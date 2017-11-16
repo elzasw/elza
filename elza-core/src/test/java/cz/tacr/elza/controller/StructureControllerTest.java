@@ -169,7 +169,7 @@ public class StructureControllerTest extends AbstractControllerTest {
         assertNotNull(structureType.id);
         assertNotNull(structureType.name);
 
-        List<StructureExtensionFundVO> fundStructureExtension = findFundStructureExtension(fundVersion.getId());
+        List<StructureExtensionFundVO> fundStructureExtension = findFundStructureExtension(fundVersion.getId(), STRUCTURE_TYPE_CODE);
         assertNotNull(fundStructureExtension);
         assertEquals(1, fundStructureExtension.size());
 
@@ -179,30 +179,13 @@ public class StructureControllerTest extends AbstractControllerTest {
         assertNotNull(structureExtensionFund.code);
         assertFalse(structureExtensionFund.active);
 
-        addFundStructureExtension(fundVersion.getId(), structureExtensionFund.code);
-        fundStructureExtension = findFundStructureExtension(fundVersion.getId());
-        assertNotNull(fundStructureExtension);
-        assertEquals(1, fundStructureExtension.size());
-
+        setFundStructureExtensions(fundVersion.getId(), STRUCTURE_TYPE_CODE, Collections.singletonList(STRUCTURE_EXTENSION_CODE));
+        fundStructureExtension = findFundStructureExtension(fundVersion.getId(), STRUCTURE_TYPE_CODE);
         structureExtensionFund = fundStructureExtension.get(0);
         assertTrue(structureExtensionFund.active);
 
-        deleteFundStructureExtension(fundVersion.getId(), structureExtensionFund.code);
-
-        fundStructureExtension = findFundStructureExtension(fundVersion.getId());
-        assertNotNull(fundStructureExtension);
-        assertEquals(1, fundStructureExtension.size());
-
-        structureExtensionFund = fundStructureExtension.get(0);
-        assertFalse(structureExtensionFund.active);
-
-        setFundStructureExtensions(fundVersion.getId(), Collections.singletonList(STRUCTURE_EXTENSION_CODE));
-        fundStructureExtension = findFundStructureExtension(fundVersion.getId());
-        structureExtensionFund = fundStructureExtension.get(0);
-        assertTrue(structureExtensionFund.active);
-
-        setFundStructureExtensions(fundVersion.getId(), Collections.emptyList());
-        fundStructureExtension = findFundStructureExtension(fundVersion.getId());
+        setFundStructureExtensions(fundVersion.getId(), STRUCTURE_TYPE_CODE, Collections.emptyList());
+        fundStructureExtension = findFundStructureExtension(fundVersion.getId(), STRUCTURE_TYPE_CODE);
         structureExtensionFund = fundStructureExtension.get(0);
         assertFalse(structureExtensionFund.active);
     }
@@ -227,13 +210,13 @@ public class StructureControllerTest extends AbstractControllerTest {
         assertEquals(1, structureDataResult1.getCount());
         assertEquals(1, structureDataResult1.getRows().size());
 
-        FilteredResultVO<ArrStructureDataVO> structureDataResult2 = findStructureData(STRUCTURE_TYPE_CODE, fundVersion.getId(), null, false, null, null);
-        assertEquals(1, structureDataResult2.getCount());
-        assertEquals(1, structureDataResult2.getRows().size());
-
         ArrStructureDataVO structureDataAssignable = setAssignableStructureData(fundVersion.getId(), structureData.id, false);
         assertNotNull(structureDataAssignable);
         assertEquals(false, structureDataAssignable.assignable);
+
+        FilteredResultVO<ArrStructureDataVO> structureDataResult2 = findStructureData(STRUCTURE_TYPE_CODE, fundVersion.getId(), null, false, null, null);
+        assertEquals(1, structureDataResult2.getCount());
+        assertEquals(1, structureDataResult2.getRows().size());
 
         FilteredResultVO<ArrStructureDataVO> structureDataResult3 = findStructureData(STRUCTURE_TYPE_CODE, fundVersion.getId(), null, true, null, null);
         assertEquals(0, structureDataResult3.getCount());

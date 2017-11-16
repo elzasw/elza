@@ -15,7 +15,6 @@ import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.RulStructureExtension;
 import cz.tacr.elza.domain.RulStructureType;
-import cz.tacr.elza.drools.RulesExecutor;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
@@ -26,8 +25,6 @@ import cz.tacr.elza.repository.FilteredResult;
 import cz.tacr.elza.repository.FundStructureExtensionRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.StructureDataRepository;
-import cz.tacr.elza.repository.StructureDefinitionRepository;
-import cz.tacr.elza.repository.StructureExtensionDefinitionRepository;
 import cz.tacr.elza.repository.StructureExtensionRepository;
 import cz.tacr.elza.repository.StructureItemRepository;
 import cz.tacr.elza.repository.StructureTypeRepository;
@@ -135,10 +132,10 @@ public class StructureService {
      * @return vytvořené entity
      */
     private List<ArrStructureData> createStructureDataList(final ArrFund fund,
-                                                          final RulStructureType structureType,
-                                                          final ArrStructureData.State state,
-                                                          final ArrChange change,
-                                                          int count) {
+                                                           final RulStructureType structureType,
+                                                           final ArrStructureData.State state,
+                                                           final ArrChange change,
+                                                           int count) {
         List<ArrStructureData> result = new ArrayList<>(count);
         for (int i = 0; i < count; i++) {
             ArrStructureData structureData = new ArrStructureData();
@@ -179,8 +176,8 @@ public class StructureService {
     /**
      * Nastavení přiřaditelnosti.
      *
-     * @param structureData  hodnota strukturovaného datového typu
-     * @param assignable     přiřaditelný
+     * @param structureData hodnota strukturovaného datového typu
+     * @param assignable    přiřaditelný
      * @return upravená entita
      */
     public ArrStructureData setAssignableStructureData(final ArrStructureData structureData, final boolean assignable) {
@@ -474,20 +471,6 @@ public class StructureService {
     }
 
     /**
-     * Provede revalidaci hodnot strukturovaného typu pro AS.
-     *
-     * @param fundVersion   verze AS
-     * @param structureType strukturovaný typ
-     */
-    private void revalidateStructureData(final ArrFundVersion fundVersion, final RulStructureType structureType) {
-        Assert.notNull(fundVersion, "Musí být vybrána verze AS");
-        Assert.notNull(structureType, "Musí být vybrán strukturovaný typ");
-
-        List<ArrStructureData> structureDataList = structureDataRepository.findByStructureTypeAndFundAndDeleteChangeIsNull(structureType, fundVersion.getFund());
-        revalidateStructureData(structureDataList);
-    }
-
-    /**
      * Provede revalidaci předaných hodnot strukturovaného typu.
      *
      * @param structureDataList strukturovaný typ
@@ -645,63 +628,16 @@ public class StructureService {
     }
 
     /**
-     * Aktivuje rozšíření u archivního souboru.
-     *
-     * @param fundVersion        verze AS
-     * @param structureExtension rozšížení strukt. typu
-     * @return vytvořená entita
-     */
-    public ArrFundStructureExtension addFundStructureExtension(final ArrFundVersion fundVersion,
-                                                               final RulStructureExtension structureExtension) {
-        validateFundStrucutureExtension(fundVersion, structureExtension);
-
-        ArrFundStructureExtension fundStructureExtension = fundStructureExtensionRepository
-                .findByFundAndStructureExtensionAndDeleteChangeIsNull(fundVersion.getFund(), structureExtension);
-        if (fundStructureExtension != null) {
-            throw new BusinessException("U AS je již rozšíření aktivováno", BaseCode.INVALID_STATE);
-        }
-
-        ArrChange change = arrangementService.createChange(ArrChange.Type.ADD_FUND_STRUCTURE_EXT);
-        ArrFundStructureExtension newFundStructureExtension = new ArrFundStructureExtension();
-        newFundStructureExtension.setCreateChange(change);
-        newFundStructureExtension.setFund(fundVersion.getFund());
-        newFundStructureExtension.setStructureExtension(structureExtension);
-
-        revalidateStructureData(fundVersion, structureExtension.getStructureType());
-        return fundStructureExtensionRepository.save(newFundStructureExtension);
-    }
-
-    /**
-     * Deaktivuje rozšíření u archivního souboru.
-     *
-     * @param fundVersion        verze AS
-     * @param structureExtension rozšížení strukt. typu
-     * @return smazaná entita
-     */
-    public ArrFundStructureExtension deleteFundStructureExtension(final ArrFundVersion fundVersion, final RulStructureExtension structureExtension) {
-        validateFundStrucutureExtension(fundVersion, structureExtension);
-
-        ArrFundStructureExtension fundStructureExtension = fundStructureExtensionRepository
-                .findByFundAndStructureExtensionAndDeleteChangeIsNull(fundVersion.getFund(), structureExtension);
-        if (fundStructureExtension == null) {
-            throw new BusinessException("U AS rozšíření není aktivováno", BaseCode.INVALID_STATE);
-        }
-
-        ArrChange change = arrangementService.createChange(ArrChange.Type.DELETE_FUND_STRUCTURE_EXT);
-        fundStructureExtension.setDeleteChange(change);
-
-        revalidateStructureData(fundVersion, structureExtension.getStructureType());
-        return fundStructureExtensionRepository.save(fundStructureExtension);
-    }
-
-    /**
      * Nastaví konkrétní rozšíření na AS.
      *
      * @param fundVersion         verze AS
+     * @param structureType       strukturovaný typ
      * @param structureExtensions seznam rozšíření, které mají být aktivovány na AS
      */
-    public void setFundStructureExtensions(final ArrFundVersion fundVersion, final List<RulStructureExtension> structureExtensions) {
-        structureExtensions.forEach(se -> validateFundStrucutureExtension(fundVersion, se));
+    public void setFundStructureExtensions(final ArrFundVersion fundVersion,
+                                           final RulStructureType structureType,
+                                           final List<RulStructureExtension> structureExtensions) {
+        structureExtensions.forEach(se -> validateFundStructureExtension(fundVersion, structureType, se));
 
         List<ArrFundStructureExtension> fundStructureExtensions = fundStructureExtensionRepository.findByFundAndDeleteChangeIsNull(fundVersion.getFund());
 
@@ -743,26 +679,16 @@ public class StructureService {
      * Validace AS a rozšíření strukt. typu.
      *
      * @param fundVersion        verze AS
+     * @param structureType      strukturovaný typ
      * @param structureExtension rozšížení strukt. typu
      */
-    private void validateFundStrucutureExtension(final ArrFundVersion fundVersion, final RulStructureExtension structureExtension) {
+    private void validateFundStructureExtension(final ArrFundVersion fundVersion, final RulStructureType structureType, final RulStructureExtension structureExtension) {
+        if (!structureType.equals(structureExtension.getStructureType())) {
+            throw new BusinessException("Rozšíření nespadá pod strukt. typ", BaseCode.INVALID_STATE);
+        }
         if (!fundVersion.getRuleSet().equals(structureExtension.getStructureType().getRuleSet())) {
             throw new BusinessException("AS a rozšíření mají rozdílná pravidla", BaseCode.INVALID_STATE);
         }
-    }
-
-    /**
-     * Vrací rozšíření strukt. typu podle kódu.
-     *
-     * @param structureExtensionCode kód rozšíření strukt. typu
-     * @return entita
-     */
-    public RulStructureExtension getStructureExtensionByCode(final String structureExtensionCode) {
-        RulStructureExtension structureExtension = structureExtensionRepository.findByCode(structureExtensionCode);
-        if (structureExtension == null) {
-            throw new ObjectNotFoundException("Rozšíření neexistuje: " + structureExtensionCode, BaseCode.ID_NOT_EXIST).setId(structureExtensionCode);
-        }
-        return structureExtension;
     }
 
     /**
@@ -782,21 +708,22 @@ public class StructureService {
     /**
      * Nalezne všechny dostupné rozšížení pro strukturovaný typ.
      *
-     * @param fundVersion verze AS
+     * @param structureType strukturovaný typ
      * @return nalezené entity
      */
-    public List<RulStructureExtension> findAllStructureExtensions(final ArrFundVersion fundVersion) {
-        return structureExtensionRepository.findByRuleSet(fundVersion.getRuleSet());
+    public List<RulStructureExtension> findAllStructureExtensions(final RulStructureType structureType) {
+        return structureExtensionRepository.findByStructureType(structureType);
     }
 
     /**
      * Nalezne aktivní rozšíření pro strukturovaný typ.
      *
-     * @param fundVersion verze AS
+     * @param fund          AS
+     * @param structureType strukturovaný typ
      * @return nalezené entity
      */
-    public List<RulStructureExtension> findStructureExtensions(final ArrFundVersion fundVersion) {
-        return structureExtensionRepository.findActiveByFundAndRuleSet(fundVersion.getFund(), fundVersion.getRuleSet());
+    public List<RulStructureExtension> findStructureExtensions(final ArrFund fund, final RulStructureType structureType) {
+        return structureExtensionRepository.findActiveByFundAndStructureType(fund, structureType);
     }
 
     /**

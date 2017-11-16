@@ -161,10 +161,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String FIND_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL + "/data/{fundVersionId}/{structureTypeCode}/search";
     protected static final String GET_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL + "/data/{fundVersionId}/{structureDataId}";
     protected static final String FIND_STRUCTURE_TYPES = STRUCTURE_CONTROLLER_URL + "/type/{fundVersionId}";
-    protected static final String FIND_FUND_STRUCTURE_EXTENSION = STRUCTURE_CONTROLLER_URL + "/extension/{fundVersionId}";
-    protected static final String ADD_FUND_STRUCTURE_EXTENSION = STRUCTURE_CONTROLLER_URL + "/extension/{structureExtensionCode}/{fundVersionId}/add";
-    protected static final String DELETE_FUND_STRUCTURE_EXTENSION = STRUCTURE_CONTROLLER_URL + "/extension/{structureExtensionCode}/{fundVersionId}/delete";
-    protected static final String SET_FUND_STRUCTURE_EXTENSION = STRUCTURE_CONTROLLER_URL + "/extension/{fundVersionId}/set";
+    protected static final String FIND_FUND_STRUCTURE_EXTENSION = STRUCTURE_CONTROLLER_URL + "/extension/{fundVersionId}/{structureTypeCode}";
+    protected static final String SET_FUND_STRUCTURE_EXTENSION = STRUCTURE_CONTROLLER_URL + "/extension/{fundVersionId}/{structureTypeCode}/set";
     protected static final String CREATE_STRUCTURE_ITEM = STRUCTURE_CONTROLLER_URL + "/item/{fundVersionId}/{structureDataId}/{itemTypeId}/create";
     protected static final String UPDATE_STRUCTURE_ITEM = STRUCTURE_CONTROLLER_URL + "/item/{fundVersionId}/update/{createNewVersion}";
     protected static final String DELETE_STRUCTURE_ITEM = STRUCTURE_CONTROLLER_URL + "/item/{fundVersionId}/delete";
@@ -3286,45 +3284,26 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param fundVersionId identifikátor verze AS
      * @return nalezené entity
      */
-    protected List<StructureExtensionFundVO> findFundStructureExtension(final Integer fundVersionId) {
+    protected List<StructureExtensionFundVO> findFundStructureExtension(final Integer fundVersionId,
+                                                                        final String structureTypeCode) {
         return Arrays.asList(get(spec -> spec
-                .pathParameter("fundVersionId", fundVersionId), FIND_FUND_STRUCTURE_EXTENSION)
+                .pathParameter("fundVersionId", fundVersionId)
+                .pathParameter("structureTypeCode", structureTypeCode), FIND_FUND_STRUCTURE_EXTENSION)
                 .as(StructureExtensionFundVO[].class));
-    }
-
-    /**
-     * Aktivuje rozšíření u archivního souboru.
-     *
-     * @param fundVersionId          identifikátor verze AS
-     * @param structureExtensionCode kód rozšíření strukturovaného typu
-     */
-    protected void addFundStructureExtension(final Integer fundVersionId,
-                                             final String structureExtensionCode) {
-        post(spec -> spec.pathParameter("fundVersionId", fundVersionId)
-                .pathParameter("structureExtensionCode", structureExtensionCode), ADD_FUND_STRUCTURE_EXTENSION);
-    }
-
-    /**
-     * Deaktivuje rozšíření u archivního souboru.
-     *
-     * @param fundVersionId          identifikátor verze AS
-     * @param structureExtensionCode kód rozšíření strukturovaného typu
-     */
-    protected void deleteFundStructureExtension(final Integer fundVersionId,
-                                                final String structureExtensionCode) {
-        post(spec -> spec.pathParameter("fundVersionId", fundVersionId)
-                .pathParameter("structureExtensionCode", structureExtensionCode), DELETE_FUND_STRUCTURE_EXTENSION);
     }
 
     /**
      * Nastaví konkrétní rozšíření na AS.
      *
      * @param fundVersionId           identifikátor verze AS
+     * @param structureTypeCode       kód strukturovaného datového typu
      * @param structureExtensionCodes seznam kódů rozšíření, které mají být aktivovány na AS
      */
     protected void setFundStructureExtensions(final Integer fundVersionId,
-                                           final List<String> structureExtensionCodes) {
+                                              final String structureTypeCode,
+                                              final List<String> structureExtensionCodes) {
         post(spec -> spec.pathParameter("fundVersionId", fundVersionId)
+                .pathParameter("structureTypeCode", structureTypeCode)
                 .body(structureExtensionCodes), SET_FUND_STRUCTURE_EXTENSION);
     }
 

@@ -334,42 +334,15 @@ public class StructureController {
      * @return nalezené entity
      */
     @Transactional
-    @RequestMapping(value = "/extension/{fundVersionId}", method = RequestMethod.GET)
-    public List<StructureExtensionFundVO> findFundStructureExtension(@PathVariable(value = "fundVersionId") final Integer fundVersionId) {
+    @RequestMapping(value = "/extension/{fundVersionId}/{structureTypeCode}", method = RequestMethod.GET)
+    public List<StructureExtensionFundVO> findFundStructureExtension(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                                                                     @PathVariable(value = "structureTypeCode") final String structureTypeCode) {
         ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
-        List<RulStructureExtension> allStructureExtensions = structureService.findAllStructureExtensions(fundVersion);
-        List<RulStructureExtension> structureExtensions = structureService.findStructureExtensions(fundVersion);
+        RulStructureType structureType = structureService.getStructureTypeByCode(structureTypeCode);
+        validateRuleSet(fundVersion, structureType);
+        List<RulStructureExtension> allStructureExtensions = structureService.findAllStructureExtensions(structureType);
+        List<RulStructureExtension> structureExtensions = structureService.findStructureExtensions(fundVersion.getFund(), structureType);
         return factoryVO.createStructureExtensionFund(allStructureExtensions, structureExtensions);
-    }
-
-    /**
-     * Aktivuje rozšíření u archivního souboru.
-     *
-     * @param fundVersionId          identifikátor verze AS
-     * @param structureExtensionCode kód rozšíření strukturovaného typu
-     */
-    @Transactional
-    @RequestMapping(value = "/extension/{structureExtensionCode}/{fundVersionId}/add", method = RequestMethod.POST)
-    public void addFundStructureExtension(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                                          @PathVariable(value = "structureExtensionCode") final String structureExtensionCode) {
-        ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
-        RulStructureExtension structureExtension = structureService.getStructureExtensionByCode(structureExtensionCode);
-        structureService.addFundStructureExtension(fundVersion, structureExtension);
-    }
-
-    /**
-     * Deaktivuje rozšíření u archivního souboru.
-     *
-     * @param fundVersionId          identifikátor verze AS
-     * @param structureExtensionCode kód rozšíření strukturovaného typu
-     */
-    @Transactional
-    @RequestMapping(value = "/extension/{structureExtensionCode}/{fundVersionId}/delete", method = RequestMethod.POST)
-    public void deleteFundStructureExtension(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                                             @PathVariable(value = "structureExtensionCode") final String structureExtensionCode) {
-        ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
-        RulStructureExtension structureExtension = structureService.getStructureExtensionByCode(structureExtensionCode);
-        structureService.deleteFundStructureExtension(fundVersion, structureExtension);
     }
 
     /**
@@ -379,12 +352,15 @@ public class StructureController {
      * @param structureExtensionCodes seznam kódů rozšíření, které mají být aktivovány na AS
      */
     @Transactional
-    @RequestMapping(value = "/extension/{fundVersionId}/set", method = RequestMethod.POST)
+    @RequestMapping(value = "/extension/{fundVersionId}/{structureTypeCode}/set", method = RequestMethod.POST)
     public void setFundStructureExtensions(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                                           @PathVariable(value = "structureTypeCode") final String structureTypeCode,
                                            @RequestBody final List<String> structureExtensionCodes) {
         ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
+        RulStructureType structureType = structureService.getStructureTypeByCode(structureTypeCode);
+        validateRuleSet(fundVersion, structureType);
         List<RulStructureExtension> structureExtensions = structureService.findStructureExtensionByCodes(structureExtensionCodes);
-        structureService.setFundStructureExtensions(fundVersion, structureExtensions);
+        structureService.setFundStructureExtensions(fundVersion, structureType, structureExtensions);
     }
 
     /**

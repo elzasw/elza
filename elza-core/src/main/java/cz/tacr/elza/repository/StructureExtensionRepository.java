@@ -29,8 +29,10 @@ public interface StructureExtensionRepository extends JpaRepository<RulStructure
     @Query("SELECT se FROM rul_structure_extension se JOIN se.structureType st JOIN st.ruleSet rs WHERE rs = :ruleSet")
     List<RulStructureExtension> findByRuleSet(@Param("ruleSet") RulRuleSet ruleSet);
 
-    @Query("SELECT se FROM arr_fund_structure_extension fse JOIN fse.structureExtension se JOIN se.structureType st WHERE st.ruleSet = :ruleSet AND fse.fund = :fund AND fse.deleteChange IS NULL")
-    List<RulStructureExtension> findActiveByFundAndRuleSet(@Param("fund") ArrFund fund,
-                                                           @Param("ruleSet") RulRuleSet ruleSet);
+    @Query("SELECT se FROM arr_fund_structure_extension fse JOIN fse.structureExtension se WHERE se.structureType = :structureType AND fse.fund = :fund AND fse.deleteChange IS NULL")
+    List<RulStructureExtension> findActiveByFundAndStructureType(@Param("fund") ArrFund fund,
+                                                                 @Param("structureType") RulStructureType structureType);
 
+    @Query("SELECT se FROM rul_structure_extension se WHERE se.structureType = :structureType")
+    List<RulStructureExtension> findByStructureType(@Param("structureType") RulStructureType structureType);
 }
