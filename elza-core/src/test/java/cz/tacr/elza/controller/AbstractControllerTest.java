@@ -162,7 +162,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String GET_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL + "/data/{fundVersionId}/{structureDataId}";
     protected static final String FIND_STRUCTURE_TYPES = STRUCTURE_CONTROLLER_URL + "/type/{fundVersionId}";
     protected static final String FIND_FUND_STRUCTURE_EXTENSION = STRUCTURE_CONTROLLER_URL + "/extension/{fundVersionId}/{structureTypeCode}";
-    protected static final String SET_FUND_STRUCTURE_EXTENSION = STRUCTURE_CONTROLLER_URL + "/extension/{fundVersionId}/{structureTypeCode}/set";
+    protected static final String SET_FUND_STRUCTURE_EXTENSION = STRUCTURE_CONTROLLER_URL + "/extension/{fundVersionId}/{structureTypeCode}";
     protected static final String CREATE_STRUCTURE_ITEM = STRUCTURE_CONTROLLER_URL + "/item/{fundVersionId}/{structureDataId}/{itemTypeId}/create";
     protected static final String UPDATE_STRUCTURE_ITEM = STRUCTURE_CONTROLLER_URL + "/item/{fundVersionId}/update/{createNewVersion}";
     protected static final String DELETE_STRUCTURE_ITEM = STRUCTURE_CONTROLLER_URL + "/item/{fundVersionId}/delete";
@@ -3302,7 +3302,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected void setFundStructureExtensions(final Integer fundVersionId,
                                               final String structureTypeCode,
                                               final List<String> structureExtensionCodes) {
-        post(spec -> spec.pathParameter("fundVersionId", fundVersionId)
+        put(spec -> spec.pathParameter("fundVersionId", fundVersionId)
                 .pathParameter("structureTypeCode", structureTypeCode)
                 .body(structureExtensionCodes), SET_FUND_STRUCTURE_EXTENSION);
     }
@@ -3425,7 +3425,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param assignable      přiřaditelný
      * @return upravená entita
      */
-    public ArrStructureDataVO setAssignableStructureData(final Integer fundVersionId,
+    protected ArrStructureDataVO setAssignableStructureData(final Integer fundVersionId,
                                                          final Integer structureDataId,
                                                          final boolean assignable) {
         return put(spec -> spec.pathParameter("fundVersionId", fundVersionId)

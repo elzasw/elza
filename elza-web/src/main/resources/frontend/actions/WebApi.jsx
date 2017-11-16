@@ -1186,12 +1186,12 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/specificationHasParty/' + itemSpecId);
     }
 
-    findFundStructureExtension(fundVersionId) {
-        return AjaxUtils.ajaxGet(WebApiCls.structureUrl + '/extension/' + fundVersionId);
+    findFundStructureExtension(fundVersionId, structureTypeCode) {
+        return AjaxUtils.ajaxGet(WebApiCls.structureUrl + '/extension/' + fundVersionId + '/' + structureTypeCode);
     }
 
-    updateFundStructureExtension(fundVersionId, data) {
-        return AjaxUtils.ajaxPut(WebApiCls.structureUrl + '/extension/' + fundVersionId, null, data);
+    updateFundStructureExtension(fundVersionId, structureTypeCode, structureExtensionCodes) {
+        return AjaxUtils.ajaxPut(WebApiCls.structureUrl + '/extension/' + fundVersionId + '/' + structureTypeCode, null, structureExtensionCodes);
     }
 
     findRulStructureTypes(fundVersionId) {

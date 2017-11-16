@@ -356,7 +356,7 @@ public class StructureController {
      * @param structureExtensionCodes seznam kódů rozšíření, které mají být aktivovány na AS
      */
     @Transactional
-    @RequestMapping(value = "/extension/{fundVersionId}/{structureTypeCode}/set", method = RequestMethod.POST)
+    @RequestMapping(value = "/extension/{fundVersionId}/{structureTypeCode}", method = RequestMethod.PUT)
     public void setFundStructureExtensions(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                            @PathVariable(value = "structureTypeCode") final String structureTypeCode,
                                            @RequestBody final List<String> structureExtensionCodes) {
