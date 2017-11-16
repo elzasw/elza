@@ -65,6 +65,8 @@ public enum EventType {
 
     CONFORMITY_INFO(EventIdsInVersion.class),
 
+    STRUCTURE_DATA_CHANGE(EventStructureDataChange.class),
+
     OUTPUT_STATE_CHANGE(EventIdAndStringInVersion.class),
     OUTPUT_CHANGES(EventIdsInVersion.class),
     OUTPUT_CHANGES_DETAIL(EventIdsInVersion.class),

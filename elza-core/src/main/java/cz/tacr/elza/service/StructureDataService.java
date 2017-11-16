@@ -2,9 +2,6 @@ package cz.tacr.elza.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 import com.google.common.eventbus.Subscribe;
 import cz.tacr.elza.EventBusListener;
 import cz.tacr.elza.domain.ArrChange;
@@ -30,6 +27,8 @@ import cz.tacr.elza.repository.StructureDefinitionRepository;
 import cz.tacr.elza.repository.StructureExtensionDefinitionRepository;
 import cz.tacr.elza.repository.StructureItemRepository;
 import cz.tacr.elza.service.event.CacheInvalidateEvent;
+import cz.tacr.elza.service.eventnotification.EventNotificationService;
+import cz.tacr.elza.service.eventnotification.events.EventStructureDataChange;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -53,8 +52,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -77,6 +74,7 @@ public class StructureDataService {
     private final RuleService ruleService;
     private final ApplicationContext applicationContext;
     private final ChangeRepository changeRepository;
+    private final EventNotificationService notificationService;
 
     private Queue<Integer> queueStructureDataIds = new ConcurrentLinkedQueue<>();
     private final Object lock = new Object();
@@ -98,7 +96,9 @@ public class StructureDataService {
                                 final RulesExecutor rulesExecutor,
                                 final ArrangementService arrangementService,
                                 final RuleService ruleService,
-                                final ApplicationContext applicationContext, final ChangeRepository changeRepository) {
+                                final ApplicationContext applicationContext,
+                                final ChangeRepository changeRepository,
+                                final EventNotificationService notificationService) {
         this.structureItemRepository = structureItemRepository;
         this.structureExtensionDefinitionRepository = structureExtensionDefinitionRepository;
         this.structureDefinitionRepository = structureDefinitionRepository;
@@ -108,6 +108,7 @@ public class StructureDataService {
         this.ruleService = ruleService;
         this.applicationContext = applicationContext;
         this.changeRepository = changeRepository;
+        this.notificationService = notificationService;
     }
 
     /**
@@ -204,6 +205,21 @@ public class StructureDataService {
             throw new ObjectNotFoundException("Nenalezena hodnota strukturovaného typu", BaseCode.ID_NOT_EXIST).setId(structureDataId);
         }
         validate(structureData);
+        if (structureData.getState() == ArrStructureData.State.TEMP) {
+            notificationService.publishEvent(new EventStructureDataChange(structureData.getFundId(),
+                    structureData.getStructureType().getCode(),
+                    Collections.singletonList(structureDataId),
+                    null,
+                    null,
+                    null));
+        } else {
+            notificationService.publishEvent(new EventStructureDataChange(structureData.getFundId(),
+                    structureData.getStructureType().getCode(),
+                    null,
+                    null,
+                    Collections.singletonList(structureDataId),
+                    null));
+        }
     }
 
     /**

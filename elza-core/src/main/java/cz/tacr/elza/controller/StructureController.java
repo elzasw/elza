@@ -119,7 +119,7 @@ public class StructureController {
         ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
         ArrStructureData structureData = structureService.getStructureDataById(structureDataId);
         validateRuleSet(fundVersion, structureData.getStructureType());
-        ArrStructureData createStructureData = structureService.confirmStructureData(structureData);
+        ArrStructureData createStructureData = structureService.confirmStructureData(fundVersion.getFund(), structureData);
         return factoryVO.createStructureData(createStructureData);
     }
 

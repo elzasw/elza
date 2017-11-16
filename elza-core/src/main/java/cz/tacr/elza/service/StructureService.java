@@ -28,6 +28,8 @@ import cz.tacr.elza.repository.StructureDataRepository;
 import cz.tacr.elza.repository.StructureExtensionRepository;
 import cz.tacr.elza.repository.StructureItemRepository;
 import cz.tacr.elza.repository.StructureTypeRepository;
+import cz.tacr.elza.service.eventnotification.EventNotificationService;
+import cz.tacr.elza.service.eventnotification.events.EventStructureDataChange;
 import org.apache.commons.collections4.CollectionUtils;
 import org.castor.core.util.Assert;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,6 +67,7 @@ public class StructureService {
     private final StructureDataService structureDataService;
     private final ItemTypeRepository itemTypeRepository;
     private final ChangeRepository changeRepository;
+    private final EventNotificationService notificationService;
 
     @Autowired
     public StructureService(final StructureItemRepository structureItemRepository,
@@ -77,7 +80,8 @@ public class StructureService {
                             final FundStructureExtensionRepository fundStructureExtensionRepository,
                             final StructureDataService structureDataService,
                             final ItemTypeRepository itemTypeRepository,
-                            final ChangeRepository changeRepository) {
+                            final ChangeRepository changeRepository,
+                            final EventNotificationService notificationService) {
         this.structureItemRepository = structureItemRepository;
         this.structureExtensionRepository = structureExtensionRepository;
         this.structureDataRepository = structureDataRepository;
@@ -89,6 +93,7 @@ public class StructureService {
         this.structureDataService = structureDataService;
         this.itemTypeRepository = itemTypeRepository;
         this.changeRepository = changeRepository;
+        this.notificationService = notificationService;
     }
 
     /**
@@ -118,7 +123,24 @@ public class StructureService {
         structureData.setFund(fund);
         structureData.setStructureType(structureType);
         structureData.setState(state);
-        return structureDataRepository.save(structureData);
+
+        ArrStructureData createStructureData = structureDataRepository.save(structureData);
+        if (state == ArrStructureData.State.TEMP) {
+            notificationService.publishEvent(new EventStructureDataChange(fund.getFundId(),
+                    structureType.getCode(),
+                    Collections.singletonList(createStructureData.getStructureDataId()),
+                    null,
+                    null,
+                    null));
+        } else {
+            notificationService.publishEvent(new EventStructureDataChange(fund.getFundId(),
+                    structureType.getCode(),
+                    null,
+                    Collections.singletonList(createStructureData.getStructureDataId()),
+                    null,
+                    null));
+        }
+        return createStructureData;
     }
 
     /**
@@ -169,6 +191,14 @@ public class StructureService {
         } else {
             ArrChange change = arrangementService.createChange(ArrChange.Type.DELETE_STRUCTURE_DATA);
             structureData.setDeleteChange(change);
+
+            notificationService.publishEvent(new EventStructureDataChange(structureData.getFundId(),
+                    structureData.getStructureType().getCode(),
+                    null,
+                    null,
+                    null,
+                    Collections.singletonList(structureData.getStructureDataId())));
+
             return structureDataRepository.save(structureData);
         }
     }
@@ -185,6 +215,12 @@ public class StructureService {
             throw new BusinessException("Nelze změnit již smazaná strukturovaná data", BaseCode.INVALID_STATE);
         }
         structureData.setAssignable(assignable);
+        notificationService.publishEvent(new EventStructureDataChange(structureData.getFundId(),
+                structureData.getStructureType().getCode(),
+                null,
+                null,
+                Collections.singletonList(structureData.getStructureDataId()),
+                null));
         return structureDataRepository.save(structureData);
     }
 
@@ -475,7 +511,7 @@ public class StructureService {
      *
      * @param structureDataList strukturovaný typ
      */
-    private void revalidateStructureData(final List<ArrStructureData> structureDataList) {
+    private List<ArrStructureData> revalidateStructureData(final List<ArrStructureData> structureDataList) {
         Assert.notNull(structureDataList, "Musí být vyplněn list hodnot strukt. typu");
 
         for (ArrStructureData structureData : structureDataList) {
@@ -484,6 +520,7 @@ public class StructureService {
         }
         structureDataRepository.save(structureDataList);
         structureDataService.addToValidate(structureDataList);
+        return structureDataList;
     }
 
     /**
@@ -583,10 +620,26 @@ public class StructureService {
     /**
      * Potvrzení hodnoty strukt. datového typu.
      *
+     * @param fund          archivní soubor
      * @param structureData hodnota struktovaného datového typu
      * @return entita
      */
-    public ArrStructureData confirmStructureData(final ArrStructureData structureData) {
+    public ArrStructureData confirmStructureData(final ArrFund fund,
+                                                 final ArrStructureData structureData) {
+        return confirmStructureData(fund, structureData, true);
+    }
+
+    /**
+     * Potvrzení hodnoty strukt. datového typu.
+     *
+     * @param fund          archivní soubor
+     * @param structureData hodnota struktovaného datového typu
+     * @param event         odeslat websocket event
+     * @return entita
+     */
+    private ArrStructureData confirmStructureData(final ArrFund fund,
+                                                  final ArrStructureData structureData,
+                                                  final boolean event) {
         if (structureData.getDeleteChange() != null) {
             throw new BusinessException("Nelze potvrdit smazaná strukturovaná data", BaseCode.INVALID_STATE);
         }
@@ -594,7 +647,16 @@ public class StructureService {
             throw new BusinessException("Strukturovaná data nemají dočasný stav", BaseCode.INVALID_STATE);
         }
         structureData.setState(ArrStructureData.State.OK);
-        return structureDataService.validate(structureData);
+        ArrStructureData confirmStructureData = structureDataService.validate(structureData);
+        if (event) {
+            notificationService.publishEvent(new EventStructureDataChange(fund.getFundId(),
+                    structureData.getStructureType().getCode(),
+                    null,
+                    Collections.singletonList(confirmStructureData.getStructureDataId()),
+                    null,
+                    null));
+        }
+        return confirmStructureData;
     }
 
     /**
@@ -790,8 +852,17 @@ public class StructureService {
             structureItemRepository.save(newStructureItems);
         }
 
-        confirmStructureData(structureData);
-        revalidateStructureData(structureDataList);
+        ArrStructureData confirmStructureData = confirmStructureData(fundVersion.getFund(), structureData, false);
+        structureDataList = revalidateStructureData(structureDataList);
+
+        List<Integer> structureDataIds = structureDataList.stream().map(ArrStructureData::getStructureDataId).collect(Collectors.toList());
+        structureDataIds.add(confirmStructureData.getStructureDataId());
+        notificationService.publishEvent(new EventStructureDataChange(fundVersion.getFundId(),
+                structureData.getStructureType().getCode(),
+                null,
+                structureDataIds,
+                null,
+                null));
     }
 
     /**
