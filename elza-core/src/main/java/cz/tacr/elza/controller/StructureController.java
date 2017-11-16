@@ -126,21 +126,21 @@ public class StructureController {
     /**
      * Nastavení přiřaditelnosti.
      *
-     * @param fundVersionId   identifikátor verze AS
-     * @param structureDataId identifikátor hodnoty strukturovaného datového typu
-     * @param assignable      přiřaditelný
-     * @return upravená entita
+     * @param fundVersionId    identifikátor verze AS
+     * @param assignable       přiřaditelný
+     * @param structureDataIds identifikátory hodnot strukturovaného datového typu
      */
     @Transactional
-    @RequestMapping(value = "/data/{fundVersionId}/{structureDataId}/assignable/{assignable}", method = RequestMethod.PUT)
-    public ArrStructureDataVO setAssignableStructureData(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                                                         @PathVariable(value = "structureDataId") final Integer structureDataId,
-                                                         @PathVariable(value = "assignable") final Boolean assignable) {
+    @RequestMapping(value = "/data/{fundVersionId}/assignable/{assignable}", method = RequestMethod.POST)
+    public void setAssignableStructureDataList(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                                               @PathVariable(value = "assignable") final Boolean assignable,
+                                               @RequestBody List<Integer> structureDataIds) {
         ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
-        ArrStructureData structureData = structureService.getStructureDataById(structureDataId);
-        validateRuleSet(fundVersion, structureData.getStructureType());
-        ArrStructureData createStructureData = structureService.setAssignableStructureData(structureData, assignable);
-        return factoryVO.createStructureData(createStructureData);
+        List<ArrStructureData> structureDataList = structureService.getStructureDataByIds(structureDataIds);
+        for (ArrStructureData structureData : structureDataList) {
+            validateRuleSet(fundVersion, structureData.getStructureType());
+        }
+        structureService.setAssignableStructureDataList(fundVersion.getFund(), structureDataList, assignable);
     }
 
     /**

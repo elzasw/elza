@@ -210,9 +210,7 @@ public class StructureControllerTest extends AbstractControllerTest {
         assertEquals(1, structureDataResult1.getCount());
         assertEquals(1, structureDataResult1.getRows().size());
 
-        ArrStructureDataVO structureDataAssignable = setAssignableStructureData(fundVersion.getId(), structureData.id, false);
-        assertNotNull(structureDataAssignable);
-        assertEquals(false, structureDataAssignable.assignable);
+        setAssignableStructureData(fundVersion.getId(), false, Collections.singletonList(structureData.id));
 
         FilteredResultVO<ArrStructureDataVO> structureDataResult2 = findStructureData(STRUCTURE_TYPE_CODE, fundVersion.getId(), null, false, null, null);
         assertEquals(1, structureDataResult2.getCount());

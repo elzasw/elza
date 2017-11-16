@@ -1,5 +1,6 @@
 package cz.tacr.elza.service;
 
+import com.google.common.collect.Lists;
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.annotation.AuthParam;
 import cz.tacr.elza.core.data.DataType;
@@ -211,23 +212,32 @@ public class StructureService {
     /**
      * Nastavení přiřaditelnosti.
      *
-     * @param structureData hodnota strukturovaného datového typu
-     * @param assignable    přiřaditelný
-     * @return upravená entita
+     * @param fund              archivní soubor
+     * @param structureDataList hodnoty strukturovaného datového typu
+     * @param assignable        přiřaditelný
+     * @return upravené entity
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
-    public ArrStructureData setAssignableStructureData(@AuthParam(type = AuthParam.Type.FUND) final ArrStructureData structureData, final boolean assignable) {
-        if (structureData.getDeleteChange() != null) {
-            throw new BusinessException("Nelze změnit již smazaná strukturovaná data", BaseCode.INVALID_STATE);
+    public List<ArrStructureData> setAssignableStructureDataList(@AuthParam(type = AuthParam.Type.FUND) final ArrFund fund,
+                                                                 final List<ArrStructureData> structureDataList,
+                                                                 final boolean assignable) {
+        if (structureDataList.size() == 0) {
+            return Collections.emptyList();
         }
-        structureData.setAssignable(assignable);
-        notificationService.publishEvent(new EventStructureDataChange(structureData.getFundId(),
-                structureData.getStructureType().getCode(),
+        for (ArrStructureData structureData : structureDataList) {
+            if (structureData.getDeleteChange() != null) {
+                throw new BusinessException("Nelze změnit již smazaná strukturovaná data", BaseCode.INVALID_STATE);
+            }
+            structureData.setAssignable(assignable);
+        }
+
+        notificationService.publishEvent(new EventStructureDataChange(fund.getFundId(),
+                structureDataList.get(0).getStructureType().getCode(),
                 null,
                 null,
-                Collections.singletonList(structureData.getStructureDataId()),
+                structureDataList.stream().map(ArrStructureData::getStructureDataId).collect(Collectors.toList()),
                 null));
-        return structureDataRepository.save(structureData);
+        return structureDataRepository.save(structureDataList);
     }
 
     /**
@@ -613,6 +623,24 @@ public class StructureService {
             throw new ObjectNotFoundException("Strukturovaná data neexistují: " + structureDataId, BaseCode.ID_NOT_EXIST).setId(structureDataId);
         }
         return structureData;
+    }
+
+    /**
+     * Vrátí strukt. data podle identifikátorů včetně načtených návazných entit.
+     *
+     * @param structureDataIds identifikátory hodnoty strukt. datového typu
+     * @return entity
+     */
+    public List<ArrStructureData> getStructureDataByIds(final List<Integer> structureDataIds) {
+        List<List<Integer>> idsParts = Lists.partition(structureDataIds, 1000);
+        List<ArrStructureData> structureDataList = new ArrayList<>();
+        for (List<Integer> idsPart : idsParts) {
+            structureDataList.addAll(structureDataRepository.findByIdsFetch(idsPart));
+        }
+        if (structureDataList.size() != structureDataIds.size()) {
+            throw new ObjectNotFoundException("Nenalezeny všechny rozšíření", BaseCode.ID_NOT_EXIST).setId(structureDataIds);
+        }
+        return structureDataList;
     }
 
     /**

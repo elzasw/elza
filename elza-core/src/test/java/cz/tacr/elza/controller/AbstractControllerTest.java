@@ -156,7 +156,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     // STRUCTURE
     protected static final String CREATE_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL + "/data/{fundVersionId}";
     protected static final String CONFIRM_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL + "/data/{fundVersionId}/{structureDataId}/confirm";
-    protected static final String SET_ASSIGNABLE_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL + "/data/{fundVersionId}/{structureDataId}/assignable/{assignable}";
+    protected static final String SET_ASSIGNABLE_STRUCTURE_DATA_LIST = STRUCTURE_CONTROLLER_URL + "/data/{fundVersionId}/assignable/{assignable}";
     protected static final String DELETE_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL + "/data/{fundVersionId}/{structureDataId}";
     protected static final String FIND_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL + "/data/{fundVersionId}/{structureTypeCode}/search";
     protected static final String GET_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL + "/data/{fundVersionId}/{structureDataId}";
@@ -3420,17 +3420,15 @@ public abstract class AbstractControllerTest extends AbstractTest {
     /**
      * Nastavení přiřaditelnosti.
      *
-     * @param fundVersionId   identifikátor verze AS
-     * @param structureDataId identifikátor hodnoty strukturovaného datového typu
-     * @param assignable      přiřaditelný
-     * @return upravená entita
+     * @param fundVersionId    identifikátor verze AS
+     * @param assignable       přiřaditelný
+     * @param structureDataIds identifikátory hodnoty strukturovaného datového typu
      */
-    protected ArrStructureDataVO setAssignableStructureData(final Integer fundVersionId,
-                                                         final Integer structureDataId,
-                                                         final boolean assignable) {
-        return put(spec -> spec.pathParameter("fundVersionId", fundVersionId)
-                .pathParameter("structureDataId", structureDataId)
-                .pathParameter("assignable", assignable), SET_ASSIGNABLE_STRUCTURE_DATA)
-                .as(ArrStructureDataVO.class);
+    protected void setAssignableStructureData(final Integer fundVersionId,
+                                           final boolean assignable,
+                                           List<Integer> structureDataIds) {
+        post(spec -> spec.pathParameter("fundVersionId", fundVersionId)
+                        .pathParameter("assignable", assignable)
+                        .body(structureDataIds), SET_ASSIGNABLE_STRUCTURE_DATA_LIST);
     }
 }
