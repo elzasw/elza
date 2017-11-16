@@ -232,6 +232,11 @@ public class ArrChange {
         ADD_FUND_STRUCTURE_EXT,
 
         /**
+         * Nastavení přiřazení k AS.
+         */
+        SET_FUND_STRUCTURE_EXT,
+
+        /**
          * Odebrání rozšíření u AS.
          */
         DELETE_FUND_STRUCTURE_EXT,

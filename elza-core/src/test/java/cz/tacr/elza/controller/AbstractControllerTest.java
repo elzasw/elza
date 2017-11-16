@@ -163,6 +163,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String FIND_FUND_STRUCTURE_EXTENSION = STRUCTURE_CONTROLLER_URL + "/extension/{fundVersionId}";
     protected static final String ADD_FUND_STRUCTURE_EXTENSION = STRUCTURE_CONTROLLER_URL + "/extension/{structureExtensionCode}/{fundVersionId}/add";
     protected static final String DELETE_FUND_STRUCTURE_EXTENSION = STRUCTURE_CONTROLLER_URL + "/extension/{structureExtensionCode}/{fundVersionId}/delete";
+    protected static final String SET_FUND_STRUCTURE_EXTENSION = STRUCTURE_CONTROLLER_URL + "/extension/{fundVersionId}/set";
     protected static final String CREATE_STRUCTURE_ITEM = STRUCTURE_CONTROLLER_URL + "/item/{fundVersionId}/{structureDataId}/{itemTypeId}/create";
     protected static final String UPDATE_STRUCTURE_ITEM = STRUCTURE_CONTROLLER_URL + "/item/{fundVersionId}/update/{createNewVersion}";
     protected static final String DELETE_STRUCTURE_ITEM = STRUCTURE_CONTROLLER_URL + "/item/{fundVersionId}/delete";
@@ -3312,6 +3313,18 @@ public abstract class AbstractControllerTest extends AbstractTest {
                                                 final String structureExtensionCode) {
         post(spec -> spec.pathParameter("fundVersionId", fundVersionId)
                 .pathParameter("structureExtensionCode", structureExtensionCode), DELETE_FUND_STRUCTURE_EXTENSION);
+    }
+
+    /**
+     * Nastaví konkrétní rozšíření na AS.
+     *
+     * @param fundVersionId           identifikátor verze AS
+     * @param structureExtensionCodes seznam kódů rozšíření, které mají být aktivovány na AS
+     */
+    protected void setFundStructureExtensions(final Integer fundVersionId,
+                                           final List<String> structureExtensionCodes) {
+        post(spec -> spec.pathParameter("fundVersionId", fundVersionId)
+                .body(structureExtensionCodes), SET_FUND_STRUCTURE_EXTENSION);
     }
 
     /**

@@ -6,6 +6,8 @@ import cz.tacr.elza.domain.RulStructureExtension;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 /**
  * Repozitory pro {@link ArrFundStructureExtension}
  *
@@ -15,4 +17,6 @@ import org.springframework.stereotype.Repository;
 public interface FundStructureExtensionRepository extends JpaRepository<ArrFundStructureExtension, Integer> {
 
     ArrFundStructureExtension findByFundAndStructureExtensionAndDeleteChangeIsNull(ArrFund fund, RulStructureExtension structureExtension);
+
+    List<ArrFundStructureExtension> findByFundAndDeleteChangeIsNull(ArrFund fund);
 }

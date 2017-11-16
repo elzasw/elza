@@ -24,6 +24,8 @@ public interface StructureExtensionRepository extends JpaRepository<RulStructure
 
     RulStructureExtension findByCode(String structureExtensionCode);
 
+    List<RulStructureExtension> findByCodeIn(List<String> structureExtensionCodes);
+
     @Query("SELECT se FROM rul_structure_extension se JOIN se.structureType st JOIN st.ruleSet rs WHERE rs = :ruleSet")
     List<RulStructureExtension> findByRuleSet(@Param("ruleSet") RulRuleSet ruleSet);
 

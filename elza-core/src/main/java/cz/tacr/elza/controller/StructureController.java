@@ -353,6 +353,21 @@ public class StructureController {
     }
 
     /**
+     * Nastaví konkrétní rozšíření na AS.
+     *
+     * @param fundVersionId           identifikátor verze AS
+     * @param structureExtensionCodes seznam kódů rozšíření, které mají být aktivovány na AS
+     */
+    @Transactional
+    @RequestMapping(value = "/extension/{fundVersionId}/set", method = RequestMethod.POST)
+    public void setFundStructureExtensions(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                                           @RequestBody final List<String> structureExtensionCodes) {
+        ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
+        List<RulStructureExtension> structureExtensions = structureService.findStructureExtensionByCodes(structureExtensionCodes);
+        structureService.setFundStructureExtensions(fundVersion, structureExtensions);
+    }
+
+    /**
      * Validace pravidel.
      *
      * @param fundVersion   verze AS

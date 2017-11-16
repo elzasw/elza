@@ -43,8 +43,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -687,6 +689,51 @@ public class StructureService {
     }
 
     /**
+     * Nastaví konkrétní rozšíření na AS.
+     *
+     * @param fundVersion         verze AS
+     * @param structureExtensions seznam rozšíření, které mají být aktivovány na AS
+     */
+    public void setFundStructureExtensions(final ArrFundVersion fundVersion, final List<RulStructureExtension> structureExtensions) {
+        structureExtensions.forEach(se -> validateFundStrucutureExtension(fundVersion, se));
+
+        List<ArrFundStructureExtension> fundStructureExtensions = fundStructureExtensionRepository.findByFundAndDeleteChangeIsNull(fundVersion.getFund());
+
+        List<ArrFundStructureExtension> fundStructureExtensionsDelete = new ArrayList<>(fundStructureExtensions);
+        fundStructureExtensionsDelete.removeIf(fundStructureExtension -> structureExtensions.contains(fundStructureExtension.getStructureExtension()));
+
+        List<ArrFundStructureExtension> fundStructureExtensionsCreate = new ArrayList<>();
+
+        for (RulStructureExtension structureExtension : structureExtensions) {
+            boolean exists = false;
+            for (ArrFundStructureExtension fundStructureExtension : fundStructureExtensions) {
+                if (structureExtension.equals(fundStructureExtension.getStructureExtension())) {
+                    exists = true;
+                    break;
+                }
+            }
+            if (!exists) {
+                ArrFundStructureExtension fundStructureExtensionCreate = new ArrFundStructureExtension();
+                fundStructureExtensionCreate.setFund(fundVersion.getFund());
+                fundStructureExtensionCreate.setStructureExtension(structureExtension);
+                fundStructureExtensionsCreate.add(fundStructureExtensionCreate);
+            }
+        }
+
+        if (fundStructureExtensionsCreate.size() > 0 || fundStructureExtensionsDelete.size() > 0) {
+            final ArrChange change = arrangementService.createChange(ArrChange.Type.SET_FUND_STRUCTURE_EXT);
+            fundStructureExtensionsCreate.forEach(fse -> fse.setCreateChange(change));
+            fundStructureExtensionsDelete.forEach(fse -> fse.setDeleteChange(change));
+            fundStructureExtensionRepository.save(fundStructureExtensionsCreate);
+            fundStructureExtensionRepository.save(fundStructureExtensionsDelete);
+            Set<RulStructureType> structureTypes = new HashSet<>();
+            fundStructureExtensionsCreate.forEach(fse -> structureTypes.add(fse.getStructureExtension().getStructureType()));
+            fundStructureExtensionsDelete.forEach(fse -> structureTypes.add(fse.getStructureExtension().getStructureType()));
+            revalidateStructureTypes(structureTypes);
+        }
+    }
+
+    /**
      * Validace AS a rozšíření strukt. typu.
      *
      * @param fundVersion        verze AS
@@ -710,6 +757,20 @@ public class StructureService {
             throw new ObjectNotFoundException("Rozšíření neexistuje: " + structureExtensionCode, BaseCode.ID_NOT_EXIST).setId(structureExtensionCode);
         }
         return structureExtension;
+    }
+
+    /**
+     * Vrací rozšíření strukt. typu podle kódu.
+     *
+     * @param structureExtensionCodes kódy rozšíření strukt. typu
+     * @return entita
+     */
+    public List<RulStructureExtension> findStructureExtensionByCodes(final List<String> structureExtensionCodes) {
+        List<RulStructureExtension> structureExtensions = structureExtensionRepository.findByCodeIn(structureExtensionCodes);
+        if (structureExtensions.size() != structureExtensionCodes.size()) {
+            throw new ObjectNotFoundException("Nenalezeny všechny rozšíření", BaseCode.ID_NOT_EXIST).setId(structureExtensionCodes);
+        }
+        return structureExtensions;
     }
 
     /**
