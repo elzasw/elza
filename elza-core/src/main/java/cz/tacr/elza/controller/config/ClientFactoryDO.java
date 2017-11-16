@@ -10,6 +10,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
@@ -312,6 +313,16 @@ public class ClientFactoryDO {
         }
 
         return structureItem;
+    }
+
+    public List<ArrStructureItem> createStructureItem(final Map<Integer, List<ArrItemVO>> descItemVO) {
+        List<ArrStructureItem> result = new ArrayList<>();
+        for (Map.Entry<Integer, List<ArrItemVO>> entry : descItemVO.entrySet()) {
+            result.addAll(entry.getValue().stream()
+                    .map(si -> createStructureItem(si, entry.getKey()))
+                    .collect(Collectors.toList()));
+        }
+        return result;
     }
 
     /**

@@ -5,6 +5,7 @@ import cz.tacr.elza.controller.vo.ArrFundVersionVO;
 import cz.tacr.elza.controller.vo.ArrStructureDataVO;
 import cz.tacr.elza.controller.vo.FilteredResultVO;
 import cz.tacr.elza.controller.vo.RulStructureTypeVO;
+import cz.tacr.elza.controller.vo.nodes.ItemTypeDescItemsLiteVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemIntVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStringVO;
@@ -14,8 +15,12 @@ import cz.tacr.elza.domain.ArrStructureData;
 import org.junit.Test;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.junit.Assert.*;
 
@@ -60,6 +65,7 @@ public class StructureControllerTest extends AbstractControllerTest {
         createStructureItemPacketPostfix(fundVersion, structureData);
         createStructureItemPacketType(fundVersion, structureData);
 
+        RulDescItemTypeExtVO typePostfix = findDescItemTypeByCode("ZP2015_PACKET_POSTFIX");
         RulDescItemTypeExtVO typeNumber = findDescItemTypeByCode("ZP2015_PACKET_NUMBER");
         List<Integer> itemTypeIds = Collections.singletonList(typeNumber.getId());
 
@@ -68,6 +74,26 @@ public class StructureControllerTest extends AbstractControllerTest {
         FilteredResultVO<ArrStructureDataVO> structureDataResult = findStructureData(STRUCTURE_TYPE_CODE, fundVersion.getId(), null, null, null, null);
         assertEquals(BATCH_COUNT, structureDataResult.getCount());
         assertEquals(BATCH_COUNT, structureDataResult.getRows().size());
+
+        StructureController.StructureDataFormDataVO structureDataForm = getFormStructureItems(fundVersion.getId(), structureData.id);
+
+        ItemGroupVO group = structureDataForm.getGroups().get(0);
+        List<ItemTypeDescItemsLiteVO> itemTypes = group.getTypes();
+        Map<Integer, List<ArrItemVO>> items = itemTypes.stream()
+                .peek(it -> {
+                    if (it.getId().equals(typeNumber.getId())) {
+                        it.getDescItems().forEach(i -> ((ArrItemIntVO) i).setValue(BATCH_COUNT + 1));
+                    }
+                })
+                .filter(it -> !it.getId().equals(typePostfix.getId()))
+                .collect(Collectors.toMap(ItemTypeDescItemsLiteVO::getId, ItemTypeDescItemsLiteVO::getDescItems));
+
+        StructureController.StructureDataBatchUpdate data = new StructureController.StructureDataBatchUpdate();
+        data.setStructureDataIds(structureDataResult.getRows().stream().map(sd -> sd.id).collect(Collectors.toList()));
+        data.setDeleteItemTypeIds(Collections.singletonList(typePostfix.getId()));
+        data.setItems(items);
+        data.setAutoincrementItemTypeIds(Collections.singletonList(typeNumber.getId()));
+        updateStructureDataBatch(fundVersion.getId(), STRUCTURE_TYPE_CODE, data);
     }
 
     private void structureItemTest(final ArrFundVersionVO fundVersion) {

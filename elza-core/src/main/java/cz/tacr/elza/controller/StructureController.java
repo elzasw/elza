@@ -34,6 +34,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.transaction.Transactional;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -103,6 +104,36 @@ public class StructureController {
         ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
         ArrStructureData structureData = structureService.getStructureDataById(structureDataId);
         structureService.duplicateStructureDataBatch(fundVersion, structureData, structureDataBatch.getCount(), structureDataBatch.getItemTypeIds());
+    }
+
+    /**
+     * Hromadná úprava položek/hodnot strukt. typu.
+     *
+     * @param fundVersionId            identifikátor verze AS
+     * @param structureTypeCode        kód strukturovaného datového typu
+     * @param structureDataBatchUpdate data pro hromadnou úpravu hodnot
+     */
+    @Transactional
+    @RequestMapping(value = "/data/{fundVersionId}/{structureTypeCode}/batchUpdate", method = RequestMethod.POST)
+    public void updateStructureDataBatch(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                                         @PathVariable(value = "structureTypeCode") final String structureTypeCode,
+                                         @RequestBody final StructureDataBatchUpdate structureDataBatchUpdate) {
+        ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
+        RulStructureType structureType = structureService.getStructureTypeByCode(structureTypeCode);
+        validateRuleSet(fundVersion, structureType);
+
+        Assert.notNull(structureDataBatchUpdate.autoincrementItemTypeIds, "Identifikátory typů atributu pro autoincrement nesmí být null");
+        Assert.notNull(structureDataBatchUpdate.deleteItemTypeIds, "Identifikátory typů atributu pro odstranění nesmí být null");
+        Assert.notNull(structureDataBatchUpdate.items, "Položky nesmí být null");
+        Assert.notEmpty(structureDataBatchUpdate.structureDataIds, "Musí být vyplněn alespoň jeden identifikátor hodnoty strukt. typu");
+
+        List<ArrStructureItem> structureItems = factoryDO.createStructureItem(structureDataBatchUpdate.getItems());
+        structureService.updateStructureDataBatch(fundVersion,
+                structureType,
+                structureDataBatchUpdate.getStructureDataIds(),
+                structureItems,
+                structureDataBatchUpdate.getAutoincrementItemTypeIds(),
+                structureDataBatchUpdate.getDeleteItemTypeIds());
     }
 
     /**
@@ -412,6 +443,61 @@ public class StructureController {
         @Override
         public void setParent(final ArrStructureDataVO parent) {
             this.parent = parent;
+        }
+    }
+
+    public static class StructureDataBatchUpdate {
+
+        /**
+         * Identifikátory hodnot strukt. typu, pro které se bude provádět úprava.
+         */
+        private List<Integer> structureDataIds;
+
+        /**
+         * Identifikátory číselných typů atributu, které se budou incrementovat.
+         */
+        private List<Integer> autoincrementItemTypeIds;
+
+        /**
+         * Identifikátory typů atributu, které se mají smazat.
+         */
+        private List<Integer> deleteItemTypeIds;
+
+        /**
+         * Identifikátor typu atributu -> položky, které se mají nastavit na hodnotách strukt. typu.
+         */
+        private Map<Integer, List<ArrItemVO>> items;
+
+        public List<Integer> getStructureDataIds() {
+            return structureDataIds;
+        }
+
+        public void setStructureDataIds(final List<Integer> structureDataIds) {
+            this.structureDataIds = structureDataIds;
+        }
+
+        public List<Integer> getAutoincrementItemTypeIds() {
+            return autoincrementItemTypeIds;
+        }
+
+        public void setAutoincrementItemTypeIds(final List<Integer> autoincrementItemTypeIds) {
+            this.autoincrementItemTypeIds = autoincrementItemTypeIds;
+        }
+
+        public List<Integer> getDeleteItemTypeIds() {
+            return deleteItemTypeIds;
+        }
+
+        public void setDeleteItemTypeIds(final List<Integer> deleteItemTypeIds) {
+            this.deleteItemTypeIds = deleteItemTypeIds;
+        }
+
+        public Map<Integer, List<ArrItemVO>> getItems() {
+            return items;
+        }
+
+        public void setItems(final Map<Integer, List<ArrItemVO>> items) {
+            this.items = items;
         }
     }
 

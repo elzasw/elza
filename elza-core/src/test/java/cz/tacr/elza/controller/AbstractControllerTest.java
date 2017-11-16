@@ -169,6 +169,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String DELETE_STRUCTURE_ITEMS_BY_TYPE = STRUCTURE_CONTROLLER_URL + "/item/{fundVersionId}/{structureDataId}/{itemTypeId}";
     protected static final String GET_FORM_STRUCTURE_ITEMS = STRUCTURE_CONTROLLER_URL + "/item/form/{fundVersionId}/{structureDataId}";
     protected static final String DUPLICATE_STRUCTURE_DATA_BATCH = STRUCTURE_CONTROLLER_URL + "/data/{fundVersionId}/{structureDataId}/batch";
+    protected static final String UPDATE_STRUCTURE_DATA_BATCH = STRUCTURE_CONTROLLER_URL + "/data/{fundVersionId}/{structureTypeCode}/batchUpdate";
 
     // ARRANGEMENT
     protected static final String CREATE_FUND = ARRANGEMENT_CONTROLLER_URL + "/funds";
@@ -3430,5 +3431,20 @@ public abstract class AbstractControllerTest extends AbstractTest {
         post(spec -> spec.pathParameter("fundVersionId", fundVersionId)
                         .pathParameter("assignable", assignable)
                         .body(structureDataIds), SET_ASSIGNABLE_STRUCTURE_DATA_LIST);
+    }
+
+    /**
+     * Hromadná úprava položek/hodnot strukt. typu.
+     *
+     * @param fundVersionId            identifikátor verze AS
+     * @param structureTypeCode        kód strukturovaného datového typu
+     * @param structureDataBatchUpdate data pro hromadnou úpravu hodnot
+     */
+    protected void updateStructureDataBatch(final Integer fundVersionId,
+                                            final String structureTypeCode,
+                                            final StructureController.StructureDataBatchUpdate structureDataBatchUpdate) {
+        post(spec -> spec.pathParameter("fundVersionId", fundVersionId)
+                .pathParameter("structureTypeCode", structureTypeCode)
+                .body(structureDataBatchUpdate), UPDATE_STRUCTURE_DATA_BATCH);
     }
 }

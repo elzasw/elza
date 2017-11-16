@@ -22,6 +22,8 @@ public interface StructureItemRepository extends JpaRepository<ArrStructureItem,
 
     List<ArrStructureItem> findByStructureDataAndDeleteChangeIsNull(ArrStructureData structureData);
 
+    @Query("SELECT i FROM arr_structure_item i JOIN FETCH i.data d WHERE i.deleteChange IS NULL AND i.structureData IN :structureDataList")
+    List<ArrStructureItem> findByStructureDataListAndDeleteChangeIsNullFetchData(@Param("structureDataList") List<ArrStructureData> structureDataList);
 
     @Query("SELECT i FROM arr_structure_item i WHERE i.deleteChange IS NULL AND i.itemType = :itemType AND i.structureData = :structureData AND i.position > :position")
     List<ArrStructureItem> findOpenItemsAfterPosition(@Param("itemType") RulItemType itemType,
