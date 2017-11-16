@@ -46,6 +46,6 @@ public interface StructureDataRepository extends JpaRepository<ArrStructureData,
     @Query("SELECT sd.createChange FROM arr_structure_data sd WHERE sd.state = 'TEMP'")
     List<ArrChange> findTempChange();
 
-    @Query("SELECT sd.createChange FROM arr_structure_data sd WHERE sd.state = 'TEMP' AND sd = structureData")
+    @Query("SELECT sd.createChange FROM arr_structure_data sd WHERE sd.state = 'TEMP' AND sd = :structureData")
     ArrChange findTempChangeByStructureData(@Param("structureData") ArrStructureData structureData);
 }
