@@ -228,15 +228,23 @@ public class StructureControllerTest extends AbstractControllerTest {
         assertEquals(1, structureDataResult1.getRows().size());
 
         FilteredResultVO<ArrStructureDataVO> structureDataResult2 = findStructureData(STRUCTURE_TYPE_CODE, fundVersion.getId(), null, false, null, null);
-        assertEquals(0, structureDataResult2.getCount());
-        assertEquals(0, structureDataResult2.getRows().size());
+        assertEquals(1, structureDataResult2.getCount());
+        assertEquals(1, structureDataResult2.getRows().size());
+
+        ArrStructureDataVO structureDataAssignable = setAssignableStructureData(fundVersion.getId(), structureData.id, false);
+        assertNotNull(structureDataAssignable);
+        assertEquals(false, structureDataAssignable.assignable);
+
+        FilteredResultVO<ArrStructureDataVO> structureDataResult3 = findStructureData(STRUCTURE_TYPE_CODE, fundVersion.getId(), null, true, null, null);
+        assertEquals(0, structureDataResult3.getCount());
+        assertEquals(0, structureDataResult3.getRows().size());
 
         ArrStructureDataVO structureDataDeleted = deleteStructureData(fundVersion.getId(), structureData.id);
         assertNotNull(structureDataDeleted);
 
-        FilteredResultVO<ArrStructureDataVO> structureDataResult3 = findStructureData(STRUCTURE_TYPE_CODE, fundVersion.getId(), null, null, null, null);
-        assertEquals(0, structureDataResult3.getCount());
-        assertEquals(0, structureDataResult3.getRows().size());
+        FilteredResultVO<ArrStructureDataVO> structureDataResult4 = findStructureData(STRUCTURE_TYPE_CODE, fundVersion.getId(), null, null, null, null);
+        assertEquals(0, structureDataResult4.getCount());
+        assertEquals(0, structureDataResult4.getRows().size());
     }
 
     private ArrStructureDataVO createStructureData(final ArrFundVersionVO fundVersion) {

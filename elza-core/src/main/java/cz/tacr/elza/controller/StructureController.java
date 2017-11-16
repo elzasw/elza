@@ -124,6 +124,26 @@ public class StructureController {
     }
 
     /**
+     * Nastavení přiřaditelnosti.
+     *
+     * @param fundVersionId   identifikátor verze AS
+     * @param structureDataId identifikátor hodnoty strukturovaného datového typu
+     * @param assignable      přiřaditelný
+     * @return upravená entita
+     */
+    @Transactional
+    @RequestMapping(value = "/data/{fundVersionId}/{structureDataId}/assignable/{assignable}", method = RequestMethod.PUT)
+    public ArrStructureDataVO setAssignableStructureData(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                                                         @PathVariable(value = "structureDataId") final Integer structureDataId,
+                                                         @PathVariable(value = "assignable") final Boolean assignable) {
+        ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
+        ArrStructureData structureData = structureService.getStructureDataById(structureDataId);
+        validateRuleSet(fundVersion, structureData.getStructureType());
+        ArrStructureData createStructureData = structureService.setAssignableStructureData(structureData, assignable);
+        return factoryVO.createStructureData(createStructureData);
+    }
+
+    /**
      * Smazání hodnoty strukturovaného datového typu.
      *
      * @param fundVersionId   identifikátor verze AS

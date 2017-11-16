@@ -58,12 +58,9 @@ import java.util.stream.Collectors;
 public class StructureService {
 
     private final StructureItemRepository structureItemRepository;
-    private final StructureExtensionDefinitionRepository structureExtensionDefinitionRepository;
     private final StructureExtensionRepository structureExtensionRepository;
-    private final StructureDefinitionRepository structureDefinitionRepository;
     private final StructureDataRepository structureDataRepository;
     private final StructureTypeRepository structureTypeRepository;
-    private final RulesExecutor rulesExecutor;
     private final ArrangementService arrangementService;
     private final DataRepository dataRepository;
     private final RuleService ruleService;
@@ -74,12 +71,9 @@ public class StructureService {
 
     @Autowired
     public StructureService(final StructureItemRepository structureItemRepository,
-                            final StructureExtensionDefinitionRepository structureExtensionDefinitionRepository,
                             final StructureExtensionRepository structureExtensionRepository,
-                            final StructureDefinitionRepository structureDefinitionRepository,
                             final StructureDataRepository structureDataRepository,
                             final StructureTypeRepository structureTypeRepository,
-                            final RulesExecutor rulesExecutor,
                             final ArrangementService arrangementService,
                             final DataRepository dataRepository,
                             final RuleService ruleService,
@@ -88,12 +82,9 @@ public class StructureService {
                             final ItemTypeRepository itemTypeRepository,
                             final ChangeRepository changeRepository) {
         this.structureItemRepository = structureItemRepository;
-        this.structureExtensionDefinitionRepository = structureExtensionDefinitionRepository;
         this.structureExtensionRepository = structureExtensionRepository;
-        this.structureDefinitionRepository = structureDefinitionRepository;
         this.structureDataRepository = structureDataRepository;
         this.structureTypeRepository = structureTypeRepository;
-        this.rulesExecutor = rulesExecutor;
         this.arrangementService = arrangementService;
         this.dataRepository = dataRepository;
         this.ruleService = ruleService;
@@ -183,6 +174,21 @@ public class StructureService {
             structureData.setDeleteChange(change);
             return structureDataRepository.save(structureData);
         }
+    }
+
+    /**
+     * Nastavení přiřaditelnosti.
+     *
+     * @param structureData  hodnota strukturovaného datového typu
+     * @param assignable     přiřaditelný
+     * @return upravená entita
+     */
+    public ArrStructureData setAssignableStructureData(final ArrStructureData structureData, final boolean assignable) {
+        if (structureData.getDeleteChange() != null) {
+            throw new BusinessException("Nelze změnit již smazaná strukturovaná data", BaseCode.INVALID_STATE);
+        }
+        structureData.setAssignable(assignable);
+        return structureDataRepository.save(structureData);
     }
 
     /**
