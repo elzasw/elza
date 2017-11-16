@@ -490,6 +490,11 @@ export default function subNodeForm(state = initialState, action = {}) {
             return result;
         case types.FUND_SUBNODE_UPDATE:
             let nodeId = action.data.node.id || action.data.parent.id;
+
+            if (nodeId != state.nodeId){
+                // not the right node
+                return state;
+            }
             
             var result = {
                 ...state,

@@ -306,6 +306,12 @@ export default function fundDataGrid(state = initialState, action = {}) {
                 rowsDirty: true
             }
         }
+        case types.FUND_NODE_INCREASE_VERSION:
+            return {
+                ...state,
+                subNodeForm: subNodeForm(state.subNodeForm, action)
+            }
+        case types.FUND_SUBNODE_UPDATE:
         case types.CHANGE_NODES:
             return {
                 ...state,
