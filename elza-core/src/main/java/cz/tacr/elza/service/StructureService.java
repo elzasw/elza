@@ -1,5 +1,7 @@
 package cz.tacr.elza.service;
 
+import cz.tacr.elza.annotation.AuthMethod;
+import cz.tacr.elza.annotation.AuthParam;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
@@ -15,6 +17,7 @@ import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.RulStructureExtension;
 import cz.tacr.elza.domain.RulStructureType;
+import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
@@ -102,7 +105,8 @@ public class StructureService {
      * @param structureData hodnota struktovaného datového typu
      * @return nalezené položky
      */
-    public List<ArrStructureItem> findStructureItems(final ArrStructureData structureData) {
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    public List<ArrStructureItem> findStructureItems(@AuthParam(type = AuthParam.Type.FUND) final ArrStructureData structureData) {
         return structureItemRepository.findByStructureDataAndDeleteChangeIsNull(structureData);
     }
 
@@ -113,7 +117,8 @@ public class StructureService {
      * @param structureType strukturovaný typ
      * @return vytvořená entita
      */
-    public ArrStructureData createStructureData(final ArrFund fund,
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    public ArrStructureData createStructureData(@AuthParam(type = AuthParam.Type.FUND) final ArrFund fund,
                                                 final RulStructureType structureType,
                                                 final ArrStructureData.State state) {
         ArrChange change = arrangementService.createChange(ArrChange.Type.ADD_STRUCTURE_DATA);
@@ -177,7 +182,8 @@ public class StructureService {
      * @param structureData hodnota struktovaného datového typu
      * @return smazaná entita
      */
-    public ArrStructureData deleteStructureData(final ArrStructureData structureData) {
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    public ArrStructureData deleteStructureData(@AuthParam(type = AuthParam.Type.FUND) final ArrStructureData structureData) {
         if (structureData.getDeleteChange() != null) {
             throw new BusinessException("Nelze odstranit již smazaná strukturovaná data", BaseCode.INVALID_STATE);
         }
@@ -210,7 +216,8 @@ public class StructureService {
      * @param assignable    přiřaditelný
      * @return upravená entita
      */
-    public ArrStructureData setAssignableStructureData(final ArrStructureData structureData, final boolean assignable) {
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    public ArrStructureData setAssignableStructureData(@AuthParam(type = AuthParam.Type.FUND) final ArrStructureData structureData, final boolean assignable) {
         if (structureData.getDeleteChange() != null) {
             throw new BusinessException("Nelze změnit již smazaná strukturovaná data", BaseCode.INVALID_STATE);
         }
@@ -232,9 +239,10 @@ public class StructureService {
      * @param fundVersionId   identifikátor verze AS
      * @return vytvořená entita
      */
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public ArrStructureItem createStructureItem(final ArrStructureItem structureItem,
                                                 final Integer structureDataId,
-                                                final Integer fundVersionId) {
+                                                @AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId) {
 
         ArrStructureData structureData = getStructureDataById(structureDataId);
         ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
@@ -362,8 +370,9 @@ public class StructureService {
      * @param createNewVersion true - verzovaná změna
      * @return upravená entita
      */
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public ArrStructureItem updateStructureItem(final ArrStructureItem structureItem,
-                                                final Integer fundVersionId,
+                                                @AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId,
                                                 final boolean createNewVersion) {
         ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
 
@@ -457,7 +466,9 @@ public class StructureService {
      * @param fundVersionId identifikátor verze AS
      * @return smazaná položka
      */
-    public ArrStructureItem deleteStructureItem(final ArrStructureItem structureItem, final Integer fundVersionId) {
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    public ArrStructureItem deleteStructureItem(final ArrStructureItem structureItem,
+                                                @AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId) {
         ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
 
         ArrStructureItem structureItemDB = structureItemRepository.findOpenItemFetchData(structureItem.getDescItemObjectId());
@@ -584,7 +595,9 @@ public class StructureService {
      * @param fundVersion     verze AS
      * @return entita
      */
-    public ArrStructureData getStructureDataById(final Integer structureDataId, final ArrFundVersion fundVersion) {
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    public ArrStructureData getStructureDataById(final Integer structureDataId,
+                                                 @AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion) {
         ArrStructureData structureData = getStructureDataById(structureDataId);
         if (!structureData.getStructureType().getRuleSet().equals(fundVersion.getRuleSet())) {
             throw new BusinessException("Pravidla AS nesouhlasí s pravidly hodnoty strukt. typu", BaseCode.INVALID_STATE);
@@ -599,7 +612,8 @@ public class StructureService {
      * @param structureDataId identifikátor hodnoty strukt. datového typu
      * @param itemTypeId      identifikátor typu atributu
      */
-    public void deleteStructureItemsByType(final Integer fundVersionId,
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    public void deleteStructureItemsByType(@AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId,
                                            final Integer structureDataId,
                                            final Integer itemTypeId) {
         ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
@@ -624,7 +638,8 @@ public class StructureService {
      * @param structureData hodnota struktovaného datového typu
      * @return entita
      */
-    public ArrStructureData confirmStructureData(final ArrFund fund,
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    public ArrStructureData confirmStructureData(@AuthParam(type = AuthParam.Type.FUND) final ArrFund fund,
                                                  final ArrStructureData structureData) {
         return confirmStructureData(fund, structureData, true);
     }
@@ -662,11 +677,12 @@ public class StructureService {
     /**
      * Vyhledání strukturovaných typů podle pravidel.
      *
-     * @param ruleSet pravidla
+     * @param fundVersion verze AS
      * @return nalezené entity
      */
-    public List<RulStructureType> findStructureTypes(final RulRuleSet ruleSet) {
-        return structureTypeRepository.findByRuleSet(ruleSet);
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    public List<RulStructureType> findStructureTypes(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion) {
+        return structureTypeRepository.findByRuleSet(fundVersion.getRuleSet());
     }
 
     /**
@@ -680,8 +696,9 @@ public class StructureService {
      * @param count         maximální počet položek
      * @return nalezené položky
      */
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public FilteredResult<ArrStructureData> findStructureData(final RulStructureType structureType,
-                                                              final ArrFund fund,
+                                                              @AuthParam(type = AuthParam.Type.FUND) final ArrFund fund,
                                                               @Nullable final String search,
                                                               @Nullable final Boolean assignable,
                                                               final int from,
@@ -696,7 +713,8 @@ public class StructureService {
      * @param structureType       strukturovaný typ
      * @param structureExtensions seznam rozšíření, které mají být aktivovány na AS
      */
-    public void setFundStructureExtensions(final ArrFundVersion fundVersion,
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN, UsrPermission.Permission.FUND_VER_WR})
+    public void setFundStructureExtensions(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
                                            final RulStructureType structureType,
                                            final List<RulStructureExtension> structureExtensions) {
         structureExtensions.forEach(se -> validateFundStructureExtension(fundVersion, structureType, se));
@@ -784,7 +802,9 @@ public class StructureService {
      * @param structureType strukturovaný typ
      * @return nalezené entity
      */
-    public List<RulStructureExtension> findStructureExtensions(final ArrFund fund, final RulStructureType structureType) {
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    public List<RulStructureExtension> findStructureExtensions(@AuthParam(type = AuthParam.Type.FUND) final ArrFund fund,
+                                                               final RulStructureType structureType) {
         return structureExtensionRepository.findActiveByFundAndStructureType(fund, structureType);
     }
 
@@ -798,7 +818,8 @@ public class StructureService {
      * @param count         počet položek, které se budou budou vytvářet (včetně zdrojové hodnoty strukt. typu)
      * @param itemTypeIds   identifikátory typů, které se mají autoincrementovat
      */
-    public void duplicateStructureDataBatch(final ArrFundVersion fundVersion,
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    public void duplicateStructureDataBatch(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
                                             final ArrStructureData structureData,
                                             final int count,
                                             final List<Integer> itemTypeIds) {

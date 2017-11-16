@@ -280,7 +280,7 @@ public class StructureDataService {
                                         final ArrStructureData structureData,
                                         final List<ArrStructureItem> structureItems) {
         ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(structureData.getFundId());
-        List<RulItemTypeExt> structureItemTypes = ruleService.getStructureItemTypes(structureData.getStructureType(), fundVersion);
+        List<RulItemTypeExt> structureItemTypes = ruleService.getStructureItemTypesInternal(structureData.getStructureType(), fundVersion);
         List<RulItemTypeExt> requiredItemTypes = structureItemTypes.stream().filter(itemType -> RulItemType.Type.REQUIRED == itemType.getType()).collect(Collectors.toList());
         List<RulItemTypeExt> impossibleItemTypes = structureItemTypes.stream().filter(itemType -> RulItemType.Type.IMPOSSIBLE == itemType.getType()).collect(Collectors.toList());
 

@@ -1026,8 +1026,22 @@ public class RuleService {
      * @param fundVersion   verze AS
      * @return seznam typu atributů
      */
-    public List<RulItemTypeExt> getStructureItemTypes(final RulStructureType structureType, final ArrFundVersion fundVersion) {
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    public List<RulItemTypeExt> getStructureItemTypes(final RulStructureType structureType,
+                                                      @AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion) {
         List<RulItemTypeExt> rulDescItemTypeExtList = getAllItemTypes(structureType.getRuleSet());
         return rulesExecutor.executeStructureItemTypesRules(structureType, rulDescItemTypeExtList, fundVersion);
+    }
+
+    /**
+     * Získání seznamu typů atributů podle strukt. typu a verze AS - internal.
+     *
+     * @param structureType strukturovaný typ
+     * @param fundVersion   verze AS
+     * @return seznam typu atributů
+     */
+    public List<RulItemTypeExt> getStructureItemTypesInternal(final RulStructureType structureType,
+                                                              final ArrFundVersion fundVersion) {
+        return getStructureItemTypes(structureType, fundVersion);
     }
 }

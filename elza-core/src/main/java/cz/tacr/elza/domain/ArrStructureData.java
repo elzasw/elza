@@ -1,6 +1,7 @@
 package cz.tacr.elza.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import cz.tacr.elza.api.interfaces.IArrFund;
 import cz.tacr.elza.domain.enumeration.StringLength;
 import org.hibernate.annotations.Type;
 
@@ -27,7 +28,7 @@ import static cz.tacr.elza.domain.enumeration.StringLength.LENGTH_ENUM;
 @Entity(name = "arr_structure_data")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ArrStructureData {
+public class ArrStructureData implements IArrFund {
 
     @Id
     @GeneratedValue
@@ -152,6 +153,7 @@ public class ArrStructureData {
     /**
      * @return archivní soubor
      */
+    @Override
     public ArrFund getFund() {
         return fund;
     }
