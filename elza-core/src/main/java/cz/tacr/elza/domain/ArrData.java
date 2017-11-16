@@ -14,6 +14,7 @@ import javax.persistence.Transient;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.commons.lang3.Validate;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -61,8 +62,13 @@ public abstract class ArrData implements NodeCacheSerializable {
 	 */
 	protected ArrData(ArrData src) {
 		this.dataId = src.dataId;
+
 		this.dataType = src.dataType;
 		this.dataTypeId = src.dataTypeId;
+
+		// If we are copying new item then dataType have to be set
+		Validate.notNull(dataType);
+		Validate.notNull(dataTypeId);
 	}
 
 	public Integer getDataId() {

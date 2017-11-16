@@ -34,6 +34,7 @@ import com.fasterxml.jackson.databind.introspect.VisibilityChecker;
 import com.google.common.collect.Lists;
 
 import cz.tacr.elza.core.data.CalendarType;
+import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.RuleSystemItemType;
 import cz.tacr.elza.core.data.RuleSystemProvider;
 import cz.tacr.elza.core.data.StaticDataProvider;
@@ -490,17 +491,20 @@ public class NodeCacheService {
 					loadDescItemType(descItem, rsp);
 
 					ArrData data = descItem.getData();
-					if (data instanceof ArrDataPacketRef) {
-						itemPacketsMap.put(descItem, ((ArrDataPacketRef) data).getPacketId());
-					} else if (data instanceof ArrDataPartyRef) {
-						itemPartiesMap.put(descItem, ((ArrDataPartyRef) data).getPartyId());
-					} else if (data instanceof ArrDataRecordRef) {
-						itemRecordsMap.put(descItem, ((ArrDataRecordRef) data).getRecordId());
-					} else if (data instanceof ArrDataFileRef) {
-						itemFilesMap.put(descItem, ((ArrDataFileRef) data).getFileId());
-					} else if (data instanceof ArrDataUnitdate) {
-						loadUnitdate((ArrDataUnitdate) data);
-                    }
+					if (data != null) {
+						// restore dataType
+						if (data instanceof ArrDataPacketRef) {
+							itemPacketsMap.put(descItem, ((ArrDataPacketRef) data).getPacketId());
+						} else if (data instanceof ArrDataPartyRef) {
+							itemPartiesMap.put(descItem, ((ArrDataPartyRef) data).getPartyId());
+						} else if (data instanceof ArrDataRecordRef) {
+							itemRecordsMap.put(descItem, ((ArrDataRecordRef) data).getRecordId());
+						} else if (data instanceof ArrDataFileRef) {
+							itemFilesMap.put(descItem, ((ArrDataFileRef) data).getFileId());
+						} else if (data instanceof ArrDataUnitdate) {
+							loadUnitdate((ArrDataUnitdate) data);
+						}
+					}
                 }
             }
 			if (CollectionUtils.isNotEmpty(restoredNode.getDaoLinks())) {
@@ -543,6 +547,26 @@ public class NodeCacheService {
 			descItem.setItemSpec(itemSpec);
 		}
 
+		// Restore dataType
+		ArrData data = descItem.getData();
+		if (data != null) {
+			loadDataType(data, itemType);
+		}
+
+	}
+
+	/**
+	 * Load data type and set it
+	 * 
+	 * @param data
+	 * @param itemType
+	 */
+	private void loadDataType(ArrData data, RuleSystemItemType itemType) {
+		DataType dataType = itemType.getDataType();
+		// check that item type match
+		Validate.isTrue(dataType.getId() == data.getDataTypeId());
+
+		data.setDataType(dataType.getEntity());
 	}
 
 	/**
