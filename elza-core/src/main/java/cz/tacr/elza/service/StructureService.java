@@ -14,7 +14,6 @@ import cz.tacr.elza.domain.ArrStructureData;
 import cz.tacr.elza.domain.ArrStructureItem;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.RulStructureExtension;
 import cz.tacr.elza.domain.RulStructureType;
 import cz.tacr.elza.domain.UsrPermission;
@@ -295,8 +294,17 @@ public class StructureService {
         createStructureItem.setItemType(structureItem.getItemType());
         createStructureItem.setItemSpec(structureItem.getItemSpec());
 
-        structureDataService.addToValidate(structureData);
-        return structureItemRepository.save(createStructureItem);
+        ArrStructureItem save = structureItemRepository.save(createStructureItem);
+        structureDataService.validate(save.getStructureData());
+
+        notificationService.publishEvent(new EventStructureDataChange(fundVersion.getFundId(),
+                structureData.getStructureType().getCode(),
+                null,
+                null,
+                Collections.singletonList(save.getStructureData().getStructureDataId()),
+                null));
+
+        return save;
     }
 
     /**
@@ -441,8 +449,17 @@ public class StructureService {
             updateData(updateData, false, structureItemDB.getItemType().getDataType());
         }
 
-        structureDataService.addToValidate(structureItemDB.getStructureData());
-        return structureItemRepository.save(updateStructureItem);
+        ArrStructureItem save = structureItemRepository.save(updateStructureItem);
+        structureDataService.validate(save.getStructureData());
+
+        notificationService.publishEvent(new EventStructureDataChange(fundVersion.getFundId(),
+                structureData.getStructureType().getCode(),
+                null,
+                null,
+                Collections.singletonList(save.getStructureData().getStructureDataId()),
+                null));
+
+        return save;
     }
 
     /**
@@ -481,8 +498,18 @@ public class StructureService {
         validateRuleSet(fundVersion, structureItemDB.getItemType());
 
         structureItemDB.setDeleteChange(change);
-        structureDataService.addToValidate(structureItemDB.getStructureData());
-        return structureItemRepository.save(structureItemDB);
+
+        ArrStructureItem save = structureItemRepository.save(structureItemDB);
+        structureDataService.validate(save.getStructureData());
+
+        notificationService.publishEvent(new EventStructureDataChange(fundVersion.getFundId(),
+                structureData.getStructureType().getCode(),
+                null,
+                null,
+                Collections.singletonList(save.getStructureData().getStructureDataId()),
+                null));
+
+        return save;
     }
 
     /**
@@ -613,9 +640,9 @@ public class StructureService {
      * @param itemTypeId      identifikátor typu atributu
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
-    public void deleteStructureItemsByType(@AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId,
-                                           final Integer structureDataId,
-                                           final Integer itemTypeId) {
+    public ArrStructureData deleteStructureItemsByType(@AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId,
+                                                       final Integer structureDataId,
+                                                       final Integer itemTypeId) {
         ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
         ArrStructureData structureData = getStructureDataById(structureDataId);
         RulItemType type = ruleService.getItemTypeById(itemTypeId);
@@ -628,7 +655,15 @@ public class StructureService {
         }
 
         structureItemRepository.save(structureItems);
-        structureDataService.addToValidate(structureData);
+
+        notificationService.publishEvent(new EventStructureDataChange(fundVersion.getFundId(),
+                structureData.getStructureType().getCode(),
+                null,
+                null,
+                Collections.singletonList(structureData.getStructureDataId()),
+                null));
+
+        return structureDataService.validate(structureData);
     }
 
     /**

@@ -272,17 +272,21 @@ public class StructureController {
 
     /**
      * Odstranení položek k hodnotě strukt. datového typu podle typu atributu.
-     *
      * @param fundVersionId   identifikátor verze AS
      * @param structureDataId identifikátor hodnoty strukturovaného datového typu
      * @param itemTypeId      identifikátor typu atributu
+     * @return smazaná entita
      */
     @Transactional
     @RequestMapping(value = "/item/{fundVersionId}/{structureDataId}/{itemTypeId}", method = RequestMethod.DELETE)
-    public void deleteStructureItemsByType(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                                           @PathVariable(value = "structureDataId") final Integer structureDataId,
-                                           @PathVariable(value = "itemTypeId") final Integer itemTypeId) {
-        structureService.deleteStructureItemsByType(fundVersionId, structureDataId, itemTypeId);
+    public StructureItemResult deleteStructureItemsByType(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                                                          @PathVariable(value = "structureDataId") final Integer structureDataId,
+                                                          @PathVariable(value = "itemTypeId") final Integer itemTypeId) {
+        ArrStructureData structureData = structureService.deleteStructureItemsByType(fundVersionId, structureDataId, itemTypeId);
+        StructureItemResult result = new StructureItemResult();
+        result.setItem(null);
+        result.setParent(factoryVO.createStructureData(structureData));
+        return result;
     }
 
     /**

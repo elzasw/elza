@@ -3362,12 +3362,13 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param structureDataId identifikátor hodnoty strukturovaného datového typu
      * @param itemTypeId      identifikátor typu atributu
      */
-    protected void deleteStructureItemsByType(final Integer fundVersionId,
-                                              final Integer structureDataId,
-                                              final Integer itemTypeId) {
-        delete(spec -> spec.pathParameter("fundVersionId", fundVersionId)
+    protected StructureController.StructureItemResult deleteStructureItemsByType(final Integer fundVersionId,
+                                                                                 final Integer structureDataId,
+                                                                                 final Integer itemTypeId) {
+        return delete(spec -> spec.pathParameter("fundVersionId", fundVersionId)
                 .pathParameter("structureDataId", structureDataId)
-                .pathParameter("itemTypeId", itemTypeId), DELETE_STRUCTURE_ITEMS_BY_TYPE);
+                .pathParameter("itemTypeId", itemTypeId), DELETE_STRUCTURE_ITEMS_BY_TYPE)
+                .as(StructureController.StructureItemResult.class);
     }
 
     /**
