@@ -33,6 +33,17 @@ public class ArrDataPartyRef extends ArrData {
     @Column
     private Integer position;
 
+	public ArrDataPartyRef() {
+
+	}
+
+	protected ArrDataPartyRef(ArrDataPartyRef src) {
+		super(src);
+		this.party = src.party;
+		this.partyId = src.partyId;
+		this.position = src.position;
+	}
+
     public Integer getPosition() {
         return position;
     }
@@ -58,4 +69,9 @@ public class ArrDataPartyRef extends ArrData {
     public String getFulltextValue() {
         return party.getRecord().getRecord();
     }
+
+	@Override
+	public ArrDataPartyRef makeCopy() {
+		return new ArrDataPartyRef(this);
+	}
 }

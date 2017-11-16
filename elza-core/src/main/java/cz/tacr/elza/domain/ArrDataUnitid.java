@@ -20,6 +20,15 @@ public class ArrDataUnitid extends ArrData {
     @Column(length = StringLength.LENGTH_250, nullable = false)
     private String value;
 
+	public ArrDataUnitid() {
+
+	}
+
+	protected ArrDataUnitid(ArrDataUnitid src) {
+		super(src);
+		this.value = src.value;
+	}
+
     public String getValue() {
         return value;
     }
@@ -32,4 +41,9 @@ public class ArrDataUnitid extends ArrData {
     public String getFulltextValue() {
         return value;
     }
+
+	@Override
+	public ArrDataUnitid makeCopy() {
+		return new ArrDataUnitid(this);
+	}
 }

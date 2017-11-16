@@ -46,7 +46,26 @@ public abstract class ArrData implements NodeCacheSerializable {
     @Column(nullable = false, insertable = false, updatable = false)
     private Integer dataTypeId;
 
-    public Integer getDataId() {
+	/**
+	 * Default constructor
+	 * 
+	 */
+	protected ArrData() {
+
+	}
+
+	/**
+	 * Copy constructor
+	 * 
+	 * @param src
+	 */
+	protected ArrData(ArrData src) {
+		this.dataId = src.dataId;
+		this.dataType = src.dataType;
+		this.dataTypeId = src.dataTypeId;
+	}
+
+	public Integer getDataId() {
         return dataId;
     }
 
@@ -128,4 +147,30 @@ public abstract class ArrData implements NodeCacheSerializable {
     public Long getNormalizedTo() {
         return null;
     }
+
+	/**
+	 * Prepare copy of the data object
+	 * 
+	 * Method returns pure data copy of the source object without saving it to
+	 * the DB
+	 * 
+	 * @return Return copy of the object
+	 */
+	abstract public ArrData makeCopy();
+
+	/**
+	 * Make copy of the source data object and set id to null
+	 * 
+	 * Method returns pure data copy of the source object without saving it to
+	 * the DB
+	 * 
+	 * @param src
+	 *            Source object
+	 * @return Return copy of the data object
+	 */
+	public static ArrData makeCopyWithoutId(ArrData src) {
+		ArrData trg = src.makeCopy();
+		trg.setDataId(null);
+		return trg;
+	}
 }

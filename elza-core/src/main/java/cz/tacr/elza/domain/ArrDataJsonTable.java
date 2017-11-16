@@ -24,6 +24,15 @@ public class ArrDataJsonTable extends ArrData  {
     @Column(nullable = false)
     private String value;
 
+	public ArrDataJsonTable() {
+
+	}
+
+	protected ArrDataJsonTable(ArrDataJsonTable src) {
+		super(src);
+		this.value = src.value;
+	}
+
     public ElzaTable getValue() {
         return ElzaTable.fromJsonString(value);
     }
@@ -41,4 +50,9 @@ public class ArrDataJsonTable extends ArrData  {
         // elza table is not indexed
         return null;
     }
+
+	@Override
+	public ArrDataJsonTable makeCopy() {
+		return new ArrDataJsonTable(this);
+	}
 }

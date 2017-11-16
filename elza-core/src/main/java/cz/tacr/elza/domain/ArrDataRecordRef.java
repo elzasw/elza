@@ -30,6 +30,16 @@ public class ArrDataRecordRef extends ArrData {
     @Column(name = "recordId", updatable = false, insertable = false)
     private Integer recordId;
 
+	public ArrDataRecordRef() {
+
+	}
+
+	protected ArrDataRecordRef(ArrDataRecordRef src) {
+		super(src);
+		this.record = src.record;
+		this.recordId = src.recordId;
+	}
+
     public RegRecord getRecord() {
         return record;
     }
@@ -47,4 +57,9 @@ public class ArrDataRecordRef extends ArrData {
     public String getFulltextValue() {
         return record.getRecord();
     }
+
+	@Override
+	public ArrDataRecordRef makeCopy() {
+		return new ArrDataRecordRef(this);
+	}
 }

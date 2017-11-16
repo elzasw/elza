@@ -52,6 +52,24 @@ public class ArrDataUnitdate extends ArrData implements IUnitdate {
     @Column(nullable = false)
     private Long normalizedTo;
 
+	public ArrDataUnitdate() {
+
+	}
+
+	protected ArrDataUnitdate(ArrDataUnitdate src) {
+		super(src);
+
+		this.calendarType = src.calendarType;
+		this.calendarTypeId = src.calendarTypeId;
+		this.format = src.format;
+		this.normalizedFrom = src.normalizedFrom;
+		this.normalizedTo = src.normalizedTo;
+		this.valueFrom = src.valueFrom;
+		this.valueFromEstimated = src.valueFromEstimated;
+		this.valueTo = src.valueTo;
+		this.valueToEstimated = src.valueToEstimated;
+	}
+
     @Override
     public String getValueFrom() {
         return this.valueFrom;
@@ -158,4 +176,9 @@ public class ArrDataUnitdate extends ArrData implements IUnitdate {
     public void formatAppend(final String format) {
         this.format += format;
     }
+
+	@Override
+	public ArrDataUnitdate makeCopy() {
+		return new ArrDataUnitdate(this);
+	}
 }

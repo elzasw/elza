@@ -30,6 +30,16 @@ public class ArrDataFileRef extends ArrData {
     @Column(name = "fileId", updatable = false, insertable = false)
     private Integer fileId;
 
+	public ArrDataFileRef() {
+
+	}
+
+	protected ArrDataFileRef(ArrDataFileRef src) {
+		super(src);
+		this.file = src.file;
+		this.fileId = src.fileId;
+	}
+
     public ArrFile getFile() {
         return file;
     }
@@ -47,4 +57,9 @@ public class ArrDataFileRef extends ArrData {
     public String getFulltextValue() {
         return file.getName();
     }
+
+	@Override
+	public ArrDataFileRef makeCopy() {
+		return new ArrDataFileRef(this);
+	}
 }

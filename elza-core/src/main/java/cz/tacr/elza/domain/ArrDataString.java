@@ -20,6 +20,15 @@ public class ArrDataString extends ArrData {
     @Column(length = StringLength.LENGTH_1000, nullable = false)
     private String value;
 
+	public ArrDataString() {
+
+	}
+
+	protected ArrDataString(ArrDataString src) {
+		super(src);
+		this.value = src.value;
+	}
+
     public String getValue() {
         return value;
     }
@@ -32,4 +41,9 @@ public class ArrDataString extends ArrData {
     public String getFulltextValue() {
         return value;
     }
+
+	@Override
+	public ArrDataString makeCopy() {
+		return new ArrDataString(this);
+	}
 }

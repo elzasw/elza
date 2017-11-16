@@ -152,16 +152,6 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
 	@Query("SELECT i FROM arr_desc_item i LEFT JOIN FETCH i.data WHERE i.deleteChange IS NULL AND i.itemType = ?1 AND i.node = ?2")
     List<ArrDescItem> findOpenDescItems(RulItemType itemType, ArrNode node);
 
-    /**
-     * Vyhledá všechny otevřené (nesmazené) hodnoty atributů podle typu a uzlu mezi pozicemi. (pro vícehodnotový atribut)
-     *
-     * @param itemType
-     * @param node
-     * @return
-     */
-	@Query("SELECT i FROM arr_desc_item i LEFT JOIN FETCH i.data WHERE i.deleteChange IS NULL AND i.itemType = ?1 AND i.node = ?2 AND i.position >= ?3 AND i.position <= ?4")
-    List<ArrDescItem> findOpenDescItemsBetweenPositions(RulItemType itemType, ArrNode node, Integer positionFrom, Integer positionTo);
-
     @Query("SELECT i FROM arr_desc_item i WHERE i.descItemObjectId = ?1 AND i.createChange < ?2 AND (i.deleteChange > ?2 OR i.deleteChange IS NULL)")
     List<ArrDescItem> findByDescItemObjectIdAndLockChangeId(Integer descItemObjectId, ArrChange change);
 

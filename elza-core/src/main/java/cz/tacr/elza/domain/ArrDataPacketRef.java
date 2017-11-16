@@ -26,6 +26,16 @@ public class ArrDataPacketRef extends ArrData {
     @Column(name = "packetId", updatable = false, insertable = false)
     private Integer packetId;
 
+	public ArrDataPacketRef() {
+
+	}
+
+	protected ArrDataPacketRef(ArrDataPacketRef src) {
+		super(src);
+		this.packet = src.packet;
+		this.packetId = src.packetId;
+	}
+
     public ArrPacket getPacket() {
         return packet;
     }
@@ -43,5 +53,10 @@ public class ArrDataPacketRef extends ArrData {
     public String getFulltextValue() {
         return ArrPacket.createFulltext(packet.getStorageNumber(), packet.getPacketType());
     }
+
+	@Override
+	public ArrDataPacketRef makeCopy() {
+		return new ArrDataPacketRef(this);
+	}
 }
 

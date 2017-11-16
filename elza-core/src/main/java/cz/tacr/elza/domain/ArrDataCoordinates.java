@@ -20,7 +20,16 @@ public class ArrDataCoordinates extends ArrData {
     @Column(nullable = false, columnDefinition = "geometry")
     private Geometry value;
 
-    public Geometry getValue() {
+	public ArrDataCoordinates() {
+
+	}
+
+	protected ArrDataCoordinates(final ArrDataCoordinates src) {
+		super(src);
+		this.value = src.value;
+	}
+
+	public Geometry getValue() {
         return value;
     }
 
@@ -32,4 +41,10 @@ public class ArrDataCoordinates extends ArrData {
     public String getFulltextValue() {
         return new WKTWriter().writeFormatted(value);
     }
+
+	@Override
+	public ArrDataCoordinates makeCopy() {
+		ArrDataCoordinates copy = new ArrDataCoordinates(this);
+		return copy;
+	}
 }

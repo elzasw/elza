@@ -19,7 +19,15 @@ public class ArrDataDecimal extends ArrData {
     @Column(nullable = false)
     private BigDecimal value;
 
-    public BigDecimal getValue() {
+	public ArrDataDecimal() {
+	}
+
+	protected ArrDataDecimal(final ArrDataDecimal src) {
+		super(src);
+		this.value = src.value;
+	}
+
+	public BigDecimal getValue() {
         return value;
     }
 
@@ -36,4 +44,9 @@ public class ArrDataDecimal extends ArrData {
     public Double getValueDouble() {
         return value.doubleValue();
     }
+
+	@Override
+	public ArrDataDecimal makeCopy() {
+		return new ArrDataDecimal(this);
+	}
 }

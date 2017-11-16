@@ -14,8 +14,22 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ArrDataNull extends ArrData {
 
-    @Override
+	public ArrDataNull() {
+
+	}
+
+	protected ArrDataNull(ArrDataNull src) {
+		super(src);
+	}
+
+	@Override
     public String getFulltextValue() {
         return null;
     }
+
+	@Override
+	public ArrDataNull makeCopy() {
+		return new ArrDataNull(this);
+	}
+
 }

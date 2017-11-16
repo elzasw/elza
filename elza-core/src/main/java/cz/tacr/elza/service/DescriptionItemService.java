@@ -20,7 +20,6 @@ import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.Validate;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -51,6 +50,7 @@ import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDataUnitid;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrPacket;
@@ -82,7 +82,6 @@ import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.DataRepository;
-import cz.tacr.elza.repository.DataTypeRepository;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.ItemSpecRegisterRepository;
@@ -118,9 +117,6 @@ public class DescriptionItemService {
     private RegRecordRepository regRecordRepository;
 
     @Autowired
-    private DataTypeRepository dataTypeRepository;
-
-    @Autowired
     private FundVersionRepository fundVersionRepository;
 
     @Autowired
@@ -146,9 +142,6 @@ public class DescriptionItemService {
 
     @Autowired
     private EventNotificationService notificationService;
-
-    @Autowired
-    private ItemService itemService;
 
     @Autowired
     private ArrangementCacheService arrangementCacheService;
@@ -517,23 +510,15 @@ public class DescriptionItemService {
         List<ArrDescItem> descItemNews = new ArrayList<>(descItems.size());
         for (ArrDescItem descItemMove : descItems) {
 
-            descItemMove.setDeleteChange(change);
-            descItemRepository.save(descItemMove);
-
-            ArrDescItem descItemNew = new ArrDescItem();
-
-            BeanUtils.copyProperties(descItemMove, descItemNew);
-            descItemNew.setItemId(null);
-            descItemNew.setDeleteChange(null);
-            descItemNew.setCreateChange(change);
-            descItemNew.setPosition(descItemMove.getPosition() + 1);
+			// make data copy
+			ArrData trgData = copyDescItemData(descItemMove);
+			// prepare new item and close old one
+			ArrDescItem descItemNew = prepareNewDescItem(descItemMove, trgData, change);
+			descItemNew.setPosition(descItemMove.getPosition() + 1);
 
             descItemRepository.save(descItemNew);
 
             descItemNews.add(descItemNew);
-
-            // pro odverzovanou hodnotu atributu je nutné vytvořit kopii dat
-            copyDescItemData(descItemMove, descItemNew);
         }
 
         if (CollectionUtils.isNotEmpty(descItemNews)) {
@@ -628,24 +613,31 @@ public class DescriptionItemService {
     }
 
     /**
-     * Provede posun (a odverzování) hodnot atributů s daty o požadovaný počet.
-     *
-     * @param change    změna operace
-     * @param descItems seznam posunovaných hodnot atributu
-     * @param diff      počet a směr posunu
-     */
+	 * Provede posun (a odverzování) hodnot atributů jednoho uzlu s daty o
+	 * požadovaný počet.
+	 *
+	 * @param change
+	 *            změna operace
+	 * @param descItems
+	 *            seznam posunovaných hodnot atributu
+	 * @param diff
+	 *            počet a směr posunu
+	 */
     private void copyDescItemsWithData(final ArrChange change, final List<ArrDescItem> descItems, final Integer diff,
                                        final ArrFundVersion version) {
         List<ArrDescItem> descItemNews = new ArrayList<>(descItems.size());
         for (ArrDescItem descItemMove : descItems) {
 
-            ArrDescItem descItemNew = copyDescItem(change, descItemMove, descItemMove.getPosition() + diff);
+			// copy data
+			ArrData trgData = copyDescItemData(descItemMove);
+
+			// copy description item
+			ArrDescItem descItemNew = prepareNewDescItem(descItemMove, trgData, change);
+			descItemNew.setPosition(descItemMove.getPosition() + diff);
+			descItemNew = descItemRepository.save(descItemNew);
 
             // sockety
             publishChangeDescItem(version, descItemNew);
-
-            // pro odverzovanou hodnotu atributu je nutné vytvořit kopii dat
-            copyDescItemData(descItemMove, descItemNew);
         }
 
         if (CollectionUtils.isNotEmpty(descItemNews)) {
@@ -654,31 +646,35 @@ public class DescriptionItemService {
     }
 
     /**
-     * Vytvoří kopii descItem. Původní hodnotu uzavře a vytvoří novou se stejnými daty (odverzování)
-     *
-     * @param change   změna, se kterou dojde k uzamčení a vytvoření kopie
-     * @param descItem hodnota ke zkopírování
-     * @param position pozice atributu
-     * @return kopie atributu4
-     */
-    private ArrDescItem copyDescItem(final ArrChange change, final ArrDescItem descItem, final int position) {
-        descItem.setDeleteChange(change);
+	 * Prepare new version of description item. Current description item is
+	 * marked as deleted and saved.
+	 *
+	 * Returned item is not saved. Caller can modify returned item before saving
+	 * and then have to save it.
+	 *
+	 * @param descItem
+	 *            source item
+	 * @param trgData
+	 *            new data for returned copy
+	 * @param change
+	 *            změna, se kterou dojde k uzamčení a vytvoření kopie
+	 * @return copy of the source item with new data. Returned item is not
+	 *         saved!!!
+	 */
+	private ArrDescItem prepareNewDescItem(final ArrDescItem descItem, final ArrData trgData, final ArrChange change) {
+		// Mark orig descItem as deleted
+		descItem.setDeleteChange(change);
         descItemRepository.save(descItem);
 
-        ArrDescItem descItemNew;
-        //try {
-        descItemNew = new ArrDescItem();
-        /*} catch (InstantiationException | IllegalAccessException e) {
-            throw new IllegalStateException(e);
-        }*/
+		// Create new one
+		ArrDescItem descItemNew = new ArrDescItem(descItem);
 
-        BeanUtils.copyProperties(descItem, descItemNew);
         descItemNew.setItemId(null);
+		descItemNew.setData(trgData);
         descItemNew.setDeleteChange(null);
         descItemNew.setCreateChange(change);
-        descItemNew.setPosition(position);
 
-        return descItemRepository.save(descItemNew);
+		return descItemNew;
     }
 
     /**
@@ -693,14 +689,22 @@ public class DescriptionItemService {
                                                         final ArrFundVersion version) {
         List<ArrDescItem> result = new ArrayList<>(sourceDescItems.size());
         for (ArrDescItem sourceDescItem : sourceDescItems) {
-            ArrDescItem descItemNew = new ArrDescItem();
 
-            BeanUtils.copyProperties(sourceDescItem, descItemNew);
+			// copy and save data
+			ArrData trgData = copyDescItemData(sourceDescItem);
+			// prepare new description item
+			// first make copy from original
+			ArrDescItem descItemNew = new ArrDescItem(sourceDescItem);
+			// set data
+			descItemNew.setData(trgData);
+			// set parent node
             descItemNew.setNode(node);
+			// reset id
             descItemNew.setItemId(null);
+			// prepare change info
             descItemNew.setDeleteChange(null);
             descItemNew.setCreateChange(createChange);
-            descItemNew.setPosition(sourceDescItem.getPosition());
+			// prepare new object id
             descItemNew.setDescItemObjectId(arrangementService.getNextDescItemObjectId());
 
             descItemRepository.save(descItemNew);
@@ -708,8 +712,6 @@ public class DescriptionItemService {
             // sockety
             //publishChangeDescItem(version, descItemNew);
 
-            // pro odverzovanou hodnotu atributu je nutné vytvořit kopii dat
-            copyDescItemData(sourceDescItem, descItemNew);
             result.add(descItemNew);
         }
         if (CollectionUtils.isNotEmpty(result)) {
@@ -731,37 +733,22 @@ public class DescriptionItemService {
     }
 
     /**
-     * Provede kopii dat mezi hodnotama atributů.
-     *
-     * @param descItemFrom z hodnoty atributu
-     * @param descItemTo   do hodnoty atributu
-     */
-    private void copyDescItemData(final ArrDescItem descItemFrom, final ArrDescItem descItemTo) {
-		if (!descItemFrom.isUndefined()) {
-			ArrData data = descItemFrom.getData();
-			ArrData dataNew = createCopyDescItemData(data, descItemTo);
-			dataRepository.save(dataNew);
-        }
-    }
-
-    /**
-     * Vytvoří kopii dat atributu.
-     *
-     * @param data        data atributu
-     * @param newDescItem atribut, do kterého patří data
-     * @return vytvořená kopie dat atributu (neuložená)
-     */
-    private ArrData createCopyDescItemData(final ArrData data, final ArrDescItem newDescItem) {
-        try {
-            ArrData dataNew = data.getClass().getConstructor().newInstance();
-
-            BeanUtils.copyProperties(data, dataNew);
-            dataNew.setDataId(null);
-            newDescItem.setData(dataNew);
-            return dataNew;
-        } catch (Exception e) {
-            throw new SystemException(e.getCause());
-        }
+	 * Provede kopii dat ze zdrojové item
+	 * 
+	 * Function will save created data in repository
+	 * 
+	 * @param descItemFrom
+	 *            z hodnoty atributu
+	 * @return Return object with data copy. If data are not defined in source
+	 *         item method will return null.
+	 */
+	private ArrData copyDescItemData(final ArrItem itemFrom) {
+		ArrData srcData = itemFrom.getData();
+		if (srcData == null) {
+			return null;
+		}
+		ArrData dataNew = ArrData.makeCopyWithoutId(srcData);
+		return dataRepository.save(dataNew);
     }
 
     /**
@@ -1416,21 +1403,6 @@ public class DescriptionItemService {
     }
 
     /**
-     * Vytvoří novou konkrétní instanci pro {@link ArrData}.
-     *
-     * @param descItemType typ atributu
-     * @return konkrétní instance
-     */
-    private ArrData createDataByType(final RulItemType descItemType) {
-        Class<? extends ArrData> dataTypeClass = getDescItemDataTypeClass(descItemType);
-        try {
-            return dataTypeClass.newInstance();
-        } catch (Exception e) {
-            throw new SystemException(e);
-        }
-    }
-
-    /**
      * Nastavení textu hodnotám atributu.
      * @param version              verze stromu
      * @param descItemType         typ atributu
@@ -1693,33 +1665,26 @@ public class DescriptionItemService {
      */
     private void replaceDescItemValue(final ArrDescItem descItem, final String searchString, final String replaceString, final ArrChange change) {
 
-
         ArrData data = descItem.getData();
-        ArrDescItem newDescItem = copyDescItem(change, descItem, descItem.getPosition());
+		Validate.notNull(data, "item without data");
 
-        ArrData newData = createCopyDescItemData(data, newDescItem);
+		ArrData dataNew = ArrData.makeCopyWithoutId(data);
 
+		// modify data
+		if (dataNew instanceof ArrDataString) {
+			ArrDataString ds = (ArrDataString) dataNew;
+			ds.setValue(getReplacedDataValue(ds.getValue(), searchString, replaceString));
+		} else if (dataNew instanceof ArrDataText) {
+			ArrDataText dt = (ArrDataText) dataNew;
+			dt.setValue(getReplacedDataValue(dt.getValue(), searchString, replaceString));
+		} else {
+			throw new IllegalStateException(
+			        "Zatím není implementováno pro kod " + descItem.getItemType().getCode());
+		}
+		dataNew = dataRepository.save(dataNew);
 
-        switch (descItem.getItemType().getDataType().getCode()) {
-            case "STRING":
-                ArrDataString oldStringData = (ArrDataString) data;
-
-                ArrDataString newStringData = (ArrDataString) newData;
-                newStringData.setValue(getReplacedDataValue(oldStringData.getValue(), searchString, replaceString));
-
-                break;
-            case "TEXT":
-                ArrDataText oldTextData = (ArrDataText) data;
-                ArrDataText newTextData = (ArrDataText) newData;
-                newTextData.setValue(getReplacedDataValue(oldTextData.getValue(), searchString, replaceString));
-                break;
-
-            default:
-                throw new IllegalStateException(
-                        "Zatím není implementováno pro kod " + descItem.getItemType().getCode());
-        }
-
-        dataRepository.save(newData);
+		ArrDescItem descItemNew = prepareNewDescItem(descItem, dataNew, change);
+		descItemNew = descItemRepository.save(descItemNew);
     }
 
 
@@ -1807,24 +1772,6 @@ public class DescriptionItemService {
             }
         }
         return maxPosition;
-    }
-
-    /**
-     * Vyhledá všechny hodnoty atributu mezi pozicemi.
-     *
-     * @param descItem     hodnota atributu
-     * @param positionFrom od pozice (včetně)
-     * @param positionTo   do pozice (včetně)
-     * @return seznam nalezených hodnot atributů
-     */
-    private List<ArrDescItem> findDescItemsBetweenPosition(final ArrDescItem descItem,
-                                                           final Integer positionFrom,
-                                                           final Integer positionTo) {
-
-        List<ArrDescItem> descItems = descItemRepository.findOpenDescItemsBetweenPositions(descItem.getItemType(),
-                descItem.getNode(), positionFrom, positionTo);
-
-        return descItems;
     }
 
     /**

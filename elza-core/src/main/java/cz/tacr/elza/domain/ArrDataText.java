@@ -23,6 +23,15 @@ public class ArrDataText extends ArrData {
     @Type(type = "org.hibernate.type.TextType")
     private String value;
 
+	public ArrDataText() {
+
+	}
+
+	protected ArrDataText(ArrDataText src) {
+    	super(src);
+		this.value = src.value;
+    }
+
     public String getValue() {
         return value;
     }
@@ -35,4 +44,9 @@ public class ArrDataText extends ArrData {
     public String getFulltextValue() {
         return value;
     }
+
+	@Override
+	public ArrDataText makeCopy() {
+		return new ArrDataText(this);
+	}
 }

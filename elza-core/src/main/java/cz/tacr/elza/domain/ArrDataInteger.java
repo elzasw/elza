@@ -18,6 +18,15 @@ public class ArrDataInteger extends ArrData {
     @Column(nullable = false)
     private Integer value;
 
+	public ArrDataInteger() {
+
+	}
+
+	protected ArrDataInteger(ArrDataInteger src) {
+		super(src);
+		this.value = src.value;
+	}
+
     public Integer getValue() {
         return value;
     }
@@ -35,4 +44,9 @@ public class ArrDataInteger extends ArrData {
     public Integer getValueInt() {
         return value;
     }
+
+	@Override
+	public ArrDataInteger makeCopy() {
+		return new ArrDataInteger(this);
+	}
 }
