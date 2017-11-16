@@ -166,12 +166,7 @@ public class ArrangementCacheService {
      */
     public void createDescItem(final Integer nodeId, final ArrDescItem descItem) {
         CachedNode cachedNode = nodeCacheService.getNode(nodeId);
-        List<ArrDescItem> descItems = cachedNode.getDescItems();
-        if (descItems == null) {
-            descItems = new ArrayList<>();
-            cachedNode.setDescItems(descItems);
-        }
-        descItems.add(descItem);
+		cachedNode.addDescItem(descItem);
         nodeCacheService.saveNode(cachedNode);
     }
 
@@ -183,12 +178,7 @@ public class ArrangementCacheService {
      */
     public void createDescItems(final Integer nodeId, final Collection<ArrDescItem> newDescItems) {
         CachedNode cachedNode = nodeCacheService.getNode(nodeId);
-        List<ArrDescItem> descItems = cachedNode.getDescItems();
-        if (descItems == null) {
-            descItems = new ArrayList<>();
-            cachedNode.setDescItems(descItems);
-        }
-        descItems.addAll(newDescItems);
+		cachedNode.addDescItems(newDescItems);
         nodeCacheService.saveNode(cachedNode);
     }
 

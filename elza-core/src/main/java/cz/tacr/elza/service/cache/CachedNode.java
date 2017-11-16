@@ -1,5 +1,7 @@
 package cz.tacr.elza.service.cache;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import cz.tacr.elza.domain.ArrDaoLink;
@@ -77,4 +79,23 @@ public class CachedNode implements NodeCacheSerializable {
                 "nodeId=" + nodeId +
                 '}';
     }
+
+	/**
+	 * Add description items to the node
+	 * 
+	 * @param newDescItems
+	 */
+	public void addDescItems(Collection<ArrDescItem> newDescItems) {
+		if (descItems == null) {
+			descItems = new ArrayList<>(newDescItems.size());
+		}
+		descItems.addAll(newDescItems);
+	}
+
+	public void addDescItem(ArrDescItem descItem) {
+		if (descItems == null) {
+			descItems = new ArrayList<>();
+		}
+		descItems.add(descItem);
+	}
 }
