@@ -22,13 +22,15 @@ public interface PartyRepositoryCustom {
      * @param firstResult  id prvního záznamu
      * @param maxResults   max počet záznamů
      * @param scopeIds     seznam tříd rejstříků, ve kterých se vyhledává
+     * @param excludeInvalid
      */
     List<ParParty> findPartyByTextAndType(String searchRecord,
                                           Integer partyTypeId,
                                           Set<Integer> registerTypeIds,
                                           Integer firstResult,
                                           Integer maxResults,
-                                          Set<Integer> scopeIds);
+                                          Set<Integer> scopeIds,
+                                          Boolean excludeInvalid);
 
 
     /**
@@ -36,8 +38,9 @@ public interface PartyRepositoryCustom {
      * @param searchRecord hledaný řetězec, může být null
      * @param partyTypeId  typ záznamu
      * @param scopeIds     seznam tříd rejstříků, ve kterých se vyhledává
+     * @param excludeInvalid
      */
-    long findPartyByTextAndTypeCount(String searchRecord, Integer partyTypeId, Set<Integer> registerTypeIds, Set<Integer> scopeIds);
+    long findPartyByTextAndTypeCount(String searchRecord, Integer partyTypeId, Set<Integer> registerTypeIds, Set<Integer> scopeIds, Boolean excludeInvalid);
 
 
     /**

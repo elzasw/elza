@@ -95,8 +95,8 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.partyUrl + '/' + partyId);
     }
 
-    findParty(search = null, versionId = null, partyTypeId = null, itemSpecId = null, from = 0, count = DEFAULT_LIST_SIZE, scopeId) {
-        return AjaxUtils.ajaxGet(WebApiCls.partyUrl + '/', {search, from, count, partyTypeId, versionId, itemSpecId, scopeId});
+    findParty(search = null, versionId = null, partyTypeId = null, itemSpecId = null, from = 0, count = DEFAULT_LIST_SIZE, scopeId, excludeInvalid) {
+        return AjaxUtils.ajaxGet(WebApiCls.partyUrl + '/', {search, from, count, partyTypeId, versionId, itemSpecId, scopeId, excludeInvalid});
     }
 
     findPartyUsage(partyId) {
@@ -368,7 +368,7 @@ export class WebApiCls {
         });
     }
 
-    findRegistry(search = null, registryParent = null, registerTypeId = null, versionId = null, itemSpecId = null, from = 0, count = DEFAULT_LIST_SIZE, scopeId = null) {
+    findRegistry(search = null, registryParent = null, registerTypeId = null, versionId = null, itemSpecId = null, from = 0, count = DEFAULT_LIST_SIZE, scopeId = null, excludeInvalid = true) {
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/', {
             search,
             from,
@@ -377,7 +377,8 @@ export class WebApiCls {
             parentRecordId: registryParent,
             registerTypeId: registerTypeId,
             versionId,
-            scopeId
+            scopeId,
+            excludeInvalid
         });
     }
 

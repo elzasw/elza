@@ -45,7 +45,8 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
                                                       final Integer firstReult,
                                                       final Integer maxResults,
                                                       final RegRecord parentRecord,
-                                                      final Set<Integer> scopeIdsForSearch) {
+                                                      final Set<Integer> scopeIdsForSearch,
+                                                      final Boolean excludeInvalid) {
         if(CollectionUtils.isEmpty(scopeIdsForSearch)){
             return Collections.emptyList();
         }
@@ -55,7 +56,7 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
         Root<RegRecord> record = query.from(RegRecord.class);
 
         Predicate condition = preparefindRegRecordByTextAndType(searchRecord, registerTypeIds, record, builder,
-                scopeIdsForSearch, query, parentRecord);
+                scopeIdsForSearch, query, parentRecord, excludeInvalid);
 
         query.select(record).distinct(true);
         if (condition != null) {
@@ -74,7 +75,8 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
     public long findRegRecordByTextAndTypeCount(final String searchRecord,
                                                 final Collection<Integer> registerTypeIds,
                                                 final RegRecord parentRecord,
-                                                final Set<Integer> scopeIdsForSearch) {
+                                                final Set<Integer> scopeIdsForSearch,
+                                                boolean excludeInvalid) {
         if (CollectionUtils.isEmpty(scopeIdsForSearch)) {
             return 0;
         }
@@ -84,7 +86,7 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
         Root<RegRecord> record = query.from(RegRecord.class);
 
         Predicate condition = preparefindRegRecordByTextAndType(searchRecord, registerTypeIds, record, builder,
-                scopeIdsForSearch, query, parentRecord);
+                scopeIdsForSearch, query, parentRecord, excludeInvalid);
 
         query.select(builder.countDistinct(record));
         if (condition != null) {
@@ -104,6 +106,7 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
      * @param scopeIdsForSearch id tříd, do který spadají rejstříky
      * @param query
      * @param parentRecord
+     * @param excludeInvalid
      * @return                  výsledné podmínky pro dotaz, nebo null pokud není za co filtrovat
      */
     private <T> Predicate preparefindRegRecordByTextAndType(final String searchRecord,
@@ -112,7 +115,8 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
                                                             final CriteriaBuilder builder,
                                                             final Set<Integer> scopeIdsForSearch,
                                                             final CriteriaQuery<T> query,
-                                                            final RegRecord parentRecord) {
+                                                            final RegRecord parentRecord,
+                                                            final Boolean excludeInvalid) {
         Assert.notEmpty(scopeIdsForSearch);
 
         Join<Object, Object> variantRecord = record.join(RegRecord.VARIANT_RECORD_LIST, JoinType.LEFT);
@@ -144,6 +148,10 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
 
         if (parentRecord != null) {
             conditions.add(builder.equal(record.get(RegRecord.PARENT_RECORD), parentRecord));
+        }
+
+        if (excludeInvalid != null && excludeInvalid) {
+            conditions.add(builder.equal(record.get(RegRecord.INVALID), false));
         }
 
         return builder.and(conditions.toArray(new Predicate[conditions.size()]));

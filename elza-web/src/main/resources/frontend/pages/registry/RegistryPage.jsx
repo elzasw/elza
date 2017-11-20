@@ -13,7 +13,7 @@ import RegistryList from 'components/registry/RegistryList'
 import {addToastrWarning} from 'components/shared/toastr/ToastrActions.jsx'
 import {Button} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
-import {registryMoveStart, registryMove, registryMoveCancel, registryDelete, registryDetailFetchIfNeeded, registryAdd, registryListInvalidate, setValidRegistry} from 'actions/registry/registry.jsx'
+import {registryMoveStart, registryMove, registryMoveCancel, registryDelete, registryDetailFetchIfNeeded, registryAdd, registryListInvalidate} from 'actions/registry/registry.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes.jsx'
 import {Shortcuts} from 'react-shortcuts';
@@ -168,9 +168,11 @@ class RegistryPage extends AbstractReactComponent {
         }
     };
 
+    /* MCV-45365
     handleSetValidParty = () => {
         confirm(i18n('party.setValid.confirm')) && this.dispatch(setValidRegistry(this.props.registryDetail.data.id));
     };
+    */
 
     handleRegistryMoveStart = () => {
         const {registryDetail:{data}} = this.props;
@@ -251,6 +253,8 @@ class RegistryPage extends AbstractReactComponent {
                 </Button>
             );
 
+            /*
+            MCV-45365
             if (userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_WR, scopeId: data ? data.scopeId : null})) {
                 itemActions.push(
                     <Button disabled={!data.invalid && data.partyId} key='registrySetValid'
@@ -259,7 +263,7 @@ class RegistryPage extends AbstractReactComponent {
                         <div><span className="btnText">{i18n('registry.setValid')}</span></div>
                     </Button>
                 );
-            }
+            }*/
         }
 
         if (this.canMoveRegistry()) {
