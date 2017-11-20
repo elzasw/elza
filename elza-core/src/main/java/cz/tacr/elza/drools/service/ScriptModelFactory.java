@@ -113,10 +113,10 @@ public class ScriptModelFactory {
             return Collections.emptyList();
         }
 
-        Set<RulItemType> descItemTypesForPackets = itemTypeRepository.findDescItemTypesForPackets();
+        Set<RulItemType> descItemTypesForStructureds = itemTypeRepository.findDescItemTypesForStructureds();
         Set<RulItemType> descItemTypesForIntegers = itemTypeRepository.findDescItemTypesForIntegers();
 
-        return ModelFactory.createDescItems(descItems, descItemTypesForPackets, descItemTypesForIntegers, descItemFactory, lastVersion);
+        return ModelFactory.createDescItems(descItems, descItemTypesForStructureds, descItemTypesForIntegers, descItemFactory, lastVersion);
     }
 
     /**

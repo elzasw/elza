@@ -52,7 +52,6 @@ public class Level {
             @XmlElement(name = "desc-item-text", type = DescItemText.class),
             @XmlElement(name = "desc-item-unit-date", type = DescItemUnitDate.class),
             @XmlElement(name = "desc-item-unit-id", type = DescItemUnitId.class),
-            @XmlElement(name = "desc-item-packet-ref", type = DescItemPacketRef.class),
             @XmlElement(name = "desc-item-enum", type = DescItemEnum.class)
     })
     private List<AbstractDescItem> descItems;

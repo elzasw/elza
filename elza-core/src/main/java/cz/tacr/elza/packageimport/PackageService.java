@@ -134,7 +134,6 @@ import cz.tacr.elza.repository.OutputTypeRepository;
 import cz.tacr.elza.repository.PackageDependencyRepository;
 import cz.tacr.elza.repository.PackageRepository;
 import cz.tacr.elza.repository.Packaging;
-import cz.tacr.elza.repository.PacketTypeRepository;
 import cz.tacr.elza.repository.PartyNameFormTypeRepository;
 import cz.tacr.elza.repository.PartyRelationClassTypeRepository;
 import cz.tacr.elza.repository.PartyTypeComplementTypeRepository;
@@ -312,11 +311,6 @@ public class PackageService {
     public static final String ZIP_DIR_RULE_SET = "rul_rule_set";
 
     /**
-     * typy packet v zipu
-     */
-    public static final String PACKET_TYPE_XML = "rul_packet_type.xml";
-
-    /**
      * adresář pro hromadné akce v zip
      */
     private final String ZIP_DIR_ACTIONS = "bulk_actions";
@@ -360,9 +354,6 @@ public class PackageService {
 
     @Autowired
     private BulkActionConfigManager bulkActionConfigManager;
-
-    @Autowired
-    private PacketTypeRepository packetTypeRepository;
 
     @Autowired
     private PolicyTypeRepository policyTypeRepository;
@@ -2585,17 +2576,17 @@ public class PackageService {
 
         newRultemplates.addAll(processTemplates(templates, rulPackage, rulOutputTypesNew, mapEntry, dirTemplates, rulRuleSet));
 
-        List<RulOutputType> rulPacketTypesDelete = new ArrayList<>(rulOutputTypes);
-        rulPacketTypesDelete.removeAll(rulOutputTypesNew);
+        List<RulOutputType> rulOutputTypesDelete = new ArrayList<>(rulOutputTypes);
+        rulOutputTypesDelete.removeAll(rulOutputTypesNew);
 
-        if (!rulPacketTypesDelete.isEmpty()) {
-            List<ArrOutputDefinition> byOutputTypes = outputDefinitionRepository.findByOutputTypes(rulPacketTypesDelete);
+        if (!rulOutputTypesDelete.isEmpty()) {
+            List<ArrOutputDefinition> byOutputTypes = outputDefinitionRepository.findByOutputTypes(rulOutputTypesDelete);
             if (!byOutputTypes.isEmpty()) {
                 throw new IllegalStateException("Existuje výstup(y) navázáný na typ výstupu, který je v novém balíčku smazán.");
             }
 
-            List<RulComponent> rulComponentsDelete = rulPacketTypesDelete.stream().map(RulOutputType::getComponent).filter(Objects::nonNull).collect(Collectors.toList());
-            outputTypeRepository.delete(rulPacketTypesDelete);
+            List<RulComponent> rulComponentsDelete = rulOutputTypesDelete.stream().map(RulOutputType::getComponent).filter(Objects::nonNull).collect(Collectors.toList());
+            outputTypeRepository.delete(rulOutputTypesDelete);
             componentRepository.delete(rulComponentsDelete);
         }
 
@@ -2984,7 +2975,6 @@ public class PackageService {
         packageActionsRepository.deleteByRulPackage(rulPackage);
         arrangementRuleRepository.deleteByRulPackage(rulPackage);
         policyTypeRepository.deleteByRulPackage(rulPackage);
-        packetTypeRepository.deleteByRulPackage(rulPackage);
         templateRepository.deleteByRulPackage(rulPackage);
         outputTypeRepository.deleteByRulPackage(rulPackage);
         deleteRuleSets(ruleSetRepository.findByRulPackage(rulPackage));

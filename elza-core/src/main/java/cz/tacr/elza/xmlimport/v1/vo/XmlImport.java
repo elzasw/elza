@@ -14,7 +14,6 @@ import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.Fund;
-import cz.tacr.elza.xmlimport.v1.vo.arrangement.Packet;
 import cz.tacr.elza.xmlimport.v1.vo.party.AbstractParty;
 import cz.tacr.elza.xmlimport.v1.vo.party.Dynasty;
 import cz.tacr.elza.xmlimport.v1.vo.party.Event;
@@ -52,11 +51,6 @@ public class XmlImport {
     })
     private List<AbstractParty> parties;
 
-    /** Seznam obalů. */
-    @XmlElement(name = "packet")
-    @XmlElementWrapper(name = "packet-list")
-    private List<Packet> packets;
-
     public Fund getFund() {
         return fund;
     }
@@ -79,14 +73,6 @@ public class XmlImport {
 
     public void setParties(List<AbstractParty> parties) {
         this.parties = parties;
-    }
-
-    public List<Packet> getPackets() {
-        return packets;
-    }
-
-    public void setPackets(List<Packet> packets) {
-        this.packets = packets;
     }
 
     @Override

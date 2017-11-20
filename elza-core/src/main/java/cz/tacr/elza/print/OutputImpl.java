@@ -35,7 +35,7 @@ import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.print.item.Item;
 import cz.tacr.elza.print.item.ItemFile;
-import cz.tacr.elza.print.item.ItemPacketRef;
+import cz.tacr.elza.print.item.ItemStructuredRef;
 import cz.tacr.elza.print.item.ItemPartyRef;
 import cz.tacr.elza.print.item.ItemSpec;
 import cz.tacr.elza.print.item.ItemType;
@@ -304,28 +304,6 @@ public class OutputImpl implements Output
                 .filter(item -> !codes.contains(item.getType().getCode()))
                 .sorted(Item::compareToItemViewOrderPosition)
                 .collect(Collectors.toList());
-    }
-
-    /**
-     * @return distinct seznam Packet navázaný přes nodes
-     */
-    public List<Packet> getPacketItemsDistinct() {
-        IteratorNodes iterator = getNodesBFS();
-        Set<Packet> resultsSet = new HashSet<>();
-
-        while (iterator.hasNext()) {
-            Node node = iterator.next();
-            List<Item> items = node.getItems();
-            for (Item item : items) {
-                if (item instanceof ItemPacketRef) {
-                    resultsSet.add(item.getValue(Packet.class));
-                }
-            }
-        }
-
-        List<Packet> results = new ArrayList<>(resultsSet);
-        results.sort(Packet::compareTo);
-        return results;
     }
 
     /**

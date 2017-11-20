@@ -18,7 +18,6 @@ import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
 import cz.tacr.elza.controller.vo.ArrOutputDefinitionVO;
 import cz.tacr.elza.controller.vo.ArrOutputExtVO;
 import cz.tacr.elza.controller.vo.ArrOutputVO;
-import cz.tacr.elza.controller.vo.ArrPacketVO;
 import cz.tacr.elza.controller.vo.ArrStructureDataVO;
 import cz.tacr.elza.controller.vo.CopyNodesParams;
 import cz.tacr.elza.controller.vo.CopyNodesValidate;
@@ -45,7 +44,6 @@ import cz.tacr.elza.controller.vo.RulDataTypeVO;
 import cz.tacr.elza.controller.vo.RulDescItemSpecVO;
 import cz.tacr.elza.controller.vo.RulDescItemTypeVO;
 import cz.tacr.elza.controller.vo.RulOutputTypeVO;
-import cz.tacr.elza.controller.vo.RulPacketTypeVO;
 import cz.tacr.elza.controller.vo.RulPolicyTypeVO;
 import cz.tacr.elza.controller.vo.RulRuleSetVO;
 import cz.tacr.elza.controller.vo.RulStructureTypeVO;
@@ -69,7 +67,7 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemEnumVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemFormattedTextVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemIntVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemJsonTableVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemPacketVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStructureVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemPartyRefVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemRecordRefVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStringVO;
@@ -78,7 +76,6 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitdateVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitidVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
-import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.ArrStructureData;
 import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.service.ArrMoveLevelService;
@@ -206,14 +203,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
             + "/outputItems/{fundVersionId}/{outputDefinitionVersion}/update/{createNewVersion}";
     protected static final String DELETE_OUTPUT_ITEM = ARRANGEMENT_CONTROLLER_URL
             + "/outputItems/{fundVersionId}/{outputDefinitionVersion}/delete";
-    protected static final String PACKET_TYPES = ARRANGEMENT_CONTROLLER_URL + "/packets/types";
-    protected static final String FIND_FORM_PACKETS = ARRANGEMENT_CONTROLLER_URL + "/packets/{fundId}/find/form";
-    protected static final String FIND_PACKETS = ARRANGEMENT_CONTROLLER_URL + "/packets/{fundId}/find";
-    protected static final String INSERT_PACKET = ARRANGEMENT_CONTROLLER_URL + "/packets/{fundId}";
-    protected static final String DELETE_PACKETS = ARRANGEMENT_CONTROLLER_URL + "/packets/{fundId}";
-    protected static final String UPDATE_PACKET = ARRANGEMENT_CONTROLLER_URL + "/packets/{fundId}";
-    protected static final String SET_STATE_PACKETS = ARRANGEMENT_CONTROLLER_URL + "/packets/{fundId}";
-    protected static final String GENERATE_PACKETS = ARRANGEMENT_CONTROLLER_URL + "/packets/{fundId}/generate";
     protected static final String FULLTEXT = ARRANGEMENT_CONTROLLER_URL + "/fulltext";
     protected static final String FIND_REGISTER_LINKS = ARRANGEMENT_CONTROLLER_URL + "/registerLinks/{nodeId}/{versionId}";
     protected static final String FIND_REGISTER_LINKS_FORM = ARRANGEMENT_CONTROLLER_URL + "/registerLinks/{nodeId}/{versionId}/form";
@@ -1190,9 +1179,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
                 break;
             }
 
-            case "PACKET_REF": {
-                descItem = new ArrItemPacketVO();
-                ((ArrItemPacketVO) descItem).setValue(((ArrPacketVO) value).getId());
+            case "STRUCTURED": {
+                descItem = new ArrItemStructureVO();
+                ((ArrItemStructureVO) descItem).setValue(((ArrStructureDataVO) value).id);
                 break;
             }
 
@@ -1258,199 +1247,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
             }
         }
         return null;
-    }
-
-    /**
-     * Seznam typů obalů.
-     *
-     * @return typy obalů
-     */
-    protected List<RulPacketTypeVO> getPacketTypes() {
-        return Arrays.asList(get(PACKET_TYPES).getBody().as(RulPacketTypeVO[].class));
-    }
-
-    /**
-     * Seznam obalů pro AP.
-     *
-     * @param fund AP
-     * @return obaly pro AP
-     */
-    protected List<ArrPacketVO> findPackets(final ArrFundVO fund, final String prefix, final ArrPacket.State state) {
-        ArrangementController.PacketFindParam input = new ArrangementController.PacketFindParam();
-        input.setState(state);
-        input.setPrefix(prefix);
-        return findPackets(fund.getId(), input);
-    }
-
-    /**
-     * Seznam obalů pro AP.
-     *
-     * @param fundId identifikátor AP
-     * @return obaly pro AP
-     */
-    protected List<ArrPacketVO> findPackets(final Integer fundId, final ArrangementController.PacketFindParam input) {
-        return Arrays.asList(post(spec ->
-                spec.body(input).pathParameter("fundId", fundId), FIND_PACKETS).getBody().as(ArrPacketVO[].class));
-    }
-
-    /**
-     * Seznam obalů pro JP.
-     *
-     * @param fund AP
-     * @return obaly pro JP
-     */
-    protected List<ArrPacketVO> findFormPackets(final ArrFundVO fund, final String text, final Integer limit) {
-        ArrangementController.PacketFindFormParam input = new ArrangementController.PacketFindFormParam();
-        input.setLimit(limit);
-        input.setText(text);
-        return findFormPackets(fund.getId(), input);
-    }
-
-    /**
-     * Seznam obalů pro JP.
-     *
-     * @param fundId identifikátor AP
-     * @return obaly pro JP
-     */
-    protected List<ArrPacketVO> findFormPackets(final Integer fundId, final ArrangementController.PacketFindFormParam input) {
-        return Arrays.asList(post(spec ->
-                spec.body(input).pathParameter("fundId", fundId), FIND_FORM_PACKETS).getBody().as(ArrPacketVO[].class));
-    }
-
-    /**
-     * Změna stavu obalů.
-     *
-     * @param fundId identifikátor fondu
-     * @param input parametry změny
-     * @return obaly pro JP
-     */
-    protected void setStatePackets(final Integer fundId, final ArrangementController.PacketSetStateParam input) {
-        post(spec -> spec.body(input).pathParameter("fundId", fundId), SET_STATE_PACKETS);
-    }
-
-    /**
-     * Změna stavu obalů.
-     *
-     * @param fund identifikátor AP
-     * @param packets obaly
-     * @param state nastavovaný stav
-     * @return obaly pro JP
-     */
-    protected void setStatePackets(final ArrFundVO fund, final List<ArrPacketVO> packets, final ArrPacket.State state) {
-        ArrangementController.PacketSetStateParam param = new ArrangementController.PacketSetStateParam();
-        param.setState(state);
-        param.setPacketIds(packets.stream().map(t -> t.getId()).toArray(size -> new Integer[size]));
-        setStatePackets(fund.getId(), param);
-    }
-
-    /**
-     * Generování obalů.
-     *
-     * @param fund  archivní fond
-     * @param prefix    prefix označení obalu
-     * @param packetTypeId  identifikátor typu obalu
-     * @param fromNumber čísluj od
-     * @param lenNumber  počet cifer
-     * @param count      počet obalů
-     * @param packets    obaly k přečíslování
-     */
-    protected void generatePackets(final ArrFundVO fund, final String prefix, final Integer packetTypeId,
-                                   final Integer fromNumber, final Integer lenNumber, final Integer count,
-                                   final List<ArrPacketVO> packets) {
-        ArrangementController.PacketGenerateParam input = new ArrangementController.PacketGenerateParam();
-        input.setPrefix(prefix);
-        input.setPacketTypeId(packetTypeId);
-        input.setFromNumber(fromNumber);
-        input.setLenNumber(lenNumber);
-        input.setCount(count);
-        input.setPacketTypeId(packetTypeId);
-        if (packets != null) {
-            input.setPacketIds(packets.stream().map(t -> t.getId()).toArray(size -> new Integer[size]));
-        }
-        generatePackets(fund.getId(), input);
-    }
-
-    /**
-     * Generování obalů.
-     *
-     * @param fundId idedntifikátor fondu
-     * @param input vstupní parametry
-     */
-    protected void generatePackets(final Integer fundId, final ArrangementController.PacketGenerateParam input) {
-        put(spec -> spec.body(input).pathParameter("fundId", fundId), GENERATE_PACKETS);
-    }
-
-    /**
-     * Vložení nového obalu pro AP.
-     *
-     * @param fund    ap
-     * @param packetVO      obal
-     * @return obal
-     */
-    protected ArrPacketVO insertPacket(final ArrFundVO fund, final ArrPacketVO packetVO) {
-        return insertPacket(fund.getId(), packetVO);
-    }
-
-    /**
-     * Vložení nového obalu pro AP.
-     *
-     * @param fundId  identifikátor AP
-     * @param packetVO      obal
-     * @return obal
-     */
-    protected ArrPacketVO insertPacket(final Integer fundId, final ArrPacketVO packetVO) {
-        return put(spec -> spec
-                .pathParameter("fundId", fundId)
-                .body(packetVO), INSERT_PACKET).getBody().as(ArrPacketVO.class);
-    }
-
-    /**
-     * Smazání obalů.
-     *
-     * @param fund    AP
-     * @param packets seznam obalů pro smazání
-     */
-    protected void deletePackets(final ArrFundVO fund, final List<ArrPacketVO> packets) {
-        ArrangementController.PacketDeleteParam param = new ArrangementController.PacketDeleteParam();
-        param.setPacketIds(packets.stream().map(t -> t.getId()).toArray(size -> new Integer[size]));
-        deletePackets(fund.getId(), param);
-    }
-
-    /**
-     * Smazání obalů.
-     *
-     * @param fundId  identifikátor AP
-     * @param param   parametry smazání
-     * @return obal
-     */
-    protected void deletePackets(final Integer fundId, final ArrangementController.PacketDeleteParam param) {
-        delete(spec -> spec.pathParameter("fundId", fundId).body(param), DELETE_PACKETS);
-    }
-
-    /**
-     * Upravení obalu.
-     *
-     * @param fund   AP
-     * @param packet     obal
-     * @return obal
-     */
-    protected ArrPacketVO updatePacket(final ArrFundVO fund,
-                                       final ArrPacketVO packet) {
-        return updatePacket(fund.getId(), packet);
-    }
-
-    /**
-     * Upravení obalu.
-     *
-     * @param fundId identifikátor AP
-     * @param packetVO     obal
-     * @return obal
-     */
-    protected ArrPacketVO updatePacket(final Integer fundId,
-                                       final ArrPacketVO packetVO) {
-        return put(spec -> spec
-                .pathParameter("fundId", fundId)
-                .body(packetVO), UPDATE_PACKET).getBody().as(ArrPacketVO.class);
     }
 
     /**

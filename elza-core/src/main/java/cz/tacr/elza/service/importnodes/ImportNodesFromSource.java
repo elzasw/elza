@@ -1,19 +1,18 @@
 package cz.tacr.elza.service.importnodes;
 
-import com.google.common.collect.Lists;
+import com.google.common.base.Objects;
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.repository.FundFileRepository;
-import cz.tacr.elza.repository.PacketRepository;
 import cz.tacr.elza.repository.ScopeRepository;
+import cz.tacr.elza.repository.StructureDataRepository;
 import cz.tacr.elza.service.ArrMoveLevelService;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.importnodes.vo.File;
 import cz.tacr.elza.service.importnodes.vo.ImportParams;
 import cz.tacr.elza.service.importnodes.vo.ImportSource;
-import cz.tacr.elza.service.importnodes.vo.Packet;
+import cz.tacr.elza.service.importnodes.vo.Structured;
 import cz.tacr.elza.service.importnodes.vo.Scope;
 import cz.tacr.elza.service.importnodes.vo.ValidateResult;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,7 +48,7 @@ public class ImportNodesFromSource {
     private FundFileRepository fundFileRepository;
 
     @Autowired
-    private PacketRepository packetRepository;
+    private StructureDataRepository structureDataRepository;
 
     /**
      * Validace dat před samotným importem.
@@ -89,20 +88,18 @@ public class ImportNodesFromSource {
         }
 
         // zjištění existujících obalů v cílovém archivním souboru
-        List<? extends Packet> packetsFund = packetRepository.findByFund(targetFundVersion.getFund(), Lists.newArrayList(ArrPacket.State.OPEN, ArrPacket.State.CLOSED));
+        List<? extends Structured> structuredFund = structureDataRepository.findByFundAndDeleteChangeIsNull(targetFundVersion.getFund());
         // zjištění používaných obalů v podstromech vybraných JP
-        Set<? extends Packet> packets = source.getPackets();
-        result.setPacketConflict(packets.size() > 0 && packetsFund.stream().anyMatch(p -> {
-            for (Packet packet : packets) {
-                if ((packet.getStorageNumber() == null && p.getStorageNumber() == null) ||
-                        (packet.getStorageNumber() != null && packet.getStorageNumber().equalsIgnoreCase(p.getStorageNumber()))
-                        /*&& Objects.equal(packet.getPacketType(), p.getPacketType())*/) {
-                    Collection<String> packetConflicts = result.getPacketConflicts();
-                    if (packetConflicts == null) {
-                        packetConflicts = new ArrayList<>();
-                        result.setPacketConflicts(packetConflicts);
+        Set<? extends Structured> structuredList = source.getStructuredList();
+        result.setStructuredConflict(structuredList.size() > 0 && structuredFund.stream().anyMatch(p -> {
+            for (Structured structured : structuredList) {
+                if (Objects.equal(structured.getValue(), p.getValue())) {
+                    Collection<String> structuredConflicts = result.getStructuredConflicts();
+                    if (structuredConflicts == null) {
+                        structuredConflicts = new ArrayList<>();
+                        result.setStructuredConflicts(structuredConflicts);
                     }
-                    packetConflicts.add(packet.getStorageNumber());
+                    structuredConflicts.add(structured.getValue());
                     return true;
                 }
             }

@@ -5,16 +5,16 @@ package cz.tacr.elza.service.importnodes.vo;
  *
  * @since 19.07.2017
  */
-public interface Packet {
+public interface Structured {
 
     /**
-     * @return označení obalu
+     * @return hodnota
      */
-    String getStorageNumber();
+    String getValue();
 
     /**
-     * @return kód typu obalu
+     * @return kód typu
      */
-    String getTypeCode();
+    String getStructureTypeCode();
 
 }

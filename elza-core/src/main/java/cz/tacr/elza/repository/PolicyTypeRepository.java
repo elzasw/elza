@@ -18,7 +18,7 @@ public interface PolicyTypeRepository extends JpaRepository<RulPolicyType, Integ
 
     void deleteByRulPackage(RulPackage rulPackage);
 
-    RulPolicyType findByCode(String packetTypeCode);
+    RulPolicyType findByCode(String policyTypeCode);
 
     List<RulPolicyType> findByRuleSet(RulRuleSet ruleSet);
 

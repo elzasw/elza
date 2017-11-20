@@ -5,8 +5,8 @@ package cz.tacr.elza.service.importnodes.vo.descitems;
  *
  * @since 19.07.2017
  */
-public interface ItemPacketRef extends Item {
+public interface ItemStructureRef extends Item {
 
-    Integer getPacketId();
+    Integer getStructureDataId();
 
 }

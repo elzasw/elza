@@ -4,13 +4,11 @@ import cz.tacr.elza.bulkaction.generator.LevelWithItems;
 import cz.tacr.elza.bulkaction.generator.result.ActionResult;
 import cz.tacr.elza.bulkaction.generator.result.UnitCountActionResult;
 import cz.tacr.elza.domain.ArrDataInteger;
-import cz.tacr.elza.domain.ArrDataPacketRef;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrPacket;
+import cz.tacr.elza.domain.ArrStructureData;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.table.ElzaColumn;
 import cz.tacr.elza.domain.table.ElzaRow;
 import cz.tacr.elza.domain.table.ElzaTable;
@@ -299,14 +297,15 @@ public class UnitCountAction extends Action {
      * @param items seznam hodnot uzlu
      */
     private void countItemValue(final List<ArrDescItem> items) {
-        RulItemType extraType = itemTypes.get("STORAGE");
+        // TODO slapa: co tady?
+        /*RulItemType extraType = itemTypes.get("STORAGE");
 
         for (ArrDescItem item : items) {
             if (item.getItemType().equals(extraType) && BooleanUtils.isNotTrue(item.isUndefined())) {
-                ArrPacket packet = ((ArrDataPacketRef) item.getData()).getPacket();
-                String storageNumber = packet.getStorageNumber();
+                ArrStructureData structureData = ((ArrDataPacketRef) item.getData()).getPacket();
+                String storageNumber = structureData.getStorageNumber();
                 if (!storageNumbers.contains(storageNumber)) {
-                	RulPacketType packetType = packet.getPacketType();
+                	RulPacketType packetType = structureData.getPacketType();
                 	if(packetType!=null) {
                 		String shortcut = packetType.getShortcut();
                 		addToCount(shortcut, 1);
@@ -314,7 +313,7 @@ public class UnitCountAction extends Action {
                 	storageNumbers.add(storageNumber);
                 }
             }
-        }
+        }*/
     }
 
     /**

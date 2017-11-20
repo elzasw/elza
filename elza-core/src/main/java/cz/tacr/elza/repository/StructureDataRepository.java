@@ -5,6 +5,7 @@ import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrStructureData;
 import cz.tacr.elza.domain.RulStructureExtension;
 import cz.tacr.elza.domain.RulStructureType;
+import cz.tacr.elza.service.importnodes.vo.Structured;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -51,4 +52,9 @@ public interface StructureDataRepository extends JpaRepository<ArrStructureData,
 
     @Query("SELECT sd.createChange FROM arr_structure_data sd WHERE sd.state = 'TEMP' AND sd = :structureData")
     ArrChange findTempChangeByStructureData(@Param("structureData") ArrStructureData structureData);
+
+    @Modifying
+    void deleteByFund(ArrFund fund);
+
+    List<ArrStructureData> findByFundAndDeleteChangeIsNull(ArrFund fund);
 }

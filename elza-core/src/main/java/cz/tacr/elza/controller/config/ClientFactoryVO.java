@@ -30,6 +30,7 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemJsonTableVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemPartyRefVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemRecordRefVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStringVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStructureVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemTextVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitdateVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitidVO;
@@ -80,7 +81,6 @@ import cz.tacr.elza.controller.vo.ArrOutputDefinitionVO;
 import cz.tacr.elza.controller.vo.ArrOutputExtVO;
 import cz.tacr.elza.controller.vo.ArrOutputFileVO;
 import cz.tacr.elza.controller.vo.ArrOutputVO;
-import cz.tacr.elza.controller.vo.ArrPacketVO;
 import cz.tacr.elza.controller.vo.ArrRequestQueueItemVO;
 import cz.tacr.elza.controller.vo.ArrRequestVO;
 import cz.tacr.elza.controller.vo.BulkActionRunVO;
@@ -105,7 +105,6 @@ import cz.tacr.elza.controller.vo.RegVariantRecordVO;
 import cz.tacr.elza.controller.vo.RulDataTypeVO;
 import cz.tacr.elza.controller.vo.RulDescItemSpecVO;
 import cz.tacr.elza.controller.vo.RulOutputTypeVO;
-import cz.tacr.elza.controller.vo.RulPacketTypeVO;
 import cz.tacr.elza.controller.vo.RulPolicyTypeVO;
 import cz.tacr.elza.controller.vo.RulRuleSetVO;
 import cz.tacr.elza.controller.vo.RulTemplateVO;
@@ -150,7 +149,6 @@ import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutputDefinition;
 import cz.tacr.elza.domain.ArrOutputFile;
-import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.ArrRequest;
 import cz.tacr.elza.domain.ArrRequestQueueItem;
 import cz.tacr.elza.domain.DmsFile;
@@ -176,7 +174,6 @@ import cz.tacr.elza.domain.RulItemSpecExt;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulOutputType;
-import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.RulPolicyType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.RulTemplate;
@@ -933,7 +930,6 @@ public class ClientFactoryVO {
      * @param processedItemsMap mapa vytvořených objektů
      * @param classType         typ VO objektu
      * @param <VO>              typ VO objektu
-     * @param <VOTYPE>          třída VO objektu
      * @return nalezený nebo vytvořený VO
      */
     public <VO> VO getOrCreateVo(final Integer id,
@@ -1160,7 +1156,7 @@ public class ClientFactoryVO {
                 case "PARTY_REF": itemVO = new ArrItemPartyRefVO(); break;
                 case "RECORD_REF": itemVO = new ArrItemRecordRefVO(); break;
                 case "DECIMAL": itemVO = new ArrItemDecimalVO(); break;
-                case "PACKET_REF": itemVO = new ArrItemPartyRefVO(); break;
+                case "STRUCTURED": itemVO = new ArrItemStructureVO(); break;
                 case "ENUM": itemVO = new ArrItemEnumVO(); break;
                 case "FILE_REF": itemVO = new ArrItemFileRefVO(); break;
                 case "JSON_TABLE": itemVO = new ArrItemJsonTableVO(); break;
@@ -1556,39 +1552,6 @@ public class ClientFactoryVO {
             result.add(createArrNode(node));
         }
         return result;
-    }
-
-    /**
-     * Vytvoření seznamu typů obalů, které jsou k dispozici.
-     *
-     * @param packetTypes seznam DO typů obalů
-     * @return seznam VO typů obalů
-     */
-    public List<RulPacketTypeVO> createPacketTypeList(final List<RulPacketType> packetTypes) {
-        return createList(packetTypes, RulPacketTypeVO.class, null);
-    }
-
-    /**
-     * Vytvoření seznamu obalů.
-     *
-     * @param packets seznam DO obalů
-     * @return seznam VO obalů
-     */
-    public List<ArrPacketVO> createPacketList(final List<ArrPacket> packets) {
-        return createList(packets, ArrPacketVO.class, null);
-    }
-
-    /**
-     * Vytvoření obalu.
-     *
-     * @param packet DO obalu
-     * @return VO obalu
-     */
-    public ArrPacketVO createPacket(final ArrPacket packet) {
-        Assert.notNull(packet, "Obal musí být vyplněn");
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        ArrPacketVO packetVO = mapper.map(packet, ArrPacketVO.class);
-        return packetVO;
     }
 
     /**

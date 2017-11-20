@@ -78,7 +78,6 @@ import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutputDefinition;
 import cz.tacr.elza.domain.ArrOutputDefinition.OutputState;
 import cz.tacr.elza.domain.ArrOutputItem;
-import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.ArrRequest;
 import cz.tacr.elza.domain.ArrRequestQueueItem;
 import cz.tacr.elza.domain.ParInstitution;
@@ -86,7 +85,6 @@ import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulOutputType;
-import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
@@ -108,7 +106,6 @@ import cz.tacr.elza.service.FilterTreeService;
 import cz.tacr.elza.service.ItemService;
 import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.service.OutputService;
-import cz.tacr.elza.service.PacketService;
 import cz.tacr.elza.service.PolicyService;
 import cz.tacr.elza.service.RegistryService;
 import cz.tacr.elza.service.RequestQueueService;
@@ -189,9 +186,6 @@ public class ArrangementController {
     private ArrMoveLevelService moveLevelService;
 
     @Autowired
-    private PacketService packetService;
-
-    @Autowired
     private DaoService daoService;
 
     @Autowired
@@ -217,9 +211,6 @@ public class ArrangementController {
 
     @Autowired
     private PolicyService policyService;
-
-    @Autowired
-    private PacketTypeRepository packetTypeRepository;
 
     @Autowired
     private UserService userService;
@@ -258,69 +249,10 @@ public class ArrangementController {
     private FundFileRepository fundFileRepository;
 
     @Autowired
-    private PacketRepository packetRepository;
-
-    @Autowired
     private LevelRepository levelRepository;
 
     @Autowired
     private ImportNodesFromSource importNodesFromSource;
-
-    /**
-     * Seznam typů obalů.
-     * @return typy obalů
-     */
-    @RequestMapping(value = "/packets/types",
-            method = RequestMethod.GET,
-            consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<RulPacketTypeVO> getPacketTypes() {
-        List<RulPacketType> packetTypes = packetService.getPacketTypes();
-        return factoryVo.createPacketTypeList(packetTypes);
-    }
-
-    /**
-     * Vložení nového obalu pro AP.
-     *
-     * @param fundId  identifikátor AP
-     * @param packetVO      obal
-     * @return obal
-     */
-    @Transactional
-    @RequestMapping(value = "/packets/{fundId}",
-            method = RequestMethod.PUT,
-            consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    public ArrPacketVO insertPacket(@PathVariable(value = "fundId") final Integer fundId,
-                                    @RequestBody final ArrPacketVO packetVO) {
-        Assert.notNull(fundId, "Nebyl vyplněn identifikátor AS");
-        Assert.notNull(packetVO, "Obal musí být vyplněn");
-
-        ArrPacket packet = factoryDO.createPacket(packetVO, fundId);
-        return factoryVo.createPacket(packetService.insertPacket(packet));
-    }
-
-    /**
-     * Vyhledání obalů podle textu - pro formulář JP.
-     *
-     * @param fundId    id archivního fondu
-     * @param input     vstupní parametry
-     * @return  seznam obalů
-     */
-    @RequestMapping(value = "/packets/{fundId}/find/form",
-            method = RequestMethod.POST,
-            consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<ArrPacketVO> findPacketsForm(@PathVariable(value = "fundId") final Integer fundId,
-                                             @RequestBody final PacketFindFormParam input) {
-        Assert.notNull(fundId, "Nebyl vyplněn identifikátor AS");
-        Assert.notNull(input, "Vstupní data musí být vyplněny");
-        Assert.notNull(input.getLimit(), "Limit musí být vyplněn");
-
-        ArrFund fund = fundRepository.getOneCheckExist(fundId);
-        List<ArrPacket> packets = packetService.findPackets(fund, input.getLimit(), input.getText());
-        return factoryVo.createPacketList(packets);
-    }
 
     /**
      *  Poskytuje seznam balíčků digitalizátů pouze pod archivní souborem (AS).
@@ -461,102 +393,6 @@ public class ArrangementController {
         final ArrDaoLink daoLink = daoLinkRepository.getOneCheckExist(daoLinkId);
 
         final ArrDaoLink deleteDaoLink = daoService.deleteDaoLink(fundVersion, daoLink);
-    }
-
-
-    /**
-     * Vyhledání obalů pro správu.
-     *
-     * @param fundId    id archivního fondu
-     * @param input     vstupní parametry
-     * @return seznam obalů
-     */
-    @RequestMapping(value = "/packets/{fundId}/find",
-            method = RequestMethod.POST,
-            consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<ArrPacketVO> findPackets(@PathVariable(value = "fundId") final Integer fundId,
-                                         @RequestBody final PacketFindParam input) {
-        Assert.notNull(fundId, "Nebyl vyplněn identifikátor AS");
-        Assert.notNull(input, "Vstupní data musí být vyplněny");
-        Assert.notNull(input.getState(), "Stav musí být vyplněn");
-
-        ArrFund fund = fundRepository.getOneCheckExist(fundId);
-        List<ArrPacket> packets = packetService.findPackets(fund, input.getPrefix(), input.getState());
-        return factoryVo.createPacketList(packets);
-    }
-
-    /**
-     * Smazání obalů.
-     *
-     * @param fundId    id archivního fondu
-     * @param input     vstupní parametry
-     */
-    @Transactional
-    @RequestMapping(value = "/packets/{fundId}",
-            method = RequestMethod.DELETE,
-            consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    public void deletePackets(@PathVariable(value = "fundId") final Integer fundId,
-                              @RequestBody final PacketDeleteParam input) {
-        Assert.notNull(fundId, "Nebyl vyplněn identifikátor AS");
-        Assert.notNull(input, "Vstupní data musí být vyplněny");
-
-        ArrFund fund = fundRepository.getOneCheckExist(fundId);
-        packetService.deletePackets(fund, input.getPacketIds());
-    }
-
-    /**
-     * Změna stavu obalů.
-     *
-     * @param fundId    id archivního fondu
-     * @param input     vstupní parametry
-     */
-    @Transactional
-    @RequestMapping(value = "/packets/{fundId}",
-            method = RequestMethod.POST,
-            consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    public void setStatePackets(@PathVariable(value = "fundId") final Integer fundId,
-                                @RequestBody final PacketSetStateParam input) {
-        Assert.notNull(fundId, "Nebyl vyplněn identifikátor AS");
-        Assert.notNull(input, "Vstupní data musí být vyplněny");
-
-        ArrFund fund = fundRepository.getOneCheckExist(fundId);
-        packetService.setStatePackets(fund, input.getPacketIds(), input.getState());
-    }
-
-    /**
-     * Vygenerování/přegenerování obalů.
-     *
-     * @param fundId    id archivního fondu
-     * @param input     vstupní parametry
-     */
-    @Transactional
-    @RequestMapping(value = "/packets/{fundId}/generate",
-            method = RequestMethod.PUT,
-            consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    public void generatePackets(@PathVariable(value = "fundId") final Integer fundId,
-                                @RequestBody final PacketGenerateParam input) {
-        Assert.notNull(fundId, "Nebyl vyplněn identifikátor AS");
-        Assert.notNull(input, "Vstupní data musí být vyplněny");
-
-        Assert.notNull(input.getFromNumber(), "Musí být vyplněno");
-        Assert.notNull(input.getLenNumber(), "Musí být vyplněno");
-        Assert.notNull(input.getCount(), "Musí být vyplněno");
-
-        ArrFund fund = fundRepository.getOneCheckExist(fundId);
-        RulPacketType packetType = input.getPacketTypeId() != null ?
-                packetTypeRepository.getOneCheckExist(input.getPacketTypeId()) : null;
-
-        packetService.generatePackets(fund,
-                packetType,
-                input.getPrefix(),
-                input.getFromNumber(),
-                input.getLenNumber(),
-                input.getCount(),
-                input.getPacketIds());
     }
 
     /**
@@ -1031,8 +867,8 @@ public class ArrangementController {
             }
 
             @Override
-            public ConflictResolve getPacketConflictResolve() {
-                return ConflictResolve.valueOf(copyNodesParams.getPacketsConflictResolve().name());
+            public ConflictResolve getStructuredConflictResolve() {
+                return ConflictResolve.valueOf(copyNodesParams.getStructuredsConflictResolve().name());
             }
         }, targetFundVersion, targetStaticNode, targetStaticParentNode, copyNodesParams.getSelectedDirection());
     }
@@ -2879,192 +2715,6 @@ public class ArrangementController {
 
         public void setUnusedItemTypeIds(final List<Integer> unusedItemTypeIds) {
             this.unusedItemTypeIds = unusedItemTypeIds;
-        }
-    }
-
-    /**
-     * Vstupní parametry změnu stavu obalů.
-     */
-    public static class PacketSetStateParam extends PacketDeleteParam {
-
-        /**
-         * Stav obalu
-         */
-        private ArrPacket.State state;
-
-        public ArrPacket.State getState() {
-            return state;
-        }
-
-        public void setState(final ArrPacket.State state) {
-            this.state = state;
-        }
-    }
-
-    /**
-     * Vstupní parametry pro smazání obalů.
-     */
-    public static class PacketDeleteParam {
-
-        /**
-         * Seznam id obalů
-         */
-        private Integer[] packetIds;
-
-        public Integer[] getPacketIds() {
-            return packetIds;
-        }
-
-        public void setPacketIds(final Integer[] packetIds) {
-            this.packetIds = packetIds;
-        }
-    }
-
-    /**
-     * Vstupní parametry pro vyhledání obalů ve formuláři.
-     */
-    public static class PacketFindFormParam {
-
-        /**
-         * Maximální počet výsledků
-         */
-        private Integer limit;
-
-        /**
-         * Vyhledávaný text - může být null
-         */
-        private String text;
-
-        public Integer getLimit() {
-            return limit;
-        }
-
-        public void setLimit(final Integer limit) {
-            this.limit = limit;
-        }
-
-        public String getText() {
-            return text;
-        }
-
-        public void setText(final String text) {
-            this.text = text;
-        }
-    }
-
-    /**
-     * Vstupní parametry pro vyhledávání - ve správě obalů.
-     */
-    public static class PacketFindParam {
-
-        /**
-         * Prefix pro vyhledávání
-         */
-        private String prefix;
-
-        /**
-         * Stav obalu
-         */
-        private ArrPacket.State state;
-
-        public String getPrefix() {
-            return prefix;
-        }
-
-        public void setPrefix(final String prefix) {
-            this.prefix = prefix;
-        }
-
-        public ArrPacket.State getState() {
-            return state;
-        }
-
-        public void setState(final ArrPacket.State state) {
-            this.state = state;
-        }
-    }
-
-    /**
-     * Vstupní parametry pro generování/přegenoravání packetů.
-     */
-    public static class PacketGenerateParam {
-
-        /**
-         * Požadovaný prefix
-         */
-        private String prefix;
-
-        /**
-         * Identifikátor typu obalu
-         */
-        private Integer packetTypeId;
-
-        /**
-         * Od čísla, od kterého se má začít generovat
-         */
-        private Integer fromNumber;
-
-        /**
-         * počet cifer (kvůli přidaným nulám)
-         */
-        private Integer lenNumber;
-
-        /**
-         * Počet obalů, které se mají vygenerovat
-         */
-        private Integer count;
-
-        /**
-         * Seznam identifikátorů packetů, které se mají přegenerovat
-         */
-        private Integer[] packetIds;
-
-        public String getPrefix() {
-            return prefix;
-        }
-
-        public void setPrefix(final String prefix) {
-            this.prefix = prefix;
-        }
-
-        public Integer getPacketTypeId() {
-            return packetTypeId;
-        }
-
-        public void setPacketTypeId(final Integer packetTypeId) {
-            this.packetTypeId = packetTypeId;
-        }
-
-        public Integer getFromNumber() {
-            return fromNumber;
-        }
-
-        public void setFromNumber(final Integer fromNumber) {
-            this.fromNumber = fromNumber;
-        }
-
-        public Integer getLenNumber() {
-            return lenNumber;
-        }
-
-        public void setLenNumber(final Integer lenNumber) {
-            this.lenNumber = lenNumber;
-        }
-
-        public Integer getCount() {
-            return count;
-        }
-
-        public void setCount(final Integer count) {
-            this.count = count;
-        }
-
-        public Integer[] getPacketIds() {
-            return packetIds;
-        }
-
-        public void setPacketIds(final Integer[] packetIds) {
-            this.packetIds = packetIds;
         }
     }
 

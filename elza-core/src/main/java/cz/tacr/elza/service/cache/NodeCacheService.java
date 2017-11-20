@@ -14,6 +14,9 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.transaction.Transactional;
 
+import cz.tacr.elza.domain.ArrDataStructureRef;
+import cz.tacr.elza.domain.ArrStructureData;
+import cz.tacr.elza.repository.StructureDataRepository;
 import org.apache.commons.collections.CollectionUtils;
 import org.castor.core.util.Assert;
 import org.slf4j.Logger;
@@ -33,7 +36,6 @@ import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrDataFileRef;
-import cz.tacr.elza.domain.ArrDataPacketRef;
 import cz.tacr.elza.domain.ArrDataPartyRef;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ArrDataUnitdate;
@@ -41,7 +43,6 @@ import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeRegister;
-import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RulItemSpec;
@@ -57,7 +58,6 @@ import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.repository.PacketRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.service.ItemService;
@@ -99,7 +99,7 @@ public class NodeCacheService {
     private DaoLinkRepository daoLinkRepository;
 
     @Autowired
-    private PacketRepository packetRepository;
+    private StructureDataRepository structureDataRepository;
 
     @Autowired
     private PartyRepository partyRepository;
@@ -471,7 +471,7 @@ public class NodeCacheService {
 
         Map<ArrDescItem, Integer> itemTypesMap = new HashMap<>();
         Map<ArrDescItem, Integer> itemSpecsMap = new HashMap<>();
-        Map<ArrDescItem, Integer> itemPacketsMap = new HashMap<>();
+        Map<ArrDescItem, Integer> itemStructureDataMap = new HashMap<>();
         Map<ArrDescItem, Integer> itemPartiesMap = new HashMap<>();
         Map<ArrDescItem, Integer> itemRecordsMap = new HashMap<>();
         Map<ArrDescItem, Integer> itemFilesMap = new HashMap<>();
@@ -493,8 +493,8 @@ public class NodeCacheService {
                         itemSpecsMap.put(descItem, descItem.getItemSpecId());
                     }
 
-                    if (descItem.getData() instanceof ArrDataPacketRef) {
-                        itemPacketsMap.put(descItem, ((ArrDataPacketRef) descItem.getData()).getPacketId());
+                    if (descItem.getData() instanceof ArrDataStructureRef) {
+                        itemStructureDataMap.put(descItem, ((ArrDataStructureRef) descItem.getData()).getStructureDataId());
                     } else if (descItem.getData() instanceof ArrDataPartyRef) {
                         itemPartiesMap.put(descItem, ((ArrDataPartyRef) descItem.getData()).getPartyId());
                     } else if (descItem.getData() instanceof ArrDataRecordRef) {
@@ -520,7 +520,7 @@ public class NodeCacheService {
 
         fillRulItemTypes(itemTypesMap);
         fillRulItemSpecs(itemSpecsMap);
-        fillArrPackets(itemPacketsMap);
+        fillArrStructureData(itemStructureDataMap);
         fillParParties(itemPartiesMap);
         fillRegRecords(itemRecordsMap);
         fillArrFiles(itemFilesMap);
@@ -652,23 +652,23 @@ public class NodeCacheService {
     }
 
     /**
-     * Vyplnění návazných entity {@link ArrPacket}.
+     * Vyplnění návazných entity {@link ArrStructureData}.
      *
-     * @param itemPacketsMap mapa entit k vyplnění
+     * @param itemStructureDataMap mapa entit k vyplnění
      */
-    private void fillArrPackets(final Map<ArrDescItem, Integer> itemPacketsMap) {
-        if (itemPacketsMap.size() == 0) {
+    private void fillArrStructureData(final Map<ArrDescItem, Integer> itemStructureDataMap) {
+        if (itemStructureDataMap.size() == 0) {
             return;
         }
-        List<ArrPacket> packets = packetRepository.findAll(itemPacketsMap.values());
-        Map<Integer, ArrPacket> packetsMapFound = new HashMap<>();
-        for (ArrPacket packet : packets) {
-            packetsMapFound.put(packet.getPacketId(), packet);
+        List<ArrStructureData> structureDataList = structureDataRepository.findAll(itemStructureDataMap.values());
+        Map<Integer, ArrStructureData> structureDataMapFound = new HashMap<>();
+        for (ArrStructureData structureData : structureDataList) {
+            structureDataMapFound.put(structureData.getStructureDataId(), structureData);
         }
 
-        for (Map.Entry<ArrDescItem, Integer> entry : itemPacketsMap.entrySet()) {
+        for (Map.Entry<ArrDescItem, Integer> entry : itemStructureDataMap.entrySet()) {
             ArrDescItem descItem = entry.getKey();
-            ((ArrDataPacketRef) descItem.getData()).setPacket(packetsMapFound.get(entry.getValue()));
+            ((ArrDataStructureRef) descItem.getData()).setStructureData(structureDataMapFound.get(entry.getValue()));
         }
     }
 

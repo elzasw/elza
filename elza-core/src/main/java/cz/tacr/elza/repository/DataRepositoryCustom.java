@@ -47,27 +47,6 @@ public interface DataRepositoryCustom {
     <T extends ArrData> List<T> findByNodesContainingText(Collection<ArrNode> nodes, RulItemType descItemType,
                                                           final Set<RulItemSpec> specifications, String text);
 
-
-    /**
-     * Provede načtení unikátních hodnot atributů typu obal.
-     *
-     * @param version       id verze stromu
-     * @param descItemType  typ atributu
-     * @param dataTypeClass třída hodnot atributu
-     * @param packetTypes   filtr typů obalů
-     * @param withoutType   příznak zda se mají hledat hodnoty bez typu
-     * @param fulltext      fulltext
-     * @param max           maximální počet hodnot
-     * @return seznam unikátních hodnot
-     */
-    List<String> findUniquePacketValuesInVersion(ArrFundVersion version,
-                                                 RulItemType descItemType,
-                                                 Class<? extends ArrData> dataTypeClass,
-                                                 Set<RulPacketType> packetTypes,
-                                                 boolean withoutType, @Nullable String fulltext,
-                                                 int max);
-
-
     /**
      * Provede načtení unikátních hodnot atributů.
      *
@@ -98,14 +77,4 @@ public interface DataRepositoryCustom {
     List<Integer> findUniqueSpecIdsInVersion(ArrFundVersion version,
                                              RulItemType descItemType);
 
-    /**
-     * Provede načtení unikátních typů obalů z hodnot atributů.
-     *
-     * @param version       id verze stromu
-     * @param descItemType  typ atributu
-     *
-     * @return seznam unikátních hodnot
-     */
-    List<Integer> findUniquePacketTypeIdsInVersion(ArrFundVersion version,
-                                                   RulItemType descItemType);
 }

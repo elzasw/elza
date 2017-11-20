@@ -55,8 +55,6 @@ public enum EventType {
 
     PACKAGE(ActionEvent.class),
 
-    PACKETS_CHANGE(EventId.class),
-
     FILES_CHANGE(EventStringInVersion.class),
 
     INSTITUTION_CHANGE(ActionEvent.class),

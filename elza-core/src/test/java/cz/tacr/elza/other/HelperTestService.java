@@ -57,7 +57,6 @@ import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.OutputDefinitionRepository;
 import cz.tacr.elza.repository.OutputRepository;
-import cz.tacr.elza.repository.PacketRepository;
 import cz.tacr.elza.repository.PartyCreatorRepository;
 import cz.tacr.elza.repository.PartyGroupIdentifierRepository;
 import cz.tacr.elza.repository.PartyNameComplementRepository;
@@ -170,8 +169,6 @@ public class HelperTestService {
     @Autowired
     protected PartyNameRepository partyNameRepository;
     @Autowired
-    private PacketRepository packetRepository;
-    @Autowired
     private BulkActionRunRepository faBulkActionRepository;
     @Autowired
     protected UserRepository userRepository;
@@ -240,7 +237,6 @@ public class HelperTestService {
         fundStructureExtensionRepository.deleteAll();
         bulkActionNodeRepository.deleteAll();
         faBulkActionRepository.deleteAll();
-        packetRepository.deleteAll();
         partyNameComplementRepository.deleteAll();
         partyRepository.unsetAllPreferredName();
         relationEntityRepository.deleteAll();

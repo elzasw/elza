@@ -3,6 +3,7 @@ package cz.tacr.elza.domain;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import cz.tacr.elza.api.interfaces.IArrFund;
 import cz.tacr.elza.domain.enumeration.StringLength;
+import cz.tacr.elza.service.importnodes.vo.Structured;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.Column;
@@ -28,7 +29,9 @@ import static cz.tacr.elza.domain.enumeration.StringLength.LENGTH_ENUM;
 @Entity(name = "arr_structure_data")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ArrStructureData implements IArrFund {
+public class ArrStructureData implements IArrFund, Structured {
+
+    public static String VALUE = "value";
 
     @Id
     @GeneratedValue
@@ -111,6 +114,11 @@ public class ArrStructureData implements IArrFund {
      */
     public String getValue() {
         return value;
+    }
+
+    @Override
+    public String getStructureTypeCode() {
+        return structureType == null ? null : structureType.getCode();
     }
 
     /**
