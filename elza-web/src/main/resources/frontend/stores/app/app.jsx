@@ -16,6 +16,7 @@ const initialState = {
     regExtSystemList: SimpleListReducer(),   // seznam externích systémů
     extSystemDetail: DetailReducer(),
     extSystemList: SimpleListReducer(),   // seznam externích systémů
+    mimeTypesList: SimpleListReducer(),   // seznam mime typů pro editaci systémů
     registryList: registryList(undefined, undefined, {filter:{text: null, registryParentId: null, registryTypeId: null, versionId: null, itemSpecId: null, parents: [], typesToRoot: null, scopeId: null, from: 0}}),
 };
 

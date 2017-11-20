@@ -77,7 +77,7 @@ Výchozí konfig
 `devTools`- Debug nástroje devtools viz. `Debug nástroje - redux-tools` 
 
 ##### Debug nástroje - redux-tools
-V příadě nastavení v souboru `.dev` a spustíme server frontendu, tak po stisku ctrl+h se zobrazí logovací nástroje redux storu.
+V případě nastavení v souboru `.dev` a spustíme server frontendu, tak po stisku ctrl+h se zobrazí logovací nástroje redux storu.
 Pomocí stisku ctrl+q se mění umístění panelu nástrojů.
 
 

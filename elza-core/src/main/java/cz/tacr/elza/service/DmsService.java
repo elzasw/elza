@@ -81,7 +81,7 @@ public class DmsService {
      * Uloží DMS soubor se streamem a publishne event
      *
      * @param dmsFile    DO
-     * @param fileStream stream pro uložení souboru
+     * @param fileStream stream pro uložení souboru, po použití jej uzavře
      * @throws IOException
      */
     public void createFile(final DmsFile dmsFile, final InputStream fileStream) throws IOException {
@@ -135,7 +135,7 @@ public class DmsService {
      * Úprava detailů souboru či jeho nahrazení
      *
      * @param newFile    nové DO DMS file
-     * @param fileStream Stream
+     * @param fileStream Stream, po použití jej uzavře
      * @throws IOException
      */
     public void updateFile(final DmsFile newFile, final InputStream fileStream) throws IOException {
@@ -158,7 +158,6 @@ public class DmsService {
         if (newFile.getName() != null && !newFile.getName().isEmpty()) {
             dbFile.setName(newFile.getName());
         }
-
 
         fileRepository.save(dbFile);
         if (fileStream != null) {
@@ -254,7 +253,7 @@ public class DmsService {
      * Uložení do souboru
      *
      * @param dmsFile    DO
-     * @param fileStream stream souboru
+     * @param fileStream stream souboru, po použití jej uzavře
      * @param outputFile místo k uložení souboru
      * @throws IOException
      */
@@ -265,11 +264,13 @@ public class DmsService {
         try (BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(outputFile, false))) {
             IOUtils.copy(fileStream, outputStream);
         } catch (IOException e) {
-            if(outputFile.exists()) {
+            if (outputFile.exists()) {
                 FileUtils.forceDelete(outputFile);
             }
             throw e;
         }
+
+        IOUtils.closeQuietly(fileStream);
 
         dmsFile.setFileSize((int) outputFile.length());
 

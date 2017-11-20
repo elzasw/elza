@@ -12,6 +12,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.multipart.MultipartResolver;
 import org.springframework.web.multipart.support.StandardServletMultipartResolver;
@@ -27,6 +28,7 @@ import java.util.Locale;
  */
 @EnableAutoConfiguration
 @Configuration
+@EnableAsync
 @EnableConfigurationProperties
 @Import({ElzaCore.class})
 @ComponentScan(basePackageClasses = {ElzaWebApp.class, ElzaCore.class})

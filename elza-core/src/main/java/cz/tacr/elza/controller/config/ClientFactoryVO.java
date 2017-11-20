@@ -38,6 +38,7 @@ import cz.tacr.elza.packageimport.xml.SettingFavoriteItemSpecs;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.domain.ParRegistryRole;
 import cz.tacr.elza.repository.RegistryRoleRepository;
+import cz.tacr.elza.service.attachment.AttachmentService;
 import ma.glasnost.orika.MappingContext;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
@@ -320,6 +321,9 @@ public class ClientFactoryVO {
 
     @Autowired
     private NodeRepository nodeRepository;
+
+    @Autowired
+    private AttachmentService attachmentService;
 
     /**
      * Vytvoří objekt informací o přihlášeném uživateli.

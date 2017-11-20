@@ -10,6 +10,7 @@ import java.util.List;
 
 import cz.tacr.elza.controller.vo.RulArrangementExtensionVO;
 import cz.tacr.elza.domain.RulArrangementExtension;
+import cz.tacr.elza.service.attachment.AttachmentService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -249,6 +250,8 @@ public class ConfigMapperConfiguration {
     private RegRecordRepository recordRepository;
     @Autowired
     private RuleService ruleService;
+    @Autowired
+    private AttachmentService attachmentService;
 
     /**
      * @return Tovární třída.
@@ -500,7 +503,10 @@ public class ConfigMapperConfiguration {
         mapperFactory.classMap(ArrFile.class, ArrFileVO.class).field("fileId", "id").exclude("file").byDefault().customize(new CustomMapper<ArrFile, ArrFileVO>() {
             @Override
             public void mapAtoB(final ArrFile arrFile, final ArrFileVO arrFileVO, final MappingContext mappingContext) {
+
                 arrFileVO.setFundId(arrFile.getFund().getFundId());
+                arrFileVO.setEditable(attachmentService.isEditable(arrFile.getMimeType()));
+                arrFileVO.setGeneratePdf(attachmentService.supportGenerateTo(arrFile, "application/pdf"));
             }
 
             @Override
