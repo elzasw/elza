@@ -245,21 +245,6 @@ Type: Integer</xs:documentation>
 			</xs:extension>
 		</xs:complexContent>
 	</xs:complexType>
-	<xs:complexType name="DescriptionItemPacketRef">
-		<xs:annotation>
-			<xs:documentation>Description item to reference packet</xs:documentation>
-		</xs:annotation>
-		<xs:complexContent>
-			<xs:extension base="e:DescriptionItem">
-				<xs:sequence/>
-				<xs:attribute name="pcid" use="required" type="e:Id">
-					<xs:annotation>
-						<xs:documentation>ID of the packet, this ID is valid only in XML</xs:documentation>
-					</xs:annotation>
-				</xs:attribute>
-			</xs:extension>
-		</xs:complexContent>
-	</xs:complexType>
 	<xs:complexType name="DescriptionItemPartyRef">
 		<xs:annotation>
 			<xs:documentation>Party reference</xs:documentation>
@@ -471,11 +456,6 @@ Item ID</xs:documentation>
 				<xs:element name="di" type="e:DescriptionItemInteger" minOccurs="1" maxOccurs="1"/>
 				<xs:element name="dd" type="e:DescriptionItemDecimal" minOccurs="1" maxOccurs="1"/>
 				<xs:element name="ds" type="e:DescriptionItemString" minOccurs="1" maxOccurs="1"/>
-				<xs:element name="dc" type="e:DescriptionItemPacketRef" minOccurs="1" maxOccurs="1">
-					<xs:annotation>
-						<xs:documentation>Description item for packet</xs:documentation>
-					</xs:annotation>
-				</xs:element>
 				<xs:element name="dp" type="e:DescriptionItemPartyRef" minOccurs="1" maxOccurs="1">
 					<xs:annotation>
 						<xs:documentation>Party reference</xs:documentation>
@@ -961,7 +941,7 @@ Allows to represent single time point and also interval</xs:documentation>
 		<xs:sequence/>
 		<xs:attribute name="ct" use="optional" type="xs:string">
 			<xs:annotation>
-				<xs:documentation>Calendar type. If calendar type is not present then Gregorian calendar is used. Typical values are: 
+				<xs:documentation>Calendar type. If calendar type is not present then Gregorian calendar is used. Typical values are:
 G - Gregorian calendar
 J - Julian calendar</xs:documentation>
 			</xs:annotation>
