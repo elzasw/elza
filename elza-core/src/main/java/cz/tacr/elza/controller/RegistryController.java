@@ -162,7 +162,7 @@ public class RegistryController {
                                        @RequestParam(required = false) @Nullable final Integer itemSpecId,
                                        @RequestParam(required = false) @Nullable final Integer scopeId,
                                        @RequestParam(required = false) @Nullable final Integer lastRecordNr,
-                                       @RequestParam(required = false) @Nullable final Boolean excludeInvalid) {
+                                       @RequestParam(required = false, defaultValue = "true") @Nullable final Boolean excludeInvalid) {
 
         Set<Integer> registerTypeIdTree = Collections.emptySet();
 

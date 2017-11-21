@@ -249,7 +249,7 @@ public class PartyController {
                                        @Nullable @RequestParam(required = false) final Integer itemSpecId,
                                        @RequestParam(required = false) @Nullable final Integer versionId,
                                        @RequestParam(required = false) @Nullable final Integer scopeId,
-                                       @RequestParam(required = false) @Nullable final Boolean excludeInvalid) {
+                                       @RequestParam(required = false, defaultValue = "true") @Nullable final Boolean excludeInvalid) {
 
         ArrFund fund;
         if (versionId == null) {
