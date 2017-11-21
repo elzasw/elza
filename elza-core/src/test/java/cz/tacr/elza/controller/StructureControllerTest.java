@@ -33,8 +33,8 @@ public class StructureControllerTest extends AbstractControllerTest {
     private static final int BATCH_COUNT = 100;
     private static final String NAME_AS = "Test AS1";
     private static final String CODE_AS = "TST1";
-    private static final String STRUCTURE_TYPE_CODE = "ZP2015_OBAL";
-    private static final String STRUCTURE_EXTENSION_CODE = "ZP2015_ObalMZABrno";
+    private static final String STRUCTURE_TYPE_CODE = "ZP2015_PACKET";
+    private static final String STRUCTURE_EXTENSION_CODE = "ZP2015_PACKET_MZABrno";
 
     private static final Integer NUMBER_VALUE_1 = 1;
     private static final Integer NUMBER_VALUE_2 = 2;

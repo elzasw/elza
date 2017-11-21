@@ -1,7 +1,7 @@
 package cz.tacr.elza.controller;
 
 /**
- * TODO slapa: vyplnit popis třídy
+ * VO pro rozšíření AS.
  *
  * @since 11.11.2017
  */

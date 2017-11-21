@@ -1,7 +1,7 @@
 package cz.tacr.elza.controller.vo;
 
 /**
- * TODO slapa: vyplnit popis třídy
+ * VO pro typ strukt. typu.
  *
  * @since 10.11.2017
  */

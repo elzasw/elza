@@ -1,9 +1,9 @@
 <structure-definitions>
-    <structure-definition structure-type="ZP2015_OBAL" filename="ZP2015_OBAL.drl">
+    <structure-definition structure-type="ZP2015_PACKET" filename="ZP2015_PACKET.drl">
         <def-type>ATTRIBUTE_TYPES</def-type>
         <priority>1</priority>
     </structure-definition>
-    <structure-definition structure-type="ZP2015_OBAL" filename="ZP2015_OBAL.groovy">
+    <structure-definition structure-type="ZP2015_PACKET" filename="ZP2015_PACKET.groovy">
         <def-type>SERIALIZED_VALUE</def-type>
         <priority>1</priority>
     </structure-definition>

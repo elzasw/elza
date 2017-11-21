@@ -39,7 +39,7 @@
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
-    <item-type code="ZP2015_STORAGE_ID" data-type="STRUCTURED" structure-type="ZP2015_OBAL">
+    <item-type code="ZP2015_STORAGE_ID" data-type="STRUCTURED" structure-type="ZP2015_PACKET">
         <name>Ukládací jednotka</name>
         <shortcut>Ukl. j.</shortcut>
         <description>ZP4.2.10 Ukládací jednotka a číslo</description>

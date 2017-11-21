@@ -260,7 +260,6 @@ public class ClientFactoryDO {
         return descItem;
     }
 
-    // TODO slapa
     public ArrStructureItem createStructureItem(final ArrItemVO itemVO, final Integer itemTypeId) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
 
@@ -285,7 +284,6 @@ public class ClientFactoryDO {
         return structureItem;
     }
 
-    // TODO slapa
     public ArrStructureItem createStructureItem(final ArrItemVO descItemVO) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         ArrData data = mapper.map(descItemVO, ArrData.class);

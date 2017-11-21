@@ -386,4 +386,28 @@
             <column name="hash" type="nvarchar(64)" />
         </addColumn>
     </changeSet>
+
+    <changeSet id="20171120095000" author="slapa">
+        <customChange class="cz.tacr.elza.dbchangelog.DbUpgrade_20171120095000" />
+    </changeSet>
+
+    <changeSet id="20171121080600" author="slapa">
+        <!--Odebrání nodů z cache, které mají vazbu na obal-->
+        <delete tableName="arr_cached_node">
+            <where>node_id in (select node_id from arr_cached_node where data like '%cz.tacr.elza.domain.ArrDataPacketRef%')</where>
+        </delete>
+
+        <dropTable tableName="arr_data_packet_ref"/>
+        <dropTable tableName="arr_packet"/>
+        <dropTable tableName="rul_packet_type"/>
+        <delete tableName="arr_node_conformity_missing">
+            <where>item_type_id IN (SELECT item_type_id FROM rul_item_type WHERE data_type_id IN (SELECT data_type_id FROM rul_data_type WHERE code = 'PACKET_REF'))</where>
+        </delete>
+        <delete tableName="rul_item_type">
+            <where>data_type_id IN (SELECT data_type_id FROM rul_data_type WHERE code = 'PACKET_REF')</where>
+        </delete>
+        <delete tableName="rul_data_type">
+            <where>code = 'PACKET_REF'</where>
+        </delete>
+    </changeSet>
 </databaseChangeLog>

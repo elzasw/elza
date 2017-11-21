@@ -1,5 +1,5 @@
 <structure-types>
-    <structure-type code="ZP2015_OBAL">
+    <structure-type code="ZP2015_PACKET">
         <name>Obaly</name>
     </structure-type>
 </structure-types>
