@@ -16,12 +16,14 @@ import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.RulStructureDefinition;
 import cz.tacr.elza.domain.RulStructureExtensionDefinition;
 import cz.tacr.elza.domain.RulStructureType;
+import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.drools.RulesExecutor;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ChangeRepository;
+import cz.tacr.elza.repository.SettingsRepository;
 import cz.tacr.elza.repository.StructureDataRepository;
 import cz.tacr.elza.repository.StructureDefinitionRepository;
 import cz.tacr.elza.repository.StructureExtensionDefinitionRepository;
@@ -48,6 +50,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.InvalidPropertiesFormatException;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -75,6 +78,7 @@ public class StructureDataService {
     private final ApplicationContext applicationContext;
     private final ChangeRepository changeRepository;
     private final EventNotificationService notificationService;
+    private final SettingsRepository settingsRepository;
 
     private Queue<Integer> queueStructureDataIds = new ConcurrentLinkedQueue<>();
     private final Object lock = new Object();
@@ -98,7 +102,7 @@ public class StructureDataService {
                                 final RuleService ruleService,
                                 final ApplicationContext applicationContext,
                                 final ChangeRepository changeRepository,
-                                final EventNotificationService notificationService) {
+                                final EventNotificationService notificationService, final SettingsRepository settingsRepository) {
         this.structureItemRepository = structureItemRepository;
         this.structureExtensionDefinitionRepository = structureExtensionDefinitionRepository;
         this.structureDefinitionRepository = structureDefinitionRepository;
@@ -109,6 +113,7 @@ public class StructureDataService {
         this.applicationContext = applicationContext;
         this.changeRepository = changeRepository;
         this.notificationService = notificationService;
+        this.settingsRepository = settingsRepository;
     }
 
     /**
@@ -335,9 +340,34 @@ public class StructureDataService {
 
         Map<String, Object> input = new HashMap<>();
         input.put("ITEMS", structureItems);
-        input.put("PACKET_LEADING_ZEROS", 4);
+        input.put("PACKET_LEADING_ZEROS", getPacketLeadingZeros());
 
         return (String) groovyScriptFile.evaluate(input);
+    }
+
+    /**
+     * Získání počtu předřadných nul v názvu obalu.
+     *
+     * @return počet předřadných nul
+     */
+    private int getPacketLeadingZeros() {
+        List<UISettings> uiSettingsList = settingsRepository.findBySettingsType(UISettings.SettingsType.PACKET_LEADING_ZEROS);
+        if (CollectionUtils.isNotEmpty(uiSettingsList)) {
+            if (uiSettingsList.size() > 1) {
+                logger.warn("Existuje více nastavení PACKET_LEADING_ZEROS, používá se první nalezená!");
+            }
+            UISettings uiSettings = uiSettingsList.get(0);
+            try {
+                int result = Integer.parseInt(uiSettings.getValue());
+                if (result < 1) {
+                    throw new InvalidPropertiesFormatException("Hodnota musí být kladné číslo");
+                }
+                return result;
+            } catch (InvalidPropertiesFormatException | NumberFormatException e) {
+                logger.warn("Hodnota nastavení PACKET_LEADING_ZEROS není platné číslo: " + uiSettings.getValue() + ", je použita výchozí hodnota", e);
+            }
+        }
+        return 4; // výchozí hodnota
     }
 
     /**
