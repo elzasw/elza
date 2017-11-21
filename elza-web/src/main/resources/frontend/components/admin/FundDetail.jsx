@@ -11,6 +11,7 @@ import FundUsersPanel from "./FundUsersPanel";
 import FundGroupsPanel from "./FundGroupsPanel";
 import FundsPermissionPanel from "./FundsPermissionPanel";
 import DetailHeader from "../shared/detail/DetailHeader";
+import "./FundDetail.less"
 
 class FundDetail extends AbstractReactComponent {
     static TAB_USERS = 0;
@@ -73,24 +74,25 @@ class FundDetail extends AbstractReactComponent {
         }
 
         return <AdminRightsContainer
-            header={<DetailHeader
+                className="detail-container"
+                header={<DetailHeader
                 icon={<Icon glyph="fa-group"/>}
                 title={fund.data.name}
-                rowFlagColor="info"
-                rowFlag={i18n("admin.fund.title")}
-            >
-                {fund.data.internalCode}
-            </DetailHeader>}
+                flagLeft={i18n("admin.fund.title")}
+                subtitle={fund.data.internalCode}
+            />}
         >
-            <Tabs.Container>
-                <Tabs.Tabs items={FundDetail.tabItems}
-                           activeItem={selectedTabItem}
-                           onSelect={this.handleTabSelect}
-                />
-                <Tabs.Content>
-                    {this.renderTabContent()}
-                </Tabs.Content>
-            </Tabs.Container>
+            <div className="permissions-container">
+                <Tabs.Container>
+                    <Tabs.Tabs items={FundDetail.tabItems}
+                        activeItem={selectedTabItem}
+                        onSelect={this.handleTabSelect}
+                    />
+                    <Tabs.Content>
+                        {this.renderTabContent()}
+                    </Tabs.Content>
+                </Tabs.Container>
+            </div>
         </AdminRightsContainer>
     }
 };

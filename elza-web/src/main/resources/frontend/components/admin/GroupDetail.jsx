@@ -117,17 +117,16 @@ class GroupDetail extends AbstractReactComponent {
             </div>;
         }
 
-        return <div className="group-detail-container-wrapper">
+        return <div className="detail-container">
             <StoreHorizontalLoader store={groupDetail}/>
             {groupDetail.fetched && <AdminRightsContainer
-                header={<DetailHeader
+                    header={<DetailHeader
                     icon={<Icon glyph="fa-group"/>}
                     title={groupDetail.name}
-                    rowFlagColor="info"
-                    rowFlag={i18n("admin.group.title")}
-                    >
-                    {groupDetail.code}
-                </DetailHeader>}
+                    subtitle={groupDetail.code}
+                    flagLeft={i18n("admin.group.title")}
+                />
+                }
                 left={<AddRemoveList
                     label={<h4>{i18n("admin.group.title.users")}</h4>}
                     addInLabel
@@ -139,16 +138,18 @@ class GroupDetail extends AbstractReactComponent {
                     renderItem={renderUserItem}
                 />}
             >
-                <h4>{i18n("admin.group.title.permissions")}</h4>
-                <Tabs.Container>
-                    <Tabs.Tabs items={GroupDetail.tabItems}
-                               activeItem={selectedTabItem}
-                               onSelect={this.handleTabSelect}
-                    />
-                    <Tabs.Content>
-                        {this.renderTabContent()}
-                    </Tabs.Content>
-                </Tabs.Container>
+                <div className="permissions-container">
+                    <h4>{i18n("admin.group.title.permissions")}</h4>
+                    <Tabs.Container>
+                        <Tabs.Tabs items={GroupDetail.tabItems}
+                            activeItem={selectedTabItem}
+                            onSelect={this.handleTabSelect}
+                        />
+                        <Tabs.Content>
+                            {this.renderTabContent()}
+                        </Tabs.Content>
+                    </Tabs.Container>
+                </div>
             </AdminRightsContainer>}
         </div>;
     }

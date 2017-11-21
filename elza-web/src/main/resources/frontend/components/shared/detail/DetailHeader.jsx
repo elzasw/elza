@@ -9,8 +9,8 @@ import "./DetailHeader.less";
  */
 export default class DetailHeader extends AbstractReactComponent {
     render() {
-        const {icon, title, rowFlag, rowFlagColor, children} = this.props;
-console.log(4444, children)
+        const {icon, title, flagLeft, flagRight, rowFlagColor, subtitle} = this.props;
+        let _flagColor = rowFlagColor ? `dh-color-${_flagColor}` : "";
         return <div className="detail-header-container">
             <div className="detail-header-main">
                 {icon && <dic className="detail-header-icon">
@@ -21,12 +21,15 @@ console.log(4444, children)
                         {title}
                     </div>
                     <div className="detail-header-desc">
-                        {children ? children : "-"}
+                        {subtitle || "\u00a0"}
                     </div>
                 </div>
             </div>
-            <div className={`detail-header-bottom dh-color-${rowFlagColor}`}>
-                {rowFlag}
+            <div className={`detail-header-bottom ${_flagColor}`}>
+                {flagLeft}
+                {flagRight && <span className="flag-right">
+                    {flagRight}
+                </span>}
             </div>
         </div>
     }

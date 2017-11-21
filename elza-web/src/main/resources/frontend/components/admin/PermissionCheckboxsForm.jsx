@@ -40,7 +40,7 @@ class PermissionCheckboxsForm extends AbstractReactComponent {
                 let infoMessage;
                 if (Object.keys(obj.groupIds).length > 0 || checked || allChecked) {
                     const groupNames = Object.keys(obj.groupIds).map(id => groupMap[id].name);
-                    infoIcon = <Icon glyph="fa-check-circle-o"/>;
+                    infoIcon = <Icon style={{color:"green"}} glyph="fa-check"/>;
 
                     infoMessage = <div className="permission-checkbox-form-tooltip">
                         <div>{i18n("permission.activePermission.title")}</div>
@@ -53,15 +53,14 @@ class PermissionCheckboxsForm extends AbstractReactComponent {
                         </ul>
                     </div>;
                 } else {
-                    infoIcon = <Icon glyph="fa-circle-o"/>;
+                    infoIcon = <Icon style={{visibility:"hidden"}} glyph="fa-check"/>;
                 }
 
                 if (infoMessage) {
                     infoIcon = <TooltipTrigger
                         key="info"
                         content={infoMessage}
-                        holdOnHover
-                        placement="auto"
+                        placement="left"
                         showDelay={1}
                     >
                         {infoIcon}
@@ -69,7 +68,7 @@ class PermissionCheckboxsForm extends AbstractReactComponent {
                 }
 
 
-                return <div>
+                return <div className="item-row">
                     {infoIcon}
                     <Checkbox inline checked={checked} onChange={e => onChangePermission(e, permCode)}>{i18n(`${labelPrefix}${permCode}`)}</Checkbox>
                 </div>

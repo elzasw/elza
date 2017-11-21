@@ -87,7 +87,8 @@ class FundGroupsPanel extends AbstractReactComponent {
         const group = selectedIndex !== null ? groups.rows[selectedIndex] : null;
 
         return <AdminRightsContainer
-            left={<AddRemoveListBox
+                className="permissions-panel"
+                left={<AddRemoveListBox
                 items={groups.rows}
                 activeIndex={selectedIndex}
                 renderItemContent={renderGroupItem}

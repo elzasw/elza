@@ -1,8 +1,6 @@
 @import "/variables.less";
 
-.group-detail {
-    height: 100%;
-
+.detail-container {
     > .admin-rights-container {
         > .admin-rights-content {
             padding: 0 10px;
@@ -30,16 +28,16 @@
             }
         }
     }
+}
 
-    .permissions-container{
-        flex-grow: 1;
+.permissions-container{
+    flex-grow: 1;
+    display: flex;
+    padding-left: 15px;
+    flex-direction: column;
+
+    .tabs-container {
         display: flex;
-        padding-left: 15px;
         flex-direction: column;
-
-        .tabs-container {
-            display: flex;
-            flex-direction: column;
-        }
     }
 }

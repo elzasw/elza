@@ -14,6 +14,7 @@ import FundField from "./FundField";
 import {renderFundItem, renderGroupItem} from "./adminRenderUtils";
 import getMapFromList from "../../shared/utils/getMapFromList";
 import AddRemoveListBox from "../shared/listbox/AddRemoveListBox";
+import "./PermissionsPanel.less";
 
 /**
  * Panel spravující oprávnění na archivní soubory.
@@ -333,7 +334,7 @@ class FundsPermissionPanel extends AbstractReactComponent {
             />;
         }
 
-        return <AdminRightsContainer left={left}>
+        return <AdminRightsContainer className="permissions-panel" left={left}>
             {permission && <PermissionCheckboxsForm
                 permCodes={permCodes}
                 onChangePermission={this.changePermission}

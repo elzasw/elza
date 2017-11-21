@@ -121,19 +121,16 @@ class UserDetail extends AbstractReactComponent {
             </div>;
         }
 
-        return <div className="user-detail-container-wrapper">
+        return <div className="detail-container">
             <StoreHorizontalLoader store={userDetail}/>
             {userDetail.fetched && <AdminRightsContainer
-                header={<div>
-                    <DetailHeader
+                header={<DetailHeader
                         icon={<Icon glyph="fa-user"/>}
                         title={userDetail.party.record.record}
                         rowFlagColor={userDetail.active ? "success" : "warning"}
-                        rowFlag={userDetail.active ? i18n("admin.user.title.active") : i18n("admin.user.title.nonactive")}
-                    >
-                        {userDetail.username}
-                    </DetailHeader>
-                </div>}
+                        flagLeft={userDetail.active ? i18n("admin.user.title.active") : i18n("admin.user.title.nonactive")}
+                        subtitle={userDetail.username}
+                    />}
                 left={<AddRemoveList
                     label={<h4>{i18n("admin.user.title.groups")}</h4>}
                     addInLabel
@@ -145,16 +142,18 @@ class UserDetail extends AbstractReactComponent {
                     renderItem={renderGroupItem}
                 />}
             >
-                <h4>{i18n("admin.user.title.permissions")}</h4>
-                <Tabs.Container>
-                    <Tabs.Tabs items={UserDetail.tabItems}
-                               activeItem={selectedTabItem}
-                               onSelect={this.handleTabSelect}
-                    />
-                    <Tabs.Content>
-                        {this.renderTabContent()}
-                    </Tabs.Content>
-                </Tabs.Container>
+                <div className="permissions-container">
+                    <h4>{i18n("admin.user.title.permissions")}</h4>
+                    <Tabs.Container>
+                        <Tabs.Tabs items={UserDetail.tabItems}
+                            activeItem={selectedTabItem}
+                            onSelect={this.handleTabSelect}
+                        />
+                        <Tabs.Content>
+                            {this.renderTabContent()}
+                        </Tabs.Content>
+                    </Tabs.Container>
+                </div>
             </AdminRightsContainer>}
         </div>;
     }

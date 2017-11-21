@@ -3,7 +3,7 @@ import React from 'react';
 import {connect} from "react-redux";
 import {AbstractReactComponent, i18n} from 'components/shared';
 import * as perms from './../../actions/user/Permission.jsx';
-import AddRemoveListBox from "../shared/listbox/AddRemoveListBox";
+import AddRemoveList from "../shared/list/AddRemoveList";
 import {modalDialogHide, modalDialogShow} from "../../actions/global/modalDialog";
 import SelectItemsForm from "./SelectItemsForm";
 import UserAndGroupField from "./UserAndGroupField";
@@ -128,10 +128,12 @@ class ControlledEntitiesPanel extends AbstractReactComponent {
         const {permissions} = this.state;
         const {className} = this.props;
 
-        return <AddRemoveListBox
+        return <AddRemoveList
+                label={i18n("admin.perms.tabs.advanced.controller.entities.title")}
+                addInLabel
                 className={className}
                 items={permissions}
-                renderItemContent={this.renderItem}
+                renderItem={this.renderItem}
                 onAdd={this.handleAdd}
                 onRemove={this.handleRemove}
             />;

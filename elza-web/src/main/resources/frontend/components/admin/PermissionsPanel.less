@@ -1,0 +1,58 @@
+.permissions-panel {
+    background-color: white;
+    border: 1px solid #ddd;
+
+    .permissions-panel{
+        background-color: transparent;
+        border: none;
+    }
+
+    .admin-rights-content {
+        .admin-rights-right {
+            display: flex;
+            flex-direction: row;
+
+            .permission-checkbox-form {
+                overflow-y: auto;
+            }
+            .controlled-entities-container {
+                min-width: 250px;
+                height: 100%;
+                display: flex;
+                flex-direction: column;
+
+                .controlled-entities {
+                    height: 100%;
+                    padding: 10px;
+                    display: flex;
+                    flex-direction: column;
+
+                    .item-list-container{
+                    
+                        flex-grow: 1;
+                        background-color: #eee;
+                        padding: 10px;
+
+                        .item {
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                            white-space: nowrap;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    .admin-rights-left{
+        .add-remove-listbox {
+            border-width: 0 1px 0 0;
+
+            &:focus {
+                border-color: #ddd !important; 
+                outline-width: 1px !important;
+            }
+            .listbox-container:focus {
+            }
+        }
+    }
+}

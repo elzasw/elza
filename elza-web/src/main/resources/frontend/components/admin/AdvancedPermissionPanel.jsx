@@ -10,7 +10,7 @@ import {WebApi} from "../../actions/WebApi";
 import PermissionCheckboxsForm from "./PermissionCheckboxsForm";
 import AdminRightsContainer from "./AdminRightsContainer";
 import ControlledEntitiesPanel from "./ControlledEntitiesPanel";
-import "./AdvancedPermissionPanel.less";
+import "./PermissionsPanel.less";
 
 /**
  * Panel spravující pokročilá oprávnění.
@@ -120,7 +120,7 @@ class AdvancedPermissionPanel extends AbstractReactComponent {
         const {permission} = this.state;
         const {onAddPermission, onDeletePermission, entityPermissions} = this.props;
 
-        return <AdminRightsContainer className="advanced-rights-container">
+        return <AdminRightsContainer className="permissions-panel">
                 {permission && <PermissionCheckboxsForm
                     permCodes={AdvancedPermissionPanel.permCodes}
                     onChangePermission={this.changePermission}
@@ -129,7 +129,6 @@ class AdvancedPermissionPanel extends AbstractReactComponent {
                     groups={entityPermissions.data.groups}
                 />}
                 {entityPermissions.fetched && <div className="controlled-entities-container">
-                    <h4>{i18n("admin.perms.tabs.advanced.controller.entities.title")}</h4>
                     <ControlledEntitiesPanel
                         className="controlled-entities"
                         permissions={entityPermissions.data.permissions}

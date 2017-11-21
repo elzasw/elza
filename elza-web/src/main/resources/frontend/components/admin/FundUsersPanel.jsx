@@ -87,7 +87,8 @@ class FundUsersPanel extends AbstractReactComponent {
         const user = selectedIndex !== null ? users.rows[selectedIndex] : null;
 
         return <AdminRightsContainer
-            left={<AddRemoveListBox
+                className="permissions-panel"
+                left={<AddRemoveListBox
                 items={users.rows}
                 activeIndex={selectedIndex}
                 renderItemContent={renderUserItem}

@@ -1,4 +1,4 @@
-.user-detail-container-wrapper {
+.detail-container {
     height: 100%;
 
     > .admin-rights-container {
@@ -15,16 +15,29 @@
                     .item-list-container {
                         flex-grow: 1;
                         margin-top: 5px;
-                        border: 1px solid #DDDDDD;
-                        background-color: white;
+                        background-color: #eee;
+                        padding: 10px;
+
+                        .item {
+                            white-space: nowrap;
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                        }
                     }
                 }
             }
         }
     }
 
-    .tabs-container {
+    .permissions-container{
+        flex-grow: 1;
         display: flex;
+        padding-left: 15px;
         flex-direction: column;
+
+        .tabs-container {
+            display: flex;
+            flex-direction: column;
+        }
     }
 }

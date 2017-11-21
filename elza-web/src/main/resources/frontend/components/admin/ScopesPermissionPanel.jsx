@@ -290,6 +290,7 @@ class ScopesPermissionPanel extends AbstractReactComponent {
         let permissionAll = permissions[permissions.findIndex(x => x.id === ScopesPermissionPanel.ALL_ID)];
 
         return <AdminRightsContainer
+            className="permissions-panel"
             left={<AddRemoveListBox
                 items={permissions}
                 activeIndex={selectedPermissionIndex}
