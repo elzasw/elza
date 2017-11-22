@@ -102,6 +102,9 @@ mvn exec:exec -Pfrontend-dev
 ```
 Uživatelské rozhranní najdete na adrese http://localhost:8080.
 
+Nastavení spuštění serveru pro IntelliJ Idea (označené hodnoty nutno explicitně nastavit):
+![IntelliJ Idea](idea.png)
+
 ### Sestavení instalátoru aplikace
 * Stáhněte aplikaci Inno Setup z odkazu http://www.jrsoftware.org/download.php/is.exe a nainstalujte (všechny volby ponechte výchozí). Aplikace se nainstaluje do umístění c:\Program Files (x86)\Inno Setup 5\.
 * Připravte si nainstalované lokální JRE (64-bit), na které je nutné se odkázat při spuštění sestavení instalátoru. JRE se v rámci sestavení přidá do instalátoru a bude využíváno pro běh aplikace.
