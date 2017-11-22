@@ -485,7 +485,7 @@ public class ImportProcess {
 
                         case AFTER:
                         case BEFORE: {
-                            ArrLevel staticLevel = levelRepository.findNodeInRootTreeByNodeId(targetNode, targetFundVersion.getRootNode(), targetFundVersion.getLockChange());
+                            ArrLevel staticLevel = levelRepository.findByNode(targetNode, targetFundVersion.getLockChange());
                             int position = selectedDirection.equals(ArrMoveLevelService.AddLevelDirection.AFTER) ? staticLevel.getPosition() + 1 : staticLevel.getPosition();
                             levelsToShift = arrMoveLevelService.nodesToShift(staticLevel);
                             if (selectedDirection.equals(ArrMoveLevelService.AddLevelDirection.BEFORE)) {
@@ -546,7 +546,7 @@ public class ImportProcess {
 	private Pair<Integer, String> createPacketKey(ArrPacket packet) {
 		RulPacketType packetType = packet.getPacketType();
 		Integer packetTypeId = (packetType != null) ? packetType.getPacketTypeId() : null;
-		return new Pair<Integer, String>(packetTypeId, packet.getStorageNumber());
+		return new Pair<>(packetTypeId, packet.getStorageNumber());
 	}
 
     /**

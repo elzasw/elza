@@ -1,7 +1,6 @@
 package cz.tacr.elza.bulkaction.generator;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,7 +58,7 @@ public class MultipleBulkAction extends BulkAction {
 
 	/**
 	 * Inicializace hromadné akce.
-	 * 
+	 *
 	 * @param bulkActionConfig
 	 *            nastavení hromadné akce
 	 * @param runContext
@@ -82,11 +81,11 @@ public class MultipleBulkAction extends BulkAction {
 			// List<String> actionCodes = yaml.getStringList("action");
 			Object obj = bulkActionConfig.getConfiguration();
 			List<String> actionCodes = new ArrayList<>();
-			
+
 			if (actionCodes.size() == 0) {
 			    throw new IllegalArgumentException("Musí být definována alespoň jedna akce");
 			}
-			
+
 			List<ActionType> actionTypes = actionCodes.stream().map(ActionType::valueOf).collect(Collectors.toList());
 			*/
             /*
@@ -111,12 +110,10 @@ public class MultipleBulkAction extends BulkAction {
         // map of all nodes, including all parents
         Map<ArrNode, LevelWithItems> nodesWithItems = new HashMap<>();
 
-		ArrNode rootNode = version.getRootNode();
         // prepare parent nodes
         for (ArrNode startingNode : startingNodes) {
             // read parents
-			List<ArrLevel> levels = levelRepository.findAllParentsByNodeAndVersion(startingNode, version);
-            Collections.reverse(levels);
+			List<ArrLevel> levels = levelRepository.findAllParentsByNodeId(startingNode.getNodeId(), version.getLockChange(), true);
 
             LevelWithItems parentLevel = null;
             for(ArrLevel level: levels) {
@@ -126,7 +123,7 @@ public class MultipleBulkAction extends BulkAction {
                 parentLevel = levelWithItems;
             }
             // add starting node
-            ArrLevel startingLevel = levelRepository.findNodeInRootTreeByNodeId(startingNode, rootNode, null);
+            ArrLevel startingLevel = levelRepository.findByNodeAndDeleteChangeIsNull(startingNode);
             LevelWithItems startingLevelWithItems = prepareLevelWithItems(startingLevel, parentLevel);
             nodesWithItems.put(startingLevel.getNode(), startingLevelWithItems);
 

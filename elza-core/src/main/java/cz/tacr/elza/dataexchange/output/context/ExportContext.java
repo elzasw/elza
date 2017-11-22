@@ -9,7 +9,7 @@ import java.util.Set;
 import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.core.data.StaticDataProvider;
-import cz.tacr.elza.dataexchange.output.DEExportParams.FundParams;
+import cz.tacr.elza.dataexchange.output.DEExportParams.FundSections;
 import cz.tacr.elza.dataexchange.output.writer.ExportBuilder;
 
 public class ExportContext {
@@ -20,7 +20,7 @@ public class ExportContext {
 
     private final Set<Integer> partyIds = new HashSet<>();
 
-    private Collection<FundParams> fundsParams = new ArrayList<>();
+    private Collection<FundSections> fundsSections = new ArrayList<>();
 
     private final ExportBuilder builder;
 
@@ -73,11 +73,11 @@ public class ExportContext {
         partyIds.add(partyId);
     }
 
-    public Collection<FundParams> getFundsParams() {
-        return fundsParams;
+    public Collection<FundSections> getFundsSections() {
+        return fundsSections;
     }
 
-    public void setFundsParams(Collection<FundParams> fundsParams) {
-        this.fundsParams = fundsParams;
+    public void setFundsSections(Collection<FundSections> fundsSections) {
+        this.fundsSections = fundsSections;
     }
 }

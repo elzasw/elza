@@ -20,7 +20,7 @@ import cz.tacr.elza.controller.vo.ArrFundVersionVO;
 import cz.tacr.elza.controller.vo.RegScopeVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
-import cz.tacr.elza.dataexchange.output.DEExportParams.FundParams;
+import cz.tacr.elza.dataexchange.output.DEExportParams.FundSections;
 
 /**
  * Test exportu archivního souboru.
@@ -85,10 +85,10 @@ public class DElExportControllerTest extends AbstractControllerTest {
 
         Path path = Files.createTempFile("elza-export", ".xml");
 
-        FundParams fundParams = new FundParams();
+        FundSections fundParams = new FundSections();
         fundParams.setFundVersionId(version.getId());
         DEExportParamsVO params = new DEExportParamsVO();
-        params.setFundsParams(Collections.singleton(fundParams));
+        params.setFundsSections(Collections.singleton(fundParams));
 
         try (InputStream is = post(spec -> spec.body(params), DE_EXPORT).asInputStream()) {
             Files.copy(is, path, StandardCopyOption.REPLACE_EXISTING);

@@ -91,8 +91,7 @@ public class ArrMoveLevelService {
         ArrLevel staticLevelParent = arrangementService.lockNode(staticParentNode, version, change);
         ArrLevel transportLevelParent = transportParentNode.equals(staticParentNode)
                                         ? staticLevelParent: arrangementService.lockNode(transportParentNode, version, change);
-        ArrLevel staticLevel = levelRepository
-                .findNodeInRootTreeByNodeId(staticNode, version.getRootNode(), version.getLockChange());
+        ArrLevel staticLevel = levelRepository.findByNode(staticNode, version.getLockChange());
         Assert.notNull(staticLevel, "Referenční level musí být vyplněn");
 
 
@@ -210,8 +209,7 @@ public class ArrMoveLevelService {
         ArrLevel staticLevelParent = arrangementService.lockNode(staticParentNode, version, change);
         ArrLevel transportLevelParent = transportParentNode.equals(staticParentNode)
                                         ? staticLevelParent : arrangementService.lockNode(transportParentNode, version, change);
-        ArrLevel staticLevel = levelRepository
-                .findNodeInRootTreeByNodeId(staticNode, version.getRootNode(), version.getLockChange());
+        ArrLevel staticLevel = levelRepository.findByNode(staticNode, version.getLockChange());
         Assert.notNull(staticLevel, "Referenční level musí být vyplněn");
 
 
@@ -320,9 +318,9 @@ public class ArrMoveLevelService {
         ArrChange change = arrangementService.createChange(ArrChange.Type.MOVE_LEVEL, staticNode);
 
         ArrLevel staticLevel = arrangementService.lockNode(staticNode, version, change);
-        ArrLevel transportLevelParent = staticNode.equals(transportParentNode)
-                                        ? staticLevel : arrangementService.lockNode(transportParentNode, version, change);
-
+        if (!staticNode.getNodeId().equals(transportParentNode.getNodeId())) {
+            arrangementService.lockNode(transportParentNode, version, change);
+        }
         List<ArrLevel> transportLevels = new ArrayList<>(transportNodes.size());
 
         for (ArrNode transportNode : transportNodes) {
@@ -523,9 +521,7 @@ public class ArrMoveLevelService {
 
         Assert.notNull(staticNode, "Refereční JP musí být vyplněna");
         Assert.notNull(staticNodeParent, "Rodič JP musí být vyplněn");
-        final ArrLevel staticLevel = levelRepository
-                .findNodeInRootTreeByNodeId(staticNode, version.getRootNode(), version.getLockChange());
-
+        final ArrLevel staticLevel = levelRepository.findByNode(staticNode, version.getLockChange());
 
         ArrLevel newLevel;
         switch (direction){
@@ -606,9 +602,7 @@ public class ArrMoveLevelService {
         final ArrLevel staticLevelParent = arrangementService.lockNode(staticNodeParent, version, change);
         Assert.notNull(staticLevelParent, "Rodič levelu musí být vyplněn");
 
-        final ArrLevel staticLevel = levelRepository
-                .findNodeInRootTreeByNodeId(staticNode, version.getRootNode(), version.getLockChange());
-
+        final ArrLevel staticLevel = levelRepository.findByNode(staticNode, version.getLockChange());
 
         int newLevelPosition = direction.equals(AddLevelDirection.AFTER) ? staticLevel.getPosition() + 1
                                                                          : staticLevel.getPosition();
@@ -675,10 +669,8 @@ public class ArrMoveLevelService {
             throw new SystemException("Přesouvaný uzel je rodičem cílového uzlu. Přesun nelze provést.");
         }
 
-        List<ArrLevel> parentNodes = levelRepository.findByNodeAndDeleteChangeIsNull(targetNode.getNodeParent());
-        for (ArrLevel parentNode : parentNodes) {
-            checkCycle(movedNode, parentNode);
-        }
+        ArrLevel parentNode = levelRepository.findByNodeAndDeleteChangeIsNull(targetNode.getNodeParent());
+        checkCycle(movedNode, parentNode);
     }
 
 

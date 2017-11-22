@@ -332,20 +332,20 @@ public class NodeCacheService {
     private List<ArrCachedNode> createCachedNodes(final List<Integer> nodeIds) {
         List<ArrCachedNode> result = new ArrayList<>(nodeIds.size());
 
+        List<ArrNode> nodes = nodeRepository.findAll(nodeIds);
         Map<Integer, List<ArrDescItem>> nodeIdItems = createNodeDescItemMap(nodeIds);
         Map<Integer, List<ArrNodeRegister>> nodeIdNodeRegisters = createNodeNodeRegisterMap(nodeIds);
         Map<Integer, List<ArrDaoLink>> nodeIdDaoLinks = createNodeDaoLinkMap(nodeIds);
 
-        for (Integer nodeId : nodeIds) {
+        for (ArrNode node : nodes) {
+            Integer nodeId = node.getNodeId();
+
 			// serialize node data
-            CachedNode cn = new CachedNode(nodeId);
+            CachedNode cn = new CachedNode(nodeId, node.getUuid());
             cn.setDescItems(nodeIdItems.get(nodeId));
             cn.setNodeRegisters(nodeIdNodeRegisters.get(nodeId));
             cn.setDaoLinks(nodeIdDaoLinks.get(nodeId));
 			String nodeData = serialize(cn);
-
-			// prepare node reference
-			ArrNode node = entityManager.getReference(ArrNode.class, nodeId);
 
 			// prepare final object
 			ArrCachedNode cachedNode = new ArrCachedNode();
@@ -369,17 +369,22 @@ public class NodeCacheService {
         }
 
         Set<Integer> nodeIds = nodeCachedNodes.keySet();
+        List<ArrNode> nodes = nodeRepository.findAll(nodeIds);
         Map<Integer, List<ArrDescItem>> nodeIdItems = createNodeDescItemMap(nodeIds);
         Map<Integer, List<ArrNodeRegister>> nodeIdNodeRegisters = createNodeNodeRegisterMap(nodeIds);
         Map<Integer, List<ArrDaoLink>> nodeIdDaoLinks = createNodeDaoLinkMap(nodeIds);
 
-        for (Map.Entry<Integer, ArrCachedNode> entry : nodeCachedNodes.entrySet()) {
-            Integer nodeId = entry.getKey();
-            CachedNode cn = new CachedNode(nodeId);
+        for (ArrNode node : nodes) {
+            Integer nodeId = node.getNodeId();
+
+            CachedNode cn = new CachedNode(nodeId, node.getUuid());
             cn.setDescItems(nodeIdItems.get(nodeId));
             cn.setNodeRegisters(nodeIdNodeRegisters.get(nodeId));
             cn.setDaoLinks(nodeIdDaoLinks.get(nodeId));
-            entry.getValue().setData(serialize(cn));
+
+            String nodeData = serialize(cn);
+            ArrCachedNode cachedNode = nodeCachedNodes.get(nodeId);
+            cachedNode.setData(nodeData);
         }
 
         return cachedNodes;
@@ -463,7 +468,7 @@ public class NodeCacheService {
         reloadCachedNodes(result.values());
         return result;
     }
-    
+
     /**
      * Metoda projde předané JP a provede donačtené návazných entit.
      *
@@ -529,7 +534,7 @@ public class NodeCacheService {
 
 	/**
 	 * Load description item type from rule system provider
-	 * 
+	 *
 	 * @param descItem
 	 * @param rsp
 	 */
@@ -557,7 +562,7 @@ public class NodeCacheService {
 
 	/**
 	 * Load data type and set it
-	 * 
+	 *
 	 * @param data
 	 * @param itemType
 	 */
@@ -571,9 +576,9 @@ public class NodeCacheService {
 
 	/**
 	 * Load unit date fields
-	 * 
+	 *
 	 * Method sets proper calendar type.
-	 * 
+	 *
 	 * @param data
 	 */
 	private void loadUnitdate(ArrDataUnitdate data) {
@@ -804,9 +809,9 @@ public class NodeCacheService {
 
 	/**
 	 * Create empty node in cache
-	 * 
+	 *
 	 * Node is created without any data
-	 * 
+	 *
 	 * @param node
 	 */
 	@Transactional(value = TxType.MANDATORY)

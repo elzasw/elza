@@ -3,6 +3,8 @@ package cz.tacr.elza.repository;
 import java.text.NumberFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -56,7 +58,6 @@ import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
 import cz.tacr.elza.exception.InvalidQueryException;
 import cz.tacr.elza.filter.DescItemTypeFilter;
-import cz.tacr.elza.utils.NodeUtils;
 
 
 /**
@@ -85,11 +86,12 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
         Assert.notNull(direction, "Směr musí být vyplněn");
 
 
-        ArrLevel level = levelRepository.findNodeInRootTreeByNodeId(node, version.getRootNode(),
-                version.getLockChange());
-        List<ArrLevel> levels = levelRepository.findLevelsByDirection(level, version, direction);
+        ArrLevel level = levelRepository.findByNode(node, version.getLockChange());
+        Collection<ArrLevel> levels = levelRepository.findLevelsByDirection(level, version, direction);
 
-        return NodeUtils.createNodeList(levels);
+        List<ArrNode> nodes = new ArrayList<>(levels.size());
+        levels.forEach(l -> nodes.add(l.getNode()));
+        return nodes;
     }
 
     /**
@@ -181,21 +183,21 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
 		return scrollableResults;
 		/*
 		List<Object[]> resultList = query.getResultList();
-		
+
 		Map<Integer, List<Integer>> result = new HashMap<>();
 		for (Object[] o : resultList) {
 		    Integer fundId = ((Number)o[0]).intValue();
 		    Integer nodeId = ((Number)o[1]).intValue();
-		
+
 		    List<Integer> nodeIds = result.get(fundId);
 		    if (nodeIds == null) {
 		        nodeIds = new ArrayList<>();
 		        result.put(fundId, nodeIds);
 		    }
-		
+
 		    nodeIds.add(nodeId);
 		}
-		
+
 		return result;*/
     }
 

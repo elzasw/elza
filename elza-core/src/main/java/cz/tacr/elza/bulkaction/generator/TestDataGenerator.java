@@ -10,7 +10,6 @@ import javax.persistence.PersistenceContext;
 
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.Assert;
 
 import com.google.common.primitives.Ints;
 
@@ -91,15 +90,10 @@ public class TestDataGenerator extends BulkAction {
 	@Override
 	public void run(ActionRunContext runContext) {
 
-		ArrNode rootNode = version.getRootNode();
-
-		for (Integer nodeId : runContext.getInputNodeIds())
-		{
-			// get node
-            ArrNode node = nodeRepository.findOne(nodeId);
-            Assert.notNull(nodeId, "Node s nodeId=" + nodeId + " neexistuje");
-            ArrLevel level = levelRepository.findNodeInRootTreeByNodeId(node, rootNode, null);
-            Assert.notNull(level, "Level neexistuje, nodeId=" + node.getNodeId() + ", rootNodeId=" + rootNode.getNodeId());
+		for (Integer nodeId : runContext.getInputNodeIds()) {
+            ArrNode nodeRef = nodeRepository.getOne(nodeId);
+            ArrLevel level = levelRepository.findByNodeAndDeleteChangeIsNull(nodeRef);
+            Validate.notNull(level);
 
             generate(level);
 		}

@@ -98,7 +98,7 @@ public class H2RecursiveQueryBuilder<T> implements RecursiveQueryBuilder<T> {
 
 	/**
 	 * Prepare pure JPA/HQL query and substitue all parameters
-	 * 
+	 *
 	 * @return Return pure JPA/HQL query
 	 */
 	private String prepareSqlQuery() {
@@ -123,7 +123,7 @@ public class H2RecursiveQueryBuilder<T> implements RecursiveQueryBuilder<T> {
         while (it.hasNext()) {
             int index = jdbcQuery.indexOf('?', offset);
             if (index < 0) {
-                throw new IllegalArgumentException("JDBC query has less paramters than specified");
+                throw new IllegalArgumentException("JDBC query has less parameters than specified");
             }
             sb.append(jdbcQuery, offset, index);
             sb.append(it.next());
@@ -131,7 +131,7 @@ public class H2RecursiveQueryBuilder<T> implements RecursiveQueryBuilder<T> {
         }
 
         if (jdbcQuery.indexOf('?', offset) >= 0) {
-            throw new IllegalArgumentException("JDBC query has more paramters than specified");
+            throw new IllegalArgumentException("JDBC query has more parameters than specified");
         }
 
         sb.append(jdbcQuery, offset, jdbcQuery.length());

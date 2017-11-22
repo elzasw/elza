@@ -2,8 +2,8 @@ package cz.tacr.elza.bulkaction.generator;
 
 import java.util.List;
 
+import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.Assert;
 
 import cz.tacr.elza.bulkaction.ActionRunContext;
 import cz.tacr.elza.bulkaction.BulkAction;
@@ -20,7 +20,7 @@ import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.DescItemRepository;
 
 /**
- * Base implementation for Depth First Search 
+ * Base implementation for Depth First Search
  * bulk action. This action is pre-order.
  *
  */
@@ -34,18 +34,14 @@ public abstract class BulkActionDFS extends BulkAction {
 	@Override
 	public void run(ActionRunContext runContext) {
 
-		ArrNode rootNode = version.getRootNode();
-
 		result = new Result();
 
 		for (Integer nodeId : runContext.getInputNodeIds()) {
-			ArrNode node = nodeRepository.findOne(nodeId);
-			Assert.notNull(nodeId, "Node s nodeId=" + nodeId + " neexistuje");
-			ArrLevel level = levelRepository.findNodeInRootTreeByNodeId(node, rootNode, null);
-			Assert.notNull(level,
-			        "Level neexistuje, nodeId=" + node.getNodeId() + ", rootNodeId=" + rootNode.getNodeId());
+			ArrNode nodeRef = nodeRepository.getOne(nodeId);
+			ArrLevel level = levelRepository.findByNodeAndDeleteChangeIsNull(nodeRef);
+			Validate.notNull(level);
 
-			run(level, rootNode);
+			run(level);
 		}
 
 		done();
@@ -61,7 +57,7 @@ public abstract class BulkActionDFS extends BulkAction {
 	 *            uzel
 	 * @param rootNode
 	 */
-	protected void run(ArrLevel level, ArrNode rootNode) {
+	protected void run(ArrLevel level) {
 		if (bulkActionRun.isInterrupted()) {
 			bulkActionRun.setState(State.INTERRUPTED);
 			throw new BusinessException("Hromadná akce " + getName() + " byla přerušena.",
@@ -74,10 +70,10 @@ public abstract class BulkActionDFS extends BulkAction {
 		List<ArrLevel> childLevels = getChildren(level);
 
 		for (ArrLevel childLevel : childLevels) {
-			run(childLevel, rootNode);
+			run(childLevel);
 		}
 	}
-    
+
 	/**
 	 * Načtení požadovaného atributu
 	 *

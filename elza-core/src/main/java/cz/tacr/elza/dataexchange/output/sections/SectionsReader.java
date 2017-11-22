@@ -1,16 +1,17 @@
 package cz.tacr.elza.dataexchange.output.sections;
 
 import java.util.Collection;
+import java.util.Collections;
 
 import javax.persistence.EntityManager;
 
 import cz.tacr.elza.aop.Authorization;
 import cz.tacr.elza.dataexchange.output.DEExportException;
-import cz.tacr.elza.dataexchange.output.DEExportParams.FundParams;
+import cz.tacr.elza.dataexchange.output.DEExportParams.FundSections;
 import cz.tacr.elza.dataexchange.output.context.ExportContext;
 import cz.tacr.elza.dataexchange.output.context.ExportInitHelper;
 import cz.tacr.elza.dataexchange.output.context.ExportReader;
-import cz.tacr.elza.dataexchange.output.writer.SectionOutputStream;
+import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.repository.FundVersionRepository;
@@ -46,12 +47,10 @@ public class SectionsReader implements ExportReader {
 
     /**
      * Reads all funds sections. For each section will be opened new section output stream.<br>
-     * <i>Note: Implementation is not optimized for big number of funds (version, fund and
-     * institution is fetched per fund parameters).</i>
      */
     @Override
     public void read() {
-        if (context.getFundsParams() == null) {
+        if (context.getFundsSections() == null) {
             return;
         }
         // check global export permissions
@@ -59,49 +58,65 @@ public class SectionsReader implements ExportReader {
                 || userService.hasPermission(Permission.FUND_EXPORT_ALL);
 
         // export all fund sections
-        for (FundParams fp : context.getFundsParams()) {
+        for (FundSections fss : context.getFundsSections()) {
             // find fund version
-            ArrFundVersion fundVersion = fundVersionRepository.findOne(fp.getFundVersionId());
+            ArrFundVersion fundVersion = fundVersionRepository.findByIdWithFetchForExport(fss.getFundVersionId());
             if (fundVersion == null) {
-                throw new DEExportException("Fund version not found, fundVersionId:" + fp.getFundVersionId());
+                throw new DEExportException("Fund version not found, fundVersionId:" + fss.getFundVersionId());
             }
             // check fund permission
             if (!globalPermission) {
-                Integer fundId = fundVersion.getFund().getFundId();
+                Integer fundId = fundVersion.getFundId();
                 if (!userService.hasPermission(Permission.FUND_EXPORT, fundId)) {
                     throw Authorization.createAccessDeniedException(Permission.FUND_EXPORT);
                 }
             }
             // read fund sections
-            Collection<Integer> rootNodeIds = fp.getRootNodeIds();
-            if (rootNodeIds == null || rootNodeIds.isEmpty()) {
-                readSection(new SectionContext(fundVersion, context));
-            } else {
-                rootNodeIds.forEach(id -> new SectionContext(fundVersion, id, context));
-            }
+            readFundSections(fss, fundVersion);
         }
     }
 
-    private void readSection(SectionContext sc) {
-        SectionOutputStream os = context.getBuilder().openSectionOutputStream(sc);
+    private void readFundSections(FundSections fss, ArrFundVersion fundVersion) {
+        Collection<Integer> rootNodeIds = fss.getRootNodeIds();
+        if (rootNodeIds == null || rootNodeIds.isEmpty()) {
+            rootNodeIds = Collections.singleton(fundVersion.getRootNodeId());
+        }
+        if (fss.isMergeSections()) {
+            readMergedSections(fundVersion, fss.getLevelInfoListener(), rootNodeIds);
+        } else {
+            rootNodeIds.forEach(nodeId -> readSection(fundVersion, fss.getLevelInfoListener(), nodeId));
+        }
+    }
+
+    private void readMergedSections(ArrFundVersion fundVersion,
+                                    ExportLevelInfoListener levelInfoListener,
+                                    Collection<Integer> rootNodeIds) {
+        ArrChange lockChange = fundVersion.getLockChange();
+        SectionContext sectionContext = new SectionContext(fundVersion, context, true, levelInfoListener, nodeCacheService, em);
         try {
-            LevelBatchReader batchReader = new LevelBatchReader(context.getBatchSize(), os, nodeCacheService);
-            levelRepository.iterateSubtree(sc.getRootNodeId(), sc.getLockChange(), level -> {
-                // TODO: replace detach for stateless session
-                em.detach(level);
-                batchReader.addLevel(level);
-            });
-            batchReader.flush();
-
-            PacketLoader packetLoader = new PacketLoader(em, context.getBatchSize());
-            for (Integer packetId : sc.getPacketIds()) {
-                packetLoader.addRequest(packetId, new PacketDispatcher(os, sc.getRuleSystem(), sc.getFund()));
+            // read sections levels
+            for (Integer rootNodeId : rootNodeIds) {
+                // read parent nodes up to root
+                levelRepository.findAllParentsByNodeId(rootNodeId, lockChange, true).forEach(sectionContext::addLevel);
+                // read subtree
+                levelRepository.iterateSubtree(rootNodeId, lockChange, sectionContext::addLevel);
             }
-            packetLoader.flush();
 
-            os.processed();
+            sectionContext.processed();
         } finally {
-            os.close();
+            sectionContext.close();
+        }
+    }
+
+    private void readSection(ArrFundVersion fundVersion, ExportLevelInfoListener levelInfoListener, int rootNodeId) {
+        ArrChange lockChange = fundVersion.getLockChange();
+        SectionContext sectionContext = new SectionContext(fundVersion, context, false, levelInfoListener, nodeCacheService, em);
+        try {
+            levelRepository.iterateSubtree(rootNodeId, lockChange, sectionContext::addLevel);
+
+            sectionContext.processed();
+        } finally {
+            sectionContext.close();
         }
     }
 }

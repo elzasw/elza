@@ -2,7 +2,6 @@ package cz.tacr.elza.repository;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -40,10 +39,6 @@ import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
-import cz.tacr.elza.exception.ObjectNotFoundException;
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.ArrangementCode;
-import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.utils.ObjectListIterator;
 
 
@@ -61,20 +56,20 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
     private LevelRepository levelRepository;
 
     @Override
-    public List<ArrLevel> findByParentNode(final ArrNode nodeParent, @Nullable final ArrChange change) {
-        if (change == null) {
+    public List<ArrLevel> findByParentNode(final ArrNode nodeParent, @Nullable final ArrChange lockChange) {
+        if (lockChange == null) {
             return levelRepository.findByParentNodeAndDeleteChangeIsNullOrderByPositionAsc(nodeParent);
         } else {
-            return levelRepository.findByParentNodeOrderByPositionAsc(nodeParent, change);
+            return levelRepository.findByParentNodeOrderByPositionAsc(nodeParent, lockChange);
         }
     }
 
     @Override
-    public List<ArrLevel> findByNode(final ArrNode node, @Nullable final ArrChange change) {
-        if (change == null) {
+    public ArrLevel findByNode(final ArrNode node, @Nullable final ArrChange lockChange) {
+        if (lockChange == null) {
             return levelRepository.findByNodeAndDeleteChangeIsNull(node);
         } else {
-            return levelRepository.findByNodeOrderByPositionAsc(node, change);
+            return levelRepository.findByNodeAndNotNullLockChange(node, lockChange);
         }
     }
 
@@ -88,30 +83,33 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
     }
 
     @Override
-    public List<ArrLevel> findAllParentsByNodeAndVersion(final ArrNode node, final ArrFundVersion version) {
-        Assert.notNull(node, "JP musí být vyplněna");
-        Assert.notNull(version, "Verze AS musí být vyplněna");
+    public List<ArrLevel> findAllParentsByNodeId(final Integer nodeId, @Nullable final ArrChange lockChange, boolean orderFromRoot) {
+        Validate.notNull(nodeId);
 
+        RecursiveQueryBuilder<ArrLevel> rqBuilder = DatabaseType.getCurrent().createRecursiveQueryBuilder(ArrLevel.class);
 
-        ArrChange lockChange = version.getLockChange();
+        String specifiedVerCond = "l.create_change_id < :lockChangeId AND (l.delete_change_id IS NULL OR l.delete_change_id > :lockChangeId)";
+        String currentVerCond = "l.delete_change_id IS NULL";
+        String verCond = lockChange != null ? specifiedVerCond : currentVerCond;
 
-        List<ArrLevel> parents = new LinkedList<>();
+        rqBuilder.addSqlPart("WITH RECURSIVE parentPath(level_id, create_change_id, delete_change_id, node_id, node_id_parent, position, path) AS (")
+                .addSqlPart("SELECT l.*, 1 FROM arr_level l WHERE l.node_id = :nodeId AND ")
+                .addSqlPart(verCond)
+                .addSqlPart(" UNION ALL ")
+                .addSqlPart("SELECT l.*, pp.path + 1 FROM arr_level l JOIN parentPath pp ON l.node_id=pp.node_id_parent WHERE ")
+                .addSqlPart(verCond)
+                .addSqlPart(") SELECT * FROM parentPath WHERE node_id <> :nodeId ORDER BY path ")
+                .addSqlPart(orderFromRoot ? "DESC" : "ASC");
 
-        boolean found = false;
-        for (ArrLevel arrLevel : findByNode(node, lockChange)) {
-            if (findParentNodesToRootByNodeId(parents, arrLevel, version.getRootNode(), lockChange)) {
-                found = true;
-                break;
-            }
+        rqBuilder.prepareQuery(entityManager);
+
+        rqBuilder.setParameter("nodeId", nodeId);
+        if (verCond == specifiedVerCond) {
+            Integer lockChangeId = lockChange.getChangeId();
+            rqBuilder.setParameter("lockChangeId", Validate.notNull(lockChangeId));
         }
 
-        if (!found) {
-            throw new IllegalStateException(
-                    "Nebyl nalezen seznam rodičů pro node " + node.getNodeId() + " ve verzi " + version.toString());
-        }
-
-
-        return parents;
+        return rqBuilder.getQuery().getResultList();
     }
 
 
@@ -149,34 +147,6 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
         return arrLevel;
     }
 
-    /**
-     * Rekurzivně prochází strom ke kořenu a pokud má uzel jako prarodiče daný kořenový uzel, je přidán do seznamu.
-     *
-     * @param toRootTree seznam rodičů hledaného uzlu
-     * @param level      uzel, pro který hledáme rodiče
-     * @param rootNode   kořenový uzel verze
-     * @param lockChange čas uzamčení verze
-     * @return true pokud má daný uzel za prarodiče kořenový uzel
-     */
-    private boolean findParentNodesToRootByNodeId(final List<ArrLevel> toRootTree,
-                                                  final ArrLevel level,
-                                                  final ArrNode rootNode,
-                                                  @Nullable final ArrChange lockChange) {
-        if (level.getNode().equals(rootNode)) {
-            return true;
-        }
-
-        for (ArrLevel parentLevel : findByNode(level.getNodeParent(), lockChange)) {
-            if (findParentNodesToRootByNodeId(toRootTree, parentLevel, rootNode, lockChange)) {
-                toRootTree.add(0, parentLevel);
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-
     @Override
     public List<ArrLevel> findAllChildrenByNode(final ArrNode node, final ArrChange lockChange) {
         Assert.notNull(node, "JP musí být vyplněna");
@@ -199,47 +169,6 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
         return result;
     }
 
-
-    @Override
-    public boolean isLevelInRootTree(final ArrLevel level,
-                                     final ArrNode rootNode,
-                                     @Nullable final ArrChange lockChange) {
-        if (level.getNode().equals(rootNode) || rootNode.equals(level.getNodeParent())) {
-            return true;
-        }
-
-
-        boolean result = false;
-        for (ArrLevel parentLevel : findByNode(level.getNodeParent(), lockChange)) {
-            result = result || isLevelInRootTree(parentLevel, rootNode, lockChange);
-        }
-
-        return result;
-    }
-
-
-    @Override
-    public ArrLevel findNodeInRootTreeByNodeId(final ArrNode node, final ArrNode rootNode, @Nullable final ArrChange lockChange) {
-        List<ArrLevel> levelsByNode = findByNode(node, lockChange);
-
-        if (levelsByNode.isEmpty()) {
-            throw new ObjectNotFoundException("Missing level for node", ArrangementCode.NODE_NOT_FOUND).setId(node.getNodeId());
-        } else if (levelsByNode.size() == 1) {
-            return levelsByNode.iterator().next();
-        }
-
-        throw new SystemException("Found multiple levels for one node, nodeId:" + node.getNodeId(), BaseCode.INVALID_STATE);
-
-        /*
-         * TODO: po otestování smazat a odstranit rootNode parametr
-         * for (ArrLevel arrFaLevel : levelsByNode) {
-         *     if (isLevelInRootTree(arrFaLevel, rootNode, lockChange)) { return arrFaLevel; }
-         * }
-         * return null;
-         */
-    }
-
-
     @Override
     public List<ArrLevel> findLevelsByDirection(final ArrLevel level,
                                                 final ArrFundVersion version,
@@ -250,19 +179,17 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
 
         switch (direction) {
             case NODE:
-                return Arrays.asList(level);
+                return Collections.singletonList(level);
             case PARENT:
 
                 // pokud je to root level, nemuze mit rodice
                 if (level.getNode().equals(version.getRootNode())) {
-                    return Arrays.asList();
+                    return Collections.emptyList();
                 }
 
-                return Arrays.asList(levelRepository
-                        .findNodeInRootTreeByNodeId(level.getNodeParent(), version.getRootNode(),
-                                version.getLockChange()));
+                return Collections.singletonList(levelRepository.findByNode(level.getNodeParent(), version.getLockChange()));
             case ASCENDANTS:
-                return levelRepository.findAllParentsByNodeAndVersion(level.getNode(), version);
+                return levelRepository.findAllParentsByNodeId(level.getNodeId(), version.getLockChange(), false);
             case CHILDREN:
                 return levelRepository.findByParentNode(level.getNode(), version.getLockChange());
             case DESCENDANTS:
@@ -390,7 +317,7 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
      */
     private List<LevelInfo> findLevelInfoByIds(final Collection<Integer> ids) {
         if (CollectionUtils.isEmpty(ids)) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
 
         List<LevelInfo> result = new ArrayList<>(ids.size());
@@ -473,19 +400,17 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
         RecursiveQueryBuilder<ArrLevel> rqBuilder = DatabaseType.getCurrent().createRecursiveQueryBuilder(ArrLevel.class);
 
         rqBuilder.addSqlPart("WITH RECURSIVE fundTree(level_id, create_change_id, delete_change_id, node_id, node_id_parent, position, parentPosition, depth) AS (")
+
         .addSqlPart("SELECT l.*, l.position, 1 FROM arr_level l WHERE l.node_id = :nodeId AND l.delete_change_id IS NULL ")
         .addSqlPart("UNION ALL ")
         .addSqlPart("SELECT l.*, ft.position, ft.depth + 1 FROM arr_level l JOIN fundTree ft ON ft.node_id=l.node_id_parent WHERE l.delete_change_id IS NULL) ")
 
-        .addSqlPart("SELECT ft.*, n.* FROM fundTree ft JOIN arr_node n ON n.node_id=ft.node_id ORDER BY ft.depth, ft.parentPosition, ft.position");
+        .addSqlPart("SELECT * FROM fundTree ORDER BY depth, parentPosition, position");
 
         rqBuilder.prepareQuery(entityManager);
         rqBuilder.setParameter("nodeId", nodeId);
-        NativeQuery<ArrLevel> query = rqBuilder.getQuery();
 
-        // probably false positive due to SQLQuery -> NativeQuery migration (should be fixed in HB 6.0)
-        query.addRoot("ft", ArrLevel.class);
-        query.addFetch("n", "ft", "node");
+        org.hibernate.query.Query<ArrLevel> query = rqBuilder.getQuery();
         query.setCacheMode(CacheMode.IGNORE);
 
         long count = 0;
@@ -518,5 +443,4 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
         rqBuilder.setParameter("date", Timestamp.valueOf(change.getChangeDate()));
         return rqBuilder.getQuery().getResultList();
     }
-
 }

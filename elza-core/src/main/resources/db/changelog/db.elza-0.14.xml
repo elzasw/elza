@@ -167,5 +167,10 @@
         <sql dbms="mssql">UPDATE us SET entity_id = rs.rule_set_id FROM ui_settings us, rul_rule_set rs WHERE rs.package_id = ui_settings.package_id AND ui_settings.entity_type = 'RULE' AND ui_settings.entity_id IS NULL</sql>
         <sql dbms="h2">UPDATE ui_settings SET entity_id = (SELECT rs.rule_set_id FROM rul_rule_set rs WHERE rs.package_id = ui_settings.package_id) WHERE ui_settings.entity_type = 'RULE' AND ui_settings.entity_id IS NULL</sql>
     </changeSet>
+    
+    <!-- added node uuid to cache -->
+    <changeSet id="201711220900" author="jtodt">
+        <delete tableName="arr_cached_node" />
+    </changeSet>
 
 </databaseChangeLog>

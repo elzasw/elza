@@ -18,6 +18,9 @@ import javax.persistence.criteria.Root;
 
 import org.apache.commons.lang3.Validate;
 
+/**
+ * Abstract implementation for entity batch loader.
+ */
 public abstract class AbstractEntityLoader<REQ_ID, ENTITY> extends AbstractBatchLoader<REQ_ID, ENTITY> {
 
     private final Class<ENTITY> entityClass;
@@ -34,7 +37,7 @@ public abstract class AbstractEntityLoader<REQ_ID, ENTITY> extends AbstractBatch
     }
 
     @Override
-    protected final void processBatch(Collection<BatchEntry> entries) {
+    protected final void processBatch(ArrayList<BatchEntry> entries) {
         Map<REQ_ID, List<BatchEntry>> requestIdMap = getRequestIdMap(entries);
 
         TypedQuery<Tuple> query = createQuery(requestIdMap.keySet());

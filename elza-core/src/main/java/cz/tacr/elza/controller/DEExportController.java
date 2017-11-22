@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.google.common.net.HttpHeaders;
 
 import cz.tacr.elza.dataexchange.output.DEExportParams;
-import cz.tacr.elza.dataexchange.output.DEExportParams.FundParams;
+import cz.tacr.elza.dataexchange.output.DEExportParams.FundSections;
 import cz.tacr.elza.dataexchange.output.DEExportService;
 
 @RestController
@@ -49,10 +49,10 @@ public class DEExportController {
                            @PathVariable(value = "versionId") final int fundVersionId,
                            @RequestParam(value = "transformationName") final String transformationName)
             throws IOException {
-        FundParams fundParams = new FundParams();
+        FundSections fundParams = new FundSections();
         fundParams.setFundVersionId(fundVersionId);
         DEExportParamsVO params = new DEExportParamsVO();
-        params.setFundsParams(Collections.singleton(fundParams));
+        params.setFundsSections(Collections.singleton(fundParams));
         params.setTransformationName(transformationName);
         exportFund(response, params);
     }

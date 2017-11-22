@@ -80,7 +80,6 @@ import cz.tacr.elza.print.party.Party;
 import cz.tacr.elza.print.party.PartyGroup;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.LevelRepository;
-import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.ItemService;
 import cz.tacr.elza.service.OutputService;
@@ -120,9 +119,6 @@ public class OutputFactoryService implements NodeLoader {
     private LevelRepository levelRepository;
 
     @Autowired
-    private NodeRepository nodeRepository;
-
-    @Autowired
     private ItemService itemService;
 
     @Autowired
@@ -150,7 +146,7 @@ public class OutputFactoryService implements NodeLoader {
         reset();
 
         // naplnit output
-        final OutputImpl output = outputGeneratorFactory.getOutput(arrOutput);
+        final OutputImpl output = new OutputImpl(arrOutput);
         output.setName(arrOutput.getOutputDefinition().getName());
         output.setInternal_code(arrOutput.getOutputDefinition().getInternalCode());
         output.setTypeCode(arrOutput.getOutputDefinition().getOutputType().getCode());
@@ -164,7 +160,7 @@ public class OutputFactoryService implements NodeLoader {
 
         // zařadit do výstupu rootNode fundu
         final ArrNode arrFundRootNode = arrFundVersion.getRootNode();
-        ArrLevel arrRootLevel = levelRepository.findNodeInRootTreeByNodeId(arrFundRootNode, arrFundRootNode, arrFundVersion.getLockChange());
+        ArrLevel arrRootLevel = levelRepository.findByNode(arrFundRootNode, arrFundVersion.getLockChange());
         NodeId rootNodeId = createNodeId(arrRootLevel, output, null);
         fund.setRootNodeId(rootNodeId);
 
@@ -184,14 +180,14 @@ public class OutputFactoryService implements NodeLoader {
 
     private void createNodeIdTree(final ArrOutput arrOutput, final OutputImpl output) {
         List<ArrNode> nodes = outputService.getNodesForOutput(arrOutput);
+        // TODO: incorrect node order
         nodes.sort((n1, n2) -> n1.getNodeId().compareTo(n2.getNodeId()));
 
         ArrChange lockChange = output.getArrFundVersion().getLockChange();
-        ArrNode rootNode = nodeRepository.findOne(output.getFund().getRootNodeId().getArrNodeId());
         for (ArrNode arrNode : nodes) {
             output.addDirectNodeIdentifier(arrNode.getNodeId());
 
-            ArrLevel arrLevel = levelRepository.findNodeInRootTreeByNodeId(arrNode, rootNode, lockChange);
+            ArrLevel arrLevel = levelRepository.findByNode(arrNode, lockChange);
             addParentNodeByNode(arrLevel, output);
         }
     }
@@ -247,10 +243,8 @@ public class OutputFactoryService implements NodeLoader {
      */
     private void addParentNodeByNode(final ArrLevel arrLevel, final OutputImpl output) {
         // získat seznam rodičů node a zařadit
-        final ArrFundVersion arrFundVersion = output.getFund().getArrFundVersion();
-        ArrNode arrNode = arrLevel.getNode();
-        final List<ArrLevel> levelList = levelRepository.findAllParentsByNodeAndVersion(arrNode, arrFundVersion);
-        levelList.sort((l1, l2) -> l1.getNode().getNodeId().compareTo(l2.getNode().getNodeId()));
+        final ArrChange lockChange = output.getArrFundVersion().getLockChange();
+        final List<ArrLevel> levelList = levelRepository.findAllParentsByNodeId(arrLevel.getNodeId(), lockChange, true);
 
         for (ArrLevel arrParentLevel : levelList) {
             ArrNode parentNode = arrParentLevel.getNodeParent();
@@ -308,7 +302,7 @@ public class OutputFactoryService implements NodeLoader {
         }
         Integer nodeIdentifier = arrLevel.getNode().getNodeId();
         Integer position = arrLevel.getPosition();
-        NodeId nodeId = outputGeneratorFactory.getNodeId(output, nodeIdentifier, parentNodeId, position, depth);
+        NodeId nodeId = new NodeId(output, nodeIdentifier, parentNodeId, position, depth);
 
         nodeId = output.addNodeId(nodeId);
         if (parent != null) {
@@ -325,7 +319,7 @@ public class OutputFactoryService implements NodeLoader {
     public Node getNode(final NodeId nodeId, final OutputImpl output) {
         Node node = nodeMap.get(nodeId.getArrNodeId());
         if (node == null) {
-            node = outputGeneratorFactory.getNode(nodeId, output);
+            node = new Node(nodeId, output);
             nodeMap.put(nodeId.getArrNodeId(), node);
         }
         return node;

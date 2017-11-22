@@ -1,23 +1,25 @@
 package cz.tacr.elza.dataexchange.output.loaders;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
 import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.core.DatabaseType;
 
+/**
+ * Abstract implementation for batch loader.
+ */
 public abstract class AbstractBatchLoader<REQ, RES> implements Loader<REQ, RES> {
 
     protected final int batchSize;
 
-    private final List<BatchEntry> batch;
+    private final ArrayList<BatchEntry> batch;
 
     public AbstractBatchLoader(int batchSize) {
         this.batchSize = Math.min(batchSize, DatabaseType.getCurrent().getMaxInClauseSize());
         this.batch = new ArrayList<>(this.batchSize);
     }
+
 
     @Override
     public void addRequest(REQ request, LoadDispatcher<RES> dispatcher) {
@@ -46,7 +48,12 @@ public abstract class AbstractBatchLoader<REQ, RES> implements Loader<REQ, RES> 
         batch.clear();
     }
 
-    protected abstract void processBatch(Collection<BatchEntry> entries);
+    /**
+     * Called during flush only when entries are not empty.
+     *
+     * @param entries not-empty
+     */
+    protected abstract void processBatch(ArrayList<BatchEntry> entries);
 
     protected void onRequestLoad(RES result, LoadDispatcher<RES> dispatcher) {
     }

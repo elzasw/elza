@@ -61,6 +61,8 @@ public class XmlPartiesOutputStream implements PartiesOutputStream {
 
     @Override
     public void addParty(ParParty party) {
+        Validate.isTrue(!processed);
+
         Party element = createParty(party);
         element.setApe(XmlAccessPointOutputStream.createEntry(party.getRecord()));
         element.setChr(party.getCharacteristics());

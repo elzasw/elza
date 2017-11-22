@@ -75,7 +75,7 @@ public class DEExportService {
     private void exportData(OutputStream os, ExportBuilder builder, DEExportParams params) {
         // create export context
         ExportContext context = new ExportContext(builder, staticDataService.getData(), 1000);
-        context.setFundsParams(params.getFundsParams());
+        context.setFundsSections(params.getFundsSections());
         if (params.getApIds() != null) {
             params.getApIds().forEach(context::addAPId);
         }

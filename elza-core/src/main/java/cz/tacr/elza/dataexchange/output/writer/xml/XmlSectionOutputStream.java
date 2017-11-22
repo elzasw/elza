@@ -70,6 +70,8 @@ class XmlSectionOutputStream implements SectionOutputStream {
 
     @Override
     public void addLevel(ExportLevelInfo levelInfo) {
+        Validate.isTrue(!processed);
+
         Level level = new Level();
         level.setUuid(levelInfo.getNodeUuid());
         level.setId(Integer.toString(levelInfo.getNodeId()));
@@ -90,6 +92,8 @@ class XmlSectionOutputStream implements SectionOutputStream {
 
     @Override
     public void addPacket(ArrPacket packet) {
+        Validate.isTrue(!processed);
+
         Packet element = new Packet();
         element.setId(packet.getPacketId().toString());
         element.setN(packet.getStorageNumber());

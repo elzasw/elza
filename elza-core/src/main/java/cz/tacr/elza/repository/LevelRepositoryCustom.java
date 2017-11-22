@@ -21,13 +21,13 @@ import cz.tacr.elza.domain.vo.RelatedNodeDirection;
 public interface LevelRepositoryCustom {
 
     /**
-     * Najde všechny rodiče seřazeny od listu ke kořenu podle nodu v požadované verzi stromu. Výsledek obsahuje i kořenový uzel verze.
+     * Najde všechny rodiče od listu ke kořenu podle nodu v požadované verzi stromu. Výsledek obsahuje i kořenový uzel verze.
+     * Result is always sorted, see description of {@code orderFromRoot} parameter.
      * @param node uzel
      * @param version verze stromu
-     * @return všechny rodiče seřazeny od listu ke kořenu
+     * @param orderFromRoot If true then result is sorted from fund root to parent of specified node otherwise order is reversed.
      */
-    List<ArrLevel> findAllParentsByNodeAndVersion(ArrNode node, ArrFundVersion version);
-
+    List<ArrLevel> findAllParentsByNodeId(final Integer nodeId, @Nullable ArrChange lockChange, boolean orderFromRoot);
 
     /**
      * Najde staršího sourozence daného uzlu.
@@ -58,12 +58,11 @@ public interface LevelRepositoryCustom {
 
 
     /**
-     * Najde všechny uzly s daným nodem.
-     * @param node nod uzlů
+     * Najde uzel pro daný node.
+     * @param node
      * @param change čas uzamčení uzamčení verze  (null pro otevřenou verzi)
-     * @return seznam uzlů s daným nodem (sdílené uzly)
      */
-    List<ArrLevel> findByNode(ArrNode node, @Nullable ArrChange change);
+    ArrLevel findByNode(ArrNode node, @Nullable ArrChange change);
 
     /**
      * Vrací počet potomků daného uzlu.
@@ -85,25 +84,6 @@ public interface LevelRepositoryCustom {
      */
     List<ArrLevel> findLevelsByDirection(ArrLevel level, ArrFundVersion version,
                                          RelatedNodeDirection direction);
-
-    /**
-     * zjistí zda je level v zadané hierarchické struktuře.
-     *
-     * @param level    testovaný level.
-     * @param rootNode kořen zadané hierarchické struktury.
-     * @return true pokud je level v zadané hierarchické struktuře.
-     */
-    boolean isLevelInRootTree(ArrLevel level, ArrNode rootNode, @Nullable ArrChange lockChange);
-
-    /**
-     * Zjistí, jestli je daný node ve stejném stromu, jako je daný kořen. Pokud máme dva nody se stejným nodeId v
-     * různých stromech, je potřeba najít tu entitu pro konkrétní strom.
-     *
-     * @param node     id nodu
-     * @param rootNode id kořenu
-     * @return nalezený level pro daný strom nebo null, pokud nebyl nalezen
-     */
-    ArrLevel findNodeInRootTreeByNodeId(ArrNode node, ArrNode rootNode, @Nullable ArrChange lockChange);
 
     /**
      * Vyhledá potomky, které mají vyšší datum poslední změny, než je v ArrChange.

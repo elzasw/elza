@@ -482,8 +482,7 @@ public class RuleService {
     public List<RulItemTypeExt> getDescriptionItemTypes(final ArrFundVersion version,
                                                         final ArrNode node) {
 
-        ArrLevel level = levelRepository.findNodeInRootTreeByNodeId(node, version.getRootNode(),
-                version.getLockChange());
+        ArrLevel level = levelRepository.findByNode(node, version.getLockChange());
 
 		List<RulItemTypeExt> rulDescItemTypeExtList = getRulesetDescriptionItemTypes(version.getRuleSetId());
 

@@ -3,8 +3,6 @@ package cz.tacr.elza.bulkaction.generator;
 import java.util.List;
 
 import org.apache.commons.lang3.Validate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
@@ -34,8 +32,6 @@ public class FundValidation extends BulkAction {
     @Autowired
     private BulkActionService bulkActionService;
 
-    private static final Logger logger = LoggerFactory.getLogger(FundValidation.class);
-
     /**
      * Generování hodnot - rekurzivní volání pro procházení celého stromu
      *
@@ -63,13 +59,10 @@ public class FundValidation extends BulkAction {
         // v případě, že existuje nějaké přepočítávání uzlů, je nutné to ukončit
         updateConformityInfoService.terminateWorkerInVersion(version.getFundVersionId());
 
-        ArrNode rootNode = version.getRootNode();
 		for (Integer nodeId : runContext.getInputNodeIds()) {
-            ArrNode node = nodeRepository.findOne(nodeId);
-			Validate.notNull(nodeId, "Node s nodeId=" + nodeId + " neexistuje");
-            ArrLevel level = levelRepository.findNodeInRootTreeByNodeId(node, rootNode, null);
-			Validate.notNull(level,
-			        "Level neexistuje, nodeId=" + node.getNodeId() + ", rootNodeId=" + rootNode.getNodeId());
+			ArrNode nodeRef = nodeRepository.getOne(nodeId);
+            ArrLevel level = levelRepository.findByNodeAndDeleteChangeIsNull(nodeRef);
+			Validate.notNull(level);
 
             generate(level);
         }

@@ -64,7 +64,7 @@ public class ScriptModelFactory {
     /**
 	 * Vytvoří strukturu od výchozího levelu. Načte všechny jeho rodiče a prvky
 	 * popisu.
-	 * 
+	 *
 	 * @param descItemReader
 	 *            Reader which will fetch description items from DB
 	 */
@@ -74,7 +74,7 @@ public class ScriptModelFactory {
         Assert.notNull(level, "Level musí být vyplněn");
         Assert.notNull(version, "Verze AS musí být vyplněna");
 
-        List<ArrLevel> parents = levelRepository.findAllParentsByNodeAndVersion(level.getNode(), version);
+        List<ArrLevel> parents = levelRepository.findAllParentsByNodeId(level.getNodeId(), version.getLockChange(), false);
         Set<ArrNode> nodes = new HashSet<>();
 		nodes.add(level.getNode());
 
@@ -96,7 +96,7 @@ public class ScriptModelFactory {
 
 	/**
 	 * Create description item reader
-	 * 
+	 *
 	 * @param version
 	 * @return
 	 */
@@ -130,7 +130,7 @@ public class ScriptModelFactory {
 
     /**
 	 * Vytvoření scénáře pro level z value objektu.
-	 * 
+	 *
 	 * @param newLevelApproach
 	 *            scénář VO
 	 * @param ruleSetId
@@ -157,7 +157,7 @@ public class ScriptModelFactory {
 
     /**
 	 * Create new description item from value object
-	 * 
+	 *
 	 * @param descItemRule
 	 *            Source description item
 	 * @param ruleSystem
@@ -302,7 +302,7 @@ public class ScriptModelFactory {
 
     /**
 	 * Create active level model for given level
-	 * 
+	 *
 	 * @param descItemReader
 	 *            reader for description items
 	 * @return

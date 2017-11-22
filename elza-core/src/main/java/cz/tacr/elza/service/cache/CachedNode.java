@@ -14,17 +14,15 @@ import cz.tacr.elza.domain.ArrNodeRegister;
  */
 public class CachedNode implements NodeCacheSerializable {
 
-    public CachedNode() {
-    }
-
-    public CachedNode(final Integer nodeId) {
-        this.nodeId = nodeId;
-    }
-
     /**
      * Identifikátor JP.
      */
     private Integer nodeId;
+
+    /**
+     * JP uuid.
+     */
+    private String uuid;
 
     /**
      * Seznam hodnot atributů.
@@ -41,12 +39,28 @@ public class CachedNode implements NodeCacheSerializable {
      */
     private List<ArrDaoLink> daoLinks;
 
+    public CachedNode() {
+    }
+
+    public CachedNode(final Integer nodeId, final String uuid) {
+        this.nodeId = nodeId;
+        this.uuid = uuid;
+    }
+
     public Integer getNodeId() {
         return nodeId;
     }
 
     public void setNodeId(final Integer nodeId) {
         this.nodeId = nodeId;
+    }
+
+    public String getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(final String uuid) {
+        this.uuid = uuid;
     }
 
     public List<ArrDescItem> getDescItems() {
@@ -82,7 +96,7 @@ public class CachedNode implements NodeCacheSerializable {
 
 	/**
 	 * Add description items to the node
-	 * 
+	 *
 	 * @param newDescItems
 	 */
 	public void addDescItems(Collection<ArrDescItem> newDescItems) {

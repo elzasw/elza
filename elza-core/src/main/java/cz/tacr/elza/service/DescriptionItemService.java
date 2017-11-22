@@ -734,9 +734,9 @@ public class DescriptionItemService {
 
     /**
 	 * Provede kopii dat ze zdrojové item
-	 * 
+	 *
 	 * Function will save created data in repository
-	 * 
+	 *
 	 * @param descItemFrom
 	 *            z hodnoty atributu
 	 * @return Return object with data copy. If data are not defined in source
@@ -870,8 +870,7 @@ public class DescriptionItemService {
 
         ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
         ArrNode node = nodeRepository.findOne(nodeId);
-        ArrLevel level = levelRepository.findNodeInRootTreeByNodeId(node, version.getRootNode(),
-                version.getLockChange());
+        ArrLevel level = levelRepository.findByNode(node, version.getLockChange());
 
         return getDescriptionItemTypesForNewLevel(level, directionLevel, version);
     }
@@ -904,10 +903,10 @@ public class DescriptionItemService {
 
         return descItemUpdated;
     }
-    
+
     /**
 	 * Fetch open item with given ID from DB
-	 * 
+	 *
 	 * @param descItemObjectId
 	 * @return
 	 */
@@ -926,9 +925,9 @@ public class DescriptionItemService {
 
 	/**
 	 * Update value without creating new version
-	 * 
+	 *
 	 * Method will update specification and value
-	 * 
+	 *
 	 * @param descItem
 	 *            detached item with new value
 	 */
@@ -936,7 +935,7 @@ public class DescriptionItemService {
     {
 		// fetch item from DB
 		ArrDescItem descItemCurr = fetchOpenItemFromDB(descItem.getDescItemObjectId());
-		
+
 		// item type have to be same
 		if (!Objects.equal(descItemCurr.getItemTypeId(), descItem.getItemTypeId())) {
 			throw new SystemException("Different item types, cannot update value");
@@ -955,9 +954,9 @@ public class DescriptionItemService {
 
 	/**
 	 * Internal method to update item and data
-	 * 
+	 *
 	 * Input is attached entity.
-	 * 
+	 *
 	 * @param descItemDB
 	 * @param data
 	 * @return
@@ -969,15 +968,15 @@ public class DescriptionItemService {
 		descItemDB.setData(data);
 		descItemDB.setItemSpec(itemSpec);
 		ArrDescItem result = descItemRepository.save(descItemDB);
-		
+
 		checkValidTypeAndSpec(result);
-		
+
 		// update value in node cache
 		arrangementCacheService.changeDescItem(result.getNodeId(), result, false);
-		
+
 		// sockety
 		publishChangeDescItem(version, result);
-		
+
 		return result;
 	}
 
@@ -986,10 +985,10 @@ public class DescriptionItemService {
 	 *
 	 * This method will create new item version. Item type and position of the
 	 * item cannot be changed.
-	 * 
+	 *
 	 * @param descItem
 	 *            detached item with new value
-	 * 
+	 *
 	 */
 	public ArrDescItem updateValueAsNewVersion(final ArrFundVersion version, final ArrChange change,
 	        final ArrDescItem descItem) {

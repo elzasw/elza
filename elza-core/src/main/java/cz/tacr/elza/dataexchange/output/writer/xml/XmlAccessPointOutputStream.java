@@ -45,6 +45,8 @@ public class XmlAccessPointOutputStream implements AccessPointsOutputStream {
 
     @Override
     public void addAccessPoint(RegRecord accessPoint) {
+        Validate.isTrue(!processed);
+
         AccessPoint element = new AccessPoint();
         element.setApe(createEntry(accessPoint));
         element.setChr(accessPoint.getCharacteristics());

@@ -406,8 +406,7 @@ public class ArrangementService {
         ArrFundVersion version = fundVersionRepository
                 .findByFundIdAndLockChangeIsNull(fund.getFundId());
 
-        ArrNode rootNode = version.getRootNode();
-        ArrLevel rootLevel = levelRepository.findNodeInRootTreeByNodeId(rootNode, rootNode, version.getLockChange());
+        ArrLevel rootLevel = levelRepository.findByNode(version.getRootNode(), version.getLockChange());
 
         // vyhledání scénářů
         List<ScenarioOfNewLevel> scenarioOfNewLevels = descriptionItemService.getDescriptionItemTypesForNewLevel(
@@ -658,8 +657,7 @@ public class ArrangementService {
 
         cachedNodeRepository.deleteByFund(fund);
 
-        ArrNode rootNode = version.getRootNode();
-        ArrLevel rootLevel = levelRepository.findNodeInRootTreeByNodeId(rootNode, rootNode, version.getLockChange());
+        ArrLevel rootLevel = levelRepository.findByNode(version.getRootNode(), version.getLockChange());
         ArrNode node = rootLevel.getNode();
 
         fundVersionRepository.findVersionsByFundIdOrderByCreateDateDesc(fundId)
@@ -890,12 +888,6 @@ public class ArrangementService {
     }
 
     public ArrLevel deleteLevelCascade(final ArrLevel level, final ArrChange deleteChange) {
-        //pokud je level sdílený, smažeme pouze entitu, atributy ponecháme
-        if (isLevelShared(level)) {
-            return deleteLevelInner(level, deleteChange);
-        }
-
-
         for (ArrLevel childLevel : levelRepository
                 .findByParentNodeAndDeleteChangeIsNullOrderByPositionAsc(level.getNode())) {
             deleteLevelCascade(childLevel, deleteChange);
@@ -907,12 +899,6 @@ public class ArrangementService {
         }
 
         return deleteLevelInner(level, deleteChange);
-    }
-
-    private boolean isLevelShared(final ArrLevel level) {
-        Assert.notNull(level, "Level musí být vyplněn");
-
-        return levelRepository.countByNode(level.getNode()) > 1;
     }
 
     private ArrLevel deleteLevelInner(final ArrLevel level, final ArrChange deleteChange) {
@@ -1135,8 +1121,7 @@ public class ArrangementService {
      * @return level nodu
      */
     public ArrLevel lockNode(final ArrNode lockNode, final ArrFundVersion version, final ArrChange change) {
-        ArrLevel lockLevel = levelRepository
-                .findNodeInRootTreeByNodeId(lockNode, version.getRootNode(), version.getLockChange());
+        ArrLevel lockLevel = levelRepository.findByNode(lockNode, version.getLockChange());
         Assert.notNull(lockLevel, "Musí být vyplněno");
         ArrNode staticNodeDb = lockLevel.getNode();
         lockNode(staticNodeDb, lockNode, change);
@@ -1172,7 +1157,7 @@ public class ArrangementService {
         Assert.notNull(nodeId, "Node id must be set");
         ArrNode node = em.getReference(ArrNode.class, nodeId);
         em.lock(node, LockModeType.PESSIMISTIC_FORCE_INCREMENT);
-        return levelRepository.findNodeInRootTreeByNodeId(node, null, fundVersion.getLockChange());
+        return levelRepository.findByNode(node, fundVersion.getLockChange());
     }
 
     /**

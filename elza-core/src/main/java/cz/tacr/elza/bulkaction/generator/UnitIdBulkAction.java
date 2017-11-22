@@ -120,26 +120,26 @@ public class UnitIdBulkAction extends BulkAction {
 		RuleSystemItemType levelTypeWrapper = ruleSystem.getItemTypeByCode(levelTypeCode);
 		Validate.notNull(levelTypeWrapper);
 		descItemLevelType = levelTypeWrapper.getEntity();
-		
+
 		// read delimiters
 		delimiterMajor = config.getDelimiterMajor();
 		Validate.notNull(delimiterMajor);
 
 		delimiterMinor = config.getDelimiterMinor();
 		Validate.notNull(delimiterMinor);
-		
+
 		// item for previous value
 		String previousIdCode = config.getPreviousIdCode();
 		Validate.notNull(previousIdCode);
 		RuleSystemItemType previousIdTypeWrapper = ruleSystem.getItemTypeByCode(previousIdCode);
 		Validate.notNull(previousIdTypeWrapper);
 		descItemPreviousType = previousIdTypeWrapper.getEntity();
-		
+
 		String previousIdSpecCode = config.getPreviousIdSpecCode();
 		Validate.notNull(previousIdSpecCode);
 		descItemPreviousSpec = previousIdTypeWrapper.getItemSpecByCode(previousIdSpecCode);
 		Validate.notNull(descItemPreviousSpec);
-		
+
 		String delimiterMajorLevelTypeNotUse = config.getDelimiterMajorLevelTypeNotUse();
 		if (delimiterMajorLevelTypeNotUse == null) {
 		    delimiterMajorLevelTypeNotUseList = new ArrayList<>();
@@ -306,11 +306,9 @@ public class UnitIdBulkAction extends BulkAction {
         ArrNode rootNode = version.getRootNode();
 
 		for (Integer nodeId : runContext.getInputNodeIds()) {
-            ArrNode node = nodeRepository.findOne(nodeId);
-			Validate.notNull(nodeId, "Node s nodeId=" + nodeId + " neexistuje");
-            ArrLevel level = levelRepository.findNodeInRootTreeByNodeId(node, rootNode, null);
-			Validate.notNull(level,
-			        "Level neexistuje, nodeId=" + node.getNodeId() + ", rootNodeId=" + rootNode.getNodeId());
+            ArrNode nodeRef = nodeRepository.getOne(nodeId);
+            ArrLevel level = levelRepository.findByNodeAndDeleteChangeIsNull(nodeRef);
+			Validate.notNull(level);
 
             ArrDescItem descItem = loadDescItem(level);
             ArrDescItem descItemLevel = loadDescItemLevel(level);
@@ -335,7 +333,7 @@ public class UnitIdBulkAction extends BulkAction {
                     generate(childLevel, rootNode, unitIdChild, descItemLevel == null ? null : descItemLevel.getItemSpec().getCode());
                 }
 
-            } else if(node.equals(rootNode)) {
+            } else if(nodeId.equals(rootNode.getNodeId())) {
                 generate(level, rootNode, null, descItemLevel == null ? null : descItemLevel.getItemSpec().getCode());
             }
 
