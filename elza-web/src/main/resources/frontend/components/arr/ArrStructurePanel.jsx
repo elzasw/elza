@@ -107,8 +107,8 @@ class ArrStructurePanel extends AbstractReactComponent {
             return [clickedItem.id];
         } else if (activeIndexes) {
             const {store: {rows}} = this.props;
-            if (activeIndexes.length === 1) { // Vybrána pouze 1 položka a není
-                return rows[parseInt(activeIndexes[0])].id;
+            if (activeIndexes.length === 1) { // Vybrána pouze 1 položka
+                return [rows[parseInt(activeIndexes[0])].id];
             } else if (activeIndexes.length > 1) { // Vybráno více položek
                 return activeIndexes.map(i => rows[i].id);
             } else { // Vybráno 0 položek
@@ -160,12 +160,12 @@ class ArrStructurePanel extends AbstractReactComponent {
 
     /**
      *
-     * @param id
+     * @param clickItem
      * @param {Boolean} assignableState
      */
-    handleSetAssignable = ({id}, assignableState) => {
+    handleSetAssignable = (clickItem, assignableState) => {
         const {fundVersionId} = this.props;
-        const ids = this.getActiveSelection();
+        const ids = this.getActiveSelection(clickItem);
         this.props.dispatch(contextMenuHide());
         WebApi.setAssignableStructureDataList(fundVersionId, assignableState, ids).then(() => {
             this.props.dispatch(structureTypeInvalidate());
