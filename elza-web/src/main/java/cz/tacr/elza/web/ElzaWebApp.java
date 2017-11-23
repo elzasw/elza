@@ -28,7 +28,6 @@ import java.util.Locale;
  */
 @EnableAutoConfiguration
 @Configuration
-@EnableAsync
 @EnableConfigurationProperties
 @Import({ElzaCore.class})
 @ComponentScan(basePackageClasses = {ElzaWebApp.class, ElzaCore.class})
