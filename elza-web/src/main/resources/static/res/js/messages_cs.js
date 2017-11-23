@@ -32,6 +32,7 @@ var messages = {
     "global.action.create": "Vytvořit",
     "global.action.update": "Upravit",
     "global.action.delete": "Odstranit",
+    "global.action.replace": "Nahradit",
     "global.action.add": "Přidat",
     "global.action.choose": "Vybrat",
     "global.action.remove": "Odebrat",
@@ -455,8 +456,10 @@ var messages = {
     "arr.fund.panel.forbidEdit": "Ukončit režim úprav",
     "arr.fund.panel.readOnly": "Máte oprávnění jen pro čtení",
 
-    "arr.fund.files.action.add": "Nový soubor",
-    "arr.fund.files.action.delete": "Odebrat soubor",
+    "arr.fund.files.action.add": "Nová příloha",
+    "arr.fund.files.action.add.fromFile": "Ze souboru",
+    "arr.fund.files.action.add.editable": "Ručně psaný text",
+    "arr.fund.files.action.delete": "Odebrat přílohu",
 
     "arr.fund.settings.title": "Nastavení zobrazení archivního fondu",
     "arr.fund.settings.rules": "Ostatní",
@@ -725,8 +728,13 @@ var messages = {
     "arr.history.action.deleteChanges": "Odstranit změny",
     "arr.history.action.goToDate": "Zobrazit",
 
-    "dms.file.title.add": "Přidání nového souboru",
-    "dms.file.name": "Název souboru",
+    "dms.file.title.file.add": "Přidání přílohy ze souboru",
+    "dms.file.title.editable.add": "Přidání přílohy jako text",
+    "dms.file.title.editable.edit": "Upravení přílohy",
+    "dms.file.name": "Název",
+    "dms.file.mimeType": "Typ souboru",
+    "dms.file.fileName": "Název souboru s příponou",
+    "dms.file.content": "Text",
 
     "arr.packet.title.addOne": "Přidání nového obalu",
     "arr.packet.title.addMany": "Přidání nových obalů",

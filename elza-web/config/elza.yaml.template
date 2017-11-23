@@ -7,6 +7,20 @@ elza:
       #allowDefaultUser:false
   #workingDir: C:/Elza/work
 
+#  attachment:
+#      mimeDefs:
+#        - mimeType: application/msword
+#          editable: false
+#          generators:
+#            - outputMimeType: application/pdf
+#              command: cmd /c copy {2} {6}
+#        - mimeType: text/plain
+#          editable: true
+#          generators:
+#            - outputMimeType: application/pdf
+#              command: "\"c:\\Program Files (x86)\\LibreOffice 5\\program\\soffice.exe\" --headless --convert-to pdf {2}"
+#              outputFileName: "{0}.pdf"
+
 spring:
   app:
       buildType: DEV

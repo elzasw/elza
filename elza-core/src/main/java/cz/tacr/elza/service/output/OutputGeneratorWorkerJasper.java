@@ -1,37 +1,29 @@
 package cz.tacr.elza.service.output;
 
-import java.io.*;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import cz.tacr.elza.controller.vo.OutputSettingsVO;
+import cz.tacr.elza.domain.ArrOutputDefinition;
+import cz.tacr.elza.domain.RulTemplate;
 import cz.tacr.elza.exception.SystemException;
-import net.sf.jasperreports.engine.JRRuntimeException;
+import cz.tacr.elza.print.JRAttPagePlaceHolder;
+import cz.tacr.elza.print.OutputImpl;
+import cz.tacr.elza.service.attachment.AttachmentService;
+import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.export.JRPdfExporter;
 import net.sf.jasperreports.export.SimpleExporterInput;
 import net.sf.jasperreports.export.SimpleOutputStreamExporterOutput;
+import net.sf.jasperreports.export.SimplePdfReportConfiguration;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.pdfbox.io.MemoryUsageSetting;
-import org.apache.pdfbox.multipdf.PDFMergerUtility;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.text.PDFTextStripper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import cz.tacr.elza.domain.ArrOutputDefinition;
-import cz.tacr.elza.domain.DmsFile;
-import cz.tacr.elza.domain.RulTemplate;
-import cz.tacr.elza.print.OutputImpl;
-import cz.tacr.elza.print.item.ItemFile;
-import net.sf.jasperreports.engine.JRDataSource;
-import net.sf.jasperreports.engine.JREmptyDataSource;
-import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.JasperCompileManager;
-import net.sf.jasperreports.engine.JasperFillManager;
-import net.sf.jasperreports.engine.JasperPrint;
-import net.sf.jasperreports.engine.JasperReport;
-import net.sf.jasperreports.export.SimplePdfReportConfiguration;
+import java.io.*;
+import java.util.*;
 
 /**
  * Zajišťuje generování výstupu a jeho uložení do dms na základě vstupní definice - část generování specifická pro jasper.
@@ -48,6 +40,9 @@ class OutputGeneratorWorkerJasper extends OutputGeneratorWorkerAbstract {
     private static final String JASPER_MAIN_TEMPLATE = MAIN_TEMPLATE_BASE_NAME + JASPER_TEMPLATE_SUFFIX;
 
     private static final int MAX_MERGE_MAIN_MEMORY_BYTES = 100 * 1024 * 1024;
+
+    @Autowired
+    private AttachmentService attachmentService;
 
     @Override
     protected InputStream getContent(final ArrOutputDefinition arrOutputDefinition, final RulTemplate rulTemplate, final OutputImpl output) {
@@ -125,27 +120,76 @@ class OutputGeneratorWorkerJasper extends OutputGeneratorWorkerAbstract {
         }
     }
 
-    private void mergePdfJasperAndAttachements(final OutputImpl output, final PipedInputStream in, final PipedOutputStream outm) {
-        PDFMergerUtility ut = new PDFMergerUtility();
-        ut.addSource(in);
-        final List<ItemFile> attachements = output.getAttachements();
-        attachements.forEach(itemFile -> {
-                    File file = itemFile.getFile();
-                    if (file == null) { // obezlička, protože arrFile ten file nevrací
-                        final DmsFile dmsFile = dmsService.getFile(itemFile.getFileId());
-                        final String filePath = dmsService.getFilePath(dmsFile);
-                        file = new File(filePath);
+    /**
+     * Provede vložení PDF příloh do výstupního streamu.
+     *
+     * @param inDocStream Vstupní PDF, generované jasperem
+     * @param outDocStream finální výstupní PDF (předávané dál do DMS)
+     * @param attachements seznam PDF příloh
+     * @throws IOException
+     */
+    private static void includeAttachementsToOutput(InputStream inDocStream, OutputStream outDocStream, List<PDDocument> attachements) throws IOException {
+        PDDocument inDoc = PDDocument.load(inDocStream);
+        final PDDocument outDoc = new PDDocument();
+        final List<PDDocument> attDoc = new ArrayList<>();
+        boolean included = false;
+        for (PDPage pdPage : inDoc.getPages()) {
+            PDFTextStripper pdfStripper = null;
+            pdfStripper = new PDFTextStripper();
+            try (final PDDocument tmpDoc = new PDDocument()) {
+                tmpDoc.addPage(pdPage);
+                String text = pdfStripper.getText(tmpDoc);
+                if (StringUtils.containsIgnoreCase(text, JRAttPagePlaceHolder.INCL_PATTERN)) {
+                    if (!included) { // nahradit značku za přílohy, další výskyty značky jen vyhodit
+                        attDoc.addAll(includeAttachements(outDoc, attachements));
+                        included = true;
                     }
+                } else {
+                    outDoc.addPage(pdPage);
+                }
+            }
+        }
 
-                    try {
-                        ut.addSource(file);
-                    } catch (FileNotFoundException e) {
-                        throw new SystemException(e);
-                    }
-                });
-        ut.setDestinationStream(outm);
+        // na závěr vložit pokud nebyla značka v dokumentu
+        if (!included) {
+            attDoc.addAll(includeAttachements(outDoc, attachements));
+        }
+
+        outDoc.save(outDocStream);
+
+        outDoc.close();
+        inDoc.close();
+        for (PDDocument pdDocument : attDoc) {
+            pdDocument.close();
+        }
+    }
+
+    /**
+     *
+     * @param outDoc Objekt výstupního dokumentu
+     * @param attachements seznam příloh
+     * @return seznam otevřených dokumentů příloh (je potřeba je zavřít až po dokončení generování)
+     * @throws IOException
+     */
+    private static List<PDDocument> includeAttachements(PDDocument outDoc, List<PDDocument> attachements) throws IOException {
+        List<PDDocument> attList = new ArrayList<>();
+        for (PDDocument attDoc : attachements) {
+            attDoc.getPages().forEach(outDoc::addPage);
+            attList.add(attDoc); // nezavírat attDoc! - až po dokončení exportu outdoc
+        }
+        return attList;
+    }
+
+    /**
+     * Zajistí připojení příloh ve formátu PDF do výstupu.
+     *
+     * @param output definice obsahu výstupu
+     * @param in vstup z jasperu
+     * @param outm výstup tisku
+     */
+    private void mergePdfJasperAndAttachements(final OutputImpl output, final PipedInputStream in, final PipedOutputStream outm) {
         try {
-            ut.mergeDocuments(MemoryUsageSetting.setupMixed(MAX_MERGE_MAIN_MEMORY_BYTES));
+            includeAttachementsToOutput(in, outm, output.getAttDocs());
             outm.close();
         } catch (IOException e) {
             setException(new SystemException(e));

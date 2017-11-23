@@ -11,6 +11,11 @@ import org.springframework.web.multipart.MultipartFile;
 public class DmsFileVO {
     private Integer id;
 
+    /**
+     * Textový obsah souboru, je plněn při ukládání z klienta na server, pokud je editován na klientovi nebo je plněn při čtení, pokud je o to explicitně požádáno.
+     */
+    private String content;
+
     private String name;
 
     private String fileName;
@@ -77,5 +82,13 @@ public class DmsFileVO {
 
     public void setFile(MultipartFile file) {
         this.file = file;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(final String content) {
+        this.content = content;
     }
 }

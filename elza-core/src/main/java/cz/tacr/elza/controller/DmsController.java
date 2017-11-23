@@ -10,15 +10,20 @@ import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrOutputFile;
 import cz.tacr.elza.domain.ArrOutputResult;
 import cz.tacr.elza.domain.DmsFile;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.FilteredResult;
 import cz.tacr.elza.repository.OutputResultRepository;
+import cz.tacr.elza.service.attachment.AttachmentService;
 import cz.tacr.elza.service.DmsService;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -26,6 +31,9 @@ import javax.annotation.Nullable;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
 import java.util.function.Function;
 
 /**
@@ -35,6 +43,8 @@ import java.util.function.Function;
 @RestController
 /// @RequestMapping("/api/dms") - Mapping není funkční pro upload
 public class DmsController {
+
+    private ThreadLocal<SimpleDateFormat> FORMATTER_DATE_TIME = ThreadLocal.withInitial(() -> new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss"));
 
     @Autowired
     private ClientFactoryDO factoryDO;
@@ -48,8 +58,21 @@ public class DmsController {
     @Autowired
     private OutputResultRepository outputResultRepository;
 
+    @Autowired
+    private AttachmentService attachmentService;
+
     /**
-     * Vytvoření souboru
+     * Načtení seznamu editovatelných mime typů.
+     *
+     * @return seznam editovatelných mime typů
+     */
+    @RequestMapping(value = "/api/attachment/mimeTypes", method = RequestMethod.GET)
+    public List<String> getMimeTypes() {
+        return attachmentService.getEditableMimeTypes();
+    }
+
+    /**
+     * Vytvoření souboru.
      * @param object objekt souboru
      * @throws IOException
      */
@@ -83,6 +106,28 @@ public class DmsController {
         create(object, (fileVO) -> factoryDO.createArrOutputFile((ArrOutputFileVO) fileVO));
     }
 
+    @RequestMapping(value = "/api/xxx", method = RequestMethod.GET)
+    public void xxx() {
+        DmsFile file = dmsService.getFile(25);
+
+        try (InputStream is = attachmentService.generate(file, "application/pdf").getInputStream()) {
+            IOUtils.toString(is);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Aktualizuje vo objekt z předaných informací o souboru.
+     * @param objVO vo pro aktualizaci - do něj se zapisuje
+     * @param fileInfo vstupní objekt s daty pro zapsání
+     */
+    private void updateDmsFile(final DmsFileVO objVO, final FileInfo fileInfo) {
+        objVO.setFileSize((int) fileInfo.getFileSize());
+        objVO.setFileName(fileInfo.getFileName());
+        objVO.setMimeType(fileInfo.getMimeType());
+    }
+
     /**
      * Pomocná metoda pro vytvoření DMS souboru
      * @param objVO VO
@@ -92,22 +137,119 @@ public class DmsController {
      */
     private DmsFile create(final DmsFileVO objVO, final Function<DmsFileVO, DmsFile> factory) throws IOException {
         Assert.notNull(objVO, "Soubor musí být vyplněn");
-        MultipartFile multipartFile = objVO.getFile();
-        Assert.notNull(multipartFile, "Soubor musí být vyplněn");
 
-        objVO.setFileName(FilenameUtils.getName(multipartFile.getOriginalFilename()));
-        objVO.setMimeType(multipartFile.getContentType());
-        objVO.setFileSize((int) multipartFile.getSize());
+        final FileInfo fileInfo = getObjInfo(objVO);
+        if (fileInfo == null) {
+            throw new BusinessException("Soubor nebo textový obsah souboru musí být vyplněny", BaseCode.PROPERTY_NOT_EXIST).set("property", "file, content");
+        }
+
+        updateDmsFile(objVO, fileInfo);
 
         DmsFile objDO = factory.apply(objVO);
-        InputStream inputStream = multipartFile.getInputStream();
+
+        final InputStream inputStream = fileInfo.getInputStream();
         dmsService.createFile(objDO, inputStream);
-        inputStream.close();
+
         return objDO;
     }
 
+    private static class FileInfo {
+        private InputStream inputStream;
+        private long fileSize;
+        private String fileName;
+        private String mimeType;
+
+        public FileInfo(final InputStream inputStream, final long fileSize, final String fileName, final String mimeType) {
+            this.setInputStream(inputStream);
+            this.setFileSize(fileSize);
+            this.setFileName(fileName);
+            this.setMimeType(mimeType);
+        }
+
+        public InputStream getInputStream() {
+            return inputStream;
+        }
+
+        public void setInputStream(InputStream inputStream) {
+            this.inputStream = inputStream;
+        }
+
+        public long getFileSize() {
+            return fileSize;
+        }
+
+        public void setFileSize(long fileSize) {
+            this.fileSize = fileSize;
+        }
+
+        public String getFileName() {
+            return fileName;
+        }
+
+        public void setFileName(String fileName) {
+            this.fileName = fileName;
+        }
+
+        public String getMimeType() {
+            return mimeType;
+        }
+
+        public void setMimeType(String mimeType) {
+            this.mimeType = mimeType;
+        }
+    }
+
     /**
-     * Update souboru
+     * Načtení informací o souboru i s ohledem na typ dat - ze souboru, editovatelná apod.
+     *
+     * @param objVO vo objekt z klienta
+     * @return info o souboru a jeho datech nebo null, pokud se v datech soubor nevyskytoval
+     * @throws IOException chyba
+     */
+    private FileInfo getObjInfo(final DmsFileVO objVO) throws IOException {
+        final MultipartFile multipartFile = objVO.getFile();
+        final String content = objVO.getContent();
+        final InputStream inputStream;
+        final String mimeType;
+        final long fileSize;
+        final String fileName;
+
+        if (multipartFile != null) {
+            mimeType = multipartFile.getContentType();
+            fileSize = multipartFile.getSize();
+            fileName = FilenameUtils.getName(multipartFile.getOriginalFilename());
+            inputStream = multipartFile.getInputStream();
+        } else if (content != null) {
+            mimeType = objVO.getMimeType();
+
+            if (StringUtils.isEmpty(objVO.getFileName())) {
+                String baseFileName = "attachment-" + FORMATTER_DATE_TIME.get().format(new Date());
+
+                String fileExtension = null;
+                try {
+                    // TODO [stanekpa] - chceme v budoucnu nějak řešit? MimeTypes tuto informaci má, ale mapu přípony na mime typ má jako private, případně by šlo použít Apache Tika
+                    //                MimeType mimeType = MimeType.valueOf(objVO.getMimeType());
+                    fileExtension = "dat";
+                } catch (Exception ex) {
+                    fileExtension = "dat";
+                }
+                fileName = baseFileName + "." + fileExtension;
+            } else {
+                fileName = objVO.getFileName();
+            }
+
+            fileSize = content.length();
+
+            inputStream = new ByteArrayInputStream(content.getBytes());
+        } else {
+            return null;
+        }
+
+        return new FileInfo(inputStream, fileSize, fileName, mimeType);
+    }
+
+    /**
+     * Update souboru - metoda neřeší oprávnění a pokud bude zpřístupněna přes rest, musí kontrovolat, že dms file nemá žádné vazby (např. na AS) a je tedy opravdu common.
      *
      * @param fileId id souboru
      * @param object objekt souboru
@@ -115,7 +257,7 @@ public class DmsController {
      */
     @Transactional
     // kvůli IE nelze použít PUT protože nemůžeme uploadovat soubor
-    @RequestMapping(value = "/api/dms/common/{fileId}", method = RequestMethod.POST)
+//    @RequestMapping(value = "/api/dms/common/{fileId}", method = RequestMethod.POST)
     public void updateFile(@PathVariable(value = "fileId") Integer fileId, final DmsFileVO object) throws IOException {
         update(fileId, object, factoryDO::createDmsFile);
     }
@@ -163,22 +305,16 @@ public class DmsController {
         Assert.notNull(objVO, "Soubor musí být vyplněn");
         Assert.isTrue(fileId.equals(objVO.getId()), "Id v URL neodpovídá ID objektu");
 
-        DmsFile objDO = factory.apply(objVO);
-
-        MultipartFile multipartFile = objVO.getFile();
-        boolean hasInputFile = multipartFile != null;
-        InputStream inputStream = null;
-        if (hasInputFile) {
-            inputStream = multipartFile.getInputStream();
-            objDO.setFileName(multipartFile.getOriginalFilename());
-            objDO.setMimeType(multipartFile.getContentType());
-            objDO.setFileSize((int) multipartFile.getSize());
+        final FileInfo fileInfo = getObjInfo(objVO);
+        if (fileInfo != null) {
+            updateDmsFile(objVO, fileInfo);
         }
+
+        DmsFile objDO = factory.apply(objVO);
+        final InputStream inputStream = fileInfo != null ? fileInfo.getInputStream() : null;
 
         dmsService.updateFile(objDO, inputStream);
-        if (hasInputFile) {
-            inputStream.close();
-        }
+
         return objDO;
     }
 
@@ -255,6 +391,66 @@ public class DmsController {
     }
 
     /**
+     * Načtení konkrétního objektu s informacemi o souboru s vyžádáním obsahu pro editovatelný soubor.
+     *
+     * @param fundId id AS
+     * @param fileId id souboru
+     * @return list záznamů
+     */
+    @RequestMapping(value = "/api/dms/fund/{fundId}/{fileId}", method = RequestMethod.GET)
+    public ArrFileVO getEditableFundFile(@PathVariable("fundId") final Integer fundId,
+                                         @PathVariable("fileId") final Integer fileId) throws IOException {
+        Assert.notNull(fundId, "Fund id musí být uvedeno");
+        ArrFile file = dmsService.getArrFile(fileId);
+        Assert.isTrue(fundId.equals(file.getFund().getFundId()), "Nesouhlasí id AS");
+
+        ArrFileVO result = factoryVO.createArrFile(file);
+
+        if (!attachmentService.isEditable(file.getMimeType())) {
+            throw new BusinessException("Soubor není možné editovat ručně.", BaseCode.INVALID_STATE);
+        }
+
+        try (InputStream is = dmsService.downloadFile(file)) {
+            String text = IOUtils.toString(is, "utf-8");
+            result.setContent(text);
+        }
+
+        return result;
+    }
+
+    /**
+     * Načtení konkrétního objektu s informacemi o souboru s vyžádáním obsahu pro editovatelný soubor.
+     *
+     * @param fundId id AS
+     * @param fileId id souboru
+     * @return list záznamů
+     */
+    @RequestMapping(value = "/api/dms/fund/{fundId}/{fileId}/generated", method = RequestMethod.GET)
+    public void generateEditableFundFile(HttpServletResponse response,
+                                         @PathVariable("fundId") final Integer fundId,
+                                         @PathVariable("fileId") final Integer fileId,
+                                         @RequestParam("mimeType") final String mimeType) throws IOException {
+        Assert.notNull(fundId, "Fund id musí být uvedeno");
+        ArrFile file = dmsService.getArrFile(fileId);
+        Assert.isTrue(fundId.equals(file.getFund().getFundId()), "Nesouhlasí id AS");
+
+        Resource output = attachmentService.generate(file, mimeType);
+
+        response.setHeader("Content-Disposition", "attachment;filename=" + output.getFilename());
+
+        ServletOutputStream out = response.getOutputStream();
+        try (InputStream in = output.getInputStream()) {
+            if (in != null) {
+                IOUtils.copy(in, out);
+                IOUtils.closeQuietly(in);
+                IOUtils.closeQuietly(out);
+            } else {
+                throw new BusinessException("Požadovaný soubor nelze generovat do " + mimeType, BaseCode.INVALID_STATE);
+            }
+        }
+    }
+
+    /**
      * Vyhledávání
      * @param search vyhledávaný text
      * @param from od záznamu
@@ -271,12 +467,12 @@ public class DmsController {
     }
 
     /**
-     * Smazání souboru
+     * Smazání souboru - metoda neřeší oprávnění a pokud bude zpřístupněna přes rest, musí kontrovolat, že dms file nemá žádné vazby (např. na AS) a je tedy opravdu common.
      *
      * @param fileId id souboru
      */
     @Transactional
-    @RequestMapping(value = "/api/dms/common/{fileId}", method = RequestMethod.DELETE)
+//    @RequestMapping(value = "/api/dms/common/{fileId}", method = RequestMethod.DELETE)
     public void deleteFile(@PathVariable(value = "fileId") Integer fileId) throws IOException {
         dmsService.deleteFile(fileId);
     }

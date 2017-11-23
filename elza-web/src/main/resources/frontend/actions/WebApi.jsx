@@ -46,6 +46,7 @@ export class WebApiCls {
     static ruleUrl = WebApiCls.baseUrl + '/rule';
     static changesUrl = WebApiCls.arrangementUrl + '/changes';
     static dmsUrl = WebApiCls.baseUrl + '/dms';
+    static attachmentUrl = WebApiCls.baseUrl + '/attachment';
     static userUrl = WebApiCls.baseUrl + '/user';
     static groupUrl = WebApiCls.baseUrl + '/group';
     static adminUrl = WebApiCls.baseUrl + '/admin';
@@ -1106,16 +1107,32 @@ export class WebApiCls {
         return AjaxUtils.ajaxDelete(WebApiCls.arrangementUrl + '/output/' + versionId + '/' + outputId);
     }
 
-    createFundFile(formData) {
+    createFundFileRaw(formData) {
         return AjaxUtils.ajaxCallRaw(WebApiCls.dmsUrl + '/fund/', {}, 'POST', formData);
+    }
+
+    createFundFile(formData) {
+        return AjaxUtils.ajaxPost(WebApiCls.dmsUrl + '/fund', null, formData);
+    }
+
+    getMimeTypes() {
+        return AjaxUtils.ajaxGet(WebApiCls.attachmentUrl + '/mimeTypes', null);
     }
 
     findFundFiles(fundId, searchText, count = 20) {
         return AjaxUtils.ajaxGet(WebApiCls.dmsUrl + '/fund/' + fundId, {'count': count, 'search': searchText});
     }
 
-    updateFundFile(fileId, formData) {
+    getEditableFundFile(fundId, fileId) {
+        return AjaxUtils.ajaxGet(WebApiCls.dmsUrl + '/fund/' + fundId + "/" + fileId);
+    }
+
+    updateFundFileRaw(fileId, formData) {
         return AjaxUtils.ajaxCallRaw(WebApiCls.dmsUrl + '/fund/' + fileId, {}, 'POST', formData);
+    }
+
+    updateFundFile(fileId, formData) {
+        return AjaxUtils.ajaxPost(WebApiCls.dmsUrl + '/fund/' + fileId, null, formData);
     }
 
     deleteArrFile(fileId) {

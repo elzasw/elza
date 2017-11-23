@@ -77,7 +77,7 @@ Výchozí konfig
 `devTools`- Debug nástroje devtools viz. `Debug nástroje - redux-tools` 
 
 ##### Debug nástroje - redux-tools
-V příadě nastavení v souboru `.dev` a spustíme server frontendu, tak po stisku ctrl+h se zobrazí logovací nástroje redux storu.
+V případě nastavení v souboru `.dev` a spustíme server frontendu, tak po stisku ctrl+h se zobrazí logovací nástroje redux storu.
 Pomocí stisku ctrl+q se mění umístění panelu nástrojů.
 
 
@@ -101,6 +101,9 @@ Pro spuštění serveru pro frontend spusťte příkaz (v modulu elza-web):
 mvn exec:exec -Pfrontend-dev
 ```
 Uživatelské rozhranní najdete na adrese http://localhost:8080.
+
+Nastavení spuštění serveru pro IntelliJ Idea (označené hodnoty nutno explicitně nastavit):
+![IntelliJ Idea](idea.png)
 
 ### Sestavení instalátoru aplikace
 * Stáhněte aplikaci Inno Setup z odkazu http://www.jrsoftware.org/download.php/is.exe a nainstalujte (všechny volby ponechte výchozí). Aplikace se nainstaluje do umístění c:\Program Files (x86)\Inno Setup 5\.

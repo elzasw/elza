@@ -35,7 +35,7 @@ const FileListBox = class FileListBox extends AbstractReactComponent {
     componentWillReceiveProps(nextProps) {}
 
     renderItemContent(item) {
-        const {onDelete, onReplace, onDownload, onInfo} = this.props;
+        const {onDelete, onDownloadPdf, supportDownloadPdf, onReplace, onEdit, supportEdit, onDownload, onInfo} = this.props;
         let iconName;
         switch (item.mimeType) {
             case 'application/pdf':
@@ -47,6 +47,10 @@ const FileListBox = class FileListBox extends AbstractReactComponent {
             default:
                 iconName = 'fa-file-o';
         }
+
+        const showEdit = onEdit && (!supportEdit || supportEdit(item.id, item))
+        const showDownloadPdf = onDownloadPdf && (!supportDownloadPdf || supportDownloadPdf(item.id, item))
+
         return (
             <div key={'file-id-' + item.id} className="search-result-row">
                 <div className="details">
@@ -58,9 +62,11 @@ const FileListBox = class FileListBox extends AbstractReactComponent {
                 </div>
                 <div className="actions">
                     {onInfo && <Icon glyph='fa-info-circle' onClick={() => onInfo(item.id)} />}
-                    {onDownload && <Icon glyph='fa-download' onClick={() => onDownload(item.id)} />}
-                    {onReplace && <Icon glyph='fa-exchange' onClick={() => onReplace(item.id)} />}
-                    {onDelete && <Icon glyph='fa-trash' onClick={() => onDelete(item.id)} />}
+                    {showEdit && <Icon title={i18n("global.action.update")} glyph='fa-edit' onClick={() => onEdit(item.id)} />}
+                    {showDownloadPdf && <Icon title={i18n("global.action.download")} glyph='fa-file-pdf-o' onClick={() => onDownloadPdf(item.id)} />}
+                    {onDownload && <Icon title={i18n("global.action.download")} glyph='fa-download' onClick={() => onDownload(item.id)} />}
+                    {onReplace && <Icon title={i18n("global.action.replace")} glyph='fa-exchange' onClick={() => onReplace(item.id)} />}
+                    {onDelete && <Icon title={i18n("global.action.delete")} glyph='fa-trash' onClick={() => onDelete(item.id)} />}
                 </div>
             </div>
         )
@@ -128,8 +134,13 @@ const FileListBox = class FileListBox extends AbstractReactComponent {
 FileListBox.propsTypes = {
     onDownload: React.PropTypes.func,
     onReplace: React.PropTypes.func,
+    onEdit: React.PropTypes.func,
     onInfo: React.PropTypes.func,
     onDelete: React.PropTypes.func,
+    onDownloadPdf: React.PropTypes.func,
+
+    supportEdit: React.PropTypes.func,
+    supportDownloadPdf: React.PropTypes.func,
 
     className:React.PropTypes.string,
     items: React.PropTypes.array.isRequired,
