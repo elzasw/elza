@@ -79,4 +79,17 @@ public class ArrDataPartyRef extends ArrData {
         }
         return party.getRecord().getRecord();
     }
+
+    @Override
+    public ArrData copy() {
+        ArrDataPartyRef data = new ArrDataPartyRef();
+        data.setDataType(this.getDataType());
+        data.setParty(this.getParty());
+        return data;
+    }
+
+    @Override
+    public void merge(final ArrData data) {
+        this.setParty(((ArrDataPartyRef) data).getParty());
+    }
 }

@@ -1,0 +1,10 @@
+<structure-extension-definitions>
+    <structure-extension-definition structure-type="ZP2015_PACKET" structure-extension="ZP2015_PACKET_MZABrno" filename="ZP2015_PACKET_MZABrno.drl">
+        <def-type>ATTRIBUTE_TYPES</def-type>
+        <priority>1</priority>
+    </structure-extension-definition>
+    <structure-extension-definition structure-type="ZP2015_PACKET" structure-extension="ZP2015_PACKET_MZABrno" filename="ZP2015_PACKET_MZABrno.groovy">
+        <def-type>SERIALIZED_VALUE</def-type>
+        <priority>1</priority>
+    </structure-extension-definition>
+</structure-extension-definitions>

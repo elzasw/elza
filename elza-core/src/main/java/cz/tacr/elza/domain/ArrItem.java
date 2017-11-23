@@ -3,6 +3,7 @@ package cz.tacr.elza.domain;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import cz.tacr.elza.repository.DataRepositoryImpl;
 import cz.tacr.elza.service.cache.NodeCacheSerializable;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.hibernate.search.annotations.Field;
@@ -38,6 +39,7 @@ public abstract class ArrItem implements NodeCacheSerializable {
     public static final String DATA = "data";
     public static final String ITEM_SPEC = "itemSpec";
     public static final String ITEM_TYPE = "itemType";
+    public static final String POSITION = "position";
 
     @Id
     @GeneratedValue
@@ -86,6 +88,9 @@ public abstract class ArrItem implements NodeCacheSerializable {
     @JoinColumn(name = "dataId")
     private ArrData data;
 
+    @Column(name = "dataId", nullable = false, updatable = false, insertable = false)
+    private Integer dataId;
+
     @JsonIgnore
     @Field
     @NumericField
@@ -98,6 +103,20 @@ public abstract class ArrItem implements NodeCacheSerializable {
     @NumericField
     public Integer getDeleteChangeId() {
         return deleteChangeId == null ? Integer.MAX_VALUE : deleteChangeId;
+    }
+
+    public String getFulltextValue() {
+        ArrData data = getData();
+        if (data == null) {
+            return null;
+        } else {
+            RulItemSpec itemSpec = getItemSpec();
+            if (data instanceof ArrDataNull) {
+                return itemSpec == null ? null : itemSpec.getName();
+            } else {
+                return itemSpec == null ? data.getFulltextValue() : itemSpec.getName() + DataRepositoryImpl.SPEC_SEPARATOR + data.getFulltextValue();
+            }
+        }
     }
 
     public Integer getItemId() {
@@ -226,6 +245,10 @@ public abstract class ArrItem implements NodeCacheSerializable {
     public abstract ArrNode getNode();
 
     public abstract ArrOutputDefinition getOutputDefinition();
+
+    public abstract ArrStructureData getStructureData();
+
+    public abstract Integer getStructureDataId();
 
     public void setCreateChangeId(final Integer createChangeId) {
         this.createChangeId = createChangeId;

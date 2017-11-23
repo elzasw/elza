@@ -26,13 +26,13 @@ public interface ItemTypeRepository extends ElzaJpaRepository<RulItemType, Integ
 
 
     /**
-     * Najde všechny typy, které mají obal. (Jsou typu s kódem "PACKET_REF".
+     * Najde všechny typy, které mají strukturovaná data. (Jsou typu s kódem "STRUCTURED".
      *
      * @return všechny typy, které mají obal
      */
     @Query(value = "SELECT t FROM rul_item_type t join t.dataType dt "
-            + "WHERE dt.code = 'PACKET_REF'")
-    Set<RulItemType> findDescItemTypesForPackets();
+            + "WHERE dt.code = 'STRUCTURED'")
+    Set<RulItemType> findDescItemTypesForStructureds();
 
     /**
      * Najde všechny typy, které mají int. (Jsou typu s kódem "INT".

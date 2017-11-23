@@ -118,6 +118,13 @@ public class RulItemType {
     @JoinColumn(name = "packageId", nullable = false)
     private RulPackage rulPackage;
 
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulStructureType.class)
+    @JoinColumn(name = "structureTypeId")
+    private RulStructureType structureType;
+
+    @Column(updatable = false, insertable = false)
+    private Integer structureTypeId;
+
     public Integer getItemTypeId() {
         return itemTypeId;
     }
@@ -349,6 +356,28 @@ public class RulItemType {
      */
     public void setRuleSet(final RulRuleSet ruleSet) {
         this.ruleSet = ruleSet;
+    }
+
+    /**
+     * @return id strukturovaného typu
+     */
+    public Integer getStructureTypeId() {
+        return structureTypeId;
+    }
+
+    /**
+     * @return strukturovaný typ
+     */
+    public RulStructureType getStructureType() {
+        return structureType;
+    }
+
+    /**
+     * @param structureType strukturovaný typ
+     */
+    public void setStructureType(final RulStructureType structureType) {
+        this.structureType = structureType;
+        this.structureTypeId = structureType != null ? structureType.getStructureTypeId() : null;
     }
 
     /**

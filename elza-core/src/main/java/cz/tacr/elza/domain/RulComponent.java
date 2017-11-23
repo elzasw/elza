@@ -27,6 +27,9 @@ public class RulComponent {
     @Column(length = StringLength.LENGTH_250, nullable = false)
     private String filename;
 
+    @Column(length = StringLength.LENGTH_SHA256)
+    private String hash;
+
     /**
      * @return identifikátor entity
      */
@@ -55,4 +58,17 @@ public class RulComponent {
         this.filename = filename;
     }
 
+    /**
+     * @return hash souboru
+     */
+    public String getHash() {
+        return hash;
+    }
+
+    /**
+     * @param hash hash souboru
+     */
+    public void setHash(final String hash) {
+        this.hash = hash;
+    }
 }

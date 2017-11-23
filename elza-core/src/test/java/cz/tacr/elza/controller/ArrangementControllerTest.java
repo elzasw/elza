@@ -7,7 +7,6 @@ import cz.tacr.elza.controller.vo.ArrFundVersionVO;
 import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
 import cz.tacr.elza.controller.vo.ArrOutputDefinitionVO;
 import cz.tacr.elza.controller.vo.ArrOutputExtVO;
-import cz.tacr.elza.controller.vo.ArrPacketVO;
 import cz.tacr.elza.controller.vo.CopyNodesParams;
 import cz.tacr.elza.controller.vo.CopyNodesValidate;
 import cz.tacr.elza.controller.vo.CopyNodesValidateResult;
@@ -19,7 +18,6 @@ import cz.tacr.elza.controller.vo.RegRecordVO;
 import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
 import cz.tacr.elza.controller.vo.RegScopeVO;
 import cz.tacr.elza.controller.vo.RulOutputTypeVO;
-import cz.tacr.elza.controller.vo.RulPacketTypeVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
 import cz.tacr.elza.controller.vo.filter.Filters;
@@ -32,7 +30,6 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.domain.ArrDataText;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrOutputDefinition;
-import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.table.ElzaRow;
 import cz.tacr.elza.domain.table.ElzaTable;
@@ -844,91 +841,6 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         return fund;
     }
 
-
-    @Test
-    public void packetsTest() {
-
-        ArrFundVO fund = createFund("Packet Test AP", "IC2");
-
-        List<RulPacketTypeVO> packetTypes = getPacketTypes();
-
-        // "Typy obalů nemůžou být prázdné"
-        assertTrue(packetTypes.size()>0);
-
-        ArrPacketVO packet = new ArrPacketVO();
-
-        packet.setPacketTypeId(packetTypes.get(0).getId());
-        packet.setStorageNumber(STORAGE_NUMBER);
-        packet.setState(ArrPacket.State.OPEN);
-
-        ArrPacketVO insertedPacket = insertPacket(fund, packet);
-
-        assertNotNull(insertedPacket);
-        assertNotNull(insertedPacket.getId());
-        assertTrue(packet.getState().equals(insertedPacket.getState()));
-        assertTrue(packet.getPacketTypeId().equals(insertedPacket.getPacketTypeId()));
-        assertTrue(packet.getStorageNumber().equals(insertedPacket.getStorageNumber()));
-
-        List<ArrPacketVO> packets = findPackets(fund, "", ArrPacket.State.OPEN);
-        assertTrue(packets.size() == 1);
-        packet = packets.get(0);
-        assertTrue(packet.getId().equals(insertedPacket.getId()));
-
-        packets = findFormPackets(fund, null, LIMIT);
-        assertTrue(packets.size() == 1);
-        packet = packets.get(0);
-        assertTrue(packet.getId().equals(insertedPacket.getId()));
-
-        packets = findFormPackets(fund, STORAGE_NUMBER_FOUND, LIMIT);
-        assertTrue(packets.size() == 1);
-        packet = packets.get(0);
-        assertTrue(packet.getId().equals(insertedPacket.getId()));
-
-        packets = findFormPackets(fund, STORAGE_NUMBER_NOT_FOUND, LIMIT);
-        assertTrue(packets.size() == 0);
-
-        packet.setStorageNumber(STORAGE_NUMBER_CHANGE);
-        List<ArrPacketVO> setStatePackets = Arrays.asList(packet);
-        setStatePackets(fund, setStatePackets, ArrPacket.State.CANCELED);
-
-        packets = findFormPackets(fund, null, LIMIT);
-        assertTrue(packets.size() == 0);
-
-        packet.setStorageNumber(STORAGE_NUMBER_CHANGE);
-        setStatePackets = Arrays.asList(packet);
-        setStatePackets(fund, setStatePackets, ArrPacket.State.OPEN);
-
-        List<ArrPacketVO> deletePackets = Arrays.asList(packet);
-        deletePackets(fund, deletePackets);
-
-        packets = findFormPackets(fund, null, LIMIT);
-        assertTrue(packets.size() == 0);
-
-        generatePackets(fund, "TEST-", packetTypes.get(0).getId(), 10, 5, 7, null);
-        packets = findPackets(fund, "TEST-", ArrPacket.State.OPEN);
-        assertTrue(packets.size() == 7);
-
-        assertTrue(packets.get(0).getStorageNumber().equals("TEST-00010"));
-        assertTrue(packets.get(1).getStorageNumber().equals("TEST-00011"));
-        assertTrue(packets.get(2).getStorageNumber().equals("TEST-00012"));
-        assertTrue(packets.get(3).getStorageNumber().equals("TEST-00013"));
-        assertTrue(packets.get(4).getStorageNumber().equals("TEST-00014"));
-        assertTrue(packets.get(5).getStorageNumber().equals("TEST-00015"));
-        assertTrue(packets.get(6).getStorageNumber().equals("TEST-00016"));
-
-        generatePackets(fund, "PAM-", packetTypes.get(0).getId(), 1, 4, 7, packets);
-        packets = findPackets(fund, "PAM-", ArrPacket.State.OPEN);
-        assertTrue(packets.size() == 7);
-
-        assertTrue(packets.get(0).getStorageNumber().equals("PAM-0001"));
-        assertTrue(packets.get(1).getStorageNumber().equals("PAM-0002"));
-        assertTrue(packets.get(2).getStorageNumber().equals("PAM-0003"));
-        assertTrue(packets.get(3).getStorageNumber().equals("PAM-0004"));
-        assertTrue(packets.get(4).getStorageNumber().equals("PAM-0005"));
-        assertTrue(packets.get(5).getStorageNumber().equals("PAM-0006"));
-        assertTrue(packets.get(6).getStorageNumber().equals("PAM-0007"));
-    }
-
     @Test
     public void calendarsTest() {
         List<ArrCalendarTypeVO> calendarTypes = getCalendarTypes();
@@ -1167,7 +1079,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         copyNodesParams.setTargetStaticNodeParent(null);
         copyNodesParams.setIgnoreRootNodes(true);
         copyNodesParams.setFilesConflictResolve(null);
-        copyNodesParams.setPacketsConflictResolve(null);
+        copyNodesParams.setStructuredsConflictResolve(null);
         copyNodesParams.setSelectedDirection(ArrMoveLevelService.AddLevelDirection.CHILD);
 
         copyLevels(copyNodesParams);

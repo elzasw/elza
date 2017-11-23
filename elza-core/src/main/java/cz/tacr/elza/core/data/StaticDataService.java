@@ -23,7 +23,6 @@ import cz.tacr.elza.repository.DataTypeRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.PackageRepository;
-import cz.tacr.elza.repository.PacketTypeRepository;
 import cz.tacr.elza.repository.PartyNameFormTypeRepository;
 import cz.tacr.elza.repository.PartyTypeComplementTypeRepository;
 import cz.tacr.elza.repository.PartyTypeRepository;
@@ -33,7 +32,7 @@ import cz.tacr.elza.utils.HibernateUtils;
 
 /**
  * Service for static data
- * 
+ *
  * Service returns StaticDataProvider with valid data for given transaction
  */
 @Service
@@ -46,10 +45,10 @@ public class StaticDataService {
 
     /**
      * Set of transactions which should refresh StaticDataProvider after commit
-     * 
+     *
      */
     private final Set<Transaction> modificationTransactions = new HashSet<Transaction>();
-    
+
     private StaticDataProvider activeProvider;
 
     /* managed components */
@@ -57,8 +56,6 @@ public class StaticDataService {
     private final EntityManager em;
 
     final RuleSetRepository ruleSetRepository;
-
-    final PacketTypeRepository packetTypeRepository;
 
     final ItemTypeRepository itemTypeRepository;
 
@@ -83,7 +80,6 @@ public class StaticDataService {
     @Autowired
     public StaticDataService(EntityManager em,
                              RuleSetRepository ruleSetRepository,
-                             PacketTypeRepository packetTypeRepository,
                              ItemTypeRepository itemTypeRepository,
                              ItemSpecRepository itemSpecRepository,
                              DataTypeRepository dataTypeRepository,
@@ -96,7 +92,6 @@ public class StaticDataService {
                              RegisterTypeRepository registerTypeRepository) {
         this.em = em;
         this.ruleSetRepository = ruleSetRepository;
-        this.packetTypeRepository = packetTypeRepository;
         this.itemTypeRepository = itemTypeRepository;
         this.itemSpecRepository = itemSpecRepository;
         this.dataTypeRepository = dataTypeRepository;
@@ -123,7 +118,7 @@ public class StaticDataService {
         // init interceptor
         StaticDataTransactionInterceptor.INSTANCE.begin(this);
     }
-    
+
     /**
      * Switch data provider for current transaction
      */
@@ -143,7 +138,7 @@ public class StaticDataService {
 
     public void reloadOnCommit(Transaction tx) {
         checkActiveTransaction(tx);
-        
+
         synchronized(modificationTransactions)
         {
         	modificationTransactions.add(tx);
@@ -170,9 +165,9 @@ public class StaticDataService {
      */
     void registerTransaction(Transaction tx) {
         checkActiveTransaction(tx);
-        
+
         StaticDataProvider provider = activeProvider;
-        // some provider have to exists       
+        // some provider have to exists
         Validate.notNull(provider);
 
         if (registeredTxMap.putIfAbsent(tx, provider) != null) {
@@ -183,7 +178,7 @@ public class StaticDataService {
 
     void beforeTransactionCommit(Transaction tx) {
         checkActiveTransaction(tx);
-        
+
         synchronized(modificationTransactions)
         {
         	// check for modified transaction
@@ -192,15 +187,15 @@ public class StaticDataService {
         	}
         	modificationTransactions.remove(tx);
         }
-        
+
         // prepare modified provider in current transaction
         try {
         	StaticDataProvider modifiedProvider = initializeProvider();
-        		
+
         	tx.registerSynchronization(new Synchronization(){
 					@Override
 					public void beforeCompletion() {
-						// nop						
+						// nop
 					}
 
 					@Override
@@ -208,8 +203,8 @@ public class StaticDataService {
 						// set new provider if committed
 						if(status==javax.transaction.Status.STATUS_COMMITTED) {
 							activeProvider = modifiedProvider;
-						}						
-					}        			
+						}
+					}
         		});
         } catch (Throwable t) {
         	tx.markRollbackOnly();

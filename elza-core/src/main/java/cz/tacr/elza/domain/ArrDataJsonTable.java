@@ -48,4 +48,17 @@ public class ArrDataJsonTable extends ArrData  {
         ElzaTable value = getValue();
         return value == null ? null : value.toString();
     }
+
+    @Override
+    public ArrData copy() {
+        ArrDataJsonTable data = new ArrDataJsonTable();
+        data.setDataType(this.getDataType());
+        data.setValue(this.getValue());
+        return data;
+    }
+
+    @Override
+    public void merge(final ArrData data) {
+        this.setValue(((ArrDataJsonTable) data).getValue());
+    }
 }

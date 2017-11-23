@@ -21,7 +21,7 @@ const initialState = {
 };
 
 export default function fundOutput(state = initialState, action = {}) {
-    if (isFundOutputDetail(action) || outputFormActions.isSubNodeFormAction(action, "OUTPUT")) {
+    if (isFundOutputDetail(action) || outputFormActions.isSubNodeFormAction(action)) {
         return {
             ...state,
             fundOutputDetail: fundOutputDetail(state.fundOutputDetail, action)
@@ -39,7 +39,7 @@ export default function fundOutput(state = initialState, action = {}) {
             fundOutputFunctions: fundOutputFunctions(state.fundOutputFunctions, action)
         }
     }
-    
+
     switch (action.type) {
         case types.STORE_LOAD:{
             return {

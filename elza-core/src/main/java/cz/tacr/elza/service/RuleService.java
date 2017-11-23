@@ -28,6 +28,7 @@ import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.domain.RulPolicyType;
 import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.RulStructureType;
 import cz.tacr.elza.domain.RulTemplate;
 import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.UsrPermission;
@@ -39,6 +40,7 @@ import cz.tacr.elza.exception.LockVersionChangeException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.OutputCode;
 import cz.tacr.elza.packageimport.PackageService;
 import cz.tacr.elza.packageimport.xml.SettingGridView;
@@ -545,7 +547,7 @@ public class RuleService {
         ArrLevel level = levelRepository.findNodeInRootTreeByNodeId(node, version.getRootNode(),
                 version.getLockChange());
 
-        List<RulItemTypeExt> rulDescItemTypeExtList = getAllDescriptionItemTypes(version.getRuleSet());
+        List<RulItemTypeExt> rulDescItemTypeExtList = getAllItemTypes(version.getRuleSet());
 
         return rulesExecutor.executeDescItemTypesRules(level, rulDescItemTypeExtList, version);
     }
@@ -555,8 +557,8 @@ public class RuleService {
      *
      * @return typy hodnot atributů
      */
-    public List<RulItemTypeExt> getAllDescriptionItemTypes() {
-        return getAllDescriptionItemTypes(null);
+    public List<RulItemTypeExt> getAllItemTypes() {
+        return getAllItemTypes(null);
     }
 
     /**
@@ -577,7 +579,7 @@ public class RuleService {
      * @param ruleSet balíček, podle kterého filtrujeme, pokud je null, vezmou se všechny
      * @return typy hodnot atributů
      */
-    public List<RulItemTypeExt> getAllDescriptionItemTypes(@Nullable final RulRuleSet ruleSet) {
+    public List<RulItemTypeExt> getAllItemTypes(@Nullable final RulRuleSet ruleSet) {
 
         List<RulItemType> itemTypeList;
 
@@ -725,7 +727,7 @@ public class RuleService {
      * @return seznam typů
      */
     public List<RulItemTypeExt> getOutputItemTypes(final ArrOutputDefinition outputDefinition) {
-        List<RulItemTypeExt> rulDescItemTypeExtList = getAllDescriptionItemTypes(outputDefinition.getOutputType().getRuleSet());
+        List<RulItemTypeExt> rulDescItemTypeExtList = getAllItemTypes(outputDefinition.getOutputType().getRuleSet());
 
         List<RulItemTypeAction> itemTypeActions = itemTypeActionRepository.findAll();
         Map<Integer, RulItemType> itemTypeMap = new HashMap<>();
@@ -910,6 +912,14 @@ public class RuleService {
         return arrangementExtensionRepository.findByNodeIdToRoot(nodeId);
     }
 
+    public RulItemType getItemTypeById(final Integer itemTypeId) {
+        RulItemType itemType = itemTypeRepository.findOne(itemTypeId);
+        if (itemType == null) {
+            throw new ObjectNotFoundException("Neexistuje typ: " + itemTypeId, BaseCode.ID_NOT_EXIST).setId(itemTypeId);
+        }
+        return itemType;
+    }
+
     public List<RulExtensionRule> findExtensionRuleByNode(final ArrNode node, final RulExtensionRule.RuleType attributeTypes) {
         Assert.notNull(node, "JP musí být vyplněna");
 
@@ -1007,5 +1017,31 @@ public class RuleService {
         }
 
         deleteConformityInfo(versionId, Collections.singleton(nodeId), Lists.newArrayList(RelatedNodeDirection.NODE, RelatedNodeDirection.DESCENDANTS));
+    }
+
+    /**
+     * Získání seznamu typů atributů podle strukt. typu a verze AS.
+     *
+     * @param structureType strukturovaný typ
+     * @param fundVersion   verze AS
+     * @return seznam typu atributů
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    public List<RulItemTypeExt> getStructureItemTypes(final RulStructureType structureType,
+                                                      @AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion) {
+        List<RulItemTypeExt> rulDescItemTypeExtList = getAllItemTypes(structureType.getRuleSet());
+        return rulesExecutor.executeStructureItemTypesRules(structureType, rulDescItemTypeExtList, fundVersion);
+    }
+
+    /**
+     * Získání seznamu typů atributů podle strukt. typu a verze AS - internal.
+     *
+     * @param structureType strukturovaný typ
+     * @param fundVersion   verze AS
+     * @return seznam typu atributů
+     */
+    public List<RulItemTypeExt> getStructureItemTypesInternal(final RulStructureType structureType,
+                                                              final ArrFundVersion fundVersion) {
+        return getStructureItemTypes(structureType, fundVersion);
     }
 }

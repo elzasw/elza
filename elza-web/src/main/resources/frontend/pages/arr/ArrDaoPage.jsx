@@ -39,9 +39,7 @@ import {WebApi} from 'actions/index.jsx';
 import {modalDialogShow} from 'actions/global/modalDialog.jsx'
 import {showRegisterJp, fundsFetchIfNeeded} from 'actions/arr/fund.jsx'
 import {versionValidate, versionValidationErrorNext, versionValidationErrorPrevious} from 'actions/arr/versionValidation.jsx'
-import {packetsFetchIfNeeded} from 'actions/arr/packets.jsx'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
-import {packetTypesFetchIfNeeded} from 'actions/refTables/packetTypes.jsx'
 import {developerNodeScenariosRequest} from 'actions/global/developer.jsx'
 import {isFundRootId, getSettings, setSettings, getOneSettings} from 'components/arr/ArrUtils.jsx';
 import {setFocus} from 'actions/global/focus.jsx'
@@ -55,7 +53,6 @@ import {fundTreeFetchIfNeeded} from 'actions/arr/fundTree.jsx'
 import {Shortcuts} from 'react-shortcuts';
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import * as perms from 'actions/user/Permission.jsx';
-import {selectTab} from 'actions/global/tab.jsx'
 import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx'
 
 class ArrDaoPage extends ArrParentPage {
@@ -78,7 +75,6 @@ class ArrDaoPage extends ArrParentPage {
         rulDataTypes: React.PropTypes.object.isRequired,
         calendarTypes: React.PropTypes.object.isRequired,
         descItemTypes: React.PropTypes.object.isRequired,
-        packetTypes: React.PropTypes.object.isRequired,
         focus: React.PropTypes.object.isRequired,
         userDetail: React.PropTypes.object.isRequired,
         ruleSet: React.PropTypes.object.isRequired,
@@ -337,7 +333,6 @@ function mapStateToProps(state) {
         rulDataTypes: refTables.rulDataTypes,
         calendarTypes: refTables.calendarTypes,
         descItemTypes: refTables.descItemTypes,
-        packetTypes: refTables.packetTypes,
         ruleSet: refTables.ruleSet,
         tab,
     }

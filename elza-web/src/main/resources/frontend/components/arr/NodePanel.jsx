@@ -47,6 +47,7 @@ import defaultKeymap from './NodePanelKeymap.jsx'
 
 import './NodePanel.less';
 import NodeSettingsForm from "./NodeSettingsForm";
+import {FOCUS_KEYS} from "../../constants";
 
 class NodePanel extends AbstractReactComponent {
     static contextTypes = { shortcuts: PropTypes.object };
@@ -153,12 +154,12 @@ class NodePanel extends AbstractReactComponent {
         var {focus, node} = props
 
         if (canSetFocus()) {
-            if (isFocusFor(focus, 'arr', 2, 'accordion') || (node.selectedSubNodeId === null && isFocusFor(focus, 'arr', 2))) {
+            if (isFocusFor(focus, FOCUS_KEYS.ARR, 2, 'accordion') || (node.selectedSubNodeId === null && isFocusFor(focus, FOCUS_KEYS.ARR, 2))) {
                 this.setState({}, () => {
                    ReactDOM.findDOMNode(this.refs.content).focus()
                    focusWasSet()
                 })
-            } else if (isFocusExactFor(focus, 'arr', 2)) {   // jen pokud není třeba focus na něco nižšího, např. prvek formuláře atp
+            } else if (isFocusExactFor(focus, FOCUS_KEYS.ARR, 2)) {   // jen pokud není třeba focus na něco nižšího, např. prvek formuláře atp
                 // Voláne jen pokud formulář úspěšně focus nenastavil - např. pokud jsou všechna pole formuláře zamčena
                 this.setState({}, () => {
                     ReactDOM.findDOMNode(this.refs.content).focus()
@@ -234,24 +235,24 @@ class NodePanel extends AbstractReactComponent {
             case 'prevItem':
                 if (index > 0) {
                     this.handleOpenItem(node.childNodes[index - 1])
-                    this.dispatch(setFocus('arr', 2, 'accordion'))
+                    this.dispatch(setFocus(FOCUS_KEYS.ARR, 2, 'accordion'))
                 }
                 break
             case 'nextItem':
                 if (index + 1 < node.childNodes.length) {
                     this.handleOpenItem(node.childNodes[index + 1])
-                    this.dispatch(setFocus('arr', 2, 'accordion'))
+                    this.dispatch(setFocus(FOCUS_KEYS.ARR, 2, 'accordion'))
                 }
                 break
             case 'toggleItem':
                 if (node.selectedSubNodeId === null) {
                     const {focusItemIndex} = this.state
                     this.handleOpenItem(node.childNodes[focusItemIndex])
-                    this.dispatch(setFocus('arr', 2, 'accordion'))
+                    this.dispatch(setFocus(FOCUS_KEYS.ARR, 2, 'accordion'))
                 } else {
                     const {focusItemIndex} = this.state
                     this.handleCloseItem(node.childNodes[focusItemIndex])
-                    this.dispatch(setFocus('arr', 2, 'accordion'))
+                    this.dispatch(setFocus(FOCUS_KEYS.ARR, 2, 'accordion'))
                 }
                 break
             case "ACCORDION_MOVE_UP":
@@ -383,8 +384,7 @@ return true
         if (this.state !== nextState) {
             return true;
         }
-        var eqProps = ['versionId', 'fund', 'node', 'calendarTypes', 'descItemTypes',
-            'packetTypes', 'packets', 'rulDataTypes', 'fundId', 'showRegisterJp', 'showDaosJp', 'closed']
+        var eqProps = ['versionId', 'fund', 'node', 'calendarTypes', 'descItemTypes', 'rulDataTypes', 'fundId', 'showRegisterJp', 'showDaosJp', 'closed']
         return !propsEquals(this.props, nextProps, eqProps);
     }
 
@@ -742,7 +742,7 @@ return true
 
     render() {
         const {calendarTypes, versionId, rulDataTypes, node,
-                packetTypes, packets, fundId, userDetail,
+                fundId, userDetail,
                 showRegisterJp, showDaosJp, fund, closed, descItemTypes} = this.props;
 
 
@@ -800,10 +800,8 @@ return true
                 subNodeForm={node.subNodeForm}
                 rulDataTypes={rulDataTypes}
                 calendarTypes={calendarTypes}
-                packetTypes={packetTypes}
                 descItemTypes={descItemTypes}
                 conformityInfo={conformityInfo}
-                packets={packets}
                 parentNode={node}
                 fundId={fundId}
                 selectedSubNode={node.subNodeForm.data.parent}
@@ -915,7 +913,7 @@ return true
 }
 
 function mapStateToProps(state) {
-    const {focus, userDetail} = state
+    const {focus, userDetail} = state;
     return {
         focus,
         userDetail
@@ -928,14 +926,12 @@ NodePanel.propTypes = {
     node: React.PropTypes.object.isRequired,
     calendarTypes: React.PropTypes.object.isRequired,
     descItemTypes: React.PropTypes.object.isRequired,
-    packetTypes: React.PropTypes.object.isRequired,
-    packets: React.PropTypes.array.isRequired,
     rulDataTypes: React.PropTypes.object.isRequired,
     fundId: React.PropTypes.number,
     showRegisterJp: React.PropTypes.bool.isRequired,
     showDaosJp: React.PropTypes.bool.isRequired,
     closed: React.PropTypes.bool.isRequired,
     userDetail: React.PropTypes.object.isRequired,
-}
+};
 
 export default connect(mapStateToProps)(NodePanel);

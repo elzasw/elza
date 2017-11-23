@@ -36,18 +36,18 @@ public class ArrDataRecordRef extends ArrData {
 
     @Transient
     private final String fulltextValue;
-    
+
     /**
      * Sets fulltext value index when record is only reference (detached hibernate proxy).
      */
     public ArrDataRecordRef(String fulltextValue) {
         this.fulltextValue = fulltextValue;
     }
-    
+
     public ArrDataRecordRef() {
         this(null);
     }
-    
+
     public RegRecord getRecord() {
         return record;
     }
@@ -67,5 +67,18 @@ public class ArrDataRecordRef extends ArrData {
             return fulltextValue;
         }
         return record.getRecord();
+    }
+
+    @Override
+    public ArrData copy() {
+        ArrDataRecordRef data = new ArrDataRecordRef();
+        data.setDataType(this.getDataType());
+        data.setRecord(this.getRecord());
+        return data;
+    }
+
+    @Override
+    public void merge(final ArrData data) {
+        this.setRecord(((ArrDataRecordRef) data).getRecord());
     }
 }

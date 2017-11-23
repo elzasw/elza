@@ -210,7 +210,6 @@ function mapStateToProps(state) {
     return {
         funds: arrRegion.funds,
         externalSystems: refTables.externalSystems,
-        packets: arrRegion.packets,
         userDetail,
         preparedRequestList: state.app.preparedRequestList,
         initialValues: { daoType: null, requestId: null, description: null }

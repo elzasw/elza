@@ -95,7 +95,7 @@ public class StaticDataProvider {
      * Init all values. Method must be called inside transaction and synchronized.
      */
     void init(StaticDataService service) {
-        ruleSystemProvider.init(service.ruleSetRepository, service.packetTypeRepository, service.itemTypeRepository,
+        ruleSystemProvider.init(service.ruleSetRepository, service.itemTypeRepository,
                 service.itemSpecRepository);
         initPackages(service.packageRepository);
         initPartyNameFormTypes(service.partyNameFormTypeRepository);

@@ -39,14 +39,14 @@ function processNode(state, action, index) {
 
 export default function nodes(state = nodesInitialState, action) {
     if (false
-        || nodeFormActions.isSubNodeFormAction(action, "NODE")
+        || nodeFormActions.isSubNodeFormAction(action)
         || isSubNodeInfoAction(action)
         || isNodeInfoAction(action)
         || isNodeAction(action)
         || isSubNodeRegisterAction(action)
         || isSubNodeDaosAction(action)
         || isDeveloperScenariosAction(action)
-        || nodeFormActions.isSubNodeFormCacheAction(action, "NODE")
+        || nodeFormActions.isSubNodeFormCacheAction(action)
     ) {
 
         if (action.type === types.CHANGE_DAOS) {

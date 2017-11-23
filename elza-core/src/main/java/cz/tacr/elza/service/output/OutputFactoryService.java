@@ -1,8 +1,79 @@
 package cz.tacr.elza.service.output;
 
-import cz.tacr.elza.domain.*;
-import cz.tacr.elza.print.*;
-import cz.tacr.elza.print.item.*;
+import java.time.ZoneId;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import cz.tacr.elza.domain.ArrDataStructureRef;
+import cz.tacr.elza.domain.ArrStructureData;
+import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import cz.tacr.elza.domain.ArrCalendarType;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataCoordinates;
+import cz.tacr.elza.domain.ArrDataDecimal;
+import cz.tacr.elza.domain.ArrDataFileRef;
+import cz.tacr.elza.domain.ArrDataInteger;
+import cz.tacr.elza.domain.ArrDataJsonTable;
+import cz.tacr.elza.domain.ArrDataNull;
+import cz.tacr.elza.domain.ArrDataPartyRef;
+import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrDataString;
+import cz.tacr.elza.domain.ArrDataText;
+import cz.tacr.elza.domain.ArrDataUnitdate;
+import cz.tacr.elza.domain.ArrDataUnitid;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFile;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrItem;
+import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrOutput;
+import cz.tacr.elza.domain.ArrOutputItem;
+import cz.tacr.elza.domain.ParInstitution;
+import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.RegRecord;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.print.Fund;
+import cz.tacr.elza.print.Node;
+import cz.tacr.elza.print.NodeId;
+import cz.tacr.elza.print.NodeLoader;
+import cz.tacr.elza.print.OutputImpl;
+import cz.tacr.elza.print.Structured;
+import cz.tacr.elza.print.Record;
+import cz.tacr.elza.print.UnitDate;
+import cz.tacr.elza.print.item.AbstractItem;
+import cz.tacr.elza.print.item.Item;
+import cz.tacr.elza.print.item.ItemCoordinates;
+import cz.tacr.elza.print.item.ItemDecimal;
+import cz.tacr.elza.print.item.ItemEnum;
+import cz.tacr.elza.print.item.ItemFile;
+import cz.tacr.elza.print.item.ItemInteger;
+import cz.tacr.elza.print.item.ItemJsonTable;
+import cz.tacr.elza.print.item.ItemStructuredRef;
+import cz.tacr.elza.print.item.ItemPartyRef;
+import cz.tacr.elza.print.item.ItemRecordRef;
+import cz.tacr.elza.print.item.ItemSpec;
+import cz.tacr.elza.print.item.ItemString;
+import cz.tacr.elza.print.item.ItemText;
+import cz.tacr.elza.print.item.ItemType;
+import cz.tacr.elza.print.item.ItemUnitId;
+import cz.tacr.elza.print.item.ItemUnitdate;
 import cz.tacr.elza.print.party.Institution;
 import cz.tacr.elza.print.party.Party;
 import cz.tacr.elza.print.party.PartyGroup;
@@ -15,17 +86,6 @@ import cz.tacr.elza.service.OutputService;
 import cz.tacr.elza.service.RegistryService;
 import cz.tacr.elza.service.cache.CachedNode;
 import cz.tacr.elza.service.cache.NodeCacheService;
-import org.apache.commons.collections.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.time.ZoneId;
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * Factory pro vytvoření struktury pro výstupy
@@ -37,14 +97,14 @@ public class OutputFactoryService implements NodeLoader {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private Map<Integer, Packet> packetMap = new HashMap<>();
+    private Map<Integer, Structured> structuredMap = new HashMap<>();
 
     private Map<Integer, Node> nodeMap = new HashMap<>();
 
     private Map<Integer, ArrCalendarType> calendarTypes = new HashMap<>();
 
     public void reset() {
-        packetMap.clear();
+        structuredMap.clear();
         nodeMap.clear();
     }
 
@@ -289,7 +349,6 @@ public class OutputFactoryService implements NodeLoader {
      *
      * @param arrItem zdrojová item
      * @param output   výstup, ke kterému se budou items zařazovat
-     * @param nodeId     node, ke kterému se budou nody zařazovat, pokud je null jde o itemy přiřazené přímo k output
      * @return item
      */
     private AbstractItem getItemByType(final OutputImpl output, final ArrItem arrItem) {
@@ -310,8 +369,8 @@ public class OutputFactoryService implements NodeLoader {
             item = getItemUnitRecordRef(output, (ArrDataRecordRef) data);
         } else if (data instanceof ArrDataPartyRef) {
             item = getItemUnitPartyRef(output, (ArrDataPartyRef) data);
-        } else if (data instanceof ArrDataPacketRef) {
-            item = getItemUnitPacketRef((ArrDataPacketRef) data);
+        } else if (data instanceof ArrDataStructureRef) {
+            item = getItemStructuredRef((ArrDataStructureRef) data);
         } else if (data instanceof ArrDataJsonTable) {
             item = getItemUnitJsonTable(output, arrItem.getItemType(), (ArrDataJsonTable) data);
         } else if (data instanceof ArrDataInteger) {
@@ -372,22 +431,15 @@ public class OutputFactoryService implements NodeLoader {
         return new ItemPartyRef(party);
     }
 
-    private AbstractItem getItemUnitPacketRef(final ArrDataPacketRef itemData) {
-        Packet packet = packetMap.get(itemData.getPacketId());
-        if (packet == null) {
-            final ArrPacket arrPacket = itemData.getPacket();
-            packet = new Packet();
-            RulPacketType packetType = arrPacket.getPacketType();
-            if (packetType != null) {
-                packet.setType(packetType.getName());
-                packet.setTypeCode(packetType.getCode());
-                packet.setTypeShortcut(packetType.getShortcut());
-            }
-            packet.setStorageNumber(arrPacket.getStorageNumber());
-            packet.setState(arrPacket.getState().name());
-            packetMap.put(arrPacket.getPacketId(), packet);
+    private AbstractItem getItemStructuredRef(final ArrDataStructureRef itemData) {
+        Structured structured = structuredMap.get(itemData.getStructureDataId());
+        if (structured == null) {
+            final ArrStructureData structureData = itemData.getStructureData();
+            structured = new Structured();
+            structured.setValue(structureData.getValue());
+            structuredMap.put(structureData.getStructureDataId(), structured);
         }
-        return new ItemPacketRef(packet);
+        return new ItemStructuredRef(structured);
     }
 
     private AbstractItem getItemUnitJsonTable(OutputImpl output, RulItemType rulItemType, final ArrDataJsonTable itemData) {
@@ -543,9 +595,9 @@ public class OutputFactoryService implements NodeLoader {
                     .map(arrDescItem -> {
                         Item item = createItem(output, arrDescItem);
 
-                        if (item instanceof ItemPacketRef) {
+                        if (item instanceof ItemStructuredRef) {
                             if(node!=null) {
-                                item.getValue(Packet.class).addNode(node);
+                                item.getValue(Structured.class).addNode(node);
                             }
                         }
                         return item;

@@ -1,5 +1,6 @@
 package cz.tacr.elza.packageimport;
 
+import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulItemSpec;
@@ -8,6 +9,7 @@ import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.RulPackageDependency;
 import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.RulStructureType;
 import cz.tacr.elza.domain.table.ElzaColumn;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
@@ -174,7 +176,9 @@ public class ItemTypeUpdater {
 	 * @param rulRuleSet
      * @return return list of updated types
 	 */
-	public List<RulItemType> update(final List<RulDataType> rulDataTypes, final RulPackage rulPackage,
+	public List<RulItemType> update(final List<RulDataType> rulDataTypes,
+                                    final List<RulStructureType> rulStructureTypes,
+                                    final RulPackage rulPackage,
                                     final ItemTypes itemTypes,
                                     final ItemSpecs itemSpecs,
                                     final RulRuleSet rulRuleSet) {
@@ -188,7 +192,7 @@ public class ItemTypeUpdater {
             // prepare list of updated/new items
             List<ItemType> itemTypesList = itemTypes.getItemTypes();
             if (!CollectionUtils.isEmpty(itemTypesList)) {
-                rulItemTypesUpdated = updateItemTypes(rulItemTypesOrig, itemTypesList, rulRuleSet);
+                rulItemTypesUpdated = updateItemTypes(rulItemTypesOrig, itemTypesList, rulRuleSet, rulStructureTypes);
                 // try to save updated items
                 rulItemTypesUpdated = itemTypeRepository.save(rulItemTypesUpdated);
             }
@@ -268,7 +272,8 @@ public class ItemTypeUpdater {
      * @return Return new list of active item types
 	 */
     private List<RulItemType> updateItemTypes(List<RulItemType> rulItemTypesOrig, List<ItemType> itemTypes,
-                                              final RulRuleSet rulRuleSet) {
+                                              final RulRuleSet rulRuleSet,
+                                              final List<RulStructureType> rulStructureTypes) {
     	List<RulItemType> rulItemTypesUpdated = new ArrayList<>();
     	int lastUsedViewOrder = -1;
 		for (ItemType itemType : itemTypes) {
@@ -308,7 +313,7 @@ public class ItemTypeUpdater {
 				lastUsedViewOrder = getNextViewOrderPos();
 			}
 
-			convertRulDescItemType(rulPackage, itemType, dbItemType, rulDataTypes, rulRuleSet);
+			convertRulDescItemType(rulPackage, itemType, dbItemType, rulDataTypes, rulStructureTypes, rulRuleSet);
 
 			// update view order
 			dbItemType.setViewOrder(lastUsedViewOrder);
@@ -356,6 +361,7 @@ public class ItemTypeUpdater {
                                         final ItemType itemType,
                                         final RulItemType rulDescItemType,
                                         final List<RulDataType> rulDataTypes,
+                                        final List<RulStructureType> rulStructureTypes,
                                         final RulRuleSet rulRuleSet) {
 
         rulDescItemType.setCode(itemType.getCode());
@@ -373,12 +379,25 @@ public class ItemTypeUpdater {
             throw new SystemException("Kód " + itemType.getDataType() + " neexistuje v RulDataType", BaseCode.ID_NOT_EXIST);
         }
 
+        RulStructureType rulStructureType = null;
+        if (DataType.STRUCTURED == DataType.fromCode(itemType.getDataType())) {
+            List<RulStructureType> findStructureTypes = rulStructureTypes.stream()
+                    .filter((r) -> r.getCode().equals(itemType.getStructureType()))
+                    .collect(Collectors.toList());
+            if (findStructureTypes.size() > 0) {
+                rulStructureType = findStructureTypes.get(0);
+            } else {
+                throw new SystemException("Kód " + itemType.getStructureType() + " neexistuje v RulStructureType", BaseCode.ID_NOT_EXIST);
+            }
+        }
+
         rulDescItemType.setDataType(item);
         rulDescItemType.setShortcut(itemType.getShortcut());
         rulDescItemType.setDescription(itemType.getDescription());
         rulDescItemType.setIsValueUnique(itemType.getIsValueUnique());
         rulDescItemType.setCanBeOrdered(itemType.getCanBeOrdered());
         rulDescItemType.setUseSpecification(itemType.getUseSpecification());
+        rulDescItemType.setStructureType(rulStructureType);
 
         if (itemType.getColumnsDefinition() != null) {
             List<ElzaColumn> elzaColumns = new ArrayList<>(itemType.getColumnsDefinition().size());

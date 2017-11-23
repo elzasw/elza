@@ -45,4 +45,17 @@ public class ArrDataDecimal extends ArrData {
     public Double getValueDouble() {
         return value.doubleValue();
     }
+
+    @Override
+    public ArrData copy() {
+        ArrDataDecimal data = new ArrDataDecimal();
+        data.setDataType(this.getDataType());
+        data.setValue(this.getValue());
+        return data;
+    }
+
+    @Override
+    public void merge(final ArrData data) {
+        this.setValue(((ArrDataDecimal) data).getValue());
+    }
 }

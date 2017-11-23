@@ -5,6 +5,8 @@ import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrOutputDefinition;
 import cz.tacr.elza.domain.RulItemTypeExt;
+import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.RulStructureType;
 import cz.tacr.elza.domain.vo.DataValidationResult;
 import cz.tacr.elza.domain.vo.NodeTypeOperation;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
@@ -39,6 +41,11 @@ public class RulesExecutor implements InitializingBean {
      */
     public static final String FOLDER = "drools";
 
+    /**
+     * Název složky v groovies.
+     */
+    public static final String GROOVY_FOLDER = "groovies";
+
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Autowired
@@ -46,6 +53,9 @@ public class RulesExecutor implements InitializingBean {
 
     @Autowired
     private DescItemTypesRules descItemTypesRules;
+
+    @Autowired
+    private StructureItemTypesRules structureItemTypesRules;
 
     @Autowired
     private OutputItemTypesRules outputItemTypesRules;
@@ -102,6 +112,20 @@ public class RulesExecutor implements InitializingBean {
                                                           final List<RulItemTypeExt> rulDescItemTypeExtList) {
         try {
             return outputItemTypesRules.execute(outputDefinition, rulDescItemTypeExtList);
+        } catch (NoSuchFileException e) {
+            logger.warn("Neexistuje soubor pro spuštění scriptu." + e.getMessage(), e);
+            return rulDescItemTypeExtList;
+        } catch (Exception e) {
+            throw new SystemException(e);
+        }
+    }
+
+
+    public List<RulItemTypeExt> executeStructureItemTypesRules(final RulStructureType structureType,
+                                                               final List<RulItemTypeExt> rulDescItemTypeExtList,
+                                                               final ArrFundVersion fundVersion) {
+        try {
+            return structureItemTypesRules.execute(structureType, rulDescItemTypeExtList, fundVersion.getFund());
         } catch (NoSuchFileException e) {
             logger.warn("Neexistuje soubor pro spuštění scriptu." + e.getMessage(), e);
             return rulDescItemTypeExtList;
@@ -195,4 +219,17 @@ public class RulesExecutor implements InitializingBean {
     public String getDroolsDir(final String packageCode, final String ruleCode) {
         return packagesDir + File.separator + packageCode + File.separator + ruleCode + File.separator + FOLDER;
     }
+
+    /**
+     * Vrací úplnou cestu k adresáři drools podle balíčku.
+     *
+     *
+     * @param packageCode
+     * @param ruleCode kód pravidel
+     * @return cesta k adresáři drools
+     */
+    public String getGroovyDir(final String packageCode, final String ruleCode) {
+        return packagesDir + File.separator + packageCode + File.separator + ruleCode + File.separator + GROOVY_FOLDER;
+    }
+
 }

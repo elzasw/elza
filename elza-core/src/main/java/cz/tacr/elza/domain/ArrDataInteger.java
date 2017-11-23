@@ -45,4 +45,16 @@ public class ArrDataInteger extends ArrData {
         return value;
     }
 
+    @Override
+    public ArrData copy() {
+        ArrDataInteger data = new ArrDataInteger();
+        data.setDataType(this.getDataType());
+        data.setValue(this.getValue());
+        return data;
+    }
+
+    @Override
+    public void merge(final ArrData data) {
+        this.setValue(((ArrDataInteger) data).getValue());
+    }
 }

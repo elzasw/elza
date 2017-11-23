@@ -14,7 +14,7 @@ global DataValidationResults results;
 rule "List musí mít ukládací jednotku směrem ke kořeni"
 when
 	$activeLevel: ActiveLevel( !hasChildren )
-	not ( $level: Level( $items: descItems ) and 
+	not ( $level: Level( $items: descItems ) and
 		DescItem(type=="ZP2015_STORAGE_ID") from $items )
 then
 	results.createMissing("ZP2015_STORAGE_ID", "Chybí ukládací jednotka", "ZP2015_POL_STORAGE_ID");
@@ -24,8 +24,8 @@ end
 rule "List musí mít dataci směrem ke kořeni"
 when
 	$activeLevel: ActiveLevel( !hasChildren )
-	not ( $level: Level( $items: descItems ) and 
-		DescItem(type in 
+	not ( $level: Level( $items: descItems ) and
+		DescItem(type in
 		  ( "ZP2015_UNIT_DATE_PRE", "ZP2015_UNIT_DATE", "ZP2015_UNIT_DATE_POST","ZP2015_UNIT_DATE_TEXT" ) )
 		  from $items )
 then
@@ -33,15 +33,16 @@ then
 end
 
 // Kontrola, zda každá hromadina s EJ má uvedenu ukládací jednotku s druhem KAR,FAS,DAJ
-rule "Každá hromadina s EJ má uvedenu ukládací jednotku"
+// TODO slapa: upravit na nové entity
+/*rule "Každá hromadina s EJ má uvedenu ukládací jednotku"
 when
 	$activeLevel: ActiveLevel( $items: descItems )
-	DescItem(type=="ZP2015_FOLDER_TYPE" && (specCode in ("ZP2015_FOLDER_UNITS", "ZP2015_FOLDER_SINGLE_TYPE") ) ) from $items 
+	DescItem(type=="ZP2015_FOLDER_TYPE" && (specCode in ("ZP2015_FOLDER_UNITS", "ZP2015_FOLDER_SINGLE_TYPE") ) ) from $items
 	not ( DescItem(type=="ZP2015_STORAGE_ID"&&packet!=null&&packet.packetType!=null&&
 	                 (packet.packetType.code in ("ZP2015_BOX", "ZP2015_FASCICLE") ) ) from $items )
 then
 	results.createMissing("ZP2015_STORAGE_ID", "Ukládací jednotka bez uvedení typu hromadiny", "ZP2015_POL_STORAGE_ID");
-end
+end*/
 
 // Počet jednotek musí být větší než 1 pro ZP2015_UNIT_COUNT
 rule "Počet jednotek musí být větší než 1 - ZP2015_UNIT_COUNT"
@@ -67,8 +68,8 @@ when
 	  and DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ROOT", "ZP2015_LEVEL_SECTION", "ZP2015_LEVEL_SERIES") ) from $items
 	)
 then
-	results.createMissing("ZP2015_SERIAL_NUMBER", 
-	"Pořadové číslo musí být nastaveno (případně ref. označení pro nejvyšší úrovně popisu)", 
+	results.createMissing("ZP2015_SERIAL_NUMBER",
+	"Pořadové číslo musí být nastaveno (případně ref. označení pro nejvyšší úrovně popisu)",
 	"ZP2015_POL_SERIAL_NO");
 end
 
@@ -87,8 +88,8 @@ end
 rule "List musí mít zdroj akvizice směrem ke kořeni"
 when
 	$activeLevel: ActiveLevel( !hasChildren )
-	not ( $level: Level( $items: descItems ) and 
-		DescItem(type in 
+	not ( $level: Level( $items: descItems ) and
+		DescItem(type in
 		  ( "ZP2015_UNIT_SOURCE" ) )
 		  from $items )
 then
@@ -99,12 +100,12 @@ end
 rule "List musí mít popsán fyzický stav směrem ke kořeni"
 when
 	$activeLevel: ActiveLevel( !hasChildren )
-	not ( $level: Level( $items: descItems ) and 
-		DescItem(type in 
+	not ( $level: Level( $items: descItems ) and
+		DescItem(type in
 		  ( "ZP2015_UNIT_CURRENT_STATUS" ) )
 		  from $items )
 then
-	results.createMissing("ZP2015_UNIT_CURRENT_STATUS", 
+	results.createMissing("ZP2015_UNIT_CURRENT_STATUS",
 	"Není uveden fyzický stav jednotky popisu a technické požadavky", "ZP2015_POL_BASIC");
 end
 
@@ -112,8 +113,8 @@ end
 rule "List musí mít směrem ke kořeni alespoň jednoho zpracovatele"
 when
 	$activeLevel: ActiveLevel( !hasChildren )
-	not ( $level: Level( $items: descItems ) and 
-		DescItem(type in 
+	not ( $level: Level( $items: descItems ) and
+		DescItem(type in
 		  ( "ZP2015_ARRANGER" ) )
 		  from $items )
 then
@@ -124,8 +125,8 @@ end
 rule "List musí mít směrem ke kořeni alespoň jeden jazyk"
 when
 	$activeLevel: ActiveLevel( !hasChildren )
-	not ( $level: Level( $items: descItems ) and 
-		DescItem(type in 
+	not ( $level: Level( $items: descItems ) and
+		DescItem(type in
 		  ( "ZP2015_LANGUAGE" ) )
 		  from $items )
 then

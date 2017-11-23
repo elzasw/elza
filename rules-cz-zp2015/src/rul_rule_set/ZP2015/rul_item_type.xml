@@ -39,7 +39,7 @@
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
-    <item-type code="ZP2015_STORAGE_ID" data-type="PACKET_REF">
+    <item-type code="ZP2015_STORAGE_ID" data-type="STRUCTURED" structure-type="ZP2015_PACKET">
         <name>Ukládací jednotka</name>
         <shortcut>Ukl. j.</shortcut>
         <description>ZP4.2.10 Ukládací jednotka a číslo</description>
@@ -279,7 +279,7 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
-    </item-type>    
+    </item-type>
     <item-type code="ZP2015_ARRANGE_RULES" data-type="TEXT">
         <name>Pravidla zpracování jednotky popisu</name>
         <shortcut>Pravidla</shortcut>
@@ -472,7 +472,7 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
-    </item-type>    
+    </item-type>
     <item-type code="ZP2015_DATE_RANGE" data-type="TEXT">
         <name>Časové rozmezí</name>
         <shortcut>Časové rozmezí</shortcut>
@@ -567,6 +567,46 @@
         <name>Pořadí uložení</name>
         <shortcut>Pořadí</shortcut>
         <description>Pořadí v ukládací jednotce</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>false</can-be-ordered>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="ZP2015_PACKET_TYPE" data-type="ENUM">
+        <name>Typ obalu</name>
+        <shortcut>Typ obalu</shortcut>
+        <description>Typ obalu</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>false</can-be-ordered>
+        <use-specification>true</use-specification>
+    </item-type>
+    <item-type code="ZP2015_PACKET_PREFIX" data-type="STRING">
+        <name>Prefix obalu</name>
+        <shortcut>Prefix</shortcut>
+        <description>Prefix pro obal</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>false</can-be-ordered>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="ZP2015_PACKET_NUMBER" data-type="INT">
+        <name>Číslo obalu</name>
+        <shortcut>Č. obalu</shortcut>
+        <description>Číslo obalu</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>false</can-be-ordered>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="ZP2015_PACKET_POSTFIX" data-type="STRING">
+        <name>Postfix obalu</name>
+        <shortcut>Postfix</shortcut>
+        <description>Postfix pro obal</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>false</can-be-ordered>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="ZP2015_PACKET_DESCRIPTION" data-type="STRING">
+        <name>Popis obalu</name>
+        <shortcut>Popis obalu</shortcut>
+        <description>Popis obalu</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>

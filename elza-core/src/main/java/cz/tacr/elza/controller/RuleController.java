@@ -92,7 +92,7 @@ public class RuleController {
 
     @RequestMapping(value = "/descItemTypes", method = RequestMethod.GET)
     public List<RulDescItemTypeExtVO> getDescItemTypes() {
-        List<RulItemTypeExt> descItemTypes = ruleService.getAllDescriptionItemTypes();
+        List<RulItemTypeExt> descItemTypes = ruleService.getAllItemTypes();
         return factoryVo.createDescItemTypeExtList(descItemTypes);
     }
 
@@ -105,7 +105,7 @@ public class RuleController {
     // zatím totožná s getDescItemTypes(), časem se možná změní
     @RequestMapping(value = "/outputItemTypes", method = RequestMethod.GET)
     public List<RulDescItemTypeExtVO> getOutputItemTypes() {
-        List<RulItemTypeExt> descItemTypes = ruleService.getAllDescriptionItemTypes();
+        List<RulItemTypeExt> descItemTypes = ruleService.getAllItemTypes();
         return factoryVo.createDescItemTypeExtList(descItemTypes);
     }
 

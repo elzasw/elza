@@ -2621,4 +2621,14 @@
         <description>Datace pořízení filmového / zvukového záznamu</description>
         <shortcut></shortcut>
     </item-spec>
+    <item-spec code="ZP2015_PACKET_TYPE_BOX" item-type="ZP2015_PACKET_TYPE">
+        <name>Karton</name>
+        <description>Karton</description>
+        <shortcut></shortcut>
+    </item-spec>
+    <item-spec code="ZP2015_PACKET_TYPE_FASCICLE" item-type="ZP2015_PACKET_TYPE">
+        <name>Fascikl</name>
+        <description>Fascikl</description>
+        <shortcut></shortcut>
+    </item-spec>
 </item-specs>

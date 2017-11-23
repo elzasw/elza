@@ -4,8 +4,8 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +15,10 @@ import java.util.Stack;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.domain.ArrDataStructureRef;
+import cz.tacr.elza.domain.ArrStructureData;
+import cz.tacr.elza.repository.StructureDataRepository;
+import cz.tacr.elza.service.eventnotification.events.EventStructureDataChange;
 import org.apache.commons.collections4.CollectionUtils;
 import org.castor.core.util.Assert;
 import org.slf4j.Logger;
@@ -39,7 +43,6 @@ import cz.tacr.elza.domain.ArrDataFileRef;
 import cz.tacr.elza.domain.ArrDataInteger;
 import cz.tacr.elza.domain.ArrDataJsonTable;
 import cz.tacr.elza.domain.ArrDataNull;
-import cz.tacr.elza.domain.ArrDataPacketRef;
 import cz.tacr.elza.domain.ArrDataPartyRef;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ArrDataString;
@@ -52,10 +55,8 @@ import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeRegister;
-import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.convertor.CalendarConverter;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.domain.vo.NodeTypeOperation;
@@ -69,8 +70,6 @@ import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRegisterRepository;
-import cz.tacr.elza.repository.PacketRepository;
-import cz.tacr.elza.repository.PacketTypeRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.service.ArrMoveLevelService;
@@ -80,7 +79,6 @@ import cz.tacr.elza.service.IEventNotificationService;
 import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.cache.NodeCacheService;
-import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.importnodes.vo.DeepCallback;
@@ -89,7 +87,7 @@ import cz.tacr.elza.service.importnodes.vo.ImportParams;
 import cz.tacr.elza.service.importnodes.vo.ImportSource;
 import cz.tacr.elza.service.importnodes.vo.Node;
 import cz.tacr.elza.service.importnodes.vo.NodeRegister;
-import cz.tacr.elza.service.importnodes.vo.Packet;
+import cz.tacr.elza.service.importnodes.vo.Structured;
 import cz.tacr.elza.service.importnodes.vo.descitems.Item;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemCoordinates;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemDecimal;
@@ -98,7 +96,7 @@ import cz.tacr.elza.service.importnodes.vo.descitems.ItemFileRef;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemFormattedText;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemInt;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemJsonTable;
-import cz.tacr.elza.service.importnodes.vo.descitems.ItemPacketRef;
+import cz.tacr.elza.service.importnodes.vo.descitems.ItemStructureRef;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemPartyRef;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemRecordRef;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemString;
@@ -161,7 +159,7 @@ public class ImportProcess {
     private FundFileRepository fundFileRepository;
 
     @Autowired
-    private PacketRepository packetRepository;
+    private StructureDataRepository structureDataRepository;
 
     @Autowired
     private PartyRepository partyRepository;
@@ -171,9 +169,6 @@ public class ImportProcess {
 
     @Autowired
     private DmsService dmsService;
-
-    @Autowired
-    private PacketTypeRepository packetTypeRepository;
 
     @Autowired
     private ArrMoveLevelService arrMoveLevelService;
@@ -229,7 +224,6 @@ public class ImportProcess {
     private Map<String, RulItemType> itemTypeMap;
     private Map<String, RulItemSpec> itemSpecMap;
     private Map<String, ArrCalendarType> calendarTypeMap;
-    private Map<String, RulPacketType> packetTypeMap;
     private ArrChange change;
 
     public ImportProcess() {
@@ -262,7 +256,6 @@ public class ImportProcess {
         itemTypeMap = itemTypeRepository.findAll().stream().collect(Collectors.toMap(RulItemType::getCode, Function.identity()));
         itemSpecMap = itemSpecRepository.findAll().stream().collect(Collectors.toMap(RulItemSpec::getCode, Function.identity()));
         calendarTypeMap = calendarTypeRepository.findAll().stream().collect(Collectors.toMap(ArrCalendarType::getCode, Function.identity()));
-        packetTypeMap = packetTypeRepository.findAll().stream().collect(Collectors.toMap(RulPacketType::getCode, Function.identity()));
         change = arrangementService.createChange(ArrChange.Type.IMPORT);
     }
 
@@ -273,7 +266,7 @@ public class ImportProcess {
         logger.info("Zahájení importu do AS");
 
         Map<String, ArrFile> filesMapper = resolveFileConflict();
-        Map<Pair<String, String>, ArrPacket> packetsMapper = resolvePacketConflict();
+        Map<Pair<String, String>, ArrStructureData> structureDataMapper = resolveStructureDataConflict();
 
         Stack<DeepData> stack = new Stack<>();
         while (source.hasNext()) {
@@ -304,7 +297,7 @@ public class ImportProcess {
                     descItem.setDescItemObjectId(arrangementService.getNextDescItemObjectId());
                     descItems.add(descItem);
 
-                    ArrData data = createArrData(filesMapper, packetsMapper, item, descItem);
+                    ArrData data = createArrData(filesMapper, structureDataMapper, item, descItem);
 
                     if (data != null) {
                         descItem.setData(data);
@@ -353,11 +346,11 @@ public class ImportProcess {
      * Vytvoření dat z atributu.
      *
      * @param filesMapper   mapování souborů
-     * @param packetsMapper mapovávé obalů
+     * @param structureDataMapper mapováví strukt.
      * @param item          zdrojový item
      * @param descItem      vazební item   @return vytvořená data
      */
-    private ArrData createArrData(final Map<String, ArrFile> filesMapper, final Map<Pair<String, String>, ArrPacket> packetsMapper, final Item item, final ArrDescItem descItem) {
+    private ArrData createArrData(final Map<String, ArrFile> filesMapper, final Map<Pair<String, String>, ArrStructureData> structureDataMapper, final Item item, final ArrDescItem descItem) {
         ArrData data;
         if (item instanceof ItemInt) {
             data = new ArrDataInteger();
@@ -408,11 +401,11 @@ public class ImportProcess {
             ArrFile file = fundFileRepository.findOne(((ItemFileRef) item).getFileId());
             ArrFile fileNew = filesMapper.get(file.getName());
             ((ArrDataFileRef) data).setFile(fileNew);
-        } else if (item instanceof ItemPacketRef) {
-            data = new ArrDataPacketRef();
-            ArrPacket packet = packetRepository.findOne(((ItemPacketRef) item).getPacketId());
-            ArrPacket packetNew = packetsMapper.get(new Pair<>(packet.getTypeCode(), packet.getStorageNumber()));
-            ((ArrDataPacketRef) data).setPacket(packetNew);
+        } else if (item instanceof ItemStructureRef) {
+            data = new ArrDataStructureRef();
+            ArrStructureData structureData = structureDataRepository.findOne(((ItemStructureRef) item).getStructureDataId());
+            ArrStructureData structureDataNew = structureDataMapper.get(new Pair<>(structureData.getStructureType().getCode(), structureData.getValue()));
+            ((ArrDataStructureRef) data).setStructureData(structureDataNew);
         } else if (item instanceof ItemPartyRef) {
             data = new ArrDataPartyRef();
             ((ArrDataPartyRef) data).setParty(partyRepository.getOne(((ItemPartyRef) item).getPartyId()));
@@ -556,54 +549,56 @@ public class ImportProcess {
      *
      * @return výsledná mapa pro provazování
      */
-    private Map<Pair<String, String>, ArrPacket> resolvePacketConflict() {
-        Map<Pair<String, String>, Packet> sourcePackets = source.getPackets().stream().collect(Collectors.toMap(packet -> new Pair<>(packet.getTypeCode(), packet.getStorageNumber()), Function.identity()));
-        Map<Pair<String, String>, ArrPacket> fundPacketsMapName = packetRepository.findByFund(targetFundVersion.getFund(), Arrays.asList(ArrPacket.State.OPEN, ArrPacket.State.CLOSED))
-                .stream().collect(Collectors.toMap(packet -> new Pair<>(packet.getTypeCode(), packet.getStorageNumber()), Function.identity()));
-        Map<Pair<String, String>, ArrPacket> packetsMapper = new HashMap<>();
+    private Map<Pair<String, String>, ArrStructureData> resolveStructureDataConflict() {
+        Map<Pair<String, String>, Structured> sourceStructureds = source.getStructuredList().stream().collect(Collectors.toMap(s -> new Pair<>(s.getStructureTypeCode(), s.getValue()), Function.identity()));
+        Map<Pair<String, String>, ArrStructureData> fundStructuredsMapName = structureDataRepository.findByFundAndDeleteChangeIsNull(targetFundVersion.getFund())
+                .stream().collect(Collectors.toMap(s -> new Pair<>(s.getStructureType().getCode(), s.getValue()), Function.identity()));
+        Map<Pair<String, String>, ArrStructureData> structureDataMapper = new HashMap<>();
 
-        for (Pair<String, String> packetSource : sourcePackets.keySet()) {
-            ArrPacket arrPacket = fundPacketsMapName.get(packetSource);
-            if (arrPacket != null) {
-                switch (params.getPacketConflictResolve()) {
+        for (Pair<String, String> structuredSource : sourceStructureds.keySet()) {
+            ArrStructureData arrStructureData = fundStructuredsMapName.get(structuredSource);
+            if (arrStructureData != null) {
+                switch (params.getStructuredConflictResolve()) {
                     case USE_TARGET:
-                        packetsMapper.put(packetSource, arrPacket);
+                        structureDataMapper.put(structuredSource, arrStructureData);
                         break;
-                    case COPY_AND_RENAME:
-                        copyPacketFromSource(sourcePackets, packetsMapper, packetSource, fundPacketsMapName.keySet());
-                        break;
+                    /*case COPY_AND_RENAME:
+                        copyStrcutureDataFromSource(sourceStructureds, structureDataMapper, structuredSource, fundStructuredsMapName.keySet());
+                        break;*/
                     default:
                         throw new SystemException("Neplatné vyřešení konfliktu: " + params.getFileConflictResolve(), BaseCode.INVALID_STATE);
                 }
             } else {
-                copyPacketFromSource(sourcePackets, packetsMapper, packetSource, fundPacketsMapName.keySet());
+                throw new SystemException("Neimplementované vyřešení konfliknu: " + params.getFileConflictResolve(), BaseCode.INVALID_STATE);
             }
         }
 
-        return packetsMapper;
+        return structureDataMapper;
     }
 
     /**
      * Zkopírovat obaly ze zdroje do AS.
      *
-     * @param sourcePackets zdorové obaly [typ/number -> zdrojový obal]
-     * @param packetsMapper převodní mapa [typ/number -> obal v AS]
-     * @param packetSource  typ/number obalu
-     * @param existsPackets existující typ/number obaly v AS
+     * @param sourceStructureds zdorové obaly [typ/value -> zdrojový obal]
+     * @param structureDataMapper převodní mapa [typ/value -> obal v AS]
+     * @param structuredSource  typ/number obalu
+     * @param existsStructureds existující typ/number obaly v AS
      */
-    private void copyPacketFromSource(final Map<Pair<String, String>, Packet> sourcePackets,
-                                      final Map<Pair<String, String>, ArrPacket> packetsMapper,
-                                      final Pair<String, String> packetSource,
-                                      final Set<Pair<String, String>> existsPackets) {
-        Packet sourcePacket = sourcePackets.get(packetSource);
-        ArrPacket packet = new ArrPacket();
-        packet.setState(ArrPacket.State.OPEN);
-        packet.setStorageNumber(StringUtils.renameConflictName(sourcePacket.getStorageNumber(), existsPackets.stream().map(Pair::getValue).collect(Collectors.toSet())));
-        packet.setFund(targetFundVersion.getFund());
-        packet.setPacketType(packetTypeMap.get(sourcePacket.getTypeCode()));
-        packetsMapper.put(packetSource, packetRepository.save(packet));
-        eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.PACKETS_CHANGE, targetFundVersion.getFund().getFundId()));
-    }
+    /*private void copyStrcutureDataFromSource(final Map<Pair<String, String>, Structured> sourceStructureds,
+                                             final Map<Pair<String, String>, ArrStructureData> structureDataMapper,
+                                             final Pair<String, String> structuredSource,
+                                             final Set<Pair<String, String>> existsStructureds) {
+        // TODO slapa: co tady?
+        Structured sourceStructured = sourceStructureds.get(structuredSource);
+        ArrStructureData structureData = new ArrStructureData();
+        structureDataMapper.put(structuredSource, structureDataRepository.save(structureData));
+        eventNotificationService.publishEvent(new EventStructureDataChange(targetFundVersion.getFundId(),
+                structureData.getStructureTypeCode(),
+                null,
+                Collections.singletonList(structureData.getStructureDataId()),
+                null,
+                null));
+    }*/
 
     /**
      * Zkopírování souboru ze zdroje do AS.

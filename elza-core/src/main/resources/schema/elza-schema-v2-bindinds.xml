@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
-<jxb:bindings version="1.0" 
+<jxb:bindings version="1.0"
 	xmlns:jxb="http://java.sun.com/xml/ns/jaxb"
-	xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+	xmlns:xs="http://www.w3.org/2001/XMLSchema"
 	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
 	xmlns:inheritance="http://jaxb2-commons.dev.java.net/basic/inheritance"
 	xmlns:abstract="http://www.example.com/jaxb/abstract-modifier/1-0"
@@ -32,10 +32,6 @@
 			<inheritance:extends>cz.tacr.elza.deimport.sections.items.DescriptionItem</inheritance:extends>
 			<jxb:class implClass="cz.tacr.elza.deimport.sections.items.DescriptionItemEnumImpl"/>
 		</jxb:bindings>
-		<jxb:bindings node="//xs:complexType[@name='DescriptionItemPacketRef']">
-			<inheritance:extends>cz.tacr.elza.deimport.sections.items.DescriptionItem</inheritance:extends>
-			<jxb:class implClass="cz.tacr.elza.deimport.sections.items.DescriptionItemPacketRefImpl"/>
-		</jxb:bindings> 
 		<jxb:bindings node="//xs:complexType[@name='DescriptionItemDecimal']">
 			<inheritance:extends>cz.tacr.elza.deimport.sections.items.DescriptionItem</inheritance:extends>
 			<jxb:class implClass="cz.tacr.elza.deimport.sections.items.DescriptionItemDecimalImpl"/>

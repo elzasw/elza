@@ -24,6 +24,7 @@ import { propsEquals } from 'components/Utils.jsx';
 import { canSetFocus, focusWasSet, isFocusFor } from 'actions/global/focus.jsx';
 
 import { fundTreeSelectNode } from '../../actions/arr/fundTree';
+import {FOCUS_KEYS} from "../../constants";
 
 class FundTreeCopy extends AbstractReactComponent {
   constructor(props) {
@@ -69,8 +70,8 @@ class FundTreeCopy extends AbstractReactComponent {
           });
         }
       } else if (
-        isFocusFor(focus, 'arr', 1, 'treeCopy') ||
-        isFocusFor(focus, 'arr', 1)
+        isFocusFor(focus, FOCUS_KEYS.ARR, 1, 'treeCopy') ||
+        isFocusFor(focus, FOCUS_KEYS.ARR, 1)
       ) {
         this.setState({}, () => {
           this.refs.treeCopy.getWrappedInstance().focus();

@@ -45,7 +45,6 @@ import cz.tacr.elza.deimport.reader.handlers.PartyGroupElementHandler;
 import cz.tacr.elza.deimport.reader.handlers.PersonElementHandler;
 import cz.tacr.elza.deimport.reader.handlers.SectionElementHandler;
 import cz.tacr.elza.deimport.reader.handlers.SectionLevelElementHandler;
-import cz.tacr.elza.deimport.reader.handlers.SectionPacketElementHandler;
 import cz.tacr.elza.deimport.sections.context.SectionStorageDispatcher;
 import cz.tacr.elza.deimport.sections.context.SectionsContext;
 import cz.tacr.elza.deimport.sections.context.SectionsContext.ImportPosition;
@@ -326,7 +325,6 @@ public class DEImportService {
         reader.addElementHandler("/edx/inss/inst", new InstitutionElementHandler(context));
         reader.addElementHandler("/edx/fs/s", new SectionElementHandler(context));
         reader.addElementHandler("/edx/fs/s/fi", new FundInfoElementHandler(context));
-        reader.addElementHandler("/edx/fs/s/pcks/pck", new SectionPacketElementHandler(context));
         reader.addElementHandler("/edx/fs/s/lvls/lvl", new SectionLevelElementHandler(context));
         return reader;
     }

@@ -35,8 +35,6 @@ public class SectionsContext {
 
     private final List<SectionProcessedListener> sectionProcessedListeners = new LinkedList<>();
 
-    private final List<ArrPacketWrapper> packetQueue = new ArrayList<>();
-
     private final SectionStorageDispatcher storageDispatcher;
 
     private final ArrChange createChange;
@@ -148,21 +146,6 @@ public class SectionsContext {
 
     /* section context methods */
 
-    void addPacket(ArrPacketWrapper packet) {
-        packetQueue.add(packet);
-        if (packetQueue.size() >= storageDispatcher.getBatchSize()) {
-            storePackets();
-        }
-    }
-
-    void storePackets() {
-        if (packetQueue.isEmpty()) {
-            return;
-        }
-        storageDispatcher.getStorageManager().saveSectionPackets(packetQueue);
-        packetQueue.clear();
-    }
-
     void addNode(ArrNodeWrapper node, int depth) {
         storageDispatcher.addNode(node, depth);
     }
@@ -186,7 +169,6 @@ public class SectionsContext {
     /* internal methods */
 
     private void storeAll() {
-        storePackets();
         storageDispatcher.dispatchAll();
     }
 

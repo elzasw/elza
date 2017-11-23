@@ -30,4 +30,5 @@ public interface SettingsRepository extends JpaRepository<UISettings, Integer>, 
                                                         UISettings.EntityType entityType,
                                                         Integer entityId);
 
+    List<UISettings> findBySettingsType(UISettings.SettingsType settingsType);
 }

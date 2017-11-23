@@ -66,14 +66,14 @@ public class ArrDescItem extends ArrItem {
 
     @Transient
     private final Integer fundId;
-    
+
     /**
      * Sets fund id for index when node is only reference (detached hibernate proxy).
      */
     public ArrDescItem(Integer fundId) {
         this.fundId = fundId;
     }
-    
+
     public ArrDescItem() {
         this((Integer) null);
     }
@@ -92,18 +92,9 @@ public class ArrDescItem extends ArrItem {
 
     @Field
     @Analyzer(definition = "customanalyzer")
+    @Override
     public String getFulltextValue() {
-        ArrData data = getData();
-        if (data == null) {
-            return null;
-        } else {
-            RulItemSpec itemSpec = getItemSpec();
-            if (data instanceof ArrDataNull) {
-                return itemSpec == null ? null : itemSpec.getName();
-            } else {
-                return itemSpec == null ? data.getFulltextValue() : itemSpec.getName() + DataRepositoryImpl.SPEC_SEPARATOR + data.getFulltextValue();
-            }
-        }
+        return super.getFulltextValue();
     }
 
     @Field(store = Store.NO)
@@ -149,6 +140,16 @@ public class ArrDescItem extends ArrItem {
 
     @Override
     public ArrOutputDefinition getOutputDefinition() {
+        return null; //throw new NotImplementedException();
+    }
+
+    @Override
+    public ArrStructureData getStructureData() {
+        return null; //throw new NotImplementedException();
+    }
+
+    @Override
+    public Integer getStructureDataId() {
         return null; //throw new NotImplementedException();
     }
 

@@ -306,28 +306,6 @@ public class OutputImpl implements Output, Closeable {
     }
 
     /**
-     * @return distinct seznam Packet navázaný přes nodes
-     */
-    public List<Packet> getPacketItemsDistinct() {
-        IteratorNodes iterator = getNodesBFS();
-        Set<Packet> resultsSet = new HashSet<>();
-
-        while (iterator.hasNext()) {
-            Node node = iterator.next();
-            List<Item> items = node.getItems();
-            for (Item item : items) {
-                if (item instanceof ItemPacketRef) {
-                    resultsSet.add(item.getValue(Packet.class));
-                }
-            }
-        }
-
-        List<Packet> results = new ArrayList<>(resultsSet);
-        results.sort(Packet::compareTo);
-        return results;
-    }
-
-    /**
      * Getter položky items
      *
      * @return seznam items

@@ -23,4 +23,16 @@ public class ArrDataNull extends ArrData {
     public String getFulltextValue() {
         return null;
     }
+
+    @Override
+    public ArrData copy() {
+        ArrDataNull data = new ArrDataNull();
+        data.setDataType(this.getDataType());
+        return data;
+    }
+
+    @Override
+    public void merge(final ArrData data) {
+
+    }
 }

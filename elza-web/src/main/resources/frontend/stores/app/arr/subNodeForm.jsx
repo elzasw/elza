@@ -56,8 +56,8 @@ function validate(descItem, refType, valueServerError) {
                 error.value = i18n('subNodeForm.validate.value.notEmpty');
             }
             break;
-        case 'PACKET_REF':
-            if (!descItem.value || descItem.value.length === 0) {
+        case 'STRUCTURED':
+            if (!descItem.value || typeof descItem.value !== 'number') {
                 error.value = i18n('subNodeForm.validate.value.notEmpty');
             }
             break;
@@ -180,9 +180,9 @@ export default function subNodeForm(state = initialState, action = {}) {
                     loc.descItem.file = action.value;
                     loc.descItem.file['@class'] = '.ArrFileVO';
                     break;
-                case 'PACKET_REF':
+                case 'STRUCTURED':
                     loc.descItem.value = action.value.id;
-                    loc.descItem.packet = action.value;
+                    loc.descItem.structureData = action.value;
                     break;
                 case 'RECORD_REF':
                     loc.descItem.value = action.value.id;

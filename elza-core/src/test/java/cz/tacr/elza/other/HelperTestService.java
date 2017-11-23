@@ -12,7 +12,13 @@ import java.util.zip.ZipOutputStream;
 
 import javax.transaction.Transactional;
 
+import cz.tacr.elza.repository.FundStructureExtensionRepository;
 import cz.tacr.elza.repository.NodeExtensionRepository;
+import cz.tacr.elza.repository.StructureDataRepository;
+import cz.tacr.elza.repository.StructureDefinitionRepository;
+import cz.tacr.elza.repository.StructureExtensionDefinitionRepository;
+import cz.tacr.elza.repository.StructureExtensionRepository;
+import cz.tacr.elza.repository.StructureTypeRepository;
 import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,7 +57,6 @@ import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.OutputDefinitionRepository;
 import cz.tacr.elza.repository.OutputRepository;
-import cz.tacr.elza.repository.PacketRepository;
 import cz.tacr.elza.repository.PartyCreatorRepository;
 import cz.tacr.elza.repository.PartyGroupIdentifierRepository;
 import cz.tacr.elza.repository.PartyNameComplementRepository;
@@ -164,8 +169,6 @@ public class HelperTestService {
     @Autowired
     protected PartyNameRepository partyNameRepository;
     @Autowired
-    private PacketRepository packetRepository;
-    @Autowired
     private BulkActionRunRepository faBulkActionRepository;
     @Autowired
     protected UserRepository userRepository;
@@ -181,6 +184,10 @@ public class HelperTestService {
     private NodeOutputRepository nodeOutputRepository;
     @Autowired
     private NodeExtensionRepository nodeExtensionRepository;
+    @Autowired
+    private StructureDataRepository structureDataRepository;
+    @Autowired
+    private FundStructureExtensionRepository fundStructureExtensionRepository;
 
     @Autowired
     private PackageService packageService;
@@ -226,9 +233,10 @@ public class HelperTestService {
         descItemRepository.deleteAll();
         itemRepository.deleteAll();
         dataRepository.deleteAll();
+        structureDataRepository.deleteAll();
+        fundStructureExtensionRepository.deleteAll();
         bulkActionNodeRepository.deleteAll();
         faBulkActionRepository.deleteAll();
-        packetRepository.deleteAll();
         partyNameComplementRepository.deleteAll();
         partyRepository.unsetAllPreferredName();
         relationEntityRepository.deleteAll();

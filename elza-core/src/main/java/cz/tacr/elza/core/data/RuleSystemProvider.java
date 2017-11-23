@@ -9,7 +9,6 @@ import org.apache.commons.lang3.Validate;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
-import cz.tacr.elza.repository.PacketTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 
 public class RuleSystemProvider {
@@ -34,7 +33,6 @@ public class RuleSystemProvider {
      * Init all values. Method must be called inside transaction and synchronized.
      */
     void init(RuleSetRepository ruleSetRepository,
-              PacketTypeRepository packetTypeRepository,
               ItemTypeRepository itemTypeRepository,
               ItemSpecRepository itemSpecRepository) {
         List<RulRuleSet> ruleSets = ruleSetRepository.findAll();
@@ -45,7 +43,7 @@ public class RuleSystemProvider {
         for (RulRuleSet rs : ruleSets) {
             // create initialized rule system
             RuleSystem ruleSystem = new RuleSystem(rs);
-            ruleSystem.init(packetTypeRepository, itemTypeRepository, itemSpecRepository);
+            ruleSystem.init(itemTypeRepository, itemSpecRepository);
 
             // update lookups
             idMap.put(rs.getRuleSetId(), ruleSystem);

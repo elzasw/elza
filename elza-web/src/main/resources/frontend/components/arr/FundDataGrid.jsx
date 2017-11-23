@@ -47,7 +47,6 @@ import {
 } from 'actions/arr/fundDataGrid.jsx'
 import {contextMenuShow, contextMenuHide} from 'actions/global/contextMenu.jsx'
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx'
-import {packetTypesFetchIfNeeded} from 'actions/refTables/packetTypes.jsx'
 import {nodeFormActions} from 'actions/arr/subNodeForm.jsx'
 import {fundSelectSubNode} from 'actions/arr/node.jsx';
 import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes.jsx'
@@ -71,7 +70,6 @@ class FundDataGrid extends AbstractReactComponent {
         fund: React.PropTypes.object.isRequired,
         rulDataTypes: React.PropTypes.object.isRequired,
         descItemTypes: React.PropTypes.object.isRequired,
-        packetTypes: React.PropTypes.object.isRequired,
         calendarTypes: React.PropTypes.object.isRequired,
         ruleSet: React.PropTypes.object.isRequired,
         readMode: React.PropTypes.bool.isRequired,
@@ -113,7 +111,6 @@ class FundDataGrid extends AbstractReactComponent {
     fetchData(props) {
         const {fundDataGrid, descItemTypes, fund, versionId, ruleSet} = props;
         this.dispatch(descItemTypesFetchIfNeeded());
-        this.dispatch(packetTypesFetchIfNeeded());
         this.dispatch(refRulDataTypesFetchIfNeeded());
         this.dispatch(fundDataGridFetchFilterIfNeeded(versionId));
         this.dispatch(fundDataGridFetchDataIfNeeded(versionId, fundDataGrid.pageIndex, fundDataGrid.pageSize));
@@ -291,12 +288,11 @@ class FundDataGrid extends AbstractReactComponent {
     }
 
     getColsStateFromProps(nextProps, props) {
-        const {fundDataGrid, descItemTypes, packetTypes, rulDataTypes} = nextProps;
+        const {fundDataGrid, descItemTypes, rulDataTypes} = nextProps;
 
         if (descItemTypes.fetched) {
             if (props.fundDataGrid.columnsOrder !== fundDataGrid.columnsOrder
                 || props.descItemTypes !== descItemTypes
-                || props.packetTypes !== packetTypes
                 || props.rulDataTypes !== rulDataTypes
                 || props.fundDataGrid.columnInfos !== fundDataGrid.columnInfos
                 || props.fundDataGrid.filter !== fundDataGrid.filter
@@ -313,7 +309,7 @@ class FundDataGrid extends AbstractReactComponent {
         if (this.state !== nextState) {
             return true;
         }
-        var eqProps = ['versionId', 'descItemTypes', 'ruleSet', 'packetTypes', 'rulDataTypes', 'closed', 'readMode']
+        var eqProps = ['versionId', 'descItemTypes', 'ruleSet', 'rulDataTypes', 'closed', 'readMode']
         if (!propsEquals(this.props, nextProps, eqProps)) {
             return true
         }
@@ -461,14 +457,13 @@ class FundDataGrid extends AbstractReactComponent {
     }
 
     handleFilterSettings(refType, dataType) {
-        const {versionId, calendarTypes, fundDataGrid, packetTypes} = this.props
+        const {versionId, calendarTypes, fundDataGrid} = this.props
 
         this.dispatch(modalDialogShow(this, i18n('arr.fund.filterSettings.title', refType.shortcut),
             <FundFilterSettings
                 versionId={versionId}
                 refType={refType}
                 dataType={dataType}
-                packetTypes={packetTypes}
                 calendarTypes={calendarTypes}
                 filter={fundDataGrid.filter[refType.id]}
                 onSubmitForm={this.handleChangeFilter.bind(this, versionId, refType)}
@@ -761,7 +756,7 @@ class FundDataGrid extends AbstractReactComponent {
     };
 
     render() {
-        const {fundId, fund, fundDataGrid, versionId, rulDataTypes, descItemTypes, packetTypes, dispatch, readMode} = this.props;
+        const {fundId, fund, fundDataGrid, versionId, rulDataTypes, descItemTypes, dispatch, readMode} = this.props;
         const {cols} = this.state;
 
         // Hledání
@@ -803,8 +798,8 @@ class FundDataGrid extends AbstractReactComponent {
                         </div>
                     </div>
                     <StoreHorizontalLoader store={{
-                        isFetching: fundDataGrid.isFetchingData || fundDataGrid.isFetchingFilter || descItemTypes.isFetching || packetTypes.isFetching || rulDataTypes.isFetching,
-                        fetched: fundDataGrid.fetchedData || fundDataGrid.fetchedFilter || descItemTypes.fetched || packetTypes.fetched || rulDataTypes.fetched
+                        isFetching: fundDataGrid.isFetchingData || fundDataGrid.isFetchingFilter || descItemTypes.isFetching || rulDataTypes.isFetching,
+                        fetched: fundDataGrid.fetchedData || fundDataGrid.fetchedFilter || descItemTypes.fetched || rulDataTypes.fetched
                     }} />
                     <div className='grid-container'>
                         <DataGrid

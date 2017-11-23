@@ -24,7 +24,6 @@ class AddDescItemTypeForm extends AbstractReactComponent {
     };
 
     static propTypes = {
-        onSubmit2: React.PropTypes.func.isRequired,
         descItemTypes: React.PropTypes.array.isRequired,
     };
 

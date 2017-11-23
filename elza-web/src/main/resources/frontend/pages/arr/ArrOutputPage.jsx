@@ -56,9 +56,7 @@ import * as perms from 'actions/user/Permission.jsx';
 import {fundActionFormShow, fundActionFormChange} from 'actions/arr/fundAction.jsx'
 import {routerNavigate} from 'actions/router.jsx'
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx'
-import {packetTypesFetchIfNeeded} from 'actions/refTables/packetTypes.jsx'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
-import {packetsFetchIfNeeded} from 'actions/arr/packets.jsx'
 import {templatesFetchIfNeeded} from 'actions/refTables/templates.jsx'
 import AddDescItemTypeForm from 'components/arr/nodeForm/AddDescItemTypeForm.jsx'
 import {outputFormActions} from 'actions/arr/subNodeForm.jsx'
@@ -70,6 +68,7 @@ import defaultKeymap from './ArrOutputPageKeymap.jsx';
 
 import {Shortcuts} from 'react-shortcuts';
 import TemplateSettingsForm from "../../components/arr/TemplateSettingsForm";
+import {FOCUS_KEYS} from "../../constants";
 
 let _selectedTab = 0
 
@@ -147,7 +146,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
         var {focus} = props
 
         if (canSetFocus()) {
-            if (isFocusFor(focus, 'fund-output', 1)) {
+            if (isFocusFor(focus, FOCUS_KEYS.FUND_OUTPUT, 1)) {
                 this.refs.fundOutputList && this.setState({}, () => {
                     ReactDOM.findDOMNode(this.refs.fundOutputList).focus()
                 })
@@ -168,14 +167,14 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
                 this.handleAddOutput();
                 break;
             case 'area1':
-                this.dispatch(setFocus('fund-output', 1));
+                this.props.dispatch(setFocus(FOCUS_KEYS.FUND_OUTPUT, 1));
                 break;
             case 'area2':
-                this.dispatch(setFocus('fund-output', 2));
+                this.props.dispatch(setFocus(FOCUS_KEYS.FUND_OUTPUT, 2));
                 break;
             case 'area3':
-                this.dispatch(setFocus('fund-output', 3));
-                break
+                this.props.dispatch(setFocus(FOCUS_KEYS.FUND_OUTPUT, 3));
+                break;
             default:
                 super.handleShortcuts(action,e);
         }
@@ -508,15 +507,11 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
     }
 
     renderCenterPanel(readMode, closed) {
-        const {arrRegion, calendarTypes, packetTypes, templates, rulDataTypes, descItemTypes, userDetail} = this.props;
+        const {calendarTypes, templates, rulDataTypes, descItemTypes, userDetail} = this.props;
 
         const fund = this.getActiveFund(this.props);
         const fundOutputDetail = fund.fundOutput.fundOutputDetail;
 
-        var packets = [];
-        if (fund && arrRegion.packets[fund.id]) {
-            packets = arrRegion.packets[fund.id].items;
-        }
 
         return (
             <ArrOutputDetail
@@ -525,9 +520,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
                 fund={fund}
                 calendarTypes={calendarTypes}
                 descItemTypes={descItemTypes}
-                packetTypes={packetTypes}
                 templates={templates}
-                packets={packets}
                 rulDataTypes={rulDataTypes}
                 userDetail={userDetail}
                 fundOutputDetail={fundOutputDetail}
@@ -636,7 +629,6 @@ function mapStateToProps(state) {
         rulDataTypes: refTables.rulDataTypes,
         calendarTypes: refTables.calendarTypes,
         descItemTypes: refTables.descItemTypes,
-        packetTypes: refTables.packetTypes,
         ruleSet: refTables.ruleSet,
         templates: refTables.templates,
         outputTypes: refTables.outputTypes.items,

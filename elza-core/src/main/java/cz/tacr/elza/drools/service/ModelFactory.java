@@ -12,7 +12,7 @@ import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.drools.model.DescItem;
 import cz.tacr.elza.drools.model.Level;
-import cz.tacr.elza.drools.model.Packet;
+import cz.tacr.elza.drools.model.Structured;
 import org.apache.commons.lang.BooleanUtils;
 
 /**
@@ -61,7 +61,7 @@ public class ModelFactory {
      * @return seznam vo hodnot atributu
      */
     static public List<DescItem> createDescItems(@Nullable final List<ArrDescItem> descItems,
-                                                 Set<RulItemType> descItemTypesForPackets,
+                                                 Set<RulItemType> descItemTypesForStructureds,
                                                  Set<RulItemType> descItemTypesForIntegers,
                                                  DescItemFactory descItemFactory,
                                                  final boolean lastVersion)
@@ -75,10 +75,10 @@ public class ModelFactory {
             result.add(voDescItem);
 
             if (!voDescItem.isUndefined()) {
-                if (descItemTypesForPackets.contains(descItem.getItemType())) {
-                    ArrDataPacketRef packetRef = lastVersion ? (ArrDataPacketRef) descItem.getData() : (ArrDataPacketRef) descItem.getData();
-                    ArrPacket packet = packetRef.getPacket();
-                    voDescItem.setPacket(createPacket(packet));
+                if (descItemTypesForStructureds.contains(descItem.getItemType())) {
+                    ArrDataStructureRef structureRef = lastVersion ? (ArrDataStructureRef) descItem.getData() : (ArrDataStructureRef) descItem.getData();
+                    ArrStructureData structureData = structureRef.getStructureData();
+                    voDescItem.setStructured(createStructured(structureData));
                 } else if (descItemTypesForIntegers.contains(descItem.getItemType())) {
                     ArrDataInteger integer = lastVersion ? (ArrDataInteger) descItem.getData() : (ArrDataInteger) descItem.getData();
                     voDescItem.setInteger(integer.getValue());
@@ -91,23 +91,12 @@ public class ModelFactory {
 
     /**
      * Create packet for Drools from corresponding object
-     * @param packet
+     * @param structureData
      * @return
      */
-    static public Packet createPacket(final ArrPacket packet) {
-
-        Packet result = new Packet();
-        result.setStorageNumber(packet.getStorageNumber());
-        result.setState(packet.getState());
-
-        if (packet.getPacketType() != null) {
-            RulPacketType packetType = packet.getPacketType();
-            Packet.VOPacketType voPacketType = new Packet.VOPacketType();
-            voPacketType.setCode(packetType.getCode());
-            voPacketType.setName(packetType.getName());
-            voPacketType.setShortcut(packetType.getShortcut());
-            result.setPacketType(voPacketType);
-        }
+    static public Structured createStructured(final ArrStructureData structureData) {
+        Structured result = new Structured();
+        result.setValue(structureData.getValue());
         return result;
     }
 

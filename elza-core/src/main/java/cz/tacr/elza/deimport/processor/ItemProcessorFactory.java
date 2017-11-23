@@ -8,7 +8,6 @@ import cz.tacr.elza.deimport.parties.FamilyProcessor;
 import cz.tacr.elza.deimport.parties.PartyGroupProcessor;
 import cz.tacr.elza.deimport.parties.PartyProcessor;
 import cz.tacr.elza.deimport.sections.SectionLevelProcessor;
-import cz.tacr.elza.deimport.sections.SectionPacketProcessor;
 import cz.tacr.elza.domain.ParEvent;
 import cz.tacr.elza.domain.ParPerson;
 import cz.tacr.elza.schema.v2.Event;
@@ -41,10 +40,6 @@ public final class ItemProcessorFactory {
 
     public static ItemProcessor createEventProcessor(ImportContext context) {
         return new PartyProcessor<Event, ParEvent>(context, ParEvent.class);
-    }
-
-    public static ItemProcessor createSectionPacketProcessor(ImportContext context) {
-        return new SectionPacketProcessor(context.getSections());
     }
 
     public static ItemProcessor createSectionLevelProcessor(ImportContext context) {

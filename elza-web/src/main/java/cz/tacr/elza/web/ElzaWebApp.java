@@ -33,6 +33,7 @@ import java.util.Locale;
 @Import({ElzaCore.class})
 @ComponentScan(basePackageClasses = {ElzaWebApp.class, ElzaCore.class})
 @EnableScheduling
+@EnableAsync
 public class ElzaWebApp {
 
     /** Logger. */

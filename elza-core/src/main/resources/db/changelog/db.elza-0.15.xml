@@ -166,4 +166,248 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="201710310958" author="slapa">
+        <createTable tableName="rul_structure_type">
+            <column name="structure_type_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="package_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_rul_structure_type_package"
+                             referencedTableName="rul_package"
+                             referencedColumnNames="package_id"/>
+            </column>
+            <column name="rule_set_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_rul_structure_type_rule_set"
+                             referencedTableName="rul_rule_set"
+                             referencedColumnNames="rule_set_id"/>
+            </column>
+            <column name="name" type="nvarchar(250)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="code" type="nvarchar(50)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="rul_structure_definition">
+            <column name="structure_definition_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="def_type" type="nvarchar(50)"/>
+            <column name="priority" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="component_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_rul_structure_definition_component"
+                             referencedTableName="rul_component"
+                             referencedColumnNames="component_id"/>
+            </column>
+            <column name="package_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_rul_structure_definition_package"
+                             referencedTableName="rul_package"
+                             referencedColumnNames="package_id"/>
+            </column>
+            <column name="structure_type_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_rul_structure_definition_structure_type"
+                             referencedTableName="rul_structure_type"
+                             referencedColumnNames="structure_type_id"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="rul_structure_extension">
+            <column name="structure_extension_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="package_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_rul_structure_extension_package"
+                             referencedTableName="rul_package"
+                             referencedColumnNames="package_id"/>
+            </column>
+            <column name="structure_type_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_rul_structure_extension_structure_type"
+                             referencedTableName="rul_structure_type"
+                             referencedColumnNames="structure_type_id"/>
+            </column>
+            <column name="name" type="nvarchar(250)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="code" type="nvarchar(50)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="rul_structure_extension_definition">
+            <column name="structure_extension_definition_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="def_type" type="nvarchar(50)"/>
+            <column name="priority" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="component_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_rul_structure_extension_definition_component"
+                             referencedTableName="rul_component"
+                             referencedColumnNames="component_id"/>
+            </column>
+            <column name="package_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_rul_structure_extension_definition_package"
+                             referencedTableName="rul_package"
+                             referencedColumnNames="package_id"/>
+            </column>
+            <column name="structure_extension_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_rul_structure_extension_definition_structure_extension"
+                             referencedTableName="rul_structure_extension"
+                             referencedColumnNames="structure_extension_id"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="arr_fund_structure_extension">
+            <column name="fund_structure_extension_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="create_change_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_arr_fund_structure_extension_create_change"
+                             referencedTableName="arr_change"
+                             referencedColumnNames="change_id"/>
+            </column>
+            <column name="delete_change_id" type="int">
+                <constraints foreignKeyName="fk_arr_fund_structure_extension_delete_change"
+                             referencedTableName="arr_change"
+                             referencedColumnNames="change_id"/>
+            </column>
+            <column name="fund_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_arr_fund_structure_extension_fund"
+                             referencedTableName="arr_fund"
+                             referencedColumnNames="fund_id"/>
+            </column>
+            <column name="structure_extension_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_arr_fund_structure_extension_structure_extension"
+                             referencedTableName="rul_structure_extension"
+                             referencedColumnNames="structure_extension_id"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="arr_structure_data">
+            <column name="structure_data_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="create_change_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_arr_structure_data_create_change"
+                             referencedTableName="arr_change"
+                             referencedColumnNames="change_id"/>
+            </column>
+            <column name="delete_change_id" type="int">
+                <constraints foreignKeyName="fk_arr_structure_data_delete_change"
+                             referencedTableName="arr_change"
+                             referencedColumnNames="change_id"/>
+            </column>
+            <column name="structure_type_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_arr_structure_data_structure_type"
+                             referencedTableName="rul_structure_type"
+                             referencedColumnNames="structure_type_id"/>
+            </column>
+            <column name="fund_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_arr_structure_data_fund"
+                             referencedTableName="arr_fund"
+                             referencedColumnNames="fund_id"/>
+            </column>
+            <column name="value" type="nvarchar(1000)" />
+            <column name="assignable" type="boolean">
+                <constraints nullable="false"/>
+            </column>
+            <column name="state" type="nvarchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="error_description" type="${type.text}" />
+        </createTable>
+
+        <createTable tableName="arr_structure_item">
+            <column name="item_id" type="int">
+                <constraints primaryKeyName="pk_arr_structure_item" primaryKey="true"/>
+            </column>
+            <column name="structure_data_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_arr_structure_item_structure_data"
+                             referencedTableName="arr_structure_data"
+                             referencedColumnNames="structure_data_id"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="arr_data_structure_ref">
+            <column name="data_id" type="int">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="structure_data_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_arr_data_structure_ref_structure_data"
+                             referencedTableName="arr_structure_data"
+                             referencedColumnNames="structure_data_id"/>
+            </column>
+        </createTable>
+
+        <insert tableName="rul_data_type">
+            <column name="data_type_id" value="15"/>
+            <column name="code" value="STRUCTURED"/>
+            <column name="name" value="Strukturovaný typ"/>
+            <column name="description" value="Strukturovaný datový typ složený z 'archivního popisu'"/>
+            <column name="regexp_use" value="false"/>
+            <column name="text_length_limit_use" value="false"/>
+            <column name="storage_table" value="arr_data_structured"/>
+        </insert>
+
+        <addColumn tableName="rul_item_type">
+            <column name="structure_type_id" type="int">
+                <constraints foreignKeyName="fk_rul_item_type_structure_type"
+                             referencedTableName="rul_structure_type"
+                             referencedColumnNames="structure_type_id"/>
+            </column>
+        </addColumn>
+
+    </changeSet>
+
+    <changeSet id="20171114144400" author="slapa">
+        <addColumn tableName="rul_component">
+            <column name="hash" type="nvarchar(64)" />
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20171120095000" author="slapa">
+        <customChange class="cz.tacr.elza.dbchangelog.DbUpgrade_20171120095000" />
+    </changeSet>
+
+    <changeSet id="20171121080600" author="slapa">
+        <!--Odebrání nodů z cache, které mají vazbu na obal-->
+        <delete tableName="arr_cached_node">
+            <where>node_id in (select node_id from arr_cached_node where data like '%cz.tacr.elza.domain.ArrDataPacketRef%')</where>
+        </delete>
+
+        <dropTable tableName="arr_data_packet_ref"/>
+        <dropTable tableName="arr_packet"/>
+        <dropTable tableName="rul_packet_type"/>
+        <delete tableName="arr_node_conformity_missing">
+            <where>item_type_id IN (SELECT item_type_id FROM rul_item_type WHERE data_type_id IN (SELECT data_type_id FROM rul_data_type WHERE code = 'PACKET_REF'))</where>
+        </delete>
+        <delete tableName="rul_item_type">
+            <where>data_type_id IN (SELECT data_type_id FROM rul_data_type WHERE code = 'PACKET_REF')</where>
+        </delete>
+        <delete tableName="rul_data_type">
+            <where>code = 'PACKET_REF'</where>
+        </delete>
+    </changeSet>
 </databaseChangeLog>

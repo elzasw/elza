@@ -10,9 +10,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.domain.ArrStructureItem;
 import cz.tacr.elza.filter.condition.UndefinedDescItemCondition;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -27,7 +29,6 @@ import cz.tacr.elza.controller.vo.ArrFileVO;
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
 import cz.tacr.elza.controller.vo.ArrOutputFileVO;
-import cz.tacr.elza.controller.vo.ArrPacketVO;
 import cz.tacr.elza.controller.vo.DmsFileVO;
 import cz.tacr.elza.controller.vo.ParPartyNameVO;
 import cz.tacr.elza.controller.vo.ParPartyVO;
@@ -57,7 +58,6 @@ import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ArrOutputFile;
 import cz.tacr.elza.domain.ArrOutputItem;
-import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.DmsFile;
 import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.ParParty;
@@ -70,7 +70,6 @@ import cz.tacr.elza.domain.RegScope;
 import cz.tacr.elza.domain.RegVariantRecord;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.convertor.CalendarConverter;
@@ -82,7 +81,6 @@ import cz.tacr.elza.filter.DescItemTypeFilter;
 import cz.tacr.elza.filter.condition.BeginDescItemCondition;
 import cz.tacr.elza.filter.condition.ContainDescItemCondition;
 import cz.tacr.elza.filter.condition.DescItemCondition;
-import cz.tacr.elza.filter.condition.EmptyPacketTypeDescItemCondition;
 import cz.tacr.elza.filter.condition.EndDescItemCondition;
 import cz.tacr.elza.filter.condition.EqDescItemCondition;
 import cz.tacr.elza.filter.condition.EqIntervalDesCitemCondition;
@@ -98,9 +96,7 @@ import cz.tacr.elza.filter.condition.NeDescItemCondition;
 import cz.tacr.elza.filter.condition.NoValuesCondition;
 import cz.tacr.elza.filter.condition.NotContainDescItemCondition;
 import cz.tacr.elza.filter.condition.NotEmptyDescItemCondition;
-import cz.tacr.elza.filter.condition.NotEmptyPacketTypeDescItemCondition;
 import cz.tacr.elza.filter.condition.NotIntervalDescItemCondition;
-import cz.tacr.elza.filter.condition.SelectedAndEmptyPacketTypeDescItemCondition;
 import cz.tacr.elza.filter.condition.SelectedSpecificationsDescItemEnumCondition;
 import cz.tacr.elza.filter.condition.SelectedValuesDescItemEnumCondition;
 import cz.tacr.elza.filter.condition.SelectsNothingCondition;
@@ -113,7 +109,6 @@ import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
-import cz.tacr.elza.repository.PacketTypeRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.service.DescriptionItemService;
 import ma.glasnost.orika.MapperFacade;
@@ -140,9 +135,6 @@ public class ClientFactoryDO {
 
     @Autowired
     private FundRepository fundRepository;
-
-    @Autowired
-    private PacketTypeRepository packetTypeRepository;
 
     @Autowired
     private RegRecordRepository regRecordRepository;
@@ -268,6 +260,59 @@ public class ClientFactoryDO {
         return descItem;
     }
 
+    public ArrStructureItem createStructureItem(final ArrItemVO itemVO, final Integer itemTypeId) {
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+
+        ArrData data = mapper.map(itemVO, ArrData.class);
+        ArrStructureItem structureItem = new ArrStructureItem();
+        structureItem.setData(data);
+
+        RulItemType descItemType = itemTypeRepository.findOne(itemTypeId);
+        if (descItemType == null) {
+            throw new SystemException("Typ s ID=" + itemVO.getDescItemSpecId() + " neexistuje", BaseCode.ID_NOT_EXIST);
+        }
+        structureItem.setItemType(descItemType);
+
+        if (itemVO.getDescItemSpecId() != null) {
+            RulItemSpec descItemSpec = itemSpecRepository.findOne(itemVO.getDescItemSpecId());
+            if (descItemSpec == null) {
+                throw new SystemException("Specifikace s ID=" + itemVO.getDescItemSpecId() + " neexistuje", BaseCode.ID_NOT_EXIST);
+            }
+            structureItem.setItemSpec(descItemSpec);
+        }
+
+        return structureItem;
+    }
+
+    public ArrStructureItem createStructureItem(final ArrItemVO descItemVO) {
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        ArrData data = mapper.map(descItemVO, ArrData.class);
+        ArrStructureItem structureItem = new ArrStructureItem();
+        structureItem.setData(data);
+        BeanUtils.copyProperties(descItemVO, structureItem);
+        structureItem.setItemId(descItemVO.getId());
+
+        if (descItemVO.getDescItemSpecId() != null) {
+            RulItemSpec descItemSpec = itemSpecRepository.findOne(descItemVO.getDescItemSpecId());
+            if (descItemSpec == null) {
+                throw new SystemException("Specifikace s ID=" + descItemVO.getDescItemSpecId() + " neexistuje", BaseCode.ID_NOT_EXIST);
+            }
+            structureItem.setItemSpec(descItemSpec);
+        }
+
+        return structureItem;
+    }
+
+    public List<ArrStructureItem> createStructureItem(final Map<Integer, List<ArrItemVO>> descItemVO) {
+        List<ArrStructureItem> result = new ArrayList<>();
+        for (Map.Entry<Integer, List<ArrItemVO>> entry : descItemVO.entrySet()) {
+            result.addAll(entry.getValue().stream()
+                    .map(si -> createStructureItem(si, entry.getKey()))
+                    .collect(Collectors.toList()));
+        }
+        return result;
+    }
+
     /**
      * Vytvoří DO objektu vztahu.
      *
@@ -320,28 +365,6 @@ public class ClientFactoryDO {
         }
 
         return descItem;
-    }
-
-    public ArrPacket createPacket(final ArrPacketVO packetVO, final Integer fundId) {
-        Assert.notNull(fundId, "Nebyl vyplněn identifikátor AS");
-        Assert.notNull(packetVO, "Obal musí být vyplněn");
-
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        ArrPacket packet = mapper.map(packetVO, ArrPacket.class);
-
-        ArrFund fund = fundRepository.findOne(fundId);
-        Assert.notNull(fund, "Archivní pomůcka neexistuje (ID=" + fundId + ")");
-
-        if (packetVO.getPacketTypeId() != null) {
-            RulPacketType packetType = packetTypeRepository.findOne(packetVO.getPacketTypeId());
-            Assert.notNull(packetType, "Typ obalu neexistuje (ID=" + packetVO.getPacketTypeId() + ")");
-            packet.setPacketType(packetType);
-        }
-
-        packet.setFund(fund);
-        packet.setState(ArrPacket.State.OPEN);
-
-        return packet;
     }
 
     /**
@@ -456,12 +479,10 @@ public class ClientFactoryDO {
         Assert.notNull(descItemType, "Typ atributu musí být vyplněn");
         Assert.notNull(filter, "Filter musí být vyplněn");
 
-        boolean isPacketRef = descItemType.getDataType().getCode().equalsIgnoreCase("PACKET_REF");
-
         List<DescItemCondition> valuesConditions = createValuesEnumCondition(filter.getValuesType(), filter.getValues(),
                 LuceneDescItemCondition.FULLTEXT_ATT);
         List<DescItemCondition> specsConditions = createSpecificationsEnumCondition(filter.getSpecsType(), filter.getSpecs(),
-                LuceneDescItemCondition.SPECIFICATION_ATT, isPacketRef);
+                LuceneDescItemCondition.SPECIFICATION_ATT);
 
         List<DescItemCondition> conditions = new LinkedList<>();
         Condition conditionType = filter.getConditionType();
@@ -811,10 +832,9 @@ public class ClientFactoryDO {
      * @param valuesTypes typ výběru - zaškrtnutí/odškrtnutí
      * @param values id specifikací
      * @param attName název atributu na který se podmínka aplikuje
-     * @param isPacketRef
      */
     private List<DescItemCondition> createSpecificationsEnumCondition(final ValuesTypes valuesTypes, final List<Integer> values,
-            final String attName, final boolean isPacketRef) {
+            final String attName) {
         if (valuesTypes == null && values == null) {
             return Collections.emptyList();
         }
@@ -829,40 +849,21 @@ public class ClientFactoryDO {
             if (noValues) { // nehledat nic
                 conditions.add(new SelectsNothingCondition());
             } else if (containsNull && !values.isEmpty()) { // vybrané hodnoty i "Prázdné"
-                if (isPacketRef) {
-                    conditions.add(new SelectedAndEmptyPacketTypeDescItemCondition(values));
-                } else {
-                    conditions.add(new SelectedSpecificationsDescItemEnumCondition(values, attName));
-                    conditions.add(new NoValuesCondition());
-                }
+                conditions.add(new SelectedSpecificationsDescItemEnumCondition(values, attName));
+                conditions.add(new NoValuesCondition());
             } else if (!values.isEmpty()) { // vybrané jen hodnoty
                 conditions.add(new SelectedSpecificationsDescItemEnumCondition(values, attName));
             } else { // vybrané jen "Prázdné"
-                if (isPacketRef) {
-                    conditions.add(new EmptyPacketTypeDescItemCondition());
-                } else {
-                    conditions.add(new NoValuesCondition());
-                }
+                conditions.add(new NoValuesCondition());
             }
         } else {
             if (containsNull && !values.isEmpty()) { // odškrtlé hodnoty i "Prázdné" = hodnoty které neobsahují proškrtlé položky
-                if (isPacketRef) {
-                    conditions.add(new NotEmptyPacketTypeDescItemCondition());
-                }
                 conditions.add(new UnselectedSpecificationsDescItemEnumCondition(values, attName));
             } else if (!values.isEmpty()) { // odškrtlé jen hodnoty = hodnoty které neobsahují proškrtlé položky + nody bez hodnot
-                if (isPacketRef) {
-                    conditions.add(new UnselectedSpecificationsDescItemEnumCondition(values, attName));
-                } else {
-                    conditions.add(new UnselectedSpecificationsDescItemEnumCondition(values, attName));
-                    conditions.add(new NoValuesCondition());
-                }
+                conditions.add(new UnselectedSpecificationsDescItemEnumCondition(values, attName));
+                conditions.add(new NoValuesCondition());
             } else if (containsNull) { // odškrtlé jen "Prázdné" = vše s hodnotou
-                if (isPacketRef) {
-                    conditions.add(new NotEmptyPacketTypeDescItemCondition());
-                } else {
-                    conditions.add(new NotEmptyDescItemCondition());
-                }
+                conditions.add(new NotEmptyDescItemCondition());
             } else {
                 // není potřeba vkládat podmínku, pokud vznikne ještě jiná podmínka tak by se udělal průnik výsledků a když bude seznam podmínek prázdný tak se vrátí všechna data
             }

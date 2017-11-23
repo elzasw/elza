@@ -65,7 +65,7 @@ public class DescItemReader {
 	 * @param version Version of the fund
 	 */
 	public void read(ArrFundVersion version) {
-        Set<RulItemType> descItemTypesForPackets = itemTypeRepository.findDescItemTypesForPackets();
+        Set<RulItemType> descItemTypesForStructureds = itemTypeRepository.findDescItemTypesForStructureds();
         Set<RulItemType> descItemTypesForIntegers = itemTypeRepository.findDescItemTypesForIntegers();
 
 		Collection<ArrNode> nodes = items.values();
@@ -93,7 +93,7 @@ public class DescItemReader {
                 levelDescItems = descItemsMap.get(level.getNodeId());
             }
             List<DescItem> items = ModelFactory.createDescItems(levelDescItems,
-            		descItemTypesForPackets, descItemTypesForIntegers, descItemFactory, version.getLockChange() == null);
+            		descItemTypesForStructureds, descItemTypesForIntegers, descItemFactory, version.getLockChange() == null);
             level.setDescItems(items);
         }
 

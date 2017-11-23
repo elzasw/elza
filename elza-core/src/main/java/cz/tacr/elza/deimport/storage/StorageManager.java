@@ -24,7 +24,6 @@ import cz.tacr.elza.deimport.sections.context.ArrDescItemWrapper;
 import cz.tacr.elza.deimport.sections.context.ArrLevelWrapper;
 import cz.tacr.elza.deimport.sections.context.ArrNodeRegisterWrapper;
 import cz.tacr.elza.deimport.sections.context.ArrNodeWrapper;
-import cz.tacr.elza.deimport.sections.context.ArrPacketWrapper;
 import cz.tacr.elza.repository.PartyGroupIdentifierRepository;
 import cz.tacr.elza.repository.PartyNameComplementRepository;
 import cz.tacr.elza.repository.PartyNameRepository;
@@ -146,10 +145,6 @@ public class StorageManager implements StorageListener {
     }
 
     public void savePartyAccessPoints(Collection<PartyAccessPointWrapper> items) {
-        saveEntities(items);
-    }
-
-    public void saveSectionPackets(Collection<ArrPacketWrapper> items) {
         saveEntities(items);
     }
 

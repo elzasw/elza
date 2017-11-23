@@ -42,7 +42,6 @@ import cz.tacr.elza.domain.ArrDataCoordinates;
 import cz.tacr.elza.domain.ArrDataDecimal;
 import cz.tacr.elza.domain.ArrDataInteger;
 import cz.tacr.elza.domain.ArrDataJsonTable;
-import cz.tacr.elza.domain.ArrDataPacketRef;
 import cz.tacr.elza.domain.ArrDataPartyRef;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ArrDataString;
@@ -54,7 +53,6 @@ import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.ParCreator;
 import cz.tacr.elza.domain.ParDynasty;
 import cz.tacr.elza.domain.ParEvent;
@@ -72,7 +70,6 @@ import cz.tacr.elza.domain.RegExternalSystem;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegVariantRecord;
 import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.table.ElzaTable;
@@ -85,7 +82,6 @@ import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.repository.PacketRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RelationEntityRepository;
@@ -103,7 +99,6 @@ import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemEnum;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemFormattedText;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemInteger;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemJsonTable;
-import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemPacketRef;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemPartyRef;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemRecordRef;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemString;
@@ -112,8 +107,6 @@ import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemUnitDate;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemUnitId;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.Fund;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.Level;
-import cz.tacr.elza.xmlimport.v1.vo.arrangement.Packet;
-import cz.tacr.elza.xmlimport.v1.vo.arrangement.PacketState;
 import cz.tacr.elza.xmlimport.v1.vo.party.AbstractParty;
 import cz.tacr.elza.xmlimport.v1.vo.party.Dynasty;
 import cz.tacr.elza.xmlimport.v1.vo.party.Event;
@@ -157,9 +150,6 @@ public class XmlExportService {
 
     @Autowired
     private PartyRepository partyRepository;
-
-    @Autowired
-    private PacketRepository packetRepository;
 
     @Autowired
     private RelationEntityRepository relationEntityRepository;
@@ -282,73 +272,8 @@ public class XmlExportService {
 
         Map<Integer, Record> recordMap = exportRecords(xmlImport, relatedEntities);
         exportParties(xmlImport, relatedEntities.getPartyDescItems(), recordMap);
-        exportPackets(xmlImport, relatedEntities.getPacketDescItems(), arrFund);
 
         return xmlImport;
-    }
-
-    /**
-     * Export obalů. Přidá do exportovaných dat obaly a nastaví je do hodnot které na ně odkazují.
-     *
-     * @param xmlImport exportovaná data
-     * @param packetDescItems použité obaly a hodnoty atributů kde byly použity
-     * @param arrFund archivní soubor
-     */
-    private void exportPackets(final XmlImport xmlImport, final Map<Integer, List<DescItemPacketRef>> packetDescItems, final ArrFund arrFund) {
-        Assert.notNull(xmlImport, "Musí být vyplněno");
-        Assert.notNull(arrFund, "AS musí být vyplněn");
-
-        List<ArrPacket> arrPackets = packetRepository.findByFund(arrFund);
-        List<Packet> packets = new ArrayList<>(arrPackets.size());
-        for (ArrPacket arrPacket : arrPackets) {
-            Packet packet = createPacket(arrPacket);
-            packets.add(packet);
-            updateDescItemPacketReferences(arrPacket.getPacketId(), packet, packetDescItems);
-        }
-
-        xmlImport.setPackets(packets);
-    }
-
-    /**
-     * Doplní obal do hodnot atributů které na ně odkazují.
-     *
-     * @param packetId id obalu
-     * @param packet obal
-     * @param packetDescItems mapa id obalů na hodnoty atributů
-     */
-    private void updateDescItemPacketReferences(final Integer packetId, final Packet packet,
-            final Map<Integer, List<DescItemPacketRef>> packetDescItems) {
-        Assert.notNull(packetId, "Identifikátor obalu musí být vyplněn");
-        Assert.notNull(packet, "Obal musí být vyplněn");
-        Assert.notNull(packetDescItems, "Hodnoty atributu pro obaly musí být vyplněny");
-
-        List<DescItemPacketRef> descItemPacketRefs = packetDescItems.get(packetId);
-        if (CollectionUtils.isNotEmpty(descItemPacketRefs)) {
-            descItemPacketRefs.forEach(diPR -> diPR.setPacket(packet));
-        }
-    }
-
-    /**
-     * Vytvoří obal.
-     *
-     * @param arrPacket obalz db
-     *
-     * @return obal pro xml
-     */
-    private Packet createPacket(final ArrPacket arrPacket) {
-        Packet packet = new Packet();
-        packet.setPacketId(arrPacket.getPacketId().toString());
-
-        RulPacketType packetType = arrPacket.getPacketType();
-        if (packetType != null) {
-            packet.setPacketTypeCode(packetType.getCode());
-        }
-        cz.tacr.elza.domain.ArrPacket.State arrPacketState = arrPacket.getState();
-        packet.setState(PacketState.valueOf(arrPacketState.name()));
-
-        packet.setStorageNumber(arrPacket.getStorageNumber());
-
-        return packet;
     }
 
     /**
@@ -1186,16 +1111,6 @@ public class XmlExportService {
                 relatedEntities.addRecordDescItem(recordId, descItem);
 
                 descItems.add(descItem);
-            } else if (dataTypeCode.equals("PACKET_REF")) {
-                DescItemPacketRef descItem = new DescItemPacketRef();
-                ArrDataPacketRef arrDataPacketRef = (ArrDataPacketRef) arrData;
-
-                fillCommonAttributes(descItem, arrDescItem);
-
-                Integer packetId = arrDataPacketRef.getPacket().getPacketId();
-                relatedEntities.addPacketDescItem(packetId, descItem);
-
-                descItems.add(descItem);
             } else if (dataTypeCode.equals("UNITDATE")) {
                 DescItemUnitDate descItem = new DescItemUnitDate();
                 ArrDataUnitdate arrDataUnitdate = (ArrDataUnitdate) arrData;
@@ -1392,9 +1307,6 @@ public class XmlExportService {
         /** Mapa do které se naplní id osoby a seznam hodnot atributů které na ni odkazují. */
         private Map<Integer, List<DescItemPartyRef>> partyDescItems = new HashMap<>();
 
-        /** Mapa do které se naplní id obalu a seznam hodnot atributů které na něj odkazují. */
-        private Map<Integer, List<DescItemPacketRef>> packetDescItems = new HashMap<>();
-
         /** Použité rejstříky z dalších entit. */
         private Set<Integer> otherUsedRecords = new HashSet<>();
 
@@ -1434,19 +1346,7 @@ public class XmlExportService {
             descItemsPartyRef.add(descItem);
         }
 
-        public void addPacketDescItem(final Integer packetId, final DescItemPacketRef descItem) {
-            Assert.notNull(packetId, "Identifikátor obalu musí být vyplněn");
-            Assert.notNull(descItem, "Hodnota atributu musí být vyplněna");
-
-            List<DescItemPacketRef> descItemsPacketRef = packetDescItems.get(packetId);
-            if (descItemsPacketRef == null) {
-                descItemsPacketRef = new LinkedList<>();
-                packetDescItems.put(packetId, descItemsPacketRef);
-            }
-            descItemsPacketRef.add(descItem);
-        }
-
-        public void addOtherUsedRecords(final Integer recordId) {
+                public void addOtherUsedRecords(final Integer recordId) {
             Assert.notNull(recordId, "Identifikátor rejstříkového hesla musí být vyplněn");
 
             otherUsedRecords.add(recordId);
@@ -1462,10 +1362,6 @@ public class XmlExportService {
 
         public Map<Integer, List<DescItemPartyRef>> getPartyDescItems() {
             return partyDescItems;
-        }
-
-        public Map<Integer, List<DescItemPacketRef>> getPacketDescItems() {
-            return packetDescItems;
         }
 
         public Set<Integer> getOtherUsedRecords() {

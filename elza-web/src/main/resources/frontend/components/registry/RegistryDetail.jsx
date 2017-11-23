@@ -44,6 +44,7 @@ import EditRegistryForm from "./EditRegistryForm";
 import RegistryDetailVariantRecords from "./RegistryDetailVariantRecords";
 import RegistryDetailCoordinates from "./RegistryDetailCoordinates";
 import {requestScopesIfNeeded} from "../../actions/refTables/scopesData";
+import {FOCUS_KEYS} from "../../constants";
 
 
 class RegistryDetail extends AbstractReactComponent {
@@ -93,7 +94,7 @@ class RegistryDetail extends AbstractReactComponent {
     trySetFocus = (props = this.props) => {
         const {focus} = props;
         if (canSetFocus()) {
-            if (isFocusFor(focus, 'registry', 2)) {
+            if (isFocusFor(focus, FOCUS_KEYS.REGISTRY, 2)) {
                 this.setState({}, () => {
                     if (this.refs.registryTitle) {
                         this.refs.registryTitle.focus();
@@ -155,7 +156,7 @@ class RegistryDetail extends AbstractReactComponent {
             ...value
         }, () => {
             // Nastavení focus
-            this.dispatch(setFocus('registry', 2))
+            this.dispatch(setFocus(FOCUS_KEYS.REGISTRY, 2))
         }));
 
     };

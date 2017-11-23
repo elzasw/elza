@@ -501,8 +501,8 @@ export function getItemClass(dataType) {
             return '.ArrItemFileRefVO';
         case 'RECORD_REF':
             return '.ArrItemRecordRefVO';
-        case 'PACKET_REF':
-            return '.ArrItemPacketVO';
+        case 'STRUCTURED':
+            return '.ArrItemStructureVO';
         case 'JSON_TABLE':
             return '.ArrItemJsonTableVO';
         case 'ENUM':

@@ -1,5 +1,40 @@
 package cz.tacr.elza.service;
 
+import cz.tacr.elza.ElzaTools;
+import cz.tacr.elza.FilterTools;
+import cz.tacr.elza.controller.ArrangementController;
+import cz.tacr.elza.controller.vo.FilterNode;
+import cz.tacr.elza.controller.vo.FilterNodePosition;
+import cz.tacr.elza.controller.vo.TreeNode;
+import cz.tacr.elza.controller.vo.TreeNodeClient;
+import cz.tacr.elza.controller.vo.filter.SearchParam;
+import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.vo.DescItemValues;
+import cz.tacr.elza.domain.vo.TitleValue;
+import cz.tacr.elza.domain.vo.TitleValues;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.filter.DescItemTypeFilter;
+import cz.tacr.elza.repository.DataRepository;
+import cz.tacr.elza.repository.ItemSpecRepository;
+import cz.tacr.elza.repository.ItemTypeRepository;
+import cz.tacr.elza.repository.NodeRepository;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -11,46 +46,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-
-import javax.annotation.Nullable;
-
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-
-import cz.tacr.elza.ElzaTools;
-import cz.tacr.elza.FilterTools;
-import cz.tacr.elza.controller.ArrangementController;
-import cz.tacr.elza.controller.vo.FilterNode;
-import cz.tacr.elza.controller.vo.FilterNodePosition;
-import cz.tacr.elza.controller.vo.TreeNode;
-import cz.tacr.elza.controller.vo.TreeNodeClient;
-import cz.tacr.elza.controller.vo.filter.SearchParam;
-import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
-import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDataPacketRef;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.RulPacketType;
-import cz.tacr.elza.domain.vo.DescItemValues;
-import cz.tacr.elza.domain.vo.TitleValue;
-import cz.tacr.elza.domain.vo.TitleValues;
-import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.codes.ArrangementCode;
-import cz.tacr.elza.filter.DescItemTypeFilter;
-import cz.tacr.elza.repository.DataRepository;
-import cz.tacr.elza.repository.ItemSpecRepository;
-import cz.tacr.elza.repository.ItemTypeRepository;
-import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.repository.PacketTypeRepository;
 
 
 /**
@@ -75,8 +70,6 @@ public class FilterTreeService {
     private NodeRepository nodeRepository;
     @Autowired
     private DataRepository dataRepository;
-    @Autowired
-    private PacketTypeRepository packetTypeRepository;
     @Autowired
     private ItemSpecRepository itemSpecRepository;
     @Autowired
@@ -223,30 +216,21 @@ public class FilterTreeService {
         Assert.notNull(descItemType, "Typ atributu musí být vyplněn");
 
         Class<? extends ArrData> dataTypeClass = descriptionItemService.getDescItemDataTypeClass(descItemType);
-        if (dataTypeClass.equals(ArrDataPacketRef.class)) {
-            Assert.notEmpty(specIds, "Musí být vyplněn alespoň jeden identifikátor specifikace");
-            boolean withoutType = FilterTools.removeNullValues(specIds);
-            Set<RulPacketType> packetTypes = new HashSet<>(packetTypeRepository.findAll(specIds));
-            return dataRepository.findUniquePacketValuesInVersion(version, descItemType, dataTypeClass, packetTypes,
-                    withoutType, fulltext, max);
-        } else {
-            Set<RulItemSpec> specs = null;
-            boolean withoutSpec = false;
-            if (descItemType.getUseSpecification()) {
-                Assert.notEmpty(specIds, "Musí být vyplněn alespoň jeden identifikátor specifikace");
-                withoutSpec = FilterTools.removeNullValues(specIds);
-                specs = new HashSet<>(itemSpecRepository.findAll(specIds));
-            }
 
-            return dataRepository.findUniqueSpecValuesInVersion(version, descItemType, dataTypeClass, specs, withoutSpec,
-                    fulltext, max);
+        Set<RulItemSpec> specs = null;
+        boolean withoutSpec = false;
+        if (descItemType.getUseSpecification()) {
+            Assert.notEmpty(specIds, "Musí být vyplněn alespoň jeden identifikátor specifikace");
+            withoutSpec = FilterTools.removeNullValues(specIds);
+            specs = new HashSet<>(itemSpecRepository.findAll(specIds));
         }
+
+        return dataRepository.findUniqueSpecValuesInVersion(version, descItemType, dataTypeClass, specs, withoutSpec,
+                fulltext, max);
     }
 
     /**
      * Získání unikátních specifikací atributů podle typu.
-     *
-     * Pokud typ je PACKET_REF, výsledek je seznamem typů obalů.
      *
      * @param fundVersion verze stromu
      * @param itemType    typ atributu
@@ -258,11 +242,7 @@ public class FilterTreeService {
         Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
         Assert.notNull(itemType, "Typ atributu musí být vyplněn");
 
-        if (itemType.getDataType().getCode().equals("PACKET_REF")) {
-            return dataRepository.findUniquePacketTypeIdsInVersion(fundVersion, itemType);
-        } else {
-            return dataRepository.findUniqueSpecIdsInVersion(fundVersion, itemType);
-        }
+        return dataRepository.findUniqueSpecIdsInVersion(fundVersion, itemType);
     }
 
     /**
