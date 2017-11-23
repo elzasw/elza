@@ -30,9 +30,7 @@ import {WebApi} from 'actions/index.jsx';
 import {modalDialogShow} from 'actions/global/modalDialog.jsx'
 import {showRegisterJp, fundsFetchIfNeeded} from 'actions/arr/fund.jsx'
 import {versionValidate, versionValidationErrorNext, versionValidationErrorPrevious} from 'actions/arr/versionValidation.jsx'
-import {packetsFetchIfNeeded} from 'actions/arr/packets.jsx'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
-import {packetTypesFetchIfNeeded} from 'actions/refTables/packetTypes.jsx'
 import {developerNodeScenariosRequest} from 'actions/global/developer.jsx'
 import {isFundRootId, getSettings, setSettings, getOneSettings} from 'components/arr/ArrUtils.jsx';
 import {setFocus} from 'actions/global/focus.jsx'
@@ -65,7 +63,6 @@ export default class ArrParentPage extends AbstractReactComponent {
         rulDataTypes: React.PropTypes.object.isRequired,
         calendarTypes: React.PropTypes.object.isRequired,
         descItemTypes: React.PropTypes.object.isRequired,
-        packetTypes: React.PropTypes.object.isRequired,
         focus: React.PropTypes.object.isRequired,
         userDetail: React.PropTypes.object.isRequired,
         ruleSet: React.PropTypes.object.isRequired,
@@ -116,24 +113,20 @@ export default class ArrParentPage extends AbstractReactComponent {
 
     componentDidMount() {
         this.dispatch(descItemTypesFetchIfNeeded());
-        this.dispatch(packetTypesFetchIfNeeded());
         this.dispatch(calendarTypesFetchIfNeeded());
         this.dispatch(fundsFetchIfNeeded());
         var activeFund = this.getActiveFund(this.props);
         if (activeFund !== null) {
-            this.dispatch(packetsFetchIfNeeded(activeFund.id));
             this.requestFundTreeData(activeFund);
         }
     }
 
     componentWillReceiveProps(nextProps) {
         this.dispatch(descItemTypesFetchIfNeeded());
-        this.dispatch(packetTypesFetchIfNeeded());
         this.dispatch(calendarTypesFetchIfNeeded());
         this.dispatch(fundsFetchIfNeeded());
         var activeFund = this.getActiveFund(nextProps);
         if (activeFund !== null) {
-            this.dispatch(packetsFetchIfNeeded(activeFund.id));
             this.requestFundTreeData(activeFund);
         }
     }
@@ -153,7 +146,7 @@ export default class ArrParentPage extends AbstractReactComponent {
         this.dispatch(userDetailsSaveSettings(settings));
     }
     getActiveFund(props) {
-        var arrRegion = props.arrRegion;
+        const arrRegion = props.arrRegion;
         return arrRegion.activeIndex != null ? arrRegion.funds[arrRegion.activeIndex] : null;
     }
 
@@ -182,7 +175,7 @@ export default class ArrParentPage extends AbstractReactComponent {
     }
 
     render() {
-        const {splitter, arrRegion, userDetail, ruleSet, rulDataTypes, calendarTypes, descItemTypes, packetTypes} = this.props;
+        const {splitter, arrRegion, userDetail, ruleSet, rulDataTypes, calendarTypes, descItemTypes} = this.props;
 
         var activeFund = arrRegion.activeIndex != null ? arrRegion.funds[arrRegion.activeIndex] : null;
 
@@ -202,12 +195,6 @@ export default class ArrParentPage extends AbstractReactComponent {
                 closed = activeFund.lockDate != null;
 
                 statusHeader = <ArrFundPanel />
-
-                var packets = [];
-                var fundId = activeFund.id;
-                if (fundId && arrRegion.packets[fundId]) {
-                    packets = arrRegion.packets[fundId].items;
-                }
 
                 centerPanel = this.renderCenterPanel(readMode, closed);
                 leftPanel = this.renderLeftPanel(readMode, closed);

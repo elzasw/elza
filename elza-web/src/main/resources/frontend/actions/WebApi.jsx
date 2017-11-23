@@ -275,7 +275,7 @@ export class WebApiCls {
         return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/levels/copy/validate', null, data);
     }
 
-    copyNodes(targetFundVersionId, targetStaticNode, targetStaticNodeParent, sourceFundVersionId, sourceNodes, ignoreRootNodes = false, selectedDirection, filesConflictResolve = null, packetsConflictResolve = null) {
+    copyNodes(targetFundVersionId, targetStaticNode, targetStaticNodeParent, sourceFundVersionId, sourceNodes, ignoreRootNodes = false, selectedDirection, filesConflictResolve = null, structuresConflictResolve = null) {
         const data = {
             targetFundVersionId,
             targetStaticNode,
@@ -285,7 +285,7 @@ export class WebApiCls {
             ignoreRootNodes,
             selectedDirection,
             filesConflictResolve,
-            packetsConflictResolve
+            structuresConflictResolve
         };
         return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/levels/copy', null, data);
     }
@@ -549,40 +549,6 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.ruleUrl + '/templates', code ? {code} : null);
     }
 
-    getPacketTypes() {
-        return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/packets/types');
-    }
-
-    getPackets(fundId, text = null, limit = 100) {
-        return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/packets/' + fundId + '/find/form', null, {'limit': limit, 'text': text});
-    }
-
-    findPackets(fundId, state = 'OPEN', prefix = null) {
-        const data = {
-            prefix,
-            state,
-        };
-        return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/packets/' + fundId + '/find', null, data);
-    }
-
-    deletePackets(fundId, packetIds) {
-        return AjaxUtils.ajaxDelete(WebApiCls.arrangementUrl + '/packets/' + fundId, null, {packetIds});
-    }
-
-    setStatePackets(fundId, packetIds, state) {
-        return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/packets/' + fundId, null, {packetIds, state});
-    }
-
-    generatePackets(fundId, prefix, packetTypeId, fromNumber, lenNumber, count, packetIds) {
-        const data = {
-            prefix, packetTypeId, fromNumber, lenNumber, count, packetIds
-        };
-        return AjaxUtils.ajaxPut(WebApiCls.arrangementUrl + '/packets/' + fundId + '/generate', null, data);
-    }
-
-    insertPacket(fundId, storageNumber, packetTypeId, invalidPacket) {
-        return AjaxUtils.ajaxPut(WebApiCls.arrangementUrl + '/packets/' + fundId, {}, {packetTypeId, storageNumber, invalidPacket});
-    }
 
     getFundNodeForm1(versionId, nodeId) {
         const node = findNodeById(_faRootNode, nodeId);
@@ -1248,6 +1214,15 @@ export class WebApiCls {
     deleteStructureItemsByType(fundVersionId, structureDataId, itemTypeId) {
         return AjaxUtils.ajaxDelete(WebApiCls.structureUrl + '/item/' + fundVersionId + '/' + structureDataId + '/' + itemTypeId)
     }
+
+    updateStructureDataBatch(fundVersionId, structureTypeCode, structureDataBatchUpdate) {
+        return AjaxUtils.ajaxPost(WebApiCls.structureUrl + '/data/'+ fundVersionId + '/'+ structureTypeCode + '/batchUpdate', null, structureDataBatchUpdate);
+    }
+
+    setAssignableStructureDataList(fundVersionId, assignable, structureDataIds) {
+        return AjaxUtils.ajaxPut(WebApiCls.structureUrl + '/data/' + fundVersionId + '/assignable/' + assignable, null, structureDataIds)
+    }
+
 
 }
 

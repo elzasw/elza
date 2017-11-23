@@ -56,9 +56,7 @@ import * as perms from 'actions/user/Permission.jsx';
 import {fundActionFormShow, fundActionFormChange} from 'actions/arr/fundAction.jsx'
 import {routerNavigate} from 'actions/router.jsx'
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx'
-import {packetTypesFetchIfNeeded} from 'actions/refTables/packetTypes.jsx'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
-import {packetsFetchIfNeeded} from 'actions/arr/packets.jsx'
 import {templatesFetchIfNeeded} from 'actions/refTables/templates.jsx'
 import AddDescItemTypeForm from 'components/arr/nodeForm/AddDescItemTypeForm.jsx'
 import {outputFormActions} from 'actions/arr/subNodeForm.jsx'
@@ -509,15 +507,11 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
     }
 
     renderCenterPanel(readMode, closed) {
-        const {arrRegion, calendarTypes, packetTypes, templates, rulDataTypes, descItemTypes, userDetail} = this.props;
+        const {calendarTypes, templates, rulDataTypes, descItemTypes, userDetail} = this.props;
 
         const fund = this.getActiveFund(this.props);
         const fundOutputDetail = fund.fundOutput.fundOutputDetail;
 
-        var packets = [];
-        if (fund && arrRegion.packets[fund.id]) {
-            packets = arrRegion.packets[fund.id].items;
-        }
 
         return (
             <ArrOutputDetail
@@ -526,9 +520,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
                 fund={fund}
                 calendarTypes={calendarTypes}
                 descItemTypes={descItemTypes}
-                packetTypes={packetTypes}
                 templates={templates}
-                packets={packets}
                 rulDataTypes={rulDataTypes}
                 userDetail={userDetail}
                 fundOutputDetail={fundOutputDetail}
@@ -637,7 +629,6 @@ function mapStateToProps(state) {
         rulDataTypes: refTables.rulDataTypes,
         calendarTypes: refTables.calendarTypes,
         descItemTypes: refTables.descItemTypes,
-        packetTypes: refTables.packetTypes,
         ruleSet: refTables.ruleSet,
         templates: refTables.templates,
         outputTypes: refTables.outputTypes.items,

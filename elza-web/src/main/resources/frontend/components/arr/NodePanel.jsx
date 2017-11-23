@@ -384,8 +384,7 @@ return true
         if (this.state !== nextState) {
             return true;
         }
-        var eqProps = ['versionId', 'fund', 'node', 'calendarTypes', 'descItemTypes',
-            'packetTypes', 'packets', 'rulDataTypes', 'fundId', 'showRegisterJp', 'showDaosJp', 'closed']
+        var eqProps = ['versionId', 'fund', 'node', 'calendarTypes', 'descItemTypes', 'rulDataTypes', 'fundId', 'showRegisterJp', 'showDaosJp', 'closed']
         return !propsEquals(this.props, nextProps, eqProps);
     }
 
@@ -743,7 +742,7 @@ return true
 
     render() {
         const {calendarTypes, versionId, rulDataTypes, node,
-                packetTypes, packets, fundId, userDetail,
+                fundId, userDetail,
                 showRegisterJp, showDaosJp, fund, closed, descItemTypes} = this.props;
 
 
@@ -801,10 +800,8 @@ return true
                 subNodeForm={node.subNodeForm}
                 rulDataTypes={rulDataTypes}
                 calendarTypes={calendarTypes}
-                packetTypes={packetTypes}
                 descItemTypes={descItemTypes}
                 conformityInfo={conformityInfo}
-                packets={packets}
                 parentNode={node}
                 fundId={fundId}
                 selectedSubNode={node.subNodeForm.data.parent}
@@ -916,7 +913,7 @@ return true
 }
 
 function mapStateToProps(state) {
-    const {focus, userDetail} = state
+    const {focus, userDetail} = state;
     return {
         focus,
         userDetail
@@ -929,14 +926,12 @@ NodePanel.propTypes = {
     node: React.PropTypes.object.isRequired,
     calendarTypes: React.PropTypes.object.isRequired,
     descItemTypes: React.PropTypes.object.isRequired,
-    packetTypes: React.PropTypes.object.isRequired,
-    packets: React.PropTypes.array.isRequired,
     rulDataTypes: React.PropTypes.object.isRequired,
     fundId: React.PropTypes.number,
     showRegisterJp: React.PropTypes.bool.isRequired,
     showDaosJp: React.PropTypes.bool.isRequired,
     closed: React.PropTypes.bool.isRequired,
     userDetail: React.PropTypes.object.isRequired,
-}
+};
 
 export default connect(mapStateToProps)(NodePanel);

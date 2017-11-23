@@ -38,5 +38,5 @@ class StructureExtensionsForm extends AbstractReactComponent {
 
 export default reduxForm({
     form: 'structureExtensions',
-    fields: ['extensions[].id', 'extensions[].name', 'extensions[].active']
+    fields: ['extensions[].code', 'extensions[].name', 'extensions[].active']
 })(StructureExtensionsForm);

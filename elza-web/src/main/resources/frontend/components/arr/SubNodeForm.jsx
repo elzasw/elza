@@ -1,7 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {Icon, i18n, AbstractReactComponent, NoFocusButton } from 'components/shared';
-import AddPacketForm from './AddPacketForm';
 import AddFileForm from './AddFileForm';
 import {connect} from 'react-redux'
 import {Panel, Accordion} from 'react-bootstrap'
@@ -15,7 +14,6 @@ import {setFocus, canSetFocus, focusWasSet, isFocusFor} from 'actions/global/foc
 import {UrlFactory} from 'actions/index.jsx';
 import {selectTab} from 'actions/global/tab.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
-import {fundPacketsCreate} from 'actions/arr/fundPackets.jsx'
 import {fundFilesCreate} from 'actions/arr/fundFiles.jsx'
 import {setSettings, getOneSettings} from 'components/arr/ArrUtils.jsx';
 import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx'
@@ -46,9 +44,6 @@ class SubNodeForm extends AbstractReactComponent {
             'handleDescItemAdd',
             'handleDescItemRemove',
             'handleCreateParty',
-            'handleCreatePacket',
-            'handleFundPackets',
-            'handleCreatePacketFormSubmit',
             'handleDescItemTypeCopyFromPrev',
             'handleDescItemTypeLock',
             'handleDescItemTypeCopy',
@@ -74,8 +69,7 @@ class SubNodeForm extends AbstractReactComponent {
         rulDataTypes: React.PropTypes.object.isRequired,
         calendarTypes: React.PropTypes.object.isRequired,
         descItemTypes: React.PropTypes.object.isRequired,
-        packetTypes: React.PropTypes.object.isRequired,
-        packets: React.PropTypes.array.isRequired,
+        structureTypes: React.PropTypes.object.isRequired,
         subNodeForm: React.PropTypes.object.isRequired,
         closed: React.PropTypes.bool.isRequired,
         readMode: React.PropTypes.bool.isRequired,
@@ -404,44 +398,6 @@ class SubNodeForm extends AbstractReactComponent {
     /**
      * Vytvoření obalu.
      *
-     * @param descItemGroupIndex {Integer} index skupiny atributů v seznamu
-     * @param descItemTypeIndex {Integer} index atributu v seznamu
-     * @param descItemIndex {Integer} index honodty atributu v seznamu
-     */
-    handleCreatePacket(descItemGroupIndex, descItemTypeIndex, descItemIndex) {
-        const {fundId} = this.props;
-
-        const valueLocation = {
-            descItemGroupIndex,
-            descItemTypeIndex,
-            descItemIndex
-        };
-
-        const form = <AddPacketForm
-            initData={{}}
-            createSingle
-            fundId={fundId}
-            onSubmitForm={this.handleCreatePacketFormSubmit.bind(this, valueLocation, "SINGLE")}
-        />;
-        this.props.dispatch(modalDialogShow(this, i18n('arr.packet.title.add'), form));
-
-    }
-
-    /**
-     * Odeslání formuláře na vytvoření obalu.
-     *
-     * @param valueLocation pozice hodnoty atributu
-     * @param type          typ obalu
-     * @param data          obal
-     */
-    handleCreatePacketFormSubmit(valueLocation, type, data) {
-        const {fundId} = this.props;
-        return this.props.dispatch(fundPacketsCreate(fundId, type, data, this.handleCreatedPacket.bind(this, valueLocation)));
-    }
-
-    /**
-     * Vytvoření obalu.
-     *
      * @param valueLocation pozice hodnoty atributu
      * @param data          obal
      */
@@ -450,23 +406,6 @@ class SubNodeForm extends AbstractReactComponent {
 
         // Uložení hodnoty
         this.props.dispatch(this.props.formActions.fundSubNodeFormValueChange(versionId, routingKey, valueLocation, data, true));
-    }
-
-    /**
-     * Zobrazení seznamu obalů.
-     *
-     * @param descItemGroupIndex {Integer} index skupiny atributů v seznamu
-     * @param descItemTypeIndex {Integer} index atributu v seznamu
-     * @param descItemIndex {Integer} index honodty atributu v seznamu
-     */
-    handleFundPackets(descItemGroupIndex, descItemTypeIndex, descItemIndex) {
-        const tab = "packets";
-        this.enableIfDisabled("FUND_CENTER_PANEL","rightPanel");
-        this.enableIfDisabled("FUND_RIGHT_PANEL",tab);
-
-        this.props.dispatch(routerNavigate('/arr'));
-        this.props.dispatch(selectTab('arr-as', tab));
-        this.props.dispatch(setFocus(FOCUS_KEYS.ARR, 3, null, null));
     }
 
     /**
@@ -750,8 +689,8 @@ class SubNodeForm extends AbstractReactComponent {
      * @return {Object} view
      */
     renderDescItemType(descItemType, descItemTypeIndex, descItemGroupIndex, nodeSetting) {
-        const {fundId, subNodeForm, descItemCopyFromPrevEnabled, singleDescItemTypeEdit, rulDataTypes, calendarTypes, closed,
-                packetTypes, packets, showNodeAddons, conformityInfo, versionId, readMode, userDetail, arrRegion, typePrefix} = this.props;
+        const {fundId, subNodeForm, descItemCopyFromPrevEnabled, singleDescItemTypeEdit, rulDataTypes, structureTypes, calendarTypes, closed,
+            showNodeAddons, conformityInfo, versionId, readMode, userDetail, arrRegion, typePrefix} = this.props;
 
         const refType = subNodeForm.refTypesMap[descItemType.id];
         const infoType = subNodeForm.infoTypesMap[descItemType.id];
@@ -805,14 +744,11 @@ class SubNodeForm extends AbstractReactComponent {
             infoType={infoType}
             rulDataType={rulDataType}
             calendarTypes={calendarTypes}
-            packetTypes={packetTypes}
-            packets={packets}
+            structureTypes={structureTypes}
             onCreateParty={this.handleCreateParty.bind(this, descItemGroupIndex, descItemTypeIndex)}
             onDetailParty={this.handleDetailParty.bind(this, descItemGroupIndex, descItemTypeIndex)}
             onCreateRecord={this.handleCreateRecord.bind(this, descItemGroupIndex, descItemTypeIndex)}
             onDetailRecord={this.handleDetailRecord.bind(this, descItemGroupIndex, descItemTypeIndex)}
-            onCreatePacket={this.handleCreatePacket.bind(this, descItemGroupIndex, descItemTypeIndex)}
-            onFundPackets={this.handleFundPackets.bind(this, descItemGroupIndex, descItemTypeIndex)}
             onCreateFile={this.handleCreateFile.bind(this, descItemGroupIndex, descItemTypeIndex)}
             onFundFiles={this.handleFundFiles.bind(this, descItemGroupIndex, descItemTypeIndex)}
             onDescItemAdd={this.handleDescItemAdd.bind(this, descItemGroupIndex, descItemTypeIndex)}
@@ -843,6 +779,7 @@ class SubNodeForm extends AbstractReactComponent {
             strictMode={strictMode}
             notIdentified={notIdentified}
             onDescItemNotIdentified={(descItemIndex, descItem) => this.handleDescItemNotIdentified(descItemGroupIndex, descItemTypeIndex, descItemIndex, descItem)}
+            customActions={this.props.customActions && this.props.customActions(rulDataType.code, infoType)}
         />
     }
 

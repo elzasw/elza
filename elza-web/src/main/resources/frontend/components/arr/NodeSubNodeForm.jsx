@@ -2,6 +2,8 @@
  * Formulář detailu a editace jedné JP - jednoho NODE v konkrétní verzi.
  */
 
+import objectById from "../../shared/utils/objectById";
+
 require('./NodeSubNodeForm.less');
 
 import React from 'react';
@@ -213,7 +215,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
 
     render() {
         const {singleDescItemTypeEdit, userDetail} = this.props;
-        const {versionId, focus, closed, fundId, routingKey, rulDataTypes, calendarTypes, descItemTypes, packetTypes, packets,
+        const {versionId, focus, closed, fundId, routingKey, rulDataTypes, calendarTypes, descItemTypes, structureTypes,
             subNodeForm, conformityInfo, descItemCopyFromPrevEnabled, singleDescItemTypeId, readMode} = this.props;
 
         let formActions
@@ -229,6 +231,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
                 <SubNodeForm
                     ref="subNodeForm"
                     typePrefix="desc"
+                    structureTypes={structureTypes}
                     versionId={versionId}
                     fundId={fundId}
                     routingKey={routingKey}
@@ -236,8 +239,6 @@ class NodeSubNodeForm extends AbstractReactComponent {
                     rulDataTypes={rulDataTypes}
                     calendarTypes={calendarTypes}
                     descItemTypes={descItemTypes}
-                    packetTypes={packetTypes}
-                    packets={packets}
                     subNodeForm={subNodeForm}
                     closed={closed}
                     conformityInfo={conformityInfo}
@@ -258,14 +259,17 @@ class NodeSubNodeForm extends AbstractReactComponent {
 }
 
 function mapStateToProps(state) {
-    const {arrRegion, focus, userDetail} = state
+    const {arrRegion, focus, userDetail, refTables} = state;
     let fund = null;
+    let structureTypes = null;
     if (arrRegion.activeIndex != null) {
         fund = arrRegion.funds[arrRegion.activeIndex];
+        structureTypes = objectById(refTables.structureTypes.data, fund.versionId, "versionId");
     }
 
     return {
         nodeSettings: arrRegion.nodeSettings,
+        structureTypes,
         fund,
         focus,
         userDetail,
@@ -284,8 +288,7 @@ NodeSubNodeForm.propTypes = {
     rulDataTypes: React.PropTypes.object.isRequired,
     calendarTypes: React.PropTypes.object.isRequired,
     descItemTypes: React.PropTypes.object.isRequired,
-    packetTypes: React.PropTypes.object.isRequired,
-    packets: React.PropTypes.array.isRequired,
+    structureTypes: React.PropTypes.object.isRequired,
     subNodeForm: React.PropTypes.object.isRequired,
     closed: React.PropTypes.bool.isRequired,
     conformityInfo: React.PropTypes.object.isRequired,

@@ -46,9 +46,7 @@ class ArrOutputDetail extends AbstractReactComponent {
         fund: React.PropTypes.object.isRequired,
         calendarTypes: React.PropTypes.object.isRequired,
         descItemTypes: React.PropTypes.object.isRequired,
-        packetTypes: React.PropTypes.object.isRequired,
         templates: React.PropTypes.object.isRequired,
-        packets: React.PropTypes.array.isRequired,
         rulDataTypes: React.PropTypes.object.isRequired,
         userDetail: React.PropTypes.object.isRequired,
         closed: React.PropTypes.bool.isRequired,
@@ -159,7 +157,7 @@ class ArrOutputDetail extends AbstractReactComponent {
 
     render() {
         const {fundOutputDetail, focus,
-            fund, versionId, packets, packetTypes, descItemTypes,
+            fund, versionId, descItemTypes,
             calendarTypes, rulDataTypes, closed, readMode} = this.props;
 
         if (fundOutputDetail.id === null) {
@@ -183,8 +181,6 @@ class ArrOutputDetail extends AbstractReactComponent {
             rulDataTypes={rulDataTypes}
             calendarTypes={calendarTypes}
             descItemTypes={descItemTypes}
-            packetTypes={packetTypes}
-            packets={packets}
             subNodeForm={fundOutputDetail.subNodeForm}
             closed={!this.isEditable()}
             focus={focus}

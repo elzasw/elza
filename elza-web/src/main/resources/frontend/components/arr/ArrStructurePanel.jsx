@@ -17,6 +17,7 @@ import UpdateStructureDataForm from "./structure/UpdateStrucutreDataForm";
 import {contextMenuShow, contextMenuHide} from "../../actions/global/contextMenu";
 import StructureExtensionsForm from "./structure/StructureExtensionsForm";
 import PropTypes from 'prop-types';
+import UpdateMultipleSub from "./structure/UpdateMultipleSub";
 
 class ArrStructurePanel extends AbstractReactComponent {
 
@@ -44,11 +45,11 @@ class ArrStructurePanel extends AbstractReactComponent {
     };
 
     handleExtensionsSettings = () => {
-        const {fundVersionId, name} = this.props;
-        WebApi.findFundStructureExtension(fundVersionId).then(extensions => {
+        const {fundVersionId, code, name} = this.props;
+        WebApi.findFundStructureExtension(fundVersionId, code).then(extensions => {
             this.props.dispatch(modalDialogShow(this, i18n("arr.structure.modal.settings.title", name), <StructureExtensionsForm
                 initialValues={{extensions}}
-                onSubmit={(data) => WebApi.updateFundStructureExtension(fundVersionId, data.extensions.filter(i => i.active))}
+                onSubmit={(data) => WebApi.updateFundStructureExtension(fundVersionId, code, data.extensions.filter(i => i.active).map(i => i.code))}
                 onSubmitSuccess={() => {
                     this.props.dispatch(modalDialogHide());
                 }}
@@ -91,38 +92,65 @@ class ArrStructurePanel extends AbstractReactComponent {
                 }}
             />, "", () => WebApi.deleteStructureData(fundVersionId, structureData.id)))
         });
+    };
 
-        console.warn("Not implemented");
+    /**
+     * Vrátí aktuální výběr
+     *
+     *
+     */
+    getActiveSelection = (clickedItem = null) => {
+        const {activeIndexes} = this.state;
+
+        if (!activeIndexes && !clickedItem && clickedItem.id) {
+            this.props.dispatch(contextMenuHide());
+            return [clickedItem.id];
+        } else if (activeIndexes) {
+            const {store: {rows}} = this.props;
+            if (activeIndexes.length === 1) { // Vybrána pouze 1 položka a není
+                return rows[parseInt(activeIndexes[0])].id;
+            } else if (activeIndexes.length > 1) { // Vybráno více položek
+                return activeIndexes.map(i => rows[i].id);
+            } else { // Vybráno 0 položek
+                console.warn("Invalid state");
+                return null;
+            }
+        }
+
+        console.warn("Invalid state");
+        return null;
     };
 
     handleUpdate = (structureData) => {
-        const {fundVersionId, fundId, name} = this.props;
-        const {activeIndexes} = this.state;
-        let id = null;
-        if (structureData.id) {
-            this.props.dispatch(contextMenuHide());
-            id = structureData.id;
-        } else if (activeIndexes) {
-            if (activeIndexes.length === 1) {
-                const {store: {rows}} = this.props;
-                id = rows[parseInt(activeIndexes[0])].id;
-            } else if (activeIndexes.length > 1) {
-                id = false;
-            }
-        } else {
-            console.warn("Invalid state");
-            return;
+        const {fundVersionId, fundId, name, code} = this.props;
+
+        let structureDataIds = this.getActiveSelection(structureData);
+        if ((!structureDataIds || structureDataIds.length === 0) && structureData && structureData.id) {
+            structureDataIds = [structureData.id];
         }
 
-
-        if (id !== null && id !== false) {
+        if (structureDataIds.length === 1) {
             this.props.dispatch(modalDialogShow(this, i18n("arr.structure.modal.update.title", name), <UpdateStructureDataForm
                 fundId={fundId}
                 fundVersionId={fundVersionId}
-                id={id}
+                id={structureDataIds[0]}
             />));
-        } else {
-            console.warn("not implemented")
+        } else if (structureDataIds.length > 1) {
+            this.props.dispatch(modalDialogShow(this, i18n("arr.structure.modal.update.title", name), <UpdateMultipleSub
+                onSubmit={(data) => WebApi.updateStructureDataBatch(fundVersionId, code, data)}
+                onSubmitSuccess={() => {
+                    this.props.dispatch(modalDialogHide());
+                    this.props.dispatch(structureTypeInvalidate());
+                }}
+                fundVersionId={fundVersionId}
+                initialValues={{
+                    autoincrementItemTypeIds: [],
+                    deleteItemTypeIds: [],
+                    items: {},
+                    structureDataIds
+                }}
+                id={structureDataIds[0]}
+            />));
         }
     };
 
@@ -130,12 +158,18 @@ class ArrStructurePanel extends AbstractReactComponent {
         this.props.dispatch(structureTypeFilter({...this.props.filter, ...toFilter}));
     };
 
-    handleOpen = ({id}) => {
+    /**
+     *
+     * @param id
+     * @param {Boolean} assignableState
+     */
+    handleSetAssignable = ({id}, assignableState) => {
+        const {fundVersionId} = this.props;
+        const ids = this.getActiveSelection();
         this.props.dispatch(contextMenuHide());
-    };
-
-    handleClose = ({id}) => {
-        this.props.dispatch(contextMenuHide());
+        WebApi.setAssignableStructureDataList(fundVersionId, assignableState, ids).then(() => {
+            this.props.dispatch(structureTypeInvalidate());
+        });
     };
 
     handleDelete = ({id}) => {
@@ -157,8 +191,8 @@ class ArrStructurePanel extends AbstractReactComponent {
 
         const menu = (
             <ul className="dropdown-menu">
-                <MenuItem onClick={this.handleOpen.bind(this, node)}>{i18n("arr.structure.item.contextMenu.changeToOpen")}</MenuItem>
-                <MenuItem onClick={this.handleClose.bind(this, node)}>{i18n("arr.structure.item.contextMenu.changeToClosed")}</MenuItem>
+                <MenuItem onClick={this.handleSetAssignable.bind(this, node, true)}>{i18n("arr.structure.item.contextMenu.changeToOpen")}</MenuItem>
+                <MenuItem onClick={this.handleSetAssignable.bind(this, node, true)}>{i18n("arr.structure.item.contextMenu.changeToClosed")}</MenuItem>
                 <MenuItem divider />
                 <MenuItem onClick={this.handleUpdate.bind(this, node)}>{i18n("arr.structure.item.contextMenu.update")}</MenuItem>
                 <MenuItem divider />
@@ -197,13 +231,20 @@ class ArrStructurePanel extends AbstractReactComponent {
                         <option value={false}>{i18n("arr.structure.filter.assignable.false")}</option>
                     </FormControl>
                 </div>
-                <FormInput name={"text"} type="text" onChange={({target: {value}}) => this.filter({text:value})} value={filter.text} placeholder={i18n("arr.structure.filter.text.placholder")}/>
+                <FormInput className="text-filter" name={"text"} type="text" onChange={({target: {value}}) => this.filter({text:value})} value={filter.text} placeholder={i18n("arr.structure.filter.text.placholder")}/>
             </div>
             {rows && rows.length > 0 ? <ListBox
                 className="list"
                 items={rows}
                 onChangeSelection={this.handleChangeSelection}
-                renderItemContent={i => <div onContextMenu={this.handleContextMenu.bind(this, i)}>{i.value} {i.state === 'ERROR' && i.errorDescription && <Icon glyph="fa-exclamation-triangle" />}</div>}
+                renderItemContent={i => {
+                    let title = i.errorDescription ? i.errorDescription : null;
+                    return <div onContextMenu={this.handleContextMenu.bind(this, i)} title={title}>
+                        {i.value || <em>{i18n("arr.structure.list.item.noValue")}</em>} {
+                            i.state === 'ERROR' && i.errorDescription && <Icon glyph="fa-exclamation-triangle pull-right" />
+                        }
+                    </div>
+                }}
                 multiselect={true}
             /> : <div className="list listbox-wrapper no-result text-center">{i18n('search.action.noResult')}</div>}
         </div>

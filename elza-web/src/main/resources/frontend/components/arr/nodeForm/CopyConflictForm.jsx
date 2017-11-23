@@ -25,7 +25,7 @@ import {
 class CopyConflictForm extends AbstractReactComponent {
     state = {
         filesConflictResolve: 'USE_TARGET',
-        packetsConflictResolve: 'USE_TARGET',
+        structuresConflictResolve: 'USE_TARGET',
         submitting: false
     };
     handleFormSubmit = e => {
@@ -33,7 +33,7 @@ class CopyConflictForm extends AbstractReactComponent {
         this.setState({submitting: true});
         this.props.onSubmit(
             this.state.filesConflictResolve,
-            this.state.packetsConflictResolve,
+            this.state.structuresConflictResolve,
             ()=>{
                 this.setState({submitting: false});
             }
@@ -81,15 +81,15 @@ class CopyConflictForm extends AbstractReactComponent {
                     </FormGroup>}
                     {packetConflict &&
                     <ControlLabel>
-                        {i18n('arr.fund.addNode.conflict.packet')} <Icon style={{cursor: 'pointer'}} title={packetConflicts && packetConflicts.join(", ")} glyph="fa-info-circle" />
+                        {i18n('arr.fund.addNode.conflict.structure')} <Icon style={{cursor: 'pointer'}} title={packetConflicts && packetConflicts.join(", ")} glyph="fa-info-circle" />
                     </ControlLabel>}
                     {packetConflict && <FormGroup>
                         <Radio
                             disabled={submitting}
                             name="selectResolveTypePacket"
-                            checked={this.state.packetsConflictResolve === 'USE_TARGET'}
+                            checked={this.state.structuresConflictResolve === 'USE_TARGET'}
                             onChange={e => {
-                                this.setState({packetsConflictResolve: 'USE_TARGET'});
+                                this.setState({structuresConflictResolve: 'USE_TARGET'});
                             }}
                         >
                             {i18n('arr.fund.addNode.conflict.useTarget')}
@@ -98,10 +98,10 @@ class CopyConflictForm extends AbstractReactComponent {
                             disabled={submitting}
                             name="selectResolveTypePacket"
                             checked={
-                                this.state.packetsConflictResolve === 'COPY_AND_RENAME'
+                                this.state.structuresConflictResolve === 'COPY_AND_RENAME'
                             }
                             onChange={e => {
-                                this.setState({packetsConflictResolve: 'COPY_AND_RENAME'});
+                                this.setState({structuresConflictResolve: 'COPY_AND_RENAME'});
                             }}
                         >
                             {i18n('arr.fund.addNode.conflict.rename')}

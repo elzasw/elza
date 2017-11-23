@@ -122,6 +122,9 @@ public class RulItemType {
     @JoinColumn(name = "structureTypeId")
     private RulStructureType structureType;
 
+    @Column(updatable = false, insertable = false)
+    private Integer structureTypeId;
+
     public Integer getItemTypeId() {
         return itemTypeId;
     }
@@ -356,6 +359,13 @@ public class RulItemType {
     }
 
     /**
+     * @return id strukturovaného typu
+     */
+    public Integer getStructureTypeId() {
+        return structureTypeId;
+    }
+
+    /**
      * @return strukturovaný typ
      */
     public RulStructureType getStructureType() {
@@ -367,6 +377,7 @@ public class RulItemType {
      */
     public void setStructureType(final RulStructureType structureType) {
         this.structureType = structureType;
+        this.structureTypeId = structureType != null ? structureType.getStructureTypeId() : null;
     }
 
     /**

@@ -19,7 +19,6 @@ import {isDeveloperScenariosAction} from 'actions/global/developer.jsx'
 import {isNodeSettingsAction} from 'actions/arr/nodeSetting.jsx'
 import {isFundDataGridAction} from 'actions/arr/fundDataGrid.jsx'
 import {isFundChangeAction} from 'actions/global/change.jsx'
-import {isFundPacketsAction} from 'actions/arr/fundPackets.jsx'
 import {isFundFilesAction} from 'actions/arr/fundFiles.jsx'
 import {isFundActionAction} from 'actions/arr/fundAction.jsx'
 import {isFundOutput} from 'actions/arr/fundOutput.jsx'
@@ -35,11 +34,10 @@ import processAreaStores from "shared/utils/processAreaStores";
     extendedView: false,
     showRegisterJp: false,
     showDaosJp: false,
-    packets: {},
     visiblePolicy: visiblePolicy(),
     funds: [],
     globalFundTree: globalFundTree(undefined, {}),
-}
+};
 
 function selectFundTab(state, action) {
     return {
@@ -93,7 +91,6 @@ export default function arrRegion(state = initialState, action) {
         || isDeveloperScenariosAction(action)
         || isFundDataGridAction(action)
         || isFundChangeAction(action)
-        || isFundPacketsAction(action)
         || isFundFilesAction(action)
         || isFundActionAction(action)
         || isFundOutput(action)
@@ -167,7 +164,6 @@ export default function arrRegion(state = initialState, action) {
             if (action.arrRegion) {
                 return {
                     ...state,
-                    packets: {},
                     ...action.arrRegion,
                     funds: action.arrRegion.funds.map(fundobj => fund(fundobj, action)),
                     extendedView: false
@@ -285,59 +281,6 @@ export default function arrRegion(state = initialState, action) {
             }
         case types.FUND_SELECT_FUND_TAB:
             return selectFundTab(state, action);
-        case types.PACKETS_REQUEST:
-            var packets = state.packets;
-            var fundPackets = packets[action.fundId];
-
-            if (fundPackets == null) {
-                fundPackets = {
-                        isFetching: true,
-                        fetched: false,
-                        dirty: false,
-                        items: []
-                }
-            } else {
-                fundPackets.isFetching = true
-            }
-
-            packets[action.fundId] = fundPackets;
-
-            return {
-                ...state,
-                packets
-            }
-        case types.CHANGE_PACKETS:{
-            var packets = state.packets;
-            var fundPackets = packets[action.fundId];
-
-            if (fundPackets == null) {
-                return state;
-            } else {
-                fundPackets.dirty = true;
-            }
-
-            packets[action.fundId] = fundPackets;
-
-            var result = {
-                ...state,
-                packets
-            }
-
-            var someFundChanged = false
-            var funds = state.funds.map(fundObj => {
-                if (fundObj.id === action.fundId) {
-                    someFundChanged = true
-                    return fund(fundObj, action)
-                } else {
-                    return fundObj
-                }
-            })
-            if (someFundChanged) {
-                result.funds = funds
-            }
-
-            return result
-        }
         case types.CHANGE_FILES:{
             const result = {
                 ...state
@@ -358,21 +301,6 @@ export default function arrRegion(state = initialState, action) {
 
             return result;
         }
-        case types.PACKETS_RECEIVE:
-            var packets = state.packets;
-            var fundPackets = packets[action.fundId];
-
-            fundPackets.isFetching = false;
-            fundPackets.fetched = true;
-            fundPackets.dirty = false;
-            fundPackets.items = action.items;
-
-            packets[action.fundId] = fundPackets;
-
-            return {
-                ...state,
-                packets
-            }
         case types.CHANGE_CONFORMITY_INFO:
         case types.CHANGE_NODE_REQUESTS:
             var index = indexById(state.funds, action.fundVersionId, "versionId");

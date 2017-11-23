@@ -41,9 +41,7 @@ import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {showRegisterJp, showDaosJp, fundsFetchIfNeeded} from 'actions/arr/fund.jsx'
 import {fundExtendedView} from 'actions/arr/fundExtended.jsx'
 import {versionValidate, versionValidationErrorNext, versionValidationErrorPrevious} from 'actions/arr/versionValidation.jsx'
-import {packetsFetchIfNeeded} from 'actions/arr/packets.jsx'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
-import {packetTypesFetchIfNeeded} from 'actions/refTables/packetTypes.jsx'
 import {developerNodeScenariosRequest} from 'actions/global/developer.jsx'
 import {isFundRootId, getSettings, setSettings, getOneSettings} from 'components/arr/ArrUtils.jsx';
 import {setFocus} from 'actions/global/focus.jsx'
@@ -67,6 +65,8 @@ import defaultKeymap from './ArrPageKeymap.jsx';
 import NodeSettingsForm from "../../components/arr/NodeSettingsForm";
 import {FOCUS_KEYS} from "../../constants";
 import ArrStructurePanel from "../../components/arr/ArrStructurePanel";
+import {structureTypesFetchIfNeeded} from "../../actions/refTables/structureTypes";
+import objectById from "../../shared/utils/objectById";
 
 const keyModifier = Utils.getKeyModifier();
 
@@ -86,7 +86,6 @@ class ArrPage extends ArrParentPage {
         rulDataTypes: React.PropTypes.object.isRequired,
         calendarTypes: React.PropTypes.object.isRequired,
         descItemTypes: React.PropTypes.object.isRequired,
-        packetTypes: React.PropTypes.object.isRequired,
         focus: React.PropTypes.object.isRequired,
         userDetail: React.PropTypes.object.isRequired,
         ruleSet: React.PropTypes.object.isRequired,
@@ -96,7 +95,6 @@ class ArrPage extends ArrParentPage {
         developerExpandedSpecsIds: {},
         fundNodesError: null,
         tabs: null,
-        tabsExts: null
     };
 
     constructor(props) {
@@ -105,7 +103,7 @@ class ArrPage extends ArrParentPage {
             'handleSelectVisiblePoliciesNode', 'handleShowVisiblePolicies',
             'handleShortcuts', 'renderFundErrors', 'renderFundVisiblePolicies', 'handleSetVisiblePolicy',
             'renderPanel', 'renderDeveloperDescItems', 'handleShowHideSpecs', 'handleTabSelect', 'handleSelectErrorNode',
-            'renderFundPackets', 'handleErrorPrevious', 'handleErrorNext', 'trySetFocus', 'handleOpenFundActionForm',
+            'handleErrorPrevious', 'handleErrorNext', 'trySetFocus', 'handleOpenFundActionForm',
             'handleChangeFundSettingsSubmit',
             "handleSetExtendedView"
         );
@@ -113,13 +111,6 @@ class ArrPage extends ArrParentPage {
     componentDidMount() {
         super.componentDidMount();
         this.trySetFocus(this.props);
-        if (this.state.tabsExts === null) {
-            const activeFund = this.getActiveFund(this.props);
-            if (activeFund !== null) {
-                this.setState({tabsExts: false});
-                WebApi.findRulStructureTypes(activeFund.versionId).then((tabsExts) => this.setState({tabsExts}));
-            }
-        }
     }
     componentWillMount(){
         this.registerTabs(this.props);
@@ -132,10 +123,7 @@ class ArrPage extends ArrParentPage {
         const {selectedTabKey} = this.props;
         const activeFund = this.getActiveFund(nextProps);
         if (activeFund !== null) {
-            if (this.state.tabsExts === null) {
-                this.setState({tabsExts: false});
-                WebApi.findRulStructureTypes(activeFund.versionId).then((tabsExts) => this.setState({tabsExts}));
-            }
+            this.props.dispatch(structureTypesFetchIfNeeded(activeFund.versionId));
             if (selectedTabKey === 'visiblePolicies') {
                 this.props.dispatch(fundNodesPolicyFetchIfNeeded(activeFund.versionId));
             }
@@ -775,7 +763,7 @@ class ArrPage extends ArrParentPage {
     *   @param props {Object}
     */
     registerTabs = (props) => {
-        const {developer, arrRegion, userDetail} = props;
+        const {developer, arrRegion, userDetail, structureTypes} = props;
         const activeFund = arrRegion.activeIndex != null ? arrRegion.funds[arrRegion.activeIndex] : null;
         let node;
         if (!activeFund) {
@@ -785,12 +773,12 @@ class ArrPage extends ArrParentPage {
             node = activeFund.nodes.nodes[activeFund.nodes.activeIndex];
         }
 
-        const {tabsExts} = this.state;
+
 
         const structureTabs = {};
-        if (tabsExts) {
+        if (structureTypes && structureTypes.data) {
             const STRUCTURE_TAB_PREFIX_KEY = "structure-tab-";
-            tabsExts.forEach(i => {
+            structureTypes.data.forEach(i => {
                 const tabKey = STRUCTURE_TAB_PREFIX_KEY + i.id + "-" + i.code;
                 structureTabs[tabKey] = {
                     id:tabKey,
@@ -817,16 +805,6 @@ class ArrPage extends ArrParentPage {
          */
         const tabs = {
                     ...structureTabs,
-                    // "packets":{
-                    //     id: "packets",
-                    //     key: "packets",
-                    //     name: i18n('arr.panel.title.packets'),
-                    //     ref: "fundPackets",
-                    //     render:() => this.renderFundPackets(activeFund),
-                    //     focus: () => this.wrappedFocus("fundPackets"),
-                    //     condition: userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId: activeFund.id}),
-                    //     permissionRestrictions: []
-                    // },
                     "files":{
                         id: "files" ,
                         key: "files" ,
@@ -911,20 +889,6 @@ class ArrPage extends ArrParentPage {
         )
     }
 
-    renderFundPackets() {
-        const {arrRegion, packetTypes} = this.props;
-        const activeFund = arrRegion.activeIndex !== null ? arrRegion.funds[arrRegion.activeIndex] : null;
-        return (
-            <FundPackets
-                ref="fundPackets"
-                versionId={activeFund.versionId}
-                fundId={activeFund.id}
-                packetTypes={packetTypes}
-                {...activeFund.fundPackets}
-            />
-        )
-    }
-
     renderFundFiles() {
         const {arrRegion} = this.props;
         const activeFund = arrRegion.activeIndex !== null ? arrRegion.funds[arrRegion.activeIndex] : null;
@@ -942,7 +906,7 @@ class ArrPage extends ArrParentPage {
     }
 
     renderCenterPanel(readMode, closed) {
-        const {focus, arrRegion, rulDataTypes, calendarTypes, descItemTypes, packetTypes} = this.props;
+        const {focus, arrRegion, rulDataTypes, calendarTypes, descItemTypes, fundId} = this.props;
         const showRegisterJp = arrRegion.showRegisterJp;
         const showDaosJp = arrRegion.showDaosJp;
         const activeFund = this.getActiveFund(this.props);
@@ -969,12 +933,6 @@ class ArrPage extends ArrParentPage {
                 </div>
             );
         } else {    // standardní zobrazení pořádání - záložky node
-            let packets = [];
-            const fundId = activeFund.id;
-            if (fundId && arrRegion.packets[fundId]) {
-                packets = arrRegion.packets[fundId].items;
-            }
-
             return (
                 <NodeTabs
                     versionId={activeFund.versionId}
@@ -985,8 +943,6 @@ class ArrPage extends ArrParentPage {
                     rulDataTypes={rulDataTypes}
                     calendarTypes={calendarTypes}
                     descItemTypes={descItemTypes}
-                    packetTypes={packetTypes}
-                    packets={packets}
                     fundId={fundId}
                     showRegisterJp={showRegisterJp}
                     showDaosJp={showDaosJp}
@@ -1032,7 +988,14 @@ class ArrPage extends ArrParentPage {
 
 function mapStateToProps(state) {
     const {splitter, arrRegion, refTables, focus, developer, userDetail, tab} = state;
+    let structureTypes = null;
+    if (arrRegion.activeIndex !== null) {
+        const fund = arrRegion.funds[arrRegion.activeIndex];
+        structureTypes = objectById(refTables.structureTypes.data, fund.versionId, "versionId");
+    }
+
     return {
+        structureTypes,
         splitter,
         arrRegion,
         focus,
@@ -1041,7 +1004,6 @@ function mapStateToProps(state) {
         rulDataTypes: refTables.rulDataTypes,
         calendarTypes: refTables.calendarTypes,
         descItemTypes: refTables.descItemTypes,
-        packetTypes: refTables.packetTypes,
         ruleSet: refTables.ruleSet,
         selectedTabKey: tab.values[ArrPage.TAB_KEY],
     }

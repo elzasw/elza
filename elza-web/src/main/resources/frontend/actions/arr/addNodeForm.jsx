@@ -40,7 +40,7 @@ export function addNodeFormArr(direction, node, selectedSubNodeIndex, versionId)
  * @param {Object} node uzel pro který je volána akce
  * @param {Object} parentNode uzel nadřazený předanému node
  * @param {Object} versionId verze AS
- * @param {func} afterCreateCallback funkce, která je volána po úspěšném vytvoření node, předpis: function (versionId, node, parentNode), node je nově založený node a parentNode je jeho aktualizovaný nadřazený node
+ * @param {Function} afterCreateCallback funkce, která je volána po úspěšném vytvoření node, předpis: function (versionId, node, parentNode), node je nově založený node a parentNode je jeho aktualizovaný nadřazený node
  * @param {array} allowedDirections seznam směrů, které chceme povolit na dialogu přidání node
  */
 export function addNodeForm(direction, node, parentNode, versionId, afterCreateCallback, allowedDirections = ['BEFORE', 'AFTER', 'CHILD', 'ATEND']) {
@@ -101,7 +101,7 @@ function handleSubmitOther(data, cb) {
                             {...json}
                             onSubmit={
                                 (filesConflictResolve,
-                                 packetsConflictResolve, cb) => dispatch(handleCopySubmit(data, filesConflictResolve, packetsConflictResolve, cb))
+                                 structuresConflictResolve, cb) => dispatch(handleCopySubmit(data, filesConflictResolve, structuresConflictResolve, cb))
                             }
 
                         />
@@ -115,7 +115,7 @@ function handleSubmitOther(data, cb) {
     }
 }
 
-function handleCopySubmit(data, filesConflictResolve = null, packetsConflictResolve = null, cb) {
+function handleCopySubmit(data, filesConflictResolve = null, structuresConflictResolve = null, cb) {
     return (dispatch) => {
         WebApi.copyNodes(
             data.targetFundVersionId,
@@ -126,7 +126,7 @@ function handleCopySubmit(data, filesConflictResolve = null, packetsConflictReso
             data.ignoreRootNodes,
             data.selectedDirection,
             filesConflictResolve,
-            packetsConflictResolve
+            structuresConflictResolve
         ).then((json) => {
                 dispatch(modalDialogHide());
                 dispatch(globalFundTreeInvalidate());

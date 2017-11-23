@@ -89,6 +89,11 @@ public class RulDescItemTypeVO {
      */
     private Integer width;
 
+    /**
+     * identifikátor strukturovaného typu
+     */
+    private Integer structureTypeId;
+
     public Integer getId() {
         return id;
     }
@@ -207,5 +212,13 @@ public class RulDescItemTypeVO {
 
     public void setItemSpecsTree(final List<TreeItemSpecsItem> itemSpecsTree) {
         this.itemSpecsTree = itemSpecsTree;
+    }
+
+    public Integer getStructureTypeId() {
+        return structureTypeId;
+    }
+
+    public void setStructureTypeId(Integer structureTypeId) {
+        this.structureTypeId = structureTypeId;
     }
 }
