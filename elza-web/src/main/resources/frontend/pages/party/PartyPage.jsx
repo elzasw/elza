@@ -22,8 +22,6 @@ import './PartyPage.less';
 import {regExtSystemListFetchIfNeeded} from 'actions/registry/regExtSystemList';
 import PageLayout from "../shared/layout/PageLayout";
 import {PropTypes} from 'prop-types';
-import {WebApi} from "../../actions/WebApi";
-import {setValidParty} from "../../actions/party/party";
 
 /**
  * PARTY PAGE
@@ -116,9 +114,11 @@ class PartyPage extends AbstractReactComponent {
         confirm(i18n('party.delete.confirm')) && this.dispatch(partyDelete(this.props.partyDetail.data.id));
     };
 
+    /* MCV-45365
     handleSetValidParty = () => {
         confirm(i18n('party.setValid.confirm')) && this.dispatch(setValidParty(this.props.partyDetail.data.id));
     };
+    */
 
     /**
      * BUILD RIBBON
@@ -166,12 +166,14 @@ class PartyPage extends AbstractReactComponent {
                     </Button>
                 );
 
+               /* MCV-45365
                 partyDetail && itemActions.push(
                     <Button disabled={ !partyDetail.data.record.invalid} key='partySetValid' onClick={ this.handleSetValidParty }>
                         <Icon glyph="fa-check"/>
                         <div><span className="btnText">{i18n("party.setValid.button")}</span></div>
                     </Button>
                 );
+                */
             }
 
         }

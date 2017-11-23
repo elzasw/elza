@@ -1948,6 +1948,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
         }
         params.put("from", from != null ? from : 0);
         params.put("count", count != null ? count : 20);
+        params.put("excludeInvalid", true);
 
         return get(spec -> spec.queryParameters(params), FIND_RECORD).getBody().as(FilteredResultVO.class).getRows();
     }
@@ -2135,6 +2136,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
         }
         params.put("from", from != null ? from : 0);
         params.put("count", count != null ? count : 20);
+        params.put("excludeInvalid", true);
 
         return get(spec -> spec.queryParameters(params), FIND_PARTY).getBody().as(FilteredResultVO.class).getRows();
     }

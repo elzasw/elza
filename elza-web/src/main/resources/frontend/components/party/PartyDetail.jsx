@@ -39,6 +39,7 @@ import {PropTypes} from 'prop-types';
 import defaultKeymap from './PartyDetailKeymap.jsx';
 import './PartyDetail.less';
 import {requestScopesIfNeeded} from "../../actions/refTables/scopesData";
+import {addToastrWarning} from "../shared/toastr/ToastrActions";
 
 
 const SETTINGS_PARTY_PIN = "PARTY_PIN";
@@ -125,7 +126,12 @@ class PartyDetail extends AbstractReactComponent {
 
     componentDidMount() {
         this.trySetFocus();
-        this.fetchIfNeeded();
+        this.fetchIfNeeded().then(data => {
+            if (data && data.record && data.record.invalid) {
+                this.props.dispatch(addToastrWarning(i18n("party.invalid.warning")));
+            }
+        });
+
         this.updateStateFromProps();
         this.props.initForm(this.handlePartyUpdate);
     }
@@ -184,7 +190,7 @@ class PartyDetail extends AbstractReactComponent {
         this.dispatch(refRecordTypesFetchIfNeeded());
         this.dispatch(requestScopesIfNeeded());
         if (id) {
-            this.dispatch(partyDetailFetchIfNeeded(id));
+            return this.dispatch(partyDetailFetchIfNeeded(id));
         }
     };
 
@@ -330,7 +336,7 @@ class PartyDetail extends AbstractReactComponent {
                 </div>
                 <div className="party-type">
                     {party.partyType.description}
-                    {party.scopeId && <span className="scope-label">
+                    {party.record.scopeId && <span className="scope-label">
                         {this.getScopeLabel(partyDetail.data.record.scopeId, scopes)}
                     </span>}
                 </div>

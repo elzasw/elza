@@ -42,19 +42,22 @@ export function fetchIfNeeded(area, id, getData, force = false) {
             dispatch(request(area, dataKey))
 
             if (id !== null) {  // pokud chceme reálně načíst objekt, provedeme fetch přes getData
-                getData(id)
+                return getData(id)
                     .then(json => {
                         const newStore = storeFromArea(getState(), area);
                         const newDataKey = newStore.getDataKey.bind(newStore)()
                         if (newDataKey === dataKey) {   // jen pokud příchozí objekt odpovídá dtům, které chceme ve store
                             dispatch(response(area, json))
                         }
+                        return Promise.resolve(json);
                     })  // TODO [stanekpa] - řešit catch a vrácení datakey!
             } else {
                 // Response s prázdným objektem
                 dispatch(response(area, null))
+                return Promise.resolve(null)
             }
         }
+        return Promise.resolve(store.data);
     }
 }
 

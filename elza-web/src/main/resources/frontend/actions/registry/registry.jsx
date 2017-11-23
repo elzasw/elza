@@ -25,7 +25,7 @@ import AddRegistryForm from "../../components/registry/AddRegistryForm";
  * @param size {number} počet položek v seznamu - velikost jedné stránky
  */
 export function registryListFetchIfNeeded(from = 0, size = DEFAULT_REGISTRY_LIST_MAX_SIZE) {
-    return SimpleListActions.fetchIfNeeded(AREA_REGISTRY_LIST, true, (parent, filter) => WebApi.findRegistry(filter.text, filter.registryParentId, filter.registryTypeId, filter.versionId, filter.itemSpecId, filter.from, size, filter.scopeId));
+    return SimpleListActions.fetchIfNeeded(AREA_REGISTRY_LIST, true, (parent, filter) => WebApi.findRegistry(filter.text, filter.registryParentId, filter.registryTypeId, filter.versionId, filter.itemSpecId, filter.from, size, filter.scopeId, filter.excludeInvalid));
 }
 
 /**
@@ -97,7 +97,7 @@ export const AREA_REGISTRY_DETAIL = "registryDetail";
 
 export function registryDetailFetchIfNeeded(id) {
     return (dispatch, getState) => {
-        dispatch(DetailActions.fetchIfNeeded(AREA_REGISTRY_DETAIL, id, () => {
+        return dispatch(DetailActions.fetchIfNeeded(AREA_REGISTRY_DETAIL, id, () => {
             return WebApi.getRegistry(id).catch(() => dispatch(registryDetailClear()));
         }));
     }
@@ -176,7 +176,7 @@ export function registryDelete(id) {
         });
     }
 }
-
+/* MCV-45365
 export function setValidRegistry(id) {
     return (dispatch, getState) => {
         WebApi.setValidRegistry(id).then(() => {
@@ -193,7 +193,7 @@ export function setValidRegistry(id) {
         });
     }
 }
-
+*/
 export function registrySetFolder(recordId) {
     return (dispatch, getState) => {
         return WebApi.getRegistry(recordId).then(item => {
