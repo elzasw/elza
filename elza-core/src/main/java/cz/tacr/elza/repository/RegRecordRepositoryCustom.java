@@ -31,19 +31,21 @@ public interface RegRecordRepositoryCustom {
                                                Integer firstResult,
                                                Integer maxResults,
                                                RegRecord parentRecord,
-                                               Set<Integer> scopeIdsForSearch);
+                                               Set<Integer> scopeIdsForSearch,
+                                               Boolean excludeInvalid);
 
 
     /**
-     * Celkový počet záznamů v DB pro funkci {@link #findRegRecordByTextAndType(String, Collection, Integer, Integer, RegRecord, Set, boolean, UsrUser, Integer)}
+     * Celkový počet záznamů v DB pro funkci {@link #findRegRecordByTextAndType(String, Collection, Integer, Integer, RegRecord, Set, Boolean)}
      * @param searchRecord    hledaný řetězec, může být null
      * @param registerTypeIds typ záznamu
      * @param parentRecord    nadřazený rejstřík, může být null
      * @param scopeIds        id tříd, do který spadají rejstříky
+     * @param excludeInvalid
      * @return celkový počet záznamů, který je v db za dané parametry
      */
     long findRegRecordByTextAndTypeCount(String searchRecord, Collection<Integer> registerTypeIds,
-                                         @Nullable RegRecord parentRecord, Set<Integer> scopeIds);
+                                         @Nullable RegRecord parentRecord, Set<Integer> scopeIds, boolean excludeInvalid);
 
     /**
      * Searches access points and all their parents. Parents are always returned before children.
