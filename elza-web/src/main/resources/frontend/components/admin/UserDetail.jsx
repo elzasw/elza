@@ -42,6 +42,22 @@ class UserDetail extends AbstractReactComponent {
         {id: UserDetail.TAB_ADVANCED, title: i18n("admin.perms.tabs.advanced")}
     ];
 
+    /*
+     * Template for selected items
+     */
+    defaultSelectedItem = {
+        id: null,
+        index: 0
+    }
+    /* 
+     * Last selected fund item.
+     */
+    selectedFund = this.defaultSelectedItem;
+    /* 
+     * Last selected scope item.
+     */
+    selectedScope = this.defaultSelectedItem;
+
     constructor(props) {
         super(props);
 
@@ -55,6 +71,15 @@ class UserDetail extends AbstractReactComponent {
     }
 
     componentWillReceiveProps(nextProps) {
+        const userId = this.props.userDetail.id;
+        const nextUserId = nextProps.userDetail.id;
+
+        // Reset selected permissions
+        if(userId !== nextUserId){
+            this.selectedFund = this.defaultSelectedItem;
+            this.selectedScope = this.defaultSelectedItem;
+        }
+
         this.dispatch(usersUserDetailFetchIfNeeded());
     }
 
@@ -91,6 +116,8 @@ class UserDetail extends AbstractReactComponent {
                     onAddPermission={perm => WebApi.addUserPermission(userDetail.id, perm)}
                     onDeletePermission={perm => WebApi.deleteUserPermission(userDetail.id, perm)}
                     onDeleteFundPermission={fundId => WebApi.deleteUserFundPermission(userDetail.id, fundId)}
+                    onSelectItem={(item, index) => {this.selectedFund = {index, id: item.id};}}
+                    selectedPermission={this.selectedFund}
                 />;
             case UserDetail.TAB_SCOPES:
                 return <ScopesPermissionPanel
@@ -98,6 +125,8 @@ class UserDetail extends AbstractReactComponent {
                     onAddPermission={perm => WebApi.addUserPermission(userDetail.id, perm)}
                     onDeletePermission={perm => WebApi.deleteUserPermission(userDetail.id, perm)}
                     onDeleteScopePermission={scopeId => WebApi.deleteUserScopePermission(userDetail.id, scopeId)}
+                    onSelectItem={(item, index) => {this.selectedScope = {index, id: item.id};}}
+                    selectedPermission={this.selectedScope}
                 />;
             case UserDetail.TAB_ADVANCED:
                 return <AdvancedPermissionPanel

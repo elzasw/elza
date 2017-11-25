@@ -37,6 +37,22 @@ class GroupDetail extends AbstractReactComponent {
         {id: GroupDetail.TAB_ADVANCED, title: i18n("admin.perms.tabs.advanced")}
     ];
 
+    /*
+     * Template for selected items
+     */
+    defaultSelectedItem = {
+        id: null,
+        index: 0
+    }
+    /* 
+     * Last selected fund item.
+     */
+    selectedFund = this.defaultSelectedItem;
+    /* 
+     * Last selected scope item.
+     */
+    selectedScope = this.defaultSelectedItem;
+
     constructor(props) {
         super(props);
 
@@ -50,6 +66,15 @@ class GroupDetail extends AbstractReactComponent {
     }
 
     componentWillReceiveProps(nextProps) {
+        const groupId = this.props.groupDetail.id;
+        const nextGroupId = nextProps.groupDetail.id;
+
+        // Reset selected permissions
+        if(groupId !== nextGroupId){
+            this.selectedFund = this.defaultSelectedItem;
+            this.selectedScope = this.defaultSelectedItem;
+        }
+
         this.dispatch(groupsGroupDetailFetchIfNeeded());
     }
 
@@ -87,6 +112,8 @@ class GroupDetail extends AbstractReactComponent {
                     onAddPermission={perm => WebApi.addGroupPermission(groupDetail.id, perm)}
                     onDeletePermission={perm => WebApi.deleteGroupPermission(groupDetail.id, perm)}
                     onDeleteFundPermission={fundId => WebApi.deleteGroupFundPermission(groupDetail.id, fundId)}
+                    onSelectItem={(item, index) => {this.selectedFund = {index, id: item.id};}}
+                    selectedPermission={this.selectedFund}
                 />;
             case GroupDetail.TAB_SCOPES:
                 return <ScopesPermissionPanel
@@ -94,6 +121,8 @@ class GroupDetail extends AbstractReactComponent {
                     onAddPermission={perm => WebApi.addGroupPermission(groupDetail.id, perm)}
                     onDeletePermission={perm => WebApi.deleteGroupPermission(groupDetail.id, perm)}
                     onDeleteScopePermission={scopeId => WebApi.deleteGroupScopePermission(groupDetail.id, scopeId)}
+                    onSelectItem={(item, index) => {this.selectedScope = {index, id: item.id};}}
+                    selectedPermission={this.selectedScope}
                 />;
             case GroupDetail.TAB_ADVANCED:
                 return <AdvancedPermissionPanel
