@@ -28,7 +28,7 @@ public class RuleSystemItemType {
         this.dataType = dataType;
 
         // ensure reference equality
-        Validate.isTrue(ruleSystem.getRuleSet().getPackage() == itemType.getPackage());
+        Validate.isTrue(ruleSystem.getRuleSet().getPackage() == itemType.getRulPackage());
         Validate.isTrue(itemType.getDataType() == dataType.getEntity());
     }
 
