@@ -432,6 +432,12 @@ public class PackageService {
 
             List<RulRuleSet> rulRuleSetsDelete = new ArrayList<>();
             List<RulRuleSet> rulRuleSets = processRuleSets(ruleSets, rulPackage, rulRuleSetsDelete);
+            for (RulRuleSet rulRuleSet : rulRuleSetsDelete) {
+                rulePaths.put(rulRuleSet.getCode(), ZIP_DIR_RULE_SET + "/" + rulRuleSet.getCode() + "/");
+            }
+            for (RulRuleSet rulRuleSet : rulRuleSets) {
+                rulePaths.put(rulRuleSet.getCode(), ZIP_DIR_RULE_SET + "/" + rulRuleSet.getCode() + "/");
+            }
 
             for (Map.Entry<String, String> ruleEntry : rulePaths.entrySet()) {
                 String ruleDirPath = ruleEntry.getValue();

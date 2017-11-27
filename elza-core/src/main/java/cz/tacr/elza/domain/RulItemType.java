@@ -326,14 +326,14 @@ public class RulItemType {
     /**
      * @return balíček
      */
-    public RulPackage getPackage() {
+    public RulPackage getRulPackage() {
         return rulPackage;
     }
 
     /**
      * @param rulPackage balíček
      */
-    public void setPackage(final RulPackage rulPackage) {
+    public void setRulPackage(final RulPackage rulPackage) {
         this.rulPackage = rulPackage;
     }
 
