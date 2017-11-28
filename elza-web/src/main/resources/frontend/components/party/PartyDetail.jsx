@@ -184,14 +184,17 @@ class PartyDetail extends AbstractReactComponent {
     }
 
     fetchIfNeeded = (props = this.props) => {
-        const {partyDetail: {id}} = props;
-        this.dispatch(refPartyTypesFetchIfNeeded());    // nacteni typu osob (osoba, rod, událost, ...)
-        this.dispatch(calendarTypesFetchIfNeeded());    // načtení typů kalendářů (gregoriánský, juliánský, ...)
-        this.dispatch(refRecordTypesFetchIfNeeded());
-        this.dispatch(requestScopesIfNeeded());
-        if (id) {
-            return this.dispatch(partyDetailFetchIfNeeded(id));
-        }
+        return new Promise((resolve, reject) => {
+            const {partyDetail: {id}} = props;
+            this.dispatch(refPartyTypesFetchIfNeeded());    // nacteni typu osob (osoba, rod, událost, ...)
+            this.dispatch(calendarTypesFetchIfNeeded());    // načtení typů kalendářů (gregoriánský, juliánský, ...)
+            this.dispatch(refRecordTypesFetchIfNeeded());
+            this.dispatch(requestScopesIfNeeded());
+
+            if (id) {
+                resolve(this.dispatch(partyDetailFetchIfNeeded(id)));
+            }
+        });
     };
 
     trySetFocus = (props = this.props) => {

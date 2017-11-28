@@ -81,13 +81,16 @@ class RegistryDetail extends AbstractReactComponent {
     }
 
     fetchIfNeeded = (props = this.props) => {
-        const {registryDetail: {id}} = props;
-        this.dispatch(refPartyTypesFetchIfNeeded());    // nacteni typu osob (osoba, rod, událost, ...)
-        this.dispatch(calendarTypesFetchIfNeeded());    // načtení typů kalendářů (gregoriánský, juliánský, ...)
-        this.dispatch(requestScopesIfNeeded());
-        if (id) {
-            return this.dispatch(registryDetailFetchIfNeeded(id));
-        }
+        return new Promise((resolve, reject) => {
+            const {registryDetail: {id}} = props;
+            this.dispatch(refPartyTypesFetchIfNeeded());    // nacteni typu osob (osoba, rod, událost, ...)
+            this.dispatch(calendarTypesFetchIfNeeded());    // načtení typů kalendářů (gregoriánský, juliánský, ...)
+            this.dispatch(requestScopesIfNeeded());
+
+            if (id) {
+                resolve(this.dispatch(registryDetailFetchIfNeeded(id)));
+            }
+        });
     };
 
     trySetFocus = (props = this.props) => {
