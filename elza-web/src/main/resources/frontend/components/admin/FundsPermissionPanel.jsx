@@ -150,12 +150,12 @@ class FundsPermissionPanel extends AbstractReactComponent {
 
         newState = {
             ...this.state,
-            permissions,
-            selectedPermission: {
-                id: newSelectedId,
-                index: newSelectedIndex
-            }
+            permissions
         }
+
+        let permission = permissions[newSelectedIndex] || {id: null};
+
+        this.selectItem(permission, newSelectedIndex);
 
         this.setState(newState);
     }
