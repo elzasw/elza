@@ -24,11 +24,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.util.Assert;
 
 import cz.tacr.elza.controller.config.ClientFactoryDO;
-import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
-import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
@@ -37,10 +35,8 @@ import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.service.ArrMoveLevelService;
 import cz.tacr.elza.service.ArrangementFormService;
-import cz.tacr.elza.service.DescriptionItemService;
 import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.websocket.WebSocketAwareController;
-import cz.tacr.elza.websocket.service.WebScoketClientEventService;
 import cz.tacr.elza.websocket.service.WebScoketStompService;
 
 /**
@@ -58,10 +54,6 @@ public class ArrangementWebsocketController {
     private ClientFactoryDO factoryDO;
     @Autowired
     private WebScoketStompService webScoketStompService;
-    @Autowired
-    private DescriptionItemService descriptionItemService;
-    @Autowired
-    private ClientFactoryVO factoryVo;
     @Autowired
     private FundVersionRepository fundVersionRepository;
     @Autowired
@@ -83,6 +75,7 @@ public class ArrangementWebsocketController {
 		Validate.notNull(nodeVersion);
 		Validate.notNull(descItemVO);
 
+		// why is it here?
 		UsernamePasswordAuthenticationToken token = (UsernamePasswordAuthenticationToken) requestHeaders
 		        .getHeader("simpUser");
 		SecurityContext sc = new SecurityContextImpl();
@@ -93,46 +86,6 @@ public class ArrangementWebsocketController {
 		        BooleanUtils.isNotFalse(createNewVersion),
 		        requestHeaders);
 	}
-
-    /**
-     * Aktualizace hodnoty atributu.
-     *
-     * @param descItemVO hodnota atributu
-     * @param fundVersionId identfikátor verze AP
-     * @param nodeVersion verze JP
-     * @param createNewVersion vytvořit novou verzi?
-     */
-    @Transactional
-    @MessageMapping("/arrangement/descItems/{fundVersionId}/{nodeVersion}/updateOld/{createNewVersion}")
-    public void updateDescItemOld(@Payload final ArrItemVO descItemVO,
-                                  @DestinationVariable(value = "fundVersionId") final Integer fundVersionId,
-                                  @DestinationVariable(value = "nodeVersion") final Integer nodeVersion,
-                                  @DestinationVariable(value = "createNewVersion") final Boolean createNewVersion,
-                                  final StompHeaderAccessor requestHeaders) {
-
-        UsernamePasswordAuthenticationToken token = (UsernamePasswordAuthenticationToken) requestHeaders.getHeader("simpUser");
-        SecurityContext sc = new SecurityContextImpl();
-        sc.setAuthentication(token);
-        SecurityContextHolder.setContext(sc);
-
-		Validate.notNull(descItemVO, "Hodnota atributu musí být vyplněna");
-		Validate.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
-		Validate.notNull(nodeVersion, "Nebyla vyplněna verze JP");
-		Validate.notNull(createNewVersion, "Vytvořit novou verzi musí být vyplněno");
-
-        ArrDescItem descItem = factoryDO.createDescItem(descItemVO);
-
-        ArrDescItem descItemUpdated = descriptionItemService
-                .updateDescriptionItem(descItem, nodeVersion, fundVersionId, createNewVersion);
-
-        ArrangementController.DescItemResult descItemResult = new ArrangementController.DescItemResult();
-        descItemResult.setItem(factoryVo.createDescItem(descItemUpdated));
-        descItemResult.setParent(ArrNodeVO.valueOf(descItemUpdated.getNode()));
-
-        // Odeslání dat zpět
-        webScoketStompService.sendMessageWithReceiptAfterCommit(WebScoketClientEventService.API_CHANGES_DESTINATION, descItemResult,
-                requestHeaders);
-    }
 
     /**
      * Přidání uzlu do stromu.
@@ -171,8 +124,7 @@ public class ArrangementWebsocketController {
         final ArrangementController.NodeWithParent result = new ArrangementController.NodeWithParent(ArrNodeVO.valueOf(newLevel.getNode()), nodeClients.iterator().next());
 
         // Odeslání dat zpět
-        webScoketStompService.sendMessageWithReceiptAfterCommit(WebScoketClientEventService.API_CHANGES_DESTINATION, result,
-                requestHeaders);
+		webScoketStompService.sendReceiptAfterCommit(result, requestHeaders);
     }
 
     /**
@@ -202,7 +154,6 @@ public class ArrangementWebsocketController {
         final ArrangementController.NodeWithParent result = new ArrangementController.NodeWithParent(ArrNodeVO.valueOf(deleteLevel.getNode()), nodeClients.iterator().next());
 
         // Odeslání dat zpět
-        webScoketStompService.sendMessageWithReceiptAfterCommit(WebScoketClientEventService.API_CHANGES_DESTINATION, result,
-                requestHeaders);
+		webScoketStompService.sendReceiptAfterCommit(result, requestHeaders);
     }
 }
