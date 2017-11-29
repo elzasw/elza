@@ -29,7 +29,7 @@ public class OutputItemTypesRules extends Rules {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Autowired
-    private RulesExecutor rulesExecutor;
+    private RulesConfigExecutor rulesConfigExecutor;
 
     /**
      * Spuštění zpracování pravidel.
@@ -54,7 +54,7 @@ public class OutputItemTypesRules extends Rules {
             logger.warn("Při vykonávání OutputItemTypesRules.execute() nebyly nalezeny pravidla pro typ výstupu '"
                     + outputType.getCode() + "'");
         } else {
-            Path path = Paths.get(rulesExecutor.getDroolsDir(outputType.getPackage().getCode(), outputType.getRuleSet().getCode()) + File.separator + component.getFilename());
+            Path path = Paths.get(rulesConfigExecutor.getDroolsDir(outputType.getPackage().getCode(), outputType.getRuleSet().getCode()) + File.separator + component.getFilename());
             StatelessKieSession session = createNewStatelessKieSession(path);
             execute(session, facts);
         }

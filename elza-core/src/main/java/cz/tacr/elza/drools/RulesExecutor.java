@@ -36,16 +36,6 @@ import java.util.Set;
 @Service
 public class RulesExecutor implements InitializingBean {
 
-    /**
-     * Název složky v drools.
-     */
-    public static final String FOLDER = "drools";
-
-    /**
-     * Název složky v groovies.
-     */
-    public static final String GROOVY_FOLDER = "groovies";
-
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Autowired
@@ -66,17 +56,8 @@ public class RulesExecutor implements InitializingBean {
     @Autowired
     private ScenarioOfNewLevelRules scenarioOfNewLevelRules;
 
-    /**
-     * Cesta adresáře pro konfiguraci pravidel.
-     */
-    @Value("${elza.packagesDir}")
-    private String packagesDir;
-
-    /**
-     * Přípona souborů pravidel
-     */
-    public static final String FILE_EXTENSION = ".drl";
-
+    @Autowired
+    private RulesConfigExecutor rulesConfigExecutor;
 
     /**
      * Spustí pravidla nad typy atributů a jejich specifikacema.
@@ -195,41 +176,13 @@ public class RulesExecutor implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        File dir = new File(packagesDir);
+        File dir = new File(rulesConfigExecutor.getPackagesDir());
 
         if (!dir.exists()) {
             dir.mkdirs();
         }
 
         //copyDefaultFromResources(dir);
-    }
-
-    public String getPackagesDir() {
-        return packagesDir;
-    }
-
-    /**
-     * Vrací úplnou cestu k adresáři drools podle balíčku.
-     *
-     *
-     * @param packageCode
-     * @param ruleCode kód pravidel
-     * @return cesta k adresáři drools
-     */
-    public String getDroolsDir(final String packageCode, final String ruleCode) {
-        return packagesDir + File.separator + packageCode + File.separator + ruleCode + File.separator + FOLDER;
-    }
-
-    /**
-     * Vrací úplnou cestu k adresáři drools podle balíčku.
-     *
-     *
-     * @param packageCode
-     * @param ruleCode kód pravidel
-     * @return cesta k adresáři drools
-     */
-    public String getGroovyDir(final String packageCode, final String ruleCode) {
-        return packagesDir + File.separator + packageCode + File.separator + ruleCode + File.separator + GROOVY_FOLDER;
     }
 
 }

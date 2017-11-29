@@ -2,7 +2,6 @@ package cz.tacr.elza.drools;
 
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.RulArrangementRule;
-import cz.tacr.elza.domain.RulExtensionRule;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.vo.NodeTypeOperation;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
@@ -39,7 +38,7 @@ public class ChangeImpactRules extends Rules {
     private ScriptModelFactory factory;
 
     @Autowired
-    private RulesExecutor rulesExecutor;
+    private RulesConfigExecutor rulesConfigExecutor;
 
     @Autowired
     private RuleService ruleService;
@@ -70,7 +69,7 @@ public class ChangeImpactRules extends Rules {
                 rulRuleSet, RulArrangementRule.RuleType.CONFORMITY_IMPACT);
 
         for (RulArrangementRule rulArrangementRule : rulArrangementRules) {
-            path = Paths.get(rulesExecutor.getDroolsDir(rulArrangementRule.getPackage().getCode(), rulRuleSet.getCode()) + File.separator + rulArrangementRule.getComponent().getFilename());
+            path = Paths.get(rulesConfigExecutor.getDroolsDir(rulArrangementRule.getPackage().getCode(), rulRuleSet.getCode()) + File.separator + rulArrangementRule.getComponent().getFilename());
 
             StatelessKieSession session = createNewStatelessKieSession(path);
 

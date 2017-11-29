@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
 public class StructureItemTypesRules extends Rules {
 
     @Autowired
-    private RulesExecutor rulesExecutor;
+    private RulesConfigExecutor rulesConfigExecutor;
 
     @Autowired
     private StructureDefinitionRepository structureDefinitionRepository;
@@ -65,7 +65,7 @@ public class StructureItemTypesRules extends Rules {
                 .findByStructureTypeAndDefTypeOrderByPriority(structureType, RulStructureDefinition.DefType.ATTRIBUTE_TYPES);
 
         for (RulStructureDefinition rulStructureDefinition : rulStructureDefinitions) {
-            path = Paths.get(rulesExecutor.getDroolsDir(rulStructureDefinition.getRulPackage().getCode(), structureType.getRuleSet().getCode()) + File.separator + rulStructureDefinition.getComponent().getFilename());
+            path = Paths.get(rulesConfigExecutor.getDroolsDir(rulStructureDefinition.getRulPackage().getCode(), structureType.getRuleSet().getCode()) + File.separator + rulStructureDefinition.getComponent().getFilename());
             StatelessKieSession session = createNewStatelessKieSession(path);
             execute(session, facts);
         }
@@ -108,7 +108,7 @@ public class StructureItemTypesRules extends Rules {
         });
 
         for (RulStructureExtensionDefinition rulStructureExtensionDefinition : rulStructureExtensionDefinitions) {
-            path = Paths.get(rulesExecutor.getDroolsDir(rulStructureExtensionDefinition.getRulPackage().getCode(), structureType.getRuleSet().getCode()) + File.separator + rulStructureExtensionDefinition.getComponent().getFilename());
+            path = Paths.get(rulesConfigExecutor.getDroolsDir(rulStructureExtensionDefinition.getRulPackage().getCode(), structureType.getRuleSet().getCode()) + File.separator + rulStructureExtensionDefinition.getComponent().getFilename());
             StatelessKieSession session = createNewStatelessKieSession(path);
             execute(session, facts);
         }

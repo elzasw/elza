@@ -44,7 +44,7 @@ import cz.tacr.elza.domain.RulTemplate.Engine;
 import cz.tacr.elza.domain.UIPartyGroup;
 import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.table.ElzaColumn;
-import cz.tacr.elza.drools.RulesExecutor;
+import cz.tacr.elza.drools.RulesConfigExecutor;
 import cz.tacr.elza.exception.AbstractException;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
@@ -362,7 +362,7 @@ public class PackageService {
     private EventNotificationService eventNotificationService;
 
     @Autowired
-    private RulesExecutor rulesExecutor;
+    private RulesConfigExecutor rulesConfigExecutor;
 
     @Autowired
     private OutputTypeRepository outputTypeRepository;
@@ -528,13 +528,13 @@ public class PackageService {
                     dirActions.mkdirs();
                 }
 
-                File dirRules = new File(rulesExecutor.getDroolsDir(rulPackage.getCode(), ruleCode));
+                File dirRules = new File(rulesConfigExecutor.getDroolsDir(rulPackage.getCode(), ruleCode));
                 dirsRules.add(dirRules);
                 if (!dirRules.exists()) {
                     dirRules.mkdirs();
                 }
 
-                File dirGroovies = new File(rulesExecutor.getGroovyDir(rulPackage.getCode(), ruleCode));
+                File dirGroovies = new File(rulesConfigExecutor.getGroovyDir(rulPackage.getCode(), ruleCode));
                 dirsGroovies.add(dirGroovies);
                 if (!dirGroovies.exists()) {
                     dirGroovies.mkdirs();
@@ -3003,8 +3003,8 @@ public class PackageService {
 
         for (RulRuleSet ruleSet : ruleSets) {
             File dirActions = new File(bulkActionConfigManager.getFunctionsDir(rulPackage.getCode(), ruleSet.getCode()));
-            File dirRules = new File(rulesExecutor.getDroolsDir(rulPackage.getCode(), ruleSet.getCode()));
-            File dirGroovies = new File(rulesExecutor.getGroovyDir(rulPackage.getCode(), ruleSet.getCode()));
+            File dirRules = new File(rulesConfigExecutor.getDroolsDir(rulPackage.getCode(), ruleSet.getCode()));
+            File dirGroovies = new File(rulesConfigExecutor.getGroovyDir(rulPackage.getCode(), ruleSet.getCode()));
 
             try {
 
@@ -3231,7 +3231,7 @@ public class PackageService {
                 ExtensionRule extensionRule = new ExtensionRule();
                 convertExtensionRule(rulExtensionRule, extensionRule);
                 extensionRuleList.add(extensionRule);
-                addToZipFile(ZIP_DIR_RULE_SET + "/" + ruleSetCode + "/" + ZIP_DIR_RULES + "/" + rulExtensionRule.getComponent().getFilename(), new File(rulesExecutor.getDroolsDir(rulPackage.getCode(), ruleSetCode)
+                addToZipFile(ZIP_DIR_RULE_SET + "/" + ruleSetCode + "/" + ZIP_DIR_RULES + "/" + rulExtensionRule.getComponent().getFilename(), new File(rulesConfigExecutor.getDroolsDir(rulPackage.getCode(), ruleSetCode)
                         + File.separator + rulExtensionRule.getComponent().getFilename()), zos);
             }
 
@@ -3739,7 +3739,7 @@ public class PackageService {
                 convertArrangementRule(rulArrangementRule, packageRule);
                 packageRuleList.add(packageRule);
 
-                addToZipFile(ZIP_DIR_RULE_SET + "/" + ruleSetCode + "/" + ZIP_DIR_RULES + "/" + rulArrangementRule.getComponent().getFilename(), new File(rulesExecutor.getDroolsDir(rulPackage.getCode(), ruleSetCode)
+                addToZipFile(ZIP_DIR_RULE_SET + "/" + ruleSetCode + "/" + ZIP_DIR_RULES + "/" + rulArrangementRule.getComponent().getFilename(), new File(rulesConfigExecutor.getDroolsDir(rulPackage.getCode(), ruleSetCode)
                         + File.separator + rulArrangementRule.getComponent().getFilename()), zos);
 
             }

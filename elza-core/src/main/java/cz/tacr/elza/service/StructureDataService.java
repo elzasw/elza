@@ -17,12 +17,14 @@ import cz.tacr.elza.domain.RulStructureDefinition;
 import cz.tacr.elza.domain.RulStructureExtensionDefinition;
 import cz.tacr.elza.domain.RulStructureType;
 import cz.tacr.elza.domain.UISettings;
+import cz.tacr.elza.drools.RulesConfigExecutor;
 import cz.tacr.elza.drools.RulesExecutor;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ChangeRepository;
+import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.SettingsRepository;
 import cz.tacr.elza.repository.StructureDataRepository;
 import cz.tacr.elza.repository.StructureDefinitionRepository;
@@ -38,6 +40,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -72,8 +75,8 @@ public class StructureDataService {
     private final StructureExtensionDefinitionRepository structureExtensionDefinitionRepository;
     private final StructureDefinitionRepository structureDefinitionRepository;
     private final StructureDataRepository structureDataRepository;
-    private final RulesExecutor rulesExecutor;
-    private final ArrangementService arrangementService;
+    private final RulesConfigExecutor rulesConfigExecutor;
+    private final FundVersionRepository fundVersionRepository;
     private final RuleService ruleService;
     private final ApplicationContext applicationContext;
     private final ChangeRepository changeRepository;
@@ -97,9 +100,9 @@ public class StructureDataService {
                                 final StructureExtensionDefinitionRepository structureExtensionDefinitionRepository,
                                 final StructureDefinitionRepository structureDefinitionRepository,
                                 final StructureDataRepository structureDataRepository,
-                                final RulesExecutor rulesExecutor,
-                                final ArrangementService arrangementService,
-                                final RuleService ruleService,
+                                final RulesConfigExecutor rulesConfigExecutor,
+                                final FundVersionRepository fundVersionRepository,
+                                @Lazy final RuleService ruleService,
                                 final ApplicationContext applicationContext,
                                 final ChangeRepository changeRepository,
                                 final EventNotificationService notificationService, final SettingsRepository settingsRepository) {
@@ -107,8 +110,8 @@ public class StructureDataService {
         this.structureExtensionDefinitionRepository = structureExtensionDefinitionRepository;
         this.structureDefinitionRepository = structureDefinitionRepository;
         this.structureDataRepository = structureDataRepository;
-        this.rulesExecutor = rulesExecutor;
-        this.arrangementService = arrangementService;
+        this.rulesConfigExecutor = rulesConfigExecutor;
+        this.fundVersionRepository = fundVersionRepository;
         this.ruleService = ruleService;
         this.applicationContext = applicationContext;
         this.changeRepository = changeRepository;
@@ -284,7 +287,7 @@ public class StructureDataService {
     private void validateStructureItems(final ValidationErrorDescription validationErrorDescription,
                                         final ArrStructureData structureData,
                                         final List<ArrStructureItem> structureItems) {
-        ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(structureData.getFundId());
+        ArrFundVersion fundVersion = fundVersionRepository.findByFundIdAndLockChangeIsNull(structureData.getFundId());
         List<RulItemTypeExt> structureItemTypes = ruleService.getStructureItemTypesInternal(structureData.getStructureType(), fundVersion);
         List<RulItemTypeExt> requiredItemTypes = structureItemTypes.stream().filter(itemType -> RulItemType.Type.REQUIRED == itemType.getType()).collect(Collectors.toList());
         List<RulItemTypeExt> impossibleItemTypes = structureItemTypes.stream().filter(itemType -> RulItemType.Type.IMPOSSIBLE == itemType.getType()).collect(Collectors.toList());
@@ -397,7 +400,7 @@ public class StructureDataService {
                 throw new SystemException("Strukturovaný typ '" + structureType.getCode() + "' nemá žádný script pro výpočet hodnoty", BaseCode.INVALID_STATE);
             }
         }
-        return new File(rulesExecutor.getGroovyDir(rulPackage.getCode(), structureType.getRuleSet().getCode())
+        return new File(rulesConfigExecutor.getGroovyDir(rulPackage.getCode(), structureType.getRuleSet().getCode())
                 + File.separator + component.getFilename());
     }
 

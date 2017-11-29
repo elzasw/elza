@@ -51,7 +51,7 @@ public class ValidationRules extends Rules {
 	private DescItemRepository descItemRepository;
 
 	@Autowired
-	private RulesExecutor rulesExecutor;
+	private RulesConfigExecutor rulesConfigExecutor;
 
 	@Autowired
 	private PolicyTypeRepository policyTypeRepository;
@@ -86,7 +86,7 @@ public class ValidationRules extends Rules {
 				.findByRuleSetAndRuleTypeOrderByPriorityAsc(version.getRuleSet(), RulArrangementRule.RuleType.CONFORMITY_INFO);
 
 		for (RulArrangementRule rulPackageRule : rulPackageRules) {
-			path = Paths.get(rulesExecutor.getDroolsDir(rulPackageRule.getPackage().getCode(), rulPackageRule.getRuleSet().getCode()) + File.separator + rulPackageRule.getComponent().getFilename());
+			path = Paths.get(rulesConfigExecutor.getDroolsDir(rulPackageRule.getPackage().getCode(), rulPackageRule.getRuleSet().getCode()) + File.separator + rulPackageRule.getComponent().getFilename());
 			StatelessKieSession session = createNewStatelessKieSession(path);
 			session.setGlobal("results", validationResults);
 			execute(session, facts);
@@ -94,7 +94,7 @@ public class ValidationRules extends Rules {
 
 		List<RulExtensionRule> rulExtensionRules = ruleService.findExtensionRuleByNode(level.getNode(), RulExtensionRule.RuleType.CONFORMITY_INFO);
 		for (RulExtensionRule rulExtensionRule : rulExtensionRules) {
-			path = Paths.get(rulesExecutor.getDroolsDir(rulExtensionRule.getPackage().getCode(), rulExtensionRule.getArrangementExtension().getRuleSet().getCode()) + File.separator + rulExtensionRule.getComponent().getFilename());
+			path = Paths.get(rulesConfigExecutor.getDroolsDir(rulExtensionRule.getPackage().getCode(), rulExtensionRule.getArrangementExtension().getRuleSet().getCode()) + File.separator + rulExtensionRule.getComponent().getFilename());
 			StatelessKieSession session = createNewStatelessKieSession(path);
 			execute(session, facts);
 		}

@@ -32,7 +32,7 @@ public class ScenarioOfNewLevelRules extends Rules {
     private ScriptModelFactory scriptModelFactory;
 
     @Autowired
-    private RulesExecutor rulesExecutor;
+    private RulesConfigExecutor rulesConfigExecutor;
 
     @Autowired
     private RuleService ruleService;
@@ -51,7 +51,7 @@ public class ScenarioOfNewLevelRules extends Rules {
                 version.getRuleSet(), RulArrangementRule.RuleType.NEW_LEVEL);
 
         for (RulArrangementRule rulArrangementRule : rulArrangementRules) {
-            path = Paths.get(rulesExecutor.getDroolsDir(rulArrangementRule.getPackage().getCode(), rulArrangementRule.getRuleSet().getCode()) + File.separator + rulArrangementRule.getComponent().getFilename());
+            path = Paths.get(rulesConfigExecutor.getDroolsDir(rulArrangementRule.getPackage().getCode(), rulArrangementRule.getRuleSet().getCode()) + File.separator + rulArrangementRule.getComponent().getFilename());
 
             StatelessKieSession session = createNewStatelessKieSession(path);
             session.setGlobal("results", newLevelApproaches);
@@ -60,7 +60,7 @@ public class ScenarioOfNewLevelRules extends Rules {
 
         List<RulExtensionRule> rulExtensionRules = ruleService.findExtensionRuleByNode(level.getNode(), RulExtensionRule.RuleType.NEW_LEVEL);
         for (RulExtensionRule rulExtensionRule : rulExtensionRules) {
-            path = Paths.get(rulesExecutor.getDroolsDir(rulExtensionRule.getPackage().getCode(), rulExtensionRule.getArrangementExtension().getRuleSet().getCode()) + File.separator + rulExtensionRule.getComponent().getFilename());
+            path = Paths.get(rulesConfigExecutor.getDroolsDir(rulExtensionRule.getPackage().getCode(), rulExtensionRule.getArrangementExtension().getRuleSet().getCode()) + File.separator + rulExtensionRule.getComponent().getFilename());
             StatelessKieSession session = createNewStatelessKieSession(path);
             execute(session, levels);
         }
