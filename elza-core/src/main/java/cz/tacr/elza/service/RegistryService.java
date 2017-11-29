@@ -19,6 +19,7 @@ import javax.annotation.Nullable;
 
 import cz.tacr.elza.domain.*;
 import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.repository.ItemTypeRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.ObjectUtils;
 import org.springframework.beans.factory.BeanFactory;
@@ -125,9 +126,6 @@ public class RegistryService {
     private SettingsRepository settingsRepository;
 
     @Autowired
-    private PackageService packageService;
-
-    @Autowired
     private ArrangementCacheService arrangementCacheService;
 
     @Autowired
@@ -151,6 +149,8 @@ public class RegistryService {
     @Autowired
     private DescItemRepository descItemRepository;
 
+    @Autowired
+    private ItemTypeRepository itemTypeRepository;
     /**
      * Kody tříd rejstříků nastavené v konfiguraci elzy.
      */
@@ -774,7 +774,7 @@ public class RegistryService {
             List<UISettings> uiSettingsList = settingsRepository.findByUserAndSettingsTypeAndEntityType(null, UISettings.SettingsType.RECORD, null);
             if (uiSettingsList.size() > 0) {
                 uiSettingsList.forEach(uiSettings -> {
-                    SettingRecord setting = (SettingRecord) packageService.convertSetting(uiSettings, null);
+                    SettingRecord setting = (SettingRecord) PackageService.convertSetting(uiSettings, itemTypeRepository);
                     List<SettingRecord.ScopeCode> scopeCodes = setting.getScopeCodes();
                     if (CollectionUtils.isEmpty(scopeCodes)) {
                         this.scopeCodes = new ArrayList<>();

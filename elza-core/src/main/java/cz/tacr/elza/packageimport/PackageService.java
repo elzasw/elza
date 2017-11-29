@@ -3290,7 +3290,8 @@ public class PackageService {
             export(rulPackage, zos, settingsRepository, Settings.class, Setting.class,
                     (settingList, settings) -> settings.setSettings(settingList),
                     (uiSetting, setting) -> setting.setValue(uiSetting.getValue()),
-                    this::convertSetting, (s) -> filterSettingByType(s, ruleSet), path, ruleSet);
+                    (uiSetting, rulRuleSet) -> PackageService.convertSetting(uiSetting, itemTypeRepository),
+                    (s) -> filterSettingByType(s, ruleSet), path, ruleSet);
         }
     }
 
@@ -3304,7 +3305,7 @@ public class PackageService {
         }
     }
 
-    public Setting convertSetting(final UISettings uiSettings, final RulRuleSet ruleSet) {
+    public static Setting convertSetting(final UISettings uiSettings, final ItemTypeRepository itemTypeRepository) {
         // factory
         Setting entity;
         if (Objects.equals(uiSettings.getSettingsType(), UISettings.SettingsType.FUND_VIEW)

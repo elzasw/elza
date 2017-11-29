@@ -7,6 +7,7 @@ import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.packageimport.PackageService;
 import cz.tacr.elza.packageimport.xml.SettingFundViews;
+import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.repository.SettingsRepository;
 import cz.tacr.elza.service.event.CacheInvalidateEvent;
@@ -43,7 +44,7 @@ public class ConfigView {
     private SettingsRepository settingsRepository;
 
     @Autowired
-    private PackageService packageService;
+    private ItemTypeRepository itemTypeRepository;
 
     @Autowired
     private RuleSetRepository ruleSetRepository;
@@ -97,7 +98,7 @@ public class ConfigView {
             fundView = new HashMap<>();
             if (uiSettingsList.size() > 0) {
                 uiSettingsList.forEach(uiSettings -> {
-                    SettingFundViews setting = (SettingFundViews) packageService.convertSetting(uiSettings, null);
+                    SettingFundViews setting = (SettingFundViews) PackageService.convertSetting(uiSettings, itemTypeRepository);
                     RulRuleSet rulRuleSet = ruleSetMap.get(setting.getEntityId());
                     Map<String, ViewTitles> viewByCode = fundView.computeIfAbsent(rulRuleSet.getCode(), k -> new HashMap<>());
                     List<SettingFundViews.Item> items = setting.getItems();
