@@ -24,10 +24,15 @@ import cz.tacr.elza.schema.v2.AccessPointRefs;
 import cz.tacr.elza.schema.v2.DescriptionItem;
 import cz.tacr.elza.schema.v2.Level;
 
+/**
+ * Process item(level) for given section
+ * 
+ */
 public class SectionLevelProcessor implements ItemProcessor {
 
     private final ImportContext context;
 
+	// Current section context
     private final ContextSection section;
 
     public SectionLevelProcessor(ImportContext context) {
@@ -46,7 +51,7 @@ public class SectionLevelProcessor implements ItemProcessor {
 
     private void validateLevel(Level item) {
         if (StringUtils.isEmpty(item.getId())) {
-            throw new DEImportException("Fund level id is not set");
+			throw new DEImportException("Level id is not set");
         }
     }
 
@@ -65,9 +70,11 @@ public class SectionLevelProcessor implements ItemProcessor {
         String importId = item.getId();
         String parentImportId = item.getPid();
 
+		// root node needs special processing
         if (StringUtils.isEmpty(parentImportId)) {
             return section.setRootNode(node, importId);
         }
+		// get parent context and append as child node
         ContextNode parentNode = section.getContextNode(parentImportId);
         if (parentNode == null) {
             throw new DEImportException("Parent for level not found, parentLevelId:" + parentImportId);
@@ -160,6 +167,10 @@ public class SectionLevelProcessor implements ItemProcessor {
         return descItem;
     }
 
+	/**
+	 * Class with prepared data for fulltext indexing
+	 *
+	 */
     private static class ImportIndexData implements ArrDescItemIndexData {
 
         private final Integer fundId;

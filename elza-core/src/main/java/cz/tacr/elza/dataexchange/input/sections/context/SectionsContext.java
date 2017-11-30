@@ -83,6 +83,14 @@ public class SectionsContext {
         sectionProcessedListeners.add(sectionProcessedListener);
     }
 
+	/**
+	 * Prepare context for new section.
+	 * 
+	 * Method endSection have to be called when section is finished.
+	 * 
+	 * @param ruleSetCode
+	 *            Rules for section
+	 */
     public void beginSection(String ruleSetCode) {
         Validate.isTrue(currentSection == null);
 

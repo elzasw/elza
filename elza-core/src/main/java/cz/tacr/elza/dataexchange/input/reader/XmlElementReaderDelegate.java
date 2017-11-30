@@ -9,11 +9,9 @@ import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 import javax.xml.stream.util.EventReaderDelegate;
 
-import cz.tacr.elza.dataexchange.input.DEImportException;
-
 class XmlElementReaderDelegate extends EventReaderDelegate {
 
-    private final XmlElementReaderPath path = new XmlElementReaderPath(32);
+    private final XmlElementPath path = new XmlElementPath(32);
 
     private final LinkedList<XmlElementReaderDelegate.HandlerScope> handlerScopeStack = new LinkedList<>();
 
@@ -21,42 +19,26 @@ class XmlElementReaderDelegate extends EventReaderDelegate {
         super(eventReader);
     }
 
-    public boolean isProcessingHandler() {
+	public boolean isActiveElementHandler() {
         return handlerScopeStack.size() > 0;
     }
 
-    public XmlElementReaderPath getNextElementPath() throws XMLStreamException {
-        XmlElementReaderPath path = this.path.copy();
-        XMLEvent nextEvent = peek();
-        if (nextEvent.isStartElement()) {
-            path.enterElement(nextEvent.asStartElement().getName());
-        } else if (nextEvent.isEndElement()) {
-            path.enterElement(nextEvent.asEndElement().getName());
-        }
-        return path;
-    }
-
     /**
-     * @return True when stream position was changed by handler.
-     */
-    public boolean processHandler(XmlElementHandler handler, XmlElementReaderPath path) throws XMLStreamException {
-        XMLEvent peekEvent = peek();
-        if (!peekEvent.isStartElement()) {
-            throw new XMLStreamException("Handler must proceed from start element");
-        }
+	 * Add activel element handler to the stack
+	 * 
+	 * @param path
+	 *            Path where handler will be active
+	 */
+	public void activateElementHandler(XmlElementHandler handler, XmlElementPath path) {
         handlerScopeStack.add(new HandlerScope(handler, path));
-        try {
-            handler.handleStartElement(this);
-        } catch (Throwable t) {
-            int lineNumber = peekEvent.getLocation().getLineNumber();
-            throw new DEImportException("Reading of XML element failed, path:" + path + ", line:" + lineNumber, t);
-        }
-        return peekEvent != peek();
     }
 
+	// Method is called by ElementReader and also by JAXB deserialization
     @Override
     public XMLEvent nextEvent() throws XMLStreamException {
         XMLEvent event = super.nextEvent();
+
+		// update current path
         if (event.isStartElement()) {
             handleNextStartElement(event.asStartElement());
         } else if (event.isEndElement()) {
@@ -67,14 +49,14 @@ class XmlElementReaderDelegate extends EventReaderDelegate {
 
     private void handleNextStartElement(StartElement startElement) throws XMLStreamException {
         path.enterElement(startElement.getName());
-        if (isProcessingHandler()) {
+		if (isActiveElementHandler()) {
             HandlerScope handlerScope = handlerScopeStack.getLast();
             handlerScope.checkScope(path);
         }
     }
 
     private void handleNextEndElement(EndElement endElement) {
-        if (isProcessingHandler()) {
+		if (isActiveElementHandler()) {
             HandlerScope handlerScope = handlerScopeStack.getLast();
             if (path.equalPath(handlerScope.path)) {
                 handlerScopeStack.removeLast();
@@ -84,21 +66,47 @@ class XmlElementReaderDelegate extends EventReaderDelegate {
         path.leaveElement(endElement.getName());
     }
 
+	/**
+	 * One active element handler
+	 * 
+	 *
+	 */
     private static class HandlerScope {
 
+		/**
+		 * Handler
+		 */
         private final XmlElementHandler handler;
 
-        private final XmlElementReaderPath path;
+		/**
+		 * Path where was handler activated
+		 */
+        private final XmlElementPath path;
 
-        public HandlerScope(XmlElementHandler handler, XmlElementReaderPath path) {
+        public HandlerScope(XmlElementHandler handler, XmlElementPath path) {
             this.handler = handler;
             this.path = path;
         }
 
-        public void checkScope(XmlElementReaderPath readerPath) throws XMLStreamException {
+		/**
+		 * Check if handler is inside its scope
+		 * 
+		 * @param readerPath
+		 * @throws XMLStreamException
+		 */
+        public void checkScope(XmlElementPath readerPath) throws XMLStreamException {
             if (!path.matchPath(readerPath)) {
                 throw new XMLStreamException("Invalid handler scope, readerPath:" + readerPath + ", handlerPath:" + path);
             }
         }
     }
+
+	/**
+	 * Return current path
+	 * 
+	 * @return
+	 */
+	public XmlElementPath getPath() {
+		return path;
+	}
 }

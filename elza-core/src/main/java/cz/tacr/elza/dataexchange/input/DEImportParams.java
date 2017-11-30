@@ -21,15 +21,27 @@ public class DEImportParams {
 
     private final ImportPositionParams positionParams;
 
-    public DEImportParams(int scopeId,
+	/**
+	 * flag if root nodes should be skipped
+	 */
+	private boolean ignoreRootNodes = false;
+
+	public DEImportParams(int scopeId,
                           int batchSize,
                           long memoryScoreLimit,
-                          ImportPositionParams positionParams) {
+	        ImportPositionParams positionParams, Boolean ignoreRootNodes) {
         this.scopeId = scopeId;
         this.batchSize = batchSize;
         this.memoryScoreLimit = memoryScoreLimit;
         this.positionParams = positionParams;
+		if (ignoreRootNodes != null) {
+			this.ignoreRootNodes = ignoreRootNodes.booleanValue();
+		}
     }
+
+	public boolean isIgnoreRootNodes() {
+		return ignoreRootNodes;
+	}
 
     public int getScopeId() {
         return scopeId;

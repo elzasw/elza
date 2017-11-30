@@ -11,7 +11,10 @@ import cz.tacr.elza.dataexchange.input.context.ImportContext;
 import cz.tacr.elza.dataexchange.input.context.ImportPhase;
 
 /**
- * Created by todtj on 11.05.2017.
+ * Element handler with default JAXB based deserialization.
+ * 
+ * This handler automatically deserialize input element. Method
+ * handleJaxbElement have to be overridden to process this element.
  */
 public abstract class JaxbElementHandler<T> extends ContextAwareElementHandler {
 
@@ -37,8 +40,6 @@ public abstract class JaxbElementHandler<T> extends ContextAwareElementHandler {
         // JAXB unmarshaller consumes end element
     }
 
-    public abstract Class<T> getType();
-
     protected Unmarshaller createUnmarshaller(JAXBContext jaxbContext) throws JAXBException {
         if (jaxbContext == null) {
             jaxbContext = JAXBContext.newInstance(getType());
@@ -51,5 +52,17 @@ public abstract class JaxbElementHandler<T> extends ContextAwareElementHandler {
         return unmarshaller.unmarshal(eventReader, getType());
     }
 
+	/**
+	 * Return target class for deserialization
+	 * 
+	 * @return
+	 */
+	public abstract Class<T> getType();
+
+	/**
+	 * Method to process deserialized element
+	 * 
+	 * @param element
+	 */
     protected abstract void handleJaxbElement(JAXBElement<T> element);
 }

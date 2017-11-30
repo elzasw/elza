@@ -6,8 +6,14 @@ import cz.tacr.elza.dataexchange.input.context.ImportContext;
 import cz.tacr.elza.dataexchange.input.context.ImportPhase;
 import cz.tacr.elza.dataexchange.input.reader.XmlElementHandler;
 
+/**
+ * Base implementation of XmlElementHandler
+ * 
+ * Each handler is applied at some phase.
+ */
 public abstract class ContextAwareElementHandler implements XmlElementHandler {
 
+	// Import context
     protected final ImportContext context;
 
     protected final ImportPhase phase;

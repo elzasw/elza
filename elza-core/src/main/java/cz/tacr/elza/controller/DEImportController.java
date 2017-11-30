@@ -54,7 +54,8 @@ public class DEImportController {
     public void importData(@RequestPart(name = "importPositionParams", required = false) final ImportPositionParams importPositionParams,
                            @RequestParam(name = "transformationName", required = false) final String transformationName,
                            @RequestParam("scopeId") final int scopeId,
-                           @RequestParam("xmlFile") final MultipartFile xmlFile) {
+	        @RequestParam("xmlFile") final MultipartFile xmlFile,
+	        @RequestParam(name = "ignoreRootNodes", required = false) final Boolean ignoreRootNodes) {
 
         // TODO: XML transformation
         if (StringUtils.isNotEmpty(transformationName)) {
@@ -62,7 +63,7 @@ public class DEImportController {
         }
 
         // prepare import parameters
-        DEImportParams params = new DEImportParams(scopeId, 1000, 10000, importPositionParams);
+		DEImportParams params = new DEImportParams(scopeId, 1000, 10000, importPositionParams, ignoreRootNodes);
         params.addImportPhaseChangeListeners(new SectionNotifications(eventNotificationService));
 
         // validate
