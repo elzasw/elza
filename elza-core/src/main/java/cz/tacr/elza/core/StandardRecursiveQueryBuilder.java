@@ -42,28 +42,28 @@ public class StandardRecursiveQueryBuilder<T> implements RecursiveQueryBuilder<T
 
 	/**
 	 * Helper method to check if entityClass is real entity class
-	 * 
+	 *
 	 * @param session
 	 * @param entityClass
 	 * @return
 	 */
-	static public boolean isEntityClass(Session session, @SuppressWarnings("rawtypes") Class entityClass) {
-		if (entityClass == null) {
-			return false;
-		}
-		// use session to check entityClass
-		Metamodel metaModel = session.getMetamodel();
-		try {
-			EntityType<Object> type = metaModel.entity(entityClass);
-			if (type == null) {
-				return false;
-			}
-		} catch (IllegalArgumentException e) {
-			// if not found metamodel throws this exception
-			return false;
-		}
-		return true;
-	}
+    static public boolean isEntityClass(Session session, Class<?> entityClass) {
+        if (entityClass == null) {
+            return false;
+        }
+        // use session to check entityClass
+        Metamodel metaModel = session.getMetamodel();
+        try {
+            EntityType<?> type = metaModel.entity(entityClass);
+            if (type == null) {
+                return false;
+            }
+        } catch (IllegalArgumentException e) {
+            // if not found metamodel throws this exception
+            return false;
+        }
+        return true;
+    }
 
     @Override
     public void prepareQuery(Session session) {

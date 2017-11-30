@@ -8,7 +8,6 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
@@ -28,6 +27,7 @@ import org.hibernate.CacheMode;
 import org.hibernate.ScrollMode;
 import org.hibernate.ScrollableResults;
 import org.hibernate.query.NativeQuery;
+import org.hibernate.type.StandardBasicTypes;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
@@ -393,41 +393,6 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
     }
 
     @Override
-    public long iterateSubtree(int nodeId, ArrChange change, Consumer<ArrLevel> levelAction) {
-        // TODO: implement condition for not null change
-        Validate.isTrue(change == null, "Not implemented");
-
-        RecursiveQueryBuilder<ArrLevel> rqBuilder = DatabaseType.getCurrent().createRecursiveQueryBuilder(ArrLevel.class);
-
-        rqBuilder.addSqlPart("WITH RECURSIVE fundTree(level_id, create_change_id, delete_change_id, node_id, node_id_parent, position, parentPosition, depth) AS (")
-
-        .addSqlPart("SELECT l.*, l.position, 1 FROM arr_level l WHERE l.node_id = :nodeId AND l.delete_change_id IS NULL ")
-        .addSqlPart("UNION ALL ")
-        .addSqlPart("SELECT l.*, ft.position, ft.depth + 1 FROM arr_level l JOIN fundTree ft ON ft.node_id=l.node_id_parent WHERE l.delete_change_id IS NULL) ")
-
-        .addSqlPart("SELECT * FROM fundTree ORDER BY depth, parentPosition, position");
-
-        rqBuilder.prepareQuery(entityManager);
-        rqBuilder.setParameter("nodeId", nodeId);
-
-        org.hibernate.query.Query<ArrLevel> query = rqBuilder.getQuery();
-        query.setCacheMode(CacheMode.IGNORE);
-
-        long count = 0;
-        try (ScrollableResults scrollableResults = query.scroll(ScrollMode.FORWARD_ONLY)) {
-            while (scrollableResults.next()) {
-                ArrLevel level = (ArrLevel) scrollableResults.get(0);
-                levelAction.accept(level);
-                count++;
-            }
-        }
-        if (count == 0) {
-            throw new IllegalArgumentException("Root node not found, nodeId:" + nodeId);
-        }
-        return count;
-    }
-
-    @Override
     public List<Integer> findNodeIdsParent(final ArrNode node, final ArrChange change) {
         RecursiveQueryBuilder<Integer> rqBuilder = DatabaseType.getCurrent().createRecursiveQueryBuilder(Integer.class);
 
@@ -442,5 +407,48 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
         rqBuilder.setParameter("nodeId", node.getNodeId());
         rqBuilder.setParameter("date", Timestamp.valueOf(change.getChangeDate()));
         return rqBuilder.getQuery().getResultList();
+    }
+
+    @Override
+    public long readLevelTree(Integer nodeId, ArrChange change, boolean excludeRoot, TreeLevelConsumer treeLevelConsumer) {
+        Validate.notNull(nodeId);
+        Validate.isTrue(change == null, "Not implemented"); // TODO: implement condition for closed versions
+
+        RecursiveQueryBuilder<ArrLevel> rqBuilder = DatabaseType.getCurrent().createRecursiveQueryBuilder(ArrLevel.class);
+
+        rqBuilder.addSqlPart("WITH RECURSIVE fundTree(level_id, create_change_id, delete_change_id, node_id, node_id_parent, position, depth) AS (")
+        .addSqlPart("SELECT l.*, 0 FROM arr_level l WHERE l.node_id = :nodeId AND l.delete_change_id IS NULL ")
+        .addSqlPart("UNION ALL ")
+        .addSqlPart("SELECT l.*, ft.depth + 1 FROM arr_level l JOIN fundTree ft ON ft.node_id=l.node_id_parent WHERE l.delete_change_id IS NULL) ")
+
+        .addSqlPart("SELECT * FROM fundTree ft ");
+        if (excludeRoot) {
+            rqBuilder.addSqlPart("WHERE node_id <> :nodeId ");
+        }
+        rqBuilder.addSqlPart("ORDER BY depth, node_id_parent, position");
+
+        rqBuilder.prepareQuery(entityManager);
+        rqBuilder.setParameter("nodeId", nodeId);
+
+        NativeQuery<ArrLevel> query = rqBuilder.getQuery();
+
+        // probably false positive due to SQLQuery -> NativeQuery migration (should be fixed in HB 6.0)
+        query.addRoot("ft", ArrLevel.class);
+        query.addScalar("depth", StandardBasicTypes.INTEGER);
+        query.setCacheMode(CacheMode.IGNORE);
+
+        long count = 0;
+        try (ScrollableResults scrollableResults = query.scroll(ScrollMode.FORWARD_ONLY)) {
+            while (scrollableResults.next()) {
+                ArrLevel level = (ArrLevel) scrollableResults.get(0);
+                int depth = scrollableResults.getInteger(1).intValue();
+                treeLevelConsumer.accept(level, depth);
+                count++;
+            }
+        }
+        if (count == 0) {
+            throw new IllegalArgumentException("Root node not found, nodeId:" + nodeId);
+        }
+        return count;
     }
 }

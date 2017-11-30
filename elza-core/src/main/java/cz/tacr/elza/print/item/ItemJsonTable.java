@@ -1,6 +1,5 @@
 package cz.tacr.elza.print.item;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -14,10 +13,10 @@ import cz.tacr.elza.domain.table.ElzaTable;
  * Item to print content of table
  */
 public class ItemJsonTable extends AbstractItem {
-	
+
 	final static String ROW_SEPARATOR = ", ";
 	final static String ITEM_SEPARATOR = " ";
-	
+
 	ElzaTable value;
 	List<ElzaColumn> tableDef;
 
@@ -30,12 +29,12 @@ public class ItemJsonTable extends AbstractItem {
     @Override
     public String serializeValue() {
     	StringBuilder sb = new StringBuilder();
-    	    	
+
     	boolean hasData = false;
     	for(ElzaRow row: value.getRows())
     	{
     		Map<String, String> columns = row.getValues();
-    		
+
     		boolean itemAdded = false;
     		// Store single value - iterate by columns
     		for(ElzaColumn col: tableDef) {
@@ -43,7 +42,7 @@ public class ItemJsonTable extends AbstractItem {
     			if(StringUtils.isNotBlank(value)) {
     				// add separator
     				if(hasData)
-    				{    					
+    				{
     					if(itemAdded) {
     						sb.append(ITEM_SEPARATOR);
     					} else {

@@ -2,6 +2,7 @@ package cz.tacr.elza.print.item;
 
 import java.util.List;
 
+import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.table.ElzaColumn;
 
@@ -12,7 +13,7 @@ import cz.tacr.elza.domain.table.ElzaColumn;
 public class ItemType {
 
     String name;
-    String dataType;
+    DataType dataType;
     String shortcut;
     String description;
     String code;
@@ -21,7 +22,7 @@ public class ItemType {
 
     public ItemType(RulItemType rulItemType) {
         name = rulItemType.getName();
-        dataType = rulItemType.getDataType().getCode();
+        dataType = DataType.fromId(rulItemType.getDataTypeId());
         shortcut = rulItemType.getShortcut();
         description = rulItemType.getDescription();
         code = rulItemType.getCode();
@@ -33,7 +34,7 @@ public class ItemType {
         return code;
     }
 
-    public String getDataType() {
+    public DataType getDataType() {
         return dataType;
     }
 
@@ -56,8 +57,8 @@ public class ItemType {
     public List<ElzaColumn> getTableDefinition() {
 		return tableDefinition;
     }
-    
+
     public static ItemType instanceOf(final RulItemType rulItemType) {
-    	return new ItemType(rulItemType); 
+    	return new ItemType(rulItemType);
     }
 }

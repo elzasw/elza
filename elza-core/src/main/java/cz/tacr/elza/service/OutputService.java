@@ -14,16 +14,17 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
-import javax.transaction.Transactional;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import cz.tacr.elza.annotation.AuthMethod;
@@ -69,7 +70,6 @@ import cz.tacr.elza.domain.RulItemTypeAction;
 import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.domain.UsrPermission;
-import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.domain.interfaces.IArrItemStringValue;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.Level;
@@ -136,9 +136,6 @@ public class OutputService {
     private NodeOutputRepository nodeOutputRepository;
 
     @Autowired
-    private EntityManager entityManager;
-
-    @Autowired
     private NodeRepository nodeRepository;
 
     @Autowired
@@ -183,24 +180,39 @@ public class OutputService {
     @Autowired
     private ItemSpecRepository itemSpecRepository;
 
-    @Autowired
-    private DescItemFactory descItemFactory;
-
     private static final Logger logger = LoggerFactory.getLogger(OutputService.class);
 
     /**
-     * Vyhledá platné nody k výstupu.
-     *
-     * @param output výstup
-     * @return seznam nodů k výstupu
+     * Searches nodes connected to output definition. Nodes must be valid by specified lock change.
+     * @param lockChange null for open version
      */
-    public List<ArrNode> getNodesForOutput(final ArrOutput output) {
-        Assert.notNull(output, "Výstup musí být vyplněn");
-        if (output.getLockChange() == null) {
-            return nodeRepository.findNodesForOutput(output, output.getCreateChange());
-        } else {
-            return nodeRepository.findNodesForOutput(output, output.getCreateChange(), output.getLockChange());
+    @Transactional(propagation = Propagation.MANDATORY)
+    public List<ArrNodeOutput> getOutputNodes(ArrOutputDefinition outputDefinition, ArrChange lockChange) {
+        Validate.notNull(outputDefinition);
+        if (lockChange == null) {
+            return nodeOutputRepository.findByOutputDefinitionAndDeleteChangeIsNull(outputDefinition);
         }
+        return nodeOutputRepository.findByOutputDefinitionAndChange(outputDefinition, lockChange);
+    }
+
+    /**
+     * Searches output definition with fetched output type, fund, institution, institution type and institution party with record.
+     */
+    @Transactional(propagation = Propagation.MANDATORY)
+    public ArrOutputDefinition getDefinitionForModel(Integer outputDefinitionId) {
+        return outputDefinitionRepository.findOneFetchTypeAndFundAndInstitution(outputDefinitionId);
+    }
+
+    /**
+     * Searches direct output items and fetches their data. Items must be valid by specified lock change.
+     * @param lockChange null for open version
+     */
+    @Transactional(propagation = Propagation.MANDATORY)
+    public List<ArrOutputItem> getDirectOutputItems(ArrOutputDefinition outputDefinition, ArrChange lockChange) {
+        if (lockChange == null) {
+            return outputItemRepository.findByOutputAndDeleteChangeIsNull(outputDefinition);
+        }
+        return outputItemRepository.findByOutputAndChange(outputDefinition, lockChange);
     }
 
     /**
@@ -1268,25 +1280,6 @@ public class OutputService {
     public List<ArrOutputItem> getOutputItems(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
                                               final ArrOutputDefinition outputDefinition) {
         return getOutputItemsInner(fundVersion, outputDefinition);
-    }
-
-    /**
-     * Vyhledání hodnot atributu výstupu.
-     *
-     * @param fundVersion      verze AS
-     * @param outputDefinition pojmenovaný výstup
-     * @return seznam hodnot atrubutů
-     */
-    public List<ArrOutputItem> getOutputItemsInner(final ArrFundVersion fundVersion,
-                                                   final ArrOutputDefinition outputDefinition) {
-        List<ArrOutputItem> itemList;
-
-        if (fundVersion.getLockChange() == null) {
-            itemList = outputItemRepository.findByOutputAndDeleteChangeIsNull(outputDefinition);
-        } else {
-            itemList = outputItemRepository.findByOutputAndChange(outputDefinition, fundVersion.getLockChange());
-        }
-        return itemList;
     }
 
     /**

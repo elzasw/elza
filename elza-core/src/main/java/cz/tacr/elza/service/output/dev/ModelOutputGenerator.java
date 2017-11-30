@@ -1,5 +1,6 @@
-package cz.tacr.elza.service.output;
+package cz.tacr.elza.service.output.dev;
 
+import java.io.InputStream;
 import java.time.ZoneId;
 import java.util.Collection;
 import java.util.Collections;
@@ -12,12 +13,13 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.lang.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 
+import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
@@ -42,6 +44,7 @@ import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrOutput;
+import cz.tacr.elza.domain.ArrOutputDefinition;
 import cz.tacr.elza.domain.ArrOutputItem;
 import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.ParInstitution;
@@ -50,10 +53,11 @@ import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulPacketType;
+import cz.tacr.elza.domain.RulTemplate;
+import cz.tacr.elza.exception.ProcessException;
 import cz.tacr.elza.print.Fund;
 import cz.tacr.elza.print.Node;
 import cz.tacr.elza.print.NodeId;
-import cz.tacr.elza.print.NodeLoader;
 import cz.tacr.elza.print.OutputImpl;
 import cz.tacr.elza.print.Packet;
 import cz.tacr.elza.print.Record;
@@ -69,7 +73,6 @@ import cz.tacr.elza.print.item.ItemJsonTable;
 import cz.tacr.elza.print.item.ItemPacketRef;
 import cz.tacr.elza.print.item.ItemPartyRef;
 import cz.tacr.elza.print.item.ItemRecordRef;
-import cz.tacr.elza.print.item.ItemSpec;
 import cz.tacr.elza.print.item.ItemString;
 import cz.tacr.elza.print.item.ItemText;
 import cz.tacr.elza.print.item.ItemType;
@@ -79,24 +82,25 @@ import cz.tacr.elza.print.party.Institution;
 import cz.tacr.elza.print.party.Party;
 import cz.tacr.elza.print.party.PartyGroup;
 import cz.tacr.elza.repository.CalendarTypeRepository;
+import cz.tacr.elza.repository.ItemRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.service.ArrangementService;
-import cz.tacr.elza.service.ItemService;
 import cz.tacr.elza.service.OutputService;
 import cz.tacr.elza.service.RegistryService;
 import cz.tacr.elza.service.cache.CachedNode;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.cache.RestoredNode;
+import cz.tacr.elza.service.output.OutputGeneratorWorkerFactory;
+import cz.tacr.elza.utils.HibernateUtils;
 
-/**
- * Factory pro vytvoření struktury pro výstupy
- *
- */
+public class ModelOutputGenerator implements OutputGenerator {
 
-@Service
-public class OutputFactoryService implements NodeLoader {
+    private final ArrOutputDefinition outputDefinition;
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final OutputImpl outputModel;
+
+    @Autowired
+    private StaticDataService staticDataService;
 
     private Map<Integer, Packet> packetMap = new HashMap<>();
 
@@ -119,7 +123,7 @@ public class OutputFactoryService implements NodeLoader {
     private LevelRepository levelRepository;
 
     @Autowired
-    private ItemService itemService;
+    private ItemRepository itemRepository;
 
     @Autowired
     private OutputService outputService;
@@ -133,49 +137,182 @@ public class OutputFactoryService implements NodeLoader {
     @Autowired
     private NodeCacheService nodeCacheService;
 
-    public OutputFactoryService() {
+    @Override
+    public void init(ArrOutputDefinition outputDefinition, int outputId) {
+        this.outputDefinition = outputDefinition;
+        this.outputModel = createOutputModel(outputId);
+    }
+
+    @Override
+    public void generate() {
+        logger.info("Spuštěno generování výstupu pro arr_output id={}", arrOutputId);
+
+        final ArrOutput arrOutput = outputRepository.findOne(arrOutputId);
+        final ArrOutputDefinition arrOutputDefinition = outputDefinitionRepository.findByOutputId(arrOutput.getOutputId());
+        change = createChange(userId);
+
+        try {
+            final RulTemplate rulTemplate = arrOutputDefinition.getTemplate();
+            Assert.notNull(rulTemplate, "Výstup nemá definovanou šablonu (ArrOutputDefinition.template je null).");
+
+            // sestavení outputu
+            logger.info("Sestavování modelu výstupu výstupu pro arr_output id={} spuštěno", arrOutputId);
+            final OutputImpl output = outputFactoryService.createOutput(arrOutput);
+            logger.info("Sestavování modelu výstupu výstupu pro arr_output id={} dokončeno", arrOutputId);
+
+            // skutečné vytvoření výstupného souboru na základě definice
+            logger.info("Spuštěno generování souboru pro arr_output id={}", arrOutputId);
+            final InputStream content = getContent(arrOutputDefinition, rulTemplate, output);
+
+            // Uložení do výstupní struktury a DMS
+            storeOutputInDms(arrOutputDefinition, rulTemplate, content);
+
+            content.close();
+
+            waitForGeneratorThread();
+
+            if (exception != null) {
+                throw exception;
+            }
+
+            arrOutputDefinition.setError(null);
+        } catch (Throwable ex) {
+            throw new ProcessException(arrOutputId, ex);
+        }
+
+    }
+
+    public OutputImpl createOutputModel(int outputId) {
+        // init common
+        OutputImpl model = new OutputImpl(outputId);
+        model.setName(outputDefinition.getName());
+        model.setInternal_code(outputDefinition.getInternalCode());
+        model.setTypeCode(outputDefinition.getOutputType().getCode());
+        model.setType(outputDefinition.getOutputType().getName());
+
+        // create root node id
+        ArrFund arrFund = outputDefinition.getFund();
+        ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(arrFund.getFundId());
+        ArrLevel rootLevel = levelRepository.findByNode(fundVersion.getRootNode(), fundVersion.getLockChange());
+        NodeId rootNodeId = createNodeId(rootLevel, model, null);
+
+        // init fund
+        Fund fund = new Fund(rootNodeId, fundVersion);
+        fund.setName(arrFund.getName());
+        fund.setCreateDate(Date.from(arrFund.getCreateDate().atZone(ZoneId.systemDefault()).toInstant()));
+        fund.setDateRange(fundVersion.getDateRange());
+        fund.setInternalCode(arrFund.getInternalCode());
+        model.setFund(fund);
+
+        // init institution
+        ParInstitution parInstitution = arrFund.getInstitution();
+        Institution institution = createInstitution(parInstitution, model);
+        fund.setInstitution(institution);
+
+        // init output items
+        readOutputItems(model, fundVersion);
+
+        // zařadit strom nodes
+        createNodeIdTree(arrOutput, model);
+
+        return model;
+    }
+
+    private void readOutputItems(OutputImpl outputModel, ArrFundVersion fundVersion) {
+        List<ArrOutputItem> outputItems = outputService.getOutputItemsInner(fundVersion, outputDefinition);
+        for (ArrOutputItem outputItem : outputItems) {
+            if (outputItem.isUndefined()) {
+                continue;
+            }
+            AbstractItem item = createItem(outputModel, outputItem);
+            outputModel.addItem(item);
+        }
+    }
+
+    private AbstractItem createItem(OutputImpl outputModel, ArrItem arrItem) {
+        AbstractItem item = getItemByType(outputModel, arrItem);
+
+        RulItemSpec rulItemSpec = arrItem.getItemSpec(); // TODO: static data
+        if (rulItemSpec != null) {
+            ItemSpec itemSpec = outputModel.getItemSpec(rulItemSpec);
+            item.setSpecification(itemSpec);
+        }
+
+        RulItemType rulItemType = arrItem.getItemType(); // TODO: static data
+        ItemType itemType = outputModel.getItemType(rulItemType);
+        item.setType(itemType);
+        return item;
     }
 
     /**
-     * Factory metoda pro vytvoření logické struktury Output struktury
+     * Vytvoří item podle zdrojového typu.
      *
-     * @param arrOutput databázová položka s definicí požadovaného výstupu
-     * @return struktura pro použití v šablonách
+     * @param arrItem zdrojová item
+     * @param output   výstup, ke kterému se budou items zařazovat
+     * @param nodeId     node, ke kterému se budou nody zařazovat, pokud je null jde o itemy přiřazené přímo k output
+     * @return item
      */
-    public OutputImpl createOutput(final ArrOutput arrOutput) {
-        reset();
+    private AbstractItem getItemByType(final OutputImpl output, final ArrItem arrItem) {
+        final ArrData data = arrItem.getData();
+        Validate.isTrue(HibernateUtils.isInitialized(data));
 
-        // naplnit output
-        final OutputImpl output = new OutputImpl(arrOutput);
-        output.setName(arrOutput.getOutputDefinition().getName());
-        output.setInternal_code(arrOutput.getOutputDefinition().getInternalCode());
-        output.setTypeCode(arrOutput.getOutputDefinition().getOutputType().getCode());
-        output.setType(arrOutput.getOutputDefinition().getOutputType().getName());
 
-        // fund
-        final ArrFund arrFund = arrOutput.getOutputDefinition().getFund();
-        ArrFundVersion arrFundVersion = arrangementService.getOpenVersionByFundId(arrFund.getFundId());
-        final Fund fund = createFund(null, arrFund, arrFundVersion);
-        output.setFund(fund);
+        switch() {
 
-        // zařadit do výstupu rootNode fundu
-        final ArrNode arrFundRootNode = arrFundVersion.getRootNode();
-        ArrLevel arrRootLevel = levelRepository.findByNode(arrFundRootNode, arrFundVersion.getLockChange());
-        NodeId rootNodeId = createNodeId(arrRootLevel, output, null);
-        fund.setRootNodeId(rootNodeId);
+        }
 
-        // plnit institution
-        final ParInstitution arrFundInstitution = arrFund.getInstitution();
-        final Institution institution = createInstitution(arrFundInstitution, output);
-        fund.setInstitution(institution);
+        AbstractItem item;
+        if (data instanceof ArrDataUnitid) {
+            item = getItemUnitid((ArrDataUnitid) data);
 
-        // zařadit items přímo přiřazené na output
-        addOutputItems(arrOutput, output, arrFundVersion);
+        } else if (data instanceof ArrDataUnitdate) {
+            item = getItemUnitdate((ArrDataUnitdate) data);
 
-        // zařadit strom nodes
-        createNodeIdTree(arrOutput, output);
+        } else if (data instanceof ArrDataText && arrItem.getItemType().getDataType().getCode().equals("TEXT")) {
+            item = getItemUnitText((ArrDataText) data);
 
-        return output;
+        } else if (data instanceof ArrDataString) {
+            item = getItemUnitString((ArrDataString) data);
+
+        } else if (data instanceof ArrDataRecordRef) {
+            item = getItemUnitRecordRef(output, (ArrDataRecordRef) data);
+
+        } else if (data instanceof ArrDataPartyRef) {
+            item = getItemUnitPartyRef(output, (ArrDataPartyRef) data);
+
+        } else if (data instanceof ArrDataPacketRef) {
+            item = getItemUnitPacketRef((ArrDataPacketRef) data);
+
+        } else if (data instanceof ArrDataJsonTable) {
+            item = getItemUnitJsonTable(output, arrItem.getItemType(), (ArrDataJsonTable) data);
+
+        } else if (data instanceof ArrDataInteger) {
+            item = getItemUnitInteger((ArrDataInteger) data);
+
+        } else if (data instanceof ArrDataText && arrItem.getItemType().getDataType().getCode().equals("FORMATTED_TEXT")) {
+            item = getItemUnitFormatedText((ArrDataText) data);
+
+        } else if (data instanceof ArrDataFileRef) {
+            item = getItemFile((ArrDataFileRef) data);
+
+        } else if (data instanceof ArrDataNull && arrItem.getItemType().getDataType().getCode().equals("ENUM")) {
+            item = ItemEnum.newInstance();
+
+        } else if (data instanceof ArrDataDecimal) {
+            item = getItemUnitDecimal((ArrDataDecimal) data);
+
+        } else if (data instanceof ArrDataCoordinates) {
+            item = getItemUnitCoordinates((ArrDataCoordinates) data);
+
+        } else {
+            logger.warn("Neznámý datový typ hodnoty Item ({}) je zpracován jako string.", data.getClass().getName());
+            item = new ItemString(data.toString());
+        }
+
+        item.setPosition(arrItem.getPosition());
+        item.setUndefined(arrItem.isUndefined());
+
+        return item;
     }
 
     private void createNodeIdTree(final ArrOutput arrOutput, final OutputImpl output) {
@@ -192,16 +329,6 @@ public class OutputFactoryService implements NodeLoader {
         }
     }
 
-    /**
-     * Naplní do výstupu hodnoty atributů přiřazené na definici výstupu.
-     */
-    private void addOutputItems(final ArrOutput arrOutput, final OutputImpl output, final ArrFundVersion arrFundVersion) {
-        final List<ArrOutputItem> outputItems = outputService.getOutputItemsInner(arrFundVersion, arrOutput.getOutputDefinition());
-        for (ArrOutputItem arrOutputItem : outputItems) {
-            final AbstractItem item = getItem(arrOutputItem.getItemId(), output);
-            output.getItems().add(item);
-        };
-    }
 
     private Institution createInstitution(final ParInstitution arrFundInstitution, final OutputImpl output) {
         final Institution institution = new Institution();
@@ -222,16 +349,6 @@ public class OutputFactoryService implements NodeLoader {
         institution.setPartyGroup(partyGroup);
 
         return institution;
-    }
-
-    private Fund createFund(final NodeId rootNodeId, final ArrFund arrFund, final ArrFundVersion arrFundVersion) {
-        Fund fund = new Fund(rootNodeId, arrFundVersion);
-        fund.setName(arrFund.getName());
-        fund.setCreateDate(Date.from(arrFund.getCreateDate().atZone(ZoneId.systemDefault()).toInstant()));
-        fund.setDateRange(arrFundVersion.getDateRange());
-        fund.setInternalCode(arrFund.getInternalCode());
-
-        return fund;
     }
 
     /**
@@ -325,73 +442,7 @@ public class OutputFactoryService implements NodeLoader {
         return node;
     }
 
-    /**
-     * Vytvoří item podle zdrojového typu.
-     *
-     * @param arrItemId zdrojový item
-     * @param output  výstup, ke kterému se budou items zařazovat
-     * @return item
-     */
-    @Transactional(readOnly = true)
-    public AbstractItem getItem(final Integer arrItemId, final OutputImpl output) {
-        final ArrItem arrItem = itemService.loadDataById(arrItemId);
 
-        AbstractItem item = createItem(output, arrItem);
-        return item;
-    }
-
-    /**
-     * Vytvoří item podle zdrojového typu.
-     *
-     * @param arrItem zdrojová item
-     * @param output   výstup, ke kterému se budou items zařazovat
-     * @param nodeId     node, ke kterému se budou nody zařazovat, pokud je null jde o itemy přiřazené přímo k output
-     * @return item
-     */
-    private AbstractItem getItemByType(final OutputImpl output, final ArrItem arrItem) {
-        final ArrData data = arrItem.getData();
-
-        AbstractItem item;
-        if (data == null) {
-            item = new ItemString("");
-        } else if (data instanceof ArrDataUnitid) {
-            item = getItemUnitid((ArrDataUnitid) data);
-        } else if (data instanceof ArrDataUnitdate) {
-            item = getItemUnitdate((ArrDataUnitdate) data);
-        } else if (data instanceof ArrDataText && arrItem.getItemType().getDataType().getCode().equals("TEXT")) {
-            item = getItemUnitText((ArrDataText) data);
-        } else if (data instanceof ArrDataString) {
-            item = getItemUnitString((ArrDataString) data);
-        } else if (data instanceof ArrDataRecordRef) {
-            item = getItemUnitRecordRef(output, (ArrDataRecordRef) data);
-        } else if (data instanceof ArrDataPartyRef) {
-            item = getItemUnitPartyRef(output, (ArrDataPartyRef) data);
-        } else if (data instanceof ArrDataPacketRef) {
-            item = getItemUnitPacketRef((ArrDataPacketRef) data);
-        } else if (data instanceof ArrDataJsonTable) {
-            item = getItemUnitJsonTable(output, arrItem.getItemType(), (ArrDataJsonTable) data);
-        } else if (data instanceof ArrDataInteger) {
-            item = getItemUnitInteger((ArrDataInteger) data);
-        } else if (data instanceof ArrDataText && arrItem.getItemType().getDataType().getCode().equals("FORMATTED_TEXT")) {
-            item = getItemUnitFormatedText((ArrDataText) data);
-        } else if (data instanceof ArrDataFileRef) {
-            item = getItemFile((ArrDataFileRef) data);
-        } else if (data instanceof ArrDataNull && arrItem.getItemType().getDataType().getCode().equals("ENUM")) {
-            item = ItemEnum.newInstance();
-        } else if (data instanceof ArrDataDecimal) {
-            item = getItemUnitDecimal((ArrDataDecimal) data);
-        } else if (data instanceof ArrDataCoordinates) {
-            item = getItemUnitCoordinates((ArrDataCoordinates) data);
-        } else {
-            logger.warn("Neznámý datový typ hodnoty Item ({}) je zpracován jako string.", data.getClass().getName());
-            item = new ItemString(data.toString());
-        }
-
-        item.setPosition(arrItem.getPosition());
-        item.setUndefined(arrItem.isUndefined());
-
-        return item;
-    }
 
     private AbstractItem getItemFile(final ArrDataFileRef itemData) {
         final ArrFile arrFile = itemData.getFile();
@@ -411,8 +462,8 @@ public class OutputFactoryService implements NodeLoader {
 
     private AbstractItem getItemUnitRecordRef(final OutputImpl output, final ArrDataRecordRef itemData) {
         Record record = output.getRecordFromCache(itemData.getRecordId());
-		if (record == null) {
-			RegRecord regRecord = itemData.getRecord();
+        if (record == null) {
+            RegRecord regRecord = itemData.getRecord();
             record = output.getRecord(regRecord);
         }
         return new ItemRecordRef(record);
@@ -539,10 +590,10 @@ public class OutputFactoryService implements NodeLoader {
     private void fillItems(final OutputImpl output, final Collection<NodeId> nodeIds, final Map<Integer, Node> mapNodes) {
         Set<Integer> requestNodeIds = mapNodes.keySet();
         // request from cache
-		Map<Integer, RestoredNode> nodeData = nodeCacheService.getNodes(requestNodeIds);
+        Map<Integer, RestoredNode> nodeData = nodeCacheService.getNodes(requestNodeIds);
         mapNodes.forEach((nodeId, node) -> {
             // find node in nodeData
-			RestoredNode cachedNode = nodeData.get(nodeId);
+            RestoredNode cachedNode = nodeData.get(nodeId);
             fillNode(output, cachedNode, node);
         });
         // TODO: use old code to request nodes directly for non active version
@@ -572,12 +623,12 @@ public class OutputFactoryService implements NodeLoader {
             } else {
                 items = descItems.stream()
                         .map(arrDescItem -> {
-                        	Item item = createItem(output, arrDescItem);
+                            Item item = createItem(output, arrDescItem);
 
                             if (item instanceof ItemPacketRef) {
-                            	if(node!=null) {
-                            		item.getValue(Packet.class).addNode(node);
-                            	}
+                                if(node!=null) {
+                                    item.getValue(Packet.class).addNode(node);
+                                }
                             }
                             return item;
 
@@ -595,8 +646,8 @@ public class OutputFactoryService implements NodeLoader {
             items = Collections.<Item>emptyList();
         } else {
             items = descItems.stream()
-			        // docasne reseni pro nereportovani nedefinovanych poli
-			        .filter(arrDescItem -> !arrDescItem.isUndefined())
+                    // docasne reseni pro nereportovani nedefinovanych poli
+                    .filter(arrDescItem -> !arrDescItem.isUndefined())
                     .map(arrDescItem -> {
                         Item item = createItem(output, arrDescItem);
 
@@ -612,27 +663,4 @@ public class OutputFactoryService implements NodeLoader {
         }
         node.setItems(items);
     }
-
-    /**
-     * Create description item for ouput
-     * @param output
-     * @param arrDescItem
-     * @return Return item for output
-     */
-    private AbstractItem createItem(OutputImpl output, ArrItem arrDescItem) {
-        AbstractItem item = getItemByType(output, arrDescItem);
-
-        RulItemSpec rulItemSpec = arrDescItem.getItemSpec();
-        if (rulItemSpec != null) {
-            ItemSpec itemSpec = output.getItemSpec(rulItemSpec);
-            item.setSpecification(itemSpec);
-        }
-
-        RulItemType rulItemType = arrDescItem.getItemType();
-        ItemType itemType = output.getItemType(rulItemType);
-        item.setType(itemType);
-        return item;
-    }
-
-
 }

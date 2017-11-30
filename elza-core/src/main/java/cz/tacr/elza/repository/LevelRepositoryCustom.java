@@ -1,7 +1,6 @@
 package cz.tacr.elza.repository;
 
 import java.util.List;
-import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
 
@@ -108,13 +107,15 @@ public interface LevelRepositoryCustom {
     List<ArrLevel> findLevelsSubtree(Integer nodeId, final int skip, final int max, final boolean ignoreRootNode);
 
     /**
-     * Iterate subtree BFS from specified node.
+     * Iterate subtree BFS from specified node. Nodes in same depth are not ordered correctly,
+     * but their position is fixed by sort of parent nodeId and level position.
      *
-     * @param nodeId root node id
-     * @param change when null current version is used
-     * @param levelAction action for each returned level
+     * @param nodeId root node id of subtree
+     * @param change when null open version is used
+     * @param excludeRoot if true root node will be excluded
+     * @param treeLevelConsumer action for each result
      */
-    long iterateSubtree(int nodeId, ArrChange change, Consumer<ArrLevel> levelAction);
+    long readLevelTree(Integer nodeId, ArrChange change, boolean excludeRoot, TreeLevelConsumer treeLevelConsumer);
 
     /**
      * Vyhledá rodiče, které mají vyšší datum poslední změny, než je v ArrChange.
@@ -132,6 +133,11 @@ public interface LevelRepositoryCustom {
      * @return seznam všech uzlů ve stromu
      */
     List<LevelInfo> readTree(ArrFundVersion version);
+
+    public interface TreeLevelConsumer {
+
+        void accept(ArrLevel level, int depth);
+    }
 
     /**
      * Uzel stromu, obsahuje pouze základní informace.

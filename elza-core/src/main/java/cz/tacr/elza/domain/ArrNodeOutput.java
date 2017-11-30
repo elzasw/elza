@@ -1,7 +1,6 @@
 package cz.tacr.elza.domain;
 
-import java.io.Serializable;
-
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -32,6 +31,9 @@ public class ArrNodeOutput {
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrNode.class)
     @JoinColumn(name = "nodeId", nullable = false)
     private ArrNode node;
+
+    @Column(nullable = false, insertable = false, updatable = false)
+    private Integer nodeId;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrChange.class)
     @JoinColumn(name = "createChangeId", nullable = false)
@@ -81,6 +83,11 @@ public class ArrNodeOutput {
      */
     public void setNode(final ArrNode node) {
         this.node = node;
+        this.nodeId = node != null ? node.getNodeId() : null;
+    }
+
+    public Integer getNodeId() {
+        return nodeId;
     }
 
     /**

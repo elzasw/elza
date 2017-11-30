@@ -1,7 +1,5 @@
 package cz.tacr.elza.print.item;
 
-import cz.tacr.elza.print.NodeId;
-
 /**
  * Rozhranní pro tiskový Item. Implementováno dle jednotlivých datových typů.
  *
@@ -68,9 +66,9 @@ public interface Item {
 
     /**
      * Return if item is empty.
-     * 
+     *
      *  Empty items are not printed
-     * @return Return true if item is empty (no value), return false if 
+     * @return Return true if item is empty (no value), return false if
      * item is not empty and should be printed.
      */
 	boolean isEmpty();

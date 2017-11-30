@@ -10,11 +10,20 @@ import cz.tacr.elza.print.Record;
  */
 public class PartyInitHelper {
 
-	Record record;
-	List<Relation> relations;
+    private final Record record;
 
-	public PartyInitHelper(Record record, List<Relation> rels) {
-		this.record = record;
-		this.relations = rels;
-	}
+    private final List<Relation> relations;
+
+    public PartyInitHelper(Record record, List<Relation> relations) {
+        this.record = record;
+        this.relations = relations;
+    }
+
+    public Record getRecord() {
+        return record;
+    }
+
+    public List<Relation> getRelations() {
+        return relations;
+    }
 }

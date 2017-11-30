@@ -91,7 +91,6 @@ public class RuleSystemItemType {
             // ensure reference equality
             for (RulItemSpec is : itemSpecs) {
                 Validate.isTrue(itemType == is.getItemType());
-                //Validate.isTrue(itemType.getPackage() == is.getPackage()); // nově neplatí, specifikace může být z jiného balíčku (pod stejnými pravidly ale)
             }
         }
         // update fields

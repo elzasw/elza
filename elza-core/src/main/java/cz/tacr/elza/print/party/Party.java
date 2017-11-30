@@ -24,13 +24,11 @@ public abstract class Party {
     private final String sourceInformation;
     private final String characteristics;
     private final Record record;
-    private final String type;
-    private final String typeCode;
     private Relation creation;
     private Relation destruction;
     private final List<Relation> relations = new ArrayList<>();
     private final List<RelationsByType> relationsByTypeList = new ArrayList<>();
-    
+
 
 	protected Party(ParParty parParty, PartyInitHelper initHelper) {
     	partyId = parParty.getPartyId();
@@ -44,15 +42,13 @@ public abstract class Party {
     	});
     	this.history = parParty.getHistory();
     	this.sourceInformation = parParty.getSourceInformation();
-        this.characteristics = parParty.getCharacteristics();        
-        this.type = parParty.getPartyType().getName();
-        this.typeCode = parParty.getPartyType().getCode();
-        
+        this.characteristics = parParty.getCharacteristics();
+
         // corresponding record
-        this.record = initHelper.record;
-        if(initHelper.relations!=null)
+        this.record = initHelper.getRecord();
+        if(initHelper.getRelations()!=null)
         {
-        	for(Relation rel: initHelper.relations) {
+        	for(Relation rel: initHelper.getRelations()) {
         		RelationType relType = rel.getRelType();
         		RelationClassType relClassType = relType.getRelClassType();
         		switch(relClassType)
@@ -64,13 +60,13 @@ public abstract class Party {
         			this.destruction = rel;
         			break;
         		case R:
-        			addRelation(rel);        			
+        			addRelation(rel);
         		}
         	}
         }
 	}
 
-    
+
 	/**
 	 * Add relation to the internal structures
 	 * @param rel
@@ -100,6 +96,10 @@ public abstract class Party {
 		relationsByTypeList.add(rels);
 		return rels;
 	}
+
+    public abstract String getType();
+
+    public abstract String getTypeCode();
 
 	public int getPartyId(){
     	return partyId;
@@ -137,15 +137,6 @@ public abstract class Party {
         return sourceInformation;
     }
 
-    public String getType() {
-        return type;
-    }
-
-    public String getTypeCode() {
-        return typeCode;
-    }
-
-
     public Relation getCreation() {
 		return creation;
 	}
@@ -159,7 +150,7 @@ public abstract class Party {
 	public List<Relation> getRelations() {
 		return relations;
 	}
-	
+
 	public List<RelationsByType> getRelationsByType() {
 		return Collections.unmodifiableList(relationsByTypeList);
 	}

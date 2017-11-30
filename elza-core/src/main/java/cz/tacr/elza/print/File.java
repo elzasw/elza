@@ -1,15 +1,8 @@
-package cz.tacr.elza.print.item;
+package cz.tacr.elza.print;
 
-
-import java.io.File;
-
-import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.DmsFile;
 
-/**
- * Link to the file
- */
-public class ItemFile extends AbstractItem {
+public class File {
 
     private Integer fileId;
     private String name;
@@ -17,33 +10,22 @@ public class ItemFile extends AbstractItem {
     private Integer fileSize;
     private String mimeType;
     private Integer pagesCount;
-    DmsFile value;
 
-    public ItemFile(final ArrFile value) {
-        super();
-        this.value = value;
+    public File(DmsFile dmsFile) {
+        this.fileId = dmsFile.getFileId();
+        this.name = dmsFile.getName();
+        this.fileName = dmsFile.getFileName();
+        this.fileSize = dmsFile.getFileSize();
+        this.mimeType = dmsFile.getMimeType();
+        this.pagesCount = dmsFile.getPagesCount();
     }
 
-    @Override
-    public Object getValue() {
-    	return value;
-    }
-    
     public Integer getFileId() {
         return fileId;
     }
 
     public void setFileId(final Integer fileId) {
         this.fileId = fileId;
-    }
-
-    @Override
-    public String serializeValue() {
-        return getName() + " (" + getFileName() + ")";
-    }
-
-    public File getFile() {
-        return getValue(File.class);
     }
 
     public String getFileName() {
@@ -84,5 +66,10 @@ public class ItemFile extends AbstractItem {
 
     public void setPagesCount(final Integer pagesCount) {
         this.pagesCount = pagesCount;
+    }
+
+    public static File newInstance(DmsFile dmsFile) {
+        File file = new File(dmsFile);
+        return file;
     }
 }

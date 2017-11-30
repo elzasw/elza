@@ -28,6 +28,8 @@ import cz.tacr.elza.repository.PartyNameFormTypeRepository;
 import cz.tacr.elza.repository.PartyTypeComplementTypeRepository;
 import cz.tacr.elza.repository.PartyTypeRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
+import cz.tacr.elza.repository.RelationTypeRepository;
+import cz.tacr.elza.repository.RelationTypeRoleTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.utils.HibernateUtils;
 
@@ -80,6 +82,10 @@ public class StaticDataService {
 
     final RegisterTypeRepository registerTypeRepository;
 
+    final RelationTypeRepository relationTypeRepository;
+
+    final RelationTypeRoleTypeRepository relationTypeRoleTypeRepository;
+
     @Autowired
     public StaticDataService(EntityManager em,
                              RuleSetRepository ruleSetRepository,
@@ -93,7 +99,9 @@ public class StaticDataService {
                              PartyNameFormTypeRepository partyNameFormTypeRepository,
                              ComplementTypeRepository complementTypeRepository,
                              PartyTypeComplementTypeRepository partyTypeComplementTypeRepository,
-                             RegisterTypeRepository registerTypeRepository) {
+                             RegisterTypeRepository registerTypeRepository,
+                             RelationTypeRepository relationTypeRepository,
+                             RelationTypeRoleTypeRepository relationTypeRoleTypeRepository) {
         this.em = em;
         this.ruleSetRepository = ruleSetRepository;
         this.packetTypeRepository = packetTypeRepository;
@@ -107,6 +115,8 @@ public class StaticDataService {
         this.complementTypeRepository = complementTypeRepository;
         this.partyTypeComplementTypeRepository = partyTypeComplementTypeRepository;
         this.registerTypeRepository = registerTypeRepository;
+        this.relationTypeRepository = relationTypeRepository;
+        this.relationTypeRoleTypeRepository = relationTypeRoleTypeRepository;
     }
 
     /**

@@ -1,110 +1,81 @@
 package cz.tacr.elza.print;
 
-import java.util.Set;
-import java.util.StringJoiner;
-import java.util.TreeSet;
+import java.util.ArrayList;
+import java.util.List;
 
-import org.apache.commons.lang.builder.CompareToBuilder;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.springframework.util.Assert;
+import org.apache.commons.lang3.Validate;
 
 /**
- * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
- *         Date: 22.6.16
+ * Basic node implementation for output tree with minimal memory footprint.
  */
-public class NodeId implements Comparable<NodeId> {
+public class NodeId {
 
-    private final OutputImpl output; // vazba na parent output
-    private final int arrNodeId; // vazba na DB objekt, povinný údaj
+    private final int arrNodeId;
 
-    private Integer parentNodeId = null; // vazba na parentNode
-    private Set<NodeId> childNodeIds = new TreeSet<>((o1, o2) -> (
-            Integer.valueOf(o1.getPosition()).compareTo(Integer.valueOf(o2.getPosition())))); // vazba na child nodes
-    private int position;
-    private int depth;
+    private final NodeId parentNodeId;
+
+    private final ArrayList<NodeId> children = new ArrayList<>();
+
+    private final int position;
+
+    private final int depth;
 
     /**
-     * Konstruktor s povinnými hodnotami
-     * @param output vazba na output
-     * @param arrNodeId ID definice DB uzlu, z něhož se vychází
-     * @param parentNodeId ID parent Node
-     * @param depth hloubka uzlu od kořene
-     * @param position pozice uzlu
+     * Creates internal or leaf node.
      */
-    public NodeId(final OutputImpl output, final int arrNodeId, final Integer parentNodeId, final int position,
-            final int depth) {
-        Assert.notNull(position, "Pozice musí být vyplněna");
-        Assert.notNull(depth, "Hloubka musí být vyplněna");
-
-        this.output = output;
+    NodeId(int arrNodeId, NodeId parentNodeId, int position) {
         this.arrNodeId = arrNodeId;
         this.parentNodeId = parentNodeId;
         this.position = position;
-        this.depth = depth;
+        this.depth = parentNodeId.getDepth() + 1;
     }
 
     /**
-     * @return dohledá v output.modes node, který je nadřazený tomuto. Pokud není nalezen nebo neexistuje vrací null.
+     * Creates root node.
      */
-    public NodeId getParent() {
-        if (parentNodeId == null) {
-            return null;
-        }
-        return output.getNodeId(parentNodeId);
-    }
-
-    public void setParentNodeId(final Integer parentNodeId) {
-        this.parentNodeId = parentNodeId;
-    }
-
-    /**
-     * @return vrací seznam dětí, omezeno jen na node v outputu
-     */
-    public Set<NodeId> getChildren() {
-        return childNodeIds;
+    NodeId(int arrNodeId, int position) {
+        this.arrNodeId = arrNodeId;
+        this.parentNodeId = null;
+        this.position = position;
+        this.depth = 1;
     }
 
     public int getArrNodeId() {
         return arrNodeId;
     }
 
-    public Integer getDepth() {
-        return depth;
+    /**
+     * @return Returns NodeId for parent node or null if current is root.
+     */
+    public NodeId getParent() {
+        return parentNodeId;
+    }
+
+    public List<NodeId> getChildren() {
+        return children;
     }
 
     public Integer getPosition() {
         return position;
     }
 
-    @Override
-    public boolean equals(final Object o) {
-        if (this == o) {
-            return true;
-        } else if (o instanceof NodeId) {
-            final NodeId o1 = (NodeId) o;
-            return new EqualsBuilder().append(arrNodeId, o1.getArrNodeId()).isEquals();
+    public int getDepth() {
+        return depth;
+    }
+
+    void addChild(NodeId child) {
+        int pos = child.getPosition(); // position greater than 0 otherwise IndexOutOfBoundsException is thrown
+        int size = children.size();
+        if (pos > size) {
+            children.ensureCapacity(pos);
+            int fillCount = pos - size - 1; // minus one for child position
+            for (int i = 0; i < fillCount; i++) {
+                children.add(null); // fill gap with null
+            }
+            children.add(child);
         } else {
-            return false;
+            NodeId prev = children.set(pos - 1, child); // set child at position
+            Validate.isTrue(prev == null); // previous value must be null
         }
-    }
-
-    @Override
-    public int hashCode() {
-        // podstatný je zdrojový arrNode
-        return new HashCodeBuilder().append(arrNodeId).toHashCode();
-    }
-
-    @Override
-    public String toString() {
-        return new StringJoiner(", ").
-                add(Integer.toString(depth)).
-                add(Integer.toString(position)).
-                toString();
-    }
-
-    @Override
-    public int compareTo(final NodeId o) {
-        return CompareToBuilder.reflectionCompare(this, o);
     }
 }

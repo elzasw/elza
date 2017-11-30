@@ -28,7 +28,7 @@ import cz.tacr.elza.utils.AppContext;
 public class Node implements Comparable<Node> {
 
     private final NodeId nodeId; // vazba na node
-    private final OutputImpl output;
+    private final OutputModel output;
 
     private List<Item> items = new ArrayList<>();
     private List<Record> records = new ArrayList<>();
@@ -40,7 +40,7 @@ public class Node implements Comparable<Node> {
      * @param nodeId vazba na nodeId
      * @param output vazba na output
      */
-    public Node(final NodeId nodeId, final OutputImpl output) {
+    public Node(final NodeId nodeId, final OutputModel output) {
         this.nodeId = nodeId;
         this.output = output;
     }
@@ -226,7 +226,7 @@ public class Node implements Comparable<Node> {
      * @return instance iterátoru, který prochází jednotky popisu do hloubky
      */
     public IteratorNodes getNodesDFS() {
-        return new IteratorNodes(output, output.getNodesChildsModel(nodeId), outputFactoryService, OutputImpl.MAX_CACHED_NODES);
+        return new IteratorNodes(output, output.getNodesChildsModel(nodeId), outputFactoryService, OutputModel.MAX_CACHED_NODES);
     }
 
     /**
@@ -239,7 +239,7 @@ public class Node implements Comparable<Node> {
                 .append(o1.getParent(), o2.getParent()) // pak sezkupit dle parenta
                 .append(o1.getPosition(), o2.getPosition()) // pak dle pořadí
                 .toComparison());
-        return new IteratorNodes(output, nodeIds, outputFactoryService, OutputImpl.MAX_CACHED_NODES);
+        return new IteratorNodes(output, nodeIds, outputFactoryService, OutputModel.MAX_CACHED_NODES);
     }
 
     public void setItems(final List<Item> items) {

@@ -6,8 +6,10 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
+
 import org.apache.commons.collections.CollectionUtils;
 
+import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.print.item.Item;
 import cz.tacr.elza.print.item.ItemType;
 
@@ -19,7 +21,7 @@ public class RecordWithLinks
 {
 
 	List<Node> nodes = new ArrayList<>();
-	    
+
     private RecordWithLinks(Record srcRecord)
     {
     	super(srcRecord);
@@ -74,15 +76,15 @@ public class RecordWithLinks
 
         return StringUtils.join(result, ", ");
     }*/
-    
+
 	public void addNode(Node node) {
-		nodes.add(node);		
+		nodes.add(node);
 	}
-	
+
 	public List<Node> getNodes(){
 		return nodes;
 	}
-	
+
 	/**
 	 * Return collection of sorted values
 	 * @param itemTypeCode Type of item
@@ -108,7 +110,7 @@ public class RecordWithLinks
 		}
 		return result;
 	}
-	
+
 	/**
 	 * Prepare set with comparator for given ItemType
 	 * @param itemType
@@ -116,7 +118,7 @@ public class RecordWithLinks
 	 */
 	private SortedSet<String> createSortedSet(ItemType itemType) {
 		Comparator<String> c;
-		if(itemType.getDataType().equals("INT")) {
+		if(itemType.getDataType().equals(DataType.INT)) {
 			// comparator for ints
 			c = ( (arg0, arg1) -> Integer.compare(Integer.valueOf(arg0), Integer.valueOf(arg1)) );
 		} else {
@@ -138,7 +140,7 @@ public class RecordWithLinks
 		if(CollectionUtils.isEmpty(sortedValues)) {
 			return "";
 		}
-		
+
 		// return values as string
 		return String.join(separator, sortedValues);
 	}

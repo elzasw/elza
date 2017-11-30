@@ -12,6 +12,10 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 
+import cz.tacr.elza.core.data.RuleSystem;
+import cz.tacr.elza.domain.ArrPacket;
+import cz.tacr.elza.domain.RulPacketType;
+
 /**
  * Packet
  * @Since  Date: 22.6.16
@@ -24,13 +28,13 @@ public class Packet implements Comparable<Packet> {
     private String storageNumber;
     private String state;
     private Set<Node> nodes;
-    
+
     public enum FormatType {
     	TYPE_WITH_NUMBER,
     	NUMBER_WITH_TYPE,
     	ONLY_TYPE,
     	ONLY_NUMBER
-    };
+    }
 
     /**
      * Metoda pro získání hodnoty do fieldu v Jasper.
@@ -177,5 +181,18 @@ public class Packet implements Comparable<Packet> {
     @Override
     public int compareTo(final Packet o) {
         return CompareToBuilder.reflectionCompare(this, o);
+    }
+
+    public static Packet newInstance(ArrPacket arrPacket, RuleSystem ruleSystem) {
+        Packet packet = new Packet();
+        packet.setStorageNumber(arrPacket.getStorageNumber());
+        packet.setState(arrPacket.getState().name());
+        if (arrPacket.getPacketTypeId() != null) {
+            RulPacketType packetType = ruleSystem.getPacketTypeById(arrPacket.getPacketTypeId());
+            packet.setType(packetType.getName());
+            packet.setTypeCode(packetType.getCode());
+            packet.setTypeShortcut(packetType.getShortcut());
+        }
+        return packet;
     }
 }

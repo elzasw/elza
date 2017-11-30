@@ -1,7 +1,5 @@
 package cz.tacr.elza.domain;
 
-import java.io.Serializable;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -52,6 +50,9 @@ public class ParRelationEntity {
     @JoinColumn(name = "roleTypeId", nullable = false)
     private ParRelationRoleType roleType;
 
+    @Column(nullable = false, insertable = false, updatable = false)
+    private Integer roleTypeId;
+
     @Column
     @Lob
     @org.hibernate.annotations.Type(type = "org.hibernate.type.TextType")
@@ -87,6 +88,11 @@ public class ParRelationEntity {
 
     public void setRoleType(final ParRelationRoleType roleType) {
         this.roleType = roleType;
+        this.roleTypeId = roleType != null ? roleType.getRoleTypeId() : null;
+    }
+
+    public Integer getRoleTypeId() {
+        return roleTypeId;
     }
 
     public String getNote() {

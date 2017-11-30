@@ -1,7 +1,6 @@
 package cz.tacr.elza.print;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -13,6 +12,7 @@ import java.util.stream.Collectors;
 import javax.validation.constraints.NotNull;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.Validate;
 import org.apache.commons.lang.builder.CompareToBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
@@ -20,7 +20,6 @@ import org.springframework.util.Assert;
 
 import cz.tacr.elza.core.data.PartyType;
 import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ParDynasty;
 import cz.tacr.elza.domain.ParEvent;
 import cz.tacr.elza.domain.ParParty;
@@ -35,7 +34,7 @@ import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.print.item.Item;
-import cz.tacr.elza.print.item.ItemFile;
+import cz.tacr.elza.print.item.ItemFileRef;
 import cz.tacr.elza.print.item.ItemPacketRef;
 import cz.tacr.elza.print.item.ItemPartyRef;
 import cz.tacr.elza.print.item.ItemSpec;
@@ -59,8 +58,7 @@ import cz.tacr.elza.utils.HibernateUtils;
  * Základní objekt pro generování výstupu, při tisku se vytváří 1 instance.
  *
  */
-public class OutputImpl implements Output
-{
+public class OutputModel implements Output {
 
     public static final int MAX_CACHED_NODES = 1000; // maximální počet nodů v cache
 
@@ -75,11 +73,6 @@ public class OutputImpl implements Output
     private Fund fund;
 
     private int page = 0;
-
-    /**
-     * Vnitřní iterátor - cache.
-     */
-    private IteratorNodes iteratorNodes = null;
 
     // seznam všech atributů outputu
     private List<Item> items = new ArrayList<>();
@@ -123,8 +116,8 @@ public class OutputImpl implements Output
      *
      * @param output arr_output s definicí zpracovávaného výstupu
      */
-    public OutputImpl(final ArrOutput output) {
-        this.outputId = output.getOutputId();
+    public OutputModel(int outputId) {
+        this.outputId = outputId;
     }
 
     /**
@@ -142,28 +135,8 @@ public class OutputImpl implements Output
         }
     }
 
-    public Node getNode(final NodeId nodeId) {
-        if (nodeIdsMap.size() > 0) {
-            if (iteratorNodes == null) {
-                iteratorNodes = getNodesBFS();
-            }
-            return iteratorNodes.moveTo(nodeId);
-        } else {
-            Map<Integer, Node> nodeMap = outputFactoryService.loadNodes(this, Arrays.asList(nodeId));
-            return nodeMap.get(nodeId.getArrNodeId());
-        }
-    }
-
     public NodeId getNodeId(final Integer nodeIdentifier) {
         return nodeIdsMap.get(nodeIdentifier);
-    }
-
-    public void linkNodeIds(final Integer parentNodeIdentifier, final Integer childNodeIdentifier) {
-        final NodeId nodeIdParent = getNodeId(parentNodeIdentifier);
-        final NodeId nodeIdChild = getNodeId(childNodeIdentifier);
-
-        nodeIdChild.setParentNodeId(parentNodeIdentifier);
-        nodeIdParent.getChildren().add(nodeIdChild);
     }
 
     /**
@@ -185,27 +158,27 @@ public class OutputImpl implements Output
      */
     public Integer getAttachedPages() {
         return getItemFilePdfs().stream()
-                .mapToInt(ItemFile::getPagesCount)
+                .mapToInt(ItemFileRef::getPagesCount)
                 .sum();
     }
 
     /**
      * @return seznam PDF příloh připojených k nodům v output.
      */
-    public List<ItemFile> getAttachements() {
+    public List<ItemFileRef> getAttachements() {
         return getItemFilePdfs();
     }
 
-    private List<ItemFile> getItemFilePdfs() {
+    private List<ItemFileRef> getItemFilePdfs() {
         IteratorNodes iterator = getNodesBFS();
 
-        List<ItemFile> result = new ArrayList<>();
+        List<ItemFileRef> result = new ArrayList<>();
         while (iterator.hasNext()) {
             Node node = iterator.next();
             List<Item> items = node.getItems();
             for (Item item : items) {
-                if (item instanceof ItemFile) {
-                    ItemFile itemFile = (ItemFile) item;
+                if (item instanceof ItemFileRef) {
+                    ItemFileRef itemFile = (ItemFileRef) item;
                     if (itemFile.getMimeType().equals(DmsService.MIME_TYPE_APPLICATION_PDF)) {
                         result.add(itemFile);
                     }
@@ -336,6 +309,11 @@ public class OutputImpl implements Output
     @Override
     public List<Item> getItems() {
         return items;
+    }
+
+    public void addItem(Item item) {
+        Validate.notNull(item);
+        items.add(item);
     }
 
     /**
@@ -530,7 +508,7 @@ public class OutputImpl implements Output
         PartyType partyType = PartyType.fromCode(partyTypeCode);
 
         // Prepare corresponding record
-        Record record = this.recordCache.get(parParty.getRecord());
+        Record record = recordCache.get(parParty.getRecordId());
         if(record==null) {
             record = createRecord(parParty.getRecord());
         }
@@ -618,7 +596,7 @@ public class OutputImpl implements Output
 
     public Record getRecord(final RegRecord regRecord)
     {
-        Record record = recordCache.get(regRecord.getRecord());
+        Record record = recordCache.get(regRecord.getRecordId());
         if(record==null) {
             record = createRecord(regRecord);
         }

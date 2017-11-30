@@ -41,9 +41,9 @@ public class IteratorNodes implements Iterator<Node> {
     /**
      * Svázaný výstup.
      */
-    private final OutputImpl output;
+    private final OutputModel output;
 
-    public IteratorNodes(final OutputImpl output, final List<NodeId> nodeIds, final NodeLoader loader, final int windowSize) {
+    public IteratorNodes(final OutputModel output, final List<NodeId> nodeIds, final NodeLoader loader, final int windowSize) {
         this.output = output;
         this.nodeIds = nodeIds;
         this.windowSize = windowSize;

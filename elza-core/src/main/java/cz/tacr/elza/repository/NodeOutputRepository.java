@@ -1,11 +1,14 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.ArrNodeOutput;
-import cz.tacr.elza.domain.ArrOutputDefinition;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrNodeOutput;
+import cz.tacr.elza.domain.ArrOutputDefinition;
 
 /**
  * Respozitory pro vazbu výstupu na podstromy archivního popisu.
@@ -16,5 +19,9 @@ import java.util.List;
 @Repository
 public interface NodeOutputRepository extends JpaRepository<ArrNodeOutput, Integer> {
 
-    List<ArrNodeOutput> findByOutputDefinition(ArrOutputDefinition arrOutputDefinition);
+    @Query("SELECT no FROM arr_node_output no JOIN arr_node n WHERE no.outputDefinition = ?1 and n.deleteChange is null")
+    List<ArrNodeOutput> findByOutputDefinitionAndDeleteChangeIsNull(ArrOutputDefinition outputDefinition);
+
+    @Query("SELECT no FROM arr_node_output no JOIN arr_node n WHERE no.outputDefinition = ?1 and n.createChange < ?2 and (n.deleteChange is null or n.deleteChange > ?2)")
+    List<ArrNodeOutput> findByOutputDefinitionAndChange(ArrOutputDefinition outputDefinition, ArrChange lockChange);
 }

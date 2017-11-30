@@ -22,8 +22,8 @@ import org.springframework.stereotype.Component;
 import cz.tacr.elza.domain.ArrOutputDefinition;
 import cz.tacr.elza.domain.DmsFile;
 import cz.tacr.elza.domain.RulTemplate;
-import cz.tacr.elza.print.OutputImpl;
-import cz.tacr.elza.print.item.ItemFile;
+import cz.tacr.elza.print.OutputModel;
+import cz.tacr.elza.print.item.ItemFileRef;
 import net.sf.jasperreports.engine.JRDataSource;
 import net.sf.jasperreports.engine.JREmptyDataSource;
 import net.sf.jasperreports.engine.JRException;
@@ -50,7 +50,7 @@ class OutputGeneratorWorkerJasper extends OutputGeneratorWorkerAbstract {
     private static final int MAX_MERGE_MAIN_MEMORY_BYTES = 100 * 1024 * 1024;
 
     @Override
-    protected InputStream getContent(final ArrOutputDefinition arrOutputDefinition, final RulTemplate rulTemplate, final OutputImpl output) {
+    protected InputStream getContent(final ArrOutputDefinition arrOutputDefinition, final RulTemplate rulTemplate, final OutputModel output) {
         try {
             // dohledání šablony
             final File mainJasperTemplate = getTemplate(rulTemplate, JASPER_MAIN_TEMPLATE);
@@ -105,10 +105,10 @@ class OutputGeneratorWorkerJasper extends OutputGeneratorWorkerAbstract {
         }
     }
 
-    private void mergePdfJasperAndAttachements(final OutputImpl output, final PipedInputStream in, final PipedOutputStream outm) {
+    private void mergePdfJasperAndAttachements(final OutputModel output, final PipedInputStream in, final PipedOutputStream outm) {
         PDFMergerUtility ut = new PDFMergerUtility();
         ut.addSource(in);
-        final List<ItemFile> attachements = output.getAttachements();
+        final List<ItemFileRef> attachements = output.getAttachements();
         attachements.forEach(itemFile -> {
                     File file = itemFile.getFile();
                     if (file == null) { // obezlička, protože arrFile ten file nevrací

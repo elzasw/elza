@@ -1037,16 +1037,6 @@ public class ItemService implements InitializingBean {
     }
 
     /**
-     * Načte z DB item dle příslušného typu
-     *
-     * @param itemId ID požadovaného itemu
-     * @return item dle příslušného typu
-     */
-    public ArrItem loadDataById(final Integer itemId) {
-        return itemRepository.findOne(itemId);
-    }
-
-    /**
      * Donačítá položky, které jsou typově jako odkaz, podle ID.
      *
      * @param dataItems seznam položek, které je potřeba donačíst podle ID návazných entit

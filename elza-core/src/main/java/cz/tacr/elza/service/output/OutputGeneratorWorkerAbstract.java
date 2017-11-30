@@ -1,22 +1,15 @@
 package cz.tacr.elza.service.output;
 
-import com.google.common.collect.Sets;
-import cz.tacr.elza.bulkaction.BulkActionService;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrNodeOutput;
-import cz.tacr.elza.domain.ArrOutput;
-import cz.tacr.elza.domain.ArrOutputDefinition;
-import cz.tacr.elza.domain.ArrOutputFile;
-import cz.tacr.elza.domain.ArrOutputResult;
-import cz.tacr.elza.domain.RulTemplate;
-import cz.tacr.elza.exception.ProcessException;
-import cz.tacr.elza.print.OutputImpl;
-import cz.tacr.elza.repository.NodeOutputRepository;
-import cz.tacr.elza.repository.OutputDefinitionRepository;
-import cz.tacr.elza.repository.OutputRepository;
-import cz.tacr.elza.repository.OutputResultRepository;
-import cz.tacr.elza.service.ArrangementService;
-import cz.tacr.elza.service.DmsService;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.stream.Collectors;
+
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,15 +21,24 @@ import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.Assert;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Paths;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.stream.Collectors;
+import com.google.common.collect.Sets;
+
+import cz.tacr.elza.bulkaction.BulkActionService;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrNodeOutput;
+import cz.tacr.elza.domain.ArrOutput;
+import cz.tacr.elza.domain.ArrOutputDefinition;
+import cz.tacr.elza.domain.ArrOutputFile;
+import cz.tacr.elza.domain.ArrOutputResult;
+import cz.tacr.elza.domain.RulTemplate;
+import cz.tacr.elza.exception.ProcessException;
+import cz.tacr.elza.print.OutputModel;
+import cz.tacr.elza.repository.NodeOutputRepository;
+import cz.tacr.elza.repository.OutputDefinitionRepository;
+import cz.tacr.elza.repository.OutputRepository;
+import cz.tacr.elza.repository.OutputResultRepository;
+import cz.tacr.elza.service.ArrangementService;
+import cz.tacr.elza.service.DmsService;
 
 /**
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
@@ -144,40 +146,7 @@ abstract class OutputGeneratorWorkerAbstract implements Callable<OutputGenerator
      * Společná část generování výstupu.
      */
     private void generateOutput() {
-        logger.info("Spuštěno generování výstupu pro arr_output id={}", arrOutputId);
 
-        final ArrOutput arrOutput = outputRepository.findOne(arrOutputId);
-        final ArrOutputDefinition arrOutputDefinition = outputDefinitionRepository.findByOutputId(arrOutput.getOutputId());
-        change = createChange(userId);
-
-        try {
-            final RulTemplate rulTemplate = arrOutputDefinition.getTemplate();
-            Assert.notNull(rulTemplate, "Výstup nemá definovanou šablonu (ArrOutputDefinition.template je null).");
-
-            // sestavení outputu
-            logger.info("Sestavování modelu výstupu výstupu pro arr_output id={} spuštěno", arrOutputId);
-            final OutputImpl output = outputFactoryService.createOutput(arrOutput);
-            logger.info("Sestavování modelu výstupu výstupu pro arr_output id={} dokončeno", arrOutputId);
-
-            // skutečné vytvoření výstupného souboru na základě definice
-            logger.info("Spuštěno generování souboru pro arr_output id={}", arrOutputId);
-            final InputStream content = getContent(arrOutputDefinition, rulTemplate, output);
-
-            // Uložení do výstupní struktury a DMS
-            storeOutputInDms(arrOutputDefinition, rulTemplate, content);
-
-            content.close();
-
-            waitForGeneratorThread();
-
-            if (exception != null) {
-                throw exception;
-            }
-
-            arrOutputDefinition.setError(null);
-        } catch (Throwable ex) {
-            throw new ProcessException(arrOutputId, ex);
-        }
     }
 
     /**
@@ -189,7 +158,7 @@ abstract class OutputGeneratorWorkerAbstract implements Callable<OutputGenerator
      * @param output výstup
      * @return generovaný obsah výstupního souboru
      */
-    protected abstract InputStream getContent(ArrOutputDefinition arrOutputDefinition, RulTemplate rulTemplate, OutputImpl output);
+    protected abstract InputStream getContent(ArrOutputDefinition arrOutputDefinition, RulTemplate rulTemplate, OutputModel output);
 
     /**
      * zajistí uložení výstupu do DB a DMS.

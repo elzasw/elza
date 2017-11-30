@@ -18,11 +18,11 @@ import org.hibernate.proxy.LazyInitializer;
 public class HibernateUtils {
 
     /**
-     * Unproxy specified entity. Proxy implementor (entity) must be in initialized state.
+     * Unproxy specified entity. Proxy implementor (entity) will be loaded from database if not initialized.
      *
-     * @param object pojo or hibernate proxy
+     * @param object POJO or hibernate proxy
      *
-     * @return initialized entity
+     * @return POJO or initialized proxy implementor (entity)
      */
     @SuppressWarnings("unchecked")
 	public static <T> T unproxy(Object object) {

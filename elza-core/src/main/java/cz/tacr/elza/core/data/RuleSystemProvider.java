@@ -19,8 +19,6 @@ import cz.tacr.elza.repository.RuleSetRepository;
 
 /**
  * Manage information about all rule systems
- * 
- *
  */
 public class RuleSystemProvider {
 
@@ -32,7 +30,7 @@ public class RuleSystemProvider {
 
 	/**
 	 * Map of all item types
-	 * 
+	 *
 	 * Key is ID of the Item type
 	 */
 	private Map<Integer, RuleSystemItemType> itemTypes;
@@ -51,7 +49,7 @@ public class RuleSystemProvider {
 
 	/**
 	 * Get list of available rule systems
-	 * 
+	 *
 	 * @return Return unmodifiable collection
 	 */
 	public List<RuleSystem> getRulesSystems() {
@@ -103,13 +101,12 @@ public class RuleSystemProvider {
 
 	/**
 	 * Initialize all item types
-	 * 
+	 *
 	 * @param itemTypeRepository
 	 * @param itemSpecRepository
 	 */
 	private void initItemTypes(ItemTypeRepository itemTypeRepository, ItemSpecRepository itemSpecRepository) {
 		List<RulItemType> itemTypes = itemTypeRepository.findAll();
-		//.findByRulPackage(ruleSet.getPackage());
 
 		this.itemTypes = new HashMap<>(itemTypes.size());
 		for (RulItemType it : itemTypes) {
@@ -132,7 +129,7 @@ public class RuleSystemProvider {
 
 	/**
 	 * Get item type by id
-	 * 
+	 *
 	 * @param itemTypeId
 	 * @return
 	 */

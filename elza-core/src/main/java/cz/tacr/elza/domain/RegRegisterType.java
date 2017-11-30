@@ -56,6 +56,9 @@ public class RegRegisterType {
     @JoinColumn(name = "parentRegisterTypeId", nullable = true)
     private RegRegisterType parentRegisterType;
 
+    @Column(insertable = false, updatable = false)
+    private Integer parentRegisterTypeId;
+
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ParPartyType.class)
     @JoinColumn(name = "partyTypeId", nullable = true)
@@ -159,6 +162,11 @@ public class RegRegisterType {
      */
     public void setParentRegisterType(final RegRegisterType parentRegisterType) {
         this.parentRegisterType = parentRegisterType;
+        this.parentRegisterTypeId = parentRegisterType != null ? parentRegisterType.getRegisterTypeId() : null;
+    }
+
+    public Integer getParentRegisterTypeId() {
+        return parentRegisterTypeId;
     }
 
     /**

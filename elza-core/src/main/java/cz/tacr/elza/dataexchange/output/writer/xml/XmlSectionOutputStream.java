@@ -32,7 +32,7 @@ import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataPacketRef;
 import cz.tacr.elza.domain.ArrDataPartyRef;
 import cz.tacr.elza.domain.ArrDataRecordRef;
-import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.RulRuleSet;
@@ -78,10 +78,10 @@ class XmlSectionOutputStream implements SectionOutputStream {
         if (levelInfo.getParentNodeId() != null) {
             level.setPid(levelInfo.getParentNodeId().toString());
         }
-        // read node APs references
-        readNodeAPs(level, levelInfo.getNodeAPs());
-        // read desc items references
-        readDescItems(level, levelInfo.getDescItems());
+        // write node APs references
+        writeNodeAPs(level, levelInfo.getNodeAPs());
+        // write desc items references
+        writeItems(level, levelInfo.getItems());
 
         try {
             writeLevel(level);
@@ -137,7 +137,7 @@ class XmlSectionOutputStream implements SectionOutputStream {
         }
     }
 
-    private void readNodeAPs(Level level, List<ArrNodeRegister> nodeAPs) {
+    private void writeNodeAPs(Level level, List<ArrNodeRegister> nodeAPs) {
         if (nodeAPs == null || nodeAPs.isEmpty()) {
             return;
         }
@@ -150,15 +150,15 @@ class XmlSectionOutputStream implements SectionOutputStream {
         }
     }
 
-    private void readDescItems(Level level, List<ArrDescItem> descItems) {
-        if (descItems == null || descItems.isEmpty()) {
+    private void writeItems(Level level, List<ArrItem> items) {
+        if (items == null || items.isEmpty()) {
             return;
         }
         ItemConvertor convertor = new ItemConvertor(sectionContext.getRuleSystem(),
                 new ContextAwareItemDataConvertorFactory());
         List<DescriptionItem> elements = level.getDeOrDiOrDd();
-        for (ArrDescItem descItem : descItems) {
-            DescriptionItem element = convertor.convert(descItem);
+        for (ArrItem item : items) {
+            DescriptionItem element = convertor.convert(item);
             elements.add(element);
         }
     }
