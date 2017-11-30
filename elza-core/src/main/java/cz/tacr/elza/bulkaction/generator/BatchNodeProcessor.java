@@ -7,8 +7,8 @@ import java.util.Map;
 import cz.tacr.elza.bulkaction.generator.multiple.Action;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.service.cache.CachedNode;
 import cz.tacr.elza.service.cache.NodeCacheService;
+import cz.tacr.elza.service.cache.RestoredNode;
 
 public class BatchNodeProcessor {
 	
@@ -58,11 +58,12 @@ public class BatchNodeProcessor {
 			nodeIds.add(l.getNodeId());
 		}
 		// fetch nodes
-		Map<Integer, CachedNode> nodes = nodeCacheService.getNodes(nodeIds);
+		Map<Integer, RestoredNode> nodes = nodeCacheService.getNodes(nodeIds);
 		
 		// process nodes
 		for(ArrLevel l: requests) {
-			List<ArrDescItem> items = nodes.get(l.getNodeId()).getDescItems();
+			RestoredNode restoredNode = nodes.get(l.getNodeId());
+			List<ArrDescItem> items = restoredNode.getDescItems();
 			
 			LevelWithItems childLevelWithItems = new LevelWithItems(l, parentLevelWithItems, items);
 			

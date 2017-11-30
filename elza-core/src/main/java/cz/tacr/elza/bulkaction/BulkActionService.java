@@ -30,6 +30,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
@@ -160,7 +162,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
     @Override
     public void onFailure(final Throwable ex) {
         // nenastane, protože ve workeru je catch na Exception
-        logger.error("Worker nedoběhl správně", ex);
+        logger.error("Worker nedoběhl správně: ", ex);
         runNextWorker();
     }
 
@@ -209,10 +211,10 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
                                   final String bulkActionCode,
                                   @AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId,
                                   final List<Integer> inputNodeIds) {
-        Assert.notNull(bulkActionCode);
-        Assert.isTrue(StringUtils.isNotBlank(bulkActionCode));
-        Assert.notNull(fundVersionId);
-        Assert.notEmpty(inputNodeIds);
+        Assert.notNull(bulkActionCode, "Musí být vyplněn kód hromadné akce");
+        Assert.isTrue(StringUtils.isNotBlank(bulkActionCode), "Musí být vyplněn kód hromadné akce");
+        Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
+        Assert.notEmpty(inputNodeIds, "Musí být vyplněna alespoň jedna JP");
 
         ArrBulkActionRun bulkActionRun = new ArrBulkActionRun();
 
@@ -224,10 +226,10 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
         ArrFundVersion version = fundVersionRepository.getOneCheckExist(fundVersionId);
 
         RulRuleSet ruleSet = version.getRuleSet();
-        List<RulAction> byRulPackage = actionRepository.findByRulPackage(ruleSet.getPackage());
+        List<RulAction> byRulPackage = actionRepository.findByRuleSet(ruleSet);
         String actionFileName = bulkActionCode + bulkActionConfigManager.getExtension();
         if (byRulPackage.stream().noneMatch(i -> i.getFilename().equals(actionFileName))) {
-            throw new BusinessException("Hromadná akce nepatří do stejného balíčku pravidel jako pravidla verze AP.", PackageCode.OTHER_PACKAGE)
+            throw new BusinessException("Hromadná akce nepatří do stejných pravidel jako pravidla verze AP.", PackageCode.OTHER_PACKAGE)
                     .set("code", bulkActionCode)
                     .set("ruleSet", ruleSet.getCode());
         }
@@ -262,8 +264,8 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
      * @return objekt hromadné akce
      */
     private ArrBulkActionRun run(final ArrBulkActionRun bulkActionRun) {
-		BulkActionWorker bulkActionWorker = new BulkActionWorker(this, bulkActionRepository);
-        bulkActionWorker.init(bulkActionRun.getBulkActionRunId());
+		BulkActionWorker bulkActionWorker = new BulkActionWorker(this, bulkActionRun);
+		bulkActionWorker.init();
         runningWorkers.put(bulkActionRun.getFundVersionId(), bulkActionWorker);
 
         // změna stavu výstupů na počítání
@@ -275,7 +277,21 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
                 OutputState.COMPUTING,
                 OutputState.OPEN);
 
-        runWorker(bulkActionWorker);
+		bulkActionWorker.setStateAndPublish(State.PLANNED);
+		logger.info("Hromadná akce naplánována ke spuštění: " + bulkActionWorker);
+		BulkActionService actionService = this;
+
+		// worker can be starter only after commit
+		// TODO: handle correctly when commit fails -> bulkActionWorker should be removed from runningWorkers
+		TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+			@Override
+			public void afterCommit() {
+				ListenableFuture<BulkActionWorker> future = taskExecutor.submitListenable(bulkActionWorker);
+				future.addCallback(actionService);
+			}
+		});
+		eventPublishBulkAction(bulkActionWorker.getBulkActionRun());
+
         return bulkActionWorker.getBulkActionRun();
     }
 
@@ -308,7 +324,8 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
     private void runNextWorker() {
         (new TransactionTemplate(txManager)).execute(new TransactionCallbackWithoutResult() {
             @Override
-            protected void doInTransactionWithoutResult(final TransactionStatus status) {List<Integer> waitingActionsId = bulkActionRepository.findIdByStateGroupByFundOrderById(State.WAITING);
+			protected void doInTransactionWithoutResult(final TransactionStatus status) {
+				List<Integer> waitingActionsId = bulkActionRepository.findIdByStateGroupByFundOrderById(State.WAITING);
                 List<ArrBulkActionRun> waitingActions = bulkActionRepository.findAll(waitingActionsId);
                 waitingActions.forEach(bulkActionRun -> {
                     if (canRun(bulkActionRun)) {
@@ -317,19 +334,6 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
                 });
             }
         });
-    }
-
-    /**
-     * Spuštění (předání k naplánování) hromadné akce.
-     *
-     * @param bulkActionWorker úloha, která se předá k naplánování
-     */
-    private void runWorker(final BulkActionWorker bulkActionWorker) {
-        bulkActionWorker.setStateAndPublish(State.PLANNED);
-        logger.info("Hromadná akce naplánována ke spuštění: " + bulkActionWorker);
-        ListenableFuture<BulkActionWorker> future = taskExecutor.submitListenable(bulkActionWorker);
-        future.addCallback(this);
-        eventPublishBulkAction(bulkActionWorker.getBulkActionRun());
     }
 
     /**
@@ -454,7 +458,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
      * @return hromadná akce
      */
     public ArrBulkActionRun getArrBulkActionRun(final Integer bulkActionRunId) {
-        Assert.notNull(bulkActionRunId);
+        Assert.notNull(bulkActionRunId, "Identifikátor běhu hromadné akce musí být vyplněn");
         ArrBulkActionRun bulkActionRun = bulkActionRepository.findOne(bulkActionRunId);
         checkAuthBA(bulkActionRun.getFundVersion());
         return bulkActionRun;
@@ -537,7 +541,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
             throw new IllegalArgumentException("Verze archivní pomůcky neexistuje!");
         }
 
-        Map<String, RulAction> byRulPackage = actionRepository.findByRulPackage(version.getRuleSet().getPackage())
+        Map<String, RulAction> byRulPackage = actionRepository.findByRuleSet(version.getRuleSet())
                 .stream()
                 .collect(Collectors.toMap(RulAction::getFilename, p -> p));
 
@@ -570,14 +574,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
             }
 
             bulkActionRun.setFundVersion(version);
-
-			String ruleCode = bulkActionConfigOrig.getRules();
-            if (ruleCode == null || !version.getRuleSet().getCode().equals(ruleCode)) {
-                throw new IllegalArgumentException("Nastavení kódu pravidel (rule_code: " + ruleCode
-                        + ") hromadné akce neodpovídá verzi archivní pomůcky (rule_code: " + version.getRuleSet().getCode()
-                        + ")!");
             }
-        }
 
         bulkActionRepository.save(bulkActionRun);
     }

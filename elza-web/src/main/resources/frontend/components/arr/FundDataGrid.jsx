@@ -10,6 +10,8 @@ import {
     AbstractReactComponent,
     i18n,
     Loading,
+    StoreHorizontalLoader,
+    HorizontalLoader,
     DataGrid,
     DataGridColumnsSettings,
     DataGridPagination,
@@ -59,8 +61,24 @@ import {getMapFromList, getSetFromIdsList} from 'stores/app/utils.jsx'
 import {propsEquals} from 'components/Utils.jsx'
 import {COL_DEFAULT_WIDTH, COL_REFERENCE_MARK} from "./FundDataGridConst";
 import './FundDataGrid.less'
+import {getPagesCount} from "../shared/datagrid/DataGridPagination";
+import {FILTER_NULL_VALUE} from 'actions/arr/fundDataGrid.jsx'
 
 class FundDataGrid extends AbstractReactComponent {
+    static PropTypes = {
+        fundId: React.PropTypes.number.isRequired,
+        versionId: React.PropTypes.number.isRequired,
+        fund: React.PropTypes.object.isRequired,
+        rulDataTypes: React.PropTypes.object.isRequired,
+        descItemTypes: React.PropTypes.object.isRequired,
+        packetTypes: React.PropTypes.object.isRequired,
+        calendarTypes: React.PropTypes.object.isRequired,
+        ruleSet: React.PropTypes.object.isRequired,
+        readMode: React.PropTypes.bool.isRequired,
+        closed: React.PropTypes.bool.isRequired,
+        fundDataGrid: React.PropTypes.object.isRequired,    // store
+    };
+
     constructor(props) {
         super(props);
 
@@ -155,7 +173,7 @@ class FundDataGrid extends AbstractReactComponent {
         }
     }
 
-    referenceMarkCellRenderer(row, rowIndex, col, colIndex, colFocus, cellFocus) {
+    referenceMarkCellRenderer(row, rowIndex, col, colIndex, cellFocus) {
         const referenceMark = row.referenceMark;
 
         let itemValue;
@@ -168,7 +186,7 @@ class FundDataGrid extends AbstractReactComponent {
         return <div className='cell-value-wrapper'>{itemValue}</div>
     }
 
-    cellRenderer(row, rowIndex, col, colIndex, colFocus, cellFocus) {
+    cellRenderer(row, rowIndex, col, colIndex, cellFocus) {
         const colValue = row[col.dataName]
 
         var displayValue
@@ -464,47 +482,77 @@ class FundDataGrid extends AbstractReactComponent {
     }
 
     handleBulkModifications(refType, dataType) {
-        const {versionId, fundDataGrid} = this.props
+        const {versionId, fundDataGrid, calendarTypes} = this.props;
 
-        var submit = (data) => {
+        const submit = (data) => {
             // Sestavení seznamu node s id a verzí, pro které se má daná operace provést
-            var nodes;
+            let nodes;
+            let selectionType;
             switch (data.itemsArea) {
-                case 'all':
-                    nodes = fundDataGrid.items.map(i => ({id: i.node.id, version: i.node.version}))
-                    break
+                case 'page':
+                    nodes = fundDataGrid.items.map(i => ({id: i.node.id, version: i.node.version}));
+                    selectionType = 'NODES';
+                    break;
                 case 'selected': {
-                    const set = getSetFromIdsList(fundDataGrid.selectedIds)
-                    nodes = []
+                    const set = getSetFromIdsList(fundDataGrid.selectedIds);
+                    nodes = [];
+                    selectionType = 'NODES';
                     fundDataGrid.items.forEach(i => {
                         if (set[i.id]) {
                             nodes.push({id: i.node.id, version: i.node.version})
                         }
-                    })
+                    });
                     break
                 }
                 case 'unselected': {
-                    nodes = []
-                    const set = getSetFromIdsList(fundDataGrid.selectedIds)
+                    nodes = [];
+                    selectionType = 'NODES';
+                    const set = getSetFromIdsList(fundDataGrid.selectedIds);
                     fundDataGrid.items.forEach(i => {
                         if (!set[i.id]) {
                             nodes.push({id: i.node.id, version: i.node.version})
                         }
-                    })
+                    });
                     break
+                }
+                case 'all':
+                    nodes = [];
+                    selectionType = 'FUND';
+                    break
+            }
+
+            // Zpracování hodnoty pro odeslání - musíme ji správně převést do testového formáltu pro odeslání na serveru
+            let replaceText = data.replaceText;
+            if (replaceText) {
+                switch (dataType.code) {
+                    case "UNITDATE":
+                        if (typeof replaceText === 'object') {
+                            replaceText = replaceText.calendarTypeId + '|' + replaceText.value;
+                        }
+                        break;
+                    case "RECORD_REF":
+                        replaceText = replaceText.id;
+                        break;
+                    default:
+                        // standardně nic neděláme, zpracovávají se jen speciální typy
+                        break;
                 }
             }
 
             // Získání seznam specifikací
-            const specsIds = getSpecsIds(refType, data.specs.type, data.specs.ids)
-
-            return this.dispatch(fundBulkModifications(versionId, refType.id, specsIds, data.operationType, data.findText, data.replaceText, data.replaceSpec, nodes))
-        }
+            const refTypeX = {...refType, descItemSpecs: [{id: FILTER_NULL_VALUE, name: i18n('arr.fund.filterSettings.value.empty')}, ...refType.descItemSpecs]};
+            let specsIds = getSpecsIds(refTypeX, data.specs.type, data.specs.ids);
+            specsIds = specsIds.map(specsId => specsId !== FILTER_NULL_VALUE ? specsId : null);
+            if (selectionType !== 'FUND' || confirm(i18n('arr.fund.bulkModifications.warn'))) {
+                return this.dispatch(fundBulkModifications(versionId, refType.id, specsIds, data.operationType, data.findText, replaceText, data.replaceSpec, nodes, selectionType))
+            }
+        };
 
         this.dispatch(modalDialogShow(this, i18n('arr.fund.bulkModifications.title'),
             <FundBulkModificationsForm
                 refType={refType}
                 dataType={dataType}
+                calendarTypes={calendarTypes}
                 onSubmitForm={submit}
                 allItemsCount={fundDataGrid.items.length}
                 checkedItemsCount={fundDataGrid.selectedIds.length}
@@ -564,13 +612,23 @@ class FundDataGrid extends AbstractReactComponent {
         const cellEl = dataGridComp.getCellElement(rowIndex, colIndex);
         const cellRect = cellEl.getBoundingClientRect();
 
+        let x = cellRect.left;
+        let y = cellRect.top;
+        const dataGridCompRect = ReactDOM.findDOMNode(dataGridComp).getBoundingClientRect();
+        if (x < dataGridCompRect.left) {
+            x = dataGridCompRect.left;
+        }
+        if (y < dataGridCompRect.top) {
+            y = dataGridCompRect.top;
+        }
+
         this.dispatch(modalDialogShow(this, null,
             <FundDataGridCellForm
                 versionId={versionId}
                 fundId={fundId}
                 routingKey='DATA_GRID'
                 closed={closed}
-                position={{x: cellRect.left, y: cellRect.top}}
+                position={{x, y}}
             />,
             'fund-data-grid-cell-edit', this.handleEditClose));
     }
@@ -578,7 +636,7 @@ class FundDataGrid extends AbstractReactComponent {
     handleEditClose() {
         const {versionId} = this.props;
 
-        this.dispatch(nodeFormActions.fundSubNodeFormHandleClose(versionId, 'DATA_GRID'))
+        this.dispatch(nodeFormActions.fundSubNodeFormHandleClose(versionId, 'DATA_GRID'));
 
         this.setState({},
             ()=> {
@@ -706,11 +764,6 @@ class FundDataGrid extends AbstractReactComponent {
         const {fundId, fund, fundDataGrid, versionId, rulDataTypes, descItemTypes, packetTypes, dispatch, readMode} = this.props;
         const {cols} = this.state;
 
-        if (!descItemTypes.fetched || !packetTypes.fetched || !rulDataTypes.fetched) {
-            // if (!fundDataGrid.fetchedFilter || !descItemTypes.fetched || !packetTypes.fetched || !rulDataTypes.fetched) {
-            return <Loading/>
-        }
-
         // Hledání
         var search = (
             <SearchWithGoto
@@ -749,6 +802,10 @@ class FundDataGrid extends AbstractReactComponent {
                                     title={i18n('arr.fund.columnSettings.action')}><Icon glyph='fa-columns'/></Button>
                         </div>
                     </div>
+                    <StoreHorizontalLoader store={{
+                        isFetching: fundDataGrid.isFetchingData || fundDataGrid.isFetchingFilter || descItemTypes.isFetching || packetTypes.isFetching || rulDataTypes.isFetching,
+                        fetched: fundDataGrid.fetchedData || fundDataGrid.fetchedFilter || descItemTypes.fetched || packetTypes.fetched || rulDataTypes.fetched
+                    }} />
                     <div className='grid-container'>
                         <DataGrid
                             ref='dataGrid'
@@ -765,6 +822,8 @@ class FundDataGrid extends AbstractReactComponent {
                             onContextMenu={this.handleContextMenu}
                             onEdit={this.handleEdit}
                             disabled={readMode}
+                            startRowIndex={fundDataGrid.pageSize * fundDataGrid.pageIndex}
+                            morePages={getPagesCount(fundDataGrid.itemsCount, fundDataGrid.pageSize) > 1}
                         />
                         <DataGridPagination
                             itemsCount={fundDataGrid.itemsCount}
@@ -783,19 +842,6 @@ class FundDataGrid extends AbstractReactComponent {
         )
     }
 }
-
-
-FundDataGrid.propTypes = {
-    fundId: React.PropTypes.number.isRequired,
-    versionId: React.PropTypes.number.isRequired,
-    fund: React.PropTypes.object.isRequired,
-    rulDataTypes: React.PropTypes.object.isRequired,
-    descItemTypes: React.PropTypes.object.isRequired,
-    packetTypes: React.PropTypes.object.isRequired,
-    ruleSet: React.PropTypes.object.isRequired,
-    readMode: React.PropTypes.bool.isRequired,
-    closed: React.PropTypes.bool.isRequired,
-};
 
 function mapStateToProps(state) {
     const {splitter} = state;

@@ -51,14 +51,14 @@ public class Validator {
      */
     void postValidateDescItemsInType(final List<ArrDescItem> descItemsOfType,
                                      final RulItemTypeExt type) {
-        Assert.notNull(type);
-        Assert.notNull(descItemsOfType);
+        Assert.notNull(type, "Typ musí být vyplněn");
+        Assert.notNull(descItemsOfType, "Seznam hodnot atributů musí být vyplněn");
 
         Map<Integer, RulItemSpecExt> specExtMap = ElzaTools.createEntityMap(type.getRulItemSpecList(), RulItemSpec::getItemSpecId);
         Map<RulItemSpecExt, List<ArrDescItem>> specItemsMap = new HashMap<>();
 
         for (ArrDescItem descItem : descItemsOfType) {
-            if (descItem.getUndefined() && !type.getIndefinable()) {
+            if (descItem.isUndefined() && !type.getIndefinable()) {
                 validationResults.createError(descItem, "U prvku popisu " + descItem.getItemType().getName()
                         + " není možné nastavit hodnotu '" + ArrangementService.UNDEFINED + "'.", type.getPolicyTypeCode());
             }
@@ -160,7 +160,6 @@ public class Validator {
         Map<Integer, List<ArrDescItem>> descItemsInTypeMap = new HashMap<>();
 
         for (ArrDescItem descItem : descItems) {
-            descItem = descItemFactory.getDescItem(descItem);
             if (!extNodeTypes.containsKey(descItem.getItemType().getItemTypeId())) {
                 validationResults.createError(descItem, "Prvek " + descItem.getItemType().getName()
                                 + " není možný u této jednotky popisu.", extNodeTypes.get(descItem.getItemType().getItemTypeId()).getPolicyTypeCode());

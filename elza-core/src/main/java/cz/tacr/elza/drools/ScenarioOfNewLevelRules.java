@@ -47,7 +47,7 @@ public class ScenarioOfNewLevelRules extends Rules {
                 version.getRuleSet(), RulRule.RuleType.NEW_LEVEL);
 
         for (RulRule rulPackageRule : rulPackageRules) {
-            path = Paths.get(rulesExecutor.getDroolsDir(rulPackageRule.getPackage().getCode()) + File.separator + rulPackageRule.getFilename());
+            path = Paths.get(rulesExecutor.getDroolsDir(rulPackageRule.getRuleSet().getCode()) + File.separator + rulPackageRule.getFilename());
 
             StatelessKieSession session = createNewStatelessKieSession(path);
             session.setGlobal("results", newLevelApproaches);
@@ -56,7 +56,8 @@ public class ScenarioOfNewLevelRules extends Rules {
 
         List<ScenarioOfNewLevel> scenarioOfNewLevelList = new LinkedList<>();
         for (NewLevelApproach newLevelApproach : newLevelApproaches.getNewLevelApproaches()) {
-            scenarioOfNewLevelList.add(scriptModelFactory.createScenarioOfNewLevel(newLevelApproach));
+			scenarioOfNewLevelList
+			        .add(scriptModelFactory.createScenarioOfNewLevel(newLevelApproach, version.getRuleSetId()));
         }
 
         return scenarioOfNewLevelList;

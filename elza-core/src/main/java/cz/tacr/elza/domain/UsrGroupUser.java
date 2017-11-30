@@ -20,7 +20,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  * @since 11.04.2016
  */
 @Entity(name = "usr_group_user")
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Cache(region = "domain", usage = CacheConcurrencyStrategy.READ_WRITE)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
 public class UsrGroupUser {
 
@@ -74,7 +74,7 @@ public class UsrGroupUser {
      */
     public void setGroup(final UsrGroup group) {
         this.group = group;
-        this.groupId = group.getGroupId();
+        this.groupId = group == null ? null : group.getGroupId();
     }
 
     /**
@@ -89,6 +89,6 @@ public class UsrGroupUser {
      */
     public void setUser(final UsrUser user) {
         this.user = user;
-        this.userId = user.getUserId();
+        this.userId = user == null ? null : user.getUserId();
     }
 }

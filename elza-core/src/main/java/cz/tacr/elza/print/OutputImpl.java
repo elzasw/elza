@@ -18,6 +18,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.springframework.util.Assert;
 
+import cz.tacr.elza.core.data.PartyType;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ParDynasty;
@@ -53,7 +54,6 @@ import cz.tacr.elza.service.DmsService;
 import cz.tacr.elza.service.output.OutputFactoryService;
 import cz.tacr.elza.utils.AppContext;
 import cz.tacr.elza.utils.HibernateUtils;
-import cz.tacr.elza.utils.PartyType;
 
 /**
  * Základní objekt pro generování výstupu, při tisku se vytváří 1 instance.
@@ -131,7 +131,7 @@ public class OutputImpl implements Output
      * Přidá {@link NodeId} do výstupu.
      */
     public NodeId addNodeId(final NodeId nodeId) {
-        Assert.notNull(nodeId);
+        Assert.notNull(nodeId, "Identifikátor JP musí být vyplněn");
 
         NodeId nodeIdOrig = nodeIdsMap.get(nodeId.getArrNodeId());
         if (nodeIdOrig == null) {
@@ -240,7 +240,7 @@ public class OutputImpl implements Output
 
     @Override
     public List<Item> getItems(@NotNull final Collection<String> codes) {
-        Assert.notNull(codes);
+        Assert.notNull(codes, "Kódy musí být vyplněny");
         return items.stream()
                 .filter(item -> codes.contains(item.getType().getCode()))
                 .sorted(Item::compareToItemViewOrderPosition)
@@ -299,7 +299,7 @@ public class OutputImpl implements Output
 
     @Override
     public List<Item> getAllItems(@NotNull final Collection<String> codes) {
-        Assert.notNull(codes);
+        Assert.notNull(codes, "Kódy musí být vyplněny");
         return items.stream()
                 .filter(item -> !codes.contains(item.getType().getCode()))
                 .sorted(Item::compareToItemViewOrderPosition)
@@ -527,7 +527,7 @@ public class OutputImpl implements Output
     private Party createParty(final ParParty parParty)
     {
         String partyTypeCode = parParty.getPartyType().getCode();
-        PartyType partyType = PartyType.getByCode(partyTypeCode);
+        PartyType partyType = PartyType.fromCode(partyTypeCode);
 
         // Prepare corresponding record
         Record record = this.recordCache.get(parParty.getRecord());
@@ -552,19 +552,19 @@ public class OutputImpl implements Output
         Party party;
         switch (partyType) {
             case DYNASTY:
-                ParDynasty parDynasty = HibernateUtils.unproxy(parParty);
+			ParDynasty parDynasty = HibernateUtils.unproxy(parParty);
                 party = Dynasty.newInstance(parDynasty, initHelper);
                 break;
             case EVENT:
-                ParEvent parEvent = HibernateUtils.unproxy(parParty);
+			ParEvent parEvent = HibernateUtils.unproxy(parParty);
                 party = Event.newInstance(parEvent, initHelper);
                 break;
-            case PARTY_GROUP:
-                ParPartyGroup parPartyGroup = HibernateUtils.unproxy(parParty);
+            case GROUP_PARTY:
+			ParPartyGroup parPartyGroup = HibernateUtils.unproxy(parParty);
                 party = PartyGroup.newInstance(parPartyGroup, initHelper);
                 break;
             case PERSON:
-                ParPerson parPerson = HibernateUtils.unproxy(parParty);
+			ParPerson parPerson = HibernateUtils.unproxy(parParty);
                 party = Person.newInstance(parPerson, initHelper);
                 break;
             default :

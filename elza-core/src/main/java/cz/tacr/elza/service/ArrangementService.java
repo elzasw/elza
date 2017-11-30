@@ -28,11 +28,9 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import com.google.common.collect.Iterables;
 
@@ -51,6 +49,7 @@ import cz.tacr.elza.controller.vo.TreeNodeClient;
 import cz.tacr.elza.controller.vo.filter.SearchParam;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundRegisterScope;
@@ -69,12 +68,10 @@ import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.UIVisiblePolicy;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
-import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.domain.vo.NodeTypeOperation;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.drools.DirectionLevel;
-import cz.tacr.elza.drools.RulesExecutor;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ConcurrentUpdateException;
 import cz.tacr.elza.exception.InvalidQueryException;
@@ -98,7 +95,6 @@ import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.DigitizationRequestNodeRepository;
 import cz.tacr.elza.repository.DigitizationRequestRepository;
-import cz.tacr.elza.repository.FundFileRepository;
 import cz.tacr.elza.repository.FundRegisterScopeRepository;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
@@ -121,14 +117,17 @@ import cz.tacr.elza.repository.RequestQueueItemRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.VisiblePolicyRepository;
 import cz.tacr.elza.security.UserDetail;
+import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventFund;
 import cz.tacr.elza.service.eventnotification.events.EventType;
-
+import cz.tacr.elza.utils.ObjectListIterator;
 
 /**
- * @author Jiří Vaněk [jiri.vanek@marbes.cz]
- * @since 20. 12. 2015
+ * Main arrangement service.
+ *
+ * This service can be used by controller. All operations are checking
+ * permissions.
  */
 @Service
 public class ArrangementService {
@@ -149,8 +148,6 @@ public class ArrangementService {
     private BulkActionService bulkActionService;
     @Autowired
     private RuleService ruleService;
-    @Autowired
-    private RulesExecutor rulesExecutor;
     @Autowired
     private ItemRepository itemRepository;
     @Autowired
@@ -186,8 +183,6 @@ public class ArrangementService {
     @Autowired
     private PacketRepository packetRepository;
     @Autowired
-    private DescItemFactory descItemFactory;
-    @Autowired
     private FundRegisterScopeRepository faRegisterRepository;
     @Autowired
     private ScopeRepository scopeRepository;
@@ -196,6 +191,8 @@ public class ArrangementService {
     @Autowired
     private RegistryService registryService;
 
+	@Autowired
+	ArrangementServiceInternal arrangementInternal;
     @Autowired
     private PolicyService policyService;
 
@@ -262,14 +259,15 @@ public class ArrangementService {
     @Autowired
     private DaoPackageRepository daoPackageRepository;
 
+	//TODO: Should not be used here, method accessing this repository have to be refactorized
     @Autowired
     private CachedNodeRepository cachedNodeRepository;
 
-    @Autowired
-    private EntityManager em;
+	@Autowired
+	private NodeCacheService nodeCacheService;
 
     @Autowired
-    private FundFileRepository fundFileRepository;
+    private EntityManager em;
 
     public static final String UNDEFINED = "Nezjištěno";
 
@@ -285,7 +283,7 @@ public class ArrangementService {
      * @param dateRange    časový rozsah
      * @return vytvořený arch. soubor
      */
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN})
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN, UsrPermission.Permission.FUND_CREATE})
     public ArrFund createFund(final String name,
                               final RulRuleSet ruleSet,
                               final ArrChange change,
@@ -316,11 +314,11 @@ public class ArrangementService {
     public ArrFund updateFund(@AuthParam(type = AuthParam.Type.FUND) final ArrFund fund,
                               final RulRuleSet ruleSet,
                               final List<RegScope> scopes) {
-        Assert.notNull(fund);
-        Assert.notNull(ruleSet);
+        Assert.notNull(fund, "AS musí být vyplněn");
+        Assert.notNull(ruleSet, "Pravidla musí být vyplněna");
 
         ArrFund originalFund = fundRepository.findOne(fund.getFundId());
-        Assert.notNull(originalFund);
+        Assert.notNull(originalFund, "AS neexistuje");
 
         originalFund.setName(fund.getName());
         originalFund.setInternalCode(fund.getInternalCode());
@@ -357,7 +355,7 @@ public class ArrangementService {
      */
     private void synchRegScopes(final ArrFund fund,
                                 final Collection<RegScope> newRegScopes) {
-        Assert.notNull(fund);
+        Assert.notNull(fund, "AS musí být vyplněn");
 
 		Map<Integer, ArrFundRegisterScope> dbIdentifiersMap = ElzaTools
 				.createEntityMap(faRegisterRepository.findByFund(fund), i -> i.getScope().getScopeId());
@@ -390,7 +388,7 @@ public class ArrangementService {
      * @param internalCode interní označení
      * @return nová archivní pomůcka
      */
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN})
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN, UsrPermission.Permission.FUND_CREATE})
     public ArrFund createFundWithScenario(final String name,
                                           final RulRuleSet ruleSet,
                                           final String internalCode,
@@ -408,8 +406,7 @@ public class ArrangementService {
         ArrFundVersion version = fundVersionRepository
                 .findByFundIdAndLockChangeIsNull(fund.getFundId());
 
-        ArrNode rootNode = version.getRootNode();
-        ArrLevel rootLevel = levelRepository.findNodeInRootTreeByNodeId(rootNode, rootNode, version.getLockChange());
+        ArrLevel rootLevel = levelRepository.findByNode(version.getRootNode(), version.getLockChange());
 
         // vyhledání scénářů
         List<ScenarioOfNewLevel> scenarioOfNewLevels = descriptionItemService.getDescriptionItemTypesForNewLevel(
@@ -433,7 +430,7 @@ public class ArrangementService {
         return fund;
     }
 
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN})
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN, UsrPermission.Permission.FUND_CREATE})
     public ArrFund createFund(final String name,
 				              final String internalCode,
 				              final ParInstitution institution) {
@@ -476,7 +473,7 @@ public class ArrangementService {
                                 final ArrNode parentNode,
                                 final int position,
                                 final ArrFund fund) {
-        Assert.notNull(createChange);
+        Assert.notNull(createChange, "Change nesmí být prázdná");
 
         ArrLevel level = new ArrLevel();
         level.setPosition(position);
@@ -491,7 +488,7 @@ public class ArrangementService {
                                       final int position,
                                       final String uuid,
                                       final ArrFund fund) {
-        Assert.notNull(createChange);
+        Assert.notNull(createChange, "Change nesmí být prázdná");
 
         ArrLevel level = new ArrLevel();
         level.setPosition(position);
@@ -502,7 +499,7 @@ public class ArrangementService {
     }
 
     public ArrLevel createLevel(final ArrChange createChange, final ArrNode node, final ArrNode parentNode, final int position) {
-        Assert.notNull(createChange);
+        Assert.notNull(createChange, "Změna musí být vyplněna");
 
         ArrLevel level = new ArrLevel();
         level.setPosition(position);
@@ -528,7 +525,7 @@ public class ArrangementService {
         node.setUuid(generateUuid());
         node.setFund(fund);
         nodeRepository.save(node);
-        arrangementCacheService.createNode(node.getNodeId());
+		nodeCacheService.createEmptyNode(node);
         return node;
     }
 
@@ -552,7 +549,7 @@ public class ArrangementService {
         node.setUuid(uuid);
         node.setFund(fund);
         nodeRepository.save(node);
-        arrangementCacheService.createNode(node.getNodeId());
+		nodeCacheService.createEmptyNode(node);
         return node;
     }
 
@@ -625,7 +622,7 @@ public class ArrangementService {
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN})
     public void deleteFund(final Integer fundId) {
-        Assert.notNull(fundId);
+        Assert.notNull(fundId, "Nebyl vyplněn identifikátor AS");
 
         if (!fundRepository.exists(fundId)) {
             return;
@@ -637,10 +634,11 @@ public class ArrangementService {
         List<ArrOutputDefinition> outputDefinitions = outputDefinitionRepository.findByFund(fund);
 
         if (!outputDefinitions.isEmpty()) {
+            Collection<Integer> dataIdsToDelete = new HashSet<>();
             for (ArrOutputDefinition outputDefinition : outputDefinitions) {
                 outputRepository.delete(outputDefinition.getOutputs());
                 nodeOutputRepository.delete(outputDefinition.getOutputNodes());
-                dataRepository.deleteByOutputDefinition(outputDefinition);
+                dataIdsToDelete.addAll(dataRepository.findByIdsOutputDefinition(outputDefinition));
                 outputItemRepository.deleteByOutputDefinition(outputDefinition);
                 faBulkActionRepository.deleteByOutputDefinition(outputDefinition);
                 itemSettingsRepository.deleteByOutputDefinition(outputDefinition);
@@ -648,12 +646,18 @@ public class ArrangementService {
                 outputResultRepository.deleteByOutputDefinition(outputDefinition);
                 outputDefinitionRepository.delete(outputDefinition);
             }
+            outputItemRepository.flush();
+            ObjectListIterator<Integer> dataIdsToDeleteIterator = new ObjectListIterator<>(dataIdsToDelete);
+            while (dataIdsToDeleteIterator.hasNext()) {
+                List<Integer> ids = dataIdsToDeleteIterator.next();
+                dataRepository.deleteByIds(ids);
+                dataRepository.flush();
+            }
         }
 
         cachedNodeRepository.deleteByFund(fund);
 
-        ArrNode rootNode = version.getRootNode();
-        ArrLevel rootLevel = levelRepository.findNodeInRootTreeByNodeId(rootNode, rootNode, version.getLockChange());
+        ArrLevel rootLevel = levelRepository.findByNode(version.getRootNode(), version.getLockChange());
         ArrNode node = rootLevel.getNode();
 
         fundVersionRepository.findVersionsByFundIdOrderByCreateDateDesc(fundId)
@@ -726,7 +730,7 @@ public class ArrangementService {
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN, UsrPermission.Permission.FUND_VER_WR})
     public ArrFundVersion approveVersion(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion version,
                                          final String dateRange) {
-        Assert.notNull(version);
+        Assert.notNull(version, "Verze AS musí být vyplněna");
 
         ArrFund fund = version.getFund();
 
@@ -742,7 +746,7 @@ public class ArrangementService {
             throw new BusinessException("Nelze uzavřít verzi AS s ID=" + fund.getFundId() + ", protože běží hromadná akce", ArrangementCode.VERSION_CANNOT_CLOSE_ACTION);
         }
 
-        if (updateConformityInfoService.isRunning(version)) {
+        if (updateConformityInfoService.isRunning(version.getFundVersionId())) {
             throw new BusinessException("Nelze uzavřít verzi AS s ID=" + fund.getFundId() + ", protože běží validace", ArrangementCode.VERSION_CANNOT_CLOSE_VALIDATION);
         }
 
@@ -760,9 +764,9 @@ public class ArrangementService {
     }
 
     private void deleteVersion(final ArrFundVersion version) {
-        Assert.notNull(version);
+        Assert.notNull(version, "Verze AS musí být vyplněna");
 
-        updateConformityInfoService.terminateWorkerInVersionAndWait(version);
+        updateConformityInfoService.terminateWorkerInVersionAndWait(version.getFundVersionId());
 
         bulkActionService.terminateBulkActions(version.getFundVersionId());
 
@@ -796,35 +800,38 @@ public class ArrangementService {
      * @param rootLevel kořenový uzel archivní pomůcky
      */
     private void deleteFundLevels(final ArrLevel rootLevel) {
-        Assert.notNull(rootLevel);
+        Assert.notNull(rootLevel, "Level musí být vyplněn");
 
         Set<ArrNode> nodesToDelete = new HashSet<>();
-        deleteLevelCascadeForce(rootLevel, nodesToDelete);
+        Set<ArrData> dataToDelete = new HashSet<>();
+
+        deleteLevelCascadeForce(rootLevel, nodesToDelete, dataToDelete);
 
         List<Integer> nodeIds = new ArrayList<>(nodesToDelete.size());
         for (ArrNode node : nodesToDelete) {
             nodeIds.add(node.getNodeId());
         }
         arrangementCacheService.deleteNodes(nodeIds);
+        dataRepository.delete(dataToDelete);
         nodesToDelete.forEach(this::deleteNodeForce);
     }
 
-    private void deleteLevelCascadeForce(final ArrLevel level, final Set<ArrNode> nodesToDelete) {
+    private void deleteLevelCascadeForce(final ArrLevel level, final Set<ArrNode> nodesToDelete, final Set<ArrData> dataToDelete) {
         ArrNode parentNode = level.getNode();
         for (ArrLevel childLevel : levelRepository.findByParentNode(parentNode)) {
             nodesToDelete.add(childLevel.getNode());
-            deleteLevelCascadeForce(childLevel, nodesToDelete);
+            deleteLevelCascadeForce(childLevel, nodesToDelete, dataToDelete);
         }
 
         for (ArrDescItem descItem : descItemRepository.findByNodeOrderByCreateChangeAsc(parentNode)) {
-            deleteDescItemForce(descItem);
+            deleteDescItemForce(descItem, dataToDelete);
         }
 
         levelRepository.delete(level);
     }
 
     private void deleteNodeForce(final ArrNode node) {
-        Assert.notNull(node);
+        Assert.notNull(node, "Musí být vyplněno");
 
         nodeRegisterRepository.findByNode(node).forEach(relation -> {
             nodeRegisterRepository.delete(relation);
@@ -841,11 +848,16 @@ public class ArrangementService {
         nodeRepository.delete(node);
     }
 
-    private void deleteDescItemForce(final ArrDescItem descItem) {
-        Assert.notNull(descItem);
+    private void deleteDescItemForce(final ArrDescItem descItem, final Set<ArrData> dataToDelete) {
+        Assert.notNull(descItem, "Hodnota atributu musí být vyplněna");
 
-        dataRepository.findByItem(descItem).forEach(data -> dataRepository.delete(data));
+        ArrData data = descItem.getData();
+
         descItemRepository.delete(descItem);
+
+        if (data != null) {
+            dataToDelete.add(data);
+        }
     }
 
     /**
@@ -854,41 +866,43 @@ public class ArrangementService {
      * @param fundId id archivní pomůcky
      * @return verze
      */
-    public ArrFundVersion getOpenVersionByFundId(@RequestParam(value = "fundId") final Integer fundId) {
-        Assert.notNull(fundId);
+    public ArrFundVersion getOpenVersionByFundId(final Integer fundId) {
+        Assert.notNull(fundId, "Nebyl vyplněn identifikátor AS");
         ArrFundVersion fundVersion = fundVersionRepository
                 .findByFundIdAndLockChangeIsNull(fundId);
 
         return fundVersion;
     }
 
+    /**
+     * Načte neuzavřené verze archivních pomůcek.
+     *
+     * @param fundIds ids archivních pomůcek
+     * @return verze
+     */
+    public List<ArrFundVersion> getOpenVersionsByFundIds(final Collection<Integer> fundIds) {
+        Assert.notNull(fundIds, "Nebyl vyplněn identifikátor AS");
+        List<ArrFundVersion> fundVersions = fundVersionRepository.findByFundIdsAndLockChangeIsNull(fundIds);
+
+        return fundVersions;
+    }
+
     public ArrLevel deleteLevelCascade(final ArrLevel level, final ArrChange deleteChange) {
-        //pokud je level sdílený, smažeme pouze entitu, atributy ponecháme
-        if (isLevelShared(level)) {
-            return deleteLevelInner(level, deleteChange);
-        }
-
-
         for (ArrLevel childLevel : levelRepository
                 .findByParentNodeAndDeleteChangeIsNullOrderByPositionAsc(level.getNode())) {
             deleteLevelCascade(childLevel, deleteChange);
         }
 
         for (ArrDescItem descItem : descItemRepository.findByNodeAndDeleteChangeIsNull(level.getNode())) {
-            deleteDescItemInner(descItem, deleteChange);
+			descItem.setDeleteChange(deleteChange);
+			descItemRepository.save(descItem);
         }
 
         return deleteLevelInner(level, deleteChange);
     }
 
-    private boolean isLevelShared(final ArrLevel level) {
-        Assert.notNull(level);
-
-        return levelRepository.countByNode(level.getNode()) > 1;
-    }
-
     private ArrLevel deleteLevelInner(final ArrLevel level, final ArrChange deleteChange) {
-        Assert.notNull(level);
+        Assert.notNull(level, "Musí být vyplněno");
 
         ArrNode node = level.getNode();
         node.setLastUpdate(deleteChange.getChangeDate());
@@ -897,21 +911,6 @@ public class ArrangementService {
         level.setDeleteChange(deleteChange);
         return levelRepository.saveAndFlush(level);
     }
-
-    private void deleteDescItemInner(final ArrDescItem descItem, final ArrChange deleteChange) {
-        Assert.notNull(descItem);
-
-        descItem.setDeleteChange(deleteChange);
-        ArrDescItem descItemTmp;
-        //try {
-        descItemTmp = new ArrDescItem();
-        /*} catch (InstantiationException | IllegalAccessException e) {
-            throw new IllegalStateException(e);
-        }*/
-        BeanUtils.copyProperties(descItem, descItemTmp);
-        descItemRepository.save(descItemTmp);
-    }
-
     /**
      * Vrací další identifikátor objektu pro atribut (oproti PK se zachovává při nové verzi)
      * <p>
@@ -932,61 +931,6 @@ public class ArrangementService {
     }
 
     /**
-     * Získání hodnot atributů podle verze AP a uzlu.
-     *
-     * @param version verze AP
-     * @param node    uzel
-     * @return seznam hodnot atributů
-     */
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.FUND_RD})
-    public List<ArrDescItem> getDescItems(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion version,
-                                          final ArrNode node) {
-
-        return getArrDescItemsInternal(version, node);
-    }
-
-    /**
-     * Získání hodnot atributů podle verze AP a uzlu.
-     * <b> Metoda nekontroluje oprávnění. </b>
-     *
-     * @param version verze AP
-     * @param node    uzel
-     * @return seznam hodnot atributů
-     */
-    public List<ArrDescItem> getArrDescItemsInternal(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion version, final ArrNode node) {
-        List<ArrDescItem> itemList;
-
-        if (version.getLockChange() == null) {
-            itemList = descItemRepository.findByNodeAndDeleteChangeIsNull(node);
-        } else {
-            itemList = descItemRepository.findByNodeAndChange(node, version.getLockChange());
-        }
-
-        return descItemFactory.getDescItems(itemList);
-    }
-
-    /**
-     * Získání hodnot atributů podle verze AP a uzlu.
-     * <b> Metoda nekontroluje oprávnění. </b>
-     *
-     * @param version verze AP
-     * @param node    uzel
-     * @return seznam hodnot atributů
-     */
-    public List<ArrDescItem> getArrDescItems(final ArrFundVersion version, final ArrNode node) {
-        List<ArrDescItem> itemList;
-
-        if (version.getLockChange() == null) {
-            itemList = descItemRepository.findByNodeAndDeleteChangeIsNull(node);
-        } else {
-            itemList = descItemRepository.findByNodeAndChange(node, version.getLockChange());
-        }
-
-        return itemList;
-    }
-
-
-    /**
      * Provede zkopírování atributu daného typu ze staršího bratra uzlu.
      *
      * @param version      verze stromu
@@ -999,9 +943,9 @@ public class ArrangementService {
                                                        final RulItemType descItemType,
                                                        final ArrLevel level,
                                                        final ArrChange change) {
-        Assert.notNull(version);
-        Assert.notNull(descItemType);
-        Assert.notNull(level);
+        Assert.notNull(version, "Verze AS musí být vyplněna");
+        Assert.notNull(descItemType, "Typ atributu musí být vyplněn");
+        Assert.notNull(level, "Musí být vyplněno");
 
         isValidAndOpenVersion(version);
 
@@ -1055,8 +999,8 @@ public class ArrangementService {
      * @return true pokud patří uzel do verze, jinak false
      */
     public boolean validLevelInVersion(final ArrLevel level, final ArrFundVersion version) {
-        Assert.notNull(level);
-        Assert.notNull(version);
+        Assert.notNull(level, "Musí být vyplněno");
+        Assert.notNull(version, "Verze AS musí být vyplněna");
         Integer lockChange = version.getLockChange() == null
                 ? Integer.MAX_VALUE : version.getLockChange().getChangeId();
 
@@ -1080,8 +1024,8 @@ public class ArrangementService {
      * @return seznam id uzlů které vyhovují parametrům
      */
     public Set<Integer> findNodeIdsByFulltext(final ArrFundVersion version, final Integer nodeId, final String searchValue, final Depth depth) {
-        Assert.notNull(version);
-        Assert.notNull(depth);
+        Assert.notNull(version, "Verze AS musí být vyplněna");
+        Assert.notNull(depth, "Hloubka musí být vyplněna");
 
         ArrChange lockChange = version.getLockChange();
         Integer lockChangeId = lockChange == null ? null : lockChange.getChangeId();
@@ -1107,7 +1051,7 @@ public class ArrangementService {
      */
     public Set<Integer> findNodeIdsByLuceneQuery(final ArrFundVersion version, final Integer nodeId,
                                                  final String searchValue, final Depth depth) throws InvalidQueryException {
-        Assert.notNull(version);
+        Assert.notNull(version, "Verze AS musí být vyplněna");
 
         if (StringUtils.isBlank(searchValue)) {
             return levelTreeCacheService.getAllNodeIdsByVersionAndParent(version, nodeId, depth);
@@ -1137,9 +1081,9 @@ public class ArrangementService {
      */
     public Set<Integer> findNodeIdsBySearchParams(final ArrFundVersion version, final Integer nodeId,
             final List<SearchParam> searchParams, final Depth depth) {
-        Assert.notNull(version);
-        Assert.notNull(depth);
-        Assert.notEmpty(searchParams);
+        Assert.notNull(version, "Verze AS musí být vyplněna");
+        Assert.notNull(depth, "Musí být vyplněno");
+        Assert.notEmpty(searchParams, "Musí existovat vyhledávající parametr");
 
         ArrChange lockChange = version.getLockChange();
         Integer lockChangeId = lockChange == null ? null : lockChange.getChangeId();
@@ -1177,9 +1121,8 @@ public class ArrangementService {
      * @return level nodu
      */
     public ArrLevel lockNode(final ArrNode lockNode, final ArrFundVersion version, final ArrChange change) {
-        ArrLevel lockLevel = levelRepository
-                .findNodeInRootTreeByNodeId(lockNode, version.getRootNode(), version.getLockChange());
-        Assert.notNull(lockLevel);
+        ArrLevel lockLevel = levelRepository.findByNode(lockNode, version.getLockChange());
+        Assert.notNull(lockLevel, "Musí být vyplněno");
         ArrNode staticNodeDb = lockLevel.getNode();
         lockNode(staticNodeDb, lockNode, change);
 
@@ -1195,8 +1138,8 @@ public class ArrangementService {
      * @return level nodu
      */
     public ArrNode lockNode(final ArrNode dbNode, final ArrNode lockNode, final ArrChange change) {
-        Assert.notNull(dbNode);
-        Assert.notNull(lockNode);
+        Assert.notNull(dbNode, "Musí být vyplněno");
+        Assert.notNull(lockNode, "Musí být vyplněno");
 
         lockNode.setUuid(dbNode.getUuid());
         lockNode.setLastUpdate(change.getChangeDate());
@@ -1214,7 +1157,7 @@ public class ArrangementService {
         Assert.notNull(nodeId, "Node id must be set");
         ArrNode node = em.getReference(ArrNode.class, nodeId);
         em.lock(node, LockModeType.PESSIMISTIC_FORCE_INCREMENT);
-        return levelRepository.findNodeInRootTreeByNodeId(node, null, fundVersion.getLockChange());
+        return levelRepository.findByNode(node, fundVersion.getLockChange());
     }
 
     /**
@@ -1293,8 +1236,8 @@ public class ArrangementService {
      * @return seznam id nodů a jejich rodičů
      */
     public List<TreeNodeFulltext> createTreeNodeFulltextList(final Set<Integer> nodeIds, final ArrFundVersion version) {
-        Assert.notNull(nodeIds);
-        Assert.notNull(version);
+        Assert.notNull(nodeIds, "Musí být vyplněno");
+        Assert.notNull(version, "Verze AS musí být vyplněna");
 
         Map<Integer, TreeNodeClient> parentIdTreeNodeClientMap = levelTreeCacheService.findParentsWithTitles(nodeIds, version);
 
@@ -1355,8 +1298,8 @@ public class ArrangementService {
     @AuthMethod(permission = {UsrPermission.Permission.REG_SCOPE_WR_ALL, UsrPermission.Permission.REG_SCOPE_WR})
     public ArrFundRegisterScope addScopeToFund(final ArrFund fund,
                                                @AuthParam(type = AuthParam.Type.SCOPE) final RegScope scope) {
-        Assert.notNull(fund);
-        Assert.notNull(scope);
+        Assert.notNull(fund, "AS musí být vyplněn");
+        Assert.notNull(scope, "Scope musí být vyplněn");
 
         ArrFundRegisterScope faRegisterScope = fundRegisterScopeRepository.findByFundAndScope(fund, scope);
         if (faRegisterScope != null) {
@@ -1414,9 +1357,9 @@ public class ArrangementService {
     public ArrangementController.ValidationItems getValidationNodes(final ArrFundVersion fundVersion,
                                                                     final Integer indexFrom,
                                                                     final Integer indexTo) {
-        Assert.notNull(fundVersion);
-        Assert.notNull(indexFrom);
-        Assert.notNull(indexTo);
+        Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
+        Assert.notNull(indexFrom, "Musí být vyplněno");
+        Assert.notNull(indexTo, "Musí být vyplněno");
 
         if (indexFrom < 0 || indexFrom >= indexTo) {
             throw new IllegalArgumentException("Neplatné vstupní parametry");
@@ -1506,10 +1449,10 @@ public class ArrangementService {
     public ArrangementController.ValidationItems findErrorNode(final ArrFundVersion fundVersion,
                                                                final Integer nodeId,
                                                                final Integer direction) {
-        Assert.notNull(fundVersion);
-        Assert.notNull(nodeId);
-        Assert.notNull(direction);
-        Assert.isTrue(direction != 0);
+        Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
+        Assert.notNull(nodeId, "Identifikátor JP musí být vyplněn");
+        Assert.notNull(direction, "Směr musí být vyplněn");
+        Assert.isTrue(direction != 0, "Směr musí být rozdílný od 0");
 
         FoundNode foundNode = new FoundNode(nodeId);
         List<Integer> nodes = createErrorTree(fundVersion, foundNode);

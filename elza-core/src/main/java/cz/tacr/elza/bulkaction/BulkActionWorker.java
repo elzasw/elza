@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Callable;
 
+import org.apache.commons.lang.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,8 +12,6 @@ import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrBulkActionRun.State;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.repository.BulkActionRunRepository;
 
 /**
  * Úloha hromadné akce.
@@ -44,8 +43,6 @@ public class BulkActionWorker implements Callable<BulkActionWorker> {
 
     private BulkActionService bulkActionService;
 
-    private BulkActionRunRepository bulkActionRunRepository;
-
     /**
      * Identfikátor uživatele, který spustil hromadnou akci (null, pokud to bylo systémové - od admina)
      */
@@ -53,16 +50,14 @@ public class BulkActionWorker implements Callable<BulkActionWorker> {
 
     private Integer processId;
 
-	public BulkActionWorker(BulkActionService bulkActionService, BulkActionRunRepository bulkActionRunRepository) {
+	public BulkActionWorker(BulkActionService bulkActionService, ArrBulkActionRun bulkActionRun) {
+		Validate.notNull(bulkActionRun);
+
 		this.bulkActionService = bulkActionService;
-		this.bulkActionRunRepository = bulkActionRunRepository;
+		this.bulkActionRun = bulkActionRun;
 	}
 
-    public void init(final int bulkActionRunId) {
-        bulkActionRun = bulkActionRunRepository.findOne(bulkActionRunId);
-        if (bulkActionRun == null) {
-            throw new SystemException("Proces hromadné akce" + bulkActionRunId + " nebyl nalezen", BaseCode.ID_NOT_EXIST);
-        }
+	public void init() {
         versionId = bulkActionRun.getFundVersionId();
         inputNodeIds = bulkActionService.getBulkActionNodeIds(bulkActionRun);
 		// create bulk action object
@@ -108,6 +103,8 @@ public class BulkActionWorker implements Callable<BulkActionWorker> {
         return bulkActionRun.getState();
     }
 
+	// Method is not running in transaction
+	// all changes are published to user
     @Override
     public BulkActionWorker call() throws Exception {
         logger.info("Spuštěna hromadná akce: " + this);
@@ -120,10 +117,11 @@ public class BulkActionWorker implements Callable<BulkActionWorker> {
 			// prepare context object
 			ActionRunContext runContext = new ActionRunContext(inputNodeIds, bulkActionRun);
 
-			bulkAction.run(runContext);
+			bulkAction.execute(runContext);
 
             //Thread.sleep(30000); // PRO TESTOVÁNÍ A DALŠÍ VÝVOJ
 
+			// TODO: Add check that action was not interrupted
             bulkActionRun.setDateFinished(new Date());
             setStateAndPublish(State.FINISHED);
             logger.info("Hromadná akce úspěšně dokončena: " + this);

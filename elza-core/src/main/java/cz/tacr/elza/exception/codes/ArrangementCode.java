@@ -156,6 +156,16 @@ public enum ArrangementCode implements ErrorCode {
     /**
      * Typ formy jména neexistuje.
      */
-    PARTY_NAME_FORM_TYPE_NOT_FOUND
+    PARTY_NAME_FORM_TYPE_NOT_FOUND,
+
+    /**
+     * Při zakládání AS byl předán uživatel jako správce, ale nemá oprávnění zakládat AS.
+     */
+    ADMIN_USER_MISSING_FUND_CREATE_PERM,
+
+    /**
+     * Při zakládání AS byla předána skupina jako správce, ale nemá oprávnění zakládat AS.
+     */
+    ADMIN_GROUP_MISSING_FUND_CREATE_PERM,
 
 }

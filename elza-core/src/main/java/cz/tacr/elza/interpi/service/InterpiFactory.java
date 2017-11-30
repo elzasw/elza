@@ -12,8 +12,6 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import cz.tacr.elza.interpi.ws.wo.*;
-import cz.tacr.elza.service.GroovyScriptService;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
@@ -26,6 +24,7 @@ import org.springframework.util.Assert;
 import cz.tacr.elza.api.enums.InterpiClass;
 import cz.tacr.elza.controller.vo.InterpiEntityMappingVO;
 import cz.tacr.elza.controller.vo.InterpiRelationMappingVO;
+import cz.tacr.elza.core.data.PartyType;
 import cz.tacr.elza.domain.ParComplementType;
 import cz.tacr.elza.domain.ParDynasty;
 import cz.tacr.elza.domain.ParEvent;
@@ -58,15 +57,40 @@ import cz.tacr.elza.interpi.service.vo.ConditionVO;
 import cz.tacr.elza.interpi.service.vo.ExternalRecordVO;
 import cz.tacr.elza.interpi.service.vo.InterpiEntity;
 import cz.tacr.elza.interpi.service.vo.MappingVO;
+import cz.tacr.elza.interpi.ws.wo.DoplnekTyp;
+import cz.tacr.elza.interpi.ws.wo.EntitaTyp;
+import cz.tacr.elza.interpi.ws.wo.IdentifikaceTyp;
+import cz.tacr.elza.interpi.ws.wo.IdentifikatorSouvTyp;
+import cz.tacr.elza.interpi.ws.wo.IdentifikatorSouvTypA;
+import cz.tacr.elza.interpi.ws.wo.IdentifikatorTyp;
+import cz.tacr.elza.interpi.ws.wo.IdentifikatorTypA;
+import cz.tacr.elza.interpi.ws.wo.KodovaneTyp;
+import cz.tacr.elza.interpi.ws.wo.KodovaneTypA;
+import cz.tacr.elza.interpi.ws.wo.KomplexniDataceTyp;
+import cz.tacr.elza.interpi.ws.wo.KomplexniDataceTypA;
+import cz.tacr.elza.interpi.ws.wo.OznaceniTyp;
+import cz.tacr.elza.interpi.ws.wo.OznaceniTypTypA;
+import cz.tacr.elza.interpi.ws.wo.PodtridaTyp;
+import cz.tacr.elza.interpi.ws.wo.PopisTyp;
+import cz.tacr.elza.interpi.ws.wo.PopisTypA;
+import cz.tacr.elza.interpi.ws.wo.RoleTypA;
+import cz.tacr.elza.interpi.ws.wo.SouvisejiciTyp;
+import cz.tacr.elza.interpi.ws.wo.TitulTyp;
+import cz.tacr.elza.interpi.ws.wo.TitulTypA;
+import cz.tacr.elza.interpi.ws.wo.TridaTyp;
+import cz.tacr.elza.interpi.ws.wo.UdalostTyp;
+import cz.tacr.elza.interpi.ws.wo.UdalostTypA;
+import cz.tacr.elza.interpi.ws.wo.VedlejsiCastTyp;
+import cz.tacr.elza.interpi.ws.wo.ZdrojTyp;
 import cz.tacr.elza.repository.ComplementTypeRepository;
 import cz.tacr.elza.repository.PartyNameFormTypeRepository;
 import cz.tacr.elza.repository.PartyTypeRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
-import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.RegVariantRecordRepository;
+import cz.tacr.elza.repository.RegisterTypeRepository;
+import cz.tacr.elza.service.GroovyScriptService;
 import cz.tacr.elza.service.PartyService;
 import cz.tacr.elza.service.RegistryService;
-import cz.tacr.elza.utils.PartyType;
 
 /**
  * Třída pro konverzi objektů z a do INTERPI.
@@ -613,7 +637,7 @@ public class InterpiFactory {
 
     private MappingVO findRelationMapping(final List<MappingVO> mappings, final InterpiClass interpiClass,
             final String interpiRelationType, final String interpiRoleType, final String entityId) {
-        Assert.isTrue(interpiRelationType != null || interpiRoleType != null);
+        Assert.isTrue(interpiRelationType != null || interpiRoleType != null, "Podmínka musí platit");
 
         if (mappings == null) {
             return null;
@@ -1050,7 +1074,7 @@ public class InterpiFactory {
         switch (trida) {
             case KORPORACE:
                 parParty = new ParPartyGroup();
-                parPartyType = partyTypeRepository.findPartyTypeByCode(PartyType.PARTY_GROUP.getCode());
+                parPartyType = partyTypeRepository.findPartyTypeByCode(PartyType.GROUP_PARTY.getCode());
                 break;
             case ROD_RODINA:
                 parParty = new ParDynasty();

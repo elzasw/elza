@@ -12,11 +12,6 @@ public abstract class BaseActionConfig implements BulkActionConfig {
 
 	protected String description;
 
-	/**
-	 * Code of rule system
-	 */
-	protected String ruleCode;
-
 	protected String codeTypeBulkAction;
 
 	public String getName() {
@@ -41,14 +36,6 @@ public abstract class BaseActionConfig implements BulkActionConfig {
 
 	public void setCodeTypeBulkAction(String codeTypeBulkAction) {
 		this.codeTypeBulkAction = codeTypeBulkAction;
-	}
-
-	public String getRules() {
-		return ruleCode;
-	}
-
-	public void setRules(String ruleCode) {
-		this.ruleCode = ruleCode;
 	}
 
 	/**

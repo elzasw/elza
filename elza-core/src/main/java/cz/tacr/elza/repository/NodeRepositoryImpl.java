@@ -1,5 +1,44 @@
 package cz.tacr.elza.repository;
 
+import java.text.NumberFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.annotation.PostConstruct;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.lucene.document.FieldType;
+import org.apache.lucene.queryparser.flexible.core.QueryNodeException;
+import org.apache.lucene.queryparser.flexible.standard.StandardQueryParser;
+import org.apache.lucene.queryparser.flexible.standard.config.NumericConfig;
+import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.Query;
+import org.hibernate.CacheMode;
+import org.hibernate.ScrollMode;
+import org.hibernate.ScrollableResults;
+import org.hibernate.Session;
+import org.hibernate.search.jpa.FullTextEntityManager;
+import org.hibernate.search.jpa.FullTextQuery;
+import org.hibernate.search.jpa.Search;
+import org.hibernate.search.query.dsl.BooleanJunction;
+import org.hibernate.search.query.dsl.QueryBuilder;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
+
 import cz.tacr.elza.api.IUnitdate;
 import cz.tacr.elza.controller.vo.filter.SearchParam;
 import cz.tacr.elza.controller.vo.filter.SearchParamType;
@@ -19,45 +58,10 @@ import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
 import cz.tacr.elza.exception.InvalidQueryException;
 import cz.tacr.elza.filter.DescItemTypeFilter;
-import cz.tacr.elza.filter.condition.LuceneDescItemCondition;
-import cz.tacr.elza.utils.NodeUtils;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.lucene.document.FieldType;
-import org.apache.lucene.queryparser.flexible.core.QueryNodeException;
-import org.apache.lucene.queryparser.flexible.standard.StandardQueryParser;
-import org.apache.lucene.queryparser.flexible.standard.config.NumericConfig;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.Query;
-import org.hibernate.search.jpa.FullTextEntityManager;
-import org.hibernate.search.jpa.FullTextQuery;
-import org.hibernate.search.jpa.Search;
-import org.hibernate.search.query.dsl.BooleanJunction;
-import org.hibernate.search.query.dsl.QueryBuilder;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.springframework.util.Assert;
-
-import javax.annotation.PostConstruct;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import java.text.NumberFormat;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 
 /**
- * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
- * @since 23.11.2015
+ * Custom node repository implementation
  */
 @Component
 public class NodeRepositoryImpl implements NodeRepositoryCustom {
@@ -77,16 +81,17 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
     public List<ArrNode> findNodesByDirection(final ArrNode node,
                                               final ArrFundVersion version,
                                               final RelatedNodeDirection direction) {
-        Assert.notNull(node);
-        Assert.notNull(version);
-        Assert.notNull(direction);
+        Assert.notNull(node, "JP musí být vyplněna");
+        Assert.notNull(version, "Verze AS musí být vyplněna");
+        Assert.notNull(direction, "Směr musí být vyplněn");
 
 
-        ArrLevel level = levelRepository.findNodeInRootTreeByNodeId(node, version.getRootNode(),
-                version.getLockChange());
-        List<ArrLevel> levels = levelRepository.findLevelsByDirection(level, version, direction);
+        ArrLevel level = levelRepository.findByNode(node, version.getLockChange());
+        Collection<ArrLevel> levels = levelRepository.findLevelsByDirection(level, version, direction);
 
-        return NodeUtils.createNodeList(levels);
+        List<ArrNode> nodes = new ArrayList<>(levels.size());
+        levels.forEach(l -> nodes.add(l.getNode()));
+        return nodes;
     }
 
     /**
@@ -96,7 +101,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
      */
     @Override
     public Set<Integer> findByFulltextAndVersionLockChangeId(final String text, final Integer fundId, final Integer lockChangeId) {
-        Assert.notNull(fundId);
+        Assert.notNull(fundId, "Nebyl vyplněn identifikátor AS");
 
         List<String> descItemIds = findDescItemIdsByData(text, fundId);
         if (descItemIds.isEmpty()) {
@@ -113,7 +118,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
     @Override
     public Set<Integer> findByLuceneQueryAndVersionLockChangeId(final String queryText, final Integer fundId, final Integer lockChangeId)
             throws InvalidQueryException {
-        Assert.notNull(fundId);
+        Assert.notNull(fundId, "Nebyl vyplněn identifikátor AS");
 
         List<String> descItemIds = findDescItemIdsByLuceneQuery(queryText, fundId);
         if (descItemIds.isEmpty()) {
@@ -130,8 +135,8 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
     @Override
     public Set<Integer> findBySearchParamsAndVersionLockChangeId(final List<SearchParam> searchParams, final Integer fundId,
             final Integer lockChangeId) {
-        Assert.notNull(fundId);
-        Assert.notEmpty(searchParams);
+        Assert.notNull(fundId, "Nebyl vyplněn identifikátor AS");
+        Assert.notEmpty(searchParams, "Musí být vyplněn alespoň jeden parametr vyhledávání");
 
         List<TextSearchParam> textParams = new LinkedList<>();
         List<UnitdateSearchParam> dateParams = new LinkedList<>();
@@ -166,30 +171,34 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
     }
 
     @Override
-    public Map<Integer, List<Integer>> findUncachedNodes() {
+	public ScrollableResults findUncachedNodes() {
 
-        String hql = "SELECT n.fundId, n.nodeId FROM arr_node n WHERE n.nodeId NOT IN (SELECT cn.nodeId FROM arr_cached_node cn)";
+		String hql = "SELECT n.nodeId FROM arr_node n WHERE n.nodeId NOT IN (SELECT cn.nodeId FROM arr_cached_node cn)";
 
-        javax.persistence.Query query = entityManager.createQuery(hql);
+		// get Hibernate session
+		Session session = entityManager.unwrap(Session.class);
+		ScrollableResults scrollableResults = session.createQuery(hql).setCacheMode(CacheMode.IGNORE)
+		        .scroll(ScrollMode.FORWARD_ONLY);
 
+		return scrollableResults;
+		/*
+		List<Object[]> resultList = query.getResultList();
 
-        List<Object[]> resultList = (List<Object[]>) query.getResultList();
+		Map<Integer, List<Integer>> result = new HashMap<>();
+		for (Object[] o : resultList) {
+		    Integer fundId = ((Number)o[0]).intValue();
+		    Integer nodeId = ((Number)o[1]).intValue();
 
-        Map<Integer, List<Integer>> result = new HashMap<>();
-        for (Object[] o : resultList) {
-            Integer fundId = ((Number)o[0]).intValue();
-            Integer nodeId = ((Number)o[1]).intValue();
+		    List<Integer> nodeIds = result.get(fundId);
+		    if (nodeIds == null) {
+		        nodeIds = new ArrayList<>();
+		        result.put(fundId, nodeIds);
+		    }
 
-            List<Integer> nodeIds = result.get(fundId);
-            if (nodeIds == null) {
-                nodeIds = new ArrayList<>();
-                result.put(fundId, nodeIds);
-            }
+		    nodeIds.add(nodeId);
+		}
 
-            nodeIds.add(nodeId);
-        }
-
-        return result;
+		return result;*/
     }
 
     /**
@@ -203,8 +212,8 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
      */
     private Set<Integer> findByTextSearchParamsAndVersionLockChangeId(final List<TextSearchParam> searchParams, final Integer fundId,
             final Integer lockChangeId) {
-        Assert.notNull(fundId);
-        Assert.notEmpty(searchParams);
+        Assert.notNull(fundId, "Nebyl vyplněn identifikátor AS");
+        Assert.notEmpty(searchParams, "Musí být vyplněn alespoň jeden parametr vyhledávání");
 
         List<String> descItemIds = findDescItemIdsByTextSearchParamsData(searchParams, fundId);
         if (descItemIds.isEmpty()) {
@@ -228,8 +237,8 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
      */
     private Set<Integer> findByDateSearchParamsAndVersionLockChangeId(final List<UnitdateSearchParam> searchParams, final Integer fundId,
             final Integer lockChangeId) {
-        Assert.notNull(fundId);
-        Assert.notEmpty(searchParams);
+        Assert.notNull(fundId, "Nebyl vyplněn identifikátor AS");
+        Assert.notEmpty(searchParams, "Musí být vyplněn alespoň jeden parametr vyhledávání");
 
         List<String> descItemIds = findDescItemIdsByDateSearchParamsData(searchParams, fundId);
         if (descItemIds.isEmpty()) {
@@ -291,9 +300,9 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
      */
     private Query createDateQuery(final String value, final Integer calendarId, final UnitdateCondition condition,
             final QueryBuilder queryBuilder) {
-        Assert.notNull(value);
-        Assert.notNull(calendarId);
-        Assert.notNull(condition);
+        Assert.notNull(value, "Hodnota musí být vyplněna");
+        Assert.notNull(calendarId, "Identifikátor typu kalendáře musí být vyplněn");
+        Assert.notNull(condition, "Podmínka musí být vyplněna");
 
         IUnitdate unitdate = new ArrDataUnitdate();
         UnitDateConvertor.convertToUnitDate(value, unitdate);
@@ -310,15 +319,16 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
         Query query;
         switch (condition) {
             case CONTAINS:
-                Query fromQuery = queryBuilder.range().onField("normalizedFrom").above(secondsFrom).createQuery();
-                Query toQuery = queryBuilder.range().onField("normalizedTo").below(secondsTo).createQuery();
+			Query fromQuery = queryBuilder.range().onField(ArrDescItem.NORMALIZED_FROM_ATT).above(secondsFrom)
+			        .createQuery();
+			Query toQuery = queryBuilder.range().onField(ArrDescItem.NORMALIZED_TO_ATT).below(secondsTo).createQuery();
                 query = queryBuilder.bool().must(fromQuery).must(toQuery).createQuery();
                 break;
             case GE:
-                query = queryBuilder.range().onField("normalizedFrom").above(secondsFrom).createQuery();
+			query = queryBuilder.range().onField(ArrDescItem.NORMALIZED_FROM_ATT).above(secondsFrom).createQuery();
                 break;
             case LE:
-                query = queryBuilder.range().onField("normalizedTo").below(secondsTo).createQuery();
+			query = queryBuilder.range().onField(ArrDescItem.NORMALIZED_TO_ATT).below(secondsTo).createQuery();
                 break;
             default:
                 throw new IllegalStateException("Neznámý typ podmínky " + condition);
@@ -390,7 +400,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
             return Collections.EMPTY_LIST;
         }
 
-        Class<ArrData> entityClass = ArrData.class;
+        Class<ArrDescItem> entityClass = ArrDescItem.class;
         QueryBuilder queryBuilder = createQueryBuilder(entityClass);
 
         Query textQuery = createTextQuery(text, queryBuilder);
@@ -435,15 +445,18 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
 //        stringNumericConfigHashMap.put("normalizedTo", longConfig);
 //        parser.setPointsConfigMap(stringNumericConfigHashMap);
         HashMap<String, NumericConfig> stringNumericConfigHashMap = new HashMap<>();
-        stringNumericConfigHashMap.put("specification", new NumericConfig(1, NumberFormat.getIntegerInstance(), FieldType.NumericType.INT));
-        stringNumericConfigHashMap.put("normalizedFrom", new NumericConfig(16, NumberFormat.getNumberInstance(), FieldType.NumericType.LONG));
-        stringNumericConfigHashMap.put("normalizedTo", new NumericConfig(16, NumberFormat.getNumberInstance(), FieldType.NumericType.LONG));
+		stringNumericConfigHashMap.put(ArrDescItem.SPECIFICATION_ATT,
+		        new NumericConfig(1, NumberFormat.getIntegerInstance(), FieldType.NumericType.INT));
+		stringNumericConfigHashMap.put(ArrDescItem.NORMALIZED_FROM_ATT,
+		        new NumericConfig(16, NumberFormat.getNumberInstance(), FieldType.NumericType.LONG));
+		stringNumericConfigHashMap.put(ArrDescItem.NORMALIZED_TO_ATT,
+		        new NumericConfig(16, NumberFormat.getNumberInstance(), FieldType.NumericType.LONG));
         parser.setNumericConfigMap(stringNumericConfigHashMap);
 
         Query query;
         try {
-            Query textQuery = parser.parse(queryText, "fulltextValue");
-            Query fundIdQuery = queryBuilder.keyword().onField("fundId").matching(fundId).createQuery();
+			Query textQuery = parser.parse(queryText, ArrDescItem.FULLTEXT_ATT);
+			Query fundIdQuery = queryBuilder.keyword().onField(ArrDescItem.FUND_ID).matching(fundId).createQuery();
             query = queryBuilder.bool().must(textQuery).must(fundIdQuery).createQuery();
 
         } catch (QueryNodeException e) {
@@ -474,7 +487,8 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
         BooleanJunction<BooleanJunction> textConditions = queryBuilder.bool();
         for (String token : tokens) {
             String searchValue = "*" + token + "*";
-            Query createQuery = queryBuilder.keyword().wildcard().onField(LuceneDescItemCondition.FULLTEXT_ATT).matching(searchValue).createQuery();
+			Query createQuery = queryBuilder.keyword().wildcard().onField(ArrDescItem.FULLTEXT_ATT)
+			        .matching(searchValue).createQuery();
             textConditions.must(createQuery);
         }
 
@@ -560,19 +574,19 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
 
     @Override
     public Set<Integer> findNodeIdsByFilters(final ArrFundVersion version, final List<DescItemTypeFilter> filters) {
-        Assert.notNull(version);
-        Assert.notEmpty(filters);
+        Assert.notNull(version, "Verze AS musí být vyplněna");
+        Assert.notEmpty(filters, "Musí být vyplněn alespoň jeden filter");
 
         Integer fundId = version.getFund().getFundId();
         Integer lockChangeId = version.getLockChange() == null ? null : version.getLockChange().getChangeId();
 
-        Map<Integer, Set<String>> nodeIdToDescItemIds = findDescItemIdsByFilters(filters, fundId, lockChangeId);
+        Map<Integer, Set<Integer>> nodeIdToDescItemIds = findDescItemIdsByFilters(filters, fundId, lockChangeId);
         if (nodeIdToDescItemIds == null || nodeIdToDescItemIds.isEmpty()) {
             return Collections.emptySet();
         }
 
         Set<Integer> nodeIds = new HashSet<>();
-        Set<String> descItemIds = new HashSet<>();
+        Set<Integer> descItemIds = new HashSet<>();
         nodeIdToDescItemIds.forEach((nodeId, diIds) -> {
             if (CollectionUtils.isEmpty(diIds)) {
                 nodeIds.add(nodeId);
@@ -588,15 +602,15 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
         return nodeIds;
     }
 
-    private Map<Integer, Set<String>> findDescItemIdsByFilters(final List<DescItemTypeFilter> filters, final Integer fundId, final Integer lockChangeId) {
+    private Map<Integer, Set<Integer>> findDescItemIdsByFilters(final List<DescItemTypeFilter> filters, final Integer fundId, final Integer lockChangeId) {
         if (CollectionUtils.isEmpty(filters)) {
             return null;
         }
 
-        Map<Integer, Set<String>> allDescItemIds = null;
+        Map<Integer, Set<Integer>> allDescItemIds = null;
         for (DescItemTypeFilter filter : filters) {
-            QueryBuilder queryBuilder = createQueryBuilder(filter.getCls());
-            Map<Integer, Set<String>> nodeIdToDescItemIds = filter.resolveConditions(fullTextEntityManager, queryBuilder, fundId, entityManager, lockChangeId);
+            QueryBuilder queryBuilder = createQueryBuilder(ArrDescItem.class);
+            Map<Integer, Set<Integer>> nodeIdToDescItemIds = filter.resolveConditions(fullTextEntityManager, queryBuilder, fundId, entityManager, lockChangeId);
 
             if (allDescItemIds == null) {
                 allDescItemIds = new HashMap<>(nodeIdToDescItemIds);
@@ -604,10 +618,10 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
                 Set<Integer> existingNodes = new HashSet<>(allDescItemIds.keySet());
                 existingNodes.retainAll(nodeIdToDescItemIds.keySet());
 
-                Map<Integer, Set<String>> updatedAllDescItemIds = new HashMap<>(nodeIdToDescItemIds.size());
+                Map<Integer, Set<Integer>> updatedAllDescItemIds = new HashMap<>(nodeIdToDescItemIds.size());
                 for (Integer nodeId : existingNodes) {
-                    Set<String> rowDescItemIds = nodeIdToDescItemIds.get(nodeId);
-                    Set<String> existingDescItemIds = allDescItemIds.get(nodeId);
+                    Set<Integer> rowDescItemIds = nodeIdToDescItemIds.get(nodeId);
+                    Set<Integer> existingDescItemIds = allDescItemIds.get(nodeId);
 
                     if (existingDescItemIds == null) {
                         updatedAllDescItemIds.put(nodeId, rowDescItemIds);

@@ -4,9 +4,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import cz.tacr.elza.domain.ArrFundVersion;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import cz.tacr.elza.domain.ArrFund;
@@ -31,6 +29,15 @@ public interface ScopeRepository extends ElzaJpaRepository<RegScope, Integer>, S
     @Query("SELECT s FROM reg_scope s WHERE s.code IN (?1)")
     List<RegScope> findByCodes(Collection<String> codes);
 
+
+    /**
+     * Najde id tříd pro FA.
+     *
+     * @param fund archivní pomůcka
+     * @return id tříd dané fa
+     */
+    @Query("SELECT s.scopeId FROM arr_fund_register_scope fs JOIN fs.scope s WHERE fs.fund.id = ?1")
+    Set<Integer> findIdsByFundId(final Integer fund);
 
     /**
      * Najde id tříd pro FA.
@@ -65,4 +72,12 @@ public interface ScopeRepository extends ElzaJpaRepository<RegScope, Integer>, S
      * @return třída
      */
     RegScope findByCode(String string);
+
+    /**
+     * Najde id všech tříd.
+     *
+     * @return id tříd
+     */
+    @Query("SELECT s.scopeId FROM reg_scope s")
+    Set<Integer> findAllIds();
 }

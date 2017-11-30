@@ -51,7 +51,6 @@ import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrItemData;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ArrOutputFile;
@@ -92,7 +91,6 @@ import cz.tacr.elza.filter.condition.Interval;
 import cz.tacr.elza.filter.condition.IntervalDescItemCondition;
 import cz.tacr.elza.filter.condition.LeDescItemCondition;
 import cz.tacr.elza.filter.condition.LtDescItemCondition;
-import cz.tacr.elza.filter.condition.LuceneDescItemCondition;
 import cz.tacr.elza.filter.condition.NeDescItemCondition;
 import cz.tacr.elza.filter.condition.NoValuesCondition;
 import cz.tacr.elza.filter.condition.NotContainDescItemCondition;
@@ -161,7 +159,7 @@ public class ClientFactoryDO {
      * @return DO node
      */
     public ArrNode createNode(final ArrNodeVO nodeVO){
-        Assert.notNull(nodeVO);
+        Assert.notNull(nodeVO, "JP musí být vyplněna");
         MapperFacade mapper = mapperFactory.getMapperFacade();
         return mapper.map(nodeVO, ArrNode.class);
     }
@@ -172,7 +170,7 @@ public class ClientFactoryDO {
      * @return DO seznam nodů
      */
     public List<ArrNode> createNodes(final Collection<ArrNodeVO> nodeVoList){
-        Assert.notNull(nodeVoList);
+        Assert.notNull(nodeVoList, "Seznam JP musí být vyplněn");
 
         List<ArrNode> result = new ArrayList<>(nodeVoList.size());
         for (ArrNodeVO arrNodeVO : nodeVoList) {
@@ -246,8 +244,9 @@ public class ClientFactoryDO {
     public ArrDescItem createDescItem(final ArrItemVO descItemVO, final Integer descItemTypeId) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
 
-        ArrItemData item = mapper.map(descItemVO, ArrItemData.class);
-        ArrDescItem descItem = new ArrDescItem(item);
+        ArrData data = mapper.map(descItemVO, ArrData.class);
+        ArrDescItem descItem = new ArrDescItem();
+        descItem.setData(data);
 
         RulItemType descItemType = itemTypeRepository.findOne(descItemTypeId);
         if (descItemType == null) {
@@ -303,8 +302,9 @@ public class ClientFactoryDO {
 
     public ArrDescItem createDescItem(final ArrItemVO descItemVO) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
-        ArrItemData item = mapper.map(descItemVO, ArrItemData.class);
-        ArrDescItem descItem = new ArrDescItem(item);
+        ArrData data = mapper.map(descItemVO, ArrData.class);
+        ArrDescItem descItem = new ArrDescItem();
+        descItem.setData(data);
 		// Copy properties to application object
 		descItemVO.fill(descItem);
 
@@ -320,8 +320,8 @@ public class ClientFactoryDO {
     }
 
     public ArrPacket createPacket(final ArrPacketVO packetVO, final Integer fundId) {
-        Assert.notNull(fundId);
-        Assert.notNull(packetVO);
+        Assert.notNull(fundId, "Nebyl vyplněn identifikátor AS");
+        Assert.notNull(packetVO, "Obal musí být vyplněn");
 
         MapperFacade mapper = mapperFactory.getMapperFacade();
         ArrPacket packet = mapper.map(packetVO, ArrPacket.class);
@@ -348,7 +348,7 @@ public class ClientFactoryDO {
      * @return souřadnice
      */
     public RegCoordinates createRegCoordinates(final RegCoordinatesVO coordinatesVO) {
-        Assert.notNull(coordinatesVO);
+        Assert.notNull(coordinatesVO, "Koordináty musí být vyplněny");
         MapperFacade mapper = mapperFactory.getMapperFacade();
         RegRecord regRecord = regRecordRepository.findOne(coordinatesVO.getRegRecordId());
         Assert.notNull(regRecord, "Rejstříkové heslo neexistuje (ID=" + coordinatesVO.getRegRecordId() + ")");
@@ -364,7 +364,7 @@ public class ClientFactoryDO {
      * @return třída rejstříku
      */
     public RegScope createScope(final RegScopeVO scopeVO) {
-        Assert.notNull(scopeVO);
+        Assert.notNull(scopeVO, "Scope musí být vyplněn");
         MapperFacade mapper = mapperFactory.getMapperFacade();
         return mapper.map(scopeVO, RegScope.class);
     }
@@ -397,7 +397,7 @@ public class ClientFactoryDO {
      * @return DO
      */
     public ArrFund createFund(final ArrFundVO fundVO) {
-        Assert.notNull(fundVO);
+        Assert.notNull(fundVO, "AS musí být vyplněno");
         MapperFacade mapper = mapperFactory.getMapperFacade();
         ArrFund fund = mapper.map(fundVO, ArrFund.class);
         ParInstitution institution = institutionRepository.findOne(fundVO.getInstitutionId());
@@ -406,7 +406,7 @@ public class ClientFactoryDO {
     }
 
     public ArrNodeRegister createRegisterLink(final ArrNodeRegisterVO nodeRegisterVO) {
-        Assert.notNull(nodeRegisterVO);
+        Assert.notNull(nodeRegisterVO, "Rejstříkové heslo musí být vyplněno");
         MapperFacade mapper = mapperFactory.getMapperFacade();
         ArrNodeRegister nodeRegister = mapper.map(nodeRegisterVO, ArrNodeRegister.class);
 
@@ -450,31 +450,31 @@ public class ClientFactoryDO {
      * @return filtr pro daný typ atributu
      */
     private DescItemTypeFilter createDescItemFilter(final RulItemType descItemType, final Filter filter) {
-        Assert.notNull(descItemType);
-        Assert.notNull(filter);
+        Assert.notNull(descItemType, "Typ atributu musí být vyplněn");
+        Assert.notNull(filter, "Filter musí být vyplněn");
 
         boolean isPacketRef = descItemType.getDataType().getCode().equalsIgnoreCase("PACKET_REF");
 
         List<DescItemCondition> valuesConditions = createValuesEnumCondition(filter.getValuesType(), filter.getValues(),
-                LuceneDescItemCondition.FULLTEXT_ATT);
+		        ArrDescItem.FULLTEXT_ATT);
         List<DescItemCondition> specsConditions = createSpecificationsEnumCondition(filter.getSpecsType(), filter.getSpecs(),
-                LuceneDescItemCondition.SPECIFICATION_ATT, isPacketRef);
+		        ArrDescItem.SPECIFICATION_ATT, isPacketRef);
 
         List<DescItemCondition> conditions = new LinkedList<>();
         Condition conditionType = filter.getConditionType();
         if (conditionType != null && conditionType != Condition.NONE) {
             conditionType.checkSupport(descItemType.getDataType().getCode());
 
-            DescItemCondition condition = null;
+            DescItemCondition condition;
             switch(conditionType) {
                 case BEGIN: {
                     String conditionValue = getConditionValueString(filter.getCondition());
-                    condition = new BeginDescItemCondition<>(conditionValue, LuceneDescItemCondition.FULLTEXT_ATT);
+				condition = new BeginDescItemCondition<>(conditionValue, ArrDescItem.FULLTEXT_ATT);
                     break;
                 }
                 case CONTAIN: {
                     String conditionValue = getConditionValueString(filter.getCondition());
-                    condition = new ContainDescItemCondition<>(conditionValue, LuceneDescItemCondition.FULLTEXT_ATT);
+				condition = new ContainDescItemCondition<>(conditionValue, ArrDescItem.FULLTEXT_ATT);
                     break;
                 }
                 case EMPTY: {
@@ -483,18 +483,18 @@ public class ClientFactoryDO {
                 }
                 case END: {
                     String conditionValue = getConditionValueString(filter.getCondition());
-                    condition = new EndDescItemCondition<>(conditionValue, LuceneDescItemCondition.FULLTEXT_ATT);
+				condition = new EndDescItemCondition<>(conditionValue, ArrDescItem.FULLTEXT_ATT);
                     break;
                 }
                 case EQ: {
                     if (descItemType.getDataType().getCode().equals("UNITDATE")) {
                         Interval<Long> conditionValue = getConditionValueIntervalLong(filter.getCondition());
                         condition = new EqIntervalDesCitemCondition<>(conditionValue,
-                                LuceneDescItemCondition.NORMALIZED_FROM_ATT,
-                                LuceneDescItemCondition.NORMALIZED_TO_ATT);
+					        ArrDescItem.NORMALIZED_FROM_ATT,
+					        ArrDescItem.NORMALIZED_TO_ATT);
                     } else {
                         String conditionValue = getConditionValueString(filter.getCondition());
-                        condition = new EqDescItemCondition<>(conditionValue, LuceneDescItemCondition.FULLTEXT_ATT);
+					condition = new EqDescItemCondition<>(conditionValue, ArrDescItem.FULLTEXT_ATT);
                     }
 
                     break;
@@ -502,11 +502,11 @@ public class ClientFactoryDO {
                 case GE: {
                      if (descItemType.getDataType().getCode().equals("INT")) {
                         Integer conditionValue = getConditionValueInteger(filter.getCondition());
-                        String attributeName = LuceneDescItemCondition.INTGER_ATT;
+					String attributeName = ArrDescItem.INTGER_ATT;
                         condition = new GeDescItemCondition<>(conditionValue, attributeName);
                     } else {
                         Double conditionValue = getConditionValueDouble(filter.getCondition());
-                        String attributeName = LuceneDescItemCondition.DECIMAL_ATT;
+					String attributeName = ArrDescItem.DECIMAL_ATT;
                         condition = new GeDescItemCondition<>(conditionValue, attributeName);
                     }
                     break;
@@ -514,15 +514,15 @@ public class ClientFactoryDO {
                 case GT: {
                     if (descItemType.getDataType().getCode().equals("UNITDATE")) {
                         ArrDataUnitdate unitDate = getConditionValueUnitdate(filter.getCondition());
-                        String attributeName = LuceneDescItemCondition.NORMALIZED_FROM_ATT;
+					String attributeName = ArrDescItem.NORMALIZED_FROM_ATT;
                         condition = new GtDescItemCondition<>(unitDate.getNormalizedTo(), attributeName);
                     } else if (descItemType.getDataType().getCode().equals("INT")) {
                         Integer conditionValue = getConditionValueInteger(filter.getCondition());
-                        String attributeName = LuceneDescItemCondition.INTGER_ATT;
+					String attributeName = ArrDescItem.INTGER_ATT;
                         condition = new GtDescItemCondition<>(conditionValue, attributeName);
                     } else {
                         Double conditionValue = getConditionValueDouble(filter.getCondition());
-                        String attributeName = LuceneDescItemCondition.DECIMAL_ATT;
+					String attributeName = ArrDescItem.DECIMAL_ATT;
                         condition = new GtDescItemCondition<>(conditionValue, attributeName);
                     }
                     break;
@@ -530,18 +530,18 @@ public class ClientFactoryDO {
                 case INTERSECT: {
                     Interval<Long> conditionValue = getConditionValueIntervalLong(filter.getCondition());
                     condition = new IntersectDescItemCondition<>(conditionValue,
-                            LuceneDescItemCondition.NORMALIZED_FROM_ATT,
-                            LuceneDescItemCondition.NORMALIZED_TO_ATT);
+				        ArrDescItem.NORMALIZED_FROM_ATT,
+				        ArrDescItem.NORMALIZED_TO_ATT);
                     break;
                 }
                 case INTERVAL: {
                     if (descItemType.getDataType().getCode().equals("INT")) {
                         Interval<Integer> conditionValue = getConditionValueIntervalInteger(filter.getCondition());
-                        String attributeName = LuceneDescItemCondition.INTGER_ATT;
+					String attributeName = ArrDescItem.INTGER_ATT;
                         condition = new IntervalDescItemCondition<>(conditionValue, attributeName);
                     } else {
                         Interval<Double> conditionValue = getConditionValueIntervalDouble(filter.getCondition());
-                        String attributeName = LuceneDescItemCondition.DECIMAL_ATT;
+					String attributeName = ArrDescItem.DECIMAL_ATT;
                         condition = new IntervalDescItemCondition<>(conditionValue, attributeName);
                     }
                     break;
@@ -549,11 +549,11 @@ public class ClientFactoryDO {
                 case LE: {
                     if (descItemType.getDataType().getCode().equals("INT")) {
                         Integer conditionValue = getConditionValueInteger(filter.getCondition());
-                        String attributeName = LuceneDescItemCondition.INTGER_ATT;
+					String attributeName = ArrDescItem.INTGER_ATT;
                         condition = new LeDescItemCondition<>(conditionValue, attributeName);
                     } else {
                         Double conditionValue = getConditionValueDouble(filter.getCondition());
-                        String attributeName = LuceneDescItemCondition.DECIMAL_ATT;
+					String attributeName = ArrDescItem.DECIMAL_ATT;
                         condition = new LeDescItemCondition<>(conditionValue, attributeName);
                     }
                     break;
@@ -561,27 +561,34 @@ public class ClientFactoryDO {
                 case LT: {
                     if (descItemType.getDataType().getCode().equals("UNITDATE")) {
                         ArrDataUnitdate unitDate = getConditionValueUnitdate(filter.getCondition());
-                        String attributeName = LuceneDescItemCondition.NORMALIZED_TO_ATT;
+					String attributeName = ArrDescItem.NORMALIZED_TO_ATT;
                         condition = new LtDescItemCondition<>(unitDate.getNormalizedFrom(), attributeName);
                     } else if (descItemType.getDataType().getCode().equals("INT")) {
                         Integer conditionValue = getConditionValueInteger(filter.getCondition());
-                        String attributeName = LuceneDescItemCondition.INTGER_ATT;
+					String attributeName = ArrDescItem.INTGER_ATT;
                         condition = new LtDescItemCondition<>(conditionValue, attributeName);
                     } else {
                         Double conditionValue = getConditionValueDouble(filter.getCondition());
-                        String attributeName = LuceneDescItemCondition.DECIMAL_ATT;
+					String attributeName = ArrDescItem.DECIMAL_ATT;
                         condition = new LtDescItemCondition<>(conditionValue, attributeName);
                     }
                     break;
                 }
                 case NE: {
-                    Double conditionValue = getConditionValueDouble(filter.getCondition());
-                    condition = new NeDescItemCondition<>(conditionValue, LuceneDescItemCondition.FULLTEXT_ATT);
+                    if (descItemType.getDataType().getCode().equals("INT")) {
+                        Integer conditionValue = getConditionValueInteger(filter.getCondition());
+					String attributeName = ArrDescItem.INTGER_ATT;
+                        condition = new NeDescItemCondition<>(conditionValue, attributeName);
+                    } else {
+                        Double conditionValue = getConditionValueDouble(filter.getCondition());
+					String attributeName = ArrDescItem.DECIMAL_ATT;
+                        condition = new NeDescItemCondition<>(conditionValue, attributeName);
+                    }
                     break;
                 }
                 case NOT_CONTAIN: {
                     String conditionValue = getConditionValueString(filter.getCondition());
-                    condition = new NotContainDescItemCondition<>(conditionValue, LuceneDescItemCondition.FULLTEXT_ATT);
+				condition = new NotContainDescItemCondition<>(conditionValue, ArrDescItem.FULLTEXT_ATT);
                     break;
                 }
                 case NOT_EMPTY:
@@ -593,11 +600,11 @@ public class ClientFactoryDO {
                 case NOT_INTERVAL: {
                     if (descItemType.getDataType().getCode().equals("INT")) {
                         Interval<Integer> conditionValue = getConditionValueIntervalInteger(filter.getCondition());
-                        String attributeName = LuceneDescItemCondition.INTGER_ATT;
+					String attributeName = ArrDescItem.INTGER_ATT;
                         condition = new NotIntervalDescItemCondition<>(conditionValue, attributeName);
                     } else {
                         Interval<Double> conditionValue = getConditionValueIntervalDouble(filter.getCondition());
-                        String attributeName = LuceneDescItemCondition.DECIMAL_ATT;
+					String attributeName = ArrDescItem.DECIMAL_ATT;
                         condition = new NotIntervalDescItemCondition<>(conditionValue, attributeName);
                     }
                     break;
@@ -605,22 +612,19 @@ public class ClientFactoryDO {
                 case SUBSET: {
                     Interval<Long> conditionValue = getConditionValueIntervalLong(filter.getCondition());
                     condition = new SubsetDescItemCondition<>(conditionValue,
-                            LuceneDescItemCondition.NORMALIZED_FROM_ATT,
-                            LuceneDescItemCondition.NORMALIZED_TO_ATT);
+				        ArrDescItem.NORMALIZED_FROM_ATT,
+				        ArrDescItem.NORMALIZED_TO_ATT);
                     break;
                 }
                 default:
                     throw new IllegalArgumentException("Neznámý typ podmínky " + conditionType);
             }
 
-            if (condition != null) {
-                conditions.add(condition);
-            }
+            conditions.add(condition);
         }
 
         if (!valuesConditions.isEmpty() || !specsConditions.isEmpty() || !conditions.isEmpty()) {
-            Class<? extends ArrData> typeClass = descriptionItemService.getDescItemDataTypeClass(descItemType);
-            return new DescItemTypeFilter(descItemType, typeClass, valuesConditions, specsConditions, conditions);
+            return new DescItemTypeFilter(descItemType, valuesConditions, specsConditions, conditions);
         }
 
         return null;
@@ -764,8 +768,8 @@ public class ClientFactoryDO {
         if (valuesTypes == null && values == null) {
             return Collections.emptyList();
         }
-        Assert.notNull(valuesTypes);
-        Assert.notNull(values);
+        Assert.notNull(valuesTypes, "Typ vybraných hodnot musí být vyplněno");
+        Assert.notNull(values, "Hodnoty musí být vyplněny");
 
         boolean noValues = CollectionUtils.isEmpty(values);
         boolean containsNull = FilterTools.removeNullValues(values);
@@ -811,8 +815,8 @@ public class ClientFactoryDO {
         if (valuesTypes == null && values == null) {
             return Collections.emptyList();
         }
-        Assert.notNull(valuesTypes);
-        Assert.notNull(values);
+        Assert.notNull(valuesTypes, "Typ vybraných hodnot musí být vyplněno");
+        Assert.notNull(values, "Hodnoty musí být vyplněny");
 
         boolean noValues = CollectionUtils.isEmpty(values);
         boolean containsNull = FilterTools.removeNullValues(values);
@@ -878,8 +882,9 @@ public class ClientFactoryDO {
     public ArrOutputItem createOutputItem(final ArrItemVO outputItemVO, final Integer itemTypeId) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
 
-        ArrItemData item = mapper.map(outputItemVO, ArrItemData.class);
-        ArrOutputItem outputItem = new ArrOutputItem(item);
+        ArrData data = mapper.map(outputItemVO, ArrData.class);
+        ArrOutputItem outputItem = new ArrOutputItem();
+        outputItem.setData(data);
 
         RulItemType descItemType = itemTypeRepository.findOne(itemTypeId);
         if (descItemType == null) {
@@ -900,8 +905,9 @@ public class ClientFactoryDO {
 
     public ArrOutputItem createOutputItem(final ArrItemVO descItemVO) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
-        ArrItemData item = mapper.map(descItemVO, ArrItemData.class);
-        ArrOutputItem outputItem = new ArrOutputItem(item);
+        ArrData data = mapper.map(descItemVO, ArrData.class);
+        ArrOutputItem outputItem = new ArrOutputItem();
+        outputItem.setData(data);
         BeanUtils.copyProperties(descItemVO, outputItem);
         outputItem.setItemId(descItemVO.getId());
 

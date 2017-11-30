@@ -67,7 +67,7 @@ public class ChangeImpactRules extends Rules {
                 rulRuleSet, RulRule.RuleType.CONFORMITY_IMPACT);
 
         for (RulRule rulPackageRule : rulPackageRules) {
-            path = Paths.get(rulesExecutor.getDroolsDir(rulRuleSet.getPackage().getCode()) + File.separator + rulPackageRule.getFilename());
+            path = Paths.get(rulesExecutor.getDroolsDir(rulRuleSet.getCode()) + File.separator + rulPackageRule.getFilename());
 
             StatelessKieSession session = createNewStatelessKieSession(path);
 

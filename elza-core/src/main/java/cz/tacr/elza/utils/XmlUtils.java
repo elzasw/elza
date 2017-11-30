@@ -1,13 +1,10 @@
 package cz.tacr.elza.utils;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
-import java.io.StringWriter;
+import java.net.URL;
 import java.text.Collator;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -16,384 +13,135 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.Locale;
+import java.util.TimeZone;
 
+import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.JAXBIntrospector;
-import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.TransformerFactoryConfigurationError;
-import javax.xml.transform.stream.StreamResult;
+import javax.xml.namespace.QName;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamReader;
+import javax.xml.transform.stax.StAXSource;
 import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
+import javax.xml.validation.Validator;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.core.io.Resource;
-import org.springframework.util.Assert;
-import org.springframework.util.FileCopyUtils;
-import org.springframework.web.multipart.MultipartFile;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.Validate;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.SAXException;
 
 import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.interpi.ws.wo.SetTyp;
-import cz.tacr.elza.service.ByteStreamResult;
-import liquibase.util.file.FilenameUtils;
 
 /**
- * Pomocná třída pro práci s xml daty.
- *
- * @author Jiří Vaněk [jiri.vanek@marbes.cz]
- * @since 26. 4. 2016
+ * Helper class for XML operations.
  */
 public class XmlUtils {
 
+    /**
+     * Default data-type factory. Initialized factory is considered to be thread-safe.
+     */
+    public static final DatatypeFactory DATATYPE_FACTORY = XmlUtils.createDatatypeFactory();
+
+    public static final TimeZone UTC_TIMEZONE = TimeZone.getTimeZone("UTC");
+
     public static final String XSLT_EXTENSION = ".xslt";
 
-    private static final Logger logger = LoggerFactory.getLogger(XmlUtils.class);
-
-    public static byte[] transformData(final byte[] xmlData, final String transformationName, final String transformationsDirectory) {
-        Assert.notNull(xmlData);
-        Assert.notNull(transformationName);
-
-        StreamSource xsltSource = getTransformationSource(transformationName, transformationsDirectory);
-        return transformData(xmlData, xsltSource);
-    }
-
-
-    public static byte[] transformData(final byte[] xmlData, final Resource transformationResource) {
-        Assert.notNull(xmlData);
-        Assert.notNull(transformationResource);
-
-        StreamSource xsltSource = null;
-        try {
-            xsltSource = getStreamSource(transformationResource.getFile());
-            return transformData(xmlData, xsltSource);
-        } catch (IOException e) {
-            throw new SystemException("Chyba při transformaci vstupních dat.", e);
-        } finally {
-            if (xsltSource != null) {
-                try {
-                    xsltSource.getInputStream().close();
-                } catch (IOException ex) {
-                    logger.error("Chyba při zavírání souboru s transformací.", ex);
-                }
-            }
-        }
-    }
-
-    public static byte[] transformData(final byte[] xmlData, final StreamSource xsltSource)
-            throws TransformerFactoryConfigurationError {
-        StreamSource xmlSource = getStreamSource(xmlData);
-        ByteStreamResult result = null;
-        byte[] byteArray = null;
-        try {
-            result = new ByteStreamResult(new ByteArrayOutputStream());
-
-            TransformerFactory transFact = TransformerFactory.newInstance();
-            Transformer trans = transFact.newTransformer(xsltSource);
-            trans.setOutputProperty(OutputKeys.ENCODING, "utf-8");
-            trans.transform(xmlSource, result);
-
-            byteArray = result.toByteArray();
-        } catch (TransformerException ex) {
-            throw new SystemException("Chyba při transformaci vstupních dat.", ex);
-        } finally {
-            if (xmlSource != null) {
-                try {
-                    xmlSource.getInputStream().close();
-                } catch (IOException ex) {
-                    logger.error("Chyba při zavírání souboru se vstupními daty.", ex);
-                }
-            }
-
-            if (xsltSource != null) {
-                try {
-                    xsltSource.getInputStream().close();
-                } catch (IOException ex) {
-                    logger.error("Chyba při zavírání souboru s transformací.", ex);
-                }
-            }
-
-            if (result != null && result.getOutputStream() != null) {
-                try {
-                    result.getOutputStream().close();
-                } catch (IOException ex) {
-                    logger.error("Chyba při zavírání výsledného souboru.", ex);
-                }
-            }
-        }
-
-        return byteArray;
-    }
-
-    private static StreamSource getTransformationSource(final String transformationName, final String transformationsDirectory) {
-        Assert.notNull(transformationName);
-
-        File transformationFile = getTransformationFileByName(transformationName, transformationsDirectory);
-
-        return getStreamSource(transformationFile);
-    }
-
-    private static File getTransformationFileByName(final String transformationName, final String transformationsDirectory) {
-        File transformationFile = new File(transformationsDirectory + File.separator + transformationName + XSLT_EXTENSION);
-        return transformationFile;
-    }
-
-    private static StreamSource getStreamSource(final byte[] xmlData) {
-        Assert.notNull(xmlData);
-
-        return new StreamSource(new ByteArrayInputStream(xmlData));
-    }
-
-    private static StreamSource getStreamSource(final File xmlFile) {
-        Assert.notNull(xmlFile);
-
-        logger.info("Otevírání souboru " + xmlFile);
-        try {
-            return new StreamSource(new FileInputStream(xmlFile));
-        } catch (IOException ex) {
-            throw new SystemException("Chyba při otevírání souboru " + xmlFile, ex);
+    /**
+     * Unmarshal xml element as declared type from string.
+     */
+    public static <T> T unmarshall(String xmlValue, Class<T> declaredType) {
+        try (StringReader reader = new StringReader(xmlValue)) {
+            return unmarshall(new StreamSource(reader), declaredType);
         }
     }
 
     /**
-     * Převede data z objektu do xml.
-     *
-     * @param data data
-     *
-     * @return pole bytů
+     * Unmarshal xml element as declared type from stream source.
      */
-    public static <T, C> byte[] marshallData(final T data, final Class<C> cls) {
-        Assert.notNull(data);
-
-        try  {
-            Marshaller marshaller = createMarshaller(cls);
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            marshaller.marshal(data, outputStream);
-
-            return outputStream.toByteArray();
-        } catch (JAXBException e) {
-            throw new SystemException(e);
-        }
-    }
-
-    /**
-     * Vytvoří marshaller pro data.
-     *
-     * @return marshaller pro data
-     */
-    private static <C> Marshaller createMarshaller(final Class<C> cls) throws JAXBException {
-        JAXBContext jaxbContext = JAXBContext.newInstance(cls);
-        Marshaller marshaller = jaxbContext.createMarshaller();
-
-        return marshaller;
-    }
-
-    public static InputStream transformXml(final MultipartFile xmlFile, final File transformationFile)
-        throws TransformerFactoryConfigurationError {
-        Assert.notNull(xmlFile);
-
-        StreamSource xmlSource = null;
-        StreamSource xsltSource = null;
-        ByteStreamResult result = null;
-        byte[] byteArray = null;
-        try {
-            xmlSource = getStreamSource(xmlFile);
-            xsltSource = getTransformationSource(transformationFile);
-            result = new ByteStreamResult(new ByteArrayOutputStream());
-
-            TransformerFactory transFact = TransformerFactory.newInstance();
-            Transformer trans = transFact.newTransformer(xsltSource);
-            trans.setOutputProperty(OutputKeys.ENCODING, "utf-8");
-            trans.transform(xmlSource, result);
-
-            byteArray = result.toByteArray();
-        } catch (TransformerException ex) {
-            throw new SystemException("Chyba při transformaci vstupních dat.", ex);
-        } finally {
-            if (xmlSource != null) {
-                try {
-                    xmlSource.getInputStream().close();
-                } catch (IOException ex) {
-                    logger.error("Chyba při zavírání souboru se vstupními daty.", ex);
-                }
-            }
-
-            if (xsltSource != null) {
-                try {
-                    xsltSource.getInputStream().close();
-                } catch (IOException ex) {
-                    logger.error("Chyba při zavírání souboru s transformací.", ex);
-                }
-            }
-
-            if (result != null && result.getOutputStream() != null) {
-                try {
-                    result.getOutputStream().close();
-                } catch (IOException ex) {
-                    logger.error("Chyba při zavírání výsledného souboru.", ex);
-                }
-            }
-        }
-
-        return new ByteArrayInputStream(byteArray);
-    }
-
-    private static StreamSource getTransformationSource(final File transformationFile) {
-        Assert.notNull(transformationFile);
-
-        return getStreamSource(transformationFile);
-    }
-
-    private static StreamSource getStreamSource(final MultipartFile xmlFile) {
-        Assert.notNull(xmlFile);
-
-        try {
-            logger.info("Otevírání souboru " + xmlFile);
-            return new StreamSource(xmlFile.getInputStream());
-        } catch (IOException ex) {
-            throw new SystemException("Chyba při otevírání souboru " + xmlFile, ex);
-        }
-    }
-
-    /**
-     * Převede data z xml do objektu.
-     *
-     * @param inputStream stream
-     *
-     * @return objekt typu T
-     */
-    public static <T> T unmarshallData(final InputStream inputStream, final Class<T> cls) throws JAXBException {
-        Assert.notNull(inputStream);
-
-        Unmarshaller unmarshaller = createUnmarshaller(cls);
-
-        return (T) unmarshaller.unmarshal(inputStream);
-    }
-
-    /**
-     * Převede data z xml do objektu.
-     */
-    public static <T> T unmarshallDataWithIntrospector(final String xml, final Class<T> cls) {
-        if (xml == null) {
+    public static <T> T unmarshall(StreamSource xmlSource, Class<T> declaredType) {
+        if (xmlSource == null) {
             return null;
         }
-
         try {
-            JAXBContext jaxbContext = JAXBContext.newInstance(SetTyp.class);
+            JAXBContext jaxbContext = JAXBContext.newInstance(declaredType);
             Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-            JAXBIntrospector jaxbIntrospector = jaxbContext.createJAXBIntrospector();
-
-            StringReader reader = new StringReader(xml);
-            Object unmarshal = unmarshaller.unmarshal(reader);
-
-            return (T) jaxbIntrospector.getValue(unmarshal);
+            JAXBElement<T> element = unmarshaller.unmarshal(xmlSource, declaredType);
+            return element.getValue();
         } catch (JAXBException e) {
-            throw new SystemException("Chyba při převodu dat z xml.", e);
+            throw new SystemException("Failed to unmarshall xml element", e);
         }
     }
 
     /**
-     * Vytvoří unmarshaller pro data.
+     * Validate XML input stream by XSD schema.
      *
-     * @return unmarshaller pro data
+     * @param is xml input stream, not-null
+     * @param xsdSchema URL to resource of schema, not-null
+     * @param handler custom error handling, can be null
+     * @throws SAXException If the ErrorHandler throws a SAXException or if a fatal error is found
+     *             and the ErrorHandler returns normally.
      */
-    private static <C> Unmarshaller createUnmarshaller(final Class<C> cls) throws JAXBException {
-        JAXBContext jaxbContext = JAXBContext.newInstance(cls);
-
-        return jaxbContext.createUnmarshaller();
-    }
-
-    /**
-     * Vrátí názvy šablon.
-     *
-     * @return názvy šablon
-     */
-    public static List<String> getTransformationNames(final String transformationsDirectory) {
-        File transformDir = new File(transformationsDirectory);
-
-        if (!transformDir.exists()) {
-            transformDir.mkdirs();
-            return Collections.EMPTY_LIST;
-        }
-
-        if (!transformDir.isDirectory()) {
-            throw new SystemException("Cesta " + transformDir.getAbsolutePath() + " není adresář.");
-        }
-
-        File[] listFiles = transformDir.listFiles((dir, name) -> name.endsWith(XmlUtils.XSLT_EXTENSION));
-        if (listFiles == null) {
-            throw new SystemException("Chyba při načítání souborů z adresáře " + transformDir.getAbsolutePath());
-        }
-        List<String> transformationNames = new ArrayList<>(listFiles.length);
-        for (File file : listFiles) {
-            String transformationName = FilenameUtils.getBaseName(file.getName());
-            transformationNames.add(transformationName.toLowerCase(Locale.getDefault()));
-        }
-
-        Collator collator = Collator.getInstance(Locale.getDefault());
-        collator.setStrength(Collator.PRIMARY);
-        Collections.sort(transformationNames, collator);
-
-        return transformationNames;
-    }
-
-    /**
-     * Uloží pole bytů do dočasného souboru.
-     *
-     * @param data pole bytů
-     * @param prefix prefix názvu souboru
-     * @param suffix suffix názvu souboru, může být null
-     *
-     * @return dočasný soubor
-     */
-    public static File createTempFile(final byte[] data,final String prefix, final String suffix) {
-        Assert.notNull(data);
-        Assert.notNull(prefix);
-
+    public static void validateXml(InputStream is, URL xsdSchema, ErrorHandler handler) throws SAXException {
+        XMLInputFactory inputFactory = XMLInputFactory.newInstance();
+        SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+        // open stream reader and load schema
+        XMLStreamReader streamReader = null;
+        Schema schema = null;
         try {
-            File file = File.createTempFile(prefix, suffix);
-            FileCopyUtils.copy(data, file);
-
-            return file;
+            streamReader = inputFactory.createXMLStreamReader(is);
+            schema = schemaFactory.newSchema(xsdSchema);
+        } catch (Exception e) {
+            throw new SystemException(e);
+        }
+        // create validator
+        Validator validator = schema.newValidator();
+        if (handler != null) {
+            validator.setErrorHandler(handler);
+        }
+        // validate xml
+        try {
+            validator.validate(new StAXSource(streamReader), null);
         } catch (IOException e) {
             throw new SystemException(e);
         }
     }
 
     /**
-     * Naformátuje předané xml.
-     *
-     * @param inputStream xml
-     *
-     * @return naformátované xml
+     * Returns XSLT file names without extension in specifies directory.
      */
-    public static String formatXml(final InputStream inputStream) {
-        try {
-            Transformer transformer = TransformerFactory.newInstance().newTransformer();
-            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-            transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
-            StreamResult result = new StreamResult(new StringWriter());
-
-            StreamSource ss = new StreamSource(inputStream);
-
-            transformer.transform(ss, result);
-            return result.getWriter().toString();
-        } catch (TransformerException e) {
-            throw new SystemException("Chyba při formátování xml.", e);
+    public static List<String> getXsltFileNames(String directoryPath) {
+        File dir = new File(directoryPath);
+        if (!dir.exists()) {
+            return Collections.emptyList();
         }
+        File[] xsltFiles = dir.listFiles((f, n) -> n.endsWith(".xslt"));
+        if (xsltFiles == null) {
+            throw new SystemException("Failed to read XSLT files from directory, path:" + directoryPath);
+        }
+        List<String> fileNames = new ArrayList<>(xsltFiles.length);
+        for (File file : xsltFiles) {
+            String fileName = FilenameUtils.getBaseName(file.getName());
+            fileNames.add(fileName);
+        }
+        Collator collator = Collator.getInstance();
+        collator.setStrength(Collator.PRIMARY);
+        Collections.sort(fileNames, collator);
+        return fileNames;
     }
 
     /**
-     * Converts {@link XMLGregorianCalendar} to  {@link LocalDateTime}.
+     * Converts {@link XMLGregorianCalendar} to {@link LocalDateTime}.<br>
+     * Xml calendar with undefined timezone is converted without time shift.<br>
+     * Any date before October 15, 1582 will be recalculate from Julian to Gregorian calendar.
+     *
      * @param calendar xml date-time, can be null
      * @return {@link LocalDateTime} or null when calendar was null.
      */
@@ -401,11 +149,67 @@ public class XmlUtils {
         if (calendar == null) {
             return null;
         }
-        GregorianCalendar gc = calendar.toGregorianCalendar();
+        TimeZone tz = calendar.getTimezone() == DatatypeConstants.FIELD_UNDEFINED ? UTC_TIMEZONE : null;
+        GregorianCalendar gc = calendar.toGregorianCalendar(tz, null, null);
         Instant instant = Instant.ofEpochMilli(gc.getTimeInMillis());
         return LocalDateTime.ofEpochSecond(instant.getEpochSecond(), instant.getNano(), ZoneOffset.UTC);
     }
 
+    /**
+     * Converts {@link LocalDateTime} to {@link XMLGregorianCalendar}.<br>
+     * Possible precision loss (only milliseconds are converted).
+     *
+     * @param dateTime can be null
+     * @param dtf not-null
+     * @return {@link XMLGregorianCalendar} or null when dateTime was null.
+     */
+    public static XMLGregorianCalendar convertDate(LocalDateTime dateTime) {
+        if (dateTime == null) {
+            return null;
+        }
+        XMLGregorianCalendar xmlGc = DATATYPE_FACTORY.newXMLGregorianCalendar(
+                dateTime.getYear(),
+                dateTime.getMonthValue(),
+                dateTime.getDayOfMonth(),
+                dateTime.getHour(),
+                dateTime.getMinute(),
+                dateTime.getSecond(),
+                dateTime.getNano() / 1000000,
+                DatatypeConstants.FIELD_UNDEFINED);
+        return xmlGc;
+    }
+
+    /**
+     * Helper method for creating new JAXB context instance.
+     */
+    public static JAXBContext createJAXBContext(Class<?>... jaxbClasses) {
+        Validate.notEmpty(jaxbClasses);
+        try {
+            return JAXBContext.newInstance(jaxbClasses);
+        } catch (JAXBException e) {
+            throw new SystemException(e);
+        }
+    }
+
+    /**
+     * Wraps element to JAXB element. Commonly used for fragment serialization of XML type.
+     */
+    public static JAXBElement<?> wrapElement(String localName, Object element) {
+        return wrapElement(new QName(localName), element);
+    }
+
+    /**
+     * Wraps element to JAXB element. Commonly used for fragment serialization of XML type.
+     */
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public static JAXBElement<?> wrapElement(QName name, Object element) {
+        Validate.notNull(name);
+        return new JAXBElement(name, element.getClass(), element);
+    }
+
+    /**
+     * Helper method for creating new DatatypeFactory instance.
+     */
     public static DatatypeFactory createDatatypeFactory() {
         try {
             return DatatypeFactory.newInstance();

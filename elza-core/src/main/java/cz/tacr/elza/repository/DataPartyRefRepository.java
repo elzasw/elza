@@ -1,5 +1,7 @@
 package cz.tacr.elza.repository;
 
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -22,4 +24,7 @@ public interface DataPartyRefRepository extends JpaRepository<ArrDataPartyRef, I
      */
     @Query("SELECT count(*) FROM arr_data_party_ref i WHERE i.party = ?1")
     Long getCountByParty(ParParty party);
+
+    @Query("SELECT i FROM arr_data_party_ref i WHERE i.party = ?1")
+	List<ArrDataPartyRef> findByParty(ParParty party);
 }

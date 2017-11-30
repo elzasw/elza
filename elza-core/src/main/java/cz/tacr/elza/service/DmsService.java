@@ -12,9 +12,8 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.ArrangementCode;
-import cz.tacr.elza.service.exception.DeleteFailedException;
+import javax.transaction.Transactional;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -25,12 +24,14 @@ import org.springframework.util.Assert;
 
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.annotation.AuthParam;
-import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrOutputFile;
 import cz.tacr.elza.domain.ArrOutputResult;
 import cz.tacr.elza.domain.DmsFile;
+import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.repository.FileRepository;
 import cz.tacr.elza.repository.FilteredResult;
 import cz.tacr.elza.repository.FundFileRepository;
@@ -41,6 +42,7 @@ import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventStringInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
+import cz.tacr.elza.service.exception.DeleteFailedException;
 
 /**
  * Dms Service
@@ -85,8 +87,8 @@ public class DmsService {
      * @throws IOException
      */
     public void createFile(final DmsFile dmsFile, final InputStream fileStream) throws IOException {
-        Assert.notNull(dmsFile);
-        Assert.notNull(fileStream);
+        Assert.notNull(dmsFile, "Soubor musí být vyplněn");
+        Assert.notNull(fileStream, "Stream souboru musí být vyplněn");
 
         fileRepository.save(dmsFile);
 
@@ -128,7 +130,7 @@ public class DmsService {
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR, UsrPermission.Permission.FUND_ARR_ALL})
     public void checkFundWritePermission(@AuthParam(type = AuthParam.Type.FUND) final Integer fundId) {
-        Assert.notNull(fundId);
+        Assert.notNull(fundId, "Nebyl vyplněn identifikátor AS");
     }
 
     /**
@@ -139,8 +141,8 @@ public class DmsService {
      * @throws IOException
      */
     public void updateFile(final DmsFile newFile, final InputStream fileStream) throws IOException {
-        Assert.notNull(newFile);
-        Assert.notNull(newFile.getFileId());
+        Assert.notNull(newFile, "Soubor musí být vyplněn");
+        Assert.notNull(newFile.getFileId(), "Identifikátor souboru musí být vyplněn");
 
         DmsFile dbFile = getFile(newFile.getFileId());
 
@@ -180,7 +182,7 @@ public class DmsService {
      * @return stream
      */
     public InputStream downloadFile(final DmsFile dmsFile) {
-        Assert.notNull(dmsFile);
+        Assert.notNull(dmsFile, "Soubor musí být vyplněn");
 
         File outputFile = new File(getFilePath(dmsFile));
         if (!outputFile.exists()) {
@@ -239,7 +241,7 @@ public class DmsService {
      * @throws IOException
      */
     public void deleteFile(final DmsFile dmsFile) throws IOException {
-        Assert.notNull(dmsFile);
+        Assert.notNull(dmsFile, "Soubor musí být vyplněn");
 
         fileRepository.delete(dmsFile);
 
@@ -299,7 +301,7 @@ public class DmsService {
      * @return soubor
      */
     public DmsFile getFile(final Integer fileId) {
-        Assert.notNull(fileId);
+        Assert.notNull(fileId, "Identifikátor souboru musí být vyplněn");
         return fileRepository.getOneCheckExist(fileId);
     }
 
@@ -328,7 +330,7 @@ public class DmsService {
                                                 @AuthParam(type = AuthParam.Type.FUND) final Integer fundId,
                                                 final Integer from,
                                                 final Integer count) {
-        Assert.notNull(fundId);
+        Assert.notNull(fundId, "Nebyl vyplněn identifikátor AS");
         return fundFileRepository.findByTextAndFund(search, fundRepository.getOneCheckExist(fundId), from, count);
     }
 
@@ -341,9 +343,10 @@ public class DmsService {
      * @param count  počet
      * @return filtrovaný list
      */
+	@Transactional
     @AuthMethod(permission = {UsrPermission.Permission.FUND_RD, UsrPermission.Permission.FUND_RD_ALL})
     public FilteredResult<ArrOutputFile> findOutputFiles(final String search, final Integer outputResultId, final Integer from, final Integer count) {
-        Assert.notNull(outputResultId);
+        Assert.notNull(outputResultId, "Identifikátor výstupu musí být vyplněn");
         return outputFileRepository.findByTextAndResult(search, outputResultRepository.getOneCheckExist(outputResultId), from, count);
     }
 

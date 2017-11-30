@@ -1,5 +1,7 @@
 package cz.tacr.elza.bulkaction.generator.result;
 
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.ArrItemData;
 
 import java.util.List;
@@ -14,13 +16,13 @@ public class CopyActionResult extends ActionResult {
 
     private String itemType;
 
-    private List<ArrItemData> dataItems;
+    private List<ArrItem> dataItems;
 
-    public List<ArrItemData> getDataItems() {
+    public List<ArrItem> getDataItems() {
         return dataItems;
     }
 
-    public void setDataItems(final List<ArrItemData> dataItems) {
+    public void setDataItems(final List<ArrItem> dataItems) {
         this.dataItems = dataItems;
     }
 

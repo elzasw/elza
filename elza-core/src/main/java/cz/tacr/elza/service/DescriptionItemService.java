@@ -1,10 +1,13 @@
 package cz.tacr.elza.service;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -16,15 +19,21 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.BeanUtils;
+import org.apache.commons.lang.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import com.google.common.base.Objects;
+import com.google.common.collect.Lists;
+
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.annotation.AuthParam;
+import cz.tacr.elza.controller.ArrangementController;
 import cz.tacr.elza.controller.vo.TreeNode;
+import cz.tacr.elza.core.data.CalendarType;
+import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataCoordinates;
@@ -41,19 +50,18 @@ import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDataUnitid;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrItemData;
-import cz.tacr.elza.domain.ArrItemFormattedText;
-import cz.tacr.elza.domain.ArrItemString;
-import cz.tacr.elza.domain.ArrItemText;
+import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.ParUnitdate;
+import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.convertor.CalendarConverter;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.domain.vo.CoordinatesTitleValue;
@@ -71,19 +79,21 @@ import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.repository.DataPacketRefRepository;
-import cz.tacr.elza.repository.DataPartyRefRepository;
-import cz.tacr.elza.repository.DataRecordRefRepository;
+import cz.tacr.elza.exception.codes.RegistryCode;
+import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.DataRepository;
-import cz.tacr.elza.repository.DataTypeRepository;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
+import cz.tacr.elza.repository.ItemSpecRegisterRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.repository.RegRecordRepository;
+import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventChangeDescItem;
+import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 
 
@@ -104,7 +114,7 @@ public class DescriptionItemService {
     private DescItemRepository descItemRepository;
 
     @Autowired
-    private DataTypeRepository dataTypeRepository;
+    private RegRecordRepository regRecordRepository;
 
     @Autowired
     private FundVersionRepository fundVersionRepository;
@@ -134,17 +144,22 @@ public class DescriptionItemService {
     private EventNotificationService notificationService;
 
     @Autowired
-    private DataPartyRefRepository dataPartyRefRepository;
-    @Autowired
-    private DataRecordRefRepository dataRecordRefRepository;
-    @Autowired
-    private DataPacketRefRepository dataPacketRefRepository;
-
-    @Autowired
-    private ItemService itemService;
-
-    @Autowired
     private ArrangementCacheService arrangementCacheService;
+
+    @Autowired
+    private LevelTreeCacheService levelTreeCacheService;
+
+    @Autowired
+    private CalendarTypeRepository calendarTypeRepository;
+
+    @Autowired
+    private ItemSpecRegisterRepository itemSpecRegisterRepository;
+
+    @Autowired
+    private RegisterTypeRepository registerTypeRepository;
+
+    @Autowired
+    private EventNotificationService eventNotificationService;
 
     /**
      * Kontrola otevřené verze.
@@ -185,9 +200,9 @@ public class DescriptionItemService {
     public ArrDescItem deleteDescriptionItem(final Integer descItemObjectId,
                                              final Integer nodeVersion,
                                              @AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId) {
-        Assert.notNull(descItemObjectId);
-        Assert.notNull(nodeVersion);
-        Assert.notNull(fundVersionId);
+        Assert.notNull(descItemObjectId, "Nebyl vyplněn jednoznačný identifikátor descItem");
+        Assert.notNull(nodeVersion, "Nebyla vyplněna verze JP");
+        Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
 
         ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
         List<ArrDescItem> descItems = descItemRepository.findOpenDescItems(descItemObjectId);
@@ -334,15 +349,15 @@ public class DescriptionItemService {
                                              final Integer nodeId,
                                              final Integer nodeVersion,
                                              @AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId) {
-        Assert.notNull(descItem);
-        Assert.notNull(nodeId);
-        Assert.notNull(nodeVersion);
-        Assert.notNull(fundVersionId);
+        Assert.notNull(descItem, "Hodnota atributu musí být vyplněna");
+        Assert.notNull(nodeId, "Identifikátor JP musí být vyplněn");
+        Assert.notNull(nodeVersion, "Nebyla vyplněna verze JP");
+        Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
 
         ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
 
         ArrNode node = nodeRepository.findOne(nodeId);
-        Assert.notNull(node);
+        Assert.notNull(node, "JP musí být vyplněna");
 
         ArrChange change = arrangementService.createChange(ArrChange.Type.ADD_DESC_ITEM, node);
 
@@ -369,16 +384,16 @@ public class DescriptionItemService {
                                                     final Integer nodeId,
                                                     final Integer nodeVersion,
                                                     @AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId) {
-        Assert.notNull(descItems);
-        Assert.notEmpty(descItems);
-        Assert.notNull(nodeId);
-        Assert.notNull(nodeVersion);
-        Assert.notNull(fundVersionId);
+        Assert.notNull(descItems, "Hodnoty atributů musí být vyplněny");
+        Assert.notEmpty(descItems, "Alespoň jedna hodnota atributu musí být vyplněna");
+        Assert.notNull(nodeId, "Identifikátor JP musí být vyplněn");
+        Assert.notNull(nodeVersion, "Nebyla vyplněna verze JP");
+        Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
 
         ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
 
         ArrNode node = nodeRepository.findOne(nodeId);
-        Assert.notNull(node);
+        Assert.notNull(node, "JP musí být vyplněna");
 
         ArrChange change = arrangementService.createChange(ArrChange.Type.ADD_DESC_ITEM, node);
 
@@ -401,17 +416,16 @@ public class DescriptionItemService {
     public ArrDescItem createDescriptionItem(final ArrDescItem descItem,
                                              final ArrNode node,
                                              final ArrFundVersion version,
-                                             @Nullable final ArrChange createChange) {
+	        final ArrChange createChange) {
 
-        ArrChange change = createChange == null ? arrangementService.createChange(ArrChange.Type.ADD_DESC_ITEM, node) : createChange;
+		Validate.notNull(createChange);
 
         descItem.setNode(node);
-        descItem.setCreateChange(change);
+		descItem.setCreateChange(createChange);
         descItem.setDeleteChange(null);
         descItem.setDescItemObjectId(arrangementService.getNextDescItemObjectId());
-        descItem.setUndefined(false);
 
-        ArrDescItem descItemCreated = createDescriptionItemWithData(descItem, version, change);
+		ArrDescItem descItemCreated = createDescriptionItemWithData(descItem, version, createChange);
 
         // validace uzlu
         ruleService.conformityInfo(version.getFundVersionId(), Collections.singletonList(descItem.getNode().getNodeId()),
@@ -471,9 +485,9 @@ public class DescriptionItemService {
     public ArrDescItem createDescriptionItemWithData(final ArrDescItem descItem,
                                                      final ArrFundVersion version,
                                                      final ArrChange change) {
-        Assert.notNull(descItem);
-        Assert.notNull(version);
-        Assert.notNull(change);
+        Assert.notNull(descItem, "Hodnota atributu musí být vyplněna");
+        Assert.notNull(version, "Verze AS musí být vyplněna");
+        Assert.notNull(change, "Změna musí být vyplněna");
 
         // pro vytváření musí být verze otevřená
         checkFundVersionLock(version);
@@ -496,29 +510,15 @@ public class DescriptionItemService {
         List<ArrDescItem> descItemNews = new ArrayList<>(descItems.size());
         for (ArrDescItem descItemMove : descItems) {
 
-            descItemMove.setDeleteChange(change);
-            descItemRepository.save(descItemMove);
-
-            ArrDescItem descItemNew = null;
-            try {
-                ArrItemData itemData = descItemMove.getItem().getClass().newInstance();
-                descItemNew = new ArrDescItem(itemData);
-            } catch (InstantiationException | IllegalAccessException e) {
-                throw new SystemException(e);
-            }
-
-            BeanUtils.copyProperties(descItemMove, descItemNew);
-            descItemNew.setItemId(null);
-            descItemNew.setDeleteChange(null);
-            descItemNew.setCreateChange(change);
-            descItemNew.setPosition(descItemMove.getPosition() + 1);
+			// make data copy
+			ArrData trgData = copyDescItemData(descItemMove);
+			// prepare new item and close old one
+			ArrDescItem descItemNew = prepareNewDescItem(descItemMove, trgData, change);
+			descItemNew.setPosition(descItemMove.getPosition() + 1);
 
             descItemRepository.save(descItemNew);
 
             descItemNews.add(descItemNew);
-
-            // pro odverzovanou hodnotu atributu je nutné vytvořit kopii dat
-            copyDescItemData(descItemMove, descItemNew);
         }
 
         if (CollectionUtils.isNotEmpty(descItemNews)) {
@@ -526,7 +526,7 @@ public class DescriptionItemService {
         }
 
         descItem.setCreateChange(change);
-        descItemFactory.saveDescItemWithData(descItem, true);
+        descItemFactory.saveItemVersionWithData(descItem, true);
 
         arrangementCacheService.createDescItem(descItem.getNodeId(), descItem);
         return descItem;
@@ -547,6 +547,16 @@ public class DescriptionItemService {
             if (descItemSpec == null) {
                 throw new BusinessException("Pro typ atributu je nutné specifikaci vyplnit", ArrangementCode.ITEM_SPEC_NOT_FOUND).level(Level.WARNING);
             }
+
+            if (descItemType.getDataType().getCode().equals("RECORD_REF")) {
+                Set<Integer> registerTypeIds = itemSpecRegisterRepository.findIdsByItemSpecId(descItemSpec);
+                Set<Integer> registerTypeIdTree = registerTypeRepository.findSubtreeIds(registerTypeIds);
+                ArrDataRecordRef data = (ArrDataRecordRef) descItem.getData();
+                if (!registerTypeIdTree.contains(data.getRecord().getRegisterTypeId())) {
+                    throw new BusinessException("Hodnota neodpovídá typu rejstříku podle specifikace", RegistryCode.FOREIGN_ENTITY_INVALID_SUBTYPE).level(Level.WARNING);
+                }
+            }
+
         } else {
             if (descItemSpec != null) {
                 throw new BusinessException("Pro typ atributu nesmí být specifikace vyplněná", ArrangementCode.ITEM_SPEC_FOUND).level(Level.WARNING);
@@ -575,9 +585,9 @@ public class DescriptionItemService {
                                              final ArrFundVersion version,
                                              final ArrChange change,
                                              final boolean moveAfter) {
-        Assert.notNull(descItem);
-        Assert.notNull(version);
-        Assert.notNull(change);
+        Assert.notNull(descItem, "Hodnota atributu musí být vyplněna");
+        Assert.notNull(version, "Verze AS musí být vyplněna");
+        Assert.notNull(change, "Změna musí být vyplněna");
 
         // pro mazání musí být verze otevřená
         checkFundVersionLock(version);
@@ -603,24 +613,31 @@ public class DescriptionItemService {
     }
 
     /**
-     * Provede posun (a odverzování) hodnot atributů s daty o požadovaný počet.
-     *
-     * @param change    změna operace
-     * @param descItems seznam posunovaných hodnot atributu
-     * @param diff      počet a směr posunu
-     */
+	 * Provede posun (a odverzování) hodnot atributů jednoho uzlu s daty o
+	 * požadovaný počet.
+	 *
+	 * @param change
+	 *            změna operace
+	 * @param descItems
+	 *            seznam posunovaných hodnot atributu
+	 * @param diff
+	 *            počet a směr posunu
+	 */
     private void copyDescItemsWithData(final ArrChange change, final List<ArrDescItem> descItems, final Integer diff,
                                        final ArrFundVersion version) {
         List<ArrDescItem> descItemNews = new ArrayList<>(descItems.size());
         for (ArrDescItem descItemMove : descItems) {
 
-            ArrDescItem descItemNew = copyDescItem(change, descItemMove, descItemMove.getPosition() + diff);
+			// copy data
+			ArrData trgData = copyDescItemData(descItemMove);
+
+			// copy description item
+			ArrDescItem descItemNew = prepareNewDescItem(descItemMove, trgData, change);
+			descItemNew.setPosition(descItemMove.getPosition() + diff);
+			descItemNew = descItemRepository.save(descItemNew);
 
             // sockety
             publishChangeDescItem(version, descItemNew);
-
-            // pro odverzovanou hodnotu atributu je nutné vytvořit kopii dat
-            copyDescItemData(descItemMove, descItemNew);
         }
 
         if (CollectionUtils.isNotEmpty(descItemNews)) {
@@ -629,31 +646,35 @@ public class DescriptionItemService {
     }
 
     /**
-     * Vytvoří kopii descItem. Původní hodnotu uzavře a vytvoří novou se stejnými daty (odverzování)
-     *
-     * @param change   změna, se kterou dojde k uzamčení a vytvoření kopie
-     * @param descItem hodnota ke zkopírování
-     * @param position pozice atributu
-     * @return kopie atributu4
-     */
-    private ArrDescItem copyDescItem(final ArrChange change, final ArrDescItem descItem, final int position) {
-        descItem.setDeleteChange(change);
+	 * Prepare new version of description item. Current description item is
+	 * marked as deleted and saved.
+	 *
+	 * Returned item is not saved. Caller can modify returned item before saving
+	 * and then have to save it.
+	 *
+	 * @param descItem
+	 *            source item
+	 * @param trgData
+	 *            new data for returned copy
+	 * @param change
+	 *            změna, se kterou dojde k uzamčení a vytvoření kopie
+	 * @return copy of the source item with new data. Returned item is not
+	 *         saved!!!
+	 */
+	private ArrDescItem prepareNewDescItem(final ArrDescItem descItem, final ArrData trgData, final ArrChange change) {
+		// Mark orig descItem as deleted
+		descItem.setDeleteChange(change);
         descItemRepository.save(descItem);
 
-        ArrDescItem descItemNew;
-        //try {
-        descItemNew = new ArrDescItem();
-        /*} catch (InstantiationException | IllegalAccessException e) {
-            throw new IllegalStateException(e);
-        }*/
+		// Create new one
+		ArrDescItem descItemNew = new ArrDescItem(descItem);
 
-        BeanUtils.copyProperties(descItem, descItemNew);
         descItemNew.setItemId(null);
+		descItemNew.setData(trgData);
         descItemNew.setDeleteChange(null);
         descItemNew.setCreateChange(change);
-        descItemNew.setPosition(position);
 
-        return descItemRepository.save(descItemNew);
+		return descItemNew;
     }
 
     /**
@@ -668,14 +689,22 @@ public class DescriptionItemService {
                                                         final ArrFundVersion version) {
         List<ArrDescItem> result = new ArrayList<>(sourceDescItems.size());
         for (ArrDescItem sourceDescItem : sourceDescItems) {
-            ArrDescItem descItemNew = new ArrDescItem();
 
-            BeanUtils.copyProperties(sourceDescItem, descItemNew);
+			// copy and save data
+			ArrData trgData = copyDescItemData(sourceDescItem);
+			// prepare new description item
+			// first make copy from original
+			ArrDescItem descItemNew = new ArrDescItem(sourceDescItem);
+			// set data
+			descItemNew.setData(trgData);
+			// set parent node
             descItemNew.setNode(node);
+			// reset id
             descItemNew.setItemId(null);
+			// prepare change info
             descItemNew.setDeleteChange(null);
             descItemNew.setCreateChange(createChange);
-            descItemNew.setPosition(sourceDescItem.getPosition());
+			// prepare new object id
             descItemNew.setDescItemObjectId(arrangementService.getNextDescItemObjectId());
 
             descItemRepository.save(descItemNew);
@@ -683,8 +712,6 @@ public class DescriptionItemService {
             // sockety
             //publishChangeDescItem(version, descItemNew);
 
-            // pro odverzovanou hodnotu atributu je nutné vytvořit kopii dat
-            copyDescItemData(sourceDescItem, descItemNew);
             result.add(descItemNew);
         }
         if (CollectionUtils.isNotEmpty(result)) {
@@ -706,44 +733,22 @@ public class DescriptionItemService {
     }
 
     /**
-     * Provede kopii dat mezi hodnotama atributů.
-     *
-     * @param descItemFrom z hodnoty atributu
-     * @param descItemTo   do hodnoty atributu
-     */
-    private void copyDescItemData(final ArrDescItem descItemFrom, final ArrDescItem descItemTo) {
-		if (!descItemFrom.getUndefined()) {
-            List<ArrData> dataList = dataRepository.findByItem(descItemFrom);
-
-            if (dataList.size() != 1) {
-                throw new SystemException("Hodnota musí být právě jedna", BaseCode.DB_INTEGRITY_PROBLEM);
-            }
-
-            ArrData data = dataList.get(0);
-            ArrData dataNew = createCopyDescItemData(data, descItemTo);
-            descItemFactory.fillItemData(descItemTo, data);
-            dataRepository.save(dataNew);
-        }
-    }
-
-    /**
-     * Vytvoří kopii dat atributu.
-     *
-     * @param data        data atributu
-     * @param newDescItem atribut, do kterého patří data
-     * @return vytvořená kopie dat atributu (neuložená)
-     */
-    private ArrData createCopyDescItemData(final ArrData data, final ArrDescItem newDescItem) {
-        try {
-            ArrData dataNew = data.getClass().getConstructor().newInstance();
-
-            BeanUtils.copyProperties(data, dataNew);
-            dataNew.setDataId(null);
-            dataNew.setItem(newDescItem);
-            return dataNew;
-        } catch (Exception e) {
-            throw new SystemException(e.getCause());
-        }
+	 * Provede kopii dat ze zdrojové item
+	 *
+	 * Function will save created data in repository
+	 *
+	 * @param descItemFrom
+	 *            z hodnoty atributu
+	 * @return Return object with data copy. If data are not defined in source
+	 *         item method will return null.
+	 */
+	private ArrData copyDescItemData(final ArrItem itemFrom) {
+		ArrData srcData = itemFrom.getData();
+		if (srcData == null) {
+			return null;
+		}
+		ArrData dataNew = ArrData.makeCopyWithoutId(srcData);
+		return dataRepository.save(dataNew);
     }
 
     /**
@@ -760,14 +765,13 @@ public class DescriptionItemService {
                                              final Integer nodeVersion,
                                              final @AuthParam(type = AuthParam.Type.FUND_VERSION) Integer fundVersionId,
                                              final Boolean createNewVersion) {
-        Assert.notNull(descItem);
-        Assert.notNull(descItem.getPosition());
-        Assert.notNull(descItem.getDescItemObjectId());
-        Assert.notNull(nodeVersion);
-        Assert.notNull(fundVersionId);
-        Assert.notNull(createNewVersion);
+        Assert.notNull(descItem, "Hodnota atributu musí být vyplněna");
+        Assert.notNull(descItem.getPosition(), "Pozice musí být vyplněna");
+        Assert.notNull(descItem.getDescItemObjectId(), "Identifikátor hodnoty atributu musí být vyplněn");
+        Assert.notNull(nodeVersion, "Nebyla vyplněna verze JP");
+        Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
+        Assert.notNull(createNewVersion, "Vytvořit novou verzi musí být vyplněno");
 
-        ArrChange change = null;
         ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
 
         List<ArrDescItem> descItems = descItemRepository.findOpenDescItems(descItem.getDescItemObjectId());
@@ -780,8 +784,10 @@ public class DescriptionItemService {
         ArrDescItem descItemDB = descItems.get(0);
 
         ArrNode node = descItemDB.getNode();
-        Assert.notNull(node);
+        Assert.notNull(node, "JP musí být vyplněna");
 
+		ArrChange change = null;
+		ArrDescItem descItemUpdated;
         if (createNewVersion) {
             node.setVersion(nodeVersion);
 
@@ -790,9 +796,12 @@ public class DescriptionItemService {
 
             // uložení uzlu (kontrola optimistických zámků)
             saveNode(node, change);
-        }
 
-        ArrDescItem descItemUpdated = updateDescriptionItemWithData(descItem, descItemDB, fundVersion, change, createNewVersion);
+			descItemUpdated = updateItemValueAsNewVersion(fundVersion, change, descItemDB, descItem.getItemSpec(),
+			        descItem.getData());
+		} else {
+			descItemUpdated = updateValue(fundVersion, descItem);
+        }
 
         // validace uzlu
         ruleService.conformityInfo(fundVersionId, Arrays.asList(descItemUpdated.getNode().getNodeId()),
@@ -814,10 +823,10 @@ public class DescriptionItemService {
     public ScenarioOfNewLevel getDescriptionItamsOfScenario(final String scenarionName, final ArrLevel level,
                                                             final DirectionLevel directionLevel,
                                                             final ArrFundVersion version) {
-        Assert.notNull(scenarionName);
-        Assert.notNull(level);
-        Assert.notNull(directionLevel);
-        Assert.notNull(version);
+        Assert.notNull(scenarionName, "Název scénáře musí být vyplněn");
+        Assert.notNull(level, "Level musí být vyplněn");
+        Assert.notNull(directionLevel, "Směr založení musí být vyplněn");
+        Assert.notNull(version, "Verze AS musí být vyplněna");
 
         List<ScenarioOfNewLevel> scenarioOfNewLevels = getDescriptionItemTypesForNewLevel(level, directionLevel,
                 version);
@@ -843,8 +852,8 @@ public class DescriptionItemService {
                                                                        final DirectionLevel directionLevel,
                                                                        final ArrFundVersion version
     ) {
-        Assert.notNull(version);
-        Assert.notNull(level);
+        Assert.notNull(version, "Verze AS musí být vyplněna");
+        Assert.notNull(level, "Level musí být vyplněn");
 
         return rulesExecutor.executeScenarioOfNewLevelRules(level, directionLevel, version);
     }
@@ -861,8 +870,7 @@ public class DescriptionItemService {
 
         ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
         ArrNode node = nodeRepository.findOne(nodeId);
-        ArrLevel level = levelRepository.findNodeInRootTreeByNodeId(node, version.getRootNode(),
-                version.getLockChange());
+        ArrLevel level = levelRepository.findByNode(node, version.getLockChange());
 
         return getDescriptionItemTypesForNewLevel(level, directionLevel, version);
     }
@@ -881,22 +889,13 @@ public class DescriptionItemService {
                                              final ArrFundVersion fundVersion,
                                              final ArrChange change,
                                              final boolean createNewVersion) {
-        Assert.notNull(descItem);
-        Assert.notNull(descItem.getPosition());
-        Assert.notNull(descItem.getDescItemObjectId());
-        Assert.notNull(fundVersion);
-        Assert.notNull(change);
+        Assert.notNull(descItem, "Hodnota atributu musí být vyplněna");
+        Assert.notNull(descItem.getPosition(), "Pozice musí být vyplněna");
+        Assert.notNull(descItem.getDescItemObjectId(), "Identifikátor hodnoty atributu musí být vyplněn");
+        Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
+        Assert.notNull(change, "Změna musí být vyplněna");
 
-        List<ArrDescItem> descItems = descItemRepository.findOpenDescItems(descItem.getDescItemObjectId());
-
-        if (descItems.size() > 1) {
-            throw new SystemException("Hodnota musí být právě jedna", BaseCode.DB_INTEGRITY_PROBLEM);
-        } else if (descItems.size() == 0) {
-            throw new SystemException("Hodnota neexistuje, pravděpodobně byla již smazána");
-        }
-        ArrDescItem descItemDB = descItems.get(0);
-
-        ArrDescItem descItemUpdated = updateDescriptionItemWithData(descItem, descItemDB, fundVersion, change, createNewVersion);
+		ArrDescItem descItemUpdated = updateValueAsNewVersion(fundVersion, change, descItem);
 
         // validace uzlu
         ruleService.conformityInfo(fundVersion.getFundVersionId(), Arrays.asList(descItemUpdated.getNode().getNodeId()),
@@ -906,107 +905,132 @@ public class DescriptionItemService {
     }
 
     /**
-     * Upravení hodnoty atributu s daty.
-     *
-     * @param descItem         hodnota atributu (změny)
-     * @param descItemDB       hodnota atributu - původní (pokud je null, donačte se)
-     * @param version          verze archivní pomůcky
-     * @param change           změna operace
-     * @param createNewVersion vytvořit novou verzi?
-     * @return upravená výsledná hodnota atributu
-     */
-    public ArrDescItem updateDescriptionItemWithData(final ArrDescItem descItem,
-                                                     final ArrDescItem descItemDB,
-                                                     final ArrFundVersion version,
-                                                     final ArrChange change,
-                                                     final Boolean createNewVersion) {
+	 * Fetch open item with given ID from DB
+	 *
+	 * @param descItemObjectId
+	 * @return
+	 */
+	protected ArrDescItem fetchOpenItemFromDB(int descItemObjectId) {
+		// fetch item from DB
+		List<ArrDescItem> descItems = descItemRepository.findOpenDescItems(descItemObjectId);
 
-        if (createNewVersion ^ change != null) {
-            throw new SystemException("Pokud vytvářím novou verzi, musí být předaná reference změny. Pokud verzi nevytvářím, musí být reference změny null.");
-        }
+		if (descItems.size() > 1) {
+			throw new SystemException("Hodnota musí být právě jedna", BaseCode.DB_INTEGRITY_PROBLEM);
+		} else if (descItems.size() == 0) {
+			throw new SystemException("Hodnota neexistuje, pravděpodobně byla již smazána");
+		}
+		ArrDescItem descItem = descItems.get(0);
+		return descItem;
+	}
 
-        if (createNewVersion && version.getLockChange() != null) {
-            throw new SystemException("Nelze provést verzovanou změnu v uzavřené verzi.");
-        }
+	/**
+	 * Update value without creating new version
+	 *
+	 * Method will update specification and value
+	 *
+	 * @param descItem
+	 *            detached item with new value
+	 */
+	public ArrDescItem updateValue(final ArrFundVersion version, final ArrDescItem descItem)
+    {
+		// fetch item from DB
+		ArrDescItem descItemCurr = fetchOpenItemFromDB(descItem.getDescItemObjectId());
 
-        ArrDescItem descItemOrig;
-        if (descItemDB == null) {
-            List<ArrDescItem> descItems = descItemRepository.findOpenDescItems(descItem.getDescItemObjectId());
+		// item type have to be same
+		if (!Objects.equal(descItemCurr.getItemTypeId(), descItem.getItemTypeId())) {
+			throw new SystemException("Different item types, cannot update value");
+		}
+		// position have to be same
+		if (!Objects.equal(descItemCurr.getPosition(), descItem.getPosition())) {
+			throw new SystemException("Different item positions, cannot update value");
+		}
 
-            if (descItems.size() > 1) {
-                throw new SystemException("Hodnota musí být právě jedna", BaseCode.DB_INTEGRITY_PROBLEM);
-            } else if (descItems.size() == 0) {
-                throw new SystemException("Hodnota neexistuje, pravděpodobně byla již smazána");
-            }
+		ArrData data = descItem.getData();
+		// save new data
+		data = descItemFactory.saveData(descItem.getItemType(), data);
+		// update item
+		return updateValue(version, descItemCurr, descItem.getItemSpec(), data);
+	}
 
-            descItemOrig = descItems.get(0);
-        } else {
-            descItemOrig = descItemDB;
-        }
+	/**
+	 * Internal method to update item and data
+	 *
+	 * Input is attached entity.
+	 *
+	 * @param descItemDB
+	 * @param data
+	 * @return
+	 */
+	private ArrDescItem updateValue(final ArrFundVersion version, ArrDescItem descItemDB, RulItemSpec itemSpec,
+	        ArrData data) {
 
-        descItemOrig = descItemFactory.getDescItem(descItemOrig, null);
-        ArrDescItem descItemUpdated;
+		// set data and specification
+		descItemDB.setData(data);
+		descItemDB.setItemSpec(itemSpec);
+		ArrDescItem result = descItemRepository.save(descItemDB);
 
-        if (createNewVersion) {
+		checkValidTypeAndSpec(result);
 
-            Integer positionOrig = descItemOrig.getPosition();
-            Integer positionNew = descItem.getPosition();
+		// update value in node cache
+		arrangementCacheService.changeDescItem(result.getNodeId(), result, false);
 
-            // změnila pozice, budou se provádět posuny
-            if (positionOrig != positionNew) {
+		// sockety
+		publishChangeDescItem(version, result);
 
-                int maxPosition = getMaxPosition(descItemOrig);
+		return result;
+	}
 
-                if (descItem.getPosition() == null || (descItem.getPosition() > maxPosition)) {
-                    descItem.setPosition(maxPosition + 1);
-                }
+	/**
+	 * Versionable update
+	 *
+	 * This method will create new item version. Item type and position of the
+	 * item cannot be changed.
+	 *
+	 * @param descItem
+	 *            detached item with new value
+	 *
+	 */
+	public ArrDescItem updateValueAsNewVersion(final ArrFundVersion version, final ArrChange change,
+	        final ArrDescItem descItem) {
+		// fetch item from DB
+		ArrDescItem descItemCurr = fetchOpenItemFromDB(descItem.getDescItemObjectId());
 
-                List<ArrDescItem> descItemsMove;
-                Integer diff;
+		// item type have to be same
+		if (!Objects.equal(descItemCurr.getItemTypeId(), descItem.getItemTypeId())) {
+			throw new SystemException("Different item types, cannot update value");
+		}
+		// position have to be same
+		if (!Objects.equal(descItemCurr.getPosition(), descItem.getPosition())) {
+			throw new SystemException("Different item positions, cannot update value");
+		}
 
-                if (positionNew < positionOrig) {
-                    diff = 1;
-                    descItemsMove = findDescItemsBetweenPosition(descItemOrig, positionNew, positionOrig - 1);
-                } else {
-                    diff = -1;
-                    descItemsMove = findDescItemsBetweenPosition(descItemOrig, positionOrig + 1, positionNew);
-                }
+		// save new data
+		ArrData dataCurr = descItem.getData();
 
-                copyDescItemsWithData(change, descItemsMove, diff, version);
+		return updateItemValueAsNewVersion(version, change, descItemCurr, descItem.getItemSpec(), dataCurr);
+	}
 
-            }
+	private ArrDescItem updateItemValueAsNewVersion(final ArrFundVersion version, final ArrChange change,
+	        final ArrDescItem descItemDB, RulItemSpec itemSpec,
+	        ArrData srcData) {
 
-            try {
-                ArrDescItem descItemNew = new ArrDescItem();
-                BeanUtils.copyProperties(descItemOrig, descItemNew);
-                itemService.copyPropertiesSubclass(descItem, descItemNew, ArrDescItem.class);
-                descItemNew.setItemSpec(descItem.getItemSpec());
+		ArrData dataNew = descItemFactory.saveData(descItemDB.getItemType(), srcData);
 
-                descItemOrig.setDeleteChange(change);
-                descItemNew.setItemId(null);
-                descItemNew.setCreateChange(change);
-                descItemNew.setPosition(positionNew);
-                descItemNew.setItem(descItem.getItem());
+		// create new item based on source
+		ArrDescItem descItemNew = new ArrDescItem(descItemDB);
+		descItemNew.setItemId(null);
+		descItemNew.setCreateChange(change);
 
-                descItemFactory.saveDescItem(descItemOrig);
-                descItemUpdated = descItemFactory.saveDescItemWithData(descItemNew, true);
-            } catch (Exception e) {
-                throw new SystemException(e);
-            }
-        } else {
-            itemService.copyPropertiesSubclass(descItem, descItemOrig, ArrDescItem.class);
-            descItemOrig.setItemSpec(descItem.getItemSpec());
-            descItemUpdated = descItemFactory.saveDescItemWithData(descItemOrig, false);
-        }
+		// mark current item as deleted and save
+		descItemDB.setDeleteChange(change);
+		descItemRepository.save(descItemDB);
 
-        arrangementCacheService.changeDescItem(descItemUpdated.getNodeId(), descItemUpdated, false);
+		// save new item
+		ArrDescItem descItemUpdated = updateValue(version, descItemNew, itemSpec, dataNew);
 
-        // sockety
-        publishChangeDescItem(version, descItemUpdated);
+		return descItemUpdated;
 
-        return descItemUpdated;
-    }
-
+	}
 
     public Map<Integer, Map<String, TitleValues>> createNodeValuesMap(final Set<Integer> subtreeNodeIds,
                                                                       @Nullable final TreeNode subtreeRoot,
@@ -1026,30 +1050,37 @@ public class DescriptionItemService {
             rootParent = rootParent.getParent();
         }
 
+        List<ArrDescItem> descItemList = descItemRepository.findDescItemsByNodeIds(nodeIds, descItemTypes, version);
 
-        List<ArrData> dataList = dataRepository.findDescItemsByNodeIds(nodeIds, descItemTypes, version);
-        Set<Integer> partyRefDataIds = new HashSet<>();
-        Set<Integer> recordRefDataIds = new HashSet<>();
-        Set<Integer> packetRefDataIds = new HashSet<>();
-        Set<Integer> enumDataIds = new HashSet<>();
-
-        for (ArrData data : dataList) {
+        for (ArrDescItem descItem : descItemList) {
 
             TitleValue value = null;
-            String code = data.getItem().getItemType().getCode();
-            String specCode = data.getItem().getItemSpec() == null ? null : data.getItem().getItemSpec()
+            String code = descItem.getItemType().getCode();
+            String specCode = descItem.getItemSpec() == null ? null : descItem.getItemSpec()
                     .getCode();
-            Integer nodeId = data.getItem().getNodeId();
-            Integer position = data.getItem().getPosition();
+            Integer nodeId = descItem.getNodeId();
+            Integer position = descItem.getPosition();
 
-            if (data.getDataType().getCode().equals("ENUM")) {
-                enumDataIds.add(data.getDataId());
+            ArrData data = descItem.getData();
+
+            if (data == null) { // undefined item
+                value = new TitleValue(ArrangementService.UNDEFINED);
+            } else if (data.getDataType().getCode().equals("ENUM")) {
+                value = new TitleValue(descItem.getItemSpec().getName());
             } else if (data.getDataType().getCode().equals("PARTY_REF")) {
-                partyRefDataIds.add(data.getDataId());
+                ArrDataPartyRef partyData = (ArrDataPartyRef) data;
+                value = new TitleValue(partyData.getParty().getRecord().getRecord());
             } else if (data.getDataType().getCode().equals("RECORD_REF")) {
-                recordRefDataIds.add(data.getDataId());
+                ArrDataRecordRef recordData = (ArrDataRecordRef) data;
+                value = new TitleValue(recordData.getRecord().getRecord());
             } else if (data.getDataType().getCode().equals("PACKET_REF")) {
-                packetRefDataIds.add(data.getDataId());
+                ArrPacket packet = ((ArrDataPacketRef) data).getPacket();
+                RulPacketType packetType = packet.getPacketType();
+                if (packetType == null) {
+                    value = new TitleValue(packet.getStorageNumber());
+                } else {
+                    value = new TitleValue(packetType.getName() + ": " + packet.getStorageNumber());
+                }
             } else if (data.getDataType().getCode().equals("UNITDATE")) {
                 ArrDataUnitdate unitDate = (ArrDataUnitdate) data;
 
@@ -1087,83 +1118,8 @@ public class DescriptionItemService {
             }
 
             if (value != null) {
-                String iconValue = getIconValue(data);
+                String iconValue = getIconValue(descItem);
                 addValuesToMap(valueMap, value, code, specCode, nodeId, iconValue, position);
-            }
-        }
-
-        List<ArrData> enumData = dataRepository.findByDataIdsAndVersionFetchSpecification(enumDataIds, descItemTypes, version);
-        for (ArrData data : enumData) {
-            TitleValue value = new TitleValue(data.getItem().getItemSpec().getName());
-            String iconValue = getIconValue(data);
-            String code = data.getItem().getItemType().getCode();
-            String specCode = data.getItem().getItemSpec() == null ? null : data.getItem().getItemSpec()
-                    .getCode();
-            Integer nodeId = data.getItem().getNodeId();
-            Integer position = data.getItem().getPosition();
-
-            addValuesToMap(valueMap, value, code, specCode, nodeId, iconValue, position);
-        }
-
-        List<ArrDataPartyRef> partyData = dataPartyRefRepository.findByDataIdsAndVersionFetchPartyRecord(partyRefDataIds, descItemTypes, version);
-        for (ArrDataPartyRef data : partyData) {
-            TitleValue value = new TitleValue(data.getParty().getRecord().getRecord());
-            String iconValue = getIconValue(data);
-            String code = data.getItem().getItemType().getCode();
-            String specCode = data.getItem().getItemSpec() == null ? null : data.getItem().getItemSpec()
-                    .getCode();
-            Integer nodeId = data.getItem().getNodeId();
-            Integer position = data.getItem().getPosition();
-
-            addValuesToMap(valueMap, value, code, specCode, nodeId, iconValue, position);
-        }
-
-        List<ArrDataRecordRef> recordData = dataRecordRefRepository.findByDataIdsAndVersionFetchRecord(recordRefDataIds, descItemTypes, version);
-        for (ArrDataRecordRef data : recordData) {
-            TitleValue value = new TitleValue(data.getRecord().getRecord());
-            String iconValue = getIconValue(data);
-            String code = data.getItem().getItemType().getCode();
-            String specCode = data.getItem().getItemSpec() == null ? null : data.getItem().getItemSpec()
-                    .getCode();
-            Integer nodeId = data.getItem().getNodeId();
-            Integer position = data.getItem().getPosition();
-
-            addValuesToMap(valueMap, value, code, specCode, nodeId, iconValue, position);
-        }
-
-        List<ArrDataPacketRef> packetData = dataPacketRefRepository.findByDataIdsAndVersionFetchPacket(packetRefDataIds, descItemTypes, version);
-        for (ArrDataPacketRef data : packetData) {
-            ArrPacket packet = data.getPacket();
-            RulPacketType packetType = packet.getPacketType();
-            TitleValue value;
-            if (packetType == null) {
-                value = new TitleValue(packet.getStorageNumber());
-            } else {
-                value = new TitleValue(packetType.getName() + ": " + packet.getStorageNumber());
-            }
-            String iconValue = getIconValue(data);
-            String code = data.getItem().getItemType().getCode();
-            String specCode = data.getItem().getItemSpec() == null ? null : data.getItem().getItemSpec()
-                    .getCode();
-            Integer nodeId = data.getItem().getNodeId();
-            Integer position = data.getItem().getPosition();
-
-            addValuesToMap(valueMap, value, code, specCode, nodeId, iconValue, position);
-        }
-
-        if (CollectionUtils.isNotEmpty(nodeIds) && CollectionUtils.isNotEmpty(descItemTypes)) {
-            List<ArrDescItem> undefinedDescItem = descItemRepository.findUndefinedByNodeAndTypesAndChange(nodeIds, descItemTypes, version.getLockChange());
-            for (ArrDescItem descItem : undefinedDescItem) {
-
-                String iconValue = null;
-                if (descItem.getItemSpec() != null) {
-                    iconValue = descItem.getItemSpec().getCode();
-                }
-                String code = descItem.getItemType().getCode();
-                String specCode = descItem.getItemSpec() == null ? null : descItem.getItemSpec().getCode();
-                Integer nodeId = descItem.getNodeId();
-                Integer position = descItem.getPosition();
-                addValuesToMap(valueMap, new TitleValue(ArrangementService.UNDEFINED), code, specCode, nodeId, iconValue, position);
             }
         }
 
@@ -1190,29 +1146,38 @@ public class DescriptionItemService {
         //chceme nalézt atributy i pro rodiče podstromu
         Set<Integer> nodeIds = new HashSet<>(subtreeNodeIds);
 
-        List<ArrData> dataList = dataRepository.findDescItemsByNodeIds(nodeIds, descItemTypes, changeId);
-        Set<Integer> partyRefDataIds = new HashSet<>();
-        Set<Integer> recordRefDataIds = new HashSet<>();
-        Set<Integer> packetRefDataIds = new HashSet<>();
-        Set<Integer> enumDataIds = new HashSet<>();
+        List<ArrDescItem> descItemList = descItemRepository.findDescItemsByNodeIds(nodeIds, descItemTypes, changeId);
 
-        for (ArrData data : dataList) {
+        for (ArrDescItem descItem : descItemList) {
 
             TitleValue value = null;
-            String code = data.getItem().getItemType().getCode();
-            String specCode = data.getItem().getItemSpec() == null ? null : data.getItem().getItemSpec()
-                    .getCode();
-            Integer nodeId = data.getItem().getNodeId();
-            Integer position = data.getItem().getPosition();
+            String code = descItem.getItemType().getCode();
+            String specCode = descItem.getItemSpec() == null ? null : descItem.getItemSpec().getCode();
+            Integer nodeId = descItem.getNodeId();
+            Integer position = descItem.getPosition();
+
+            ArrData data = descItem.getData();
+
+            if (data == null) {
+                continue;
+            }
 
             if (data.getDataType().getCode().equals("ENUM")) {
-                enumDataIds.add(data.getDataId());
+                value = new TitleValue(descItem.getItemSpec().getName());
             } else if (data.getDataType().getCode().equals("PARTY_REF")) {
-                partyRefDataIds.add(data.getDataId());
+                ArrDataPartyRef partyData = (ArrDataPartyRef) data;
+                value = new TitleValue(partyData.getParty().getRecord().getRecord());
             } else if (data.getDataType().getCode().equals("RECORD_REF")) {
-                recordRefDataIds.add(data.getDataId());
+                ArrDataRecordRef recordData = (ArrDataRecordRef) data;
+                value = new TitleValue(recordData.getRecord().getRecord());
             } else if (data.getDataType().getCode().equals("PACKET_REF")) {
-                packetRefDataIds.add(data.getDataId());
+                ArrPacket packet = ((ArrDataPacketRef) data).getPacket();
+                RulPacketType packetType = packet.getPacketType();
+                if (packetType == null) {
+                    value = new TitleValue(packet.getStorageNumber());
+                } else {
+                    value = new TitleValue(packetType.getName() + ": " + packet.getStorageNumber());
+                }
             } else if (data.getDataType().getCode().equals("UNITDATE")) {
                 ArrDataUnitdate unitDate = (ArrDataUnitdate) data;
 
@@ -1250,12 +1215,12 @@ public class DescriptionItemService {
             }
 
             if (value != null) {
-                String iconValue = getIconValue(data);
+                String iconValue = getIconValue(descItem);
                 addValuesToMap(valueMap, value, code, specCode, nodeId, iconValue, position);
             }
         }
 
-        List<ArrData> enumData = dataRepository.findByDataIdsAndVersionFetchSpecification(enumDataIds, descItemTypes, changeId);
+        /*List<ArrData> enumData = dataRepository.findByDataIdsAndVersionFetchSpecification(enumDataIds, descItemTypes, changeId);
         for (ArrData data : enumData) {
             TitleValue value = new TitleValue(data.getItem().getItemSpec().getName());
             String iconValue = getIconValue(data);
@@ -1312,7 +1277,7 @@ public class DescriptionItemService {
             Integer position = data.getItem().getPosition();
 
             addValuesToMap(valueMap, value, code, specCode, nodeId, iconValue, position);
-        }
+        }*/
 
         return valueMap;
     }
@@ -1345,9 +1310,9 @@ public class DescriptionItemService {
     }
 
 
-    private String getIconValue(final ArrData data) {
-        if (data.getItem().getItemSpec() != null) {
-            return data.getItem().getItemSpec().getCode();
+    private String getIconValue(final ArrDescItem data) {
+        if (data.getItemSpec() != null) {
+            return data.getItemSpec().getCode();
         }
         return null;
     }
@@ -1355,40 +1320,53 @@ public class DescriptionItemService {
 
     /**
      * Nahrazení textu v hodnotách textových atributů.
-     *
      * @param version        verze stromu
      * @param descItemType   typ atributu
      * @param nodes          seznam uzlů, ve kterých hledáme
      * @param specifications seznam specifikací (pokud se jedná o typ atributu se specifikací)
      * @param findText       hledaný text v atributu
      * @param replaceText    text, který nahradí hledaný text v celém textu
+     * @param allNodes       najít u všech JP a nahradit
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public void replaceDescItemValues(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion version,
                                       final RulItemType descItemType,
                                       final Set<ArrNode> nodes,
                                       final Set<RulItemSpec> specifications, final String findText,
-                                      final String replaceText) {
-        Assert.notNull(version);
-        Assert.notNull(descItemType);
-        Assert.hasText(findText);
-        Assert.notEmpty(nodes);
+                                      final String replaceText,
+                                      final boolean allNodes) {
+        Assert.notNull(version, "Verze AS musí být vyplněna");
+        Assert.notNull(descItemType, "Typ atributu musí být vyplněn");
+        Assert.hasText(findText, "Musí být vyplněn hledaný text");
 
-        Map<Integer, ArrNode> nodesMap = ElzaTools.createEntityMap(nodes, n -> n.getNodeId());
+        Map<Integer, ArrNode> nodesMap = ElzaTools.createEntityMap(nodes, ArrNode::getNodeId);
 
-        List<ArrData> dataToReplaceText = dataRepository.findByNodesContainingText(nodes, descItemType, specifications, findText);
-        if (!dataToReplaceText.isEmpty()) {
+        List<ArrDescItem> descItemsToReplaceText;
+        if (allNodes) {
+            descItemsToReplaceText = new LinkedList<>();
+
+            Integer rootNodeId = version.getRootNode().getNodeId();
+            Set<Integer> nodeIds = levelTreeCacheService.getAllNodeIdsByVersionAndParent(version, rootNodeId, ArrangementController.Depth.SUBTREE);
+            nodeIds.add(rootNodeId);
+            for (List<ArrNode> partNodes : Lists.partition(nodeRepository.findAll(nodeIds), 1000)) {
+                descItemsToReplaceText.addAll(descItemRepository.findByNodesContainingText(partNodes, descItemType, specifications, findText));
+            }
+        } else {
+            descItemsToReplaceText = descItemRepository.findByNodesContainingText(nodes, descItemType, specifications, findText);
+        }
+
+        if (!descItemsToReplaceText.isEmpty()) {
 
 
             ArrChange change = arrangementService.createChange(ArrChange.Type.BATCH_CHANGE_DESC_ITEM);
 
-            for (ArrData arrData : dataToReplaceText) {
-                ArrNode clientNode = nodesMap.get(arrData.getItem().getNodeId());
-                arrangementService.lockNode(arrData.getItem().getNode(), clientNode, change);
+            for (ArrDescItem descItem: descItemsToReplaceText) {
+                ArrNode clientNode = nodesMap.get(descItem.getNodeId());
+                arrangementService.lockNode(descItem.getNode(), clientNode == null ? descItem.getNode() : clientNode, change);
 
-                replaceDescItemValue(arrData, findText, replaceText, change);
+                replaceDescItemValue(descItem, findText, replaceText, change);
 
-                publishChangeDescItem(version, (ArrDescItem) arrData.getItem());
+                publishChangeDescItem(version, descItem);
             }
         }
     }
@@ -1424,59 +1402,48 @@ public class DescriptionItemService {
     }
 
     /**
-     * Vytvoří novou konkrétní instanci pro {@link ArrData}.
-     *
-     * @param descItemType typ atributu
-     * @return konkrétní instance
-     */
-    private ArrData createDataByType(final RulItemType descItemType) {
-        Class<? extends ArrData> dataTypeClass = getDescItemDataTypeClass(descItemType);
-        try {
-            return dataTypeClass.newInstance();
-        } catch (Exception e) {
-            throw new SystemException(e);
-        }
-    }
-
-    /**
      * Nastavení textu hodnotám atributu.
-     *
      * @param version              verze stromu
      * @param descItemType         typ atributu
      * @param newItemSpecification pokud se jedná o atribut se specifikací ->  specifikace, která bude nastavena
-     * @param text                 text, který nahradí text v celém textu
      * @param specifications       seznam specifikací, ve kterých se má hledat hodnota
+     * @param text                 text, který nahradí text v celém textu
+     * @param allNodes             vložit u všech JP
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public void placeDescItemValues(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion version,
                                     final RulItemType descItemType,
                                     final Set<ArrNode> nodes,
                                     final RulItemSpec newItemSpecification,
-                                    final Set<RulItemSpec> specifications, final String text) {
-        Assert.hasText(text);
-        Assert.isTrue(!descItemType.getUseSpecification() || newItemSpecification != null);
+                                    final Set<RulItemSpec> specifications, final String text,
+                                    final boolean allNodes) {
+        Assert.hasText(text, "Musí být vyplněn text");
+        Assert.isTrue(!descItemType.getUseSpecification() || newItemSpecification != null, "Neplatný stav specifikace");
         if (descItemType.getUseSpecification() && CollectionUtils.isEmpty(specifications)) {
             throw new BusinessException("Musí být zadána alespoň jedna filtrovaná specifikace.", BaseCode.PROPERTY_NOT_EXIST).set("property", "specifications");
         }
 
 
-        Map<Integer, ArrNode> nodesMap = ElzaTools.createEntityMap(nodes, n -> n.getNodeId());
-        List<ArrNode> dbNodes = nodeRepository.findAll(nodesMap.keySet());
+        Map<Integer, ArrNode> nodesMap = ElzaTools.createEntityMap(nodes, ArrNode::getNodeId);
 
-        List<ArrDescItem> descItems = descItemType.getUseSpecification() ?
+        List<ArrDescItem> descItems;
+        if (allNodes) {
+            descItems = descItemType.getUseSpecification() ?
                 descItemRepository
+                            .findOpenByFundAndTypeAndSpec(version.getFund(), descItemType, specifications) :
+                    descItemRepository.findOpenByFundAndType(version.getFund(), descItemType);
+        } else {
+            descItems = descItemType.getUseSpecification() ?
+                    descItemRepository
                         .findOpenByNodesAndTypeAndSpec(nodes, descItemType, specifications) :
                 descItemRepository.findOpenByNodesAndType(nodes, descItemType);
+        }
 
         ArrChange change = arrangementService.createChange(ArrChange.Type.BATCH_CHANGE_DESC_ITEM);
 
         Map<Integer, List<Integer>> nodeDescItems = new HashMap<>();
         for (ArrDescItem descItem : descItems) {
-            List<Integer> descItemList = nodeDescItems.get(descItem.getNodeId());
-            if (descItemList == null) {
-                descItemList = new ArrayList<>();
-                nodeDescItems.put(descItem.getNodeId(), descItemList);
-            }
+            List<Integer> descItemList = nodeDescItems.computeIfAbsent(descItem.getNodeId(), k -> new ArrayList<>());
             descItemList.add(descItem.getDescItemObjectId());
             deleteDescriptionItem(descItem, version, change, false);
         }
@@ -1489,9 +1456,19 @@ public class DescriptionItemService {
         //jestli nemá již nějakou hodnotu specifikace nastavenou (jinou než přišla v parametru seznamu specifikací)
         //takovým nodům nenastavujeme novou hodnotu se specifikací
         Set<ArrNode> ignoreNodes = new HashSet<>();
-        if (descItemType.getUseSpecification() && BooleanUtils.isNotTrue(descItemType.getRepeatable())) {
+        if (descItemType.getUseSpecification() && BooleanUtils.isNotTrue(descItemType.getRepeatable()) && nodes.size() > 0) {
             List<ArrDescItem> remainSpecItems = descItemRepository.findOpenByNodesAndType(nodes, descItemType);
-            ignoreNodes = remainSpecItems.stream().map(n -> n.getNode()).collect(Collectors.toSet());
+            ignoreNodes = remainSpecItems.stream().map(ArrDescItem::getNode).collect(Collectors.toSet());
+        }
+
+        List<ArrNode> dbNodes;
+        if (allNodes) {
+            Integer rootNodeId = version.getRootNode().getNodeId();
+            Set<Integer> nodeIds = levelTreeCacheService.getAllNodeIdsByVersionAndParent(version, rootNodeId, ArrangementController.Depth.SUBTREE);
+            nodeIds.add(rootNodeId);
+            dbNodes = nodeRepository.findAll(nodeIds);
+        } else {
+            dbNodes = nodeRepository.findAll(nodesMap.keySet());
         }
 
         for (ArrNode dbNode : dbNodes) {
@@ -1499,123 +1476,257 @@ public class DescriptionItemService {
                 continue;
             }
 
-            arrangementService.lockNode(dbNode, nodesMap.get(dbNode.getNodeId()), change);
+            ArrNode arrNode = nodesMap.get(dbNode.getNodeId());
+            arrangementService.lockNode(dbNode, arrNode == null ? dbNode : arrNode, change);
 
-            ArrItemData itemData;
-
-            Class<? extends ArrItemData> clazz = null;
+            ArrData data;
             switch (descItemType.getDataType().getCode()) {
-                case "TEXT":
-                    ArrItemText itemText = new ArrItemText();
-                    itemText.setValue(text);
-                    itemData = itemText;
-                    break;
                 case "FORMATTED_TEXT":
-                    ArrItemFormattedText itemFormattedText = new ArrItemFormattedText();
-                    itemFormattedText.setValue(text);
-                    itemData = itemFormattedText;
+                case "TEXT":
+                    ArrDataText dataText = new ArrDataText();
+                    dataText.setValue(text);
+                    data = dataText;
                     break;
                 case "STRING":
-                    ArrItemString itemString = new ArrItemString();
+                    ArrDataString itemString = new ArrDataString();
                     itemString.setValue(text);
-                    itemData = itemString;
+                    data = itemString;
+                    break;
+                case "INT":
+                    ArrDataInteger itemInteger = new ArrDataInteger();
+                    itemInteger.setValue(Integer.valueOf(text));
+                    data = itemInteger;
+                    break;
+                case "UNITDATE":
+                    ArrDataUnitdate itemUnitdate = createArrDataUnitdate(text);
+                    data = itemUnitdate;
+                    break;
+                case "RECORD_REF":
+                    ArrDataRecordRef itemRecordRef = new ArrDataRecordRef();
+                    RegRecord record = regRecordRepository.getOneCheckExist(Integer.valueOf(text));
+                    itemRecordRef.setRecord(record);
+                    data = itemRecordRef;
                     break;
                 default:
-                    throw new IllegalStateException("Neplatný typ atributu " + descItemType.getDataType().getCode()
-                            + ". Pouze textové hodnoty jdou nahradit.");
+                    throw new SystemException("Neplatný typ atributu " + descItemType.getDataType().getCode(), BaseCode.INVALID_STATE);
             }
 
-            ArrDescItem newDescItem = new ArrDescItem(descItemFactory.createItemByType(descItemType.getDataType()));
-            newDescItem.setItem(itemData);
+            ArrDescItem newDescItem = new ArrDescItem();
+            newDescItem.setData(data);
             newDescItem.setNode(dbNode);
             newDescItem.setItemType(descItemType);
             newDescItem.setItemSpec(newItemSpecification);
             newDescItem.setCreateChange(change);
             newDescItem.setDescItemObjectId(arrangementService.getNextDescItemObjectId());
             newDescItem.setPosition(1);
-            newDescItem.setUndefined(false);
 
-            descItemFactory.saveDescItemWithData(newDescItem, true);
+            descItemFactory.saveItemVersionWithData(newDescItem, true);
             arrangementCacheService.createDescItem(newDescItem.getNodeId(), newDescItem);
             publishChangeDescItem(version, newDescItem);
         }
     }
 
     /**
+     * Nastavit specifikaci hodnotám atributu.
+     *
+     * @param fundVersion      verze stromu
+     * @param itemType         typ atributu
+     * @param setSpecification specifikace, která bude nastavena
+     * @param specifications   seznam specifikací, ve kterých se má hledat hodnota
+     * @param allNodes         vložit u všech JP
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    public void setSpecification(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
+                                 final RulItemType itemType,
+                                 final Set<ArrNode> nodes,
+                                 final RulItemSpec setSpecification,
+                                 final Set<RulItemSpec> specifications,
+                                 final boolean setNull,
+                                 final boolean allNodes) {
+        Assert.notNull(itemType, "Typ atributu musí být vyplněn");
+        Assert.notNull(setSpecification, "Nastavovaná specifikace musí být vyplněna");
+        if (!itemType.getUseSpecification()) {
+            throw new BusinessException("Typ atributu nemá povolené specifikace.", BaseCode.PROPERTY_NOT_EXIST).set("property", "itemTypeId");
+        }
+        if (setNull) {
+            if (!itemType.getDataType().getCode().equals("ENUM")) {
+                throw new BusinessException("Typ atributu musí být typu enum.", BaseCode.PROPERTY_IS_INVALID).set("property", "itemTypeId");
+            }
+        }
+
+        List<ArrDescItem> descItems;
+        Set<Integer> nodeIdsToAdd;
+        if (allNodes) {
+            Integer rootNodeId = fundVersion.getRootNode().getNodeId();
+            nodeIdsToAdd = levelTreeCacheService.getAllNodeIdsByVersionAndParent(fundVersion, rootNodeId, ArrangementController.Depth.SUBTREE);
+            nodeIdsToAdd.add(rootNodeId);
+            descItems = specifications.size() == 0 ? Collections.emptyList() : descItemRepository.findOpenByFundAndTypeAndSpec(fundVersion.getFund(), itemType, specifications);
+            List<ArrDescItem> ignoreDescItems = descItemRepository.findOpenByFundAndType(fundVersion.getFund(), itemType);
+            ignoreDescItems.removeAll(descItems);
+            for (ArrDescItem ignoreDescItem : ignoreDescItems) {
+                nodeIdsToAdd.remove(ignoreDescItem.getNodeId());
+            }
+        } else {
+            descItems = specifications.size() == 0 ? Collections.emptyList() : descItemRepository.findOpenByNodesAndTypeAndSpec(nodes, itemType, specifications);
+            nodeIdsToAdd = nodes.stream().map(ArrNode::getNodeId).collect(Collectors.toSet());
+            List<ArrDescItem> ignoreDescItems = descItemRepository.findOpenByNodesAndType(nodes, itemType);
+            ignoreDescItems.removeAll(descItems);
+            for (ArrDescItem ignoreDescItem : ignoreDescItems) {
+                nodeIdsToAdd.remove(ignoreDescItem.getNodeId());
+            }
+        }
+
+        ArrChange change = arrangementService.createChange(ArrChange.Type.BATCH_CHANGE_DESC_ITEM);
+
+        List<Integer> nodeIds = new ArrayList<>();
+        List<ArrDescItem> updatedDescItems = new ArrayList<>(descItems.size());
+        for (ArrDescItem descItem : descItems) {
+			ArrDescItem updatedDescItem = updateItemValueAsNewVersion(fundVersion, change, descItem, setSpecification,
+			        descItem.getData());
+            nodeIds.add(updatedDescItem.getNodeId());
+            nodeIdsToAdd.remove(updatedDescItem.getNodeId());
+            updatedDescItems.add(updatedDescItem);
+        }
+
+        List<ArrDescItem> createdDescItems = new ArrayList<>(nodeIdsToAdd.size());
+        if (setNull) {
+            for (Integer nodeId : nodeIdsToAdd) {
+                ArrDescItem descItem = new ArrDescItem();
+                descItem.setData(new ArrDataNull());
+                descItem.setNode(nodeRepository.getOne(nodeId));
+                descItem.setItemType(itemType);
+                descItem.setItemSpec(setSpecification);
+                descItem.setCreateChange(change);
+                descItem.setDeleteChange(null);
+                descItem.setDescItemObjectId(arrangementService.getNextDescItemObjectId());
+                nodeIds.add(nodeId);
+                ArrDescItem created = createDescriptionItemWithData(descItem, fundVersion, change);
+                createdDescItems.add(created);
+            }
+        }
+
+        if (nodeIds.size() > 0) {
+            eventNotificationService.publishEvent(new EventIdsInVersion(EventType.NODES_CHANGE, fundVersion.getFundVersionId(), nodeIds.toArray(new Integer[nodeIds.size()])));
+            // validace uzlu
+            ruleService.conformityInfo(fundVersion.getFundVersionId(), nodeIds,
+                    NodeTypeOperation.SAVE_DESC_ITEM, createdDescItems, updatedDescItems, null);
+        }
+    }
+
+    /**
+     * Vytvoření unitdate struktury.
+     *
+     * @param text vstupní text ve formátu '[calendarTypeId]|[unitDateText]'
+     * @return vytvořená struktura
+     */
+    private ArrDataUnitdate createArrDataUnitdate(final String text) {
+        String[] splitText = text.split("\\|", 2);
+
+        if (splitText.length != 2 || !StringUtils.isNumeric(splitText[0])) {
+            throw new SystemException("Neplatný vstupní řetězec: " + text, BaseCode.PROPERTY_IS_INVALID);
+        }
+
+        ArrCalendarType calendarType = calendarTypeRepository.findOne(Integer.valueOf(splitText[0]));
+
+        if (calendarType == null) {
+            throw new ObjectNotFoundException("Neexistující kalendář: " + splitText[0], BaseCode.ID_NOT_EXIST).setId(splitText[0]);
+        }
+
+        ArrDataUnitdate itemUnitdate = new ArrDataUnitdate();
+        itemUnitdate.setCalendarType(calendarType);
+        UnitDateConvertor.convertToUnitDate(splitText[1], itemUnitdate);
+
+        CalendarType calendar = CalendarType.valueOf(calendarType.getCode());
+        String value;
+        value = itemUnitdate.getValueFrom();
+        if (value != null) {
+            itemUnitdate.setNormalizedFrom(CalendarConverter.toSeconds(calendar, LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
+        } else {
+            itemUnitdate.setNormalizedFrom(Long.MIN_VALUE);
+        }
+
+        value = itemUnitdate.getValueTo();
+        if (value != null) {
+            itemUnitdate.setNormalizedTo(CalendarConverter.toSeconds(calendar, LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
+        } else {
+            itemUnitdate.setNormalizedTo(Long.MAX_VALUE);
+        }
+        return itemUnitdate;
+    }
+
+    /**
      * Provede nahrazení textu v hodnotě atributu.
      *
-     * @param data          data atributu
+     * @param descItem      hodnota atributu
      * @param searchString  text, který hledáme
      * @param replaceString text, který nahradíme
      * @param change        změna (odverzování)
      */
-    private void replaceDescItemValue(final ArrData data, final String searchString, final String replaceString, final ArrChange change) {
+    private void replaceDescItemValue(final ArrDescItem descItem, final String searchString, final String replaceString, final ArrChange change) {
 
+        ArrData data = descItem.getData();
+		Validate.notNull(data, "item without data");
 
-        ArrDescItem descItem = (ArrDescItem) data.getItem();
-        ArrDescItem newDescItem = copyDescItem(change, descItem, descItem.getPosition());
+		ArrData dataNew = ArrData.makeCopyWithoutId(data);
 
-        ArrData newData = createCopyDescItemData(data, newDescItem);
+		// modify data
+		if (dataNew instanceof ArrDataString) {
+			ArrDataString ds = (ArrDataString) dataNew;
+			ds.setValue(getReplacedDataValue(ds.getValue(), searchString, replaceString));
+		} else if (dataNew instanceof ArrDataText) {
+			ArrDataText dt = (ArrDataText) dataNew;
+			dt.setValue(getReplacedDataValue(dt.getValue(), searchString, replaceString));
+		} else {
+			throw new IllegalStateException(
+			        "Zatím není implementováno pro kod " + descItem.getItemType().getCode());
+		}
+		dataNew = dataRepository.save(dataNew);
 
-
-        switch (data.getItem().getItemType().getDataType().getCode()) {
-            case "STRING":
-                ArrDataString oldStringData = (ArrDataString) data;
-
-                ArrDataString newStringData = (ArrDataString) newData;
-                newStringData.setValue(getReplacedDataValue(oldStringData.getValue(), searchString, replaceString));
-
-                break;
-            case "TEXT":
-                ArrDataText oldTextData = (ArrDataText) data;
-                ArrDataText newTextData = (ArrDataText) newData;
-                newTextData.setValue(getReplacedDataValue(oldTextData.getValue(), searchString, replaceString));
-                break;
-
-            default:
-                throw new IllegalStateException(
-                        "Zatím není implementováno pro kod " + data.getItem().getItemType().getCode());
-        }
-
-        dataRepository.save(newData);
+		ArrDescItem descItemNew = prepareNewDescItem(descItem, dataNew, change);
+		descItemNew = descItemRepository.save(descItemNew);
     }
 
 
     /**
      * Smazání hodnot atributů daného typu pro vybrané uzly.
-     *
      * @param version        verze stromu
      * @param descItemType   typ atributu, jehož hodnoty budou smazány
      * @param nodes          seznam uzlů, jejichž hodnoty mažeme
      * @param specifications seznam specifikací pro typ se specifikací, kterým budou smazány hodnoty
+     * @param allNodes       odstranit u všech JP
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public void deleteDescItemValues(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion version,
                                      final RulItemType descItemType,
                                      final Set<ArrNode> nodes,
-                                     final Set<RulItemSpec> specifications) {
-        Assert.notNull(version);
-        Assert.notNull(descItemType);
+                                     final Set<RulItemSpec> specifications,
+                                     final boolean allNodes) {
+        Assert.notNull(version, "Verze AS musí být vyplněna");
+        Assert.notNull(descItemType, "Typ atributu musí být vyplněn");
         if (descItemType.getUseSpecification() && CollectionUtils.isEmpty(specifications)) {
             throw new BusinessException("Musí být zadána alespoň jedna filtrovaná specifikace.", BaseCode.PROPERTY_NOT_EXIST).set("property", specifications);
         }
 
-
-        List<ArrDescItem> descItems = descItemType.getUseSpecification() ?
+        List<ArrDescItem> descItems;
+        if (allNodes) {
+            descItems = descItemType.getUseSpecification() ?
+                    descItemRepository
+                            .findOpenByFundAndTypeAndSpec(version.getFund(), descItemType, specifications) :
+                    descItemRepository.findOpenByFundAndType(version.getFund(), descItemType);
+        } else {
+            descItems = descItemType.getUseSpecification() ?
                 descItemRepository.findOpenByNodesAndTypeAndSpec(nodes, descItemType,
                         specifications) :
                 descItemRepository.findOpenByNodesAndType(nodes, descItemType);
+        }
+
         if (!descItems.isEmpty()) {
             ArrChange change = arrangementService.createChange(ArrChange.Type.BATCH_DELETE_DESC_ITEM);
 
             Map<Integer, List<Integer>> nodeDescItems = new HashMap<>();
 
             for (ArrDescItem descItem : descItems) {
-                List<Integer> descItemList = nodeDescItems.get(descItem.getNodeId());
-                if (descItemList == null) {
-                    descItemList = new ArrayList<>();
-                    nodeDescItems.put(descItem.getNodeId(), descItemList);
-                }
+                List<Integer> descItemList = nodeDescItems.computeIfAbsent(descItem.getNodeId(), k -> new ArrayList<>());
                 descItemList.add(descItem.getDescItemObjectId());
                 deleteDescriptionItem(descItem, version, change, false);
             }
@@ -1635,8 +1746,8 @@ public class DescriptionItemService {
      * @return zpracovaný text
      */
     private String getReplacedDataValue(final String text, final String searchString, final String replaceString) {
-        Assert.notNull(text);
-        Assert.notNull(searchString);
+        Assert.notNull(text, "Musí být vyplněn text, ve kterém hledáme");
+        Assert.notNull(searchString, "Hledaný text musí být vyplněn");
 
         return StringUtils.replace(text, searchString, replaceString);
     }
@@ -1660,24 +1771,6 @@ public class DescriptionItemService {
             }
         }
         return maxPosition;
-    }
-
-    /**
-     * Vyhledá všechny hodnoty atributu mezi pozicemi.
-     *
-     * @param descItem     hodnota atributu
-     * @param positionFrom od pozice (včetně)
-     * @param positionTo   do pozice (včetně)
-     * @return seznam nalezených hodnot atributů
-     */
-    private List<ArrDescItem> findDescItemsBetweenPosition(final ArrDescItem descItem,
-                                                           final Integer positionFrom,
-                                                           final Integer positionTo) {
-
-        List<ArrDescItem> descItems = descItemRepository.findOpenDescItemsBetweenPositions(descItem.getItemType(),
-                descItem.getNode(), positionFrom, positionTo);
-
-        return descItems;
     }
 
     /**
@@ -1732,7 +1825,7 @@ public class DescriptionItemService {
             ArrDescItem openDescItem = descItemRepository.findOpenDescItem(descItemObjectId);
             if (openDescItem == null) {
                 throw new ObjectNotFoundException("Nebyla nalezena hodnota atributu s OBJID=" + descItemObjectId, ArrangementCode.DATA_NOT_FOUND).set("descItemObjectId", descItemObjectId);
-            } else if (openDescItem.getUndefined()) {
+            } else if (openDescItem.isUndefined()) {
                 throw new BusinessException("Položka již je nastavená jako '" + ArrangementService.UNDEFINED + "'", ArrangementCode.ALREADY_INDEFINABLE);
             }
 
@@ -1752,12 +1845,11 @@ public class DescriptionItemService {
         descItem.setCreateChange(change);
         descItem.setDeleteChange(null);
         descItem.setDescItemObjectId(descItemObjectId == null ? arrangementService.getNextDescItemObjectId() : descItemObjectId);
-        descItem.setUndefined(true);
 
         ArrDescItem descItemCreated = createDescriptionItemWithData(descItem, fundVersion, change);
 
         // nastavujeme prázdné hodnoty
-        descItem.setItem(descItemFactory.createItemByType(descItemType.getDataType()));
+        //descItem.setItem(descItemFactory.createItemByType(descItemType.getDataType()));
 
         // validace uzlu
         ruleService.conformityInfo(fundVersion.getFundVersionId(), Collections.singletonList(descItem.getNode().getNodeId()),

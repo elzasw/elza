@@ -8,6 +8,4 @@ package cz.tacr.elza.filter.condition;
  */
 public interface DescItemCondition {
 
-    String FUND_ID = "fundId";
-
 }

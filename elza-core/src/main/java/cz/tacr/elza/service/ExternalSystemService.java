@@ -1,11 +1,17 @@
 package cz.tacr.elza.service;
 
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+
 import cz.tacr.elza.annotation.AuthMethod;
-import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrDigitizationFrontdesk;
 import cz.tacr.elza.domain.RegExternalSystem;
 import cz.tacr.elza.domain.SysExternalSystem;
+import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
@@ -15,11 +21,6 @@ import cz.tacr.elza.repository.ExternalSystemRepository;
 import cz.tacr.elza.repository.RegExternalSystemRepository;
 import cz.tacr.elza.service.eventnotification.events.EventId;
 import cz.tacr.elza.service.eventnotification.events.EventType;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
-
-import java.util.List;
 
 /**
  * Servisní třída pro práci s externími systémy.
@@ -61,7 +62,6 @@ public class ExternalSystemService {
      *
      * @return seznam externích systémů
      */
-    @AuthMethod(permission = UsrPermission.Permission.REG_SCOPE_WR_ALL)
     public List<RegExternalSystem> findAllRegSystem() {
         return regExternalSystemRepository.findAll();
     }

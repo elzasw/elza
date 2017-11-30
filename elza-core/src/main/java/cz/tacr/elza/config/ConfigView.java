@@ -1,13 +1,12 @@
 package cz.tacr.elza.config;
 
 
-import com.google.common.eventbus.Subscribe;
-import cz.tacr.elza.EventBusListener;
-import cz.tacr.elza.domain.UISettings;
-import cz.tacr.elza.packageimport.PackageService;
-import cz.tacr.elza.packageimport.xml.SettingFundViews;
-import cz.tacr.elza.repository.SettingsRepository;
-import cz.tacr.elza.service.event.CacheInvalidateEvent;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,9 +14,16 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import com.google.common.eventbus.Subscribe;
+
+import cz.tacr.elza.EventBusListener;
+import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.UISettings;
+import cz.tacr.elza.packageimport.PackageService;
+import cz.tacr.elza.packageimport.xml.SettingFundViews;
+import cz.tacr.elza.repository.RuleSetRepository;
+import cz.tacr.elza.repository.SettingsRepository;
+import cz.tacr.elza.service.event.CacheInvalidateEvent;
 
 
 /**
@@ -41,6 +47,9 @@ public class ConfigView {
     @Autowired
     private PackageService packageService;
 
+    @Autowired
+    private RuleSetRepository ruleSetRepository;
+
     /**
      * Nastavení zobrazení v UI.
      */
@@ -55,8 +64,8 @@ public class ConfigView {
 
     public ViewTitles getViewTitles(final String code, final Integer fundId) {
         Map<String, Map<String, ViewTitles>> fundView = getFundView();
-        Assert.notNull(code);
-        Assert.notNull(fundId);
+        Assert.notNull(code, "Kód musí být vyplněn");
+        Assert.notNull(fundId, "Nebyl vyplněn identifikátor AS");
 
         if (fundView == null) {
             logger.warn("Nejsou definována pravidla pro zobrazení popisků v UI");
@@ -85,19 +94,16 @@ public class ConfigView {
 
     public Map<String, Map<String, ViewTitles>> getFundView() {
         if (fundView == null) {
+            Map<Integer, RulRuleSet> ruleSetMap = ruleSetRepository.findAll().stream().collect(Collectors.toMap(RulRuleSet::getRuleSetId, Function.identity()));
             List<UISettings> uiSettingsList = settingsRepository.findByUserAndSettingsTypeAndEntityType(null, UISettings.SettingsType.FUND_VIEW, UISettings.EntityType.RULE);
             fundView = new HashMap<>();
             if (uiSettingsList.size() > 0) {
                 uiSettingsList.forEach(uiSettings -> {
-                    SettingFundViews setting = (SettingFundViews) packageService.convertSetting(uiSettings);
-                    Map<String, ViewTitles> viewByCode = fundView.get(setting.getCode());
-                    if (viewByCode == null) {
-                        viewByCode = new HashMap<>();
-                        fundView.put(setting.getCode(), viewByCode);
-                    }
+                    SettingFundViews setting = (SettingFundViews) packageService.convertSetting(uiSettings, null);
+                    RulRuleSet rulRuleSet = ruleSetMap.get(uiSettings.getEntityId());
+                    Map<String, ViewTitles> viewByCode = fundView.computeIfAbsent(rulRuleSet.getCode(), k -> new HashMap<>());
                     List<SettingFundViews.Item> items = setting.getItems();
                     for (SettingFundViews.Item item : items) {
-
                         ViewTitles vt = convertViewTitles(item);
                         if (item instanceof SettingFundViews.Default) {
                             viewByCode.put(DEFAULT, vt);

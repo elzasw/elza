@@ -11,12 +11,6 @@ import java.util.Set;
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
-import cz.tacr.elza.exception.Level;
-import cz.tacr.elza.exception.ObjectNotFoundException;
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.ArrangementCode;
-import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.exception.codes.RegistryCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
@@ -40,6 +34,7 @@ import cz.tacr.elza.controller.vo.ParRelationTypeVO;
 import cz.tacr.elza.controller.vo.ParRelationVO;
 import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
 import cz.tacr.elza.controller.vo.UIPartyGroupVO;
+import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ParComplementType;
@@ -53,11 +48,15 @@ import cz.tacr.elza.domain.ParRelationEntity;
 import cz.tacr.elza.domain.ParRelationRoleType;
 import cz.tacr.elza.domain.ParRelationType;
 import cz.tacr.elza.domain.ParRelationTypeRoleType;
+import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.UIPartyGroup;
-import cz.tacr.elza.domain.UsrPermission;
-import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.DeleteException;
+import cz.tacr.elza.exception.Level;
+import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.exception.codes.UserCode;
 import cz.tacr.elza.repository.ComplementTypeRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
@@ -74,6 +73,7 @@ import cz.tacr.elza.repository.RelationTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRoleTypeRepository;
 import cz.tacr.elza.repository.UIPartyGroupRepository;
 import cz.tacr.elza.service.PartyService;
+import cz.tacr.elza.service.RegistryService;
 import cz.tacr.elza.service.UserService;
 
 
@@ -145,6 +145,9 @@ public class PartyController {
     @Autowired
     private UIPartyGroupRepository uiPartyGroupRepository;
 
+    @Autowired
+    private RegistryService registryService;
+
     /**
      * Uložení nové osoby
      * @param partyVO data osoby
@@ -153,7 +156,7 @@ public class PartyController {
     @RequestMapping(value = "/", method = RequestMethod.POST)
     @Transactional
     public ParPartyVO createParty(@RequestBody final ParPartyVO partyVO) {
-        Assert.notNull(partyVO);
+        Assert.notNull(partyVO, "Osoba musí být vyplněna");
 
         if(partyVO.getId() != null){
             throw new SystemException("Nová osoba nesmí mít nastaveno ID", BaseCode.ID_EXIST).set("id", partyVO.getId());
@@ -174,9 +177,10 @@ public class PartyController {
      * @param partyId id osoby
      * @return data osoby
      */
+	@Transactional
     @RequestMapping(value = "/{partyId}", method = RequestMethod.GET)
     public ParPartyVO getParty(@PathVariable final Integer partyId) {
-        Assert.notNull(partyId);
+        Assert.notNull(partyId, "Identifikátor osoby musí být vyplněna");
         ParParty party = partyService.getParty(partyId);
         if (party == null) {
             throw new ObjectNotFoundException("Osoba s ID=" + partyId + " nebyla nalezena", RegistryCode.PARTY_NOT_EXIST).set("id", partyId);
@@ -193,8 +197,8 @@ public class PartyController {
     @RequestMapping(value = "/{partyId}", method = RequestMethod.PUT)
     @Transactional
     public ParPartyVO updateParty(@PathVariable final Integer partyId, @RequestBody final ParPartyVO partyVO) {
-        Assert.notNull(partyId);
-        Assert.notNull(partyVO);
+        Assert.notNull(partyId, "Identifikátor osoby musí být vyplněna");
+        Assert.notNull(partyVO, "Osoba musí být vyplněna");
 
         Assert.isTrue(
                 partyId.equals(partyVO.getId()),
@@ -216,7 +220,7 @@ public class PartyController {
     @Transactional
     @RequestMapping(value = "/{partyId}", method = RequestMethod.DELETE)
     public void deleteParty(@PathVariable final Integer partyId) {
-        Assert.notNull(partyId);
+        Assert.notNull(partyId, "Identifikátor osoby musí být vyplněna");
 
         ParParty party = partyRepository.getOneCheckExist(partyId);
 
@@ -235,15 +239,19 @@ public class PartyController {
      * @param count       počet vrácených záznamů
      * @param partyTypeId id typu osoby
      * @param versionId   id verze, podle které se budou filtrovat třídy rejstříků, null - výchozí třídy
+     * @param scopeId     id scope, pokud je vyplněn vrací se jen osoby s tímto scope
      * @return seznam osob s počtem všech osob
      */
     @RequestMapping(value = "/", method = RequestMethod.GET)
+	@Transactional
     public FilteredResultVO<ParPartyVO> findParty(@Nullable @RequestParam(required = false) final String search,
                                        @RequestParam final Integer from,
                                        @RequestParam final Integer count,
                                        @Nullable @RequestParam(required = false) final Integer partyTypeId,
                                        @Nullable @RequestParam(required = false) final Integer itemSpecId,
-                                       @RequestParam(required = false) @Nullable final Integer versionId) {
+                                       @RequestParam(required = false) @Nullable final Integer versionId,
+                                       @RequestParam(required = false) @Nullable final Integer scopeId,
+                                       @RequestParam(required = false, defaultValue = "true") @Nullable final Boolean excludeInvalid) {
 
         ArrFund fund;
         if (versionId == null) {
@@ -253,10 +261,11 @@ public class PartyController {
             fund = version.getFund();
         }
 
-        List<ParParty> partyList = partyService.findPartyByTextAndType(search, partyTypeId, itemSpecId, from, count, fund);
+        List<ParParty> partyList = partyService.findPartyByTextAndType(search, partyTypeId, itemSpecId, from, count,
+                fund, scopeId, excludeInvalid);
         List<ParPartyVO> resultVo = factoryVo.createPartyList(partyList);
 
-        long countAll = partyService.findPartyByTextAndTypeCount(search, partyTypeId, itemSpecId, fund);
+        long countAll = partyService.findPartyByTextAndTypeCount(search, partyTypeId, itemSpecId, fund, scopeId, excludeInvalid);
         return new FilteredResultVO<>(resultVo, countAll);
     }
 
@@ -271,6 +280,7 @@ public class PartyController {
      * @return seznam osob s počtem všech osob
      */
     @RequestMapping(value = "/findPartyForParty", method = RequestMethod.GET)
+	@Transactional
     public FilteredResultVO<ParPartyVO> findPartyForParty(
             @Nullable @RequestParam(required = false) final String search,
             @RequestParam final Integer from,
@@ -282,13 +292,12 @@ public class PartyController {
         Set<Integer> scopeIds = new HashSet<>();
         scopeIds.add(party.getRecord().getScope().getScopeId());
 
-        UsrUser user = userService.getLoggedUser();
-        boolean readAllScopes = userService.hasPermission(UsrPermission.Permission.REG_SCOPE_RD_ALL);
-        List<ParParty> partyList = partyRepository.findPartyByTextAndType(search, partyTypeId, null, from, count, scopeIds, readAllScopes, user);
+        List<ParParty> partyList = partyRepository.findPartyByTextAndType(search, partyTypeId, null,
+                from, count, scopeIds, true);
 
         List<ParPartyVO> resultVo = factoryVo.createPartyList(partyList);
 
-        long countAll = partyRepository.findPartyByTextAndTypeCount(search, partyTypeId, null, scopeIds, readAllScopes, user);
+        long countAll = partyRepository.findPartyByTextAndTypeCount(search, partyTypeId, null, scopeIds, true);
         return new FilteredResultVO<>(resultVo, countAll);
     }
 
@@ -303,7 +312,7 @@ public class PartyController {
     @RequestMapping(value = "/relation", method = RequestMethod.POST)
     public ParRelationVO createRelation(@RequestBody final ParRelationVO relationVO) {
 
-        Assert.isNull(relationVO.getId());
+        Assert.isNull(relationVO.getId(), "Identifikátor vztahu musí být vyplněn");
 
         validationVOService.checkRelation(relationVO);
 
@@ -362,6 +371,7 @@ public class PartyController {
      * @return typy osob včetně navázaných podtypů
      */
     @RequestMapping(value = "/partyTypes", method = RequestMethod.GET)
+	@Transactional
     public List<ParPartyTypeVO> getPartyTypes() {
         //načteme všechny záznamy, aby nedocházelo k samostatným dotazům v cyklech
         //noinspection unused
@@ -494,6 +504,7 @@ public class PartyController {
      * @return seznam typů formy jména
      */
     @RequestMapping(value = "/partyNameFormTypes", method = RequestMethod.GET)
+	@Transactional
     public List<ParPartyNameFormTypeVO> getPartyNameFormType() {
         List<ParPartyNameFormType> types = partyNameFormTypeRepository.findAll();
 
@@ -505,7 +516,53 @@ public class PartyController {
      * @return seznam institucí
      */
     @RequestMapping(value = "/institutions", method = RequestMethod.GET)
+	@Transactional
     public List<ParInstitutionVO> getInstitutions() {
         return factoryVo.createInstitutionList(institutionRepository.findAll());
+    }
+
+    /**
+     * Najde použití osoby.
+     *
+     * @param partyId identifikátor osoby
+     *
+     * @return použití osoby
+     */
+    @RequestMapping(value = "/{partyId}/usage", method = RequestMethod.GET)
+	@Transactional
+    public RecordUsageVO findUsage(@PathVariable final Integer partyId) {
+    	ParParty parParty = partyRepository.getOneCheckExist(partyId);
+    	RegRecord regRecord = parParty.getRecord();
+    	return registryService.findRecordUsage(regRecord, parParty);
+    }
+
+
+    /**
+     * Nahrazení osoby
+     *
+     * @param partyId ID nahrazované osoby
+     * @param replacedId ID osoby pomocí které budeme nahrazovat
+     */
+    @Transactional
+    @RequestMapping(value = "/{partyId}/replace", method = RequestMethod.POST)
+    public void replace(@PathVariable final Integer partyId, @RequestBody final Integer replacedId) {
+        final ParParty replaced = partyService.getParty(partyId);
+        final ParParty replacement = partyService.getParty(replacedId);
+        partyService.replace(replaced, replacement);
+    }
+
+
+    /**
+     * Zplatnění osoby
+     * @param partyId ID osoby
+     */
+    @Transactional
+    @RequestMapping(value = "/{partyId}/valid", method = RequestMethod.POST)
+    public void valid(@PathVariable final Integer partyId) {
+        final ParParty party = partyService.getParty(partyId);
+        RegRecord record = party.getRecord();
+        record.setInvalid(false);
+        registryService.saveRecord(record, false);
+
     }
 }

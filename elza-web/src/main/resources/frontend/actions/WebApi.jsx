@@ -18,13 +18,13 @@ function getData(data, timeout = 1000) {
 function callWS(url, data, needResponse = true) {
     return new Promise((resolve, reject) => {
         if (needResponse) { // chceme skoro vždy
-            window.ws.send('/app' + url, {}, JSON.stringify(data), (successResponse) => {
+            window.ws.send('/app' + url, JSON.stringify(data), (successResponse) => {
                 resolve(successResponse);
             }, (errorResponse) => { // příprava pro budoucí možnost odchytávání klientských výjimek - zavolá se error calbback
                 reject(errorResponse);
             });
         } else {
-            window.ws.send('/app' + url, {}, JSON.stringify(data));
+            window.ws.send('/app' + url, JSON.stringify(data));
             resolve();
         }
     });
@@ -47,6 +47,7 @@ export class WebApiCls {
     static changesUrl = WebApiCls.arrangementUrl + '/changes';
     static dmsUrl = WebApiCls.baseUrl + '/dms';
     static userUrl = WebApiCls.baseUrl + '/user';
+    static groupUrl = WebApiCls.baseUrl + '/group';
     static adminUrl = WebApiCls.baseUrl + '/admin';
     static validateUrl = WebApiCls.baseUrl + '/validate';
 
@@ -94,8 +95,12 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.partyUrl + '/' + partyId);
     }
 
-    findParty(search = null, versionId = null, partyTypeId = null, itemSpecId = null, from = 0, count = DEFAULT_LIST_SIZE) {
-        return AjaxUtils.ajaxGet(WebApiCls.partyUrl + '/', {search, from, count, partyTypeId, versionId, itemSpecId});
+    findParty(search = null, versionId = null, partyTypeId = null, itemSpecId = null, from = 0, count = DEFAULT_LIST_SIZE, scopeId, excludeInvalid) {
+        return AjaxUtils.ajaxGet(WebApiCls.partyUrl + '/', {search, from, count, partyTypeId, versionId, itemSpecId, scopeId, excludeInvalid});
+    }
+
+    findPartyUsage(partyId) {
+        return AjaxUtils.ajaxGet(WebApiCls.partyUrl + '/' + partyId + '/usage');
     }
 
     findPartyForParty(partyId, search = null, from = 0, count = DEFAULT_LIST_SIZE) {
@@ -104,6 +109,14 @@ export class WebApiCls {
 
     updateParty(party) {
         return AjaxUtils.ajaxPut(WebApiCls.partyUrl + '/' + party.id, null, party);
+    }
+
+    replaceParty(partyReplaceId, partyReplacementId) {
+        return AjaxUtils.ajaxPost(WebApiCls.partyUrl + '/' + partyReplaceId + '/replace', null, partyReplacementId);
+    }
+
+    setValidParty(partyId) {
+        return AjaxUtils.ajaxPost(WebApiCls.partyUrl + '/' + partyId + '/valid');
     }
 
     deleteParty(partyId) {
@@ -355,7 +368,7 @@ export class WebApiCls {
         });
     }
 
-    findRegistry(search = null, registryParent = null, registerTypeId = null, versionId = null, itemSpecId = null, from = 0, count = DEFAULT_LIST_SIZE) {
+    findRegistry(search = null, registryParent = null, registerTypeId = null, versionId = null, itemSpecId = null, from = 0, count = DEFAULT_LIST_SIZE, scopeId = null, excludeInvalid = true) {
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/', {
             search,
             from,
@@ -363,8 +376,14 @@ export class WebApiCls {
             itemSpecId,
             parentRecordId: registryParent,
             registerTypeId: registerTypeId,
-            versionId
+            versionId,
+            scopeId,
+            excludeInvalid
         });
+    }
+
+    findRegistryUsage(recordId) {
+        return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/' + recordId + '/usage');
     }
 
     findRecordForRelation(search = null, roleTypeId = null, partyId = null, from = 0, count = DEFAULT_LIST_SIZE) {
@@ -383,6 +402,14 @@ export class WebApiCls {
 
     updateRegistry(record) {
         return AjaxUtils.ajaxPut(WebApiCls.registryUrl + '/' + record.id, null, record);
+    }
+
+    replaceRegistry(recordReplaceId, recordReplacementId) {
+        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/' + recordReplaceId + '/replace', null, recordReplacementId);
+    }
+
+    setValidRegistry(registryId) {
+        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/' + registryId +'/valid', null);
     }
 
     deleteRegistry(recordId) {
@@ -427,10 +454,6 @@ export class WebApiCls {
 
     getRecordTypes() {
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/recordTypes');
-    }
-
-    getDefaultScopes() {
-        return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/defaultScopes');
     }
     // End registry
 
@@ -688,14 +711,8 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.ruleUrl + '/getRuleSets');
     }
 
-    createFund(name, ruleSetId, institutionId, internalCode, dateRange) {
-        return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/funds', {
-            name,
-            institutionId,
-            ruleSetId,
-            internalCode,
-            dateRange
-        });
+    createFund(createFund) {
+        return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/funds', null, createFund);
     }
 
     updateFund(data) {
@@ -714,16 +731,20 @@ export class WebApiCls {
         return AjaxUtils.ajaxPut(WebApiCls.arrangementUrl + '/getFilterNodes/' + versionId, {page: pageIndex, pageSize: pageSize}, descItemTypeIds)
     }
 
-    replaceDataValues(versionId, descItemTypeId, specsIds, searchText, replaceText, nodes) {
-        return AjaxUtils.ajaxPut(WebApiCls.arrangementUrl + '/replaceDataValues/' + versionId, {descItemTypeId, searchText, replaceText }, {nodes, specIds: specsIds})
+    replaceDataValues(versionId, descItemTypeId, specsIds, searchText, replaceText, nodes, selectionType) {
+        return AjaxUtils.ajaxPut(WebApiCls.arrangementUrl + '/replaceDataValues/' + versionId, {descItemTypeId, searchText, replaceText }, {nodes, specIds: specsIds, selectionType})
     }
 
-    placeDataValues(versionId, descItemTypeId, specsIds, replaceText, replaceSpecId, nodes) {
-        return AjaxUtils.ajaxPut(WebApiCls.arrangementUrl + '/placeDataValues/' + versionId, {descItemTypeId, newDescItemSpecId: replaceSpecId, text: replaceText }, {nodes, specIds: specsIds})
+    placeDataValues(versionId, descItemTypeId, specsIds, replaceText, replaceSpecId, nodes, selectionType) {
+        return AjaxUtils.ajaxPut(WebApiCls.arrangementUrl + '/placeDataValues/' + versionId, {descItemTypeId, newDescItemSpecId: replaceSpecId, text: replaceText }, {nodes, specIds: specsIds, selectionType})
     }
 
-    deleteDataValues(versionId, descItemTypeId, specsIds, nodes) {
-        return AjaxUtils.ajaxPut(WebApiCls.arrangementUrl + '/deleteDataValues/' + versionId, {descItemTypeId}, {nodes, specIds: specsIds})
+    setSpecification(fundVersionId, itemTypeId, specIds, replaceSpecId, nodes, selectionType) {
+        return AjaxUtils.ajaxPut(WebApiCls.arrangementUrl + '/setSpecification/' + fundVersionId, {itemTypeId, replaceSpecId}, {nodes, specIds, selectionType})
+    }
+
+    deleteDataValues(versionId, descItemTypeId, specsIds, nodes, selectionType) {
+        return AjaxUtils.ajaxPut(WebApiCls.arrangementUrl + '/deleteDataValues/' + versionId, {descItemTypeId}, {nodes, specIds: specsIds, selectionType})
     }
 
     getFilteredFulltextNodes(versionId, fulltext, luceneQuery = false, searchParams = null) {
@@ -827,6 +848,10 @@ export class WebApiCls {
         return AjaxUtils.ajaxPut(WebApiCls.arrangementUrl + '/filterUniqueValues/' + versionId, {descItemTypeId, fulltext, max}, descItemSpecIds)
     }
 
+    findUniqueSpecIds(fundVersionId, itemTypeId) {
+        return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/findUniqueSpecIds/' + fundVersionId, {itemTypeId})
+    }
+
     getVisiblePolicy(nodeId, fundVersionId, includeParents = true) {
         return AjaxUtils.ajaxGet(WebApiCls.ruleUrl + '/policy/' + nodeId + '/' + fundVersionId + '/' + includeParents);
     }
@@ -865,8 +890,77 @@ export class WebApiCls {
             .then(json => ({users: json.rows, usersCount: json.count}))
     }
 
+    findControlFunds(fulltext, max = DEFAULT_LIST_SIZE) {
+        return AjaxUtils.ajaxGet(WebApiCls.userUrl + '/controlFunds', {search: fulltext, from: 0, count: max});
+    }
+
+    findUserWithFundCreate(fulltext, active, disabled, max = DEFAULT_LIST_SIZE, groupId = null) {
+        return AjaxUtils.ajaxGet(WebApiCls.userUrl + "/withFundCreate", {search: fulltext, active, disabled, from: 0, count: max, excludedGroupId: groupId})
+            .then(json => ({users: json.rows, usersCount: json.count}))
+    }
+
+    findUsersPermissionsByFund(fundId) {
+        return AjaxUtils.ajaxGet(WebApiCls.userUrl + `/fund/${fundId}/users`)
+            .then(data => ({rows: data, count: data.length}));
+    }
+
+    findUsersPermissionsByFundAll() {
+        return AjaxUtils.ajaxGet(WebApiCls.userUrl + `/fund/all/users`)
+            .then(data => ({rows: data, count: data.length}));
+    }
+
+    findGroupsPermissionsByFund(fundId) {
+        return AjaxUtils.ajaxGet(WebApiCls.groupUrl + `/fund/${fundId}/groups`)
+            .then(data => ({rows: data, count: data.length}));
+    }
+
+    findGroupsPermissionsByFundAll(fundId) {
+        return AjaxUtils.ajaxGet(WebApiCls.groupUrl + `/fund/all/groups`)
+            .then(data => ({rows: data, count: data.length}));
+    }
+
     changeUserPermission(userId, permissions) {
         return AjaxUtils.ajaxPost(WebApiCls.userUrl + "/" + userId + '/permission', null, permissions);
+    }
+
+    addUserPermission(userId, permissions) {
+        return AjaxUtils.ajaxPost(WebApiCls.userUrl + "/" + userId + '/permission/add', null, permissions);
+    }
+
+    addGroupPermission(groupId, permissions) {
+        return AjaxUtils.ajaxPost(WebApiCls.groupUrl + "/" + groupId + '/permission/add', null, permissions);
+    }
+
+    deleteUserPermission(userId, permissions) {
+        return AjaxUtils.ajaxPost(WebApiCls.userUrl + "/" + userId + '/permission/delete', null, permissions);
+    }
+
+    deleteGroupPermission(groupId, permissions) {
+        return AjaxUtils.ajaxPost(WebApiCls.groupUrl + "/" + groupId + '/permission/delete', null, permissions);
+    }
+
+    deleteUserFundPermission(userId, fundId) {
+        return AjaxUtils.ajaxPost(WebApiCls.userUrl + "/" + userId + '/permission/delete/fund/' + fundId);
+    }
+
+    deleteUserFundAllPermission(userId) {
+        return AjaxUtils.ajaxPost(WebApiCls.userUrl + "/" + userId + '/permission/delete/fund/all');
+    }
+
+    deleteGroupFundPermission(groupId, fundId) {
+        return AjaxUtils.ajaxPost(WebApiCls.groupUrl + "/" + groupId + '/permission/delete/fund/' + fundId);
+    }
+
+    deleteGroupFundAllPermission(groupId) {
+        return AjaxUtils.ajaxPost(WebApiCls.groupUrl + "/" + groupId + '/permission/delete/fund/all');
+    }
+
+    deleteUserScopePermission(userId, scopeId) {
+        return AjaxUtils.ajaxPost(WebApiCls.userUrl + "/" + userId + '/permission/delete/scope/' + scopeId);
+    }
+
+    deleteGroupScopePermission(groupId, scopeId) {
+        return AjaxUtils.ajaxPost(WebApiCls.groupUrl + "/" + groupId + '/permission/delete/scope/' + scopeId);
     }
 
     changeGroupPermission(groupId, permissions) {
@@ -874,12 +968,21 @@ export class WebApiCls {
     }
 
     findGroup(fulltext, max = DEFAULT_LIST_SIZE) {
-        return AjaxUtils.ajaxGet(WebApiCls.userUrl + '/group', {search: fulltext, from: 0, count: max})
+        return AjaxUtils.ajaxGet(WebApiCls.groupUrl, {search: fulltext, from: 0, count: max})
+            .then(json => ({groups: json.rows, groupsCount: json.count}))
+    }
+
+    findGroupWithFundCreate(fulltext, max = DEFAULT_LIST_SIZE) {
+        return AjaxUtils.ajaxGet(WebApiCls.groupUrl + "/withFundCreate", {search: fulltext, from: 0, count: max})
             .then(json => ({groups: json.rows, groupsCount: json.count}))
     }
 
     getUser(userId) {
         return AjaxUtils.ajaxGet(WebApiCls.userUrl + '/' + userId);
+    }
+
+    getUserOld(userId) {
+        return AjaxUtils.ajaxGet(WebApiCls.userUrl + '/' + userId + "/old");
     }
 
     createGroup(name, code, description) {
@@ -888,15 +991,15 @@ export class WebApiCls {
             code: code,
             description
         };
-        return AjaxUtils.ajaxPost(WebApiCls.userUrl + '/group', null, params);
+        return AjaxUtils.ajaxPost(WebApiCls.groupUrl, null, params);
     }
 
     updateGroup(groupId, name, description) {
-        return AjaxUtils.ajaxPut(WebApiCls.userUrl + '/group/' + groupId, null, {name, description});
+        return AjaxUtils.ajaxPut(WebApiCls.groupUrl + '/' + groupId, null, {name, description});
     }
 
     deleteGroup(groupId) {
-        return AjaxUtils.ajaxDelete(WebApiCls.userUrl + '/group/' + groupId);
+        return AjaxUtils.ajaxDelete(WebApiCls.groupUrl + '/' + groupId);
     }
 
     joinGroup(groupIds, userIds) {
@@ -937,7 +1040,7 @@ export class WebApiCls {
     }
 
     getGroup(groupId){
-        return AjaxUtils.ajaxGet(WebApiCls.userUrl + '/group/' + groupId);
+        return AjaxUtils.ajaxGet(WebApiCls.groupUrl + '/' + groupId);
     }
 
     getFundDetail(fundId) {
@@ -1092,6 +1195,8 @@ export class UrlFactory {
     }
 
     static exportFund(versionId, transformationName) {
+        transformationName = transformationName || "";
+
         return serverContextPath + WebApiCls.exportUrl + '/fund/' + versionId + '?transformationName=' + encodeURIComponent(transformationName);
     }
 

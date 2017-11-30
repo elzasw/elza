@@ -10,8 +10,6 @@ import javax.persistence.PersistenceContext;
 
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
 
 import com.google.common.primitives.Ints;
 
@@ -20,9 +18,7 @@ import cz.tacr.elza.bulkaction.BulkAction;
 import cz.tacr.elza.bulkaction.generator.result.Result;
 import cz.tacr.elza.bulkaction.generator.result.TestDataGeneratorResult;
 import cz.tacr.elza.domain.ArrBulkActionRun;
-import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.vo.NodeTypeOperation;
@@ -30,8 +26,11 @@ import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.service.ArrangementService;
+import cz.tacr.elza.service.ArrangementServiceInternal;
 import cz.tacr.elza.service.IEventNotificationService;
 import cz.tacr.elza.service.RuleService;
+import cz.tacr.elza.service.cache.NodeCacheService;
+import cz.tacr.elza.service.cache.RestoredNode;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 
@@ -54,12 +53,8 @@ public class TestDataGenerator extends BulkAction {
     int [] unitsToGenerate = {10};
     int activeLevel = 0;
 
-    /**
-     * Změna
-     */
-    private ArrChange change;
-
-	private ArrFundVersion version;
+	@Autowired
+	ArrangementServiceInternal arrangementInternal;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -69,6 +64,8 @@ public class TestDataGenerator extends BulkAction {
     private IEventNotificationService eventNotificationService;
     @Autowired
     private RuleService ruleService;
+	@Autowired
+	private NodeCacheService nodeCacheService;
 
 	TestDataConfig config;
 
@@ -78,7 +75,10 @@ public class TestDataGenerator extends BulkAction {
 		this.config = testDataConfig;
 	}
 
-	private void init() {
+	@Override
+	protected void init(ArrBulkActionRun bulkActionRun) {
+		super.init(bulkActionRun);
+
 		List<Integer> unitsCount = config.getItemsToGenerate();
 		unitsToGenerate = Ints.toArray(unitsCount);
 		if(unitsToGenerate.length==0) {
@@ -88,26 +88,12 @@ public class TestDataGenerator extends BulkAction {
 	}
 
 	@Override
-	@Transactional
 	public void run(ActionRunContext runContext) {
-		init();
 
-		ArrBulkActionRun arrBulkActionRun = runContext.getBulkActionRun();
-
-		this.change = arrBulkActionRun.getChange();
-		this.version = arrBulkActionRun.getFundVersion();
-
-		Validate.notNull(version);
-        checkVersion(version);
-		ArrNode rootNode = version.getRootNode();
-
-		for (Integer nodeId : runContext.getInputNodeIds())
-		{
-			// get node
-            ArrNode node = nodeRepository.findOne(nodeId);
-            Assert.notNull(nodeId, "Node s nodeId=" + nodeId + " neexistuje");
-            ArrLevel level = levelRepository.findNodeInRootTreeByNodeId(node, rootNode, null);
-            Assert.notNull(level, "Level neexistuje, nodeId=" + node.getNodeId() + ", rootNodeId=" + rootNode.getNodeId());
+		for (Integer nodeId : runContext.getInputNodeIds()) {
+            ArrNode nodeRef = nodeRepository.getOne(nodeId);
+            ArrLevel level = levelRepository.findByNodeAndDeleteChangeIsNull(nodeRef);
+            Validate.notNull(level);
 
             generate(level);
 		}
@@ -117,7 +103,7 @@ public class TestDataGenerator extends BulkAction {
         TestDataGeneratorResult result = new TestDataGeneratorResult();
         //result.setCountChanges(countChanges);
         resultBA.getResults().add(result);
-		arrBulkActionRun.setResult(resultBA);
+		bulkActionRun.setResult(resultBA);
 	}
 
 	private void generate(ArrLevel parentLevel) {
@@ -175,7 +161,8 @@ public class TestDataGenerator extends BulkAction {
 		// Copy child nodes
 		for(ArrLevel srcLevel: childLevels)
 		{
-			ArrLevel newLevel = this.arrangementService.createLevel(this.change, parentLevel.getNode(), pos, version.getFund());
+			ArrLevel newLevel = this.arrangementService.createLevel(getChange(), parentLevel.getNode(), pos,
+			        version.getFund());
 
         	eventNotificationService
             .publishEvent(EventFactory.createAddNodeEvent(EventType.ADD_LEVEL_UNDER, version, parentLevel, newLevel));
@@ -202,12 +189,15 @@ public class TestDataGenerator extends BulkAction {
 	 * @param trgLevel
 	 */
 	private void copyDescrItems(ArrLevel srcLevel, ArrLevel trgLevel) {
-		List<ArrDescItem> sourceDescItems = arrangementService.getArrDescItems(version, srcLevel.getNode());
-		descriptionItemService.copyDescItemWithDataToNode(trgLevel.getNode(), sourceDescItems, this.change, version);
+		ArrNode node = srcLevel.getNode();
+		RestoredNode restoredNode = nodeCacheService.getNode(node.getNodeId());
+		List<ArrDescItem> sourceDescItems = restoredNode.getDescItems();
+		descriptionItemService.copyDescItemWithDataToNode(trgLevel.getNode(), sourceDescItems, this.getChange(),
+		        version);
 	}
 
 	@Override
-	public String toString() {
+	public String getName() {
 		return "TestDataGenerator";
 	}
 

@@ -9,7 +9,7 @@ import {connect} from 'react-redux'
 import {Button} from 'react-bootstrap';
 import {GroupDetail, AddGroupForm, Ribbon} from 'components/index.jsx';
 import PageLayout from "../shared/layout/PageLayout";
-import {i18n, Search, ListBox, AbstractReactComponent, Icon, RibbonGroup, Loading} from 'components/shared';
+import {i18n, Search, ListBox, AbstractReactComponent, Icon, RibbonGroup, StoreHorizontalLoader} from 'components/shared';
 import {groupsFetchIfNeeded, groupsGroupDetailFetchIfNeeded, groupsSelectGroup, groupsSearch, groupUpdate, groupCreate, groupDelete} from 'actions/admin/group.jsx'
 import {indexById} from 'stores/app/utils.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
@@ -122,14 +122,15 @@ const AdminGroupPage = class AdminGroupPage extends AbstractReactComponent {
         }
 
         const leftPanel = (
-            !group.fetching && group.groups ? <div className="group-list-container">
+            <div className="group-list-container">
                 <Search
                     onSearch={this.handleSearch}
                     onClear={this.handleSearchClear}
                     placeholder={i18n('search.input.search')}
-                    value={group.filterText}
+                    value={group.filterText || ""}
                 />
-                <ListBox
+                <StoreHorizontalLoader store={group}/>
+                {group.fetched && <ListBox
                     className='group-listbox'
                     ref='groupList'
                     items={group.groups}
@@ -137,8 +138,8 @@ const AdminGroupPage = class AdminGroupPage extends AbstractReactComponent {
                     renderItemContent={renderGroupItem}
                     onFocus={this.handleSelect}
                     onSelect={this.handleSelect}
-                />
-            </div> : <Loading />
+                />}
+            </div>
         )
 
         const centerPanel = (

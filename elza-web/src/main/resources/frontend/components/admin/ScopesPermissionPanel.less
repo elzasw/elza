@@ -1,0 +1,26 @@
+.scopes-permissions-container {
+    background-color: white;
+    border: 1px solid #ddd;
+
+    .admin-rights-content {
+        .admin-rights-right {
+            display: flex;
+            flex-direction: row;
+
+            .permission-checkbox-form {
+                overflow-y: auto;
+                width: 50%;
+            }
+        }
+    }
+    .add-remove-listbox {
+        border-width: 0 1px 0 0;
+
+        &:focus {
+            border-color: #ddd !important; 
+            outline-width: 1px !important;
+        }
+        .listbox-container:focus {
+        }
+    }
+}

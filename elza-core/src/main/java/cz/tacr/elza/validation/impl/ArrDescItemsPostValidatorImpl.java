@@ -1,6 +1,10 @@
 package cz.tacr.elza.validation.impl;
 
-import cz.tacr.elza.domain.ArrData;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
@@ -8,22 +12,20 @@ import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.domain.vo.DataValidationResult;
 import cz.tacr.elza.drools.ValidationRules;
-import cz.tacr.elza.repository.DataRepository;
+import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.service.ArrangementServiceInternal;
 import cz.tacr.elza.service.RuleService;
+import cz.tacr.elza.service.cache.NodeCacheService;
+import cz.tacr.elza.service.cache.RestoredNode;
 import cz.tacr.elza.validation.ArrDescItemsPostValidator;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 
 /**
  * Validátor povinnosti, opakovatelnosti, hodnot atd pro atributy. Validace probíhá až po uložení všech hodnot.
  * Neslouží k validaci při ukládání jedné hodnoty.
  *
- * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
- * @since 30.11.2015
  */
 @Component
 public class ArrDescItemsPostValidatorImpl implements ArrDescItemsPostValidator {
@@ -40,15 +42,30 @@ public class ArrDescItemsPostValidatorImpl implements ArrDescItemsPostValidator 
     @Autowired
     private ValidationRules validationRules;
 
+	@Autowired
+	ArrangementServiceInternal arrangementServiceInternal;
+
+	@Autowired
+	NodeCacheService nodeCache;
+
     @Override
     public List<DataValidationResult> postValidateNodeDescItems(final ArrLevel level,
                                                                 final ArrFundVersion version) {
 
         List<ArrDescItem> descItems;
         if (version.getLockChange() == null) {
-            descItems = descItemRepository.findByNodeAndDeleteChangeIsNullFetch(level.getNode());
+			// read node from cache
+			RestoredNode restoredNode = nodeCache.getNode(level.getNodeId());
+			if (restoredNode == null) {
+				throw new ObjectNotFoundException("Nebyla nalezena JP s ID=" + level.getNodeId(),
+				        ArrangementCode.NODE_NOT_FOUND)
+				                .set("id", level.getNodeId());
+			}
+			//Node node = restoredNode.getNode();
+
+			descItems = restoredNode.getDescItems();
         } else {
-            descItems = descItemRepository.findByNodeAndChange(level.getNode(), version.getLockChange());
+			descItems = arrangementServiceInternal.getDescItems(version.getLockChange(), level.getNode());
         }
 
         List<RulItemTypeExt> nodeTypes = ruleService.getDescriptionItemTypes(version, level.getNode());
@@ -58,7 +75,7 @@ public class ArrDescItemsPostValidatorImpl implements ArrDescItemsPostValidator 
         validator.validate();
 
         List<DataValidationResult> validationResultList = validator.getValidationResultList();
-        validationRules.finalizeValidationResults(validationResultList);
+		validationRules.finalizeValidationResults(validationResultList, version.getRuleSetId());
         return validationResultList;
     }
 

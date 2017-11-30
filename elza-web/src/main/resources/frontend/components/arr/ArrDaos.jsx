@@ -5,7 +5,7 @@ import './ArrDaos.less';
 
 import React from "react";
 import {connect} from "react-redux";
-import {Icon, Loading, AbstractReactComponent, i18n} from 'components/shared';
+import {Icon, HorizontalLoader, AbstractReactComponent, i18n} from 'components/shared';
 import {indexById} from "stores/app/utils.jsx";
 import {Button} from "react-bootstrap";
 import {dateToString} from "components/Utils.jsx";
@@ -144,7 +144,7 @@ class ArrDaos extends AbstractReactComponent {
                             renderItemContent={this.renderItem}
                             onFocus={this.handleSelect}
                         />}
-                        {!daoList.fetched && daoPackageId && <Loading/>}
+                        {!daoList.fetched && daoPackageId && <HorizontalLoader/>}
                     </div>
                 </div>
                 <div className="daos-detail">

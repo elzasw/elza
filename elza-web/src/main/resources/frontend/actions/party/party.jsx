@@ -43,8 +43,8 @@ export const USE_UNITDATE_ENUM = {
  * @param from {number} od kolikáté položky se má posílat seznam - stránkování
  * @param size {number} počet položek v seznamu - velikost jedné stránky
  */
-export function partyListFetchIfNeeded(versionId = null, from = 0, size = DEFAULT_PARTY_LIST_MAX_SIZE) {
-    return SimpleListActions.fetchIfNeeded(AREA_PARTY_LIST, versionId, (parent, filter) => WebApi.findParty(filter.text, versionId, filter.type, filter.itemSpecId, from, size))
+export function partyListFetchIfNeeded(versionId = null, from = 0, size = DEFAULT_PARTY_LIST_MAX_SIZE, scopeId = null) {
+    return SimpleListActions.fetchIfNeeded(AREA_PARTY_LIST, versionId, (parent, filter) => WebApi.findParty(filter.text, versionId, filter.type, filter.itemSpecId, filter.from, size, filter.scopeId, filter.excludeInvalid))
 }
 
 /**
@@ -65,7 +65,7 @@ export function partyListInvalidate() {
 
 export function partyDetailFetchIfNeeded(id) {
     return (dispatch, getState) => {
-        dispatch(DetailActions.fetchIfNeeded(AREA_PARTY_DETAIL, id, () => {
+        return dispatch(DetailActions.fetchIfNeeded(AREA_PARTY_DETAIL, id, () => {
             return WebApi.getParty(id).catch(()=>dispatch(partyDetailClear()));
         }));
     }
@@ -123,7 +123,24 @@ export function partyDelete(id) {
         })
     }
 }
+/* MCV-45365
+export function setValidParty(id) {
+    return (dispatch, getState) => {
+        WebApi.setValidParty(id).then(() => {
+            const store = getState();
+            const detail = storeFromArea(store, AREA_PARTY_DETAIL);
+            const list = storeFromArea(store, AREA_PARTY_LIST);
+            if (detail.id == id) {
+                dispatch(partyDetailClear());
+            }
 
+            if (list.filteredRows && indexById(list.filteredRows, id) !== null) {
+                dispatch(partyListInvalidate())
+            }
+        })
+    }
+}
+*/
 
 export function relationCreate(relation) {
     return (dispatch, getState) => {

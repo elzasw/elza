@@ -35,7 +35,7 @@ public abstract class AbstractTest {
     @Autowired
 	protected DataRepository dataRepository;
     @Autowired
-    protected DataTypeRepository dataTypeRepository;    
+    protected DataTypeRepository dataTypeRepository;
     @Autowired
     protected DescItemRepository descItemRepository;
     @Autowired

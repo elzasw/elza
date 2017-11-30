@@ -1,7 +1,7 @@
 package cz.tacr.elza.domain;
 
-import java.io.Serializable;
-
+import javax.persistence.Access;
+import javax.persistence.AccessType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -20,12 +20,13 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  * @since 20.10.2015
  */
 @Entity(name = "arr_calendar_type")
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Cache(region = "domain", usage = CacheConcurrencyStrategy.READ_WRITE)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
 public class ArrCalendarType {
 
     @Id
     @GeneratedValue
+    @Access(AccessType.PROPERTY) // required to read id without fetch from db
     private Integer calendarTypeId;
 
     @Column(length = 50, nullable = false)

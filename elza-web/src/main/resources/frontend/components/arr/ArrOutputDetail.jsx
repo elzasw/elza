@@ -1,9 +1,9 @@
 import React from 'react';
 import {outputTypesFetchIfNeeded} from "actions/refTables/outputTypes.jsx";
-import * as Utils from "components/Utils.jsx";
 import {indexById} from 'stores/app/utils.jsx'
 import {connect} from 'react-redux'
-import {Loading, i18n, AbstractReactComponent, FormInput} from 'components/shared';
+import {addShortcutManager} from "components/Utils.jsx";
+import {HorizontalLoader, i18n, AbstractReactComponent, FormInput} from 'components/shared';
 import {fundOutputDetailFetchIfNeeded, fundOutputEdit} from 'actions/arr/fundOutput.jsx'
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx'
 import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes.jsx'
@@ -36,7 +36,7 @@ class ArrOutputDetail extends AbstractReactComponent {
     static contextTypes = { shortcuts: PropTypes.object };
     static childContextTypes = { shortcuts: PropTypes.object.isRequired };
     componentWillMount(){
-        Utils.addShortcutManager(this,defaultKeymap);
+        addShortcutManager(this,defaultKeymap);
     }
     getChildContext() {
         return { shortcuts: this.shortcutManager };
@@ -171,31 +171,25 @@ class ArrOutputDetail extends AbstractReactComponent {
                     </div>
         }
 
-        if (!fundOutputDetail.fetched) {
-            return <div className='arr-output-detail-container'><Loading/></div>
+        const fetched = fundOutputDetail.fetched && fundOutputDetail.subNodeForm.fetched && calendarTypes.fetched && descItemTypes.fetched;
+        if (!fetched) {
+            return <HorizontalLoader/>
         }
 
-        let form;
-        if (fundOutputDetail.subNodeForm.fetched && calendarTypes.fetched && descItemTypes.fetched) {
-            form = (
-                <OutputSubNodeForm
-                    versionId={versionId}
-                    fundId={fund.id}
-                    selectedSubNodeId={fundOutputDetail.outputDefinition.id}
-                    rulDataTypes={rulDataTypes}
-                    calendarTypes={calendarTypes}
-                    descItemTypes={descItemTypes}
-                    packetTypes={packetTypes}
-                    packets={packets}
-                    subNodeForm={fundOutputDetail.subNodeForm}
-                    closed={!this.isEditable()}
-                    focus={focus}
-                    readMode={closed || readMode}
-                />
-            );
-        } else {
-            form = <Loading value={i18n('global.data.loading.form')}/>
-        }
+        let form= <OutputSubNodeForm
+            versionId={versionId}
+            fundId={fund.id}
+            selectedSubNodeId={fundOutputDetail.outputDefinition.id}
+            rulDataTypes={rulDataTypes}
+            calendarTypes={calendarTypes}
+            descItemTypes={descItemTypes}
+            packetTypes={packetTypes}
+            packets={packets}
+            subNodeForm={fundOutputDetail.subNodeForm}
+            closed={!this.isEditable()}
+            focus={focus}
+            readMode={closed || readMode}
+        />;
 
         return <Shortcuts name='ArrOutputDetail' handler={this.handleShortcuts}>
             <div className={"arr-output-detail-container"}>

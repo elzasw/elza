@@ -7,22 +7,14 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
+import javax.transaction.Transactional;
 
-import cz.tacr.elza.domain.UISettings;
-import cz.tacr.elza.exception.ObjectNotFoundException;
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.ArrangementCode;
-import cz.tacr.elza.exception.codes.OutputCode;
-import cz.tacr.elza.packageimport.PackageService;
-import cz.tacr.elza.packageimport.xml.SettingGridView;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,9 +24,14 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
 import cz.tacr.elza.controller.factory.ExtendedObjectsFactory;
+import cz.tacr.elza.core.data.RuleSystem;
+import cz.tacr.elza.core.data.RuleSystemItemType;
+import cz.tacr.elza.core.data.RuleSystemProvider;
+import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.core.rules.ItemTypeExtBuilder;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrItemSettings;
@@ -45,24 +42,26 @@ import cz.tacr.elza.domain.ArrNodeConformityError;
 import cz.tacr.elza.domain.ArrNodeConformityExt;
 import cz.tacr.elza.domain.ArrNodeConformityMissing;
 import cz.tacr.elza.domain.ArrOutputDefinition;
-import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.RulItemSpecExt;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulItemTypeAction;
 import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulOutputType;
-import cz.tacr.elza.domain.RulPackage;
-import cz.tacr.elza.domain.RulPolicyType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.RulTemplate;
+import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.vo.DataValidationResult;
 import cz.tacr.elza.domain.vo.NodeTypeOperation;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
 import cz.tacr.elza.drools.RulesExecutor;
 import cz.tacr.elza.exception.LockVersionChangeException;
+import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.exception.codes.OutputCode;
+import cz.tacr.elza.packageimport.PackageService;
+import cz.tacr.elza.packageimport.xml.SettingGridView;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.ItemSettingsRepository;
-import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeActionRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.LevelRepository;
@@ -79,8 +78,6 @@ import cz.tacr.elza.validation.ArrDescItemsPostValidator;
 /**
  * Servisní třída pro pravidla.
  *
- * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
- * @since 13.01.2016
  */
 @Service
 public class RuleService {
@@ -88,6 +85,9 @@ public class RuleService {
     @Autowired
     private EntityManager entityManager;
     @Autowired
+	private StaticDataService staticDataService;
+
+	@Autowired
     private UpdateConformityInfoService updateConformityInfoService;
     @Autowired
     private ArrangementService arrangementService;
@@ -115,14 +115,9 @@ public class RuleService {
     @Autowired
     private ExtendedObjectsFactory extendedObjectsFactory;
     @Autowired
-    private ItemSpecRepository itemSpecRepository;
-    @Autowired
     private ItemTypeRepository itemTypeRepository;
     @Autowired
     private ArrDescItemsPostValidator descItemsPostValidator;
-
-    @Autowired
-    private PolicyService policyService;
 
     @Autowired
     private OutputService outputService;
@@ -145,8 +140,8 @@ public class RuleService {
      * @return stav validovaného uzlu
      */
     public ArrNodeConformityExt setConformityInfo(final Integer faLevelId, final Integer fundVersionId) {
-        Assert.notNull(faLevelId);
-        Assert.notNull(fundVersionId);
+        Assert.notNull(faLevelId, "Musí být vyplněn identifikátor levelu");
+        Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
 
         ArrLevel level = levelRepository.findOne(faLevelId);
         Integer nodeId = level.getNode().getNodeId();
@@ -384,7 +379,7 @@ public class RuleService {
         nodes.add(rootNode);
 
         if (!nodes.isEmpty()) {
-            updateConformityInfoService.updateInfoForNodesAfterCommit(nodes, fundVersion);
+            updateConformityInfoService.updateInfoForNodesAfterCommit(fundVersion.getFundVersionId(), nodes);
         }
     }
 
@@ -425,8 +420,8 @@ public class RuleService {
     private void deleteConformityInfo(final Integer fundVersionId,
                                       final Collection<Integer> nodeIds,
                                       final Collection<RelatedNodeDirection> deleteDirections) {
-        Assert.notNull(fundVersionId);
-        Assert.notEmpty(nodeIds);
+        Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
+        Assert.notEmpty(nodeIds, "Musí být vyplněna alespoň jedna JP");
 
         List<ArrNode> nodes = nodeRepository.findAll(nodeIds);
         ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
@@ -450,7 +445,7 @@ public class RuleService {
                     .findByNodesAndFundVersion(deleteNodes, version);
 
             deleteConformityInfo(deleteInfos);
-            updateConformityInfoService.updateInfoForNodesAfterCommit(deleteNodes, version);
+            updateConformityInfoService.updateInfoForNodesAfterCommit(version.getFundVersionId(), deleteNodes);
         }
     }
 
@@ -479,34 +474,6 @@ public class RuleService {
 
     /**
      * Získání rozšířených typů hodnot atributů se specifikacemi.
-     * Používá výchozí strategie
-     *
-     * @param fundVersionId identifikátor verze archivní pomůcky
-     * @param nodeId              identifikátor uzlu
-     * @return seznam typů hodnot atributů se specifikacemi
-     */
-    public List<RulItemTypeExt> getDescriptionItemTypes(final Integer fundVersionId,
-                                                        final Integer nodeId) {
-        Assert.notNull(fundVersionId);
-        Assert.notNull(nodeId);
-
-        ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
-
-        if (version == null) {
-            throw new ObjectNotFoundException("Nebyla nalezena verze AS s ID=" + fundVersionId, ArrangementCode.FUND_VERSION_NOT_FOUND).set("id", fundVersionId);
-        }
-
-        ArrNode node = nodeRepository.findOne(nodeId);
-
-        if (node == null) {
-            throw new ObjectNotFoundException("Nebyla nalezena JP s ID=" + nodeId, ArrangementCode.NODE_NOT_FOUND).set("id", nodeId);
-        }
-
-        return getDescriptionItemTypes(version, node);
-    }
-
-    /**
-     * Získání rozšířených typů hodnot atributů se specifikacemi.
      *
      * @param version    verze archivní pomůcky
      * @param node       uzel
@@ -515,10 +482,9 @@ public class RuleService {
     public List<RulItemTypeExt> getDescriptionItemTypes(final ArrFundVersion version,
                                                         final ArrNode node) {
 
-        ArrLevel level = levelRepository.findNodeInRootTreeByNodeId(node, version.getRootNode(),
-                version.getLockChange());
+        ArrLevel level = levelRepository.findByNode(node, version.getLockChange());
 
-        List<RulItemTypeExt> rulDescItemTypeExtList = getAllDescriptionItemTypes(version.getRuleSet().getPackage());
+		List<RulItemTypeExt> rulDescItemTypeExtList = getRulesetDescriptionItemTypes(version.getRuleSetId());
 
         return rulesExecutor.executeDescItemTypesRules(level, rulDescItemTypeExtList, version);
     }
@@ -528,91 +494,49 @@ public class RuleService {
      *
      * @return typy hodnot atributů
      */
+	@Transactional
     public List<RulItemTypeExt> getAllDescriptionItemTypes() {
-        return getAllDescriptionItemTypes(null);
+		StaticDataProvider sdp = staticDataService.getData();
+		RuleSystemProvider rsp = sdp.getRuleSystems();
+
+		ItemTypeExtBuilder builder = new ItemTypeExtBuilder();
+		for (RuleSystem rs : rsp.getRulesSystems()) {
+			List<RuleSystemItemType> typeList = rs.getItemTypes();
+			builder.add(typeList);
+		}
+
+		return builder.getResult();
     }
 
     /**
-     * Vrací typy atributů podle balíčku.
+     * Vrací typy atributů podle pravidla.
      *
-     * @param rulPackage balíček
+     * @param ruleSet pravidla
      * @return seznam typů
      */
-    public List<String> getItemTypeCodesByPackage(final RulPackage rulPackage) {
-        return itemTypeRepository.findByRulPackage(rulPackage).stream()
+    public List<String> getItemTypeCodesByRuleSet(final RulRuleSet ruleSet) {
+        return itemTypeRepository.findByRuleSet(ruleSet).stream()
                 .map(RulItemType::getCode)
                 .collect(Collectors.toList());
     }
 
     /**
-     * Získání typů atributů se specifikacemi podle balíčku.
-     *
-     * @param rulPackage balíček, podle kterého filtrujeme, pokud je null, vezmou se všechny
-     * @return typy hodnot atributů
-     */
-    public List<RulItemTypeExt> getAllDescriptionItemTypes(@Nullable final RulPackage rulPackage) {
+	 * Získání typů atributů se specifikacemi pro pravidla
+	 *
+	 * @param ruleSetId
+	 * @return typy hodnot atributů
+	 */
+	private List<RulItemTypeExt> getRulesetDescriptionItemTypes(final int ruleSetId) {
+		StaticDataProvider sdp = staticDataService.getData();
+		RuleSystemProvider rsp = sdp.getRuleSystems();
 
-        List<RulItemType> itemTypeList;
+		RuleSystem rs = rsp.getByRuleSetId(ruleSetId);
 
-        if (rulPackage == null) {
-            itemTypeList = itemTypeRepository.findAll();
-        } else {
-            itemTypeList = itemTypeRepository.findByRulPackage(rulPackage);
-        }
+		ItemTypeExtBuilder builder = new ItemTypeExtBuilder();
+		builder.add(rs.getItemTypes());
 
-        List<RulItemTypeExt> rulDescItemTypeExtList = createExt(itemTypeList);
-
-        RulPolicyType policyType = policyService.getPolicyTypes().stream().findFirst().get();
-
-        // projde všechny typy atributů
-        for (RulItemTypeExt rulDescItemTypeExt : rulDescItemTypeExtList) {
-
-            rulDescItemTypeExt.setType(RulItemType.Type.IMPOSSIBLE);
-            rulDescItemTypeExt.setRepeatable(true);
-            rulDescItemTypeExt.setCalculable(false);
-            rulDescItemTypeExt.setCalculableState(false);
-            rulDescItemTypeExt.setIndefinable(false);
-            rulDescItemTypeExt.setPolicyTypeCode(policyType.getCode());
-
-            List<RulItemSpecExt> itemSpecList = rulDescItemTypeExt.getRulItemSpecList();
-
-            // projde všechny specifikace typů atributů
-            for (RulItemSpecExt rulDescItemSpecExt : itemSpecList) {
-                rulDescItemSpecExt.setType(RulItemSpec.Type.IMPOSSIBLE);
-                rulDescItemSpecExt.setRepeatable(true);
-                rulDescItemSpecExt.setPolicyTypeCode(policyType.getCode());
-            }
-
-            // seřadit dle viewOrder
-            itemSpecList.sort((o1, o2) -> {
-                if (o1 == null && o2 == null) {
-                    return 0;
-                }
-                if (o1 == null || o1.getViewOrder() == null) {
-                    return -1;
-                }
-                if (o2 == null || o2.getViewOrder() == null) {
-                    return 1;
-                }
-                return o1.getViewOrder().compareTo(o2.getViewOrder());
-            });
-        }
-
-        rulDescItemTypeExtList.sort((o1, o2) -> {
-            if (o1 == null && o2 == null) {
-                return 0;
-            }
-            if (o1 == null || o1.getViewOrder() == null) {
-                return -1;
-            }
-            if (o2 == null || o2.getViewOrder() == null) {
-                return 1;
-            }
-            return o1.getViewOrder().compareTo(o2.getViewOrder());
-        });
-
-        return rulDescItemTypeExtList;
-    }
+		return builder.getResult();
+	}
 
     /**
      * Načtení seznamu kódů atributů - implicitní atributy pro zobrazení tabulky hromadných akcí, seznam je seřazený podle
@@ -627,7 +551,7 @@ public class RuleService {
 
         for (UISettings gridView : gridViews) {
             if (gridView.getRulPackage().getPackageId().equals(ruleSet.getPackage().getPackageId())) {
-                SettingGridView view = (SettingGridView) packageService.convertSetting(gridView);
+                SettingGridView view = (SettingGridView) packageService.convertSetting(gridView, ruleSet);
                 if (CollectionUtils.isNotEmpty(view.getItemTypes())) {
                     return view.getItemTypes();
                 }
@@ -638,41 +562,6 @@ public class RuleService {
     }
 
     /**
-     * Vytvoření seznamu rozšířených typů hodnot atributů se specifikacemi podle seznamu typů hodnot atributů.
-     *
-     * @param itemTypeList seznam typů hodnot atributů
-     * @return seznam typů hodnot atributů se specifikacemi
-     */
-    private List<RulItemTypeExt> createExt(final List<RulItemType> itemTypeList) {
-        if (itemTypeList.isEmpty()) {
-            return new LinkedList<>();
-        }
-
-        List<RulItemSpec> listDescItem = itemSpecRepository.findByItemTypeIds(itemTypeList);
-        Map<Integer, List<RulItemSpec>> itemSpecMap =
-                ElzaTools.createGroupMap(listDescItem, p -> p.getItemType().getItemTypeId());
-
-        List<RulItemTypeExt> result = new LinkedList<>();
-        for (RulItemType rulDescItemType : itemTypeList) {
-            RulItemTypeExt descItemTypeExt = new RulItemTypeExt();
-            BeanUtils.copyProperties(rulDescItemType, descItemTypeExt, "columnsDefinition");
-            descItemTypeExt.setColumnsDefinition(rulDescItemType.getColumnsDefinition());
-            List<RulItemSpec> itemSpecList =
-                    itemSpecMap.get(rulDescItemType.getItemTypeId());
-            if (itemSpecList != null) {
-                for (RulItemSpec rulDescItemSpec : itemSpecList) {
-                    RulItemSpecExt descItemSpecExt = new RulItemSpecExt();
-                    BeanUtils.copyProperties(rulDescItemSpec, descItemSpecExt);
-                    descItemTypeExt.getRulItemSpecList().add(descItemSpecExt);
-                }
-            }
-            result.add(descItemTypeExt);
-        }
-
-        return result;
-    }
-
-    /**
      * Získání rozšířených typů hodnot atributů se specifikacemi.
      * Používá výchozí strategie
      *
@@ -680,7 +569,7 @@ public class RuleService {
      * @return seznam typů hodnot atributů se specifikacemi
      */
     public List<RulItemTypeExt> getOutputItemTypes(final Integer outputDefinitionId) {
-        Assert.notNull(outputDefinitionId);
+        Assert.notNull(outputDefinitionId, "Identifikátor definice výstupu musí být vyplněn");
 
         ArrOutputDefinition outputDefinition = outputService.findOutputDefinition(outputDefinitionId);
 
@@ -698,7 +587,8 @@ public class RuleService {
      * @return seznam typů
      */
     public List<RulItemTypeExt> getOutputItemTypes(final ArrOutputDefinition outputDefinition) {
-        List<RulItemTypeExt> rulDescItemTypeExtList = getAllDescriptionItemTypes(outputDefinition.getOutputType().getPackage());
+		List<RulItemTypeExt> rulDescItemTypeExtList = getRulesetDescriptionItemTypes(
+		        outputDefinition.getOutputType().getRuleSetId());
 
         List<RulItemTypeAction> itemTypeActions = itemTypeActionRepository.findAll();
         Map<Integer, RulItemType> itemTypeMap = new HashMap<>();

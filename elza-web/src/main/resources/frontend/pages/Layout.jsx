@@ -33,11 +33,16 @@ import {
     AdminPackagesPage,
     AdminUserPage,
     AdminGroupPage,
+    AdminFundPage,
     AdminExtSystemPage,
     AdminRequestsQueuePage,
 } from 'pages'
 
 import './Layout.less';
+import {modalDialogShow} from "../actions/global/modalDialog";
+import i18n from "../components/i18n";
+import RegistryUsageForm from "../components/form/RegistryUsageForm";
+import PartyUsageForm from "../components/form/PartyUsageForm";
 
 
 let _gameRunner = null;
@@ -104,12 +109,29 @@ class Layout extends AbstractReactComponent {
             this.setState({canStartGame: true});
         }, 1000);
     };
+
+    //kvůli circular dependency
+    handleRegistryShowUsage = (data) => {
+        this.dispatch(
+            modalDialogShow(this, i18n('registry.registryUsage'), <RegistryUsageForm detail={data}/>)
+        );
+    };
+
+    //kvůli circular dependency
+    handlePartyShowUsage = (data) => {
+        this.dispatch(
+            modalDialogShow(this, i18n('party.usage.button'), <PartyUsageForm detail={data}/>)
+        );
+    };
+
     render() {
         const {canStartGame, showGame} = this.state;
 
         if (showGame) {
             return <Tetris onClose={() => { this.setState({showGame: false, canStartGame: false}) }} />;
         }
+
+
 
         return <Shortcuts name='Main' handler={this.handleShortcuts} global stopPropagation={false} className="main-shortcuts">
             <div className={versionNumber ? 'root-container with-version' : 'root-container'}>
@@ -129,12 +151,13 @@ class Layout extends AbstractReactComponent {
                             <Route component={ArrPage} />
                         </Switch>
                     </Route>
-                    <Route path="/registry" component={RegistryPage} />
-                    <Route path="/party" component={PartyPage} />
+                    <Route path="/registry" render={() => <RegistryPage onShowUsage={this.handleRegistryShowUsage}/>} />
+                    <Route path="/party"  render={() => <PartyPage onShowUsage={this.handlePartyShowUsage}/>} />
                     <Route path="/admin">
                         <Switch>
                             <Route path="/admin/user" component={AdminUserPage} />
                             <Route path="/admin/group" component={AdminGroupPage} />
+                            <Route path="/admin/fund" component={AdminFundPage} />
                             <Route path="/admin/packages" component={AdminPackagesPage} />
                             <Route path="/admin/requestsQueue" component={AdminRequestsQueuePage} />
                             <Route path="/admin/extSystem" component={AdminExtSystemPage} />

@@ -1,7 +1,5 @@
 package cz.tacr.elza.domain;
 
-import java.io.Serializable;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -26,28 +24,28 @@ public class ArrDaoLink {
     @GeneratedValue
     private Integer daoLinkId;
 
-    @ManyToOne(fetch = FetchType.EAGER, targetEntity = ArrNode.class)
+	@ManyToOne(fetch=FetchType.LAZY, targetEntity = ArrNode.class)
     @JoinColumn(name = "nodeId", nullable = false)
     private ArrNode node;
 
     @Column(name = "nodeId", updatable = false, insertable = false)
     private Integer nodeId;
 
-    @ManyToOne(fetch = FetchType.EAGER, targetEntity = ArrDao.class)
+	@ManyToOne(fetch=FetchType.LAZY, targetEntity = ArrDao.class)
     @JoinColumn(name = "daoId", nullable = false)
     private ArrDao dao;
 
     @Column(name = "daoId", updatable = false, insertable = false)
     private Integer daoId;
 
-    @ManyToOne(fetch = FetchType.EAGER, targetEntity = ArrChange.class)
+	@ManyToOne(fetch=FetchType.LAZY, targetEntity = ArrChange.class)
     @JoinColumn(name = "createChangeId", nullable = false)
     private ArrChange createChange;
 
     @Column(name = "createChangeId", updatable = false, insertable = false)
     private Integer createChangeId;
 
-    @ManyToOne(fetch = FetchType.EAGER, targetEntity = ArrChange.class)
+	@ManyToOne(fetch=FetchType.LAZY, targetEntity = ArrChange.class)
     @JoinColumn(name = "deleteChangeId")
     private ArrChange deleteChange;
 

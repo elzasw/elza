@@ -35,7 +35,7 @@ import cz.tacr.elza.domain.enumeration.StringLength;
 @Table(uniqueConstraints = {
         @UniqueConstraint(columnNames = {"code"}),
         @UniqueConstraint(columnNames = {"viewOrder"})})
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Cache(region = "domain", usage = CacheConcurrencyStrategy.READ_WRITE)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
 public class RulItemSpec {
 
@@ -68,6 +68,14 @@ public class RulItemSpec {
     @Column(nullable = false)
     private Integer viewOrder;
 
+	@Column(length = StringLength.LENGTH_1000)
+	private String category;
+
+	@ManyToOne(fetch = FetchType.LAZY, targetEntity = RulPackage.class)
+	@JoinColumn(name = "packageId", nullable = false)
+	private RulPackage rulPackage;
+
+	// Consider to move transient fields to RulItemSpecExt
     @Transient
     private Type type;
 
@@ -77,14 +85,35 @@ public class RulItemSpec {
     @Transient
     private String policyTypeCode;
 
-    @Column(length = StringLength.LENGTH_1000)
-    private String category;
+	/**
+	 * Default constructor
+	 */
+	public RulItemSpec() {
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulPackage.class)
-    @JoinColumn(name = "packageId", nullable = false)
-    private RulPackage rulPackage;
+	}
 
-    public Integer getItemSpecId() {
+	/**
+	 * Copy constructor
+	 * 
+	 * @param src
+	 */
+	public RulItemSpec(RulItemSpec src) {
+		itemSpecId = src.itemSpecId;
+		itemTypeId = src.itemTypeId;
+		itemType = src.itemType;
+		code = src.code;
+		name = src.name;
+		shortcut = src.shortcut;
+		description = src.description;
+		viewOrder = src.viewOrder;
+		type = src.type;
+		repeatable = src.repeatable;
+		policyTypeCode = src.policyTypeCode;
+		category = src.category;
+		rulPackage = src.rulPackage;
+	}
+
+	public Integer getItemSpecId() {
         return itemSpecId;
     }
 

@@ -7,13 +7,13 @@ import java.util.TreeSet;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import cz.tacr.elza.bulkaction.ActionRunContext;
 import cz.tacr.elza.bulkaction.generator.LevelWithItems;
 import cz.tacr.elza.bulkaction.generator.result.ActionResult;
 import cz.tacr.elza.bulkaction.generator.result.TableStatisticActionResult;
+import cz.tacr.elza.domain.ArrBulkActionRun;
+import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrItem;
-import cz.tacr.elza.domain.ArrItemData;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.table.ElzaColumn;
@@ -63,7 +63,7 @@ public class TableStatisticAction extends Action {
     }
 
     @Override
-	public void init(ActionRunContext runContext) {
+	public void init(ArrBulkActionRun bulkActionRun) {
 		/*
 		Set<String> inputTypes = config.getStringList("input_types", null).stream().collect(Collectors.toSet());
 		String outputType = config.getString("output_type", null);
@@ -97,12 +97,12 @@ public class TableStatisticAction extends Action {
             if (inputItemTypes.contains(item.getItemType())) {
                 String text;
                 RulItemSpec itemSpec = item.getItemSpec();
-				if (item.getUndefined()) {
+				if (item.isUndefined()) {
                     text = ArrangementService.UNDEFINED;
                 } else {
-                    ArrItemData itemData = item.getItem();
-                    itemData.setSpec(itemSpec);
-                    text = itemData.toString();
+                    ArrData data = item.getData();
+                    //data.setSpec(itemSpec);
+                    text = data.toString();
                 }
                 if (itemSpec != null) {
                     text = itemSpec.getName() + ": " + text;

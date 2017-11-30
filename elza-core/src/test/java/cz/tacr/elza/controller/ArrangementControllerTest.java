@@ -1,5 +1,8 @@
 package cz.tacr.elza.controller;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -17,29 +20,16 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import cz.tacr.elza.controller.vo.CopyNodesParams;
-import cz.tacr.elza.controller.vo.CopyNodesValidate;
-import cz.tacr.elza.controller.vo.CopyNodesValidateResult;
-import cz.tacr.elza.service.vo.ChangesResult;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.csv.CSVRecord;
 import org.junit.Assert;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
 
-import cz.tacr.elza.ElzaCoreTest;
-import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
@@ -47,6 +37,9 @@ import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
 import cz.tacr.elza.controller.vo.ArrOutputDefinitionVO;
 import cz.tacr.elza.controller.vo.ArrOutputExtVO;
 import cz.tacr.elza.controller.vo.ArrPacketVO;
+import cz.tacr.elza.controller.vo.CopyNodesParams;
+import cz.tacr.elza.controller.vo.CopyNodesValidate;
+import cz.tacr.elza.controller.vo.CopyNodesValidateResult;
 import cz.tacr.elza.controller.vo.FilterNode;
 import cz.tacr.elza.controller.vo.FilterNodePosition;
 import cz.tacr.elza.controller.vo.NodeItemWithParent;
@@ -64,7 +57,6 @@ import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStringVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemTextVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
-import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataText;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrPacket;
@@ -72,20 +64,10 @@ import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.table.ElzaRow;
 import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.drools.DirectionLevel;
-import cz.tacr.elza.repository.DataRepository;
-import cz.tacr.elza.repository.DataTypeRepository;
-import cz.tacr.elza.repository.DescItemRepository;
-import cz.tacr.elza.repository.ItemTypeRepository;
-import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.service.ArrIOService;
 import cz.tacr.elza.service.ArrMoveLevelService;
+import cz.tacr.elza.service.vo.ChangesResult;
 
-
-/**
- * Test ArrangementController
- */
-//@RunWith(SpringRunner.class)
-//@ContextConfiguration(classes=ElzaCoreTest.class)
 public class ArrangementControllerTest extends AbstractControllerTest {
 
     public static final Logger logger = LoggerFactory.getLogger(ArrangementControllerTest.class);
@@ -103,7 +85,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
     // maximální počet položek pro načtení
     public static final int MAX_SIZE = 999;
-    
+
     @Test
     public void arrangementTest() throws IOException {
 
@@ -336,7 +318,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         parent = outputItemResult.getParent();
 
         // docasne zakazano - bude vraceno zpet pri prechodu na vyvojarska pravidla
-        /*outputItemResult = setNotIdentifiedOutputItem(fundVersion.getId(), parent.getId(), parent.getVersion(), typeVo.getId(), null, null);        
+        /*outputItemResult = setNotIdentifiedOutputItem(fundVersion.getId(), parent.getId(), parent.getVersion(), typeVo.getId(), null, null);
         parent = outputItemResult.getParent();
         // Návratová struktura nesmí být prázdná
         assertNotNull(outputItemResult);
@@ -356,7 +338,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         assertNotNull(outputItemResult);
         // Hodnota atributu musí být prázdná
         Assert.assertNull(outputItemResult.getItem());*/
-        
+
         deleteNamedOutput(fundVersion.getId(), output.getId());
 
         outputs = getOutputs(fundVersion.getId());
@@ -555,7 +537,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         node = descItemResult.getParent();
 
         type = findDescItemTypeByCode("ZP2015_UNIT_COUNT_TABLE");
-        assertNotNull(type);        
+        assertNotNull(type);
         ElzaTable table = new ElzaTable();
         table.addRow(new ElzaRow(new AbstractMap.SimpleEntry<>("NAME", "Test 1"), new AbstractMap.SimpleEntry<>("COUNT", "195")));
         table.addRow(new ElzaRow(new AbstractMap.SimpleEntry<>("NAME", "Test 2"), new AbstractMap.SimpleEntry<>("COUNT", "200")));
@@ -1038,42 +1020,44 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         List<ArrNodeVO> allNodes = clientFactoryVO.createArrNodes(nodeRepository.findAll(nodeIds));
         ArrangementController.ReplaceDataBody body = new ArrangementController.ReplaceDataBody();
         body.setNodes(new HashSet<>(allNodes));
+        body.setSelectionType(ArrangementController.SelectionType.NODES);
         replaceDataValues(fundVersion.getId(), typeVo.getId(), "value", "valXYZ", body);
 
 
         //nalezení hodnot podle změněné hodnoty
         RulItemType type = itemTypeRepository.findOneByCode("ZP2015_TITLE");
         type.setDataType(dataTypeRepository.findByCode("TEXT"));  //kvůli transakci (no session)
-        List<ArrData> nodesContainingText = dataRepository.findByNodesContainingText(nodeRepository.findAll(nodeIds),
+        List<ArrDescItem> nodesContainingText = descItemRepository.findByNodesContainingText(nodeRepository.findAll(nodeIds),
                 type, null, "valXYZ");
 
         assertTrue(nodesContainingText.size() == nodeIds.size());
-        for (ArrData arrData : nodesContainingText) {
-            ArrDataText data = (ArrDataText) arrData;
+        for (ArrDescItem descItem : nodesContainingText) {
+            ArrDataText data = (ArrDataText) descItem.getData();
             assertTrue(Pattern.compile("^(\\d+valXYZ\\d+)$").matcher(data.getValue()).matches());
-            assertTrue(nodeIds.contains(arrData.getItem().getNodeId()));
+            assertTrue(nodeIds.contains(descItem.getNodeId()));
         }
 
 
         //test nahrazení všech hodnot na konkrétní hodnotu
         allNodes = clientFactoryVO.createArrNodes(nodeRepository.findAll(nodeIds));
         body.setNodes(new HashSet<>(allNodes));
+        body.setSelectionType(ArrangementController.SelectionType.NODES);
         placeDataValues(fundVersion.getId(), typeVo.getId(), "nova_value", body);
 
-        List<ArrData> byNodesAndDeleteChangeIsNull = dataRepository
-                .findByNodesAndDeleteChangeIsNull(nodeRepository.findAll(nodeIds));
+        List<ArrDescItem> byNodesAndDeleteChangeIsNull = descItemRepository
+		        .findByNodeIdsAndDeleteChangeIsNull(nodeIds);
         assertTrue(byNodesAndDeleteChangeIsNull.size() >= nodeIds.size());
-        for (ArrData arrData : byNodesAndDeleteChangeIsNull) {
-            if (arrData.getItem().getItemType().getItemTypeId().equals(typeVo.getId())) {
-                ArrDataText text = (ArrDataText) arrData;
+        for (ArrDescItem descItem : byNodesAndDeleteChangeIsNull) {
+			if (descItem.getItemTypeId().equals(typeVo.getId())) {
+                ArrDataText text = (ArrDataText) descItem.getData();
                 assertTrue(text.getValue().equals("nova_value"));
             }
         }
 
-
         //smazání hodnot atributů
         allNodes = clientFactoryVO.createArrNodes(nodeRepository.findAll(nodeIds));
         body.setNodes(new HashSet<>(allNodes));
+        body.setSelectionType(ArrangementController.SelectionType.NODES);
         deleteDescItems(fundVersion.getId(), typeVo.getId(), body);
 
         List<ArrDescItem> nodeDescItems = descItemRepository
@@ -1123,7 +1107,6 @@ public class ArrangementControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    @Ignore // TODO po implementaci
     public void copyLevelsTest() {
 
         ArrFundVO fundSource = createdFund();
@@ -1158,6 +1141,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         copyNodesParams.setIgnoreRootNodes(true);
         copyNodesParams.setFilesConflictResolve(null);
         copyNodesParams.setPacketsConflictResolve(null);
+        copyNodesParams.setSelectedDirection(ArrMoveLevelService.AddLevelDirection.CHILD);
 
         copyLevels(copyNodesParams);
     }

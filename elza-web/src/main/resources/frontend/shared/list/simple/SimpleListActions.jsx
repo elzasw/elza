@@ -123,6 +123,27 @@ function request(area, dataKey) {
     }
 }
 
+export function setData(area, parent, data) {
+    return (dispatch, getState) => {
+        // Načtení aktuálního store
+        let store = storeFromArea(getState(), area);
+
+        // Pokud ve store není potřebné id, dáme ho tam, aby se nám správně spočetl data key
+        if (store.parent !== parent) {
+            dispatch(selectParent(area, parent));
+            store = storeFromArea(getState(), area);
+        }
+
+        const dataKey = store.getDataKey.bind(store)();
+
+        // Simulace request dat
+        dispatch(request(area, dataKey));
+
+        // Response dat
+        dispatch(response(area, data, data.length));
+    }
+}
+
 /**
  * Response dat.
  * @param area oblast

@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {VirtualList, NoFocusButton, AbstractReactComponent, i18n, Loading, Icon, SearchWithGoto, Utils} from 'components/shared';
+import {VirtualList, NoFocusButton, AbstractReactComponent, i18n, HorizontalLoader, StoreHorizontalLoader, Icon, SearchWithGoto, Utils} from 'components/shared';
 import {Nav, Input, NavItem, Button, DropdownButton} from 'react-bootstrap';
 const classNames = require('classnames');
 import {propsEquals} from 'components/Utils.jsx'
@@ -33,6 +33,14 @@ const colorMap = {
 class FundTreeLazy extends AbstractReactComponent {
     static contextTypes = { shortcuts: PropTypes.object };
     static childContextTypes = { shortcuts: PropTypes.object.isRequired };
+
+    static defaultProps = {
+        showSearch: true,
+        showCountStats: false,
+        showCollapseAll: true,
+        onLinkClick:null
+    };
+
     componentWillMount(){
         Utils.addShortcutManager(this,defaultKeymap);
     }
@@ -60,6 +68,10 @@ class FundTreeLazy extends AbstractReactComponent {
         onOpenCloseNode: React.PropTypes.func,
         onContextMenu: React.PropTypes.func,
         actionAddons: React.PropTypes.object,
+        showSearch: React.PropTypes.bool,
+        showCountStats: React.PropTypes.bool,
+        showCollapseAll: React.PropTypes.bool,
+        onLinkClick: React.PropTypes.func
     };
     selectorMoveUp = ()=>{
         const {nodes, selectedId, multipleSelection} = this.props;
@@ -190,7 +202,7 @@ class FundTreeLazy extends AbstractReactComponent {
             closed: !expanded,
             active: active,
             focus: this.props.focusId === node.id,
-            "node-color": this.props.colorCoded 
+            "node-color": this.props.colorCoded
         });
         const iconClass = classNames({
             "node-icon": true,
@@ -232,25 +244,28 @@ class FundTreeLazy extends AbstractReactComponent {
         };
         if(iconRemap[icon] && this.props.colorCoded){
             icon = iconRemap[icon];
-        } 
+        }
+
         return <div key={node.id} className={cls}>
             {levels}
             {expCol}
             <Icon {...clickProps} className={iconClass} style={style} fill={backgroundColor} stroke="none" glyph={icon}/>
-            <span
+            <div
                 title={title}
                 className='node-label'
                 {...clickProps}
                 onContextMenu={onContextMenu ? onContextMenu.bind(this, node) : null}>
                 {name}
-            </span>
+                {this.props.showCountStats && node.count && <span className="count-label">({node.count})</span>}
+                {this.props.onLinkClick && node.link && <Icon glyph="fa-sign-out fa-lg" onClick={() => this.props.onLinkClick(node)}/>}
+            </div>
         </div>;
     };
 
     render() {
-        const {className, actionAddons, multipleSelection, onFulltextNextItem, onFulltextPrevItem, onFulltextSearch,
+        const {fetched, isFetching, className, actionAddons, multipleSelection, onFulltextNextItem, onFulltextPrevItem, onFulltextSearch,
             onFulltextChange, filterText, searchedIds, filterCurrentIndex, filterResult,
-            extendedSearch, onClickExtendedSearch, extendedReadOnly} = this.props;
+            extendedSearch, onClickExtendedSearch, extendedReadOnly, showCollapseAll} = this.props;
 
         let index;
         if (this.props.ensureItemVisible) {
@@ -270,7 +285,7 @@ class FundTreeLazy extends AbstractReactComponent {
 
         return <div className={cls}>
             <div className='fa-traa-header-container'>
-                <SearchWithGoto
+                {this.props.showSearch && <SearchWithGoto
                     filterText={filterText}
                     itemsCount={searchedIds ? searchedIds.length : 0}
                     selIndex={filterCurrentIndex}
@@ -282,14 +297,15 @@ class FundTreeLazy extends AbstractReactComponent {
                     extendedSearch={extendedSearch}
                     extendedReadOnly={extendedReadOnly}
                     onClickExtendedSearch={onClickExtendedSearch}
-                />
+                />}
             </div>
-            <Shortcuts className="fa-tree-wrapper" name="FundTreeLazy" tabIndex={"0"} handler={(action,e)=>this.handleShortcuts(action,e)} ref="treeWrapper" >
+            <Shortcuts className="fa-tree-wrapper" name="FundTreeLazy" tabIndex={0} handler={(action,e)=>this.handleShortcuts(action,e)} ref="treeWrapper" >
                 <div className="fa-tree-lazy-actions">
-                    <Button className="tree-collapse" onClick={this.props.onCollapse}><Icon glyph='fa-compress'/>Sbalit vše</Button>
+                    {showCollapseAll && <Button className="tree-collapse" onClick={this.props.onCollapse}><Icon glyph='fa-compress'/>Sbalit vše</Button>}
                     {actionAddons}
                 </div>
                 <div className='fa-tree-lazy-container' ref="treeContainer">
+                    <StoreHorizontalLoader store={{fetched, isFetching}} />
                     {this.state.treeContainer && <VirtualList
                         scrollTopPadding={TREE_TOP_PADDING}
                         tagName='div'

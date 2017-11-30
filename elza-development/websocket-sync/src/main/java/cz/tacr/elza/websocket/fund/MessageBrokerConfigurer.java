@@ -12,10 +12,6 @@ import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.messaging.StompSubProtocolErrorHandler;
 import org.springframework.web.socket.server.support.HttpSessionHandshakeInterceptor;
 
-/**
- * @author Jaroslav Todt [jaroslav.todt@lightcomp.cz]
- * @since 25.8.2016
- */
 @Configuration
 @EnableWebSocketMessageBroker
 public class MessageBrokerConfigurer extends AbstractSecurityWebSocketMessageBrokerConfigurer {

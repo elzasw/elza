@@ -16,7 +16,9 @@ import {getRoutingKeyType} from 'stores/app/utils.jsx'
 import * as types from 'actions/constants/ActionTypes.js';
 import {addToastrSuccess,addToastrDanger} from 'components/shared/toastr/ToastrActions.jsx'
 import {i18n} from 'components/shared';
-import {statusSaving, statusSaved} from 'actions/global/status.jsx'
+import {statusSaving, statusSaved} from 'actions/global/status.jsx';
+import {debounce} from "shared/utils";
+import NodeRequestController from "websocketController.jsx";
 
 class ItemFormActions {
     constructor(area) {
@@ -224,7 +226,7 @@ class ItemFormActions {
 
     /** Metoda pro volání API. */
     // @Abstract
-    _callUpdateDescItem(versionId, parentVersionId, descItem) {}
+    _callUpdateDescItem(versionId, parentVersionId, parentId, descItem) {}
 
     /** Metoda pro volání API. */
     // @Abstract
@@ -244,18 +246,23 @@ class ItemFormActions {
         const loc = subNodeForm.getLoc(subNodeForm, valueLocation);
 
         const refType = subNodeForm.refTypesMap[loc.descItemType.id]
+        const refTables = state.refTables;
 
-        if (this.descItemNeedStore(loc.descItem, refType)) {
+        const descItem = loc.descItem;
+        const parentVersionId = subNodeForm.data.parent.version;
+        const parentId = subNodeForm.data.parent.id;
+
+        if (this.descItemNeedStore(descItem, refType)) {
             dispatch(statusSaving());
 
             // Umělé navýšení verze o 1 - aby mohla pozitivně projít případná další update operace
-            dispatch(increaseNodeVersion(versionId, subNodeForm.data.parent.id, subNodeForm.data.parent.version));
-
+            dispatch(increaseNodeVersion(versionId, parentId, parentVersionId));
             // Reálné provedení operace
             if (typeof loc.descItem.id !== 'undefined') {
-                this._callUpdateDescItem(versionId, subNodeForm.data.parent.version, loc.descItem)
+                this._callUpdateDescItem(versionId, parentVersionId, parentId, descItem)
                     .then(json => {
-                        dispatch(this._fundSubNodeFormDescItemResponse(versionId, routingKey, valueLocation, json, 'UPDATE'));
+                        //dispatch(this._fundSubNodeFormDescItemResponse(versionId, routingKey, valueLocation, json, 'UPDATE'));
+                        dispatch(this._fundSubNodeUpdate(versionId, refTables, json));
                         dispatch(statusSaved());
                     })
             } else {
@@ -263,11 +270,21 @@ class ItemFormActions {
                     dispatch(this._fundSubNodeFormDescItemCreate(versionId, routingKey, valueLocation));
                     this._callCreateDescItem(versionId, subNodeForm.data.parent.id, subNodeForm.data.parent.version, loc.descItemType.id, loc.descItem)
                         .then(json => {
+                            console.log("formValueStore - id undefined",json);
                             dispatch(this._fundSubNodeFormDescItemResponse(versionId, routingKey, valueLocation, json, 'CREATE'));
                             dispatch(statusSaved());
                         })
                 }
             }
+        }
+    }
+
+    _fundSubNodeUpdate(versionId, refTables, data){
+        return {
+            type: types.FUND_SUBNODE_UPDATE,
+            data,
+            versionId,
+            refTables
         }
     }
 
@@ -821,7 +838,7 @@ class ItemFormActions {
         }
     }
 }
-
+var debouncedGetFundNodeForm = debounce(WebApi.getFundNodeForm,200);
 class NodeFormActions extends ItemFormActions {
     constructor() {
         super("NODE");
@@ -866,7 +883,7 @@ class NodeFormActions extends ItemFormActions {
                     // ##
                     // # Data pro cache, jen pokud již cache nenačítá
                     // ##
-                    if (!subNodeFormCache.isFetching) {
+                    if (false) {
                         if (node.isNodeInfoFetching || !node.nodeInfoFetched || node.nodeInfoDirty) {   // nemáme platné okolí (okolní NODE) pro daný NODE, raději je načteme ze serveru; nemáme vlastně okolní NODE pro získání seznamu ID pro načtení formulářů pro cache
                             //console.log('### READ_CACHE', 'around')
 
@@ -966,8 +983,11 @@ class NodeFormActions extends ItemFormActions {
     }
 
     // @Override
-    _callUpdateDescItem(versionId, parentVersionId, descItem) {
-        return WebApi.updateDescItem(versionId, parentVersionId, descItem);
+    _callUpdateDescItem(versionId, parentVersionId, parentId, descItem) {
+        //return WebApi.updateDescItem(versionId, parentVersionId, descItem);
+        return new Promise((resolve, reject) => {
+            NodeRequestController.updateRequest(versionId, parentVersionId, parentId, descItem, (json) => {resolve(json)})
+        });
     }
 
     // @Override
@@ -1051,7 +1071,7 @@ class OutputFormActions extends ItemFormActions {
     }
 
     // @Override
-    _callUpdateDescItem(versionId, parentVersionId, descItem) {
+    _callUpdateDescItem(versionId, parentVersionId, parentId, descItem) {
         return WebApi.updateOutputItem(versionId, parentVersionId, descItem);
     }
 

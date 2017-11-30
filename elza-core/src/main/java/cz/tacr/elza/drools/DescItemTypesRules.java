@@ -16,7 +16,6 @@ import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulRule;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.drools.model.ActiveLevel;
-import cz.tacr.elza.drools.model.Level;
 import cz.tacr.elza.drools.service.ModelFactory;
 import cz.tacr.elza.drools.service.ScriptModelFactory;
 
@@ -52,9 +51,9 @@ public class DescItemTypesRules extends Rules {
     	facts.addAll(rulDescItemTypeExtList);
 
     	// prepare list of levels
-    	Level modelLevel = scriptModelFactory.createLevelModel(level, version);
-    	ActiveLevel activeLevel = scriptModelFactory.createActiveLevel(modelLevel, level, version);
-    	ModelFactory.addAll(activeLevel, facts);
+		ActiveLevel activeLevel = scriptModelFactory.createActiveLevel(level, version);
+
+    	ModelFactory.addLevelWithParents(activeLevel, facts);
 
     	final RulRuleSet rulRuleSet = version.getRuleSet();
 
@@ -65,7 +64,7 @@ public class DescItemTypesRules extends Rules {
                 rulRuleSet, RulRule.RuleType.ATTRIBUTE_TYPES);
 
         for (RulRule rulPackageRule : rulPackageRules) {
-            path = Paths.get(rulesExecutor.getDroolsDir(rulPackageRule.getPackage().getCode()) + File.separator + rulPackageRule.getFilename());
+            path = Paths.get(rulesExecutor.getDroolsDir(rulPackageRule.getRuleSet().getCode()) + File.separator + rulPackageRule.getFilename());
             StatelessKieSession session = createNewStatelessKieSession(path);
             //session.setGlobal("results", results);
             execute(session, facts);

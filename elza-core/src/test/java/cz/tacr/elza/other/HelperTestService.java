@@ -45,6 +45,7 @@ import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeConformityErrorRepository;
 import cz.tacr.elza.repository.NodeConformityMissingRepository;
 import cz.tacr.elza.repository.NodeConformityRepository;
+import cz.tacr.elza.repository.NodeOutputRepository;
 import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.OutputDefinitionRepository;
@@ -76,7 +77,7 @@ import cz.tacr.elza.repository.UserRepository;
  */
 @Service
 public class HelperTestService {
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(HelperTestService.class);
 
     @Autowired
@@ -138,7 +139,7 @@ public class HelperTestService {
     @Autowired
     protected InstitutionRepository institutionRepository;
     @Autowired
-    protected InstitutionTypeRepository institutionTypeRepository;    
+    protected InstitutionTypeRepository institutionTypeRepository;
     @Autowired
     protected RelationRepository relationRepository;
     @Autowired
@@ -154,7 +155,7 @@ public class HelperTestService {
     @Autowired
     protected ComplementTypeRepository complementTypeRepository;
     @Autowired
-    protected PartyNameFormTypeRepository partyNameFormTypeRepository;    
+    protected PartyNameFormTypeRepository partyNameFormTypeRepository;
     @Autowired
     protected RegCoordinatesRepository regCoordinatesRepository;
     @Autowired
@@ -175,12 +176,14 @@ public class HelperTestService {
     protected GroupRepository groupRepository;
     @Autowired
     protected ExternalSystemRepository externalSystemRepository;
+    @Autowired
+    private NodeOutputRepository nodeOutputRepository;
 
     @Autowired
     private PackageService packageService;
-    
+
     @Autowired
-    private StaticDataService staticDataService;    
+    private StaticDataService staticDataService;
 
     @Transactional
     public void importPackage(final File file) {
@@ -204,16 +207,21 @@ public class HelperTestService {
     	}
 		return null;
 	}
-    
+
     @Transactional
     public void deleteTables() {
     	logger.info("Cleaning table contents...");
-    	    	
+
         cachedNodeRepository.deleteAll();
         permissionRepository.deleteAll();
         groupUserRepository.deleteAll();
         groupRepository.deleteAll();
         userRepository.deleteAll();
+        nodeConformityErrorsRepository.deleteAll();
+        nodeConformityMissingRepository.deleteAll();
+        nodeConformityInfoRepository.deleteAll();
+        descItemRepository.deleteAll();
+        itemRepository.deleteAll();
         dataRepository.deleteAll();
         bulkActionNodeRepository.deleteAll();
         faBulkActionRepository.deleteAll();
@@ -224,20 +232,16 @@ public class HelperTestService {
         relationRepository.deleteAll();
         partyGroupIdentifierRepository.deleteAll();
         partyCreatorRepository.deleteAll();
-        partyNameRepository.deleteAll();        
+        partyNameRepository.deleteAll();
         variantRecordRepository.deleteAll();
         nodeRegisterRepository.deleteAll();
-        regCoordinatesRepository.deleteAll();        
-        nodeConformityErrorsRepository.deleteAll();
-        nodeConformityMissingRepository.deleteAll();
-        nodeConformityInfoRepository.deleteAll();
+        regCoordinatesRepository.deleteAll();
         fundVersionRepository.deleteAll();
         fundRegisterScopeRepository.deleteAll();
         levelRepository.deleteAll();
+        nodeOutputRepository.deleteAll();
         outputRepository.deleteAll();
         outputDefinitionRepository.deleteAll();
-        descItemRepository.deleteAll();
-        itemRepository.deleteAll();
         itemSpecRegisterRepository.deleteAll();
         changeRepository.deleteAll();
         nodeRepository.deleteAll();
@@ -246,14 +250,14 @@ public class HelperTestService {
         partyRepository.deleteAll();
         recordRepository.deleteAll();
         externalSystemRepository.deleteAll();
-        
+
         logger.info("All tables cleaned.");
     }
 
 	public FundRepository getFundRepository() {
 		return fundRepository;
 	}
-	
+
 	@Transactional
 	public void loadPackage(String packageCode, String packageDir) {
     	RulPackage rulPackage = getPackage(packageCode);
@@ -270,15 +274,16 @@ public class HelperTestService {
             	throw new RuntimeException(e);
             }
             finally {
-            	if(file!=null)
-            		file.delete();
+            	if(file!=null) {
+                    file.delete();
+                }
             }
-            
+
             rulPackage = getPackage(packageCode);
             Assert.assertNotNull(rulPackage);
             logger.info("Package loaded.");
         }
-		
+
 	}
 
     /**
@@ -330,5 +335,5 @@ public class HelperTestService {
             fin.close();
         }
     }
-    
+
 }

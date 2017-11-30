@@ -1,7 +1,5 @@
 package cz.tacr.elza.domain;
 
-import java.io.Serializable;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -25,11 +23,11 @@ public class ArrDaoRequestDao {
     @GeneratedValue
     private Integer daoRequestDaoId;
 
-    @ManyToOne(fetch = FetchType.EAGER, targetEntity = ArrDaoRequest.class)
+	@ManyToOne(fetch=FetchType.LAZY, targetEntity = ArrDaoRequest.class)
     @JoinColumn(name = "daoRequestId", nullable = false)
     private ArrDaoRequest daoRequest;
 
-    @ManyToOne(fetch = FetchType.EAGER, targetEntity = ArrDao.class)
+	@ManyToOne(fetch=FetchType.LAZY, targetEntity = ArrDao.class)
     @JoinColumn(name = "daoId", nullable = false)
     private ArrDao dao;
 

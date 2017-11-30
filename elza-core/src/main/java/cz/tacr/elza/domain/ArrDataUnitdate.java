@@ -1,7 +1,5 @@
 package cz.tacr.elza.domain;
 
-import java.io.Serializable;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -9,24 +7,17 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
-import org.hibernate.search.annotations.Field;
-import org.hibernate.search.annotations.Indexed;
 import org.springframework.data.rest.core.annotation.RestResource;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import cz.tacr.elza.api.IUnitdate;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
-import cz.tacr.elza.search.IndexArrDataWhenHasDescItemInterceptor;
 
 
 /**
  * Hodnota atributu archivního popisu typu strojově zpracovatelná datace.
- *
- * @author Martin Šlapa
- * @since 1.9.2015
  */
-@Indexed(interceptor = IndexArrDataWhenHasDescItemInterceptor.class)
 @Entity(name = "arr_data_unitdate")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
@@ -36,6 +27,9 @@ public class ArrDataUnitdate extends ArrData implements IUnitdate {
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrCalendarType.class)
     @JoinColumn(name = "calendarTypeId", nullable = false)
     private ArrCalendarType calendarType;
+
+    @Column(name = "calendarTypeId", updatable = false, insertable = false)
+    private Integer calendarTypeId;
 
     @Column(length = 19, nullable = true)
     private String valueFrom;
@@ -52,13 +46,29 @@ public class ArrDataUnitdate extends ArrData implements IUnitdate {
     @Column(length = 50, nullable = false)
     private String format;
 
-    @Field
     @Column(nullable = false)
     private Long normalizedFrom;
 
-    @Field
     @Column(nullable = false)
     private Long normalizedTo;
+
+	public ArrDataUnitdate() {
+
+	}
+
+	protected ArrDataUnitdate(ArrDataUnitdate src) {
+		super(src);
+
+		this.calendarType = src.calendarType;
+		this.calendarTypeId = src.calendarTypeId;
+		this.format = src.format;
+		this.normalizedFrom = src.normalizedFrom;
+		this.normalizedTo = src.normalizedTo;
+		this.valueFrom = src.valueFrom;
+		this.valueFromEstimated = src.valueFromEstimated;
+		this.valueTo = src.valueTo;
+		this.valueToEstimated = src.valueToEstimated;
+	}
 
     @Override
     public String getValueFrom() {
@@ -105,9 +115,14 @@ public class ArrDataUnitdate extends ArrData implements IUnitdate {
         return calendarType;
     }
 
+    public Integer getCalendarTypeId() {
+        return calendarTypeId;
+    }
+
     @Override
     public void setCalendarType(final ArrCalendarType calendarType) {
         this.calendarType = calendarType;
+        this.calendarTypeId = calendarType == null ? null : calendarType.getCalendarTypeId();
     }
 
 
@@ -124,6 +139,7 @@ public class ArrDataUnitdate extends ArrData implements IUnitdate {
     /**
      * @return počet sekund v normalizačním kalendáři - od
      */
+    @Override
     public Long getNormalizedFrom() {
         return normalizedFrom;
     }
@@ -138,12 +154,13 @@ public class ArrDataUnitdate extends ArrData implements IUnitdate {
     /**
      * @return počet sekund v normalizačním kalendáři - do
      */
+    @Override
     public Long getNormalizedTo() {
         return normalizedTo;
     }
 
     /**
-     * @param normalizedFrom počet sekund v normalizačním kalendáři - do
+     * @param normalizedTo počet sekund v normalizačním kalendáři - do
      */
     public void setNormalizedTo(final Long normalizedTo) {
         this.normalizedTo = normalizedTo;
@@ -151,28 +168,17 @@ public class ArrDataUnitdate extends ArrData implements IUnitdate {
 
     @Override
     public String getFulltextValue() {
-        String ret = calendarType == null ? "?" : calendarType.getName() + " ";
-
-        String from = valueFromEstimated == true ? valueFrom + "*" : valueFrom;
-        String to = valueToEstimated == true ? valueTo + "*" : valueTo;
-
-        if (valueFrom != null && valueTo != null) {
-            ret += from + " - " + to;
-        } else if (valueTo != null) {
-            ret += " do " + to;
-        } else if (valueFrom != null) {
-            ret += " od " + from;
-        } else {
-            ret += " ?";
-        }
-
         String unitdateString = UnitDateConvertor.convertToString(this);
-
-        return ret + " " + unitdateString;
+        return unitdateString;
     }
 
     @Override
     public void formatAppend(final String format) {
         this.format += format;
     }
+
+	@Override
+	public ArrDataUnitdate makeCopy() {
+		return new ArrDataUnitdate(this);
+	}
 }

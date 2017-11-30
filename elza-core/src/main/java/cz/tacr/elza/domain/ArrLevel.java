@@ -45,6 +45,9 @@ public class ArrLevel {
     @JoinColumn(name = "nodeIdParent", nullable = true)
     private ArrNode nodeParent;
 
+    @Column(name = "nodeIdParent", insertable = false, updatable = false)
+    private Integer nodeIdParent;
+
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrChange.class)
     @JoinColumn(name = "createChangeId", nullable = false)
@@ -88,6 +91,7 @@ public class ArrLevel {
      */
     public void setNode(final ArrNode node) {
         this.node = node;
+        this.nodeId = node != null ? node.getNodeId() : null;
     }
 
     public Integer getNodeId() {
@@ -108,6 +112,11 @@ public class ArrLevel {
     */
     public void setNodeParent(final ArrNode parentNode) {
         this.nodeParent = parentNode;
+        this.nodeIdParent = parentNode != null ? parentNode.getNodeId() : null;
+    }
+
+    public Integer getNodeIdParent() {
+        return nodeIdParent;
     }
 
     /**

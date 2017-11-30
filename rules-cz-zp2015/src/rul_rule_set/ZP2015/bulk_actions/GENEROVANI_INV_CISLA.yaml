@@ -1,0 +1,4 @@
+!SerialNumberGenerator
+name: Generátor inventárního čísla
+itemType: ZP2015_INV_CISLO
+useCurrentNumbering: true

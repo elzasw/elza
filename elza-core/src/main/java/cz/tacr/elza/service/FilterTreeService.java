@@ -14,8 +14,6 @@ import java.util.TreeSet;
 
 import javax.annotation.Nullable;
 
-import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.codes.ArrangementCode;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,6 +43,8 @@ import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.vo.DescItemValues;
 import cz.tacr.elza.domain.vo.TitleValue;
 import cz.tacr.elza.domain.vo.TitleValues;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.filter.DescItemTypeFilter;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
@@ -147,7 +147,7 @@ public class FilterTreeService {
         ArrayList<Integer> subIds = FilterTools.getSublist(page, pageSize, filteredIds);
 
 
-        Map<Integer, Map<String, TitleValues>> nodeValuesMap = Collections.EMPTY_MAP;
+        Map<Integer, Map<String, TitleValues>> nodeValuesMap = Collections.emptyMap();
         if (!subIds.isEmpty() && !descItemTypeIds.isEmpty()) {
             nodeValuesMap = descriptionItemService.createNodeValuesMap(new HashSet<>(subIds), null,
                     new HashSet<>(descItemTypeMap.values()), version);
@@ -170,7 +170,7 @@ public class FilterTreeService {
      */
     public List<FilterNodePosition> getFilteredFulltextIds(final ArrFundVersion version, final String fulltext,
                                                            final boolean luceneQuery, final List<SearchParam> searchParams) {
-        Assert.notNull(version);
+        Assert.notNull(version, "Verze AS musí být vyplněna");
 
         TreeSet<FilterNodePosition> result = new TreeSet<>((a, b) -> a.getIndex().compareTo(b.getIndex()));
 
@@ -219,12 +219,12 @@ public class FilterTreeService {
                                            @Nullable final String fulltext,
                                            final int max) {
 
-        Assert.notNull(version);
-        Assert.notNull(descItemType);
+        Assert.notNull(version, "Verze AS musí být vyplněna");
+        Assert.notNull(descItemType, "Typ atributu musí být vyplněn");
 
         Class<? extends ArrData> dataTypeClass = descriptionItemService.getDescItemDataTypeClass(descItemType);
         if (dataTypeClass.equals(ArrDataPacketRef.class)) {
-            Assert.notEmpty(specIds);
+            Assert.notEmpty(specIds, "Musí být vyplněn alespoň jeden identifikátor specifikace");
             boolean withoutType = FilterTools.removeNullValues(specIds);
             Set<RulPacketType> packetTypes = new HashSet<>(packetTypeRepository.findAll(specIds));
             return dataRepository.findUniquePacketValuesInVersion(version, descItemType, dataTypeClass, packetTypes,
@@ -233,7 +233,7 @@ public class FilterTreeService {
             Set<RulItemSpec> specs = null;
             boolean withoutSpec = false;
             if (descItemType.getUseSpecification()) {
-                Assert.notEmpty(specIds);
+                Assert.notEmpty(specIds, "Musí být vyplněn alespoň jeden identifikátor specifikace");
                 withoutSpec = FilterTools.removeNullValues(specIds);
                 specs = new HashSet<>(itemSpecRepository.findAll(specIds));
             }
@@ -243,6 +243,27 @@ public class FilterTreeService {
         }
     }
 
+    /**
+     * Získání unikátních specifikací atributů podle typu.
+     *
+     * Pokud typ je PACKET_REF, výsledek je seznamem typů obalů.
+     *
+     * @param fundVersion verze stromu
+     * @param itemType    typ atributu
+     * @return seznam hodnot
+     */
+    public List<Integer> findUniqueSpecIds(final ArrFundVersion fundVersion,
+                                          final RulItemType itemType) {
+
+        Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
+        Assert.notNull(itemType, "Typ atributu musí být vyplněn");
+
+        if (itemType.getDataType().getCode().equals("PACKET_REF")) {
+            return dataRepository.findUniquePacketTypeIdsInVersion(fundVersion, itemType);
+        } else {
+            return dataRepository.findUniqueSpecIdsInVersion(fundVersion, itemType);
+        }
+    }
 
     /**
      * Vytvoří výslednou mapu.
@@ -311,7 +332,7 @@ public class FilterTreeService {
             TreeNodeClient treeNodeClient = idsMap.get(filteredId);
 
             ArrNode arrNode = filterIdsMap.get(treeNode.getId());
-            ArrNodeVO arrNodeVo = new ArrNodeVO(arrNode.getNodeId(), arrNode.getVersion());
+            ArrNodeVO arrNodeVo = ArrNodeVO.valueOf(arrNode);
             TreeNodeClient arrParentNodeVo = null;
             if(treeParentNode != null)  {
                 arrParentNodeVo = parentIdsMap.get(treeParentNode.getId());

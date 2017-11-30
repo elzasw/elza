@@ -6,22 +6,11 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
-import org.hibernate.search.annotations.Field;
-import org.hibernate.search.annotations.Indexed;
-import org.hibernate.search.annotations.Store;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
-import cz.tacr.elza.search.IndexArrDataWhenHasDescItemInterceptor;
-
 
 /**
  * Hodnota atributu archivního popisu typu desetinného čísla.
- *
- * @author Martin Šlapa
- * @since 12.10.2015
  */
-@Indexed(interceptor = IndexArrDataWhenHasDescItemInterceptor.class)
 @Entity(name = "arr_data_decimal")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
@@ -30,13 +19,16 @@ public class ArrDataDecimal extends ArrData {
     @Column(nullable = false)
     private BigDecimal value;
 
-    public BigDecimal getValue() {
-        return value;
-    }
+	public ArrDataDecimal() {
+	}
 
-    @Field(name = "valueDecimal", store = Store.YES)
-    public Double getValueDouble() {
-        return value.doubleValue();
+	protected ArrDataDecimal(final ArrDataDecimal src) {
+		super(src);
+		this.value = src.value;
+	}
+
+	public BigDecimal getValue() {
+        return value;
     }
 
     public void setValue(final BigDecimal value) {
@@ -47,4 +39,14 @@ public class ArrDataDecimal extends ArrData {
     public String getFulltextValue() {
         return value.toPlainString();
     }
+
+    @Override
+    public Double getValueDouble() {
+        return value.doubleValue();
+    }
+
+	@Override
+	public ArrDataDecimal makeCopy() {
+		return new ArrDataDecimal(this);
+	}
 }

@@ -1,14 +1,15 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrNodeRegister;
-import cz.tacr.elza.domain.RegRecord;
+import java.util.Collection;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import java.util.Collection;
-import java.util.List;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrNodeRegister;
+import cz.tacr.elza.domain.RegRecord;
 
 
 /**
@@ -52,4 +53,12 @@ public interface NodeRegisterRepository extends JpaRepository<ArrNodeRegister, I
     List<RegRecord> findRecordsByNode(ArrNode node);
 
     List<ArrNodeRegister> findByNodeIdInAndDeleteChangeIsNull(Collection<Integer> nodeIds);
+
+    /**
+     * Hledá v otevřené verzi pomocí rejstříku
+     * @param record rejstřík
+     * @return seznam Node registrů v otevřené verzi
+     */
+    @Query("SELECT nr FROM arr_node_register nr JOIN FETCH nr.record WHERE nr.deleteChange IS NULL AND nr.record = ?1")
+    List<ArrNodeRegister> findByRecordAndDeleteChangeIsNull(RegRecord record);
 }

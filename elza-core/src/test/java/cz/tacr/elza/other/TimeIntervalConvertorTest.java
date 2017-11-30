@@ -5,7 +5,7 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
 import cz.tacr.elza.core.data.CalendarType;
-import cz.tacr.elza.deimport.timeinterval.TimeInterval;
+import cz.tacr.elza.dataexchange.common.timeinterval.TimeInterval;
 
 public class TimeIntervalConvertorTest {
 

@@ -26,7 +26,7 @@ import {
     AbstractReactComponent,
     i18n,
     FormInput,
-    Loading,
+    HorizontalLoader,
     Autocomplete
 } from 'components/shared';
 import { isFundRootId, getOneSettings } from 'components/arr/ArrUtils.jsx';
@@ -219,6 +219,7 @@ class AddNodeForm extends AbstractReactComponent {
             const submitData = {
                 xmlFile:this.state.importXml,
                 scopeId:this.state.selectedScopeId,
+                ignoreRootNodes: this.state.ignoreRootNodes
             };
             //Upravena rozhodovaci logika pro umisteni uzlu
             let importPositionParams = {
@@ -491,7 +492,7 @@ class AddNodeForm extends AbstractReactComponent {
                         {i18n('arr.fund.addNode.scenario')}
                     </ControlLabel>
                     {loading
-                        ? <Loading />
+                        ? <HorizontalLoader />
                         : <FormGroup key="Scenarios">
                               {scnRadios}
                           </FormGroup>}

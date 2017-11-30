@@ -52,7 +52,8 @@ import {
 import Stomp from 'stompjs';
 import URLParse from "url-parse";
 
-import {reloadUserDetail} from 'actions/user/userDetail'
+import {reloadUserDetail} from 'actions/user/userDetail';
+import {shouldSkipNodeEvent} from "websocketController.jsx";
 
 const url = new URLParse(serverContextPath + '/stomp');
 
@@ -75,37 +76,50 @@ export function stompDisconnect() {
 /** Připojení websocketů. */
 export function stompConnect() {
     stompClient = Stomp.client(wsUrl);
-    stompClient = stompClient;
     stompClient.debug = null
     stompClient.heartbeat.outgoing = 20000;
     stompClient.heartbeat.incoming = 20000;
     stompClient.onreceipt = receiptCallback;
     console.info("Websocket connecting to " + wsUrl);
-    stompClient.connect({}, stompSuccessCallback, stompFailureCallback);
+    stompClient.connect({}, stompOnConnect, stompOnError);
 }
 stompConnect();
 
 class ws {
     constructor() {
         this.nextReceiptId = 0;
-        this.receiptSuccessCallbacks = {}; // mapa id receipt na callback funkci
-        this.receiptErrorCallbacks = {}; // mapa id receipt na error callback funkci
+        this.pendingRequests = {};
     }
 
     static stompDisconnect = stompDisconnect;
 
     static stompConnect = stompConnect;
 
-    send = (url, headers, data, successCallback, errorCallback) => {
-        const useHeaders = headers ? headers : {};
+    stompConnect = () => {
+        ws.stompConnect();
+    };
+    
+    // Funkce
+    send = (url, data, successCallback, errorCallback) => {
+        const headers = {};
+
         if (successCallback || errorCallback) {
-            useHeaders.receipt = this.nextReceiptId;
-            this.receiptSuccessCallbacks[this.nextReceiptId] = successCallback;
-            this.receiptErrorCallbacks[this.nextReceiptId] = errorCallback;
+            headers.receipt = this.nextReceiptId;
+
+            let nextRequest = {
+                url: url,
+                headers: headers,
+                data: data,
+                onSuccess: successCallback,
+                onError: errorCallback
+            }
+
+            this.pendingRequests[this.nextReceiptId] = nextRequest;
             this.nextReceiptId++;
         }
+
         stompClient.send(url, headers, data);
-    }
+    };
 
     processCallback(body, headers) {
         if (!body || !headers) {
@@ -118,20 +132,17 @@ class ws {
             const receiptId = typeof receiptIdStr === "number" ? receiptIdStr : parseInt(receiptIdStr);
 
             const bodyObj = JSON.parse(body);
-            console.log("__WESOCKET", bodyObj)
-            if (bodyObj && bodyObj.errorMessage) {  // error
-                if (this.receiptErrorCallbacks[receiptId]) {
-                    this.receiptErrorCallbacks[receiptId](bodyObj);
-                }
-            } else {    // succes
-                if (this.receiptSuccessCallbacks[receiptId]) {
-                    this.receiptSuccessCallbacks[receiptId](bodyObj);
-                }
-            }
+            console.info("WEBSOCKET MESSAGE:", bodyObj, "| Remaining requests:", this.pendingRequests);
 
-            // Smazání callback z pole
-            this.receiptSuccessCallbacks[receiptId] && delete this.receiptSuccessCallbacks[receiptId];
-            this.receiptErrorCallbacks[receiptId] && delete this.receiptErrorCallbacks[receiptId];
+            let request = this.pendingRequests[receiptId];
+            if(request){
+                if(bodyObj && !bodyObj.errorMessage){
+                    request.onSuccess(bodyObj);
+                } else {
+                    request.onError(bodyObj);
+                }
+                delete this.pendingRequests[receiptId];
+            }
 
             return true;
         }
@@ -143,79 +154,38 @@ if (!window.ws) {
     window.ws = new ws();
 }
 
-//
-//
-//
-//
-//
-//
-//
-// var SockJS = require('sockjs-client');
-// var Stomp = require('stompjs');
-// var socket = new SockJS(serverContextPath + '/config/websock');
-// var client = Stomp.over(socket);
-// var refresh = false;
-// /**
-//  * Připojení websocketů.
-//  */
-// function stompConnect() {
-//     console.info('WebSocket: Pokus o připojení...');
-//
-//     socket = new SockJS(serverContextPath + '/web/websock');
-//     client = Stomp.over(socket);
-//     client.debug = null;
-//
-//     client.heartbeat.outgoing = 5000;
-//     client.heartbeat.incoming = 0;
-//     client.connect('guest', 'guest', stompSuccessCallback, stompFailureCallback);
-// }
-//
-
 function receiptCallback(frame) {
-    // console.log("@@@@@@@@@@@@@@@@@@receiptCallback", frame)
+    let body = frame.body;
+    let headers = frame.headers;
+    console.info("WEBSOCKET RECEIPT:", frame);
+    window.ws.processCallback(body, headers);
 }
 
 /**
  * Callback příchozích dat z websocketů.
  * @param frame {object}
  */
-function stompSuccessCallback(frame) {
-    // console.log("############################## stompSuccessCallback");
-    // console.log("::::stompSuccessCallback", frame);
+function stompOnConnect(frame) {
     store.dispatch(webSocketConnect());
+
     if (!refresh) {
         refresh = true;
     } else {
         location.reload(true);
     }
-    stompClient.subscribe('/topic/api/changes', function({body, headers}) {
-        // console.log("############### stompClient.subscribe('/topic/api/changes'", "body: ", body, "headers: ", headers)
-        if (window.ws.processCallback(body, headers)) { // zpracováno jako callback
-            // již zpracováno a není třeba nic dělat
-        } else {    // standardní informace o změnách
-            var change = JSON.parse(body);
-            console.info("WebSocket", change);
-            switch (change.area) {
-                case 'EVENT':
-                    processEvents(change.value);
-                    break;
-                case 'VALIDATION':
-                    processValidations(change.value);
-                    break;
-                default:
-                    console.warn("Nedefinovaný datový typ ze serveru: " + change.area);
-                    break;
-            }
-        }
+    stompClient.subscribe('/topic/api/changes', function(frame) {
+        var body = JSON.parse(frame.body);
+        processEvents(body);
     });
 }
+
 
 /**
  * Callback při ztráně spojení.
  *
  * @param error {string} text chyby
  */
-function stompFailureCallback(error) {
+function stompOnError(error) {
     console.error("Websocket - failure", error);
 
     const {body, headers} = error;
@@ -238,11 +208,8 @@ function stompFailureCallback(error) {
  *
  * @param values {array} seznam příchozí eventů
  */
-function processEvents(values) {
-    values.forEach(value => {
-
+function processEvents(value) {
         switch (value.eventType) {
-
             case 'DAO_LINK_CREATE':
             case 'DAO_LINK_DELETE':
                 daoLink(value);
@@ -293,7 +260,9 @@ function processEvents(values) {
                 break;
 
             case 'NODES_CHANGE':
-                nodesChange(value);
+                shouldSkipNodeEvent(value.entityIds,()=>{
+                    nodesChange(value);
+                })
                 break;
             case 'OUTPUT_ITEM_CHANGE':
                 outputItemChange(value);
@@ -418,8 +387,6 @@ function processEvents(values) {
                 console.warn("Nedefinovaný typ eventu: " + value.eventType, value);
                 break;
         }
-
-    });
 }
 
 /**

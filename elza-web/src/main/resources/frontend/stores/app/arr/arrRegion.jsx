@@ -78,9 +78,8 @@ export default function arrRegion(state = initialState, action) {
         }
     }
 
-    if (false
-        || isBulkAction(action)
-        || (isFundTreeAction(action) && action.area !== types.FUND_TREE_AREA_COPY)
+    if (isBulkAction(action)
+        || (isFundTreeAction(action) && (action.area !== types.FUND_TREE_AREA_COPY && action.area !== types.FUND_TREE_AREA_USAGE))
         || nodeFormActions.isSubNodeFormAction(action, "NODE") || nodeFormActions.isSubNodeFormAction(action, "OUTPUT")
         || nodeFormActions.isSubNodeFormCacheAction(action, "NODE") || nodeFormActions.isSubNodeFormCacheAction(action, "OUTPUT")
         || isSubNodeRegisterAction(action)
@@ -106,10 +105,7 @@ export default function arrRegion(state = initialState, action) {
         }
     }
 
-    if (
-        isFundTreeAction(action) &&
-        action.area === types.FUND_TREE_AREA_COPY
-    ) {
+    if (isFundTreeAction(action) && (action.area === types.FUND_TREE_AREA_USAGE || action.area === types.FUND_TREE_AREA_COPY)) {
         return {
             ...state,
             globalFundTree: globalFundTree(state.globalFundTree, action)
@@ -217,6 +213,7 @@ export default function arrRegion(state = initialState, action) {
         case types.FUND_NODES_REQUEST:
         case types.FUND_FUND_CHANGE_READ_MODE:
         case types.CHANGE_NODES:
+        case types.FUND_SUBNODE_UPDATE:
         case types.CHANGE_OUTPUTS:
         case types.CHANGE_DELETE_LEVEL:
         case types.CHANGE_ADD_LEVEL:

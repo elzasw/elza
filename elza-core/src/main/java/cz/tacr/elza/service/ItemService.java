@@ -1,11 +1,9 @@
 package cz.tacr.elza.service;
 
-import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -16,7 +14,6 @@ import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 
-import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.beans.BeanUtils;
@@ -28,7 +25,6 @@ import org.springframework.util.Assert;
 
 import cz.tacr.elza.controller.ArrangementController;
 import cz.tacr.elza.core.data.CalendarType;
-import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataCoordinates;
@@ -48,7 +44,6 @@ import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.ArrItemCoordinates;
-import cz.tacr.elza.domain.ArrItemData;
 import cz.tacr.elza.domain.ArrItemDecimal;
 import cz.tacr.elza.domain.ArrItemEnum;
 import cz.tacr.elza.domain.ArrItemFileRef;
@@ -96,7 +91,6 @@ import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.PacketRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
-import cz.tacr.elza.utils.HibernateUtils;
 import ma.glasnost.orika.CustomMapper;
 import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MappingContext;
@@ -105,8 +99,6 @@ import ma.glasnost.orika.impl.DefaultMapperFactory;
 /**
  * Serviska pro správu hodnot atributů.
  *
- * @author Martin Šlapa
- * @since 24.06.2016
  */
 @Service
 public class ItemService implements InitializingBean {
@@ -236,50 +228,40 @@ public class ItemService implements InitializingBean {
     }
 
     public ArrData getDataByItem(final ArrItem item) {
-		if (item.getUndefined()) {
-            return null;
-        }
-        List<ArrData> dataList = dataRepository.findByItem(item);
-        if (dataList.size() != 1) {
-            throw new SystemException("Hodnota musí být právě jedna", BaseCode.DB_INTEGRITY_PROBLEM);
-        }
-        return dataList.get(0);
+        return item.getData();
     }
 
+    @Deprecated
     public <T extends ArrItem> T save(final T item,
                                       final boolean createNewVersion) {
-        itemRepository.save(item);
+        ArrData data = item.getData();
 
-        ArrItemData itemData = item.getItem();
-
-        if (itemData == null || BooleanUtils.isTrue(itemData.getUndefined())) {
-            return item;
+        if (data != null) {
+            if (data instanceof ArrDataJsonTable) {
+                checkJsonTableData(((ArrDataJsonTable) data).getValue(), item.getItemType().getColumnsDefinition());
         }
 
-        if (itemData instanceof ArrItemJsonTable) {
-            checkJsonTableData(((ArrItemJsonTable) itemData).getValue(), item.getItemType().getColumnsDefinition());
-        }
-
-        ArrData data;
+            ArrData dataNew;
         if (createNewVersion) {
-            data = facade.map(itemData, ArrData.class);
-            data.setItem(item);
-            data.setDataType(item.getItemType().getDataType());
+                dataNew = facade.map(data, ArrData.class);
+                //data.setItem(item);
+                dataNew.setDataType(item.getItemType().getDataType());
         } else {
-            data = getDataByItem(item);
-            facade.map(itemData, data);
+                dataNew = data;
         }
 
         try {
-            mapRepository.get(data.getClass()).save(data);
+                mapRepository.get(dataNew.getClass()).save(dataNew);
         } catch (NullPointerException e) {
             throw new NotImplementedException("Nebyla namapována repozitory pro datový typ");
         }
 
-        return item;
+            item.setData(dataNew);
+    }
+        return itemRepository.save(item);
     }
 
-    public <T extends ArrItem> T loadData(final T item) {
+    /*public <T extends ArrItem> T loadData(final T item) {
         ArrData data = getDataByItem(item);
         ArrItemData itemData;
         if (data == null) {
@@ -289,85 +271,7 @@ public class ItemService implements InitializingBean {
         }
         item.setItem(itemData);
         return item;
-    }
-
-    public void loadData(final List<? extends ArrItem> items) {
-        if (items.isEmpty()) {
-            return;
-        }
-		// do not load items without data
-		List<ArrItem> loadItems = new ArrayList<>(items.size());
-		for (ArrItem item : items) {
-			if (!item.getUndefined()) {
-				loadItems.add(item);
-			}
-		}
-
-		List<ArrData> itemsData = dataRepository.findByItem(loadItems);
-		if (itemsData.size() != loadItems.size()) {
-
-			// prepare error
-			Map<Integer, ArrData> item2data = new HashMap<>();
-			// populate keys
-			for(ArrItem item: items) {
-				item2data.put(item.getItemId(), null);
-			}
-			if (item2data.size() != itemsData.size()) {
-				List<ArrData> dataWithoutItems = new ArrayList<>();
-				List<Integer> itemsWithMoreData = new ArrayList<>();
-				List<Integer> itemsWithoutData = new ArrayList<>();
-			for(ArrData itemData: itemsData) {
-				Integer key = itemData.getItem().getItemId();
-				if(!item2data.containsKey(key)) {
-					dataWithoutItems.add(itemData);
-				} else {
-					ArrData value = item2data.get(key);
-					if (value != null) {
-						itemsWithMoreData.add(key);
-					} else {
-						item2data.put(key, itemData);
-					}
-				}
-			}
-				
-			// try to find missing data
-			item2data.forEach((id, data) -> {
-				if (data == null) {
-					itemsWithoutData.add(id);
-				}
-			});
-			
-            // Will be probably removed in MT05 (item without data).
-            throw new IllegalStateException("Missing data for specified items");
-			}
-        }
-        for (ArrData data : itemsData) {
-            data = HibernateUtils.unproxy(data);
-            for (ArrItem item : items) {
-                if (item.getItemId().equals(data.getItem().getItemId())) {
-					//TODO: odstranit objekt facade - zdroj chyb
-					// zde musime rozlisit mezi formatovanym a neformatovanym textem
-					// mapper toho jiz neni schopen
-					// problem nastava pri obnove cache
-					Class<? extends ArrItemData> targetClass = ArrItemData.class;
-					if (data.getDataType().getDataTypeId() == DataType.TEXT.getId()) {
-						targetClass = ArrItemText.class;
-					} else if (data.getDataType().getDataTypeId() == DataType.FORMATTED_TEXT.getId()) {
-						targetClass = ArrItemFormattedText.class;
-					}
-
-					ArrItemData itemData = facade.map(data, targetClass);
-                    item.setItem(itemData);
-                    break;
-                }
-            }
-        }
-        for (ArrItem item : items) {
-            if (item.getItem() == null) {
-                item.setItem(descItemFactory.createItemByType(item.getItemType().getDataType()));
-            }
-        }
-    }
+    }*/
 
     public <T extends ArrItem> void moveDown(final List<T> items, final ArrChange change) {
         for (ArrItem itemMove : items) {
@@ -377,7 +281,7 @@ public class ItemService implements InitializingBean {
 
             ArrItem itemNew;
             try {
-                itemNew = itemMove.getClass().getConstructor().newInstance(itemMove.getItem().getClass());
+                itemNew = itemMove.getClass().getConstructor().newInstance();
             } catch (NoSuchMethodException | InvocationTargetException | InstantiationException | IllegalAccessException e) {
                 throw new SystemException(e);
             }
@@ -386,10 +290,9 @@ public class ItemService implements InitializingBean {
             itemNew.setCreateChange(change);
             itemNew.setPosition(itemMove.getPosition() + 1);
 
-            itemRepository.save(itemNew);
-
             // pro odverzovanou hodnotu atributu je nutné vytvořit kopii dat
             copyItemData(itemMove, itemNew);
+            itemRepository.save(itemNew);
         }
     }
 
@@ -447,7 +350,7 @@ public class ItemService implements InitializingBean {
                                 final ArrDataCoordinates arrDataCoordinatesNew,
                                 final MappingContext context) {
                 arrDataCoordinatesNew.setDataType(arrDataCoordinates.getDataType());
-                arrDataCoordinatesNew.setItem(arrDataCoordinates.getItem());
+
                 arrDataCoordinatesNew.setValue(arrDataCoordinates.getValue());
             }
         }).register();
@@ -483,7 +386,6 @@ public class ItemService implements InitializingBean {
                                 final ArrDataJsonTable arrDataJsonTableNew,
                                 final MappingContext context) {
                 arrDataJsonTableNew.setDataType(arrDataJsonTable.getDataType());
-                arrDataJsonTableNew.setItem(arrDataJsonTable.getItem());
                 arrDataJsonTableNew.setValue(arrDataJsonTable.getValue());
             }
         }).register();
@@ -516,7 +418,7 @@ public class ItemService implements InitializingBean {
             @Override
             public void mapAtoB(final ArrDataText arrDataText, final ArrDataText arrDataTextNew, final MappingContext context) {
                 arrDataTextNew.setDataType(arrDataText.getDataType());
-                arrDataTextNew.setItem(arrDataText.getItem());
+                //arrDataTextNew.setItem(arrDataText.getItem());
                 arrDataTextNew.setValue(arrDataText.getValue());
             }
         }).register();
@@ -552,7 +454,6 @@ public class ItemService implements InitializingBean {
                                 final ArrDataInteger arrDataIntegerNew,
                                 final MappingContext context) {
                 arrDataIntegerNew.setDataType(arrDataInteger.getDataType());
-                arrDataIntegerNew.setItem(arrDataInteger.getItem());
                 arrDataIntegerNew.setValue(arrDataInteger.getValue());
             }
         }).register();
@@ -588,7 +489,6 @@ public class ItemService implements InitializingBean {
                                 final ArrDataPartyRef arrDataPartyRefNew,
                                 final MappingContext context) {
                 arrDataPartyRefNew.setDataType(arrDataPartyRef.getDataType());
-                arrDataPartyRefNew.setItem(arrDataPartyRef.getItem());
                 arrDataPartyRefNew.setParty(arrDataPartyRef.getParty());
             }
         }).register();
@@ -624,7 +524,6 @@ public class ItemService implements InitializingBean {
                                 final ArrDataPacketRef arrDataPartyRefNew,
                                 final MappingContext context) {
                 arrDataPartyRefNew.setDataType(arrDataPartyRef.getDataType());
-                arrDataPartyRefNew.setItem(arrDataPartyRef.getItem());
                 arrDataPartyRefNew.setPacket(arrDataPartyRef.getPacket());
             }
         }).register();
@@ -660,7 +559,6 @@ public class ItemService implements InitializingBean {
                                 final ArrDataFileRef arrDataPartyRefNew,
                                 final MappingContext context) {
                 arrDataPartyRefNew.setDataType(arrDataPartyRef.getDataType());
-                arrDataPartyRefNew.setItem(arrDataPartyRef.getItem());
                 arrDataPartyRefNew.setFile(arrDataPartyRef.getFile());
             }
         }).register();
@@ -696,7 +594,6 @@ public class ItemService implements InitializingBean {
                                 final ArrDataRecordRef arrDataRecordRefNew,
                                 final MappingContext context) {
                 arrDataRecordRefNew.setDataType(arrDataRecordRef.getDataType());
-                arrDataRecordRefNew.setItem(arrDataRecordRef.getItem());
                 arrDataRecordRefNew.setRecord(arrDataRecordRef.getRecord());
             }
         }).register();
@@ -732,7 +629,6 @@ public class ItemService implements InitializingBean {
                                 final ArrDataString arrDataStringNew,
                                 final MappingContext context) {
                 arrDataStringNew.setDataType(arrDataString.getDataType());
-                arrDataStringNew.setItem(arrDataString.getItem());
                 arrDataStringNew.setValue(arrDataString.getValue());
             }
         }).register();
@@ -765,7 +661,7 @@ public class ItemService implements InitializingBean {
             @Override
             public void mapAtoB(final ArrDataText arrDataText, final ArrDataText arrDataTextNew, final MappingContext context) {
                 arrDataTextNew.setDataType(arrDataText.getDataType());
-                arrDataTextNew.setItem(arrDataText.getItem());
+                //arrDataTextNew.setItem(arrDataText.getItem());
                 arrDataTextNew.setValue(arrDataText.getValue());
             }
         }).register();
@@ -885,7 +781,6 @@ public class ItemService implements InitializingBean {
                                 final ArrDataUnitdate arrDataUnitdateNew,
                                 final MappingContext context) {
                 arrDataUnitdateNew.setDataType(arrDataUnitdate.getDataType());
-                arrDataUnitdateNew.setItem(arrDataUnitdate.getItem());
                 arrDataUnitdateNew.setCalendarType(arrDataUnitdate.getCalendarType());
                 arrDataUnitdateNew.setValueFrom(arrDataUnitdate.getValueFrom());
                 arrDataUnitdateNew.setValueFromEstimated(arrDataUnitdate.getValueFromEstimated());
@@ -927,7 +822,6 @@ public class ItemService implements InitializingBean {
                                 final ArrDataUnitid arrDataUnitidNew,
                                 final MappingContext context) {
                 arrDataUnitidNew.setDataType(arrDataUnitid.getDataType());
-                arrDataUnitidNew.setItem(arrDataUnitid.getItem());
                 arrDataUnitidNew.setValue(arrDataUnitid.getValue());
             }
         }).register();
@@ -962,7 +856,6 @@ public class ItemService implements InitializingBean {
                                 final ArrDataDecimal arrDataDecimalNew,
                                 final MappingContext context) {
                 arrDataDecimalNew.setDataType(arrDataDecimal.getDataType());
-                arrDataDecimalNew.setItem(arrDataDecimal.getItem());
                 arrDataDecimalNew.setValue(arrDataDecimal.getValue());
             }
         }).register();
@@ -993,7 +886,7 @@ public class ItemService implements InitializingBean {
             @Override
             public void mapAtoB(final ArrDataNull arrDataNull, final ArrDataNull arrDataNullNew, final MappingContext context) {
                 arrDataNullNew.setDataType(arrDataNull.getDataType());
-                arrDataNullNew.setItem(arrDataNull.getItem());
+                //arrDataNullNew.setItem(arrDataNull.getItem());
             }
         }).register();
     }
@@ -1040,20 +933,15 @@ public class ItemService implements InitializingBean {
         return valueRet;
     }
 
+    @Deprecated
     public <T extends ArrItem> void copyItemData(final T dataFrom, final T dataTo) {
-        List<ArrData> dataList = dataRepository.findByItem(dataFrom);
-
-        if (dataList.size() != 1) {
-            throw new SystemException("Hodnota musí být právě jedna", BaseCode.DB_INTEGRITY_PROBLEM);
-        }
-
-        ArrData data = dataList.get(0);
+        ArrData data = dataFrom.getData();
 
         ArrData dataNew;
         try {
             dataNew = data.getClass().getConstructor().newInstance();
             BeanUtils.copyProperties(data, dataNew, "dataId");
-            dataNew.setItem(dataTo);
+            dataTo.setData(dataNew);
         } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
             throw new SystemException(e.getCause());
         }
@@ -1118,6 +1006,7 @@ public class ItemService implements InitializingBean {
 
             // pro odverzovanou hodnotu atributu je nutné vytvořit kopii dat
             copyItemData(itemMove, itemNew);
+            itemRepository.save(itemNew);
         }
     }
 
@@ -1144,27 +1033,7 @@ public class ItemService implements InitializingBean {
         itemNew.setCreateChange(change);
         itemNew.setPosition(position);
 
-        return itemRepository.save(itemNew);
-    }
-
-    /**
-     * Kopíruje všechny property krom propert, které má zadaná třída.
-     *
-     * @param from   z objektu
-     * @param to     do objektu
-     * @param aClass ignorovaná třída (subclass)
-     * @param <T>    ignorovaná třída (subclass)
-     * @param <TYPE> kopírovaná třída
-     */
-    public <T, TYPE extends T> void copyPropertiesSubclass(final TYPE from, final TYPE to, final Class<T> aClass) {
-        String[] ignoreProperties;
-        PropertyDescriptor[] descriptors = BeanUtils.getPropertyDescriptors(aClass);
-        ignoreProperties = new String[descriptors.length];
-        for (int i = 0; i < descriptors.length; i++) {
-            ignoreProperties[i] = descriptors[i].getName();
-        }
-
-        BeanUtils.copyProperties(from, to, ignoreProperties);
+        return itemNew;
     }
 
     /**
@@ -1174,8 +1043,7 @@ public class ItemService implements InitializingBean {
      * @return item dle příslušného typu
      */
     public ArrItem loadDataById(final Integer itemId) {
-        final ArrItem arrItem = itemRepository.findOne(itemId);
-        return loadData(arrItem);
+        return itemRepository.findOne(itemId);
     }
 
     /**
@@ -1183,29 +1051,30 @@ public class ItemService implements InitializingBean {
      *
      * @param dataItems seznam položek, které je potřeba donačíst podle ID návazných entit
      */
-    public void refItemsLoader(final List<ArrItemData> dataItems) {
+    public void refItemsLoader(final List<ArrItem> dataItems) {
 
         // mapy pro naplnění ID entit
-        Map<Integer, ArrItemPartyRef> partyMap = new HashMap<>();
-        Map<Integer, ArrItemPacketRef> packetMap = new HashMap<>();
-        Map<Integer, ArrItemFileRef> fileMap = new HashMap<>();
-        Map<Integer, ArrItemRecordRef> recordMap = new HashMap<>();
+        Map<Integer, ArrDataPartyRef> partyMap = new HashMap<>();
+        Map<Integer, ArrDataPacketRef> packetMap = new HashMap<>();
+        Map<Integer, ArrDataFileRef> fileMap = new HashMap<>();
+        Map<Integer, ArrDataRecordRef> recordMap = new HashMap<>();
 
         // prohledávám pouze entity, které mají návazné data
-        for (ArrItemData dataItem : dataItems) {
-            if (BooleanUtils.isNotTrue(dataItem.getUndefined())) {
-                if (dataItem instanceof ArrItemPartyRef) {
-                    ParParty party = ((ArrItemPartyRef) dataItem).getParty();
-                    partyMap.put(party.getPartyId(), (ArrItemPartyRef) dataItem);
-                } else if (dataItem instanceof ArrItemPacketRef) {
-                    ArrPacket packet = ((ArrItemPacketRef) dataItem).getPacket();
-                    packetMap.put(packet.getPacketId(), (ArrItemPacketRef) dataItem);
-                } else if (dataItem instanceof ArrItemFileRef) {
-                    ArrFile file = ((ArrItemFileRef) dataItem).getFile();
-                    fileMap.put(file.getFileId(), (ArrItemFileRef) dataItem);
-                } else if (dataItem instanceof ArrItemRecordRef) {
-                    RegRecord record = ((ArrItemRecordRef) dataItem).getRecord();
-                    recordMap.put(record.getRecordId(), (ArrItemRecordRef) dataItem);
+        for (ArrItem dataItem : dataItems) {
+            ArrData data = dataItem.getData();
+            if (data != null) {
+                if (data instanceof ArrDataPartyRef) {
+                    ParParty party = ((ArrDataPartyRef) data).getParty();
+                    partyMap.put(party.getPartyId(), (ArrDataPartyRef) data);
+                } else if (data instanceof ArrDataPacketRef) {
+                    ArrPacket packet = ((ArrDataPacketRef) data).getPacket();
+                    packetMap.put(packet.getPacketId(), (ArrDataPacketRef) data);
+                } else if (data instanceof ArrDataFileRef) {
+                    ArrFile file = ((ArrDataFileRef) data).getFile();
+                    fileMap.put(file.getFileId(), (ArrDataFileRef) data);
+                } else if (data instanceof ArrDataRecordRef) {
+                    RegRecord record = ((ArrDataRecordRef) data).getRecord();
+                    recordMap.put(record.getRecordId(), (ArrDataRecordRef) data);
                 }
             }
         }
@@ -1225,7 +1094,7 @@ public class ItemService implements InitializingBean {
         Set<Integer> fileIds = partyMap.keySet();
         List<ArrFile> fileEntities = fundFileRepository.findAll(fileIds);
         for (ArrFile fileEntity : fileEntities) {
-            ArrItemFileRef ref = fileMap.get(fileEntity.getFileId());
+            ArrDataFileRef ref = fileMap.get(fileEntity.getFileId());
             if (ref != null) {
                 ref.setFile(fileEntity);
             }

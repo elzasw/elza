@@ -5,6 +5,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.persistence.Access;
+import javax.persistence.AccessType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -43,6 +45,7 @@ public class RegRecord extends AbstractVersionableEntity implements Versionable,
 
     @Id
     @GeneratedValue
+    @Access(AccessType.PROPERTY)
     private Integer recordId;
 
     @RestResource(exported = false)
@@ -51,7 +54,7 @@ public class RegRecord extends AbstractVersionableEntity implements Versionable,
     @JsonIgnore
     private RegRegisterType registerType;
 
-    @Column(name = "registerTypeId", nullable = false, updatable = false, insertable = false)
+    @Column(nullable = false, updatable = false, insertable = false)
     private Integer registerTypeId;
 
     @RestResource(exported = false)
@@ -60,11 +63,17 @@ public class RegRecord extends AbstractVersionableEntity implements Versionable,
     @JsonIgnore
     private RegRecord parentRecord;
 
+    @Column(updatable = false, insertable = false)
+    private Integer parentRecordId;
+
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RegExternalSystem.class)
     @JoinColumn(name = "externalSystemId")
     @JsonIgnore
     private RegExternalSystem externalSystem;
+
+    @Column(updatable = false, insertable = false)
+    private Integer externalSystemId;
 
     @RestResource(exported = false)
     @OneToMany(mappedBy = "regRecord")
@@ -97,11 +106,17 @@ public class RegRecord extends AbstractVersionableEntity implements Versionable,
     @JsonIgnore
     private RegScope scope;
 
+    @Column(nullable = false, updatable = false, insertable = false)
+    private Integer scopeId;
+
     @Column(length = StringLength.LENGTH_36, nullable = false, unique = true)
     private String uuid;
 
     @Column(nullable = false)
     private LocalDateTime lastUpdate;
+
+    @Column(nullable = false)
+    private boolean invalid;
 
     /* Konstanty pro vazby a fieldy. */
     public static final String VARIANT_RECORD_LIST = "variantRecordList";
@@ -115,6 +130,7 @@ public class RegRecord extends AbstractVersionableEntity implements Versionable,
     public static final String SCOPE = "scope";
     public static final String UUID = "uuid";
     public static final String LAST_UPDATE = "lastUpdate";
+    public static final String INVALID = "invalid";
 
     /**
      * ID hesla.
@@ -163,6 +179,11 @@ public class RegRecord extends AbstractVersionableEntity implements Versionable,
      */
     public void setParentRecord(final RegRecord parentRecord) {
         this.parentRecord = parentRecord;
+        this.parentRecordId = parentRecord != null ? parentRecord.getRecordId() : null;
+    }
+
+    public Integer getParentRecordId() {
+        return parentRecordId;
     }
 
     public RegExternalSystem getExternalSystem() {
@@ -171,6 +192,11 @@ public class RegRecord extends AbstractVersionableEntity implements Versionable,
 
     public void setExternalSystem(final RegExternalSystem externalSystem) {
         this.externalSystem = externalSystem;
+        this.externalSystemId = externalSystem != null ? externalSystem.getExternalSystemId() : null;
+    }
+
+    public Integer getExternalSystemId() {
+        return externalSystemId;
     }
 
     /**
@@ -268,6 +294,11 @@ public class RegRecord extends AbstractVersionableEntity implements Versionable,
      */
     public void setScope(final RegScope scope) {
         this.scope = scope;
+        this.scopeId = scope != null ? scope.getScopeId() : null;
+    }
+
+    public Integer getScopeId() {
+        return scopeId;
     }
 
     @Override
@@ -301,6 +332,14 @@ public class RegRecord extends AbstractVersionableEntity implements Versionable,
      */
     public void setLastUpdate(final LocalDateTime lastUpdate) {
         this.lastUpdate = lastUpdate;
+    }
+
+    public boolean isInvalid() {
+        return invalid;
+    }
+
+    public void setInvalid(boolean invalid) {
+        this.invalid = invalid;
     }
 
     @Override

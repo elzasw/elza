@@ -1,12 +1,14 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrNode;
+import java.util.Collection;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrNode;
 
 
 /**
@@ -32,4 +34,13 @@ public interface FundVersionRepository extends ElzaJpaRepository<ArrFundVersion,
 
     @Query(value = "SELECT v FROM arr_fund_version v JOIN FETCH v.fund f WHERE v.lockChange IS NULL")
     List<ArrFundVersion> findAllOpenVersion();
+
+    @Query(value = "select v from arr_fund_version v JOIN FETCH v.fund fa where fa.fundId in :fundIds and v.lockChange is null")
+    List<ArrFundVersion> findByFundIdsAndLockChangeIsNull(@Param(value = "fundIds") Collection<Integer> fundIds);
+
+    /**
+     * Fetches fund, fund institution and lockChange for dataexchange export.
+     */
+    @Query(value = "SELECT v FROM arr_fund_version v JOIN FETCH v.fund f JOIN FETCH f.institution i LEFT JOIN FETCH v.lockChange lc WHERE v.fundVersionId = :fundVersionId")
+    ArrFundVersion findByIdWithFetchForExport(@Param(value = "fundVersionId") Integer fundVersionId);
 }

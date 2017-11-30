@@ -1,9 +1,5 @@
 package cz.tacr.elza.websocket.core;
 
-/**
- * @author Jaroslav Todt [jaroslav.todt@lightcomp.cz]
- * @since 27.8.2016
- */
 public class ErrorDescription {
 
 	private final String message;

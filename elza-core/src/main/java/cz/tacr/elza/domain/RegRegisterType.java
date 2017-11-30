@@ -28,7 +28,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  */
 @Entity(name = "reg_register_type")
 @Table
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Cache(region = "domain", usage = CacheConcurrencyStrategy.READ_WRITE)
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class RegRegisterType {
@@ -126,7 +126,7 @@ public class RegRegisterType {
      * @return Příznak, zda rejstříková hesla tohoto typu rejstříku tvoří hierarchii.
      */
     public void setHierarchical(final Boolean hierarchical) {
-        this.hierarchical = hierarchical;
+            this.hierarchical = hierarchical;
     }
 
     /**

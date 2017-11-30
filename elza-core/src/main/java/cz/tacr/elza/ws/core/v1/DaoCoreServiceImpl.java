@@ -121,9 +121,9 @@ public class DaoCoreServiceImpl implements DaoService {
     public void _import(final DaoImport daoImport) throws CoreServiceException   {
         try {
             logger.info("Executing operation _import");
-            Assert.notNull(daoImport);
-            Assert.notNull(daoImport.getDaoPackages());
-            Assert.notNull(daoImport.getDaoLinks());
+            Assert.notNull(daoImport, "DAO import musí být vyplněn");
+            Assert.notNull(daoImport.getDaoPackages(), "DAO obaly musí být vyplněny");
+            Assert.notNull(daoImport.getDaoLinks(), "DAO linky musí být vyplněny");
 
             final List<DaoPackage> daoPackageList = daoImport.getDaoPackages().getDaoPackage();
             if (CollectionUtils.isNotEmpty(daoPackageList)) {
@@ -154,9 +154,9 @@ public class DaoCoreServiceImpl implements DaoService {
      * @return nově založený link
      */
     private ArrDaoLink createArrDaoLink(final DaoLink daoLink) {
-        Assert.notNull(daoLink);
-        Assert.hasText(daoLink.getDaoIdentifier());
-        Assert.hasText(daoLink.getDidIdentifier());
+        Assert.notNull(daoLink, "Link musí být vyplněn");
+        Assert.hasText(daoLink.getDaoIdentifier(), "DAO identifier musí být vyplněn");
+        Assert.hasText(daoLink.getDidIdentifier(), "DID identifier musí být vyplněn");
 
         final String daoIdentifier = daoLink.getDaoIdentifier();
         final String didIdentifier = daoLink.getDidIdentifier();
@@ -199,7 +199,7 @@ public class DaoCoreServiceImpl implements DaoService {
     }
 
     private ArrDaoPackage createArrDaoPackage(final DaoPackage daoPackage) {
-        Assert.notNull(daoPackage);
+        Assert.notNull(daoPackage, "DAO obal musí být vyplněn");
 
         ArrFund fund = fundRepository.findByRootNodeUuid(daoPackage.getFundIdentifier());
         ArrDigitalRepository repository = digitalRepositoryRepository.findOneByCode(daoPackage.getRepositoryIdentifier());
@@ -357,7 +357,7 @@ public class DaoCoreServiceImpl implements DaoService {
     public void removePackage(final String packageIdentifier) throws CoreServiceException   {
         try {
             logger.info("Executing operation removePackage");
-            Assert.hasText(packageIdentifier);
+            Assert.hasText(packageIdentifier, "Označení obalu musí být vyplněno");
 
             final ArrDaoPackage arrDaoPackage = daoPackageRepository.findOneByCode(packageIdentifier);
             if (arrDaoPackage == null) {
@@ -402,7 +402,7 @@ public class DaoCoreServiceImpl implements DaoService {
     public void removeDao(final String daoIdentifier) throws CoreServiceException   {
         try {
             logger.info("Executing operation removeDao");
-            Assert.hasText(daoIdentifier);
+            Assert.hasText(daoIdentifier, "Označení obalu musí být vyplněno");
 
             final ArrDao arrDao = daoRepository.findOneByCode(daoIdentifier);
             if (arrDao == null) {

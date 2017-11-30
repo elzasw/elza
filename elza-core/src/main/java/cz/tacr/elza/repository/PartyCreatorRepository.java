@@ -34,4 +34,14 @@ public interface PartyCreatorRepository extends JpaRepository<ParCreator, Intege
      * @return seznam tvůrců
      */
     List<ParCreator> findByParty(ParParty party);
+
+
+    /**
+     * Najde seznam osob vytvořených předanou osobou.
+     *
+     * @param party autor
+     * @return seznam osob vytvořených předanou osobou
+     */
+    @Query("SELECT c FROM par_creator c JOIN FETCH c.party WHERE c.creatorParty = ?1")
+    List<ParCreator> findByCreatorParty(ParParty party);
 }

@@ -7,21 +7,17 @@ import java.util.Map;
 import java.util.Objects;
 
 import org.apache.commons.lang3.Validate;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import cz.tacr.elza.bulkaction.ActionRunContext;
 import cz.tacr.elza.bulkaction.generator.LevelWithItems;
 import cz.tacr.elza.bulkaction.generator.result.ActionResult;
 import cz.tacr.elza.bulkaction.generator.result.CopyActionResult;
 import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.core.data.RuleSystemItemType;
+import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrItem;
-import cz.tacr.elza.domain.ArrItemData;
 import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
 
@@ -46,10 +42,7 @@ public class CopyAction extends Action {
     /**
 	 * Zkopírované hodnoty, výsledek
 	 */
-    private List<ArrItemData> dataItems = new ArrayList<>();
-
-    @Autowired
-    private DescItemFactory descItemFactory;
+    private List<ArrDescItem> dataItems = new ArrayList<>();
 
 	final CopyConfig config;
 
@@ -59,8 +52,8 @@ public class CopyAction extends Action {
     }
 
     @Override
-	public void init(ActionRunContext runContext) {
-		RuleSystem ruleSystem = getRuleSystem(runContext);
+	public void init(ArrBulkActionRun bulkActionRun) {
+		RuleSystem ruleSystem = getRuleSystem(bulkActionRun);
 
 		String outputType = config.getOutputType();
 		outputItemType = ruleSystem.getItemTypeByCode(outputType);
@@ -87,8 +80,8 @@ public class CopyAction extends Action {
 	 * @return
 	 */
 	private boolean isSpecificationUsed(Integer itemSpecId) {
-		for (ArrItemData dataItem : dataItems) {
-			RulItemSpec spec = dataItem.getSpec();
+		for (ArrDescItem dataItem : dataItems) {
+			RulItemSpec spec = dataItem.getItemSpec();
 			Integer currSpecd = null;
 			if (spec != null) {
 				currSpecd = spec.getItemSpecId();
@@ -104,14 +97,14 @@ public class CopyAction extends Action {
 	public void apply(LevelWithItems level, TypeLevel typeLevel) {
 		List<ArrDescItem> items = level.getDescItems();
 
-        for (ArrItem item : items) {
+        for (ArrDescItem item : items) {
 			// check if item is in inputItemTypes set
 			RuleSystemItemType itemType = inputItemTypes.get(item.getItemTypeId());
 			if (itemType == null) {
 				continue;
 			}
 			// skip undefined items
-			if (item.getUndefined()) {
+			if (item.isUndefined()) {
 				continue;
 			}
 			// check if exists
@@ -123,13 +116,15 @@ public class CopyAction extends Action {
 			}
 
 			// Copy item
-			ArrItemData itemData = item.getItem();
+			// TODO: Ma zde byt?, nutno overit
+			/*
+			ArrData itemData = item.getData();
 			if (itemData == null) {
 				itemData = descItemFactory.createItemByType(item.getItemType().getDataType());
-            }
+			}
 			itemData.setSpec(item.getItemSpec());
-			itemData.setUndefined(item.getUndefined());
-			dataItems.add(itemData);
+			*/
+			dataItems.add(item);
         }
 	}
 
@@ -137,7 +132,7 @@ public class CopyAction extends Action {
     public ActionResult getResult() {
         CopyActionResult copyActionResult = new CopyActionResult();
         copyActionResult.setItemType(outputItemType.getCode());
-        copyActionResult.setDataItems(dataItems);
+        copyActionResult.setDataItems(new ArrayList<>(dataItems));
         return copyActionResult;
     }
 

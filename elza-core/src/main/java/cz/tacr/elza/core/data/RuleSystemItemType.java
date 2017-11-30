@@ -20,6 +20,8 @@ public class RuleSystemItemType {
 
     private List<RulItemSpec> itemSpecs;
 
+    private Map<Integer, RulItemSpec> itemSpecIdMap;
+
     private Map<String, RulItemSpec> itemSpecCodeMap;
 
     RuleSystemItemType(RuleSystem ruleSystem, RulItemType itemType, DataType dataType) {
@@ -28,7 +30,6 @@ public class RuleSystemItemType {
         this.dataType = dataType;
 
         // ensure reference equality
-        Validate.isTrue(ruleSystem.getRuleSet().getPackage() == itemType.getPackage());
         Validate.isTrue(itemType.getDataType() == dataType.getEntity());
     }
 
@@ -64,6 +65,10 @@ public class RuleSystemItemType {
         return itemSpecs;
     }
 
+    public RulItemSpec getItemSpecById(int id) {
+        return itemSpecIdMap.get(id);
+    }
+
     public RulItemSpec getItemSpecByCode(String code) {
         Validate.notEmpty(code);
         return itemSpecCodeMap.get(code);
@@ -74,21 +79,24 @@ public class RuleSystemItemType {
      */
     void init(ItemSpecRepository itemSpecRepository) {
         List<RulItemSpec> itemSpecs = Collections.emptyList();
+        Map<Integer, RulItemSpec> idMap = Collections.emptyMap();
         Map<String, RulItemSpec> codeMap = Collections.emptyMap();
 
         if (hasSpecifications()) {
             itemSpecs = itemSpecRepository.findByItemType(itemType);
             itemSpecs = Collections.unmodifiableList(itemSpecs);
+            idMap = StaticDataProvider.createLookup(itemSpecs, RulItemSpec::getItemSpecId);
             codeMap = StaticDataProvider.createLookup(itemSpecs, RulItemSpec::getCode);
 
             // ensure reference equality
             for (RulItemSpec is : itemSpecs) {
                 Validate.isTrue(itemType == is.getItemType());
-                Validate.isTrue(itemType.getPackage() == is.getPackage());
+                //Validate.isTrue(itemType.getPackage() == is.getPackage()); // nově neplatí, specifikace může být z jiného balíčku (pod stejnými pravidly ale)
             }
         }
         // update fields
         this.itemSpecs = itemSpecs;
+        this.itemSpecIdMap = idMap;
         this.itemSpecCodeMap = codeMap;
     }
 }

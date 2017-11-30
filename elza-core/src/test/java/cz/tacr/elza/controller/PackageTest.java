@@ -1,14 +1,14 @@
 package cz.tacr.elza.controller;
 
-import cz.tacr.elza.domain.RulPackage;
-import cz.tacr.elza.other.HelperTestService;
+import java.io.File;
+import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.File;
-import java.util.List;
+import cz.tacr.elza.controller.vo.PackageVO;
+import cz.tacr.elza.other.HelperTestService;
 
 
 /**
@@ -21,6 +21,7 @@ public class PackageTest extends AbstractControllerTest {
     private static final String DELETE_PACKAGE = RULE_CONTROLLER_URL + "/deletePackage/{code}";
     private static final String EXPORT_PACKAGE = RULE_CONTROLLER_URL + "/exportPackage/{code}";
 
+    @Override
     @Before
     public void setUp() throws Exception {
         loadInstitutions = false;
@@ -30,9 +31,9 @@ public class PackageTest extends AbstractControllerTest {
 
     @Test
     public void deleteImportExportPackageTest() throws Exception {
-        List<RulPackage> packages = getPackages();
-        RulPackage packageItem = null;
-        for (RulPackage item : packages) {
+        List<PackageVO> packages = getPackages();
+        PackageVO packageItem = null;
+        for (PackageVO item : packages) {
             if (item.getCode().equals("ZP2015")) {
                 packageItem = item;
                 break;

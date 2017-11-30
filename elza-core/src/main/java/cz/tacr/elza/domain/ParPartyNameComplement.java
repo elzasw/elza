@@ -35,6 +35,7 @@ public class ParPartyNameComplement {
 
     /* Konstanty pro vazby a fieldy. */
     public static final String PARTY_NAME_COMPLEMENT_ID = "partyNameComplementId";
+    public static final String PARTY_FK = "partyName.partyNameId";
 
     @Id
     @GeneratedValue

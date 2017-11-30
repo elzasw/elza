@@ -1,7 +1,6 @@
 package cz.tacr.elza.domain;
 
-import java.io.Serializable;
-
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -11,96 +10,68 @@ import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.apache.lucene.analysis.core.KeywordTokenizerFactory;
-import org.apache.lucene.analysis.core.LowerCaseFilterFactory;
-import org.hibernate.search.annotations.Analyzer;
-import org.hibernate.search.annotations.AnalyzerDef;
-import org.hibernate.search.annotations.Field;
-import org.hibernate.search.annotations.FieldBridge;
-import org.hibernate.search.annotations.Store;
-import org.hibernate.search.annotations.TokenFilterDef;
-import org.hibernate.search.annotations.TokenizerDef;
-import org.hibernate.search.bridge.builtin.IntegerBridge;
+import org.apache.commons.lang3.Validate;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
+import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.service.cache.NodeCacheSerializable;
 
 
 /**
  * Tabulka pro evidenci hodnot atributů archivního popisu.
- *
- * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
- * @since 20.8.2015
  */
-@AnalyzerDef(name = "customanalyzer",
-tokenizer = @TokenizerDef(factory = KeywordTokenizerFactory.class),
-filters = {
-  @TokenFilterDef(factory = LowerCaseFilterFactory.class),
-})
 @Entity(name = "arr_data")
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public abstract class ArrData {
+@JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
+public abstract class ArrData implements NodeCacheSerializable {
 
-    public static final String ITEM = "item";
-
-    public static final String LUCENE_DESC_ITEM_TYPE_ID = "descItemTypeId";
+    public static final String ID = "dataId";
 
     @Id
     @GeneratedValue
     private Integer dataId;
 
-    @ManyToOne(fetch = FetchType.EAGER, targetEntity = RulDataType.class)
+	@ManyToOne(fetch=FetchType.LAZY, targetEntity = RulDataType.class)
     @JoinColumn(name = "dataTypeId", nullable = false)
     private RulDataType dataType;
 
-    @ManyToOne(fetch = FetchType.EAGER, targetEntity = ArrItem.class)
-    @JoinColumn(name = "itemId", nullable = true)
-    private ArrItem item;
+    @Column(nullable = false, insertable = false, updatable = false)
+    private Integer dataTypeId;
 
-    /** @return vrací hodnotu pro fulltextové hledání  */
-    @Field
-    @Analyzer(definition = "customanalyzer")
-    public abstract String getFulltextValue();
+	/**
+	 * Default constructor
+	 * 
+	 */
+	protected ArrData() {
 
-    @Field(store = Store.YES)
-    public String getItemId() {
-        return item.getItemId().toString();
-    }
+	}
 
-    @Field(store = Store.YES)
-    @FieldBridge(impl = IntegerBridge.class)
-    public Integer getNodeId() {
-        return item.getNode() != null ? item.getNode().getNodeId() : null;
-    }
+	/**
+	 * Copy constructor
+	 * 
+	 * @param src
+	 */
+	protected ArrData(ArrData src) {
+		this.dataId = src.dataId;
 
-    @Field
-    @FieldBridge(impl = IntegerBridge.class)
-    public Integer getFundId() {
-        return item.getFundId();
-    }
+		this.dataType = src.dataType;
+		this.dataTypeId = src.dataTypeId;
 
-    @Field(store = Store.NO)
-    @FieldBridge(impl = IntegerBridge.class)
-    public Integer getDescItemTypeId() {
-        return item.getItemType().getItemTypeId();
-    }
+		// If we are copying new item then dataType have to be set
+		Validate.notNull(dataType);
+		Validate.notNull(dataTypeId);
+	}
 
-    @Field
-    @Analyzer(definition = "customanalyzer")
-    public Integer getSpecification() {
-        RulItemSpec descItemSpec = item.getItemSpec();
-        if (descItemSpec == null) {
-            return null;
-        }
-
-        return descItemSpec.getItemSpecId();
-    }
-
-    public Integer getDataId() {
+	public Integer getDataId() {
         return dataId;
     }
 
@@ -114,14 +85,19 @@ public abstract class ArrData {
 
     public void setDataType(final RulDataType dataType) {
         this.dataType = dataType;
+        this.dataTypeId = dataType != null ? dataType.getDataTypeId() : null;
     }
 
-    public ArrItem getItem() {
-        return item;
+    public Integer getDataTypeId() {
+        return dataTypeId;
     }
 
-    public void setItem(final ArrItem item) {
-        this.item = item;
+    // TODO: consider to remove getDataType() and setDataType(...), rename this method to getDataType()
+    public DataType getType() {
+        if (dataTypeId == null) {
+            return null;
+        }
+        return DataType.fromId(dataTypeId);
     }
 
     @Override
@@ -147,4 +123,60 @@ public abstract class ArrData {
     public String toString() {
         return "ArrData pk=" + dataId;
     }
+
+    /* methods for data indexing */
+
+    @JsonIgnore
+    @Transient
+    public abstract String getFulltextValue();
+
+    @JsonIgnore
+    @Transient
+    public Integer getValueInt() {
+        return null;
+    }
+
+    @JsonIgnore
+    @Transient
+    public Double getValueDouble() {
+        return null;
+    }
+
+    @JsonIgnore
+    @Transient
+    public Long getNormalizedFrom() {
+        return null;
+    }
+
+    @JsonIgnore
+    @Transient
+    public Long getNormalizedTo() {
+        return null;
+    }
+
+	/**
+	 * Prepare copy of the data object
+	 * 
+	 * Method returns pure data copy of the source object without saving it to
+	 * the DB
+	 * 
+	 * @return Return copy of the object
+	 */
+	abstract public ArrData makeCopy();
+
+	/**
+	 * Make copy of the source data object and set id to null
+	 * 
+	 * Method returns pure data copy of the source object without saving it to
+	 * the DB
+	 * 
+	 * @param src
+	 *            Source object
+	 * @return Return copy of the data object
+	 */
+	public static ArrData makeCopyWithoutId(ArrData src) {
+		ArrData trg = src.makeCopy();
+		trg.setDataId(null);
+		return trg;
+	}
 }

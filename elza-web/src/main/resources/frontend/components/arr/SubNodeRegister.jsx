@@ -2,7 +2,7 @@ require('./SubNodeRegister.less');
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {Icon, i18n, AbstractReactComponent, Loading, NoFocusButton} from 'components/shared';
+import {Icon, i18n, AbstractReactComponent, HorizontalLoader, NoFocusButton} from 'components/shared';
 import {connect} from 'react-redux'
 
 import {
@@ -159,7 +159,7 @@ const SubNodeRegister = class SubNodeRegister extends AbstractReactComponent {
 
         return <div className='node-register'>
             <div className='node-register-title'>{i18n('subNodeRegister.title')}</div>
-            {register.fetched ? this.renderForm() : <Loading value={i18n('global.data.loading.register')} />}
+            {register.fetched ? this.renderForm() : <HorizontalLoader />}
         </div>
     }
 };

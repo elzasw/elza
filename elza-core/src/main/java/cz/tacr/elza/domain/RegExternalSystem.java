@@ -20,7 +20,7 @@ import cz.tacr.elza.api.RegExternalSystemType;
  * @since 23. 11. 2016
  */
 @Entity(name = "reg_external_system")
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Cache(region = "domain", usage = CacheConcurrencyStrategy.READ_WRITE)
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @Table
 public class RegExternalSystem extends SysExternalSystem {

@@ -22,7 +22,7 @@ import cz.tacr.elza.api.interfaces.IRegScope;
  *
  */
 @Entity(name = "reg_scope")
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Cache(region = "domain", usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = {"code"}))
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class RegScope implements IRegScope {

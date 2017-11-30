@@ -12,18 +12,17 @@ import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.NumericField;
 import org.springframework.data.rest.core.annotation.RestResource;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import cz.tacr.elza.service.cache.NodeCacheSerializable;
-
 
 /**
  * Nadřízená položka.
@@ -38,75 +37,93 @@ import cz.tacr.elza.service.cache.NodeCacheSerializable;
 @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
 public abstract class ArrItem implements NodeCacheSerializable {
 
+    public static final String DATA = "data";
     public static final String ITEM_SPEC = "itemSpec";
     public static final String ITEM_TYPE = "itemType";
-
-    @Transient
-    protected ArrItemData item;
-    
-    public ArrItem() {
-    }
-    
-    public ArrItem(ArrItemData item) {
-        this.item = item;
-    }
-
-    public void setItem(ArrItemData item) {
-        this.item = item;
-    }
 
     @Id
     @GeneratedValue
     @Access(AccessType.PROPERTY) // required to read id without fetch from db
-    private Integer itemId;
+	protected Integer itemId;
 
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrChange.class)
     @JoinColumn(name = "createChangeId", nullable = false)
-    private ArrChange createChange;
+	protected ArrChange createChange;
 
     @Column(name = "createChangeId", nullable = false, updatable = false, insertable = false)
-    private Integer createChangeId;
+	protected Integer createChangeId;
 
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrChange.class)
     @JoinColumn(name = "deleteChangeId", nullable = true)
-    private ArrChange deleteChange;
+	protected ArrChange deleteChange;
 
     @Column(name = "deleteChangeId", nullable = true, updatable = false, insertable = false)
-    private Integer deleteChangeId;
+	protected Integer deleteChangeId;
 
     @Column(nullable = false)
-    private Integer descItemObjectId;
+	protected Integer descItemObjectId;
 
     @RestResource(exported = false)
-    @ManyToOne(fetch = FetchType.EAGER, targetEntity = RulItemType.class)
+	@ManyToOne(fetch=FetchType.LAZY, targetEntity = RulItemType.class)
     @JoinColumn(name = "itemTypeId", nullable = false)
-    private RulItemType itemType;
+	protected RulItemType itemType;
 
     @Column(name = "itemTypeId", nullable = false, updatable = false, insertable = false)
-    private Integer itemTypeId;
+	protected Integer itemTypeId;
 
     @RestResource(exported = false)
-    @ManyToOne(fetch = FetchType.EAGER, targetEntity = RulItemSpec.class)
+	@ManyToOne(fetch=FetchType.LAZY, targetEntity = RulItemSpec.class)
     @JoinColumn(name = "itemSpecId")
-    private RulItemSpec itemSpec;
+	protected RulItemSpec itemSpec;
 
     @Column(name = "itemSpecId", updatable = false, insertable = false)
-    private Integer itemSpecId;
+	protected Integer itemSpecId;
 
     @Column(nullable = false)
-    private Integer position;
+	protected Integer position;
 
-    @Column(nullable = false)
-    private Boolean undefined;
+	@ManyToOne(fetch=FetchType.LAZY, targetEntity = ArrData.class)
+    @JoinColumn(name = "dataId")
+	protected ArrData data;
 
+	/**
+	 * Default constructor
+	 */
+	protected ArrItem() {
+
+	}
+
+	/**
+	 * Copy constructor for ArrItem
+	 * 
+	 * @param src
+	 *            Source item
+	 */
+	public ArrItem(ArrItem src) {
+		this.createChange = src.createChange;
+		this.createChangeId = src.createChangeId;
+		this.data = src.data;
+		this.deleteChange = src.deleteChange;
+		this.deleteChangeId = src.deleteChangeId;
+		this.descItemObjectId = src.descItemObjectId;
+		this.itemId = src.itemId;
+		this.itemSpec = src.itemSpec;
+		this.itemSpecId = src.itemSpecId;
+		this.itemType = src.itemType;
+		this.itemTypeId = src.itemTypeId;
+		this.position = src.position;
+	}
+
+	@JsonIgnore
     @Field
     @NumericField
     public Integer getCreateChangeId() {
         return createChangeId;
     }
 
+    @JsonIgnore
     @Field
     @NumericField
     public Integer getDeleteChangeId() {
@@ -240,10 +257,6 @@ public abstract class ArrItem implements NodeCacheSerializable {
 
     public abstract ArrOutputDefinition getOutputDefinition();
 
-    public ArrItemData getItem() {
-        return item;
-    }
-
     public void setCreateChangeId(final Integer createChangeId) {
         this.createChangeId = createChangeId;
     }
@@ -268,21 +281,15 @@ public abstract class ArrItem implements NodeCacheSerializable {
         this.itemSpecId = itemSpecId;
     }
 
-	/**
-	 * Return if value is undefined
-	 * 
-	 * @return Return false if value is undefined or flag not set (default
-	 *         value)
-	 */
-	public boolean getUndefined() {
-		if (undefined == null) {
-			return false;
-		} else {
-			return undefined.booleanValue();
-		}
+    public ArrData getData() {
+        return data;
     }
 
-	public void setUndefined(final boolean undefined) {
-		this.undefined = Boolean.valueOf(undefined);
+    public void setData(final ArrData data) {
+        this.data = data;
+    }
+
+    public boolean isUndefined() {
+        return data == null;
     }
 }

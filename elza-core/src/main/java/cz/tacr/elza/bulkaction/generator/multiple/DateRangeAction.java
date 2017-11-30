@@ -5,16 +5,16 @@ import java.util.List;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import cz.tacr.elza.bulkaction.ActionRunContext;
 import cz.tacr.elza.bulkaction.generator.LevelWithItems;
 import cz.tacr.elza.bulkaction.generator.result.ActionResult;
 import cz.tacr.elza.bulkaction.generator.result.DateRangeActionResult;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.core.data.RuleSystemItemType;
+import cz.tacr.elza.domain.ArrBulkActionRun;
+import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrItem;
-import cz.tacr.elza.domain.ArrItemUnitdate;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
@@ -93,8 +93,8 @@ public class DateRangeAction extends Action {
 	}
 
     @Override
-	public void init(ActionRunContext runContext) {
-		RuleSystem ruleSystem = this.getRuleSystem(runContext);
+	public void init(ArrBulkActionRun bulkActionRun) {
+		RuleSystem ruleSystem = this.getRuleSystem(bulkActionRun);
 
 		// prepare output type
 		String outputType = config.getOutputType();
@@ -140,14 +140,14 @@ public class DateRangeAction extends Action {
 
         for (ArrItem item : items) {
 
-			if (item.getUndefined()) {
+			if (item.isUndefined()) {
                 continue;
             }
 
             // není použit záměrně if-else, protože teoreticky by šlo nakonfigurovat vše na stejnou položku
 			Integer itemTypeId = item.getItemTypeId();
 			if (inputItemType.getItemTypeId().equals(itemTypeId)) {
-                ArrItemUnitdate data = (ArrItemUnitdate) item.getItem();
+                ArrDataUnitdate data = (ArrDataUnitdate) item.getData();
                 Long dataNormalizedFrom = data.getNormalizedFrom();
                 if(dataNormalizedFrom==null) {
                 	dataNormalizedFrom = Long.MAX_VALUE;
@@ -167,7 +167,7 @@ public class DateRangeAction extends Action {
                 }
             }
 			if (inputItemTypePrior.getItemTypeId().equals(itemTypeId)) {
-                ArrItemUnitdate data = (ArrItemUnitdate) item.getItem();
+                ArrDataUnitdate data = (ArrDataUnitdate) item.getData();
                 Long dataNormalizedFrom = data.getNormalizedFrom();
                 if(dataNormalizedFrom==null) {
                 	dataNormalizedFrom = Long.MAX_VALUE;
@@ -178,7 +178,7 @@ public class DateRangeAction extends Action {
                 }
             }
 			if (inputItemTypePosterior.getItemTypeId().equals(itemTypeId)) {
-                ArrItemUnitdate data = (ArrItemUnitdate) item.getItem();
+                ArrDataUnitdate data = (ArrDataUnitdate) item.getData();
                 Long dataNormalizedTo = data.getNormalizedTo();
                 if(dataNormalizedTo==null) {
                 	dataNormalizedTo = Long.MIN_VALUE;

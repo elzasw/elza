@@ -80,8 +80,26 @@ export function fundsReceive(funds) {
  * @param {Object} data data
  */
 export function createFund(data) {
+    const formData = {
+        name: data.name,
+        ruleSetId: data.ruleSetId,
+        internalCode: data.internalCode,
+        institutionId: data.institutionId,
+        dateRange: data.dateRange,
+        adminUsers: [],
+        adminGroups: []
+    };
+
+    data.fundAdmins && data.fundAdmins.forEach(i => {
+        if (i.user) {
+            formData.adminUsers.push(i.user);
+        } else if (i.group) {
+            formData.adminGroups.push(i.group);
+        }
+    });
+
     return dispatch => {
-        return savingApiWrapper(dispatch, WebApi.createFund(data.name, data.ruleSetId, data.institutionId, data.internalCode, data.dateRange))
+        return savingApiWrapper(dispatch, WebApi.createFund(formData))
             .then((fund) => {
                 dispatch(addToastrSuccess(i18n("arr.fund.title.added")));
                 dispatch(fundsSelectFund(fund.id))

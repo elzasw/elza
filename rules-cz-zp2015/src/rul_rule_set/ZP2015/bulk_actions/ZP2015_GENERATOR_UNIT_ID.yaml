@@ -1,0 +1,9 @@
+!UnitIdGenerator
+name: Generátor referenčního označení
+itemType: ZP2015_UNIT_ID
+previousIdCode: ZP2015_OTHER_ID
+previousIdSpecCode: ZP2015_OTHERID_SIG_ORIG
+delimiterMajor: //
+delimiterMinor: /
+levelTypeCode: ZP2015_LEVEL_TYPE
+delimiterMajorLevelTypeNotUse: ZP2015_LEVEL_PART

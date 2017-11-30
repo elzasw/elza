@@ -1,0 +1,7 @@
+!MoveDescItem
+name: Zneplatnění inventárního čísla
+source:
+  itemType: ZP2015_INV_CISLO
+target:
+  itemType: ZP2015_OTHER_ID
+  itemSpec: ZP2015_OTHERID_OLDID

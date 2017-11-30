@@ -1,18 +1,17 @@
 package cz.tacr.elza.asynchactions;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.Executor;
 
-import javax.transaction.Transactional;
-import javax.transaction.Transactional.TxType;
+import javax.persistence.EntityManager;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.commons.lang3.Validate;
+import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -21,16 +20,10 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionSynchronizationAdapter;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
-import org.springframework.util.Assert;
 
-import com.google.common.eventbus.EventBus;
-
-import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeConformity;
-import cz.tacr.elza.events.ConformityInfoUpdatedEvent;
-import cz.tacr.elza.service.RuleService;
-
+import cz.tacr.elza.utils.HibernateUtils;
 
 /**
  * Servisní třída pro spouštění vláken na aktualizaci {@link ArrNodeConformity}.
@@ -39,135 +32,77 @@ import cz.tacr.elza.service.RuleService;
 @Configuration
 public class UpdateConformityInfoService {
 
-    private Log logger = LogFactory.getLog(UpdateConformityInfoService.class);
+    private final Map<Integer, UpdateConformityInfoWorker> fundVersionIdWorkerMap = new HashMap<>();
 
-    @Autowired
-    @Qualifier(value = "conformityUpdateTaskExecutor")
+    private final Map<Transaction, ConformitySyncAdapter> txSyncAdapterMap = new HashMap<>();
+
     private Executor taskExecutor;
 
-    @Autowired
-    private RuleService ruleService;
+    private EntityManager em;
 
     @Autowired
-    private EventBus eventBus;
-
-    private ThreadLocal<Set<ArrNode>> nodesToUpdate = new ThreadLocal<>();
-
-    /**
-     * Mapa workerů pro dané verze.
-     */
-    private final Map<ArrFundVersion, UpdateConformityInfoWorker> versionWorkers = new HashMap<>();
+    public UpdateConformityInfoService(@Qualifier(value = "conformityUpdateTaskExecutor") Executor taskExecutor, EntityManager em) {
+        this.taskExecutor = taskExecutor;
+        this.em = em;
+    }
 
     /**
      * Zapamatuje se uzly k přepočítání stavu a po dokončení transakce spustí jejich přepočet.
      *
-     * @param updateNodes seznam nodů, které budou přepočítány.
-     * @param version     verze, ve které probíhá výpočet
+     * @param nodes seznam nodů, které budou přepočítány.
+     * @param version verze, ve které probíhá výpočet
      */
-    public void updateInfoForNodesAfterCommit(final Collection<ArrNode> updateNodes,
-                                              final ArrFundVersion version) {
-
-        if (CollectionUtils.isEmpty(updateNodes)) {
+    public void updateInfoForNodesAfterCommit(Integer fundVersionId, Collection<ArrNode> nodes) {
+        if (CollectionUtils.isEmpty(nodes)) {
             return;
         }
+        Transaction tx = HibernateUtils.getCurrentTransaction(em);
+        ConformitySyncAdapter adapter = txSyncAdapterMap.computeIfAbsent(tx, k -> new ConformitySyncAdapter());
 
-        if (CollectionUtils.isEmpty(nodesToUpdate.get())) {
-            Set<ArrNode> nodes = new HashSet<>(updateNodes);
-            nodesToUpdate.set(nodes);
+        nodes.forEach(node -> adapter.addNode(fundVersionId, node));
 
-            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
-                @Override
-                public void afterCommit() {
-                    updateInfoForNodes(nodesToUpdate.get(), version);
-                    nodesToUpdate.set(null);
-                }
-            });
-        } else {
-            nodesToUpdate.get().addAll(updateNodes);
-        }
+        TransactionSynchronizationManager.registerSynchronization(adapter);
     }
 
-    /**
-     * Provede spuštění vlákna pro výpočet nového stavu nad nody.
-     *
-     * @param updatedNodes seznam nodů k aktualizaci
-     * @param version      verze, do které spadají nody
-     */
-    synchronized private void updateInfoForNodes(final Collection<ArrNode> updatedNodes,
-                                                 final ArrFundVersion version) {
-        if (CollectionUtils.isEmpty(updatedNodes)) {
+    @Bean
+    @Scope("prototype")
+    public UpdateConformityInfoWorker createConformityInfoWorker(Integer fundVersionId) {
+        return new UpdateConformityInfoWorker(fundVersionId);
+    }
+
+    private synchronized void executeConformityUpdate(Integer fundVersionId, Collection<ArrNode> nodes) {
+        UpdateConformityInfoWorker worker = fundVersionIdWorkerMap.get(fundVersionId);
+        if (worker != null && worker.addNodes(nodes)) {
+            // nodes were added to existing worker
             return;
         }
-        UpdateConformityInfoWorker worker = versionWorkers.get(version);
-        if (worker == null || !worker.addNodes(updatedNodes)) {
-            startNewWorker(updatedNodes, version);
-        }
+        // create new runnable worker
+        worker = createConformityInfoWorker(fundVersionId);
+        worker.addNodes(nodes);
+
+        fundVersionIdWorkerMap.put(fundVersionId, worker);
+
+        taskExecutor.execute(worker);
     }
 
     /**
      * Provede ukončení běhu vlákna. (dopočítá poslední stav a ukončí se)
      */
-    synchronized public void terminateWorkerInVersion(final ArrFundVersion version) {
-        UpdateConformityInfoWorker worker = versionWorkers.get(version);
+    public synchronized void terminateWorkerInVersion(Integer fundVersionId) {
+        UpdateConformityInfoWorker worker = fundVersionIdWorkerMap.remove(fundVersionId);
         if (worker != null) {
             worker.terminate();
-            versionWorkers.remove(worker);
         }
     }
 
     /**
      * Provede ukončení běhu vlákna.
      */
-    synchronized public void terminateWorkerInVersionAndWait(final ArrFundVersion version) {
-        UpdateConformityInfoWorker worker = versionWorkers.get(version);
+    public synchronized void terminateWorkerInVersionAndWait(Integer fundVersionId) {
+        UpdateConformityInfoWorker worker = fundVersionIdWorkerMap.remove(fundVersionId);
         if (worker != null && worker.isRunning()) {
             worker.terminateAndWait();
-            versionWorkers.remove(worker);
         }
-    }
-
-    /**
-     * Provede přidání nodů do fronty běžícího vlákna nebo založí nové.
-     *
-     * @param updatedNodes seznam nodů k aktualizaci
-     * @param version      verze, do které nody spadají
-     */
-    synchronized private void startNewWorker(Collection<ArrNode> updatedNodes, ArrFundVersion version) {
-        Assert.notNull(version);
-
-        UpdateConformityInfoWorker updateConformityInfoWorker = createConformityInfoWorker(
-                version.getFundVersionId());
-        updateConformityInfoWorker.addNodes(updatedNodes);
-        versionWorkers.put(version, updateConformityInfoWorker);
-
-        taskExecutor.execute(updateConformityInfoWorker);
-    }
-
-    @Transactional(value = TxType.REQUIRES_NEW)
-    public void updateConformityInfo(final Integer nodeId, final Integer levelId, final Integer versionId) {
-        logger.debug("Aktualizace stavu " + nodeId + " ve verzi " + versionId);
-
-        registerAfterCommitListener(nodeId);
-        ruleService.setConformityInfo(levelId, versionId);
-    }
-
-    /**
-     * Registruje listener, který po úspěšném commitu transakce odešle aktualizované nody.
-     */
-    private void registerAfterCommitListener(final Integer nodeId) {
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
-            @Override
-            public void afterCommit() {
-                eventBus.post(new ConformityInfoUpdatedEvent(nodeId));
-            }
-        });
-    }
-
-
-    @Bean
-    @Scope("prototype")
-    public UpdateConformityInfoWorker createConformityInfoWorker(final Integer versionId) {
-        return new UpdateConformityInfoWorker(versionId);
     }
 
     /**
@@ -176,14 +111,29 @@ public class UpdateConformityInfoService {
      * @param version verze AS
      * @return běží nad verzí validace?
      */
-    public boolean isRunning(final ArrFundVersion version) {
-        Assert.notNull(version);
+    public synchronized boolean isRunning(Integer fundVersionId) {
+        Validate.notNull(fundVersionId);
 
-        UpdateConformityInfoWorker updateConformityInfoWorker = versionWorkers.get(version);
-        if (updateConformityInfoWorker != null) {
-            return updateConformityInfoWorker.isRunning();
+        UpdateConformityInfoWorker worker = fundVersionIdWorkerMap.get(fundVersionId);
+
+        return worker != null ? worker.isRunning() : false;
+    }
+
+    private class ConformitySyncAdapter extends TransactionSynchronizationAdapter {
+
+        private final Map<Integer, List<ArrNode>> fundVersionIdNodeMap = new HashMap<>();
+
+        public void addNode(Integer fundVersionId, ArrNode node) {
+            Validate.notNull(fundVersionId);
+            Validate.notNull(node);
+
+            List<ArrNode> nodes = fundVersionIdNodeMap.computeIfAbsent(fundVersionId, k -> new ArrayList<>());
+            nodes.add(node);
         }
 
-        return false;
+        @Override
+        public void afterCommit() {
+            fundVersionIdNodeMap.forEach(UpdateConformityInfoService.this::executeConformityUpdate);
+        }
     }
 }

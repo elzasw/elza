@@ -50,7 +50,7 @@ public class RegVariantRecord extends AbstractVersionableEntity implements Versi
 
     /* Konstanty pro vazby a fieldy. */
     public static final String RECORD = "record";
-
+    public static final String RECORD_FK = "regRecord.recordId";
 
     /**
      * Vlastní ID.

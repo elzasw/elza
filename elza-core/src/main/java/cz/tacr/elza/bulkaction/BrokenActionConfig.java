@@ -10,7 +10,6 @@ public class BrokenActionConfig extends BaseActionConfig {
 		this.innerException = innerException;
 		name = "Broken action";
 		description = "Broken action, reload newer version of source package";
-		ruleCode = "";
 		codeTypeBulkAction = "";
 	}
 

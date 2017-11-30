@@ -16,23 +16,22 @@ import org.springframework.stereotype.Component;
 
 import com.google.common.base.Objects;
 
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataCoordinates;
+import cz.tacr.elza.domain.ArrDataDecimal;
+import cz.tacr.elza.domain.ArrDataFileRef;
+import cz.tacr.elza.domain.ArrDataInteger;
+import cz.tacr.elza.domain.ArrDataJsonTable;
+import cz.tacr.elza.domain.ArrDataNull;
+import cz.tacr.elza.domain.ArrDataPacketRef;
+import cz.tacr.elza.domain.ArrDataPartyRef;
+import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrDataString;
+import cz.tacr.elza.domain.ArrDataText;
+import cz.tacr.elza.domain.ArrDataUnitdate;
+import cz.tacr.elza.domain.ArrDataUnitid;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFile;
-import cz.tacr.elza.domain.ArrItemCoordinates;
-import cz.tacr.elza.domain.ArrItemData;
-import cz.tacr.elza.domain.ArrItemDecimal;
-import cz.tacr.elza.domain.ArrItemEnum;
-import cz.tacr.elza.domain.ArrItemFileRef;
-import cz.tacr.elza.domain.ArrItemFormattedText;
-import cz.tacr.elza.domain.ArrItemInt;
-import cz.tacr.elza.domain.ArrItemJsonTable;
-import cz.tacr.elza.domain.ArrItemPacketRef;
-import cz.tacr.elza.domain.ArrItemPartyRef;
-import cz.tacr.elza.domain.ArrItemRecordRef;
-import cz.tacr.elza.domain.ArrItemString;
-import cz.tacr.elza.domain.ArrItemText;
-import cz.tacr.elza.domain.ArrItemUnitdate;
-import cz.tacr.elza.domain.ArrItemUnitid;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrPacket;
@@ -46,6 +45,7 @@ import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.service.DmsService;
 import cz.tacr.elza.service.cache.CachedNode;
 import cz.tacr.elza.service.cache.NodeCacheService;
+import cz.tacr.elza.service.cache.RestoredNode;
 import cz.tacr.elza.service.importnodes.vo.ChangeDeep;
 import cz.tacr.elza.service.importnodes.vo.DeepCallback;
 import cz.tacr.elza.service.importnodes.vo.ImportSource;
@@ -184,7 +184,7 @@ public class ImportFromFund implements ImportSource {
         /**
          * Naštené uzly iterátoru.
          */
-        private Map<Integer, CachedNode> cachedNodes = null;
+		private Map<Integer, RestoredNode> cachedNodes = null;
 
         private final LevelRepository levelRepository;
 
@@ -196,18 +196,29 @@ public class ImportFromFund implements ImportSource {
             this.nodeId = nodeId;
         }
 
+		/**
+		 * Fetch next nodes from DB
+		 */
+		private void readNext() {
+			levelsSubtree = levelRepository.findLevelsSubtree(nodeId, offset, MAX, ignoreRootNodes);
+			// shift offset 
+			offset += levelsSubtree.size();
+			// read nodes from cache
+			List<Integer> nodeIds = levelsSubtree.stream().map(ArrLevel::getNodeId).collect(Collectors.toList());
+			if (!nodeIds.isEmpty()) {
+				cachedNodes = nodeCacheService.getNodes(nodeIds);
+			}
+			// prepare iterator
+			iterator = levelsSubtree.iterator();
+		}
+
         @Override
         public boolean hasNext() {
             if (iterator == null) { // pokud není nic načtené, načteme první část do bufferu
-                levelsSubtree = levelRepository.findLevelsSubtree(nodeId, offset, MAX, ignoreRootNodes);
-                iterator = levelsSubtree.iterator();
-                cachedNodes = nodeCacheService.getNodes(levelsSubtree.stream().map(ArrLevel::getNodeId).collect(Collectors.toList()));
-            }
+				readNext();
+			} else
             if (!iterator.hasNext()) { // pokud už nemáme v buffer, posuneme offset a načteme další část
-                offset += MAX;
-                levelsSubtree = levelRepository.findLevelsSubtree(nodeId, offset, MAX, ignoreRootNodes);
-                iterator = levelsSubtree.iterator();
-                cachedNodes = nodeCacheService.getNodes(levelsSubtree.stream().map(ArrLevel::getNodeId).collect(Collectors.toList()));
+				readNext();
             }
             return iterator.hasNext();
         }
@@ -309,36 +320,36 @@ public class ImportFromFund implements ImportSource {
     private Item convertDescItem(final ArrDescItem item) {
         Item result;
 
-        ArrItemData itemData = item.getItem();
+        ArrData itemData = item.getData();
 
-        if (itemData instanceof ArrItemEnum) {
+        if (itemData instanceof ArrDataNull) {
             result = new ItemEnumImpl(item);
-        } else if (itemData instanceof ArrItemString) {
-            result = new ItemStringImpl(item, (ArrItemString) itemData);
-        } else if (itemData instanceof ArrItemText) {
-            result = new ItemTextImpl(item, (ArrItemText) itemData);
-        } else if (itemData instanceof ArrItemFormattedText) {
-            result = new ItemFormattedTextImpl(item, (ArrItemFormattedText) itemData);
-        } else if (itemData instanceof ArrItemInt) {
-            result = new ItemIntImpl(item, (ArrItemInt) itemData);
-        } else if (itemData instanceof ArrItemDecimal) {
-            result = new ItemDecimalImpl(item, (ArrItemDecimal) itemData);
-        } else if (itemData instanceof ArrItemUnitid) {
-            result = new ItemUnitidImpl(item, (ArrItemUnitid) itemData);
-        } else if (itemData instanceof ArrItemJsonTable) {
-            result = new ItemJsonTableImpl(item, (ArrItemJsonTable) itemData);
-        } else if (itemData instanceof ArrItemUnitdate) {
-            result = new ItemUnitdateImpl(item, (ArrItemUnitdate) itemData);
-        } else if (itemData instanceof ArrItemFileRef) {
-            result = new ItemFileRefImpl(item, (ArrItemFileRef) itemData);
-        } else if (itemData instanceof ArrItemPartyRef) {
-            result = new ItemPartyRefImpl(item, (ArrItemPartyRef) itemData);
-        } else if (itemData instanceof ArrItemRecordRef) {
-            result = new ItemRecordRefImpl(item, (ArrItemRecordRef) itemData);
-        } else if (itemData instanceof ArrItemPacketRef) {
-            result = new ItemPacketRefImpl(item, (ArrItemPacketRef) itemData);
-        } else if (itemData instanceof ArrItemCoordinates) {
-            result = new ItemCoordinatesRefImpl(item, (ArrItemCoordinates) itemData);
+        } else if (itemData instanceof ArrDataString) {
+            result = new ItemStringImpl(item, (ArrDataString) itemData);
+        } else if (itemData instanceof ArrDataText && item.getItemType().getDataType().getCode().equals("TEXT")) {
+            result = new ItemTextImpl(item, (ArrDataText) itemData);
+        } else if (itemData instanceof ArrDataText && item.getItemType().getDataType().getCode().equals("FORMATTED_TEXT")) {
+            result = new ItemFormattedTextImpl(item, (ArrDataText) itemData);
+        } else if (itemData instanceof ArrDataInteger) {
+            result = new ItemIntImpl(item, (ArrDataInteger) itemData);
+        } else if (itemData instanceof ArrDataDecimal) {
+            result = new ItemDecimalImpl(item, (ArrDataDecimal) itemData);
+        } else if (itemData instanceof ArrDataUnitid) {
+            result = new ItemUnitidImpl(item, (ArrDataUnitid) itemData);
+        } else if (itemData instanceof ArrDataJsonTable) {
+            result = new ItemJsonTableImpl(item, (ArrDataJsonTable) itemData);
+        } else if (itemData instanceof ArrDataUnitdate) {
+            result = new ItemUnitdateImpl(item, (ArrDataUnitdate) itemData);
+        } else if (itemData instanceof ArrDataFileRef) {
+            result = new ItemFileRefImpl(item, (ArrDataFileRef) itemData);
+        } else if (itemData instanceof ArrDataPartyRef) {
+            result = new ItemPartyRefImpl(item, (ArrDataPartyRef) itemData);
+        } else if (itemData instanceof ArrDataRecordRef) {
+            result = new ItemRecordRefImpl(item, (ArrDataRecordRef) itemData);
+        } else if (itemData instanceof ArrDataPacketRef) {
+            result = new ItemPacketRefImpl(item, (ArrDataPacketRef) itemData);
+        } else if (itemData instanceof ArrDataCoordinates) {
+            result = new ItemCoordinatesRefImpl(item, (ArrDataCoordinates) itemData);
         } else {
             result = new ItemImpl(item);
         }
@@ -378,7 +389,7 @@ public class ImportFromFund implements ImportSource {
 
         private final String value;
 
-        public ItemStringImpl(final ArrDescItem item, final ArrItemString itemData) {
+        public ItemStringImpl(final ArrDescItem item, final ArrDataString itemData) {
             super(item);
             value = itemData.getValue();
         }
@@ -392,7 +403,7 @@ public class ImportFromFund implements ImportSource {
     private class ItemTextImpl extends ItemImpl implements ItemText {
         private final String value;
 
-        public ItemTextImpl(final ArrDescItem item, final ArrItemText itemData) {
+        public ItemTextImpl(final ArrDescItem item, final ArrDataText itemData) {
             super(item);
             value = itemData.getValue();
         }
@@ -406,7 +417,7 @@ public class ImportFromFund implements ImportSource {
     private class ItemFormattedTextImpl extends ItemImpl implements ItemFormattedText {
         private final String value;
 
-        public ItemFormattedTextImpl(final ArrDescItem item, final ArrItemFormattedText itemData) {
+        public ItemFormattedTextImpl(final ArrDescItem item, final ArrDataText itemData) {
             super(item);
             value = itemData.getValue();
         }
@@ -420,7 +431,7 @@ public class ImportFromFund implements ImportSource {
     private class ItemIntImpl extends ItemImpl implements ItemInt {
         private final Integer value;
 
-        public ItemIntImpl(final ArrDescItem item, final ArrItemInt itemData) {
+        public ItemIntImpl(final ArrDescItem item, final ArrDataInteger itemData) {
             super(item);
             value = itemData.getValue();
         }
@@ -434,7 +445,7 @@ public class ImportFromFund implements ImportSource {
     private class ItemDecimalImpl extends ItemImpl implements ItemDecimal {
         private final BigDecimal value;
 
-        public ItemDecimalImpl(final ArrDescItem item, final ArrItemDecimal itemData) {
+        public ItemDecimalImpl(final ArrDescItem item, final ArrDataDecimal itemData) {
             super(item);
             value = itemData.getValue();
         }
@@ -448,7 +459,7 @@ public class ImportFromFund implements ImportSource {
     private class ItemUnitidImpl extends ItemImpl implements ItemUnitid {
         private final String value;
 
-        public ItemUnitidImpl(final ArrDescItem item, final ArrItemUnitid itemData) {
+        public ItemUnitidImpl(final ArrDescItem item, final ArrDataUnitid itemData) {
             super(item);
             value = itemData.getValue();
         }
@@ -463,7 +474,7 @@ public class ImportFromFund implements ImportSource {
 
         private final ElzaTable value;
 
-        public ItemJsonTableImpl(final ArrDescItem item, final ArrItemJsonTable itemData) {
+        public ItemJsonTableImpl(final ArrDescItem item, final ArrDataJsonTable itemData) {
             super(item);
             value = itemData.getValue();
         }
@@ -480,7 +491,7 @@ public class ImportFromFund implements ImportSource {
 
         private final String calendarTypeCode;
 
-        public ItemUnitdateImpl(final ArrDescItem item, final ArrItemUnitdate itemData) {
+        public ItemUnitdateImpl(final ArrDescItem item, final ArrDataUnitdate itemData) {
             super(item);
             calendarTypeCode = itemData.getCalendarType().getCode();
             value = UnitDateConvertor.convertToString(itemData);
@@ -501,7 +512,7 @@ public class ImportFromFund implements ImportSource {
 
         private final Integer fileId;
 
-        public ItemFileRefImpl(final ArrDescItem item, final ArrItemFileRef itemData) {
+        public ItemFileRefImpl(final ArrDescItem item, final ArrDataFileRef itemData) {
             super(item);
             fileId = itemData.getFileId();
         }
@@ -516,7 +527,7 @@ public class ImportFromFund implements ImportSource {
 
         private final Integer packetId;
 
-        public ItemPacketRefImpl(final ArrDescItem item, final ArrItemPacketRef itemData) {
+        public ItemPacketRefImpl(final ArrDescItem item, final ArrDataPacketRef itemData) {
             super(item);
             packetId = itemData.getPacketId();
         }
@@ -531,7 +542,7 @@ public class ImportFromFund implements ImportSource {
 
         private final Integer partyId;
 
-        public ItemPartyRefImpl(final ArrDescItem item, final ArrItemPartyRef itemData) {
+        public ItemPartyRefImpl(final ArrDescItem item, final ArrDataPartyRef itemData) {
             super(item);
             partyId = itemData.getPartyId();
         }
@@ -545,7 +556,7 @@ public class ImportFromFund implements ImportSource {
 
         private final Integer recordId;
 
-        public ItemRecordRefImpl(final ArrDescItem item, final ArrItemRecordRef itemData) {
+        public ItemRecordRefImpl(final ArrDescItem item, final ArrDataRecordRef itemData) {
             super(item);
             recordId = itemData.getRecordId();
         }
@@ -559,7 +570,7 @@ public class ImportFromFund implements ImportSource {
 
         private final String geometry;
 
-        public ItemCoordinatesRefImpl(final ArrDescItem item, final ArrItemCoordinates itemData) {
+        public ItemCoordinatesRefImpl(final ArrDescItem item, final ArrDataCoordinates itemData) {
             super(item);
             geometry = itemData.toString();
         }

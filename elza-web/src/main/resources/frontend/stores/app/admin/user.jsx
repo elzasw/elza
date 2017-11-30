@@ -5,7 +5,7 @@ import {isPermissionAction} from 'actions/admin/permission.jsx'
 
 const initialState = {
     fetched: false,
-    fetching: false,
+    isFetching: false,
     filterText: '',
     filterState: { type: "all" },
     currentDataKey: '',
@@ -36,7 +36,7 @@ export default function user(state = initialState, action = {}) {
                 return {
                     ...state,
                     fetched: false,
-                    fetching: false,
+                    isFetching: false,
                     filterText: '',
                     filterState: { type: "all" },
                     currentDataKey: '',
@@ -58,13 +58,13 @@ export default function user(state = initialState, action = {}) {
         case types.USERS_REQUEST:
             return {
                 ...state,
-                fetching: true,
+                isFetching: true,
                 currentDataKey: action.dataKey,
             }
         case types.USERS_RECEIVE:
             return {
                 ...state,
-                fetching: false,
+                isFetching: false,
                 fetched: true,
                 users: action.data.users,
                 usersCount: action.data.usersCount,

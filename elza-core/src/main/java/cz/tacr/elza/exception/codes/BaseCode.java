@@ -70,7 +70,13 @@ public enum BaseCode implements ErrorCode {
 
     /**
      * Import failed.<br>
-     * Code used by DataExchange import.
+     * Code used by DataExchange import exception.
      */
-    IMPORT_FAILED
+    IMPORT_FAILED,
+
+    /**
+     * Export failed.<br>
+     * Code used by DataExchange export exception.
+     */
+    EXPORT_FAILED
 }

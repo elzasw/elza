@@ -10,19 +10,18 @@ import org.apache.commons.lang3.Validate;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import cz.tacr.elza.bulkaction.ActionRunContext;
 import cz.tacr.elza.bulkaction.generator.LevelWithItems;
 import cz.tacr.elza.bulkaction.generator.result.ActionResult;
 import cz.tacr.elza.bulkaction.generator.result.TextAggregationActionResult;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.core.data.RuleSystemItemType;
+import cz.tacr.elza.domain.ArrBulkActionRun;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataString;
+import cz.tacr.elza.domain.ArrDataText;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrItem;
-import cz.tacr.elza.domain.ArrItemData;
-import cz.tacr.elza.domain.ArrItemFormattedText;
-import cz.tacr.elza.domain.ArrItemString;
-import cz.tacr.elza.domain.ArrItemText;
 
 /**
  * Akce na agregaci textových hodnot.
@@ -63,8 +62,8 @@ public class TextAggregationAction extends Action {
     }
 
     @Override
-	public void init(ActionRunContext runContext) {
-		RuleSystem ruleSystem = getRuleSystem(runContext);
+	public void init(ArrBulkActionRun bulkActionRun) {
+		RuleSystem ruleSystem = getRuleSystem(bulkActionRun);
 
 		String outputType = config.getOutputType();
 		outputItemType = ruleSystem.getItemTypeByCode(outputType);
@@ -88,9 +87,9 @@ public class TextAggregationAction extends Action {
 			// check if item is in inputItemTypes set
 			RuleSystemItemType itemType = inputItemTypes.get(item.getItemTypeId());
 			if (itemType != null) {
-                ArrItemData itemData = item.getItem();
+                ArrData data = item.getData();
 
-				if (item.getUndefined()) {
+				if (item.isUndefined()) {
 					// skip if not defined
 					continue;
                 }
@@ -99,13 +98,13 @@ public class TextAggregationAction extends Action {
                 switch(itemType.getDataType())
                 {
 				case STRING:
-					value = ((ArrItemString) itemData).getValue();
+					value = ((ArrDataString) data).getValue();
 					break;
 				case TEXT:
-					value = (((ArrItemText) itemData).getValue());
+					value = (((ArrDataText) data).getValue());
                 	break;
 				case FORMATTED_TEXT:
-					value = (((ArrItemFormattedText) itemData).getValue());
+					value = (((ArrDataText) data).getValue());
 					break;
 				default:
 					throw new IllegalStateException(

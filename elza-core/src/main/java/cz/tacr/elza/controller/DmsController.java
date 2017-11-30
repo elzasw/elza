@@ -1,5 +1,29 @@
 package cz.tacr.elza.controller;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.function.Function;
+
+import javax.annotation.Nullable;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
+import javax.transaction.Transactional;
+
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.ArrFileVO;
@@ -13,20 +37,6 @@ import cz.tacr.elza.domain.DmsFile;
 import cz.tacr.elza.repository.FilteredResult;
 import cz.tacr.elza.repository.OutputResultRepository;
 import cz.tacr.elza.service.DmsService;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
-import javax.annotation.Nullable;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletResponse;
-import java.io.*;
-import java.util.function.Function;
 
 /**
  * @author Petr Compel <petr.compel@marbes.cz>
@@ -91,9 +101,9 @@ public class DmsController {
      * @throws IOException
      */
     private DmsFile create(final DmsFileVO objVO, final Function<DmsFileVO, DmsFile> factory) throws IOException {
-        Assert.notNull(objVO);
+        Assert.notNull(objVO, "Soubor musí být vyplněn");
         MultipartFile multipartFile = objVO.getFile();
-        Assert.notNull(multipartFile);
+        Assert.notNull(multipartFile, "Soubor musí být vyplněn");
 
         objVO.setFileName(FilenameUtils.getName(multipartFile.getOriginalFilename()));
         objVO.setMimeType(multipartFile.getContentType());
@@ -159,8 +169,8 @@ public class DmsController {
      * @throws IOException
      */
     private DmsFile update(final Integer fileId, final DmsFileVO objVO, final Function<DmsFileVO, DmsFile> factory) throws IOException {
-        Assert.notNull(fileId);
-        Assert.notNull(objVO);
+        Assert.notNull(fileId, "Identifikátor souboru musí být vyplněn");
+        Assert.notNull(objVO, "Soubor musí být vyplněn");
         Assert.isTrue(fileId.equals(objVO.getId()), "Id v URL neodpovídá ID objektu");
 
         DmsFile objDO = factory.apply(objVO);
@@ -190,7 +200,7 @@ public class DmsController {
      */
     @RequestMapping(value = "/api/dms/{fileId}", method = RequestMethod.GET)
     public void getFile(HttpServletResponse response, @PathVariable(value = "fileId") Integer fileId) throws IOException {
-        Assert.notNull(fileId);
+        Assert.notNull(fileId, "Identifikátor souboru musí být vyplněn");
         DmsFile file = dmsService.getFile(fileId);
         Assert.notNull(file, "Soubor s fileId " + fileId + " neexistuje!");
         response.setHeader("Content-Disposition", "attachment;filename="+file.getFileName());
@@ -210,7 +220,7 @@ public class DmsController {
      */
     @RequestMapping(value = "/api/outputResult/{outputResultId}", method = RequestMethod.GET)
     public void getOutputResultZip(HttpServletResponse response, @PathVariable(value = "outputResultId") Integer outputResultId) throws IOException {
-        Assert.notNull(outputResultId);
+        Assert.notNull(outputResultId, "Identifikátor výstupu musí být vyplněn");
         ArrOutputResult result = outputResultRepository.getOneCheckExist(outputResultId);
         File outputFilesZip = dmsService.getOutputFilesZip(result);
         response.setHeader("Content-Disposition", "attachment;filename="+outputFilesZip.getName());
@@ -246,6 +256,7 @@ public class DmsController {
      * @return list záznamů
      */
     @RequestMapping(value = "/api/dms/fund/{fundId}", method = RequestMethod.GET)
+	@Transactional
     public FilteredResultVO<ArrFileVO> findFundFiles(@PathVariable final Integer fundId,
                                                      @RequestParam(required = false) @Nullable final String search,
                                                     @RequestParam(required = false, defaultValue = "0") final Integer from,

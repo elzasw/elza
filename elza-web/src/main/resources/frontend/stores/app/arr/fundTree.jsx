@@ -313,7 +313,7 @@ export default function fundTree(state = initialState, action = {}) {
                     ensureItemVisible: false,
                     nodes: [
                         ...state.nodes.slice(0, index + 1),
-                        {id: '___' + Math.random(), name: i18n('global.data.loading'), depth: action.node.depth + 1},
+                        {id: '___' + Math.random(), name: i18n('global.data.loading'), depth: action.node.depth + 1, isFetching: true},
                         ...state.nodes.slice(index + 1)
                     ],
                 });
@@ -479,7 +479,20 @@ export default function fundTree(state = initialState, action = {}) {
             }
 
             return state;
+        case types.FUND_SUBNODE_UPDATE:
+            let data = action.data;
+            let nodes = state.nodes;
+            let nodeId = action.data.node ? action.data.node.id : action.data.parent.id;
+            let index = indexById(nodes, nodeId);
+            let updatedNode = nodes[index];
 
+            for(let i in updatedNode){
+                if(typeof data[i] !== "undefined"){
+                    updatedNode[i] = data[i];
+                }
+            }
+            state.nodes[index] = updatedNode;
+            return {...state};
         case types.NODES_DELETE: {
             var result = {
                 ...state

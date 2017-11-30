@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import cz.tacr.elza.controller.AbstractControllerTest;
 import cz.tacr.elza.controller.vo.ArrFundVO;
-import cz.tacr.elza.service.IClientDataChangesService;
+import cz.tacr.elza.service.ClientEventDispatcher;
 import cz.tacr.elza.service.eventnotification.events.AbstractEventSimple;
 import cz.tacr.elza.service.eventnotification.events.EventId;
 import cz.tacr.elza.service.eventnotification.events.EventType;
@@ -16,36 +16,27 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
 
 /**
  * Test vyvolání událostí.
- *
- * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
- * @since 14.01.2016
  */
 public class ClientEventTest extends AbstractControllerTest {
 
-
     @Autowired
-    private IClientDataChangesService clientDataChangesService;
+    private ClientEventDispatcher clientEventDispatcher;
 
     @Test
     public void testEventPublish() {
+        ClientEventDispatcherTest testDispatcher = (ClientEventDispatcherTest) clientEventDispatcher;
+        testDispatcher.clearFiredEvents();
+
         ArrFundVO test_publish = createFund("test_publish", "IC4");
 
+        Collection<AbstractEventSimple> firedEvents = testDispatcher.getFiredEvents();
 
-        Collection<AbstractEventSimple> lastEvents = ((ClientDataChangesServiceTest) clientDataChangesService)
-                .getLastFiredEvents();
+        Assert.assertTrue(firedEvents.size() > 0);
 
-        Assert.assertTrue(lastEvents.size() > 0);
+        AbstractEventSimple event = firedEvents.iterator().next();
 
-        EventId createFAevent = null;
-        for (AbstractEventSimple lastEvent : lastEvents) {
-            if (lastEvent.getEventType().equals(EventType.FUND_CREATE)) {
-                createFAevent = (EventId) lastEvent;
-                break;
-            }
-        }
-
-        Assert.assertNotNull(createFAevent);
-        Assert.assertTrue(createFAevent.getIds().contains(test_publish.getId()));
+        Assert.assertTrue(event.getEventType().equals(EventType.FUND_CREATE));
+        Assert.assertTrue(event instanceof EventId);
+        Assert.assertTrue(((EventId) event).getIds().contains(test_publish.getId()));
     }
-
 }

@@ -1,0 +1,25 @@
+<ehcache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="ehcache.xsd">  
+
+	<defaultCache
+			eternal="false" 
+			overflowToDisk="false"
+			timeToIdleSeconds="300"  
+			timeToLiveSeconds="600" 
+			maxElementsInMemory="100"  
+			memoryStoreEvictionPolicy="LRU"/>
+
+	<!-- matches with @Cache(region = "fund") -->
+	<cache name="fund" 
+			eternal="true" 
+			overflowToDisk="false"
+			maxElementsInMemory ="5000" 
+			memoryStoreEvictionPolicy="LRU"/>
+	
+	<!-- matches with @Cache(region = "domain") -->
+	<cache name="domain" 
+			eternal="true" 
+			overflowToDisk="false"
+			maxElementsInMemory ="5000" 
+			memoryStoreEvictionPolicy="LRU"/>
+			
+</ehcache>

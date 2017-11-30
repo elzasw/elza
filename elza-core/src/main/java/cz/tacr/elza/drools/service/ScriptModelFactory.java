@@ -1,7 +1,6 @@
 package cz.tacr.elza.drools.service;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -9,21 +8,23 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import javax.annotation.Nullable;
-
-import cz.tacr.elza.service.cache.NodeCacheService;
+import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
+import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.core.data.RuleSystem;
+import cz.tacr.elza.core.data.RuleSystemItemType;
+import cz.tacr.elza.core.data.RuleSystemProvider;
+import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.domain.ArrDataInteger;
+import cz.tacr.elza.domain.ArrDataNull;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrItemData;
-import cz.tacr.elza.domain.ArrItemInt;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.drools.DirectionLevel;
@@ -34,17 +35,13 @@ import cz.tacr.elza.drools.model.Level;
 import cz.tacr.elza.drools.model.NewLevel;
 import cz.tacr.elza.drools.model.NewLevelApproach;
 import cz.tacr.elza.repository.DescItemRepository;
-import cz.tacr.elza.repository.ItemSpecRepository;
-import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.LevelRepository;
+import cz.tacr.elza.service.cache.NodeCacheService;
 
 
 /**
  * Tovární třída pro objekty validačních skriptů.
  *
- * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
- * @author Petr Pytelka [<a href="mailto:petr.pytelka@lightcomp.cz">petr.pytelka@lightcomp.cz</a>]
- * @since 1.12.2015
  */
 @Component
 public class ScriptModelFactory {
@@ -52,19 +49,8 @@ public class ScriptModelFactory {
     @Autowired
     private LevelRepository levelRepository;
 
-    /*
-    @Autowired
-    private DataRepository arrDataRepository;
-     */
-
     @Autowired
     private DescItemFactory descItemFactory;
-
-    @Autowired
-    private ItemTypeRepository itemTypeRepository;
-
-    @Autowired
-    private ItemSpecRepository itemSpecRepository;
 
     @Autowired
     private DescItemRepository descItemRepository;
@@ -72,63 +58,25 @@ public class ScriptModelFactory {
     @Autowired
     private NodeCacheService nodeCacheService;
 
-    /**
-     * Převede stromovou strukturu na seznam.
-     *
-     * @param level  level, pro který je struktura sestavena
-     * @return resultList seznam
-     */
-    public List<Level> convertLevelTreeToList(final Level level) {
-        List<Level> list = new ArrayList<>();
-        Level tmp = level;
-        while (tmp != null) {
-            list.add(tmp);
-            /*
-            if (tmp instanceof NewLevel) {
-                NewLevel newLevel = (NewLevel) tmp;
-                if (newLevel.getSiblingAfter() != null) {
-                    list.add(newLevel.getSiblingAfter());
-                }
-                if (newLevel.getSiblingBefore() != null) {
-                    list.add(newLevel.getSiblingBefore());
-                }
-            }*/
-            tmp = tmp.getParent();
-        }
-        return list;
-    }
-
+	@Autowired
+	private StaticDataService staticDataService;
 
     /**
-     * Vytvoří hodnoty atributu.
-     *
-     * @param descItems hodnoty atributu
-     * @return seznam vo hodnot atributu
-     */
-    public List<DescItem> createDescItems(@Nullable final List<ArrDescItem> descItems, final boolean lastVersion) {
-        if (descItems == null) {
-            return Collections.emptyList();
-        }
+	 * Vytvoří strukturu od výchozího levelu. Načte všechny jeho rodiče a prvky
+	 * popisu.
+	 *
+	 * @param descItemReader
+	 *            Reader which will fetch description items from DB
+	 */
+	private Level createLevelModel(final ArrLevel level,
+	        final ArrFundVersion version,
+	        final DescItemReader descItemReader) {
+        Assert.notNull(level, "Level musí být vyplněn");
+        Assert.notNull(version, "Verze AS musí být vyplněna");
 
-        Set<RulItemType> descItemTypesForPackets = itemTypeRepository.findDescItemTypesForPackets();
-        Set<RulItemType> descItemTypesForIntegers = itemTypeRepository.findDescItemTypesForIntegers();
-
-        return ModelFactory.createDescItems(descItems, descItemTypesForPackets, descItemTypesForIntegers, descItemFactory, lastVersion);
-    }
-
-    /**
-     * Vytvoří strukturu od výchozího levelu. Načte všechny jeho rodiče a prvky popisu.
-     */
-    public Level createLevelModel(final ArrLevel level,
-                                        final ArrFundVersion version) {
-        Assert.notNull(level);
-        Assert.notNull(version);
-
-        List<ArrLevel> parents = levelRepository.findAllParentsByNodeAndVersion(level.getNode(), version);
+        List<ArrLevel> parents = levelRepository.findAllParentsByNodeId(level.getNodeId(), version.getLockChange(), false);
         Set<ArrNode> nodes = new HashSet<>();
-        nodes.add(level.getNode());
-
-        DescItemReader descItemReader = new DescItemReader(descItemRepository, itemTypeRepository, descItemFactory, nodeCacheService);
+		nodes.add(level.getNode());
 
         Level mainLevel = ModelFactory.createLevel(level, version);
         descItemReader.add(mainLevel, level.getNode());
@@ -143,10 +91,22 @@ public class ScriptModelFactory {
             descItemReader.add(newParent, parent.getNode());
         }
 
-        descItemReader.read(version);
-
         return mainLevel;
     }
+
+	/**
+	 * Create description item reader
+	 *
+	 * @param version
+	 * @return
+	 */
+	private DescItemReader createDescItemReader(ArrFundVersion version) {
+
+		DescItemReader descItemReader = new DescItemReader(version, descItemRepository,
+		        descItemFactory,
+		        nodeCacheService);
+		return descItemReader;
+	}
 
     /**
      * Vytvoří hodnoty atributu, pro každý atribut je zavolána extension.
@@ -156,8 +116,8 @@ public class ScriptModelFactory {
      * @return seznam vo hodnot
      */
     public List<DescItem> createDescItems(final List<ArrDescItem> descItems, final Consumer<DescItem> extension) {
-        Assert.notNull(descItems);
-        Assert.notNull(extension);
+        Assert.notNull(descItems, "Hodnoty atributů musí být vyplněny");
+        Assert.notNull(extension, "Funkce pro zadání dodatečných hodnot musí být vyplněná");
 
         List<DescItem> result = new ArrayList<>(descItems.size());
         for (ArrDescItem descItem : descItems) {
@@ -169,17 +129,25 @@ public class ScriptModelFactory {
     }
 
     /**
-     * Vytvoření scénáře pro level z value objektu.
-     * @param newLevelApproach  scénář VO
-     * @return
-     */
-    public ScenarioOfNewLevel createScenarioOfNewLevel(final NewLevelApproach newLevelApproach) {
+	 * Vytvoření scénáře pro level z value objektu.
+	 *
+	 * @param newLevelApproach
+	 *            scénář VO
+	 * @param ruleSetId
+	 *            ID of the ruleset
+	 * @return
+	 */
+	public ScenarioOfNewLevel createScenarioOfNewLevel(final NewLevelApproach newLevelApproach, int ruleSetId) {
+		RuleSystemProvider rsp = staticDataService.getData().getRuleSystems();
+		RuleSystem ruleSystem = rsp.getByRuleSetId(ruleSetId);
+
         ScenarioOfNewLevel scenarioOfNewLevel = new ScenarioOfNewLevel();
         scenarioOfNewLevel.setName(newLevelApproach.getName());
 
         List<ArrDescItem> descItems = new ArrayList<>();
-        for (DescItem descItemVO : newLevelApproach.getDescItems()) {
-            descItems.add(createDescItem(descItemVO));
+		for (DescItem descItemRules : newLevelApproach.getDescItems()) {
+			ArrDescItem descItem = createDescItem(descItemRules, ruleSystem);
+			descItems.add(descItem);
         }
 
         scenarioOfNewLevel.setDescItems(descItems);
@@ -188,33 +156,37 @@ public class ScriptModelFactory {
     }
 
     /**
-     * Create new description item from value object
-     * @param descItemVO Source description item
-     * @return
-     */
-    private ArrDescItem createDescItem(final DescItem descItemVO) {
-        RulItemType rulDescItemType = itemTypeRepository.getOneByCode(descItemVO.getType());
-        Assert.notNull(rulDescItemType, "Item does not exists: " + descItemVO.getType());
+	 * Create new description item from value object
+	 *
+	 * @param descItemRule
+	 *            Source description item
+	 * @param ruleSystem
+	 * @return
+	 */
+	private ArrDescItem createDescItem(final DescItem descItemRule, RuleSystem ruleSystem) {
+		RuleSystemItemType itemType = ruleSystem.getItemTypeByCode(descItemRule.getType());
+		Validate.notNull(itemType, "Item type: %d", descItemRule.getType());
 
-        ArrDescItem descItem = new ArrDescItem(descItemFactory.createItemByType(rulDescItemType.getDataType()));
-        descItem.setItemType(rulDescItemType);
+        ArrDescItem descItem = new ArrDescItem();
+		descItem.setItemType(itemType.getEntity());
 
-        // set specification
-        ArrItemData item = descItem.getItem();
-        if (descItemVO.getSpecCode() != null) {
-            RulItemSpec rulDescItemSpec = itemSpecRepository.getOneByCode(descItemVO.getSpecCode());
-            Assert.notNull(rulDescItemSpec, "Item specification does not exists: " + descItemVO.getSpecCode());
+		if (descItemRule.getSpecCode() != null) {
+			RulItemSpec rulDescItemSpec = itemType.getItemSpecByCode(descItemRule.getSpecCode());
+			Validate.notNull(rulDescItemSpec, "Item specification does not exists: %s", descItemRule.getSpecCode());
             descItem.setItemSpec(rulDescItemSpec);
         }
 
-        // set initial value
-        if (descItemVO.getInteger() != null)
-        {
-            if(item instanceof ArrItemInt) {
-                // Set initial value
-                ((ArrItemInt) item).setValue(descItemVO.getInteger());
+        if (!descItemRule.isUndefined()) {
+            // set initial value
+			if (descItemRule.getInteger() != null && itemType.getDataType() == DataType.INT) {
+                ArrDataInteger data = new ArrDataInteger();
+                data.setValue(descItemRule.getInteger());
+                descItem.setData(data);
             } else {
-                throw new IllegalStateException("Initial value cannot be set for item: " + descItemVO.getType());
+				// This is strange?
+				// Probably there should be data according item type
+                ArrDataNull data = new ArrDataNull();
+                descItem.setData(data);
             }
         }
         return descItem;
@@ -234,9 +206,9 @@ public class ScriptModelFactory {
                                    final ArrLevel level,
                                    final DirectionLevel directionLevel, final ArrFundVersion version)
     {
-        Level srcModelLevel = createLevelModel(level, version);
+		DescItemReader descItemReader = createDescItemReader(version);
 
-        DescItemReader descItemReader = new DescItemReader(descItemRepository, itemTypeRepository, descItemFactory, nodeCacheService);
+		Level srcModelLevel = createLevelModel(level, version, descItemReader);
 
         // Parent level
         Level parentLevel = null;
@@ -320,25 +292,34 @@ public class ScriptModelFactory {
 
         // Add to the output
         List<Level> levels = new LinkedList<>();
-        ModelFactory.addAll(newLevel, (List) levels);
+		ModelFactory.addLevelWithParents(newLevel, (List) levels);
 
         // Read description items
-        descItemReader.read(version);
+		descItemReader.read();
 
         return levels;
     }
 
     /**
-     * Create active level for given level
-     * @param modelLevel prepared model level
-     * @return
-     */
-    public ActiveLevel createActiveLevel(final Level modelLevel,
+	 * Create active level model for given level
+	 *
+	 * @param descItemReader
+	 *            reader for description items
+	 * @return
+	 */
+	public ActiveLevel createActiveLevel(
                                          final ArrLevel level,
-                                         final ArrFundVersion version) {
-        DescItemReader descItemReader = new DescItemReader(descItemRepository, itemTypeRepository, descItemFactory, nodeCacheService);
+	        final ArrFundVersion version) {
+
+		DescItemReader descItemReader = createDescItemReader(version);
+
+		// prepare list of levels
+		Level modelLevel = createLevelModel(level, version, descItemReader);
 
         ActiveLevel activeLevel = new ActiveLevel(modelLevel);
+
+		// read descitems for thic activelevel instead of original level
+		descItemReader.add(activeLevel, level.getNode());
 
         // Prepare children info
         Integer childsCount = levelRepository.countChildsByParent(level.getNode(), version.getLockChange());
@@ -374,11 +355,10 @@ public class ScriptModelFactory {
         activeLevel.setSiblingAfter(modelSiblingAfter);
         activeLevel.setSiblingBefore(modelSiblingBefore);
 
-        // Read description items
-        descItemReader.read(version);
+		descItemReader.read();
 
-        // Add effective attributes
-        addEffectiveDescItems(activeLevel);
+		// Add effective attributes
+		addEffectiveDescItems(activeLevel);
 
         return activeLevel;
     }
@@ -388,9 +368,10 @@ public class ScriptModelFactory {
      *
      * @param level požadovaný level, ke kterému se budou efektivní atributu vytvářet
      */
-    private void addEffectiveDescItems(final Level level) {
+	private void addEffectiveDescItems(final Level level) {
         Level tmpLevel = level.getParent();
         List<DescItem> descItemLevel = level.getDescItems();
+		Validate.notNull(descItemLevel);
         while (tmpLevel != null) {
             // atributy procházeného rodiče
             List<DescItem> descItems = tmpLevel.getDescItems();
@@ -399,7 +380,7 @@ public class ScriptModelFactory {
             List<DescItem> effectiveDescItemsAdd = new ArrayList<>();
 
             // existuje nějaký atribut?
-            if (descItemLevel.size() > 0) {
+			if (descItemLevel != null && descItemLevel.size() > 0) {
                 for (DescItem descItem : descItems) {
                     String dataType = descItem.getDataType();
                     Boolean addAsEffective = true;

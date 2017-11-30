@@ -35,14 +35,12 @@ import cz.tacr.elza.domain.table.ElzaColumn;
  *
  * Evidence typů atributů archivního popisu. evidence je společná pro všechny archivní pomůcky.
  *
- * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
- * @since 20.8.2015
  */
 @Entity(name = "rul_item_type")
 @Table(uniqueConstraints = {
         @UniqueConstraint(columnNames = {"code"}),
         @UniqueConstraint(columnNames = {"viewOrder"})})
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Cache(region = "domain", usage = CacheConcurrencyStrategy.READ_WRITE)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class RulItemType {
 
@@ -92,6 +90,9 @@ public class RulItemType {
     @Column
     private String columnsDefinition;
 
+	// Note: Consider to remove all transient fields from this
+	// class. Should be probably placed in RulItemTypeExt
+
     @Transient
     private Type type;
 
@@ -110,11 +111,50 @@ public class RulItemType {
     @Transient
     private Boolean indefinable;
 
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulRuleSet.class)
+    @JoinColumn(name = "ruleSetId", nullable = false)
+    private RulRuleSet ruleSet;
+
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulPackage.class)
     @JoinColumn(name = "packageId", nullable = false)
     private RulPackage rulPackage;
 
-    public Integer getItemTypeId() {
+	/**
+	 * Default constructor
+	 */
+	public RulItemType() {
+
+	}
+
+	/**
+	 * Copy constructor for derived types
+	 * 
+	 * @param src
+	 */
+	protected RulItemType(RulItemType src) {
+		itemTypeId = src.itemTypeId;
+		dataTypeId = src.dataTypeId;
+		dataType = src.dataType;
+		code = src.code;
+		name = src.name;
+		shortcut = src.shortcut;
+		description = src.description;
+		isValueUnique = src.isValueUnique;
+		canBeOrdered = src.canBeOrdered;
+		useSpecification = src.useSpecification;
+		viewOrder = src.viewOrder;
+		columnsDefinition = src.columnsDefinition;
+		type = src.type;
+		repeatable = src.repeatable;
+		calculable = src.calculable;
+		calculableState = src.calculableState;
+		policyTypeCode = src.policyTypeCode;
+		indefinable = src.indefinable;
+		ruleSet = src.ruleSet;
+		rulPackage = src.rulPackage;
+	}
+
+	public Integer getItemTypeId() {
         return itemTypeId;
     }
 
@@ -331,6 +371,20 @@ public class RulItemType {
      */
     public void setPackage(final RulPackage rulPackage) {
         this.rulPackage = rulPackage;
+    }
+
+    /**
+     * @return pravidla
+     */
+    public RulRuleSet getRuleSet() {
+        return ruleSet;
+    }
+
+    /**
+     * @param ruleSet pravidla
+     */
+    public void setRuleSet(final RulRuleSet ruleSet) {
+        this.ruleSet = ruleSet;
     }
 
     /**

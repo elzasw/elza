@@ -32,7 +32,6 @@ import {
 import {
     Ribbon,
     FundSettingsForm,
-    BulkActionsDialog,
     NodeTabs,
     VisiblePolicyForm,
     FundPackets,

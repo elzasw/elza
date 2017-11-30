@@ -3,8 +3,11 @@ package cz.tacr.elza.packageimport.xml;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlTransient;
 
+import org.apache.commons.lang3.Validate;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.UISettings;
 
 
@@ -24,10 +27,6 @@ public abstract class Setting {
     @XmlAttribute(name = "entity-type")
     @JsonIgnore
     private UISettings.EntityType entityType;
-
-    @XmlAttribute(name = "entity-id")
-    @JsonIgnore
-    private Integer entityId;
 
     @JsonIgnore
     public abstract String getValue();
@@ -50,11 +49,12 @@ public abstract class Setting {
         this.entityType = entityType;
     }
 
-    public Integer getEntityId() {
-        return entityId;
-    }
-
-    public void setEntityId(final Integer entityId) {
-        this.entityId = entityId;
+    public UISettings createUISettings(RulPackage rulPackage) {
+        UISettings uiSettings = new UISettings();
+        uiSettings.setRulPackage(Validate.notNull(rulPackage));
+        uiSettings.setSettingsType(settingsType);
+        uiSettings.setEntityType(entityType);
+        uiSettings.setValue(getValue());
+        return uiSettings;
     }
 }

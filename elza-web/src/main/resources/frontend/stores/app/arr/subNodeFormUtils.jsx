@@ -2,6 +2,19 @@ import {indexById} from 'stores/app/utils.jsx'
 import {hasDescItemTypeValue} from 'components/arr/ArrUtils.jsx'
 import {getMapFromList} from 'stores/app/utils.jsx'
 
+const availability = {
+    REQUIRED : "REQUIRED",
+    RECOMMENDED : "RECOMMENDED",
+    POSSIBLE : "POSSIBLE",
+    IMPOSSIBLE : "IMPOSSIBLE"
+}
+
+var typesNumToStrMap = {}
+typesNumToStrMap[3] = availability.REQUIRED
+typesNumToStrMap[2] = availability.RECOMMENDED
+typesNumToStrMap[1] = availability.POSSIBLE
+typesNumToStrMap[0] = availability.IMPOSSIBLE
+
 function getDbItemTypesMap(data) {
     // Mapa id descItemType na descItemType
     var typesMap = {};
@@ -203,6 +216,7 @@ function mergeDescItems(state, resultDescItemType, prevType, newType) {
     var refType = state.refTypesMap[resultDescItemType.id]
     var forceVisibility = infoType.type == 'REQUIRED' || infoType.type == 'RECOMMENDED'
 
+
     if (!prevType) {    // ještě ji na formuláři nemáme
         if (!newType) { // není ani v DB, přidáme ji pouze pokud je nastaveno forceVisibility
             if (forceVisibility) {  // přidáme ji pouze pokud je nastaveno forceVisibility
@@ -259,9 +273,11 @@ function mergeDescItems(state, resultDescItemType, prevType, newType) {
             // Nakopírování nově přijatých hodnot, případně ponechání stejných (na základě descItemObjectId a prev value == value ze serveru, které již uživatel upravil a nejsou odeslané)
             newType.descItems.forEach(descItem => {
                 var prevDescItem = prevDescItemMap[descItem.descItemObjectId];
-
-                if (prevDescItem && prevDescItemHasSamePrevValue(prevDescItem, descItem) && prevDescItem.touched) {   // původní hodnota přijatá ze serveru má stejné hodnoty jako jsou nyní v nově přijatých datech na serveru a uživatel nám aktuální data upravil
+                if (prevDescItem && (prevDescItemHasSamePrevValue(prevDescItem, descItem) && prevDescItem.touched || !descItem.value)) {   // původní hodnota přijatá ze serveru má stejné hodnoty jako jsou nyní v nově přijatých datech na serveru a uživatel nám aktuální data upravil
                     var item = prevDescItem;
+                    if(state.updatedItem && (state.updatedItem.descItemObjectId === descItem.descItemObjectId)){
+                        item.value = state.updatedItem.value;
+                    }
                     addUid(item, null);
                     item.formKey = prevDescItem.formKey
                     resultDescItemType.descItems.push(item)
@@ -325,6 +341,553 @@ function mergeDescItems(state, resultDescItemType, prevType, newType) {
 
     return false;
 }
+/**
+ * Prepares flat form data. 
+ * Replacing availability ids with strings.
+ * Inserting DescItemSpecsMap into types
+ *
+ * @param FlatFormData data
+ *
+ * @return FlatFormData
+ */
+function prepareFlatData(data){
+    data.types = replaceIdsWithString(data.types, typesNumToStrMap);
+    data.specs = replaceIdsWithString(data.specs, typesNumToStrMap);
+    data.types = insertDescItemSpecsMap(data.types,data.specs);
+    return data;
+}
+/**
+ * Adds item from response as descItem
+ *
+ * @param FlatFormData data
+ * @param Object item
+ */
+function addChangedItemIfExists(data, item){
+    if(item){
+
+        if(!data.descItems){
+            data.descItems = {};
+        }
+        let itemId = item.descItemObjectId;
+        data.descItems[itemId] = item;
+        data.descItems.ids.push(itemId);
+    }
+}
+/**
+ * Gets descItem ids per type as map.
+ *
+ * @param Object items
+ *
+ * @return Object
+ */
+function getMapByItemType(items){
+    let types = {ids:[]};
+
+    for(let i = 0; i < items.ids.length; i++){
+        let itemId = items.ids[i];
+        let item = items[itemId];
+        let typeId = item.itemType
+        if(!types[typeId]){
+            types[typeId] = {
+             items: []
+            };
+            types.ids.push(typeId);
+        }
+        types[typeId].items.push(itemId);
+    }
+    return types;
+}
+/**
+ * Inserts item type into item
+ *
+ * @param Object item
+ * @param Object items
+ *
+ * @return Object
+ */
+function insertItemType(item, items){
+    item = {
+        ...item,
+        itemType: items[item.descItemObjectId].itemType
+    }
+    return item;
+}
+
+export function mergeAfterUpdate(state, data, refTables) {
+    let changedItem = data.item;
+    let flatForm = new FlatFormData(refTables);
+    let flatLocalForm = new FlatFormData(refTables);
+    
+    // Initization of the flat forms
+    flatForm.flattenInit(data);
+    flatLocalForm.flattenInit(state.formData);
+
+    // Modifications of the flat forms
+    flatForm = prepareFlatData(flatForm);
+    flatLocalForm = prepareFlatData(flatLocalForm);
+
+    // Inserting item type from local descItems, 
+    // because it is not defined on the item received from server
+    changedItem = insertItemType(changedItem, flatLocalForm.descItems); 
+    addChangedItemIfExists(flatForm, changedItem);
+
+    flatLocalForm.update(flatForm);
+
+    state.formData = restoreFormDataStructure(flatLocalForm);
+
+    return state;
+}
+/**
+ * Inserts map of specifications for descItems
+ */
+function insertDescItemSpecsMap(types, specs){
+    for(let s = 0; s < specs.ids.length; s++){
+
+        let specId = specs.ids[s];
+        let spec = specs[specId];
+        let type = types[spec.itemType];
+
+        if(type){
+
+            if(!type.descItemSpecsMap){
+                type.descItemSpecsMap = {};
+            }
+
+            type.descItemSpecsMap[spec.id] = spec;
+        }
+    }
+    return types;
+}
+/**
+ * Recreate the original deep formData structure from flat data
+ *
+ * @param FlatFormData data 
+ * 
+ * @return Object
+ * */
+function restoreFormDataStructure(data){
+    let groupId, group, typeId, type, descItemId, descItem, specId, spec;
+    let usedTypes = {ids:[]};
+    let usedGroups = {ids:[]};
+    let descItemGroups = [];
+
+    for(let d = 0; d < data.descItems.ids.length; d++){
+        descItemId = data.descItems.ids[d];
+        descItem = data.descItems[descItemId];
+
+        if(!usedTypes[descItem.itemType]){
+            type = data.types[descItem.itemType];
+            type.descItems = [];
+            type.specs = [];
+            usedTypes[descItem.itemType] = type;
+            usedTypes.ids.push(descItem.itemType);
+        }
+        usedTypes[descItem.itemType].descItems.push(descItem);
+    }
+
+    for(let s = 0; s < data.specs.ids.length; s++){
+        specId = data.specs.ids[s];
+        spec = data.specs[specId];
+
+        if(usedTypes[spec.itemType]){
+            usedTypes[spec.itemType].specs.push(spec);
+        }
+    }
+
+    for(let t = 0; t < usedTypes.ids.length; t++){
+        typeId = usedTypes.ids[t];
+        type = usedTypes[typeId];
+
+        if(!usedGroups[type.group]){
+            group = data.groups[type.group];
+            group.descItemTypes = [];
+            usedGroups[type.group] = group;
+            usedGroups.ids.push(type.group);
+        }
+        usedGroups[type.group].descItemTypes.push(type);
+    }
+
+    for(let g = 0; g < usedGroups.ids.length; g++){
+        groupId = usedGroups.ids[g];
+        group = usedGroups[groupId];
+        descItemGroups.push(group);
+    }
+
+    return {
+        descItemGroups
+    };
+}
+
+class FlatFormData{
+
+    /*
+     * Example of the flat form data structure
+     * {
+           groups: {
+               GROUP01: {
+                   ...
+                   code: "GROUP01",
+                   name: "Skupina"
+               },
+               ids: ["GROUP01"]
+           },
+           types:{
+               "1": {
+                   ...
+                   group: "GROUP01"
+               },
+               ids: ["1"]
+           },
+           descItems:{
+               "1": {
+                   ...
+                   type: "1",
+               },
+               ids: ["1"]
+           },
+           specs:{
+               "1": {
+                   ...
+                   type: "1"
+               },
+               ids: ["1"]
+           }
+       }
+    */
+
+
+    constructor(refTables){
+        this._emptyItemCounter = 0;
+        this.groups = {ids:[]};
+        this.types = {ids:[]};
+        this.descItems = {ids:[]};
+        this.specs = {ids:[]};
+        this.refTables = refTables;
+    }
+    /**
+     * Loads form data
+     *
+     * @param data
+     */
+    init(data){
+        this.groups = data.groups;
+        this.types = data.types;
+        this.descItems = data.descItems;
+        this.specs = data.specs;
+    }
+    /**
+     * Flattens and loads form data
+     *
+     * @param data
+     */
+    flattenInit(data){
+        this._flattenFormData(data);
+    }
+    /**
+     * Updates current form data with given form data 
+     *
+     * @param Object newData
+     */
+    update(newData){
+        this.groups = newData.groups;
+        this.types = newData.types;
+        this.specs = newData.specs;
+
+        this._updateDescItems(newData.descItems);
+    }
+    /**
+     * Updates descItems with given items.
+     *
+     * @param Object newItems
+     */
+    _updateDescItems(newItems){
+        this._mergeDescItems(newItems);
+        this._deleteUnusedItems();
+        this._addForcedItems();
+    }
+    /**
+     * Merges given items into instance's descItems.
+     * Modifies this.descItems.
+     *
+     * @param Object newItems
+     */
+    _mergeDescItems(newItems){
+        let items = this.descItems;
+        let types = this.types;
+
+        for(let i = 0; i < newItems.ids.length; i++){
+            let newItemId = newItems.ids[i];
+            let item = items[newItemId];
+            let newItem = newItems[newItemId]
+
+            if(!item){
+                items.ids.push(newItem.descItemObjectId);
+            }
+            if(item.prevValue !== newItem.value){
+                newItem.value = item.value;
+            }
+            newItem = createDescItemFromDb(types[newItem.itemType], newItem);
+            items[newItemId] = newItem;
+        }
+        this.descItems = items;
+    }
+    /** 
+     * Deletes unused items (items that are empty, not required or recommended, and not added by user).
+     */
+    _deleteUnusedItems(){
+        let types = this.types;
+        let items = this.descItems;
+        let newIds = [...items.ids];
+
+        for(let i = 0; i < items.ids.length; i++){
+            let itemId = items.ids[i];
+            let item = items[itemId];
+            let type = types[item.itemType];
+            let forceVisible =  type.type === availability.REQUIRED || type.type === availability.RECOMMENDED;
+            let isEmpty = !item.value && !item.descItemSpecId;
+
+            if(isEmpty && !item.addedByUser && !forceVisible){
+                delete items[itemId];
+                newIds.splice(newIds.indexOf(itemId),1);
+            }
+        }
+        items.ids = newIds;
+        this.descItems = items;
+    }
+    /**
+     * Adds required or recommended items, if they don't exist.
+     */
+    _addForcedItems(){
+        let types = this.types;
+        let items = this.descItems;
+        let specs = this.specs;
+        let itemTypesMap= getMapByItemType(items);
+        let itemSpecsMap = this._getForcedSpecsByType(specs);
+        let refTypesMap = getMapFromList(this.refTables.descItemTypes.items);
+        let refDataTypesMap = getMapFromList(this.refTables.rulDataTypes.items);
+
+        for(let t = 0; t < types.ids.length; t++){
+            let typeId = types.ids[t];
+            let type = types[typeId];
+            let forceVisible = type.type === availability.REQUIRED || type.type === availability.RECOMMENDED;
+            let typeItems = itemTypesMap[typeId] && itemTypesMap[typeId].items;
+
+            if (forceVisible || typeItems){
+                let refType = refTypesMap[typeId];
+                refType.dataType = refDataTypesMap[refType.dataTypeId];
+                let forcedTypeSpecs = itemSpecsMap[typeId] && itemSpecsMap[typeId].specs;
+                let newItem;
+                let newItems = [];
+
+                if (forcedTypeSpecs){
+                    let unusedForcedSpecs = this._getUnusedSpecIds(forcedTypeSpecs, typeItems);
+                    let lastPosition = typeItems ? typeItems.length : 0;
+
+                    for(let s = 0; s < unusedForcedSpecs.length; s++){
+                        newItem = createDescItem(type, refType, false);
+                        newItem.descItemSpecId = unusedForcedSpecs[s];
+                        newItem.itemType = typeId;
+                        newItem.position = lastPosition + 1;
+                        lastPosition++;
+
+                        newItems.push(newItem);
+                    }
+                }
+                if(!typeItems && newItems.length <= 0){
+                    newItem = createDescItem(type, refType, false);
+                    newItem.position = 1;
+                    newItem.itemType = typeId;
+
+                    newItems.push(newItem);
+                }
+
+                this._addItemsFromArray(newItems);
+            }
+        }
+    }
+    /**
+     * Adds items from array to instance's descItems
+     *
+     * @param Array newItems
+     */
+    _addItemsFromArray(newItems){
+        let items = this.descItems;
+        let nextEmptyItemId;
+        for(let i = 0; i < newItems.length; i++){
+            do {
+                nextEmptyItemId = "item_" + this._emptyItemCounter;
+                this._emptyItemCounter++;
+
+            } while(items[nextEmptyItemId]);
+
+            items[nextEmptyItemId] = newItems[i];
+            items.ids.push(nextEmptyItemId);
+        }
+        this.descItems = items;
+    }
+    /**
+     * Returns specs from given array, that are not used in descItems
+     *
+     * @param Array specs - Array of spec ids
+     * @param Array items - Array of descItem ids
+     *
+     * @return Array
+     */
+    _getUnusedSpecIds(specIds = this.specs.ids, itemIds = this.descItems.ids){
+        let unusedSpecIds = [...specIds]
+        for(let i = 0; i < itemIds.length; i++){
+            let itemId = itemIds[i];
+            let item = this.descItems[itemId];
+            let specIndex = unusedSpecIds.indexOf(item.descItemSpecId);
+            if(specIndex >= 0){
+                unusedSpecIds.splice(specIndex, 1);
+            }
+        }
+        return unusedSpecIds;
+    }
+    /**
+     * Returns Object of required or recommended spec ids (in array), mapped to item type ids
+     * Ex.: {"typeId":["specId_1","specId_2"]}
+     *
+     * @param Object specs
+     *
+     * @return Object
+     */
+    _getForcedSpecsByType(specs){
+        let types = {ids:[]};
+
+        for(let i = 0; i < specs.ids.length; i++){
+            let itemId = specs.ids[i];
+            let item = specs[itemId];
+            let typeId = item.itemType
+
+            if(item.type === availability.RECOMMENDED || item.type === availability.REQUIRED){
+                if(!types[typeId]){
+                    types[typeId] = {
+                        specs: []
+                    };
+                    types.ids.push(typeId);
+                }
+                types[typeId].specs.push(itemId);
+            }
+        }
+        return types;
+    }
+    /**
+     * Flattens the form data
+     *
+     * @param Object data
+     */
+    _flattenFormData(data){
+        let flatDescItemGroups, flatGroups;
+
+        if(data.descItemGroups){
+            this._getGroupsMap(data.descItemGroups);
+        }
+        if(data.groups){
+            this._getGroupsMap(data.groups);
+        }
+        if(data.typeGroups){
+            this._getGroupsMap(data.typeGroups);
+        }
+    }
+
+    _getGroupsMap(groups){
+        let flatTypes, flatDescItemTypes, newDescItems;
+
+        for(let g = 0; g < groups.length; g++){
+            let group = groups[g];
+
+            if(group.descItemTypes && group.descItemTypes.length > 0){
+                flatDescItemTypes = this._getTypesMap(group.descItemTypes, group);
+            }
+
+            if(group.types && group.types.length > 0){
+                flatTypes = this._getTypesMap(group.types, group);
+            }
+
+            this.groups[group.code] = group;
+            this.groups.ids.push(group.code);
+        }
+        if(flatTypes && flatTypes.descItems && flatTypes.descItems.ids.length > 0){
+            newDescItems = flatTypes.descItems;
+        } else if(flatDescItemTypes && flatDescItemTypes.descItems && flatDescItemTypes.descItems.ids.lenght > 0){
+            newDescItems = flatDescItemTypes.descItems;
+        }
+    }
+
+    _getTypesMap(types, group){
+        let specs, descItems;
+
+        for(let t = 0; t < types.length; t++){
+            let type = {
+                ...types[t],
+                group: group.code
+            }
+            let typeDescItems = type.descItems;
+            let typeSpecs = type.specs;
+
+            if(typeSpecs && typeSpecs.length > 0){
+                this._getSpecMap(typeSpecs, type)
+            }
+
+            if(typeDescItems && typeDescItems.length > 0){
+                this._getDescItemsMap(typeDescItems, type)
+            }
+
+            this.types[type.id] = type;
+            this.types.ids.push(type.id);
+        }
+    }
+
+    _getSpecMap(specs, type){
+        for(let s = 0; s < specs.length; s++){
+            let spec = {
+                ...specs[s],
+                itemType: type.id
+            };
+            this.specs[spec.id] = spec;
+            this.specs.ids.push(spec.id);
+        }
+    }
+
+    _getDescItemsMap(items, type){
+        for(let d = 0; d < items.length; d++){
+            let item = {
+                ...items[d],
+                itemType: type.id
+            }
+            let itemId = null;
+
+            if(item.descItemObjectId >= 0){
+                itemId = item.descItemObjectId;
+            } else {
+                itemId = "item_" + this._emptyItemCounter;
+                this._emptyItemCounter++;
+            }
+
+            if(itemId !== null){
+                this.descItems[itemId] = item;
+                this.descItems.ids.push(itemId);
+            }
+        }
+    }
+}
+
+function replaceIdWithString(item, map){
+    if(typeof item.type === "number"){
+        item.type = map[item.type];
+    }
+    return item;
+}
+
+function replaceIdsWithString(items, map){
+    for(let i = 0; i < items.ids.length; i++){
+        let itemId = items.ids[i];
+        items[itemId] = replaceIdWithString(items[itemId],map);
+    }
+    return items;
+}
 
 function merge(state) {
     // Načten data map pro aktuální data, která jsou ve store - co klient zobrazuje (nemusí být, pokud se poprvé zobrazuje formulář)
@@ -381,18 +944,12 @@ function merge(state) {
     return formData;
 }
 
-var typesNumToStrMap = {}
-typesNumToStrMap[3] = 'REQUIRED'
-typesNumToStrMap[2] = 'RECOMMENDED'
-typesNumToStrMap[1] = 'POSSIBLE'
-typesNumToStrMap[0] = 'IMPOSSIBLE'
 
 // refTypesMap - mapa id info typu na typ, je doplněné o dataType objekt - obecný číselník
-export function updateFormData(state, data, refTypesMap) {
+export function updateFormData(state, data, refTypesMap, updatedItem) {
     // Přechozí a nová verze node
     var currentNodeVersionId = state.data ? state.data.parent.version : -1;
     var newNodeVersionId = data.parent.version;
-
     // ##
     // # Vytvoření formuláře se všemi povinnými a doporučenými položkami, které jsou doplněné reálnými daty ze serveru
     // # Případně promítnutí merge.
@@ -400,6 +957,10 @@ export function updateFormData(state, data, refTypesMap) {
     if (currentNodeVersionId <= newNodeVersionId) { // rovno musí být, protože i když mám danou verzi, nemusím mít nově přidané povinné položky (nastává i v případě umělého klientského zvednutí nodeVersionId po zápisové operaci) na základě aktuálně upravené mnou
         // Data přijatá ze serveru
         state.data = data
+
+        if(updatedItem){
+            state.updatedItem = updatedItem;
+        }
 
         // Překopírování seznam id nepoužitých PP pro výstupy
         state.unusedItemTypeIds = data.unusedItemTypeIds;

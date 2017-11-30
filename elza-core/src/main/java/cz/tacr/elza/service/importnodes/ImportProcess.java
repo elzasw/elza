@@ -23,8 +23,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.support.TransactionSynchronizationAdapter;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.ParseException;
@@ -283,7 +281,7 @@ public class ImportProcess {
                 Map<String, Integer> descItemPositionMap = new HashMap<>();
                 for (Item item : items) {
                     ArrDescItem descItem = new ArrDescItem();
-                    descItem.setUndefined(false);
+                    //descItem.setUndefined(false);
 
                     Integer position = descItemPositionMap.merge(item.getTypeCode(), 1, (a, b) -> a + b);
 
@@ -299,7 +297,7 @@ public class ImportProcess {
                     ArrData data = createArrData(filesMapper, packetsMapper, item, descItem);
 
                     if (data != null) {
-                        data.setItem(descItem);
+                        descItem.setData(data);
                         data.setDataType(itemType.getDataType());
                         dataList.add(data);
                     }
@@ -328,13 +326,8 @@ public class ImportProcess {
 
         if (nodeIds.size() > 0) {
             nodeCacheService.syncCache();
-            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
-                @Override
-                public void afterCommit() {
-                    ruleService.conformityInfo(targetFundVersion.getFundVersionId(), nodeIds, NodeTypeOperation.CREATE_NODE, null,
-                            null, null);
-                }
-            });
+			ruleService.conformityInfo(targetFundVersion.getFundVersionId(), nodeIds, NodeTypeOperation.CREATE_NODE,
+			        null, null, null);
         }
         logger.info("Dokončení importu do AS: " + nodeIds.size() + " uzlů");
 
@@ -351,7 +344,7 @@ public class ImportProcess {
      */
 	private ArrData createArrData(final Map<String, ArrFile> filesMapper, final Map<Integer, ArrPacket> packetsMapper,
 	        final Item item, final ArrDescItem descItem) {
-        ArrData data = null;
+        ArrData data;
         if (item instanceof ItemInt) {
             data = new ArrDataInteger();
             ((ArrDataInteger) data).setValue(((ItemInt) item).getValue());
@@ -413,7 +406,8 @@ public class ImportProcess {
             data = new ArrDataRecordRef();
             ((ArrDataRecordRef) data).setRecord(regRecordRepository.getOne(((ItemRecordRef) item).getRecordId()));
         } else {
-            descItem.setUndefined(true);
+            //descItem.setUndefined(true);
+            data = null;
         }
         return data;
     }
@@ -491,7 +485,7 @@ public class ImportProcess {
 
                         case AFTER:
                         case BEFORE: {
-                            ArrLevel staticLevel = levelRepository.findNodeInRootTreeByNodeId(targetNode, targetFundVersion.getRootNode(), targetFundVersion.getLockChange());
+                            ArrLevel staticLevel = levelRepository.findByNode(targetNode, targetFundVersion.getLockChange());
                             int position = selectedDirection.equals(ArrMoveLevelService.AddLevelDirection.AFTER) ? staticLevel.getPosition() + 1 : staticLevel.getPosition();
                             levelsToShift = arrMoveLevelService.nodesToShift(staticLevel);
                             if (selectedDirection.equals(ArrMoveLevelService.AddLevelDirection.BEFORE)) {
@@ -552,7 +546,7 @@ public class ImportProcess {
 	private Pair<Integer, String> createPacketKey(ArrPacket packet) {
 		RulPacketType packetType = packet.getPacketType();
 		Integer packetTypeId = (packetType != null) ? packetType.getPacketTypeId() : null;
-		return new Pair<Integer, String>(packetTypeId, packet.getStorageNumber());
+		return new Pair<>(packetTypeId, packet.getStorageNumber());
 	}
 
     /**
@@ -728,11 +722,11 @@ public class ImportProcess {
             nodeRegisterRepository.save(nodeRegisters);
             nodeRegisterRepository.flush();
 
-            descItemRepository.save(descItems);
-            descItemRepository.flush();
-
             dataRepository.save(dataList);
             dataRepository.flush();
+
+            descItemRepository.save(descItems);
+            descItemRepository.flush();
 
             levels = new ArrayList<>();
             nodeRegisters = new ArrayList<>();

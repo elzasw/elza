@@ -1,13 +1,15 @@
 package cz.tacr.elza.repository;
 
+import java.util.List;
+import java.util.function.Consumer;
+
+import javax.annotation.Nullable;
+
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
-
-import javax.annotation.Nullable;
-import java.util.List;
 
 
 /**
@@ -19,13 +21,13 @@ import java.util.List;
 public interface LevelRepositoryCustom {
 
     /**
-     * Najde všechny rodiče seřazeny od listu ke kořenu podle nodu v požadované verzi stromu. Výsledek obsahuje i kořenový uzel verze.
+     * Najde všechny rodiče od listu ke kořenu podle nodu v požadované verzi stromu. Výsledek obsahuje i kořenový uzel verze.
+     * Result is always sorted, see description of {@code orderFromRoot} parameter.
      * @param node uzel
      * @param version verze stromu
-     * @return všechny rodiče seřazeny od listu ke kořenu
+     * @param orderFromRoot If true then result is sorted from fund root to parent of specified node otherwise order is reversed.
      */
-    List<ArrLevel> findAllParentsByNodeAndVersion(ArrNode node, ArrFundVersion version);
-
+    List<ArrLevel> findAllParentsByNodeId(final Integer nodeId, @Nullable ArrChange lockChange, boolean orderFromRoot);
 
     /**
      * Najde staršího sourozence daného uzlu.
@@ -56,12 +58,11 @@ public interface LevelRepositoryCustom {
 
 
     /**
-     * Najde všechny uzly s daným nodem.
-     * @param node nod uzlů
+     * Najde uzel pro daný node.
+     * @param node
      * @param change čas uzamčení uzamčení verze  (null pro otevřenou verzi)
-     * @return seznam uzlů s daným nodem (sdílené uzly)
      */
-    List<ArrLevel> findByNode(ArrNode node, @Nullable ArrChange change);
+    ArrLevel findByNode(ArrNode node, @Nullable ArrChange change);
 
     /**
      * Vrací počet potomků daného uzlu.
@@ -83,28 +84,6 @@ public interface LevelRepositoryCustom {
      */
     List<ArrLevel> findLevelsByDirection(ArrLevel level, ArrFundVersion version,
                                          RelatedNodeDirection direction);
-
-    /**
-     * zjistí zda je level v zadané hierarchické struktuře.
-     *
-     * @param level    testovaný level.
-     * @param rootNode kořen zadané hierarchické struktury.
-     * @return true pokud je level v zadané hierarchické struktuře.
-     */
-    boolean isLevelInRootTree(ArrLevel level, ArrNode rootNode, @Nullable ArrChange lockChange);
-
-
-
-
-    /**
-     * Zjistí, jestli je daný node ve stejném stromu, jako je daný kořen. Pokud máme dva nody se stejným nodeId v
-     * různých stromech, je potřeba najít tu entitu pro konkrétní strom.
-     *
-     * @param node     id nodu
-     * @param rootNode id kořenu
-     * @return nalezený level pro daný strom nebo null, pokud nebyl nalezen
-     */
-    ArrLevel findNodeInRootTreeByNodeId(ArrNode node, ArrNode rootNode, @Nullable ArrChange lockChange);
 
     /**
      * Vyhledá potomky, které mají vyšší datum poslední změny, než je v ArrChange.
@@ -129,6 +108,15 @@ public interface LevelRepositoryCustom {
     List<ArrLevel> findLevelsSubtree(Integer nodeId, final int skip, final int max, final boolean ignoreRootNode);
 
     /**
+     * Iterate subtree BFS from specified node.
+     *
+     * @param nodeId root node id
+     * @param change when null current version is used
+     * @param levelAction action for each returned level
+     */
+    long iterateSubtree(int nodeId, ArrChange change, Consumer<ArrLevel> levelAction);
+
+    /**
      * Vyhledá rodiče, které mají vyšší datum poslední změny, než je v ArrChange.
      *
      * @param node   uzel od kterého prohledáváme
@@ -144,11 +132,6 @@ public interface LevelRepositoryCustom {
      * @return seznam všech uzlů ve stromu
      */
     List<LevelInfo> readTree(ArrFundVersion version);
-
-    /**
-     * @return vrací dodatečný text při použití rekurzivního dotazu SQL podle typu DB
-     */
-    String getRecursivePart();
 
     /**
      * Uzel stromu, obsahuje pouze základní informace.

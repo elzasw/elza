@@ -1,4 +1,5 @@
 import React from 'react';
+import {connect} from 'react-redux'
 import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, i18n, Icon, Autocomplete, VersionValidationState, FormInput} from 'components/shared';
 import {Modal, Button, Form} from 'react-bootstrap';
@@ -7,6 +8,10 @@ import {refInstitutionsFetchIfNeeded} from 'actions/refTables/institutions.jsx'
 import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx'
 
 import './FundForm.less';
+import UserAndGroupField from "../admin/UserAndGroupField";
+import {WebApi} from "../../actions/WebApi";
+import {renderUserOrGroupItem, renderUserOrGroupLabel} from "../admin/adminRenderUtils";
+import TagsField from "../TagsField";
 
 /**
  * Formulář přidání nebo uzavření AS.
@@ -17,6 +22,9 @@ class FundForm extends AbstractReactComponent {
      * Validace formuláře.
      */
     static validate = (values, props) => {
+        const {userDetail} = props;
+        const admin = userDetail.isAdmin();
+
         const errors = {};
 
         if ((props.create || props.update) && !values.name) {
@@ -27,6 +35,10 @@ class FundForm extends AbstractReactComponent {
         }
         if ((props.create || props.update) && !values.institutionId) {
             errors.institutionId = i18n('global.validation.required');
+        }
+
+        if (!admin && (!values.fundAdmins || values.fundAdmins.length === 0)) {
+            errors.fundAdmins = i18n('global.validation.required');
         }
 
         return errors;
@@ -87,7 +99,7 @@ class FundForm extends AbstractReactComponent {
     submitReduxForm = (values, dispatch) => submitForm(FundForm.validate,values,this.props,this.props.onSubmitForm,dispatch);
 
     render() {
-        const {fields: {name, ruleSetId, regScopes, institutionId, internalCode, dateRange}, handleSubmit, onClose, create, update, approve, ruleSet, refTables, submitting} = this.props;
+        const {error, userDetail, fields: {fundAdmins, name, ruleSetId, regScopes, institutionId, internalCode, dateRange}, handleSubmit, onClose, create, update, approve, ruleSet, refTables, submitting} = this.props;
         let approveButton;
         if (approve) {
             if (this.isBulkActionRunning()) {
@@ -98,6 +110,7 @@ class FundForm extends AbstractReactComponent {
         }
         const ruleSets = refTables.ruleSet.items;
         const institutions = refTables.institutions.items;
+        const admin = userDetail.isAdmin();
 
         return <Form onSubmit={handleSubmit(this.submitReduxForm)}>
             <Modal.Body>
@@ -150,11 +163,24 @@ class FundForm extends AbstractReactComponent {
                 {update && <div className="selected-data-container">
                     {regScopes.map((scope, scopeIndex) => (
                         <div className="selected-data" key={scopeIndex}>
-                            {scope.name.value}<Button onClick={() => {regScopes.removeField(scopeIndex)}}>
+                            <span>{scope.name.value}</span><Button onClick={() => {regScopes.removeField(scopeIndex)}}>
                             <Icon glyph="fa-times"/>
                         </Button>
                         </div>))}
                 </div>}
+
+                {create && <FormInput
+                    componentClass={TagsField}
+                    label={i18n('arr.fund.fundAdmins')}
+                    {...fundAdmins}
+                    {...decorateFormField(fundAdmins)}
+                    renderTagItem={renderUserOrGroupLabel}
+                    fieldComponent={UserAndGroupField}
+                    fieldComponentProps={{
+                        findUserApi: admin ? WebApi.findUser : WebApi.findUserWithFundCreate,
+                        findGroupApi: admin ? WebApi.findGroup : WebApi.findGroupWithFundCreate
+                    }}
+                />}
             </Modal.Body>
             <Modal.Footer>
                 {create && <Button type="submit"  disabled={submitting}>{i18n('global.action.create')}</Button>}
@@ -166,9 +192,16 @@ class FundForm extends AbstractReactComponent {
     }
 }
 
-export default reduxForm({
+function mapStateToProps(state) {
+    const {userDetail} = state;
+    return {
+        userDetail,
+    }
+}
+
+export default connect(mapStateToProps)(reduxForm({
         form: 'fundForm',
-        fields: ['name', 'ruleSetId', 'institutionId', 'internalCode', 'dateRange', 'regScopes[].id', 'regScopes[].name']
+        fields: ['name', 'ruleSetId', 'institutionId', 'internalCode', 'dateRange', 'regScopes[].id', 'regScopes[].name', "fundAdmins"]
     }, state => ({
         initialValues: state.form.fundForm.initialValues,
         refTables: state.refTables,
@@ -176,7 +209,7 @@ export default reduxForm({
         versionValidation: state.arrRegion.activeIndex !== null ? state.arrRegion.funds[state.arrRegion.activeIndex].versionValidation : undefined,
     }),
     {load: data => ({type: 'GLOBAL_INIT_FORM_DATA', form: 'fundForm', data})}
-)(FundForm);
+)(FundForm));
 
 
 

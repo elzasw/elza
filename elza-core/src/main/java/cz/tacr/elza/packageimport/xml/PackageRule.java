@@ -19,9 +19,6 @@ import cz.tacr.elza.domain.RulRule;
 @XmlType(name = "package-rule")
 public class PackageRule {
 
-    @XmlAttribute(name = "rule-set", required = false)
-    private String ruleSet;
-
     @XmlAttribute(name = "filename", required = true)
     private String filename;
 
@@ -30,14 +27,6 @@ public class PackageRule {
 
     @XmlElement(name = "priority", required = true)
     private Integer priority;
-
-    public String getRuleSet() {
-        return ruleSet;
-    }
-
-    public void setRuleSet(final String ruleSet) {
-        this.ruleSet = ruleSet;
-    }
 
     public String getFilename() {
         return filename;

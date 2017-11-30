@@ -203,13 +203,13 @@ class FundPage extends AbstractReactComponent {
                     </Button>,
                 )
             }
-            /*if (userDetail.hasOne(perms.FUND_EXPORT_ALL, {type: perms.FUND_EXPORT, fundId: fundRegion.fundDetail.id})) {
+            if (userDetail.hasOne(perms.FUND_EXPORT_ALL, {type: perms.FUND_EXPORT, fundId: fundRegion.fundDetail.id})) {
                 itemActions.push(
                     <Button key="fa-export" onClick={this.handleExportDialog}><Icon glyph='fa-download'/>
                         <div><span className="btnText">{i18n('ribbon.action.arr.fund.export')}</span></div>
                     </Button>
                 )
-            }*/
+            }
         }
 
         let altSection;
@@ -305,20 +305,19 @@ class FundPage extends AbstractReactComponent {
             </div>
         )
 
-        const centerPanel = (
-            <FundDetail
-                fundDetail={fundRegion.fundDetail}
-                focus={focus}
-                fundCount={fundRegion.funds.length}
-            />
-        )
+        const centerPanel = <FundDetail
+            fundDetail={fundRegion.fundDetail}
+            focus={focus}
+            fundCount={fundRegion.funds.length}
+        />;
 
-        const rightPanel = (
-            <FundDetailExt
+        let rightPanel;
+        if (fundRegion.fundDetail.fetched) {
+            rightPanel = <FundDetailExt
                 fundDetail={fundRegion.fundDetail}
                 focus={focus}
-            />
-        )
+            />;
+        }
 
         return (
             <PageLayout

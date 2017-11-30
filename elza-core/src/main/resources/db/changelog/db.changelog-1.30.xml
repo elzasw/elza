@@ -5,7 +5,8 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
 
     <changeSet id="31" author="slapa">
-        <createView replaceIfExists="true" viewName="usr_permission_view">
+    	<validCheckSum>7:07c8123fc6d2ceeef4dbeefb1f739885</validCheckSum>
+        <createView viewName="usr_permission_view">
             SELECT DISTINCT
                 p.permission_id AS id,
                 p.permission,

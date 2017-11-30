@@ -27,14 +27,20 @@ import PageLayout from "../shared/layout/PageLayout";
 class AdminPage extends AbstractReactComponent {
 
     componentWillReceiveProps = (nextProps) => {
-        if (!nextProps.fetched) {
-            this.dispatch(getIndexStateFetchIfNeeded());
-        }
+        this.fetchData(nextProps);
     };
 
     componentDidMount = () => {
-        if (!this.props.fetched) {
-            this.dispatch(getIndexStateFetchIfNeeded());
+        this.fetchData(this.props);
+    };
+
+    fetchData = (props) => {
+        const {fetched, userDetail} = props;
+
+        if (userDetail.hasOne(perms.ADMIN)) {
+            if (!fetched) {
+                props.dispatch(getIndexStateFetchIfNeeded());
+            }
         }
     };
 

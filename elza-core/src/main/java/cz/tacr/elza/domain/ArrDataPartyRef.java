@@ -6,23 +6,15 @@ import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 
-import org.hibernate.search.annotations.Indexed;
 import org.springframework.data.rest.core.annotation.RestResource;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import cz.tacr.elza.search.IndexArrDataWhenHasDescItemInterceptor;
-
 
 /**
  * Hodnota atributu archivního popisu typu ParParty.
- *
- * @author Martin Šlapa
- * @since 1.9.2015
  */
-@Indexed(interceptor = IndexArrDataWhenHasDescItemInterceptor.class)
 @Entity(name = "arr_data_party_ref")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
@@ -31,26 +23,26 @@ public class ArrDataPartyRef extends ArrData {
     public static final String PARTY = "party";
 
     @RestResource(exported = false)
-    @ManyToOne(fetch = FetchType.EAGER, targetEntity = ParParty.class)
+	@ManyToOne(fetch = FetchType.LAZY, targetEntity = ParParty.class)
     @JoinColumn(name = "partyId", nullable = false)
     private ParParty party;
 
-    @Column(nullable = true)
+    @Column(name = "partyId", updatable = false, insertable = false)
+    private Integer partyId;
+
+    @Column
     private Integer position;
 
-    @Transient
-    private final String fulltextValue;
+	public ArrDataPartyRef() {
 
-    /**
-     * Sets fulltext value index when party is only reference (detached hibernate proxy).
-     */
-    public ArrDataPartyRef(String fulltextValue) {
-        this.fulltextValue = fulltextValue;
-    }
+	}
 
-    public ArrDataPartyRef() {
-        this(null);
-    }
+	protected ArrDataPartyRef(ArrDataPartyRef src) {
+		super(src);
+		this.party = src.party;
+		this.partyId = src.partyId;
+		this.position = src.position;
+	}
 
     public Integer getPosition() {
         return position;
@@ -66,13 +58,20 @@ public class ArrDataPartyRef extends ArrData {
 
     public void setParty(final ParParty party) {
         this.party = party;
+        this.partyId = party == null ? null : party.getPartyId();
+    }
+
+    public Integer getPartyId() {
+        return partyId;
     }
 
     @Override
     public String getFulltextValue() {
-        if (fulltextValue != null) {
-            return fulltextValue;
-        }
         return party.getRecord().getRecord();
     }
+
+	@Override
+	public ArrDataPartyRef makeCopy() {
+		return new ArrDataPartyRef(this);
+	}
 }

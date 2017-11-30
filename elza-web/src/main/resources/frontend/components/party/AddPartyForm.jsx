@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {reduxForm} from 'redux-form';
-import {Autocomplete, AbstractReactComponent, i18n, Icon, FormInput, Loading} from 'components/shared';
+import {Autocomplete, AbstractReactComponent, i18n, Icon, FormInput, HorizontalLoader} from 'components/shared';
 import {Modal, Button, HelpBlock, FormGroup, Form, Row, Col} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
 import {refPartyNameFormTypesFetchIfNeeded} from 'actions/refTables/partyNameFormTypes.jsx'
@@ -275,7 +275,7 @@ class AddPartyForm extends AbstractReactComponent {
         const {initialized} = this.state;
 
         if (!initialized) {
-            return <Loading />;
+            return <HorizontalLoader />;
         }
 
         const treeItems = recordTypes.fetched ? recordTypes.item : [];

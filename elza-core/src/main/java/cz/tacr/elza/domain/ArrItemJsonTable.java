@@ -10,6 +10,7 @@ import cz.tacr.elza.domain.table.ElzaTable;
  * @author Martin Šlapa
  * @since 21.06.2016
  */
+@Deprecated
 public class ArrItemJsonTable extends ArrItemData {
 
     private ElzaTable value;

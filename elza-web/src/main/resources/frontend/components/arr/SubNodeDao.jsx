@@ -2,7 +2,7 @@ require('./SubNodeDao.less');
 
 import React from 'react';
 import NodeDaosForm from "./NodeDaosForm";
-import {Icon, i18n, AbstractReactComponent, Loading} from 'components/shared';
+import {Icon, i18n, AbstractReactComponent, HorizontalLoader} from 'components/shared';
 import {Button} from "react-bootstrap";
 import {connect} from 'react-redux'
 
@@ -90,7 +90,7 @@ class SubNodeDao extends AbstractReactComponent {
         return <div className='node-dao'>
             <div className='node-dao-title'>{i18n('subNodeDao.title')}</div>
             <div className="actions"><Button onClick={this.handleShowDetailAll} title={i18n('subNodeDao.dao.action.showDetailAll')}><Icon glyph='fa-pencil'/></Button></div>
-            {daos.isFetching ? <Loading value={i18n('global.data.loading.dao')} /> : this.renderForm() }
+            {daos.isFetching ? <HorizontalLoader /> : this.renderForm() }
         </div>
     }
 };

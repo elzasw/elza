@@ -3,17 +3,17 @@ package cz.tacr.elza.drools.service;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataInteger;
+import cz.tacr.elza.domain.ArrDataPacketRef;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrItemInt;
-import cz.tacr.elza.domain.ArrItemPacketRef;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrPacket;
-import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.drools.model.DescItem;
@@ -39,7 +39,7 @@ public class ModelFactory {
         item.setType(descItem.getItemType().getCode());
         item.setSpecCode(descItem.getItemSpec() == null ? null : descItem.getItemSpec().getCode());
         item.setDataType(descItem.getItemType().getDataType().getCode());
-		item.setUndefined(descItem.getUndefined());
+		item.setUndefined(descItem.isUndefined());
         return item;
     }
 
@@ -66,10 +66,7 @@ public class ModelFactory {
      * @return seznam vo hodnot atributu
      */
     static public List<DescItem> createDescItems(@Nullable final List<ArrDescItem> descItems,
-                                                 Set<RulItemType> descItemTypesForPackets,
-                                                 Set<RulItemType> descItemTypesForIntegers,
-                                                 DescItemFactory descItemFactory,
-                                                 final boolean lastVersion)
+	        DescItemFactory descItemFactory)
     {
     	if(descItems==null) {
     		return new ArrayList<>();
@@ -80,12 +77,13 @@ public class ModelFactory {
             result.add(voDescItem);
 
             if (!voDescItem.isUndefined()) {
-                if (descItemTypesForPackets.contains(descItem.getItemType())) {
-                    ArrItemPacketRef packetRef = lastVersion ? (ArrItemPacketRef) descItem.getItem() : (ArrItemPacketRef) descItemFactory.getDescItem(descItem).getItem();
+				ArrData data = descItem.getData();
+				if (data.getType() == DataType.PACKET_REF) {
+					ArrDataPacketRef packetRef = (ArrDataPacketRef) descItem.getData();
                     ArrPacket packet = packetRef.getPacket();
                     voDescItem.setPacket(createPacket(packet));
-                } else if (descItemTypesForIntegers.contains(descItem.getItemType())) {
-                    ArrItemInt integer = lastVersion ? (ArrItemInt) descItem.getItem() : (ArrItemInt) descItemFactory.getDescItem(descItem).getItem();
+				} else if (data.getType() == DataType.INT) {
+					ArrDataInteger integer = (ArrDataInteger) descItem.getData();
                     voDescItem.setInteger(integer.getValue());
                 }
             }
@@ -121,7 +119,7 @@ public class ModelFactory {
      * @param level Level to be added
      * @param facts Collection where are nodes added
      */
-	public static void addAll(Level level, Collection<Object> facts) {
+	public static void addLevelWithParents(Level level, Collection<Object> facts) {
 		while(level!=null) {
 			facts.add(level);
 			level = level.getParent();

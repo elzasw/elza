@@ -28,8 +28,8 @@ import org.springframework.web.multipart.support.StandardServletMultipartResolve
 
 import com.google.common.eventbus.EventBus;
 
-import cz.tacr.elza.service.IClientDataChangesService;
-import cz.tacr.elza.service.websocket.ClientDataChangesService;
+import cz.tacr.elza.service.ClientEventDispatcher;
+import cz.tacr.elza.websocket.service.WebScoketClientEventService;
 
 
 /**
@@ -116,10 +116,9 @@ public class ElzaCore {
     }
 
     @Bean
-    public IClientDataChangesService clientDataChangesService(){
-        return new ClientDataChangesService();
+    public ClientEventDispatcher clientEventDispatcher(){
+        return new WebScoketClientEventService();
     }
-
 
     @PostConstruct
     public void registerEventBusListeners() {

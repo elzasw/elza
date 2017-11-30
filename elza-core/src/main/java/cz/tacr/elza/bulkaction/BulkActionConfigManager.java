@@ -21,6 +21,7 @@ import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 
 import cz.tacr.elza.bulkaction.generator.FundValidationConfig;
+import cz.tacr.elza.bulkaction.generator.MoveDescItemConfig;
 import cz.tacr.elza.bulkaction.generator.MultiActionConfig;
 import cz.tacr.elza.bulkaction.generator.SerialNumberConfig;
 import cz.tacr.elza.bulkaction.generator.TestDataConfig;
@@ -103,7 +104,7 @@ public class BulkActionConfigManager {
 
         for (int i = 0; i < actions.size(); i++) {
             RulAction action = actions.get(i);
-            String filePath = getFunctionsDir(action.getPackage().getCode()) + File.separator + action.getFilename();
+            String filePath = getFunctionsDir(action.getRuleSet().getCode()) + File.separator + action.getFilename();
             files[i] = new File(filePath);
             if (!files[i].exists()) {
                 throw new SystemException("Soubor neexistuje: " + filePath);
@@ -122,6 +123,7 @@ public class BulkActionConfigManager {
 		yamlCons.addTypeDescription(new TypeDescription(CopyConfig.class, "!Copy"));
 		yamlCons.addTypeDescription(new TypeDescription(NodeCountConfig.class, "!NodeCount"));
 		yamlCons.addTypeDescription(new TypeDescription(UnitCountConfig.class, "!UnitCount"));
+		yamlCons.addTypeDescription(new TypeDescription(MoveDescItemConfig.class, "!MoveDescItem"));
 		Yaml yamlLoader = new Yaml(yamlCons);
 
 		// load files

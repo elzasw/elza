@@ -94,9 +94,9 @@ public class InterpiTest extends AbstractControllerTest {
     private RegExternalSystemRepository regExternalSystemRepository;
 
     private Integer systemId;
-    
+
     @Autowired
-    protected ScopeRepository scopeRepository;    
+    protected ScopeRepository scopeRepository;
 
     @Override
     @Before
@@ -176,9 +176,9 @@ public class InterpiTest extends AbstractControllerTest {
         System.out.println(data2);
         System.out.println(data3);
 
-        SetTyp setTyp = XmlUtils.unmarshallDataWithIntrospector(data, SetTyp.class);
-        SetTyp setTyp2 = XmlUtils.unmarshallDataWithIntrospector(data2, SetTyp.class);
-        SetTyp setTyp3 = XmlUtils.unmarshallDataWithIntrospector(data3, SetTyp.class);
+        SetTyp setTyp = XmlUtils.unmarshall(data, SetTyp.class);
+        SetTyp setTyp2 = XmlUtils.unmarshall(data2, SetTyp.class);
+        SetTyp setTyp3 = XmlUtils.unmarshall(data3, SetTyp.class);
     }
 
     @Test
@@ -193,7 +193,7 @@ public class InterpiTest extends AbstractControllerTest {
         WssoapSoap client = createClient();
         String oneRecord = client.getOneRecord("n000382567", username, password);
 
-        SetTyp set = XmlUtils.unmarshallDataWithIntrospector(oneRecord, SetTyp.class);
+        SetTyp set = XmlUtils.unmarshall(oneRecord, SetTyp.class);
 
         Assert.notEmpty(set.getEntita());
         Assert.isTrue(set.getEntita().size() == 1);
@@ -213,7 +213,7 @@ public class InterpiTest extends AbstractControllerTest {
         String query = "@attr 1=2051 @and @or @or 'r' 'o' @or 'k' 'u' @attr 1=2055 'rod'";
         String data = client.findData(query, null, from, to, username, password);
 
-        SetTyp set = XmlUtils.unmarshallDataWithIntrospector(data, SetTyp.class);
+        SetTyp set = XmlUtils.unmarshall(data, SetTyp.class);
         List<EntitaTyp> entita = set.getEntita();
         for (EntitaTyp entitaTyp : entita) {
             entitaTyp.getContent().forEach(e -> {

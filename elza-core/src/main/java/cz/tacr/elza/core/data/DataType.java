@@ -11,11 +11,34 @@ import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.repository.DataTypeRepository;
 
 public enum DataType {
-    INT, STRING, TEXT, UNITDATE, UNITID, FORMATTED_TEXT, COORDINATES, PARTY_REF, RECORD_REF, DECIMAL, PACKET_REF, ENUM, FILE_REF, JSON_TABLE;
+    INT(Integer.MAX_VALUE),
+    STRING(1000),
+    TEXT(Integer.MAX_VALUE),
+    UNITDATE,
+    UNITID(250),
+    FORMATTED_TEXT(Integer.MAX_VALUE),
+    COORDINATES,
+    PARTY_REF,
+    RECORD_REF,
+    DECIMAL(38),
+    PACKET_REF,
+    ENUM,
+    FILE_REF,
+    JSON_TABLE(Integer.MAX_VALUE);
 
-    private static Map<Integer, DataType> ENTITY_ID_LOOKUP;
+    private static Map<Integer, DataType> entityIdMap;
+
+    private final Integer valueMaxSize;
 
     private RulDataType entity;
+
+    private DataType(Integer valueMaxSize) {
+        this.valueMaxSize = valueMaxSize;
+    }
+
+    private DataType() {
+        this(null);
+    }
 
     /**
      * @return Same value as result of <code>name()</code>.
@@ -33,10 +56,14 @@ public enum DataType {
     }
 
     public RulDataType getEntity() {
-        if (entity == null) {
-            throw new IllegalStateException("Cache not initialized");
-        }
-        return entity;
+        return Validate.notNull(entity, "Cache not initialized");
+    }
+
+    /**
+     * @return Max size of value or null when size is not relevant for data type.
+     */
+    public Integer getValueMaxSize() {
+        return valueMaxSize;
     }
 
     /**
@@ -60,10 +87,7 @@ public enum DataType {
      * @return Null when not found.
      */
     public static DataType fromId(int id) {
-        if (ENTITY_ID_LOOKUP == null) {
-            throw new IllegalStateException("Cache not initialized");
-        }
-        return ENTITY_ID_LOOKUP.get(id);
+        return Validate.notNull(entityIdMap, "Cache not initialized").get(id);
     }
 
     static synchronized void init(DataTypeRepository dataTypeRepository) {
@@ -88,6 +112,6 @@ public enum DataType {
             throw new SystemException("Entity not found, code:" + value.name());
         }
         // set id lookup
-        ENTITY_ID_LOOKUP = idMap;
+        entityIdMap = idMap;
     }
 }

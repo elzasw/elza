@@ -1,0 +1,7 @@
+!TestDataGenerator
+name: Generátor testovacích dat
+
+# number of items to generate
+itemsToGenerate:
+    - 2
+    - 1

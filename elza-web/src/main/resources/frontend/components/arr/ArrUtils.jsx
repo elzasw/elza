@@ -81,17 +81,17 @@ export function getFundFromFundAndVersion(fund, version) {
 }
 
 export function getSpecsIds(refType, selectionType, selectedIds) {
-    var specIds = []
+    let specIds = [];
     if (refType.useSpecification) {
         if (selectionType === 'selected') {
-            specIds = selectedIds
+            specIds = selectedIds;
         } else {
-            var set = getSetFromIdsList(selectedIds)
+            let set = getSetFromIdsList(selectedIds);
             refType.descItemSpecs.forEach(i => {
-                if (!set[i.id]) {
-                    specIds.push(i.id)
+                if ((!set[i.id] && selectionType === 'unselected') || (!set[i.id] && selectionType === 'unselected')) {
+                    specIds.push(i.id);
                 }
-            })
+            });
         }
     }
     return specIds

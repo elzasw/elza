@@ -26,4 +26,6 @@ public interface RegCoordinatesRepository extends ElzaJpaRepository<RegCoordinat
 
     @Modifying
     int deleteByRegRecordIn(Collection<RegRecord> records);
+
+    List<RegCoordinates> findByRegRecordIdIn(Collection<Integer> accessPointIds);
 }

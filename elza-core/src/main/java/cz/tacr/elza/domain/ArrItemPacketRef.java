@@ -8,6 +8,7 @@ import java.util.Objects;
  * @author Martin Šlapa
  * @since 15.9.15
  */
+@Deprecated
 public class ArrItemPacketRef extends ArrItemData {
 
     private ArrPacket packet;

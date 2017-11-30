@@ -1,7 +1,6 @@
 package cz.tacr.elza.bulkaction.generator;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,7 +9,6 @@ import java.util.Map.Entry;
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.transaction.annotation.Transactional;
 
 import cz.tacr.elza.bulkaction.ActionRunContext;
 import cz.tacr.elza.bulkaction.BulkAction;
@@ -19,15 +17,11 @@ import cz.tacr.elza.bulkaction.generator.multiple.ActionConfig;
 import cz.tacr.elza.bulkaction.generator.multiple.TypeLevel;
 import cz.tacr.elza.bulkaction.generator.result.Result;
 import cz.tacr.elza.domain.ArrBulkActionRun;
-import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
-import cz.tacr.elza.repository.DescItemRepository;
-import cz.tacr.elza.service.ItemService;
 import cz.tacr.elza.service.cache.CachedNode;
 import cz.tacr.elza.service.cache.NodeCacheService;
 
@@ -37,19 +31,13 @@ import cz.tacr.elza.service.cache.NodeCacheService;
  * @since 29.06.2016
  */
 public class MultipleBulkAction extends BulkAction {
-	
-	/** 
+
+	/**
 	 * Size of batch for fetching child nodes from DB
 	 */
 	private final static int BATCH_CHILD_NODE_SIZE = 100;
 
     @Autowired
-    private ItemService itemService;
-
-    @Autowired
-    private DescItemRepository descItemRepository;
-    
-    @Autowired 
     private NodeCacheService nodeCacheService;
 
     /**
@@ -57,19 +45,7 @@ public class MultipleBulkAction extends BulkAction {
      */
     public static final String TYPE = "GENERATOR_MULTIPLE";
 
-    /**
-     * Verze archivní pomůcky
-     */
-    private ArrFundVersion fundVersion;
-
-    /**
-     * Změna
-     */
-    private ArrChange change;
-
     private List<Action> actions = new ArrayList<>();
-
-    private ArrBulkActionRun bulkActionRun;
 
 	MultiActionConfig config;
 
@@ -82,17 +58,20 @@ public class MultipleBulkAction extends BulkAction {
 
 	/**
 	 * Inicializace hromadné akce.
-	 * 
+	 *
 	 * @param bulkActionConfig
 	 *            nastavení hromadné akce
 	 * @param runContext
 	 */
-	private void init(final ActionRunContext runContext) {
+	@Override
+	protected void init(ArrBulkActionRun bulkActionRun) {
+		super.init(bulkActionRun);
+
 		// initialize actions from configuration
 		for (ActionConfig ac : config.getActions()) {
 			Action a = appCtx.getBean(ac.getActionClass(), ac);
 			// initialize each action after all properties are autowired
-			a.init(runContext);
+			a.init(bulkActionRun);
 			actions.add(a);
 		}
 
@@ -102,11 +81,11 @@ public class MultipleBulkAction extends BulkAction {
 			// List<String> actionCodes = yaml.getStringList("action");
 			Object obj = bulkActionConfig.getConfiguration();
 			List<String> actionCodes = new ArrayList<>();
-			
+
 			if (actionCodes.size() == 0) {
 			    throw new IllegalArgumentException("Musí být definována alespoň jedna akce");
 			}
-			
+
 			List<ActionType> actionTypes = actionCodes.stream().map(ActionType::valueOf).collect(Collectors.toList());
 			*/
             /*
@@ -119,18 +98,11 @@ public class MultipleBulkAction extends BulkAction {
 		} catch (Exception e) {
             throw new IllegalArgumentException(e);
         }
-
-		this.bulkActionRun = runContext.getBulkActionRun();
-		this.fundVersion = runContext.getFundVersion();
-		this.change = runContext.getChange();
     }
 
 
     @Override
-    @Transactional
 	public void run(ActionRunContext runContext) {
-		init(runContext);
-
 		List<ArrNode> startingNodes = nodeRepository.findAll(runContext.getInputNodeIds());
 
         // map of root nodes for action
@@ -138,12 +110,10 @@ public class MultipleBulkAction extends BulkAction {
         // map of all nodes, including all parents
         Map<ArrNode, LevelWithItems> nodesWithItems = new HashMap<>();
 
-        ArrNode rootNode = fundVersion.getRootNode();
         // prepare parent nodes
         for (ArrNode startingNode : startingNodes) {
             // read parents
-            List<ArrLevel> levels = levelRepository.findAllParentsByNodeAndVersion(startingNode, fundVersion);
-            Collections.reverse(levels);
+			List<ArrLevel> levels = levelRepository.findAllParentsByNodeId(startingNode.getNodeId(), version.getLockChange(), true);
 
             LevelWithItems parentLevel = null;
             for(ArrLevel level: levels) {
@@ -153,7 +123,7 @@ public class MultipleBulkAction extends BulkAction {
                 parentLevel = levelWithItems;
             }
             // add starting node
-            ArrLevel startingLevel = levelRepository.findNodeInRootTreeByNodeId(startingNode, rootNode, null);
+            ArrLevel startingLevel = levelRepository.findByNodeAndDeleteChangeIsNull(startingNode);
             LevelWithItems startingLevelWithItems = prepareLevelWithItems(startingLevel, parentLevel);
             nodesWithItems.put(startingLevel.getNode(), startingLevelWithItems);
 
@@ -229,8 +199,8 @@ public class MultipleBulkAction extends BulkAction {
 
         // apply on child nodes in batch
         List<ArrLevel> childLevels = getChildren(level);
-        
-        BatchNodeProcessor bnp = new BatchNodeProcessor(this, BATCH_CHILD_NODE_SIZE, actions, levelWithItems, nodeCacheService); 
+
+        BatchNodeProcessor bnp = new BatchNodeProcessor(this, BATCH_CHILD_NODE_SIZE, actions, levelWithItems, nodeCacheService);
         for (ArrLevel childLevel : childLevels) {
         	bnp.addItem(childLevel);
         }
@@ -256,22 +226,8 @@ public class MultipleBulkAction extends BulkAction {
 		}
     }
 
-    /**
-     * Načtení hodnot uzlu.
-     *
-     * @param level uzel
-     * @return  hodnoty uzlu
-     */
-    private List<ArrDescItem> loadDescItems(final ArrLevel level) {
-        List<ArrDescItem> descItems = descItemRepository.findByNodeAndDeleteChangeIsNull(level.getNode());
-        itemService.loadData(descItems);
-        return descItems;
-    }
-
     @Override
-    public String toString() {
-        return "MultipleBulkAction{" +
-                "version=" + fundVersion +
-                '}';
+	public String getName() {
+		return "MultipleBulkAction";
     }
 }

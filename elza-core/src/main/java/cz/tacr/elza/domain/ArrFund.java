@@ -27,9 +27,11 @@ import cz.tacr.elza.domain.interfaces.Versionable;
  * @since 22.7.15
  */
 @Entity(name = "arr_fund")
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Cache(region = "fund", usage = CacheConcurrencyStrategy.READ_WRITE)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
 public class ArrFund extends AbstractVersionableEntity implements Versionable, Serializable, IArrFund {
+
+	public static final String NAME = "name";
 
 	@Id
 	@GeneratedValue

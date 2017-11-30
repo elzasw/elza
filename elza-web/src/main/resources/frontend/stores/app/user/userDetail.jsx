@@ -45,14 +45,14 @@ function hasRight(right) {
 function hasRdPage(fundId = null) {     //Zjistí zda má uživatel oprávnění číst archivní soubor
     return hasOne.bind(this)(
         perms.FUND_ADMIN,
-        perms.FUND_RD_ALL, {type: perms.FUND_RD, fundId},  
-        perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId},      
+        perms.FUND_RD_ALL, {type: perms.FUND_RD, fundId},
+        perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId},
     )
 }
 
 function hasArrPage(fundId = null) {    //Zjistí zda má uživatel oprávnění pořádat archivní soubor
     return hasOne.bind(this)(
-        perms.FUND_ADMIN,        
+        perms.FUND_ADMIN,
         perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId},
     )
 }
@@ -60,15 +60,23 @@ function hasArrPage(fundId = null) {    //Zjistí zda má uživatel oprávnění
 function hasArrOutputPage(fundId = null) {  //Zjistí zda má uživatel oprávnění vytvářet výstupy
     return hasOne.bind(this)(
         perms.FUND_ADMIN,
-        perms.FUND_OUTPUT_WR_ALL, {type: perms.FUND_OUTPUT_WR, fundId},        
+        perms.FUND_OUTPUT_WR_ALL, {type: perms.FUND_OUTPUT_WR, fundId},
     )
 }
 
 function hasFundActionPage(fundId = null) { //Zjistí zda má uživatel oprávnění spouštět funkce
     return hasOne.bind(this)(
-        perms.FUND_ADMIN,        
+        perms.FUND_ADMIN,
         perms.FUND_BA_ALL, {type: perms.FUND_BA, fundId},
     )
+}
+
+function isAdmin() {
+    if (this.permissionsMap[perms.ADMIN]) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
 function hasOne(...rights) {
@@ -114,12 +122,13 @@ const initialState = {
 export default function userDetail(state = initialState, action = {}) {
     const result = userDetailInt(state, action)
 
-    result.hasOne = hasOne.bind(result)
-    result.hasAll = hasAll.bind(result)
-    result.hasRdPage = hasRdPage.bind(result)
-    result.hasArrPage = hasArrPage.bind(result)
-    result.hasArrOutputPage = hasArrOutputPage.bind(result)
-    result.hasFundActionPage = hasFundActionPage.bind(result)
+    result.hasOne = hasOne.bind(result);
+    result.hasAll = hasAll.bind(result);
+    result.hasRdPage = hasRdPage.bind(result);
+    result.hasArrPage = hasArrPage.bind(result);
+    result.hasArrOutputPage = hasArrOutputPage.bind(result);
+    result.hasFundActionPage = hasFundActionPage.bind(result);
+    result.isAdmin = isAdmin.bind(result);
 
     return result
 }

@@ -68,7 +68,6 @@ class RegistryPage extends AbstractReactComponent {
             id != registryParentId
     };
 
-
     canDeleteRegistry = () => {
         const {registryDetail: {id, data}, registryList:{filter:{registryParentId}}} = this.props;
 
@@ -169,6 +168,12 @@ class RegistryPage extends AbstractReactComponent {
         }
     };
 
+    /* MCV-45365
+    handleSetValidParty = () => {
+        confirm(i18n('party.setValid.confirm')) && this.dispatch(setValidRegistry(this.props.registryDetail.data.id));
+    };
+    */
+
     handleRegistryMoveStart = () => {
         const {registryDetail:{data}} = this.props;
         this.dispatch(registryMoveStart(data));
@@ -201,7 +206,7 @@ class RegistryPage extends AbstractReactComponent {
     };
 
     buildRibbon = () => {
-        const {registryDetail:{data}, userDetail, extSystems, module, customRibbon} = this.props;
+        const {registryDetail:{data}, userDetail, extSystems, module, customRibbon, registryDetail } = this.props;
 
         const parts = module && customRibbon ? customRibbon : {altActions: [], itemActions: [], primarySection: null};
 
@@ -234,13 +239,33 @@ class RegistryPage extends AbstractReactComponent {
         if (this.canDeleteRegistry()) {
             if (userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_WR, scopeId: data ? data.scopeId : null})) {
                 itemActions.push(
-                    <Button key='registryRemove' onClick={this.handleDeleteRegistry}>
+                    <Button disabled={data.invalid && data.partyId} key='registryRemove' onClick={this.handleDeleteRegistry}>
                         <Icon glyph="fa-trash"/>
                         <div><span className="btnText">{i18n('registry.deleteRegistry')}</span></div>
                     </Button>
                 );
             }
+
+            this.props.onShowUsage && itemActions.push(
+                <Button key='registryShow' onClick={() => this.props.onShowUsage(registryDetail)}>
+                    <Icon glyph="fa-search"/>
+                    <div><span className="btnText">{i18n('registry.registryUsage')}</span></div>
+                </Button>
+            );
+
+            /*
+            MCV-45365
+            if (userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_WR, scopeId: data ? data.scopeId : null})) {
+                itemActions.push(
+                    <Button disabled={!data.invalid && data.partyId} key='registrySetValid'
+                            onClick={() => this.handleSetValidParty()}>
+                        <Icon glyph="fa-check"/>
+                        <div><span className="btnText">{i18n('registry.setValid')}</span></div>
+                    </Button>
+                );
+            }*/
         }
+
         if (this.canMoveRegistry()) {
             if (userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_WR, scopeId: data ? data.scopeId : null})) {
                 itemActions.push(

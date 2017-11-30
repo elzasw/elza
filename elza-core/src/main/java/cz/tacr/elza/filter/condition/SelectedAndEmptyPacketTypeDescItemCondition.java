@@ -7,6 +7,8 @@ import org.hibernate.search.query.dsl.BooleanJunction;
 import org.hibernate.search.query.dsl.QueryBuilder;
 import org.springframework.util.Assert;
 
+import cz.tacr.elza.domain.ArrDescItem;
+
 /**
  * Má typ z dané množiny nebo má hodnotu bez typu.
  *
@@ -30,13 +32,14 @@ public class SelectedAndEmptyPacketTypeDescItemCondition implements LuceneDescIt
         BooleanJunction<BooleanJunction> booleanJunction = queryBuilder.bool();
 
         values.forEach(v -> {
-            Query query = queryBuilder.range().onField(LuceneDescItemCondition.SPECIFICATION_ATT).from(v).to(v).createQuery();
+			Query query = queryBuilder.range().onField(ArrDescItem.SPECIFICATION_ATT).from(v).to(v).createQuery();
             booleanJunction.should(query);
         });
 
         Query selectedTypesQuery = booleanJunction.createQuery();
 
-        Query allTypesQuery = queryBuilder.range().onField(LuceneDescItemCondition.SPECIFICATION_ATT).from(Integer.MIN_VALUE).to(Integer.MAX_VALUE).createQuery();
+		Query allTypesQuery = queryBuilder.range().onField(ArrDescItem.SPECIFICATION_ATT).from(Integer.MIN_VALUE)
+		        .to(Integer.MAX_VALUE).createQuery();
         Query noTypesQuery = queryBuilder.bool().must(allTypesQuery).not().createQuery();
 
         return queryBuilder.

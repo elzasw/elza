@@ -2,6 +2,7 @@ package cz.tacr.elza.repository;
 
 import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.domain.RulPackage;
+import cz.tacr.elza.domain.RulRuleSet;
 
 import java.util.List;
 
@@ -14,6 +15,10 @@ import java.util.List;
 public interface OutputTypeRepository extends ElzaJpaRepository<RulOutputType, Integer> {
 
     List<RulOutputType> findByRulPackage(RulPackage rulPackage);
+
+    List<RulOutputType> findByRuleSet(RulRuleSet ruleSet);
+
+    List<RulOutputType> findByRulPackageAndRuleSet(RulPackage rulPackage, RulRuleSet ruleSet);
 
     void deleteByRulPackage(RulPackage rulPackage);
 

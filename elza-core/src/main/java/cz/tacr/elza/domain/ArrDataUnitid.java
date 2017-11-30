@@ -4,21 +4,14 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
-import org.hibernate.search.annotations.Indexed;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import cz.tacr.elza.domain.enumeration.StringLength;
-import cz.tacr.elza.search.IndexArrDataWhenHasDescItemInterceptor;
 
 
 /**
  * Hodnota atributu archivního popisu typu referenční označení.
- *
- * @author Martin Šlapa
- * @since 1.9.2015
  */
-@Indexed(interceptor = IndexArrDataWhenHasDescItemInterceptor.class)
 @Entity(name = "arr_data_unitid")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
@@ -26,6 +19,15 @@ public class ArrDataUnitid extends ArrData {
 
     @Column(length = StringLength.LENGTH_250, nullable = false)
     private String value;
+
+	public ArrDataUnitid() {
+
+	}
+
+	protected ArrDataUnitid(ArrDataUnitid src) {
+		super(src);
+		this.value = src.value;
+	}
 
     public String getValue() {
         return value;
@@ -39,4 +41,9 @@ public class ArrDataUnitid extends ArrData {
     public String getFulltextValue() {
         return value;
     }
+
+	@Override
+	public ArrDataUnitid makeCopy() {
+		return new ArrDataUnitid(this);
+	}
 }

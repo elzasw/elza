@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 
 import {reduxForm} from 'redux-form'
 import {Form, Button, FormControl, Table, Modal, OverlayTrigger, Tooltip, Checkbox, ControlLabel} from 'react-bootstrap'
-import {FormInput, Icon, Loading} from 'components/shared';
+import {FormInput, Icon, HorizontalLoader} from 'components/shared';
 import objectById from '../../shared/utils/objectById'
 import {requestScopesIfNeeded} from 'actions/refTables/scopesData.jsx';
 import {submitForm} from 'components/form/FormUtils.jsx'
@@ -45,8 +45,6 @@ const ATTRIBUTE_TYPES = [
 ];
 
 class ExtImportSearch extends AbstractReactComponent {
-    state = {extSystems: null};
-
     validate = (values, props) => {
         const {extSystems} = props;
         let errors = {};
@@ -132,7 +130,7 @@ class ExtImportSearch extends AbstractReactComponent {
         const {fields: {systemId, conditions}, handleSubmit, submitting, error, extSystems} = this.props;
 
         if (!extSystems) {
-            return <Loading />
+            return <HorizontalLoader />
         }
         let system = null;
         if (systemId.value != null) {

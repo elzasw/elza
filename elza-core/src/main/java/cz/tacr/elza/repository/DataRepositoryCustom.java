@@ -16,14 +16,17 @@ import cz.tacr.elza.domain.RulItemSpec;
  */
 public interface DataRepositoryCustom {
 
+    @Deprecated
     List<ArrData> findDescItemsByNodeIds(Set<Integer> nodeIds,
                                          Set<RulItemType> descItemTypes,
                                          ArrFundVersion version);
 
+    @Deprecated
     List<ArrData> findDescItemsByNodeIds(Set<Integer> nodeIds,
                                          Set<RulItemType> itemTypes,
                                          Integer changeId);
 
+    @Deprecated
     List<ArrData> findByDataIdsAndVersionFetchSpecification(Set<Integer> nodeIds,
             Set<RulItemType> descItemTypes,
             ArrFundVersion version);
@@ -40,6 +43,7 @@ public interface DataRepositoryCustom {
      * @param specifications seznam specifikací (pokud se jedná o typ atributu se specifikací)
      *@param text hledaný text  @return seznam hodnot atributů
      */
+    @Deprecated
     <T extends ArrData> List<T> findByNodesContainingText(Collection<ArrNode> nodes, RulItemType descItemType,
                                                           final Set<RulItemSpec> specifications, String text);
 
@@ -82,4 +86,26 @@ public interface DataRepositoryCustom {
                                                @Nullable Set<RulItemSpec> specs,
                                                boolean withoutSpec, @Nullable String fulltext,
                                                int max);
+
+    /**
+     * Provede načtení unikátních specifikací hodnot atributů.
+     *
+     * @param version       id verze stromu
+     * @param descItemType  typ atributu
+     *
+     * @return seznam unikátních hodnot
+     */
+    List<Integer> findUniqueSpecIdsInVersion(ArrFundVersion version,
+                                             RulItemType descItemType);
+
+    /**
+     * Provede načtení unikátních typů obalů z hodnot atributů.
+     *
+     * @param version       id verze stromu
+     * @param descItemType  typ atributu
+     *
+     * @return seznam unikátních hodnot
+     */
+    List<Integer> findUniquePacketTypeIdsInVersion(ArrFundVersion version,
+                                                   RulItemType descItemType);
 }

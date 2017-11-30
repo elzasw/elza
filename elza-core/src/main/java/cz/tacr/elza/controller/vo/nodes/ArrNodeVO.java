@@ -3,7 +3,9 @@ package cz.tacr.elza.controller.vo.nodes;
 import cz.tacr.elza.domain.ArrNode;
 
 /**
- * VO uzlu archivní pomůcky.
+ * Node id and version
+ *
+ * Object is used to transfer nodeId and its version
  */
 public class ArrNodeVO {
 
@@ -20,12 +22,12 @@ public class ArrNodeVO {
     public ArrNodeVO() {
     }
 
-    public ArrNodeVO(final Integer id, final Integer version) {
-        this.id = id;
-        this.version = version;
-    }
+	protected ArrNodeVO(ArrNode node) {
+		this.id = node.getNodeId();
+		this.version = node.getVersion();
+	}
 
-    public Integer getId() {
+	public Integer getId() {
         return id;
     }
 
@@ -46,5 +48,9 @@ public class ArrNodeVO {
         node.setNodeId(id);
         node.setVersion(version);
         return node;
+    }
+
+    public static ArrNodeVO valueOf(ArrNode node) {
+        return new ArrNodeVO(node);
     }
 }

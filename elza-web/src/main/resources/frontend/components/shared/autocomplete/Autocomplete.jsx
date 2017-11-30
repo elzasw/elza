@@ -911,7 +911,7 @@ export default class Autocomplete extends AbstractReactComponent {
 
         if (!this._ignoreBlur) {
             this.changeState({hasFocus: false})
-            this.closeMenu(true);
+            this.closeMenu(true, false);
         } else {
             this._ignoreBlur = false;
         }
@@ -993,7 +993,7 @@ export default class Autocomplete extends AbstractReactComponent {
         });
     }
 
-    closeMenu(callBlurAfterSetState = false) {
+    closeMenu(callBlurAfterSetState = false, focusAfterClosing = true) {
         if (!this.state.isOpen && this.state.highlightedIndex === null && this.state.inputStrValue === this.props.getItemName(this.state.value)) {
             // Není třeba nastavovat state
             if (callBlurAfterSetState) {
@@ -1019,7 +1019,10 @@ export default class Autocomplete extends AbstractReactComponent {
                 onBlur && onBlur(value);
             }
         })
-        this.focus();
+
+        if(focusAfterClosing){
+            this.focus();
+        }
     }
     selectorMoveToChildOrOpen = (e) => {
         const node = this.getHighlightedNode();
@@ -1181,6 +1184,10 @@ export default class Autocomplete extends AbstractReactComponent {
         var clsMain = 'autocomplete-control-container'
         if (this.props.className) {
             clsMain += ' ' + this.props.className;
+        }
+
+        if (hasError) {
+            clsMain += " has-error";
         }
 
         var glyph = this.state.isOpen ? 'fa-angle-up' : 'fa-angle-down';

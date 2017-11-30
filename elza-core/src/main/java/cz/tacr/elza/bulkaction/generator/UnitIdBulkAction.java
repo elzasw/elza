@@ -6,24 +6,19 @@ import java.util.List;
 
 import org.apache.commons.lang.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
 
 import cz.tacr.elza.bulkaction.ActionRunContext;
 import cz.tacr.elza.bulkaction.BulkAction;
 import cz.tacr.elza.bulkaction.generator.result.Result;
 import cz.tacr.elza.bulkaction.generator.result.UnitIdResult;
-import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.core.data.RuleSystemItemType;
-import cz.tacr.elza.core.data.StaticDataProvider;
-import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrBulkActionRun.State;
 import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataString;
+import cz.tacr.elza.domain.ArrDataUnitid;
 import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrItemData;
-import cz.tacr.elza.domain.ArrItemString;
-import cz.tacr.elza.domain.ArrItemUnitid;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulItemSpec;
@@ -45,11 +40,6 @@ public class UnitIdBulkAction extends BulkAction {
      * Identifikátor hromadné akce
      */
     public static final String TYPE = "GENERATOR_UNIT_ID";
-
-    /**
-     * Verze archivní pomůcky
-     */
-    private ArrFundVersion version;
 
     /**
      * Změna
@@ -92,11 +82,6 @@ public class UnitIdBulkAction extends BulkAction {
     private List<String> delimiterMajorLevelTypeNotUseList;
 
     /**
-     * Stav hromadné akce
-     */
-    private ArrBulkActionRun bulkActionRun;
-
-    /**
      * Počet změněných položek.
      */
     private Integer countChanges = 0;
@@ -106,9 +91,6 @@ public class UnitIdBulkAction extends BulkAction {
 
     @Autowired
     private DescItemFactory descItemFactory;
-
-	@Autowired
-	private StaticDataService staticDataService;
 
 	protected final UnitIdConfig config;
 
@@ -121,10 +103,9 @@ public class UnitIdBulkAction extends BulkAction {
 	 * Inicializace hromadné akce.
 	 *
 	 */
-	private void init() {
-		StaticDataProvider sdp = staticDataService.getData();
-		RuleSystem ruleSystem = sdp.getRuleSystems().getByRuleSetCode(config.getRules());
-		Validate.notNull(ruleSystem, "Rule system not available, code:" + config.getRules());
+	@Override
+	protected void init(ArrBulkActionRun bulkActionRun) {
+		super.init(bulkActionRun);
 
 		// read item type for UnitId
 		String unitIdCode = config.getItemType();
@@ -139,26 +120,26 @@ public class UnitIdBulkAction extends BulkAction {
 		RuleSystemItemType levelTypeWrapper = ruleSystem.getItemTypeByCode(levelTypeCode);
 		Validate.notNull(levelTypeWrapper);
 		descItemLevelType = levelTypeWrapper.getEntity();
-		
+
 		// read delimiters
 		delimiterMajor = config.getDelimiterMajor();
 		Validate.notNull(delimiterMajor);
 
 		delimiterMinor = config.getDelimiterMinor();
 		Validate.notNull(delimiterMinor);
-		
+
 		// item for previous value
 		String previousIdCode = config.getPreviousIdCode();
 		Validate.notNull(previousIdCode);
 		RuleSystemItemType previousIdTypeWrapper = ruleSystem.getItemTypeByCode(previousIdCode);
 		Validate.notNull(previousIdTypeWrapper);
 		descItemPreviousType = previousIdTypeWrapper.getEntity();
-		
+
 		String previousIdSpecCode = config.getPreviousIdSpecCode();
 		Validate.notNull(previousIdSpecCode);
 		descItemPreviousSpec = previousIdTypeWrapper.getItemSpecByCode(previousIdSpecCode);
 		Validate.notNull(descItemPreviousSpec);
-		
+
 		String delimiterMajorLevelTypeNotUse = config.getDelimiterMajorLevelTypeNotUse();
 		if (delimiterMajorLevelTypeNotUse == null) {
 		    delimiterMajorLevelTypeNotUseList = new ArrayList<>();
@@ -205,36 +186,44 @@ public class UnitIdBulkAction extends BulkAction {
                     unitId.genNext();
                 }
 
+				ArrDataUnitid dataUnitId;
                 // vytvoření nového atributu
                 if (descItem == null) {
-                    descItem = new ArrDescItem(new ArrItemUnitid());
+                    descItem = new ArrDescItem();
                     descItem.setItemType(descItemType);
                     descItem.setNode(level.getNode());
-                }
+					dataUnitId = new ArrDataUnitid();
+					descItem.setData(dataUnitId);
+				} else if (descItem.isUndefined()) {
+					// create new value if not exists
+					dataUnitId = new ArrDataUnitid();
+					descItem.setData(dataUnitId);
+				} else {
+					ArrData data = descItem.getData();
 
-                ArrItemData item = descItem.getItem();
+					if (!(data instanceof ArrDataUnitid)) {
+						throw new IllegalStateException(descItemType.getCode() + " neni typu ArrDescItemUnitid");
+					}
 
-                if (!(item instanceof ArrItemUnitid)) {
-                    throw new IllegalStateException(descItemType.getCode() + " neni typu ArrDescItemUnitid");
+					dataUnitId = (ArrDataUnitid) data;
                 }
 
                 // uložit pouze při rozdílu
-                if (((ArrItemUnitid) item).getValue() == null || !unitId.getData()
-                        .equals(((ArrItemUnitid) item).getValue())) {
+				if (dataUnitId.getValue() == null || !unitId.getData().equals(dataUnitId.getValue())) {
 
                     ArrDescItem ret;
 
                     // uložit původní hodnotu pouze při první změně z předchozí verze
                     if (descItem.getDescItemObjectId() != null && descItem.getCreateChange().getChangeId() < version
                             .getCreateChange().getChangeId()) {
-                        ArrDescItem descItemPrev = new ArrDescItem(descItemFactory.createItemByType(descItemPreviousType.getDataType()));
-                        ArrItemData itemPrev = descItemPrev.getItem();
+                        ArrDescItem descItemPrev = new ArrDescItem();
+                        ArrData dataPrev = descItemPrev.getData();
                         descItemPrev.setItemType(descItemPreviousType);
                         descItemPrev.setItemSpec(descItemPreviousSpec);
                         descItemPrev.setNode(level.getNode());
 
-                        if (itemPrev instanceof ArrItemString) {
-                            ((ArrItemString) itemPrev).setValue(((ArrItemUnitid) itemPrev).getValue());
+                        if (dataPrev instanceof ArrDataString) {
+                            ((ArrDataString) dataPrev).setValue(((ArrDataUnitid) dataPrev).getValue());
                         } else {
                             throw new IllegalStateException(
                                     descItemPrev.getClass().getName() + " nema definovany prevod hodnoty");
@@ -245,11 +234,8 @@ public class UnitIdBulkAction extends BulkAction {
 
                     }
 
-					if (descItem.getUndefined()) {
-                        descItem.setUndefined(false);
-                    }
+					dataUnitId.setValue(unitId.getData());
 
-                    ((ArrItemUnitid) item).setValue(unitId.getData());
                     ret = saveDescItem(descItem, version, change);
                     level.setNode(ret.getNode());
                     countChanges++;
@@ -291,7 +277,7 @@ public class UnitIdBulkAction extends BulkAction {
             throw new IllegalStateException(
                     descItemType.getCode() + " nemuze byt vice nez jeden (" + descItems.size() + ")");
         }
-        return descItemFactory.getDescItem(descItems.get(0));
+        return descItems.get(0);
     }
 
     /**
@@ -311,55 +297,43 @@ public class UnitIdBulkAction extends BulkAction {
             throw new IllegalStateException(
                     descItemType.getCode() + " nemuze byt vice nez jeden (" + descItems.size() + ")");
         }
-        return descItemFactory.getDescItem(descItems.get(0));
+        return descItems.get(0);
     }
 
 
-    @Override
-    @Transactional
+	@Override
 	public void run(ActionRunContext runContext) {
-		this.bulkActionRun = runContext.getBulkActionRun();
-		init();
-
-        ArrFundVersion version = fundVersionRepository.findOne(bulkActionRun.getFundVersionId());
-
-		Validate.notNull(version);
-        checkVersion(version);
-        this.version = version;
-
         ArrNode rootNode = version.getRootNode();
 
 		for (Integer nodeId : runContext.getInputNodeIds()) {
-            ArrNode node = nodeRepository.findOne(nodeId);
-			Validate.notNull(nodeId, "Node s nodeId=" + nodeId + " neexistuje");
-            ArrLevel level = levelRepository.findNodeInRootTreeByNodeId(node, rootNode, null);
-			Validate.notNull(level,
-			        "Level neexistuje, nodeId=" + node.getNodeId() + ", rootNodeId=" + rootNode.getNodeId());
+            ArrNode nodeRef = nodeRepository.getOne(nodeId);
+            ArrLevel level = levelRepository.findByNodeAndDeleteChangeIsNull(nodeRef);
+			Validate.notNull(level);
 
             ArrDescItem descItem = loadDescItem(level);
             ArrDescItem descItemLevel = loadDescItemLevel(level);
-			if (descItem != null && !descItem.getUndefined()) {
-                ArrItemData item = descItem.getItem();
+			if (descItem != null && !descItem.isUndefined()) {
+                ArrData item = descItem.getData();
 
-                if (!(item instanceof ArrItemUnitid)) {
+                if (!(item instanceof ArrDataUnitid)) {
                     throw new IllegalStateException(descItemType.getCode() + " neni typu ArrDescItemUnitid");
                 }
 
                 List<ArrLevel> childLevels = getChildren(level);
 
-                String value = ((ArrItemUnitid) item).getValue();
+                String value = ((ArrDataUnitid) item).getValue();
                 UnitId unitId = new UnitId(value);
                 unitId.setSeparator("");
 
                 UnitId unitIdChild = null;
                 for (ArrLevel childLevel : childLevels) {
-                    if (unitId != null && unitIdChild == null) {
+                    if (unitIdChild == null) {
                         unitIdChild = unitId.getClone();
                     }
                     generate(childLevel, rootNode, unitIdChild, descItemLevel == null ? null : descItemLevel.getItemSpec().getCode());
                 }
 
-            } else if(node.equals(rootNode)) {
+            } else if(nodeId.equals(rootNode.getNodeId())) {
                 generate(level, rootNode, null, descItemLevel == null ? null : descItemLevel.getItemSpec().getCode());
             }
 
@@ -419,9 +393,7 @@ public class UnitIdBulkAction extends BulkAction {
     }
 
     @Override
-    public String toString() {
-        return "UnitIdBulkAction{" +
-                "version=" + version +
-                '}';
+	public String getName() {
+		return "UnitIdBulkAction";
     }
 }

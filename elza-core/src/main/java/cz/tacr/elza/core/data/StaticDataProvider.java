@@ -81,6 +81,10 @@ public class StaticDataProvider {
         return partyTypeComplementTypesCodeMap.get(code);
     }
 
+    /**
+     * Returns fully initialized register type by id.
+     * This object and all his referenced entities are detached.
+     */
     public RegRegisterType getRegisterTypeById(Integer id) {
         Validate.notNull(id);
         return registerTypeIdMap.get(id);
@@ -152,7 +156,7 @@ public class StaticDataProvider {
         Map<Integer, RegRegisterType> idMap = createLookup(regTypes, RegRegisterType::getRegisterTypeId);
 
         for (RegRegisterType rt : regTypes) {
-            // ensure reference equality
+            // ensure reference equality (same init transaction)
             Validate.isTrue(rt.getRulPackage() == packageIdMap.get(rt.getRulPackage().getPackageId()));
             if (rt.getParentRegisterType() != null) {
                 Validate.isTrue(rt.getParentRegisterType() == idMap.get(rt.getParentRegisterType().getRegisterTypeId()));

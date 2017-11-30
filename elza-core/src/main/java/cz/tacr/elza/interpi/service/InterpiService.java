@@ -129,7 +129,7 @@ public class InterpiService {
             final List<ConditionVO> conditions,
             final Integer count,
             final Integer systemId) {
-        Assert.notNull(systemId);
+        Assert.notNull(systemId, "Identifikátor systému musí být vyplněn");
         String interpiRecordId = findIdCondition(conditions);
 
         RegExternalSystem regExternalSystem = regExternalSystemRepository.findOne(systemId);
@@ -200,8 +200,8 @@ public class InterpiService {
      * @return požadovaný záznam
      */
     private EntitaTyp getRecordById(final String interpiRecordId, final RegExternalSystem regExternalSystem) {
-        Assert.notNull(interpiRecordId);
-        Assert.notNull(regExternalSystem);
+        Assert.notNull(interpiRecordId, "Identifikátor systému interpi musí být vyplněn");
+        Assert.notNull(regExternalSystem, "Musí být vyplněn externí systém");
 
         return interpiClient.findOneRecord(interpiRecordId, regExternalSystem);
     }
@@ -216,9 +216,9 @@ public class InterpiService {
      * @return vztahy záznamu a jejich mapování
      */
     public InterpiMappingVO findInterpiRecordRelations(final String interpiRecordId, final Integer systemId, final Integer scopeId) {
-        Assert.notNull(interpiRecordId);
-        Assert.notNull(systemId);
-        Assert.notNull(scopeId);
+        Assert.notNull(interpiRecordId, "Identifikátor systému interpi musí být vyplněn");
+        Assert.notNull(systemId, "Identifikátor systému musí být vyplněn");
+        Assert.notNull(scopeId, "Identifikátor scope musí být vyplněn");
 
         RegExternalSystem regExternalSystem = regExternalSystemRepository.findOne(systemId);
         EntitaTyp entitaTyp = interpiClient.findOneRecord(interpiRecordId, regExternalSystem);
@@ -284,9 +284,9 @@ public class InterpiService {
      */
     public RegRecord importRecord(final Integer recordId, final String interpiRecordId, final Integer scopeId, final Integer systemId, final boolean isOriginator,
             final List<InterpiRelationMappingVO> mappings) {
-        Assert.notNull(interpiRecordId);
-        Assert.notNull(scopeId);
-        Assert.notNull(systemId);
+        Assert.notNull(interpiRecordId, "Identifikátor systému interpi musí být vyplněn");
+        Assert.notNull(scopeId, "Identifikátor scope musí být vyplněn");
+        Assert.notNull(systemId, "Identifikátor systému musí být vyplněn");
 
         logger.info("Import záznamu s identifikátorem " + interpiRecordId + " z interpi.");
 
@@ -457,8 +457,8 @@ public class InterpiService {
      */
     private String createInterpiKey(final InterpiRelationMappingVO relationMappingVO,
             final InterpiEntityMappingVO entityMappingVO) {
-        Assert.notNull(relationMappingVO);
-        Assert.notNull(entityMappingVO);
+        Assert.notNull(relationMappingVO, "Mapovací klíč musí být vyplněn");
+        Assert.notNull(entityMappingVO, "Mapovací entita musí být vyplněna");
 
         // klíč je ve tvaru interpiRelationType-%-%-interpiClass-%-%-interpiRoleType
         return new StringBuilder(StringUtils.trimToEmpty(relationMappingVO.getInterpiRelationType())).
@@ -475,7 +475,7 @@ public class InterpiService {
      */
     private String createMappingKey(final InterpiRelationMappingVO relationMappingVO,
             final InterpiEntityMappingVO entityMappingVO) {
-        Assert.notNull(relationMappingVO);
+        Assert.notNull(relationMappingVO, "Mapovací klíč musí být vyplněn");
 
         // klíč je ve tvaru interpiRelationType-%-%-elzaRelationTypeId-%-%-interpiRoleType-%-%-elzaRoleTypeId
         StringBuilder sb = new StringBuilder(StringUtils.trimToEmpty(relationMappingVO.getInterpiRelationType())).

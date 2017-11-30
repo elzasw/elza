@@ -55,6 +55,9 @@ public class ParUnitdate implements IUnitdate {
     @JoinColumn(name = "calendarTypeId")
     private ArrCalendarType calendarType;
 
+    @Column(updatable = false, insertable = false)
+    private Integer calendarTypeId;
+
     @Column(length = 19)
     private String valueFrom;
 
@@ -102,6 +105,11 @@ public class ParUnitdate implements IUnitdate {
     @Override
     public void setCalendarType(final ArrCalendarType calendarType) {
         this.calendarType = calendarType;
+        this.calendarTypeId = calendarType != null ? calendarType.getCalendarTypeId() : null;
+    }
+
+    public Integer getCalendarTypeId() {
+        return calendarTypeId;
     }
 
     @Override

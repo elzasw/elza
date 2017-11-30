@@ -3,7 +3,9 @@ package cz.tacr.elza.packageimport.xml;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
+import java.util.List;
 
 
 /**
@@ -27,6 +29,10 @@ public class PackageInfo {
 
     @XmlElement(name = "description", nillable = true)
     private String description;
+
+    @XmlElement(name = "dependency", required = true)
+    @XmlElementWrapper(name = "dependencies")
+    private List<PackageDependency> dependencies;
 
     public String getCode() {
         return code;
@@ -60,6 +66,14 @@ public class PackageInfo {
         this.description = description;
     }
 
+    public List<PackageDependency> getDependencies() {
+        return dependencies;
+    }
+
+    public void setDependencies(final List<PackageDependency> dependencies) {
+        this.dependencies = dependencies;
+    }
+
     @Override
     public String toString() {
         return "PackageInfo{" +
@@ -67,6 +81,7 @@ public class PackageInfo {
                 ", name='" + name + '\'' +
                 ", version=" + version +
                 ", description='" + description + '\'' +
+                ", dependencies='" + dependencies + '\'' +
                 '}';
     }
 }

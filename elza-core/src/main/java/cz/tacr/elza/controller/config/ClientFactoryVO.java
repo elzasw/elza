@@ -18,13 +18,9 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import cz.tacr.elza.packageimport.PackageService;
-import cz.tacr.elza.packageimport.xml.SettingFavoriteItemSpecs;
-import cz.tacr.elza.repository.ItemSpecRepository;
-import cz.tacr.elza.domain.ParRegistryRole;
-import cz.tacr.elza.repository.RegistryRoleRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -65,7 +61,6 @@ import cz.tacr.elza.controller.vo.ArrRequestVO;
 import cz.tacr.elza.controller.vo.BulkActionRunVO;
 import cz.tacr.elza.controller.vo.BulkActionVO;
 import cz.tacr.elza.controller.vo.DmsFileVO;
-import cz.tacr.elza.controller.vo.TreeItemSpecsItem;
 import cz.tacr.elza.controller.vo.NodeConformityVO;
 import cz.tacr.elza.controller.vo.ParInstitutionVO;
 import cz.tacr.elza.controller.vo.ParPartyNameComplementVO;
@@ -89,6 +84,7 @@ import cz.tacr.elza.controller.vo.RulPolicyTypeVO;
 import cz.tacr.elza.controller.vo.RulRuleSetVO;
 import cz.tacr.elza.controller.vo.RulTemplateVO;
 import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
+import cz.tacr.elza.controller.vo.TreeItemSpecsItem;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
 import cz.tacr.elza.controller.vo.UISettingsVO;
 import cz.tacr.elza.controller.vo.UserInfoVO;
@@ -100,6 +96,19 @@ import cz.tacr.elza.controller.vo.nodes.ItemTypeDescItemsLiteVO;
 import cz.tacr.elza.controller.vo.nodes.ItemTypeLiteVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeDescItemsVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemCoordinatesVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemDecimalVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemEnumVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemFileRefVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemFormattedTextVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemIntVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemJsonTableVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemPartyRefVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemRecordRefVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStringVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemTextVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitdateVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitidVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ItemGroupVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ItemTypeGroupVO;
@@ -115,6 +124,8 @@ import cz.tacr.elza.domain.ArrDaoLinkRequest;
 import cz.tacr.elza.domain.ArrDaoPackage;
 import cz.tacr.elza.domain.ArrDaoRequest;
 import cz.tacr.elza.domain.ArrDaoRequestDao;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataText;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrDigitizationRequest;
@@ -141,6 +152,7 @@ import cz.tacr.elza.domain.ParPartyNameComplement;
 import cz.tacr.elza.domain.ParPartyNameFormType;
 import cz.tacr.elza.domain.ParPartyType;
 import cz.tacr.elza.domain.ParPartyTypeRelation;
+import cz.tacr.elza.domain.ParRegistryRole;
 import cz.tacr.elza.domain.ParRelation;
 import cz.tacr.elza.domain.ParRelationEntity;
 import cz.tacr.elza.domain.ParRelationType;
@@ -168,6 +180,8 @@ import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.packageimport.ItemTypeUpdater;
+import cz.tacr.elza.packageimport.PackageService;
+import cz.tacr.elza.packageimport.xml.SettingFavoriteItemSpecs;
 import cz.tacr.elza.repository.BulkActionNodeRepository;
 import cz.tacr.elza.repository.ComplementTypeRepository;
 import cz.tacr.elza.repository.DaoFileGroupRepository;
@@ -178,6 +192,7 @@ import cz.tacr.elza.repository.DaoRequestDaoRepository;
 import cz.tacr.elza.repository.DigitizationRequestNodeRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.GroupRepository;
+import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.OutputDefinitionRepository;
 import cz.tacr.elza.repository.PartyNameRepository;
@@ -185,6 +200,7 @@ import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.PermissionRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
+import cz.tacr.elza.repository.RegistryRoleRepository;
 import cz.tacr.elza.repository.RelationEntityRepository;
 import cz.tacr.elza.repository.RelationRepository;
 import cz.tacr.elza.repository.RequestQueueItemRepository;
@@ -197,6 +213,7 @@ import cz.tacr.elza.service.OutputService;
 import cz.tacr.elza.service.SettingsService;
 import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MapperFactory;
+import ma.glasnost.orika.MappingContext;
 
 
 /**
@@ -334,11 +351,17 @@ public class ClientFactoryVO {
     /**
      * Vytvoří seznam VO.
      * @param users vstupní seznam uživatelů
+     * @param initPermissions mají se plnit oprávnění?
      * @return seznam VO
      */
-    public List<UsrUserVO> createUserList(final List<UsrUser> users) {
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        return mapper.mapAsList(users, UsrUserVO.class);
+    public List<UsrUserVO> createUserList(final List<UsrUser> users, final boolean initPermissions) {
+        if (users == null) {
+            return null;
+        }
+
+        return users.stream()
+                .map(x -> createUser(x, initPermissions, false))
+                .collect(Collectors.toList());
     }
 
     /**
@@ -347,7 +370,7 @@ public class ClientFactoryVO {
      * @return seznam VO
      */
     public List<RulTemplateVO> createTemplates(final Collection<RulTemplate> templates){
-        Assert.notNull(templates);
+        Assert.notNull(templates, "Šablony musí být vyplněny");
 
         List<RulTemplateVO> result = new ArrayList<>();
         for (RulTemplate template : templates) {
@@ -362,7 +385,7 @@ public class ClientFactoryVO {
      * @return VO
      */
     public RulTemplateVO createTemplate(final RulTemplate template){
-        Assert.notNull(template);
+        Assert.notNull(template, "Šablona musí být vyplněna");
         MapperFacade mapper = mapperFactory.getMapperFacade();
         return mapper.map(template, RulTemplateVO.class);
     }
@@ -737,7 +760,7 @@ public class ClientFactoryVO {
      * @return seznam VO typů
      */
     public List<ParPartyNameFormTypeVO> createPartyNameFormTypes(final Collection<ParPartyNameFormType> types) {
-        Assert.notNull(types);
+        Assert.notNull(types, "Typy forem jmén musí být vyplněny");
         MapperFacade mapper = mapperFactory.getMapperFacade();
 
         List<ParPartyNameFormTypeVO> result = new LinkedList<>();
@@ -917,7 +940,7 @@ public class ClientFactoryVO {
 
 
         if (item == null) {
-            item = (VO) mapperFactory.getMapperFacade().map(source, classType);
+            item = mapperFactory.getMapperFacade().map(source, classType);
             processedItemsMap.put(id, item);
         }
         return item;
@@ -931,7 +954,7 @@ public class ClientFactoryVO {
      * @return VO
      */
     public ArrFundVO createFundVO(final ArrFund fund, final boolean includeVersions) {
-        Assert.notNull(fund);
+        Assert.notNull(fund, "AS musí být vyplněn");
 
         MapperFacade mapper = mapperFactory.getMapperFacade();
         ArrFundVO fundVO = mapper.map(fund, ArrFundVO.class);
@@ -961,14 +984,14 @@ public class ClientFactoryVO {
      * @return VO verze archivní pomůcky
      */
     public ArrFundVersionVO createFundVersion(final ArrFundVersion fundVersion) {
-        Assert.notNull(fundVersion);
+        Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
 
         MapperFacade mapper = mapperFactory.getMapperFacade();
         ArrFundVersionVO fundVersionVO = mapper.map(fundVersion, ArrFundVersionVO.class);
         Date createDate = Date.from(
                 fundVersion.getCreateChange().getChangeDate().atZone(ZoneId.systemDefault()).toInstant());
         fundVersionVO.setCreateDate(createDate);
-        ConfigView.ViewTitles viewTitles = configView.getViewTitles(fundVersion.getRuleSet().getCode(), fundVersion.getFund().getFundId());
+        ConfigView.ViewTitles viewTitles = configView.getViewTitles(fundVersion.getRuleSet().getCode(), fundVersion.getFundId());
         fundVersionVO.setStrictMode(viewTitles.getStrictMode());
 
         ArrChange lockChange = fundVersion.getLockChange();
@@ -991,7 +1014,7 @@ public class ClientFactoryVO {
      */
     public List<ArrOutputDefinitionVO> createOutputDefinitions(final Collection<ArrOutputDefinition> outputDefinitions,
                                                                final boolean loadOutputs) {
-        Assert.notNull(outputDefinitions);
+        Assert.notNull(outputDefinitions, "Musí být vyplněny definice výstupů");
 
         MapperFacade mapper = mapperFactory.getMapperFacade();
 
@@ -1016,7 +1039,7 @@ public class ClientFactoryVO {
      * @return VO
      */
     public ArrOutputDefinitionVO createOutputDefinition(final ArrOutputDefinition outputDefinition) {
-        Assert.notNull(outputDefinition);
+        Assert.notNull(outputDefinition, "Definice výstupu musí být vyplněna");
         MapperFacade mapper = mapperFactory.getMapperFacade();
         ArrOutputDefinitionVO outputDefinitionVO = mapper.map(outputDefinition, ArrOutputDefinitionVO.class);
         return outputDefinitionVO;
@@ -1029,7 +1052,7 @@ public class ClientFactoryVO {
      * @return seznam verzí seřazený od nejstarší po nejmladší
      */
     private List<ArrOutputVO> createOutputsVO(final List<ArrOutput> outputs) {
-        Assert.notNull(outputs);
+        Assert.notNull(outputs, "Výstupy musí být vyplněny");
 
         List<ArrOutputVO> result = new ArrayList<>(outputs.size());
         MapperFacade mapper = mapperFactory.getMapperFacade();
@@ -1058,7 +1081,7 @@ public class ClientFactoryVO {
      * @return VO specifikace hodnoty atributu
      */
     public RulDescItemSpecVO createDescItemSpecVO(final RulItemSpec descItemSpec) {
-        Assert.notNull(descItemSpec);
+        Assert.notNull(descItemSpec, "Specifikace atributu musí být vyplněna");
         MapperFacade mapper = mapperFactory.getMapperFacade();
         RulDescItemSpecVO descItemSpecVO = mapper.map(descItemSpec, RulDescItemSpecVO.class);
         return descItemSpecVO;
@@ -1071,7 +1094,7 @@ public class ClientFactoryVO {
      * @return VO typ hodnoty atributu
      */
     public RulDescItemTypeDescItemsVO createDescItemTypeVO(final RulItemType descItemType) {
-        Assert.notNull(descItemType);
+        Assert.notNull(descItemType, "Typ atributu musí být vyplněn");
         MapperFacade mapper = mapperFactory.getMapperFacade();
         RulDescItemTypeDescItemsVO descItemTypeVO = mapper.map(descItemType, RulDescItemTypeDescItemsVO.class);
         descItemTypeVO.setDataTypeId(descItemType.getDataType().getDataTypeId());
@@ -1085,7 +1108,7 @@ public class ClientFactoryVO {
      * @return VO typ hodnoty atributu
      */
     public ItemTypeDescItemsLiteVO createDescItemTypeLiteVO(final RulItemType descItemType) {
-        Assert.notNull(descItemType);
+        Assert.notNull(descItemType, "Typ atributu musí být vyplněn");
         MapperFacade mapper = mapperFactory.getMapperFacade();
         ItemTypeDescItemsLiteVO descItemTypeVO = mapper.map(descItemType, ItemTypeDescItemsLiteVO.class);
         return descItemTypeVO;
@@ -1098,9 +1121,50 @@ public class ClientFactoryVO {
      * @return VO hodnota atributu
      */
     public <T extends ArrItem> ArrItemVO createDescItem(final T item) {
-        Assert.notNull(item);
+        Assert.notNull(item, "Hodnota musí být vyplněna");
         MapperFacade mapper = mapperFactory.getMapperFacade();
-        ArrItemVO itemVO = mapper.map(item.getItem(), ArrItemVO.class);
+
+        ArrItemVO itemVO;
+        ArrData data = item.getData();
+		String code = item.getItemType().getDataType().getCode();
+        if (data instanceof ArrDataText) {
+			switch (code) {
+                case "TEXT":
+                    itemVO = new ArrItemTextVO();
+                    ((ArrItemTextVO) itemVO).setValue(((ArrDataText)data).getValue());
+                    break;
+                case "FORMATTED_TEXT":
+                    itemVO = new ArrItemFormattedTextVO();
+                    ((ArrItemFormattedTextVO) itemVO).setValue(((ArrDataText)data).getValue());
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
+        } else {
+            itemVO = mapper.map(data, ArrItemVO.class);
+        }
+
+        if (itemVO == null) {
+            switch (code) {
+                case "INT": itemVO = new ArrItemIntVO(); break;
+                case "STRING": itemVO = new ArrItemStringVO(); break;
+                case "TEXT": itemVO = new ArrItemTextVO(); break;
+                case "UNITDATE": itemVO = new ArrItemUnitdateVO(); break;
+                case "UNITID": itemVO = new ArrItemUnitidVO(); break;
+                case "FORMATTED_TEXT": itemVO = new ArrItemFormattedTextVO(); break;
+                case "COORDINATES": itemVO = new ArrItemCoordinatesVO(); break;
+                case "PARTY_REF": itemVO = new ArrItemPartyRefVO(); break;
+                case "RECORD_REF": itemVO = new ArrItemRecordRefVO(); break;
+                case "DECIMAL": itemVO = new ArrItemDecimalVO(); break;
+                case "PACKET_REF": itemVO = new ArrItemPartyRefVO(); break;
+                case "ENUM": itemVO = new ArrItemEnumVO(); break;
+                case "FILE_REF": itemVO = new ArrItemFileRefVO(); break;
+                case "JSON_TABLE": itemVO = new ArrItemJsonTableVO(); break;
+                default: throw  new NotImplementedException(code);
+            }
+            itemVO.setUndefined(true);
+        }
+
         BeanUtils.copyProperties(item, itemVO);
         itemVO.setId(item.getItemId());
 
@@ -1131,18 +1195,20 @@ public class ClientFactoryVO {
      */
     public <T extends ArrItem> List<ItemGroupVO> createItemGroupsNew(final String ruleCode, final Integer fundId, final List<T> items) {
         Map<RulItemType, List<ArrItemVO>> itemByType = new HashMap<>();
+		if (items != null) {
         // vytvoření VO hodnot atributů
-        for (T item : items) {
-            List<ArrItemVO> itemList = itemByType.get(item.getItemType());
+			for (T item : items) {
+				List<ArrItemVO> itemList = itemByType.get(item.getItemType());
 
-            if (itemList == null) {
-                itemList = new ArrayList<>();
+				if (itemList == null) {
+					itemList = new ArrayList<>();
                 itemByType.put(item.getItemType(), itemList);
-            }
+				}
 
-            itemList.add(createItem(item));
+				itemList.add(createDescItem(item));
+			}
         }
-    	
+
         List<ItemTypeDescItemsLiteVO> itemTypeVOList = new ArrayList<>();
         // zjištění použitých typů atributů a jejich převod do VO
         for (RulItemType descItemType : itemByType.keySet()) {
@@ -1164,7 +1230,7 @@ public class ClientFactoryVO {
         	for(GroupConfiguration groupConfig: viewConfig.getGroups())
         	{
         		ItemGroupVO groupVo = new ItemGroupVO(groupConfig.getCode());
-        		groupVo.setTypes(new ArrayList<>()); // should be removed after moving logic into ItemTypeGroupVO 
+        		groupVo.setTypes(new ArrayList<>()); // should be removed after moving logic into ItemTypeGroupVO
         		allItemGroups.add(groupVo);
         		itemGroupVOMap.put(groupConfig, groupVo);
         	}
@@ -1194,7 +1260,7 @@ public class ClientFactoryVO {
         // seřazení položek ve skupinách
         for (ItemGroupVO itemGroupVO : itemGroupVOList) {
         	boolean ordered = false;
-        	
+
             if(viewConfig!=null) {
             	GroupConfiguration groupConfig = viewConfig.getGroup(itemGroupVO.getCode());
             	if(groupConfig!=null) {
@@ -1267,7 +1333,7 @@ public class ClientFactoryVO {
         // naplnění mapy podle oblíbených z nastavení
         Map<Integer, List<Integer>> typeSpecsMap = new HashMap<>();
         for (UISettings favoritesItemType : favoritesItemTypes) {
-            SettingFavoriteItemSpecs setting = (SettingFavoriteItemSpecs) packageServise.convertSetting(favoritesItemType);
+            SettingFavoriteItemSpecs setting = (SettingFavoriteItemSpecs) packageServise.convertSetting(favoritesItemType, null);
             if (CollectionUtils.isNotEmpty(setting.getFavoriteItems())) {
                 List<RulItemSpec> itemSpecs = itemSpecRepository.findOneByCodes(setting.getFavoriteItems().stream()
                         .map(SettingFavoriteItemSpecs.FavoriteItem::getValue).collect(Collectors.toList()));
@@ -1279,8 +1345,8 @@ public class ClientFactoryVO {
             }
         }
 
-        // Prepare list of groups        
-        ViewConfiguration viewConfig = elzaRules.getViewConfiguration(ruleCode, fundId);        
+        // Prepare list of groups
+        ViewConfiguration viewConfig = elzaRules.getViewConfiguration(ruleCode, fundId);
         Map<GroupConfiguration, ItemTypeGroupVO> itemTypeGroupVOMap = new HashMap<>();
         List<ItemTypeGroupVO> result = new ArrayList<>();
         // prepare empty groups
@@ -1289,7 +1355,7 @@ public class ClientFactoryVO {
         	for(GroupConfiguration groupConfig: viewConfig.getGroups())
         	{
         		ItemTypeGroupVO groupVo = new ItemTypeGroupVO(groupConfig.getCode(), groupConfig.getName());
-        		groupVo.setTypes(new ArrayList<>()); // should be removed after moving logic into ItemTypeGroupVO 
+        		groupVo.setTypes(new ArrayList<>()); // should be removed after moving logic into ItemTypeGroupVO
         		result.add(groupVo);
         		itemTypeGroupVOMap.put(groupConfig, groupVo);
         	}
@@ -1324,16 +1390,16 @@ public class ClientFactoryVO {
             // set width from type info
             itemTypeVO.setWidth(typeInfo!=null?typeInfo.getWidth():1);
 
-            List<ItemTypeLiteVO> itemTypeList = itemTypeGroupVO.getTypes();            
+            List<ItemTypeLiteVO> itemTypeList = itemTypeGroupVO.getTypes();
             itemTypeList.add(itemTypeVO);
         }
-        
+
         // remove empty groups and return result
         return result.stream().filter(g -> g.getTypes().size()>0 ).collect(Collectors.toList());
     }
 
     private ItemTypeLiteVO createItemTypeLite(final RulItemTypeExt itemTypeExt) {
-        Assert.notNull(itemTypeExt);
+        Assert.notNull(itemTypeExt, "Typ hodnoty atributu musí být vyplněn");
         MapperFacade mapper = mapperFactory.getMapperFacade();
         ItemTypeLiteVO itemTypeVO = mapper.map(itemTypeExt, ItemTypeLiteVO.class);
         return itemTypeVO;
@@ -1346,7 +1412,7 @@ public class ClientFactoryVO {
      * @return VO typu hodnoty atributu se specifikacemi
      */
     public RulDescItemTypeExtVO createDescItemTypeExt(final RulItemTypeExt descItemType) {
-        Assert.notNull(descItemType);
+        Assert.notNull(descItemType, "Typ atributu musí být vyplněn");
         MapperFacade mapper = mapperFactory.getMapperFacade();
         RulDescItemTypeExtVO descItemTypeVO = mapper.map(descItemType, RulDescItemTypeExtVO.class);
         descItemTypeVO.setDataTypeId(descItemType.getDataType().getDataTypeId());
@@ -1485,7 +1551,7 @@ public class ClientFactoryVO {
     public List<ArrNodeVO> createArrNodes(final Collection<ArrNode> nodes) {
         List<ArrNodeVO> result = new LinkedList<>();
         for (ArrNode node : nodes) {
-            result.add(createArrNode(node));
+            result.add(ArrNodeVO.valueOf(node));
         }
         return result;
     }
@@ -1517,7 +1583,7 @@ public class ClientFactoryVO {
      * @return VO obalu
      */
     public ArrPacketVO createPacket(final ArrPacket packet) {
-        Assert.notNull(packet);
+        Assert.notNull(packet, "Obal musí být vyplněn");
         MapperFacade mapper = mapperFactory.getMapperFacade();
         ArrPacketVO packetVO = mapper.map(packet, ArrPacketVO.class);
         return packetVO;
@@ -1529,7 +1595,7 @@ public class ClientFactoryVO {
      * @return  VO stavu validace
      */
     public NodeConformityVO createNodeConformity(final ArrNodeConformityExt nodeConformity) {
-        Assert.notNull(nodeConformity);
+        Assert.notNull(nodeConformity, "Musí být vyplněno");
         MapperFacade mapper = mapperFactory.getMapperFacade();
         NodeConformityVO nodeConformityVO = mapper.map(nodeConformity, NodeConformityVO.class);
         return nodeConformityVO;
@@ -1542,13 +1608,13 @@ public class ClientFactoryVO {
      * @return třída rejstříku
      */
     public RegScopeVO createScope(final RegScope scope) {
-        Assert.notNull(scope);
+        Assert.notNull(scope, "Scope musí být vyplněn");
         MapperFacade mapper = mapperFactory.getMapperFacade();
         return mapper.map(scope, RegScopeVO.class);
     }
 
     public List<RegScopeVO> createScopes(final Collection<RegScope> scopes) {
-        Assert.notNull(scopes);
+        Assert.notNull(scopes, "Scopes musí být vyplněny");
         List<RegScopeVO> result = new ArrayList<>(scopes.size());
         scopes.forEach(s -> result.add(createScope(s)));
 
@@ -1573,19 +1639,19 @@ public class ClientFactoryVO {
      * @return hromadná akce VO
      */
     public BulkActionVO createBulkAction(final BulkActionConfig bulkAction) {
-        Assert.notNull(bulkAction);
+        Assert.notNull(bulkAction, "Nastavení hromadné akce musí být vyplněno");
         MapperFacade mapper = mapperFactory.getMapperFacade();
         return mapper.map(bulkAction, BulkActionVO.class);
     }
 
     public BulkActionRunVO createBulkActionRun(final ArrBulkActionRun bulkActionRun) {
-        Assert.notNull(bulkActionRun);
+        Assert.notNull(bulkActionRun, "Běh hromatných akcí musí být vyplněn");
         MapperFacade mapper = mapperFactory.getMapperFacade();
         return mapper.map(bulkActionRun, BulkActionRunVO.class);
     }
 
     public BulkActionRunVO createBulkActionRunWithNodes(final ArrBulkActionRun bulkActionRun) {
-        Assert.notNull(bulkActionRun);
+        Assert.notNull(bulkActionRun, "Běh hromatných akcí musí být vyplněn");
         MapperFacade mapper = mapperFactory.getMapperFacade();
         BulkActionRunVO bulkActionRunVO = mapper.map(bulkActionRun, BulkActionRunVO.class);
         bulkActionRunVO.setNodes(levelTreeCacheService.getNodesByIds(bulkActionNodeRepository.findNodeIdsByBulkActionRun(bulkActionRun), bulkActionRun.getFundVersionId()));
@@ -1597,7 +1663,7 @@ public class ClientFactoryVO {
     }
 
     public ArrNodeRegisterVO createRegisterLink(final ArrNodeRegister nodeRegister) {
-        Assert.notNull(nodeRegister);
+        Assert.notNull(nodeRegister, "Rejstříkové heslo musí být vyplněno");
         MapperFacade mapper = mapperFactory.getMapperFacade();
         ArrNodeRegisterVO nodeRegisterVO = mapper.map(nodeRegister, ArrNodeRegisterVO.class);
         nodeRegisterVO.setNodeId(nodeRegister.getNode().getNodeId());
@@ -1632,7 +1698,7 @@ public class ClientFactoryVO {
                                                          final Boolean withGroups,
                                                          final String ruleCode,
                                                          final Integer fundId) {
-        Assert.notNull(scenarioOfNewLevel);
+        Assert.notNull(scenarioOfNewLevel, "Scénáře musí být vyplněny");
         MapperFacade mapper = mapperFactory.getMapperFacade();
         ScenarioOfNewLevelVO scenarioVO = mapper.map(scenarioOfNewLevel, ScenarioOfNewLevelVO.class);
         if (BooleanUtils.isTrue(withGroups)) {
@@ -1668,7 +1734,7 @@ public class ClientFactoryVO {
      * @return instituce VO
      */
     public ParInstitutionVO createInstitution(final ParInstitution institution) {
-        Assert.notNull(institution);
+        Assert.notNull(institution, "Instituce musí být vyplněny");
         MapperFacade mapper = mapperFactory.getMapperFacade();
         ParInstitutionVO institutionVO = mapper.map(institution, ParInstitutionVO.class);
         institutionVO.setName(institution.getParty().getRecord().getRecord());
@@ -1693,7 +1759,7 @@ public class ClientFactoryVO {
      * @return seznam VO typu oprávnění
      */
     public RulPolicyTypeVO createPolicyType(final RulPolicyType policyType) {
-        Assert.notNull(policyType);
+        Assert.notNull(policyType, "Typ oprávnění musí být vyplněno");
         MapperFacade mapper = mapperFactory.getMapperFacade();
         RulPolicyTypeVO policyTypeVO = mapper.map(policyType, RulPolicyTypeVO.class);
         policyTypeVO.setRuleSetId(policyType.getRuleSet().getRuleSetId());
@@ -1717,7 +1783,7 @@ public class ClientFactoryVO {
      * @return seznam VO typu outputu
      */
     public RulOutputTypeVO createOutputType(final RulOutputType outputType) {
-        Assert.notNull(outputType);
+        Assert.notNull(outputType, "Typ výstupu musí být vyplněno");
         MapperFacade mapper = mapperFactory.getMapperFacade();
         return mapper.map(outputType, RulOutputTypeVO.class);
     }
@@ -1734,7 +1800,7 @@ public class ClientFactoryVO {
      * @return seznam VO výstupů
      */
     public List<ArrOutputExtVO> createOutputExtList(final List<ArrOutput> outputs, final ArrFundVersion fundVersion) {
-        Assert.notNull(outputs);
+        Assert.notNull(outputs, "Výstupy musí být vyplněny");
         List<ArrOutputExtVO> outputExtList = new ArrayList<>();
         for (ArrOutput output : outputs) {
             ArrOutputExtVO outputExt = createOutputExt(output, fundVersion);
@@ -1783,9 +1849,53 @@ public class ClientFactoryVO {
      * @param permissions vstupní seznam oprávnění
      * @return seznam VO
      */
-    public List<UsrPermissionVO> createPermissionList(final List<UsrPermission> permissions) {
+    public List<UsrPermissionVO> createPermissionList(final List<UsrPermission> permissions, Class targetEntity) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
-        return mapper.mapAsList(permissions, UsrPermissionVO.class);
+        Map<Object, Object> map = new HashMap<>();
+        map.put("targetEntity", targetEntity);
+        MappingContext context = new MappingContext(map);
+        return mapper.mapAsList(permissions, UsrPermissionVO.class, context);
+    }
+
+    /**
+     * Vytvoří VO.
+     * @param permission vstupní oprávnění
+     * @return VO
+     */
+    public UsrPermissionVO createPermission(final UsrPermission permission, Class targetEntity) {
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        Map<Object, Object> map = new HashMap<>();
+        map.put("targetEntity", targetEntity);
+        MappingContext context = new MappingContext(map);
+        return mapper.map(permission, UsrPermissionVO.class, context);
+    }
+
+    /**
+     * Vytvoří VO uživatele s návaznými daty.
+     * @param user uživatel
+     * @param initPermissions mají se plnit oprávnění?
+     * @param initGroups mají se plnit skuipny?
+     * @return VO
+     */
+    public UsrUserVO createUser(final UsrUser user, final boolean initPermissions, final boolean initGroups) {
+        // Hlavní objekt
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        UsrUserVO result = mapper.map(user, UsrUserVO.class);
+
+        // Načtení oprávnění
+        if (initPermissions) {
+//        List<UsrPermission> permissions = permissionRepository.findByUserOrderByPermissionIdAsc(user);
+            List<UsrPermission> permissions = permissionRepository.getAllPermissionsWithGroups(user);
+            result.setPermissions(createPermissionList(permissions, UsrUser.class));
+        }
+
+        // Načtení členství ve skupinách
+        if (initGroups) {
+            List<UsrGroup> groups = groupRepository.findByUser(user);
+            result.setGroups(createGroupList(groups, false, false));
+        }
+
+        return result;
     }
 
     /**
@@ -1793,14 +1903,16 @@ public class ClientFactoryVO {
      * @param user uživatel
      * @return VO
      */
-    public UsrUserVO createUser(final UsrUser user) {
+    @Deprecated
+    public UsrUserVO createUserOld(final UsrUser user) {
         // Hlavní objekt
         MapperFacade mapper = mapperFactory.getMapperFacade();
         UsrUserVO result = mapper.map(user, UsrUserVO.class);
 
         // Načtení oprávnění
         List<UsrPermission> permissions = permissionRepository.findByUserOrderByPermissionIdAsc(user);
-        result.setPermissions(createPermissionList(permissions));
+//        List<UsrPermission> permissions = permissionRepository.getAllPermissionsWithGroups(user);
+        result.setPermissions(createPermissionList(permissions, UsrUser.class));
 
         // Načtení členství ve skupinách
         List<UsrGroup> groups = groupRepository.findByUser(user);
@@ -1822,12 +1934,16 @@ public class ClientFactoryVO {
         UsrGroupVO result = mapper.map(group, UsrGroupVO.class);
 
         // Načtení oprávnění
-        List<UsrPermission> permissions = permissionRepository.findByGroupOrderByPermissionIdAsc(group);
-        result.setPermissions(createPermissionList(permissions));
+        if (initPermissions) {
+            List<UsrPermission> permissions = permissionRepository.findByGroupOrderByPermissionIdAsc(group);
+            result.setPermissions(createPermissionList(permissions, UsrGroup.class));
+        }
 
         // Přiřazení uživatelé
-        List<UsrUser> users = userRepository.findByGroup(group);
-        result.setUsers(createUserList(users));
+        if (initUsers) {
+            List<UsrUser> users = userRepository.findByGroup(group);
+            result.setUsers(createUserList(users, false));
+        }
 
         return result;
     }
@@ -1887,27 +2003,13 @@ public class ClientFactoryVO {
     }
 
     public ArrOutputDefinitionVO createArrOutputDefinition(final ArrOutputDefinition outputDefinition) {
-        Assert.notNull(outputDefinition);
+        Assert.notNull(outputDefinition, "Definice výstupu musí být vyplněna");
         MapperFacade mapper = mapperFactory.getMapperFacade();
         ArrOutputDefinitionVO result = mapper.map(outputDefinition, ArrOutputDefinitionVO.class);
         if (outputDefinition.getOutputResult() != null) {
             result.setGeneratedDate(mapper.map(outputDefinition.getOutputResult().getChange().getChangeDate(), Date.class));
         }
         return result;
-    }
-
-    public <T extends ArrItem> ArrItemVO createItem(final T item) {
-
-        Assert.notNull(item);
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        ArrItemVO descItemVO = mapper.map(item.getItem(), ArrItemVO.class);
-        BeanUtils.copyProperties(item, descItemVO);
-        descItemVO.setId(item.getItemId());
-
-        Integer specId = (item.getItemSpec() == null) ? null : item.getItemSpec().getItemSpecId();
-        descItemVO.setDescItemSpecId(specId);
-        return descItemVO;
-
     }
 
     /**

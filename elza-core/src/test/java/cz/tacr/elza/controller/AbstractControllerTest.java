@@ -20,10 +20,6 @@ import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
-import cz.tacr.elza.controller.vo.CopyNodesParams;
-import cz.tacr.elza.controller.vo.CopyNodesValidate;
-import cz.tacr.elza.controller.vo.CopyNodesValidateResult;
-import cz.tacr.elza.service.vo.ChangesResult;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.junit.Assert;
@@ -56,11 +52,16 @@ import cz.tacr.elza.controller.vo.ArrOutputDefinitionVO;
 import cz.tacr.elza.controller.vo.ArrOutputExtVO;
 import cz.tacr.elza.controller.vo.ArrOutputVO;
 import cz.tacr.elza.controller.vo.ArrPacketVO;
+import cz.tacr.elza.controller.vo.CopyNodesParams;
+import cz.tacr.elza.controller.vo.CopyNodesValidate;
+import cz.tacr.elza.controller.vo.CopyNodesValidateResult;
+import cz.tacr.elza.controller.vo.CreateFundVO;
 import cz.tacr.elza.controller.vo.FilterNode;
 import cz.tacr.elza.controller.vo.FilterNodePosition;
 import cz.tacr.elza.controller.vo.FilteredResultVO;
 import cz.tacr.elza.controller.vo.FundListCountResult;
 import cz.tacr.elza.controller.vo.NodeItemWithParent;
+import cz.tacr.elza.controller.vo.PackageVO;
 import cz.tacr.elza.controller.vo.ParInstitutionVO;
 import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
 import cz.tacr.elza.controller.vo.ParPartyTypeVO;
@@ -85,6 +86,7 @@ import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
 import cz.tacr.elza.controller.vo.UserInfoVO;
 import cz.tacr.elza.controller.vo.UsrGroupVO;
+import cz.tacr.elza.controller.vo.UsrPermissionVO;
 import cz.tacr.elza.controller.vo.UsrUserVO;
 import cz.tacr.elza.controller.vo.ValidationResult;
 import cz.tacr.elza.controller.vo.filter.Filters;
@@ -105,10 +107,11 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemTextVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitdateVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitidVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
+import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
 import cz.tacr.elza.domain.ArrPacket;
-import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.service.ArrMoveLevelService;
+import cz.tacr.elza.service.vo.ChangesResult;
 
 
 public abstract class AbstractControllerTest extends AbstractTest {
@@ -134,8 +137,10 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String KML_CONTROLLER_URL = "/api/kml";
     protected static final String VALIDATION_CONTROLLER_URL = "/api/validate";
     protected static final String RULE_CONTROLLER_URL = "/api/rule";
-    protected static final String XML_IMPORT_CONTROLLER_URL = "/api/import";
+    protected static final String DE_IMPORT_CONTROLLER_URL = "/api/import";
+    protected static final String DE_EXPORT_CONTROLLER_URL = "/api/export";
     protected static final String USER_CONTROLLER_URL = "/api/user";
+    protected static final String GROUP_CONTROLLER_URL = "/api/group";
 
     // ADMIN
     protected static final String REINDEX = ADMIN_CONTROLLER_URL + "/reindex";
@@ -249,11 +254,12 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String INSERT_PARTY = PARTY_CONTROLLER_URL + "/";
     protected static final String UPDATE_PARTY = PARTY_CONTROLLER_URL + "/{partyId}";
     protected static final String DELETE_PARTY = PARTY_CONTROLLER_URL + "/{partyId}";
+    protected static final String USAGE_PARTY = PARTY_CONTROLLER_URL + "/{partyId}/usage";
+    protected static final String REPLACE_PARTY = PARTY_CONTROLLER_URL + "/{partyId}/replace";
 
     protected static final String INSTITUTIONS = PARTY_CONTROLLER_URL + "/institutions";
 
     // REGISTRY
-    protected static final String DEFAULT_SCOPES = REGISTRY_CONTROLLER_URL + "/defaultScopes";
     protected static final String CREATE_SCOPE = REGISTRY_CONTROLLER_URL + "/scopes";
     protected static final String UPDATE_SCOPE = REGISTRY_CONTROLLER_URL + "/scopes/{scopeId}";
     protected static final String DELETE_SCOPE = REGISTRY_CONTROLLER_URL + "/scopes/{scopeId}";
@@ -267,6 +273,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String CREATE_RECORD = REGISTRY_CONTROLLER_URL + "/";
     protected static final String UPDATE_RECORD = REGISTRY_CONTROLLER_URL + "/{recordId}";
     protected static final String DELETE_RECORD = REGISTRY_CONTROLLER_URL + "/{recordId}";
+    protected static final String USAGES_RECORD = REGISTRY_CONTROLLER_URL + "/{recordId}/usage";
+    protected static final String REPLACE_RECORD = REGISTRY_CONTROLLER_URL + "/{recordId}/replace";
 
 
     protected static final String CREATE_REG_COORDINATES = REGISTRY_CONTROLLER_URL + "/regCoordinates/";
@@ -294,8 +302,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
     // Validation
     protected static final String VALIDATE_UNIT_DATE = VALIDATION_CONTROLLER_URL + "/unitDate";
 
-    // XmlImport
-    protected final static String XML_IMPORT = XML_IMPORT_CONTROLLER_URL + "/import";
+    // Import/Export
+    protected final static String DE_IMPORT = DE_IMPORT_CONTROLLER_URL + "/import";
+    protected final static String DE_EXPORT = DE_EXPORT_CONTROLLER_URL + "/create";
 
     // Uživatelé a skupiny
     protected final static String USER_DETAIL = USER_CONTROLLER_URL + "/detail";
@@ -305,15 +314,23 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected final static String GET_USER = USER_CONTROLLER_URL + "/{userId}";
     protected final static String ACTIVE_USER = USER_CONTROLLER_URL + "/{userId}/active/{active}";
     protected final static String CREATE_USER = USER_CONTROLLER_URL;
-    protected final static String FIND_GROUP = USER_CONTROLLER_URL + "/group";
-    protected final static String GET_GROUP = USER_CONTROLLER_URL + "/group/{groupId}";
-    protected final static String CREATE_GROUP = USER_CONTROLLER_URL + "/group";
-    protected final static String DELETE_GROUP = USER_CONTROLLER_URL + "/group/{groupId}";
-    protected final static String CHANGE_GROUP = USER_CONTROLLER_URL + "/group/{groupId}";
-    protected final static String CHANGE_GROUP_PERMISSION = USER_CONTROLLER_URL + "/group/{groupId}/permission";
+    protected final static String FIND_GROUP = GROUP_CONTROLLER_URL;
+    protected final static String GET_GROUP = GROUP_CONTROLLER_URL + "/{groupId}";
+    protected final static String CREATE_GROUP = GROUP_CONTROLLER_URL;
+    protected final static String DELETE_GROUP = GROUP_CONTROLLER_URL + "/{groupId}";
+    protected final static String CHANGE_GROUP = GROUP_CONTROLLER_URL + "/{groupId}";
     protected final static String JOIN_GROUP = USER_CONTROLLER_URL + "/group/join";
     protected final static String LEAVE_GROUP = USER_CONTROLLER_URL + "/group/{groupId}/leave/{userId}";
-    protected final static String CHANGE_USER_PERMISSION = USER_CONTROLLER_URL + "/{userId}/permission";
+
+    protected final static String ADD_USER_PERMISSION = USER_CONTROLLER_URL + "/{userId}/permission/add";
+    protected final static String DELETE_USER_PERMISSION = USER_CONTROLLER_URL + "/{userId}/permission/delete";
+    protected final static String DELETE_USER_FUND_PERMISSION = USER_CONTROLLER_URL + "/{userId}/permission/delete/fund/{fundId}";
+    protected final static String DELETE_USER_FUND_ALL_PERMISSION = USER_CONTROLLER_URL + "/{userId}/permission/delete/fund/all";
+
+    protected final static String ADD_GROUP_PERMISSION = GROUP_CONTROLLER_URL + "/{groupId}/permission/add";
+    protected final static String DELETE_GROUP_PERMISSION = GROUP_CONTROLLER_URL + "/{groupId}/permission/delete";
+    protected final static String DELETE_GROUP_FUND_PERMISSION = GROUP_CONTROLLER_URL + "/{groupId}/permission/delete/fund/{fundId}";
+    protected final static String DELETE_GROUP_FUND_ALL_PERMISSION = GROUP_CONTROLLER_URL + "/{groupId}/permission/delete/fund/all";
 
     protected final static DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.00");
 
@@ -339,7 +356,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
         RestAssured.baseURI = RestAssured.DEFAULT_URI;  // nastavi default URI pro REST-assured. Nejcasteni localhost
         login();
         if (loadInstitutions) {
-            importXmlFile(null, 1, XmlImportControllerTest.getResourceFile(XML_INSTITUTION));
+            importXmlFile(null, 1, DEImportControllerTest.getResourceFile(XML_INSTITUTION));
         }
     }
 
@@ -438,26 +455,26 @@ public abstract class AbstractControllerTest extends AbstractTest {
             default:
                 throw new IllegalStateException("Nedefinovaný stav " + method + ".");
         }
-        
+
         logResponse(response);
         Assert.assertEquals(status.value(), response.statusCode());
 
         return response;
     }
 
-    private static void logResponse(Response response) {
+    private static void logResponse(final Response response) {
         String contentType = response.contentType();
         logger.info("Response status: " + response.statusLine() + ", content-type: " + contentType);
         // print body in some cases
         if(contentType!=null) {
         	if(contentType.startsWith(JSON_CONTENT_TYPE)||contentType.startsWith("text/")) {
-        		
-        		ResponseBody<?> responseBody = (ResponseBody<?>)response;
-        		ResponseOptions<?> responseOptions = (ResponseOptions<?>)response;
+
+        		ResponseBody<?> responseBody = response;
+        		ResponseOptions<?> responseOptions = response;
         		String body = new Prettifier().getPrettifiedBodyIfPossible(responseOptions, responseBody);
         		logger.info("Response body:" + body);
         	}
-        }		
+        }
 	}
 
 	/**
@@ -478,7 +495,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
         Response response = requestSpecification.post(url);
         logResponse(response);
-        
+
         Assert.assertEquals(HttpStatus.OK.value(), response.statusCode());
 
         return response;
@@ -518,23 +535,12 @@ public abstract class AbstractControllerTest extends AbstractTest {
     /**
      * Vytvoření archivní pomůcky.
      *
-     * @param name              název AP
-     * @param ruleSetId         identifikátor pravidel
-     * @param institutionId     identifikátor instituce
-     * @param dateRange         vysčítaná informace o časovém rozsahu fondu
+     * @param createFund             parametry pro založení
      * @return ap
      */
-    protected ArrFundVO createFund(final String name,
-                                   final Integer ruleSetId,
-                                   final Integer institutionId,
-                                   final String internalCode,
-                                   final String dateRange) {
+    protected ArrFundVO createFund(final CreateFundVO createFund) {
         Response response = post(spec -> spec
-                .queryParameter("name", name)
-                .queryParameter("ruleSetId", ruleSetId)
-                .queryParameter("institutionId", institutionId)
-                .queryParameter("internalCode", internalCode)
-                .queryParameter("dateRange", dateRange), CREATE_FUND);
+                .body(createFund), CREATE_FUND);
         return response.getBody().as(ArrFundVO.class);
     }
 
@@ -548,7 +554,15 @@ public abstract class AbstractControllerTest extends AbstractTest {
         List<RulRuleSetVO> ruleSets = getRuleSets();
         RulRuleSetVO ruleSet = ruleSets.get(0);
         ParInstitutionVO institution = getInstitutions().get(0);
-        return createFund(name, ruleSet.getId(), institution.getId(), internalCode, null);
+
+        CreateFundVO createFund = new CreateFundVO();
+        createFund.setName(name);
+        createFund.setRuleSetId(ruleSet.getId());
+        createFund.setInstitutionId(institution.getId());
+        createFund.setInternalCode(internalCode);
+        createFund.setDateRange(null);
+
+        return createFund(createFund);
     }
 
     /**
@@ -877,8 +891,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
      *
      * @return list RulPackage
      */
-    protected List<RulPackage> getPackages() {
-        return Arrays.asList(get(PACKAGES).getBody().as(RulPackage[].class));
+    protected List<PackageVO> getPackages() {
+        return Arrays.asList(get(PACKAGES).getBody().as(PackageVO[].class));
     }
 
     /**
@@ -1837,13 +1851,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
     }
 
     /**
-     * Vrací výchozí třídy rejstříků z databáze.
-     */
-    protected List<RegScopeVO> getDefaultScopes() {
-        return Arrays.asList(get(DEFAULT_SCOPES).getBody().as(RegScopeVO[].class));
-    }
-
-    /**
      * Vložení nové třídy.
      *
      * @param scope objekt třídy
@@ -1936,6 +1943,25 @@ public abstract class AbstractControllerTest extends AbstractTest {
     }
 
     /**
+     * Nahrazení rejstříkového hesla.
+     *
+     * @param recordId id rejstříkového hesla
+     */
+    protected RecordUsageVO usagesRecord(final Integer recordId) {
+        return get(spec -> spec.pathParam("recordId", recordId), USAGES_RECORD).getBody().as(RecordUsageVO.class);
+    }
+
+    /**
+     * Nahrazení rejstříkového hesla.
+     *
+     * @param replacedId id rejstříkového hesla které nahrazujeme
+     * @param replacementId id rejstříkového hesla kterým nahrazujeme
+     */
+    protected Response replaceRecord(final Integer replacedId, final Integer replacementId) {
+        return post(spec -> spec.pathParam("recordId", replacedId).body(replacementId), REPLACE_RECORD);
+    }
+
+    /**
      * Vyhledávání v RegRecord
      *
      * @param search
@@ -1967,6 +1993,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
         }
         params.put("from", from != null ? from : 0);
         params.put("count", count != null ? count : 20);
+        params.put("excludeInvalid", true);
 
         return get(spec -> spec.queryParameters(params), FIND_RECORD).getBody().as(FilteredResultVO.class).getRows();
     }
@@ -2068,6 +2095,26 @@ public abstract class AbstractControllerTest extends AbstractTest {
     }
 
     /**
+     * Použití osoby
+     *
+     * @param partyId id osoby
+     * @return response
+     */
+    protected RecordUsageVO usageParty(final int partyId) {
+        return get(spec -> spec.pathParam("partyId", partyId), USAGE_PARTY).getBody().as(RecordUsageVO.class);
+    }
+
+    /**
+     * Nahrazení osoby
+     *
+     * @param partyId id osoby
+     * @return response
+     */
+    protected Response replaceParty(final int partyId, final int replacementId) {
+        return post(spec -> spec.pathParam("partyId", partyId).body(replacementId), REPLACE_PARTY);
+    }
+
+    /**
      * Typy osob
      *
      * @return Typy osob
@@ -2134,6 +2181,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
         }
         params.put("from", from != null ? from : 0);
         params.put("count", count != null ? count : 20);
+        params.put("excludeInvalid", true);
 
         return get(spec -> spec.queryParameters(params), FIND_PARTY).getBody().as(FilteredResultVO.class).getRows();
     }
@@ -2239,7 +2287,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
         if (scopeId != null) {
             params.put("scopeId", scopeId);
         }
-        return multipart(spec -> spec.multiPart("xmlFile", xmlFile).params(params), XML_IMPORT);
+        return multipart(spec -> spec.multiPart("xmlFile", xmlFile).params(params), DE_IMPORT);
     }
 
 
@@ -2485,7 +2533,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param params parametry pro vytvoření skupiny
      * @return vytvořená skupina
      */
-    protected UsrGroupVO createGroup(final UserController.CreateGroup params) {
+    protected UsrGroupVO createGroup(final GroupController.CreateGroup params) {
         return post(spec -> spec.body(params), CREATE_GROUP).as(UsrGroupVO.class);
     }
 
@@ -2521,7 +2569,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param params  parametry změny skupiny
      */
     protected UsrGroupVO changeGroup(final Integer groupId,
-                                  final UserController.ChangeGroup params) {
+                                  final GroupController.ChangeGroup params) {
         return put(spec -> spec.body(params).pathParameter("groupId", groupId), CHANGE_GROUP).as(UsrGroupVO.class);
     }
 
@@ -2593,25 +2641,81 @@ public abstract class AbstractControllerTest extends AbstractTest {
     }
 
     /**
-     * Nastavení oprávnění uživatele.
+     * Přidání oprávnění uživatele.
      *
      * @param userId      identifikátor uživatele
      * @param permissions seznam oprávnění
      */
-    protected void changeUserPermission(final Integer userId,
-                                     final UserController.Permissions permissions) {
-        post(spec -> spec.pathParameter("userId", userId).body(permissions), CHANGE_USER_PERMISSION);
+    protected void addUserPermission(final Integer userId, final List<UsrPermissionVO> permissions) {
+        post(spec -> spec.pathParameter("userId", userId).body(permissions), ADD_USER_PERMISSION);
     }
 
     /**
-     * Nastavení oprávnění skupiny.
+     * Odebrání oprávnění uživatele.
      *
-     * @param groupId     identifikátor skupiny
+     * @param userId      identifikátor uživatele
+     * @param permission seznam oprávnění
+     */
+    protected void deleteUserPermission(final Integer userId, final UsrPermissionVO permission) {
+        post(spec -> spec.pathParameter("userId", userId).body(permission), DELETE_USER_PERMISSION);
+    }
+
+    /**
+     * Odebrání oprávnění uživatele typu AS all.
+     *
+     * @param userId      identifikátor uživatele
+     */
+    protected void deleteUserFundAllPermission(final Integer userId) {
+        post(spec -> spec.pathParameter("userId", userId), DELETE_USER_FUND_ALL_PERMISSION);
+    }
+
+    /**
+     * Odebrání oprávnění uživatele na daný AS.
+     *
+     * @param userId      identifikátor uživatele
+     * @param fundId      identifikátor AS
+     */
+    protected void deleteUserFundPermission(final Integer userId, final Integer fundId) {
+        post(spec -> spec.pathParameter("userId", userId).pathParameter("fundId", fundId), DELETE_USER_FUND_PERMISSION);
+    }
+
+    /**
+     * Přidání oprávnění skupiny.
+     *
+     * @param groupId      identifikátor skupiny
      * @param permissions seznam oprávnění
      */
-    protected void changeGroupPermission(final Integer groupId,
-                                      final UserController.Permissions permissions) {
-        post(spec -> spec.pathParameter("groupId", groupId).body(permissions), CHANGE_GROUP_PERMISSION);
+    protected void addGroupPermission(final Integer groupId, final List<UsrPermissionVO> permissions) {
+        post(spec -> spec.pathParameter("groupId", groupId).body(permissions), ADD_GROUP_PERMISSION);
+    }
+
+    /**
+     * Odebrání oprávnění skupiny.
+     *
+     * @param groupId      identifikátor skupiny
+     * @param permission seznam oprávnění
+     */
+    protected void deleteGroupPermission(final Integer groupId, final UsrPermissionVO permission) {
+        post(spec -> spec.pathParameter("groupId", groupId).body(permission), DELETE_GROUP_PERMISSION);
+    }
+
+    /**
+     * Odebrání oprávnění skupiny typu AS all.
+     *
+     * @param groupId      identifikátor skupiny
+     */
+    protected void deleteGroupFundAllPermission(final Integer groupId) {
+        post(spec -> spec.pathParameter("groupId", groupId), DELETE_GROUP_FUND_ALL_PERMISSION);
+    }
+
+    /**
+     * Odebrání oprávnění skupiny na daný AS.
+     *
+     * @param groupId      identifikátor skupiny
+     * @param fundId      identifikátor AS
+     */
+    protected void deleteGroupFundPermission(final Integer groupId, final Integer fundId) {
+        post(spec -> spec.pathParameter("groupId", groupId).pathParameter("fundId", fundId), DELETE_GROUP_FUND_PERMISSION);
     }
 
     /**

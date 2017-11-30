@@ -2,6 +2,8 @@ package cz.tacr.elza.domain;
 
 import java.io.Serializable;
 
+import javax.persistence.Access;
+import javax.persistence.AccessType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -36,7 +38,7 @@ import cz.tacr.elza.domain.enumeration.StringLength;
         @UniqueConstraint(columnNames = {"fundId"}),
         @UniqueConstraint(columnNames = {"storageNumber"}),
         @UniqueConstraint(columnNames = {"packetTypeId"})})
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Cache(region = "domain", usage = CacheConcurrencyStrategy.READ_WRITE)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
 public class ArrPacket implements IArrFund, Serializable {
     public final static String PACKET_ID = "packetId";
@@ -46,13 +48,17 @@ public class ArrPacket implements IArrFund, Serializable {
 
     @Id
     @GeneratedValue
+    @Access(AccessType.PROPERTY)
     private Integer packetId;
 
     @RestResource(exported = false)
-    @ManyToOne(fetch = FetchType.EAGER, targetEntity = RulPacketType.class)
+	@ManyToOne(fetch=FetchType.LAZY, targetEntity = RulPacketType.class)
     @JoinColumn(name = "packetTypeId", nullable = true)
     @JsonIgnore
     private RulPacketType packetType;
+
+    @Column(nullable = true, insertable = false, updatable = false)
+    private Integer packetTypeId;
 
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFund.class)
@@ -83,6 +89,11 @@ public class ArrPacket implements IArrFund, Serializable {
 
     public void setPacketType(final RulPacketType packetType) {
         this.packetType = packetType;
+        this.packetTypeId = packetType != null ? packetType.getPacketTypeId() : null;
+    }
+
+    public Integer getPacketTypeId() {
+        return packetTypeId;
     }
 
     @Override
@@ -141,5 +152,12 @@ public class ArrPacket implements IArrFund, Serializable {
         OPEN,
         CLOSED,
         CANCELED;
+    }
+
+    public static String createFulltext(String number, RulPacketType type) {
+        if (type != null) {
+            return type.getName() + ": " + number;
+        }
+        return number;
     }
 }

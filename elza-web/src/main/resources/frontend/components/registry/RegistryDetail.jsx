@@ -12,7 +12,7 @@ import {
     Icon,
     CollapsablePanel,
     NoFocusButton,
-    Loading,
+    StoreHorizontalLoader,
     Utils
 } from 'components/shared';
 import {Form, Button} from 'react-bootstrap';
@@ -32,6 +32,8 @@ import * as perms from 'actions/user/Permission.jsx';
 import {initForm} from "actions/form/inlineForm.jsx"
 import {getMapFromList} from 'stores/app/utils.jsx'
 import {setFocus} from 'actions/global/focus.jsx'
+import {addToastrWarning} from 'components/shared/toastr/ToastrActions.jsx'
+
 
 import {routerNavigate} from 'actions/router.jsx'
 import {partyDetailFetchIfNeeded} from 'actions/party/party.jsx'
@@ -41,6 +43,7 @@ import './RegistryDetail.less';
 import EditRegistryForm from "./EditRegistryForm";
 import RegistryDetailVariantRecords from "./RegistryDetailVariantRecords";
 import RegistryDetailCoordinates from "./RegistryDetailCoordinates";
+import {requestScopesIfNeeded} from "../../actions/refTables/scopesData";
 
 
 class RegistryDetail extends AbstractReactComponent {
@@ -48,7 +51,6 @@ class RegistryDetail extends AbstractReactComponent {
     static childContextTypes = { shortcuts: PropTypes.object.isRequired };
     componentWillMount(){
         Utils.addShortcutManager(this,defaultKeymap);
-        this.fetchIfNeeded();
     }
     getChildContext() {
         return { shortcuts: this.shortcutManager };
@@ -58,6 +60,11 @@ class RegistryDetail extends AbstractReactComponent {
 
     componentDidMount() {
         this.trySetFocus();
+        this.fetchIfNeeded().then(data => {
+            if (data && data.invalid) {
+                this.props.dispatch(addToastrWarning(i18n("registry.invalid.warning")));
+            }
+        });
     }
 
     componentWillReceiveProps(nextProps) {
@@ -74,12 +81,16 @@ class RegistryDetail extends AbstractReactComponent {
     }
 
     fetchIfNeeded = (props = this.props) => {
-        const {registryDetail: {id}} = props;
-        this.dispatch(refPartyTypesFetchIfNeeded());    // nacteni typu osob (osoba, rod, událost, ...)
-        this.dispatch(calendarTypesFetchIfNeeded());    // načtení typů kalendářů (gregoriánský, juliánský, ...)
-        if (id) {
-            this.dispatch(registryDetailFetchIfNeeded(id));
-        }
+        return new Promise((resolve, reject) => {
+            const {registryDetail: {id}} = props;
+            this.dispatch(refPartyTypesFetchIfNeeded());    // nacteni typu osob (osoba, rod, událost, ...)
+            this.dispatch(calendarTypesFetchIfNeeded());    // načtení typů kalendářů (gregoriánský, juliánský, ...)
+            this.dispatch(requestScopesIfNeeded());
+
+            if (id) {
+                resolve(this.dispatch(registryDetailFetchIfNeeded(id)));
+            }
+        });
     };
 
     trySetFocus = (props = this.props) => {
@@ -207,14 +218,18 @@ class RegistryDetail extends AbstractReactComponent {
     createHierarchyElement = (hierarchy,delimiter = ">") => {
         var hierarchyElement = [];
         for(var i = 0; i < hierarchy.length; i++){
-            if(i > 0){hierarchyElement.push(<span className="hierarchy-delimiter">{delimiter}</span>);}
-            hierarchyElement.push(<span className="hierarchy-level">{hierarchy[i].toUpperCase()}</span>);
+            if(i > 0){hierarchyElement.push(<span key="hierarchy-delimiter" className="hierarchy-delimiter">{delimiter}</span>);}
+            hierarchyElement.push(<span key={i + "hierarchy-level"} className="hierarchy-level">{hierarchy[i].toUpperCase()}</span>);
         }
         return hierarchyElement;
     }
 
+    getScopeLabel = (scopeId, scopes) => {
+        return scopeId && scopes[0].scopes.find(scope => (scope.id === scopeId)).name.toUpperCase();
+    };
+
     render() {
-        const {registryDetail} = this.props;
+        const {registryDetail, scopes} = this.props;
         const {data, fetched, isFetching, id} = registryDetail;
 
         let icon = 'fa-folder';
@@ -231,7 +246,7 @@ class RegistryDetail extends AbstractReactComponent {
         }
 
         if (!fetched || (id && !data)) {
-            return <Loading />
+            return <StoreHorizontalLoader store={registryDetail}/>
         }
 
         const disableEdit = !this.canEdit();
@@ -241,17 +256,22 @@ class RegistryDetail extends AbstractReactComponent {
         var delimiter = <Icon glyph="fa-angle-right"/>;
         var hierarchyElement = this.createHierarchyElement(hierarchy,delimiter);
 
+        let headerCls = "registry-header";
+        if (data.invalid) {
+            headerCls += " invalid";
+        }
+
         return <div className='registry'>
             <Shortcuts name='RegistryDetail' handler={this.handleShortcuts} global>
                 <div className="registry-detail">
-                    <div className="registry-header">
+                    <div className={headerCls}>
                         <div className="header-icon">
                             <Icon glyph={icon}/>
                         </div>
-                        <div className="header-content">
+                        <div className={"header-content"}>
                             <div>
                                 <div>
-                                    <div className="title">{data.record}</div>
+                                    <div className="title">{data.record} {data.invalid && "(Neplatné)"}</div>
                                 </div>
                                 <div>
                                     <NoFocusButton disabled={disableEdit} className="registry-record-edit btn-action" onClick={this.handleRecordUpdate}>
@@ -270,8 +290,11 @@ class RegistryDetail extends AbstractReactComponent {
                     </div>
                     <div className="registry-type">
                         {hierarchyElement}
+                        {data.scopeId && <span className="scope-label">
+                            {scopes && this.getScopeLabel(data.scopeId, scopes)}
+                        </span>}
                     </div>
-                    <div ref='registryTitle' className="registry-title" tabIndex={"0"}>
+                    <div ref='registryTitle' className="registry-title" tabIndex={0}>
                         <div className='registry-content'>
 
                             <div className='line charakteristik'>
@@ -303,10 +326,11 @@ class RegistryDetail extends AbstractReactComponent {
 }
 
 export default connect((state) => {
-    const {app: {registryDetail}, userDetail, focus} = state;
+    const {app: {registryDetail}, userDetail, focus, refTables} = state;
     return {
         focus,
         registryDetail,
-        userDetail
+        userDetail,
+        scopes: refTables.scopesData.scopes
     }
 })(RegistryDetail);

@@ -20,8 +20,8 @@ public class UnitdateSearchParam extends SearchParam {
     protected UnitdateSearchParam(final String value, final UnitdateCondition condition, final Integer calendarId) {
         super(SearchParamType.UNITDATE, value);
 
-        Assert.notNull(condition);
-        Assert.notNull(calendarId);
+        Assert.notNull(condition, "Podmínka musí být vyplněna");
+        Assert.notNull(calendarId, "Identifikátor typu kalendáře musí být vyplněn");
 
         this.condition = condition;
         this.calendarId = calendarId;

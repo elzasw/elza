@@ -1,6 +1,4 @@
-/**
- * Stránka pro správu uživatelů.
- */
+// ---
 import './AdminUserPage.less';
 
 import React from 'react';
@@ -8,10 +6,9 @@ import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import PageLayout from "../shared/layout/PageLayout";
 import {FormControl, Button} from 'react-bootstrap';
-import {i18n, Search, ListBox, AbstractReactComponent, RibbonGroup, Icon} from 'components/shared';
+import {i18n, Search, ListBox, StoreHorizontalLoader, AbstractReactComponent, RibbonGroup, Icon} from 'components/shared';
 import {UserDetail, Ribbon, AddUserForm, PasswordForm} from 'components/index.jsx';
 import {usersFetchIfNeeded,
-    usersUserDetailFetchIfNeeded,
     usersSelectUser,
     usersSearch,
     userCreate,
@@ -25,6 +22,9 @@ import {requestScopesIfNeeded} from 'actions/refTables/scopesData.jsx';
 import {renderUserItem} from 'components/admin/adminRenderUtils.jsx';
 import {partyAdd} from 'actions/party/party.jsx'
 
+/**
+ * Stránka pro správu uživatelů.
+ */
 class AdminUserPage extends AbstractReactComponent{
     constructor(props) {
         super(props);
@@ -168,7 +168,8 @@ class AdminUserPage extends AbstractReactComponent{
                     <option value="all">{i18n("admin.user.filter.all")}</option>
                     <option value="onlyActive">{i18n("admin.user.filter.onlyActive")}</option>
                 </FormControl>
-                <ListBox
+                <StoreHorizontalLoader store={user}/>
+                {user.fetched && <ListBox
                     className='user-listbox'
                     ref='userList'
                     items={user.users}
@@ -176,16 +177,19 @@ class AdminUserPage extends AbstractReactComponent{
                     renderItemContent={renderUserItem}
                     onFocus={this.handleSelect}
                     onSelect={this.handleSelect}
-                />
+                />}
             </div>
         )
 
-        const centerPanel = (
-            <UserDetail
-                userDetail={user.userDetail}
-                userCount={user.users.length}
-            />
-        )
+        let centerPanel;
+        if (user.userDetail.id) {
+            centerPanel = (
+                <UserDetail
+                    userDetail={user.userDetail}
+                    userCount={user.users.length}
+                />
+            )
+        }
 
         return (
             <PageLayout

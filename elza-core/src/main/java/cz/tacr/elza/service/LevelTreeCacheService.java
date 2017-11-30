@@ -21,8 +21,6 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.ArrangementCode;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -54,6 +52,8 @@ import cz.tacr.elza.domain.ArrRequest;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.vo.TitleValue;
 import cz.tacr.elza.domain.vo.TitleValues;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.LevelRepository;
@@ -372,8 +372,8 @@ public class LevelTreeCacheService {
      * @return  seznam identifikátorů uzlů
      */
     public List<Integer> getParentNodeIds(final Integer nodeId, final ArrFundVersion fundVersion) {
-        Assert.notNull(nodeId);
-        Assert.notNull(fundVersion);
+        Assert.notNull(nodeId, "Identifikátor JP musí být vyplněn");
+        Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
 
         // mapa nodů z cache
         Map<Integer, TreeNode> treeMap = getVersionTreeCache(fundVersion);
@@ -404,8 +404,8 @@ public class LevelTreeCacheService {
      * @return seznam rodičů
      */
     public Collection<TreeNodeClient> getNodeParents(final Integer nodeId, final Integer versionId) {
-        Assert.notNull(nodeId);
-        Assert.notNull(versionId);
+        Assert.notNull(nodeId, "Identifikátor JP musí být vyplněn");
+        Assert.notNull(versionId, "Nebyl vyplněn identifikátor verze AS");
 
         ArrFundVersion version = fundVersionRepository.findOne(versionId);
         Map<Integer, TreeNode> treeMap = getVersionTreeCache(version);
@@ -518,7 +518,7 @@ public class LevelTreeCacheService {
      * @return mapu všech uzlů stromu (nodeid uzlu --> uzel)
      */
     private Map<Integer, TreeNode> createVersionTreeCache(final ArrFundVersion version) {
-        Assert.notNull(version);
+        Assert.notNull(version, "Verze AS musí být vyplněna");
 
         Integer rootId = version.getRootNode().getNodeId();
 
@@ -677,7 +677,7 @@ public class LevelTreeCacheService {
      * @param fund archivní soubor
      */
     synchronized public void invalidateFundVersion(final ArrFund fund) {
-        Assert.notNull(fund);
+        Assert.notNull(fund, "AS musí být vyplněn");
         for (ArrFundVersion fundVersion: fund.getVersions()) {
             versionCache.remove(fundVersion.getFundVersionId());
         }
@@ -743,8 +743,8 @@ public class LevelTreeCacheService {
      * @return mapu id nodů a jejich rodičů
      */
     public Map<Integer, TreeNodeClient> findParentsWithTitles(final Set<Integer> nodeIds, final ArrFundVersion version) {
-        Assert.notNull(nodeIds);
-        Assert.notNull(version);
+        Assert.notNull(nodeIds, "Nebyly vyplněny identifikátory JP");
+        Assert.notNull(version, "Verze AS musí být vyplněna");
 
         Map<Integer, TreeNode> versionTreeCache = getVersionTreeCache(version);
         Map<Integer, TreeNode> nodeIdParentMap = new HashMap<>(nodeIds.size());
@@ -788,8 +788,8 @@ public class LevelTreeCacheService {
                                                                @Nullable final Map<Integer, Map<String, TitleValues>> valuesMapParam,
                                                                final TreeNode subtreeRoot,
                                                                final ArrFundVersion version) {
-        Assert.notNull(treeNodeMap);
-        Assert.notNull(version);
+        Assert.notNull(treeNodeMap, "Mapa nesmí být null");
+        Assert.notNull(version, "Verze AS musí být vyplněna");
 
         List<ArrNode> nodes = new ArrayList<>(treeNodeMap.size());
         Set<Integer> nodeIds = treeNodeMap.keySet();
@@ -1232,7 +1232,7 @@ public class LevelTreeCacheService {
      * @param nodeIds   seznam id uzlů
      * @return informace
      */
-    public Collection<TreeNodeClient> getFaTreeNodes(final Integer versionId, final List<Integer> nodeIds) {
+    public Collection<TreeNodeClient> getFaTreeNodes(final Integer versionId, final Collection<Integer> nodeIds) {
         ArrFundVersion version = fundVersionRepository.findOne(versionId);
         Map<Integer, TreeNode> treeMap = getVersionTreeCache(version);
         LinkedHashMap<Integer, TreeNode> nodesMap = new LinkedHashMap<>();
@@ -1396,7 +1396,7 @@ public class LevelTreeCacheService {
      * @return id všech nodů ve verzi
      */
     public Set<Integer> getAllNodeIdsByVersionAndParent(final ArrFundVersion version, final Integer nodeId, final Depth depth) {
-        Assert.notNull(version);
+        Assert.notNull(version, "Verze AS musí být vyplněna");
 
         Map<Integer, TreeNode> versionTreeCache = getVersionTreeCache(version);
 
@@ -1414,7 +1414,7 @@ public class LevelTreeCacheService {
             return nodeIds;
         }
 
-        Assert.notNull(depth);
+        Assert.notNull(depth, "Hlouba není vyplněna");
 
         if (depth == Depth.ONE_LEVEL) {
             TreeNode node = versionTreeCache.get(nodeId);

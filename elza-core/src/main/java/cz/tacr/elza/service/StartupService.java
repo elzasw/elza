@@ -6,6 +6,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
+import cz.tacr.elza.core.DatabaseType;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -36,31 +38,46 @@ public class StartupService implements SmartLifecycle {
 
     private static final Logger LOG = LoggerFactory.getLogger(StartupService.class);
 
+    private final NodeRepository nodeRepository;
+
+    private final FundVersionRepository fundVersionRepository;
+
+    private final UpdateConformityInfoService updateConformityInfoService;
+
+    private final BulkActionRunRepository bulkActionRunRepository;
+
+    private final OutputDefinitionRepository outputDefinitionRepository;
+
+    private final RequestQueueService requestQueueService;
+
+    private final NodeCacheService nodeCacheService;
+
+    private final StaticDataService staticDataService;
+
+    private final EntityManager em;
+
     private boolean running;
 
     @Autowired
-    private NodeRepository nodeRepository;
-
-    @Autowired
-    private FundVersionRepository fundVersionRepository;
-
-    @Autowired
-    private UpdateConformityInfoService updateConformityInfoService;
-
-    @Autowired
-    private BulkActionRunRepository bulkActionRunRepository;
-
-    @Autowired
-    private OutputDefinitionRepository outputDefinitionRepository;
-
-    @Autowired
-    private RequestQueueService requestQueueService;
-
-    @Autowired
-    private NodeCacheService nodeCacheService;
-
-    @Autowired
-    private StaticDataService staticDataService;
+    public StartupService(NodeRepository nodeRepository,
+                          FundVersionRepository fundVersionRepository,
+                          UpdateConformityInfoService updateConformityInfoService,
+                          BulkActionRunRepository bulkActionRunRepository,
+                          OutputDefinitionRepository outputDefinitionRepository,
+                          RequestQueueService requestQueueService,
+                          NodeCacheService nodeCacheService,
+                          StaticDataService staticDataService,
+                          EntityManager em) {
+        this.nodeRepository = nodeRepository;
+        this.fundVersionRepository = fundVersionRepository;
+        this.updateConformityInfoService = updateConformityInfoService;
+        this.bulkActionRunRepository = bulkActionRunRepository;
+        this.outputDefinitionRepository = outputDefinitionRepository;
+        this.requestQueueService = requestQueueService;
+        this.nodeCacheService = nodeCacheService;
+        this.staticDataService = staticDataService;
+        this.em = em;
+    }
 
     @Override
     @Transactional(value = TxType.REQUIRES_NEW)
@@ -100,6 +117,7 @@ public class StartupService implements SmartLifecycle {
         if (!TransactionSynchronizationManager.isActualTransactionActive()) {
             throw new IllegalStateException("Active transaction required");
         }
+        DatabaseType.init(em);
         staticDataService.init();
         clearBulkActions();
         clearOutputGeneration();
@@ -187,7 +205,7 @@ public class StartupService implements SmartLifecycle {
 
             // přidávání nodů je nutné dělat ve vlastní transakci (podle updateInfoForNodesAfterCommit)
             LOG.info("Přidání " + entry.getValue().size() + " uzlů do fronty pro zvalidování");
-            updateConformityInfoService.updateInfoForNodesAfterCommit(entry.getValue(), version);
+            updateConformityInfoService.updateInfoForNodesAfterCommit(version.getFundVersionId(), entry.getValue());
         }
     }
 }

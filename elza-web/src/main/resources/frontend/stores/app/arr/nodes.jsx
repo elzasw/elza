@@ -119,6 +119,53 @@ export default function nodes(state = nodesInitialState, action) {
             } else {
                 return state
             }
+        case types.FUND_SUBNODE_UPDATE:
+            console.log("UPDATE_CHILD - nodes", action);
+            let data = action.data;
+            var nodes = state.nodes;
+            var nodesChange = [
+                ...nodes
+            ];
+
+            var changed = false;
+
+            var nodeId;
+            if (data.node && data.node.id) {
+                    nodeId = data.node.id;
+                for (var i = 0; i < nodes.length; i++) {
+                        console.log(nodes[i].childNodes);
+                        var index = indexById(nodes[i].childNodes, nodeId);
+                        console.log(index);
+                        // změna se ho netýká, vracím původní stav
+                        if (index == null) {
+                            continue;
+                        }
+
+                        var nodeChange = node(nodes[i], action);
+
+                        // nezměnil se stav podřízených, nemusím nic měnit
+                        if (nodeChange === nodes[i]) {
+                            continue;
+                        }
+
+                        changed = true;
+
+                        nodesChange = [
+                            ...nodesChange.slice(0, i),
+                            nodeChange,
+                            ...nodesChange.slice(i + 1)
+                        ];
+                    }
+            }
+
+            if (changed) {
+                return {
+                    ...state,
+                    nodes: nodesChange,
+                }
+            }
+
+            return state;
         case types.FUND_FUND_SELECT_SUBNODE:
             var newState;
 

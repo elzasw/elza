@@ -1,6 +1,5 @@
 package cz.tacr.elza.domain;
 
-import java.io.Serializable;
 import java.util.List;
 
 import javax.persistence.Column;
@@ -34,19 +33,27 @@ import cz.tacr.elza.domain.enumeration.StringLength;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ParPartyName {
 
+    public static final String PK = "partyNameId";
     public static final String PARTY = "party";
+    public static final String PARTY_FK = PARTY + ".partyId";
 
     @Id
     @GeneratedValue
     private Integer partyNameId;
 
-    @ManyToOne(fetch = FetchType.EAGER, targetEntity = ParUnitdate.class)
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ParUnitdate.class)
     @JoinColumn(name = "validFromUnitdateId")
     private ParUnitdate validFrom;
 
-    @ManyToOne(fetch = FetchType.EAGER, targetEntity = ParUnitdate.class)
+    @Column(insertable = false, updatable = false)
+    private Integer validFromUnitdateId;
+
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ParUnitdate.class)
     @JoinColumn(name = "validToUnitdateId")
     private ParUnitdate validTo;
+
+    @Column(insertable = false, updatable = false)
+    private Integer validToUnitdateId;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ParPartyNameFormType.class)
     @JoinColumn(name = "nameFormTypeId")
@@ -72,7 +79,7 @@ public class ParPartyName {
     private String degreeAfter;
 
 
-    @OneToMany(mappedBy = "partyName", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "partyName", fetch = FetchType.LAZY)
     private List<ParPartyNameComplement> partyNameComplements;
 
     /**
@@ -185,6 +192,11 @@ public class ParPartyName {
      */
     public void setValidFrom(final ParUnitdate validFrom) {
         this.validFrom = validFrom;
+        this.validFromUnitdateId = validFrom != null ? validFrom.getUnitdateId() : null;
+    }
+
+    public Integer getValidFromUnitdateId() {
+        return validFromUnitdateId;
     }
 
     /**
@@ -201,6 +213,11 @@ public class ParPartyName {
      */
     public void setValidTo(final ParUnitdate validTo) {
         this.validTo = validTo;
+        this.validToUnitdateId = validTo != null ? validTo.getUnitdateId() : null;
+    }
+
+    public Integer getValidToUnitdateId() {
+        return validToUnitdateId;
     }
 
     public ParPartyNameFormType getNameFormType() {

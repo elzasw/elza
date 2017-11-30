@@ -1,16 +1,12 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.utils.ObjectListIterator;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.springframework.util.Assert;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
@@ -21,13 +17,22 @@ import javax.persistence.criteria.Join;
 import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
+
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.utils.ObjectListIterator;
 
 
 /**
@@ -47,28 +52,12 @@ public class DescItemRepositoryImpl implements DescItemRepositoryCustom {
     @Autowired
     private EntityManager entityManager;
 
-    @Override
-    public List<ArrDescItem> findByNodes(final Collection<ArrNode> nodes, @Nullable final ArrChange lockChange) {
-        Assert.notNull(nodes);
-
-        if (nodes.isEmpty()) {
-            return Collections.EMPTY_LIST;
-        }
-
-        if (lockChange == null) {
-            return descItemRepository.findByNodesAndDeleteChangeIsNull(nodes);
-        } else {
-            return descItemRepository.findByNodesAndDeleteChange(nodes, lockChange);
-        }
-    }
-
-
 
     @Override
     public Map<Integer, DescItemTitleInfo> findDescItemTitleInfoByNodeId(final Set<Integer> nodeIds,
                                                                          final RulItemType titleType,
                                                                          @Nullable final ArrChange lockChange) {
-        Assert.notNull(titleType);
+        Assert.notNull(titleType, "Typ musí být vyplněn");
         if (CollectionUtils.isEmpty(nodeIds)) {
             return new HashMap<>();
         }
@@ -153,5 +142,81 @@ public class DescItemRepositoryImpl implements DescItemRepositoryCustom {
 
         }
         return result;
+    }
+
+    @Override
+    public List<ArrDescItem> findDescItemsByNodeIds(final Set<Integer> nodeIds, final Set<RulItemType> itemTypes, final ArrFundVersion version) {
+        return findDescItemsByNodeIds(nodeIds, itemTypes, version.getLockChange() == null ? null : version.getLockChange().getChangeId());
+    }
+
+    @Override
+    public List<ArrDescItem> findDescItemsByNodeIds(final Set<Integer> nodeIds, final Set<RulItemType> itemTypes, final Integer changeId) {
+        String hql = "SELECT di FROM arr_item di JOIN FETCH di.node n JOIN FETCH di.itemType dit LEFT JOIN FETCH di.itemSpec dis " +
+                "LEFT JOIN FETCH di.data d LEFT JOIN FETCH d.record drr LEFT JOIN FETCH d.party dpr LEFT JOIN FETCH d.packet dpcr  WHERE ";
+        if (changeId == null) {
+            hql += "di.deleteChange IS NULL ";
+        } else {
+            hql += "di.createChange.changeId <= :changeId AND (di.deleteChange IS NULL OR di.deleteChange.changeId >= :changeId) ";
+        }
+
+        hql += "AND n.nodeId IN (:nodeIds)";
+
+        if (CollectionUtils.isNotEmpty(itemTypes)) {
+            hql += " AND di.itemType IN (:itemTypes)";
+        }
+
+        List<ArrDescItem> result = new LinkedList<>();
+        ObjectListIterator<Integer> nodeIdsIterator = new ObjectListIterator<>(nodeIds);
+        while (nodeIdsIterator.hasNext()) {
+
+            Query query = entityManager.createQuery(hql);
+            if (changeId != null) {
+                query.setParameter("changeId", changeId);
+            }
+            if (CollectionUtils.isNotEmpty(itemTypes)) {
+                query.setParameter("itemTypes", itemTypes);
+            }
+            query.setParameter("nodeIds", nodeIdsIterator.next());
+
+            result.addAll(query.getResultList());
+        }
+
+        return result;
+    }
+
+    @Override
+    public List<ArrDescItem> findByNodesContainingText(final Collection<ArrNode> nodes,
+                                                       final RulItemType itemType,
+                                                       final Set<RulItemSpec> specifications,
+                                                       final String text) {
+
+        if(StringUtils.isBlank(text)){
+            throw new IllegalArgumentException("Parametr text nesmí mít prázdnou hodnotu.");
+        }
+
+        if(itemType.getUseSpecification() && CollectionUtils.isEmpty(specifications)){
+            throw new IllegalArgumentException("Musí být zadána alespoň jedna filtrovaná specifikace.");
+        }
+
+        String searchText = "%" + text + "%";
+
+        String hql = "SELECT di FROM arr_item di JOIN FETCH di.data d WHERE (di.data IN (SELECT ds FROM arr_data_string ds WHERE ds.value like :text) OR di.data IN (SELECT ds FROM arr_data_text ds WHERE ds.value like :text)) "
+                + " AND di.itemType = :itemType";
+
+        if(itemType.getUseSpecification()){
+            hql+= " AND di.itemSpec IN (:specs)";
+        }
+
+        hql += " AND di.node IN (:nodes) AND di.deleteChange IS NULL";
+
+        Query query = entityManager.createQuery(hql);
+        query.setParameter("itemType", itemType);
+        query.setParameter("nodes", nodes);
+        query.setParameter("text", searchText);
+        if (itemType.getUseSpecification()) {
+            query.setParameter("specs", specifications);
+        }
+
+        return query.getResultList();
     }
 }

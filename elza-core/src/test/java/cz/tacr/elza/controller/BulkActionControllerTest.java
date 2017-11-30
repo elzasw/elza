@@ -18,7 +18,6 @@ import cz.tacr.elza.controller.vo.RegScopeVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
 import cz.tacr.elza.domain.ArrBulkActionRun.State;
-import cz.tacr.elza.domain.vo.XmlImportType;
 
 
 /**
@@ -43,7 +42,7 @@ public class BulkActionControllerTest extends AbstractControllerTest {
     private static final String BULK_ACTION_SERIAL_NUMBER_GENERATOR = "ZP2015_GENERATOR_SERIAL_NUMBER";
 
     private int importAndGetVersionId() {
-        importXmlFile(null, 1, XmlImportControllerTest.getResourceFile(XML_FILE));
+        importXmlFile(null, 1, DEImportControllerTest.getResourceFile(XML_FILE));
         List<ArrFundVO> funds = getFunds();
         Assert.assertEquals(1, funds.size());
         Assert.assertEquals(1, funds.get(0).getVersions().size());
@@ -66,7 +65,9 @@ public class BulkActionControllerTest extends AbstractControllerTest {
         int fundVersionId = importAndGetVersionId();
         List<BulkActionVO> bulkActionVOs = Arrays.asList(get(spec -> spec.pathParam("versionId", fundVersionId), BULK_ACTIONS).getBody().as(BulkActionVO[].class));
 
-        Assert.assertEquals(6, bulkActionVOs.size());
+		// number of default bulk actions
+		// Currently 8 for ZP2015
+		Assert.assertEquals(8, bulkActionVOs.size());
 
         Boolean unit = false, serial = false, fa = false;
 
@@ -108,8 +109,7 @@ public class BulkActionControllerTest extends AbstractControllerTest {
      */
     @Test
     public void runBulkActionByNode() throws InterruptedException {
-        int fundVersionId = importAndGetVersionId();
-        BulkActionRunVO state;
+		int fundVersionId = importAndGetVersionId();
         ArrangementController.FaTreeParam faTreeParam = new ArrangementController.FaTreeParam();
         faTreeParam.setVersionId(fundVersionId);
         TreeData fundTree = getFundTree(faTreeParam);
@@ -120,32 +120,21 @@ public class BulkActionControllerTest extends AbstractControllerTest {
 
         post((spec) -> spec.pathParameter("versionId", fundVersionId).pathParam("code", BULK_ACTION_SERIAL_NUMBER_GENERATOR).body(Collections.singletonList(next.getId())), BULK_ACTION_QUEUE);
 
-        int counter = 6;
-
-        boolean hasResult = false;
-        do {
-            counter--;
-
+		while (true) {
             logger.info("Čekání na dokončení asynchronních operací...");
-            Thread.sleep(5000);
+			Thread.sleep(1000);
 
-            state = getBulkActionState(fundVersionId, BULK_ACTION_SERIAL_NUMBER_GENERATOR);
+			BulkActionRunVO stateVo = getBulkActionState(fundVersionId, BULK_ACTION_SERIAL_NUMBER_GENERATOR);
+			Assert.assertNotNull(stateVo);
+			State state = stateVo.getState();
+			logger.info("Received state: " + state);
 
-            if (counter >= 0) {
-                if (state != null) {
-                    if (state.getState().equals(State.FINISHED)) {
-                        hasResult = true;
-                    } else if (state.getState().equals(State.ERROR)) {
-                        Assert.fail("Hromadná akce skončila chybou");
-                    }
-                }
-            } else {
-                hasResult = true;
-            }
-
-        } while (!hasResult);
-
-        Assert.assertTrue("Čas překročen", counter >= 0);
+			Assert.assertTrue(state != State.ERROR);
+			if (state == State.FINISHED) {
+				logger.info("Async action finished");
+				break;
+			}
+		}
     }
 
     /**

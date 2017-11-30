@@ -6,20 +6,13 @@ import javax.persistence.Lob;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.Type;
-import org.hibernate.search.annotations.Indexed;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
-import cz.tacr.elza.search.IndexArrDataWhenHasDescItemInterceptor;
 
 
 /**
  * Hodnota atributu archivního popisu typu "neomezený" textový řetězec.
- *
- * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
- * @since 20.8.2015
  */
-@Indexed(interceptor = IndexArrDataWhenHasDescItemInterceptor.class)
 @Entity(name = "arr_data_text")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
@@ -29,6 +22,15 @@ public class ArrDataText extends ArrData {
     @Lob
     @Type(type = "org.hibernate.type.TextType")
     private String value;
+
+	public ArrDataText() {
+
+	}
+
+	protected ArrDataText(ArrDataText src) {
+    	super(src);
+		this.value = src.value;
+    }
 
     public String getValue() {
         return value;
@@ -42,4 +44,9 @@ public class ArrDataText extends ArrData {
     public String getFulltextValue() {
         return value;
     }
+
+	@Override
+	public ArrDataText makeCopy() {
+		return new ArrDataText(this);
+	}
 }

@@ -29,6 +29,11 @@ public class RulPacketTypeVO {
     private Integer packageId;
 
     /**
+     * identifikátor pravidel
+     */
+    private Integer ruleSetId;
+
+    /**
      * zkratka
      */
     private String shortcut;
@@ -71,5 +76,13 @@ public class RulPacketTypeVO {
 
     public void setPackageId(final Integer packageId) {
         this.packageId = packageId;
+    }
+
+    public Integer getRuleSetId() {
+        return ruleSetId;
+    }
+
+    public void setRuleSetId(final Integer ruleSetId) {
+        this.ruleSetId = ruleSetId;
     }
 }

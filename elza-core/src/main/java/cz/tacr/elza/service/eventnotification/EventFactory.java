@@ -33,14 +33,14 @@ public class EventFactory {
     public static EventIdsInVersion createIdsInVersionEvent(final EventType eventType,
                                                             final ArrFundVersion version,
                                                             final Integer... entityIds) {
-        Assert.notNull(version);
+        Assert.notNull(version, "Verze AS musí být vyplněna");
         return new EventIdsInVersion(eventType, version.getFundVersionId(), entityIds);
     }
 
     public static EventIdInVersion createIdInVersionEvent(final EventType eventType,
                                                           final ArrFundVersion version,
                                                           final Integer entityId) {
-        Assert.notNull(version);
+        Assert.notNull(version, "Verze AS musí být vyplněna");
 
         return new EventIdInVersion(eventType, version.getFundVersionId(), entityId);
     }
@@ -48,7 +48,7 @@ public class EventFactory {
     public static EventStringInVersion createStringInVersionEvent(final EventType eventType,
                                                                   final Integer versionId,
                                                                   final String entityString) {
-        Assert.notNull(versionId);
+        Assert.notNull(versionId, "Nebyl vyplněn identifikátor verze AS");
 
         return new EventStringInVersion(eventType, versionId, entityString);
     }
@@ -57,7 +57,7 @@ public class EventFactory {
                                                                             final Integer versionId,
                                                                             final Integer entityId,
                                                                             final String entityString) {
-        Assert.notNull(versionId);
+        Assert.notNull(versionId, "Nebyl vyplněn identifikátor verze AS");
 
         return new EventIdAndStringInVersion(eventType, versionId, entityId, entityString);
     }
@@ -84,10 +84,10 @@ public class EventFactory {
                                                   final ArrFundVersion version,
                                                   final ArrLevel staticLevel,
                                                   final ArrLevel addLevel) {
-        Assert.notNull(eventType);
-        Assert.notNull(version);
-        Assert.notNull(staticLevel);
-        Assert.notNull(addLevel);
+        Assert.notNull(eventType, "Typ eventu musí být vyplněn");
+        Assert.notNull(version, "Verze AS musí být vyplněna");
+        Assert.notNull(staticLevel, "Referenční level musí být vyplněn");
+        Assert.notNull(addLevel, "Level musí být vyplněn");
 
         NodeInfo staticParentNode = staticLevel.getNodeParent() == null ? null
                                                                         : createNodeInfo(staticLevel.getNodeParent());
@@ -111,7 +111,7 @@ public class EventFactory {
     }
 
     private static List<NodeInfo> createNodesInfo(final List<ArrLevel> levels) {
-        Assert.notNull(levels);
+        Assert.notNull(levels, "Levely musí být vyplněny");
         List<NodeInfo> result = new ArrayList<>(levels.size());
         levels.forEach(l -> result.add(createNodeInfo(l)));
 

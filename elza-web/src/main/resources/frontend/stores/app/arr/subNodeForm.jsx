@@ -1,7 +1,7 @@
 import * as types from 'actions/constants/ActionTypes.js';
 import {i18n} from 'components/shared';
 import {indexById} from 'stores/app/utils.jsx'
-import {createDescItemFromDb, getItemType, updateFormData, createDescItem, consolidateDescItems} from './subNodeFormUtils.jsx'
+import {createDescItemFromDb, getItemType, updateFormData, createDescItem, consolidateDescItems, mergeAfterUpdate} from './subNodeFormUtils.jsx'
 import {validateInt, validateDouble, validateCoordinatePoint} from 'components/validate.jsx'
 import {getMapFromList} from 'stores/app/utils.jsx'
 import {valuesEquals} from 'components/Utils.jsx'
@@ -312,11 +312,13 @@ export default function subNodeForm(state = initialState, action = {}) {
                 }
             }
         case types.FUND_SUB_NODE_FORM_VALUE_RESPONSE:
-            if (state.data.parent.id !== action.descItemResult.parent.id) {
+            console.log("sub node response", state.data, action)
+            let node = action.descItemResult.node || action.descItemResult.parent;
+            if (state.data.parent.id !== node.id) {
                 return state;
             }
             const newState = {...state};
-            newState.data.parent = action.descItemResult.parent;
+            newState.data.parent = node;
 
             switch (action.operationType) {
                 case 'DELETE':
@@ -469,7 +471,7 @@ export default function subNodeForm(state = initialState, action = {}) {
             // ##
             // # Result a merge formuláře.
             // ##
-            const result = {
+            var result = {
                 ...state,
                 isFetching: false,
                 fetched: true,
@@ -484,10 +486,30 @@ export default function subNodeForm(state = initialState, action = {}) {
                 result.data = null;
                 result.formData = null;
             }
-
             updateFormData(result, action.data, refTypesMap);
+            return result;
+        case types.FUND_SUBNODE_UPDATE:
+            let nodeId = action.data.node.id || action.data.parent.id;
+
+            if (nodeId != state.nodeId){
+                // not the right node
+                return state;
+            }
+            
+            var result = {
+                ...state,
+                isFetching: false,
+                fetched: true,
+                dirty: false,
+                versionId: action.versionId,
+                nodeId: nodeId,
+                needClean: false,
+            };
+
+            mergeAfterUpdate(result, action.data, action.refTables); // merges result with data from action
 
             return result;
+
         case types.CHANGE_FUND_RECORD:
             return {
                 ...state,
@@ -503,3 +525,4 @@ export default function subNodeForm(state = initialState, action = {}) {
             return state
     }
 }
+

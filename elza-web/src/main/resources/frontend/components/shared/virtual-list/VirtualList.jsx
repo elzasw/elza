@@ -9,7 +9,7 @@ var VirtualList = React.createClass({
     propTypes: {
         items: React.PropTypes.array,   // v případě, že máme položky na klientovi, je zde seznam všech položek
         lazyItemsCount: React.PropTypes.number,  //  v případě, že máme položky jen na serveru, zde je počet položek
-        itemHeight: React.PropTypes.number.isRequired,
+        itemHeight: React.PropTypes.number,
         scrollToIndex: React.PropTypes.oneOfType([ React.PropTypes.number, React.PropTypes.shape({ index: React.PropTypes.number }) ]), // pokud je změněn, provede se scroll na daný index - lépe použít objekt, protože při stejném indexu lze kvůli odscrolování změnit referenci na objekt
         renderItem: React.PropTypes.func.isRequired,
         onViewChange: React.PropTypes.func,
@@ -136,7 +136,7 @@ var VirtualList = React.createClass({
     },
     componentDidUpdate: function(prevProps) {
         if(!this.props.itemHeight){
-            this.updateItemHeightIfChanged(); 
+            this.updateItemHeightIfChanged();
         }
     },
     updateItemHeightIfChanged: function() {
@@ -193,7 +193,7 @@ var VirtualList = React.createClass({
             content = this.state.items.map(this.props.renderItem);
         }
         return (
-            <this.props.tagName className="virtual-list" ref={(container)=>{this.container = container;}} {...this.props} style={{boxSizing: 'border-box', height: this.state.height, paddingTop: this.state.bufferStart}} >
+            <this.props.tagName className="virtual-list" ref={(container)=>{this.container = container;}} style={{boxSizing: 'border-box', height: this.state.height, paddingTop: this.state.bufferStart}} >
                 {content}
             </this.props.tagName>
         );

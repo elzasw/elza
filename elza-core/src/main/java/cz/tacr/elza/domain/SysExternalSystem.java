@@ -1,11 +1,5 @@
 package cz.tacr.elza.domain;
 
-import cz.tacr.elza.domain.enumeration.StringLength;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -14,6 +8,13 @@ import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.Table;
 
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+import cz.tacr.elza.domain.enumeration.StringLength;
+
 /**
  * Číselník externích systémů.
  *
@@ -21,7 +22,7 @@ import javax.persistence.Table;
  * @since 23. 11. 2016
  */
 @Entity(name = "sys_external_system")
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Cache(region = "domain", usage = CacheConcurrencyStrategy.READ_WRITE)
 @Inheritance(strategy = InheritanceType.JOINED)
 @Table
 public abstract class SysExternalSystem {
@@ -47,6 +48,8 @@ public abstract class SysExternalSystem {
 
     @Column(length = StringLength.LENGTH_50)
     private String elzaCode;
+
+    public static final String PK = "externalSystemId";
 
     public Integer getExternalSystemId() {
         return externalSystemId;

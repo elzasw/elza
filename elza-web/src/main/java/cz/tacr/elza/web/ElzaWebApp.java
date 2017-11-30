@@ -43,6 +43,13 @@ public class ElzaWebApp {
         SpringApplication.run(ElzaWebApp.class, args);
     }
 
+    /*@Bean
+    public ServletRegistrationBean h2servletRegistration() {
+        ServletRegistrationBean registration = new ServletRegistrationBean(new WebServlet());
+        registration.addUrlMappings("/console/*");
+        return registration;
+    }*/
+
     @Bean
     public MultipartResolver multipartResolver() {
         return new StandardServletMultipartResolver();
