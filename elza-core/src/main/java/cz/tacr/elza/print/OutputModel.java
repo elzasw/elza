@@ -461,7 +461,7 @@ public class OutputModel implements Output {
         Integer itemTypeId = rulItemType.getItemTypeId();
         ItemType itemType = itemTypeMap.get(itemTypeId);
         if (itemType == null) {
-            itemType = ItemType.instanceOf(rulItemType);
+            itemType = ItemType.newInstance(rulItemType);
             itemTypeMap.put(itemTypeId, itemType);
         }
         return itemType;

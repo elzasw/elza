@@ -57,8 +57,4 @@ public class ItemType {
     public List<ElzaColumn> getTableDefinition() {
 		return tableDefinition;
     }
-
-    public static ItemType instanceOf(final RulItemType rulItemType) {
-    	return new ItemType(rulItemType);
-    }
 }

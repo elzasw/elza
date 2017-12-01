@@ -55,7 +55,7 @@ public class NodeId {
         return children;
     }
 
-    public Integer getPosition() {
+    public int getPosition() {
         return position;
     }
 
@@ -63,19 +63,12 @@ public class NodeId {
         return depth;
     }
 
+    /**
+     * @param child Expecting higher position than current children.
+     */
     void addChild(NodeId child) {
-        int pos = child.getPosition(); // position greater than 0 otherwise IndexOutOfBoundsException is thrown
-        int size = children.size();
-        if (pos > size) {
-            children.ensureCapacity(pos);
-            int fillCount = pos - size - 1; // minus one for child position
-            for (int i = 0; i < fillCount; i++) {
-                children.add(null); // fill gap with null
-            }
-            children.add(child);
-        } else {
-            NodeId prev = children.set(pos - 1, child); // set child at position
-            Validate.isTrue(prev == null); // previous value must be null
-        }
+        NodeId lastChild = children.get(children.size() - 1);
+        Validate.isTrue(lastChild.getPosition() < child.getPosition());
+        children.add(child);
     }
 }

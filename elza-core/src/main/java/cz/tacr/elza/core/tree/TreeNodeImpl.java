@@ -70,19 +70,12 @@ class TreeNodeImpl implements TreeNode {
         children.trimToSize();
     }
 
+    /**
+     * @param child Expecting higher position than current children.
+     */
     public void addChild(TreeNode child) {
-        int pos = child.getPosition(); // position greater than 0 otherwise IndexOutOfBoundsException is thrown
-        int size = children.size();
-        if (pos > size) {
-            children.ensureCapacity(pos);
-            int fillCount = pos - size - 1; // minus one for child position
-            for (int i = 0; i < fillCount; i++) {
-                children.add(null); // fill gap with null
-            }
-            children.add(child);
-        } else {
-            TreeNode prev = children.set(pos - 1, child); // set child at position
-            Validate.isTrue(prev == null); // previous value must be null
-        }
+        TreeNode lastChild = children.get(children.size() - 1);
+        Validate.isTrue(lastChild.getPosition() < child.getPosition());
+        children.add(child);
     }
 }

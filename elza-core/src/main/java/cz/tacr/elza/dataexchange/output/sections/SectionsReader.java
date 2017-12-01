@@ -99,7 +99,7 @@ public class SectionsReader implements ExportReader {
                 // read parent nodes up to root
                 levelRepository.findAllParentsByNodeId(rootNodeId, lockChange, true).forEach(sectionContext::addLevel);
                 // read subtree
-                levelRepository.iterateSubtree(rootNodeId, lockChange, sectionContext::addLevel);
+                levelRepository.readLevelTree(rootNodeId, lockChange, false, sectionContext::addLevel);
             }
 
             sectionContext.processed();

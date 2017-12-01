@@ -21,6 +21,6 @@ public class ItemFileRef extends AbstractItem {
 
     @Override
     public String serializeValue() {
-        return file.getName() + " (" + file.getFileName() + ")";
+        return file.getName();
     }
 }

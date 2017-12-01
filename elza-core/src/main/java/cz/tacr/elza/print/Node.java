@@ -2,47 +2,40 @@ package cz.tacr.elza.print;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
-import java.util.Set;
-import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.CompareToBuilder;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.springframework.util.Assert;
 
 import cz.tacr.elza.print.item.Item;
 import cz.tacr.elza.print.item.ItemRecordRef;
 import cz.tacr.elza.print.item.ItemSpec;
-import cz.tacr.elza.service.output.OutputFactoryService;
-import cz.tacr.elza.utils.AppContext;
 
 /**
  * Node with data
  */
-public class Node implements Comparable<Node> {
+public class Node {
 
-    private final NodeId nodeId; // vazba na node
-    private final OutputModel output;
+    private final NodeId nodeId;
 
-    private List<Item> items = new ArrayList<>();
-    private List<Record> records = new ArrayList<>();
+    private final OutputModelNew model;
 
-    private OutputFactoryService outputFactoryService = AppContext.getBean(OutputFactoryService.class);
+    private final List<Item> items;
+
+    private final List<Record> records;
 
     /**
      * Konstruktor s povinnými hodnotami
      * @param nodeId vazba na nodeId
-     * @param output vazba na output
+     * @param nodel vazba na output
      */
-    public Node(final NodeId nodeId, final OutputModel output) {
+    public Node(NodeId nodeId, OutputModelNew nodel, List<Item> items, List<Record> records) {
         this.nodeId = nodeId;
-        this.output = output;
+        this.model = nodel;
+        this.items = items;
+        this.records = records;
     }
 
     /**
@@ -55,7 +48,7 @@ public class Node implements Comparable<Node> {
     /**
      * @return vrací seznam dětí, omezeno jen na node v outputu
      */
-    public Set<NodeId> getChildren() {
+    public List<NodeId> getChildren() {
         return nodeId.getChildren();
     }
 
@@ -106,22 +99,15 @@ public class Node implements Comparable<Node> {
      * @param code požadovaný kód položky
      * @return vrací seznam hodnot položek s odpovídajícím kódem oddělený čárkou (typicky 1 položka = její serializeValue)
      */
-    public String getItemsValueByCode(@NotNull final String code) {
+    /*
+     * XXX: Not needed -> remove in future.
+     *
+     * public String getItemsValueByCode(@NotNull final String code) {
         return getItems(Collections.singletonList(code)).stream()
                 .map(Item::serializeValue)
                 .filter(StringUtils::isNotBlank)
                 .collect(Collectors.joining(", "));
-    }
-
-    /**
-     * Metoda pro získání hodnoty do fieldu v Jasper.
-     * Umožní na položce v detailu volat metody sám nad sebou (nejen implicitně zpřístupněné gettery).
-     *
-     * @return odkaz sám na sebe
-     */
-    public Node getNode() {
-        return this;
-    }
+    } */
 
     /**
      * Vstupem je seznam kódu typů atributů a vrací se seznam všech hodnot atributů výstupu kromě hodnot
@@ -130,7 +116,7 @@ public class Node implements Comparable<Node> {
      * @param codes     seznam kódu typů atributů
      * @return   seznam všech hodnot atributů kromě hodnot typů uvedených ve vstupu metody
      */
-    public List<Item> getAllItems(@NotNull final Collection<String> codes) {
+    public List<Item> getItemsWithout(@NotNull final Collection<String> codes) {
         Assert.notNull(codes, "Kódy musí být vyplněny");
         return getItems().stream()
                 .filter(item -> !codes.contains(item.getType().getCode()))
@@ -141,17 +127,16 @@ public class Node implements Comparable<Node> {
      * Metoda pro potřeby jasperu
      * @return položky jako getItems, serializované a spojené čárkou
      */
-    public String getAllItemsAsString(@NotNull final Collection<String> codes) {
+    /*
+     * XXX: Not needed -> remove in future.
+     *
+     * public String getAllItemsAsString(@NotNull final Collection<String> codes) {
        return getItems(codes).stream()
-//               .map((item) -> item.serialize() + "[" + item.getType().getCode() + "]") // pro potřeby identifikace políčka při ladění šablony
+                // .map((item) -> item.serialize() + "[" + item.getType().getCode() + "]") // pro potřeby identifikace políčka při ladění šablony
                .map(Item::serialize)
                .filter(StringUtils::isNotBlank)
                .collect(Collectors.joining(", "));
-    }
-
-    public Integer getArrNodeId() {
-        return nodeId.getArrNodeId();
-    }
+    } */
 
     /**
      * @return všechny Items přiřazené na node.
@@ -194,59 +179,10 @@ public class Node implements Comparable<Node> {
         return records;
     }
 
-    @Override
-    public boolean equals(final Object o) {
-        if (this == o) {
-            return true;
-        } else if (o instanceof Node) {
-            final Node o1 = (Node) o;
-            return new EqualsBuilder().append(getArrNodeId(), o1.getArrNodeId()).isEquals();
-        } else {
-            return false;
-        }
-    }
-
-    @Override
-    public int hashCode() {
-        // podstatný je zdrojový arrNode
-        return new HashCodeBuilder().append(getArrNodeId()).toHashCode();
-    }
-
-    @Override
-    public String toString() {
-        return new StringJoiner(", ").add(getDepth().toString()).add(getPosition().toString()).toString();
-    }
-
-    @Override
-    public int compareTo(final Node o) {
-        return CompareToBuilder.reflectionCompare(this, o);
-    }
-
     /**
      * @return instance iterátoru, který prochází jednotky popisu do hloubky
      */
     public IteratorNodes getNodesDFS() {
-        return new IteratorNodes(output, output.getNodesChildsModel(nodeId), outputFactoryService, OutputModel.MAX_CACHED_NODES);
-    }
-
-    /**
-     * @return instance iterátoru, který prochází jednotky popisu do šířky
-     */
-    public IteratorNodes getNodesBFS() {
-        List<NodeId> nodeIds = output.getNodesChildsModel(nodeId);
-        nodeIds.sort((o1, o2) -> new CompareToBuilder()
-                .append(o1.getDepth(), o2.getDepth())  // nejprve nejvyšší nody
-                .append(o1.getParent(), o2.getParent()) // pak sezkupit dle parenta
-                .append(o1.getPosition(), o2.getPosition()) // pak dle pořadí
-                .toComparison());
-        return new IteratorNodes(output, nodeIds, outputFactoryService, OutputModel.MAX_CACHED_NODES);
-    }
-
-    public void setItems(final List<Item> items) {
-        this.items = items;
-    }
-
-    public void setRecords(final List<Record> records) {
-        this.records = records;
+        return new IteratorNodes(model, model.getNodesChildsModel(nodeId), outputFactoryService, OutputModel.MAX_CACHED_NODES);
     }
 }

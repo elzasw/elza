@@ -69,7 +69,6 @@ public class File {
     }
 
     public static File newInstance(DmsFile dmsFile) {
-        File file = new File(dmsFile);
-        return file;
+        return new File(dmsFile);
     }
 }

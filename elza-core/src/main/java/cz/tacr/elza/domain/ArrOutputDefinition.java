@@ -114,7 +114,7 @@ public class ArrOutputDefinition extends AbstractVersionableEntity {
         this.fundId = fund != null ? fund.getFundId() : null;
     }
 
-    public Object getFundId() {
+    public Integer getFundId() {
         return fundId;
     }
 

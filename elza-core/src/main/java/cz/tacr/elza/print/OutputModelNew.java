@@ -9,24 +9,24 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.Validate;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import com.ibm.wsdl.OutputImpl;
 
 import cz.tacr.elza.core.data.CalendarType;
 import cz.tacr.elza.core.data.PartyType;
+import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.core.data.RuleSystemItemType;
-import cz.tacr.elza.core.data.RuleSystemProvider;
+import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.tree.FundTree;
 import cz.tacr.elza.core.tree.FundTreeProvider;
 import cz.tacr.elza.core.tree.TreeNode;
+import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataCoordinates;
 import cz.tacr.elza.domain.ArrDataDecimal;
@@ -101,9 +101,13 @@ import cz.tacr.elza.utils.HibernateUtils;
 
 public class OutputModelNew implements Output {
 
-    private final List<Item> outputItems = new ArrayList<>();
+    private StaticDataProvider staticData;
+
+    private RuleSystem ruleSystem;
 
     /* general description */
+
+    private final List<Item> outputItems = new ArrayList<>();
 
     private String name;
 
@@ -224,32 +228,144 @@ public class OutputModelNew implements Output {
         return null;
     }
 
-    public void loadNodes() {
+    public Map<Integer, Node> loadNodes(Collection<NodeId> nodeIds) {
+        Map<Integer, Node> nodeIdMap = new HashMap<>(nodeIds.size());
+        for (NodeId nodeId : nodeIds) {
+            Node node = new Node(nodeId, this);
+        }
 
+         = nodeIds.stream().map(nodeId -> getNode(nodeId, output))
+                .collect(Collectors.toMap(Node::getArrNodeId, Function.identity()));
+
+        fillItems(output, nodeIds, mapNodes);
+        fillRecords(output, nodeIds, mapNodes);
+
+        List<ArrDescItem> descItems = cachedNode.getDescItems();
+        List<Item> items;
+        if (descItems == null) {
+            items = Collections.<Item>emptyList();
+        } else {
+            items = descItems.stream()
+                    // docasne reseni pro nereportovani nedefinovanych poli
+                    .filter(arrDescItem -> !arrDescItem.isUndefined()).map(arrDescItem -> {
+                        Item item = createItem(output, arrDescItem);
+
+                        if (item instanceof ItemPacketRef) {
+                            if (node != null) {
+                                item.getValue(Packet.class).addNode(node);
+                            }
+                        }
+                        return item;
+
+                    }).collect(Collectors.toList());
+            items.sort((i1, i2) -> (i1.compareToItemViewOrderPosition(i2)));
+        }
+        node.setItems(items);
+
+        return mapNodes;
+    }
+
+    /**
+     * Načtení rejstříkových hesel k jednotkám popisu.
+     *
+     * @param output output pod který node patří
+     * @param nodeIds seznam identifikátorů uzlů, které načítáme
+     * @param mapNodes mapa uzlů, do kterých ukládáme
+     */
+    private void fillRecords(final OutputImpl output, final Collection<NodeId> nodeIds, final Map<Integer, Node> mapNodes) {
+        Map<Integer, List<RegRecord>> recordsByNode = registryService.findByNodes(mapNodes.keySet());
+        for (NodeId nodeId : nodeIds) {
+            int arrNodeId = nodeId.getArrNodeId();
+            Node node = mapNodes.get(arrNodeId);
+
+            // prepare list of records
+            List<RegRecord> regRecords = recordsByNode.get(arrNodeId);
+            List<Record> records;
+            if (CollectionUtils.isEmpty(regRecords)) {
+                records = Collections.<Record>emptyList();
+            } else {
+                records = regRecords.stream().map(regRecord -> output.getRecord(regRecord)).collect(Collectors.toList());
+            }
+
+            // store list
+            node.setRecords(records);
+        }
+    }
+
+    /**
+     * Načtení hodnot atributu k jednotkám popisu.
+     *
+     * @param output output pod který node patří
+     * @param nodeIds seznam identifikátorů uzlů, které načítáme
+     * @param mapNodes mapa uzlů, do kterých ukládáme
+     */
+    private void fillItems(final OutputImpl output, final Collection<NodeId> nodeIds, final Map<Integer, Node> mapNodes) {
+        Set<Integer> requestNodeIds = mapNodes.keySet();
+        // request from cache
+        Map<Integer, RestoredNode> nodeData = nodeCacheService.getNodes(requestNodeIds);
+        mapNodes.forEach((nodeId, node) -> {
+            // find node in nodeData
+            RestoredNode cachedNode = nodeData.get(nodeId);
+            fillNode(output, cachedNode, node);
+        });
+        // TODO: use old code to request nodes directly for non active version
+        /*
+         * Map<Integer, List<ArrDescItem>> descItemsByNode = arrangementService.findByNodes();
+         *
+         * List<ArrDescItem> allDescItems = new LinkedList<>(); for (List<ArrDescItem> items :
+         * descItemsByNode.values()) { allDescItems.addAll(items); }
+         *
+         * ObjectListIterator<ArrDescItem> iterator = new ObjectListIterator<>(allDescItems);
+         *
+         * while (iterator.hasNext()) { List<ArrDescItem> descItems = iterator.next();
+         * itemService.loadData(descItems); }
+         *
+         * for (NodeId nodeId : nodeIds) { int arrNodeId = nodeId.getArrNodeId(); List<ArrDescItem>
+         * descItems = descItemsByNode.get(arrNodeId);
+         *
+         * List<Item> items; Node node = mapNodes.get(arrNodeId); if (descItems == null) { items =
+         * Collections.<Item>emptyList(); } else { items = descItems.stream() .map(arrDescItem -> {
+         * Item item = createItem(output, arrDescItem);
+         *
+         * if (item instanceof ItemPacketRef) { if(node!=null) {
+         * item.getValue(Packet.class).addNode(node); } } return item;
+         *
+         * }).collect(Collectors.toList()); items.sort((i1,i2) ->
+         * (i1.compareToItemViewOrderPosition(i2))); } node.setItems(items); }
+         */
     }
 
     /**
      * Initializes output model. Must be called during transaction.
+     *
+     * @param fundVersion not-null
      */
     public void init(int outputDefinitionId, ArrFundVersion fundVersion) {
         Validate.isTrue(TransactionSynchronizationManager.isActualTransactionActive());
-        Validate.isTrue(fund == null); // check if not initialized
 
+        // find output definition with fetch for model
         ArrOutputDefinition outputDefinition = outputService.getDefinitionForModel(outputDefinitionId);
         if (outputDefinition == null) {
             throw new SystemException("Output definition not found", BaseCode.ID_NOT_EXIST).set("outputDefinitionId",
                     outputDefinitionId);
         }
 
-        ArrFund fund = outputDefinition.getFund();
+        // check fund version against definition
         if (fundVersion != null) {
-            Validate.isTrue(fundVersion.getFundId().equals(fund.getFundId()));
+            Integer fundId = outputDefinition.getFundId();
+            Validate.isTrue(fundId.equals(fundVersion.getFundId()));
         }
 
         init(outputDefinition, fundVersion);
     }
 
     private void init(ArrOutputDefinition outputDefinition, ArrFundVersion fundVersion) {
+        Validate.isTrue(fund == null); // check if not initialized
+
+        // init static data
+        staticData = staticDataService.getData();
+        ruleSystem = staticData.getRuleSystems().getByRuleSetId(fundVersion.getRuleSetId());
+
         // init general
         name = outputDefinition.getName();
         internalCode = outputDefinition.getInternalCode();
@@ -269,7 +385,8 @@ public class OutputModelNew implements Output {
         fund.setDateRange(fundVersion.getDateRange());
         fund.setInstitution(createInstitution(srcFund.getInstitution()));
 
-        initDirectOutputItems(outputDefinition, fundVersion);
+        // init direct items
+        initDirectOutputItems(outputDefinition, fundVersion.getLockChange());
     }
 
     /**
@@ -384,7 +501,7 @@ public class OutputModelNew implements Output {
             return type;
         }
 
-        RegRegisterType regType = staticDataService.getData().getRegisterTypeById(apTypeId);
+        RegRegisterType regType = staticData.getRegisterTypeById(apTypeId);
         if (Boolean.TRUE.equals(regType.getHierarchical())) {
             // recursively create parent types up to root or existing one
             RecordType parentType = getAPType(regType.getParentRegisterTypeId());
@@ -400,7 +517,8 @@ public class OutputModelNew implements Output {
     }
 
     private Party getParty(ParParty parParty) {
-        Party party = partyIdMap.get(parParty.getPartyId()); // without fetch -> access type property
+        Party party = partyIdMap.get(parParty.getPartyId()); // without fetch -> access type
+                                                             // property
         if (party != null) {
             return party;
         }
@@ -436,6 +554,7 @@ public class OutputModelNew implements Output {
         }
     }
 
+    // TODO:
     private List<Relation> createRelations(List<ParRelation> parRelations) {
         if (parRelations.isEmpty()) {
             return Collections.emptyList();
@@ -444,8 +563,7 @@ public class OutputModelNew implements Output {
         List<Relation> relations = new ArrayList<>(parRelations.size());
         for (ParRelation parRelation : parRelations) {
 
-            cz.tacr.elza.core.data.RelationType staticType = staticDataService.getData()
-                    .getRelationTypeById(parRelation.getRelationTypeId());
+            cz.tacr.elza.core.data.RelationType staticType = staticData.getRelationTypeById(parRelation.getRelationTypeId());
 
             // prepare list of relationTo
             List<ParRelationEntity> entities = parRelation.getRelationEntities();
@@ -498,8 +616,8 @@ public class OutputModelNew implements Output {
         return type;
     }
 
-    private void initDirectOutputItems(ArrOutputDefinition outputDefinition, ArrFundVersion fundVersion) {
-        List<ArrOutputItem> outputItems = outputService.getDirectOutputItems(outputDefinition, fundVersion.getLockChange());
+    private void initDirectOutputItems(ArrOutputDefinition outputDefinition, ArrChange lockChange) {
+        List<ArrOutputItem> outputItems = outputService.getDirectOutputItems(outputDefinition, lockChange);
         for (ArrOutputItem outputItem : outputItems) {
             if (outputItem.isUndefined()) {
                 continue; // skip items without data
@@ -510,9 +628,7 @@ public class OutputModelNew implements Output {
     }
 
     private Item createItem(ArrItem arrItem) {
-        RuleSystemProvider ruleSystems = staticDataService.getData().getRuleSystems();
-
-        RuleSystemItemType rsItemType = ruleSystems.getItemType(arrItem.getItemTypeId());
+        RuleSystemItemType rsItemType = ruleSystem.getItemTypeById(arrItem.getItemTypeId());
         ItemType itemType = getItemType(rsItemType);
 
         AbstractItem item = convertItemData(arrItem.getData(), itemType);
@@ -535,7 +651,7 @@ public class OutputModelNew implements Output {
             return type;
         }
 
-        type = ItemType.instanceOf(rsItemType.getEntity());
+        type = new ItemType(rsItemType.getEntity());
 
         // add to lookup
         itemTypeIdMap.put(rsItemType.getItemTypeId(), type);
@@ -552,7 +668,7 @@ public class OutputModelNew implements Output {
         }
 
         RulItemSpec rulItemSpec = rsItemType.getItemSpecById(itemSpecId);
-        spec = ItemSpec.instanceOf(rulItemSpec);
+        spec = new ItemSpec(rulItemSpec);
 
         // add to lookup
         itemSpecIdMap.put(itemSpecId, spec);
@@ -630,10 +746,10 @@ public class OutputModelNew implements Output {
         Packet packet = packetIdMap.get(data.getPacketId());
         if (packet == null) {
             ArrPacket arrPacket = data.getPacket();
-            packet = Packet.newInstance(arrPacket);
+            packet = Packet.newInstance(arrPacket, ruleSystem);
             packetIdMap.put(data.getPacketId(), packet);
         }
-        return new ItemPacketRef(packet); // TODO: addNode from every source
+        return new ItemPacketRef(packet);
     }
 
     private ItemFileRef createItemFileRef(final ArrDataFileRef data) {
@@ -644,127 +760,5 @@ public class OutputModelNew implements Output {
             fileIdMap.put(data.getFileId(), file);
         }
         return new ItemFileRef(file);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public Map<Integer, Node> loadNodes(final OutputImpl output, final Collection<NodeId> nodeIds) {
-        Map<Integer, Node> mapNodes = nodeIds.stream().map(nodeId -> getNode(nodeId, output)).collect(Collectors.toMap(Node::getArrNodeId, Function.identity()));
-
-        fillItems(output, nodeIds, mapNodes);
-        fillRecords(output, nodeIds, mapNodes);
-
-        return mapNodes;
-    }
-
-    /**
-     * Načtení rejstříkových hesel k jednotkám popisu.
-     *
-     * @param output    output pod který node patří
-     * @param nodeIds   seznam identifikátorů uzlů, které načítáme
-     * @param mapNodes  mapa uzlů, do kterých ukládáme
-     */
-    private void fillRecords(final OutputImpl output, final Collection<NodeId> nodeIds, final Map<Integer, Node> mapNodes) {
-        Map<Integer, List<RegRecord>> recordsByNode = registryService.findByNodes(mapNodes.keySet());
-        for (NodeId nodeId : nodeIds) {
-            int arrNodeId = nodeId.getArrNodeId();
-            Node node = mapNodes.get(arrNodeId);
-
-            // prepare list of records
-            List<RegRecord> regRecords = recordsByNode.get(arrNodeId);
-            List<Record> records;
-            if (CollectionUtils.isEmpty(regRecords)) {
-                records = Collections.<Record>emptyList();
-            } else {
-                records = regRecords.stream().map(regRecord -> output.getRecord(regRecord)).collect(Collectors.toList());
-            }
-
-            // store list
-            node.setRecords(records);
-        }
-    }
-
-    /**
-     * Načtení hodnot atributu k jednotkám popisu.
-     *
-     * @param output   output pod který node patří
-     * @param nodeIds  seznam identifikátorů uzlů, které načítáme
-     * @param mapNodes mapa uzlů, do kterých ukládáme
-     */
-    private void fillItems(final OutputImpl output, final Collection<NodeId> nodeIds, final Map<Integer, Node> mapNodes) {
-        Set<Integer> requestNodeIds = mapNodes.keySet();
-        // request from cache
-        Map<Integer, RestoredNode> nodeData = nodeCacheService.getNodes(requestNodeIds);
-        mapNodes.forEach((nodeId, node) -> {
-            // find node in nodeData
-            RestoredNode cachedNode = nodeData.get(nodeId);
-            fillNode(output, cachedNode, node);
-        });
-        // TODO: use old code to request nodes directly for non active version
-        /*
-        Map<Integer, List<ArrDescItem>> descItemsByNode = arrangementService.findByNodes();
-
-        List<ArrDescItem> allDescItems = new LinkedList<>();
-        for (List<ArrDescItem> items : descItemsByNode.values()) {
-            allDescItems.addAll(items);
-        }
-
-        ObjectListIterator<ArrDescItem> iterator = new ObjectListIterator<>(allDescItems);
-
-        while (iterator.hasNext()) {
-            List<ArrDescItem> descItems = iterator.next();
-            itemService.loadData(descItems);
-        }
-
-        for (NodeId nodeId : nodeIds) {
-            int arrNodeId = nodeId.getArrNodeId();
-            List<ArrDescItem> descItems = descItemsByNode.get(arrNodeId);
-
-            List<Item> items;
-            Node node = mapNodes.get(arrNodeId);
-            if (descItems == null) {
-                items = Collections.<Item>emptyList();
-            } else {
-                items = descItems.stream()
-                        .map(arrDescItem -> {
-                            Item item = createItem(output, arrDescItem);
-
-                            if (item instanceof ItemPacketRef) {
-                                if(node!=null) {
-                                    item.getValue(Packet.class).addNode(node);
-                                }
-                            }
-                            return item;
-
-                        }).collect(Collectors.toList());
-                items.sort((i1,i2) -> (i1.compareToItemViewOrderPosition(i2)));
-            }
-            node.setItems(items);
-        }*/
-    }
-
-    private void fillNode(OutputImpl output, CachedNode cachedNode, Node node) {
-        List<ArrDescItem> descItems = cachedNode.getDescItems();
-        List<Item> items;
-        if (descItems == null) {
-            items = Collections.<Item>emptyList();
-        } else {
-            items = descItems.stream()
-                    // docasne reseni pro nereportovani nedefinovanych poli
-                    .filter(arrDescItem -> !arrDescItem.isUndefined())
-                    .map(arrDescItem -> {
-                        Item item = createItem(output, arrDescItem);
-
-                        if (item instanceof ItemPacketRef) {
-                            if(node!=null) {
-                                item.getValue(Packet.class).addNode(node);
-                            }
-                        }
-                        return item;
-
-                    }).collect(Collectors.toList());
-            items.sort((i1,i2) -> (i1.compareToItemViewOrderPosition(i2)));
-        }
-        node.setItems(items);
     }
 }

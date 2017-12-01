@@ -34,8 +34,4 @@ public class ItemSpec {
     public String getShortcut() {
         return shortcut;
     }
-
-    public static ItemSpec instanceOf(final RulItemSpec rulItemSpec) {
-    	return new ItemSpec(rulItemSpec); 
-    }
 }
