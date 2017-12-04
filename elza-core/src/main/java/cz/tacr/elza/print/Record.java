@@ -2,55 +2,57 @@ package cz.tacr.elza.print;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import org.apache.commons.lang.builder.CompareToBuilder;
-import org.apache.commons.lang.builder.ToStringBuilder;
+import java.util.stream.Collectors;
 
 import cz.tacr.elza.domain.RegRecord;
-
+import cz.tacr.elza.domain.RegVariantRecord;
 
 /**
  * One record from registry
- * 
+ *
  * Each record has its type, record name and characteristics
  */
-public class Record implements Comparable<Record> {
+public class Record {
 
-    final int recordId;
+    private final int recordId;
 
-	private final String record;
+    private final String record;
+
     private final String characteristics;
-    private final List<String> variantRecords = new ArrayList<>();
+
     private final RecordType recordType;
+
     private final String externalId;
 
-    private Record(RegRecord regRecord, RecordType recordType) {
-    	this.externalId = regRecord.getExternalId();
-        this.recordId = regRecord.getRecordId(); 
+    private final List<String> variantRecords;
+
+    private Record(RegRecord regRecord, RecordType recordType, List<String> variantRecords) {
+        this.externalId = regRecord.getExternalId();
+        this.recordId = regRecord.getRecordId();
         this.record = regRecord.getRecord();
         this.characteristics = regRecord.getCharacteristics();
         this.recordType = recordType;
-        regRecord.getVariantRecordList().forEach(regVariantRecord -> variantRecords.add(regVariantRecord.getRecord()));
+        this.variantRecords = variantRecords;
     }
-    
+
     /**
      * Copy constructor
+     *
      * @param record
      */
     protected Record(Record srcRecord) {
-    	this.recordId = srcRecord.recordId;
-    	this.record = srcRecord.record;
-    	this.characteristics = srcRecord.characteristics;
-    	this.recordType = srcRecord.recordType;
-    	this.variantRecords.addAll(srcRecord.variantRecords);
-    	this.externalId = srcRecord.externalId;
+        this.recordId = srcRecord.recordId;
+        this.record = srcRecord.record;
+        this.characteristics = srcRecord.characteristics;
+        this.recordType = srcRecord.recordType;
+        this.externalId = srcRecord.externalId;
+        this.variantRecords = new ArrayList<>(srcRecord.variantRecords);
     }
 
     public int getRecordId() {
-		return recordId;
-	}
+        return recordId;
+    }
 
-    
     public RecordType getRecordType() {
         return recordType;
     }
@@ -67,29 +69,19 @@ public class Record implements Comparable<Record> {
         return variantRecords;
     }
 
-	public String getExternalId() {
-		return externalId;
-	}
-
-	@Override
-    public String toString() {
-        return new ToStringBuilder(this).append("record", record).append("characteristics", characteristics).toString();
-    }
-
-    @Override
-    public int compareTo(final Record o) {
-        return CompareToBuilder.reflectionCompare(this, o);
+    public String getExternalId() {
+        return externalId;
     }
 
     /**
-     * Return value of RegRecord
-     * @param recordType
-     * @param regRecord
-     * @return
+     * Return new instance of Record. Variant names are required (fetched from database if not initialized).
      */
-	public static Record newInstance(RecordType recordType, RegRecord regRecord) {
-		Record record = new Record(regRecord, recordType);
+    public static Record newInstance(RegRecord regRecord, RecordType recordType) {
+        List<String> variantNames = regRecord.getVariantRecordList().stream()
+                .map(RegVariantRecord::getRecord)
+                .collect(Collectors.toList());
+        Record record = new Record(regRecord, recordType, variantNames);
         return record;
-	}
+    }
 
 }

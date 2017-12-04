@@ -2,12 +2,12 @@ package cz.tacr.elza.print;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.validation.constraints.NotNull;
-
-import org.springframework.util.Assert;
+import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.print.item.Item;
 import cz.tacr.elza.print.item.ItemRecordRef;
@@ -20,26 +20,30 @@ public class Node {
 
     private final NodeId nodeId;
 
-    private final OutputModelNew model;
+    private final NodeLoader nodeLoader;
 
-    private final List<Item> items;
+    private List<Item> items;
 
-    private final List<Record> records;
+    private List<Record> nodeAPs;
 
     /**
      * Konstruktor s povinnými hodnotami
+     *
      * @param nodeId vazba na nodeId
      * @param nodel vazba na output
      */
-    public Node(NodeId nodeId, OutputModelNew nodel) {
+    public Node(NodeId nodeId, NodeLoader nodeLoader) {
         this.nodeId = nodeId;
-        this.model = nodel;
-        this.items = items;
-        this.records = records;
+        this.nodeLoader = nodeLoader;
+    }
+
+    public NodeId getNodeId() {
+        return nodeId;
     }
 
     /**
-     * @return dohledá v output.modes node, který je nadřazený tomuto. Pokud není nalezen nebo neexistuje vrací null.
+     * @return dohledá v output.modes node, který je nadřazený tomuto. Pokud není nalezen nebo
+     *         neexistuje vrací null.
      */
     public NodeId getParent() {
         return nodeId.getParent();
@@ -52,147 +56,156 @@ public class Node {
         return nodeId.getChildren();
     }
 
-    /**
-     * @param codes seznam kódů typů atributů.
-     * @return vrací se seznam hodnot těchto atributů, řazeno dle rul_desc_item.view_order + arr_item.position
-     */
-    public List<Item> getItems(@NotNull final Collection<String> codes) {
-        Assert.notNull(codes, "Kódy musí být vyplněny");
-        return getItems().stream()
-                .filter(item -> {
-                    final String code = item.getType().getCode();
-                    return codes.contains(code);
-                })
-                .collect(Collectors.toList());
+    public Integer getDepth() {
+        return nodeId.getDepth();
     }
 
-    /**
-     * Return list of items with given specification
-     *
-     * @param code 		Code of the item
-     * @param specCode	Code of specificaion
-     * @return
-     */
-    public List<Item> getItemsWithSpec(@NotNull final String code, @NotNull final String specCode) {
-    	Assert.notNull(code, "Kód musí být vyplněn");
-    	Assert.notNull(specCode, "Kód specifikace musí být vyplněn");
-
-    	List<Item> result = new ArrayList<>();
-    	items.forEach(item -> {
-    		if(code.equals(item.getType().getCode())) {
-    			// Check specification
-    			ItemSpec is = item.getSpecification();
-    			if(is!=null) {
-    				if(specCode.equals(is.getCode())) {
-    					result.add(item);
-    				}
-    			}
-    		}
-    	});
-
-    	return result;
+    public Integer getPosition() {
+        return nodeId.getPosition();
     }
-
-    /**
-     * Metoda pro získání hodnoty do fieldu v Jasper.
-     *
-     * @param code požadovaný kód položky
-     * @return vrací seznam hodnot položek s odpovídajícím kódem oddělený čárkou (typicky 1 položka = její serializeValue)
-     */
-    /*
-     * XXX: Not needed -> remove in future.
-     *
-     * public String getItemsValueByCode(@NotNull final String code) {
-        return getItems(Collections.singletonList(code)).stream()
-                .map(Item::serializeValue)
-                .filter(StringUtils::isNotBlank)
-                .collect(Collectors.joining(", "));
-    } */
-
-    /**
-     * Vstupem je seznam kódu typů atributů a vrací se seznam všech hodnot atributů výstupu kromě hodnot
-     * typů uvedených ve vstupu metody, řazeno dle rul_desc_item.view_order + arr_item.position.
-     *
-     * @param codes     seznam kódu typů atributů
-     * @return   seznam všech hodnot atributů kromě hodnot typů uvedených ve vstupu metody
-     */
-    public List<Item> getItemsWithout(@NotNull final Collection<String> codes) {
-        Assert.notNull(codes, "Kódy musí být vyplněny");
-        return getItems().stream()
-                .filter(item -> !codes.contains(item.getType().getCode()))
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * Metoda pro potřeby jasperu
-     * @return položky jako getItems, serializované a spojené čárkou
-     */
-    /*
-     * XXX: Not needed -> remove in future.
-     *
-     * public String getAllItemsAsString(@NotNull final Collection<String> codes) {
-       return getItems(codes).stream()
-                // .map((item) -> item.serialize() + "[" + item.getType().getCode() + "]") // pro potřeby identifikace políčka při ladění šablony
-               .map(Item::serialize)
-               .filter(StringUtils::isNotBlank)
-               .collect(Collectors.joining(", "));
-    } */
 
     /**
      * @return všechny Items přiřazené na node.
      */
     public List<Item> getItems() {
+        if (items == null) {
+            return Collections.emptyList();
+        }
         return items;
     }
 
-    public Integer getDepth() {
-        return getNodeId().getDepth();
-    }
+    /**
+     * @param typeCodes seznam kódů typů atributů.
+     * @return vrací se seznam hodnot těchto atributů, řazeno dle rul_desc_item.view_order +
+     *         arr_item.position
+     */
+    public List<Item> getItems(final Collection<String> typeCodes) {
+        Validate.notNull(typeCodes);
 
-    public Integer getPosition() {
-        return getNodeId().getPosition();
-    }
+        if (items == null || typeCodes.isEmpty()) {
+            return Collections.emptyList();
+        }
 
-    public NodeId getNodeId() {
-        return nodeId;
+        return items.stream().filter(item -> {
+            String tc = item.getType().getCode();
+            return typeCodes.contains(tc);
+        }).collect(Collectors.toList());
     }
 
     /**
+     * Return list of items with given specification
+     *
+     * @param typeCode Code of the item
+     * @param specCode Code of specificaion
+     * @return
+     */
+    public List<Item> getItemsWithSpec(final String typeCode, final String specCode) {
+        Validate.notNull(typeCode);
+        Validate.notNull(specCode);
+
+        if (items == null) {
+            return Collections.emptyList();
+        }
+
+        return items.stream().filter(item -> {
+            String tc = item.getType().getCode();
+            if (!typeCode.equals(tc)) {
+                return false;
+            }
+            ItemSpec is = item.getSpecification();
+            return is != null && specCode.equals(is.getCode());
+        }).collect(Collectors.toList());
+    }
+
+    /*
+     * XXX: Not needed -> remove in future.
+     *
+     * Metoda pro získání hodnoty do fieldu v Jasper.
+     *
+     * @param code požadovaný kód položky
+     *
+     * @return vrací seznam hodnot položek s odpovídajícím kódem oddělený čárkou (typicky 1 položka
+     * = její serializeValue)
+     *
+     * public String getItemsValueByCode(final String code) { return
+     * getItems(Collections.singletonList(code)).stream() .map(Item::serializeValue)
+     * .filter(StringUtils::isNotBlank) .collect(Collectors.joining(", ")); }
+     */
+
+    /**
+     * Vstupem je seznam kódu typů atributů a vrací se seznam všech hodnot atributů výstupu kromě
+     * hodnot typů uvedených ve vstupu metody, řazeno dle rul_desc_item.view_order +
+     * arr_item.position.
+     *
+     * @param codes seznam kódu typů atributů
+     * @return seznam všech hodnot atributů kromě hodnot typů uvedených ve vstupu metody
+     */
+    public List<Item> getItemsWithout(final Collection<String> typeCodes) {
+        Validate.notNull(typeCodes);
+
+        if (items == null) {
+            return Collections.emptyList();
+        }
+
+        return items.stream().filter(item -> {
+            String tc = item.getType().getCode();
+            return !typeCodes.contains(tc);
+        }).collect(Collectors.toList());
+    }
+
+    /*
+     * XXX: Not needed -> remove in future.
+     *
+     * Metoda pro potřeby jasperu
+     *
+     * @return položky jako getItems, serializované a spojené čárkou
+     *
+     * public String getAllItemsAsString(final Collection<String> codes) { return
+     * getItems(codes).stream() // .map((item) -> item.serialize() + "[" + item.getType().getCode()
+     * + "]") // pro potřeby identifikace políčka při ladění šablony .map(Item::serialize)
+     * .filter(StringUtils::isNotBlank) .collect(Collectors.joining(", ")); }
+     */
+
+    /**
      * Return list of records connected to the node or to description item
+     *
      * @return
      */
     public List<Record> getRecords() {
-    	// interně navázané recordy jako první
-        final List<Record> recordList = new ArrayList<>(records);
+        List<Record> allAPs = new ArrayList<>();
 
-        // recordy z itemů
-        for (Item item : getItems()) {
-            if (item instanceof ItemRecordRef) {
-                recordList.add(item.getValue(Record.class));
+        if (nodeAPs != null) {
+            allAPs.addAll(nodeAPs);
+        }
+        if (items != null) {
+            for (Item item : items) {
+                if (item instanceof ItemRecordRef) {
+                    allAPs.add(item.getValue(Record.class));
+                }
             }
         }
-
-        return recordList;
+        return allAPs;
     }
 
     public List<Record> getNodeRecords() {
-        return records;
+        return nodeAPs;
     }
 
     /**
      * @return instance iterátoru, který prochází jednotky popisu do hloubky
      */
     public IteratorNodes getNodesDFS() {
-        return new IteratorNodes(model, model.getNodesChildsModel(nodeId), outputFactoryService, OutputModel.MAX_CACHED_NODES);
+        Iterator<NodeId> nodeIdIterator = nodeId.getIteratorDFS();
+        return new IteratorNodes(nodeLoader, nodeIdIterator);
     }
 
-    public void setItems(List<Item> items2) {
-        // TODO Auto-generated method stub
+    /* internal methods */
 
+    void setItems(List<Item> items) {
+        this.items = items;
     }
 
-    public void setAPs(List<Record> aPs) {
-        // TODO Auto-generated method stub
-
+    void setNodeAPs(List<Record> nodeAPs) {
+        this.nodeAPs = nodeAPs;
     }
 }

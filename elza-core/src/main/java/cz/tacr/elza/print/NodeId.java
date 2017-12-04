@@ -1,6 +1,8 @@
 package cz.tacr.elza.print;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.lang3.Validate;
@@ -14,11 +16,11 @@ public class NodeId {
 
     private final NodeId parentNodeId;
 
-    private final ArrayList<NodeId> children = new ArrayList<>();
-
     private final int position;
 
     private final int depth;
+
+    List<NodeId> children;
 
     /**
      * Creates internal or leaf node.
@@ -51,10 +53,6 @@ public class NodeId {
         return parentNodeId;
     }
 
-    public List<NodeId> getChildren() {
-        return children;
-    }
-
     public int getPosition() {
         return position;
     }
@@ -63,12 +61,31 @@ public class NodeId {
         return depth;
     }
 
+    public List<NodeId> getChildren() {
+        if (children == null) {
+            return Collections.emptyList();
+        }
+        return children;
+    }
+
+    /**
+     * Creates DFS tree iterator from this node.
+     */
+    public Iterator<NodeId> getIteratorDFS() {
+        return new NodeIdIterator(this, true);
+    }
+
     /**
      * @param child Expecting higher position than current children.
      */
     void addChild(NodeId child) {
-        NodeId lastChild = children.get(children.size() - 1);
-        Validate.isTrue(lastChild.getPosition() < child.getPosition());
+        if (children == null) {
+            children = new ArrayList<>();
+        } else {
+            // check last child position
+            NodeId lastChild = children.get(children.size() - 1);
+            Validate.isTrue(lastChild.getPosition() < child.getPosition());
+        }
         children.add(child);
-    }
+    };
 }

@@ -1,22 +1,23 @@
 package cz.tacr.elza.print;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.NoSuchElementException;
+
+import org.apache.commons.lang.Validate;
 
 /**
  * Implementace iterátoru s cache pro načítání bloku dat.
- *
- * @author Martin Šlapa
- * @since 29.08.2016
  */
 public class IteratorNodes implements Iterator<Node> {
+
+    private final NodeLoader nodeLoader;
 
     /**
      * Seznam NodeId seřazených podle iterace.
      */
-    private final List<NodeId> nodeIds;
+    private final Iterator<NodeId> nodeIdIterator;
 
     /**
      * Velikost cache.
@@ -24,35 +25,32 @@ public class IteratorNodes implements Iterator<Node> {
     private final int windowSize;
 
     /**
-     * Třída, která zajišťuje načítání dat o uzlech.
-     */
-    private final NodeLoader loader;
-
-    /**
      * Uložiště pro načtené uzly.
      */
-    private Map<Integer, Node> nodes = null;
+    private List<Node> nodes;
 
     /**
      * Pozice další iterované položky.
      */
-    private int position = 0;
+    private int windowIndex;
+
+    public IteratorNodes(NodeLoader nodeLoader, Iterator<NodeId> nodeIdIterator, int windowSize) {
+        this.nodeLoader = nodeLoader;
+        this.nodeIdIterator = nodeIdIterator;
+        this.windowSize = windowSize;
+        this.windowIndex = windowSize; // force to load first window
+    }
 
     /**
-     * Svázaný výstup.
+     * Creates node iterator with default window size of 1000.
      */
-    private final OutputModel output;
-
-    public IteratorNodes(final OutputModel output, final List<NodeId> nodeIds, final NodeLoader loader, final int windowSize) {
-        this.output = output;
-        this.nodeIds = nodeIds;
-        this.windowSize = windowSize;
-        this.loader = loader;
+    public IteratorNodes(NodeLoader nodeLoader, Iterator<NodeId> nodeIdIterator) {
+        this(nodeLoader, nodeIdIterator, 1000);
     }
 
     @Override
     public boolean hasNext() {
-        return nodeIds.size() > position;
+        return nodeIdIterator.hasNext() || (nodes != null && windowIndex < nodes.size());
     }
 
     @Override
@@ -62,34 +60,16 @@ public class IteratorNodes implements Iterator<Node> {
             throw new NoSuchElementException();
         }
 
-        NodeId nodeId = nodeIds.get(position);
-
-        if (nodes == null) {
-            nodes = loader.loadNodes(output, nextIds());
+        if (windowIndex >= windowSize) {
+            nodes = nodeLoader.loadNodes(getNextIds());
+            windowIndex = 0;
         }
 
-        Node node = nodes.get(nodeId.getArrNodeId());
+        Node node = nodes.get(windowIndex);
+        Validate.notNull(node);
 
-        if (node == null) {
-            nodes = loader.loadNodes(output, nextIds());
-            node = nodes.get(nodeId.getArrNodeId());
-
-            if (node == null) {
-                throw new NoSuchElementException("Node " + nodeId + " se nepodařilo načíst do cache");
-            }
-        }
-
-        position++;
+        windowIndex++;
         return node;
-    }
-
-    /**
-     * Vrací aktuální pozici - NodeId.
-     *
-     * @return aktuální NodeId
-     */
-    public NodeId getActualNodeId() {
-        return nodeIds.get(position - 1);
     }
 
     /**
@@ -97,26 +77,13 @@ public class IteratorNodes implements Iterator<Node> {
      *
      * @return seznam NodeId
      */
-    private List<NodeId> nextIds() {
-        int from = position;
-        int to = nodeIds.size() > from + windowSize ? from + windowSize : nodeIds.size();
-        return nodeIds.subList(from, to);
-    }
-
-    /**
-     * Vrací aktuální seznam NodeId.
-     *
-     * @return seznam NodeId
-     */
-    public List<NodeId> getNodeIds() {
-        return nodeIds;
-    }
-
-    public Node moveTo(final NodeId nodeId) {
-        if (!nodeIds.contains(nodeId)) {
-            throw new NoSuchElementException();
+    private List<NodeId> getNextIds() {
+        List<NodeId> nodeIds = new ArrayList<>(windowSize);
+        int i = 0;
+        while (i < windowSize && nodeIdIterator.hasNext()) {
+            nodeIds.add(nodeIdIterator.next());
+            i++;
         }
-        position = nodeIds.indexOf(nodeId);
-        return next();
+        return nodeIds;
     }
 }

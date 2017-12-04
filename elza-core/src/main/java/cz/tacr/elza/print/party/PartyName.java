@@ -128,7 +128,7 @@ public class PartyName {
     }
 
     /**
-     * Creates party name. Valid From/To ParUnitdate reference is fetched during process.
+     * Return new instance of PartyName. Valid From/To unit dates are required (fetched from database if not initialized).
      */
     public static PartyName newInstance(ParPartyName parPartyName, StaticDataProvider staticData) {
         // prepare valid dates
@@ -136,10 +136,9 @@ public class PartyName {
         UnitDateText validTo = UnitDateText.valueOf(parPartyName.getValidTo());
 
         // prepare form type name
-        Integer formTypeId = parPartyName.getNameFormTypeId();
         String formTypeName = null;
-        if (formTypeId != null) {
-            ParPartyNameFormType formType = staticData.getPartyNameFormTypeById(formTypeId);
+        if (parPartyName.getNameFormTypeId() != null) {
+            ParPartyNameFormType formType = staticData.getPartyNameFormTypeById(parPartyName.getNameFormTypeId());
             formTypeName = formType.getName();
         }
 

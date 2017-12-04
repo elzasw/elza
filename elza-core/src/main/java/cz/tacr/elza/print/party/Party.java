@@ -1,6 +1,5 @@
 package cz.tacr.elza.print.party;
 
-import java.util.Collections;
 import java.util.List;
 
 import cz.tacr.elza.core.data.PartyType;
@@ -104,7 +103,7 @@ public abstract class Party {
     }
 
     public List<RelationsByType> getRelationsByType() {
-        return Collections.unmodifiableList(relationsByType);
+        return relationsByType;
     }
 
     protected abstract PartyType getPartyType();

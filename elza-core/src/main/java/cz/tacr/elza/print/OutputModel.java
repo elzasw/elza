@@ -1,31 +1,62 @@
 package cz.tacr.elza.print;
 
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.validation.constraints.NotNull;
+import org.apache.commons.lang3.Validate;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.Validate;
-import org.apache.commons.lang.builder.CompareToBuilder;
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
-import org.springframework.util.Assert;
-
+import cz.tacr.elza.core.data.CalendarType;
 import cz.tacr.elza.core.data.PartyType;
+import cz.tacr.elza.core.data.RuleSystem;
+import cz.tacr.elza.core.data.RuleSystemItemType;
+import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.core.tree.FundTree;
+import cz.tacr.elza.core.tree.FundTreeProvider;
+import cz.tacr.elza.core.tree.TreeNode;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataCoordinates;
+import cz.tacr.elza.domain.ArrDataDecimal;
+import cz.tacr.elza.domain.ArrDataFileRef;
+import cz.tacr.elza.domain.ArrDataInteger;
+import cz.tacr.elza.domain.ArrDataJsonTable;
+import cz.tacr.elza.domain.ArrDataPacketRef;
+import cz.tacr.elza.domain.ArrDataPartyRef;
+import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrDataString;
+import cz.tacr.elza.domain.ArrDataText;
+import cz.tacr.elza.domain.ArrDataUnitdate;
+import cz.tacr.elza.domain.ArrDataUnitid;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFile;
+import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrItem;
+import cz.tacr.elza.domain.ArrNodeOutput;
+import cz.tacr.elza.domain.ArrNodeRegister;
+import cz.tacr.elza.domain.ArrOutputDefinition;
+import cz.tacr.elza.domain.ArrOutputItem;
+import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.ParDynasty;
 import cz.tacr.elza.domain.ParEvent;
+import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyGroup;
+import cz.tacr.elza.domain.ParPartyName;
 import cz.tacr.elza.domain.ParPerson;
 import cz.tacr.elza.domain.ParRelation;
+import cz.tacr.elza.domain.ParRelationClassType;
 import cz.tacr.elza.domain.ParRelationEntity;
 import cz.tacr.elza.domain.ParRelationRoleType;
 import cz.tacr.elza.domain.ParRelationType;
@@ -33,226 +64,189 @@ import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulOutputType;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.print.item.AbstractItem;
 import cz.tacr.elza.print.item.Item;
+import cz.tacr.elza.print.item.ItemCoordinates;
+import cz.tacr.elza.print.item.ItemDecimal;
+import cz.tacr.elza.print.item.ItemEnum;
 import cz.tacr.elza.print.item.ItemFileRef;
+import cz.tacr.elza.print.item.ItemInteger;
+import cz.tacr.elza.print.item.ItemJsonTable;
 import cz.tacr.elza.print.item.ItemPacketRef;
 import cz.tacr.elza.print.item.ItemPartyRef;
+import cz.tacr.elza.print.item.ItemRecordRef;
 import cz.tacr.elza.print.item.ItemSpec;
+import cz.tacr.elza.print.item.ItemString;
 import cz.tacr.elza.print.item.ItemType;
+import cz.tacr.elza.print.item.ItemUnitId;
+import cz.tacr.elza.print.item.ItemUnitdate;
 import cz.tacr.elza.print.party.Dynasty;
 import cz.tacr.elza.print.party.Event;
+import cz.tacr.elza.print.party.Institution;
 import cz.tacr.elza.print.party.Party;
 import cz.tacr.elza.print.party.PartyGroup;
 import cz.tacr.elza.print.party.PartyInitHelper;
+import cz.tacr.elza.print.party.PartyName;
 import cz.tacr.elza.print.party.Person;
 import cz.tacr.elza.print.party.Relation;
+import cz.tacr.elza.print.party.RelationRoleType;
 import cz.tacr.elza.print.party.RelationTo;
-import cz.tacr.elza.print.party.RelationToType;
 import cz.tacr.elza.print.party.RelationType;
-import cz.tacr.elza.service.DmsService;
-import cz.tacr.elza.service.output.OutputFactoryService;
-import cz.tacr.elza.utils.AppContext;
+import cz.tacr.elza.repository.OutputDefinitionRepository;
+import cz.tacr.elza.service.OutputService;
+import cz.tacr.elza.service.cache.CachedNode;
+import cz.tacr.elza.service.cache.NodeCacheService;
+import cz.tacr.elza.service.cache.RestoredNode;
 import cz.tacr.elza.utils.HibernateUtils;
 
-/**
- * Základní objekt pro generování výstupu, při tisku se vytváří 1 instance.
- *
- */
-public class OutputModel implements Output {
+public class OutputModel implements Output, NodeLoader {
 
-    public static final int MAX_CACHED_NODES = 1000; // maximální počet nodů v cache
+    private StaticDataProvider staticData;
 
-    private final int outputId; // ID pro vazbu do DB na entitu arr_output
+    private RuleSystem ruleSystem;
 
-    private OutputFactoryService outputFactoryService = AppContext.getBean(OutputFactoryService.class);
+    /* general description */
 
-    private String internal_code;
+    private final List<Item> outputItems = new ArrayList<>();
+
     private String name;
+
+    private String internalCode;
+
     private String type;
+
     private String typeCode;
+
     private Fund fund;
 
-    private int page = 0;
+    /* lookups */
 
-    // seznam všech atributů outputu
-    private List<Item> items = new ArrayList<>();
+    // seznam rejstříkových hesel podle typu
+    private final Map<String, FilteredRecords> filteredRecords = new HashMap<>();
 
-    // seznam všech node outputu (přímo přiřazené + jejich potomci + nadřízení až do root);
-    // mapa má jako klíč ID Nodu odpovídající ArrNode.arrNodeId
-    private Map<Integer, NodeId> nodeIdsMap = new HashMap<>();
+    private final Map<Integer, ItemType> itemTypeIdMap = new HashMap<>();
 
-    // seznam rejstříkových hesel podle  typu
-    private Map<String, FilteredRecords> filteredRecords = new HashMap <>();
+    private final Map<Integer, ItemSpec> itemSpecIdMap = new HashMap<>();
 
-    /**
-     * Record type cache
-     */
-    private Map<Integer, RecordType> recordTypes = new HashMap<>();
+    private final Map<Integer, Record> apIdMap = new HashMap<>();
 
-    /**
-     * Cache for party
-     */
-    private Map<Integer, Party> partyCache = new HashMap<>();
+    private final Map<Integer, RecordType> apTypeIdMap = new HashMap<>();
 
-    /**
-     * Cache for records
-     */
-    private Map<Integer, Record> recordCache = new HashMap<>();
+    private final Map<Integer, Party> partyIdMap = new HashMap<>();
 
-    /**
-     * Cache ro relation types
-     */
-    private Map<Integer, RelationType> partyRelationTypeCache = new HashMap<>();
+    private final Map<Integer, RelationType> relationTypeIdMap = new HashMap<>();
 
-    private Set<Integer> directNodeIds = new HashSet<>();
+    private final Map<Integer, RelationRoleType> relationRoleTypeIdMap = new HashMap<>();
 
-    Map<Integer, ItemType> itemTypeMap = new HashMap<>();
-    Map<Integer, ItemSpec> itemSpecMap = new HashMap<>();
+    private final Map<Integer, Packet> packetIdMap = new HashMap<>();
 
-    private Map<Integer, RelationToType> relToTypeCache = new HashMap<>();
+    private final Map<Integer, File> fileIdMap = new HashMap<>();
 
-    /**
-     * Vytvoření instance s povinnými údaji
-     *
-     * @param output arr_output s definicí zpracovávaného výstupu
-     */
-    public OutputModel(int outputId) {
-        this.outputId = outputId;
-    }
+    /* spring components */
 
-    /**
-     * Přidá {@link NodeId} do výstupu.
-     */
-    public NodeId addNodeId(final NodeId nodeId) {
-        Assert.notNull(nodeId, "Identifikátor JP musí být vyplněn");
+    private final StaticDataService staticDataService;
 
-        NodeId nodeIdOrig = nodeIdsMap.get(nodeId.getArrNodeId());
-        if (nodeIdOrig == null) {
-            nodeIdsMap.put(nodeId.getArrNodeId(), nodeId);
-            return nodeId;
-        } else {
-            return nodeIdOrig;
-        }
-    }
+    private final OutputService outputService;
 
-    public NodeId getNodeId(final Integer nodeIdentifier) {
-        return nodeIdsMap.get(nodeIdentifier);
-    }
+    private final FundTreeProvider fundTreeProvider;
 
-    /**
-     * Externí počítadlo stránek pro Jasper.
-     * Obchází chybu, kdy jasper nezvládá interně počítat stránky pokud detail přeteče na více stránek.
-     *
-     * @param increment má se při volání provést increment
-     * @return aktuální hodnota (po případné inkrementaci)
-     */
-    public Integer getPage(final boolean increment) {
-        if (increment) {
-            page += 1;
-        }
-        return page;
-    }
+    private final NodeCacheService nodeCacheService;
 
-    /**
-     * @return sečtená hodnota počtu stránek příloh pdf připojených k nodům v output.
-     */
-    public Integer getAttachedPages() {
-        return getItemFilePdfs().stream()
-                .mapToInt(ItemFileRef::getPagesCount)
-                .sum();
-    }
-
-    /**
-     * @return seznam PDF příloh připojených k nodům v output.
-     */
-    public List<ItemFileRef> getAttachements() {
-        return getItemFilePdfs();
-    }
-
-    private List<ItemFileRef> getItemFilePdfs() {
-        IteratorNodes iterator = getNodesBFS();
-
-        List<ItemFileRef> result = new ArrayList<>();
-        while (iterator.hasNext()) {
-            Node node = iterator.next();
-            List<Item> items = node.getItems();
-            for (Item item : items) {
-                if (item instanceof ItemFileRef) {
-                    ItemFileRef itemFile = (ItemFileRef) item;
-                    if (itemFile.getMimeType().equals(DmsService.MIME_TYPE_APPLICATION_PDF)) {
-                        result.add(itemFile);
-                    }
-                }
-            }
-        }
-
-        return result;
-    }
-
-    /**
-     * Metoda sahá pomocí service do DB a zafiltruje seznam přímo přiřazených nodes.
-     *
-     * @return seznam nodes, které jsou přímo přiřazené outputu (arr_node_output), řazeno dle pořadí ve stromu
-     */
-    public List<NodeId> getDirectNodes() {
-        IteratorNodes iterator = getNodesDFS();
-        List<NodeId> result = new ArrayList<>();
-        while (iterator.hasNext()) {
-            Node node = iterator.next();
-            if (directNodeIds.contains(node.getArrNodeId())) {
-                result.add(iterator.getActualNodeId());
-            }
-        }
-        return result;
-    }
-
-    /** Přidá id uzlu přímo přiřazeného k výstupu. */
-    public void addDirectNodeIdentifier(final Integer nodeId) {
-        directNodeIds.add(nodeId);
+    public OutputModel(StaticDataService staticDataService,
+                          OutputService outputService,
+                          FundTreeProvider fundTreeProvider,
+                          OutputDefinitionRepository outputDefinitionRepository,
+                          NodeCacheService nodeCacheService) {
+        this.staticDataService = staticDataService;
+        this.outputService = outputService;
+        this.fundTreeProvider = fundTreeProvider;
+        this.nodeCacheService = nodeCacheService;
     }
 
     @Override
-    public List<Item> getItems(@NotNull final Collection<String> codes) {
-        Assert.notNull(codes, "Kódy musí být vyplněny");
-        return items.stream()
-                .filter(item -> codes.contains(item.getType().getCode()))
-                .sorted(Item::compareToItemViewOrderPosition)
-                .collect(Collectors.toList());
+    public Fund getFund() {
+        return fund;
     }
 
     @Override
-    public List<Party> getParties(Collection<String> codes) {
-        Assert.notNull(codes);
+    public String getInternalCode() {
+        return internalCode;
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public String getType() {
+        return type;
+    }
+
+    @Override
+    public String getTypeCode() {
+        return typeCode;
+    }
+
+    @Override
+    public List<Item> getItems() {
+        return outputItems;
+    }
+
+    @Override
+    public List<Item> getItems(Collection<String> typeCodes) {
+        Validate.notNull(typeCodes);
+
+        return outputItems.stream().filter(item -> {
+            String tc = item.getType().getCode();
+            return typeCodes.contains(tc);
+        }).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Item> getItemsWithout(Collection<String> typeCodes) {
+        Validate.notNull(typeCodes);
+
+        return outputItems.stream().filter(item -> {
+            String tc = item.getType().getCode();
+            return !typeCodes.contains(tc);
+        }).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Party> getParties(Collection<String> typeCodes) {
+        Validate.notNull(typeCodes);
+
+        Set<Integer> distinctPartyIds = new HashSet<>();
         List<Party> parties = new ArrayList<>();
-        // set to check if party was added
-        Set<Integer> exportedParties = new HashSet<>();
-        items.forEach(item-> {
-            // check item code
-            if(codes.contains(item.getType().getCode())) {
 
-                ItemPartyRef partyRef = (ItemPartyRef)item;
-                Party party = partyRef.getParty();
-
-                // check if party already added and add it
-                if(!exportedParties.contains(party.getPartyId())) {
-                    exportedParties.add(party.getPartyId());
-                    parties.add(party);
-                }
+        for (Item item : outputItems) {
+            String tc = item.getType().getCode();
+            if (!typeCodes.contains(tc)) {
+                continue;
             }
-        });
+            Party party = item.getValue(Party.class);
+            if (distinctPartyIds.add(party.getPartyId())) {
+                parties.add(party);
+            }
+        }
 
         return parties;
     }
 
     @Override
-    public Item getSingleItem(final String itemTypeCode) {
+    public Item getSingleItem(String typeCode) {
+        Validate.notEmpty(typeCode);
+
         Item found = null;
-        for(Item item: items)
-        {
-            if(itemTypeCode.equals(item.getType().getCode())) {
-                // Check if item already found
-                if(found!=null) {
-                    throw new IllegalStateException("Multiple items with same code exists: "+itemTypeCode);
+        for (Item item : outputItems) {
+            if (typeCode.equals(item.getType().getCode())) {
+                // check if item already found
+                if (found != null) {
+                    throw new IllegalStateException("Multiple items with same code exists: " + typeCode);
                 }
                 found = item;
             }
@@ -261,399 +255,554 @@ public class OutputModel implements Output {
     }
 
     @Override
-    public String getSingleItemValue(final String itemTypeCode) {
+    public String getSingleItemValue(String itemTypeCode) {
         Item found = getSingleItem(itemTypeCode);
-        if(found!=null) {
+        if (found != null) {
             return found.getSerializedValue();
-        } else {
-            return null;
         }
+        return null;
     }
 
-    @Override
-    public List<Item> getAllItems(@NotNull final Collection<String> codes) {
-        Assert.notNull(codes, "Kódy musí být vyplněny");
-        return items.stream()
-                .filter(item -> !codes.contains(item.getType().getCode()))
-                .sorted(Item::compareToItemViewOrderPosition)
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * @return distinct seznam Packet navázaný přes nodes
-     */
-    public List<Packet> getPacketItemsDistinct() {
-        IteratorNodes iterator = getNodesBFS();
-        Set<Packet> resultsSet = new HashSet<>();
-
-        while (iterator.hasNext()) {
-            Node node = iterator.next();
-            List<Item> items = node.getItems();
-            for (Item item : items) {
-                if (item instanceof ItemPacketRef) {
-                    resultsSet.add(item.getValue(Packet.class));
-                }
-            }
-        }
-
-        List<Packet> results = new ArrayList<>(resultsSet);
-        results.sort(Packet::compareTo);
-        return results;
-    }
-
-    /**
-     * Getter položky items
-     *
-     * @return seznam items
-     */
-    @Override
-    public List<Item> getItems() {
-        return items;
-    }
-
-    public void addItem(Item item) {
-        Validate.notNull(item);
-        items.add(item);
-    }
-
-    /**
-     *  @return plochý seznam Nodů seřazený dle depth, parent, position
-     */
-    @Override
-    public IteratorNodes getNodesBFS() {
-        List<NodeId> nodeIds = nodeIdsMap.values().stream()
-                .sorted((o1, o2) -> new CompareToBuilder()
-                        .append(o1.getDepth(), o2.getDepth())  // nejprve nejvyšší nody
-                        .append(o1.getParent(), o2.getParent()) // pak sezkupit dle parenta
-                        .append(o1.getPosition(), o2.getPosition()) // pak dle pořadí
-                        .toComparison())
-                .collect(Collectors.toList());
-        return new IteratorNodes(this, nodeIds, outputFactoryService, MAX_CACHED_NODES);
-    }
-
-    /**
-     * @param parent výchozí parent
-     * @return plochý seznam Nodů seřazený dle prohledávání stromu nodů od root node do hloubky, vč. předaných parentů
-     */
-    public List<NodeId> getNodesChildsModel(final NodeId parent) {
-        List<NodeId> result = new ArrayList<>();
-        result.add(parent); // zařadit vlastní parent
-
-        for (NodeId child : parent.getChildren()) {
-            result.addAll(getNodesChildsModel(child));
-        }
-
-        return result;
-    }
-
-    /**
-     * Jako výchozí bod vezme root node
-     * @return plochý seznam Nodů seřazený dle prohledávání stromu nodů od root node do hloubky
-     */
     @Override
     public IteratorNodes getNodesDFS() {
-        final NodeId rootNodeId = getFund().getRootNodeId();
-        final List<NodeId> nodesChildsModel = new ArrayList<>();
-        nodesChildsModel.addAll(getNodesChildsModel(rootNodeId));
-
-        return new IteratorNodes(this, nodesChildsModel, outputFactoryService, MAX_CACHED_NODES);
+        Iterator<NodeId> nodeIdIterator = fund.getRootNodeId().getIteratorDFS();
+        return new IteratorNodes(this, nodeIdIterator);
     }
 
     @Override
-    public FilteredRecords getRecordsByType(final String code) {
-        FilteredRecords recs = filteredRecords.get(code);
-        if(recs==null) {
-            // prepare records
-            recs = filterRecords(code);
-            filteredRecords.put(code, recs);
-        }
+    public FilteredRecords getRecordsByType(String typeCode) {
+        Validate.notEmpty(typeCode);
 
-        return recs;
+        FilteredRecords filteredAPs = filteredRecords.get(typeCode);
+        if (filteredAPs == null) {
+            // prepare records
+            filteredAPs = filterRecords(typeCode);
+            filteredRecords.put(typeCode, filteredAPs);
+        }
+        return filteredAPs;
     }
 
     /**
      * Prepare filtered list of records
-     * @param code
-     * @return
      */
-    private FilteredRecords filterRecords(String code) {
-        FilteredRecords records = new FilteredRecords(code);
+    private FilteredRecords filterRecords(String typeCode) {
+        FilteredRecords filteredAPs = new FilteredRecords(typeCode);
 
-        // Add all nodes
-        IteratorNodes iteratorNodes = new IteratorNodes(this, new ArrayList<>(nodeIdsMap.values()), outputFactoryService, MAX_CACHED_NODES);
+        // add all nodes
+        Iterator<NodeId> nodeIdIterator = fund.getRootNodeId().getIteratorDFS();
+        IteratorNodes iteratorNodes = new IteratorNodes(this, nodeIdIterator);
         while (iteratorNodes.hasNext()) {
             Node node = iteratorNodes.next();
-            records.addNode(node);
+            filteredAPs.addNode(node);
         }
 
-        // Sort collection
-        records.nodesAdded();
+        // sort collection
+        filteredAPs.nodesAdded();
 
-        return records;
+        return filteredAPs;
     }
 
     @Override
-    public Fund getFund() {
-        return fund;
+    public List<Node> loadNodes(Collection<NodeId> nodeIds) {
+        Validate.isTrue(TransactionSynchronizationManager.isActualTransactionActive());
+
+        List<Integer> arrNodeIds = new ArrayList<>(nodeIds.size());
+        List<Node> nodes = new ArrayList<>(nodeIds.size());
+
+        for (NodeId nodeId : nodeIds) {
+            arrNodeIds.add(nodeId.getArrNodeId());
+            Node node = new Node(nodeId, this);
+            nodes.add(node);
+        }
+
+        Map<Integer, RestoredNode> cachedNodeMap = nodeCacheService.getNodes(arrNodeIds);
+        for (Node node : nodes) {
+            Integer arrNodeId = node.getNodeId().getArrNodeId();
+            RestoredNode cachedNode = cachedNodeMap.get(arrNodeId);
+            Validate.notNull(cachedNode);
+            initNode(node, cachedNode);
+        }
+
+        return nodes;
     }
 
-    public void setFund(final Fund fund) {
-        this.fund = fund;
+    private void initNode(Node node, CachedNode cachedNode) {
+        // set node items
+        List<ArrDescItem> descItems = cachedNode.getDescItems();
+        if (descItems != null) {
+            List<Item> items = descItems.stream()
+                    .filter(arrItem -> !arrItem.isUndefined())
+                    .map(arrItem -> {
+                        Item item = createItem(arrItem);
+                        // add packet reference
+                        if (item instanceof ItemPacketRef) {
+                            item.getValue(Packet.class).addNodeId(node.getNodeId());
+                        }
+                        return item;
+                    })
+                    .sorted(Item::compareTo)
+                    .collect(Collectors.toList());
+            node.setItems(items);
+        }
+
+        // set direct node AP
+        List<ArrNodeRegister> arrNodeAPs = cachedNode.getNodeRegisters();
+        if (arrNodeAPs != null) {
+            List<Record> nodeAPs = new ArrayList<>(arrNodeAPs.size());
+            for (ArrNodeRegister nodeAP : arrNodeAPs) {
+                Record ap = getAP(nodeAP.getRecord());
+                nodeAPs.add(ap);
+            }
+            node.setNodeAPs(nodeAPs);
+        }
     }
 
-    @Override
-    public String getInternal_code() {
-        return internal_code;
+    /**
+     * Initializes output model. Must be called during transaction.
+     *
+     * @param fundVersion not-null
+     */
+    public void init(int outputDefinitionId, ArrFundVersion fundVersion) {
+        Validate.isTrue(TransactionSynchronizationManager.isActualTransactionActive());
+
+        // find output definition with fetch for model
+        ArrOutputDefinition outputDefinition = outputService.getDefinitionForModel(outputDefinitionId);
+        if (outputDefinition == null) {
+            throw new SystemException("Output definition not found", BaseCode.ID_NOT_EXIST).set("outputDefinitionId",
+                    outputDefinitionId);
+        }
+
+        // check fund version against definition
+        if (fundVersion != null) {
+            Integer fundId = outputDefinition.getFundId();
+            Validate.isTrue(fundId.equals(fundVersion.getFundId()));
+        }
+
+        init(outputDefinition, fundVersion);
     }
 
-    public void setInternal_code(final String internal_code) {
-        this.internal_code = internal_code;
+    private void init(ArrOutputDefinition outputDefinition, ArrFundVersion fundVersion) {
+        Validate.isTrue(fund == null); // check if not initialized
+
+        // prepare static data
+        staticData = staticDataService.getData();
+        ruleSystem = staticData.getRuleSystems().getByRuleSetId(fundVersion.getRuleSetId());
+
+        // init general description
+        name = outputDefinition.getName();
+        internalCode = outputDefinition.getInternalCode();
+        RulOutputType outputType = outputDefinition.getOutputType();
+        typeCode = outputType.getCode();
+        type = outputType.getName();
+
+        // init node id tree
+        NodeId rootNodeId = createNodeIdTree(outputDefinition, fundVersion);
+
+        // init fund
+        ArrFund arrFund = outputDefinition.getFund();
+        fund = new Fund(rootNodeId);
+        fund.setName(arrFund.getName());
+        fund.setInternalCode(arrFund.getInternalCode());
+        fund.setCreateDate(Date.from(arrFund.getCreateDate().atZone(ZoneId.systemDefault()).toInstant()));
+        fund.setDateRange(fundVersion.getDateRange());
+
+        // init fund institution
+        ParInstitution parInstit = arrFund.getInstitution();
+        Institution institution = new Institution(parInstit.getInternalCode(), parInstit.getInstitutionType());
+        Party party = getParty(parInstit.getParty());
+        institution.setPartyGroup((PartyGroup) party);
+        fund.setInstitution(institution);
+
+        // init direct items
+        initDirectOutputItems(outputDefinition, fundVersion.getLockChange());
     }
 
-    @Override
-    public String getName() {
-        return name;
+    /**
+     * Creates output tree with root equal to {@link ArrFundVersion#getRootNodeId()} which contains
+     * all connected output nodes and their subtrees.
+     *
+     * @return NodeId tree root.
+     */
+    private NodeId createNodeIdTree(ArrOutputDefinition outputDefinition, ArrFundVersion fundVersion) {
+        List<ArrNodeOutput> outputNodes = outputService.getOutputNodes(outputDefinition, fundVersion.getLockChange());
+        FundTree fundTree = fundTreeProvider.getFundTree(fundVersion.getFundVersionId());
+
+        Map<Integer, NodeId> nodeIdMap = new HashMap<>();
+
+        for (ArrNodeOutput outputNode : outputNodes) {
+            TreeNode rootNode = fundTree.getNode(outputNode.getNodeId());
+
+            NodeId nodeId = createNodeIdWithParents(rootNode, nodeIdMap);
+
+            rootNode.getChildren().forEach(child -> initNodeIdSubtree(child, nodeId, nodeIdMap));
+        }
+
+        return nodeIdMap.get(fundTree.getRoot().getNodeId());
     }
 
-    public void setName(final String name) {
-        this.name = name;
+    /**
+     * Creates NodeId with all missing parent nodes.
+     */
+    private NodeId createNodeIdWithParents(TreeNode treeNode, Map<Integer, NodeId> nodeIdMap) {
+        Integer arrNodeId = new Integer(treeNode.getNodeId());
+
+        NodeId nodeId = nodeIdMap.get(arrNodeId);
+        if (nodeId != null) {
+            return nodeId;
+        }
+
+        if (treeNode.isRoot()) {
+            nodeId = new NodeId(treeNode.getNodeId(), treeNode.getPosition());
+        } else {
+            // recursively create parents up to root or existing node
+            NodeId parentNodeId = createNodeIdWithParents(treeNode.getParent(), nodeIdMap);
+            nodeId = new NodeId(treeNode.getNodeId(), parentNodeId, treeNode.getPosition());
+            parentNodeId.addChild(nodeId);
+        }
+
+        // add to lookup
+        nodeIdMap.put(arrNodeId, nodeId);
+
+        return nodeId;
     }
 
-    public int getOutputId() {
-        return outputId;
+    /**
+     * Initializes subtree recursively from specified node. Overlapping nodes are disallowed. Parent
+     * node id cannot be null thus method is not suitable for root treeNode.
+     *
+     * @param parentNodeId not-null
+     */
+    private void initNodeIdSubtree(TreeNode treeNode, NodeId parentNodeId, Map<Integer, NodeId> nodeIdMap) {
+        Integer arrNodeId = new Integer(treeNode.getNodeId());
+
+        NodeId nodeId = new NodeId(treeNode.getNodeId(), parentNodeId, treeNode.getPosition());
+        parentNodeId.addChild(nodeId);
+
+        // add to lookup
+        if (nodeIdMap.putIfAbsent(arrNodeId, nodeId) != null) {
+            throw new SystemException("Node already defined for output", BaseCode.INVALID_STATE).set("nodeId", arrNodeId)
+                    .set("outputDefinitionName", name);
+        }
+
+        for (TreeNode child : treeNode.getChildren()) {
+            // recursively init child nodes
+            initNodeIdSubtree(child, nodeId, nodeIdMap);
+        }
     }
 
-    @Override
-    public String getType() {
+    /* factory methods */
+
+    // TODO: record variants should be fetched
+    private Record getAP(RegRecord regAP) {
+        // id without fetch -> access type property
+        Record ap = apIdMap.get(regAP.getRecordId());
+        if (ap != null) {
+            return ap;
+        }
+
+        RecordType apType = getAPType(regAP.getRegisterTypeId());
+        ap = Record.newInstance(regAP, apType);
+
+        // add to lookup
+        apIdMap.put(regAP.getRecordId(), ap);
+
+        return ap;
+    }
+
+    private RecordType getAPType(Integer apTypeId) {
+        Validate.notNull(apTypeId);
+
+        RecordType type = apTypeIdMap.get(apTypeId);
+        if (type != null) {
+            return type;
+        }
+
+        RegRegisterType regType = staticData.getRegisterTypeById(apTypeId);
+        if (Boolean.TRUE.equals(regType.getHierarchical())) {
+            // recursively create parent types up to root or existing one
+            RecordType parentType = getAPType(regType.getParentRegisterTypeId());
+            type = RecordType.newInstance(parentType, regType);
+        } else {
+            type = RecordType.newInstance(null, regType);
+        }
+
+        // add to lookup
+        apTypeIdMap.put(apTypeId, type);
+
         return type;
     }
 
-    public void setType(final String type) {
-        this.type = type;
-    }
-
-    @Override
-    public String getTypeCode() {
-        return typeCode;
-    }
-
-    public void setTypeCode(final String typeCode) {
-        this.typeCode = typeCode;
-    }
-
-    @Override
-    public String toString() {
-        return ToStringBuilder.reflectionToString(this, ToStringStyle.SIMPLE_STYLE);
-    }
-
-    public ArrFundVersion getArrFundVersion() {
-        return getFund().getArrFundVersion();
-    }
-
-    /**
-     * Return item type for output
-     *
-     * Item type is created if does not exist
-     * @param rulItemType
-     * @return
-     */
-    public ItemType getItemType(RulItemType rulItemType) {
-        Integer itemTypeId = rulItemType.getItemTypeId();
-        ItemType itemType = itemTypeMap.get(itemTypeId);
-        if (itemType == null) {
-            itemType = ItemType.newInstance(rulItemType);
-            itemTypeMap.put(itemTypeId, itemType);
-        }
-        return itemType;
-    }
-
-    /**
-     * Return item specification for output
-     *
-     * Item specification is created if does not exist
-     * @param rulItemType
-     * @return
-     */
-    public ItemSpec getItemSpec(RulItemSpec rulItemSpec) {
-        Integer itemSpecId = rulItemSpec.getItemSpecId();
-        ItemSpec itemSpec = itemSpecMap.get(itemSpecId);
-        if (itemSpec == null) {
-            itemSpec = ItemSpec.instanceOf(rulItemSpec);
-            itemSpecMap.put(itemSpecId, itemSpec);
-        }
-        return itemSpec;
-    }
-
-    /**
-     * Return party from cache
-     * @param partyId
-     * @return
-     */
-    public Party getParty(final ParParty parParty) {
-        Party party = partyCache.get(parParty.getPartyId());
-        if(party==null) {
-            party = createParty(parParty);
-        }
-        return party;
-    }
-
-    /**
-     * Create party object and store it in cache
-     * @param parParty
-     * @return
-     */
-    private Party createParty(final ParParty parParty)
-    {
-        String partyTypeCode = parParty.getPartyType().getCode();
-        PartyType partyType = PartyType.fromCode(partyTypeCode);
-
-        // Prepare corresponding record
-        Record record = recordCache.get(parParty.getRecordId());
-        if(record==null) {
-            record = createRecord(parParty.getRecord());
+    // TODO: party names and relations should be fetched
+    private Party getParty(ParParty parParty) {
+        // id without fetch -> access type property
+        Party party = partyIdMap.get(parParty.getPartyId());
+        if (party != null) {
+            return party;
         }
 
-        // create relations
-        List<ParRelation> dbrelations = parParty.getRelations();
-        List<Relation> rels = null;
-        if(CollectionUtils.isNotEmpty(dbrelations)) {
-            rels = new ArrayList<>();
-            for(ParRelation dbRelation: dbrelations) {
-                Relation rel = createRelation(dbRelation);
-                rels.add(rel);
+        Record partyAP = getAP(parParty.getRecord());
+        PartyInitHelper initHelper = new PartyInitHelper(partyAP);
+
+        // init all party names
+        for (ParPartyName parName : parParty.getPartyNames()) {
+            // TODO: valid dates should be fetched
+            PartyName name = PartyName.newInstance(parName, staticData);
+            if (parName.getPartyNameId().equals(parParty.getPreferredNameId())) {
+                initHelper.setPreferredName(name);
+            } else {
+                initHelper.addName(name);
             }
         }
 
-        // prepare init helper
-        PartyInitHelper initHelper = new PartyInitHelper(record, rels);
+        // init all relations
+        parParty.getRelations().forEach(r -> preparePartyRelation(r, initHelper));
 
-        Party party;
-        switch (partyType) {
-            case DYNASTY:
-			ParDynasty parDynasty = HibernateUtils.unproxy(parParty);
-                party = Dynasty.newInstance(parDynasty, initHelper);
-                break;
-            case EVENT:
-			ParEvent parEvent = HibernateUtils.unproxy(parParty);
-                party = Event.newInstance(parEvent, initHelper);
-                break;
-            case GROUP_PARTY:
-			ParPartyGroup parPartyGroup = HibernateUtils.unproxy(parParty);
-                party = PartyGroup.newInstance(parPartyGroup, initHelper);
-                break;
-            case PERSON:
-			ParPerson parPerson = HibernateUtils.unproxy(parParty);
-                party = Person.newInstance(parPerson, initHelper);
-                break;
-            default :
-                throw new IllegalStateException("Neznámý typ osoby " + partyType.getCode());
-        }
-        this.partyCache.put(party.getPartyId(), party);
+        // create party
+        party = convertParty(parParty, initHelper);
+
+        // add to lookup
+        partyIdMap.put(parParty.getPartyId(), party);
+
         return party;
     }
 
-    private Relation createRelation(ParRelation dbRelation) {
-        // prepare relation type
-        ParRelationType dbRelType = dbRelation.getRelationType();
-        RelationType relType = this.partyRelationTypeCache.get(dbRelType.getRelationTypeId());
-        if(relType==null) {
-            relType = RelationType.newInstance(dbRelType);
-            partyRelationTypeCache.put(dbRelType.getRelationTypeId(), relType);
-        }
+    /**
+     * Prepares output name for party init helper.
+     */
+
+    /**
+     * Prepares output relation for party init helper.
+     */
+    // TODO: valid dates, entities and related records should be fetched
+    private void preparePartyRelation(ParRelation parRelation, PartyInitHelper initHelper) {
+        cz.tacr.elza.core.data.RelationType staticRelationType = staticData.getRelationTypeById(parRelation.getRelationTypeId());
+
         // prepare list of relationTo
-        List<ParRelationEntity> entities = dbRelation.getRelationEntities();
-        List<RelationTo> relsTo = null;
-        if(CollectionUtils.isNotEmpty(entities)) {
-            relsTo = new ArrayList<>(entities.size());
-            for(ParRelationEntity dbEntity: entities)
-            {
-                RelationTo relTo = createRelationTo(dbEntity);
-                relsTo.add(relTo);
-            }
+        List<ParRelationEntity> entities = parRelation.getRelationEntities();
+        List<RelationTo> relationsTo = new ArrayList<>(entities.size());
+        for (ParRelationEntity entity : entities) {
+            // create relation to
+            RelationRoleType roleType = getRelationRoleType(entity.getRoleTypeId(), staticRelationType);
+            Record entityAP = getAP(entity.getRecord());
+            RelationTo relationTo = new RelationTo(entity, roleType, entityAP);
+            relationsTo.add(relationTo);
         }
 
         // create relation
-        Relation relation = Relation.newInstance(dbRelation, relType, relsTo);
-        return relation;
-    }
+        RelationType type = getRelationType(staticRelationType);
+        Relation relation = Relation.newInstance(parRelation, type, relationsTo);
 
-    private RelationTo createRelationTo(ParRelationEntity dbEntity) {
-        // prepare RelationToType
-        ParRelationRoleType roleType = dbEntity.getRoleType();
-        RelationToType relToType = relToTypeCache.get(roleType.getRoleTypeId());
-        if(relToType==null) {
-            relToType = RelationToType.newInstance(roleType);
-            relToTypeCache.put(roleType.getRoleTypeId(), relToType);
+        // resolve relation type
+        ParRelationClassType parClassType = staticRelationType.getEntity().getRelationClassType();
+        switch (parClassType.getCode()) {
+            case ParRelationClassType.CREATION_CODE:
+                initHelper.setCreation(relation);
+                break;
+            case ParRelationClassType.DESTRUCTION_CODE:
+                initHelper.setDestruction(relation);
+                break;
+            default:
+                initHelper.addRelation(relation);
         }
-        // get record
-        RegRecord dbRecord = dbEntity.getRecord();
-        Record record = this.getRecord(dbRecord);
-
-        // prepare RelationTo
-        RelationTo relTo = RelationTo.newInstance(dbEntity, relToType, record);
-        return relTo;
     }
 
-    public Record getRecord(final RegRecord regRecord)
-    {
-        Record record = recordCache.get(regRecord.getRecordId());
-        if(record==null) {
-            record = createRecord(regRecord);
+    private static Party convertParty(ParParty parParty, PartyInitHelper initHelper) {
+        PartyType partyType = PartyType.fromId(parParty.getPartyTypeId());
+        switch (partyType) {
+            case DYNASTY:
+                ParDynasty parDynasty = (ParDynasty) parParty;
+                return new Dynasty(parDynasty, initHelper);
+            case EVENT:
+                ParEvent parEvent = (ParEvent) parParty;
+                return new Event(parEvent, initHelper);
+            case GROUP_PARTY:
+                ParPartyGroup parPartyGroup = (ParPartyGroup) parParty;
+                return new PartyGroup(parPartyGroup, initHelper);
+            case PERSON:
+                ParPerson parPerson = (ParPerson) parParty;
+                return new Person(parPerson, initHelper);
+            default:
+                throw new IllegalStateException("Uknown party type: " + partyType);
         }
-        return record;
     }
 
-    private Record createRecord(RegRecord regRecord) {
-        RegRegisterType dbRegisterType = regRecord.getRegisterType();
-        // lookup via recordTypeId
-        RecordType recordType = this.recordTypes.get(regRecord.getRegisterTypeId());
-        if(recordType==null) {
-            recordType = this.createRecordType(dbRegisterType);
+    private RelationType getRelationType(cz.tacr.elza.core.data.RelationType staticRelationType) {
+        RelationType realtionType = relationTypeIdMap.get(staticRelationType.getId());
+        if (realtionType != null) {
+            return realtionType;
         }
 
-        Record record = Record.newInstance(recordType, regRecord);
-        recordCache.put(record.getRecordId(), record);
-        return record;
+        ParRelationType parRelationType = staticRelationType.getEntity();
+        realtionType = new RelationType(parRelationType);
+
+        // add to lookup
+        relationTypeIdMap.put(staticRelationType.getId(), realtionType);
+
+        return realtionType;
     }
 
-    /**
-     * Return record type
-     * @return
-     */
-    public RecordType getRecordType(RegRegisterType dbRegisterType) {
-        RecordType  recordType = this.recordTypes.get(dbRegisterType.getRegisterTypeId());
-        if(recordType==null) {
-            recordType = createRecordType(dbRegisterType);
+    private RelationRoleType getRelationRoleType(Integer relationRoleTypeId,
+                                                 cz.tacr.elza.core.data.RelationType staticRelationType) {
+        Validate.notNull(relationRoleTypeId);
+
+        RelationRoleType roleType = relationRoleTypeIdMap.get(relationRoleTypeId);
+        if (roleType != null) {
+            return roleType;
         }
-        return recordType;
+
+        ParRelationRoleType parRoleType = staticRelationType.getRoleTypeById(relationRoleTypeId);
+        roleType = new RelationRoleType(parRoleType);
+
+        // add to lookup
+        relationRoleTypeIdMap.put(relationRoleTypeId, roleType);
+
+        return roleType;
     }
 
-    /**
-     * Add new record type
-     * @return
-     */
-    private RecordType createRecordType(RegRegisterType dbRegisterType) {
-        // prepare parent
-        RecordType parentType = null;
-        RegRegisterType dbParentRegisterType = dbRegisterType.getParentRegisterType();
-        if(dbParentRegisterType!=null) {
-            parentType = getRecordType(dbParentRegisterType);
+    private void initDirectOutputItems(ArrOutputDefinition outputDefinition, ArrChange lockChange) {
+        List<ArrOutputItem> outputItems = outputService.getDirectOutputItems(outputDefinition, lockChange);
+        for (ArrOutputItem outputItem : outputItems) {
+            if (outputItem.isUndefined()) {
+                continue; // skip items without data
+            }
+            Item item = createItem(outputItem);
+            this.outputItems.add(item);
         }
-        RecordType recordType = RecordType.newInstance(parentType, dbRegisterType);
-        recordTypes.put(dbRegisterType.getRegisterTypeId(), recordType);
-        return recordType;
     }
 
-    /**
-     * Return record from cache
-     * @param recordId
-     * @return
-     */
-    public Record getRecordFromCache(Integer recordId) {
-        return recordCache.get(recordId);
+    private Item createItem(ArrItem arrItem) {
+        RuleSystemItemType staticItemType = ruleSystem.getItemTypeById(arrItem.getItemTypeId());
+        ItemType itemType = getItemType(staticItemType);
+
+        AbstractItem item = convertItemData(arrItem.getData(), itemType);
+
+        item.setType(Validate.notNull(itemType));
+        item.setPosition(arrItem.getPosition());
+        item.setUndefined(arrItem.isUndefined());
+
+        if (arrItem.getItemSpecId() != null) {
+            ItemSpec itemSpec = getItemSpec(staticItemType, arrItem.getItemSpecId());
+            item.setSpecification(Validate.notNull(itemSpec));
+        }
+
+        return item;
     }
 
-    public Party getPartyFromCache(Integer partyId) {
-        return partyCache.get(partyId);
+    private ItemType getItemType(RuleSystemItemType staticItemType) {
+        ItemType itemType = itemTypeIdMap.get(staticItemType.getItemTypeId());
+        if (itemType != null) {
+            return itemType;
+        }
+
+        RulItemType rulItemType = staticItemType.getEntity();
+        itemType = new ItemType(rulItemType);
+
+        // add to lookup
+        itemTypeIdMap.put(staticItemType.getItemTypeId(), itemType);
+
+        return itemType;
+    }
+
+    private ItemSpec getItemSpec(RuleSystemItemType staticItemType, Integer itemSpecId) {
+        Validate.notNull(itemSpecId);
+
+        ItemSpec itemSpec = itemSpecIdMap.get(itemSpecId);
+        if (itemSpec != null) {
+            return itemSpec;
+        }
+
+        RulItemSpec rulItemSpec = staticItemType.getItemSpecById(itemSpecId);
+        itemSpec = new ItemSpec(rulItemSpec);
+
+        // add to lookup
+        itemSpecIdMap.put(itemSpecId, itemSpec);
+
+        return itemSpec;
+    }
+
+    private AbstractItem convertItemData(ArrData data, ItemType itemType) {
+        Validate.isTrue(HibernateUtils.isInitialized(data));
+
+        switch (itemType.getDataType()) {
+            case UNITID:
+                ArrDataUnitid unitid = (ArrDataUnitid) data;
+                return new ItemUnitId(unitid.getValue());
+            case UNITDATE:
+                ArrDataUnitdate unitdate = (ArrDataUnitdate) data;
+                return createItemUnitdate(unitdate);
+            case TEXT:
+                ArrDataText text = (ArrDataText) data;
+                return new ItemString(text.getValue());
+            case STRING:
+                ArrDataString str = (ArrDataString) data;
+                return new ItemString(str.getValue());
+            case RECORD_REF:
+                ArrDataRecordRef apRef = (ArrDataRecordRef) data;
+                return createItemAPRef(apRef);
+            case PARTY_REF:
+                ArrDataPartyRef partyRef = (ArrDataPartyRef) data;
+                return createItemPartyRef(partyRef);
+            case PACKET_REF:
+                ArrDataPacketRef packetRef = (ArrDataPacketRef) data;
+                return createItemPacketRef(packetRef);
+            case JSON_TABLE:
+                ArrDataJsonTable jsonTable = (ArrDataJsonTable) data;
+                return new ItemJsonTable(itemType.getTableDefinition(), jsonTable.getValue());
+            case INT:
+                ArrDataInteger integer = (ArrDataInteger) data;
+                return new ItemInteger(integer.getValue());
+            case FORMATTED_TEXT:
+                ArrDataText ftext = (ArrDataText) data;
+                return new ItemString(ftext.getValue());
+            case FILE_REF:
+                ArrDataFileRef fileRef = (ArrDataFileRef) data;
+                return createItemFileRef(fileRef);
+            case ENUM:
+                return new ItemEnum();
+            case DECIMAL:
+                ArrDataDecimal decimal = (ArrDataDecimal) data;
+                return new ItemDecimal(decimal.getValue());
+            case COORDINATES:
+                ArrDataCoordinates coords = (ArrDataCoordinates) data;
+                return new ItemCoordinates(coords.getValue());
+            default:
+                throw new SystemException("Uknown data type", BaseCode.INVALID_STATE).set("dataType", itemType.getDataType());
+        }
+    }
+
+    private static ItemUnitdate createItemUnitdate(ArrDataUnitdate data) {
+        CalendarType ct = CalendarType.fromId(data.getCalendarTypeId());
+        UnitDate unitdate = UnitDate.valueOf(data, ct.getEntity());
+        return new ItemUnitdate(unitdate);
+    }
+
+    private ItemRecordRef createItemAPRef(ArrDataRecordRef data) {
+        Record ap = getAP(data.getRecord());
+        return new ItemRecordRef(ap);
+    }
+
+    private ItemPartyRef createItemPartyRef(ArrDataPartyRef data) {
+        Party party = getParty(data.getParty());
+        return new ItemPartyRef(party);
+    }
+
+    private ItemPacketRef createItemPacketRef(ArrDataPacketRef data) {
+        Packet packet = packetIdMap.get(data.getPacketId());
+        if (packet == null) {
+            ArrPacket arrPacket = data.getPacket();
+            packet = Packet.newInstance(arrPacket, ruleSystem, this);
+            packetIdMap.put(data.getPacketId(), packet);
+        }
+        return new ItemPacketRef(packet);
+    }
+
+    private ItemFileRef createItemFileRef(final ArrDataFileRef data) {
+        File file = fileIdMap.get(data.getFileId());
+        if (file == null) {
+            ArrFile arrFile = data.getFile();
+            file = new File(arrFile);
+            fileIdMap.put(data.getFileId(), file);
+        }
+        return new ItemFileRef(file);
     }
 }

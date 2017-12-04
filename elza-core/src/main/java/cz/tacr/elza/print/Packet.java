@@ -1,7 +1,7 @@
 package cz.tacr.elza.print;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.StringJoiner;
 
@@ -16,6 +16,8 @@ public class Packet {
 
     private final List<NodeId> nodeIds = new ArrayList<>();
 
+    private final NodeLoader nodeLoader;
+
     private String type;
 
     private String typeCode;
@@ -28,6 +30,10 @@ public class Packet {
 
     public enum FormatType {
         TYPE_WITH_NUMBER, NUMBER_WITH_TYPE, ONLY_TYPE, ONLY_NUMBER
+    }
+
+    private Packet(NodeLoader nodeLoader) {
+        this.nodeLoader = nodeLoader;
     }
 
     /**
@@ -129,11 +135,9 @@ public class Packet {
         this.typeShortcut = typeShortcut;
     }
 
-    public List<Node> getNodes() {
-        if (nodes == null) {
-            return Collections.emptySet();
-        }
-        return nodes;
+    public IteratorNodes getNodes() {
+        Iterator<NodeId> nodeIdIterator = nodeIds.iterator();
+        return new IteratorNodes(nodeLoader, nodeIdIterator);
     }
 
     void addNodeId(NodeId nodeId) {
@@ -141,8 +145,8 @@ public class Packet {
         nodeIds.add(nodeId);
     }
 
-    public static Packet newInstance(ArrPacket arrPacket, RuleSystem ruleSystem) {
-        Packet packet = new Packet();
+    public static Packet newInstance(ArrPacket arrPacket, RuleSystem ruleSystem, NodeLoader nodeLoader) {
+        Packet packet = new Packet(nodeLoader);
         packet.setStorageNumber(arrPacket.getStorageNumber());
         packet.setState(arrPacket.getState().name());
         if (arrPacket.getPacketTypeId() != null) {

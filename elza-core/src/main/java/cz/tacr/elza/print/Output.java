@@ -3,8 +3,6 @@ package cz.tacr.elza.print;
 import java.util.Collection;
 import java.util.List;
 
-import javax.validation.constraints.NotNull;
-
 import cz.tacr.elza.print.item.Item;
 import cz.tacr.elza.print.party.Party;
 import net.bytebuddy.implementation.bytecode.Throw;
@@ -39,7 +37,7 @@ public interface Output {
      * @param codes seznam požadovaných kódů itemů
      * @return seznam items s odpovídajícími kódy
      */
-	public List<Item> getItems(@NotNull final Collection<String> codes);
+	public List<Item> getItems(final Collection<String> codes);
 
     /**
      * Vstupem je seznam kódu typů atributů a vrací se seznam všech hodnot atributů výstupu kromě hodnot typů uvedených ve vstupu metody;
@@ -48,7 +46,7 @@ public interface Output {
      * @param codes seznam ignorovaných kódů itemů
      * @return seznam všech items výstupu kromě hodnot typů uvedených ve vstupu metody
      */
-    public List<Item> getItemsWithout(@NotNull final Collection<String> codes);
+    public List<Item> getItemsWithout(final Collection<String> codes);
 
 	/**
 	 * Return list of parties from the given description items.
@@ -57,7 +55,7 @@ public interface Output {
 	 * @param codes List of description items referencing parties
 	 * @return List of referenced parties
 	 */
-	public List<Party> getParties(@NotNull final Collection<String> codes);
+	public List<Party> getParties(final Collection<String> codes);
 
     /**
      * Return single item

@@ -69,7 +69,7 @@ public class Relation {
     }
 
     /**
-     * Creates relation. From/To ParUnitdate reference is fetched during process.
+     * Return new instance of Relation. From/To unit dates are required (fetched from database if not initialized).
      */
     public static Relation newInstance(ParRelation parRelation, RelationType relationType, List<RelationTo> relationsTo) {
         Relation relation = new Relation(parRelation, relationType);
