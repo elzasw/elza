@@ -9,87 +9,90 @@ import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 
 /**
  * Relation to other items
- * 
+ *
  *
  */
 public class Relation {
-	
-	final RelationType relType;
-	final String note;
-	final String source;
-	final String textFrom;
-	final String textTo;
-	final String dateNoteFrom;
-	final String dateNoteTo;
-	final List<RelationTo> relationsTo;
-	
-	private Relation(ParRelation dbRelation, RelationType relType, List<RelationTo> relsTo)
-	{
-		note = dbRelation.getNote();
-		source = dbRelation.getSource();
-		this.relType = relType;
-		
-		// set dateFrom
-		ParUnitdate parFrom = dbRelation.getFrom();		
-		if(parFrom!=null) {
-			dateNoteFrom = parFrom.getNote();
-			textFrom = UnitDateConvertor.convertToString(parFrom);
-		} else {
-			dateNoteFrom = null;
-			textFrom = null;
-		}
-		// set dateTo
-		ParUnitdate parTo = dbRelation.getTo();
-		if(parTo!=null) {
-			dateNoteTo = parTo.getNote();
-			textTo = UnitDateConvertor.convertToString(parTo);
-		} else {
-			dateNoteTo = null;
-			textTo = null;
-		}		
-		// copy relationsTo
-		if(relsTo!=null) {
-			relationsTo = new ArrayList<>(relsTo);
-		} else {
-			relationsTo = null;
-		}
-	}
 
-	public List<RelationTo> getRelationsTo() {
-		return relationsTo;
-	}
+    private final RelationType relationType;
 
-	public RelationType getRelType() {
-		return relType;
-	}
+    private final String note;
 
-	public String getNote() {
-		return note;
-	}
+    private final String source;
 
-	public String getSource() {
-		return source;
-	}
+    private String textFrom;
 
-	public String getTextFrom() {
-		return textFrom;
-	}
+    private String textTo;
 
-	public String getTextTo() {
-		return textTo;
-	}
-	
-	public String getDateNoteFrom() {
-		return dateNoteFrom;
-	}
+    private String dateNoteFrom;
 
-	public String getDateNoteTo() {
-		return dateNoteTo;
-	}
+    private String dateNoteTo;
 
-	public static Relation newInstance(ParRelation dbRelation, RelationType relType, List<RelationTo> relsTo) {
-		Relation relation = new Relation(dbRelation, relType, relsTo);
-		return relation;
-	}
+    private List<RelationTo> relationsTo;
 
+    private Relation(ParRelation parRelation, RelationType relationType) {
+        this.relationType = relationType;
+        this.note = parRelation.getNote();
+        this.source = parRelation.getSource();
+    }
+
+    public List<RelationTo> getRelationsTo() {
+        return relationsTo;
+    }
+
+    public RelationType getType() {
+        return relationType;
+    }
+
+    public String getNote() {
+        return note;
+    }
+
+    public String getSource() {
+        return source;
+    }
+
+    public String getTextFrom() {
+        return textFrom;
+    }
+
+    public String getTextTo() {
+        return textTo;
+    }
+
+    public String getDateNoteFrom() {
+        return dateNoteFrom;
+    }
+
+    public String getDateNoteTo() {
+        return dateNoteTo;
+    }
+
+    /**
+     * Creates relation. From/To ParUnitdate reference is fetched during process.
+     */
+    public static Relation newInstance(ParRelation parRelation, RelationType relationType, List<RelationTo> relationsTo) {
+        Relation relation = new Relation(parRelation, relationType);
+
+        // set dateFrom
+        ParUnitdate parFrom = parRelation.getFrom();
+        if (parFrom != null) {
+            relation.dateNoteFrom = parFrom.getNote();
+            relation.textFrom = UnitDateConvertor.convertToString(parFrom);
+        }
+
+        // set dateTo
+        ParUnitdate parTo = parRelation.getTo();
+        if (parTo != null) {
+            relation.dateNoteTo = parTo.getNote();
+            relation.textTo = UnitDateConvertor.convertToString(parTo);
+        }
+
+        // copy relationsTo
+        if (relationsTo != null) {
+            relation.relationsTo = new ArrayList<>(relationsTo);
+        }
+
+        return relation;
+    }
 }

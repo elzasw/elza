@@ -1,117 +1,71 @@
 package cz.tacr.elza.print.party;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
-
+import cz.tacr.elza.core.data.PartyType;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.print.Record;
 
 /**
- * Party information
+ * Abstract party
  */
 public abstract class Party {
 
-	private final int partyId;
+    private final int partyId;
+
     private final PartyName preferredName;
-    private final List<PartyName> names = new ArrayList<>();
+
+    private final List<PartyName> names;
+
     private final String history;
+
     private final String sourceInformation;
+
     private final String characteristics;
-    private final Record record;
-    private Relation creation;
-    private Relation destruction;
-    private final List<Relation> relations = new ArrayList<>();
-    private final List<RelationsByType> relationsByTypeList = new ArrayList<>();
 
+    private final Record ap;
 
-	protected Party(ParParty parParty, PartyInitHelper initHelper) {
-    	partyId = parParty.getPartyId();
-    	preferredName = PartyName.valueOf(parParty.getPreferredName());
-    	// add names without preferred name
-    	parParty.getPartyNames().forEach(parPartyName -> {
-    		PartyName partyName = PartyName.valueOf(parPartyName);
-    		if(!partyName.equals(preferredName)) {
-    			names.add(partyName);
-    		}
-    	});
-    	this.history = parParty.getHistory();
-    	this.sourceInformation = parParty.getSourceInformation();
+    private final Relation creation;
+
+    private final Relation destruction;
+
+    private final List<Relation> relations;
+
+    private final List<RelationsByType> relationsByType;
+
+    protected Party(ParParty parParty, PartyInitHelper initHelper) {
+        this.partyId = parParty.getPartyId();
+        this.preferredName = initHelper.getPreferredName();
+        this.names = initHelper.getNames();
+        this.history = parParty.getHistory();
+        this.sourceInformation = parParty.getSourceInformation();
         this.characteristics = parParty.getCharacteristics();
-
-        // corresponding record
-        this.record = initHelper.getRecord();
-        if(initHelper.getRelations()!=null)
-        {
-        	for(Relation rel: initHelper.getRelations()) {
-        		RelationType relType = rel.getRelType();
-        		RelationClassType relClassType = relType.getRelClassType();
-        		switch(relClassType)
-        		{
-        		case B:
-        			this.creation = rel;
-        			break;
-        		case E:
-        			this.destruction = rel;
-        			break;
-        		case R:
-        			addRelation(rel);
-        		}
-        	}
-        }
-	}
-
-
-	/**
-	 * Add relation to the internal structures
-	 * @param rel
-	 */
-    private void addRelation(Relation rel) {
-    	// add to the list
-    	relations.add(rel);
-		// add to the list by type
-    	RelationType relType = rel.getRelType();
-    	RelationsByType relByType = getRelationsByType(relType);
-    	relByType.addRelation(rel);
-	}
-
-    /**
-     * Return relation by type
-     * @param relType
-     * @return
-     */
-	private RelationsByType getRelationsByType(RelationType relType) {
-		for(RelationsByType rels: relationsByTypeList) {
-			if(rels.getRelationType()==relType) {
-				return rels;
-			}
-		}
-		// create new
-		RelationsByType rels = new RelationsByType(relType);
-		relationsByTypeList.add(rels);
-		return rels;
-	}
-
-    public abstract String getType();
-
-    public abstract String getTypeCode();
-
-	public int getPartyId(){
-    	return partyId;
+        this.ap = initHelper.getAP();
+        this.creation = initHelper.getCreation();
+        this.destruction = initHelper.getDestruction();
+        this.relations = initHelper.getRelations();
+        this.relationsByType = initHelper.getRelationsByType();
     }
 
-	/**
+    public int getPartyId() {
+        return partyId;
+    }
+
+    public String getType() {
+        return getPartyType().getName();
+    }
+
+    public String getTypeCode() {
+        return getPartyType().getCode();
+    }
+
+    /**
      * @return obsah položky record.getRecord()
      */
     public String getName() {
-        return record.getRecord();
+        return ap.getRecord();
     }
-
 
     public String getCharacteristics() {
         return characteristics;
@@ -129,8 +83,8 @@ public abstract class Party {
         return preferredName;
     }
 
-    public Record getRecord() {
-        return record;
+    public Record getAP() {
+        return ap;
     }
 
     public String getSourceInformation() {
@@ -138,35 +92,20 @@ public abstract class Party {
     }
 
     public Relation getCreation() {
-		return creation;
-	}
-
-
-	public Relation getDestruction() {
-		return destruction;
-	}
-
-
-	public List<Relation> getRelations() {
-		return relations;
-	}
-
-	public List<RelationsByType> getRelationsByType() {
-		return Collections.unmodifiableList(relationsByTypeList);
-	}
-
-    @Override
-    public boolean equals(final Object o) {
-        return EqualsBuilder.reflectionEquals(o, this);
+        return creation;
     }
 
-    @Override
-    public int hashCode() {
-        return HashCodeBuilder.reflectionHashCode(this);
+    public Relation getDestruction() {
+        return destruction;
     }
 
-    @Override
-    public String toString() {
-        return ToStringBuilder.reflectionToString(this, ToStringStyle.SIMPLE_STYLE);
+    public List<Relation> getRelations() {
+        return relations;
     }
+
+    public List<RelationsByType> getRelationsByType() {
+        return Collections.unmodifiableList(relationsByType);
+    }
+
+    protected abstract PartyType getPartyType();
 }

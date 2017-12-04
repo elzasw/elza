@@ -4,7 +4,7 @@ package cz.tacr.elza.print.item;
  * Rozhranní pro tiskový Item. Implementováno dle jednotlivých datových typů.
  *
  */
-public interface Item {
+public interface Item extends Comparable<Item> {
 
     /**
      * @return typ item, odpovídá rul_item_type (+rul_data_type)
@@ -19,35 +19,20 @@ public interface Item {
     /**
      * @return pozice item v seznamu
      */
-    Integer getPosition();
+    int getPosition();
 
     /**
      * @return je nedefinovaná hodnota?
      */
-    Boolean getUndefined();
-
-    /**
-     * porovnání pro řazení dle rul_item_type.view_order + arr_item.position
-     */
-    int compareToItemViewOrderPosition(Item o);
+    boolean isUndefined();
 
     /**
      * @return vrací hodnotu formátovanou jako text k tisku
-     */
-    String serializeValue();
-
-    /**
-     * @return vrací hodnotu formátovanou jako text k tisku - pro použití jako field serializedValue v jasperu
      */
     String getSerializedValue();
 
     /**
      * @return vrací popis položky + hodnotu formátovanou jako text k tisku
-     */
-    String serialize();
-
-    /**
-     * @return vrací popis položky + hodnotu formátovanou jako text k tisku - pro použití jako field serializedValue v jasperu
      */
     String getSerialized();
 
@@ -55,14 +40,6 @@ public interface Item {
      * @return vrací původní hodnotu položky
      */
     <T> T getValue(Class<T> type);
-
-    /**
-     * Metoda pro získání hodnoty do fieldu v Jasper.
-     * Umožní na položce v detailu volat metody sám nad sebou (nejen implicitně zpřístupněné gettery).
-     *
-     * @return odkaz sám na sebe
-     */
-    Item getItem();
 
     /**
      * Return if item is empty.

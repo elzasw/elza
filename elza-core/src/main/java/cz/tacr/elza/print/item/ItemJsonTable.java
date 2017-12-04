@@ -14,58 +14,52 @@ import cz.tacr.elza.domain.table.ElzaTable;
  */
 public class ItemJsonTable extends AbstractItem {
 
-	final static String ROW_SEPARATOR = ", ";
-	final static String ITEM_SEPARATOR = " ";
+    private final static String ROW_SEPARATOR = ", ";
+    private final static String ITEM_SEPARATOR = " ";
 
-	ElzaTable value;
-	List<ElzaColumn> tableDef;
+    private final ElzaTable value;
+
+    private final List<ElzaColumn> tableDef;
 
     public ItemJsonTable(List<ElzaColumn> tableDef, final ElzaTable value) {
-        super();
         this.value = value;
         this.tableDef = tableDef;
     }
 
     @Override
-    public String serializeValue() {
-    	StringBuilder sb = new StringBuilder();
+    public String getSerializedValue() {
+        StringBuilder sb = new StringBuilder();
 
-    	boolean hasData = false;
-    	for(ElzaRow row: value.getRows())
-    	{
-    		Map<String, String> columns = row.getValues();
+        boolean hasData = false;
+        for (ElzaRow row : value.getRows()) {
+            Map<String, String> columns = row.getValues();
 
-    		boolean itemAdded = false;
-    		// Store single value - iterate by columns
-    		for(ElzaColumn col: tableDef) {
-    			String value = columns.get(col.getCode());
-    			if(StringUtils.isNotBlank(value)) {
-    				// add separator
-    				if(hasData)
-    				{
-    					if(itemAdded) {
-    						sb.append(ITEM_SEPARATOR);
-    					} else {
-    						sb.append(ROW_SEPARATOR);
-    						itemAdded = true;
-    					}
-    				} else {
-    					hasData = true;
-    					itemAdded = true;
-    				}
-    				sb.append(value);
-    			}
-    		}
-    	}
+            boolean itemAdded = false;
+            // Store single value - iterate by columns
+            for (ElzaColumn col : tableDef) {
+                String value = columns.get(col.getCode());
+                if (StringUtils.isNotBlank(value)) {
+                    // add separator
+                    if (hasData) {
+                        if (itemAdded) {
+                            sb.append(ITEM_SEPARATOR);
+                        } else {
+                            sb.append(ROW_SEPARATOR);
+                            itemAdded = true;
+                        }
+                    } else {
+                        hasData = true;
+                        itemAdded = true;
+                    }
+                    sb.append(value);
+                }
+            }
+        }
         return sb.toString();
     }
 
     @Override
-    public Object getValue() {
-        return value;
-    }
-
-    public ElzaTable getElzaTable() {
+    protected ElzaTable getValue() {
         return value;
     }
 }

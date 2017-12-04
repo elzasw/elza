@@ -4,29 +4,23 @@ import cz.tacr.elza.print.Record;
 
 /**
  * Record reference
- * 
+ *
  */
 public class ItemRecordRef extends AbstractItem {
-	
-	final Record record;
+
+    private final Record record;
 
     public ItemRecordRef(final Record record) {
-        super();
-        
         this.record = record;
     }
 
     @Override
-    public String serializeValue() {
+    public String getSerializedValue() {
         return record.getRecord();
     }
 
-	@Override
-	public Object getValue() {
-		return record;
-	}
-	
-	Record getRecord() {
-		return record;
-	}
+    @Override
+    protected Record getValue() {
+        return record;
+    }
 }

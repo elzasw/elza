@@ -26,6 +26,13 @@ public interface Output {
     public String getTypeCode();
 
     /**
+     * Getter položky items
+     *
+     * @return seznam items
+     */
+    public List<Item> getItems();
+
+    /**
      * vstupem je seznam kódu typů atributů a vrací se seznam hodnot těchto atributů
      * řazených dle rul_desc_item.view_order + arr_item.position
      *
@@ -33,6 +40,15 @@ public interface Output {
      * @return seznam items s odpovídajícími kódy
      */
 	public List<Item> getItems(@NotNull final Collection<String> codes);
+
+    /**
+     * Vstupem je seznam kódu typů atributů a vrací se seznam všech hodnot atributů výstupu kromě hodnot typů uvedených ve vstupu metody;
+     * řazeno dle rul_desc_item.view_order + arr_item.position.
+     *
+     * @param codes seznam ignorovaných kódů itemů
+     * @return seznam všech items výstupu kromě hodnot typů uvedených ve vstupu metody
+     */
+    public List<Item> getItemsWithout(@NotNull final Collection<String> codes);
 
 	/**
 	 * Return list of parties from the given description items.
@@ -60,27 +76,9 @@ public interface Output {
 	public String getSingleItemValue(final String itemTypeCode);
 
     /**
-     * Vstupem je seznam kódu typů atributů a vrací se seznam všech hodnot atributů výstupu kromě hodnot typů uvedených ve vstupu metody;
-     * řazeno dle rul_desc_item.view_order + arr_item.position.
-     *
-     * @param codes seznam ignorovaných kódů itemů
-     * @return seznam všech items výstupu kromě hodnot typů uvedených ve vstupu metody
-     */
-    public List<Item> getAllItems(@NotNull final Collection<String> codes);
-
-    /**
-     * Getter položky items
-     *
-     * @return seznam items
-     */
-    public List<Item> getItems();
-
-    /**
      * @return instance iterátoru, který prochází jednotky popisu do hloubky
      */
     IteratorNodes getNodesDFS();
-
-    // IteratorNodes getNodesBFS(); - BF traversal should not be needed.
 
     /**
      * vstupem je kód typu rejstříku a vrací se seznam rejstříkových hesel řazených podle názvu (record).

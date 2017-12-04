@@ -31,7 +31,7 @@ public class Node {
      * @param nodeId vazba na nodeId
      * @param nodel vazba na output
      */
-    public Node(NodeId nodeId, OutputModelNew nodel, List<Item> items, List<Record> records) {
+    public Node(NodeId nodeId, OutputModelNew nodel) {
         this.nodeId = nodeId;
         this.model = nodel;
         this.items = items;
@@ -184,5 +184,15 @@ public class Node {
      */
     public IteratorNodes getNodesDFS() {
         return new IteratorNodes(model, model.getNodesChildsModel(nodeId), outputFactoryService, OutputModel.MAX_CACHED_NODES);
+    }
+
+    public void setItems(List<Item> items2) {
+        // TODO Auto-generated method stub
+
+    }
+
+    public void setAPs(List<Record> aPs) {
+        // TODO Auto-generated method stub
+
     }
 }

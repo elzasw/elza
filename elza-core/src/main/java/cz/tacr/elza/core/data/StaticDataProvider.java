@@ -40,6 +40,8 @@ public class StaticDataProvider {
 
     private Map<Integer, RulPackage> packageIdMap;
 
+    private Map<Integer, ParPartyNameFormType> partyNameFormTypeIdMap;
+
     private Map<String, ParPartyNameFormType> partyNameFormTypeCodeMap;
 
     private Map<String, ParComplementType> complementTypeCodeMap;
@@ -79,6 +81,11 @@ public class StaticDataProvider {
 
     public List<RelationType> getRelationTypes() {
         return relationTypes;
+    }
+
+    public ParPartyNameFormType getPartyNameFormTypeById(Integer id) {
+        Validate.notNull(id);
+        return partyNameFormTypeIdMap.get(id);
     }
 
     public ParPartyNameFormType getPartyNameFormTypeByCode(String code) {
@@ -150,6 +157,7 @@ public class StaticDataProvider {
 
         // update fields
         this.partyNameFormTypes = Collections.unmodifiableList(formTypes);
+        this.partyNameFormTypeIdMap = createLookup(formTypes, ParPartyNameFormType::getNameFormTypeId);
         this.partyNameFormTypeCodeMap = createLookup(formTypes, ParPartyNameFormType::getCode);
     }
 

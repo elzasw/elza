@@ -4,23 +4,19 @@ import cz.tacr.elza.print.File;
 
 public class ItemFileRef extends AbstractItem {
 
-    private File file;
+    private final File file;
 
     public ItemFileRef(File file) {
         this.file = file;
     }
 
-    public File getFile() {
+    @Override
+    protected File getValue() {
         return file;
     }
 
     @Override
-    public Object getValue() {
-        return file;
-    }
-
-    @Override
-    public String serializeValue() {
+    public String getSerializedValue() {
         return file.getName();
     }
 }
