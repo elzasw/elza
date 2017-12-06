@@ -191,6 +191,8 @@ class PartyDetail extends AbstractReactComponent {
         this.dispatch(requestScopesIfNeeded());
         if (id) {
             return this.dispatch(partyDetailFetchIfNeeded(id));
+        } else {
+            return Promise.resolve(null);
         }
     };
 

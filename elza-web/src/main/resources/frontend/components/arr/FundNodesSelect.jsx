@@ -64,7 +64,11 @@ class FundNodesSelect extends AbstractReactComponent {
         const {fund, multipleSelection} = nextProps;
         const fundTreeNodes = fund.fundTreeNodes;
         const versionId = fund.versionId;
-        this.requestFundTreeData(versionId, multipleSelection, fundTreeNodes.expandedIds);
+        this.requestFundTreeData(versionId, multipleSelection, fundTreeNodes.expandedIds).then((fundTree) => {
+            const nodesMap = getMapFromList(fundTree.nodes);
+            const node = nodesMap[fundTreeNodes.selectedId];
+            this.props.onChange([fundTree.selectedId],[node])
+        });
 
         // Zavolání onChange metody
         let selectionChanged = false;
@@ -105,7 +109,7 @@ class FundNodesSelect extends AbstractReactComponent {
     }
 
     requestFundTreeData = (versionId, multipleSelection, expandedIds) => {
-        this.dispatch(fundTreeFetchIfNeeded(types.FUND_TREE_AREA_NODES, versionId, expandedIds));
+        return this.dispatch(fundTreeFetchIfNeeded(types.FUND_TREE_AREA_NODES, versionId, expandedIds));
     };
 
     handleNodeClick = (node, ensureItemVisible, e) => {

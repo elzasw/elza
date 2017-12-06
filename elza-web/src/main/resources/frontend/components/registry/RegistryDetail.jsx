@@ -87,6 +87,8 @@ class RegistryDetail extends AbstractReactComponent {
         this.dispatch(requestScopesIfNeeded());
         if (id) {
             return this.dispatch(registryDetailFetchIfNeeded(id));
+        } else {
+            return Promise.resolve(null);
         }
     };
 
