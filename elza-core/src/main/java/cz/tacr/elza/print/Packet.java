@@ -135,9 +135,9 @@ public class Packet {
         this.typeShortcut = typeShortcut;
     }
 
-    public IteratorNodes getNodes() {
+    public NodeIterator getNodes() {
         Iterator<NodeId> nodeIdIterator = nodeIds.iterator();
-        return new IteratorNodes(nodeLoader, nodeIdIterator);
+        return new NodeIterator(nodeLoader, nodeIdIterator);
     }
 
     void addNodeId(NodeId nodeId) {

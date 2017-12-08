@@ -12,10 +12,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.Validate;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
-import cz.tacr.elza.core.data.CalendarType;
 import cz.tacr.elza.core.data.PartyType;
 import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.core.data.RuleSystemItemType;
@@ -24,7 +24,6 @@ import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.tree.FundTree;
 import cz.tacr.elza.core.tree.FundTreeProvider;
 import cz.tacr.elza.core.tree.TreeNode;
-import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataCoordinates;
 import cz.tacr.elza.domain.ArrDataDecimal;
@@ -46,7 +45,6 @@ import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.ArrNodeOutput;
 import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ArrOutputDefinition;
-import cz.tacr.elza.domain.ArrOutputItem;
 import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.ParDynasty;
 import cz.tacr.elza.domain.ParEvent;
@@ -95,11 +93,10 @@ import cz.tacr.elza.print.party.Relation;
 import cz.tacr.elza.print.party.RelationRoleType;
 import cz.tacr.elza.print.party.RelationTo;
 import cz.tacr.elza.print.party.RelationType;
-import cz.tacr.elza.repository.OutputDefinitionRepository;
-import cz.tacr.elza.service.OutputService;
 import cz.tacr.elza.service.cache.CachedNode;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.cache.RestoredNode;
+import cz.tacr.elza.service.output.dev.OutputParams;
 import cz.tacr.elza.utils.HibernateUtils;
 
 public class OutputModel implements Output, NodeLoader {
@@ -108,9 +105,11 @@ public class OutputModel implements Output, NodeLoader {
 
     private RuleSystem ruleSystem;
 
+    private ArrFundVersion fundVersion;
+
     /* general description */
 
-    private final List<Item> outputItems = new ArrayList<>();
+    private List<Item> directItems;
 
     private String name;
 
@@ -123,9 +122,6 @@ public class OutputModel implements Output, NodeLoader {
     private Fund fund;
 
     /* lookups */
-
-    // seznam rejstříkových hesel podle typu
-    private final Map<String, FilteredRecords> filteredRecords = new HashMap<>();
 
     private final Map<Integer, ItemType> itemTypeIdMap = new HashMap<>();
 
@@ -145,25 +141,30 @@ public class OutputModel implements Output, NodeLoader {
 
     private final Map<Integer, File> fileIdMap = new HashMap<>();
 
+    /**
+     * Filtered records have references to initialized Nodes (RecordWithLinks) which is reason why
+     * we keep only last loaded instance instead of complete map.
+     */
+    private FilteredRecords lastFilteredRecords;
+
     /* spring components */
 
     private final StaticDataService staticDataService;
-
-    private final OutputService outputService;
 
     private final FundTreeProvider fundTreeProvider;
 
     private final NodeCacheService nodeCacheService;
 
     public OutputModel(StaticDataService staticDataService,
-                          OutputService outputService,
                           FundTreeProvider fundTreeProvider,
-                          OutputDefinitionRepository outputDefinitionRepository,
                           NodeCacheService nodeCacheService) {
         this.staticDataService = staticDataService;
-        this.outputService = outputService;
         this.fundTreeProvider = fundTreeProvider;
         this.nodeCacheService = nodeCacheService;
+    }
+
+    public boolean isInitialized() {
+        return fundVersion != null;
     }
 
     @Override
@@ -193,14 +194,14 @@ public class OutputModel implements Output, NodeLoader {
 
     @Override
     public List<Item> getItems() {
-        return outputItems;
+        return directItems;
     }
 
     @Override
     public List<Item> getItems(Collection<String> typeCodes) {
         Validate.notNull(typeCodes);
 
-        return outputItems.stream().filter(item -> {
+        return directItems.stream().filter(item -> {
             String tc = item.getType().getCode();
             return typeCodes.contains(tc);
         }).collect(Collectors.toList());
@@ -210,7 +211,7 @@ public class OutputModel implements Output, NodeLoader {
     public List<Item> getItemsWithout(Collection<String> typeCodes) {
         Validate.notNull(typeCodes);
 
-        return outputItems.stream().filter(item -> {
+        return directItems.stream().filter(item -> {
             String tc = item.getType().getCode();
             return !typeCodes.contains(tc);
         }).collect(Collectors.toList());
@@ -223,7 +224,7 @@ public class OutputModel implements Output, NodeLoader {
         Set<Integer> distinctPartyIds = new HashSet<>();
         List<Party> parties = new ArrayList<>();
 
-        for (Item item : outputItems) {
+        for (Item item : directItems) {
             String tc = item.getType().getCode();
             if (!typeCodes.contains(tc)) {
                 continue;
@@ -242,7 +243,7 @@ public class OutputModel implements Output, NodeLoader {
         Validate.notEmpty(typeCode);
 
         Item found = null;
-        for (Item item : outputItems) {
+        for (Item item : directItems) {
             if (typeCode.equals(item.getType().getCode())) {
                 // check if item already found
                 if (found != null) {
@@ -264,22 +265,17 @@ public class OutputModel implements Output, NodeLoader {
     }
 
     @Override
-    public IteratorNodes getNodesDFS() {
+    public NodeIterator getNodesDFS() {
         Iterator<NodeId> nodeIdIterator = fund.getRootNodeId().getIteratorDFS();
-        return new IteratorNodes(this, nodeIdIterator);
+        return new NodeIterator(this, nodeIdIterator);
     }
 
     @Override
     public FilteredRecords getRecordsByType(String typeCode) {
-        Validate.notEmpty(typeCode);
-
-        FilteredRecords filteredAPs = filteredRecords.get(typeCode);
-        if (filteredAPs == null) {
-            // prepare records
-            filteredAPs = filterRecords(typeCode);
-            filteredRecords.put(typeCode, filteredAPs);
+        if (lastFilteredRecords == null || !lastFilteredRecords.getFilterType().equals(typeCode)) {
+            lastFilteredRecords = filterRecords(typeCode);
         }
-        return filteredAPs;
+        return lastFilteredRecords;
     }
 
     /**
@@ -290,9 +286,9 @@ public class OutputModel implements Output, NodeLoader {
 
         // add all nodes
         Iterator<NodeId> nodeIdIterator = fund.getRootNodeId().getIteratorDFS();
-        IteratorNodes iteratorNodes = new IteratorNodes(this, nodeIdIterator);
-        while (iteratorNodes.hasNext()) {
-            Node node = iteratorNodes.next();
+        NodeIterator nodeIterator = new NodeIterator(this, nodeIdIterator);
+        while (nodeIterator.hasNext()) {
+            Node node = nodeIterator.next();
             filteredAPs.addNode(node);
         }
 
@@ -305,6 +301,7 @@ public class OutputModel implements Output, NodeLoader {
     @Override
     public List<Node> loadNodes(Collection<NodeId> nodeIds) {
         Validate.isTrue(TransactionSynchronizationManager.isActualTransactionActive());
+        Validate.isTrue(isInitialized());
 
         List<Integer> arrNodeIds = new ArrayList<>(nodeIds.size());
         List<Node> nodes = new ArrayList<>(nodeIds.size());
@@ -313,6 +310,10 @@ public class OutputModel implements Output, NodeLoader {
             arrNodeIds.add(nodeId.getArrNodeId());
             Node node = new Node(nodeId, this);
             nodes.add(node);
+        }
+
+        if (fundVersion.getLockChange() != null) {
+            throw new NotImplementedException("Load nodes for closed fund version not implemented");
         }
 
         Map<Integer, RestoredNode> cachedNodeMap = nodeCacheService.getNodes(arrNodeIds);
@@ -326,6 +327,9 @@ public class OutputModel implements Output, NodeLoader {
         return nodes;
     }
 
+    /**
+     * Init output node from node cache.
+     */
     private void initNode(Node node, CachedNode cachedNode) {
         // set node items
         List<ArrDescItem> descItems = cachedNode.getDescItems();
@@ -359,89 +363,73 @@ public class OutputModel implements Output, NodeLoader {
 
     /**
      * Initializes output model. Must be called during transaction.
-     *
-     * @param fundVersion not-null
      */
-    public void init(int outputDefinitionId, ArrFundVersion fundVersion) {
+    public void init(OutputParams params) {
         Validate.isTrue(TransactionSynchronizationManager.isActualTransactionActive());
+        Validate.isTrue(!isInitialized());
 
-        // find output definition with fetch for model
-        ArrOutputDefinition outputDefinition = outputService.getDefinitionForModel(outputDefinitionId);
-        if (outputDefinition == null) {
-            throw new SystemException("Output definition not found", BaseCode.ID_NOT_EXIST).set("outputDefinitionId",
-                    outputDefinitionId);
-        }
-
-        // check fund version against definition
-        if (fundVersion != null) {
-            Integer fundId = outputDefinition.getFundId();
-            Validate.isTrue(fundId.equals(fundVersion.getFundId()));
-        }
-
-        init(outputDefinition, fundVersion);
-    }
-
-    private void init(ArrOutputDefinition outputDefinition, ArrFundVersion fundVersion) {
-        Validate.isTrue(fund == null); // check if not initialized
-
-        // prepare static data
-        staticData = staticDataService.getData();
-        ruleSystem = staticData.getRuleSystems().getByRuleSetId(fundVersion.getRuleSetId());
+        // prepare internal fields
+        this.staticData = staticDataService.getData();
+        this.ruleSystem = staticData.getRuleSystems().getByRuleSetId(fundVersion.getRuleSetId());
+        this.fundVersion = params.getFundVersion();
 
         // init general description
-        name = outputDefinition.getName();
-        internalCode = outputDefinition.getInternalCode();
-        RulOutputType outputType = outputDefinition.getOutputType();
-        typeCode = outputType.getCode();
-        type = outputType.getName();
+        ArrOutputDefinition definition = params.getDefinition();
+        RulOutputType outputType = definition.getOutputType();
+        this.name = definition.getName();
+        this.internalCode = definition.getInternalCode();
+        this.typeCode = outputType.getCode();
+        this.type = outputType.getName();
 
         // init node id tree
-        NodeId rootNodeId = createNodeIdTree(outputDefinition, fundVersion);
+        NodeId rootNodeId = createNodeIdTree(params.getRootNodes(), params.getFundVersionId());
 
         // init fund
-        ArrFund arrFund = outputDefinition.getFund();
-        fund = new Fund(rootNodeId);
-        fund.setName(arrFund.getName());
-        fund.setInternalCode(arrFund.getInternalCode());
-        fund.setCreateDate(Date.from(arrFund.getCreateDate().atZone(ZoneId.systemDefault()).toInstant()));
-        fund.setDateRange(fundVersion.getDateRange());
+        ArrFund arrFund = definition.getFund();
+        this.fund = new Fund(rootNodeId);
+        this.fund.setName(arrFund.getName());
+        this.fund.setInternalCode(arrFund.getInternalCode());
+        this.fund.setCreateDate(Date.from(arrFund.getCreateDate().atZone(ZoneId.systemDefault()).toInstant()));
+        this.fund.setDateRange(fundVersion.getDateRange());
 
         // init fund institution
         ParInstitution parInstit = arrFund.getInstitution();
         Institution institution = new Institution(parInstit.getInternalCode(), parInstit.getInstitutionType());
         Party party = getParty(parInstit.getParty());
         institution.setPartyGroup((PartyGroup) party);
-        fund.setInstitution(institution);
+        this.fund.setInstitution(institution);
 
         // init direct items
-        initDirectOutputItems(outputDefinition, fundVersion.getLockChange());
+        directItems = params.getDirectItems().stream()
+                .filter(i -> !i.isUndefined())
+                .map(this::createItem)
+                .collect(Collectors.toList());
     }
 
     /**
-     * Creates output tree with root equal to {@link ArrFundVersion#getRootNodeId()} which contains
-     * all connected output nodes and their subtrees.
+     * Creates output tree with root same as {@link ArrFundVersion#getRootNodeId()}. Tree contains
+     * output subtrees and their paths to fund root.
      *
      * @return NodeId tree root.
      */
-    private NodeId createNodeIdTree(ArrOutputDefinition outputDefinition, ArrFundVersion fundVersion) {
-        List<ArrNodeOutput> outputNodes = outputService.getOutputNodes(outputDefinition, fundVersion.getLockChange());
-        FundTree fundTree = fundTreeProvider.getFundTree(fundVersion.getFundVersionId());
+    private NodeId createNodeIdTree(List<ArrNodeOutput> rootNodes, Integer fundVersionId) {
+        FundTree fundTree = fundTreeProvider.getFundTree(fundVersionId);
 
         Map<Integer, NodeId> nodeIdMap = new HashMap<>();
 
-        for (ArrNodeOutput outputNode : outputNodes) {
-            TreeNode rootNode = fundTree.getNode(outputNode.getNodeId());
+        for (ArrNodeOutput rootNode : rootNodes) {
+            TreeNode treeNode = fundTree.getNode(rootNode.getNodeId());
 
-            NodeId nodeId = createNodeIdWithParents(rootNode, nodeIdMap);
+            NodeId nodeId = createNodeIdWithParents(treeNode, nodeIdMap);
 
-            rootNode.getChildren().forEach(child -> initNodeIdSubtree(child, nodeId, nodeIdMap));
+            treeNode.getChildren().forEach(child -> initNodeIdSubtree(child, nodeId, nodeIdMap));
         }
 
         return nodeIdMap.get(fundTree.getRoot().getNodeId());
     }
 
     /**
-     * Creates NodeId with all missing parent nodes.
+     * Creates NodeId with all parent nodes up to root.
      */
     private NodeId createNodeIdWithParents(TreeNode treeNode, Map<Integer, NodeId> nodeIdMap) {
         Integer arrNodeId = new Integer(treeNode.getNodeId());
@@ -468,7 +456,7 @@ public class OutputModel implements Output, NodeLoader {
 
     /**
      * Initializes subtree recursively from specified node. Overlapping nodes are disallowed. Parent
-     * node id cannot be null thus method is not suitable for root treeNode.
+     * node id cannot be null thus method is not suitable for root node.
      *
      * @param parentNodeId not-null
      */
@@ -659,17 +647,6 @@ public class OutputModel implements Output, NodeLoader {
         return roleType;
     }
 
-    private void initDirectOutputItems(ArrOutputDefinition outputDefinition, ArrChange lockChange) {
-        List<ArrOutputItem> outputItems = outputService.getDirectOutputItems(outputDefinition, lockChange);
-        for (ArrOutputItem outputItem : outputItems) {
-            if (outputItem.isUndefined()) {
-                continue; // skip items without data
-            }
-            Item item = createItem(outputItem);
-            this.outputItems.add(item);
-        }
-    }
-
     private Item createItem(ArrItem arrItem) {
         RuleSystemItemType staticItemType = ruleSystem.getItemTypeById(arrItem.getItemTypeId());
         ItemType itemType = getItemType(staticItemType);
@@ -728,8 +705,9 @@ public class OutputModel implements Output, NodeLoader {
                 ArrDataUnitid unitid = (ArrDataUnitid) data;
                 return new ItemUnitId(unitid.getValue());
             case UNITDATE:
-                ArrDataUnitdate unitdate = (ArrDataUnitdate) data;
-                return createItemUnitdate(unitdate);
+                ArrDataUnitdate dataUnitdate = (ArrDataUnitdate) data;
+                UnitDate unitDate = new UnitDate(dataUnitdate);
+                return new ItemUnitdate(unitDate);
             case TEXT:
                 ArrDataText text = (ArrDataText) data;
                 return new ItemString(text.getValue());
@@ -738,10 +716,12 @@ public class OutputModel implements Output, NodeLoader {
                 return new ItemString(str.getValue());
             case RECORD_REF:
                 ArrDataRecordRef apRef = (ArrDataRecordRef) data;
-                return createItemAPRef(apRef);
+                Record ap = getAP(apRef.getRecord());
+                return new ItemRecordRef(ap);
             case PARTY_REF:
                 ArrDataPartyRef partyRef = (ArrDataPartyRef) data;
-                return createItemPartyRef(partyRef);
+                Party party = getParty(partyRef.getParty());
+                return new ItemPartyRef(party);
             case PACKET_REF:
                 ArrDataPacketRef packetRef = (ArrDataPacketRef) data;
                 return createItemPacketRef(packetRef);
@@ -768,22 +748,6 @@ public class OutputModel implements Output, NodeLoader {
             default:
                 throw new SystemException("Uknown data type", BaseCode.INVALID_STATE).set("dataType", itemType.getDataType());
         }
-    }
-
-    private static ItemUnitdate createItemUnitdate(ArrDataUnitdate data) {
-        CalendarType ct = CalendarType.fromId(data.getCalendarTypeId());
-        UnitDate unitdate = UnitDate.valueOf(data, ct.getEntity());
-        return new ItemUnitdate(unitdate);
-    }
-
-    private ItemRecordRef createItemAPRef(ArrDataRecordRef data) {
-        Record ap = getAP(data.getRecord());
-        return new ItemRecordRef(ap);
-    }
-
-    private ItemPartyRef createItemPartyRef(ArrDataPartyRef data) {
-        Party party = getParty(data.getParty());
-        return new ItemPartyRef(party);
     }
 
     private ItemPacketRef createItemPacketRef(ArrDataPacketRef data) {

@@ -16,7 +16,7 @@ public class ItemUnitdate extends AbstractItem {
 
     @Override
     public String getSerializedValue() {
-        return value.serialize();
+        return value.getValueText();
     }
 
     @Override

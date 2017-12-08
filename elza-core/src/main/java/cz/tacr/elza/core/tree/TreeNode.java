@@ -13,14 +13,4 @@ public interface TreeNode {
     TreeNode getParent();
 
     List<TreeNode> getChildren();
-
-    boolean traverseDF(Visitor visitor);
-
-    interface Visitor {
-
-        /**
-         * @return If true then subtree of current note will be visited.
-         */
-        boolean visit(TreeNode treeNode);
-    }
 }

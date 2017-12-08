@@ -6,10 +6,10 @@ import java.util.List;
 public interface NodeLoader {
 
     /**
-     * Initializes nodes by specified ids.
+     * Initializes all nodes by specified ids.
      *
      * @param nodeIds not-null
-     * @return List of nodes which preserve order of specified ids.
+     * @return List of initialized nodes which preserve order of specified ids.
      */
     List<Node> loadNodes(Collection<NodeId> nodeIds);
 }

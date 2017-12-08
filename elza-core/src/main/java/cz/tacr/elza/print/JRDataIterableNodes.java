@@ -12,22 +12,22 @@ public class JRDataIterableNodes implements JRDataSource {
     /**
      * Iterátor uzlů, které procházíme.
      */
-    private final IteratorNodes iteratorNodes;
+    private final NodeIterator nodeIterator;
 
     /**
      * Poslední vrácený uzel.
      */
     private Node actual;
 
-    public JRDataIterableNodes(final IteratorNodes iteratorNodes) {
-        this.iteratorNodes = iteratorNodes;
+    public JRDataIterableNodes(final NodeIterator nodeIterator) {
+        this.nodeIterator = nodeIterator;
     }
 
     @Override
     public boolean next() throws JRException {
-        boolean hasNext = iteratorNodes.hasNext();
+        boolean hasNext = nodeIterator.hasNext();
         if (hasNext) {
-            actual = iteratorNodes.next();
+            actual = nodeIterator.next();
         }
         return hasNext;
     }

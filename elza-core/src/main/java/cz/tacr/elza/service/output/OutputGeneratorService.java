@@ -12,10 +12,6 @@ import java.util.concurrent.RejectedExecutionException;
 
 import javax.annotation.Nullable;
 
-import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.ArrangementCode;
-import cz.tacr.elza.exception.codes.BaseCode;
 import org.apache.commons.lang.BooleanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,7 +42,11 @@ import cz.tacr.elza.domain.ArrOutputResult;
 import cz.tacr.elza.domain.RulAction;
 import cz.tacr.elza.domain.RulTemplate;
 import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ProcessException;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.OutputDefinitionRepository;
 import cz.tacr.elza.repository.OutputResultRepository;
@@ -144,11 +144,13 @@ public class OutputGeneratorService implements ListenableFutureCallback<OutputGe
                                final Integer userId,
                                @AuthParam(type = AuthParam.Type.FUND) final ArrFund fund,
                                final boolean forced) {
+        // replace with output definition state check for OPEN
         ArrOutputResult outputResult = outputResultRepository.findByOutputDefinition(arrOutput.getOutputDefinition());
         if (outputResult != null) {
             throw new BusinessException("Tento výstup byl již vygenerován", ArrangementCode.ALREADY_CREATED);
         }
 
+        // -> output generator service
         synchronized (lock) {
             if (outputQueue.stream().anyMatch(i -> arrOutput.getOutputId().equals(i.getArrOutputId()))) {
                 throw new BusinessException("Tento výstup je již ve frontě generování", BaseCode.INVALID_STATE);

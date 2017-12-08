@@ -40,8 +40,8 @@ public interface OutputDefinitionRepository extends JpaRepository<ArrOutputDefin
 
     List<ArrOutputDefinition> findByFund(ArrFund fund);
 
-    @Query("SELECT od FROM arr_output_definition od JOIN FETCH od.outputType ot JOIN FETCH od.fund f JOIN FETCH "
-            + "f.institution i JOIN FETCH i.institutionType it JOIN FETCH i.party ip JOIN FETCH ip.record ipr WHERE od.outputDefinitionId=?1")
+    @Query("SELECT od FROM arr_output_definition od JOIN FETCH od.template t JOIN FETCH od.outputType ot JOIN FETCH od.fund f JOIN FETCH "
+            + "f.institution i JOIN FETCH i.institutionType it WHERE od.outputDefinitionId=?1")
     ArrOutputDefinition findOneFetchTypeAndFundAndInstitution(Integer outputDefinitionId);
 
     @Modifying

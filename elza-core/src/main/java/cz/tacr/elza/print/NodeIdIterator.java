@@ -5,22 +5,19 @@ import java.util.LinkedList;
 import java.util.NoSuchElementException;
 
 /**
- * NodeId subtree iterator. Can be initialized as breadth-first or depth-first iterator.
+ * NodeId subtree depth-first iterator.
  */
 public class NodeIdIterator implements Iterator<NodeId> {
 
-    private final LinkedList<NodeId> nodeIdQueue = new LinkedList<>();
+    private final LinkedList<NodeId> nodeIdStack = new LinkedList<>();
 
-    private final boolean depthFirst;
-
-    public NodeIdIterator(NodeId root, boolean depthFirst) {
-        this.nodeIdQueue.add(root);
-        this.depthFirst = depthFirst;
+    public NodeIdIterator(NodeId rootNodeId) {
+        this.nodeIdStack.add(rootNodeId);
     }
 
     @Override
     public boolean hasNext() {
-        return nodeIdQueue.size() > 0;
+        return nodeIdStack.size() > 0;
     }
 
     @Override
@@ -28,13 +25,9 @@ public class NodeIdIterator implements Iterator<NodeId> {
         if (!hasNext()) {
             throw new NoSuchElementException();
         }
-        NodeId node = nodeIdQueue.removeFirst();
+        NodeId node = nodeIdStack.removeFirst();
         if (node.children != null) {
-            if (depthFirst) {
-                node.children.forEach(nodeIdQueue::addFirst);
-            } else {
-                node.children.forEach(nodeIdQueue::addLast);
-            }
+            node.children.forEach(nodeIdStack::addFirst);
         }
         return node;
     }

@@ -8,6 +8,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.Validate;
+
 /**
  * Collection of records
  *
@@ -29,7 +31,11 @@ public class FilteredRecords {
     private Collection<RecordWithLinks> records;
 
     FilteredRecords(String filterType) {
-        this.filterType = filterType;
+        this.filterType = Validate.notEmpty(filterType);
+    }
+
+    public String getFilterType() {
+        return filterType;
     }
 
     public Collection<RecordWithLinks> getRecords() {
@@ -86,7 +92,8 @@ public class FilteredRecords {
      */
     public void nodesAdded() {
         Collator collator = Collator.getInstance(Locale.forLanguageTag("cs"));
-        records = recordsMap.values().stream().sorted((v1, v2) -> collator.compare(v1.getRecord(), v2.getRecord()))
+        records = recordsMap.values().stream()
+                .sorted((v1, v2) -> collator.compare(v1.getRecord(), v2.getRecord()))
                 .collect(Collectors.toList());
     }
 }

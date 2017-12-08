@@ -196,14 +196,6 @@ public class OutputService {
     }
 
     /**
-     * Searches output definition with fetched output type, fund, institution, institution type and institution party with record.
-     */
-    @Transactional(propagation = Propagation.MANDATORY)
-    public ArrOutputDefinition getDefinitionForModel(Integer outputDefinitionId) {
-        return outputDefinitionRepository.findOneFetchTypeAndFundAndInstitution(outputDefinitionId);
-    }
-
-    /**
      * Searches direct output items and fetches their data. Items must be valid by specified lock change.
      * @param lockChange null for open version
      */

@@ -194,9 +194,9 @@ public class Node {
     /**
      * @return instance iterátoru, který prochází jednotky popisu do hloubky
      */
-    public IteratorNodes getNodesDFS() {
+    public NodeIterator getNodesDFS() {
         Iterator<NodeId> nodeIdIterator = nodeId.getIteratorDFS();
-        return new IteratorNodes(nodeLoader, nodeIdIterator);
+        return new NodeIterator(nodeLoader, nodeIdIterator);
     }
 
     /* internal methods */

@@ -22,6 +22,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.Assert;
 
 import com.google.common.collect.Sets;
+import com.ibm.wsdl.OutputImpl;
 
 import cz.tacr.elza.bulkaction.BulkActionService;
 import cz.tacr.elza.domain.ArrChange;
@@ -146,7 +147,40 @@ abstract class OutputGeneratorWorkerAbstract implements Callable<OutputGenerator
      * Společná část generování výstupu.
      */
     private void generateOutput() {
+        logger.info("Spuštěno generování výstupu pro arr_output id={}", arrOutputId);
 
+        final ArrOutput arrOutput = outputRepository.findOne(arrOutputId);
+        final ArrOutputDefinition arrOutputDefinition = outputDefinitionRepository.findByOutputId(arrOutput.getOutputId());
+        change = createChange(userId);
+
+        try {
+            final RulTemplate rulTemplate = arrOutputDefinition.getTemplate();
+            Assert.notNull(rulTemplate, "Výstup nemá definovanou šablonu (ArrOutputDefinition.template je null).");
+
+            // sestavení outputu
+            logger.info("Sestavování modelu výstupu výstupu pro arr_output id={} spuštěno", arrOutputId);
+            final OutputImpl output = outputFactoryService.createOutput(arrOutput);
+            logger.info("Sestavování modelu výstupu výstupu pro arr_output id={} dokončeno", arrOutputId);
+
+            // skutečné vytvoření výstupného souboru na základě definice
+            logger.info("Spuštěno generování souboru pro arr_output id={}", arrOutputId);
+            final InputStream content = getContent(arrOutputDefinition, rulTemplate, output);
+
+            // Uložení do výstupní struktury a DMS
+            storeOutputInDms(arrOutputDefinition, rulTemplate, content);
+
+            content.close();
+
+            waitForGeneratorThread();
+
+            if (exception != null) {
+                throw exception;
+            }
+
+            arrOutputDefinition.setError(null);
+        } catch (Throwable ex) {
+            throw new ProcessException(arrOutputId, ex);
+        }
     }
 
     /**

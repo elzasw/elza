@@ -8,7 +8,8 @@ import org.apache.commons.lang.StringUtils;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ParPartyName;
 import cz.tacr.elza.domain.ParPartyNameFormType;
-import cz.tacr.elza.print.UnitDateText;
+import cz.tacr.elza.domain.ParUnitdate;
+import cz.tacr.elza.print.UnitDate;
 
 /**
  * Party name
@@ -27,20 +28,26 @@ public class PartyName {
 
     private final String degreeAfter;
 
-    private final UnitDateText validFrom;
+    // can be proxy, initialized only when needed
+    private final ParUnitdate srcValidFrom;
 
-    private final UnitDateText validTo;
+    // can be proxy, initialized only when needed
+    private final ParUnitdate srcValidTo;
 
     private final String formTypeName;
 
-    private PartyName(ParPartyName parPartyName, UnitDateText validFrom, UnitDateText validTo, String formTypeName) {
+    private UnitDate validFrom;
+
+    private UnitDate validTo;
+
+    private PartyName(ParPartyName parPartyName, String formTypeName) {
         this.mainPart = parPartyName.getMainPart();
         this.otherPart = parPartyName.getOtherPart();
         this.note = parPartyName.getNote();
         this.degreeBefore = parPartyName.getDegreeBefore();
         this.degreeAfter = parPartyName.getDegreeAfter();
-        this.validFrom = validFrom;
-        this.validTo = validTo;
+        this.srcValidFrom = parPartyName.getValidFrom();
+        this.srcValidTo = parPartyName.getValidTo();
         this.formTypeName = formTypeName;
     }
 
@@ -64,11 +71,17 @@ public class PartyName {
         return otherPart;
     }
 
-    public UnitDateText getValidFrom() {
+    public UnitDate getValidFrom() {
+        if (validFrom == null && srcValidFrom != null) {
+            validFrom = new UnitDate(srcValidFrom); // lazy initialization
+        }
         return validFrom;
     }
 
-    public UnitDateText getValidTo() {
+    public UnitDate getValidTo() {
+        if (validTo == null && srcValidTo != null) {
+            validTo = new UnitDate(srcValidTo); // lazy initialization
+        }
         return validTo;
     }
 
@@ -128,20 +141,17 @@ public class PartyName {
     }
 
     /**
-     * Return new instance of PartyName. Valid From/To unit dates are required (fetched from database if not initialized).
+     * Return new instance of PartyName. Valid From/To unit dates are required (fetched from
+     * database if not initialized).
      */
     public static PartyName newInstance(ParPartyName parPartyName, StaticDataProvider staticData) {
-        // prepare valid dates
-        UnitDateText validFrom = UnitDateText.valueOf(parPartyName.getValidFrom());
-        UnitDateText validTo = UnitDateText.valueOf(parPartyName.getValidTo());
-
         // prepare form type name
+        Integer nameFormTypeId = parPartyName.getNameFormTypeId();
         String formTypeName = null;
-        if (parPartyName.getNameFormTypeId() != null) {
-            ParPartyNameFormType formType = staticData.getPartyNameFormTypeById(parPartyName.getNameFormTypeId());
+        if (nameFormTypeId != null) {
+            ParPartyNameFormType formType = staticData.getPartyNameFormTypeById(nameFormTypeId);
             formTypeName = formType.getName();
         }
-
-        return new PartyName(parPartyName, validFrom, validTo, formTypeName);
+        return new PartyName(parPartyName, formTypeName);
     }
 }

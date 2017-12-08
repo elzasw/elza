@@ -1,6 +1,5 @@
 package cz.tacr.elza.print;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -14,25 +13,28 @@ import cz.tacr.elza.domain.RegVariantRecord;
  */
 public class Record {
 
-    private final int recordId;
+    private final Integer recordId;
 
     private final String record;
 
     private final String characteristics;
 
-    private final RecordType recordType;
-
     private final String externalId;
 
-    private final List<String> variantRecords;
+    private final RecordType recordType;
 
-    private Record(RegRecord regRecord, RecordType recordType, List<String> variantRecords) {
+    // can be proxy, initialized only when needed
+    private final List<RegVariantRecord> srcVariantRecords;
+
+    private List<String> variantRecords;
+
+    private Record(RegRecord regRecord, RecordType recordType) {
         this.externalId = regRecord.getExternalId();
         this.recordId = regRecord.getRecordId();
         this.record = regRecord.getRecord();
         this.characteristics = regRecord.getCharacteristics();
         this.recordType = recordType;
-        this.variantRecords = variantRecords;
+        this.srcVariantRecords = regRecord.getVariantRecordList();
     }
 
     /**
@@ -46,7 +48,7 @@ public class Record {
         this.characteristics = srcRecord.characteristics;
         this.recordType = srcRecord.recordType;
         this.externalId = srcRecord.externalId;
-        this.variantRecords = new ArrayList<>(srcRecord.variantRecords);
+        this.srcVariantRecords = srcRecord.srcVariantRecords;
     }
 
     public int getRecordId() {
@@ -66,6 +68,11 @@ public class Record {
     }
 
     public List<String> getVariantRecords() {
+        if (variantRecords == null) { // lazy initialization
+            variantRecords = srcVariantRecords.stream()
+                    .map(RegVariantRecord::getRecord)
+                    .collect(Collectors.toList());
+        }
         return variantRecords;
     }
 
@@ -74,13 +81,11 @@ public class Record {
     }
 
     /**
-     * Return new instance of Record. Variant names are required (fetched from database if not initialized).
+     * Return new instance of Record. Variant names are required (fetched from database if not
+     * initialized).
      */
     public static Record newInstance(RegRecord regRecord, RecordType recordType) {
-        List<String> variantNames = regRecord.getVariantRecordList().stream()
-                .map(RegVariantRecord::getRecord)
-                .collect(Collectors.toList());
-        Record record = new Record(regRecord, recordType, variantNames);
+        Record record = new Record(regRecord, recordType);
         return record;
     }
 

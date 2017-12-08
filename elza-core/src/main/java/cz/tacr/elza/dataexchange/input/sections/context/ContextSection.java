@@ -6,7 +6,6 @@ import java.util.Map;
 import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.core.data.RuleSystem;
-import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.dataexchange.input.DEImportException;
 import cz.tacr.elza.dataexchange.input.context.EntityIdHolder;
 import cz.tacr.elza.domain.ArrChange;

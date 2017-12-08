@@ -13,22 +13,22 @@ import net.bytebuddy.implementation.bytecode.Throw;
  */
 public interface Output {
 
-    public Fund getFund();
+    Fund getFund();
 
-    public String getInternalCode();
+    String getInternalCode();
 
-    public String getName();
+    String getName();
 
-    public String getType();
+    String getType();
 
-    public String getTypeCode();
+    String getTypeCode();
 
     /**
      * Getter položky items
      *
      * @return seznam items
      */
-    public List<Item> getItems();
+    List<Item> getItems();
 
     /**
      * vstupem je seznam kódu typů atributů a vrací se seznam hodnot těchto atributů
@@ -37,7 +37,7 @@ public interface Output {
      * @param codes seznam požadovaných kódů itemů
      * @return seznam items s odpovídajícími kódy
      */
-	public List<Item> getItems(final Collection<String> codes);
+	List<Item> getItems(final Collection<String> codes);
 
     /**
      * Vstupem je seznam kódu typů atributů a vrací se seznam všech hodnot atributů výstupu kromě hodnot typů uvedených ve vstupu metody;
@@ -46,7 +46,7 @@ public interface Output {
      * @param codes seznam ignorovaných kódů itemů
      * @return seznam všech items výstupu kromě hodnot typů uvedených ve vstupu metody
      */
-    public List<Item> getItemsWithout(final Collection<String> codes);
+    List<Item> getItemsWithout(final Collection<String> codes);
 
 	/**
 	 * Return list of parties from the given description items.
@@ -55,7 +55,7 @@ public interface Output {
 	 * @param codes List of description items referencing parties
 	 * @return List of referenced parties
 	 */
-	public List<Party> getParties(final Collection<String> codes);
+	List<Party> getParties(final Collection<String> codes);
 
     /**
      * Return single item
@@ -63,7 +63,7 @@ public interface Output {
      * @return Return single item if exists. Return null if item does not exists.
      * @throws Throw exception if there are multiple items with same type.
      */
-	public Item getSingleItem(final String itemTypeCode);
+	Item getSingleItem(final String itemTypeCode);
 
     /**
      * Return value of single item
@@ -71,12 +71,12 @@ public interface Output {
      * @return Return value of single item. Return null if item does not exists.
      * @throws Throw exception if there are multiple items with same type.
      */
-	public String getSingleItemValue(final String itemTypeCode);
+	String getSingleItemValue(final String itemTypeCode);
 
     /**
      * @return instance iterátoru, který prochází jednotky popisu do hloubky
      */
-    IteratorNodes getNodesDFS();
+    NodeIterator getNodesDFS();
 
     /**
      * vstupem je kód typu rejstříku a vrací se seznam rejstříkových hesel řazených podle názvu (record).
@@ -84,5 +84,5 @@ public interface Output {
      * @param code požadovaný kód recordu
      * @return seznam recordů v daného typu
      */
-    public FilteredRecords getRecordsByType(final String code);
+    FilteredRecords getRecordsByType(final String code);
 }

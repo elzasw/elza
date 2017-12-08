@@ -10,31 +10,22 @@ import org.apache.commons.lang.Validate;
 /**
  * Implementace iterátoru s cache pro načítání bloku dat.
  */
-public class IteratorNodes implements Iterator<Node> {
+public class NodeIterator implements Iterator<Node> {
 
     private final NodeLoader nodeLoader;
 
-    /**
-     * Seznam NodeId seřazených podle iterace.
-     */
+    // source node ids
     private final Iterator<NodeId> nodeIdIterator;
 
-    /**
-     * Velikost cache.
-     */
     private final int windowSize;
 
-    /**
-     * Uložiště pro načtené uzly.
-     */
+    // loaded nodes for current window
     private List<Node> nodes;
 
-    /**
-     * Pozice další iterované položky.
-     */
+    // position in current window
     private int windowIndex;
 
-    public IteratorNodes(NodeLoader nodeLoader, Iterator<NodeId> nodeIdIterator, int windowSize) {
+    public NodeIterator(NodeLoader nodeLoader, Iterator<NodeId> nodeIdIterator, int windowSize) {
         this.nodeLoader = nodeLoader;
         this.nodeIdIterator = nodeIdIterator;
         this.windowSize = windowSize;
@@ -44,13 +35,22 @@ public class IteratorNodes implements Iterator<Node> {
     /**
      * Creates node iterator with default window size of 1000.
      */
-    public IteratorNodes(NodeLoader nodeLoader, Iterator<NodeId> nodeIdIterator) {
+    public NodeIterator(NodeLoader nodeLoader, Iterator<NodeId> nodeIdIterator) {
         this(nodeLoader, nodeIdIterator, 1000);
     }
 
     @Override
     public boolean hasNext() {
-        return nodeIdIterator.hasNext() || (nodes != null && windowIndex < nodes.size());
+        if (nodeIdIterator.hasNext()) {
+            return true;
+        }
+        if (nodes != null) {
+            if (windowIndex < nodes.size()) {
+                return true;
+            }
+            nodes = null; // release node references for last window
+        }
+        return false;
     }
 
     @Override
@@ -73,9 +73,7 @@ public class IteratorNodes implements Iterator<Node> {
     }
 
     /**
-     * Seznam dalšího bloku pro načtení.
-     *
-     * @return seznam NodeId
+     * Loads node ids for new window. Position of source iterator will be changed.
      */
     private List<NodeId> getNextIds() {
         List<NodeId> nodeIds = new ArrayList<>(windowSize);

@@ -291,7 +291,17 @@ public class DmsService {
      * @return cesta
      */
     public String getFilePath(final DmsFile file) {
-        return dmsFileDirectory + File.separator + file.getFileId();
+        return getFilePath(file.getFileId());
+    }
+
+    /**
+     * Zíkání cesty k reálnému souboru
+     *
+     * @param fileId dms file id
+     * @return cesta
+     */
+    public String getFilePath(final int fileId) {
+        return dmsFileDirectory + File.separator + fileId;
     }
 
     /**

@@ -72,7 +72,7 @@ public class NodeId {
      * Creates DFS tree iterator from this node.
      */
     public Iterator<NodeId> getIteratorDFS() {
-        return new NodeIdIterator(this, true);
+        return new NodeIdIterator(this);
     }
 
     /**
@@ -87,5 +87,5 @@ public class NodeId {
             Validate.isTrue(lastChild.getPosition() < child.getPosition());
         }
         children.add(child);
-    };
+    }
 }

@@ -1,16 +1,13 @@
 package cz.tacr.elza.print.party;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import cz.tacr.elza.domain.ParRelation;
 import cz.tacr.elza.domain.ParUnitdate;
-import cz.tacr.elza.domain.convertor.UnitDateConvertor;
+import cz.tacr.elza.print.PartyUnitDate;
 
 /**
  * Relation to other items
- *
- *
  */
 public class Relation {
 
@@ -20,20 +17,25 @@ public class Relation {
 
     private final String source;
 
-    private String textFrom;
+    private final List<RelationTo> relationsTo;
 
-    private String textTo;
+    // can be proxy, initialized only when needed
+    private final ParUnitdate srcFrom;
 
-    private String dateNoteFrom;
+    // can be proxy, initialized only when needed
+    private final ParUnitdate srcTo;
 
-    private String dateNoteTo;
+    private PartyUnitDate from;
 
-    private List<RelationTo> relationsTo;
+    private PartyUnitDate to;
 
-    private Relation(ParRelation parRelation, RelationType relationType) {
+    private Relation(ParRelation parRelation, RelationType relationType, List<RelationTo> relationsTo) {
         this.relationType = relationType;
         this.note = parRelation.getNote();
         this.source = parRelation.getSource();
+        this.relationsTo = relationsTo;
+        this.srcFrom = parRelation.getFrom();
+        this.srcTo = parRelation.getTo();
     }
 
     public List<RelationTo> getRelationsTo() {
@@ -52,47 +54,26 @@ public class Relation {
         return source;
     }
 
-    public String getTextFrom() {
-        return textFrom;
+    public PartyUnitDate getValidFrom() {
+        if (from == null && srcFrom != null) {
+            from = new PartyUnitDate(srcFrom); // lazy initialization
+        }
+        return from;
     }
 
-    public String getTextTo() {
-        return textTo;
-    }
-
-    public String getDateNoteFrom() {
-        return dateNoteFrom;
-    }
-
-    public String getDateNoteTo() {
-        return dateNoteTo;
+    public PartyUnitDate getValidTo() {
+        if (to == null && srcTo != null) {
+            to = new PartyUnitDate(srcTo); // lazy initialization
+        }
+        return to;
     }
 
     /**
-     * Return new instance of Relation. From/To unit dates are required (fetched from database if not initialized).
+     * Return new instance of Relation. From/To unit dates are required (fetched from database if
+     * not initialized).
      */
     public static Relation newInstance(ParRelation parRelation, RelationType relationType, List<RelationTo> relationsTo) {
-        Relation relation = new Relation(parRelation, relationType);
-
-        // set dateFrom
-        ParUnitdate parFrom = parRelation.getFrom();
-        if (parFrom != null) {
-            relation.dateNoteFrom = parFrom.getNote();
-            relation.textFrom = UnitDateConvertor.convertToString(parFrom);
-        }
-
-        // set dateTo
-        ParUnitdate parTo = parRelation.getTo();
-        if (parTo != null) {
-            relation.dateNoteTo = parTo.getNote();
-            relation.textTo = UnitDateConvertor.convertToString(parTo);
-        }
-
-        // copy relationsTo
-        if (relationsTo != null) {
-            relation.relationsTo = new ArrayList<>(relationsTo);
-        }
-
+        Relation relation = new Relation(parRelation, relationType, relationsTo);
         return relation;
     }
 }

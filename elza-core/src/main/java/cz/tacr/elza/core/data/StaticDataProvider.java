@@ -83,6 +83,11 @@ public class StaticDataProvider {
         return relationTypes;
     }
 
+    public RulPackage getPackageById(Integer id) {
+        Validate.notNull(id);
+        return packageIdMap.get(id);
+    }
+
     public ParPartyNameFormType getPartyNameFormTypeById(Integer id) {
         Validate.notNull(id);
         return partyNameFormTypeIdMap.get(id);

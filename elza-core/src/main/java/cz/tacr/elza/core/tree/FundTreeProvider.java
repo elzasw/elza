@@ -38,9 +38,6 @@ public class FundTreeProvider {
             throw new SystemException("Fund version not found", BaseCode.ID_NOT_EXIST).set("fundVersionId", fundVersionId);
         }
 
-        TreeNodeImpl rootNode = new TreeNodeImpl(fundVersion.getRootNodeId());
-        rootNode.setPosition(1);
-
         FundTree fundTree = new FundTree(fundVersion);
         fundTree.init(levelRepository);
 
