@@ -10,6 +10,7 @@ import javax.xml.bind.Marshaller;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.Validate;
 
 import cz.tacr.elza.dataexchange.output.writer.AccessPointsOutputStream;
@@ -113,7 +114,7 @@ public class XmlAccessPointOutputStream implements AccessPointsOutputStream {
         if (ap.getParentRecordId() != null) {
             entry.setPid(ap.getParentRecordId().toString());
         }
-        if (ap.getExternalId() != null) {
+		if (StringUtils.isNotBlank(ap.getExternalId())) {
             ExternalId eid = new ExternalId();
             eid.setId(ap.getExternalId());
             eid.setEsc(ap.getExternalSystem().getCode());
