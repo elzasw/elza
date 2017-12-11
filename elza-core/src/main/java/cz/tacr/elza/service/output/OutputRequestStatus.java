@@ -2,11 +2,8 @@ package cz.tacr.elza.service.output;
 
 /**
  * Stav spuštění generátoru.
- *
- * @author Martin Šlapa
- * @since 01.12.2016
  */
-public enum StatusGenerate {
+public enum OutputRequestStatus {
     /**
      * V pořádku.
      */

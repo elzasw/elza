@@ -1,4 +1,4 @@
-package cz.tacr.elza.service.output.dev;
+package cz.tacr.elza.service.output;
 
 import java.util.List;
 
@@ -19,14 +19,14 @@ public class OutputParams {
 
     private final ArrFundVersion fundVersion;
 
-    private final List<ArrNodeOutput> rootNodes;
+    private final List<ArrNodeOutput> outputNodes;
 
     private final List<ArrOutputItem> directItems;
 
     public OutputParams(ArrOutputDefinition definition,
                         ArrChange change,
                         ArrFundVersion fundVersion,
-                        List<ArrNodeOutput> rootNodes,
+                        List<ArrNodeOutput> outputNodes,
                         List<ArrOutputItem> directItems) {
         // sanity check
         Validate.isTrue(definition.getFundId().equals(fundVersion.getFundId()));
@@ -34,7 +34,7 @@ public class OutputParams {
         this.definition = definition;
         this.change = change;
         this.fundVersion = fundVersion;
-        this.rootNodes = rootNodes;
+        this.outputNodes = outputNodes;
         this.directItems = directItems;
     }
 
@@ -71,8 +71,8 @@ public class OutputParams {
         return fundVersion;
     }
 
-    public List<ArrNodeOutput> getRootNodes() {
-        return rootNodes;
+    public List<ArrNodeOutput> getOutputNodes() {
+        return outputNodes;
     }
 
     public List<ArrOutputItem> getDirectItems() {

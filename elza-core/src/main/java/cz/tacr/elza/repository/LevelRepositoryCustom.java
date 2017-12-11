@@ -1,5 +1,6 @@
 package cz.tacr.elza.repository;
 
+import java.sql.Timestamp;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -85,13 +86,22 @@ public interface LevelRepositoryCustom {
                                          RelatedNodeDirection direction);
 
     /**
-     * Vyhledá potomky, které mají vyšší datum poslední změny, než je v ArrChange.
+     * Vyhledá potomky, které mají vyšší datum poslední změny. Specified node included.
      *
-     * @param node   uzel od kterého prohledáváme
-     * @param change změna podle které filtrujeme uzly
+     * @param nodeId     uzel od kterého prohledáváme
+     * @param lastUpdate změna podle které filtrujeme uzly
      * @return identifikátory uzlů, které byly změněny
      */
-    List<Integer> findNodeIdsSubtree(ArrNode node, ArrChange change);
+    List<Integer> findNewerNodeIdsInSubtree(int nodeId, Timestamp lastUpdate);
+
+    /**
+     * Vyhledá rodiče, které mají vyšší datum poslední změny. Specified node included.
+     *
+     * @param nodeId     uzel od kterého prohledáváme
+     * @param lastUpdate změna podle které filtrujeme uzly
+     * @return identifikátory uzlů, které byly změněny
+     */
+    List<Integer> findNewerNodeIdsInParents(int nodeId, Timestamp lastUpdate);
 
     /**
      * Vyhledání potomků v podstromu.
@@ -116,15 +126,6 @@ public interface LevelRepositoryCustom {
      * @param treeLevelConsumer action for each result
      */
     long readLevelTree(Integer nodeId, ArrChange change, boolean excludeRoot, TreeLevelConsumer treeLevelConsumer);
-
-    /**
-     * Vyhledá rodiče, které mají vyšší datum poslední změny, než je v ArrChange.
-     *
-     * @param node   uzel od kterého prohledáváme
-     * @param change změna podle které filtrujeme uzly
-     * @return identifikátory uzlů, které byly změněny
-     */
-    List<Integer> findNodeIdsParent(ArrNode node, ArrChange change);
 
     /**
      * Provede načtení všech uzlů ve stromu dané verze.

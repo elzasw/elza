@@ -60,11 +60,6 @@ public class BulkActionConfigManager {
     private ActionRepository actionRepository;
 
     /**
-     * Podporovaný formát souborů pro konfiguraci - použité pro ukládání nových a vyhledání v adresáři.
-     */
-    private String extension = ".yaml";
-
-    /**
      * Mapa konfigurací hromadných akcí.
      */
     private Map<String, BulkActionConfig> bulkActionConfigMap = new HashMap<>();
@@ -74,13 +69,6 @@ public class BulkActionConfigManager {
      */
     public String getRulesDir() {
         return rulesDir;
-    }
-
-    /**
-     * @return přípona
-     */
-    public String getExtension() {
-        return extension;
     }
 
     /**

@@ -96,7 +96,7 @@ import cz.tacr.elza.print.party.RelationType;
 import cz.tacr.elza.service.cache.CachedNode;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.cache.RestoredNode;
-import cz.tacr.elza.service.output.dev.OutputParams;
+import cz.tacr.elza.service.output.OutputParams;
 import cz.tacr.elza.utils.HibernateUtils;
 
 public class OutputModel implements Output, NodeLoader {
@@ -382,7 +382,7 @@ public class OutputModel implements Output, NodeLoader {
         this.type = outputType.getName();
 
         // init node id tree
-        NodeId rootNodeId = createNodeIdTree(params.getRootNodes(), params.getFundVersionId());
+        NodeId rootNodeId = createNodeIdTree(params.getOutputNodes(), params.getFundVersionId());
 
         // init fund
         ArrFund arrFund = definition.getFund();
@@ -412,13 +412,13 @@ public class OutputModel implements Output, NodeLoader {
      *
      * @return NodeId tree root.
      */
-    private NodeId createNodeIdTree(List<ArrNodeOutput> rootNodes, Integer fundVersionId) {
+    private NodeId createNodeIdTree(List<ArrNodeOutput> outputNodes, Integer fundVersionId) {
         FundTree fundTree = fundTreeProvider.getFundTree(fundVersionId);
 
         Map<Integer, NodeId> nodeIdMap = new HashMap<>();
 
-        for (ArrNodeOutput rootNode : rootNodes) {
-            TreeNode treeNode = fundTree.getNode(rootNode.getNodeId());
+        for (ArrNodeOutput outputNode : outputNodes) {
+            TreeNode treeNode = fundTree.getNode(outputNode.getNodeId());
 
             NodeId nodeId = createNodeIdWithParents(treeNode, nodeIdMap);
 

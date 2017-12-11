@@ -1,4 +1,4 @@
-package cz.tacr.elza.service.output.dev.generators;
+package cz.tacr.elza.service.output.generators;
 
 import javax.persistence.EntityManager;
 

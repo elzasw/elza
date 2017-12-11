@@ -49,7 +49,6 @@ import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeConformityExt;
 import cz.tacr.elza.domain.ArrOutputDefinition.OutputState;
 import cz.tacr.elza.domain.RulAction;
-import cz.tacr.elza.domain.RulActionRecommended;
 import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.UsrPermission;
@@ -58,7 +57,6 @@ import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.PackageCode;
-import cz.tacr.elza.repository.ActionRecommendedRepository;
 import cz.tacr.elza.repository.ActionRepository;
 import cz.tacr.elza.repository.BulkActionNodeRepository;
 import cz.tacr.elza.repository.BulkActionRunRepository;
@@ -128,9 +126,6 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
 
     @Autowired
     private ActionRepository actionRepository;
-
-    @Autowired
-    private ActionRecommendedRepository actionRecommendedRepository;
 
     @Autowired
     @Qualifier("transactionManager")
@@ -227,8 +222,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
 
         RulRuleSet ruleSet = version.getRuleSet();
         List<RulAction> byRulPackage = actionRepository.findByRuleSet(ruleSet);
-        String actionFileName = bulkActionCode + bulkActionConfigManager.getExtension();
-        if (byRulPackage.stream().noneMatch(i -> i.getFilename().equals(actionFileName))) {
+        if (byRulPackage.stream().noneMatch(i -> i.getCode().equals(bulkActionCode))) {
             throw new BusinessException("Hromadná akce nepatří do stejných pravidel jako pravidla verze AP.", PackageCode.OTHER_PACKAGE)
                     .set("code", bulkActionCode)
                     .set("ruleSet", ruleSet.getCode());
@@ -541,13 +535,15 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
             throw new IllegalArgumentException("Verze archivní pomůcky neexistuje!");
         }
 
-        Map<String, RulAction> byRulPackage = actionRepository.findByRuleSet(version.getRuleSet())
-                .stream()
-                .collect(Collectors.toMap(RulAction::getFilename, p -> p));
+        List<RulAction> ruleActions = actionRepository.findByRuleSet(version.getRuleSet());
+        List<BulkActionConfig> configs = new ArrayList<>(ruleActions.size());
 
-        return bulkActionConfigManager.getBulkActions().stream()
-                .filter(i -> byRulPackage.containsKey(i.getCode() + bulkActionConfigManager.getExtension()))
-                .collect(Collectors.toList());
+        for (RulAction action : ruleActions) {
+            BulkActionConfig config = bulkActionConfigManager.get(action.getCode());
+            configs.add(config);
+        }
+
+        return configs;
     }
 
     /**
@@ -608,15 +604,18 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
     }
 
     /**
-     * Vyhledání výstupů podle uzlů.
-     *
-     * @param fundVersion verze AS
-     * @param nodes       seznam uzlů
-     * @return seznam hromadných akcí
+     * Searches finished bulk actions for specified nodes.
      */
     public List<ArrBulkActionRun> findBulkActionsByNodes(final ArrFundVersion fundVersion,
                                                          final Set<ArrNode> nodes) {
         return bulkActionRepository.findBulkActionsByNodes(fundVersion, nodes, State.FINISHED);
+    }
+
+    /**
+     * Searches finished bulk actions for specified nodes.
+     */
+    public List<ArrBulkActionRun> findBulkActionsByNodes(int fundVersionId, List<Integer> nodeIds) {
+        return bulkActionRepository.findBulkActionsByNodes(fundVersionId, nodeIds, State.FINISHED);
     }
 
     /**
@@ -654,7 +653,9 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
         return actionRepository.findByFilenameIn(collect);
     }
 
-    public Set<RulAction> getRecommendedActions(final RulOutputType outputType) {
-        return actionRecommendedRepository.findByOutputType(outputType).stream().map(RulActionRecommended::getAction).collect(Collectors.toSet());
+    public List<RulAction> getRecommendedActions(RulOutputType outputType) {
+        return actionRepository.findByRecommendedActionOutputType(outputType);
     }
+
+    public static
 }

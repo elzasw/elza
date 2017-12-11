@@ -346,21 +346,39 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
     }
 
     @Override
-    public List<Integer> findNodeIdsSubtree(final ArrNode node, final ArrChange change) {
+    public List<Integer> findNewerNodeIdsInSubtree(final int nodeId, final Timestamp lastUpdate) {
         RecursiveQueryBuilder<Integer> rqBuilder = DatabaseType.getCurrent().createRecursiveQueryBuilder(Integer.class);
 
         rqBuilder.addSqlPart("WITH RECURSIVE treeData AS (")
 
         .addSqlPart("SELECT t.* FROM arr_level t WHERE t.node_id = :nodeId ")
         .addSqlPart("UNION ALL ")
-        .addSqlPart(" SELECT t.* FROM arr_level t JOIN treeData td ON td.node_id = t.node_id_parent) ")
+        .addSqlPart("SELECT t.* FROM arr_level t JOIN treeData td ON td.node_id = t.node_id_parent) ")
 
         .addSqlPart("SELECT DISTINCT n.node_id FROM treeData t JOIN arr_node n ON n.node_id = t.node_id ")
-        .addSqlPart("WHERE t.delete_change_id IS NULL AND n.last_update > :date");
+        .addSqlPart("WHERE t.delete_change_id IS NULL AND n.last_update > :lastUpdate");
 
         rqBuilder.prepareQuery(entityManager);
-        rqBuilder.setParameter("nodeId", node.getNodeId());
-        rqBuilder.setParameter("date", Timestamp.valueOf(change.getChangeDate()));
+        rqBuilder.setParameter("nodeId", nodeId);
+        rqBuilder.setParameter("lastUpdate", lastUpdate);
+        return rqBuilder.getQuery().getResultList();
+    }
+
+    @Override
+    public List<Integer> findNewerNodeIdsInParents(final int nodeId, final Timestamp lastUpdate) {
+        RecursiveQueryBuilder<Integer> rqBuilder = DatabaseType.getCurrent().createRecursiveQueryBuilder(Integer.class);
+
+        rqBuilder.addSqlPart("WITH RECURSIVE treeData AS (")
+        .addSqlPart("SELECT t.* FROM arr_level t WHERE t.node_id = :nodeId ")
+        .addSqlPart("UNION ALL ")
+        .addSqlPart("SELECT t.* FROM arr_level t JOIN treeData td ON td.node_id_parent = t.node_id) ")
+
+        .addSqlPart("SELECT DISTINCT n.node_id FROM treeData t JOIN arr_node n ON n.node_id = t.node_id ")
+        .addSqlPart("WHERE t.delete_change_id IS NULL AND n.last_update > :lastUpdate");
+
+        rqBuilder.prepareQuery(entityManager);
+        rqBuilder.setParameter("nodeId", nodeId);
+        rqBuilder.setParameter("lastUpdate", lastUpdate);
         return rqBuilder.getQuery().getResultList();
     }
 
@@ -390,23 +408,6 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
         query.setMaxResults(max);
 
         return query.getResultList();
-    }
-
-    @Override
-    public List<Integer> findNodeIdsParent(final ArrNode node, final ArrChange change) {
-        RecursiveQueryBuilder<Integer> rqBuilder = DatabaseType.getCurrent().createRecursiveQueryBuilder(Integer.class);
-
-        rqBuilder.addSqlPart("WITH RECURSIVE treeData AS (SELECT t.* FROM arr_level t WHERE t.node_id = :nodeId ")
-        .addSqlPart("UNION ALL ")
-        .addSqlPart("SELECT t.* FROM arr_level t JOIN treeData td ON td.node_id_parent = t.node_id) ")
-
-        .addSqlPart("SELECT DISTINCT n.node_id FROM treeData t JOIN arr_node n ON n.node_id = t.node_id ")
-        .addSqlPart("WHERE t.delete_change_id IS NULL AND n.last_update > :date");
-
-        rqBuilder.prepareQuery(entityManager);
-        rqBuilder.setParameter("nodeId", node.getNodeId());
-        rqBuilder.setParameter("date", Timestamp.valueOf(change.getChangeDate()));
-        return rqBuilder.getQuery().getResultList();
     }
 
     @Override

@@ -97,17 +97,11 @@ import cz.tacr.elza.repository.TemplateRepository;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventChangeOutputItem;
+import cz.tacr.elza.service.eventnotification.events.EventIdAndStringInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.output.OutputGeneratorService;
 
-/**
- * Serviska pro práci s výstupy.
- *
- * @author Martin Šlapa
- * @author Petr Pytelka
- * @since 03.05.2016
- */
 @Service
 public class OutputService {
 
@@ -184,11 +178,13 @@ public class OutputService {
 
     /**
      * Searches nodes connected to output definition. Nodes must be valid by specified lock change.
+     *
      * @param lockChange null for open version
      */
     @Transactional(propagation = Propagation.MANDATORY)
     public List<ArrNodeOutput> getOutputNodes(ArrOutputDefinition outputDefinition, ArrChange lockChange) {
         Validate.notNull(outputDefinition);
+
         if (lockChange == null) {
             return nodeOutputRepository.findByOutputDefinitionAndDeleteChangeIsNull(outputDefinition);
         }
@@ -196,16 +192,30 @@ public class OutputService {
     }
 
     /**
-     * Searches direct output items and fetches their data. Items must be valid by specified lock change.
+     * Searches direct output items and fetches their data. Items must be valid by specified lock
+     * change.
+     *
      * @param lockChange null for open version
      */
     @Transactional(propagation = Propagation.MANDATORY)
     public List<ArrOutputItem> getDirectOutputItems(ArrOutputDefinition outputDefinition, ArrChange lockChange) {
+        Validate.notNull(outputDefinition);
+
         if (lockChange == null) {
             return outputItemRepository.findByOutputAndDeleteChangeIsNull(outputDefinition);
         }
         return outputItemRepository.findByOutputAndChange(outputDefinition, lockChange);
     }
+
+    @Transactional(propagation = Propagation.MANDATORY)
+    public void publishOutputStateChanged(ArrOutputDefinition outputDefinition, int fundVersionId) {
+        String outputState = outputDefinition.getState().name();
+        EventIdAndStringInVersion stateChangedEvent = EventFactory.createStringAndIdInVersionEvent(EventType.OUTPUT_STATE_CHANGE,
+                fundVersionId, outputDefinition.getOutputDefinitionId(), outputState);
+        eventNotificationService.publishEvent(stateChangedEvent);
+    }
+
+    /* NEED REFACTOR */
 
     /**
      * Smazat pojmenovaný výstup.
@@ -1249,16 +1259,6 @@ public class OutputService {
         List<ArrOutputItem> descItems = outputItemRepository.findOpenOutputItemsBetweenPositions(outputItem.getItemType(),
                 outputItem.getOutputDefinition(), positionFrom, positionTo);
         return descItems;
-    }
-
-    /**
-     * Vyhledání definice podle identifikátoru výstupu.
-     *
-     * @param outputDefinitionId identifikátor výstupu
-     * @return výstup
-     */
-    public ArrOutputDefinition findOutputDefinition(final Integer outputDefinitionId) {
-        return outputDefinitionRepository.findOne(outputDefinitionId);
     }
 
     /**

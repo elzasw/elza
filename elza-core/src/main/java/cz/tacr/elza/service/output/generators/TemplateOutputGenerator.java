@@ -1,4 +1,4 @@
-package cz.tacr.elza.service.output.dev.generators;
+package cz.tacr.elza.service.output.generators;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -20,7 +20,7 @@ import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.print.OutputModel;
 import cz.tacr.elza.service.DmsService;
 import cz.tacr.elza.service.cache.NodeCacheService;
-import cz.tacr.elza.service.output.dev.OutputParams;
+import cz.tacr.elza.service.output.OutputParams;
 
 public abstract class TemplateOutputGenerator extends DmsOutputGenerator {
 

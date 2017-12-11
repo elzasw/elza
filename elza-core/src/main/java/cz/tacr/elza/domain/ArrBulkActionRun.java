@@ -1,7 +1,6 @@
 package cz.tacr.elza.domain;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -92,10 +91,6 @@ public class ArrBulkActionRun {
     @Type(type = "org.hibernate.type.TextType")
     @Column
     private String result;
-
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrOutputDefinition.class)
-    @JoinColumn(name = "outputDefinitionId")
-    private ArrOutputDefinition outputDefinition;
 
     /**
      * Vrací identifikátor záznamu.
@@ -331,20 +326,6 @@ public class ArrBulkActionRun {
         } catch (JsonProcessingException e) {
             throw new IllegalArgumentException("Problém při parsování JSON", e);
         }
-    }
-
-    /**
-     * @return vazba na výstup
-     */
-    public ArrOutputDefinition getOutputDefinition() {
-        return outputDefinition;
-    }
-
-    /**
-     * @param outputDefinition vazba na výstup
-     */
-    public void setOutputDefinition(final ArrOutputDefinition outputDefinition) {
-        this.outputDefinition = outputDefinition;
     }
 
     /**

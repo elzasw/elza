@@ -8,6 +8,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -21,6 +22,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class RulAction {
+
+    public static final String FILE_EXTENSION = ".yaml";
 
     @Id
     @GeneratedValue
@@ -91,5 +94,14 @@ public class RulAction {
      */
     public void setRuleSet(final RulRuleSet ruleSet) {
         this.ruleSet = ruleSet;
+    }
+
+    /**
+     * @return Code from filename (without extension).
+     */
+    @Transient
+    public String getCode() {
+        int len = filename.length() - FILE_EXTENSION.length();
+        return filename.substring(0, len);
     }
 }

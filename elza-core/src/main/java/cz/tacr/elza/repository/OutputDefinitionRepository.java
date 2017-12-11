@@ -40,9 +40,9 @@ public interface OutputDefinitionRepository extends JpaRepository<ArrOutputDefin
 
     List<ArrOutputDefinition> findByFund(ArrFund fund);
 
-    @Query("SELECT od FROM arr_output_definition od JOIN FETCH od.template t JOIN FETCH od.outputType ot JOIN FETCH od.fund f JOIN FETCH "
+    @Query("SELECT od FROM arr_output_definition od JOIN FETCH od.outputType ot JOIN FETCH od.template t JOIN FETCH od.fund f JOIN FETCH "
             + "f.institution i JOIN FETCH i.institutionType it WHERE od.outputDefinitionId=?1")
-    ArrOutputDefinition findOneFetchTypeAndFundAndInstitution(Integer outputDefinitionId);
+    ArrOutputDefinition findOneAndFetchForGenerator(int outputDefinitionId);
 
     @Modifying
     @Query("UPDATE arr_output_definition o SET o.state = ?2, o.error = ?3 WHERE o.state IN ?1")
@@ -56,5 +56,4 @@ public interface OutputDefinitionRepository extends JpaRepository<ArrOutputDefin
 
     @Query("SELECT COUNT(no) > 0 FROM arr_output_definition no WHERE no.name LIKE :name")
     boolean existsByName(@Param("name") String name);
-
 }

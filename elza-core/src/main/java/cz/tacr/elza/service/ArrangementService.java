@@ -1,5 +1,6 @@
 package cz.tacr.elza.service;
 
+import java.sql.Timestamp;
 import java.text.Normalizer;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -1578,45 +1579,31 @@ public class ArrangementService {
     }
 
     /**
-     * Detekuje, zdali nad předanými uzly byly provedené změny po předaných změnách.
+     * Test if specified change is last change for nodes. Parents and subtrees can be included.
      *
-     * @param nodes           seznam nodů od kterých prohledáváme
-     * @param changes         seznam změn vůči kterým porovnáváme
+     * @param change          tested change
+     * @param nodeIds         node id od kterého prohledáváme
      * @param includeParents  zahrnout rodiče k root?
      * @param includeChildren zahrnout podstrom?
-     * @return mapa, zdali bylo něco upraveno podle změn
      */
-    public Map<ArrChange, Boolean> detectChangeNodes(final Set<ArrNode> nodes,
-                                                     final Set<ArrChange> changes,
-                                                     final boolean includeParents,
-                                                     final boolean includeChildren) {
-
-        Map<ArrChange, Boolean> result = new HashMap<>();
-
-        for (ArrChange change : changes) {
-            for (ArrNode node : nodes) {
-
-                if (includeChildren) {
-                    List<Integer> nodeIdsSubtree = levelRepository.findNodeIdsSubtree(node, change);
-                    if (nodeIdsSubtree.size() > 0) {
-                        result.put(change, true);
-                        break;
-                    }
-                }
-
-                if (includeParents) {
-                    List<Integer> nodeIdsParent = levelRepository.findNodeIdsParent(node, change);
-                    if (nodeIdsParent.size() > 0) {
-                        result.put(change, true);
-                        break;
-                    }
-                }
-
-                result.put(change, false);
+    public boolean isLastChange(final ArrChange change,
+                                final int nodeId,
+                                final boolean includeParents,
+                                final boolean includeChildren) {
+        Timestamp lastChange = Timestamp.valueOf(change.getChangeDate());
+        if (includeChildren) {
+            List<Integer> newerNodeIds = levelRepository.findNewerNodeIdsInSubtree(nodeId, lastChange);
+            if (newerNodeIds.size() > 0) {
+                return false;
             }
         }
-
-        return result;
+        if (includeParents) {
+            List<Integer> newerNodeIds = levelRepository.findNewerNodeIdsInParents(nodeId, lastChange);
+            if (newerNodeIds.size() > 0) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
