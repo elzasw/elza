@@ -1,6 +1,7 @@
 package cz.tacr.elza.repository;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -63,6 +64,12 @@ public class OutputDefinitionRepositoryImpl implements OutputDefinitionRepositor
             query.setParameter("states", Arrays.asList(states).stream().map(OutputState::name).collect(Collectors.toList()));
         }
 
-        return outputDefinitionRepository.findAll(query.getResultList());
+		@SuppressWarnings("unchecked")
+		List<Integer> outputDefIDs = query.getResultList();
+		if (outputDefIDs.size() == 0) {
+			return Collections.emptyList();
+		}
+
+		return outputDefinitionRepository.findAll(outputDefIDs);
     }
 }
