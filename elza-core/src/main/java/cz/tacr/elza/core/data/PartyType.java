@@ -4,13 +4,27 @@ import java.util.List;
 
 import org.apache.commons.lang3.Validate;
 
+import cz.tacr.elza.domain.ParDynasty;
+import cz.tacr.elza.domain.ParEvent;
+import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.ParPartyGroup;
 import cz.tacr.elza.domain.ParPartyType;
+import cz.tacr.elza.domain.ParPerson;
 import cz.tacr.elza.repository.PartyTypeRepository;
 
 public enum PartyType {
-    PERSON, DYNASTY, GROUP_PARTY, EVENT;
+    PERSON(ParPerson.class),
+    DYNASTY(ParDynasty.class),
+    GROUP_PARTY(ParPartyGroup.class),
+    EVENT(ParEvent.class);
+
+    private final Class<? extends ParParty> domainClass;
 
     private ParPartyType entity;
+
+    private PartyType(Class<? extends ParParty> domainClass) {
+        this.domainClass = domainClass;
+    }
 
     /**
      * @return Equal to <code>name()</code>.
@@ -25,6 +39,10 @@ public enum PartyType {
 
     public String getName() {
         return getEntity().getName();
+    }
+
+    public Class<? extends ParParty> getDomainClass() {
+        return domainClass;
     }
 
     public ParPartyType getEntity() {
