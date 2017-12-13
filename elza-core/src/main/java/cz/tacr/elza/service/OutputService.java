@@ -17,13 +17,11 @@ import javax.annotation.Nullable;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
@@ -97,7 +95,6 @@ import cz.tacr.elza.repository.TemplateRepository;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventChangeOutputItem;
-import cz.tacr.elza.service.eventnotification.events.EventIdAndStringInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.output.OutputGeneratorService;
@@ -175,47 +172,6 @@ public class OutputService {
     private ItemSpecRepository itemSpecRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(OutputService.class);
-
-    /**
-     * Searches nodes connected to output definition. Nodes must be valid by specified lock change.
-     *
-     * @param lockChange null for open version
-     */
-    @Transactional(propagation = Propagation.MANDATORY)
-    public List<ArrNodeOutput> getOutputNodes(ArrOutputDefinition outputDefinition, ArrChange lockChange) {
-        Validate.notNull(outputDefinition);
-
-        if (lockChange == null) {
-            return nodeOutputRepository.findByOutputDefinitionAndDeleteChangeIsNull(outputDefinition);
-        }
-        return nodeOutputRepository.findByOutputDefinitionAndChange(outputDefinition, lockChange);
-    }
-
-    /**
-     * Searches direct output items and fetches their data. Items must be valid by specified lock
-     * change.
-     *
-     * @param lockChange null for open version
-     */
-    @Transactional(propagation = Propagation.MANDATORY)
-    public List<ArrOutputItem> getDirectOutputItems(ArrOutputDefinition outputDefinition, ArrChange lockChange) {
-        Validate.notNull(outputDefinition);
-
-        if (lockChange == null) {
-            return outputItemRepository.findByOutputAndDeleteChangeIsNull(outputDefinition);
-        }
-        return outputItemRepository.findByOutputAndChange(outputDefinition, lockChange);
-    }
-
-    @Transactional(propagation = Propagation.MANDATORY)
-    public void publishOutputStateChanged(ArrOutputDefinition outputDefinition, int fundVersionId) {
-        String outputState = outputDefinition.getState().name();
-        EventIdAndStringInVersion stateChangedEvent = EventFactory.createStringAndIdInVersionEvent(EventType.OUTPUT_STATE_CHANGE,
-                fundVersionId, outputDefinition.getOutputDefinitionId(), outputState);
-        eventNotificationService.publishEvent(stateChangedEvent);
-    }
-
-    /* NEED REFACTOR */
 
     /**
      * Smazat pojmenovaný výstup.
@@ -1889,16 +1845,16 @@ public class OutputService {
         List<RulItemTypeExt> itemTypesResult = new ArrayList<>(itemTypes);
         Iterator<RulItemTypeExt> itemTypeIterator = itemTypesResult.iterator();
 
-        final Set<ArrNode> nodes = outputDefinition.getOutputNodes().stream()
+        final Set<Integer> nodeIds = outputDefinition.getOutputNodes().stream()
                 .filter(nodeOutput -> nodeOutput.getDeleteChange() == null)
-                .map(ArrNodeOutput::getNode)
+                .map(ArrNodeOutput::getNodeId)
                 .collect(Collectors.toSet());
 
         List<RulItemType> rulItemTypes = new ArrayList<>();
 
-        if (nodes.size() != 0) {
+        if (nodeIds.size() != 0) {
             List<ArrBulkActionRun> bulkActionsByNodes;
-            bulkActionsByNodes = bulkActionService.findBulkActionsByNodes(version, nodes);
+            bulkActionsByNodes = bulkActionService.findBulkActionsByNodes(version, nodeIds);
 
             // získám kódy hromadných akcí
             List<String> actionCodes = new ArrayList<>(bulkActionsByNodes.size());

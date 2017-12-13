@@ -1,7 +1,9 @@
 package cz.tacr.elza.service.output;
 
+import java.nio.file.Path;
 import java.util.List;
-import java.util.Objects;
+
+import javax.persistence.EntityManager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,7 +11,6 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrChange.Type;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNodeOutput;
 import cz.tacr.elza.domain.ArrOutputDefinition;
@@ -18,16 +19,13 @@ import cz.tacr.elza.domain.ArrOutputItem;
 import cz.tacr.elza.domain.RulTemplate.Engine;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.repository.FundVersionRepository;
-import cz.tacr.elza.repository.OutputDefinitionRepository;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.IEventNotificationService;
-import cz.tacr.elza.service.OutputService;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventIdAndStringInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
-import cz.tacr.elza.service.output.generators.OutputGenerator;
-import cz.tacr.elza.service.output.generators.OutputGeneratorFactory;
+import cz.tacr.elza.service.output.generator.OutputGenerator;
+import cz.tacr.elza.service.output.generator.OutputGeneratorFactory;
 
 public class OutputGeneratorWorker implements Runnable {
 
@@ -39,9 +37,11 @@ public class OutputGeneratorWorker implements Runnable {
 
     private final int fundVersionId;
 
+    private final Integer userId;
+
     /* managed components */
 
-    private final FundVersionRepository fundVersionRepository;
+    private final EntityManager em;
 
     private final OutputGeneratorFactory outputGeneratorFactory;
 
@@ -49,29 +49,27 @@ public class OutputGeneratorWorker implements Runnable {
 
     private final ArrangementService arrangementService;
 
-    private final OutputService outputService;
-
-    private final OutputDefinitionRepository outputDefinitionRepository;
+    private final OutputGeneratorService outputGeneratorService;
 
     private final PlatformTransactionManager transactionManager;
 
     public OutputGeneratorWorker(int outputDefinitionId,
                                  int fundVersionId,
-                                 FundVersionRepository fundVersionRepository,
+                                 Integer userId,
+                                 EntityManager em,
                                  OutputGeneratorFactory outputGeneratorFactory,
                                  IEventNotificationService eventNotificationService,
                                  ArrangementService arrangementService,
-                                 OutputService outputService,
-                                 OutputDefinitionRepository outputDefinitionRepository,
+                                 OutputGeneratorService outputGeneratorService,
                                  PlatformTransactionManager transactionManager) {
         this.outputDefinitionId = outputDefinitionId;
         this.fundVersionId = fundVersionId;
-        this.fundVersionRepository = fundVersionRepository;
+        this.userId = userId;
+        this.em = em;
         this.outputGeneratorFactory = outputGeneratorFactory;
         this.eventNotificationService = eventNotificationService;
         this.arrangementService = arrangementService;
-        this.outputService = outputService;
-        this.outputDefinitionRepository = outputDefinitionRepository;
+        this.outputGeneratorService = outputGeneratorService;
         this.transactionManager = transactionManager;
     }
 
@@ -98,7 +96,7 @@ public class OutputGeneratorWorker implements Runnable {
      * Process output. Must be called in transaction.
      */
     private void generateOutput() {
-        ArrOutputDefinition definition = getOutputDefinitionForGenerator();
+        ArrOutputDefinition definition = outputGeneratorService.getOutputDefinitionForGenerator(outputDefinitionId);
 
         Engine engine = definition.getTemplate().getEngine();
         OutputGenerator generator = outputGeneratorFactory.createOutputGenerator(engine);
@@ -110,20 +108,7 @@ public class OutputGeneratorWorker implements Runnable {
         OutputState state = resolveEndState(params);
         definition.setState(state); // saved by commit
 
-        outputService.publishOutputStateChanged(definition, fundVersionId);
-    }
-
-    private ArrOutputDefinition getOutputDefinitionForGenerator() {
-        ArrOutputDefinition definition = outputDefinitionRepository.findOneAndFetchForGenerator(outputDefinitionId);
-        if (definition == null) {
-            throw new SystemException("Output definition not found", BaseCode.ID_NOT_EXIST).set("outputDefinitionId",
-                    outputDefinitionId);
-        }
-        if (definition.getState() != OutputState.GENERATING) {
-            throw new SystemException("Processing output must be in GENERATING state", BaseCode.INVALID_STATE)
-                    .set("outputDefinitionId", outputDefinitionId).set("outputState", definition.getState());
-        }
-        return definition;
+        outputGeneratorService.publishOutputStateChanged(definition, fundVersionId);
     }
 
     private OutputState resolveEndState(OutputParams params) {
@@ -137,26 +122,28 @@ public class OutputGeneratorWorker implements Runnable {
     }
 
     private OutputParams createOutputParams(ArrOutputDefinition definition) {
-        ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
+        ArrFundVersion fundVersion = em.find(ArrFundVersion.class, fundVersionId);
         if (fundVersion == null) {
             throw new SystemException("Fund version for output not found", BaseCode.ID_NOT_EXIST).set("fundVersionId",
                     fundVersionId);
         }
 
-        ArrChange change = arrangementService.createChange(Type.GENERATE_OUTPUT);
+        ArrChange change = outputGeneratorService.createChange(userId);
 
-        List<ArrNodeOutput> outputNodes = outputService.getOutputNodes(definition, fundVersion.getLockChange());
+        List<ArrNodeOutput> outputNodes = outputGeneratorService.getOutputNodes(definition, fundVersion.getLockChange());
 
-        List<ArrOutputItem> directItems = outputService.getDirectOutputItems(definition, fundVersion.getLockChange());
+        List<ArrOutputItem> directItems = outputGeneratorService.getDirectOutputItems(definition, fundVersion.getLockChange());
 
-        return new OutputParams(definition, change, fundVersion, outputNodes, directItems);
+        Path templateDir = outputGeneratorService.getTemplateDirectory(definition.getTemplate());
+
+        return new OutputParams(definition, change, fundVersion, outputNodes, directItems, templateDir);
     }
 
     /**
      * Handle exception raised during output processing. Must be called in transaction.
      */
     private void handleException(Throwable t) {
-        ArrOutputDefinition definition = outputDefinitionRepository.findOne(outputDefinitionId);
+        ArrOutputDefinition definition = em.find(ArrOutputDefinition.class, outputDefinitionId);
         if (definition != null) {
             definition.setError(getCauseMessages(t, 1000));
             definition.setState(OutputState.OPEN); // saved by commit
@@ -179,25 +166,5 @@ public class OutputGeneratorWorker implements Runnable {
             sb.append("...");
         }
         return sb.toString();
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(outputDefinitionId);
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (obj == this) {
-            return true;
-        }
-        if (obj instanceof OutputGeneratorWorker) {
-            OutputGeneratorWorker o = (OutputGeneratorWorker) obj;
-            return outputDefinitionId == o.outputDefinitionId;
-        }
-        return false;
     }
 }

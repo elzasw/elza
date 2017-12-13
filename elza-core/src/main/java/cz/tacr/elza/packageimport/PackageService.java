@@ -2916,13 +2916,13 @@ public class PackageService {
             List<Template> templateList = new ArrayList<>(rulTemplatesList.size());
             outputTypes.setTemplates(templateList);
             String ruleSetCode = entry.getKey().getCode();
-            for (RulTemplate rulOutputType : rulTemplatesList) {
+            for (RulTemplate rulTemplate : rulTemplatesList) {
                 Template outputType = new Template();
-                convertTemplate(rulOutputType, outputType);
+                convertTemplate(rulTemplate, outputType);
                 templateList.add(outputType);
-                File dir = new File(outputGeneratorService.getTemplatesDir(rulPackage.getCode()) + File.separator + rulOutputType.getDirectory() + File.separator);
+                File dir = new File(outputGeneratorService.getTemplatesDir(rulPackage.getCode()) + File.separator + rulTemplate.getDirectory() + File.separator);
                 for (File dirFile : dir.listFiles()) {
-                    addToZipFile(ZIP_DIR_RULE_SET + "/" + ruleSetCode + "/" + ZIP_DIR_TEMPLATES + "/" + rulOutputType.getDirectory() + "/" + dirFile.getName(), dirFile, zos);
+                    addToZipFile(ZIP_DIR_RULE_SET + "/" + ruleSetCode + "/" + ZIP_DIR_TEMPLATES + "/" + rulTemplate.getDirectory() + "/" + dirFile.getName(), dirFile, zos);
                 }
             }
 

@@ -1,4 +1,4 @@
-package cz.tacr.elza.service.output.generators;
+package cz.tacr.elza.service.output.generator;
 
 import java.io.IOException;
 import java.io.InputStream;

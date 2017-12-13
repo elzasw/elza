@@ -242,7 +242,7 @@ public class ArrChange {
         REPLACE_PARTY,
 
         /**
-         * Generating output
+         * Generate output
          */
         GENERATE_OUTPUT
     }

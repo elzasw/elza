@@ -10,6 +10,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+import org.apache.commons.lang3.Validate;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 
@@ -103,5 +105,9 @@ public class RulAction {
     public String getCode() {
         int len = filename.length() - FILE_EXTENSION.length();
         return filename.substring(0, len);
+    }
+
+    public static String getFileNameFromCode(String code) {
+        return Validate.notEmpty(code) + FILE_EXTENSION;
     }
 }

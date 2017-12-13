@@ -2,18 +2,18 @@ package cz.tacr.elza.bulkaction;
 
 
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
+import javax.transaction.Transactional.TxType;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -52,7 +52,6 @@ import cz.tacr.elza.domain.RulAction;
 import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.UsrPermission;
-import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
@@ -399,25 +398,6 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
     /// Operace s repositories, getry atd..
 
     /**
-     * Vytvoření nové změny.
-     *
-     * @param userId the user id
-     * @return vytvořená změna
-     */
-    @Transactional(value = javax.transaction.Transactional.TxType.REQUIRES_NEW)
-    public ArrChange createChange(final Integer userId) {
-        ArrChange change = new ArrChange();
-        change.setChangeDate(LocalDateTime.now());
-        if (userId != null) {
-            UsrUser user = new UsrUser();
-            user.setUserId(userId);
-            change.setUser(user);
-        }
-        change.setType(ArrChange.Type.BULK_ACTION);
-        return changeRepository.save(change);
-    }
-
-    /**
      * Event publish bulk action.
      *
      * @param bulkActionRun the bulk action run
@@ -464,21 +444,21 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
      *
      * @param fundVersionId id verze archivní pomůcky
      */
-    public void checkOutdatedActions(final Integer fundVersionId) {
+    @Transactional(TxType.MANDATORY)
+    public void checkOutdatedActions(int fundVersionId) {
         List<ArrBulkActionRun> bulkActions = bulkActionRepository.findByFundVersionIdAndState(fundVersionId, State.FINISHED);
 
         for (ArrBulkActionRun bulkAction : bulkActions) {
-            if (bulkAction.getState() == State.FINISHED) {
-                Set<ArrNode> arrNodes = bulkAction.getArrBulkActionNodes().stream().map(ArrBulkActionNode::getNode).collect(Collectors.toSet());
-                HashSet<ArrChange> arrChanges = new HashSet<>(1);
-                ArrChange changeBulkAction = bulkAction.getChange();
-                arrChanges.add(changeBulkAction);
+            ArrChange baChange = bulkAction.getChange();
 
-                Map<ArrChange, Boolean> arrChangeBooleanMap = arrangementService.detectChangeNodes(arrNodes, arrChanges, true, true);
-                if (arrChangeBooleanMap.containsKey(changeBulkAction) && arrChangeBooleanMap.get(changeBulkAction)) {
+            for (ArrBulkActionNode baNode : bulkAction.getArrBulkActionNodes()) {
+                int nodeId = baNode.getNode().getNodeId(); // id without fetch -> access type property
+
+                if (!arrangementService.isLastChange(baChange, nodeId, true, true)) {
                     bulkAction.setState(State.OUTDATED);
                     bulkActionRepository.save(bulkAction);
                     eventPublishBulkAction(bulkAction);
+                    break; // continue to next action
                 }
             }
         }
@@ -604,29 +584,26 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
     }
 
     /**
-     * Searches finished bulk actions for specified nodes.
+     * Searches latest finished bulk actions for specified node ids.
      */
-    public List<ArrBulkActionRun> findBulkActionsByNodes(final ArrFundVersion fundVersion,
-                                                         final Set<ArrNode> nodes) {
-        return bulkActionRepository.findBulkActionsByNodes(fundVersion, nodes, State.FINISHED);
+    public List<ArrBulkActionRun> findFinishedBulkActionsByNodes(ArrFundVersion fundVersion, Collection<ArrNode> nodes) {
+        List<Integer> nodeIds = new ArrayList<>(nodes.size());
+        nodes.forEach(n -> nodeIds.add(n.getNodeId()));
+        return findFinishedBulkActionsByNodeIds(fundVersion, nodeIds);
     }
 
     /**
-     * Searches finished bulk actions for specified nodes.
+     * Searches latest finished bulk actions for specified node ids.
      */
-    public List<ArrBulkActionRun> findBulkActionsByNodes(int fundVersionId, List<Integer> nodeIds) {
-        return bulkActionRepository.findBulkActionsByNodes(fundVersionId, nodeIds, State.FINISHED);
+    public List<ArrBulkActionRun> findFinishedBulkActionsByNodeIds(ArrFundVersion fundVersion, Collection<Integer> nodeIds) {
+        return bulkActionRepository.findBulkActionsByNodes(fundVersion.getFundVersionId(), nodeIds, State.FINISHED);
     }
 
     /**
-     * Vyhledání výstupů podle uzlů.
-     *
-     * @param fundVersion verze AS
-     * @param nodes       seznam uzlů
-     * @return seznam hromadných akcí
+     * Searches latest executions of bulk actions for specified node ids.
      */
-    public List<ArrBulkActionRun> findBulkActionsByNodes(final ArrFundVersion fundVersion, final Set<ArrNode> nodes, final State... states) {
-        return bulkActionRepository.findBulkActionsByNodes(fundVersion, nodes, states);
+    public List<ArrBulkActionRun> findBulkActionsByNodeIds(ArrFundVersion fundVersion, Collection<Integer> nodeIds) {
+        return bulkActionRepository.findBulkActionsByNodes(fundVersion.getFundVersionId(), nodeIds, null);
     }
 
     /**
@@ -636,7 +613,8 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
      * @return hromadná akce
      */
     public RulAction getBulkActionByCode(final String code) {
-        return actionRepository.findOneByFilename(code + ".yaml");
+        String fileName = RulAction.getFileNameFromCode(code);
+        return actionRepository.findOneByFilename(fileName);
     }
 
     /**
@@ -649,13 +627,11 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
         if (CollectionUtils.isEmpty(codes)) {
             return Collections.emptyList();
         }
-        List<String> collect = codes.stream().map(code -> code + ".yaml").collect(Collectors.toList());
-        return actionRepository.findByFilenameIn(collect);
+        List<String> fileNames = codes.stream().map(RulAction::getFileNameFromCode).collect(Collectors.toList());
+        return actionRepository.findByFilenameIn(fileNames);
     }
 
     public List<RulAction> getRecommendedActions(RulOutputType outputType) {
         return actionRepository.findByRecommendedActionOutputType(outputType);
     }
-
-    public static
 }

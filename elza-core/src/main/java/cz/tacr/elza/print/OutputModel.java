@@ -14,6 +14,8 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import cz.tacr.elza.core.data.PartyType;
@@ -100,6 +102,8 @@ import cz.tacr.elza.service.output.OutputParams;
 import cz.tacr.elza.utils.HibernateUtils;
 
 public class OutputModel implements Output, NodeLoader {
+
+    private static final Logger logger = LoggerFactory.getLogger(OutputModel.class);
 
     private StaticDataProvider staticData;
 
@@ -368,6 +372,8 @@ public class OutputModel implements Output, NodeLoader {
         Validate.isTrue(TransactionSynchronizationManager.isActualTransactionActive());
         Validate.isTrue(!isInitialized());
 
+        logger.info("Output model initialization started, outputDefinitionId:{}", params.getDefinitionId());
+
         // prepare internal fields
         this.staticData = staticDataService.getData();
         this.ruleSystem = staticData.getRuleSystems().getByRuleSetId(fundVersion.getRuleSetId());
@@ -404,6 +410,8 @@ public class OutputModel implements Output, NodeLoader {
                 .filter(i -> !i.isUndefined())
                 .map(this::createItem)
                 .collect(Collectors.toList());
+
+        logger.info("Output model initialization ended, outputDefinitionId:{}", params.getDefinitionId());
     }
 
     /**

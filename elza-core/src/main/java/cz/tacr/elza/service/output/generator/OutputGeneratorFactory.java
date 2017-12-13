@@ -1,9 +1,8 @@
-package cz.tacr.elza.service.output.generators;
+package cz.tacr.elza.service.output.generator;
 
 import javax.persistence.EntityManager;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import cz.tacr.elza.core.data.StaticDataService;
@@ -28,23 +27,19 @@ public class OutputGeneratorFactory {
 
     private final DEExportService exportService;
 
-    private final String rulesDirectory;
-
     @Autowired
     public OutputGeneratorFactory(StaticDataService staticDataService,
                                   FundTreeProvider fundTreeProvider,
                                   NodeCacheService nodeCacheService,
                                   EntityManager em,
                                   DmsService dmsService,
-                                  DEExportService exportService,
-                                  @Value("${elza.rulesDir}") String rulesDirectory) {
+                                  DEExportService exportService) {
         this.staticDataService = staticDataService;
         this.fundTreeProvider = fundTreeProvider;
         this.nodeCacheService = nodeCacheService;
         this.em = em;
         this.dmsService = dmsService;
         this.exportService = exportService;
-        this.rulesDirectory = rulesDirectory;
     }
 
     public OutputGenerator createOutputGenerator(Engine engine) {
@@ -61,11 +56,11 @@ public class OutputGeneratorFactory {
     }
 
     public FreemarkerOutputGenerator createFreemarkerOutputGenerator() {
-        return new FreemarkerOutputGenerator(staticDataService, fundTreeProvider, nodeCacheService, em, dmsService, rulesDirectory);
+        return new FreemarkerOutputGenerator(staticDataService, fundTreeProvider, nodeCacheService, em, dmsService);
     }
 
     public JasperOutputGenerator createJasperOutputGenerator() {
-        return new JasperOutputGenerator(staticDataService, fundTreeProvider, nodeCacheService, em, dmsService, rulesDirectory);
+        return new JasperOutputGenerator(staticDataService, fundTreeProvider, nodeCacheService, em, dmsService);
     }
 
     public DEXmlOutputGenerator createDEXmlOutputGenerator() {

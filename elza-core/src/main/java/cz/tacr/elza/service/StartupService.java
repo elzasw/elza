@@ -1,6 +1,5 @@
 package cz.tacr.elza.service;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -23,12 +22,11 @@ import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrOutputDefinition.OutputState;
 import cz.tacr.elza.repository.BulkActionRunRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.repository.OutputDefinitionRepository;
 import cz.tacr.elza.service.cache.NodeCacheService;
+import cz.tacr.elza.service.output.OutputGeneratorService;
 
 /**
  * Serviska pro úlohy, které je nutné spustit těsně po spuštění.
@@ -46,7 +44,7 @@ public class StartupService implements SmartLifecycle {
 
     private final BulkActionRunRepository bulkActionRunRepository;
 
-    private final OutputDefinitionRepository outputDefinitionRepository;
+    private final OutputGeneratorService outputGeneratorService;
 
     private final RequestQueueService requestQueueService;
 
@@ -63,7 +61,7 @@ public class StartupService implements SmartLifecycle {
                           FundVersionRepository fundVersionRepository,
                           UpdateConformityInfoService updateConformityInfoService,
                           BulkActionRunRepository bulkActionRunRepository,
-                          OutputDefinitionRepository outputDefinitionRepository,
+                          OutputGeneratorService outputGeneratorService,
                           RequestQueueService requestQueueService,
                           NodeCacheService nodeCacheService,
                           StaticDataService staticDataService,
@@ -72,7 +70,7 @@ public class StartupService implements SmartLifecycle {
         this.fundVersionRepository = fundVersionRepository;
         this.updateConformityInfoService = updateConformityInfoService;
         this.bulkActionRunRepository = bulkActionRunRepository;
-        this.outputDefinitionRepository = outputDefinitionRepository;
+        this.outputGeneratorService = outputGeneratorService;
         this.requestQueueService = requestQueueService;
         this.nodeCacheService = nodeCacheService;
         this.staticDataService = staticDataService;
@@ -119,8 +117,8 @@ public class StartupService implements SmartLifecycle {
         }
         DatabaseType.init(em);
         staticDataService.init();
+        outputGeneratorService.init();
         clearBulkActions();
-        clearOutputGeneration();
         syncNodeCacheService();
         startNodeValidation();
         runQueuedRequests();
@@ -144,17 +142,6 @@ public class StartupService implements SmartLifecycle {
         int affected = bulkActionRunRepository.updateFromStateToState(ArrBulkActionRun.State.RUNNING, ArrBulkActionRun.State.ERROR);
         if (affected > 0) {
             LOG.warn("Detected unfinished actions, reseting to error state, count:" + affected);
-        }
-    }
-
-    /**
-     * Vyčistí hromadné akce - ty které jsou po startu ve stavu generování do chyba.
-     */
-    private void clearOutputGeneration() {
-        int affected = outputDefinitionRepository.setStateFromStateWithError(Arrays.asList(OutputState.GENERATING, OutputState.COMPUTING),
-                OutputState.OPEN, "Server se restartoval v průběhu zpracování");
-        if (affected > 0) {
-            LOG.warn("Bylo změněn stav " + affected + " outputů na stav Otevřený z důvodu restartování serveru při jejich zpracování.");
         }
     }
 

@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory;
 
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrBulkActionRun.State;
-import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.exception.SystemException;
 
 /**
@@ -82,16 +81,6 @@ public class BulkActionWorker implements Callable<BulkActionWorker> {
         if (state.equals(State.FINISHED)) {
             bulkActionService.finished(bulkActionRun);
         }
-    }
-
-
-    /**
-     * Vytvoření nové změny.
-     *
-     * @return vytvořená změna
-     */
-    protected ArrChange createChange(final Integer userId) {
-        return bulkActionService.createChange(userId);
     }
 
     /**

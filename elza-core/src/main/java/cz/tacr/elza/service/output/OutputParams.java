@@ -1,5 +1,6 @@
 package cz.tacr.elza.service.output;
 
+import java.nio.file.Path;
 import java.util.List;
 
 import org.apache.commons.lang3.Validate;
@@ -23,11 +24,14 @@ public class OutputParams {
 
     private final List<ArrOutputItem> directItems;
 
+    private final Path templateDir;
+
     public OutputParams(ArrOutputDefinition definition,
                         ArrChange change,
                         ArrFundVersion fundVersion,
                         List<ArrNodeOutput> outputNodes,
-                        List<ArrOutputItem> directItems) {
+                        List<ArrOutputItem> directItems,
+                        Path templateDir) {
         // sanity check
         Validate.isTrue(definition.getFundId().equals(fundVersion.getFundId()));
 
@@ -36,6 +40,7 @@ public class OutputParams {
         this.fundVersion = fundVersion;
         this.outputNodes = outputNodes;
         this.directItems = directItems;
+        this.templateDir = templateDir;
     }
 
     /**
@@ -77,5 +82,9 @@ public class OutputParams {
 
     public List<ArrOutputItem> getDirectItems() {
         return directItems;
+    }
+
+    public Path getTemplateDir() {
+        return templateDir;
     }
 }

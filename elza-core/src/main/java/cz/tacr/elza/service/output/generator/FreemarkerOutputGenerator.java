@@ -1,4 +1,4 @@
-package cz.tacr.elza.service.output.generators;
+package cz.tacr.elza.service.output.generator;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -13,29 +13,39 @@ import javax.persistence.EntityManager;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.tree.FundTreeProvider;
 import cz.tacr.elza.exception.ProcessException;
+import cz.tacr.elza.print.OutputModel;
 import cz.tacr.elza.service.DmsService;
 import cz.tacr.elza.service.cache.NodeCacheService;
+import cz.tacr.elza.service.output.OutputParams;
 import freemarker.cache.FileTemplateLoader;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 
-public class FreemarkerOutputGenerator extends TemplateOutputGenerator {
+public class FreemarkerOutputGenerator extends DmsOutputGenerator {
 
     private static final String TEMPLATE_FILE_NAME = "index.ftl";
+
+    private final OutputModel outputModel;
 
     FreemarkerOutputGenerator(StaticDataService staticDataService,
                               FundTreeProvider fundTreeProvider,
                               NodeCacheService nodeCacheService,
                               EntityManager em,
-                              DmsService dmsService,
-                              String rulesDirectory) {
-        super(staticDataService, fundTreeProvider, nodeCacheService, em, dmsService, rulesDirectory);
+                              DmsService dmsService) {
+        super(em, dmsService);
+        outputModel = new OutputModel(staticDataService, fundTreeProvider, nodeCacheService);
     }
 
     @Override
-    protected void generate(Path templateDir, OutputStream os) throws IOException {
-        Template template = getTemplate(templateDir);
+    public void init(OutputParams params) {
+        super.init(params);
+        outputModel.init(params);
+    }
+
+    @Override
+    protected void generate(OutputStream os) throws IOException {
+        Template template = loadTemplate();
 
         // prepare data model
         Map<String, Object> dataModel = new HashMap<>();
@@ -50,7 +60,9 @@ public class FreemarkerOutputGenerator extends TemplateOutputGenerator {
         }
     }
 
-    private Template getTemplate(Path templateDir) throws IOException {
+    private Template loadTemplate() throws IOException {
+        Path templateDir = params.getTemplateDir();
+
         Configuration cfg = new Configuration(Configuration.VERSION_2_3_23);
 
         FileTemplateLoader loader = new FileTemplateLoader(templateDir.toFile());
