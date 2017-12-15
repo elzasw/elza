@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import cz.tacr.elza.print.Node;
+import cz.tacr.elza.print.Output;
 import cz.tacr.elza.print.Packet;
 import cz.tacr.elza.print.item.Item;
 
@@ -139,15 +140,38 @@ public class Formatter {
 	 */
 	public String format(Node node)
 	{
-		FormatContext ctx = new FormatContext();
 		List<Item> items = node.getItems();
 		
-		for(FormatAction action: actions)
-		{
-			action.format(ctx, items);
-		}
-		
-		return ctx.getResult();
+		return format(items);
 	}
 	
+	/**
+	 * Format items from output
+	 * 
+	 * @param node
+	 *            Output to be formatted
+	 * @return Return string
+	 */
+	public String format(Output output) {
+		List<Item> items = output.getItems();
+
+		return format(items);
+	}
+
+	/**
+	 * Format items
+	 * 
+	 * @param items
+	 *            to be formatted
+	 * @return Return string
+	 */
+	public String format(List<Item> items) {
+		FormatContext ctx = new FormatContext();
+
+		for (FormatAction action : actions) {
+			action.format(ctx, items);
+		}
+
+		return ctx.getResult();
+	}
 }
