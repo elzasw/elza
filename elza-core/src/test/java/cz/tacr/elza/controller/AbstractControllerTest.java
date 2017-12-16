@@ -2450,7 +2450,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected UsrUserVO changePassword(final Integer userId,
                                        final UserController.ChangePassword params) {
         return put(spec -> spec.body(params)
-                .pathParameter("userId", userId), CHANGE_PASSWORD).as(UserInfoVO.class);
+		        .pathParameter("userId", userId), CHANGE_PASSWORD).as(UsrUserVO.class);
     }
 
     /**
@@ -2460,7 +2460,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @return uživatel
      */
     protected UsrUserVO changePassword(final UserController.ChangePassword params) {
-        return put(spec -> spec.body(params), CHANGE_PASSWORD_USER).as(UserInfoVO.class);
+		return put(spec -> spec.body(params), CHANGE_PASSWORD_USER).as(UsrUserVO.class);
     }
 
 

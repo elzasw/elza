@@ -37,15 +37,12 @@ import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.UserCode;
 import cz.tacr.elza.repository.FilteredResult;
 import cz.tacr.elza.repository.FundRepository;
-import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.SettingsService;
 import cz.tacr.elza.service.UserService;
 
 /**
  * Kontroler pro uživatele.
  *
- * @author Martin Šlapa
- * @since 26.04.2016
  */
 @RestController
 @RequestMapping("/api/user")
@@ -64,21 +61,16 @@ public class UserController {
     private SettingsService settingsService;
 
     @Autowired
-    private ArrangementController arrangementController;
-
-    @Autowired
     private FundRepository fundRepository;
 
     /**
-     * Získání oprávnění uživatele.
-     *
-     * @return výčet oprávnění uživatele.
-     */
+	 * Return detail user info
+	 *
+	 * @return výčet oprávnění uživatele.
+	 */
     @RequestMapping(value = "/detail", method = RequestMethod.GET)
-	@Transactional
     public UserInfoVO getUserDetail() {
-        final UserDetail userDetail = userService.getLoggedUserDetail();
-        return factoryVO.createUserInfo(userDetail);
+		return userService.getLoggeUserInfo();
     }
 
     /**

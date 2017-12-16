@@ -87,7 +87,6 @@ import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
 import cz.tacr.elza.controller.vo.TreeItemSpecsItem;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
 import cz.tacr.elza.controller.vo.UISettingsVO;
-import cz.tacr.elza.controller.vo.UserInfoVO;
 import cz.tacr.elza.controller.vo.UsrGroupVO;
 import cz.tacr.elza.controller.vo.UsrPermissionVO;
 import cz.tacr.elza.controller.vo.UsrUserVO;
@@ -206,7 +205,6 @@ import cz.tacr.elza.repository.RelationRepository;
 import cz.tacr.elza.repository.RequestQueueItemRepository;
 import cz.tacr.elza.repository.UnitdateRepository;
 import cz.tacr.elza.repository.UserRepository;
-import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.DaoService;
 import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.service.OutputService;
@@ -321,21 +319,6 @@ public class ClientFactoryVO {
     @Autowired
     private NodeRepository nodeRepository;
 
-    /**
-     * Vytvoří objekt informací o přihlášeném uživateli.
-     * @param userDetail detail objekt
-     * @return detail VO objekt
-     */
-    public UserInfoVO createUserInfo(final UserDetail userDetail) {
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        UserInfoVO result = mapper.map(userDetail, UserInfoVO.class);
-        UsrUser user = userRepository.findByUsername(userDetail.getUsername());
-        if (user != null) {
-            List<UISettings> settings = settingsService.getSettings(user);
-            result.setSettings(mapper.mapAsList(settings, UISettingsVO.class));
-        }
-        return result;
-    }
 
     /**
      * Vytvoření nastavení.
@@ -1858,19 +1841,6 @@ public class ClientFactoryVO {
     }
 
     /**
-     * Vytvoří VO.
-     * @param permission vstupní oprávnění
-     * @return VO
-     */
-    public UsrPermissionVO createPermission(final UsrPermission permission, Class targetEntity) {
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        Map<Object, Object> map = new HashMap<>();
-        map.put("targetEntity", targetEntity);
-        MappingContext context = new MappingContext(map);
-        return mapper.map(permission, UsrPermissionVO.class, context);
-    }
-
-    /**
      * Vytvoří VO uživatele s návaznými daty.
      * @param user uživatel
      * @param initPermissions mají se plnit oprávnění?
@@ -1894,29 +1864,6 @@ public class ClientFactoryVO {
             List<UsrGroup> groups = groupRepository.findByUser(user);
             result.setGroups(createGroupList(groups, false, false));
         }
-
-        return result;
-    }
-
-    /**
-     * Vytvoří VO uživatele s návaznými daty.
-     * @param user uživatel
-     * @return VO
-     */
-    @Deprecated
-    public UsrUserVO createUserOld(final UsrUser user) {
-        // Hlavní objekt
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        UsrUserVO result = mapper.map(user, UsrUserVO.class);
-
-        // Načtení oprávnění
-        List<UsrPermission> permissions = permissionRepository.findByUserOrderByPermissionIdAsc(user);
-//        List<UsrPermission> permissions = permissionRepository.getAllPermissionsWithGroups(user);
-        result.setPermissions(createPermissionList(permissions, UsrUser.class));
-
-        // Načtení členství ve skupinách
-        List<UsrGroup> groups = groupRepository.findByUser(user);
-        result.setGroups(createGroupList(groups, false, false));
 
         return result;
     }

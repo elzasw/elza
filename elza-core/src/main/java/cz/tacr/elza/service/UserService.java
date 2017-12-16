@@ -18,6 +18,7 @@ import javax.transaction.Transactional.TxType;
 import javax.validation.constraints.NotNull;
 
 import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang3.Validate;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,8 +39,10 @@ import com.google.common.cache.LoadingCache;
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.annotation.AuthParam;
 import cz.tacr.elza.aop.Authorization;
+import cz.tacr.elza.controller.vo.UserInfoVO;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegScope;
 import cz.tacr.elza.domain.UsrGroup;
 import cz.tacr.elza.domain.UsrGroupUser;
@@ -103,8 +106,6 @@ public class UserService {
 
     @Value("${elza.security.salt:kdFss=+4Df_%}")
     private String SALT;
-
-    private Object synchObj = new Object();
 
     private ShaPasswordEncoder encoder = new ShaPasswordEncoder(256);
 
@@ -867,27 +868,26 @@ public class UserService {
      * @return detail přihlášeného uživatele (null pokud není nikdo přihlášený)
      */
     public UserDetail getLoggedUserDetail() {
-        synchronized (synchObj) {
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            if (auth == null) {
-                return null;
-            }
-            UserDetail details = (UserDetail) auth.getDetails();
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		if (auth == null) {
+			return null;
+		}
+		UserDetail details = (UserDetail) auth.getDetails();
 
-			Integer userId = details.getId();
-			// admin has no userId but has detail
-			// pokud je null, jedná se o virtuální admin účet, který má nastaveno oprávnění ADMIN
-			if (userId != null) {
-				UsrUser user = userRepository.findOne(userId);
-                try {
-					Collection<UserPermission> perms = userPermissionsCache.get(userId);
-					details.setUserPermission(perms);
-                } catch (ExecutionException e) {
-                    throw new SystemException(e);
-                }
-            }
-            return details;
-        }
+		Integer userId = details.getId();
+		// admin has no userId but has detail
+		// pokud je null, jedná se o virtuální admin účet, který má nastaveno oprávnění ADMIN
+		if (userId != null) {
+			try {
+				// get permission from cache, refresh it s TTL
+				Collection<UserPermission> perms = userPermissionsCache.get(userId);
+				// refresh permissions in user detail
+				details.setUserPermission(perms);
+			} catch (ExecutionException e) {
+				throw new SystemException(e);
+			}
+		}
+		return details;
     }
 
     /**
@@ -1304,5 +1304,29 @@ public class UserService {
 		// throw exception - authorization not granted
 		throw new AccessDeniedException("Missing permissions: " + Arrays.toString(deniedPermissions),
 		        deniedPermissions);
+	}
+
+	/**
+	 * Return detail information about logged user
+	 * 
+	 * This method can be called by any user, no permissions are required
+	 * @return
+	 */
+	@Transactional
+	public UserInfoVO getLoggeUserInfo() {
+        final UserDetail userDetail = getLoggedUserDetail();
+		Integer userId = userDetail.getId();
+		String preferredName = null;
+		// if not admin
+		if (userId != null) {
+			// read user from db
+			UsrUser user = userRepository.findOneWithDetail(userId);
+			Validate.notNull(user, "Failed to get user: {}", userId);
+
+			RegRecord record = user.getParty().getRecord();
+			preferredName = record.getRecord();
+		}
+
+		return UserInfoVO.newInstance(userDetail, preferredName);
 	}
 }

@@ -3,11 +3,11 @@ package cz.tacr.elza.controller.vo;
 import java.util.List;
 import java.util.Objects;
 
+import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.security.UserDetail;
+
 /**
  * Vo objekt uživatele, obsahuje informace o osobě.
- *
- * @author Pavel Stánek
- * @since 15.06.2016
  */
 public class UsrUserVO {
     /** Uživatelské jméno. */
@@ -20,12 +20,42 @@ public class UsrUserVO {
     private String description;
     /** Osoba. */
     private ParPartyVO party;
-    /** Oprávnění. */
+	/**
+	 * Oprávnění.
+	 */
+	//TODO: Should be moved to other object
     private List<UsrPermissionVO> permissions;
     /** Seznam skupin. */
+	//TODO: Should be moved to other object
     private List<UsrGroupVO> groups;
 
-    public String getUsername() {
+	/**
+	 * Empty constructor
+	 */
+	public UsrUserVO() {
+
+	}
+
+	protected UsrUserVO(UsrUser user, ParPartyVO party) {
+		this.username = user.getUsername();
+		this.id = user.getUserId();
+		this.active = user.getActive();
+		this.description = user.getDescription();
+		this.party = party;
+	}
+
+	/**
+	 * Prepare simplified user info
+	 * 
+	 * @param userDetail
+	 */
+	public UsrUserVO(UserDetail userDetail) {
+		this.username = userDetail.getUsername();
+		this.id = userDetail.getId();
+		this.active = userDetail.getActive();
+	}
+
+	public String getUsername() {
         return username;
     }
 
