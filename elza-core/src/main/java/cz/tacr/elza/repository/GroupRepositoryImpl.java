@@ -1,9 +1,9 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.UsrGroup;
-import cz.tacr.elza.domain.UsrGroupUser;
-import cz.tacr.elza.domain.UsrPermission;
-import org.apache.commons.lang.StringUtils;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -14,10 +14,12 @@ import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.persistence.criteria.Subquery;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+
+import org.apache.commons.lang.StringUtils;
+
+import cz.tacr.elza.domain.UsrGroup;
+import cz.tacr.elza.domain.UsrGroupUser;
+import cz.tacr.elza.domain.UsrPermission;
 
 /**
  * @author Pavel Stánek
@@ -89,7 +91,7 @@ public class GroupRepositoryImpl implements GroupRepositoryCustom {
                 .setFirstResult(firstResult)
                 .setMaxResults(maxResults)
                 .getResultList();
-        long count = entityManager.createQuery(queryCount).getSingleResult();
+		int count = entityManager.createQuery(queryCount).getSingleResult().intValue();
 
         return new FilteredResult<>(firstResult, maxResults, count, list);
     }
@@ -157,6 +159,7 @@ public class GroupRepositoryImpl implements GroupRepositoryCustom {
     public FilteredResult<UsrGroup> findGroupWithFundCreateByTextCount(final String search, final Integer firstResult, final Integer maxResults, final Integer userId) {
         TypedQuery data = buildGroupFindQuery(true, search, firstResult, maxResults, userId);
         TypedQuery count = buildGroupFindQuery(false, search, firstResult, maxResults, userId);
-        return new FilteredResult<>(firstResult, maxResults, ((Number) count.getSingleResult()).longValue(), data.getResultList());
+		return new FilteredResult<>(firstResult, maxResults, ((Number) count.getSingleResult()).intValue(),
+		        data.getResultList());
     }
 }

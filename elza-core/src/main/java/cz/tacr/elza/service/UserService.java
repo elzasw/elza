@@ -50,7 +50,6 @@ import cz.tacr.elza.domain.UsrGroupUser;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.domain.UsrUser;
-import cz.tacr.elza.domain.vo.ArrFundOpenVersion;
 import cz.tacr.elza.exception.AccessDeniedException;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.Level;
@@ -157,14 +156,12 @@ public class UserService {
 		UserDetail userDetail = getLoggedUserDetail();
 
 		if (userDetail.hasPermission(UsrPermission.Permission.USR_PERM)) {
-			// nefiltruje se dle přiřazených oprávnění, vrací všechny AS
-            List<ArrFundOpenVersion> funds = fundRepository.findByFulltext(search, maxResults, false, null);
-            Integer fundsCount = fundRepository.findCountByFulltext(search, false, null);
-            return new FilteredResult<>(firstResult, maxResults, fundsCount, funds.stream().map(x -> x.getFund()).collect(Collectors.toList()));
+			// nefiltruje se dle přiřazených oprávnění, vrací všechny AS            
+			return fundRepository.findFunds(search, firstResult, maxResults);
 		} else {
 			// filtruje se dle přiřazeníé oprávnění na AS pro daného uživatele			
 			return fundRepository.findFundsWithPermissions(search, firstResult, maxResults, userDetail.getId());
-    }
+		}
     }
 
     private enum ChangePermissionType {

@@ -102,7 +102,6 @@ import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.UsrPermission;
-import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ConcurrentUpdateException;
@@ -117,6 +116,7 @@ import cz.tacr.elza.repository.DaoLinkRepository;
 import cz.tacr.elza.repository.DaoPackageRepository;
 import cz.tacr.elza.repository.DaoRepository;
 import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.FilteredResult;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
@@ -1210,17 +1210,37 @@ public class ArrangementController {
     @RequestMapping(value = "/getFunds", method = RequestMethod.GET)
 	@Transactional
     public FundListCountResult getFunds(@RequestParam(value = "fulltext", required = false) final String fulltext,
-                                        @RequestParam(value = "max") final Integer max) {
-        List<ArrFundVO> fundList = new LinkedList<>();
-        boolean readAllFunds = userService.hasPermission(UsrPermission.Permission.FUND_RD_ALL);
-        UsrUser user = userService.getLoggedUser();
-        fundRepository.findByFulltext(fulltext, max, readAllFunds, user).forEach(f -> {
+	        @RequestParam(value = "max") final Integer max) {
+		UserDetail userDetail = userService.getLoggedUserDetail();
+
+		FilteredResult<ArrFund> funds;
+
+		if (userDetail.hasPermission(UsrPermission.Permission.FUND_RD_ALL)) {
+			// read all funds
+			funds = fundRepository.findFunds(fulltext, 0, max);
+		} else {
+			Integer userId = userDetail.getId();
+			funds = fundRepository.findFundsWithPermissions(fulltext, 0, max, userId);
+		}
+
+		/*
+		List<ArrFundOpenVersion> funds = fundRepository.findByFulltext(fulltext, max, userId);
+		int fundsCount = funds.size();
+		if (fundsCount >= max) {
+			// read real funds count
+			fundsCount = fundRepository.findCountByFulltext(fulltext, userId);
+		}*/
+
+		List<ArrFund> fundList = funds.getList();
+
+		List<ArrFundVO> fundVOList = new ArrayList<>(fundList.size());
+		fundList.forEach(f -> {
             ArrFundVO fundVO = factoryVo.createFundVO(f.getFund(), false);
-            fundVO.setVersions(Arrays.asList(factoryVo.createFundVersion(f.getOpenVersion())));
-            fundList.add(fundVO);
+			//fundVO.setVersions(Arrays.asList(factoryVo.createFundVersion(f.getOpenVersion())));
+			fundVOList.add(fundVO);
         });
 
-        return new FundListCountResult(fundList, fundRepository.findCountByFulltext(fulltext, readAllFunds, user));
+		return new FundListCountResult(fundVOList, funds.getTotalCount());
     }
 
     /**
@@ -1263,7 +1283,7 @@ public class ArrangementController {
     public List<ArrFundVO> getFundsByVersionIds(@RequestBody final IdsParam idsParam) {
 
         if (CollectionUtils.isEmpty(idsParam.getIds())) {
-            return Collections.EMPTY_LIST;
+			return Collections.emptyList();
         }
 
         List<ArrFundVersion> versions = fundVersionRepository.findAll(idsParam.getIds());

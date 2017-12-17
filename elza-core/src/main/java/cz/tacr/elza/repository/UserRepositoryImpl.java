@@ -17,13 +17,13 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.persistence.criteria.Subquery;
 
-import cz.tacr.elza.domain.UsrGroup;
-import cz.tacr.elza.domain.UsrPermission;
 import org.apache.commons.lang.StringUtils;
 
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.RegRecord;
+import cz.tacr.elza.domain.UsrGroup;
 import cz.tacr.elza.domain.UsrGroupUser;
+import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
 
 /**
@@ -132,7 +132,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
                 .setFirstResult(firstResult)
                 .setMaxResults(maxResults)
                 .getResultList();
-        long count = entityManager.createQuery(queryCount).getSingleResult();
+		int count = entityManager.createQuery(queryCount).getSingleResult().intValue();
 
         return new FilteredResult<>(firstResult, maxResults, count, list);
     }
@@ -235,6 +235,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
     public FilteredResult<UsrUser> findUserWithFundCreateByTextAndStateCount(final String search, final Boolean active, final Boolean disabled, final Integer firstResult, final Integer maxResults, final Integer excludedGroupId, final Integer userId) {
         TypedQuery data = buildUserFindQuery(true, search, active, disabled, firstResult, maxResults, excludedGroupId, userId);
         TypedQuery count = buildUserFindQuery(false, search, active, disabled, firstResult, maxResults, excludedGroupId, userId);
-        return new FilteredResult<>(firstResult, maxResults, ((Number)count.getSingleResult()).longValue(), data.getResultList());
+		return new FilteredResult<>(firstResult, maxResults, ((Number) count.getSingleResult()).intValue(),
+		        data.getResultList());
     }
 }
