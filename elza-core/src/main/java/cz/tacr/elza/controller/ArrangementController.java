@@ -101,7 +101,6 @@ import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.RulRuleSet;
-import cz.tacr.elza.domain.UsrGroup;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.drools.DirectionLevel;
@@ -1438,18 +1437,6 @@ public class ArrangementController {
         return factoryVo.createCalendarTypes(calendarTypes);
     }
 
-    /**
-     * Seznam oprávnění, které se mají nastavit při vytváření AS a přiřazení uživatele nebo skupiny jako správce.
-     */
-    private static final UsrPermission.Permission FUND_ADMIN_PERMISSIONS[] = {
-            UsrPermission.Permission.FUND_RD,
-            UsrPermission.Permission.FUND_ARR,
-            UsrPermission.Permission.FUND_OUTPUT_WR,
-            UsrPermission.Permission.FUND_CL_VER_WR,
-            UsrPermission.Permission.FUND_EXPORT,
-            UsrPermission.Permission.FUND_BA,
-            UsrPermission.Permission.FUND_VER_WR,
-    };
 
     @Transactional
     @RequestMapping(value = "/funds", method = RequestMethod.POST,
@@ -1505,36 +1492,15 @@ public class ArrangementController {
 
         // Oprávnění na uživatele a skupiny
         if (createFund.getAdminUsers() != null && !createFund.getAdminUsers().isEmpty()) {
-            final List<UsrPermission> usrPermissions = new ArrayList<>();
-            createFund.getAdminUsers().stream()
-                    .forEach(u -> {
-                        UsrUser user = userService.getUser(u.getId());
-                        for (UsrPermission.Permission permission : FUND_ADMIN_PERMISSIONS) {
-                            UsrPermission perm = new UsrPermission();
-                            perm.setFund(newFund);
-                            perm.setUser(user);
-                            perm.setPermission(permission);
-                            usrPermissions.add(perm);
-                        }
-                        userService.addUserPermission(user, usrPermissions, false);
-                    });
+			// add permissions to selectected users
+			createFund.getAdminUsers().forEach(
+			        u -> userService.addFundAdminPermissions(u.getId(), null, newFund));
         }
         if (createFund.getAdminGroups() != null && !createFund.getAdminGroups().isEmpty()) {
-            final List<UsrPermission> usrPermissions = new ArrayList<>();
-            createFund.getAdminGroups().stream()
-                    .forEach(g -> {
-                        UsrGroup group = userService.getGroup(g.getId());
-                        for (UsrPermission.Permission permission : FUND_ADMIN_PERMISSIONS) {
-                            UsrPermission perm = new UsrPermission();
-                            perm.setFund(newFund);
-                            perm.setGroup(group);
-                            perm.setPermission(permission);
-                            usrPermissions.add(perm);
-                        }
-                        userService.addGroupPermission(group, usrPermissions, false);
-                    });
+			// add permissions to selectected groups
+			createFund.getAdminGroups().forEach(
+			        g -> userService.addFundAdminPermissions(null, g.getId(), newFund));
         }
-
 
         return factoryVo.createFundVO(newFund, true);
     }

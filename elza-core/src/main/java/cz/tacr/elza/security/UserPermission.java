@@ -11,8 +11,6 @@ import cz.tacr.elza.domain.UsrPermission.Permission;
 /**
  * Oprávnění uživatele.
  *
- * @author Martin Šlapa
- * @since 26.04.2016
  */
 public class UserPermission {
 
@@ -103,5 +101,47 @@ public class UserPermission {
 			return false;
 		}
 		return true;
+	}
+
+	/**
+	 * Check if permission has given type
+	 * 
+	 * Note this check only compare permission type and does not check further
+	 * conditions.
+	 * 
+	 * @param permissionType
+	 * @return
+	 */
+	public boolean isPermissionType(Permission permissionType) {
+		if (this.permission == permissionType) {
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Check if user in controlled user set
+	 * 
+	 * @param userId
+	 * @return
+	 */
+	public boolean isControllsUser(Integer userId) {
+		if (controlUserIds.contains(userId)) {
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Check if group in controlled group set
+	 * 
+	 * @param groupId
+	 * @return
+	 */
+	public boolean isControllsGroup(Integer groupId) {
+		if (controlGroupIds.contains(groupId)) {
+			return true;
+		}
+		return false;
 	}
 }

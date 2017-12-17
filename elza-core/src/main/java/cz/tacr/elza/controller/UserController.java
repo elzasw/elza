@@ -297,10 +297,15 @@ public class UserController {
     }
 
     /**
-     * Načte seznam uživatelů, kteří mají explicitně (přímo na nich) nastavené nějaké oprávnění pro daný AS.
-     * @param fundId id AS
-     * @return seznam
-     */
+	 * Načte seznam uživatelů, kteří mají explicitně (přímo na nich) nastavené
+	 * nějaké oprávnění pro daný AS.
+	 * 
+	 * Method will return only users which might be administered by logged user.
+	 * 
+	 * @param fundId
+	 *            id of fund
+	 * @return seznam
+	 */
     @RequestMapping(value = "/fund/{fundId}/users", method = RequestMethod.GET)
 	@Transactional
     public List<UsrUserVO> findUsersPermissionsByFund(@PathVariable(value = "fundId") final Integer fundId) {

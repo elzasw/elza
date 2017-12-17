@@ -3,6 +3,7 @@ package cz.tacr.elza.service;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -47,6 +48,7 @@ import cz.tacr.elza.domain.RegScope;
 import cz.tacr.elza.domain.UsrGroup;
 import cz.tacr.elza.domain.UsrGroupUser;
 import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.vo.ArrFundOpenVersion;
 import cz.tacr.elza.exception.AccessDeniedException;
@@ -113,6 +115,20 @@ public class UserService {
      * Cache pro nakešování oprávnění uživatele.
      */
     private LoadingCache<Integer, Collection<UserPermission>> userPermissionsCache;
+
+	/**
+	 * Seznam oprávnění, které se mají nastavit při vytváření AS a přiřazení
+	 * uživatele nebo skupiny jako správce.
+	 */
+	private static final UsrPermission.Permission FUND_ADMIN_PERMISSIONS[] = {
+	        UsrPermission.Permission.FUND_RD,
+	        UsrPermission.Permission.FUND_ARR,
+	        UsrPermission.Permission.FUND_OUTPUT_WR,
+	        UsrPermission.Permission.FUND_CL_VER_WR,
+	        UsrPermission.Permission.FUND_EXPORT,
+	        UsrPermission.Permission.FUND_BA,
+	        UsrPermission.Permission.FUND_VER_WR,
+	};
 
     public UserService() {
         userPermissionsCache = CacheBuilder.newBuilder()
@@ -882,6 +898,7 @@ public class UserService {
 				// get permission from cache, refresh it s TTL
 				Collection<UserPermission> perms = userPermissionsCache.get(userId);
 				// refresh permissions in user detail
+				// probably should be places elsewhere
 				details.setUserPermission(perms);
 			} catch (ExecutionException e) {
 				throw new SystemException(e);
@@ -1159,16 +1176,72 @@ public class UserService {
      * @return list uživatelů
      */
     public List<UsrUser> findUsersByFund(final ArrFund fund) {
-        return userRepository.findByFund(fund);
-    }
+		// get list of all users for fund
+		List<UsrUser> users = userRepository.findByFund(fund);
 
-    /**
-     * Vyhledá list uživatelů podle oprávnění typu všechny AS.
-     * @return list uživatelů
-     */
-    public List<UsrUser> findUsersByFundAll() {
-        return userRepository.findByPermissions(UsrPermission.Permission.getFundAllPerms());
-    }
+		return filterUsersByAdminPermission(users);
+	}
+
+	/**
+	 * Vyhledá list uživatelů podle oprávnění typu všechny AS.
+	 * 
+	 * @return list uživatelů
+	 */
+	public List<UsrUser> findUsersByFundAll() {
+		List<UsrUser> users = userRepository.findByPermissions(UsrPermission.Permission.getFundAllPerms());
+
+		return filterUsersByAdminPermission(users);
+	}
+
+	/**
+	 * Filter list of users to contain only users which might be administered by
+	 * logged user
+	 * 
+	 * @param users
+	 * @return
+	 */
+	private List<UsrUser> filterUsersByAdminPermission(List<UsrUser> users) {
+    	// check permissions
+    	UserDetail userDetail = this.getLoggedUserDetail();
+    	
+		// if user is admin -> can manage all users
+		if (userDetail.getId() == null) {
+			return users;
+		}
+		Collection<UserPermission> perms = userDetail.getUserPermission();
+		if (perms == null) {
+			// no perms -> no rights
+			return Collections.emptyList();
+		}
+
+		UserPermission userControlEntity = null;
+		// check all permissions
+		for (UserPermission perm : perms) {
+			// check if user has permissions to manage all users 
+			if (perm.isPermissionType(UsrPermission.Permission.ADMIN)
+			        || perm.isPermissionType(UsrPermission.Permission.USR_PERM)) {
+				return users;
+    		}
+			// check if user can manage selected entities
+			if (perm.isPermissionType(UsrPermission.Permission.USER_CONTROL_ENTITITY)) {
+				userControlEntity = perm;
+    		}
+    	}
+
+		// if no controlled entities -> no rights
+		if (userControlEntity == null) {
+			return Collections.emptyList();
+		}
+    	
+		// filter out not managed users
+		List<UsrUser> result = new ArrayList<>(users.size());
+		for (UsrUser user : users) {
+			if (userControlEntity.isControllsUser(user.getUserId())) {
+				result.add(user);
+			}
+		}
+		return result;
+	}
 
     /**
      * Vyhledá list skupin podle oprávnění typu všechny AS.
@@ -1328,5 +1401,91 @@ public class UserService {
 		}
 
 		return UserInfoVO.newInstance(userDetail, preferredName);
+	}
+
+	/**
+	 * Add admin permissions to user/group for given fund
+	 * 
+	 * Method is used only for newly created fund.
+	 * 
+	 * @param userId
+	 *            Can be null
+	 * @param groupId
+	 *            Can be null
+	 * @param newFund
+	 */
+	@Transactional(value = TxType.MANDATORY)
+	public void addFundAdminPermissions(Integer userId, Integer groupId, ArrFund newFund) {
+		UsrUser user = null;
+		UsrGroup group = null;
+		if (userId != null) {
+			// only user or group might be set
+			Validate.isTrue(groupId == null);
+
+			user = userRepository.getOneCheckExist(userId);
+		}
+		if (groupId != null) {
+			// only user or group might be set
+			Validate.isTrue(userId == null);
+
+			group = groupRepository.getOneCheckExist(groupId);
+		}
+
+		// if we do not have right FUND_ADMIN or USR_PERM
+		// we have to have rights FUND_CREATE (In such case we can create it only for logged user) 
+		// or USER_CONTROL_ENTITITY (In such case we can create it only for managed entities).
+
+		boolean hasPermission = false;
+		for (UserPermission userPermission : getUserPermission()) {
+			if (userPermission.isPermissionType(UsrPermission.Permission.FUND_ADMIN)
+			        || userPermission.isPermissionType(UsrPermission.Permission.USR_PERM)) {
+				hasPermission = true;
+				break;
+			}
+
+			if (userPermission.isPermissionType(UsrPermission.Permission.FUND_CREATE)) {
+				// check if user is same as logged user
+				UserDetail userDetail = getLoggedUserDetail();
+				if (userDetail.getId() == userId) {
+					hasPermission = true;
+					break;
+				}
+			}
+
+			if (userPermission.isPermissionType(UsrPermission.Permission.USER_CONTROL_ENTITITY)) {
+				// check if entity is managed			
+				if (userPermission.isControllsUser(userId)) {
+					hasPermission = true;
+					break;
+				}
+				if (userPermission.isControllsGroup(groupId)) {
+					hasPermission = true;
+					break;
+				}
+			}
+		}
+
+		if (!hasPermission) {
+			Permission[] perms = { UsrPermission.Permission.FUND_ADMIN, UsrPermission.Permission.USR_PERM,
+			        UsrPermission.Permission.FUND_CREATE, UsrPermission.Permission.USER_CONTROL_ENTITITY };
+			throw new AccessDeniedException("Cannot set permissions for new fund.", perms);
+		}
+
+		// now we can add permission
+		List<UsrPermission> usrPermissions = new ArrayList<>(FUND_ADMIN_PERMISSIONS.length);
+		for (UsrPermission.Permission permission : FUND_ADMIN_PERMISSIONS) {
+			UsrPermission usrPerm = new UsrPermission();
+			usrPerm.setPermission(permission);
+			usrPerm.setFund(newFund);
+			usrPerm.setUser(user);
+			usrPerm.setGroup(group);
+			usrPermissions.add(usrPerm);
+		}
+		if (group != null) {
+			addGroupPermission(group, usrPermissions, false);
+		}
+		if (user != null) {
+			addUserPermission(user, usrPermissions, false);
+		}
 	}
 }
