@@ -154,13 +154,16 @@ public class UserService {
     public FilteredResult<ArrFund> findFundsWithPermissions(final String search,
                                                             final Integer firstResult,
                                                             final Integer maxResults) {
-        if (hasPermission(UsrPermission.Permission.USR_PERM)) { // nefiltruje se dle přiřazených oprávnění
+		UserDetail userDetail = getLoggedUserDetail();
+
+		if (userDetail.hasPermission(UsrPermission.Permission.USR_PERM)) {
+			// nefiltruje se dle přiřazených oprávnění, vrací všechny AS
             List<ArrFundOpenVersion> funds = fundRepository.findByFulltext(search, maxResults, false, null);
             Integer fundsCount = fundRepository.findCountByFulltext(search, false, null);
             return new FilteredResult<>(firstResult, maxResults, fundsCount, funds.stream().map(x -> x.getFund()).collect(Collectors.toList()));
-        } else {    // filtruje se dle přiřazeníé oprávnění na AS pro daného uživatele
-        UsrUser user = getLoggedUser();
-            return fundRepository.findFundsWithPermissions(search, firstResult, maxResults, user.getUserId());
+		} else {
+			// filtruje se dle přiřazeníé oprávnění na AS pro daného uživatele			
+			return fundRepository.findFundsWithPermissions(search, firstResult, maxResults, userDetail.getId());
     }
     }
 
@@ -1248,7 +1251,9 @@ public class UserService {
      * @return list skupin
      */
     public List<UsrGroup> findGroupsByFundAll() {
-        return groupRepository.findByPermissions(UsrPermission.Permission.getFundAllPerms());
+		List<UsrGroup> groups = groupRepository.findByPermissions(UsrPermission.Permission.getFundAllPerms());
+
+		return filterGroupsByAdminPermission(groups);
     }
 
     /**
@@ -1257,14 +1262,67 @@ public class UserService {
      * @return list uživatelů
      */
     public List<UsrGroup> findGroupsByFund(final ArrFund fund) {
-        return groupRepository.findByFund(fund);
+		List<UsrGroup> groups = groupRepository.findByFund(fund);
+
+		return filterGroupsByAdminPermission(groups);
     }
 
-    /**
-     * Event změněného uživatele.
-     *
-     * @param user uživatel
-     */
+	/**
+	 * Filter list of groups to contain only groups which might be administered
+	 * by logged user
+	 * 
+	 * @param groups
+	 * @return
+	 */
+	private List<UsrGroup> filterGroupsByAdminPermission(List<UsrGroup> groups) {
+		// check permissions
+		UserDetail userDetail = this.getLoggedUserDetail();
+
+		// if user is admin -> can manage all users
+		if (userDetail.getId() == null) {
+			return groups;
+		}
+		Collection<UserPermission> perms = userDetail.getUserPermission();
+		if (perms == null) {
+			// no perms -> no rights
+			return Collections.emptyList();
+		}
+
+		UserPermission groupControlEntity = null;
+		// check all permissions
+		for (UserPermission perm : perms) {
+			// check if user has permissions to manage all users 
+			if (perm.isPermissionType(UsrPermission.Permission.ADMIN)
+			        || perm.isPermissionType(UsrPermission.Permission.USR_PERM)) {
+				return groups;
+			}
+			// check if user can manage selected entities
+			if (perm.isPermissionType(UsrPermission.Permission.GROUP_CONTROL_ENTITITY)) {
+				groupControlEntity = perm;
+			}
+		}
+
+		// if no controlled entities -> no rights
+		if (groupControlEntity == null) {
+			return Collections.emptyList();
+		}
+
+		// filter out not managed users
+		List<UsrGroup> result = new ArrayList<>(groups.size());
+		for (UsrGroup group : groups) {
+			if (groupControlEntity.isControllsGroup(group.getGroupId())) {
+				result.add(group);
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * Event změněného uživatele.
+	 *
+	 * @param user
+	 *            uživatel
+	 */
     private void changeUserEvent(final UsrUser user) {
         eventNotificationService.publishEvent(new EventId(EventType.USER_CHANGE, user.getUserId()));
     }
@@ -1458,6 +1516,8 @@ public class UserService {
 					hasPermission = true;
 					break;
 				}
+			}
+			if (userPermission.isPermissionType(UsrPermission.Permission.GROUP_CONTROL_ENTITITY)) {
 				if (userPermission.isControllsGroup(groupId)) {
 					hasPermission = true;
 					break;
@@ -1467,7 +1527,9 @@ public class UserService {
 
 		if (!hasPermission) {
 			Permission[] perms = { UsrPermission.Permission.FUND_ADMIN, UsrPermission.Permission.USR_PERM,
-			        UsrPermission.Permission.FUND_CREATE, UsrPermission.Permission.USER_CONTROL_ENTITITY };
+			        UsrPermission.Permission.FUND_CREATE,
+			        UsrPermission.Permission.USER_CONTROL_ENTITITY,
+			        UsrPermission.Permission.GROUP_CONTROL_ENTITITY };
 			throw new AccessDeniedException("Cannot set permissions for new fund.", perms);
 		}
 
