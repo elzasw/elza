@@ -102,4 +102,48 @@ public class UserDetail {
 		}
 		return false;
 	}
+
+	/**
+	 * Check if user has given permission
+	 * 
+	 * @param usrPerm
+	 * @return
+	 */
+	public boolean hasPermission(Permission permission, Integer entityId) {
+		for (UserPermission userPermission : userPermission) {
+			if (userPermission.getPermission().equals(permission)) {
+
+				if (userPermission.getPermission().equals(UsrPermission.Permission.ADMIN)) {
+					return true;
+				}
+
+				switch (permission.getType()) {
+				case FUND:
+					if (userPermission.getFundIds().contains(entityId)) {
+						return true;
+					}
+					break;
+				case USER:
+					if (userPermission.getControlUserIds().contains(entityId)) {
+						return true;
+					}
+					break;
+				case GROUP:
+					if (userPermission.getControlGroupIds().contains(entityId)) {
+						return true;
+					}
+					break;
+				case SCOPE:
+					if (userPermission.getScopeIds().contains(entityId)) {
+						return true;
+					}
+					break;
+				default:
+					throw new IllegalStateException(permission.getType().toString());
+				}
+				break;
+			}
+		}
+		return false;
+	}
 }

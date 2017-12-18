@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.UsrGroup;
+import cz.tacr.elza.domain.UsrGroupUser;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
 
@@ -42,4 +43,15 @@ public interface UserRepository extends ElzaJpaRepository<UsrUser, Integer>, Use
 	 */
 	@Query("select u from usr_user u join fetch u.party p join fetch p.record r where u.userId = :userId")
 	UsrUser findOneWithDetail(@Param("userId") Integer userId);
+
+	/**
+	 * Return list of groupUser links
+	 * 
+	 * @param userId
+	 * @param checkedUserId
+	 * @return
+	 */
+	@Query("select gu from usr_permission p join p.groupControl g join g.users gu where p.userId = :userId and gu.userId = :checkedUserId")
+	List<UsrGroupUser> findGroupManagedByWithUser(@Param("userId") int userId,
+	        @Param("checkedUserId") int checkedUserId);
 }

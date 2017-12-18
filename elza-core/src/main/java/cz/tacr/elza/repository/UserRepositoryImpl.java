@@ -29,13 +29,53 @@ import cz.tacr.elza.domain.UsrUser;
 /**
  * Rozšířené repository pro uživatele.
  *
- * @author Pavel Stánek
- * @since 15.06.2016
  */
 //@Component
 public class UserRepositoryImpl implements UserRepositoryCustom {
     @PersistenceContext
     private EntityManager entityManager;
+
+	private <T> Predicate prepareFindUserByText(
+	        final String search,
+	        final Boolean active,
+	        final Boolean disabled,
+	        final CriteriaBuilder builder,
+	        final Root<UsrUser> user,
+	        final Integer excludedGroupId,
+	        final CriteriaQuery<T> query) {
+		Join<UsrUser, ParParty> party = user.join(UsrUser.PARTY, JoinType.INNER);
+		Join<ParParty, RegRecord> record = party.join(ParParty.RECORD, JoinType.INNER);
+		List<Predicate> conditions = new ArrayList<>();
+
+		// Search
+		if (StringUtils.isNotBlank(search)) {
+			final String searchValue = "%" + search.toLowerCase() + "%";
+			conditions.add(builder.or(
+			        builder.like(builder.lower(record.get(RegRecord.RECORD)), searchValue),
+			        builder.like(builder.lower(user.get(UsrUser.USERNAME)), searchValue),
+			        builder.like(builder.lower(user.get(UsrUser.DESCRIPTION)), searchValue)));
+		}
+
+		if (excludedGroupId != null) {
+			final Subquery<UsrUser> subquery = query.subquery(UsrUser.class);
+			final Root<UsrGroupUser> groupUserSubq = subquery.from(UsrGroupUser.class);
+			subquery.select(groupUserSubq.get(UsrGroupUser.USER_ID));
+			subquery.where(builder.equal(groupUserSubq.get(UsrGroupUser.GROUP_ID), excludedGroupId));
+			conditions.add(builder.and(builder.not(builder.in(user.get(UsrUser.USER_ID)).value(subquery))));
+		}
+
+		// Status
+		List<Predicate> statusConditions = new ArrayList<>();
+		if (active) {
+			statusConditions.add(builder.equal(user.get(UsrUser.ACTIVE), true));
+		}
+		if (disabled) {
+			statusConditions.add(builder.equal(user.get(UsrUser.ACTIVE), false));
+		}
+		conditions.add(builder.or(statusConditions.toArray(new Predicate[statusConditions.size()])));
+
+		return builder.and(conditions.toArray(new Predicate[conditions.size()]));
+	}
 
     private <T> Predicate prepareFindUserByTextAndStateCount(
             final String search,
@@ -45,7 +85,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
             final Root<UsrUser> user,
             final Integer excludedGroupId,
             final CriteriaQuery<T> query,
-            final Integer userId) {
+	        final int userId) {
         Join<UsrUser, ParParty> party = user.join(UsrUser.PARTY, JoinType.INNER);
         Join<ParParty, RegRecord> record = party.join(ParParty.RECORD, JoinType.INNER);
         List<Predicate> conditions = new ArrayList<>();
@@ -68,20 +108,51 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
             conditions.add(builder.and(builder.not(builder.in(user.get(UsrUser.USER_ID)).value(subquery))));
         }
 
-        if (userId != null) {
-            final Subquery<UsrUser> subquery = query.subquery(UsrUser.class);
-            final Root<UsrPermission> permissionUserSubq = subquery.from(UsrPermission.class);
-            subquery.select(permissionUserSubq.get(UsrPermission.USER_CONTROL_ID));
+		// userId
+		/*
+		 *  Query (with union):
+		 *  select user_control_id from usr_permission up
+		 *  where up.permission = 'USER_CONTROL_ENTITITY'
+		 *  union
+		 *  select ugu.user_id from usr_permission up
+		 *  join usr_group_user ugu on ugu.group_id = up.group_control_id
+		 *  where up.permission = 'GROUP_CONTROL_ENTITITY'
+		 *  
+		 *  
+		 *  Same query (without union)
+		 *  select coalesce(user_control_id, ugu.user_id) from usr_permission up
+		 *  left join usr_group_user ugu on ugu.group_id = up.group_control_id
+		 *  where up.permission in ('USER_CONTROL_ENTITITY', 'GROUP_CONTROL_ENTITITY')
+		 */
+		final Subquery<Integer> subquery = query.subquery(Integer.class);
+		final Root<UsrPermission> permissionUserSubq = subquery.from(UsrPermission.class);
+		Join<UsrPermission, UsrGroup> ug = permissionUserSubq.join(UsrPermission.GROUP_CONTROL, JoinType.LEFT);
+		Join<UsrGroup, UsrGroupUser> ugu = ug.join(UsrGroup.USERS, JoinType.LEFT);
 
-            final Subquery<UsrGroup> subsubquery = subquery.subquery(UsrGroup.class);
-            final Root<UsrGroupUser> groupUserSubq = subsubquery.from(UsrGroupUser.class);
-            subsubquery.select(groupUserSubq.get(UsrGroupUser.GROUP_ID));
-            subsubquery.where(builder.equal(groupUserSubq.get(UsrGroupUser.USER_ID), userId));
+		subquery.where(
+		        builder.and(
+		                builder.equal(permissionUserSubq.get(UsrPermission.USER_ID), userId),
+		                builder.in(permissionUserSubq.get(UsrPermission.PERMISSION))
+		                        .value(UsrPermission.Permission.USER_CONTROL_ENTITITY)
+		                        .value(UsrPermission.Permission.GROUP_CONTROL_ENTITITY)));
 
-            subquery.where(builder.or(builder.equal(permissionUserSubq.get(UsrPermission.USER_ID), userId), builder.in(permissionUserSubq.get(UsrPermission.GROUP_ID)).value(subsubquery)));
+		// prepare coalesce and select
+		CriteriaBuilder.Coalesce<Integer> subQueryResult = builder.coalesce();
+		subQueryResult.value(permissionUserSubq.get(UsrPermission.USER_CONTROL_ID));
+		subQueryResult.value(ugu.get(UsrGroupUser.USER_ID));
+		subquery.select(subQueryResult);
 
-            conditions.add(builder.and(builder.in(user.get(UsrUser.USER_ID)).value(subquery)));
-        }
+		/*
+		final Subquery<UsrGroup> subsubquery = subquery.subquery(UsrGroup.class);
+		final Root<UsrGroupUser> groupUserSubq = subsubquery.from(UsrGroupUser.class);
+		subsubquery.select(groupUserSubq.get(UsrGroupUser.GROUP_ID));
+		subsubquery.where(builder.equal(groupUserSubq.get(UsrGroupUser.USER_ID), userId));
+		
+		subquery.where(builder.or(builder.equal(permissionUserSubq.get(UsrPermission.USER_ID), userId),
+		        builder.in(permissionUserSubq.get(UsrPermission.GROUP_ID)).value(subsubquery)));
+		        */
+		
+		conditions.add(builder.and(builder.in(user.get(UsrUser.USER_ID)).value(subquery)));
 
         // Status
         List<Predicate> statusConditions = new ArrayList<>();
@@ -96,14 +167,55 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
         return builder.and(conditions.toArray(new Predicate[conditions.size()]));
     }
 
+	@Override
+	public FilteredResult<UsrUser> findUserByText(String search, Boolean active, Boolean disabled,
+	        int firstResult, int maxResults, Integer excludedGroupId) {
+		CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+
+		CriteriaQuery<UsrUser> query = builder.createQuery(UsrUser.class);
+		CriteriaQuery<Long> queryCount = builder.createQuery(Long.class);
+
+		Root<UsrUser> user = query.from(UsrUser.class);
+		Root<UsrUser> userCount = queryCount.from(UsrUser.class);
+
+		Predicate condition = prepareFindUserByText(search, active, disabled, builder, user, excludedGroupId, query);
+		Predicate conditionCount = prepareFindUserByText(search, active, disabled, builder, userCount, excludedGroupId,
+		        queryCount);
+
+		query.select(user);
+		queryCount.select(builder.countDistinct(userCount));
+
+		if (condition != null) {
+			Join<UsrUser, ParParty> party = user.join(UsrUser.PARTY, JoinType.INNER);
+			Join<ParParty, RegRecord> record = party.join(ParParty.RECORD, JoinType.INNER);
+			Order order1 = builder.asc(record.get(RegRecord.RECORD));
+			Order order2 = builder.asc(user.get(UsrUser.USERNAME));
+			query.where(condition).orderBy(order1, order2);
+
+			queryCount.where(conditionCount);
+		}
+
+		List<UsrUser> list = entityManager.createQuery(query)
+		        .setFirstResult(firstResult)
+		        .setMaxResults(maxResults)
+		        .getResultList();
+		int count = list.size();
+		// count number of items
+		if (count >= maxResults || firstResult != 0) {
+			count = entityManager.createQuery(queryCount).getSingleResult().intValue();
+		}
+
+		return new FilteredResult<>(firstResult, maxResults, count, list);
+	}
+
     @Override
     public FilteredResult<UsrUser> findUserByTextAndStateCount(final String search,
                                                                final Boolean active,
                                                                final Boolean disabled,
-                                                               final Integer firstResult,
-                                                               final Integer maxResults,
+                                                               final int firstResult,
+                                                               final int maxResults,
                                                                final Integer excludedGroupId,
-                                                               final Integer userId) {
+                                                               final int userId) {
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
 
         CriteriaQuery<UsrUser> query = builder.createQuery(UsrUser.class);

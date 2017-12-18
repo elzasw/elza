@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.annotation.AuthParam;
+import cz.tacr.elza.annotation.AuthParam.Type;
 import cz.tacr.elza.api.interfaces.IArrFund;
 import cz.tacr.elza.api.interfaces.IRegScope;
 import cz.tacr.elza.domain.UsrGroup;
@@ -23,17 +24,48 @@ import cz.tacr.elza.exception.AccessDeniedException;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
+import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.UserService;
 
 /**
  * Kontrola oprávnění přes AOP.
  *
- * @author Martin Šlapa
- * @since 17.04.2016
  */
 @Aspect
 @Component
 public class Authorization {
+
+	/**
+	 * Brief method info
+	 * 
+	 *
+	 */
+	class MethodInfo {
+		MethodSignature methodSignature;
+		Method method;
+		Parameter[] parameters;
+		Object[] pjpArgs;
+
+		public MethodInfo(ProceedingJoinPoint pjp) {
+			this.methodSignature = (MethodSignature) pjp.getSignature();
+			this.method = methodSignature.getMethod();
+
+			this.parameters = method.getParameters();
+			this.pjpArgs = pjp.getArgs();
+		}
+
+		Method getMethod() {
+			return method;
+		}
+
+		Parameter[] getParameters() {
+			return parameters;
+		}
+
+		public Object getPjpArg(int i) {
+			return pjpArgs[i];
+		}
+	}
 
     @Autowired
     private UserService userService;
@@ -47,119 +79,239 @@ public class Authorization {
     @Autowired
     private PartyRepository partyRepository;
 
-    @Around("execution(* cz.tacr.elza..*.*(..)) && @annotation(cz.tacr.elza.annotation.AuthMethod)")
-    public Object auth(final ProceedingJoinPoint pjp) throws Throwable {
-        MethodSignature methodSignature = (MethodSignature)pjp.getSignature();
-        Method method = methodSignature.getMethod();
-        AuthMethod declaredAnnotation = method.getDeclaredAnnotation(AuthMethod.class);
+	@Around("execution(* cz.tacr.elza..*.*(..)) && @annotation(cz.tacr.elza.annotation.AuthMethod)")
+	public Object auth(final ProceedingJoinPoint pjp) throws Throwable {
+		
+		MethodInfo methodInfo = new MethodInfo(pjp);
+		
+		AuthMethod declaredAnnotation = methodInfo.getMethod().getDeclaredAnnotation(AuthMethod.class);
+		
+		UserDetail userDetail = userService.getLoggedUserDetail();
 
-        if (userService.hasPermission(UsrPermission.Permission.ADMIN)) {
-            return pjp.proceed();
-        }
-
-        for (UsrPermission.Permission permission : declaredAnnotation.permission()) {
+		for (UsrPermission.Permission permission : declaredAnnotation.permission()) {
 
 			boolean hasPermission = false;
+			
+			if(permission==UsrPermission.Permission.USER_CONTROL_ENTITITY) {
+				hasPermission = checkControlEntityPermission(methodInfo, userDetail);
+			} else if (permission == UsrPermission.Permission.GROUP_CONTROL_ENTITITY) {
+				hasPermission = checkControlGroupPermission(methodInfo, userDetail);
+			} else {
+				// type based permission checker
+				switch (permission.getType()) {
+				case ALL:
+					if (userDetail.hasPermission(permission)) {
+						hasPermission = true;
+					}
+					break;
 
-            Parameter[] parameters = method.getParameters();
-            Object[] pjpArgs = pjp.getArgs();
+				case SCOPE:
+					// permissions for scope
+					hasPermission = checkScopePermission(permission, methodInfo, userDetail);
+					break;
+				case FUND:
+					hasPermission = checkFundPermission(permission, methodInfo, userDetail);
+					break;
+				default:
+					throw new IllegalStateException("Permission type not defined: " + permission.getType());
+				}
+			}
 
-            switch (permission.getType()) {
-                case ALL:
-                    if (userService.hasPermission(permission)) {
-                        hasPermission = true;
-                    }
-                    break;
-                case USER:
-                case GROUP:
-                case SCOPE:
-                case FUND:
-                    for (int i = 0; i < parameters.length; i++) {
-                        Parameter parameter = parameters[i];
-                        Object parameterValue = pjpArgs[i];
-                        AuthParam[] authParams = parameter.getAnnotationsByType(AuthParam.class);
-                        for (AuthParam authParam : authParams) {
-                            Integer entityId = loadEntityId(parameterValue, authParam.type());
-                            if (userService.hasPermission(permission, entityId)) {
-                                hasPermission = true;
-                            }
-                        }
-                    }
-                    break;
-                default:
-                    throw new IllegalStateException("Permission type not defined: " + permission.getType());
-            }
+			if (hasPermission) {
+				return pjp.proceed();
+			}
+		}
 
-            if (hasPermission) {
-                return pjp.proceed();
-            }
-        }
+		throw createAccessDeniedException(declaredAnnotation.permission());
+	}
 
-        throw createAccessDeniedException(declaredAnnotation.permission());
-    }
+	private boolean checkControlGroupPermission(MethodInfo methodInfo, UserDetail userDetail) {
+		Integer userId = userDetail.getId();
+		if (userId == null) {
+			// if user is null -> it is admin
+			return true;
+		}
 
-    /**
-     * Načtení entity podle vstupního objektu.
-     *
-     * @param value vstupní objekt
-     * @param type  typ vstupního parametru
-     * @return  identfikátor entity
-     */
-    private Integer loadEntityId(final Object value, final AuthParam.Type type) {
-        switch (type) {
-            case FUND: {
-                if (value instanceof Integer) {
-                    return (Integer) value;
-                } else if (value instanceof IArrFund) {
-                    return ((IArrFund) value).getFund().getFundId();
-                }
-            }
-            case FUND_VERSION: {
-                if (value instanceof Integer) {
-                    return fundVersionRepository.getOneCheckExist((Integer) value).getFund().getFundId();
-                } else if (value instanceof IArrFund) {
-                    return ((IArrFund) value).getFund().getFundId();
-                }
-            }
-            case SCOPE: {
-                if (value instanceof Integer) {
-                    return (Integer) value;
-                } else if (value instanceof IRegScope) {
-                    return ((IRegScope) value).getRegScope().getScopeId();
-                }
-            }
-            case PARTY: {
-                if (value instanceof Integer) {
-                    return partyRepository.getOneCheckExist((Integer) value).getRegScope().getScopeId();
-                } else if (value instanceof IRegScope) {
-                    return ((IRegScope) value).getRegScope().getScopeId();
-                }
-            }
-            case REGISTRY: {
-                if (value instanceof Integer) {
-                    return recordRepository.getOneCheckExist((Integer) value).getRegScope().getScopeId();
-                } else if (value instanceof IRegScope) {
-                    return ((IRegScope) value).getRegScope().getScopeId();
-                }
-            }
-            case USER: {
-                if (value instanceof Integer) {
-                    return (Integer) value;
-                } else if (value instanceof UsrUser) {
-                    return ((UsrUser) value).getUserId();
-                }
-            }
-            case GROUP: {
-                if (value instanceof Integer) {
-                    return (Integer) value;
-                } else if (value instanceof UsrGroup) {
-                    return ((UsrGroup) value).getGroupId();
-                }
-            }
-            default:
-                throw new IllegalStateException(type + ":" + value.getClass().getName());
-        }
-    }
+		Parameter[] params = methodInfo.getParameters();
+		// permssions for fund
+		for (int i = 0; i < params.length; i++) {
+			Parameter parameter = params[i];
+			Object parameterValue = methodInfo.getPjpArg(i);
+			AuthParam[] authParams = parameter.getAnnotationsByType(AuthParam.class);
+			for (AuthParam authParam : authParams) {
+				Integer entityId = loadGroupId(parameterValue, authParam.type());
+				if (userDetail.hasPermission(UsrPermission.Permission.GROUP_CONTROL_ENTITITY, entityId)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	private Integer loadGroupId(Object value, Type type) {
+		switch (type) {
+		case GROUP:
+			if (value instanceof Integer) {
+				return (Integer) value;
+			} else if (value instanceof UsrGroup) {
+				return ((UsrGroup) value).getGroupId();
+			}
+			break;
+		}
+		throw new IllegalStateException(type + ":" + value.getClass().getName());
+	}
+
+	/**
+	 * Check if logged user can manage entity in parameter
+	 * 
+	 * @param permission
+	 * @param methodInfo
+	 * @param userDetail
+	 * @return
+	 */
+	private boolean checkControlEntityPermission(MethodInfo methodInfo, UserDetail userDetail) {
+		Integer userId = userDetail.getId();
+		if (userId == null) {
+			// if user is null -> it is admin
+			return true;
+		}
+
+		Parameter[] params = methodInfo.getParameters();
+		// permssions for fund
+		for (int i = 0; i < params.length; i++) {
+			Parameter parameter = params[i];
+			Object parameterValue = methodInfo.getPjpArg(i);
+			AuthParam[] authParams = parameter.getAnnotationsByType(AuthParam.class);
+			for (AuthParam authParam : authParams) {
+				Integer entityId = loadUserId(parameterValue, authParam.type());
+				if (userDetail.hasPermission(UsrPermission.Permission.USER_CONTROL_ENTITITY, entityId)) {
+					return true;
+				}
+				if (userService.isControlledByUserGroup(userId, entityId)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	private int loadUserId(Object value, Type type) {
+		switch (type) {
+		case USER:
+			if (value instanceof Integer) {
+				return (Integer) value;
+			} else if (value instanceof UsrUser) {
+				return ((UsrUser) value).getUserId();
+			}
+			break;
+		}
+		throw new IllegalStateException(type + ":" + value.getClass().getName());
+	}
+
+	private boolean checkFundPermission(Permission permission, MethodInfo methodInfo, UserDetail userDetail) {
+		Parameter[] params = methodInfo.getParameters();
+		// permssions for fund
+		for (int i = 0; i < params.length; i++) {
+			Parameter parameter = params[i];
+			Object parameterValue = methodInfo.getPjpArg(i);
+			AuthParam[] authParams = parameter.getAnnotationsByType(AuthParam.class);
+			for (AuthParam authParam : authParams) {
+				Integer entityId = loadFundId(parameterValue, authParam.type());
+				if (userDetail.hasPermission(permission, entityId)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Check permissions for scope
+	 * 
+	 * @param permission
+	 * @param methodInfo
+	 * @param userDetail
+	 * @return
+	 */
+	private boolean checkScopePermission(Permission permission, MethodInfo methodInfo, UserDetail userDetail) {
+		Parameter[] params = methodInfo.getParameters();
+		// permssions for fund
+		for (int i = 0; i < params.length; i++) {
+			Parameter parameter = params[i];
+			Object parameterValue = methodInfo.getPjpArg(i);
+			AuthParam[] authParams = parameter.getAnnotationsByType(AuthParam.class);
+			for (AuthParam authParam : authParams) {
+				Integer entityId = loadScopeId(parameterValue, authParam.type());
+				if (userDetail.hasPermission(permission, entityId)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Prapare scope id
+	 * 
+	 * @param value
+	 * @param type
+	 * @return
+	 */
+	private Integer loadScopeId(final Object value, final AuthParam.Type type) {
+		switch (type) {
+		case SCOPE:
+			if (value instanceof Integer) {
+				return (Integer) value;
+			} else if (value instanceof IRegScope) {
+				return ((IRegScope) value).getRegScope().getScopeId();
+			}
+			break;
+		case PARTY:
+			if (value instanceof Integer) {
+				return partyRepository.getOneCheckExist((Integer) value).getRegScope().getScopeId();
+			} else if (value instanceof IRegScope) {
+				return ((IRegScope) value).getRegScope().getScopeId();
+			}
+			break;
+		case REGISTRY:
+			if (value instanceof Integer) {
+				return recordRepository.getOneCheckExist((Integer) value).getRegScope().getScopeId();
+			} else if (value instanceof IRegScope) {
+				return ((IRegScope) value).getRegScope().getScopeId();
+			}
+			break;
+		}
+		throw new IllegalStateException(type + ":" + value.getClass().getName());
+	}
+
+	/**
+	 * Load fund id
+	 *
+	 * @param value
+	 *            vstupní objekt
+	 * @param type
+	 *            typ vstupního parametru
+	 * @return identfikátor entity
+	 */
+	private Integer loadFundId(final Object value, final AuthParam.Type type) {
+		switch (type) {
+		case FUND:
+			if (value instanceof Integer) {
+				return (Integer) value;
+			} else if (value instanceof IArrFund) {
+				return ((IArrFund) value).getFund().getFundId();
+			}
+			break;
+		case FUND_VERSION:
+			if (value instanceof Integer) {
+				return fundVersionRepository.getOneCheckExist((Integer) value).getFund().getFundId();
+			} else if (value instanceof IArrFund) {
+				return ((IArrFund) value).getFund().getFundId();
+			}
+			break;
+		}
+		throw new IllegalStateException(type + ":" + value.getClass().getName());
+	}
 
 	public static AccessDeniedException createAccessDeniedException(Permission... deniedPermissions) {
 		return new AccessDeniedException("Chybějící oprávnění: " + Arrays.toString(deniedPermissions), deniedPermissions);

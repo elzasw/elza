@@ -7,6 +7,7 @@ import java.util.Set;
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
+import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -216,7 +217,7 @@ public class UserController {
     @RequestMapping(value = "/{userId}", method = RequestMethod.GET)
 	@Transactional
     public UsrUserVO getUser(@PathVariable(value = "userId") final Integer userId) {
-        Assert.notNull(userId, "Identifikátor uživatele musí být vyplněno");
+		Validate.notNull(userId);
 
         UsrUser user = userService.getUser(userId);
         return factoryVO.createUser(user, true, true);

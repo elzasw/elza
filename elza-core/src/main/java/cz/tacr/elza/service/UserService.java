@@ -18,6 +18,7 @@ import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 import javax.validation.constraints.NotNull;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.Validate;
 import org.hibernate.validator.constraints.NotEmpty;
@@ -895,7 +896,7 @@ public class UserService {
 		// pokud je null, jedná se o virtuální admin účet, který má nastaveno oprávnění ADMIN
 		if (userId != null) {
 			try {
-				// get permission from cache, refresh it s TTL
+				// get permission from cache, refresh its TTL
 				Collection<UserPermission> perms = userPermissionsCache.get(userId);
 				// refresh permissions in user detail
 				// probably should be places elsewhere
@@ -974,36 +975,8 @@ public class UserService {
 	@Transactional(value = TxType.MANDATORY)
     public boolean hasPermission(final UsrPermission.Permission permission,
                                  final Integer entityId) {
-        for (UserPermission userPermission : getUserPermission()) {
-            if (userPermission.getPermission().equals(permission)) {
-                switch (permission.getType()) {
-                    case FUND:
-                        if (userPermission.getFundIds().contains(entityId)) {
-                            return true;
-                        }
-                        break;
-                    case USER:
-                        if (userPermission.getControlUserIds().contains(entityId)) {
-                            return true;
-                        }
-                        break;
-                    case GROUP:
-                        if (userPermission.getControlGroupIds().contains(entityId)) {
-                            return true;
-                        }
-                        break;
-                    case SCOPE:
-                        if (userPermission.getScopeIds().contains(entityId)) {
-                            return true;
-                        }
-                        break;
-                    default:
-                        throw new IllegalStateException(permission.getType().toString());
-                }
-                break;
-            }
-        }
-        return false;
+		UserDetail userDetail = getLoggedUserDetail();
+		return userDetail.hasPermission(permission, entityId);
     }
 
     /**
@@ -1017,12 +990,8 @@ public class UserService {
 	 */
 	@Transactional(value = TxType.MANDATORY)
     public boolean hasPermission(final UsrPermission.Permission permission) {
-        for (UserPermission userPermission : getUserPermission()) {
-            if (userPermission.getPermission().equals(permission) || userPermission.getPermission().equals(UsrPermission.Permission.ADMIN)) {
-                return true;
-            }
-        }
-        return false;
+		UserDetail userDetail = getLoggedUserDetail();
+		return userDetail.hasPermission(permission);
     }
 
     /**
@@ -1035,14 +1004,21 @@ public class UserService {
      * @param maxResults  maximální počet vrácených záznamů
      * @return výsledky hledání
      */
-    public FilteredResult<UsrUser> findUser(final String search, final Boolean active, final Boolean disabled, final Integer firstResult, final Integer maxResults, final Integer excludedGroupId) {
+	public FilteredResult<UsrUser> findUser(final String search, final Boolean active, final Boolean disabled,
+	        final int firstResult, final int maxResults, final Integer excludedGroupId) {
         if (!active && !disabled) {
             throw new IllegalArgumentException("Musí být uveden alespoň jeden z parametrů: active, disabled.");
         }
 
-        boolean filterByUser = !hasPermission(UsrPermission.Permission.USR_PERM);
-        UsrUser user = getLoggedUser();
-        return userRepository.findUserByTextAndStateCount(search, active, disabled, firstResult, maxResults, excludedGroupId, filterByUser && user != null ? user.getUserId() : null);
+		UserDetail userDetail = getLoggedUserDetail();
+		if (userDetail.hasPermission(UsrPermission.Permission.USR_PERM)) {
+			// return all users
+			return userRepository.findUserByText(search, active, disabled, firstResult, maxResults, excludedGroupId);
+		} else {
+			return userRepository.findUserByTextAndStateCount(search, active, disabled, firstResult, maxResults,
+			        excludedGroupId,
+			        userDetail.getId());
+		}
     }
 
     /**
@@ -1094,8 +1070,8 @@ public class UserService {
      * @return objekt
      */
     @AuthMethod(permission = {UsrPermission.Permission.USR_PERM, UsrPermission.Permission.USER_CONTROL_ENTITITY})
-    public UsrUser getUser(@AuthParam(type = AuthParam.Type.USER) final Integer userId) {
-        Assert.notNull(userId, "Identifikátor uživatele musí být vyplněno");
+	public UsrUser getUser(@AuthParam(type = AuthParam.Type.USER) final Integer userId) {
+		Validate.notNull(userId, "Identifikátor uživatele musí být vyplněno");
         return userRepository.getOneCheckExist(userId);
     }
 
@@ -1418,18 +1394,19 @@ public class UserService {
 	/**
 	 * Authorize request or throw exception
 	 * 
-	 * @param or
+	 * @param authRequest
+	 *            Request to be authorized
 	 */
 	@Transactional(value = TxType.MANDATORY)
 	public void authorizeRequest(AuthorizationRequest authRequest) {
-		Collection<UserPermission> perms = getUserPermission();
-		if (authRequest.matches(perms)) {
+		UserDetail userDetail = getLoggedUserDetail();
+		if (authRequest.matches(userDetail)) {
 			// request match permissions
 			return;
 		}
 
-		UsrPermission.Permission deniedPermissions[] = authRequest.getPermissions();
 		// throw exception - authorization not granted
+		UsrPermission.Permission deniedPermissions[] = authRequest.getPermissions();
 		throw new AccessDeniedException("Missing permissions: " + Arrays.toString(deniedPermissions),
 		        deniedPermissions);
 	}
@@ -1546,5 +1523,23 @@ public class UserService {
 		if (user != null) {
 			addUserPermission(user, usrPermissions, false);
 		}
+	}
+
+	/**
+	 * Check if supplied user is manager by other user over group
+	 * 
+	 * @param userId
+	 *            logged user
+	 * @param checkedUserId
+	 * @return
+	 */
+	public boolean isControlledByUserGroup(int userId, int checkedUserId) {
+		// check if user is member of the group which can be managed by this user
+		List<UsrGroupUser> userGroupLinks = userRepository.findGroupManagedByWithUser(userId, checkedUserId);
+		if (CollectionUtils.isNotEmpty(userGroupLinks)) {
+			return true;
+		}
+
+		return false;
 	}
 }

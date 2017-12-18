@@ -10,8 +10,17 @@ import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrPermission.Permission;
 
+/**
+ * Class for request authorization
+ * 
+ */
 public class AuthorizationRequest {
 
+	/**
+	 * Check if given permission exists.
+	 *
+	 * Check does not validate specific entity ids.
+	 */
 	static class AuthCheck {
 		UsrPermission.Permission perm;
 
@@ -23,16 +32,21 @@ public class AuthorizationRequest {
 			return perm;
 		}
 
-		public boolean matches(Collection<UserPermission> perms) {
-			for (UserPermission up : perms) {
-				if (up.getPermission() == perm) {
-					return true;
-				}
-			}
-			return false;
+		/**
+		 * Check if has such permission
+		 * 
+		 * @param userDetail
+		 * @return
+		 */
+		public boolean matches(UserDetail userDetail) {
+			return userDetail.hasPermission(perm);
 		}
 	}
 
+	/**
+	 * Check if user has specific access rights for the fund
+	 *
+	 */
 	static class AuthCheckFundVersion extends AuthCheck {
 
 		ArrFundVersion fundVersion;
@@ -59,6 +73,7 @@ public class AuthorizationRequest {
 	}
 
 	public AuthorizationRequest or(Permission perm) {
+		// only some permission type checks are supported
 		Validate.isTrue(perm == Permission.ADMIN || perm == Permission.FUND_ARR_ALL);
 
 		checkList.add(new AuthCheck(perm));
@@ -66,6 +81,7 @@ public class AuthorizationRequest {
 	}
 
 	public AuthorizationRequest or(Permission perm, ArrFundVersion fundVersion) {
+		// only some permission type checks are supported
 		Validate.isTrue(perm == Permission.FUND_ARR);
 
 		checkList.add(new AuthCheckFundVersion(perm, fundVersion));
@@ -94,9 +110,9 @@ public class AuthorizationRequest {
 		return result;
 	}
 
-	public boolean matches(Collection<UserPermission> perms) {
+	public boolean matches(UserDetail userDetail) {
 		for (AuthCheck authCheck : checkList) {
-			if (authCheck.matches(perms)) {
+			if (authCheck.matches(userDetail)) {
 				return true;
 			}
 		}

@@ -1,6 +1,5 @@
 package cz.tacr.elza.domain;
 
-import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -28,8 +27,11 @@ public class UsrPermission {
 
     public static final String USER_ID = "userId";
     public static final String GROUP_ID = "groupId";
+	public static final String USER_CONTROL = "userControl";
     public static final String USER_CONTROL_ID = "userControlId";
     public static final String GROUP_CONTROL_ID = "groupControlId";
+	public static final String GROUP_CONTROL = "groupControl";
+	public static final String PERMISSION = "permission";
 
     @Id
     @GeneratedValue
