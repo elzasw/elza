@@ -22,7 +22,7 @@ public class OutputParams {
 
     private final List<ArrNodeOutput> outputNodes;
 
-    private final List<ArrOutputItem> directItems;
+    private final List<ArrOutputItem> outputItems;
 
     private final Path templateDir;
 
@@ -30,7 +30,7 @@ public class OutputParams {
                         ArrChange change,
                         ArrFundVersion fundVersion,
                         List<ArrNodeOutput> outputNodes,
-                        List<ArrOutputItem> directItems,
+                        List<ArrOutputItem> outputItems,
                         Path templateDir) {
         // sanity check
         Validate.isTrue(definition.getFundId().equals(fundVersion.getFundId()));
@@ -39,7 +39,7 @@ public class OutputParams {
         this.change = change;
         this.fundVersion = fundVersion;
         this.outputNodes = outputNodes;
-        this.directItems = directItems;
+        this.outputItems = outputItems;
         this.templateDir = templateDir;
     }
 
@@ -80,8 +80,8 @@ public class OutputParams {
         return outputNodes;
     }
 
-    public List<ArrOutputItem> getDirectItems() {
-        return directItems;
+    public List<ArrOutputItem> getOutputItems() {
+        return outputItems;
     }
 
     public Path getTemplateDir() {

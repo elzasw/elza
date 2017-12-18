@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.core.tree.FundTreeProvider;
+import cz.tacr.elza.core.fund.FundTreeProvider;
 import cz.tacr.elza.dataexchange.output.DEExportService;
 import cz.tacr.elza.domain.RulTemplate.Engine;
 import cz.tacr.elza.service.DmsService;

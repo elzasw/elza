@@ -1,6 +1,5 @@
 package cz.tacr.elza.service;
 
-import java.sql.Timestamp;
 import java.text.Normalizer;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -36,10 +35,9 @@ import org.springframework.util.Assert;
 import com.google.common.collect.Iterables;
 
 import cz.tacr.elza.ElzaTools;
-import cz.tacr.elza.annotation.AuthMethod;
-import cz.tacr.elza.annotation.AuthParam;
 import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
 import cz.tacr.elza.bulkaction.BulkActionService;
+import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.controller.ArrangementController;
 import cz.tacr.elza.controller.ArrangementController.Depth;
 import cz.tacr.elza.controller.ArrangementController.TreeNodeFulltext;
@@ -49,6 +47,8 @@ import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
 import cz.tacr.elza.controller.vo.filter.SearchParam;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.core.security.AuthMethod;
+import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDescItem;
@@ -122,7 +122,6 @@ import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventFund;
 import cz.tacr.elza.service.eventnotification.events.EventType;
-import cz.tacr.elza.utils.ObjectListIterator;
 
 /**
  * Main arrangement service.
@@ -193,7 +192,7 @@ public class ArrangementService {
     private RegistryService registryService;
 
 	@Autowired
-	ArrangementServiceInternal arrangementInternal;
+	DescriptionItemServiceInternal arrangementInternal;
     @Autowired
     private PolicyService policyService;
 
@@ -632,6 +631,8 @@ public class ArrangementService {
         ArrFundVersion version = getOpenVersionByFundId(fundId);
         ArrFund fund = version.getFund();
 
+        faBulkActionRepository.deleteByFundVersionFund(fund);
+
         List<ArrOutputDefinition> outputDefinitions = outputDefinitionRepository.findByFund(fund);
 
         if (!outputDefinitions.isEmpty()) {
@@ -641,7 +642,6 @@ public class ArrangementService {
                 nodeOutputRepository.delete(outputDefinition.getOutputNodes());
                 dataIdsToDelete.addAll(dataRepository.findByIdsOutputDefinition(outputDefinition));
                 outputItemRepository.deleteByOutputDefinition(outputDefinition);
-                faBulkActionRepository.deleteByOutputDefinition(outputDefinition);
                 itemSettingsRepository.deleteByOutputDefinition(outputDefinition);
                 outputFileRepository.deleteByOutputDefinition(outputDefinition);
                 outputResultRepository.deleteByOutputDefinition(outputDefinition);
@@ -1576,34 +1576,6 @@ public class ArrangementService {
                 recursiveAddNodes(nodeIds, node, nodePolicyTypes, policiesMap, nodeProblemsMap, foundNode);
             }
         }
-    }
-
-    /**
-     * Test if specified change is last change for nodes. Parents and subtrees can be included.
-     *
-     * @param change          tested change
-     * @param nodeIds         node id od kterého prohledáváme
-     * @param includeParents  zahrnout rodiče k root?
-     * @param includeChildren zahrnout podstrom?
-     */
-    public boolean isLastChange(final ArrChange change,
-                                final int nodeId,
-                                final boolean includeParents,
-                                final boolean includeChildren) {
-        Timestamp lastChange = Timestamp.valueOf(change.getChangeDate());
-        if (includeChildren) {
-            List<Integer> newerNodeIds = levelRepository.findNewerNodeIdsInSubtree(nodeId, lastChange);
-            if (newerNodeIds.size() > 0) {
-                return false;
-            }
-        }
-        if (includeParents) {
-            List<Integer> newerNodeIds = levelRepository.findNewerNodeIdsInParents(nodeId, lastChange);
-            if (newerNodeIds.size() > 0) {
-                return false;
-            }
-        }
-        return true;
     }
 
     /**

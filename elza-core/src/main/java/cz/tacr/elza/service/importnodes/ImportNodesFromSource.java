@@ -23,7 +23,7 @@ import cz.tacr.elza.domain.RegScope;
 import cz.tacr.elza.repository.FundFileRepository;
 import cz.tacr.elza.repository.PacketRepository;
 import cz.tacr.elza.repository.ScopeRepository;
-import cz.tacr.elza.service.ArrMoveLevelService;
+import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.importnodes.vo.ImportParams;
 import cz.tacr.elza.service.importnodes.vo.ImportSource;
@@ -139,7 +139,7 @@ public class ImportNodesFromSource {
                            final ArrFundVersion targetFundVersion,
                            final ArrNode targetNode,
                            final ArrNode targetStaticParentNode,
-                           final ArrMoveLevelService.AddLevelDirection selectedDirection) {
+                           final FundLevelService.AddLevelDirection selectedDirection) {
         ImportProcess importProcess = createImportProcess();
         importProcess.init(source, params, targetFundVersion, targetNode, targetStaticParentNode, selectedDirection);
         importProcess.run();

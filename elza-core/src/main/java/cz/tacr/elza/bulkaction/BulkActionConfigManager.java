@@ -1,9 +1,10 @@
 package cz.tacr.elza.bulkaction;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -14,7 +15,6 @@ import javax.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.yaml.snakeyaml.TypeDescription;
 import org.yaml.snakeyaml.Yaml;
@@ -31,6 +31,7 @@ import cz.tacr.elza.bulkaction.generator.multiple.DateRangeConfig;
 import cz.tacr.elza.bulkaction.generator.multiple.NodeCountConfig;
 import cz.tacr.elza.bulkaction.generator.multiple.TextAggregationConfig;
 import cz.tacr.elza.bulkaction.generator.multiple.UnitCountConfig;
+import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.domain.RulAction;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.repository.ActionRepository;
@@ -45,16 +46,8 @@ public class BulkActionConfigManager {
 
 	private static final Logger logger = LoggerFactory.getLogger(BulkActionConfigManager.class);
 
-    /**
-     * Název složky v pravidlech.
-     */
-    public final static String FOLDER = "functions";
-
-    /**
-     * Cesta adresáře pro konfiguraci pravidel.
-     */
-    @Value("${elza.rulesDir}")
-    private String rulesDir;
+	@Autowired
+    private ResourcePathResolver resourcePathResolver;
 
     @Autowired
     private ActionRepository actionRepository;
@@ -65,13 +58,6 @@ public class BulkActionConfigManager {
     private Map<String, BulkActionConfig> bulkActionConfigMap = new HashMap<>();
 
     /**
-     * @return cesta k pravidlům
-     */
-    public String getRulesDir() {
-        return rulesDir;
-    }
-
-    /**
      * Načtení hromadných akcí z adresáře.
      */
     @Transactional
@@ -79,24 +65,17 @@ public class BulkActionConfigManager {
 
         bulkActionConfigMap = new HashMap<>();
 
-        File dir = new File(rulesDir);
-
-        if (!dir.exists()) {
-            dir.mkdirs();
-        }
-
         List<RulAction> actions = actionRepository.findAll();
 
         // vyhledání souborů v adresáři
-        File[] files = new File[actions.size()];
+        List<Path> actionFiles = new ArrayList<>(actions.size());
 
-        for (int i = 0; i < actions.size(); i++) {
-            RulAction action = actions.get(i);
-            String filePath = getFunctionsDir(action.getRuleSet().getCode()) + File.separator + action.getFilename();
-            files[i] = new File(filePath);
-            if (!files[i].exists()) {
-                throw new SystemException("Soubor neexistuje: " + filePath);
+        for (RulAction action : actions) {
+            Path file = resourcePathResolver.getFunctionFile(action);
+            if (!Files.exists(file)) {
+                throw new SystemException("Action file not found, path: " + file);
             }
+            actionFiles.add(file);
         }
 
 		// prepare yaml loader
@@ -115,17 +94,15 @@ public class BulkActionConfigManager {
 		Yaml yamlLoader = new Yaml(yamlCons);
 
 		// load files
-        for (File file : files) {
+        for (Path file : actionFiles) {
 			// load bulk action
-			String actionCode = FilenameUtils.getBaseName(file.getName());
+			String actionCode = FilenameUtils.getBaseName(file.getFileName().toString());
 
 			BulkActionConfig bulkActionConfig = null;
-			try (InputStream ios = new FileInputStream(file)) {
+			try (InputStream ios = Files.newInputStream(file, StandardOpenOption.READ)) {
 				bulkActionConfig = (BulkActionConfig) yamlLoader.load(ios);
 			} catch (Exception e) {
-				logger.error(
-				        "Failed to initialize action, consider updating package with action, actionCode=" + actionCode,
-				        e);
+                logger.error("Failed to initialize action, consider updating package with action, actionCode=" + actionCode, e);
 				// on failure - log problem and create empty action
 				bulkActionConfig = new BrokenActionConfig(e);
 			}
@@ -152,15 +129,5 @@ public class BulkActionConfigManager {
      */
     public List<BulkActionConfig> getBulkActions() {
         return new ArrayList<>(bulkActionConfigMap.values());
-    }
-
-    /**
-     * Vrací úplnou cestu k adresáři funkcí podle balíčku.
-     *
-     * @param code kód balíčku (pravidel)
-     * @return cesta k adresáři funkcí
-     */
-    public String getFunctionsDir(final String code) {
-        return rulesDir + File.separator + code + File.separator + FOLDER;
     }
 }

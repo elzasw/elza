@@ -18,7 +18,7 @@ import org.apache.pdfbox.multipdf.PDFMergerUtility;
 import org.springframework.http.MediaType;
 
 import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.core.tree.FundTreeProvider;
+import cz.tacr.elza.core.fund.FundTreeProvider;
 import cz.tacr.elza.exception.ProcessException;
 import cz.tacr.elza.print.File;
 import cz.tacr.elza.print.OutputModel;

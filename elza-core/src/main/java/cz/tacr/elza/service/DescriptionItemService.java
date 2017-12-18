@@ -28,11 +28,11 @@ import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 
 import cz.tacr.elza.ElzaTools;
-import cz.tacr.elza.annotation.AuthMethod;
-import cz.tacr.elza.annotation.AuthParam;
 import cz.tacr.elza.controller.ArrangementController;
 import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.core.data.CalendarType;
+import cz.tacr.elza.core.security.AuthMethod;
+import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;

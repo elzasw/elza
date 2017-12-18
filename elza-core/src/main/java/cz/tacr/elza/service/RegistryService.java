@@ -25,8 +25,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import cz.tacr.elza.annotation.AuthMethod;
-import cz.tacr.elza.annotation.AuthParam;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
 import cz.tacr.elza.controller.vo.usage.FundVO;
 import cz.tacr.elza.controller.vo.usage.NodeVO;
@@ -34,6 +32,8 @@ import cz.tacr.elza.controller.vo.usage.OccurrenceType;
 import cz.tacr.elza.controller.vo.usage.OccurrenceVO;
 import cz.tacr.elza.controller.vo.usage.PartyVO;
 import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
+import cz.tacr.elza.core.security.AuthMethod;
+import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataRecordRef;

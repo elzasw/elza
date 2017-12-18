@@ -19,7 +19,7 @@ import cz.tacr.elza.domain.ParRelationTypeRoleType;
 @Repository
 public interface RelationTypeRoleTypeRepository extends JpaRepository<ParRelationTypeRoleType, Integer>, Packaging<ParRelationTypeRoleType> {
 
-    @Query("SELECT * FROM par_relation_type_role_type tr FETCH JOIN tr.roleType")
+    @Query("FROM par_relation_type_role_type rrt JOIN FETCH rrt.roleType rt")
     List<ParRelationTypeRoleType> findAllFetchRoleType();
 
     void deleteByRoleType(ParRelationRoleType parRelationRoleTypesDelete);

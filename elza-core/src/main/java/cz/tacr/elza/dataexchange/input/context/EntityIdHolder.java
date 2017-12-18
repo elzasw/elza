@@ -5,7 +5,7 @@ import java.io.Serializable;
 import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
 
-import cz.tacr.elza.utils.HibernateUtils;
+import cz.tacr.elza.common.db.HibernateUtils;
 
 public class EntityIdHolder<E> {
 

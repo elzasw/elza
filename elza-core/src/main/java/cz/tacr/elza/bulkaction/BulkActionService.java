@@ -38,8 +38,8 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureCallback;
 
-import cz.tacr.elza.annotation.AuthMethod;
-import cz.tacr.elza.annotation.AuthParam;
+import cz.tacr.elza.core.security.AuthMethod;
+import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.domain.ArrBulkActionNode;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrBulkActionRun.State;
@@ -59,10 +59,10 @@ import cz.tacr.elza.exception.codes.PackageCode;
 import cz.tacr.elza.repository.ActionRepository;
 import cz.tacr.elza.repository.BulkActionNodeRepository;
 import cz.tacr.elza.repository.BulkActionRunRepository;
-import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.service.ArrangementService;
+import cz.tacr.elza.service.FundLevelServiceInternal;
 import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.service.OutputService;
 import cz.tacr.elza.service.RuleService;
@@ -77,7 +77,6 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
 @Service
 @Configuration
 public class BulkActionService implements InitializingBean, ListenableFutureCallback<BulkActionWorker> {
-
 
     /**
      * Počet hromadných akcí v listu MAX_BULK_ACTIONS_LIST.
@@ -109,9 +108,6 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
     private EventNotificationService eventNotificationService;
 
     @Autowired
-    private ChangeRepository changeRepository;
-
-    @Autowired
     private LevelTreeCacheService levelTreeCacheService;
 
     @Autowired
@@ -128,7 +124,10 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
 
     @Autowired
     @Qualifier("transactionManager")
-    protected PlatformTransactionManager txManager;
+    private PlatformTransactionManager txManager;
+
+    @Autowired
+    private FundLevelServiceInternal fundLevelServiceInternal;
 
     /**
      * Seznam běžících úloh instancí hromadných akcí.
@@ -454,7 +453,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
             for (ArrBulkActionNode baNode : bulkAction.getArrBulkActionNodes()) {
                 int nodeId = baNode.getNode().getNodeId(); // id without fetch -> access type property
 
-                if (!arrangementService.isLastChange(baChange, nodeId, true, true)) {
+                if (!fundLevelServiceInternal.isLastChange(baChange, nodeId, true, true)) {
                     bulkAction.setState(State.OUTDATED);
                     bulkActionRepository.save(bulkAction);
                     eventPublishBulkAction(bulkAction);

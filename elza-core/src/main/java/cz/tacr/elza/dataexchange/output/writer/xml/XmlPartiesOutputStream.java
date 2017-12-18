@@ -12,6 +12,7 @@ import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.commons.lang.Validate;
 
+import cz.tacr.elza.common.XmlUtils;
 import cz.tacr.elza.core.data.CalendarType;
 import cz.tacr.elza.core.data.PartyType;
 import cz.tacr.elza.dataexchange.common.CalendarTypeConvertor;
@@ -39,7 +40,6 @@ import cz.tacr.elza.schema.v2.PartyName;
 import cz.tacr.elza.schema.v2.PartyNames;
 import cz.tacr.elza.schema.v2.Person;
 import cz.tacr.elza.schema.v2.TimeIntervalExt;
-import cz.tacr.elza.utils.XmlUtils;
 
 /**
  * XML output stream for parties export.

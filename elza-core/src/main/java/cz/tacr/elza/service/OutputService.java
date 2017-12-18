@@ -25,8 +25,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
-import cz.tacr.elza.annotation.AuthMethod;
-import cz.tacr.elza.annotation.AuthParam;
 import cz.tacr.elza.bulkaction.BulkActionService;
 import cz.tacr.elza.bulkaction.generator.result.ActionResult;
 import cz.tacr.elza.bulkaction.generator.result.CopyActionResult;
@@ -39,6 +37,8 @@ import cz.tacr.elza.bulkaction.generator.result.TestDataGeneratorResult;
 import cz.tacr.elza.bulkaction.generator.result.TextAggregationActionResult;
 import cz.tacr.elza.bulkaction.generator.result.UnitCountActionResult;
 import cz.tacr.elza.bulkaction.generator.result.UnitIdResult;
+import cz.tacr.elza.core.security.AuthMethod;
+import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
@@ -98,9 +98,12 @@ import cz.tacr.elza.service.eventnotification.events.EventChangeOutputItem;
 import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.output.OutputGeneratorService;
+import cz.tacr.elza.service.output.OutputRequestStatus;
 
 @Service
 public class OutputService {
+
+    private static final Logger logger = LoggerFactory.getLogger(OutputService.class);
 
     @Autowired
     private OutputDefinitionRepository outputDefinitionRepository;
@@ -171,7 +174,13 @@ public class OutputService {
     @Autowired
     private ItemSpecRepository itemSpecRepository;
 
-    private static final Logger logger = LoggerFactory.getLogger(OutputService.class);
+    public ArrOutputDefinition getOutputDefinition(int outputDefinitionId) {
+        return outputGeneratorService.getOutputDefinition(outputDefinitionId);
+    }
+
+    public OutputRequestStatus addRequest(int outputDefinitionId, ArrFundVersion fundVersion, Integer userId, boolean checkBulkActions) {
+        return outputGeneratorService.addRequest(outputDefinitionId, fundVersion, userId, checkBulkActions);
+    }
 
     /**
      * Smazat pojmenovaný výstup.
@@ -736,7 +745,7 @@ public class OutputService {
             return false;
         }
 
-        List<ArrBulkActionRun> bulkActionRunList = bulkActionService.findBulkActionsByNodes(fundVersion, newNodes);
+        List<ArrBulkActionRun> bulkActionRunList = bulkActionService.findFinishedBulkActionsByNodes(fundVersion, newNodes);
         List<RulActionRecommended> actionRecommendeds = actionRecommendedRepository.findByOutputType(outputDefinition.getOutputType());
 
         ArrChangeLazy changeLazy = () -> change;
@@ -764,7 +773,7 @@ public class OutputService {
      * @return seznam typů atributů, které se pro seznam uzlů automaticky počítají
      */
     private List<RulItemType> findCountItemTypes(final ArrFundVersion fundVersion, final Set<ArrNode> nodes) {
-        List<ArrBulkActionRun> bulkActionRunListOld = bulkActionService.findBulkActionsByNodes(fundVersion, nodes);
+        List<ArrBulkActionRun> bulkActionRunListOld = bulkActionService.findFinishedBulkActionsByNodes(fundVersion, nodes);
 
         // získám kódy hromadných akcí
         List<String> actionCodes = new ArrayList<>(bulkActionRunListOld.size());
@@ -1227,7 +1236,7 @@ public class OutputService {
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public List<ArrOutputItem> getOutputItems(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
                                               final ArrOutputDefinition outputDefinition) {
-        return getOutputItemsInner(fundVersion, outputDefinition);
+        return outputGeneratorService.getOutputItems(outputDefinition, fundVersion.getLockChange());
     }
 
     /**
@@ -1274,8 +1283,7 @@ public class OutputService {
 
         ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
 
-        ArrOutputDefinition outputDefinition = findOutputDefinition(outputDefinitionId);
-        Assert.notNull(outputDefinition, "Definice výstupu musí být vyplněna");
+        ArrOutputDefinition outputDefinition = outputGeneratorService.getOutputDefinition(outputDefinitionId);
 
         // uložení uzlu (kontrola optimistických zámků)
         outputDefinition.setVersion(outputDefinitionVersion);
@@ -1338,7 +1346,7 @@ public class OutputService {
         Assert.notNull(fundVersion, "Verze archivní pomůcky neexistuje");
         Assert.notNull(descItemType, "Typ hodnoty atributu neexistuje");
 
-        final ArrOutputDefinition outputDefinition = findOutputDefinition(outputDefinitionId);
+        final ArrOutputDefinition outputDefinition = outputGeneratorService.getOutputDefinition(outputDefinitionId);
         List<OutputState> allowStates = Collections.singletonList(OutputState.OPEN);
         if (!allowStates.contains(outputDefinition.getState())) {
             throw new BusinessException("Nelze upravit výstupu, který není ve stavu otevřený", OutputCode.NOT_PROCESS_IN_STATE);
@@ -1448,7 +1456,7 @@ public class OutputService {
                                           final OutputState... changingStates) {
         List<ArrOutputDefinition> outputDefinitions = findOutputsByNodes(fundVersion, nodes, changingStates);
         for (ArrOutputDefinition outputDefinition : outputDefinitions) {
-            changeOutputState(outputDefinition, state);
+            changeOutputState(outputDefinition, state, fundVersion);
         }
     }
 
@@ -1552,7 +1560,7 @@ public class OutputService {
                     }
                 }
             }
-            changeOutputState(outputDefinition, OutputState.OPEN);
+            changeOutputState(outputDefinition, OutputState.OPEN, fundVersion);
         }
 
         return Pair.of(itemTypesResult, changed);
@@ -1565,10 +1573,11 @@ public class OutputService {
      * @param state            nastavovaný stav
      */
     private void changeOutputState(final ArrOutputDefinition outputDefinition,
-                                   final OutputState state) {
+                                   final OutputState state,
+                                   final ArrFundVersion fundVersion) {
         outputDefinition.setState(state);
         outputDefinitionRepository.save(outputDefinition);
-        outputGeneratorService.publishOutputStateEvent(outputDefinition, state.name());
+        outputGeneratorService.publishOutputStateChanged(outputDefinition, fundVersion.getFundVersionId());
     }
 
     /**
@@ -1854,7 +1863,7 @@ public class OutputService {
 
         if (nodeIds.size() != 0) {
             List<ArrBulkActionRun> bulkActionsByNodes;
-            bulkActionsByNodes = bulkActionService.findBulkActionsByNodes(version, nodeIds);
+            bulkActionsByNodes = bulkActionService.findFinishedBulkActionsByNodeIds(version, nodeIds);
 
             // získám kódy hromadných akcí
             List<String> actionCodes = new ArrayList<>(bulkActionsByNodes.size());

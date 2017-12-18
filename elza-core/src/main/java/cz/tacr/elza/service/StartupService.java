@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
-import cz.tacr.elza.core.DatabaseType;
+import cz.tacr.elza.common.db.DatabaseType;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrFundVersion;

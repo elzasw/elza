@@ -110,7 +110,7 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
 import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.table.ElzaTable;
-import cz.tacr.elza.service.ArrMoveLevelService;
+import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.vo.ChangesResult;
 
 
@@ -659,7 +659,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param parentStaticNode  rodič uzlu vůči kterému přidávám
      * @return vytvořený uzel
      */
-    protected ArrangementController.NodeWithParent addLevel(final ArrMoveLevelService.AddLevelDirection direction,
+    protected ArrangementController.NodeWithParent addLevel(final FundLevelService.AddLevelDirection direction,
                                                             final ArrFundVersionVO fundVersion,
                                                             final ArrNodeVO staticNode,
                                                             final ArrNodeVO parentStaticNode,

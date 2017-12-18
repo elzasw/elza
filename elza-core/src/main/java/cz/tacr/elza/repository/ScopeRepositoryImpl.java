@@ -9,8 +9,8 @@ import org.apache.commons.lang3.Validate;
 import org.hibernate.query.NativeQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import cz.tacr.elza.core.DatabaseType;
-import cz.tacr.elza.core.RecursiveQueryBuilder;
+import cz.tacr.elza.common.db.DatabaseType;
+import cz.tacr.elza.common.db.RecursiveQueryBuilder;
 import cz.tacr.elza.domain.RegScope;
 
 

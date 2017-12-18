@@ -12,6 +12,7 @@ import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.commons.lang.Validate;
 
+import cz.tacr.elza.common.XmlUtils;
 import cz.tacr.elza.dataexchange.output.writer.AccessPointsOutputStream;
 import cz.tacr.elza.dataexchange.output.writer.xml.nodes.FileNode;
 import cz.tacr.elza.dataexchange.output.writer.xml.nodes.RootNode;
@@ -23,7 +24,6 @@ import cz.tacr.elza.schema.v2.AccessPoint;
 import cz.tacr.elza.schema.v2.AccessPointEntry;
 import cz.tacr.elza.schema.v2.AccessPointVariantNames;
 import cz.tacr.elza.schema.v2.ExternalId;
-import cz.tacr.elza.utils.XmlUtils;
 
 /**
  * XML output stream for access points export.

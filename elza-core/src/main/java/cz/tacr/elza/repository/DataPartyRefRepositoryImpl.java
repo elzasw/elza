@@ -1,9 +1,10 @@
 package cz.tacr.elza.repository;
 
+import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.domain.ArrDataPartyRef;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.utils.ObjectListIterator;
+
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.EntityManager;

@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 import org.apache.commons.lang3.Validate;
 
-import cz.tacr.elza.core.DatabaseType;
+import cz.tacr.elza.common.db.DatabaseType;
 
 /**
  * Abstract implementation for batch loader.

@@ -35,6 +35,8 @@ import org.springframework.util.Assert;
 
 import cz.tacr.elza.ElzaCoreTest;
 import cz.tacr.elza.api.RegExternalSystemType;
+import cz.tacr.elza.common.XmlUtils;
+import cz.tacr.elza.common.security.NoCheckTrustManager;
 import cz.tacr.elza.controller.AbstractControllerTest;
 import cz.tacr.elza.controller.vo.RecordImportVO;
 import cz.tacr.elza.controller.vo.RegRecordVO;
@@ -65,8 +67,6 @@ import cz.tacr.elza.interpi.ws.wo.ZaznamTyp;
 import cz.tacr.elza.interpi.ws.wo.ZdrojTyp;
 import cz.tacr.elza.repository.RegExternalSystemRepository;
 import cz.tacr.elza.repository.ScopeRepository;
-import cz.tacr.elza.utils.NoCheckTrustManager;
-import cz.tacr.elza.utils.XmlUtils;
 
 /**
  * Testy na volání INTERPI.

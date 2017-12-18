@@ -13,6 +13,7 @@ import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.commons.lang.Validate;
 
+import cz.tacr.elza.common.XmlUtils;
 import cz.tacr.elza.dataexchange.common.PacketStateConvertor;
 import cz.tacr.elza.dataexchange.common.items.DescriptionItemAPRefImpl;
 import cz.tacr.elza.dataexchange.common.items.DescriptionItemPacketRefImpl;
@@ -42,7 +43,6 @@ import cz.tacr.elza.schema.v2.DescriptionItem;
 import cz.tacr.elza.schema.v2.FundInfo;
 import cz.tacr.elza.schema.v2.Level;
 import cz.tacr.elza.schema.v2.Packet;
-import cz.tacr.elza.utils.XmlUtils;
 
 /**
  * XML output stream for section export.

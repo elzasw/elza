@@ -23,6 +23,7 @@ import cz.tacr.elza.dataexchange.input.context.ImportPhaseChangeListener;
 import cz.tacr.elza.dataexchange.input.sections.context.SectionsContext;
 import cz.tacr.elza.dataexchange.input.sections.context.SectionsContext.ImportPosition;
 import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.service.IEventNotificationService;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
@@ -47,7 +48,11 @@ public class DEImportController {
 
     @RequestMapping(value = "transformations", method = RequestMethod.GET)
     public List<String> getTransformations() {
-        return importService.getTransformationNames();
+        try {
+            return importService.getTransformationNames();
+        } catch (IOException e) {
+            throw new SystemException("Failed to list import transformations", e, BaseCode.SYSTEM_ERROR);
+        }
     }
 
     @RequestMapping(value = "import", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

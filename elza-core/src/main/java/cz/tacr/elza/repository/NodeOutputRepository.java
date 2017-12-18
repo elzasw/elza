@@ -19,9 +19,17 @@ import cz.tacr.elza.domain.ArrOutputDefinition;
 @Repository
 public interface NodeOutputRepository extends JpaRepository<ArrNodeOutput, Integer> {
 
-    @Query("SELECT no FROM arr_node_output no JOIN arr_node n WHERE no.outputDefinition = ?1 and n.deleteChange is null")
+    static final String SELECT_OUTPUT_NODES = "SELECT no FROM arr_node_output no JOIN arr_level l ON l.nodeId = no.nodeId WHERE no.outputDefinition = ?1";
+
+    /**
+     * Searches output nodes for definition. Nodes must be valid in current fund version and also output.
+     */
+    @Query(SELECT_OUTPUT_NODES + " AND l.deleteChange is null AND no.deleteChange is null")
     List<ArrNodeOutput> findByOutputDefinitionAndDeleteChangeIsNull(ArrOutputDefinition outputDefinition);
 
-    @Query("SELECT no FROM arr_node_output no JOIN arr_node n WHERE no.outputDefinition = ?1 and n.createChange < ?2 and (n.deleteChange is null or n.deleteChange > ?2)")
+    /**
+     * Searches output nodes for definition. Nodes must be valid for specified lock change in fund and also output.
+     */
+    @Query(SELECT_OUTPUT_NODES + " AND no.createChange < ?2 AND (l.deleteChange is null or l.deleteChange > ?2) AND (no.deleteChange is null or no.deleteChange > ?2)")
     List<ArrNodeOutput> findByOutputDefinitionAndChange(ArrOutputDefinition outputDefinition, ArrChange lockChange);
 }

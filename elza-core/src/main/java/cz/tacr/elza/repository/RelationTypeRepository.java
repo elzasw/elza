@@ -31,6 +31,6 @@ public interface RelationTypeRepository extends ElzaJpaRepository<ParRelationTyp
 
     void deleteByRelationClassType(ParRelationClassType parRelationClassType);
 
-    @Query("SELECT * FROM par_relation_type rt FETCH JOIN rt.relationClassType")
+    @Query("FROM par_relation_type rt JOIN FETCH rt.relationClassType rct")
     List<ParRelationType> findAllFetchClassType();
 }

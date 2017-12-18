@@ -11,7 +11,7 @@ import java.util.Map;
 import javax.persistence.EntityManager;
 
 import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.core.tree.FundTreeProvider;
+import cz.tacr.elza.core.fund.FundTreeProvider;
 import cz.tacr.elza.exception.ProcessException;
 import cz.tacr.elza.print.OutputModel;
 import cz.tacr.elza.service.DmsService;

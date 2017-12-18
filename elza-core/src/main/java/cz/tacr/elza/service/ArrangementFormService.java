@@ -10,8 +10,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Service;
 
-import cz.tacr.elza.annotation.AuthMethod;
-import cz.tacr.elza.annotation.AuthParam;
 import cz.tacr.elza.controller.ArrangementController.DescFormDataNewVO;
 import cz.tacr.elza.controller.ArrangementController.DescItemResult;
 import cz.tacr.elza.controller.arrangement.UpdateItemResult;
@@ -25,6 +23,8 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ItemTypeGroupVO;
 import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.core.security.AuthMethod;
+import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -53,7 +53,7 @@ public class ArrangementFormService {
 
 	private final StaticDataService staticData;
 
-	private final ArrangementServiceInternal arrangementInternal;
+	private final DescriptionItemServiceInternal arrangementInternal;
 
 	private final DescriptionItemService descriptionItemService;
 
@@ -74,7 +74,7 @@ public class ArrangementFormService {
 	private final NodeCacheService nodeCache;
 
 	public ArrangementFormService(StaticDataService staticData,
-	        ArrangementServiceInternal arrangementInternal,
+	        DescriptionItemServiceInternal arrangementInternal,
 	        DescriptionItemService descriptionItemService,
 	        LevelTreeCacheService levelTreeCache,
 	        UserService userService,

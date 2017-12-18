@@ -129,7 +129,7 @@ import cz.tacr.elza.repository.PacketTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.ArrIOService;
-import cz.tacr.elza.service.ArrMoveLevelService;
+import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.ArrangementFormService;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.DaoService;
@@ -152,8 +152,7 @@ import cz.tacr.elza.service.importnodes.ImportNodesFromSource;
 import cz.tacr.elza.service.importnodes.vo.ConflictResolve;
 import cz.tacr.elza.service.importnodes.vo.ImportParams;
 import cz.tacr.elza.service.importnodes.vo.ValidateResult;
-import cz.tacr.elza.service.output.OutputGeneratorService;
-import cz.tacr.elza.service.output.StatusGenerate;
+import cz.tacr.elza.service.output.OutputRequestStatus;
 import cz.tacr.elza.service.vo.ChangesResult;
 
 
@@ -218,7 +217,7 @@ public class ArrangementController {
     private DescriptionItemService descriptionItemService;
 
     @Autowired
-    private ArrMoveLevelService moveLevelService;
+    private FundLevelService moveLevelService;
 
     @Autowired
     private PacketService packetService;
@@ -260,9 +259,6 @@ public class ArrangementController {
     private ArrIOService arrIOService;
 
     @Autowired
-    private OutputGeneratorService outputGeneratorService;
-
-    @Autowired
     private RevertingChangesService revertingChangesService;
 
     @Autowired
@@ -281,7 +277,7 @@ public class ArrangementController {
     private ImportNodesFromSource importNodesFromSource;
 
 	@Autowired
-	ArrangementFormService formService;
+	private ArrangementFormService formService;
 
     /**
      * Seznam typů obalů.
@@ -1153,7 +1149,7 @@ public class ArrangementController {
                                         @PathVariable(value = "itemTypeId") final Integer itemTypeId,
                                         @RequestParam(value = "strict", required = false, defaultValue = "false") final Boolean strict) {
         ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
-        ArrOutputDefinition outputDefinition = outputService.findOutputDefinition(outputDefinitionId);
+        ArrOutputDefinition outputDefinition = outputService.getOutputDefinition(outputDefinitionId);
         RulItemType itemType = itemTypeRepository.findOne(itemTypeId);
 
         outputService.switchOutputCalculating(outputDefinition, version, itemType, strict);
@@ -1174,10 +1170,9 @@ public class ArrangementController {
         Assert.notNull(outputDefinitionId, "Identifikátor výstupu musí být vyplněn");
 
         ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
-        ArrOutputDefinition outputDefinition = outputService.findOutputDefinition(outputDefinitionId);
+        ArrOutputDefinition outputDefinition = outputService.getOutputDefinition(outputDefinitionId);
 
         Assert.notNull(version, "Verze AP neexistuje");
-        Assert.notNull(outputDefinition, "Výstup neexistuje");
 
         List<ArrOutputItem> outputItems = outputService.getOutputItems(version, outputDefinition);
 
@@ -2219,14 +2214,20 @@ public class ArrangementController {
 
     @RequestMapping(value = "/output/generate/{outputId}", method = RequestMethod.GET)
 	@Transactional
-    public GenerateOutputResult generateOutput(@PathVariable(value = "outputId") final Integer outputId,
-                                               @RequestParam(value = "forced", required = false, defaultValue = "false") final Boolean forced) {
-        ArrOutput output = outputService.getOutput(outputId);
+    public GenerateOutputResult generateOutput(@PathVariable(value = "outputId") int outputId,
+                                               @RequestParam(value = "forced", defaultValue = "false") boolean forced) {
+
         UserDetail userDetail = userService.getLoggedUserDetail();
         Integer userId = userDetail != null ? userDetail.getId() : null;
+
+        ArrOutput output = outputService.getOutput(outputId);
+        ArrOutputDefinition definition = output.getOutputDefinition();
+
+        ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(definition.getFundId());
+        OutputRequestStatus requestStatus = outputService.addRequest(outputId, fundVersion, userId, forced);
+
         GenerateOutputResult generateOutputResult = new GenerateOutputResult();
-        StatusGenerate statusGenerate = outputGeneratorService.generateOutput(output, userId, output.getOutputDefinition().getFund(), forced);
-        generateOutputResult.setStatus(statusGenerate);
+        generateOutputResult.setStatus(requestStatus);
         return generateOutputResult;
     }
 
@@ -3257,7 +3258,7 @@ public class ArrangementController {
         /**
          * Směr přidávání uzlu (před, za, pod)
          */
-        private ArrMoveLevelService.AddLevelDirection direction;
+        private FundLevelService.AddLevelDirection direction;
         /**
          * Název scénáře, ze kterého se mají převzít výchozí hodnoty atributů.
          */
@@ -3270,11 +3271,11 @@ public class ArrangementController {
         @Nullable
         private Set<Integer> descItemCopyTypes;
 
-        public ArrMoveLevelService.AddLevelDirection getDirection() {
+        public FundLevelService.AddLevelDirection getDirection() {
             return direction;
         }
 
-        public void setDirection(final ArrMoveLevelService.AddLevelDirection direction) {
+        public void setDirection(final FundLevelService.AddLevelDirection direction) {
             this.direction = direction;
         }
 
@@ -3296,13 +3297,13 @@ public class ArrangementController {
     }
 
     public static class GenerateOutputResult {
-        private StatusGenerate status;
+        private OutputRequestStatus status;
 
-        public StatusGenerate getStatus() {
+        public OutputRequestStatus getStatus() {
             return status;
         }
 
-        public void setStatus(final StatusGenerate status) {
+        public void setStatus(final OutputRequestStatus status) {
             this.status = status;
         }
     }

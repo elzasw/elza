@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNodeOutput;
@@ -19,19 +20,13 @@ import cz.tacr.elza.domain.ArrOutputItem;
 import cz.tacr.elza.domain.RulTemplate.Engine;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.service.ArrangementService;
-import cz.tacr.elza.service.IEventNotificationService;
-import cz.tacr.elza.service.eventnotification.EventFactory;
-import cz.tacr.elza.service.eventnotification.events.EventIdAndStringInVersion;
-import cz.tacr.elza.service.eventnotification.events.EventType;
+import cz.tacr.elza.service.FundLevelServiceInternal;
 import cz.tacr.elza.service.output.generator.OutputGenerator;
 import cz.tacr.elza.service.output.generator.OutputGeneratorFactory;
 
 public class OutputGeneratorWorker implements Runnable {
 
     private final static Logger logger = LoggerFactory.getLogger(OutputGeneratorWorker.class);
-
-    private final static String ERROR_OUTPUT_STATE = "ERROR";
 
     private final int outputDefinitionId;
 
@@ -45,11 +40,11 @@ public class OutputGeneratorWorker implements Runnable {
 
     private final OutputGeneratorFactory outputGeneratorFactory;
 
-    private final IEventNotificationService eventNotificationService;
-
-    private final ArrangementService arrangementService;
-
     private final OutputGeneratorService outputGeneratorService;
+
+    private final ResourcePathResolver resourcePathResolver;
+
+    private final FundLevelServiceInternal fundLevelServiceInternal;
 
     private final PlatformTransactionManager transactionManager;
 
@@ -58,18 +53,18 @@ public class OutputGeneratorWorker implements Runnable {
                                  Integer userId,
                                  EntityManager em,
                                  OutputGeneratorFactory outputGeneratorFactory,
-                                 IEventNotificationService eventNotificationService,
-                                 ArrangementService arrangementService,
                                  OutputGeneratorService outputGeneratorService,
+                                 ResourcePathResolver resourcePathResolver,
+                                 FundLevelServiceInternal fundLevelServiceInternal,
                                  PlatformTransactionManager transactionManager) {
         this.outputDefinitionId = outputDefinitionId;
         this.fundVersionId = fundVersionId;
         this.userId = userId;
         this.em = em;
         this.outputGeneratorFactory = outputGeneratorFactory;
-        this.eventNotificationService = eventNotificationService;
-        this.arrangementService = arrangementService;
         this.outputGeneratorService = outputGeneratorService;
+        this.resourcePathResolver = resourcePathResolver;
+        this.fundLevelServiceInternal = fundLevelServiceInternal;
         this.transactionManager = transactionManager;
     }
 
@@ -114,7 +109,7 @@ public class OutputGeneratorWorker implements Runnable {
     private OutputState resolveEndState(OutputParams params) {
         ArrChange change = params.getChange();
         for (ArrNodeOutput outputNode : params.getOutputNodes()) {
-            if (!arrangementService.isLastChange(change, outputNode.getNodeId(), false, true)) {
+            if (!fundLevelServiceInternal.isLastChange(change, outputNode.getNodeId(), false, true)) {
                 return OutputState.OUTDATED;
             }
         }
@@ -132,11 +127,11 @@ public class OutputGeneratorWorker implements Runnable {
 
         List<ArrNodeOutput> outputNodes = outputGeneratorService.getOutputNodes(definition, fundVersion.getLockChange());
 
-        List<ArrOutputItem> directItems = outputGeneratorService.getDirectOutputItems(definition, fundVersion.getLockChange());
+        List<ArrOutputItem> outputItems = outputGeneratorService.getOutputItems(definition, fundVersion.getLockChange());
 
-        Path templateDir = outputGeneratorService.getTemplateDirectory(definition.getTemplate());
+        Path templateDir = resourcePathResolver.getTemplateDirectory(definition.getTemplate());
 
-        return new OutputParams(definition, change, fundVersion, outputNodes, directItems, templateDir);
+        return new OutputParams(definition, change, fundVersion, outputNodes, outputItems, templateDir);
     }
 
     /**
@@ -150,9 +145,7 @@ public class OutputGeneratorWorker implements Runnable {
         } else {
             logger.error("Output generator worker failed, outputDefinitionId:" + outputDefinitionId, t);
         }
-        EventIdAndStringInVersion stateChangedEvent = EventFactory.createStringAndIdInVersionEvent(EventType.OUTPUT_STATE_CHANGE,
-                fundVersionId, outputDefinitionId, ERROR_OUTPUT_STATE);
-        eventNotificationService.publishEvent(stateChangedEvent);
+        outputGeneratorService.publishOutputFailed(definition, fundVersionId);
     }
 
     private static String getCauseMessages(Throwable t, int charLimit) {

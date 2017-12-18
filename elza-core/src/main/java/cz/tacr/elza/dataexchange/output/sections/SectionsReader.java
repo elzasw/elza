@@ -5,7 +5,7 @@ import java.util.Collections;
 
 import javax.persistence.EntityManager;
 
-import cz.tacr.elza.aop.Authorization;
+import cz.tacr.elza.core.security.Authorization;
 import cz.tacr.elza.dataexchange.output.DEExportException;
 import cz.tacr.elza.dataexchange.output.DEExportParams.FundSections;
 import cz.tacr.elza.dataexchange.output.context.ExportContext;

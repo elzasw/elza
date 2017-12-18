@@ -1,19 +1,24 @@
 package cz.tacr.elza.dataexchange.output;
 
+import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
 import javax.xml.stream.XMLStreamException;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
-import cz.tacr.elza.annotation.AuthMethod;
+import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.dataexchange.output.context.ExportContext;
 import cz.tacr.elza.dataexchange.output.context.ExportInitHelper;
 import cz.tacr.elza.dataexchange.output.context.ExportPhase;
@@ -27,7 +32,6 @@ import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.cache.NodeCacheService;
-import cz.tacr.elza.utils.XmlUtils;
 
 /**
  * Service for data-exchange export.
@@ -39,7 +43,7 @@ public class DEExportService {
 
     private final StaticDataService staticDataService;
 
-    private final String transformationsDir;
+    private final ResourcePathResolver resourcePathResolver;
 
     @Autowired
     public DEExportService(EntityManager em,
@@ -49,15 +53,23 @@ public class DEExportService {
                            LevelRepository levelRepository,
                            NodeCacheService nodeCacheService,
                            RegRecordRepository recordRepository,
-                           @Value("${elza.xmlExport.transformationDir}") String transformationsDir) {
+                           ResourcePathResolver resourcePathResolver) {
         this.initHelper = new ExportInitHelper(em, userService, levelRepository, nodeCacheService, recordRepository,
                 fundVersionRepository);
         this.staticDataService = staticDataService;
-        this.transformationsDir = transformationsDir;
+        this.resourcePathResolver = resourcePathResolver;
     }
 
-    public List<String> getTransformationNames() {
-        return XmlUtils.getXsltFileNames(transformationsDir);
+    public List<String> getTransformationNames() throws IOException {
+        Path transformDir = resourcePathResolver.getExportXmlTrasnformDir();
+        if (!Files.exists(transformDir)) {
+            return Collections.emptyList();
+        }
+        return Files.list(transformDir)
+                .filter(p -> p.endsWith(".xslt"))
+                .map(p -> p.getFileName().toString())
+                .map(n -> n.substring(0, n.length() - 5))
+                .sorted().collect(Collectors.toList());
     }
 
     /**

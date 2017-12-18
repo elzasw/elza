@@ -26,7 +26,7 @@ import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.service.ArrangementService;
-import cz.tacr.elza.service.ArrangementServiceInternal;
+import cz.tacr.elza.service.DescriptionItemServiceInternal;
 import cz.tacr.elza.service.IEventNotificationService;
 import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.cache.NodeCacheService;
@@ -54,7 +54,7 @@ public class TestDataGenerator extends BulkAction {
     int activeLevel = 0;
 
 	@Autowired
-	ArrangementServiceInternal arrangementInternal;
+	DescriptionItemServiceInternal arrangementInternal;
 
     @PersistenceContext
     private EntityManager entityManager;

@@ -5,11 +5,11 @@ import java.util.List;
 
 import org.apache.commons.lang.Validate;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.dataexchange.output.loaders.LoadDispatcher;
 import cz.tacr.elza.dataexchange.output.loaders.NestedLoadDispatcher;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyName;
-import cz.tacr.elza.utils.HibernateUtils;
 
 public class NameDispatcher extends NestedLoadDispatcher<ParPartyName> {
 

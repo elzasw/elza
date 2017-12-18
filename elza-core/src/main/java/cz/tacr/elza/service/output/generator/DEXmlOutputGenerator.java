@@ -11,7 +11,7 @@ import javax.persistence.EntityManager;
 import cz.tacr.elza.dataexchange.output.DEExportParams;
 import cz.tacr.elza.dataexchange.output.DEExportParams.FundSections;
 import cz.tacr.elza.dataexchange.output.DEExportService;
-import cz.tacr.elza.dataexchange.output.sections.RootLevelDecorator;
+import cz.tacr.elza.dataexchange.output.sections.ExportRootLevelDecorator;
 import cz.tacr.elza.domain.ArrNodeOutput;
 import cz.tacr.elza.service.DmsService;
 
@@ -39,8 +39,8 @@ public class DEXmlOutputGenerator extends DmsOutputGenerator {
         fundSections.setFundVersionId(params.getFundVersionId());
         fundSections.setRootNodeIds(rootNodeIds);
         fundSections.setMergeSections(true);
-        // add output items to export root node
-        fundSections.setLevelInfoListener(new RootLevelDecorator(params.getDirectItems()));
+        // add output items to export root
+        fundSections.setLevelInfoListener(new ExportRootLevelDecorator(params.getOutputItems()));
 
         DEExportParams params = new DEExportParams();
         params.setFundsSections(Collections.singleton(fundSections));

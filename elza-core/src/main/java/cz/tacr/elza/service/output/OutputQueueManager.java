@@ -10,7 +10,10 @@ import org.apache.commons.lang.Validate;
 
 class OutputQueueManager {
 
-    public enum State {
+    /**
+     * Internal state. Do not change definition order!
+     */
+    private enum State {
         INIT, RUNNING, STOPPING, TERMINATED
     }
 
@@ -46,12 +49,17 @@ class OutputQueueManager {
     }
 
     /**
-     * When terminated no more worker will be passed to execution.
+     * Caller stop async queue processing. This operation will block caller thread
+     * until manager thread does not terminate.
+     *
+     * When terminated no more workers will be passed to execution.
      */
     public synchronized void stop() {
         if (state == State.RUNNING) {
             state = State.STOPPING;
+            // notify manager thread about stopping
             notify();
+            // wait until manager thread does not terminate
             while (state != State.TERMINATED) {
                 try {
                     Thread.sleep(100);
@@ -67,6 +75,7 @@ class OutputQueueManager {
      * @return False when worker already in queue.
      */
     public synchronized void addWorker(OutputGeneratorWorker worker) {
+        Validate.isTrue(state.ordinal() <= State.RUNNING.ordinal());
         Validate.notNull(worker);
 
         workerQueue.addLast(worker);
@@ -102,6 +111,7 @@ class OutputQueueManager {
 
     private synchronized void onWorkerFinished(OutputGeneratorWorker worker) {
         runningWorkers.remove(worker);
+        // notify manager thread about ended worker
         if (workerQueue.size() > 0) {
             notify();
         }

@@ -1,8 +1,5 @@
 package cz.tacr.elza.service.output;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,7 +13,6 @@ import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionSynchronization;
@@ -24,7 +20,7 @@ import org.springframework.transaction.support.TransactionSynchronizationAdapter
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import cz.tacr.elza.bulkaction.BulkActionService;
-import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -33,15 +29,13 @@ import cz.tacr.elza.domain.ArrOutputDefinition;
 import cz.tacr.elza.domain.ArrOutputDefinition.OutputState;
 import cz.tacr.elza.domain.ArrOutputItem;
 import cz.tacr.elza.domain.RulAction;
-import cz.tacr.elza.domain.RulPackage;
-import cz.tacr.elza.domain.RulTemplate;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.NodeOutputRepository;
 import cz.tacr.elza.repository.OutputDefinitionRepository;
 import cz.tacr.elza.repository.OutputItemRepository;
-import cz.tacr.elza.service.ArrangementService;
+import cz.tacr.elza.service.FundLevelServiceInternal;
 import cz.tacr.elza.service.IEventNotificationService;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventIdAndStringInVersion;
@@ -53,8 +47,6 @@ public class OutputGeneratorService {
 
     private final static Logger logger = LoggerFactory.getLogger(OutputGeneratorService.class);
 
-    private static final String PACKAGE_TEMPLATES_DIR = "templates";
-
     private final OutputQueueManager queueManager = new OutputQueueManager(2);
 
     private final PlatformTransactionManager transactionManager;
@@ -62,8 +54,6 @@ public class OutputGeneratorService {
     private final OutputGeneratorFactory outputGeneratorFactory;
 
     private final IEventNotificationService eventNotificationService;
-
-    private final ArrangementService arrangementService;
 
     private final BulkActionService bulkActionService;
 
@@ -73,35 +63,33 @@ public class OutputGeneratorService {
 
     private final OutputItemRepository outputItemRepository;
 
+    private final FundLevelServiceInternal fundLevelServiceInternal;
+
     private final EntityManager em;
 
-    private final StaticDataService staticDataService;
-
-    private final String rulesDirectory;
+    private final ResourcePathResolver resourcePathResolver;
 
     @Autowired
     public OutputGeneratorService(PlatformTransactionManager transactionManager,
                                   OutputGeneratorFactory outputGeneratorFactory,
                                   IEventNotificationService eventNotificationService,
-                                  ArrangementService arrangementService,
+                                  FundLevelServiceInternal fundLevelServiceInternal,
                                   BulkActionService bulkActionService,
                                   OutputDefinitionRepository outputDefinitionRepository,
                                   NodeOutputRepository nodeOutputRepository,
                                   OutputItemRepository outputItemRepository,
                                   EntityManager em,
-                                  StaticDataService staticDataService,
-                                  @Value("${elza.rulesDir}") String rulesDirectory) {
+                                  ResourcePathResolver resourcePathResolver) {
         this.transactionManager = transactionManager;
         this.outputGeneratorFactory = outputGeneratorFactory;
         this.eventNotificationService = eventNotificationService;
-        this.arrangementService = arrangementService;
+        this.fundLevelServiceInternal = fundLevelServiceInternal;
         this.bulkActionService = bulkActionService;
         this.outputDefinitionRepository = outputDefinitionRepository;
         this.nodeOutputRepository = nodeOutputRepository;
         this.outputItemRepository = outputItemRepository;
         this.em = em;
-        this.staticDataService = staticDataService;
-        this.rulesDirectory = rulesDirectory;
+        this.resourcePathResolver = resourcePathResolver;
     }
 
     /**
@@ -117,7 +105,6 @@ public class OutputGeneratorService {
         if (affected > 0) {
             logger.warn("{} interrupted outputs by server shutdown were recovered to opened state", affected);
         }
-
         // start queue manager
         queueManager.start();
     }
@@ -130,7 +117,6 @@ public class OutputGeneratorService {
     @Transactional
     public List<ArrNodeOutput> getOutputNodes(ArrOutputDefinition outputDefinition, ArrChange lockChange) {
         Validate.notNull(outputDefinition);
-
         if (lockChange == null) {
             return nodeOutputRepository.findByOutputDefinitionAndDeleteChangeIsNull(outputDefinition);
         }
@@ -144,9 +130,8 @@ public class OutputGeneratorService {
      * @param lockChange null for open version
      */
     @Transactional
-    public List<ArrOutputItem> getDirectOutputItems(ArrOutputDefinition outputDefinition, ArrChange lockChange) {
+    public List<ArrOutputItem> getOutputItems(ArrOutputDefinition outputDefinition, ArrChange lockChange) {
         Validate.notNull(outputDefinition);
-
         if (lockChange == null) {
             return outputItemRepository.findByOutputAndDeleteChangeIsNull(outputDefinition);
         }
@@ -155,29 +140,23 @@ public class OutputGeneratorService {
 
     @Transactional(TxType.MANDATORY)
     public void publishOutputStateChanged(ArrOutputDefinition outputDefinition, int fundVersionId) {
+        int outputDefinitionId = outputDefinition.getOutputDefinitionId();
         String outputState = outputDefinition.getState().name();
-        EventIdAndStringInVersion stateChangedEvent = EventFactory.createStringAndIdInVersionEvent(EventType.OUTPUT_STATE_CHANGE,
-                fundVersionId, outputDefinition.getOutputDefinitionId(), outputState);
-        eventNotificationService.publishEvent(stateChangedEvent);
+        publishOutputStateChangedInternal(outputDefinitionId, fundVersionId, outputState);
     }
 
     /**
-     * Locates system directory for specified template. Directory must exist.
-     *
-     * @return Absolute path for template directory.
+     * Publish error event when output generation failed, it's special state for client.
      */
-    @Transactional
-    public Path getTemplateDirectory(RulTemplate template) {
-        RulPackage rulPackage = staticDataService.getData().getPackageById(template.getPackageId());
+    @Transactional(TxType.MANDATORY)
+    public void publishOutputFailed(ArrOutputDefinition outputDefinition, int fundVersionId) {
+        publishOutputStateChangedInternal(outputDefinition.getOutputDefinitionId(), fundVersionId, "ERROR");
+    }
 
-        String packageDir = rulPackage.getCode();
-        String templateSubDir = template.getDirectory();
-
-        Path dirPath = Paths.get(rulesDirectory, packageDir, PACKAGE_TEMPLATES_DIR, templateSubDir);
-        if (!Files.isDirectory(dirPath)) {
-            throw new SystemException("Template directory not found, path:" + dirPath);
-        }
-        return dirPath.toAbsolutePath();
+    private void publishOutputStateChangedInternal(int outputDefinitionId, int fundVersionId, String outputState) {
+        EventIdAndStringInVersion stateChangedEvent = EventFactory.createStringAndIdInVersionEvent(EventType.OUTPUT_STATE_CHANGE,
+                fundVersionId, outputDefinitionId, outputState);
+        eventNotificationService.publishEvent(stateChangedEvent);
     }
 
     /**
@@ -209,11 +188,7 @@ public class OutputGeneratorService {
                                           Integer userId,
                                           boolean checkBulkActions) {
         // find open output definition
-        ArrOutputDefinition definition = outputDefinitionRepository.findOne(outputDefinitionId);
-        if (definition == null) {
-            throw new SystemException("Output definition not found", BaseCode.ID_NOT_EXIST).set("outputDefinitionId",
-                    outputDefinitionId);
-        }
+        ArrOutputDefinition definition = getOutputDefinition(outputDefinitionId);
         if (definition.getState() != OutputState.OPEN) {
             throw new SystemException("Requested output must be in OPEN state", BaseCode.INVALID_STATE)
                     .set("expectedState", OutputState.OPEN).set("givenState", definition.getState());
@@ -232,7 +207,7 @@ public class OutputGeneratorService {
 
         // create worker
         OutputGeneratorWorker worker = new OutputGeneratorWorker(outputDefinitionId, fundVersion.getFundVersionId(), userId, em,
-                outputGeneratorFactory, eventNotificationService, arrangementService, this, transactionManager);
+                outputGeneratorFactory, this, resourcePathResolver, fundLevelServiceInternal, transactionManager);
 
         // register after commit action
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
@@ -241,7 +216,7 @@ public class OutputGeneratorService {
                 if (status == TransactionSynchronization.STATUS_COMMITTED) {
                     queueManager.addWorker(worker);
                 } else {
-                    logger.warn("Request for output is cancelled due to rollbacked source transaction, outputDefinitionId:{}",
+                    logger.warn("Request for output is cancelled due to rollback of source transaction, outputDefinitionId:{}",
                             worker.getOutputDefinitionId());
                 }
             }
@@ -251,9 +226,24 @@ public class OutputGeneratorService {
     }
 
     /**
-     * Searches definition in generating state with fetches for output generator.
+     * Searches definition.
      *
-     * @throws SystemException When definition not found or it has invalid state.
+     * @throws SystemException When definition not found.
+     */
+    @Transactional
+    public ArrOutputDefinition getOutputDefinition(int outputDefinitionId) {
+        ArrOutputDefinition definition = outputDefinitionRepository.findOne(outputDefinitionId);
+        if (definition == null) {
+            throw new SystemException("Output definition not found", BaseCode.ID_NOT_EXIST).set("outputDefinitionId",
+                    outputDefinitionId);
+        }
+        return definition;
+    }
+
+    /**
+     * Searches definition in generating state and fetches entities for output generator.
+     *
+     * @throws SystemException When definition not found or it has other than generating state.
      */
     @Transactional
     public ArrOutputDefinition getOutputDefinitionForGenerator(int outputDefinitionId) {
@@ -291,7 +281,7 @@ public class OutputGeneratorService {
         }
 
         // find finished actions
-        List<ArrBulkActionRun> finishedAction = bulkActionService.findBulkActionsByNodes(fundVersion, outputNodeIds);
+        List<ArrBulkActionRun> finishedAction = bulkActionService.findFinishedBulkActionsByNodeIds(fundVersion, outputNodeIds);
         if (recommendedActions.size() > finishedAction.size()) {
             return OutputRequestStatus.RECOMMENDED_ACTION_NOT_RUN;
         }
@@ -315,7 +305,7 @@ public class OutputGeneratorService {
             }
             // test: newest change is last change
             for (Integer nodeId : outputNodeIds) {
-                if (!arrangementService.isLastChange(newestChange, nodeId, false, true)) {
+                if (!fundLevelServiceInternal.isLastChange(newestChange, nodeId, false, true)) {
                     return OutputRequestStatus.DETECT_CHANGE;
                 }
             }

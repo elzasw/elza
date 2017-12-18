@@ -153,7 +153,7 @@ public class BulkActionController {
                         arrangementService.getOpenVersionByFundId(outputDefinition.getFund().getFundId()),
                         nodeIds
                 );
-        final Set<RulAction> recommendedActions = bulkActionService.getRecommendedActions(outputDefinition.getOutputType());
+        final List<RulAction> recommendedActions = bulkActionService.getRecommendedActions(outputDefinition.getOutputType());
 
         bulkActionsByNodes.sort((o1, o2) -> o2.getChange().getChangeId() - o1.getChange().getChangeId());
         ArrayList<BulkActionRunVO> result = new ArrayList<>();

@@ -18,14 +18,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.PartyType;
 import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.core.data.RuleSystemItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.core.tree.FundTree;
-import cz.tacr.elza.core.tree.FundTreeProvider;
-import cz.tacr.elza.core.tree.TreeNode;
+import cz.tacr.elza.core.fund.FundTree;
+import cz.tacr.elza.core.fund.FundTreeProvider;
+import cz.tacr.elza.core.fund.TreeNode;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataCoordinates;
 import cz.tacr.elza.domain.ArrDataDecimal;
@@ -99,7 +100,6 @@ import cz.tacr.elza.service.cache.CachedNode;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.cache.RestoredNode;
 import cz.tacr.elza.service.output.OutputParams;
-import cz.tacr.elza.utils.HibernateUtils;
 
 public class OutputModel implements Output, NodeLoader {
 
@@ -113,7 +113,7 @@ public class OutputModel implements Output, NodeLoader {
 
     /* general description */
 
-    private List<Item> directItems;
+    private List<Item> outputItems;
 
     private String name;
 
@@ -198,14 +198,14 @@ public class OutputModel implements Output, NodeLoader {
 
     @Override
     public List<Item> getItems() {
-        return directItems;
+        return outputItems;
     }
 
     @Override
     public List<Item> getItems(Collection<String> typeCodes) {
         Validate.notNull(typeCodes);
 
-        return directItems.stream().filter(item -> {
+        return outputItems.stream().filter(item -> {
             String tc = item.getType().getCode();
             return typeCodes.contains(tc);
         }).collect(Collectors.toList());
@@ -215,7 +215,7 @@ public class OutputModel implements Output, NodeLoader {
     public List<Item> getItemsWithout(Collection<String> typeCodes) {
         Validate.notNull(typeCodes);
 
-        return directItems.stream().filter(item -> {
+        return outputItems.stream().filter(item -> {
             String tc = item.getType().getCode();
             return !typeCodes.contains(tc);
         }).collect(Collectors.toList());
@@ -228,7 +228,7 @@ public class OutputModel implements Output, NodeLoader {
         Set<Integer> distinctPartyIds = new HashSet<>();
         List<Party> parties = new ArrayList<>();
 
-        for (Item item : directItems) {
+        for (Item item : outputItems) {
             String tc = item.getType().getCode();
             if (!typeCodes.contains(tc)) {
                 continue;
@@ -247,7 +247,7 @@ public class OutputModel implements Output, NodeLoader {
         Validate.notEmpty(typeCode);
 
         Item found = null;
-        for (Item item : directItems) {
+        for (Item item : outputItems) {
             if (typeCode.equals(item.getType().getCode())) {
                 // check if item already found
                 if (found != null) {
@@ -406,7 +406,7 @@ public class OutputModel implements Output, NodeLoader {
         this.fund.setInstitution(institution);
 
         // init direct items
-        directItems = params.getDirectItems().stream()
+        outputItems = params.getOutputItems().stream()
                 .filter(i -> !i.isUndefined())
                 .map(this::createItem)
                 .collect(Collectors.toList());

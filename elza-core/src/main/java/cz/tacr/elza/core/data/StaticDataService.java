@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.collect.MapMaker;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.ComplementTypeRepository;
 import cz.tacr.elza.repository.DataTypeRepository;
@@ -31,7 +32,6 @@ import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRoleTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
-import cz.tacr.elza.utils.HibernateUtils;
 
 /**
  * Service for static data

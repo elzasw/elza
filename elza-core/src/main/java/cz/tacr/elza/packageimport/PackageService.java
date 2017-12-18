@@ -51,6 +51,8 @@ import cz.tacr.elza.api.UseUnitdateEnum;
 import cz.tacr.elza.api.enums.ParRelationClassTypeRepeatabilityEnum;
 import cz.tacr.elza.api.enums.UIPartyGroupTypeEnum;
 import cz.tacr.elza.bulkaction.BulkActionConfigManager;
+import cz.tacr.elza.core.AppContext;
+import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.core.data.RuleSystemItemType;
 import cz.tacr.elza.core.data.StaticDataService;
@@ -186,8 +188,6 @@ import cz.tacr.elza.service.event.CacheInvalidateEvent;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.ActionEvent;
 import cz.tacr.elza.service.eventnotification.events.EventType;
-import cz.tacr.elza.service.output.OutputGeneratorService;
-import cz.tacr.elza.utils.AppContext;
 
 
 /**
@@ -343,7 +343,7 @@ public class PackageService {
     private ItemTypeActionRepository itemTypeActionRepository;
 
     @Autowired
-    private OutputGeneratorService outputGeneratorService;
+    private ResourcePathResolver resourcePathResolver;
 
     @Autowired
     private OutputDefinitionRepository outputDefinitionRepository;
@@ -465,7 +465,7 @@ public class PackageService {
                     dirRules.mkdirs();
                 }
 
-                File dirTemplates = new File(outputGeneratorService.getTemplatesDir(ruleCode));
+                File dirTemplates = resourcePathResolver.getTemplatesDirectory(rulRuleSet.getRuleSetId()).toFile();
                 dirsTemplates.add(dirTemplates);
                 if (!dirTemplates.exists()) {
                     dirTemplates.mkdirs();
@@ -2920,7 +2920,7 @@ public class PackageService {
                 Template outputType = new Template();
                 convertTemplate(rulTemplate, outputType);
                 templateList.add(outputType);
-                File dir = new File(outputGeneratorService.getTemplatesDir(rulPackage.getCode()) + File.separator + rulTemplate.getDirectory() + File.separator);
+                File dir = resourcePathResolver.getTemplateDirectory(rulTemplate).toFile();
                 for (File dirFile : dir.listFiles()) {
                     addToZipFile(ZIP_DIR_RULE_SET + "/" + ruleSetCode + "/" + ZIP_DIR_TEMPLATES + "/" + rulTemplate.getDirectory() + "/" + dirFile.getName(), dirFile, zos);
                 }

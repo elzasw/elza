@@ -35,12 +35,18 @@ public class RulAction {
     @JoinColumn(name = "packageId", nullable = false)
     private RulPackage rulPackage;
 
+    @Column(nullable = false, insertable = false, updatable = false)
+    private Integer packageId;
+
     @Column(length = 250, nullable = false)
     private String filename;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulRuleSet.class)
     @JoinColumn(name = "ruleSetId", nullable = false)
     private RulRuleSet ruleSet;
+
+    @Column(nullable = false, insertable = false, updatable = false)
+    private Integer ruleSetId;
 
     /**
      * @return identifikátor entity
@@ -68,6 +74,11 @@ public class RulAction {
      */
     public void setPackage(final RulPackage rulPackage) {
         this.rulPackage = rulPackage;
+        this.packageId = rulPackage != null ? rulPackage.getPackageId() : null;
+    }
+
+    public Integer getPackageId() {
+        return packageId;
     }
 
     /**
@@ -96,6 +107,11 @@ public class RulAction {
      */
     public void setRuleSet(final RulRuleSet ruleSet) {
         this.ruleSet = ruleSet;
+        this.ruleSetId = ruleSet != null ? ruleSet.getRuleSetId() : null;
+    }
+
+    public Integer getRuleSetId() {
+        return ruleSetId;
     }
 
     /**

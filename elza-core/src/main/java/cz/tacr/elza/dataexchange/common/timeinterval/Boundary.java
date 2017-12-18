@@ -11,7 +11,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.apache.commons.lang3.Validate;
 
-import cz.tacr.elza.utils.XmlUtils;
+import cz.tacr.elza.common.XmlUtils;
 
 class Boundary implements Comparable<Boundary> {
 

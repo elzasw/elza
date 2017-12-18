@@ -22,8 +22,8 @@ import org.apache.commons.lang3.Validate;
 import org.hibernate.CacheMode;
 import org.springframework.stereotype.Component;
 
-import cz.tacr.elza.core.DatabaseType;
-import cz.tacr.elza.core.RecursiveQueryBuilder;
+import cz.tacr.elza.common.db.DatabaseType;
+import cz.tacr.elza.common.db.RecursiveQueryBuilder;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RegScope;

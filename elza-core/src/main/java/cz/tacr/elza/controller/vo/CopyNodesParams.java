@@ -1,7 +1,7 @@
 package cz.tacr.elza.controller.vo;
 
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
-import cz.tacr.elza.service.ArrMoveLevelService;
+import cz.tacr.elza.service.FundLevelService;
 
 /**
  * @since 17.7.2017
@@ -21,7 +21,7 @@ public class CopyNodesParams extends CopyNodesValidate {
     /**
      * Směr založení levelu.
      */
-    private ArrMoveLevelService.AddLevelDirection selectedDirection;
+    private FundLevelService.AddLevelDirection selectedDirection;
 
     private ConflictResolve filesConflictResolve;
 
@@ -59,11 +59,11 @@ public class CopyNodesParams extends CopyNodesValidate {
         this.packetsConflictResolve = packetsConflictResolve;
     }
 
-    public ArrMoveLevelService.AddLevelDirection getSelectedDirection() {
+    public FundLevelService.AddLevelDirection getSelectedDirection() {
         return selectedDirection;
     }
 
-    public void setSelectedDirection(final ArrMoveLevelService.AddLevelDirection selectedDirection) {
+    public void setSelectedDirection(final FundLevelService.AddLevelDirection selectedDirection) {
         this.selectedDirection = selectedDirection;
     }
 }
