@@ -3,6 +3,10 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="registryGeo" pageWidth="595" pageHeight="842" columnWidth="455" leftMargin="70" rightMargin="70" topMargin="70" bottomMargin="70" uuid="3f43110c-223f-408d-9478-6c840e9ddba1">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="net.sf.jasperreports.print.create.bookmarks" value="true"/>
+	<style name="Text" isDefault="true" hTextAlign="Justified" fontName="DejaVu Sans" fontSize="10"/>
+	<style name="Heading 1" style="Text" hTextAlign="Left" vTextAlign="Middle" fontSize="16" isBold="true"/>
+	<style name="Heading 2" style="Text" hTextAlign="Left" vTextAlign="Middle" fontSize="12" isBold="true" isItalic="false"/>
+	<style name="Heading 3" style="Text" hTextAlign="Left" vTextAlign="Middle" fontSize="10" isBold="true" isItalic="false"/>
 	<queryString>
 		<![CDATA[]]>
 	</queryString>
@@ -14,11 +18,11 @@
 		<band height="25">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<textField bookmarkLevel="1">
-				<reportElement x="0" y="0" width="455" height="25" uuid="1ab7fb0a-bb11-4204-b817-2063d8908b56">
+				<reportElement style="Heading 1" x="0" y="0" width="455" height="25" uuid="1ab7fb0a-bb11-4204-b817-2063d8908b56">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement>
-					<font size="16" isBold="true" pdfEncoding="Cp1250"/>
+					<font pdfEncoding="Cp1250"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Rejstřík zeměpisný "]]></textFieldExpression>
 				<anchorNameExpression><![CDATA["Rejstřík zeměpisný"]]></anchorNameExpression>
@@ -29,7 +33,7 @@
 		<band height="28" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<staticText>
-				<reportElement x="0" y="0" width="455" height="20" uuid="82e49811-c5b9-4e76-a114-13524336eda5">
+				<reportElement style="Text" x="0" y="0" width="455" height="20" uuid="82e49811-c5b9-4e76-a114-13524336eda5">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					<printWhenExpression><![CDATA[$V{PAGE_NUMBER}.intValue() >1]]></printWhenExpression>
 				</reportElement>
@@ -39,7 +43,7 @@
 					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement>
+				<textElement verticalAlignment="Middle">
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
 				<text><![CDATA[Rejstřík zeměpisný]]></text>
@@ -50,7 +54,7 @@
 		<band height="18" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<textField isStretchWithOverflow="true">
-				<reportElement x="0" y="0" width="180" height="15" uuid="1b08e6b5-785e-4975-913f-17c7cf7238ac">
+				<reportElement style="Text" x="0" y="0" width="180" height="15" uuid="1b08e6b5-785e-4975-913f-17c7cf7238ac">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement>
@@ -59,7 +63,7 @@
 				<textFieldExpression><![CDATA[$F{record}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement x="180" y="0" width="275" height="15" uuid="f594599e-8a70-4210-835c-1c8482543917">
+				<reportElement style="Text" x="180" y="0" width="275" height="15" uuid="f594599e-8a70-4210-835c-1c8482543917">
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
@@ -78,7 +82,7 @@
 		<band height="29" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<textField evaluationTime="Master">
-				<reportElement x="0" y="10" width="455" height="19" uuid="ee5be658-0c4c-473d-8395-b7e5b2c24b1d">
+				<reportElement style="Text" x="0" y="10" width="455" height="19" uuid="ee5be658-0c4c-473d-8395-b7e5b2c24b1d">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<box>
