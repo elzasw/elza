@@ -7,16 +7,37 @@ export function renderUserOrGroupItem(item, isHighlighted = false, isSelected = 
         return renderGroupItem(item.group, isHighlighted, isSelected);
     }
 }
+/**
+ * Returns name of given user in "preferredName(username)" format.
+ *
+ * @param {object} user
+ * @return {string} name
+ */
+export function getUsername(user){
+    if(!user){
+        // if user does not exist
+        throw new Error("Invalid user object");
+    }
+    if(user.preferredName){
+        // if user has preferredName defined
+        return user.preferredName + " (" + user.username + ")";
+    } else if (user.party && user.party.record && user.party.record.record) {
+        // if user has record name
+        return user.party.record.record + " (" + user.username + ")";
+    } else {
+        return user.username;
+    }
+}
 
 export function renderUserOrGroupLabel(item) {
     if (item.user) {
-        return item.user.party.record.record + " (" + item.user.username + ")";
+        return getUsername(item.user);
     } else {
         return item.group.name;
     }
 }
 
-export function renderUserItem(user, isHighlighted = false, isSelected = false) {
+export function renderItem(id, itemStr, isHighlighted = false, isSelected = false) {
     let cls = 'item';
     if (isHighlighted) {
         cls += ' focus'
@@ -25,65 +46,30 @@ export function renderUserItem(user, isHighlighted = false, isSelected = false) 
         cls += ' active'
     }
 
-    const itemStr = user.party.record.record + " (" + user.username + ")";
     return (
         <div
             className={cls}
-            key={user.id}
+            key={id}
         >{itemStr}</div>
     )
+}
+
+export function renderUserItem(user, isHighlighted = false, isSelected = false) {
+    const itemStr = getUsername(user);
+    return renderItem(user.id, itemStr, isHighlighted, isSelected);
 }
 
 export function renderGroupItem(group, isHighlighted = false, isSelected = false) {
-    let cls = 'item';
-    if (isHighlighted) {
-        cls += ' focus'
-    }
-    if (isSelected) {
-        cls += ' active'
-    }
-
     const itemStr = group.name;
-    return (
-        <div
-            className={cls}
-            key={group.id}
-        >{itemStr}</div>
-    )
+    return renderItem(group.id, itemStr, isHighlighted, isSelected);
 }
 
 export function renderFundItem(fund, isHighlighted = false, isSelected = false) {
-    let cls = 'item';
-    if (isHighlighted) {
-        cls += ' focus'
-    }
-    if (isSelected) {
-        cls += ' active'
-    }
-
     const itemStr = fund.name;
-    return (
-        <div
-            className={cls}
-            key={fund.id}
-        >{itemStr}</div>
-    )
+    return renderItem(fund.id, itemStr, isHighlighted, isSelected);
 }
 
 export function renderScopeItem(scope, isHighlighted = false, isSelected = false) {
-    let cls = 'item';
-    if (isHighlighted) {
-        cls += ' focus'
-    }
-    if (isSelected) {
-        cls += ' active'
-    }
-
     const itemStr = scope.name;
-    return (
-        <div
-            className={cls}
-            key={scope.id}
-        >{itemStr}</div>
-    )
+    return renderItem(scope.id, itemStr, isHighlighted, isSelected);
 }
