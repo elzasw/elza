@@ -3,7 +3,6 @@ package cz.tacr.elza.service;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -262,11 +261,13 @@ public class UserService {
                         throw new SystemException("Neplatný vstup oprávnění: USER", UserCode.PERM_ILLEGAL_INPUT).set("type", "USER");
                     }
                     break;
-                case GROUP:
-                    if (permission.getScopeId() != null || permission.getFundId() != null || permission.getUserControlId() != null || permission.getGroupControlId() == null) {
-                        throw new SystemException("Neplatný vstup oprávnění: GROUP", UserCode.PERM_ILLEGAL_INPUT).set("type", "GROUP");
-                    }
-                    break;
+			/*
+			case GROUP:
+			    if (permission.getScopeId() != null || permission.getFundId() != null || permission.getUserControlId() != null || permission.getGroupControlId() == null) {
+			        throw new SystemException("Neplatný vstup oprávnění: GROUP", UserCode.PERM_ILLEGAL_INPUT).set("type", "GROUP");
+			    }
+			    break;
+			    */
                 default:
                     throw new IllegalStateException("Nedefinovaný typ oprávnění");
             }
@@ -314,11 +315,13 @@ public class UserService {
                                 hasPermission = true;
                             }
                             break;
-                        case GROUP:
-                            if (perm.getControlGroupIds().contains(usrPermission.getGroupControlId())) {
-                                hasPermission = true;
-                            }
-                            break;
+					/*
+					case GROUP:
+					    if (perm.getControlGroupIds().contains(usrPermission.getGroupControlId())) {
+					        hasPermission = true;
+					    }
+					    break;
+					   */
                         case SCOPE:
                             if (perm.getScopeIds().contains(usrPermission.getScopeId())) {
                                 hasPermission = true;
@@ -1004,7 +1007,7 @@ public class UserService {
      * @param maxResults  maximální počet vrácených záznamů
      * @return výsledky hledání
      */
-	public FilteredResult<UsrUser> findUser(final String search, final Boolean active, final Boolean disabled,
+	public FilteredResult<UsrUser> findUser(final String search, final boolean active, final boolean disabled,
 	        final int firstResult, final int maxResults, final Integer excludedGroupId) {
         if (!active && !disabled) {
             throw new IllegalArgumentException("Musí být uveden alespoň jeden z parametrů: active, disabled.");
@@ -1173,47 +1176,24 @@ public class UserService {
 	 * Filter list of users to contain only users which might be administered by
 	 * logged user
 	 * 
+	 * Method will run query for each user in the list.
+	 * 
 	 * @param users
 	 * @return
 	 */
 	private List<UsrUser> filterUsersByAdminPermission(List<UsrUser> users) {
     	// check permissions
     	UserDetail userDetail = this.getLoggedUserDetail();
-    	
-		// if user is admin -> can manage all users
-		if (userDetail.getId() == null) {
+		if (userDetail.hasPermission(UsrPermission.Permission.USR_PERM))
 			return users;
-		}
-		Collection<UserPermission> perms = userDetail.getUserPermission();
-		if (perms == null) {
-			// no perms -> no rights
-			return Collections.emptyList();
-		}
 
-		UserPermission userControlEntity = null;
-		// check all permissions
-		for (UserPermission perm : perms) {
-			// check if user has permissions to manage all users 
-			if (perm.isPermissionType(UsrPermission.Permission.ADMIN)
-			        || perm.isPermissionType(UsrPermission.Permission.USR_PERM)) {
-				return users;
-    		}
-			// check if user can manage selected entities
-			if (perm.isPermissionType(UsrPermission.Permission.USER_CONTROL_ENTITITY)) {
-				userControlEntity = perm;
-    		}
-    	}
-
-		// if no controlled entities -> no rights
-		if (userControlEntity == null) {
-			return Collections.emptyList();
-		}
-    	
-		// filter out not managed users
+		// check each user if might be accessed
 		List<UsrUser> result = new ArrayList<>(users.size());
-		for (UsrUser user : users) {
-			if (userControlEntity.isControllsUser(user.getUserId())) {
-				result.add(user);
+		for (UsrUser checkedUser : users) {
+			List<Integer> perms = userRepository.findPermissionAllowingUserAccess(userDetail.getId(),
+			        checkedUser.getUserId());
+			if (CollectionUtils.isNotEmpty(perms)) {
+				result.add(checkedUser);
 			}
 		}
 		return result;
@@ -1250,41 +1230,16 @@ public class UserService {
 	private List<UsrGroup> filterGroupsByAdminPermission(List<UsrGroup> groups) {
 		// check permissions
 		UserDetail userDetail = this.getLoggedUserDetail();
-
-		// if user is admin -> can manage all users
-		if (userDetail.getId() == null) {
+		if (userDetail.hasPermission(UsrPermission.Permission.USR_PERM))
 			return groups;
-		}
-		Collection<UserPermission> perms = userDetail.getUserPermission();
-		if (perms == null) {
-			// no perms -> no rights
-			return Collections.emptyList();
-		}
 
-		UserPermission groupControlEntity = null;
-		// check all permissions
-		for (UserPermission perm : perms) {
-			// check if user has permissions to manage all users 
-			if (perm.isPermissionType(UsrPermission.Permission.ADMIN)
-			        || perm.isPermissionType(UsrPermission.Permission.USR_PERM)) {
-				return groups;
-			}
-			// check if user can manage selected entities
-			if (perm.isPermissionType(UsrPermission.Permission.GROUP_CONTROL_ENTITITY)) {
-				groupControlEntity = perm;
-			}
-		}
-
-		// if no controlled entities -> no rights
-		if (groupControlEntity == null) {
-			return Collections.emptyList();
-		}
-
-		// filter out not managed users
+		// check each user if might be accessed
 		List<UsrGroup> result = new ArrayList<>(groups.size());
-		for (UsrGroup group : groups) {
-			if (groupControlEntity.isControllsGroup(group.getGroupId())) {
-				result.add(group);
+		for (UsrGroup checkedGroup : groups) {
+			List<Integer> perms = userRepository.findPermissionAllowingGroupAccess(userDetail.getId(),
+			        checkedGroup.getGroupId());
+			if (CollectionUtils.isNotEmpty(perms)) {
+				result.add(checkedGroup);
 			}
 		}
 		return result;
@@ -1525,40 +1480,4 @@ public class UserService {
 		}
 	}
 
-	/**
-	 * Check if supplied user is manager by other user over group
-	 * 
-	 * @param userId
-	 *            logged user
-	 * @param checkedUserId
-	 * @return
-	 */
-	public boolean isControlledByUserGroup(int userId, int checkedUserId) {
-		// check if user is member of the group which can be managed by this user
-		List<UsrGroupUser> userGroupLinks = userRepository.findGroupManagedByWithUser(userId, checkedUserId);
-		if (CollectionUtils.isNotEmpty(userGroupLinks)) {
-			return true;
-		}
-
-		return false;
-	}
-
-	/**
-	 * Check if supplied user is member of group which controlls given group
-	 * 
-	 * @param userId
-	 *            Logged user
-	 * @param checkedGroupId
-	 *            Group to be check
-	 * @return
-	 */
-	public boolean isGroupControlledByParentGroup(int userId, int checkedGroupId) {
-		// list of groups controlling checkedGroupId
-		List<UsrGroupUser> groups = userRepository.findGroupsManagingGroup(userId, checkedGroupId);
-		if (CollectionUtils.isNotEmpty(groups)) {
-			return true;
-		}
-
-		return false;
-	}
 }

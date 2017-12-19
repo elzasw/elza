@@ -242,6 +242,9 @@ public class UserController {
                                                 @RequestParam("count") final Integer count,
                                                 @RequestParam(value = "excludedGroupId", required = false) final Integer excludedGroupId
     ) {
+		Validate.notNull(active);
+		Validate.notNull(disabled);
+
         if (!active && !disabled) {
             throw new IllegalArgumentException("Musí být uveden alespoň jeden z parametrů: active, disabled.");
         }

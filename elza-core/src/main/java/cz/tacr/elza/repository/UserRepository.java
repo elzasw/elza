@@ -10,7 +10,6 @@ import org.springframework.stereotype.Repository;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.UsrGroup;
-import cz.tacr.elza.domain.UsrGroupUser;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
 
@@ -45,24 +44,29 @@ public interface UserRepository extends ElzaJpaRepository<UsrUser, Integer>, Use
 	UsrUser findOneWithDetail(@Param("userId") Integer userId);
 
 	/**
-	 * Return list of groupUser links
+	 * Return list of usr_permission which grant user rights to manage other
+	 * users and groups
 	 * 
-	 * @param userId
-	 * @param checkedUserId
 	 * @return
 	 */
-	@Query("select gu from usr_permission p join p.groupControl g join g.users gu where p.userId = :userId and gu.userId = :checkedUserId")
-	List<UsrGroupUser> findGroupManagedByWithUser(@Param("userId") int userId,
+	@Query("select distinct p.permissionId from usr_permission p " +
+	        "left join p.groupControl g " +
+	        "left join g.users gu " +
+	        "left join p.group g3 " +
+	        "left join g3.users gu3 " +
+	        "where  (p.userId = :userId or gu3.userId = :userId) " +
+	        "       and p.permission in ('USER_CONTROL_ENTITITY' , 'GROUP_CONTROL_ENTITITY') " +
+	        "       and (p.userControlId = :checkedUserId OR gu.userId = :checkedUserId)")
+	List<Integer> findPermissionAllowingUserAccess(@Param("userId") int userId,
 	        @Param("checkedUserId") int checkedUserId);
 
 	/**
-	 * Return list of groupUser links which allows to control user given group
+	 * Return list of usr_permission which grant user rights to manage group
+	 * users and groups
 	 * 
-	 * @param userId
-	 * @param checkedGroupId
 	 * @return
 	 */
 	@Query("select gu from usr_permission p join p.group g join g.users gu where p.groupControl = :checkedGroupId and gu.userId = :userId")
-	List<UsrGroupUser> findGroupsManagingGroup(@Param("userId") int userId,
+	List<Integer> findPermissionAllowingGroupAccess(@Param("userId") int userId,
 	        @Param("checkedGroupId") int checkedGroupId);
 }

@@ -3,7 +3,9 @@ package cz.tacr.elza.aop;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.Arrays;
+import java.util.List;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -24,6 +26,7 @@ import cz.tacr.elza.exception.AccessDeniedException;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
+import cz.tacr.elza.repository.UserRepository;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.UserService;
 
@@ -67,8 +70,21 @@ public class Authorization {
 		}
 	}
 
+	/**
+	 * Interface to check access based on annotaded method parameter
+	 *
+	 */
+	interface MethodParamBasedAccess {
+
+		boolean hasPermission(AuthParam authParam, Object parameterValue);
+
+	}
+
     @Autowired
     private UserService userService;
+
+	@Autowired
+	private UserRepository userRepository;
 
     @Autowired
     private FundVersionRepository fundVersionRepository;
@@ -125,13 +141,14 @@ public class Authorization {
 		throw createAccessDeniedException(declaredAnnotation.permission());
 	}
 
-	private boolean checkControlGroupPermission(MethodInfo methodInfo, UserDetail userDetail) {
-		Integer userId = userDetail.getId();
-		if (userId == null) {
-			// if user is null -> it is admin
-			return true;
-		}
-
+	/**
+	 * Iterate all method parameters and try to get access
+	 * 
+	 * @param methodInfo
+	 * @param methodChecker
+	 * @return
+	 */
+	private boolean hasPermission(MethodInfo methodInfo, MethodParamBasedAccess methodChecker) {
 		Parameter[] params = methodInfo.getParameters();
 		// permssions for fund
 		for (int i = 0; i < params.length; i++) {
@@ -139,16 +156,32 @@ public class Authorization {
 			Object parameterValue = methodInfo.getPjpArg(i);
 			AuthParam[] authParams = parameter.getAnnotationsByType(AuthParam.class);
 			for (AuthParam authParam : authParams) {
-				Integer groupId = loadGroupId(parameterValue, authParam.type());
-				if (userDetail.hasPermission(UsrPermission.Permission.GROUP_CONTROL_ENTITITY, groupId)) {
-					return true;
-				}
-				if (userService.isGroupControlledByParentGroup(userId, groupId)) {
+				if (methodChecker.hasPermission(authParam, parameterValue)) {
 					return true;
 				}
 			}
 		}
 		return false;
+	}
+
+	private boolean checkControlGroupPermission(MethodInfo methodInfo, UserDetail userDetail) {
+		Integer userId = userDetail.getId();
+		if (userId == null) {
+			// if user is null -> it is admin
+			return true;
+		}
+
+		return hasPermission(methodInfo, (authParam, parameterValue) -> {
+			Integer groupId = loadGroupId(parameterValue, authParam.type());
+			if (userDetail.hasPermission(UsrPermission.Permission.GROUP_CONTROL_ENTITITY, groupId)) {
+				return true;
+			}
+			List<Integer> perms = userRepository.findPermissionAllowingGroupAccess(userId, groupId);
+			if (CollectionUtils.isNotEmpty(perms)) {
+				return true;
+			}
+			return false;
+		});
 	}
 
 	private Integer loadGroupId(Object value, Type type) {
@@ -178,24 +211,17 @@ public class Authorization {
 			// if user is null -> it is admin
 			return true;
 		}
-
-		Parameter[] params = methodInfo.getParameters();
-		// permssions for fund
-		for (int i = 0; i < params.length; i++) {
-			Parameter parameter = params[i];
-			Object parameterValue = methodInfo.getPjpArg(i);
-			AuthParam[] authParams = parameter.getAnnotationsByType(AuthParam.class);
-			for (AuthParam authParam : authParams) {
-				Integer entityId = loadUserId(parameterValue, authParam.type());
-				if (userDetail.hasPermission(UsrPermission.Permission.USER_CONTROL_ENTITITY, entityId)) {
-					return true;
-				}
-				if (userService.isControlledByUserGroup(userId, entityId)) {
-					return true;
-				}
+		return hasPermission(methodInfo, (authParam, parameterValue) -> {
+			Integer entityId = loadUserId(parameterValue, authParam.type());
+			if (userDetail.hasPermission(UsrPermission.Permission.USER_CONTROL_ENTITITY, entityId)) {
+				return true;
 			}
-		}
-		return false;
+			List<Integer> perms = userRepository.findPermissionAllowingUserAccess(userId, entityId);
+			if (CollectionUtils.isNotEmpty(perms)) {
+				return true;
+			}
+			return false;
+		});
 	}
 
 	private int loadUserId(Object value, Type type) {
@@ -212,20 +238,13 @@ public class Authorization {
 	}
 
 	private boolean checkFundPermission(Permission permission, MethodInfo methodInfo, UserDetail userDetail) {
-		Parameter[] params = methodInfo.getParameters();
-		// permssions for fund
-		for (int i = 0; i < params.length; i++) {
-			Parameter parameter = params[i];
-			Object parameterValue = methodInfo.getPjpArg(i);
-			AuthParam[] authParams = parameter.getAnnotationsByType(AuthParam.class);
-			for (AuthParam authParam : authParams) {
-				Integer entityId = loadFundId(parameterValue, authParam.type());
-				if (userDetail.hasPermission(permission, entityId)) {
-					return true;
-				}
+		return hasPermission(methodInfo, (authParam, parameterValue) -> {
+			Integer entityId = loadFundId(parameterValue, authParam.type());
+			if (userDetail.hasPermission(permission, entityId)) {
+				return true;
 			}
-		}
-		return false;
+			return false;
+		});
 	}
 
 	/**
@@ -237,20 +256,13 @@ public class Authorization {
 	 * @return
 	 */
 	private boolean checkScopePermission(Permission permission, MethodInfo methodInfo, UserDetail userDetail) {
-		Parameter[] params = methodInfo.getParameters();
-		// permssions for fund
-		for (int i = 0; i < params.length; i++) {
-			Parameter parameter = params[i];
-			Object parameterValue = methodInfo.getPjpArg(i);
-			AuthParam[] authParams = parameter.getAnnotationsByType(AuthParam.class);
-			for (AuthParam authParam : authParams) {
-				Integer entityId = loadScopeId(parameterValue, authParam.type());
-				if (userDetail.hasPermission(permission, entityId)) {
-					return true;
-				}
+		return hasPermission(methodInfo, (authParam, parameterValue) -> {
+			Integer entityId = loadScopeId(parameterValue, authParam.type());
+			if (userDetail.hasPermission(permission, entityId)) {
+				return true;
 			}
-		}
-		return false;
+			return false;
+		});
 	}
 
 	/**

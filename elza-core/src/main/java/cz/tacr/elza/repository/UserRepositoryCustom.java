@@ -10,7 +10,7 @@ import cz.tacr.elza.domain.UsrUser;
  */
 public interface UserRepositoryCustom {
 
-	FilteredResult<UsrUser> findUserByText(String search, Boolean active, Boolean disabled, int firstResult,
+	FilteredResult<UsrUser> findUserByText(String search, boolean active, boolean disabled, int firstResult,
 	        int maxResults, Integer excludedGroupId);
 
 	/**
@@ -33,7 +33,7 @@ public interface UserRepositoryCustom {
 	 *            null, nefiltrujeme)
 	 * @return výsledky hledání
 	 */
-	FilteredResult<UsrUser> findUserByTextAndStateCount(String search, Boolean active, Boolean disabled,
+	FilteredResult<UsrUser> findUserByTextAndStateCount(String search, boolean active, boolean disabled,
 	        int firstResult, int maxResults, Integer excludedGroupId, int userId);
 
     /**

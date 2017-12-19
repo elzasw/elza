@@ -25,7 +25,9 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
 public class UsrPermission {
 
+	public static final String USER = "user";
     public static final String USER_ID = "userId";
+	public static final String GROUP = "group";
     public static final String GROUP_ID = "groupId";
 	public static final String USER_CONTROL = "userControl";
     public static final String USER_CONTROL_ID = "userControlId";
@@ -254,14 +256,15 @@ public class UsrPermission {
         USER,
 
         /**
-         * Oprávnění se vztahuje na konkrétní skupinu - např. jako spravovanou entitu.
-         */
-        GROUP,
+		 * Oprávnění se vztahuje na konkrétní skupinu - např. jako spravovanou
+		 * entitu.
+		 */
+		GROUP,
 
         /**
-         * Oprávnění se vztahuje na konkrétní scope.
-         */
-        SCOPE
+		 * Oprávnění se vztahuje na konkrétní scope.
+		 */
+		SCOPE
     }
 
     /**
@@ -427,7 +430,7 @@ public class UsrPermission {
         /**
          * Spravovaná entita skupina.
          */
-        GROUP_CONTROL_ENTITITY(PermissionType.GROUP);
+		GROUP_CONTROL_ENTITITY(PermissionType.GROUP);
 
         /**
          * Typ oprávnění
