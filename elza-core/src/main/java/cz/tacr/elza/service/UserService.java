@@ -1542,4 +1542,23 @@ public class UserService {
 
 		return false;
 	}
+
+	/**
+	 * Check if supplied user is member of group which controlls given group
+	 * 
+	 * @param userId
+	 *            Logged user
+	 * @param checkedGroupId
+	 *            Group to be check
+	 * @return
+	 */
+	public boolean isGroupControlledByParentGroup(int userId, int checkedGroupId) {
+		// list of groups controlling checkedGroupId
+		List<UsrGroupUser> groups = userRepository.findGroupsManagingGroup(userId, checkedGroupId);
+		if (CollectionUtils.isNotEmpty(groups)) {
+			return true;
+		}
+
+		return false;
+	}
 }

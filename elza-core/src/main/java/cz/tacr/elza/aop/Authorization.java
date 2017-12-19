@@ -139,8 +139,11 @@ public class Authorization {
 			Object parameterValue = methodInfo.getPjpArg(i);
 			AuthParam[] authParams = parameter.getAnnotationsByType(AuthParam.class);
 			for (AuthParam authParam : authParams) {
-				Integer entityId = loadGroupId(parameterValue, authParam.type());
-				if (userDetail.hasPermission(UsrPermission.Permission.GROUP_CONTROL_ENTITITY, entityId)) {
+				Integer groupId = loadGroupId(parameterValue, authParam.type());
+				if (userDetail.hasPermission(UsrPermission.Permission.GROUP_CONTROL_ENTITITY, groupId)) {
+					return true;
+				}
+				if (userService.isGroupControlledByParentGroup(userId, groupId)) {
 					return true;
 				}
 			}

@@ -127,6 +127,15 @@ public class UsrPermission {
      */
     public void setUser(final UsrUser user) {
         this.user = user;
+		if (user != null) {
+			this.userId = user.getUserId();
+		} else {
+			this.userId = null;
+		}
+	}
+
+	public Integer getUserId() {
+		return userId;
     }
 
     /**
@@ -141,6 +150,15 @@ public class UsrPermission {
      */
     public void setGroup(final UsrGroup group) {
         this.group = group;
+		if (group != null) {
+			groupId = group.getGroupId();
+		} else {
+			groupId = null;
+		}
+	}
+
+	public Integer getGroupId() {
+		return groupId;
     }
 
     /**
