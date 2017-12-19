@@ -434,7 +434,6 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
         NativeQuery<ArrLevel> query = rqBuilder.getQuery();
 
         // probably false positive due to SQLQuery -> NativeQuery migration (should be fixed in HB 6.0)
-        query.addRoot("ft", ArrLevel.class);
         query.addScalar("depth", StandardBasicTypes.INTEGER);
         query.setCacheMode(CacheMode.IGNORE);
 

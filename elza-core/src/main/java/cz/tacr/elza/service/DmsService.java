@@ -8,6 +8,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -18,10 +19,10 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.domain.ArrFile;
@@ -55,11 +56,8 @@ public class DmsService {
 
     public static final String MIME_TYPE_APPLICATION_PDF = "application/pdf";
 
-    /**
-     * Složka se soubory DMS
-     */
-    @Value("${elza.dmsDir}")
-    private String dmsFileDirectory;
+    @Autowired
+    private ResourcePathResolver resourcePathResolver;
 
     @Autowired
     private FileRepository fileRepository;
@@ -92,10 +90,9 @@ public class DmsService {
 
         fileRepository.save(dmsFile);
 
-        String filePath = getFilePath(dmsFile);
-        File outputFile = new File(filePath);
+        File outputFile = getFilePath(dmsFile).toFile();
         if (outputFile.exists()) {
-            throw new SystemException("Nelze soubor již existuje: "+ filePath, ArrangementCode.ALREADY_CREATED);
+            throw new SystemException("Nelze soubor již existuje: " + outputFile.getPath(), ArrangementCode.ALREADY_CREATED);
         }
         saveFile(dmsFile, fileStream, outputFile);
 
@@ -164,7 +161,7 @@ public class DmsService {
 
         fileRepository.save(dbFile);
         if (fileStream != null) {
-            File outputFile = new File(getFilePath(dbFile));
+            File outputFile = getFilePath(dbFile).toFile();
             if (outputFile.exists() && !outputFile.delete()) {
                 throw new SystemException("Nelze odstranit existující soubor");
             }
@@ -184,7 +181,7 @@ public class DmsService {
     public InputStream downloadFile(final DmsFile dmsFile) {
         Assert.notNull(dmsFile, "Soubor musí být vyplněn");
 
-        File outputFile = new File(getFilePath(dmsFile));
+        File outputFile = getFilePath(dmsFile).toFile();
         if (!outputFile.exists()) {
             throw new SystemException("Požadovaný soubor neexistuje");
         }
@@ -245,7 +242,7 @@ public class DmsService {
 
         fileRepository.delete(dmsFile);
 
-        File outputFile = new File(getFilePath(dmsFile));
+        File outputFile = getFilePath(dmsFile).toFile();
         if (outputFile.exists() && !outputFile.delete()) {
             throw new SystemException("Nelze odstranit existující soubor");
         }
@@ -290,8 +287,9 @@ public class DmsService {
      * @param file dms file
      * @return cesta
      */
-    public String getFilePath(final DmsFile file) {
-        return getFilePath(file.getFileId());
+    public Path getFilePath(final DmsFile file) {
+        int fileId = file.getFileId();
+        return getFilePath(fileId);
     }
 
     /**
@@ -300,8 +298,9 @@ public class DmsService {
      * @param fileId dms file id
      * @return cesta
      */
-    public String getFilePath(final int fileId) {
-        return dmsFileDirectory + File.separator + fileId;
+    public Path getFilePath(final int fileId) {
+        String strFileId = Integer.toString(fileId);
+        return resourcePathResolver.getDmsDir().resolve(strFileId);
     }
 
     /**
@@ -372,7 +371,7 @@ public class DmsService {
             zos = new ZipOutputStream(fos);
 
             for (ArrOutputFile outputFile : result.getOutputFiles()) {
-                File dmsFile = new File(getFilePath(outputFile));
+                File dmsFile = getFilePath(outputFile).toFile();
                 if (dmsFile.exists()) {
                     addToZipFile(outputFile.getFileName(), dmsFile, zos);
                 }

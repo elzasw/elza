@@ -105,6 +105,8 @@ public class OutputModel implements Output, NodeLoader {
 
     private static final Logger logger = LoggerFactory.getLogger(OutputModel.class);
 
+    /* internal fields */
+
     private StaticDataProvider staticData;
 
     private RuleSystem ruleSystem;
@@ -151,7 +153,7 @@ public class OutputModel implements Output, NodeLoader {
      */
     private FilteredRecords lastFilteredRecords;
 
-    /* spring components */
+    /* managed components */
 
     private final StaticDataService staticDataService;
 
@@ -375,9 +377,10 @@ public class OutputModel implements Output, NodeLoader {
         logger.info("Output model initialization started, outputDefinitionId:{}", params.getDefinitionId());
 
         // prepare internal fields
+        this.fundVersion = params.getFundVersion();
         this.staticData = staticDataService.getData();
         this.ruleSystem = staticData.getRuleSystems().getByRuleSetId(fundVersion.getRuleSetId());
-        this.fundVersion = params.getFundVersion();
+
 
         // init general description
         ArrOutputDefinition definition = params.getDefinition();
@@ -604,6 +607,7 @@ public class OutputModel implements Output, NodeLoader {
 
     private static Party convertParty(ParParty parParty, PartyInitHelper initHelper) {
         PartyType partyType = PartyType.fromId(parParty.getPartyTypeId());
+        parParty = HibernateUtils.unproxy(parParty);
         switch (partyType) {
             case DYNASTY:
                 ParDynasty parDynasty = (ParDynasty) parParty;

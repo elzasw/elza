@@ -1,7 +1,4 @@
 elza:
-  treenode:
-    title: ${elza.conf.treenode.title}
-    defaultTitle: ${elza.conf.treenode.default.title}
   workingDir: ./work
 
 spring:

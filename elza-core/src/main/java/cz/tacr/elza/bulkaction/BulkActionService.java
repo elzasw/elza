@@ -1,7 +1,6 @@
 package cz.tacr.elza.bulkaction;
 
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -18,7 +17,6 @@ import javax.transaction.Transactional.TxType;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -76,7 +74,7 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
  */
 @Service
 @Configuration
-public class BulkActionService implements InitializingBean, ListenableFutureCallback<BulkActionWorker> {
+public class BulkActionService implements ListenableFutureCallback<BulkActionWorker> {
 
     /**
      * Počet hromadných akcí v listu MAX_BULK_ACTIONS_LIST.
@@ -135,11 +133,6 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
      * FA_ID -> WORKER
      */
     private HashMap<Integer, BulkActionWorker> runningWorkers = new HashMap<>();
-
-    @Override
-    public void afterPropertiesSet() throws Exception {
-        bulkActionConfigManager.load();
-    }
 
     /**
      * Testuje, zda-li může být úloha spuštěna/naplánována.
@@ -287,7 +280,6 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
         return bulkActionWorker.getBulkActionRun();
     }
 
-
     /**
      * Zjistí, zda-li nad verzí AS neběží nějaká hromadná akce.
      *
@@ -297,18 +289,6 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
     public boolean isRunning(final ArrFundVersion version) {
         return runningWorkers.containsKey(version.getFundVersionId());
     }
-
-    /**
-     * Přenačtení konfigurací hromadných akcí.
-     */
-    public void reload() {
-        try {
-            bulkActionConfigManager.load();
-        } catch ( IOException e) {
-            throw new IllegalStateException("Nastal problem při načítání hromadných akcí", e);
-        }
-    }
-
 
     /**
      * Spuštění dalších hromadných akcí, pokud splňují podmínky pro spuštění.

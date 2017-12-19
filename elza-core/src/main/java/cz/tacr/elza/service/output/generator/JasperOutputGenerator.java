@@ -117,27 +117,27 @@ public class JasperOutputGenerator extends DmsOutputGenerator {
         PDFMergerUtility merger = new PDFMergerUtility();
         merger.setDestinationStream(os);
 
-        merger.addSource(pdfFile.toAbsolutePath().toString());
+        merger.addSource(pdfFile.toAbsolutePath().toFile());
 
-        List<String> pdfAttachPaths = getPDFAttachmentPaths();
-        for (String path : pdfAttachPaths) {
-            merger.addSource(path);
+        List<Path> pdfAttachments = getPDFAttachments();
+        for (Path path : pdfAttachments) {
+            merger.addSource(path.toAbsolutePath().toFile());
         }
 
         merger.mergeDocuments(MemoryUsageSetting.setupMixed(MAX_MERGE_MAIN_MEMORY_BYTES));
     }
 
-    private List<String> getPDFAttachmentPaths() {
-        List<String> pdfAttachPaths = new ArrayList<>();
+    private List<Path> getPDFAttachments() {
+        List<Path> pdfAttachments = new ArrayList<>();
         for (Item item : outputModel.getItems()) {
             if (item instanceof ItemFileRef) {
                 File file = item.getValue(File.class);
                 if (file.getMimeType().equals(MediaType.APPLICATION_PDF_VALUE)) {
-                    String filePath = dmsService.getFilePath(file.getFileId());
-                    pdfAttachPaths.add(filePath);
+                    Path filePath = dmsService.getFilePath(file.getFileId());
+                    pdfAttachments.add(filePath);
                 }
             } ;
         }
-        return pdfAttachPaths;
+        return pdfAttachments;
     }
 }

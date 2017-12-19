@@ -33,30 +33,4 @@ spring:
             dialect: org.hibernate.spatial.dialect.h2geodb.GeoDBDialect
 
 elza:
-  data:
-    url: jdbc:h2:mem:scratchdb
-
-  treenode:
-    defaultTitle: <Není nastaven popisek>
-
   workingDir: ./work
-
-  xmlImport:
-    transformationDir: ${elza.workingDir}/transformations/
-
-  xmlExport:
-    transformationDir: ${elza.workingDir}/xmlExportTransformations/
-
-  rulesDir: ${elza.workingDir}/rules
-
-  dmsDir: ${elza.workingDir}/dms/
-
-  rules:
-    ZP2015:
-      default:
-        - NORMAL
-
-  groovy:
-    groovyDir: ${elza.workingDir}/groovy
-  interpi:
-    interpiDir: ${elza.workingDir}/interpi

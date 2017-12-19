@@ -129,13 +129,13 @@ import cz.tacr.elza.repository.PacketTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.ArrIOService;
-import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.ArrangementFormService;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.DaoService;
 import cz.tacr.elza.service.DescriptionItemService;
 import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.FilterTreeService;
+import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.service.OutputService;
 import cz.tacr.elza.service.PacketService;
@@ -2224,7 +2224,7 @@ public class ArrangementController {
         ArrOutputDefinition definition = output.getOutputDefinition();
 
         ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(definition.getFundId());
-        OutputRequestStatus requestStatus = outputService.addRequest(outputId, fundVersion, userId, forced);
+        OutputRequestStatus requestStatus = outputService.addRequest(outputId, fundVersion, userId, !forced);
 
         GenerateOutputResult generateOutputResult = new GenerateOutputResult();
         generateOutputResult.setStatus(requestStatus);

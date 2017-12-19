@@ -6,13 +6,16 @@ import java.nio.file.Paths;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
+import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.RulAction;
+import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.RulRule;
 import cz.tacr.elza.domain.RulTemplate;
@@ -21,15 +24,14 @@ import cz.tacr.elza.domain.RulTemplate;
 public class ResourcePathResolver {
 
     private static final String TRANSFORMS_DIR = "transformations";
-    private static final String PACKAGES_DIR = "rules";
+    private static final String PACKAGES_DIR = "packages";
     private static final String GROOVY_DIR = "groovy";
     private static final String DMS_DIR = "dms";
 
     private static final String EXPORT_XML_DIR = "export-xml";
     private static final String IMPORT_XML_DIR = "import-xml";
 
-    private static final String PACKAGE_TEMPLATES_DIR = "templates";
-
+    private static final String RULESET_TEMPLATES_DIR = "templates";
     private static final String RULESET_FUNCTIONS = "functions";
     private static final String RULESET_DROOLS = "drools";
 
@@ -85,10 +87,15 @@ public class ResourcePathResolver {
 
     /**
      * @return Path to template directory (may not exist).
+     *
+     * @param template Persistent entity with initialized OutputType.
      */
-    @Transactional
+    @Transactional(TxType.MANDATORY)
     public Path getTemplateDir(RulTemplate template) {
-        Path templatesPath = getTemplatesDir(template.getPackageId());
+        RulOutputType outputType = template.getOutputType();
+        Validate.isTrue(HibernateUtils.isInitialized(outputType));
+
+        Path templatesPath = getTemplatesDir(template.getPackageId(), outputType.getRuleSetId());
         String templateDir = template.getDirectory();
 
         Path path = templatesPath.resolve(templateDir);
@@ -100,10 +107,10 @@ public class ResourcePathResolver {
      * @return Path to templates directory (may not exist).
      */
     @Transactional
-    public Path getTemplatesDir(int packageId) {
-        Path packagePath = getPackageDir(packageId);
+    public Path getTemplatesDir(int packageId, int ruleSetId) {
+        Path ruleSetPath = getRuleSetDir(packageId, ruleSetId);
 
-        Path path = packagePath.resolve(PACKAGE_TEMPLATES_DIR);
+        Path path = ruleSetPath.resolve(RULESET_TEMPLATES_DIR);
 
         return path;
     }
@@ -114,9 +121,9 @@ public class ResourcePathResolver {
     @Transactional(TxType.MANDATORY)
     public Path getDroolFile(RulRule rule) {
         Path droolsDir = getDroolsDir(rule.getPackageId(), rule.getRuleSetId());
-        String ruleFile = rule.getFilename();
+        String droolFile = rule.getFilename();
 
-        Path path = droolsDir.resolve(ruleFile);
+        Path path = droolsDir.resolve(droolFile);
 
         return path;
     }

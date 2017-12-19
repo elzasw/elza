@@ -129,7 +129,7 @@ public class OutputGeneratorWorker implements Runnable {
 
         List<ArrOutputItem> outputItems = outputGeneratorService.getOutputItems(definition, fundVersion.getLockChange());
 
-        Path templateDir = resourcePathResolver.getTemplateDirectory(definition.getTemplate());
+        Path templateDir = resourcePathResolver.getTemplateDir(definition.getTemplate()).toAbsolutePath();
 
         return new OutputParams(definition, change, fundVersion, outputNodes, outputItems, templateDir);
     }
@@ -138,6 +138,7 @@ public class OutputGeneratorWorker implements Runnable {
      * Handle exception raised during output processing. Must be called in transaction.
      */
     private void handleException(Throwable t) {
+        logger.error("Failed to generate output, outputDefinitionId:" + outputDefinitionId, t);
         ArrOutputDefinition definition = em.find(ArrOutputDefinition.class, outputDefinitionId);
         if (definition != null) {
             definition.setError(getCauseMessages(t, 1000));

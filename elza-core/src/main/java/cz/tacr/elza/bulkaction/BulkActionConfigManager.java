@@ -1,6 +1,5 @@
 package cz.tacr.elza.bulkaction;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -11,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.transaction.Transactional;
+import javax.transaction.Transactional.TxType;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,10 +33,7 @@ import cz.tacr.elza.bulkaction.generator.multiple.TextAggregationConfig;
 import cz.tacr.elza.bulkaction.generator.multiple.UnitCountConfig;
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.domain.RulAction;
-import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.repository.ActionRepository;
-import liquibase.util.file.FilenameUtils;
-
 
 /**
  * Manager konfigurace hromadných akcí.
@@ -44,72 +41,39 @@ import liquibase.util.file.FilenameUtils;
 @Component
 public class BulkActionConfigManager {
 
-	private static final Logger logger = LoggerFactory.getLogger(BulkActionConfigManager.class);
+    private static final Logger logger = LoggerFactory.getLogger(BulkActionConfigManager.class);
 
-	@Autowired
-    private ResourcePathResolver resourcePathResolver;
+    private final ActionRepository actionRepository;
 
-    @Autowired
-    private ActionRepository actionRepository;
+    private final ResourcePathResolver resourcePathResolver;
 
     /**
      * Mapa konfigurací hromadných akcí.
      */
-    private Map<String, BulkActionConfig> bulkActionConfigMap = new HashMap<>();
+    private Map<String, BulkActionConfig> bulkActionConfigMap;
+
+    @Autowired
+    public BulkActionConfigManager(ActionRepository actionRepository, ResourcePathResolver resourcePathResolver) {
+        this.actionRepository = actionRepository;
+        this.resourcePathResolver = resourcePathResolver;
+    }
 
     /**
      * Načtení hromadných akcí z adresáře.
      */
-    @Transactional
-    public void load() throws IOException {
+    @Transactional(TxType.MANDATORY)
+    public void load() {
 
         bulkActionConfigMap = new HashMap<>();
 
         List<RulAction> actions = actionRepository.findAll();
 
-        // vyhledání souborů v adresáři
-        List<Path> actionFiles = new ArrayList<>(actions.size());
+        Yaml yamlLoader = prepareYamlLoader();
 
+        // load all bulk action configurations
         for (RulAction action : actions) {
-            Path file = resourcePathResolver.getFunctionFile(action);
-            if (!Files.exists(file)) {
-                throw new SystemException("Action file not found, path: " + file);
-            }
-            actionFiles.add(file);
+            loadActionConfig(action, yamlLoader);
         }
-
-		// prepare yaml loader
-		Constructor yamlCons = new Constructor();
-		yamlCons.addTypeDescription(new TypeDescription(FundValidationConfig.class, "!FundValidation"));
-		yamlCons.addTypeDescription(new TypeDescription(SerialNumberConfig.class, "!SerialNumberGenerator"));
-		yamlCons.addTypeDescription(new TypeDescription(UnitIdConfig.class, "!UnitIdGenerator"));
-		yamlCons.addTypeDescription(new TypeDescription(TestDataConfig.class, "!TestDataGenerator"));
-		yamlCons.addTypeDescription(new TypeDescription(MultiActionConfig.class, "!MultiAction"));
-		yamlCons.addTypeDescription(new TypeDescription(DateRangeConfig.class, "!DateRange"));
-		yamlCons.addTypeDescription(new TypeDescription(TextAggregationConfig.class, "!TextAggregation"));
-		yamlCons.addTypeDescription(new TypeDescription(CopyConfig.class, "!Copy"));
-		yamlCons.addTypeDescription(new TypeDescription(NodeCountConfig.class, "!NodeCount"));
-		yamlCons.addTypeDescription(new TypeDescription(UnitCountConfig.class, "!UnitCount"));
-		yamlCons.addTypeDescription(new TypeDescription(MoveDescItemConfig.class, "!MoveDescItem"));
-		Yaml yamlLoader = new Yaml(yamlCons);
-
-		// load files
-        for (Path file : actionFiles) {
-			// load bulk action
-			String actionCode = FilenameUtils.getBaseName(file.getFileName().toString());
-
-			BulkActionConfig bulkActionConfig = null;
-			try (InputStream ios = Files.newInputStream(file, StandardOpenOption.READ)) {
-				bulkActionConfig = (BulkActionConfig) yamlLoader.load(ios);
-			} catch (Exception e) {
-                logger.error("Failed to initialize action, consider updating package with action, actionCode=" + actionCode, e);
-				// on failure - log problem and create empty action
-				bulkActionConfig = new BrokenActionConfig(e);
-			}
-			bulkActionConfig.setCode(actionCode);
-			bulkActionConfigMap.put(actionCode, bulkActionConfig);
-        }
-
     }
 
     /**
@@ -129,5 +93,38 @@ public class BulkActionConfigManager {
      */
     public List<BulkActionConfig> getBulkActions() {
         return new ArrayList<>(bulkActionConfigMap.values());
+    }
+
+    private void loadActionConfig(RulAction action, Yaml yamlLoader) {
+        Path configFile = resourcePathResolver.getFunctionFile(action);
+        String actionCode = action.getCode();
+        BaseActionConfig config = null;
+
+        try (InputStream ios = Files.newInputStream(configFile, StandardOpenOption.READ)) {
+            config = (BaseActionConfig) yamlLoader.load(ios);
+        } catch (Exception e) {
+            logger.error("Failed to initialize action, consider updating package with action, actionCode=" + actionCode, e);
+            // on failure - log problem and create empty action
+            config = new BrokenActionConfig(e);
+        }
+
+        config.setCode(actionCode);
+        bulkActionConfigMap.put(actionCode, config);
+    }
+
+    private static Yaml prepareYamlLoader() {
+        Constructor yamlCtor = new Constructor();
+        yamlCtor.addTypeDescription(new TypeDescription(FundValidationConfig.class, "!FundValidation"));
+        yamlCtor.addTypeDescription(new TypeDescription(SerialNumberConfig.class, "!SerialNumberGenerator"));
+        yamlCtor.addTypeDescription(new TypeDescription(UnitIdConfig.class, "!UnitIdGenerator"));
+        yamlCtor.addTypeDescription(new TypeDescription(TestDataConfig.class, "!TestDataGenerator"));
+        yamlCtor.addTypeDescription(new TypeDescription(MultiActionConfig.class, "!MultiAction"));
+        yamlCtor.addTypeDescription(new TypeDescription(DateRangeConfig.class, "!DateRange"));
+        yamlCtor.addTypeDescription(new TypeDescription(TextAggregationConfig.class, "!TextAggregation"));
+        yamlCtor.addTypeDescription(new TypeDescription(CopyConfig.class, "!Copy"));
+        yamlCtor.addTypeDescription(new TypeDescription(NodeCountConfig.class, "!NodeCount"));
+        yamlCtor.addTypeDescription(new TypeDescription(UnitCountConfig.class, "!UnitCount"));
+        yamlCtor.addTypeDescription(new TypeDescription(MoveDescItemConfig.class, "!MoveDescItem"));
+        return new Yaml(yamlCtor);
     }
 }

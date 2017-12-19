@@ -130,8 +130,13 @@ public class StaticDataService {
         PartyType.init(partyTypeRepository);
         CalendarType.init(calendarTypeRepository);
         activeProvider = initializeProvider();
+
         // init interceptor
         StaticDataTransactionInterceptor.INSTANCE.begin(this);
+
+        // register provider for current transaction
+        Transaction tx = getCurrentActiveTransaction();
+        registeredTxMap.put(tx, activeProvider);
     }
 
     /**

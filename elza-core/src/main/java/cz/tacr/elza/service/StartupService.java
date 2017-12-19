@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
+import cz.tacr.elza.bulkaction.BulkActionConfigManager;
 import cz.tacr.elza.common.db.DatabaseType;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrBulkActionRun;
@@ -52,6 +53,8 @@ public class StartupService implements SmartLifecycle {
 
     private final StaticDataService staticDataService;
 
+    private final BulkActionConfigManager bulkActionConfigManager;
+
     private final EntityManager em;
 
     private boolean running;
@@ -65,6 +68,7 @@ public class StartupService implements SmartLifecycle {
                           RequestQueueService requestQueueService,
                           NodeCacheService nodeCacheService,
                           StaticDataService staticDataService,
+                          BulkActionConfigManager bulkActionConfigManager,
                           EntityManager em) {
         this.nodeRepository = nodeRepository;
         this.fundVersionRepository = fundVersionRepository;
@@ -74,6 +78,7 @@ public class StartupService implements SmartLifecycle {
         this.requestQueueService = requestQueueService;
         this.nodeCacheService = nodeCacheService;
         this.staticDataService = staticDataService;
+        this.bulkActionConfigManager = bulkActionConfigManager;
         this.em = em;
     }
 
@@ -119,6 +124,7 @@ public class StartupService implements SmartLifecycle {
         staticDataService.init();
         outputGeneratorService.init();
         clearBulkActions();
+        bulkActionConfigManager.load();
         syncNodeCacheService();
         startNodeValidation();
         runQueuedRequests();

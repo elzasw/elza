@@ -1,9 +1,0 @@
-spring:
-  datasource:
-    url: jdbc:postgresql://vyv-inet/elza_test
- #   url: jdbc:postgresql://vyv-inet/elza_test_data
-    username: app
-    password: app
-  jpa:
-    # Logovani SQL dotazu
-    show-sql: true
