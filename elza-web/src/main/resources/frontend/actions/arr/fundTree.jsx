@@ -311,7 +311,7 @@ export function fundTreeNodeExpand(area, node) {
         var state = getState();
         var fundTree
         var versionId
-        let activeFund;
+        let activeFund, activeNode;
         if (area === types.FUND_TREE_AREA_FUNDS_FUND_DETAIL) {  // fundRegion
             versionId = state.fundRegion.fundDetail.versionId
             fundTree = state.fundRegion.fundDetail.fundTree
@@ -320,16 +320,16 @@ export function fundTreeNodeExpand(area, node) {
             fundTree = state.arrRegion.globalFundTree.fundTreeCopy
         } else {    // arrRegion
             activeFund = state.arrRegion.funds[state.arrRegion.activeIndex];
+            activeNode = activeFund.nodes.nodes[activeFund.nodes.activeIndex];
             versionId = activeFund.versionId;
             fundTree = getFundTree(activeFund, area);
             console.log(activeFund.nodes.nodes[activeFund.nodes.activeIndex].selectedSubNodeId,node.id);
         }
         dispatch(_fundTreeNodeExpand(area, versionId, node, true))
 
-        let activeNode = activeFund.nodes.nodes[activeFund.nodes.activeIndex];
         var nodeId = node.id;
         var expandedIds = {...fundTree.expandedIds, [nodeId]: true}
-        if(activeNode.selectedSubNodeId === nodeId){
+        if(activeNode && activeNode.selectedSubNodeId === nodeId){
             let json = {
                 nodes:[...activeNode.subNodeInfo.childNodes],
                 expandedIdsExtension:[]
