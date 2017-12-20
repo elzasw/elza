@@ -7,7 +7,6 @@ import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.dataexchange.input.DEImportException;
-import cz.tacr.elza.dataexchange.input.context.EntityIdHolder;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrNode;
@@ -85,18 +84,14 @@ public class ContextSection {
     /**
      * Create root node for section and stores all remaining packets.
      */
-    public ContextNode setRootNode(ArrNode rootNode, String importId) {
+	public ContextNode setRootNode(ArrNode rootNode, String importNodeId) {
         Validate.notNull(rootAdapter);
-        // check root
-        if (contextNodeImportIdMap.size() > 0) {
-            throw new DEImportException("Section must have only one root, levelId:" + importId);
-        }
+
         // save processed packets
         context.storePackets();
+
         // create root context node
-        ArrNodeWrapper rootNodeWrapper = rootAdapter.createNodeWrapper(rootNode);
-        ArrLevelWrapper rootLevelWrapper = rootAdapter.createLevelWrapper(rootNodeWrapper.getIdHolder());
-        return addNode(rootNodeWrapper, rootLevelWrapper, importId, 0);
+		return rootAdapter.createRoot(this, rootNode, importNodeId);
     }
 
     public void close() {
@@ -134,13 +129,31 @@ public class ContextSection {
         this.rootAdapter = rootAdapter;
     }
 
+	/**
+	 * Interface to create wrapper objects
+	 * 
+	 * This adapter can be used to change parent node of imported item.
+	 *
+	 */
     interface SectionRootAdapter {
 
+		/**
+		 * Return target fund
+		 * 
+		 * @return return fund
+		 */
         ArrFund getFund();
 
-        ArrNodeWrapper createNodeWrapper(ArrNode rootNode);
-
-        ArrLevelWrapper createLevelWrapper(EntityIdHolder<ArrNode> rootNodeIdHolder);
+		/**
+		 * Create root node for section
+		 * 
+		 * @param contextSection
+		 * @param rootNode
+		 * @param importNodeId
+		 *            ID of imported node
+		 * @return
+		 */
+		ContextNode createRoot(ContextSection contextSection, ArrNode rootNode, String importNodeId);
 
         /**
          * Called when section is processed.

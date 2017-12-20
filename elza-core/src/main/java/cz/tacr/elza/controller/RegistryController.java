@@ -163,7 +163,8 @@ public class RegistryController {
                                        @RequestParam(required = false) @Nullable final Integer versionId,
                                        @RequestParam(required = false) @Nullable final Integer itemSpecId,
                                        @RequestParam(required = false) @Nullable final Integer scopeId,
-                                       @RequestParam(required = false) @Nullable final Integer lastRecordNr) {
+                                       @RequestParam(required = false) @Nullable final Integer lastRecordNr,
+                                       @RequestParam(required = false, defaultValue = "true") @Nullable final Boolean excludeInvalid) {
 
         Set<Integer> registerTypeIdTree = Collections.emptySet();
 
@@ -193,10 +194,10 @@ public class RegistryController {
         }
 
         final long foundRecordsCount = registryService.findRegRecordByTextAndTypeCount(search, registerTypeIdTree,
-                parentRecordId, fund, scopeId);
+                parentRecordId, fund, scopeId, excludeInvalid);
 
         List<RegRecord> foundRecords = registryService.findRegRecordByTextAndType(search, registerTypeIdTree, from,
-                count, parentRecordId, fund, scopeId);
+                count, parentRecordId, fund, scopeId, excludeInvalid);
 
 
         Map<Integer, Integer> recordIdPartyIdMap = partyService.findParPartyIdsByRecords(foundRecords);
@@ -273,10 +274,10 @@ public class RegistryController {
         scopeIds.add(party.getRecord().getScope().getScopeId());
 
         final long foundRecordsCount = regRecordRepository.findRegRecordByTextAndTypeCount(search, registerTypeIds,
-                null, scopeIds);
+                null, scopeIds, true);
 
         final List<RegRecord> foundRecords = regRecordRepository.findRegRecordByTextAndType(search, registerTypeIds,
-                from, count, null, scopeIds);
+                from, count, null, scopeIds, true);
 
         List<RegRecordSimple> foundRecordsVO = factoryVo.createRegRecordsSimple(foundRecords);
         return new FilteredResultVO(foundRecordsVO, foundRecordsCount);

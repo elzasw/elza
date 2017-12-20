@@ -3,10 +3,12 @@ package cz.tacr.elza.dataexchange.input.reader;
 import javax.xml.namespace.QName;
 
 /**
- * XmlElementReaderPath is working only with local path (without namespace prefixes), this may
- * change in future.
+ * Class can dynamically build path to the xml element
+ * 
+ * XmlElementPathBuilder is working only with local path (without namespace
+ * prefixes), this may change in future.
  */
-public class XmlElementReaderPath {
+public class XmlElementPath {
 
     private final StringBuilder sb;
 
@@ -15,11 +17,11 @@ public class XmlElementReaderPath {
     /**
      * Copy path inner state.
      */
-    public XmlElementReaderPath(XmlElementReaderPath src) {
+    public XmlElementPath(XmlElementPath src) {
         this.sb = new StringBuilder(src.sb);
     }
 
-    public XmlElementReaderPath(int capacity) {
+    public XmlElementPath(int capacity) {
         this.sb = new StringBuilder(capacity);
     }
 
@@ -72,7 +74,7 @@ public class XmlElementReaderPath {
     /**
      * Test if specified path is equal or children path.
      */
-    public boolean matchPath(XmlElementReaderPath path) {
+    public boolean matchPath(XmlElementPath path) {
         if (path == null) {
             return false;
         }
@@ -97,7 +99,7 @@ public class XmlElementReaderPath {
     /**
      * Test if specified path is equal.
      */
-    public boolean equalPath(XmlElementReaderPath path) {
+    public boolean equalPath(XmlElementPath path) {
         if (path == null) {
             return false;
         }
@@ -107,7 +109,7 @@ public class XmlElementReaderPath {
     /**
      * @return Copy inner state of path.
      */
-    public XmlElementReaderPath copy() {
-        return new XmlElementReaderPath(this);
+    public XmlElementPath copy() {
+        return new XmlElementPath(this);
     }
 }

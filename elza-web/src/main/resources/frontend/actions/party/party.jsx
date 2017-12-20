@@ -44,7 +44,7 @@ export const USE_UNITDATE_ENUM = {
  * @param size {number} počet položek v seznamu - velikost jedné stránky
  */
 export function partyListFetchIfNeeded(versionId = null, from = 0, size = DEFAULT_PARTY_LIST_MAX_SIZE, scopeId = null) {
-    return SimpleListActions.fetchIfNeeded(AREA_PARTY_LIST, versionId, (parent, filter) => WebApi.findParty(filter.text, versionId, filter.type, filter.itemSpecId, filter.from, size, filter.scopeId))
+    return SimpleListActions.fetchIfNeeded(AREA_PARTY_LIST, versionId, (parent, filter) => WebApi.findParty(filter.text, versionId, filter.type, filter.itemSpecId, filter.from, size, filter.scopeId, filter.excludeInvalid))
 }
 
 /**
@@ -65,7 +65,7 @@ export function partyListInvalidate() {
 
 export function partyDetailFetchIfNeeded(id) {
     return (dispatch, getState) => {
-        dispatch(DetailActions.fetchIfNeeded(AREA_PARTY_DETAIL, id, () => {
+        return dispatch(DetailActions.fetchIfNeeded(AREA_PARTY_DETAIL, id, () => {
             return WebApi.getParty(id).catch(()=>dispatch(partyDetailClear()));
         }));
     }
@@ -123,7 +123,7 @@ export function partyDelete(id) {
         })
     }
 }
-
+/* MCV-45365
 export function setValidParty(id) {
     return (dispatch, getState) => {
         WebApi.setValidParty(id).then(() => {
@@ -140,7 +140,7 @@ export function setValidParty(id) {
         })
     }
 }
-
+*/
 
 export function relationCreate(relation) {
     return (dispatch, getState) => {

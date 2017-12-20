@@ -130,6 +130,7 @@ public class RegRecord extends AbstractVersionableEntity implements Versionable,
     public static final String SCOPE = "scope";
     public static final String UUID = "uuid";
     public static final String LAST_UPDATE = "lastUpdate";
+    public static final String INVALID = "invalid";
 
     /**
      * ID hesla.

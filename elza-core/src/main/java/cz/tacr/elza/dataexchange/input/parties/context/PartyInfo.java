@@ -20,7 +20,7 @@ public class PartyInfo extends EntityIdHolder<ParParty> {
     private final PartyType partyType;
 
     public PartyInfo(String importId, AccessPointInfo apInfo, PartyType partyType) {
-        super(ParParty.class);
+        super(partyType.getDomainClass());
         this.importId = Validate.notNull(importId);
         this.apInfo = Validate.notNull(apInfo);
         this.partyType = Validate.notNull(partyType);

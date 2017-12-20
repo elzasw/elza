@@ -250,7 +250,8 @@ public class PartyController {
                                        @Nullable @RequestParam(required = false) final Integer partyTypeId,
                                        @Nullable @RequestParam(required = false) final Integer itemSpecId,
                                        @RequestParam(required = false) @Nullable final Integer versionId,
-                                       @RequestParam(required = false) @Nullable final Integer scopeId) {
+                                       @RequestParam(required = false) @Nullable final Integer scopeId,
+                                       @RequestParam(required = false, defaultValue = "true") @Nullable final Boolean excludeInvalid) {
 
         ArrFund fund;
         if (versionId == null) {
@@ -261,10 +262,10 @@ public class PartyController {
         }
 
         List<ParParty> partyList = partyService.findPartyByTextAndType(search, partyTypeId, itemSpecId, from, count,
-                fund, scopeId);
+                fund, scopeId, excludeInvalid);
         List<ParPartyVO> resultVo = factoryVo.createPartyList(partyList);
 
-        long countAll = partyService.findPartyByTextAndTypeCount(search, partyTypeId, itemSpecId, fund, scopeId);
+        long countAll = partyService.findPartyByTextAndTypeCount(search, partyTypeId, itemSpecId, fund, scopeId, excludeInvalid);
         return new FilteredResultVO<>(resultVo, countAll);
     }
 
@@ -292,11 +293,11 @@ public class PartyController {
         scopeIds.add(party.getRecord().getScope().getScopeId());
 
         List<ParParty> partyList = partyRepository.findPartyByTextAndType(search, partyTypeId, null,
-                from, count, scopeIds);
+                from, count, scopeIds, true);
 
         List<ParPartyVO> resultVo = factoryVo.createPartyList(partyList);
 
-        long countAll = partyRepository.findPartyByTextAndTypeCount(search, partyTypeId, null, scopeIds);
+        long countAll = partyRepository.findPartyByTextAndTypeCount(search, partyTypeId, null, scopeIds, true);
         return new FilteredResultVO<>(resultVo, countAll);
     }
 

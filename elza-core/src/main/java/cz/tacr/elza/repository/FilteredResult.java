@@ -6,20 +6,18 @@ import java.util.List;
  * Třída obsahuje informaci o výsledku hledání s omezením vráceného počtu s tránkováním, včetně informace o celkovém počtu záznamů.
  *
  * @param <T> jaké objekty se vracejí
- * @author Pavel Stánek
- * @since 15.06.2016
  */
 public class FilteredResult<T> {
     /** Od jakého záznamu se data vracely. */
-    private long firstResult;
+	private int firstResult;
     /** Maximální počet vrácených záznamů. */
-    private long maxResults;
+	private int maxResults;
     /** Celkový počet záznamů pro daná kriteria hledání. */
-    private long totalCount;
+	private int totalCount;
     /** Seznam objektů. */
     private List<T> list;
 
-    public FilteredResult(final long firstResult, final long maxResults, final long totalCount, final List<T> list) {
+	public FilteredResult(final int firstResult, final int maxResults, final int totalCount, final List<T> list) {
         this.firstResult = firstResult;
         this.maxResults = maxResults;
         this.totalCount = totalCount;
@@ -27,17 +25,17 @@ public class FilteredResult<T> {
     }
 
     /** Od jakého záznamu se data vracely. */
-    public long getFirstResult() {
+	public int getFirstResult() {
         return firstResult;
     }
 
     /** Maximální počet vrácených záznamů. */
-    public long getMaxResults() {
+	public int getMaxResults() {
         return maxResults;
     }
 
     /** Celkový počet záznamů pro daná kriteria hledání. */
-    public long getTotalCount() {
+	public int getTotalCount() {
         return totalCount;
     }
 

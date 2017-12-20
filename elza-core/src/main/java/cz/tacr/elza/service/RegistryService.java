@@ -194,7 +194,8 @@ public class RegistryService {
                                                       final Integer maxResults,
                                                       final Integer parentRecordId,
                                                       @Nullable final ArrFund fund,
-                                                      @Nullable final Integer scopeId) {
+                                                      @Nullable final Integer scopeId,
+                                                      @Nullable final Boolean excludeInvalid) {
 
         Set<Integer> scopeIdsForSearch = getScopeIdsForSearch(fund, scopeId);
 
@@ -204,12 +205,12 @@ public class RegistryService {
         }
 
         return regRecordRepository.findRegRecordByTextAndType(searchRecord, registerTypeIds, firstResult,
-                maxResults, parentRecord, scopeIdsForSearch);
+                maxResults, parentRecord, scopeIdsForSearch, excludeInvalid);
     }
 
 
     /**
-     * Celkový počet záznamů v DB pro funkci {@link #findRegRecordByTextAndType(String, Collection, Integer, Integer, Integer, ArrFund, Integer)}
+     * Celkový počet záznamů v DB pro funkci {@link #findRegRecordByTextAndType(String, Collection, Integer, Integer, Integer, ArrFund, Integer, Boolean)}
      *
      * @param searchRecord    hledaný řetězec, může být null
      * @param registerTypeIds typ záznamu
@@ -221,7 +222,8 @@ public class RegistryService {
     public long findRegRecordByTextAndTypeCount(@Nullable final String searchRecord,
                                                 @Nullable final Collection<Integer> registerTypeIds,
                                                 final Integer parentRecordId, @Nullable final ArrFund fund,
-                                                final Integer scopeId) {
+                                                final Integer scopeId,
+                                                final Boolean excludeInvalid) {
 
         Set<Integer> scopeIdsForSearch = getScopeIdsForSearch(fund, scopeId);
 
@@ -231,7 +233,7 @@ public class RegistryService {
         }
 
         return regRecordRepository.findRegRecordByTextAndTypeCount(searchRecord, registerTypeIds, parentRecord,
-                scopeIdsForSearch);
+                scopeIdsForSearch, excludeInvalid);
     }
 
     /**

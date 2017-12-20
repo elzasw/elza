@@ -15,6 +15,11 @@ import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.repository.LevelRepository;
 
+/**
+ * Adapter to import sections into existing fund
+ * 
+ *
+ */
 class SubsectionRootAdapter implements SectionRootAdapter {
 
     private final ImportPosition importPosition;
@@ -35,18 +40,6 @@ class SubsectionRootAdapter implements SectionRootAdapter {
     @Override
     public ArrFund getFund() {
         return importPosition.getFundVersion().getFund();
-    }
-
-    @Override
-    public ArrNodeWrapper createNodeWrapper(ArrNode rootNode) {
-        return new ArrNodeWrapper(rootNode);
-    }
-
-    @Override
-    public ArrLevelWrapper createLevelWrapper(EntityIdHolder<ArrNode> rootNodeIdHolder) {
-        EntityIdHolder<ArrNode> parentNodeIdHolder = new EntityIdHolder<>(ArrNode.class);
-        parentNodeIdHolder.setEntityId(importPosition.getParentLevel().getNodeId());
-        return ContextNode.createLevelWrapper(rootNodeIdHolder, parentNodeIdHolder, getNextLevelPosition(), createChange);
     }
 
     @Override
@@ -95,4 +88,17 @@ class SubsectionRootAdapter implements SectionRootAdapter {
             levelRepository.save(level);
         }
     }
+
+	@Override
+	public ContextNode createRoot(ContextSection contextSection, ArrNode rootNode, String importNodeId) {
+		ArrNodeWrapper nodeWrapper = new ArrNodeWrapper(rootNode);
+
+		// set existing node from importPosition as parent 
+		EntityIdHolder<ArrNode> parentNodeIdHolder = new EntityIdHolder<>(ArrNode.class);
+		parentNodeIdHolder.setEntityId(importPosition.getParentLevel().getNodeId());
+		ArrLevelWrapper levelWrapper = ContextNode.createLevelWrapper(nodeWrapper.getIdHolder(), parentNodeIdHolder,
+		        getNextLevelPosition(), createChange);
+
+		return contextSection.addNode(nodeWrapper, levelWrapper, importNodeId, 0);
+	}
 }

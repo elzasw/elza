@@ -189,14 +189,14 @@ public class PartyService {
 
     /**
      * Osobu vyhledává podle hesla v rejstříku včetně variantních hesel.
-     *
-     * @param searchRecord hledaný řetězec, může být null
+     *  @param searchRecord hledaný řetězec, může být null
      * @param partyTypeId  typ záznamu
      * @param itemSpecId specifikace
      * @param firstResult  první vrácená osoba
      * @param maxResults   max počet vrácených osob
      * @param fund   AP, ze které se použijí třídy rejstříků
      * @param scopeId scope, pokud je vyplněno hledají se osoby pouze s tímto scope
+     * @param excludeInvalid
      */
     public List<ParParty> findPartyByTextAndType(final String searchRecord,
                                                  final Integer partyTypeId,
@@ -204,7 +204,7 @@ public class PartyService {
                                                  final Integer firstResult,
                                                  final Integer maxResults,
                                                  @Nullable final ArrFund fund,
-                                                 @Nullable final Integer scopeId) {
+                                                 @Nullable final Integer scopeId, Boolean excludeInvalid) {
         Set<Integer> scopeIdsForSearch = registryService.getScopeIdsForSearch(fund, scopeId);
 
         Set<Integer> registerTypesIds = null;
@@ -213,7 +213,7 @@ public class PartyService {
         }
 
         return partyRepository.findPartyByTextAndType(searchRecord, partyTypeId, registerTypesIds, firstResult,
-                maxResults, scopeIdsForSearch);
+                maxResults, scopeIdsForSearch, true);
     }
 
     private Set<Integer> find(final Integer itemSpecId) {
@@ -235,13 +235,15 @@ public class PartyService {
      * @param fund   AP, ze které se použijí třídy rejstříků
      * @param scopeId scope, pokud je vyplněno hledají se osoby pouze s tímto scope
      *
+     * @param excludeInvalid
      * @return
      */
     public long findPartyByTextAndTypeCount(final String searchRecord,
                                             final Integer partyTypeId,
                                             final Integer itemSpecId,
                                             @Nullable final ArrFund fund,
-                                            @Nullable final Integer scopeId){
+                                            @Nullable final Integer scopeId,
+                                            @Nullable final Boolean excludeInvalid){
         Set<Integer> scopeIdsForSearch = registryService.getScopeIdsForSearch(fund, scopeId);
 
 
@@ -251,7 +253,7 @@ public class PartyService {
         }
 
         return partyRepository.findPartyByTextAndTypeCount(searchRecord, partyTypeId, registerTypesIds,
-                scopeIdsForSearch);
+                scopeIdsForSearch, excludeInvalid);
     }
 
     /**

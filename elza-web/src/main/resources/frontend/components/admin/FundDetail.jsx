@@ -22,6 +22,22 @@ class FundDetail extends AbstractReactComponent {
         {id: FundDetail.TAB_GROUPS, title: i18n("admin.perms.fund.tabs.groups")},
     ];
 
+    /*
+     * Template for selected items
+     */
+    defaultSelectedItem = {
+        id: null,
+        index: 0
+    }
+    /* 
+     * Last selected fund item.
+     */
+    selectedUser = this.defaultSelectedItem;
+    /* 
+     * Last selected scope item.
+     */
+    selectedGroup = this.defaultSelectedItem;
+
     constructor(props) {
         super(props);
 
@@ -35,6 +51,15 @@ class FundDetail extends AbstractReactComponent {
     }
 
     componentWillReceiveProps(nextProps) {
+        const fundId = this.props.fund.id;
+        const nextFundId = nextProps.fund.id;
+
+        // Reset selected permissions
+        if(fundId !== nextFundId){
+            this.selectedUser = this.defaultSelectedItem;
+            this.selectedGroup = this.defaultSelectedItem;
+        }
+
         this.fetchData(nextProps);
     }
 
@@ -56,12 +81,21 @@ class FundDetail extends AbstractReactComponent {
     renderTabContent = () => {
         const {fund} = this.props;
         const {selectedTabItem} = this.state;
+        console.log("selected items", this.selectedUser, this.selectedGroup);
 
         switch (selectedTabItem.id) {
             case FundDetail.TAB_USERS:
-                return <FundUsersPanel fundId={fund.id} />
+                return <FundUsersPanel 
+                    fundId={fund.id}
+                    onSelectItem={(item, index) => {this.selectedUser = {index, id: item.id}}}
+                    selectedPermission={this.selectedUser}
+                />
             case FundDetail.TAB_GROUPS:
-                return <FundGroupsPanel fundId={fund.id} />
+                return <FundGroupsPanel 
+                    fundId={fund.id}
+                    onSelectItem={(item, index) => {this.selectedGroup = {index, id: item.id}}}
+                    selectedPermission={this.selectedGroup}
+                />
         }
     };
 

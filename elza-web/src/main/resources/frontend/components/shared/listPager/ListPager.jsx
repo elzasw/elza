@@ -19,13 +19,21 @@ export default class ListPager extends React.Component {
         maxSize: 0
     };
 
+    getMax = () => {
+        const {from, maxSize } = this.props;
+        let to = from + DEFAULT_PARTY_LIST_MAX_SIZE;
+        return Math.min(to, maxSize);
+    }
+
     render() {
         const { prev, next, from, maxSize } = this.props;
+        let to = this.getMax();
+
         return (
             <div className="list-pager">
                 <Icon onClick={prev} glyph="fa-chevron-left fa-lg" className="arrow-left" />
                 <span className="middle-text">
-                    {from} - {from + DEFAULT_PARTY_LIST_MAX_SIZE} z {maxSize}
+                    {from} - {to} z {maxSize}
                 </span>
                 <Icon onClick={next} glyph="fa fa-chevron-right fa-lg" className="arrow-right" />
             </div>

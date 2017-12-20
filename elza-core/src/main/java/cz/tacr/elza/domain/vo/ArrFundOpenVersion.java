@@ -6,10 +6,9 @@ import cz.tacr.elza.domain.ArrFundVersion;
 
 /**
  * Objekt AS spolu s otevřenou verzí.
- *
- * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
- * @since 14.04.2016
  */
+// TODO: This object is probably useless, fund can be 
+//       fetched together with version
 public class ArrFundOpenVersion {
 
     private ArrFund fund;

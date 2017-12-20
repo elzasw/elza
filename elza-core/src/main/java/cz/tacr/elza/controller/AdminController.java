@@ -97,6 +97,7 @@ public class AdminController {
      * @return nalezený externí systém
      */
     @RequestMapping(value = "/externalSystems/{externalSystemId}", method = RequestMethod.GET)
+	@Transactional
     public SysExternalSystemVO findExternalSystemById(@PathVariable("externalSystemId") final Integer externalSystemId) {
         return factoryVo.createSimpleEntity(externalSystemService.findOne(externalSystemId), SysExternalSystemVO.class);
     }

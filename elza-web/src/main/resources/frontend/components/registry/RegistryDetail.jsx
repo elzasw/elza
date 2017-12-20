@@ -32,6 +32,8 @@ import * as perms from 'actions/user/Permission.jsx';
 import {initForm} from "actions/form/inlineForm.jsx"
 import {getMapFromList} from 'stores/app/utils.jsx'
 import {setFocus} from 'actions/global/focus.jsx'
+import {addToastrWarning} from 'components/shared/toastr/ToastrActions.jsx'
+
 
 import {routerNavigate} from 'actions/router.jsx'
 import {partyDetailFetchIfNeeded} from 'actions/party/party.jsx'
@@ -49,7 +51,6 @@ class RegistryDetail extends AbstractReactComponent {
     static childContextTypes = { shortcuts: PropTypes.object.isRequired };
     componentWillMount(){
         Utils.addShortcutManager(this,defaultKeymap);
-        this.fetchIfNeeded();
     }
     getChildContext() {
         return { shortcuts: this.shortcutManager };
@@ -59,6 +60,11 @@ class RegistryDetail extends AbstractReactComponent {
 
     componentDidMount() {
         this.trySetFocus();
+        this.fetchIfNeeded().then(data => {
+            if (data && data.invalid) {
+                this.props.dispatch(addToastrWarning(i18n("registry.invalid.warning")));
+            }
+        });
     }
 
     componentWillReceiveProps(nextProps) {
@@ -75,13 +81,16 @@ class RegistryDetail extends AbstractReactComponent {
     }
 
     fetchIfNeeded = (props = this.props) => {
-        const {registryDetail: {id}} = props;
-        this.dispatch(refPartyTypesFetchIfNeeded());    // nacteni typu osob (osoba, rod, událost, ...)
-        this.dispatch(calendarTypesFetchIfNeeded());    // načtení typů kalendářů (gregoriánský, juliánský, ...)
-        this.dispatch(requestScopesIfNeeded());
-        if (id) {
-            this.dispatch(registryDetailFetchIfNeeded(id));
-        }
+        return new Promise((resolve, reject) => {
+            const {registryDetail: {id}} = props;
+            this.dispatch(refPartyTypesFetchIfNeeded());    // nacteni typu osob (osoba, rod, událost, ...)
+            this.dispatch(calendarTypesFetchIfNeeded());    // načtení typů kalendářů (gregoriánský, juliánský, ...)
+            this.dispatch(requestScopesIfNeeded());
+
+            if (id) {
+                resolve(this.dispatch(registryDetailFetchIfNeeded(id)));
+            }
+        });
     };
 
     trySetFocus = (props = this.props) => {

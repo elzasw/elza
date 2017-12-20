@@ -2,7 +2,6 @@ package cz.tacr.elza.dataexchange.input.sections.context;
 
 import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.dataexchange.input.DEImportException;
-import cz.tacr.elza.dataexchange.input.context.EntityIdHolder;
 import cz.tacr.elza.dataexchange.input.sections.context.ContextSection.SectionRootAdapter;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFund;
@@ -11,6 +10,10 @@ import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.service.ArrangementService;
 
+/**
+ * Adapter to import section as new fund
+ *
+ */
 class FundRootAdapter implements SectionRootAdapter {
 
     private final ArrFund fund;
@@ -24,6 +27,11 @@ class FundRootAdapter implements SectionRootAdapter {
     private final ArrangementService arrangementService;
 
     private ArrFundVersion fundVersion;
+
+	/**
+	 * Flag if root was created
+	 */
+	boolean rootCreated = false;
 
     public FundRootAdapter(ArrFund fund,
                            RuleSystem ruleSystem,
@@ -43,26 +51,33 @@ class FundRootAdapter implements SectionRootAdapter {
     }
 
     @Override
-    public ArrNodeWrapper createNodeWrapper(ArrNode rootNode) {
-        return new ArrNodeWrapper(rootNode) {
+	public void onSectionClose() {
+		if (fundVersion == null) {
+			throw new DEImportException("Root level not found, fund name:" + fund.getName());
+		}
+	}
+
+	@Override
+	public ContextNode createRoot(ContextSection contextSection, ArrNode rootNode, String importNodeId) {
+		// check root
+		if (rootCreated) {
+			throw new DEImportException("Section must have only one root, levelId:" + importNodeId);
+		}
+		rootCreated = true;
+
+		ArrNodeWrapper nodeWrapper = new ArrNodeWrapper(rootNode) {
             @Override
             public void afterEntityPersist() {
+				// fund version requires rootNode, 
+				// can be created only after persist of root node
                 RulRuleSet ruleSet = ruleSystem.getRuleSet();
                 fundVersion = arrangementService.createVersion(createChange, fund, ruleSet, rootNode, timeRange);
                 super.afterEntityPersist();
             }
         };
-    }
 
-    @Override
-    public ArrLevelWrapper createLevelWrapper(EntityIdHolder<ArrNode> rootNodeIdHolder) {
-        return ContextNode.createLevelWrapper(rootNodeIdHolder, null, 1, createChange);
-    }
+		ArrLevelWrapper levelWrapper = ContextNode.createLevelWrapper(nodeWrapper.getIdHolder(), null, 1, createChange);
 
-    @Override
-    public void onSectionClose() {
-        if (fundVersion == null) {
-            throw new DEImportException("Root level not found, fund name:" + fund.getName());
-        }
-    }
+		return contextSection.addNode(nodeWrapper, levelWrapper, importNodeId, 0);
+	}
 }

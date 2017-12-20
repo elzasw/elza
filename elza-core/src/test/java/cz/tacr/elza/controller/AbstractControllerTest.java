@@ -1993,6 +1993,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
         }
         params.put("from", from != null ? from : 0);
         params.put("count", count != null ? count : 20);
+        params.put("excludeInvalid", true);
 
         return get(spec -> spec.queryParameters(params), FIND_RECORD).getBody().as(FilteredResultVO.class).getRows();
     }
@@ -2180,6 +2181,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
         }
         params.put("from", from != null ? from : 0);
         params.put("count", count != null ? count : 20);
+        params.put("excludeInvalid", true);
 
         return get(spec -> spec.queryParameters(params), FIND_PARTY).getBody().as(FilteredResultVO.class).getRows();
     }
@@ -2448,7 +2450,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected UsrUserVO changePassword(final Integer userId,
                                        final UserController.ChangePassword params) {
         return put(spec -> spec.body(params)
-                .pathParameter("userId", userId), CHANGE_PASSWORD).as(UserInfoVO.class);
+		        .pathParameter("userId", userId), CHANGE_PASSWORD).as(UsrUserVO.class);
     }
 
     /**
@@ -2458,7 +2460,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @return uživatel
      */
     protected UsrUserVO changePassword(final UserController.ChangePassword params) {
-        return put(spec -> spec.body(params), CHANGE_PASSWORD_USER).as(UserInfoVO.class);
+		return put(spec -> spec.body(params), CHANGE_PASSWORD_USER).as(UsrUserVO.class);
     }
 
 

@@ -1,27 +1,32 @@
 package cz.tacr.elza.controller.vo;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.UsrPermission.Permission;
+import cz.tacr.elza.security.UserPermission;
 
 /**
  * Informace o oprávnění uživatele.
  *
- * @author Pavel Stánek
- * @since 27.04.2016
  */
 public class UserPermissionInfoVO {
     /** Typ oprávnění. */
     private UsrPermission.Permission permission;
 
     /** Seznam identifikátorů AS, ke kterým se vztahuje oprávnění. */
-    private Set<Integer> fundIds = new HashSet<>();
+	private List<Integer> fundIds = new ArrayList<>();
 
     /** Seznam identifikátorů scopů, ke kterým se vztahuje oprávnění. */
-    private Set<Integer> scopeIds = new HashSet<>();
+	private List<Integer> scopeIds = new ArrayList<>();
 
-    public UsrPermission.Permission getPermission() {
+	public UserPermissionInfoVO(Permission permission) {
+		this.permission = permission;
+	}
+
+	public UsrPermission.Permission getPermission() {
         return permission;
     }
 
@@ -29,19 +34,51 @@ public class UserPermissionInfoVO {
         this.permission = permission;
     }
 
-    public Set<Integer> getFundIds() {
+	public List<Integer> getFundIds() {
         return fundIds;
     }
 
-    public void setFundIds(final Set<Integer> fundIds) {
+	public void setFundIds(final List<Integer> fundIds) {
         this.fundIds = fundIds;
     }
 
-    public Set<Integer> getScopeIds() {
+	public List<Integer> getScopeIds() {
         return scopeIds;
     }
 
-    public void setScopeIds(final Set<Integer> scopeIds) {
+	public void setScopeIds(final List<Integer> scopeIds) {
         this.scopeIds = scopeIds;
     }
+
+	/**
+	 * Add all scope ids
+	 * 
+	 * @param ids
+	 */
+	private void addScopeIds(Collection<Integer> ids) {
+		this.scopeIds.addAll(ids);
+	}
+
+	/**
+	 * Add all fund ids
+	 * 
+	 * @param fundIds
+	 */
+	private void addFundIds(Collection<Integer> ids) {
+		this.fundIds.addAll(ids);
+	}
+
+	/**
+	 * Create new instance of UserPermissionInfoVO
+	 * 
+	 * @param perm
+	 * @return
+	 */
+	public static UserPermissionInfoVO newInstance(UserPermission perm) {
+		UserPermissionInfoVO result = new UserPermissionInfoVO(perm.getPermission());
+		result.addFundIds(perm.getFundIds());
+		result.addScopeIds(perm.getScopeIds());
+
+		return result;
+	}
 }

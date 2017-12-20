@@ -219,6 +219,7 @@ class AddNodeForm extends AbstractReactComponent {
             const submitData = {
                 xmlFile:this.state.importXml,
                 scopeId:this.state.selectedScopeId,
+                ignoreRootNodes: this.state.ignoreRootNodes
             };
             //Upravena rozhodovaci logika pro umisteni uzlu
             let importPositionParams = {

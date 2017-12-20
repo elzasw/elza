@@ -39,13 +39,10 @@ import cz.tacr.elza.dataexchange.input.reader.XmlElementReader;
 import cz.tacr.elza.dataexchange.input.reader.handlers.AccessPointElementHandler;
 import cz.tacr.elza.dataexchange.input.reader.handlers.EventElementHandler;
 import cz.tacr.elza.dataexchange.input.reader.handlers.FamilyElementHandler;
-import cz.tacr.elza.dataexchange.input.reader.handlers.FundInfoElementHandler;
 import cz.tacr.elza.dataexchange.input.reader.handlers.InstitutionElementHandler;
 import cz.tacr.elza.dataexchange.input.reader.handlers.PartyGroupElementHandler;
 import cz.tacr.elza.dataexchange.input.reader.handlers.PersonElementHandler;
 import cz.tacr.elza.dataexchange.input.reader.handlers.SectionElementHandler;
-import cz.tacr.elza.dataexchange.input.reader.handlers.SectionLevelElementHandler;
-import cz.tacr.elza.dataexchange.input.reader.handlers.SectionPacketElementHandler;
 import cz.tacr.elza.dataexchange.input.sections.context.SectionStorageDispatcher;
 import cz.tacr.elza.dataexchange.input.sections.context.SectionsContext;
 import cz.tacr.elza.dataexchange.input.sections.context.SectionsContext.ImportPosition;
@@ -173,13 +170,19 @@ public class DEImportService {
 
         Session session = HibernateUtils.getCurrentSession(em);
         ImportContext context = initContext(params, session);
-        XmlElementReader reader = prepareReader(is, context);
+		XmlElementReader reader = prepareReader(is, context, params.isIgnoreRootNodes());
         FlushMode origFlushMode = configureBatchSession(session, params.getBatchSize());
         try {
+			// read XML
             reader.readDocument();
+
+			// set final phase
             context.setCurrentPhase(ImportPhase.FINISHED);
+
+			// sync node cache with all new nodes
             nodeCacheService.syncCache();
-            // clear lever tree cache
+
+			// clear level tree cache if imported to existing fund
             ImportPosition importPosition = context.getSections().getImportPostition();
             if (importPosition != null) {
                 levelTreeCacheService.invalidateFundVersion(importPosition.getFundVersion());
@@ -197,11 +200,28 @@ public class DEImportService {
         }
     }
 
+	/**
+	 * Check if all parameters are logically consistent
+	 * 
+	 * @param params
+	 */
     private void checkParameters(DEImportParams params) {
         Validate.isTrue(params.getBatchSize() > 0, "Import batch size must be greater than 0");
         Validate.isTrue(params.getMemoryScoreLimit() > 0, "Import memory score limit must be greater than 0");
+		// to ignore root nodes, position have to be set
+		if (params.isIgnoreRootNodes()) {
+			ImportPositionParams posParams = params.getPositionParams();
+			Validate.notNull(posParams);
+		}
     }
 
+	/**
+	 * Prepare ImportContext object
+	 * 
+	 * @param params
+	 * @param session
+	 * @return
+	 */
     private ImportContext initContext(DEImportParams params, Session session) {
         // init storage manager
         StorageManager storageManager = new StorageManager(params.getMemoryScoreLimit(), session, initHelper);
@@ -261,7 +281,7 @@ public class DEImportService {
         return new SectionsContext(storageDispatcher, createChange, scope, pos, staticData, initHelper);
     }
 
-    private static XmlElementReader prepareReader(InputStream is, ImportContext context) {
+	private static XmlElementReader prepareReader(InputStream is, ImportContext context, boolean ignoreRootNodes) {
         XmlElementReader reader;
         try {
             reader = XmlElementReader.create(is);
@@ -274,10 +294,7 @@ public class DEImportService {
         reader.addElementHandler("/edx/pars/pg", new PartyGroupElementHandler(context));
         reader.addElementHandler("/edx/pars/evnt", new EventElementHandler(context));
         reader.addElementHandler("/edx/inss/inst", new InstitutionElementHandler(context));
-        reader.addElementHandler("/edx/fs/s", new SectionElementHandler(context));
-        reader.addElementHandler("/edx/fs/s/fi", new FundInfoElementHandler(context));
-        reader.addElementHandler("/edx/fs/s/pcks/pck", new SectionPacketElementHandler(context));
-        reader.addElementHandler("/edx/fs/s/lvls/lvl", new SectionLevelElementHandler(context));
+		reader.addElementHandler("/edx/fs/s", new SectionElementHandler(context, reader, ignoreRootNodes));
         return reader;
     }
 

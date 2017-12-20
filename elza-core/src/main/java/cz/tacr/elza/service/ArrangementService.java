@@ -567,8 +567,7 @@ public class ArrangementService {
         change.setChangeDate(LocalDateTime.now());
 
         if (userDetail != null && userDetail.getId() != null) {
-            UsrUser user = new UsrUser();
-            user.setUserId(userDetail.getId());
+			UsrUser user = em.getReference(UsrUser.class, userDetail.getId());
             change.setUser(user);
         }
 

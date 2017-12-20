@@ -39,6 +39,7 @@ import {PropTypes} from 'prop-types';
 import defaultKeymap from './PartyDetailKeymap.jsx';
 import './PartyDetail.less';
 import {requestScopesIfNeeded} from "../../actions/refTables/scopesData";
+import {addToastrWarning} from "../shared/toastr/ToastrActions";
 
 
 const SETTINGS_PARTY_PIN = "PARTY_PIN";
@@ -125,7 +126,12 @@ class PartyDetail extends AbstractReactComponent {
 
     componentDidMount() {
         this.trySetFocus();
-        this.fetchIfNeeded();
+        this.fetchIfNeeded().then(data => {
+            if (data && data.record && data.record.invalid) {
+                this.props.dispatch(addToastrWarning(i18n("party.invalid.warning")));
+            }
+        });
+
         this.updateStateFromProps();
         this.props.initForm(this.handlePartyUpdate);
     }
@@ -178,14 +184,17 @@ class PartyDetail extends AbstractReactComponent {
     }
 
     fetchIfNeeded = (props = this.props) => {
-        const {partyDetail: {id}} = props;
-        this.dispatch(refPartyTypesFetchIfNeeded());    // nacteni typu osob (osoba, rod, událost, ...)
-        this.dispatch(calendarTypesFetchIfNeeded());    // načtení typů kalendářů (gregoriánský, juliánský, ...)
-        this.dispatch(refRecordTypesFetchIfNeeded());
-        this.dispatch(requestScopesIfNeeded());
-        if (id) {
-            this.dispatch(partyDetailFetchIfNeeded(id));
-        }
+        return new Promise((resolve, reject) => {
+            const {partyDetail: {id}} = props;
+            this.dispatch(refPartyTypesFetchIfNeeded());    // nacteni typu osob (osoba, rod, událost, ...)
+            this.dispatch(calendarTypesFetchIfNeeded());    // načtení typů kalendářů (gregoriánský, juliánský, ...)
+            this.dispatch(refRecordTypesFetchIfNeeded());
+            this.dispatch(requestScopesIfNeeded());
+
+            if (id) {
+                resolve(this.dispatch(partyDetailFetchIfNeeded(id)));
+            }
+        });
     };
 
     trySetFocus = (props = this.props) => {
@@ -452,12 +461,12 @@ class PartyDetail extends AbstractReactComponent {
 }
 
 export default reduxForm({
+        form: 'partyDetail',
         fields: PartyDetail.fields,
         validate: PartyDetail.validate
     },(state) => {
         const {app: {partyDetail}, userDetail, refTables: {partyTypes, recordTypes}, focus, refTables} = state;
         return {
-            form: 'partyDetail',
             partyDetail,
             userDetail,
             partyTypes,

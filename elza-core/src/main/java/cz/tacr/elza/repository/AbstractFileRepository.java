@@ -39,7 +39,8 @@ abstract public class AbstractFileRepository<T extends DmsFile> {
         return null;
     }
 
-    public FilteredResult<T> getFilteredResult(final CriteriaQuery<T> query, final CriteriaQuery<Long> queryCount, final Root<T> file,
+	public FilteredResult<T> getFilteredResult(final CriteriaQuery<T> query, final CriteriaQuery<Long> queryCount,
+	        final Root<T> file,
             final Root<T> fileCount, final Integer firstResult, final Integer maxResults) {
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         query.select(file);
@@ -49,8 +50,8 @@ abstract public class AbstractFileRepository<T extends DmsFile> {
                 .setFirstResult(firstResult)
                 .setMaxResults(maxResults)
                 .getResultList();
-        long count = entityManager.createQuery(queryCount).getSingleResult();
+		int count = entityManager.createQuery(queryCount).getSingleResult().intValue();
 
-        return new FilteredResult<>(firstResult, maxResults, count, list);
+        return new FilteredResult<T>(firstResult, maxResults, count, list);
     }
 }

@@ -6,11 +6,11 @@ import javax.persistence.EntityManager;
 
 import org.apache.commons.lang3.Validate;
 import org.hibernate.CacheMode;
+import org.hibernate.Hibernate;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
-import org.hibernate.proxy.HibernateProxy;
-import org.hibernate.proxy.LazyInitializer;
+import org.hibernate.search.hcore.util.impl.HibernateHelper;
 
 /**
  * Helper class for Hibernate.
@@ -18,50 +18,18 @@ import org.hibernate.proxy.LazyInitializer;
 public class HibernateUtils {
 
     /**
-     * Unproxy specified entity. Proxy implementor (entity) will be loaded from database if not initialized.
+     * Unproxy specified object. In case of uninitialized proxy will be entity loaded from database.
      *
      * @param object POJO or hibernate proxy
      *
-     * @return POJO or initialized proxy implementor (entity)
+     * @return POJO or initialized entity, can be null when object was null.
      */
     @SuppressWarnings("unchecked")
-	public static <T> T unproxy(Object object) {
+    public static <T> T unproxy(Object object) {
         if (object == null) {
             return null;
         }
-        LazyInitializer initializer = getLazyInitializer(object);
-        if (initializer != null) {
-            return (T) initializer.getImplementation();
-        }
-		return (T) object;
-    }
-
-    /**
-     * Get the actual class of proxied entity.
-     *
-     * @param object pojo or hibernate proxy, not-null
-     */
-    public static Class<?> getPersistentClass(Object object) {
-        LazyInitializer initializer = getLazyInitializer(object);
-        if (initializer != null) {
-            return initializer.getPersistentClass();
-        }
-        return object.getClass();
-    }
-
-    /**
-     * Get LazyInitializer from hibernate proxy.
-     *
-     * @param object pojo or hibernate proxy, not-null
-     * @return LazyInitializer or null when object is not instance of hibernate proxy.
-     */
-    public static LazyInitializer getLazyInitializer(Object object) {
-        Validate.notNull(object);
-        if (object instanceof HibernateProxy) {
-            HibernateProxy proxy = (HibernateProxy) object;
-            return proxy.getHibernateLazyInitializer();
-        }
-        return null;
+        return (T) HibernateHelper.unproxy(object);
     }
 
     /**
@@ -92,8 +60,7 @@ public class HibernateUtils {
         if (object == null) {
             return false;
         }
-        LazyInitializer initializer = HibernateUtils.getLazyInitializer(object);
-        return initializer == null || !initializer.isUninitialized();
+        return Hibernate.isInitialized(object);
     }
 
     /**
