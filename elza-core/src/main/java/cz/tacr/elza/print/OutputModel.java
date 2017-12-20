@@ -93,7 +93,7 @@ import cz.tacr.elza.print.party.PartyInitHelper;
 import cz.tacr.elza.print.party.PartyName;
 import cz.tacr.elza.print.party.Person;
 import cz.tacr.elza.print.party.Relation;
-import cz.tacr.elza.print.party.RelationRoleType;
+import cz.tacr.elza.print.party.RelationToType;
 import cz.tacr.elza.print.party.RelationTo;
 import cz.tacr.elza.print.party.RelationType;
 import cz.tacr.elza.service.cache.CachedNode;
@@ -141,7 +141,7 @@ public class OutputModel implements Output, NodeLoader {
 
     private final Map<Integer, RelationType> relationTypeIdMap = new HashMap<>();
 
-    private final Map<Integer, RelationRoleType> relationRoleTypeIdMap = new HashMap<>();
+    private final Map<Integer, RelationToType> relationRoleTypeIdMap = new HashMap<>();
 
     private final Map<Integer, Packet> packetIdMap = new HashMap<>();
 
@@ -581,7 +581,7 @@ public class OutputModel implements Output, NodeLoader {
         List<RelationTo> relationsTo = new ArrayList<>(entities.size());
         for (ParRelationEntity entity : entities) {
             // create relation to
-            RelationRoleType roleType = getRelationRoleType(entity.getRoleTypeId(), staticRelationType);
+            RelationToType roleType = getRelationRoleType(entity.getRoleTypeId(), staticRelationType);
             Record entityAP = getAP(entity.getRecord());
             RelationTo relationTo = new RelationTo(entity, roleType, entityAP);
             relationsTo.add(relationTo);
@@ -641,17 +641,17 @@ public class OutputModel implements Output, NodeLoader {
         return realtionType;
     }
 
-    private RelationRoleType getRelationRoleType(Integer relationRoleTypeId,
+    private RelationToType getRelationRoleType(Integer relationRoleTypeId,
                                                  cz.tacr.elza.core.data.RelationType staticRelationType) {
         Validate.notNull(relationRoleTypeId);
 
-        RelationRoleType roleType = relationRoleTypeIdMap.get(relationRoleTypeId);
+        RelationToType roleType = relationRoleTypeIdMap.get(relationRoleTypeId);
         if (roleType != null) {
             return roleType;
         }
 
         ParRelationRoleType parRoleType = staticRelationType.getRoleTypeById(relationRoleTypeId);
-        roleType = new RelationRoleType(parRoleType);
+        roleType = new RelationToType(parRoleType);
 
         // add to lookup
         relationRoleTypeIdMap.put(relationRoleTypeId, roleType);

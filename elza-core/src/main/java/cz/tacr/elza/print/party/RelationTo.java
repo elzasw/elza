@@ -5,19 +5,19 @@ import cz.tacr.elza.print.Record;
 
 public class RelationTo {
 
-    private final RelationRoleType roleType;
+    private final RelationToType roleType;
 
     private final Record record;
 
     private final String note;
 
-    public RelationTo(ParRelationEntity parRelationEntity, RelationRoleType roleType, Record record) {
+    public RelationTo(ParRelationEntity parRelationEntity, RelationToType roleType, Record record) {
         this.note = parRelationEntity.getNote();
         this.roleType = roleType;
         this.record = record;
     }
 
-    public RelationRoleType getRoleType() {
+    public RelationToType getRoleType() {
         return roleType;
     }
 
