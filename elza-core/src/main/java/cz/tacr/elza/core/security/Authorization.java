@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 
 import cz.tacr.elza.api.interfaces.IArrFund;
 import cz.tacr.elza.api.interfaces.IRegScope;
+import cz.tacr.elza.core.security.AuthParam.Type;
 import cz.tacr.elza.domain.UsrGroup;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrPermission.Permission;
@@ -138,30 +139,30 @@ public class Authorization {
 		throw createAccessDeniedException(declaredAnnotation.permission());
 	}
 
-	/**
-
-     * Načtení entity podle vstupního objektu.
+    /**
+     * Iterate all method parameters and try to get access
      *
-     * @param value vstupní objekt
-     * @param type  typ vstupního parametru
-     * @return  identfikátor entity
-	private boolean hasPermission(MethodInfo methodInfo, MethodParamBasedAccess methodChecker) {
-		Parameter[] params = methodInfo.getParameters();
-		// permssions for fund
-		for (int i = 0; i < params.length; i++) {
-			Parameter parameter = params[i];
-			Object parameterValue = methodInfo.getPjpArg(i);
-			AuthParam[] authParams = parameter.getAnnotationsByType(AuthParam.class);
-			for (AuthParam authParam : authParams) {
-				if (methodChecker.hasPermission(authParam, parameterValue)) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}
+     * @param methodInfo
+     * @param methodChecker
+     * @return
      */
-	private boolean checkControlGroupPermission(MethodInfo methodInfo, UserDetail userDetail) {
+    private boolean hasPermission(MethodInfo methodInfo, MethodParamBasedAccess methodChecker) {
+        Parameter[] params = methodInfo.getParameters();
+        // permssions for fund
+        for (int i = 0; i < params.length; i++) {
+            Parameter parameter = params[i];
+            Object parameterValue = methodInfo.getPjpArg(i);
+            AuthParam[] authParams = parameter.getAnnotationsByType(AuthParam.class);
+            for (AuthParam authParam : authParams) {
+                if (methodChecker.hasPermission(authParam, parameterValue)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean checkControlGroupPermission(MethodInfo methodInfo, UserDetail userDetail) {
 		Integer userId = userDetail.getId();
 		if (userId == null) {
 			// if user is null -> it is admin
