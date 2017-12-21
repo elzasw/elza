@@ -4,7 +4,6 @@ import java.util.List;
 
 import cz.tacr.elza.domain.ParRelation;
 import cz.tacr.elza.domain.ParUnitdate;
-import cz.tacr.elza.print.PartyUnitDate;
 
 /**
  * Relation to other items
@@ -54,14 +53,14 @@ public class Relation {
         return source;
     }
 
-    public PartyUnitDate getValidFrom() {
+    public PartyUnitDate getFrom() {
         if (from == null && srcFrom != null) {
             from = new PartyUnitDate(srcFrom); // lazy initialization
         }
         return from;
     }
 
-    public PartyUnitDate getValidTo() {
+    public PartyUnitDate getTo() {
         if (to == null && srcTo != null) {
             to = new PartyUnitDate(srcTo); // lazy initialization
         }

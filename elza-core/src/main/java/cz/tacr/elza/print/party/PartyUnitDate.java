@@ -1,6 +1,7 @@
-package cz.tacr.elza.print;
+package cz.tacr.elza.print.party;
 
 import cz.tacr.elza.domain.ParUnitdate;
+import cz.tacr.elza.print.UnitDate;
 
 public class PartyUnitDate extends UnitDate {
 

@@ -249,6 +249,10 @@
         </dependency>
         <dependency>
             <groupId>net.sf.jasperreports</groupId>
+            <artifactId>jasperreports-functions</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.sf.jasperreports</groupId>
             <artifactId>jasperreports-fonts</artifactId>
         </dependency>
         <!-- Optional dependency for JasperReports - barcode generator -->

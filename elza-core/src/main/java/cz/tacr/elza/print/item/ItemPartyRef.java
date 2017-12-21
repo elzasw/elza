@@ -28,7 +28,7 @@ public class ItemPartyRef extends AbstractItem {
     public <T> T getValue(final Class<T> type) {
         // allow to get directly AP
         if (type == Record.class) {
-            return type.cast(party.getAP());
+            return type.cast(party.getRecord());
         }
         return type.cast(getValue());
     }

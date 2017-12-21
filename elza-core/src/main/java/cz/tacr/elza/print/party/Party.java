@@ -23,7 +23,7 @@ public abstract class Party {
 
     private final String characteristics;
 
-    private final Record ap;
+    private final Record record;
 
     private final Relation creation;
 
@@ -40,7 +40,7 @@ public abstract class Party {
         this.history = parParty.getHistory();
         this.sourceInformation = parParty.getSourceInformation();
         this.characteristics = parParty.getCharacteristics();
-        this.ap = initHelper.getAP();
+        this.record = initHelper.getAP();
         this.creation = initHelper.getCreation();
         this.destruction = initHelper.getDestruction();
         this.relations = initHelper.getRelations();
@@ -63,7 +63,7 @@ public abstract class Party {
      * @return obsah položky record.getRecord()
      */
     public String getName() {
-        return ap.getRecord();
+        return record.getRecord();
     }
 
     public String getCharacteristics() {
@@ -82,8 +82,8 @@ public abstract class Party {
         return preferredName;
     }
 
-    public Record getAP() {
-        return ap;
+    public Record getRecord() {
+        return record;
     }
 
     public String getSourceInformation() {
