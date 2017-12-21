@@ -13,7 +13,6 @@ import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import cz.tacr.elza.annotation.AuthParam.Type;
 import cz.tacr.elza.api.interfaces.IArrFund;
 import cz.tacr.elza.api.interfaces.IRegScope;
 import cz.tacr.elza.domain.UsrGroup;
@@ -31,14 +30,14 @@ import cz.tacr.elza.service.UserService;
 /**
  * Kontrola oprávnění přes AOP.
  *
- * @author Martin Šlapa
+ */
 @Aspect
 @Component
 public class Authorization {
 
 	/**
 	 * Brief method info
-	 * 
+	 *
 	 *
 	 */
 	class MethodInfo {
@@ -95,17 +94,17 @@ public class Authorization {
 
     @Around("execution(* cz.tacr.elza..*.*(..)) && @annotation(cz.tacr.elza.core.security.AuthMethod)")
 	public Object auth(final ProceedingJoinPoint pjp) throws Throwable {
-		
+
 		MethodInfo methodInfo = new MethodInfo(pjp);
-		
+
 		AuthMethod declaredAnnotation = methodInfo.getMethod().getDeclaredAnnotation(AuthMethod.class);
-		
+
 		UserDetail userDetail = userService.getLoggedUserDetail();
 
 		for (UsrPermission.Permission permission : declaredAnnotation.permission()) {
 
 			boolean hasPermission = false;
-			
+
 			if(permission==UsrPermission.Permission.USER_CONTROL_ENTITITY) {
 				hasPermission = checkControlEntityPermission(methodInfo, userDetail);
 			} else if (permission == UsrPermission.Permission.GROUP_CONTROL_ENTITITY) {
@@ -197,7 +196,7 @@ public class Authorization {
 
 	/**
 	 * Check if logged user can manage entity in parameter
-	 * 
+	 *
 	 * @param permission
 	 * @param methodInfo
 	 * @param userDetail
@@ -247,7 +246,7 @@ public class Authorization {
 
 	/**
 	 * Check permissions for scope
-	 * 
+	 *
 	 * @param permission
 	 * @param methodInfo
 	 * @param userDetail
@@ -265,7 +264,7 @@ public class Authorization {
 
 	/**
 	 * Prapare scope id
-	 * 
+	 *
 	 * @param value
 	 * @param type
 	 * @return

@@ -18,7 +18,7 @@ import javax.persistence.criteria.Root;
 
 import org.apache.commons.lang3.Validate;
 
-import cz.tacr.elza.utils.HibernateUtils;
+import cz.tacr.elza.common.db.HibernateUtils;
 
 /**
  * Abstract implementation for entity batch loader.
