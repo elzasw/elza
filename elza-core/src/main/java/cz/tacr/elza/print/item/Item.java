@@ -22,31 +22,19 @@ public interface Item extends Comparable<Item> {
     int getPosition();
 
     /**
-     * @return je nedefinovaná hodnota?
-     */
-    boolean isUndefined();
-
-    /**
-     * @return vrací hodnotu formátovanou jako text k tisku
-     */
-    String getSerializedValue();
-
-    /**
-     * @return vrací popis položky + hodnotu formátovanou jako text k tisku
-     */
-    String getSerialized();
-
-    /**
      * @return vrací původní hodnotu položky
      */
     <T> T getValue(Class<T> type);
 
     /**
-     * Return if item is empty.
+     * Formats value as string.
      *
-     *  Empty items are not printed
-     * @return Return true if item is empty (no value), return false if
-     * item is not empty and should be printed.
+     * @return Never null, for non-serializable item should be returned empty string.
      */
-	boolean isEmpty();
+    String getSerializedValue();
+
+    /**
+     * @return Returns false for items without value e.g. enum.
+     */
+    boolean isValueSerializable();
 }

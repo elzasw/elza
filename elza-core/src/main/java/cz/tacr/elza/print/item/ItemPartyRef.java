@@ -20,6 +20,11 @@ public class ItemPartyRef extends AbstractItem {
     }
 
     @Override
+    public boolean isValueSerializable() {
+        return true;
+    }
+
+    @Override
     protected Party getValue() {
         return party;
     }

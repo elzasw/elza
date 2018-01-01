@@ -1,5 +1,6 @@
 package cz.tacr.elza.core.data;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -8,7 +9,6 @@ import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.repository.ItemSpecRepository;
 
 public class RuleSystemItemType {
 
@@ -29,6 +29,8 @@ public class RuleSystemItemType {
         this.itemType = itemType;
         this.dataType = dataType;
 
+        this.itemSpecs = new ArrayList<>();
+
         // ensure reference equality
         Validate.isTrue(itemType.getDataType() == dataType.getEntity());
     }
@@ -45,13 +47,13 @@ public class RuleSystemItemType {
         return itemType;
     }
 
-	public Integer getDataTypeId() {
+    public Integer getDataTypeId() {
         return itemType.getDataTypeId();
     }
 
-	public Integer getItemTypeId() {
-		return itemType.getItemTypeId();
-	}
+    public Integer getItemTypeId() {
+        return itemType.getItemTypeId();
+    }
 
     public String getCode() {
         return itemType.getCode();
@@ -65,7 +67,8 @@ public class RuleSystemItemType {
         return itemSpecs;
     }
 
-    public RulItemSpec getItemSpecById(int id) {
+    public RulItemSpec getItemSpecById(Integer id) {
+        Validate.notNull(id);
         return itemSpecIdMap.get(id);
     }
 
@@ -74,28 +77,16 @@ public class RuleSystemItemType {
         return itemSpecCodeMap.get(code);
     }
 
-    /**
-     * Init all values. Method must be called inside transaction and synchronized.
-     */
-    void init(ItemSpecRepository itemSpecRepository) {
-        List<RulItemSpec> itemSpecs = Collections.emptyList();
-        Map<Integer, RulItemSpec> idMap = Collections.emptyMap();
-        Map<String, RulItemSpec> codeMap = Collections.emptyMap();
+    void addItemSpec(RulItemSpec is) {
+        itemSpecs.add(is);
+    }
 
-        if (hasSpecifications()) {
-            itemSpecs = itemSpecRepository.findByItemType(itemType);
-            itemSpecs = Collections.unmodifiableList(itemSpecs);
-            idMap = StaticDataProvider.createLookup(itemSpecs, RulItemSpec::getItemSpecId);
-            codeMap = StaticDataProvider.createLookup(itemSpecs, RulItemSpec::getCode);
-
-            // ensure reference equality
-            for (RulItemSpec is : itemSpecs) {
-                Validate.isTrue(itemType == is.getItemType());
-            }
-        }
+    void sealUp() {
         // update fields
-        this.itemSpecs = itemSpecs;
-        this.itemSpecIdMap = idMap;
-        this.itemSpecCodeMap = codeMap;
+        this.itemSpecIdMap = StaticDataProvider.createLookup(itemSpecs, RulItemSpec::getItemSpecId);
+        this.itemSpecCodeMap = StaticDataProvider.createLookup(itemSpecs, RulItemSpec::getCode);
+
+        // switch to unmodifiable collections
+        itemSpecs = Collections.unmodifiableList(itemSpecs);
     }
 }

@@ -629,19 +629,8 @@ $F{node}.getItemsWithSpec("ZP2015_LEVEL_TYPE","ZP2015_LEVEL_ROOT").size() > 0]]>
 		)
 	)]]></variableExpression>
 	</variable>
-	<variable name="allItems" class="java.util.Collection">
-		<variableExpression><![CDATA[$F{node}.getAllItems( 
-		Collections.unmodifiableList(
-			new ArrayList<String>(
-				Arrays.asList(
-					""					
-				)
-			)
-		)
-	)]]></variableExpression>
-	</variable>
 	<variable name="rootRef" class="java.lang.String">
-		<variableExpression><![CDATA[$P{fund}.getInstitution().getCode()+"/"+$F{node}.getItemsValueByCode("ZP2015_NAD")]]></variableExpression>
+		<variableExpression><![CDATA[$P{fund}.getInstitution().getCode()+"/"+$F{node}.getSingleItemValue("ZP2015_NAD")]]></variableExpression>
 	</variable>
 	<variable name="detail" class="java.lang.String">
 		<variableExpression><![CDATA[$P{detailFormatter}.format($F{node})]]></variableExpression>
@@ -724,7 +713,7 @@ $F{node}.getItemsWithSpec("ZP2015_LEVEL_TYPE","ZP2015_LEVEL_ROOT").size() > 0]]>
 						</textElement>
 						<textFieldExpression><![CDATA[$F{node}.getItemsWithSpec("ZP2015_LEVEL_TYPE","ZP2015_LEVEL_ROOT").size() > 0 ? 
 	$V{rootRef} : 
-	$F{node}.getItemsValueByCode("ZP2015_UNIT_ID")]]></textFieldExpression>
+	$F{node}.getSingleItemValue("ZP2015_UNIT_ID")]]></textFieldExpression>
 					</textField>
 					<textField isStretchWithOverflow="true" pattern="">
 						<reportElement key="" style="Item" positionType="Float" mode="Transparent" x="151" y="0" width="149" height="0" isRemoveLineWhenBlank="true" backcolor="#FF0400" uuid="f5623b8e-6f6f-42a5-be27-6f253dd9c537">
@@ -733,7 +722,7 @@ $F{node}.getItemsWithSpec("ZP2015_LEVEL_TYPE","ZP2015_LEVEL_ROOT").size() > 0]]>
 						<textElement textAlignment="Center" markup="html">
 							<font pdfEncoding="Cp1250"/>
 						</textElement>
-						<textFieldExpression><![CDATA[$F{node}.getItemsValueByCode("ZP2015_SERIAL_NUMBER")]]></textFieldExpression>
+						<textFieldExpression><![CDATA[$F{node}.getSingleItemValue("ZP2015_SERIAL_NUMBER")]]></textFieldExpression>
 					</textField>
 					<textField isStretchWithOverflow="true" pattern="">
 						<reportElement style="Item" positionType="Float" x="300" y="0" width="149" height="0" isRemoveLineWhenBlank="true" backcolor="#FF0400" uuid="8dc98e28-c13b-4dc6-8543-46ddcc621a79"/>
@@ -776,7 +765,7 @@ $F{node}.getItemsWithSpec("ZP2015_LEVEL_TYPE","ZP2015_LEVEL_ROOT").size() > 0]]>
 						<textElement markup="none">
 							<font pdfEncoding=""/>
 						</textElement>
-						<textFieldExpression><![CDATA[$F{node}.getItemsValueByCode("ZP2015_TITLE")]]></textFieldExpression>
+						<textFieldExpression><![CDATA[$F{node}.getSingleItemValue("ZP2015_TITLE")]]></textFieldExpression>
 						<anchorNameExpression><![CDATA["Jednotky popisu"]]></anchorNameExpression>
 					</textField>
 				</frame>
@@ -785,7 +774,7 @@ $F{node}.getItemsWithSpec("ZP2015_LEVEL_TYPE","ZP2015_LEVEL_ROOT").size() > 0]]>
 					<textElement textAlignment="Right" markup="html">
 						<font pdfEncoding="Cp1250"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{node}.getItemsValueByCode( "ZP2015_UNIT_DATE" )]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{node}.getSingleItemValue( "ZP2015_UNIT_DATE" )]]></textFieldExpression>
 				</textField>
 			</frame>
 		</band>
@@ -798,13 +787,13 @@ $F{node}.getItemsWithSpec("ZP2015_LEVEL_TYPE","ZP2015_LEVEL_ROOT").size() > 0]]>
 				<textField isStretchWithOverflow="true" pattern="">
 					<reportElement key="" style="Item" positionType="Float" mode="Transparent" x="0" y="0" width="455" height="5" isRemoveLineWhenBlank="true" backcolor="#FF0400" uuid="c1830022-f0bc-4009-87d1-6ef681e84e7a">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-						<printWhenExpression><![CDATA[$F{node}.getItemsValueByCode("ZP2015_FORMAL_TITLE") != null]]></printWhenExpression>
+						<printWhenExpression><![CDATA[$F{node}.getSingleItemValue("ZP2015_FORMAL_TITLE") != null]]></printWhenExpression>
 					</reportElement>
 					<box topPadding="0" bottomPadding="3"/>
 					<textElement markup="html">
 						<font isItalic="true" pdfEncoding="Cp1250"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{node}.getItemsValueByCode("ZP2015_FORMAL_TITLE")]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{node}.getSingleItemValue("ZP2015_FORMAL_TITLE")]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="">
 					<reportElement key="" style="Item" positionType="Float" mode="Transparent" x="0" y="5" width="455" height="1" isRemoveLineWhenBlank="true" backcolor="#00FFFF" uuid="a3510bac-f867-49ff-ae62-c4bcef03c80d">

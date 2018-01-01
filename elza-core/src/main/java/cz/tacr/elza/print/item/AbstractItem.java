@@ -1,7 +1,5 @@
 package cz.tacr.elza.print.item;
 
-import org.apache.commons.lang3.StringUtils;
-
 /**
  * Abstract description item implementation.
  */
@@ -12,8 +10,6 @@ public abstract class AbstractItem implements Item {
     private ItemSpec specification;
 
     private int position;
-
-    private boolean undefined;
 
     @Override
     public ItemType getType() {
@@ -43,29 +39,8 @@ public abstract class AbstractItem implements Item {
     }
 
     @Override
-    public boolean isUndefined() {
-        return undefined;
-    }
-
-    public void setUndefined(final Boolean undefined) {
-        this.undefined = undefined;
-    }
-
-    @Override
     public <T> T getValue(final Class<T> type) {
         return type.cast(getValue());
-    }
-
-    @Override
-    public String getSerialized() {
-        String typeName = getType().getName();
-        return typeName + ": " + getSerializedValue();
-    }
-
-    @Override
-    public boolean isEmpty() {
-        String value = getSerializedValue();
-        return StringUtils.isEmpty(value);
     }
 
     @Override

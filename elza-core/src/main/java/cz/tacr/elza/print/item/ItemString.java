@@ -20,6 +20,11 @@ public class ItemString extends AbstractItem {
     }
 
     @Override
+    public boolean isValueSerializable() {
+        return true;
+    }
+
+    @Override
     protected String getValue() {
         return value;
     }

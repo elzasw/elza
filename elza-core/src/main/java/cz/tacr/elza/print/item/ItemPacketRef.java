@@ -16,6 +16,11 @@ public class ItemPacketRef extends AbstractItem {
     }
 
     @Override
+    public boolean isValueSerializable() {
+        return true;
+    }
+
+    @Override
     protected Packet getValue() {
         return packet;
     }

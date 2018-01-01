@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -27,24 +28,10 @@ import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.fund.FundTree;
 import cz.tacr.elza.core.fund.FundTreeProvider;
 import cz.tacr.elza.core.fund.TreeNode;
-import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDataCoordinates;
-import cz.tacr.elza.domain.ArrDataDecimal;
-import cz.tacr.elza.domain.ArrDataFileRef;
-import cz.tacr.elza.domain.ArrDataInteger;
-import cz.tacr.elza.domain.ArrDataJsonTable;
-import cz.tacr.elza.domain.ArrDataPacketRef;
-import cz.tacr.elza.domain.ArrDataPartyRef;
-import cz.tacr.elza.domain.ArrDataRecordRef;
-import cz.tacr.elza.domain.ArrDataString;
-import cz.tacr.elza.domain.ArrDataText;
-import cz.tacr.elza.domain.ArrDataUnitdate;
-import cz.tacr.elza.domain.ArrDataUnitid;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.ArrNodeOutput;
 import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ArrOutputDefinition;
@@ -68,22 +55,13 @@ import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.print.item.AbstractItem;
 import cz.tacr.elza.print.item.Item;
-import cz.tacr.elza.print.item.ItemCoordinates;
-import cz.tacr.elza.print.item.ItemDecimal;
-import cz.tacr.elza.print.item.ItemEnum;
-import cz.tacr.elza.print.item.ItemFileRef;
-import cz.tacr.elza.print.item.ItemInteger;
-import cz.tacr.elza.print.item.ItemJsonTable;
 import cz.tacr.elza.print.item.ItemPacketRef;
-import cz.tacr.elza.print.item.ItemPartyRef;
-import cz.tacr.elza.print.item.ItemRecordRef;
 import cz.tacr.elza.print.item.ItemSpec;
-import cz.tacr.elza.print.item.ItemString;
 import cz.tacr.elza.print.item.ItemType;
-import cz.tacr.elza.print.item.ItemUnitId;
-import cz.tacr.elza.print.item.ItemUnitdate;
+import cz.tacr.elza.print.item.convertors.ItemConvertor;
+import cz.tacr.elza.print.item.convertors.ItemConvertorContext;
+import cz.tacr.elza.print.item.convertors.OutputItemConvertor;
 import cz.tacr.elza.print.party.Dynasty;
 import cz.tacr.elza.print.party.Event;
 import cz.tacr.elza.print.party.Institution;
@@ -93,25 +71,25 @@ import cz.tacr.elza.print.party.PartyInitHelper;
 import cz.tacr.elza.print.party.PartyName;
 import cz.tacr.elza.print.party.Person;
 import cz.tacr.elza.print.party.Relation;
-import cz.tacr.elza.print.party.RelationToType;
 import cz.tacr.elza.print.party.RelationTo;
+import cz.tacr.elza.print.party.RelationToType;
 import cz.tacr.elza.print.party.RelationType;
 import cz.tacr.elza.service.cache.CachedNode;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.cache.RestoredNode;
 import cz.tacr.elza.service.output.OutputParams;
 
-public class OutputModel implements Output, NodeLoader {
+public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
     private static final Logger logger = LoggerFactory.getLogger(OutputModel.class);
 
     /* internal fields */
 
+    private ArrFundVersion fundVersion;
+
     private StaticDataProvider staticData;
 
     private RuleSystem ruleSystem;
-
-    private ArrFundVersion fundVersion;
 
     /* general description */
 
@@ -161,9 +139,7 @@ public class OutputModel implements Output, NodeLoader {
 
     private final NodeCacheService nodeCacheService;
 
-    public OutputModel(StaticDataService staticDataService,
-                          FundTreeProvider fundTreeProvider,
-                          NodeCacheService nodeCacheService) {
+    public OutputModel(StaticDataService staticDataService, FundTreeProvider fundTreeProvider, NodeCacheService nodeCacheService) {
         this.staticDataService = staticDataService;
         this.fundTreeProvider = fundTreeProvider;
         this.nodeCacheService = nodeCacheService;
@@ -271,7 +247,7 @@ public class OutputModel implements Output, NodeLoader {
     }
 
     @Override
-    public NodeIterator getNodesDFS() {
+    public NodeIterator createFlatNodeIterator() {
         Iterator<NodeId> nodeIdIterator = fund.getRootNodeId().getIteratorDFS();
         return new NodeIterator(this, nodeIdIterator);
     }
@@ -314,7 +290,7 @@ public class OutputModel implements Output, NodeLoader {
 
         for (NodeId nodeId : nodeIds) {
             arrNodeIds.add(nodeId.getArrNodeId());
-            Node node = new Node(nodeId, this);
+            Node node = new Node(nodeId);
             nodes.add(node);
         }
 
@@ -340,16 +316,17 @@ public class OutputModel implements Output, NodeLoader {
         // set node items
         List<ArrDescItem> descItems = cachedNode.getDescItems();
         if (descItems != null) {
+            ItemConvertor conv = new OutputItemConvertor();
             List<Item> items = descItems.stream()
-                    .filter(arrItem -> !arrItem.isUndefined())
-                    .map(arrItem -> {
-                        Item item = createItem(arrItem);
+                    .map(i -> {
+                        Item item = conv.convert(i, this);
                         // add packet reference
                         if (item instanceof ItemPacketRef) {
                             item.getValue(Packet.class).addNodeId(node.getNodeId());
                         }
                         return item;
                     })
+                    .filter(Objects::nonNull)
                     .sorted(Item::compareTo)
                     .collect(Collectors.toList());
             node.setItems(items);
@@ -360,7 +337,7 @@ public class OutputModel implements Output, NodeLoader {
         if (arrNodeAPs != null) {
             List<Record> nodeAPs = new ArrayList<>(arrNodeAPs.size());
             for (ArrNodeRegister nodeAP : arrNodeAPs) {
-                Record ap = getAP(nodeAP.getRecord());
+                Record ap = getRecord(nodeAP.getRecord());
                 nodeAPs.add(ap);
             }
             node.setNodeAPs(nodeAPs);
@@ -381,7 +358,6 @@ public class OutputModel implements Output, NodeLoader {
         this.staticData = staticDataService.getData();
         this.ruleSystem = staticData.getRuleSystems().getByRuleSetId(fundVersion.getRuleSetId());
 
-
         // init general description
         ArrOutputDefinition definition = params.getDefinition();
         RulOutputType outputType = definition.getOutputType();
@@ -395,7 +371,7 @@ public class OutputModel implements Output, NodeLoader {
 
         // init fund
         ArrFund arrFund = definition.getFund();
-        this.fund = new Fund(rootNodeId);
+        this.fund = new Fund(rootNodeId, this);
         this.fund.setName(arrFund.getName());
         this.fund.setInternalCode(arrFund.getInternalCode());
         this.fund.setCreateDate(Date.from(arrFund.getCreateDate().atZone(ZoneId.systemDefault()).toInstant()));
@@ -409,9 +385,10 @@ public class OutputModel implements Output, NodeLoader {
         this.fund.setInstitution(institution);
 
         // init direct items
+        ItemConvertor conv = new OutputItemConvertor();
         outputItems = params.getOutputItems().stream()
-                .filter(i -> !i.isUndefined())
-                .map(this::createItem)
+                .map(i -> conv.convert(i, this))
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
         logger.info("Output model initialization ended, outputDefinitionId:{}", params.getDefinitionId());
@@ -492,18 +469,19 @@ public class OutputModel implements Output, NodeLoader {
     /* factory methods */
 
     // TODO: record variants should be fetched
-    private Record getAP(RegRecord regAP) {
+    @Override
+    public Record getRecord(RegRecord record) {
         // id without fetch -> access type property
-        Record ap = apIdMap.get(regAP.getRecordId());
+        Record ap = apIdMap.get(record.getRecordId());
         if (ap != null) {
             return ap;
         }
 
-        RecordType apType = getAPType(regAP.getRegisterTypeId());
-        ap = Record.newInstance(regAP, apType);
+        RecordType apType = getAPType(record.getRegisterTypeId());
+        ap = Record.newInstance(record, apType);
 
         // add to lookup
-        apIdMap.put(regAP.getRecordId(), ap);
+        apIdMap.put(record.getRecordId(), ap);
 
         return ap;
     }
@@ -532,14 +510,15 @@ public class OutputModel implements Output, NodeLoader {
     }
 
     // TODO: party names and relations should be fetched
-    private Party getParty(ParParty parParty) {
+    @Override
+    public Party getParty(ParParty parParty) {
         // id without fetch -> access type property
         Party party = partyIdMap.get(parParty.getPartyId());
         if (party != null) {
             return party;
         }
 
-        Record partyAP = getAP(parParty.getRecord());
+        Record partyAP = getRecord(parParty.getRecord());
         PartyInitHelper initHelper = new PartyInitHelper(partyAP);
 
         // init all party names
@@ -582,7 +561,7 @@ public class OutputModel implements Output, NodeLoader {
         for (ParRelationEntity entity : entities) {
             // create relation to
             RelationToType roleType = getRelationRoleType(entity.getRoleTypeId(), staticRelationType);
-            Record entityAP = getAP(entity.getRecord());
+            Record entityAP = getRecord(entity.getRecord());
             RelationTo relationTo = new RelationTo(entity, roleType, entityAP);
             relationsTo.add(relationTo);
         }
@@ -641,8 +620,7 @@ public class OutputModel implements Output, NodeLoader {
         return realtionType;
     }
 
-    private RelationToType getRelationRoleType(Integer relationRoleTypeId,
-                                                 cz.tacr.elza.core.data.RelationType staticRelationType) {
+    private RelationToType getRelationRoleType(Integer relationRoleTypeId, cz.tacr.elza.core.data.RelationType staticRelationType) {
         Validate.notNull(relationRoleTypeId);
 
         RelationToType roleType = relationRoleTypeIdMap.get(relationRoleTypeId);
@@ -659,126 +637,70 @@ public class OutputModel implements Output, NodeLoader {
         return roleType;
     }
 
-    private Item createItem(ArrItem arrItem) {
-        RuleSystemItemType staticItemType = ruleSystem.getItemTypeById(arrItem.getItemTypeId());
-        ItemType itemType = getItemType(staticItemType);
-
-        AbstractItem item = convertItemData(arrItem.getData(), itemType);
-
-        item.setType(Validate.notNull(itemType));
-        item.setPosition(arrItem.getPosition());
-        item.setUndefined(arrItem.isUndefined());
-
-        if (arrItem.getItemSpecId() != null) {
-            ItemSpec itemSpec = getItemSpec(staticItemType, arrItem.getItemSpecId());
-            item.setSpecification(Validate.notNull(itemSpec));
-        }
-
-        return item;
-    }
-
-    private ItemType getItemType(RuleSystemItemType staticItemType) {
-        ItemType itemType = itemTypeIdMap.get(staticItemType.getItemTypeId());
+    @Override
+    public ItemType getItemTypeById(Integer id) {
+        ItemType itemType = itemTypeIdMap.get(id);
         if (itemType != null) {
             return itemType;
         }
 
+        RuleSystemItemType staticItemType = ruleSystem.getItemTypeById(id);
         RulItemType rulItemType = staticItemType.getEntity();
         itemType = new ItemType(rulItemType);
 
         // add to lookup
-        itemTypeIdMap.put(staticItemType.getItemTypeId(), itemType);
+        itemTypeIdMap.put(id, itemType);
 
         return itemType;
     }
 
-    private ItemSpec getItemSpec(RuleSystemItemType staticItemType, Integer itemSpecId) {
-        Validate.notNull(itemSpecId);
-
-        ItemSpec itemSpec = itemSpecIdMap.get(itemSpecId);
+    @Override
+    public ItemSpec getItemSpecById(Integer id) {
+        ItemSpec itemSpec = itemSpecIdMap.get(id);
         if (itemSpec != null) {
             return itemSpec;
         }
 
-        RulItemSpec rulItemSpec = staticItemType.getItemSpecById(itemSpecId);
+        RulItemSpec rulItemSpec = staticData.getRuleSystems().getItemSpec(id);
         itemSpec = new ItemSpec(rulItemSpec);
 
         // add to lookup
-        itemSpecIdMap.put(itemSpecId, itemSpec);
+        itemSpecIdMap.put(id, itemSpec);
 
         return itemSpec;
     }
 
-    private AbstractItem convertItemData(ArrData data, ItemType itemType) {
-        Validate.isTrue(HibernateUtils.isInitialized(data));
+    @Override
+    public Packet getPacket(ArrPacket arrPacket) {
+        Validate.isTrue(HibernateUtils.isInitialized(arrPacket));
 
-        switch (itemType.getDataType()) {
-            case UNITID:
-                ArrDataUnitid unitid = (ArrDataUnitid) data;
-                return new ItemUnitId(unitid.getValue());
-            case UNITDATE:
-                ArrDataUnitdate dataUnitdate = (ArrDataUnitdate) data;
-                UnitDate unitDate = new UnitDate(dataUnitdate);
-                return new ItemUnitdate(unitDate);
-            case TEXT:
-                ArrDataText text = (ArrDataText) data;
-                return new ItemString(text.getValue());
-            case STRING:
-                ArrDataString str = (ArrDataString) data;
-                return new ItemString(str.getValue());
-            case RECORD_REF:
-                ArrDataRecordRef apRef = (ArrDataRecordRef) data;
-                Record ap = getAP(apRef.getRecord());
-                return new ItemRecordRef(ap);
-            case PARTY_REF:
-                ArrDataPartyRef partyRef = (ArrDataPartyRef) data;
-                Party party = getParty(partyRef.getParty());
-                return new ItemPartyRef(party);
-            case PACKET_REF:
-                ArrDataPacketRef packetRef = (ArrDataPacketRef) data;
-                return createItemPacketRef(packetRef);
-            case JSON_TABLE:
-                ArrDataJsonTable jsonTable = (ArrDataJsonTable) data;
-                return new ItemJsonTable(itemType.getTableDefinition(), jsonTable.getValue());
-            case INT:
-                ArrDataInteger integer = (ArrDataInteger) data;
-                return new ItemInteger(integer.getValue());
-            case FORMATTED_TEXT:
-                ArrDataText ftext = (ArrDataText) data;
-                return new ItemString(ftext.getValue());
-            case FILE_REF:
-                ArrDataFileRef fileRef = (ArrDataFileRef) data;
-                return createItemFileRef(fileRef);
-            case ENUM:
-                return new ItemEnum();
-            case DECIMAL:
-                ArrDataDecimal decimal = (ArrDataDecimal) data;
-                return new ItemDecimal(decimal.getValue());
-            case COORDINATES:
-                ArrDataCoordinates coords = (ArrDataCoordinates) data;
-                return new ItemCoordinates(coords.getValue());
-            default:
-                throw new SystemException("Uknown data type", BaseCode.INVALID_STATE).set("dataType", itemType.getDataType());
+        Packet packet = packetIdMap.get(arrPacket.getPacketId());
+        if (packet != null) {
+            return packet;
         }
+
+        packet = Packet.newInstance(arrPacket, ruleSystem, this);
+
+        // add to lookup
+        packetIdMap.put(arrPacket.getPacketId(), packet);
+
+        return packet;
     }
 
-    private ItemPacketRef createItemPacketRef(ArrDataPacketRef data) {
-        Packet packet = packetIdMap.get(data.getPacketId());
-        if (packet == null) {
-            ArrPacket arrPacket = data.getPacket();
-            packet = Packet.newInstance(arrPacket, ruleSystem, this);
-            packetIdMap.put(data.getPacketId(), packet);
-        }
-        return new ItemPacketRef(packet);
-    }
+    @Override
+    public File getFile(ArrFile arrFile) {
+        Validate.isTrue(HibernateUtils.isInitialized(arrFile));
 
-    private ItemFileRef createItemFileRef(final ArrDataFileRef data) {
-        File file = fileIdMap.get(data.getFileId());
-        if (file == null) {
-            ArrFile arrFile = data.getFile();
-            file = new File(arrFile);
-            fileIdMap.put(data.getFileId(), file);
+        File file = fileIdMap.get(arrFile.getFileId());
+        if (file != null) {
+            return file;
         }
-        return new ItemFileRef(file);
+
+        file = new File(arrFile);
+
+        // add to lookup
+        fileIdMap.put(arrFile.getFileId(), file);
+
+        return file;
     }
 }

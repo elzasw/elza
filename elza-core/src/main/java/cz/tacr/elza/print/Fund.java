@@ -1,6 +1,8 @@
 package cz.tacr.elza.print;
 
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 import org.apache.commons.lang3.Validate;
 
@@ -13,6 +15,8 @@ public class Fund {
 
     private final NodeId rootNodeId;
 
+    private final NodeLoader nodeLoader;
+
     private String name;
 
     private String internalCode;
@@ -23,12 +27,19 @@ public class Fund {
 
     private Institution institution;
 
-    public Fund(NodeId rootNodeId) {
+    public Fund(NodeId rootNodeId, NodeLoader nodeLoader) {
         this.rootNodeId = Validate.notNull(rootNodeId);
+        this.nodeLoader = Validate.notNull(nodeLoader);
     }
 
     public NodeId getRootNodeId() {
         return rootNodeId;
+    }
+
+    public Node getRootNode() {
+        List<Node> rootNode = nodeLoader.loadNodes(Collections.singletonList(rootNodeId));
+        Validate.isTrue(rootNode.size() == 1);
+        return rootNode.get(0);
     }
 
     public String getName() {

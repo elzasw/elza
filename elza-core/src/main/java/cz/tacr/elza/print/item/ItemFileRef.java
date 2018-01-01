@@ -16,6 +16,11 @@ public class ItemFileRef extends AbstractItem {
     }
 
     @Override
+    public boolean isValueSerializable() {
+        return true;
+    }
+
+    @Override
     public String getSerializedValue() {
         return file.getName();
     }

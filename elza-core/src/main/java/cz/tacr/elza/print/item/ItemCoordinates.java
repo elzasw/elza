@@ -20,6 +20,11 @@ public class ItemCoordinates extends AbstractItem {
     }
 
     @Override
+    public boolean isValueSerializable() {
+        return true;
+    }
+
+    @Override
     protected Geometry getValue() {
         return value;
     }

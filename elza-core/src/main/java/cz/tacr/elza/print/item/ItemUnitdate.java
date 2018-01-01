@@ -20,6 +20,11 @@ public class ItemUnitdate extends AbstractItem {
     }
 
     @Override
+    public boolean isValueSerializable() {
+        return true;
+    }
+
+    @Override
     protected UnitDate getValue() {
         return value;
     }

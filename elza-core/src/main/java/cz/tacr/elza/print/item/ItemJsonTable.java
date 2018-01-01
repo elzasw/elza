@@ -59,6 +59,11 @@ public class ItemJsonTable extends AbstractItem {
     }
 
     @Override
+    public boolean isValueSerializable() {
+        return true;
+    }
+
+    @Override
     protected ElzaTable getValue() {
         return value;
     }

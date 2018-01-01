@@ -152,7 +152,7 @@
 				<textElement markup="html">
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA["<b>Datum vzniku: </b>"+$F{creation}.getFrom().getValueText()+" "+T($F{creation}.getFrom().getNote())]]></textFieldExpression>
+				<textFieldExpression><![CDATA["<b>Datum vzniku: </b>"+$F{creation}.getFrom().getValueText()+(StringUtils.isNotBlank($F{creation}.getFrom().getNote())?" "+$F{creation}.getFrom().getNote():"")]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="Text" positionType="Float" x="0" y="25" width="455" height="20" isRemoveLineWhenBlank="true" uuid="066f0355-bd2b-4328-ac97-52ec55458007">
@@ -203,7 +203,7 @@
 				<textElement markup="html">
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA["<b>Datum zániku: </b>"+$F{destruction}.getFrom().getValueText()+" "+T($F{destruction}.getFrom().getNote())]]></textFieldExpression>
+				<textFieldExpression><![CDATA["<b>Datum zániku: </b>"+$F{destruction}.getFrom().getValueText()+(StringUtils.isNotBlank($F{destruction}.getFrom().getNote())?" "+$F{destruction}.getFrom().getNote():"")]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="Text" positionType="Float" x="0" y="25" width="455" height="20" isRemoveLineWhenBlank="true" uuid="6a019459-1eba-43cc-b95b-8f42c185f959">
@@ -305,7 +305,7 @@
 										<textElement>
 											<font pdfEncoding="Cp1250"/>
 										</textElement>
-										<textFieldExpression><![CDATA["Datace: "+($F{from}!=null?$F{from}.getValueText()+(LEN($F{from}.getNote())>0?" "+$F{from}.getNote():""):"")+($F{to}!=null?" - "+$F{to}.getValueText()+(LEN($F{to}.getNote())>0?" "+$F{to}.getNote():""):"")]]></textFieldExpression>
+										<textFieldExpression><![CDATA["Datace: "+($F{from}!=null?$F{from}.getValueText()+(StringUtils.isNotBlank($F{from}.getNote())?" "+$F{from}.getNote():""):"")+($F{to}!=null?" - "+$F{to}.getValueText()+(StringUtils.isNotBlank($F{to}.getNote())?" "+$F{to}.getNote():""):"")]]></textFieldExpression>
 									</textField>
 									<textField isStretchWithOverflow="true">
 										<reportElement style="Text" positionType="Float" x="0" y="38" width="455" height="19" isRemoveLineWhenBlank="true" uuid="8668414c-ae5c-4d76-a275-ba8aae90ab10">

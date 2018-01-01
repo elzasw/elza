@@ -3,7 +3,6 @@ package cz.tacr.elza.print;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,8 +19,6 @@ public class Node {
 
     private final NodeId nodeId;
 
-    private final NodeLoader nodeLoader;
-
     private List<Item> items;
 
     private List<Record> nodeAPs;
@@ -32,9 +29,8 @@ public class Node {
      * @param nodeId vazba na nodeId
      * @param nodel vazba na output
      */
-    public Node(NodeId nodeId, NodeLoader nodeLoader) {
+    public Node(NodeId nodeId) {
         this.nodeId = nodeId;
-        this.nodeLoader = nodeLoader;
     }
 
     public NodeId getNodeId() {
@@ -117,21 +113,6 @@ public class Node {
         }).collect(Collectors.toList());
     }
 
-    /*
-     * XXX: Not needed -> remove in future.
-     *
-     * Metoda pro získání hodnoty do fieldu v Jasper.
-     *
-     * @param code požadovaný kód položky
-     *
-     * @return vrací seznam hodnot položek s odpovídajícím kódem oddělený čárkou (typicky 1 položka
-     * = její serializeValue)
-     *
-     * public String getItemsValueByCode(final String code) { return
-     * getItems(Collections.singletonList(code)).stream() .map(Item::serializeValue)
-     * .filter(StringUtils::isNotBlank) .collect(Collectors.joining(", ")); }
-     */
-
     /**
      * Vstupem je seznam kódu typů atributů a vrací se seznam všech hodnot atributů výstupu kromě
      * hodnot typů uvedených ve vstupu metody, řazeno dle rul_desc_item.view_order +
@@ -153,18 +134,29 @@ public class Node {
         }).collect(Collectors.toList());
     }
 
-    /*
-     * XXX: Not needed -> remove in future.
-     *
-     * Metoda pro potřeby jasperu
-     *
-     * @return položky jako getItems, serializované a spojené čárkou
-     *
-     * public String getAllItemsAsString(final Collection<String> codes) { return
-     * getItems(codes).stream() // .map((item) -> item.serialize() + "[" + item.getType().getCode()
-     * + "]") // pro potřeby identifikace políčka při ladění šablony .map(Item::serialize)
-     * .filter(StringUtils::isNotBlank) .collect(Collectors.joining(", ")); }
-     */
+    public Item getSingleItem(String typeCode) {
+        Validate.notEmpty(typeCode);
+
+        Item found = null;
+        for (Item item : items) {
+            if (typeCode.equals(item.getType().getCode())) {
+                // check if item already found
+                if (found != null) {
+                    throw new IllegalStateException("Multiple items with same code exists: " + typeCode);
+                }
+                found = item;
+            }
+        }
+        return found;
+    }
+
+    public String getSingleItemValue(String itemTypeCode) {
+        Item found = getSingleItem(itemTypeCode);
+        if (found != null) {
+            return found.getSerializedValue();
+        }
+        return null;
+    }
 
     /**
      * Return list of records connected to the node or to description item
@@ -189,14 +181,6 @@ public class Node {
 
     public List<Record> getNodeRecords() {
         return nodeAPs;
-    }
-
-    /**
-     * @return instance iterátoru, který prochází jednotky popisu do hloubky
-     */
-    public NodeIterator getNodesDFS() {
-        Iterator<NodeId> nodeIdIterator = nodeId.getIteratorDFS();
-        return new NodeIterator(nodeLoader, nodeIdIterator);
     }
 
     /* internal methods */

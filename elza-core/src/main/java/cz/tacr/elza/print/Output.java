@@ -76,7 +76,7 @@ public interface Output {
     /**
      * @return instance iterátoru, který prochází jednotky popisu do hloubky
      */
-    NodeIterator getNodesDFS();
+    NodeIterator createFlatNodeIterator();
 
     /**
      * vstupem je kód typu rejstříku a vrací se seznam rejstříkových hesel řazených podle názvu (record).

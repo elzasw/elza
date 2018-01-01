@@ -1,10 +1,5 @@
 package cz.tacr.elza.print.item;
 
-/**
- * Enumerated Item for outputs
- *
- * This type is without value
- */
 public class ItemEnum extends AbstractItem {
 
     @Override
@@ -13,14 +8,12 @@ public class ItemEnum extends AbstractItem {
     }
 
     @Override
-    protected String getValue() {
-        return "";
+    public boolean isValueSerializable() {
+        return false;
     }
 
     @Override
-    public boolean isEmpty() {
-        // Item without specification is considered empty
-        ItemSpec spec = this.getSpecification();
-        return spec == null;
+    protected ItemSpec getValue() {
+        return null;
     }
 }
