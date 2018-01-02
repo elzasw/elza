@@ -173,4 +173,8 @@ public enum ArrangementCode implements ErrorCode {
      */
     INVALID_RULE,
 
+    /**
+     * Nelze smazat položku, protože existují navázané entity.
+     */
+    STRUCTURE_DATA_DELETE_ERROR,
 }

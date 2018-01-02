@@ -101,6 +101,7 @@ var messages = {
     "exception.arr.INVALID_REQUEST_DIGITAL_REPOSITORY_DAO": "Nelze připojit digitální entitu k JP, protože je požadavek pro jiné digitální uložiště",
     "exception.arr.ADMIN_USER_MISSING_FUND_CREATE_PERM": "K AS nelze přiřadit spráce (uživatele), protože nemá oprávnění zakládat AS",
     "exception.arr.ADMIN_GROUP_MISSING_FUND_CREATE_PERM": "K AS nelze přiřadit spráce (skupinu), protože nemá oprávnění zakládat AS",
+    "exception.arr.STRUCTURE_DATA_DELETE_ERROR": "Nelze smazat položku, protože existují navázané entity",
 
 
     "exception.base.INSUFFICIENT_PERMISSIONS": "Nedostatečná oprávnění",

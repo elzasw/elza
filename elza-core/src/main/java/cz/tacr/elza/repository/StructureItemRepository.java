@@ -57,4 +57,7 @@ public interface StructureItemRepository extends JpaRepository<ArrStructureItem,
     @Modifying
     @Query("DELETE FROM arr_structure_item i WHERE i.structureData = :structureData")
     void deleteByStructureData(@Param("structureData") ArrStructureData structureData);
+
+    @Query("SELECT COUNT(i) FROM arr_item i JOIN i.data d WHERE d.structureData = :structureData")
+    Integer countItemsByStructureData(@Param("structureData") ArrStructureData structureData);
 }
