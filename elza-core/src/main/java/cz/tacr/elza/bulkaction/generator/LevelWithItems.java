@@ -79,4 +79,36 @@ public class LevelWithItems {
 
 		return result;
 	}
+
+    /**
+     * Return list of description items
+     * 
+     * Function return list of description items directly places on the level or
+     * at the parent
+     * 
+     * @param bulkRangeType
+     * @return
+     */
+    public List<ArrDescItem> getInheritedDescItems(RuleSystemItemType itemType) {
+        List<ArrDescItem> result = null;
+
+        for (ArrDescItem item : descItems) {
+            if (itemType.getItemTypeId().equals(item.getItemTypeId())) {
+                // append to result
+                if (result == null) {
+                    result = new ArrayList<>(1);
+                }
+                result.add(item);
+            }
+        }
+
+        // if result not exists try to get it from parent        
+        if (result == null) {
+            if (parent != null) {
+                return parent.getInheritedDescItems(itemType);
+            }
+        }
+
+        return result;
+    }
 }

@@ -45,7 +45,7 @@ no-loop
 when
     $itemType : RulItemTypeExt(code in ("ZP2015_ARRANGEMENT_TYPE", "ZP2015_LEVEL_TYPE", "ZP2015_FOLDER_TYPE",
         "ZP2015_UNIT_TYPE", "ZP2015_UNIT_COUNT", "ZP2015_UNIT_ID", "ZP2015_SERIAL_NUMBER", "ZP2015_TITLE",
-        "ZP2015_FORMAL_TITLE", "ZP2015_UNIT_DATE_PRE", "ZP2015_UNIT_DATE", "ZP2015_UNIT_DATE_POST",
+        "ZP2015_FORMAL_TITLE", "ZP2015_UNIT_DATE", "ZP2015_UNIT_DATE_BULK",
         "ZP2015_UNIT_DATE_TEXT", "ZP2015_UNIT_HIST", "ZP2015_UNIT_ARR", "ZP2015_UNIT_CONTENT",
         "ZP2015_UNIT_SOURCE", "ZP2015_FUTURE_UNITS", "ZP2015_UNIT_ACCESS", "ZP2015_UNIT_INFO_RIGHTS",
         "ZP2015_UNIT_COPY_RIGHTS", "ZP2015_UNIT_CURRENT_STATUS", "ZP2015_COPY_SOURCE",
@@ -761,7 +761,7 @@ no-loop
 when
     $activeLevel: ActiveLevel( )
     $itemType : RulItemTypeExt(code in
-    ( "ZP2015_UNIT_DATE_PRE", "ZP2015_UNIT_DATE", "ZP2015_UNIT_DATE_POST", "ZP2015_DATE_OTHER" ) )
+    ( "ZP2015_UNIT_DATE", "ZP2015_DATE_OTHER" ) )
     $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
 then
     $itemType.setType(RulItemType.Type.POSSIBLE);
@@ -778,9 +778,19 @@ when
     $itemType : RulItemTypeExt(code=="ZP2015_UNIT_DATE_TEXT")
     $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
 then
-       $itemType.setType(RulItemType.Type.POSSIBLE);
+    $itemType.setType(RulItemType.Type.POSSIBLE);
 end
 
+// Na kořeni je možné uvést vlastní časový rozsah fondu
+rule "Vlastní časový rozsah fondu - ZP2015_UNIT_DATE_BULK"
+no-loop
+when
+    $activeLevel: ActiveLevel( )
+    $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ROOT") ) from $activeLevel.descItems
+    $itemType : RulItemTypeExt(code=="ZP2015_UNIT_DATE_BULK")
+then
+    $itemType.setType(RulItemType.Type.POSSIBLE);
+end
 
 // Standarní datace je doporučená pro poslední složku a část jednotlivosti (bez potomků)
 rule "Datace - strojová - doporučení"

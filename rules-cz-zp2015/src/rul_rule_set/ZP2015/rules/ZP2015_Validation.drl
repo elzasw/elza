@@ -26,7 +26,7 @@ when
 	$activeLevel: ActiveLevel( !hasChildren )
 	not ( $level: Level( $items: descItems ) and 
 		DescItem(type in 
-		  ( "ZP2015_UNIT_DATE_PRE", "ZP2015_UNIT_DATE", "ZP2015_UNIT_DATE_POST","ZP2015_UNIT_DATE_TEXT" ) )
+		  ( "ZP2015_UNIT_DATE", "ZP2015_UNIT_DATE_TEXT" ) )
 		  from $items )
 then
 	results.createMissing("ZP2015_UNIT_DATE", "Není uvedena datace", "ZP2015_POL_BASIC");
