@@ -306,6 +306,10 @@ class PartyDetail extends AbstractReactComponent {
 
             let canEdit = userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_WR, scopeId: party.record.scopeId});
 
+            if (partyDetail.data.record.invalid) {
+                canEdit = false;
+            }
+
             const partyType = this.getPartyType();
 
             let parts = partyType && partyType.partyGroups ? partyType.partyGroups : [];
