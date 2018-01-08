@@ -11,6 +11,8 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.commons.lang.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import cz.tacr.elza.core.data.CalendarType;
 import cz.tacr.elza.core.data.PartyType;
@@ -45,6 +47,8 @@ import cz.tacr.elza.utils.XmlUtils;
  * XML output stream for parties export.
  */
 public class XmlPartiesOutputStream implements PartiesOutputStream {
+
+    private final static Logger logger = LoggerFactory.getLogger(XmlPartiesOutputStream.class);
 
     private final JAXBContext jaxbContext = XmlUtils.createJAXBContext(Person.class, PartyGroup.class, Family.class, Event.class);
 
@@ -223,19 +227,29 @@ public class XmlPartiesOutputStream implements PartiesOutputStream {
         if (partyUnitdate == null) {
             return null;
         }
-        TimeIntervalExt element = new TimeIntervalExt();
 
+        String valueFrom = partyUnitdate.getValueFrom();
+        String valueTo = partyUnitdate.getValueTo();
+        if (valueFrom == null && valueTo == null) {
+            logger.warn("Ignored unitdate without value, parUnitdateId:{}", partyUnitdate.getUnitdateId());
+            return null;
+        }
+        if (valueFrom == null || valueTo == null) {
+            throw new SystemException("Unitdate without from/to value").set("parUnitdateId", partyUnitdate.getUnitdateId());
+        }
+
+        TimeIntervalExt element = new TimeIntervalExt();
         if (partyUnitdate.getCalendarTypeId() != null) {
             CalendarType ct = CalendarType.fromId(partyUnitdate.getCalendarTypeId());
             element.setCt(CalendarTypeConvertor.convert(ct));
         }
-        element.setF(partyUnitdate.getValueFrom());
+        element.setF(valueFrom);
         element.setFe(partyUnitdate.getValueFromEstimated());
+        element.setTo(valueTo);
+        element.setToe(partyUnitdate.getValueToEstimated());
         element.setFmt(partyUnitdate.getFormat());
         element.setNote(partyUnitdate.getNote());
         element.setTf(partyUnitdate.getTextDate());
-        element.setTo(partyUnitdate.getValueTo());
-        element.setToe(partyUnitdate.getValueToEstimated());
 
         return element;
     }

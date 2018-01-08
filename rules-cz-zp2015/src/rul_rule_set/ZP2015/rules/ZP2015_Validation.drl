@@ -26,7 +26,7 @@ when
 	$activeLevel: ActiveLevel( !hasChildren )
 	not ( $level: Level( $items: descItems ) and 
 		DescItem(type in 
-		  ( "ZP2015_UNIT_DATE_PRE", "ZP2015_UNIT_DATE", "ZP2015_UNIT_DATE_POST","ZP2015_UNIT_DATE_TEXT" ) )
+		  ( "ZP2015_UNIT_DATE", "ZP2015_UNIT_DATE_TEXT" ) )
 		  from $items )
 then
 	results.createMissing("ZP2015_UNIT_DATE", "Není uvedena datace", "ZP2015_POL_BASIC");
@@ -43,10 +43,11 @@ then
 	results.createMissing("ZP2015_STORAGE_ID", "Ukládací jednotka bez uvedení typu hromadiny", "ZP2015_POL_STORAGE_ID");
 end
 
-// Počet jednotek musí být větší než 1 pro ZP2015_UNIT_COUNT
-rule "Počet jednotek musí být větší než 1 - ZP2015_UNIT_COUNT"
+// uplatni se jen pro pomucky dle ZP
+rule "Počet jednotek musí být větší než 1"
 when
 	$activeLevel: ActiveLevel( $items: descItems )
+	DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_MAN", "ZP2015_ARRANGEMENT_INV", "ZP2015_ARRANGEMENT_KAT") ) from $items
     $descItem: DescItem(type=="ZP2015_UNIT_COUNT"  && integer.intValue()<2 ) from $items
 then
 	results.createError($descItem.getDescItemId(), "Počet jednotek musí být větší než 1", "ZP2015_POL_BASIC");
@@ -87,6 +88,7 @@ end
 rule "List musí mít zdroj akvizice směrem ke kořeni"
 when
 	$activeLevel: ActiveLevel( !hasChildren )
+	DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_MAN", "ZP2015_ARRANGEMENT_INV", "ZP2015_ARRANGEMENT_KAT") ) from $activeLevel.descItems
 	not ( $level: Level( $items: descItems ) and 
 		DescItem(type in 
 		  ( "ZP2015_UNIT_SOURCE" ) )
@@ -99,6 +101,7 @@ end
 rule "List musí mít popsán fyzický stav směrem ke kořeni"
 when
 	$activeLevel: ActiveLevel( !hasChildren )
+	DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_MAN", "ZP2015_ARRANGEMENT_INV", "ZP2015_ARRANGEMENT_KAT") ) from $activeLevel.descItems
 	not ( $level: Level( $items: descItems ) and 
 		DescItem(type in 
 		  ( "ZP2015_UNIT_CURRENT_STATUS" ) )
@@ -112,6 +115,7 @@ end
 rule "List musí mít směrem ke kořeni alespoň jednoho zpracovatele"
 when
 	$activeLevel: ActiveLevel( !hasChildren )
+	DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_MAN", "ZP2015_ARRANGEMENT_INV", "ZP2015_ARRANGEMENT_KAT") ) from $activeLevel.descItems
 	not ( $level: Level( $items: descItems ) and 
 		DescItem(type in 
 		  ( "ZP2015_ARRANGER" ) )
@@ -124,6 +128,7 @@ end
 rule "List musí mít směrem ke kořeni alespoň jeden jazyk"
 when
 	$activeLevel: ActiveLevel( !hasChildren )
+	DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_MAN", "ZP2015_ARRANGEMENT_INV", "ZP2015_ARRANGEMENT_KAT") ) from $activeLevel.descItems
 	not ( $level: Level( $items: descItems ) and 
 		DescItem(type in 
 		  ( "ZP2015_LANGUAGE" ) )

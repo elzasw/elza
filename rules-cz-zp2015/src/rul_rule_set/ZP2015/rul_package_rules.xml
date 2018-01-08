@@ -23,4 +23,8 @@
         <rule-type>OUTPUT_ATTRIBUTE_TYPES</rule-type>
         <priority>1</priority>
     </package-rule>
+    <package-rule filename="STARSI_POMUCKA_1958.drl">
+        <rule-type>OUTPUT_ATTRIBUTE_TYPES</rule-type>
+        <priority>1</priority>
+    </package-rule>
 </package-rules>

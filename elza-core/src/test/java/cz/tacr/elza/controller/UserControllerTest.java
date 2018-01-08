@@ -1,6 +1,15 @@
 package cz.tacr.elza.controller;
 
-import cz.tacr.elza.domain.UsrPermission;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.junit.Test;
+
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.FilteredResultVO;
 import cz.tacr.elza.controller.vo.ParPartyVO;
@@ -9,20 +18,12 @@ import cz.tacr.elza.controller.vo.UserInfoVO;
 import cz.tacr.elza.controller.vo.UsrGroupVO;
 import cz.tacr.elza.controller.vo.UsrPermissionVO;
 import cz.tacr.elza.controller.vo.UsrUserVO;
-import org.junit.Test;
-import org.springframework.util.Assert;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import cz.tacr.elza.domain.UsrPermission;
 
 
 /**
  * Testy pro uživatelskou sekci.
  *
- * @author Martin Šlapa
- * @since 11.05.2016
  */
 public class UserControllerTest extends AbstractControllerTest {
 
@@ -37,9 +38,9 @@ public class UserControllerTest extends AbstractControllerTest {
     @Test
     public void userDetail() {
         UserInfoVO userDetail = getUserDetail();
-        Assert.notNull(userDetail);
-        Assert.notNull(userDetail.getUsername());
-        Assert.notEmpty(userDetail.getUserPermissions());
+		assertNotNull(userDetail);
+		assertNotNull(userDetail.getUsername());
+		assertTrue(userDetail.getUserPermissions().size() > 0);
     }
 
     @Test
@@ -52,13 +53,13 @@ public class UserControllerTest extends AbstractControllerTest {
 
         // vyhledání uživatele
         FilteredResultVO<UsrUserVO> dataUser = findUser(null, true, true, 0, 10, null);
-        Assert.notNull(dataUser);
-        Assert.isTrue(dataUser.getCount() == 1);
-        Assert.isTrue(dataUser.getRows().get(0).getId().equals(user.getId()));
+		assertNotNull(dataUser);
+		assertTrue(dataUser.getCount() == 1);
+		assertTrue(dataUser.getRows().get(0).getId().equals(user.getId()));
 
         UsrUserVO userReturn = getUser(user.getId());
-        Assert.notNull(userReturn);
-        Assert.isTrue(userReturn.getId().equals(user.getId()));
+		assertNotNull(userReturn);
+		assertTrue(userReturn.getId().equals(user.getId()));
 
         // změna hesla - administrace
         changePassword(user, PASS_NEW);
@@ -74,20 +75,20 @@ public class UserControllerTest extends AbstractControllerTest {
         changeActive(user);
 
         UsrGroupVO group = createGroup(new GroupController.CreateGroup(GROUP_NAME, GROUP_CODE));
-        Assert.notNull(group);
-        Assert.notNull(group.getId());
+		assertNotNull(group);
+		assertNotNull(group.getId());
 
         UsrGroupVO groupChange = changeGroup(group.getId(), new GroupController.ChangeGroup(NAME_GROUP_CHANGE, DESCRIPTION));
-        Assert.notNull(groupChange);
-        Assert.isTrue(groupChange.getId().equals(group.getId()));
-        Assert.isTrue(groupChange.getName().equals(NAME_GROUP_CHANGE));
-        Assert.isTrue(groupChange.getDescription().equals(DESCRIPTION));
+		assertNotNull(groupChange);
+		assertTrue(groupChange.getId().equals(group.getId()));
+		assertTrue(groupChange.getName().equals(NAME_GROUP_CHANGE));
+		assertTrue(groupChange.getDescription().equals(DESCRIPTION));
 
         // vyhledání skupiny
         FilteredResultVO<UsrGroupVO> dataGroup = findGroup(null, 0, 10);
-        Assert.notNull(dataGroup);
-        Assert.isTrue(dataGroup.getCount() == 1);
-        Assert.isTrue(dataGroup.getRows().get(0).getId().equals(group.getId()));
+		assertNotNull(dataGroup);
+		assertTrue(dataGroup.getCount() == 1);
+		assertTrue(dataGroup.getRows().get(0).getId().equals(group.getId()));
 
         Set<Integer> groupIds = new HashSet<>();
         groupIds.add(group.getId());
@@ -96,23 +97,23 @@ public class UserControllerTest extends AbstractControllerTest {
 
         //Kontrola počtu uživatelů před přidáním
         FilteredResultVO<UsrUserVO> findUsers = findUser(null, true, false, 0, 10, group.getId());
-        Assert.isTrue(findUsers.getCount() == 1);
+		assertTrue(findUsers.getCount() == 1);
 
         joinGroup(groupIds, userIds);
 
         //Konstrola počtu uživatelů s vynechanou skupinou po přidání do skupiny
         findUsers = findUser(null, true, false, 0, 10, group.getId());
-        Assert.isTrue(findUsers.getCount() == 0);
+		assertTrue(findUsers.getCount() == 0);
 
         group = getGroup(group.getId());
-        Assert.isTrue(group.getUsers().size() == 1);
+		assertTrue(group.getUsers().size() == 1);
 
         user = getUser(user.getId());
-        Assert.isTrue(user.getGroups().size() == 1);
+		assertTrue(user.getGroups().size() == 1);
 
         UsrGroupVO groupReturn = getGroup(group.getId());
-        Assert.notNull(groupReturn);
-        Assert.isTrue(groupReturn.getId().equals(group.getId()));
+		assertNotNull(groupReturn);
+		assertTrue(groupReturn.getId().equals(group.getId()));
 
         // ##
         // # Oprávnění
@@ -138,28 +139,28 @@ public class UserControllerTest extends AbstractControllerTest {
         // Přidání a odebrání oprávnění na uživatele
         addUserPermission(user.getId(), permissionVOs);
         user = getUser(user.getId());
-        Assert.notNull(user.getPermissions());
-        Assert.isTrue(user.getPermissions().size() == 3);
+		assertNotNull(user.getPermissions());
+		assertTrue(user.getPermissions().size() == 3);
 
         for (UsrPermissionVO usrPermissionVO : user.getPermissions()) {
             deleteUserPermission(user.getId(), usrPermissionVO);
         }
         user = getUser(user.getId());
-        Assert.notNull(user.getPermissions());
-        Assert.isTrue(user.getPermissions().size() == 0);
+		assertNotNull(user.getPermissions());
+		assertTrue(user.getPermissions().size() == 0);
 
         // Přidání a odebrání oprávnění na skupinu
         addGroupPermission(group.getId(), permissionVOs);
         group = getGroup(user.getId());
-        Assert.notNull(group.getPermissions());
-        Assert.isTrue(group.getPermissions().size() == 3);
+		assertNotNull(group.getPermissions());
+		assertTrue(group.getPermissions().size() == 3);
 
         for (UsrPermissionVO x : group.getPermissions()) {
             deleteGroupPermission(group.getId(), x);
         }
         group = getGroup(user.getId());
-        Assert.notNull(group.getPermissions());
-        Assert.isTrue(group.getPermissions().size() == 0);
+		assertNotNull(group.getPermissions());
+		assertTrue(group.getPermissions().size() == 0);
 
         // ##
         // # Oprávnění na AS all a na fund
@@ -178,19 +179,19 @@ public class UserControllerTest extends AbstractControllerTest {
 
         // Uživatel
         addUserPermission(user.getId(), permissionVOs);
-        Assert.isTrue(getUser(user.getId()).getPermissions().size() == 2);
+		assertTrue(getUser(user.getId()).getPermissions().size() == 2);
         deleteUserFundPermission(user.getId(), fund.getId());
-        Assert.isTrue(getUser(user.getId()).getPermissions().size() == 1);
+		assertTrue(getUser(user.getId()).getPermissions().size() == 1);
         deleteUserFundAllPermission(user.getId());
-        Assert.isTrue(getUser(user.getId()).getPermissions().size() == 0);
+		assertTrue(getUser(user.getId()).getPermissions().size() == 0);
 
         // Skupina
         addGroupPermission(group.getId(), permissionVOs);
-        Assert.isTrue(getGroup(group.getId()).getPermissions().size() == 2);
+		assertTrue(getGroup(group.getId()).getPermissions().size() == 2);
         deleteGroupFundPermission(group.getId(), fund.getId());
-        Assert.isTrue(getGroup(group.getId()).getPermissions().size() == 1);
+		assertTrue(getGroup(group.getId()).getPermissions().size() == 1);
         deleteGroupFundAllPermission(group.getId());
-        Assert.isTrue(getGroup(group.getId()).getPermissions().size() == 0);
+		assertTrue(getGroup(group.getId()).getPermissions().size() == 0);
 
         // ##
         // ---
@@ -206,10 +207,10 @@ public class UserControllerTest extends AbstractControllerTest {
      */
     private void changeActive(final UsrUserVO user) {
         UsrUserVO user2 = changeActive(user, false);
-        Assert.isTrue(user2.isActive() == false);
+		assertTrue(user2.isActive() == false);
 
         user2 = changeActive(user, true);
-        Assert.isTrue(user2.isActive() == true);
+		assertTrue(user2.isActive() == true);
     }
 
     /**
@@ -221,8 +222,8 @@ public class UserControllerTest extends AbstractControllerTest {
         List<ParPartyVO> party = findParty(null, 0, 1, null, null);
 
         UsrUserVO user = createUser(USER, PASS, party.get(0).getId());
-        Assert.notNull(user);
-        Assert.notNull(user.getId());
+		assertNotNull(user);
+		assertNotNull(user.getId());
         return user;
     }
 

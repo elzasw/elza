@@ -9,6 +9,7 @@ import javax.persistence.Table;
 
 import org.springframework.data.rest.core.annotation.RestResource;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import cz.tacr.elza.api.IUnitdate;
@@ -139,6 +140,7 @@ public class ArrDataUnitdate extends ArrData implements IUnitdate {
     /**
      * @return počet sekund v normalizačním kalendáři - od
      */
+    @JsonIgnore(false)
     @Override
     public Long getNormalizedFrom() {
         return normalizedFrom;
@@ -154,6 +156,7 @@ public class ArrDataUnitdate extends ArrData implements IUnitdate {
     /**
      * @return počet sekund v normalizačním kalendáři - do
      */
+    @JsonIgnore(false)
     @Override
     public Long getNormalizedTo() {
         return normalizedTo;

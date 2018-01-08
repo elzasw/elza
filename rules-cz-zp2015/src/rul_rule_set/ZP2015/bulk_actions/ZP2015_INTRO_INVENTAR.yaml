@@ -4,8 +4,7 @@ name: Agregace úvodu inventáře a katalogu
 actions:
     - !DateRange
       inputType: ZP2015_UNIT_DATE
-      inputTypePrior: ZP2015_UNIT_DATE_PRE
-      inputTypePosterior: ZP2015_UNIT_DATE_POST
+      bulkRangeType: ZP2015_UNIT_DATE_BULK
       outputType: ZP2015_DATE_RANGE
 
     - !TextAggregation

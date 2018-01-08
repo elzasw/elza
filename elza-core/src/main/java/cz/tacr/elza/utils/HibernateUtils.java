@@ -6,11 +6,11 @@ import javax.persistence.EntityManager;
 
 import org.apache.commons.lang3.Validate;
 import org.hibernate.CacheMode;
+import org.hibernate.Hibernate;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
-import org.hibernate.proxy.HibernateProxy;
-import org.hibernate.proxy.LazyInitializer;
+import org.hibernate.search.hcore.util.impl.HibernateHelper;
 
 /**
  * Helper class for Hibernate.
@@ -18,54 +18,22 @@ import org.hibernate.proxy.LazyInitializer;
 public class HibernateUtils {
 
     /**
-     * Unproxy specified entity. Proxy implementor (entity) must be in initialized state.
+     * Unproxy specified object. In case of uninitialized proxy will be entity loaded from database.
      *
-     * @param object pojo or hibernate proxy
+     * @param object POJO or hibernate proxy
      *
-     * @return initialized entity
+     * @return POJO or initialized entity, can be null when object was null.
      */
     @SuppressWarnings("unchecked")
-	public static <T> T unproxy(Object object) {
+    public static <T> T unproxy(Object object) {
         if (object == null) {
             return null;
         }
-        LazyInitializer initializer = getLazyInitializer(object);
-        if (initializer != null) {
-            return (T) initializer.getImplementation();
-        }
-		return (T) object;
+        return (T) HibernateHelper.unproxy(object);
     }
 
     /**
-     * Get the actual class of proxied entity.
-     *
-     * @param object pojo or hibernate proxy, not-null
-     */
-    public static Class<?> getPersistentClass(Object object) {
-        LazyInitializer initializer = getLazyInitializer(object);
-        if (initializer != null) {
-            return initializer.getPersistentClass();
-        }
-        return object.getClass();
-    }
-
-    /**
-     * Get LazyInitializer from hibernate proxy.
-     *
-     * @param object pojo or hibernate proxy, not-null
-     * @return LazyInitializer or null when object is not instance of hibernate proxy.
-     */
-    public static LazyInitializer getLazyInitializer(Object object) {
-        Validate.notNull(object);
-        if (object instanceof HibernateProxy) {
-            HibernateProxy proxy = (HibernateProxy) object;
-            return proxy.getHibernateLazyInitializer();
-        }
-        return null;
-    }
-
-    /**
-     * Unproxy active session from entity manager for current thread.
+     * Unwrap active session from entity manager for current thread.
      */
     public static Session getCurrentSession(EntityManager em) {
         return em.unwrap(Session.class);
@@ -85,20 +53,19 @@ public class HibernateUtils {
     /**
      * Test if specified object is initialized.
      *
-     * @param object pojo or hibernate proxy
-     * @return True when specified object is not proxy or LazyInitializer is initialized.
+     * @param object POJO or hibernate proxy
+     * @return True when specified object is not-null POJO or proxy is initialized.
      */
     public static boolean isInitialized(Object object) {
         if (object == null) {
             return false;
         }
-        LazyInitializer initializer = HibernateUtils.getLazyInitializer(object);
-        return initializer == null || !initializer.isUninitialized();
+        return Hibernate.isInitialized(object);
     }
 
     /**
-     * Get entity from persistent context or create proxy if missing. Exception is thrown when
-     * entity does not exist during proxy initialization.
+     * Get entity from persistent context or create proxy if missing. Exception can be thrown later
+     * when entity does not exist during proxy initialization.
      *
      * @param entityId not-null
      * @param entityClass not-null

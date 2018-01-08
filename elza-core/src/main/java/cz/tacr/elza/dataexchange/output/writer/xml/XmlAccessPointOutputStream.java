@@ -10,6 +10,7 @@ import javax.xml.bind.Marshaller;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.Validate;
 
 import cz.tacr.elza.dataexchange.output.writer.AccessPointsOutputStream;
@@ -103,6 +104,15 @@ public class XmlAccessPointOutputStream implements AccessPointsOutputStream {
         marshaller.marshal(jaxbElement, sw);
     }
 
+	/**
+	 * Create new access point for XML
+	 * 
+	 * This is factory method
+	 * 
+	 * @param ap
+	 *            Record
+	 * @return
+	 */
     public static AccessPointEntry createEntry(RegRecord ap) {
         AccessPointEntry entry = new AccessPointEntry();
         entry.setId(ap.getRecordId().toString());
@@ -113,7 +123,9 @@ public class XmlAccessPointOutputStream implements AccessPointsOutputStream {
         if (ap.getParentRecordId() != null) {
             entry.setPid(ap.getParentRecordId().toString());
         }
-        if (ap.getExternalId() != null) {
+
+		// prepare external id
+		if (StringUtils.isNotBlank(ap.getExternalId())) {
             ExternalId eid = new ExternalId();
             eid.setId(ap.getExternalId());
             eid.setEsc(ap.getExternalSystem().getCode());
@@ -123,6 +135,13 @@ public class XmlAccessPointOutputStream implements AccessPointsOutputStream {
         return entry;
     }
 
+	/**
+	 * Create collection of variant names
+	 * 
+	 * @param ap
+	 *            record
+	 * @return Return null if variant names does not exists.
+	 */
     private static AccessPointVariantNames createVariantNames(RegRecord ap) {
         List<RegVariantRecord> variantNames = ap.getVariantRecordList();
         if (variantNames == null || variantNames.isEmpty()) {

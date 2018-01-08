@@ -7,6 +7,7 @@ import java.util.Set;
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
+import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -37,15 +38,12 @@ import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.UserCode;
 import cz.tacr.elza.repository.FilteredResult;
 import cz.tacr.elza.repository.FundRepository;
-import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.SettingsService;
 import cz.tacr.elza.service.UserService;
 
 /**
  * Kontroler pro uživatele.
  *
- * @author Martin Šlapa
- * @since 26.04.2016
  */
 @RestController
 @RequestMapping("/api/user")
@@ -64,21 +62,16 @@ public class UserController {
     private SettingsService settingsService;
 
     @Autowired
-    private ArrangementController arrangementController;
-
-    @Autowired
     private FundRepository fundRepository;
 
     /**
-     * Získání oprávnění uživatele.
-     *
-     * @return výčet oprávnění uživatele.
-     */
+	 * Return detail user info
+	 *
+	 * @return výčet oprávnění uživatele.
+	 */
     @RequestMapping(value = "/detail", method = RequestMethod.GET)
-	@Transactional
     public UserInfoVO getUserDetail() {
-        final UserDetail userDetail = userService.getLoggedUserDetail();
-        return factoryVO.createUserInfo(userDetail);
+		return userService.getLoggeUserInfo();
     }
 
     /**
@@ -224,7 +217,7 @@ public class UserController {
     @RequestMapping(value = "/{userId}", method = RequestMethod.GET)
 	@Transactional
     public UsrUserVO getUser(@PathVariable(value = "userId") final Integer userId) {
-        Assert.notNull(userId, "Identifikátor uživatele musí být vyplněno");
+		Validate.notNull(userId);
 
         UsrUser user = userService.getUser(userId);
         return factoryVO.createUser(user, true, true);
@@ -249,6 +242,9 @@ public class UserController {
                                                 @RequestParam("count") final Integer count,
                                                 @RequestParam(value = "excludedGroupId", required = false) final Integer excludedGroupId
     ) {
+		Validate.notNull(active);
+		Validate.notNull(disabled);
+
         if (!active && !disabled) {
             throw new IllegalArgumentException("Musí být uveden alespoň jeden z parametrů: active, disabled.");
         }
@@ -305,10 +301,15 @@ public class UserController {
     }
 
     /**
-     * Načte seznam uživatelů, kteří mají explicitně (přímo na nich) nastavené nějaké oprávnění pro daný AS.
-     * @param fundId id AS
-     * @return seznam
-     */
+	 * Načte seznam uživatelů, kteří mají explicitně (přímo na nich) nastavené
+	 * nějaké oprávnění pro daný AS.
+	 * 
+	 * Method will return only users which might be administered by logged user.
+	 * 
+	 * @param fundId
+	 *            id of fund
+	 * @return seznam
+	 */
     @RequestMapping(value = "/fund/{fundId}/users", method = RequestMethod.GET)
 	@Transactional
     public List<UsrUserVO> findUsersPermissionsByFund(@PathVariable(value = "fundId") final Integer fundId) {

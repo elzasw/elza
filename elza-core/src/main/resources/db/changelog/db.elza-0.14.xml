@@ -173,4 +173,8 @@
         <delete tableName="arr_cached_node" />
     </changeSet>
 
+    <!-- rebuild cache to add normalized from/to for unitdate -->
+    <changeSet id="201801040001" author="ppyt">
+        <delete tableName="arr_cached_node" />
+    </changeSet>
 </databaseChangeLog>

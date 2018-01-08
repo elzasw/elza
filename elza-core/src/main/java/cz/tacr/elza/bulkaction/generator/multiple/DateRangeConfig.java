@@ -4,8 +4,7 @@ public class DateRangeConfig implements ActionConfig {
 
 	String inputType;
 
-	String inputTypePrior;
-	String inputTypePosterior;
+    String bulkRangeType;
 	String outputType;
 
 	public String getInputType() {
@@ -16,20 +15,12 @@ public class DateRangeConfig implements ActionConfig {
 		this.inputType = inputType;
 	}
 
-	public String getInputTypePrior() {
-		return inputTypePrior;
+    public String getBulkRangeType() {
+        return bulkRangeType;
 	}
 
-	public void setInputTypePrior(String inputTypePrior) {
-		this.inputTypePrior = inputTypePrior;
-	}
-
-	public String getInputTypePosterior() {
-		return inputTypePosterior;
-	}
-
-	public void setInputTypePosterior(String inputTypePosterior) {
-		this.inputTypePosterior = inputTypePosterior;
+    public void setBulkRangeType(String bulkRangeType) {
+        this.bulkRangeType = bulkRangeType;
 	}
 
 	public String getOutputType() {

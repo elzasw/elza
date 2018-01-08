@@ -17,7 +17,9 @@ import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 import javax.validation.constraints.NotNull;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang3.Validate;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,14 +40,16 @@ import com.google.common.cache.LoadingCache;
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.annotation.AuthParam;
 import cz.tacr.elza.aop.Authorization;
+import cz.tacr.elza.controller.vo.UserInfoVO;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegScope;
 import cz.tacr.elza.domain.UsrGroup;
 import cz.tacr.elza.domain.UsrGroupUser;
 import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.domain.UsrUser;
-import cz.tacr.elza.domain.vo.ArrFundOpenVersion;
 import cz.tacr.elza.exception.AccessDeniedException;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.Level;
@@ -104,14 +108,26 @@ public class UserService {
     @Value("${elza.security.salt:kdFss=+4Df_%}")
     private String SALT;
 
-    private Object synchObj = new Object();
-
     private ShaPasswordEncoder encoder = new ShaPasswordEncoder(256);
 
     /**
      * Cache pro nakešování oprávnění uživatele.
      */
     private LoadingCache<Integer, Collection<UserPermission>> userPermissionsCache;
+
+	/**
+	 * Seznam oprávnění, které se mají nastavit při vytváření AS a přiřazení
+	 * uživatele nebo skupiny jako správce.
+	 */
+	private static final UsrPermission.Permission FUND_ADMIN_PERMISSIONS[] = {
+	        UsrPermission.Permission.FUND_RD,
+	        UsrPermission.Permission.FUND_ARR,
+	        UsrPermission.Permission.FUND_OUTPUT_WR,
+	        UsrPermission.Permission.FUND_CL_VER_WR,
+	        UsrPermission.Permission.FUND_EXPORT,
+	        UsrPermission.Permission.FUND_BA,
+	        UsrPermission.Permission.FUND_VER_WR,
+	};
 
     public UserService() {
         userPermissionsCache = CacheBuilder.newBuilder()
@@ -137,14 +153,15 @@ public class UserService {
     public FilteredResult<ArrFund> findFundsWithPermissions(final String search,
                                                             final Integer firstResult,
                                                             final Integer maxResults) {
-        if (hasPermission(UsrPermission.Permission.USR_PERM)) { // nefiltruje se dle přiřazených oprávnění
-            List<ArrFundOpenVersion> funds = fundRepository.findByFulltext(search, maxResults, false, null);
-            Integer fundsCount = fundRepository.findCountByFulltext(search, false, null);
-            return new FilteredResult<>(firstResult, maxResults, fundsCount, funds.stream().map(x -> x.getFund()).collect(Collectors.toList()));
-        } else {    // filtruje se dle přiřazeníé oprávnění na AS pro daného uživatele
-        UsrUser user = getLoggedUser();
-            return fundRepository.findFundsWithPermissions(search, firstResult, maxResults, user.getUserId());
-    }
+		UserDetail userDetail = getLoggedUserDetail();
+
+		if (userDetail.hasPermission(UsrPermission.Permission.USR_PERM)) {
+			// nefiltruje se dle přiřazených oprávnění, vrací všechny AS            
+			return fundRepository.findFunds(search, firstResult, maxResults);
+		} else {
+			// filtruje se dle přiřazeníé oprávnění na AS pro daného uživatele			
+			return fundRepository.findFundsWithPermissions(search, firstResult, maxResults, userDetail.getId());
+		}
     }
 
     private enum ChangePermissionType {
@@ -244,11 +261,13 @@ public class UserService {
                         throw new SystemException("Neplatný vstup oprávnění: USER", UserCode.PERM_ILLEGAL_INPUT).set("type", "USER");
                     }
                     break;
-                case GROUP:
-                    if (permission.getScopeId() != null || permission.getFundId() != null || permission.getUserControlId() != null || permission.getGroupControlId() == null) {
-                        throw new SystemException("Neplatný vstup oprávnění: GROUP", UserCode.PERM_ILLEGAL_INPUT).set("type", "GROUP");
-                    }
-                    break;
+			/*
+			case GROUP:
+			    if (permission.getScopeId() != null || permission.getFundId() != null || permission.getUserControlId() != null || permission.getGroupControlId() == null) {
+			        throw new SystemException("Neplatný vstup oprávnění: GROUP", UserCode.PERM_ILLEGAL_INPUT).set("type", "GROUP");
+			    }
+			    break;
+			    */
                 default:
                     throw new IllegalStateException("Nedefinovaný typ oprávnění");
             }
@@ -296,11 +315,13 @@ public class UserService {
                                 hasPermission = true;
                             }
                             break;
-                        case GROUP:
-                            if (perm.getControlGroupIds().contains(usrPermission.getGroupControlId())) {
-                                hasPermission = true;
-                            }
-                            break;
+					/*
+					case GROUP:
+					    if (perm.getControlGroupIds().contains(usrPermission.getGroupControlId())) {
+					        hasPermission = true;
+					    }
+					    break;
+					   */
                         case SCOPE:
                             if (perm.getScopeIds().contains(usrPermission.getScopeId())) {
                                 hasPermission = true;
@@ -867,27 +888,27 @@ public class UserService {
      * @return detail přihlášeného uživatele (null pokud není nikdo přihlášený)
      */
     public UserDetail getLoggedUserDetail() {
-        synchronized (synchObj) {
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            if (auth == null) {
-                return null;
-            }
-            UserDetail details = (UserDetail) auth.getDetails();
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		if (auth == null) {
+			return null;
+		}
+		UserDetail details = (UserDetail) auth.getDetails();
 
-			Integer userId = details.getId();
-			// admin has no userId but has detail
-			// pokud je null, jedná se o virtuální admin účet, který má nastaveno oprávnění ADMIN
-			if (userId != null) {
-				UsrUser user = userRepository.findOne(userId);
-                try {
-					Collection<UserPermission> perms = userPermissionsCache.get(userId);
-					details.setUserPermission(perms);
-                } catch (ExecutionException e) {
-                    throw new SystemException(e);
-                }
-            }
-            return details;
-        }
+		Integer userId = details.getId();
+		// admin has no userId but has detail
+		// pokud je null, jedná se o virtuální admin účet, který má nastaveno oprávnění ADMIN
+		if (userId != null) {
+			try {
+				// get permission from cache, refresh its TTL
+				Collection<UserPermission> perms = userPermissionsCache.get(userId);
+				// refresh permissions in user detail
+				// probably should be places elsewhere
+				details.setUserPermission(perms);
+			} catch (ExecutionException e) {
+				throw new SystemException(e);
+			}
+		}
+		return details;
     }
 
     /**
@@ -957,36 +978,8 @@ public class UserService {
 	@Transactional(value = TxType.MANDATORY)
     public boolean hasPermission(final UsrPermission.Permission permission,
                                  final Integer entityId) {
-        for (UserPermission userPermission : getUserPermission()) {
-            if (userPermission.getPermission().equals(permission)) {
-                switch (permission.getType()) {
-                    case FUND:
-                        if (userPermission.getFundIds().contains(entityId)) {
-                            return true;
-                        }
-                        break;
-                    case USER:
-                        if (userPermission.getControlUserIds().contains(entityId)) {
-                            return true;
-                        }
-                        break;
-                    case GROUP:
-                        if (userPermission.getControlGroupIds().contains(entityId)) {
-                            return true;
-                        }
-                        break;
-                    case SCOPE:
-                        if (userPermission.getScopeIds().contains(entityId)) {
-                            return true;
-                        }
-                        break;
-                    default:
-                        throw new IllegalStateException(permission.getType().toString());
-                }
-                break;
-            }
-        }
-        return false;
+		UserDetail userDetail = getLoggedUserDetail();
+		return userDetail.hasPermission(permission, entityId);
     }
 
     /**
@@ -1000,12 +993,8 @@ public class UserService {
 	 */
 	@Transactional(value = TxType.MANDATORY)
     public boolean hasPermission(final UsrPermission.Permission permission) {
-        for (UserPermission userPermission : getUserPermission()) {
-            if (userPermission.getPermission().equals(permission) || userPermission.getPermission().equals(UsrPermission.Permission.ADMIN)) {
-                return true;
-            }
-        }
-        return false;
+		UserDetail userDetail = getLoggedUserDetail();
+		return userDetail.hasPermission(permission);
     }
 
     /**
@@ -1018,14 +1007,21 @@ public class UserService {
      * @param maxResults  maximální počet vrácených záznamů
      * @return výsledky hledání
      */
-    public FilteredResult<UsrUser> findUser(final String search, final Boolean active, final Boolean disabled, final Integer firstResult, final Integer maxResults, final Integer excludedGroupId) {
+	public FilteredResult<UsrUser> findUser(final String search, final boolean active, final boolean disabled,
+	        final int firstResult, final int maxResults, final Integer excludedGroupId) {
         if (!active && !disabled) {
             throw new IllegalArgumentException("Musí být uveden alespoň jeden z parametrů: active, disabled.");
         }
 
-        boolean filterByUser = !hasPermission(UsrPermission.Permission.USR_PERM);
-        UsrUser user = getLoggedUser();
-        return userRepository.findUserByTextAndStateCount(search, active, disabled, firstResult, maxResults, excludedGroupId, filterByUser && user != null ? user.getUserId() : null);
+		UserDetail userDetail = getLoggedUserDetail();
+		if (userDetail.hasPermission(UsrPermission.Permission.USR_PERM)) {
+			// return all users
+			return userRepository.findUserByText(search, active, disabled, firstResult, maxResults, excludedGroupId);
+		} else {
+			return userRepository.findUserByTextAndStateCount(search, active, disabled, firstResult, maxResults,
+			        excludedGroupId,
+			        userDetail.getId());
+		}
     }
 
     /**
@@ -1077,8 +1073,8 @@ public class UserService {
      * @return objekt
      */
     @AuthMethod(permission = {UsrPermission.Permission.USR_PERM, UsrPermission.Permission.USER_CONTROL_ENTITITY})
-    public UsrUser getUser(@AuthParam(type = AuthParam.Type.USER) final Integer userId) {
-        Assert.notNull(userId, "Identifikátor uživatele musí být vyplněno");
+	public UsrUser getUser(@AuthParam(type = AuthParam.Type.USER) final Integer userId) {
+		Validate.notNull(userId, "Identifikátor uživatele musí být vyplněno");
         return userRepository.getOneCheckExist(userId);
     }
 
@@ -1159,23 +1155,58 @@ public class UserService {
      * @return list uživatelů
      */
     public List<UsrUser> findUsersByFund(final ArrFund fund) {
-        return userRepository.findByFund(fund);
-    }
+		// get list of all users for fund
+		List<UsrUser> users = userRepository.findByFund(fund);
 
-    /**
-     * Vyhledá list uživatelů podle oprávnění typu všechny AS.
-     * @return list uživatelů
-     */
-    public List<UsrUser> findUsersByFundAll() {
-        return userRepository.findByPermissions(UsrPermission.Permission.getFundAllPerms());
-    }
+		return filterUsersByAdminPermission(users);
+	}
+
+	/**
+	 * Vyhledá list uživatelů podle oprávnění typu všechny AS.
+	 * 
+	 * @return list uživatelů
+	 */
+	public List<UsrUser> findUsersByFundAll() {
+		List<UsrUser> users = userRepository.findByPermissions(UsrPermission.Permission.getFundAllPerms());
+
+		return filterUsersByAdminPermission(users);
+	}
+
+	/**
+	 * Filter list of users to contain only users which might be administered by
+	 * logged user
+	 * 
+	 * Method will run query for each user in the list.
+	 * 
+	 * @param users
+	 * @return
+	 */
+	private List<UsrUser> filterUsersByAdminPermission(List<UsrUser> users) {
+    	// check permissions
+    	UserDetail userDetail = this.getLoggedUserDetail();
+		if (userDetail.hasPermission(UsrPermission.Permission.USR_PERM))
+			return users;
+
+		// check each user if might be accessed
+		List<UsrUser> result = new ArrayList<>(users.size());
+		for (UsrUser checkedUser : users) {
+			List<Integer> perms = userRepository.findPermissionAllowingUserAccess(userDetail.getId(),
+			        checkedUser.getUserId());
+			if (CollectionUtils.isNotEmpty(perms)) {
+				result.add(checkedUser);
+			}
+		}
+		return result;
+	}
 
     /**
      * Vyhledá list skupin podle oprávnění typu všechny AS.
      * @return list skupin
      */
     public List<UsrGroup> findGroupsByFundAll() {
-        return groupRepository.findByPermissions(UsrPermission.Permission.getFundAllPerms());
+		List<UsrGroup> groups = groupRepository.findByPermissions(UsrPermission.Permission.getFundAllPerms());
+
+		return filterGroupsByAdminPermission(groups);
     }
 
     /**
@@ -1184,14 +1215,42 @@ public class UserService {
      * @return list uživatelů
      */
     public List<UsrGroup> findGroupsByFund(final ArrFund fund) {
-        return groupRepository.findByFund(fund);
+		List<UsrGroup> groups = groupRepository.findByFund(fund);
+
+		return filterGroupsByAdminPermission(groups);
     }
 
-    /**
-     * Event změněného uživatele.
-     *
-     * @param user uživatel
-     */
+	/**
+	 * Filter list of groups to contain only groups which might be administered
+	 * by logged user
+	 * 
+	 * @param groups
+	 * @return
+	 */
+	private List<UsrGroup> filterGroupsByAdminPermission(List<UsrGroup> groups) {
+		// check permissions
+		UserDetail userDetail = this.getLoggedUserDetail();
+		if (userDetail.hasPermission(UsrPermission.Permission.USR_PERM))
+			return groups;
+
+		// check each user if might be accessed
+		List<UsrGroup> result = new ArrayList<>(groups.size());
+		for (UsrGroup checkedGroup : groups) {
+			List<Integer> perms = userRepository.findPermissionAllowingGroupAccess(userDetail.getId(),
+			        checkedGroup.getGroupId());
+			if (CollectionUtils.isNotEmpty(perms)) {
+				result.add(checkedGroup);
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * Event změněného uživatele.
+	 *
+	 * @param user
+	 *            uživatel
+	 */
     private void changeUserEvent(final UsrUser user) {
         eventNotificationService.publishEvent(new EventId(EventType.USER_CHANGE, user.getUserId()));
     }
@@ -1290,19 +1349,135 @@ public class UserService {
 	/**
 	 * Authorize request or throw exception
 	 * 
-	 * @param or
+	 * @param authRequest
+	 *            Request to be authorized
 	 */
 	@Transactional(value = TxType.MANDATORY)
 	public void authorizeRequest(AuthorizationRequest authRequest) {
-		Collection<UserPermission> perms = getUserPermission();
-		if (authRequest.matches(perms)) {
+		UserDetail userDetail = getLoggedUserDetail();
+		if (authRequest.matches(userDetail)) {
 			// request match permissions
 			return;
 		}
 
-		UsrPermission.Permission deniedPermissions[] = authRequest.getPermissions();
 		// throw exception - authorization not granted
+		UsrPermission.Permission deniedPermissions[] = authRequest.getPermissions();
 		throw new AccessDeniedException("Missing permissions: " + Arrays.toString(deniedPermissions),
 		        deniedPermissions);
 	}
+
+	/**
+	 * Return detail information about logged user
+	 * 
+	 * This method can be called by any user, no permissions are required
+	 * @return
+	 */
+	@Transactional
+	public UserInfoVO getLoggeUserInfo() {
+        final UserDetail userDetail = getLoggedUserDetail();
+		Integer userId = userDetail.getId();
+		String preferredName = null;
+		// if not admin
+		if (userId != null) {
+			// read user from db
+			UsrUser user = userRepository.findOneWithDetail(userId);
+			Validate.notNull(user, "Failed to get user: {}", userId);
+
+			RegRecord record = user.getParty().getRecord();
+			preferredName = record.getRecord();
+		}
+
+		return UserInfoVO.newInstance(userDetail, preferredName);
+	}
+
+	/**
+	 * Add admin permissions to user/group for given fund
+	 * 
+	 * Method is used only for newly created fund.
+	 * 
+	 * @param userId
+	 *            Can be null
+	 * @param groupId
+	 *            Can be null
+	 * @param newFund
+	 */
+	@Transactional(value = TxType.MANDATORY)
+	public void addFundAdminPermissions(Integer userId, Integer groupId, ArrFund newFund) {
+		UsrUser user = null;
+		UsrGroup group = null;
+		if (userId != null) {
+			// only user or group might be set
+			Validate.isTrue(groupId == null);
+
+			user = userRepository.getOneCheckExist(userId);
+		}
+		if (groupId != null) {
+			// only user or group might be set
+			Validate.isTrue(userId == null);
+
+			group = groupRepository.getOneCheckExist(groupId);
+		}
+
+		// if we do not have right FUND_ADMIN or USR_PERM
+		// we have to have rights FUND_CREATE (In such case we can create it only for logged user) 
+		// or USER_CONTROL_ENTITITY (In such case we can create it only for managed entities).
+
+		boolean hasPermission = false;
+		for (UserPermission userPermission : getUserPermission()) {
+			if (userPermission.isPermissionType(UsrPermission.Permission.FUND_ADMIN)
+			        || userPermission.isPermissionType(UsrPermission.Permission.USR_PERM)) {
+				hasPermission = true;
+				break;
+			}
+
+			if (userPermission.isPermissionType(UsrPermission.Permission.FUND_CREATE)) {
+				// check if user is same as logged user
+				UserDetail userDetail = getLoggedUserDetail();
+				if (userDetail.getId() == userId) {
+					hasPermission = true;
+					break;
+				}
+			}
+
+			if (userPermission.isPermissionType(UsrPermission.Permission.USER_CONTROL_ENTITITY)) {
+				// check if entity is managed			
+				if (userPermission.isControllsUser(userId)) {
+					hasPermission = true;
+					break;
+				}
+			}
+			if (userPermission.isPermissionType(UsrPermission.Permission.GROUP_CONTROL_ENTITITY)) {
+				if (userPermission.isControllsGroup(groupId)) {
+					hasPermission = true;
+					break;
+				}
+			}
+		}
+
+		if (!hasPermission) {
+			Permission[] perms = { UsrPermission.Permission.FUND_ADMIN, UsrPermission.Permission.USR_PERM,
+			        UsrPermission.Permission.FUND_CREATE,
+			        UsrPermission.Permission.USER_CONTROL_ENTITITY,
+			        UsrPermission.Permission.GROUP_CONTROL_ENTITITY };
+			throw new AccessDeniedException("Cannot set permissions for new fund.", perms);
+		}
+
+		// now we can add permission
+		List<UsrPermission> usrPermissions = new ArrayList<>(FUND_ADMIN_PERMISSIONS.length);
+		for (UsrPermission.Permission permission : FUND_ADMIN_PERMISSIONS) {
+			UsrPermission usrPerm = new UsrPermission();
+			usrPerm.setPermission(permission);
+			usrPerm.setFund(newFund);
+			usrPerm.setUser(user);
+			usrPerm.setGroup(group);
+			usrPermissions.add(usrPerm);
+		}
+		if (group != null) {
+			addGroupPermission(group, usrPermissions, false);
+		}
+		if (user != null) {
+			addUserPermission(user, usrPermissions, false);
+		}
+	}
+
 }

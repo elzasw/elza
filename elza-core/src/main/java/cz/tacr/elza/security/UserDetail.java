@@ -5,14 +5,13 @@ import java.util.Collection;
 import java.util.HashSet;
 
 import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.domain.UsrUser;
 
 /**
  * Detail uživatele v session.
  * Použití pro zjištění základních informací o přihlášeném uživateli.
  *
- * @author Martin Šlapa
- * @since 13.04.2016
  */
 public class UserDetail {
 
@@ -59,6 +58,11 @@ public class UserDetail {
         return username;
     }
 
+	/**
+	 * Return DB id of user.
+	 * 
+	 * @return Return DB id of user. Return null for admin.
+	 */
     public Integer getId() {
         return id;
     }
@@ -67,6 +71,13 @@ public class UserDetail {
         return active;
     }
 
+	/**
+	 * Return collection of user permission
+	 * 
+	 * Return always valid object.
+	 * 
+	 * @return
+	 */
     public Collection<UserPermission> getUserPermission() {
         return userPermission;
     }
@@ -74,5 +85,65 @@ public class UserDetail {
 	public void setUserPermission(Collection<UserPermission> perms) {
 		userPermission.clear();
 		userPermission.addAll(perms);
+	}
+
+	/**
+	 * Check if user has given permission
+	 * 
+	 * @param usrPerm
+	 * @return
+	 */
+	public boolean hasPermission(Permission usrPerm) {
+		for (UserPermission userPermission : userPermission) {
+			if (userPermission.getPermission().equals(usrPerm) ||
+			        userPermission.getPermission().equals(UsrPermission.Permission.ADMIN)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Check if user has given permission
+	 * 
+	 * @param usrPerm
+	 * @return
+	 */
+	public boolean hasPermission(Permission permission, Integer entityId) {
+		for (UserPermission userPermission : userPermission) {
+			if (userPermission.getPermission().equals(permission)) {
+
+				if (userPermission.getPermission().equals(UsrPermission.Permission.ADMIN)) {
+					return true;
+				}
+
+				switch (permission.getType()) {
+				case FUND:
+					if (userPermission.getFundIds().contains(entityId)) {
+						return true;
+					}
+					break;
+				case USER:
+					if (userPermission.getControlUserIds().contains(entityId)) {
+						return true;
+					}
+					break;
+				case GROUP:
+					if (userPermission.getControlGroupIds().contains(entityId)) {
+						return true;
+					}
+					break;
+				case SCOPE:
+					if (userPermission.getScopeIds().contains(entityId)) {
+						return true;
+					}
+					break;
+				default:
+					throw new IllegalStateException(permission.getType().toString());
+				}
+				break;
+			}
+		}
+		return false;
 	}
 }

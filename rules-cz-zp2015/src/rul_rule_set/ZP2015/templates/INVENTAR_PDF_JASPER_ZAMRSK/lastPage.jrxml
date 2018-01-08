@@ -11,7 +11,7 @@
 	<property name="com.jaspersoft.studio.unit.rightMargin" value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
-	<style name="ElzaBase" isDefault="true" fontName="Arial"/>
+	<style name="Text" isDefault="true" hTextAlign="Justified" fontName="DejaVu Sans" fontSize="10"/>
 	<parameter name="fund" class="cz.tacr.elza.print.Fund"/>
 	<parameter name="output" class="cz.tacr.elza.print.Output"/>
 	<queryString>
@@ -25,7 +25,7 @@
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement markup="html">
-					<font fontName="SansSerif" pdfEncoding="Cp1250"/>
+					<font pdfEncoding="Cp1250"/>
 				</textElement>
 				<textFieldExpression><![CDATA["<b>Název archivní pomůcky:</b> "+$P{output}.getName()]]></textFieldExpression>
 			</textField>
@@ -34,7 +34,7 @@
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement markup="html">
-					<font fontName="SansSerif" pdfEncoding="Cp1250"/>
+					<font pdfEncoding="Cp1250"/>
 				</textElement>
 				<textFieldExpression><![CDATA["<b>Počet jednotek popisu, které lze na základě archivní pomůcky zpřístupnit:</b> "+$P{output}.getSingleItemValue( "ZP2015_UNIT_COUNT_SUM" )]]></textFieldExpression>
 			</textField>
@@ -43,7 +43,7 @@
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement markup="html">
-					<font fontName="SansSerif" pdfEncoding="Cp1250"/>
+					<font pdfEncoding="Cp1250"/>
 				</textElement>
 				<textFieldExpression><![CDATA["<b>Časové rozmezí archivní pomůcky:</b> "+$P{output}.getSingleItemValue( "ZP2015_DATE_RANGE" )]]></textFieldExpression>
 			</textField>
@@ -52,7 +52,7 @@
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement markup="html">
-					<font fontName="SansSerif" pdfEncoding="Cp1250"/>
+					<font pdfEncoding="Cp1250"/>
 				</textElement>
 				<textFieldExpression><![CDATA["<b>Rozsah archivní pomůckou zpřístupněných archiválií:</b> "+$P{output}.getSingleItemValue( "ZP2015_UNITS_AMOUNT" )]]></textFieldExpression>
 			</textField>
@@ -61,7 +61,7 @@
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement markup="html">
-					<font fontName="SansSerif" pdfEncoding="Cp1250"/>
+					<font pdfEncoding="Cp1250"/>
 				</textElement>
 				<textFieldExpression><![CDATA["<b>Stav archivní pomůckou zpřístupněných archiválií ke dni:</b> "+$P{output}.getSingleItemValue( "ZP2015_FINDING_AID_DATE" )]]></textFieldExpression>
 			</textField>
@@ -70,7 +70,7 @@
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement markup="html">
-					<font fontName="SansSerif" pdfEncoding="Cp1250"/>
+					<font pdfEncoding="Cp1250"/>
 				</textElement>
 				<textFieldExpression><![CDATA["<b>Zpracovatel archivního souboru:</b> "+$P{output}.getSingleItemValue( "ZP2015_ARRANGER_TEXT" )]]></textFieldExpression>
 			</textField>
@@ -79,7 +79,7 @@
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement markup="html">
-					<font fontName="SansSerif" pdfEncoding="Cp1250"/>
+					<font pdfEncoding="Cp1250"/>
 				</textElement>
 				<textFieldExpression><![CDATA["<b>Archivní pomůcku sestavil:</b> "+$P{output}.getSingleItemValue( "ZP2015_FINDING_AID_EDITOR" )]]></textFieldExpression>
 			</textField>
@@ -88,7 +88,7 @@
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement markup="html">
-					<font fontName="SansSerif" pdfEncoding="Cp1250"/>
+					<font pdfEncoding="Cp1250"/>
 				</textElement>
 				<textFieldExpression><![CDATA["<b>Počet stran archivní pomůcky:</b> "+$V{MASTER_TOTAL_PAGES}]]></textFieldExpression>
 			</textField>
@@ -97,7 +97,7 @@
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement markup="html">
-					<font fontName="SansSerif" pdfEncoding="Cp1250"/>
+					<font pdfEncoding="Cp1250"/>
 				</textElement>
 				<textFieldExpression><![CDATA["<b>Archivní pomůcku schválil:</b> "+$P{output}.getSingleItemValue( "ZP2015_FINDING_AID_APPROVED_BY" )]]></textFieldExpression>
 			</textField>
@@ -106,7 +106,7 @@
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement markup="html">
-					<font fontName="SansSerif" pdfEncoding="Cp1250"/>
+					<font pdfEncoding="Cp1250"/>
 				</textElement>
 				<textFieldExpression><![CDATA["<b>Počet evidenčních jednotek zpřístupněných archivní pomůckou:</b> "+$P{output}.getSingleItemValue( "ZP2015_UNIT_COUNT_TABLE" )]]></textFieldExpression>
 			</textField>
