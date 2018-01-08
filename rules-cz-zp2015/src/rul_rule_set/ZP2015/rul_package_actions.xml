@@ -2,12 +2,14 @@
     <!-- Validace pravidel ZP2015 -->
     <package-action filename="ZP2015_FUND_VALIDATION.yaml" >
         <action-recommendeds>
+            <action-recommended output-type="STARSI_POMUCKA_1958" />
             <action-recommended output-type="ZP2015_MANIP_SEZNAM" />
             <action-recommended output-type="ZP2015_INVENTAR" />
         </action-recommendeds>
     </package-action>
     <package-action filename="ZP2015_GENERATOR_SERIAL_NUMBER.yaml" >
         <action-recommendeds>
+            <action-recommended output-type="STARSI_POMUCKA_1958" />
             <action-recommended output-type="ZP2015_MANIP_SEZNAM" />
             <action-recommended output-type="ZP2015_INVENTAR" />
         </action-recommendeds>
@@ -66,7 +68,7 @@
             <action-recommended output-type="ZP2015_INVENTAR" />
         </action-recommendeds>
     </package-action>
-    <!-- Agregace pro inventar a katalog -->
+    <!-- Generator testovacich dat -->
     <package-action filename="ZP2015_TEST_DATA_GENERATOR.yaml">
     </package-action>
 </package-actions>

@@ -71,7 +71,7 @@ rule "Typy výstupů dle ZP2015"
 no-loop
 when
     $itemType : RulItemTypeExt( code == "ZP2015_OUTPUT_TYPE" )
-    $itemSpec : RulItemSpecExt(code in ("ZP2015_OUTPUT_INV", "ZP2015_OUTPUT_KAT") ) from $itemType.rulItemSpecList
+    $itemSpec : RulItemSpecExt(code in ("ZP2015_OUTPUT_INV", "ZP2015_OUTPUT_KAT", "ZP2015_OUTPUT_PROV_INV") ) from $itemType.rulItemSpecList
 then
     $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
 end
