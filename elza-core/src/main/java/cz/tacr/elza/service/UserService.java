@@ -261,13 +261,13 @@ public class UserService {
                         throw new SystemException("Neplatný vstup oprávnění: USER", UserCode.PERM_ILLEGAL_INPUT).set("type", "USER");
                     }
                     break;
-			/*
-			case GROUP:
-			    if (permission.getScopeId() != null || permission.getFundId() != null || permission.getUserControlId() != null || permission.getGroupControlId() == null) {
-			        throw new SystemException("Neplatný vstup oprávnění: GROUP", UserCode.PERM_ILLEGAL_INPUT).set("type", "GROUP");
-			    }
-			    break;
-			    */
+            case GROUP:
+                if (/*permission.getScopeId() != null || permission.getFundId() != null || permission.getUserControlId() != null ||*/
+                permission.getGroupControlId() == null) {
+                    throw new SystemException("Neplatný vstup oprávnění: GROUP", UserCode.PERM_ILLEGAL_INPUT)
+                            .set("type", "GROUP");
+                }
+                break;
                 default:
                     throw new IllegalStateException("Nedefinovaný typ oprávnění");
             }

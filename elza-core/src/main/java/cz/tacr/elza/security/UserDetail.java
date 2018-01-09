@@ -2,7 +2,6 @@ package cz.tacr.elza.security;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrPermission.Permission;
@@ -50,7 +49,7 @@ public class UserDetail {
     public UserDetail(final String systemUser) {
         this.username = systemUser;
         this.active = true;
-        this.userPermission = new HashSet<>();
+        this.userPermission = new ArrayList<>();
         this.userPermission.add(new UserPermission(UsrPermission.Permission.ADMIN));
     }
 
@@ -110,7 +109,7 @@ public class UserDetail {
 	 * @return
 	 */
 	public boolean hasPermission(Permission permission, Integer entityId) {
-		for (UserPermission userPermission : userPermission) {
+        for (UserPermission userPermission : this.userPermission) {
 			if (userPermission.getPermission().equals(permission)) {
 
 				if (userPermission.getPermission().equals(UsrPermission.Permission.ADMIN)) {
