@@ -42,12 +42,12 @@ class FundOutputFiles extends AbstractReactComponent {
     };
 
     handleDownload = (id) => {
-        this.dispatch(downloadFile("arr-output-file-" + id, UrlFactory.downloadDmsFile(id)));
+        this.dispatch(downloadFile(UrlFactory.downloadDmsFile(id)));
     };
 
     handleDownloadAll = () => {
         const {versionId, outputResultId} = this.props;
-        this.dispatch(downloadFile("arr-output-files-all-" + versionId, UrlFactory.downloadOutputResult(outputResultId)));
+        this.dispatch(downloadFile(UrlFactory.downloadOutputResult(outputResultId)));
     };
 
     focus = () => {

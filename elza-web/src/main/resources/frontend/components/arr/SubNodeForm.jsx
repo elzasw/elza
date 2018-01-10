@@ -698,12 +698,12 @@ class SubNodeForm extends AbstractReactComponent {
     handleCoordinatesDownload(objectId) {
         const {versionId} = this.props;
 
-        this.dispatch(downloadFile("arr-registry-coordinates-" + objectId, UrlFactory.exportArrCoordinate(objectId, versionId)));
+        this.dispatch(downloadFile(UrlFactory.exportArrCoordinate(objectId, versionId)));
     }
 
     handleJsonTableDownload(objectId) {
         const {versionId, typePrefix} = this.props;
-        this.dispatch(downloadFile("arr-json-table-" + objectId + "-" + versionId, UrlFactory.exportItemCsvExport(objectId, versionId, typePrefix)));
+        this.dispatch(downloadFile(UrlFactory.exportItemCsvExport(objectId, versionId, typePrefix)));
     }
 
     /**
