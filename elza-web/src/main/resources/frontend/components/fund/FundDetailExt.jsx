@@ -41,7 +41,7 @@ const FundDetailExt = class FundDetailExt extends AbstractReactComponent {
     }
 
     handleDownload = (id) => {
-        this.dispatch(downloadFile("arr-output-file-" + id, UrlFactory.downloadDmsFile(id)));
+        this.dispatch(downloadFile("arr-output-file-" + id, UrlFactory.downloadOutputResult(id)));
     };
 
     render() {
