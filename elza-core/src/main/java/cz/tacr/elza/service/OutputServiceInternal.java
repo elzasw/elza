@@ -22,10 +22,10 @@ import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationAdapter;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
-import cz.tacr.elza.bulkaction.BulkActionService;
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrBulkActionRun;
+import cz.tacr.elza.domain.ArrBulkActionRun.State;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrItemSettings;
@@ -41,6 +41,8 @@ import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.repository.ActionRepository;
+import cz.tacr.elza.repository.BulkActionRunRepository;
 import cz.tacr.elza.repository.ItemSettingsRepository;
 import cz.tacr.elza.repository.NodeOutputRepository;
 import cz.tacr.elza.repository.OutputDefinitionRepository;
@@ -67,8 +69,6 @@ public class OutputServiceInternal {
 
     private final IEventNotificationService eventNotificationService;
 
-    private final BulkActionService bulkActionService;
-
     private final OutputDefinitionRepository outputDefinitionRepository;
 
     private final NodeOutputRepository nodeOutputRepository;
@@ -87,16 +87,19 @@ public class OutputServiceInternal {
 
     private final StaticDataService staticDataService;
 
-    private ItemSettingsRepository itemSettingsRepository;
+    private final ItemSettingsRepository itemSettingsRepository;
 
-    private RuleService ruleService;
+    private final RuleService ruleService;
+
+    private final ActionRepository actionRepository;
+
+    private final BulkActionRunRepository bulkActionRunRepository;
 
     @Autowired
     public OutputServiceInternal(PlatformTransactionManager transactionManager,
                                  OutputGeneratorFactory outputGeneratorFactory,
                                  IEventNotificationService eventNotificationService,
                                  FundLevelServiceInternal fundLevelServiceInternal,
-                                 BulkActionService bulkActionService,
                                  OutputDefinitionRepository outputDefinitionRepository,
                                  NodeOutputRepository nodeOutputRepository,
                                  OutputItemRepository outputItemRepository,
@@ -106,12 +109,13 @@ public class OutputServiceInternal {
                                  ArrangementService arrangementService,
                                  StaticDataService staticDataService,
                                  ItemSettingsRepository itemSettingsRepository,
-                                 RuleService ruleService) {
+                                 RuleService ruleService,
+                                 ActionRepository actionRepository,
+                                 BulkActionRunRepository bulkActionRunRepository) {
         this.transactionManager = transactionManager;
         this.outputGeneratorFactory = outputGeneratorFactory;
         this.eventNotificationService = eventNotificationService;
         this.fundLevelServiceInternal = fundLevelServiceInternal;
-        this.bulkActionService = bulkActionService;
         this.outputDefinitionRepository = outputDefinitionRepository;
         this.nodeOutputRepository = nodeOutputRepository;
         this.outputItemRepository = outputItemRepository;
@@ -122,6 +126,8 @@ public class OutputServiceInternal {
         this.staticDataService = staticDataService;
         this.itemSettingsRepository = itemSettingsRepository;
         this.ruleService = ruleService;
+        this.actionRepository = actionRepository;
+        this.bulkActionRunRepository = bulkActionRunRepository;
     }
 
     /**
@@ -443,21 +449,19 @@ public class OutputServiceInternal {
      * @return
      */
     private OutputRequestStatus checkRecommendedActions(ArrOutputDefinition definition, ArrFundVersion fundVersion) {
-        bulkActionService.checkOutdatedActions(fundVersion.getFundVersionId());
-
         // find output node ids
         List<ArrNodeOutput> outputNodes = getOutputNodes(definition, fundVersion.getLockChange());
         List<Integer> outputNodeIds = new ArrayList<>(outputNodes.size());
         outputNodes.forEach(n -> outputNodeIds.add(n.getNodeId()));
 
         // find recommended actions
-        List<RulAction> recommendedActions = bulkActionService.getRecommendedActions(definition.getOutputType());
+        List<RulAction> recommendedActions = actionRepository.findByRecommendedActionOutputType(definition.getOutputType());
         if (recommendedActions.isEmpty()) {
             return OutputRequestStatus.OK;
         }
 
         // find finished actions
-        List<ArrBulkActionRun> finishedAction = bulkActionService.findFinishedBulkActionsByNodeIds(fundVersion, outputNodeIds);
+        List<ArrBulkActionRun> finishedAction = bulkActionRunRepository.findBulkActionsByNodes(fundVersion.getFundVersionId(), outputNodeIds, State.FINISHED);
         if (recommendedActions.size() > finishedAction.size()) {
             return OutputRequestStatus.RECOMMENDED_ACTION_NOT_RUN;
         }
