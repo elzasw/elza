@@ -33,6 +33,22 @@ public class HibernateUtils {
     }
 
     /**
+     * Unproxy initialized object.
+     *
+     * @param object
+     *            POJO or hibernate proxy
+     *
+     * @return POJO or initialized entity, can be null when object was null.
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> T unproxyInitialized(Object entity) {
+        if (!Hibernate.isInitialized(entity)) {
+            throw new IllegalStateException("Unitialized entity, class = " + entity.getClass().getName());
+        }
+        return (T) HibernateHelper.unproxy(entity);
+    }
+
+    /**
      * Unproxy active session from entity manager for current thread.
      */
     public static Session getCurrentSession(EntityManager em) {

@@ -350,7 +350,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
     }
 
     /**
-     * Initializes output model. Must be called during transaction.
+     * Initializes output model. Must be called inside transaction.
      */
     public void init(OutputParams params) {
         Validate.isTrue(TransactionSynchronizationManager.isActualTransactionActive());
@@ -596,20 +596,31 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         }
     }
 
-    private static Party convertParty(ParParty parParty, PartyInitHelper initHelper) {
-        PartyType partyType = PartyType.fromId(parParty.getPartyTypeId());
+    /**
+     * Convert party to output specific object
+     * 
+     * @param party
+     *            have to be non null
+     * @param initHelper
+     * @return
+     */
+    private static Party convertParty(ParParty party, PartyInitHelper initHelper) {
+        // input data have to be initialized 
+        party = HibernateUtils.unproxyInitialized(party);
+
+        PartyType partyType = PartyType.fromId(party.getPartyTypeId());
         switch (partyType) {
             case DYNASTY:
-                ParDynasty parDynasty = (ParDynasty) parParty;
+            ParDynasty parDynasty = (ParDynasty) party;
                 return new Dynasty(parDynasty, initHelper);
             case EVENT:
-                ParEvent parEvent = (ParEvent) parParty;
+            ParEvent parEvent = (ParEvent) party;
                 return new Event(parEvent, initHelper);
             case GROUP_PARTY:
-                ParPartyGroup parPartyGroup = (ParPartyGroup) parParty;
+            ParPartyGroup parPartyGroup = (ParPartyGroup) party;
                 return new PartyGroup(parPartyGroup, initHelper);
             case PERSON:
-                ParPerson parPerson = (ParPerson) parParty;
+            ParPerson parPerson = (ParPerson) party;
                 return new Person(parPerson, initHelper);
             default:
                 throw new IllegalStateException("Uknown party type: " + partyType);
