@@ -216,6 +216,8 @@ public class OutputService {
         }
 
         outputDefinition.setState(OutputState.OPEN);
+        // reset previous error
+        outputDefinition.setError(null);
 
         ArrOutputResult outputResult = outputDefinition.getOutputResult();
         if (outputResult != null) {
