@@ -108,7 +108,7 @@ public class DateRangeAction extends Action {
 			        "Datový typ atributu musí být " + DataType.TEXT + " (item type " + outputType + ")",
 			        BaseCode.ID_NOT_EXIST);
 		}
-		
+
 		String inputType = config.getInputType();
 		if (inputType == null) {
 			throw new BusinessException("Není vyplněn parametr 'inputType' v akci.", BaseCode.PROPERTY_NOT_EXIST)
@@ -116,7 +116,7 @@ public class DateRangeAction extends Action {
 		}
 		inputItemType = ruleSystem.getItemTypeByCode(inputType);
 		checkValidDataType(inputItemType, DataType.UNITDATE);
-		
+
 		String inputTypePrior = config.getInputTypePrior();
 		if (inputTypePrior == null) {
 			throw new BusinessException("Není vyplněn parametr 'inputTypePrior' v akci.", BaseCode.PROPERTY_NOT_EXIST)
@@ -124,14 +124,14 @@ public class DateRangeAction extends Action {
 		}
 		inputItemTypePrior = ruleSystem.getItemTypeByCode(inputTypePrior);
 		checkValidDataType(inputItemTypePrior, DataType.UNITDATE);
-		
+
 		String inputTypePosterior = config.getInputTypePosterior();
 		if (inputTypePosterior == null) {
 		    throw new BusinessException("Není vyplněn parametr 'input_type_posterior' v akci.", BaseCode.PROPERTY_NOT_EXIST).set("property", "input_type_posterior");
 		}
 		inputItemTypePosterior = ruleSystem.getItemTypeByCode(inputTypePosterior);
 		checkValidDataType(inputItemTypePosterior, DataType.UNITDATE);
-		
+
     }
 
     @Override

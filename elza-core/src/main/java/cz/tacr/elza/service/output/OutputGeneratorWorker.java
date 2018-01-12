@@ -21,6 +21,7 @@ import cz.tacr.elza.domain.RulTemplate.Engine;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.service.FundLevelServiceInternal;
+import cz.tacr.elza.service.OutputServiceInternal;
 import cz.tacr.elza.service.output.generator.OutputGenerator;
 import cz.tacr.elza.service.output.generator.OutputGeneratorFactory;
 
@@ -40,7 +41,7 @@ public class OutputGeneratorWorker implements Runnable {
 
     private final OutputGeneratorFactory outputGeneratorFactory;
 
-    private final OutputGeneratorService outputGeneratorService;
+    private final OutputServiceInternal outputServiceInternal;
 
     private final ResourcePathResolver resourcePathResolver;
 
@@ -53,7 +54,7 @@ public class OutputGeneratorWorker implements Runnable {
                                  Integer userId,
                                  EntityManager em,
                                  OutputGeneratorFactory outputGeneratorFactory,
-                                 OutputGeneratorService outputGeneratorService,
+                                 OutputServiceInternal outputServiceInternal,
                                  ResourcePathResolver resourcePathResolver,
                                  FundLevelServiceInternal fundLevelServiceInternal,
                                  PlatformTransactionManager transactionManager) {
@@ -62,7 +63,7 @@ public class OutputGeneratorWorker implements Runnable {
         this.userId = userId;
         this.em = em;
         this.outputGeneratorFactory = outputGeneratorFactory;
-        this.outputGeneratorService = outputGeneratorService;
+        this.outputServiceInternal = outputServiceInternal;
         this.resourcePathResolver = resourcePathResolver;
         this.fundLevelServiceInternal = fundLevelServiceInternal;
         this.transactionManager = transactionManager;
@@ -91,7 +92,7 @@ public class OutputGeneratorWorker implements Runnable {
      * Process output. Must be called in transaction.
      */
     private void generateOutput() {
-        ArrOutputDefinition definition = outputGeneratorService.getOutputDefinitionForGenerator(outputDefinitionId);
+        ArrOutputDefinition definition = outputServiceInternal.getOutputDefinitionForGenerator(outputDefinitionId);
 
         Engine engine = definition.getTemplate().getEngine();
         OutputGenerator generator = outputGeneratorFactory.createOutputGenerator(engine);
@@ -103,7 +104,7 @@ public class OutputGeneratorWorker implements Runnable {
         OutputState state = resolveEndState(params);
         definition.setState(state); // saved by commit
 
-        outputGeneratorService.publishOutputStateChanged(definition, fundVersionId);
+        outputServiceInternal.publishOutputStateChanged(definition, fundVersionId);
     }
 
     private OutputState resolveEndState(OutputParams params) {
@@ -123,11 +124,11 @@ public class OutputGeneratorWorker implements Runnable {
                     fundVersionId);
         }
 
-        ArrChange change = outputGeneratorService.createChange(userId);
+        ArrChange change = outputServiceInternal.createGenerateChange(userId);
 
-        List<ArrNodeOutput> outputNodes = outputGeneratorService.getOutputNodes(definition, fundVersion.getLockChange());
+        List<ArrNodeOutput> outputNodes = outputServiceInternal.getOutputNodes(definition, fundVersion.getLockChange());
 
-        List<ArrOutputItem> outputItems = outputGeneratorService.getOutputItems(definition, fundVersion.getLockChange());
+        List<ArrOutputItem> outputItems = outputServiceInternal.getOutputItems(definition, fundVersion.getLockChange());
 
         Path templateDir = resourcePathResolver.getTemplateDir(definition.getTemplate()).toAbsolutePath();
 
@@ -146,7 +147,7 @@ public class OutputGeneratorWorker implements Runnable {
         } else {
             logger.error("Output generator worker failed, outputDefinitionId:" + outputDefinitionId, t);
         }
-        outputGeneratorService.publishOutputFailed(definition, fundVersionId);
+        outputServiceInternal.publishOutputFailed(definition, fundVersionId);
     }
 
     private static String getCauseMessages(Throwable t, int charLimit) {

@@ -1120,12 +1120,11 @@ public class ArrangementController {
         Assert.notNull(outputItemVO, "Výstup musí být vyplněn");
         Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
         Assert.notNull(outputDefinitionVersion, "Verze definice výstupu musí být vyplněna");
-        Assert.notNull(createNewVersion, "Vytvořit novou verzi musí být vyplněno");
+        Validate.isTrue(createNewVersion); // TODO: remove from API (update client)
 
         ArrOutputItem outputItem = factoryDO.createOutputItem(outputItemVO);
 
-        ArrOutputItem outputItemUpdated = outputService
-                .updateOutputItem(outputItem, outputDefinitionVersion, fundVersionId, createNewVersion);
+        ArrOutputItem outputItemUpdated = outputService.updateOutputItem(outputItem, outputDefinitionVersion, fundVersionId);
 
         OutputItemResult outputItemResult = new OutputItemResult();
         outputItemResult.setItem(factoryVo.createDescItem(outputItemUpdated));

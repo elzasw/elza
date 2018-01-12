@@ -35,7 +35,7 @@ public class BulkActionRunRepositoryImpl implements BulkActionRunRepositoryCusto
         }
         sql1 += "GROUP BY ar.bulk_action_code";
 
-        String sql2 = "SELECT k FROM arr_bulk_action_run k JOIN (" + sql1 + ") l "
+        String sql2 = "SELECT k.* FROM arr_bulk_action_run k JOIN (" + sql1 + ") l "
                 + "ON k.bulk_action_code = l.bulk_action_code AND k.change_id = l.change_id WHERE k.fund_version_id = :fundVersionId";
 
         Session session = em.unwrap(Session.class);
@@ -48,9 +48,6 @@ public class BulkActionRunRepositoryImpl implements BulkActionRunRepositoryCusto
         if (state != null) {
             query.setParameter("state", state.name());
         }
-
-        // probably false deprecated, should be fine in HB6.0
-        query.addRoot("k", ArrBulkActionRun.class);
 
         return query.getResultList();
     }

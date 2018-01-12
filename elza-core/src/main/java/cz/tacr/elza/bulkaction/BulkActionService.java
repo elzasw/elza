@@ -8,7 +8,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
@@ -36,15 +36,18 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureCallback;
 
+import cz.tacr.elza.bulkaction.generator.result.ActionResult;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.domain.ArrBulkActionNode;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrBulkActionRun.State;
 import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrChange.Type;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeConformityExt;
+import cz.tacr.elza.domain.ArrOutputDefinition;
 import cz.tacr.elza.domain.ArrOutputDefinition.OutputState;
 import cz.tacr.elza.domain.RulAction;
 import cz.tacr.elza.domain.RulOutputType;
@@ -61,11 +64,12 @@ import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.FundLevelServiceInternal;
+import cz.tacr.elza.service.IEventNotificationService;
 import cz.tacr.elza.service.LevelTreeCacheService;
-import cz.tacr.elza.service.OutputService;
+import cz.tacr.elza.service.OutputItemConnector;
+import cz.tacr.elza.service.OutputServiceInternal;
 import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.eventnotification.EventFactory;
-import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 
 /**
@@ -103,7 +107,7 @@ public class BulkActionService implements ListenableFutureCallback<BulkActionWor
     private BulkActionNodeRepository bulkActionNodeRepository;
 
     @Autowired
-    private EventNotificationService eventNotificationService;
+    private IEventNotificationService eventNotificationService;
 
     @Autowired
     private LevelTreeCacheService levelTreeCacheService;
@@ -112,7 +116,7 @@ public class BulkActionService implements ListenableFutureCallback<BulkActionWor
     private NodeRepository nodeRepository;
 
     @Autowired
-    private OutputService outputService;
+    private OutputServiceInternal outputServiceInternal;
 
     @Autowired
     private ArrangementService arrangementService;
@@ -159,11 +163,10 @@ public class BulkActionService implements ListenableFutureCallback<BulkActionWor
         ArrBulkActionRun bulkActionRun = result.getBulkActionRun();
 
         // změna stavu výstupů na open
-        outputService.changeOutputsStateByNodes(bulkActionRun.getFundVersion(),
-                bulkActionRun.getArrBulkActionNodes()
-                        .stream()
-                        .map(ArrBulkActionNode::getNode)
-                        .collect(Collectors.toSet()),
+        outputServiceInternal.changeOutputsStateByNodes(bulkActionRun.getFundVersion(),
+                bulkActionRun.getArrBulkActionNodes().stream()
+                        .map(ArrBulkActionNode::getNodeId)
+                        .collect(Collectors.toList()),
                 OutputState.OPEN,
                 OutputState.COMPUTING);
 
@@ -249,16 +252,15 @@ public class BulkActionService implements ListenableFutureCallback<BulkActionWor
      * @return objekt hromadné akce
      */
     private ArrBulkActionRun run(final ArrBulkActionRun bulkActionRun) {
-		BulkActionWorker bulkActionWorker = new BulkActionWorker(this, bulkActionRun);
+		BulkActionWorker bulkActionWorker = new BulkActionWorker(bulkActionRun, this, txManager);
 		bulkActionWorker.init();
         runningWorkers.put(bulkActionRun.getFundVersionId(), bulkActionWorker);
 
         // změna stavu výstupů na počítání
-        outputService.changeOutputsStateByNodes(bulkActionRun.getFundVersion(),
-                bulkActionRun.getArrBulkActionNodes()
-                        .stream()
-                        .map(ArrBulkActionNode::getNode)
-                        .collect(Collectors.toSet()),
+        outputServiceInternal.changeOutputsStateByNodes(bulkActionRun.getFundVersion(),
+                bulkActionRun.getArrBulkActionNodes().stream()
+                        .map(ArrBulkActionNode::getNodeId)
+                        .collect(Collectors.toList()),
                 OutputState.COMPUTING,
                 OutputState.OPEN);
 
@@ -381,8 +383,9 @@ public class BulkActionService implements ListenableFutureCallback<BulkActionWor
      *
      * @param bulkActionRun the bulk action run
      */
+    @Transactional(TxType.MANDATORY)
     public void eventPublishBulkAction(final ArrBulkActionRun bulkActionRun) {
-        eventNotificationService.forcePublish(
+        eventNotificationService.publishEvent(
                 EventFactory.createIdInVersionEvent(
                         EventType.BULK_ACTION_STATE_CHANGE,
                         bulkActionRun.getFundVersion(),
@@ -548,18 +551,45 @@ public class BulkActionService implements ListenableFutureCallback<BulkActionWor
      *
      * @param bulkActionRun objekt hromadné akce
      */
-    public void finished(final ArrBulkActionRun bulkActionRun) {
-        Set<ArrNode> nodes = new HashSet<>();
+    // TODO: implements concurrent strategy like sub-tree exclusive execute of action or output
+    @Transactional(TxType.MANDATORY)
+    public void onFinished(final ArrBulkActionRun bulkActionRun) {
+        // find action nodes for output update
         List<ArrBulkActionNode> arrBulkActionNodes = bulkActionRun.getArrBulkActionNodes();
-        nodes.addAll(arrBulkActionNodes.stream().map(ArrBulkActionNode::getNode).collect(Collectors.toSet()));
+        List<Integer> nodeIds = arrBulkActionNodes.stream().map(ArrBulkActionNode::getNodeId).collect(Collectors.toList());
 
-        try {
-            logger.info("Zahájení překlopení výsledku hromadné akce do výstupů");
-            outputService.storeResultBulkAction(bulkActionRun, nodes, null);
-            logger.info("Překlopení výsledku hromadné akce bylo úspěšně dokončeno");
-        } catch (Exception e) {
-            logger.error("Nastal problém při překlopení výsledků hromadné akce do výstupů", e);
+        // find all related output definitions
+        List<ArrOutputDefinition> outputDefinitions = outputServiceInternal.findOutputsByNodes(bulkActionRun.getFundVersion(), nodeIds, OutputState.OPEN, OutputState.COMPUTING);
+
+        // prepare ArrChange provider applied only if update occurs, change shared between connectors
+        Supplier<ArrChange> changeSupplier = new Supplier<ArrChange>() {
+            private ArrChange change;
+
+            @Override
+            public ArrChange get() {
+                if (change == null) {
+                    change = arrangementService.createChange(Type.UPDATE_OUTPUT);
+                }
+                return change;
+            }
+        };
+
+        // update each output definition
+        logger.info("Dispatching result to outputs");
+        for (ArrOutputDefinition definition : outputDefinitions) {
+            OutputItemConnector connector = outputServiceInternal.createItemConnector(bulkActionRun.getFundVersion(), definition);
+            connector.setChangeSupplier(changeSupplier);
+
+            // update definition by each result
+            for (ActionResult result : bulkActionRun.getResult().getResults()) {
+                result.createOutputItems(connector);
+            }
+
+            // update to open state
+            definition.setState(OutputState.OPEN); // saved by commit
+            outputServiceInternal.publishOutputStateChanged(definition, bulkActionRun.getFundVersionId());
         }
+        logger.info("Result dispatched to outputs");
     }
 
     /**

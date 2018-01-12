@@ -1,7 +1,6 @@
 package cz.tacr.elza.domain;
 
-import java.io.Serializable;
-
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -28,6 +27,9 @@ public class ArrBulkActionNode {
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrNode.class)
     @JoinColumn(name = "nodeId", nullable = false)
     private ArrNode node;
+
+    @Column(nullable = false, insertable =  false, updatable = false)
+    private Integer nodeId;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrBulkActionRun.class)
     @JoinColumn(name = "bulkActionRunId", nullable = false)
@@ -59,6 +61,11 @@ public class ArrBulkActionNode {
      */
     public void setNode(final ArrNode node) {
         this.node = node;
+        this.nodeId = node != null ? node.getNodeId() : null;
+    }
+
+    public Integer getNodeId() {
+        return nodeId;
     }
 
     /**

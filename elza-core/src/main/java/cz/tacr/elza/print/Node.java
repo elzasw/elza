@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.print.item.Item;
@@ -155,7 +156,7 @@ public class Node {
         if (found != null) {
             return found.getSerializedValue();
         }
-        return null;
+        return StringUtils.EMPTY;
     }
 
     /**

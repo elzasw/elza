@@ -208,8 +208,8 @@ import cz.tacr.elza.repository.UnitdateRepository;
 import cz.tacr.elza.repository.UserRepository;
 import cz.tacr.elza.service.DaoService;
 import cz.tacr.elza.service.LevelTreeCacheService;
+import cz.tacr.elza.service.OutputServiceInternal;
 import cz.tacr.elza.service.SettingsService;
-import cz.tacr.elza.service.output.OutputGeneratorService;
 import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MapperFactory;
 import ma.glasnost.orika.MappingContext;
@@ -276,7 +276,7 @@ public class ClientFactoryVO {
     private LevelTreeCacheService levelTreeCacheService;
 
     @Autowired
-    private OutputGeneratorService outputGeneratorService;
+    private OutputServiceInternal outputServiceInternal;
 
     @Autowired
     private SettingsService settingsService;
@@ -1807,7 +1807,7 @@ public class ClientFactoryVO {
         outputExt.setCreateDate(mapper.map(output.getCreateChange().getChangeDate(), Date.class));
         outputExt.setLockDate(output.getLockChange() != null ? mapper.map(output.getLockChange().getChangeDate(), Date.class) : null);
 
-        List<ArrNodeOutput> nodes = outputGeneratorService.getOutputNodes(output.getOutputDefinition(), fundVersion.getLockChange());
+        List<ArrNodeOutput> nodes = outputServiceInternal.getOutputNodes(output.getOutputDefinition(), fundVersion.getLockChange());
         List<Integer> nodeIds = nodes.stream().map(ArrNodeOutput::getNodeId).collect(Collectors.toList());
         outputExt.getOutputDefinition().setNodes(levelTreeCacheService.getNodesByIds(nodeIds, fundVersion.getFundVersionId()));
         return outputExt;

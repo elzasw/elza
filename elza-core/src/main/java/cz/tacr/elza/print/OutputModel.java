@@ -14,6 +14,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,6 +75,7 @@ import cz.tacr.elza.print.party.Relation;
 import cz.tacr.elza.print.party.RelationTo;
 import cz.tacr.elza.print.party.RelationToType;
 import cz.tacr.elza.print.party.RelationType;
+import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.service.cache.CachedNode;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.cache.RestoredNode;
@@ -139,10 +141,13 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
     private final NodeCacheService nodeCacheService;
 
-    public OutputModel(StaticDataService staticDataService, FundTreeProvider fundTreeProvider, NodeCacheService nodeCacheService) {
+    private final InstitutionRepository institutionRepository;
+
+    public OutputModel(StaticDataService staticDataService, FundTreeProvider fundTreeProvider, NodeCacheService nodeCacheService, InstitutionRepository institutionRepository) {
         this.staticDataService = staticDataService;
         this.fundTreeProvider = fundTreeProvider;
         this.nodeCacheService = nodeCacheService;
+        this.institutionRepository = institutionRepository;
     }
 
     public boolean isInitialized() {
@@ -243,7 +248,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         if (found != null) {
             return found.getSerializedValue();
         }
-        return null;
+        return StringUtils.EMPTY;
     }
 
     @Override
@@ -378,20 +383,27 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         this.fund.setDateRange(fundVersion.getDateRange());
 
         // init fund institution
-        ParInstitution parInstit = arrFund.getInstitution();
-        Institution institution = new Institution(parInstit.getInternalCode(), parInstit.getInstitutionType());
-        Party party = getParty(parInstit.getParty());
-        institution.setPartyGroup((PartyGroup) party);
-        this.fund.setInstitution(institution);
+        Institution inst = createInstitution(arrFund);
+        this.fund.setInstitution(inst);
 
         // init direct items
         ItemConvertor conv = new OutputItemConvertor();
-        outputItems = params.getOutputItems().stream()
+        this.outputItems = params.getOutputItems().stream()
                 .map(i -> conv.convert(i, this))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
         logger.info("Output model initialization ended, outputDefinitionId:{}", params.getDefinitionId());
+    }
+
+    private Institution createInstitution(ArrFund arrFund) {
+        ParInstitution parInst = institutionRepository.findByFundFetchTypeAndParty(arrFund);
+        PartyGroup pg = (PartyGroup) getParty(parInst.getParty());
+
+        Institution inst = new Institution(parInst.getInternalCode(), parInst.getInstitutionType());
+        inst.setPartyGroup(pg);
+
+        return inst;
     }
 
     /**
@@ -586,7 +598,6 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
     private static Party convertParty(ParParty parParty, PartyInitHelper initHelper) {
         PartyType partyType = PartyType.fromId(parParty.getPartyTypeId());
-        parParty = HibernateUtils.unproxy(parParty);
         switch (partyType) {
             case DYNASTY:
                 ParDynasty parDynasty = (ParDynasty) parParty;

@@ -52,7 +52,7 @@ public abstract class AbstractEntityLoader<REQ_ID, ENTITY> extends AbstractBatch
 
             // TODO: replace detach for stateless session
             em.detach(entity);
-            // if referenced before can be proxy (after query always initialized)
+            // can be initialized (detached) proxy
             entity = HibernateUtils.unproxy(entity);
 
             for (BatchEntry entry : requestIdMap.get(requestId)) {

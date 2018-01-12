@@ -1,9 +1,12 @@
-package cz.tacr.elza.service.output;
+package cz.tacr.elza.service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
@@ -21,31 +24,40 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 
 import cz.tacr.elza.bulkaction.BulkActionService;
 import cz.tacr.elza.core.ResourcePathResolver;
+import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrItemSettings;
 import cz.tacr.elza.domain.ArrNodeOutput;
 import cz.tacr.elza.domain.ArrOutputDefinition;
 import cz.tacr.elza.domain.ArrOutputDefinition.OutputState;
 import cz.tacr.elza.domain.ArrOutputItem;
 import cz.tacr.elza.domain.RulAction;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.repository.ItemSettingsRepository;
 import cz.tacr.elza.repository.NodeOutputRepository;
 import cz.tacr.elza.repository.OutputDefinitionRepository;
 import cz.tacr.elza.repository.OutputItemRepository;
-import cz.tacr.elza.service.FundLevelServiceInternal;
-import cz.tacr.elza.service.IEventNotificationService;
 import cz.tacr.elza.service.eventnotification.EventFactory;
+import cz.tacr.elza.service.eventnotification.events.EventChangeOutputItem;
 import cz.tacr.elza.service.eventnotification.events.EventIdAndStringInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
+import cz.tacr.elza.service.output.OutputGeneratorWorker;
+import cz.tacr.elza.service.output.OutputQueueManager;
+import cz.tacr.elza.service.output.OutputRequestStatus;
 import cz.tacr.elza.service.output.generator.OutputGeneratorFactory;
 
 @Service
-public class OutputGeneratorService {
+public class OutputServiceInternal {
 
-    private final static Logger logger = LoggerFactory.getLogger(OutputGeneratorService.class);
+    private final static Logger logger = LoggerFactory.getLogger(OutputServiceInternal.class);
 
     private final OutputQueueManager queueManager = new OutputQueueManager(2);
 
@@ -69,17 +81,32 @@ public class OutputGeneratorService {
 
     private final ResourcePathResolver resourcePathResolver;
 
+    private final ItemService itemService;
+
+    private final ArrangementService arrangementService;
+
+    private final StaticDataService staticDataService;
+
+    private ItemSettingsRepository itemSettingsRepository;
+
+    private RuleService ruleService;
+
     @Autowired
-    public OutputGeneratorService(PlatformTransactionManager transactionManager,
-                                  OutputGeneratorFactory outputGeneratorFactory,
-                                  IEventNotificationService eventNotificationService,
-                                  FundLevelServiceInternal fundLevelServiceInternal,
-                                  BulkActionService bulkActionService,
-                                  OutputDefinitionRepository outputDefinitionRepository,
-                                  NodeOutputRepository nodeOutputRepository,
-                                  OutputItemRepository outputItemRepository,
-                                  EntityManager em,
-                                  ResourcePathResolver resourcePathResolver) {
+    public OutputServiceInternal(PlatformTransactionManager transactionManager,
+                                 OutputGeneratorFactory outputGeneratorFactory,
+                                 IEventNotificationService eventNotificationService,
+                                 FundLevelServiceInternal fundLevelServiceInternal,
+                                 BulkActionService bulkActionService,
+                                 OutputDefinitionRepository outputDefinitionRepository,
+                                 NodeOutputRepository nodeOutputRepository,
+                                 OutputItemRepository outputItemRepository,
+                                 EntityManager em,
+                                 ResourcePathResolver resourcePathResolver,
+                                 ItemService itemService,
+                                 ArrangementService arrangementService,
+                                 StaticDataService staticDataService,
+                                 ItemSettingsRepository itemSettingsRepository,
+                                 RuleService ruleService) {
         this.transactionManager = transactionManager;
         this.outputGeneratorFactory = outputGeneratorFactory;
         this.eventNotificationService = eventNotificationService;
@@ -90,6 +117,11 @@ public class OutputGeneratorService {
         this.outputItemRepository = outputItemRepository;
         this.em = em;
         this.resourcePathResolver = resourcePathResolver;
+        this.itemService = itemService;
+        this.arrangementService = arrangementService;
+        this.staticDataService = staticDataService;
+        this.itemSettingsRepository = itemSettingsRepository;
+        this.ruleService = ruleService;
     }
 
     /**
@@ -105,12 +137,48 @@ public class OutputGeneratorService {
         if (affected > 0) {
             logger.warn("{} interrupted outputs by server shutdown were recovered to opened state", affected);
         }
+
         // start queue manager
         queueManager.start();
     }
 
     /**
-     * Searches nodes connected to output definition. Nodes must be valid by specified lock change.
+     * Searches definition.
+     *
+     * @throws SystemException When definition not found.
+     */
+    @Transactional
+    public ArrOutputDefinition getOutputDefinition(int outputDefinitionId) {
+        ArrOutputDefinition definition = outputDefinitionRepository.findOne(outputDefinitionId);
+        if (definition == null) {
+            throw new SystemException("Output definition not found", BaseCode.ID_NOT_EXIST).set("outputDefinitionId",
+                    outputDefinitionId);
+        }
+        return definition;
+    }
+
+    /**
+     * Searches definition in generating state and fetches entities for output generator (fund,
+     * template and output type).
+     *
+     * @throws SystemException When definition not found or it has other than generating state.
+     */
+    @Transactional
+    public ArrOutputDefinition getOutputDefinitionForGenerator(int outputDefinitionId) {
+        ArrOutputDefinition definition = outputDefinitionRepository.findOneFetchTypeAndTemplateAndFund(outputDefinitionId);
+        if (definition == null) {
+            throw new SystemException("Output definition not found", BaseCode.ID_NOT_EXIST).set("outputDefinitionId",
+                    outputDefinitionId);
+        }
+        if (definition.getState() != OutputState.GENERATING) {
+            throw new SystemException("Processing output must be in GENERATING state", BaseCode.INVALID_STATE)
+                    .set("outputDefinitionId", outputDefinitionId).set("outputState", definition.getState());
+        }
+        return definition;
+    }
+
+    /**
+     * Searches output nodes for specified definition. Nodes must be valid by specified lock change.
      *
      * @param lockChange null for open version
      */
@@ -138,6 +206,22 @@ public class OutputGeneratorService {
         return outputItemRepository.findByOutputAndChange(outputDefinition, lockChange);
     }
 
+    /**
+     * Publish event when output item was changed.
+     *
+     * @param fundVersion
+     * @param outputItem related definition is needed (should be fetched)
+     */
+    @Transactional(TxType.MANDATORY)
+    public void publishOutputItemChanged(ArrOutputItem outputItem, int fundVersionId) {
+        ArrOutputDefinition definition = outputItem.getOutputDefinition();
+        eventNotificationService.publishEvent(new EventChangeOutputItem(EventType.OUTPUT_ITEM_CHANGE, fundVersionId,
+                outputItem.getDescItemObjectId(), definition.getOutputDefinitionId(), definition.getVersion()));
+    }
+
+    /**
+     * Publish event when output state was changed. Current output definition state is used.
+     */
     @Transactional(TxType.MANDATORY)
     public void publishOutputStateChanged(ArrOutputDefinition outputDefinition, int fundVersionId) {
         int outputDefinitionId = outputDefinition.getOutputDefinitionId();
@@ -146,7 +230,7 @@ public class OutputGeneratorService {
     }
 
     /**
-     * Publish error event when output generation failed, it's special state for client.
+     * Publish event when output generation failed, it's special "ERROR" state for client.
      */
     @Transactional(TxType.MANDATORY)
     public void publishOutputFailed(ArrOutputDefinition outputDefinition, int fundVersionId) {
@@ -160,12 +244,12 @@ public class OutputGeneratorService {
     }
 
     /**
-     * Creates new change for output.
+     * Creates new change for generating output.
      *
      * @param userId can be null for system administrator
      */
     @Transactional(TxType.MANDATORY)
-    public ArrChange createChange(Integer userId) {
+    public ArrChange createGenerateChange(Integer userId) {
         ArrChange change = new ArrChange();
         change.setChangeDate(LocalDateTime.now());
         change.setType(ArrChange.Type.GENERATE_OUTPUT);
@@ -196,7 +280,7 @@ public class OutputGeneratorService {
 
         // check recommended bulk action
         if (checkBulkActions) {
-            OutputRequestStatus status = checkBulkActions(definition, fundVersion);
+            OutputRequestStatus status = checkRecommendedActions(definition, fundVersion);
             if (status != OutputRequestStatus.OK) {
                 return status;
             }
@@ -226,37 +310,129 @@ public class OutputGeneratorService {
     }
 
     /**
-     * Searches definition.
+     * Finds all outputs defined on specified nodes.
      *
-     * @throws SystemException When definition not found.
+     * @param currentStates state filter, null allows all output states
      */
     @Transactional
-    public ArrOutputDefinition getOutputDefinition(int outputDefinitionId) {
-        ArrOutputDefinition definition = outputDefinitionRepository.findOne(outputDefinitionId);
-        if (definition == null) {
-            throw new SystemException("Output definition not found", BaseCode.ID_NOT_EXIST).set("outputDefinitionId",
-                    outputDefinitionId);
-        }
-        return definition;
+    public List<ArrOutputDefinition> findOutputsByNodes(ArrFundVersion fundVersion,
+                                                        Collection<Integer> nodeIds,
+                                                        OutputState... currentStates) {
+        return outputDefinitionRepository.findOutputsByNodes(fundVersion, nodeIds, currentStates);
     }
 
     /**
-     * Searches definition in generating state and fetches entities for output generator.
+     * Updates state for all outputs defined on specified nodes.
      *
-     * @throws SystemException When definition not found or it has other than generating state.
+     * @param newState new state
+     * @param currentStates state filter, null allows all output states
      */
     @Transactional
-    public ArrOutputDefinition getOutputDefinitionForGenerator(int outputDefinitionId) {
-        ArrOutputDefinition definition = outputDefinitionRepository.findOneAndFetchForGenerator(outputDefinitionId);
-        if (definition == null) {
-            throw new SystemException("Output definition not found", BaseCode.ID_NOT_EXIST).set("outputDefinitionId",
-                    outputDefinitionId);
+    public void changeOutputsStateByNodes(ArrFundVersion fundVersion,
+                                          Collection<Integer> nodeIds,
+                                          OutputState newState,
+                                          OutputState... currentStates) {
+
+        List<ArrOutputDefinition> outputDefinitions = findOutputsByNodes(fundVersion, nodeIds, currentStates);
+        int fundVersionId = fundVersion.getFundVersionId();
+
+        for (ArrOutputDefinition outputDefinition : outputDefinitions) {
+            outputDefinition.setState(newState); // saved by commit
+            publishOutputStateChanged(outputDefinition, fundVersionId);
         }
-        if (definition.getState() != OutputState.GENERATING) {
-            throw new SystemException("Processing output must be in GENERATING state", BaseCode.INVALID_STATE)
-                    .set("outputDefinitionId", outputDefinitionId).set("outputState", definition.getState());
+    }
+
+    @Transactional(TxType.MANDATORY)
+    public OutputItemConnector createItemConnector(ArrFundVersion fundVersion, ArrOutputDefinition outputDefinition) {
+        OutputItemConnectorImpl connector = new OutputItemConnectorImpl(fundVersion, outputDefinition, staticDataService, this, itemService);
+
+        Set<Integer> ignoredItemTypeIds = getIgnoredItemTypeIds(outputDefinition);
+        connector.setIgnoredItemTypeIds(ignoredItemTypeIds);
+
+        return connector;
+    }
+
+    @Transactional
+    public Set<Integer> getIgnoredItemTypeIds(ArrOutputDefinition outputDefinition) {
+        Set<Integer> ignoredItemTypeIds = new HashSet<>();
+
+        // add all manually calculating items from settings
+        List<ArrItemSettings> itemSettingsList = itemSettingsRepository.findByOutputDefinition(outputDefinition);
+        for (ArrItemSettings itemSettings : itemSettingsList) {
+            if (itemSettings.getBlockActionResult()) {
+                ignoredItemTypeIds.add(itemSettings.getItemTypeId());
+            }
         }
-        return definition;
+
+        // add all impossible types
+        List<RulItemTypeExt> outputItemTypes = ruleService.getOutputItemTypes(outputDefinition);
+        for (RulItemTypeExt itemType : outputItemTypes) {
+            if (itemType.getType().equals(RulItemType.Type.IMPOSSIBLE)) {
+                ignoredItemTypeIds.add(itemType.getItemTypeId());
+            }
+        }
+
+        return ignoredItemTypeIds;
+    }
+
+    @Transactional(TxType.MANDATORY)
+    public void createOutputItem(ArrOutputItem outputItem, ArrFundVersion fundVersion, ArrChange createChange) {
+        Validate.notNull(createChange);
+
+        if (fundVersion.getLockChange() != null) {
+            throw new BusinessException("Output items cannot be deleted in closed fund version.",
+                    ArrangementCode.VERSION_ALREADY_CLOSED);
+        }
+
+        itemService.checkValidTypeAndSpec(outputItem);
+
+        int maxPosition = outputItemRepository.findMaxItemPosition(outputItem.getItemType(), outputItem.getOutputDefinition());
+
+        if (outputItem.getPosition() == null || outputItem.getPosition() > maxPosition) {
+            outputItem.setPosition(maxPosition + 1);
+        } else {
+            // find items which must be moved up
+            List<ArrOutputItem> outputItems = outputItemRepository.findOpenOutputItemsAfterPosition(outputItem.getItemType(),
+                    outputItem.getOutputDefinition(), outputItem.getPosition() - 1);
+            for (ArrOutputItem item : outputItems) {
+                itemService.copyItem(item, createChange, item.getPosition() + 1);
+            }
+        }
+
+        outputItem.setCreateChange(createChange);
+        outputItem.setDescItemObjectId(arrangementService.getNextDescItemObjectId());
+
+        em.persist(outputItem.getData());
+        em.persist(outputItem);
+    }
+
+    /**
+     * Deletes all output items by type for specified definition and fund version.
+     *
+     * @return Count of affected items
+     */
+    @Transactional(TxType.MANDATORY)
+    public int deleteOutputItemsByType(ArrFundVersion fundVersion,
+                                       ArrOutputDefinition outputDefinition,
+                                       RulItemType itemType,
+                                       ArrChange deleteChange) {
+        Validate.notNull(outputDefinition);
+        Validate.notNull(itemType);
+        Validate.notNull(deleteChange);
+
+        if (fundVersion.getLockChange() != null) {
+            throw new BusinessException("Output items cannot be deleted in closed fund version.",
+                    ArrangementCode.VERSION_ALREADY_CLOSED);
+        }
+
+        List<ArrOutputItem> outputItems = outputItemRepository.findOpenOutputItems(itemType, outputDefinition);
+
+        for (ArrOutputItem item : outputItems) {
+            item.setDeleteChange(deleteChange); // saved by commit
+            publishOutputItemChanged(item, fundVersion.getFundVersionId());
+        }
+
+        return outputItems.size();
     }
 
     /**
@@ -266,7 +442,7 @@ public class OutputGeneratorService {
      * @param fundVersion
      * @return
      */
-    private OutputRequestStatus checkBulkActions(ArrOutputDefinition definition, ArrFundVersion fundVersion) {
+    private OutputRequestStatus checkRecommendedActions(ArrOutputDefinition definition, ArrFundVersion fundVersion) {
         bulkActionService.checkOutdatedActions(fundVersion.getFundVersionId());
 
         // find output node ids

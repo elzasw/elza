@@ -9,6 +9,7 @@ import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.fund.FundTreeProvider;
 import cz.tacr.elza.dataexchange.output.DEExportService;
 import cz.tacr.elza.domain.RulTemplate.Engine;
+import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.service.DmsService;
 import cz.tacr.elza.service.cache.NodeCacheService;
 
@@ -27,16 +28,20 @@ public class OutputGeneratorFactory {
 
     private final DEExportService exportService;
 
+    private final InstitutionRepository institutionRepository;
+
     @Autowired
     public OutputGeneratorFactory(StaticDataService staticDataService,
                                   FundTreeProvider fundTreeProvider,
                                   NodeCacheService nodeCacheService,
+                                  InstitutionRepository institutionRepository,
                                   EntityManager em,
                                   DmsService dmsService,
                                   DEExportService exportService) {
         this.staticDataService = staticDataService;
         this.fundTreeProvider = fundTreeProvider;
         this.nodeCacheService = nodeCacheService;
+        this.institutionRepository = institutionRepository;
         this.em = em;
         this.dmsService = dmsService;
         this.exportService = exportService;
@@ -56,11 +61,13 @@ public class OutputGeneratorFactory {
     }
 
     public FreemarkerOutputGenerator createFreemarkerOutputGenerator() {
-        return new FreemarkerOutputGenerator(staticDataService, fundTreeProvider, nodeCacheService, em, dmsService);
+        return new FreemarkerOutputGenerator(staticDataService, fundTreeProvider, nodeCacheService, institutionRepository, em,
+                dmsService);
     }
 
     public JasperOutputGenerator createJasperOutputGenerator() {
-        return new JasperOutputGenerator(staticDataService, fundTreeProvider, nodeCacheService, em, dmsService);
+        return new JasperOutputGenerator(staticDataService, fundTreeProvider, nodeCacheService, institutionRepository, em,
+                dmsService);
     }
 
     public DEXmlOutputGenerator createDEXmlOutputGenerator() {

@@ -1,5 +1,7 @@
 package cz.tacr.elza.domain;
 
+import java.beans.Transient;
+
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.Column;
@@ -97,7 +99,7 @@ public abstract class ArrItem implements NodeCacheSerializable {
 
 	/**
 	 * Copy constructor for ArrItem
-	 * 
+	 *
 	 * @param src
 	 *            Source item
 	 */
@@ -292,4 +294,15 @@ public abstract class ArrItem implements NodeCacheSerializable {
     public boolean isUndefined() {
         return data == null;
     }
+
+    /**
+     * Prepare copy of the item object
+     *
+     * Method returns pure item copy of the source object without saving it to
+     * the DB
+     *
+     * @return Return copy of the object
+     */
+    @Transient
+    abstract public ArrItem makeCopy();
 }

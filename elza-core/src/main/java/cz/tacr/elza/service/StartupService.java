@@ -27,7 +27,6 @@ import cz.tacr.elza.repository.BulkActionRunRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.service.cache.NodeCacheService;
-import cz.tacr.elza.service.output.OutputGeneratorService;
 
 /**
  * Serviska pro úlohy, které je nutné spustit těsně po spuštění.
@@ -45,7 +44,7 @@ public class StartupService implements SmartLifecycle {
 
     private final BulkActionRunRepository bulkActionRunRepository;
 
-    private final OutputGeneratorService outputGeneratorService;
+    private final OutputServiceInternal outputServiceInternal;
 
     private final RequestQueueService requestQueueService;
 
@@ -64,7 +63,7 @@ public class StartupService implements SmartLifecycle {
                           FundVersionRepository fundVersionRepository,
                           UpdateConformityInfoService updateConformityInfoService,
                           BulkActionRunRepository bulkActionRunRepository,
-                          OutputGeneratorService outputGeneratorService,
+                          OutputServiceInternal outputServiceInternal,
                           RequestQueueService requestQueueService,
                           NodeCacheService nodeCacheService,
                           StaticDataService staticDataService,
@@ -74,7 +73,7 @@ public class StartupService implements SmartLifecycle {
         this.fundVersionRepository = fundVersionRepository;
         this.updateConformityInfoService = updateConformityInfoService;
         this.bulkActionRunRepository = bulkActionRunRepository;
-        this.outputGeneratorService = outputGeneratorService;
+        this.outputServiceInternal = outputServiceInternal;
         this.requestQueueService = requestQueueService;
         this.nodeCacheService = nodeCacheService;
         this.staticDataService = staticDataService;
@@ -122,7 +121,7 @@ public class StartupService implements SmartLifecycle {
         }
         DatabaseType.init(em);
         staticDataService.init();
-        outputGeneratorService.init();
+        outputServiceInternal.init();
         clearBulkActions();
         bulkActionConfigManager.load();
         syncNodeCacheService();

@@ -66,10 +66,10 @@ public class TempFileProvider {
         return Files.list(tmpDirPath).map(tmpFilePath -> {
             try {
                 Files.delete(tmpFilePath);
-                return true;
+                return Boolean.TRUE;
             } catch (IOException e) {
                 logger.error("Failed to delete temporary file, path:{}, detail:{}", tmpFilePath, e.getMessage());
-                return false;
+                return Boolean.FALSE;
             }
         }).reduce(Boolean.TRUE, Boolean::logicalAnd);
     }

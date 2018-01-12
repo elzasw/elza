@@ -24,6 +24,7 @@ import cz.tacr.elza.print.File;
 import cz.tacr.elza.print.OutputModel;
 import cz.tacr.elza.print.item.Item;
 import cz.tacr.elza.print.item.ItemFileRef;
+import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.service.DmsService;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.output.OutputParams;
@@ -46,10 +47,11 @@ public class JasperOutputGenerator extends DmsOutputGenerator {
     JasperOutputGenerator(StaticDataService staticDataService,
                           FundTreeProvider fundTreeProvider,
                           NodeCacheService nodeCacheService,
+                          InstitutionRepository institutionRepository,
                           EntityManager em,
                           DmsService dmsService) {
         super(em, dmsService);
-        outputModel = new OutputModel(staticDataService, fundTreeProvider, nodeCacheService);
+        outputModel = new OutputModel(staticDataService, fundTreeProvider, nodeCacheService, institutionRepository);
     }
 
     @Override

@@ -8,7 +8,7 @@ import java.util.concurrent.Executors;
 
 import org.apache.commons.lang.Validate;
 
-class OutputQueueManager {
+public class OutputQueueManager {
 
     /**
      * Internal state. Do not change definition order!
