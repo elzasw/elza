@@ -1,6 +1,9 @@
 package cz.tacr.elza.print.item.convertors;
 
+import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrItem;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.print.item.AbstractItem;
 import cz.tacr.elza.print.item.Item;
 import cz.tacr.elza.print.item.ItemSpec;
@@ -16,9 +19,19 @@ public abstract class AbstractItemConvertor implements ItemConvertor {
 
         ItemType itemType = context.getItemTypeById(arrItem.getItemTypeId());
 
-        AbstractItem item = convert(arrItem, itemType);
-        if (item == null) {
-            return item;
+        AbstractItem item;
+        try {
+            item = convert(arrItem, itemType);
+            // check if item was converter by this convertor
+            if (item == null) {
+                return null;
+            }
+        } catch (Exception e) {
+            ArrData data = arrItem.getData();
+            String descr = "Failed to convert item, itemId = " + arrItem.getItemId() + ", targetItemType="
+                    + itemType.getCode()
+                    + ", dataType=" + ((data == null) ? "null" : data.getClass().getCanonicalName());
+            throw new BusinessException(descr, e, BaseCode.DB_INTEGRITY_PROBLEM);
         }
         item.setPosition(arrItem.getPosition());
         item.setType(itemType);
