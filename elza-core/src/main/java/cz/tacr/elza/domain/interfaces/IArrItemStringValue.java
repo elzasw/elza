@@ -7,6 +7,7 @@ package cz.tacr.elza.domain.interfaces;
  * @author Martin Šlapa
  * @since 27.10.2016
  */
+@Deprecated
 public interface IArrItemStringValue {
 
     /**

@@ -4,25 +4,28 @@ import java.math.BigDecimal;
 
 /**
  * Decimal number for print
- * 
+ *
  */
 public class ItemDecimal extends AbstractItem {
-	
-	BigDecimal value;
+
+    private final BigDecimal value;
 
     public ItemDecimal(final BigDecimal value) {
-        super();
         this.value = value;
     }
 
     @Override
-    public String serializeValue() {
+    public String getSerializedValue() {
         return value.toString();
     }
-    
+
     @Override
-    public Object getValue() {
-    	return value;
+    public boolean isValueSerializable() {
+        return true;
     }
 
+    @Override
+    protected BigDecimal getValue() {
+        return value;
+    }
 }

@@ -1,7 +1,7 @@
 package cz.tacr.elza.repository;
 
+import java.sql.Timestamp;
 import java.util.List;
-import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
 
@@ -86,13 +86,22 @@ public interface LevelRepositoryCustom {
                                          RelatedNodeDirection direction);
 
     /**
-     * Vyhledá potomky, které mají vyšší datum poslední změny, než je v ArrChange.
+     * Vyhledá potomky, které mají vyšší datum poslední změny. Specified node included.
      *
-     * @param node   uzel od kterého prohledáváme
-     * @param change změna podle které filtrujeme uzly
+     * @param nodeId     uzel od kterého prohledáváme
+     * @param lastUpdate změna podle které filtrujeme uzly
      * @return identifikátory uzlů, které byly změněny
      */
-    List<Integer> findNodeIdsSubtree(ArrNode node, ArrChange change);
+    List<Integer> findNewerNodeIdsInSubtree(int nodeId, Timestamp lastUpdate);
+
+    /**
+     * Vyhledá rodiče, které mají vyšší datum poslední změny. Specified node included.
+     *
+     * @param nodeId     uzel od kterého prohledáváme
+     * @param lastUpdate změna podle které filtrujeme uzly
+     * @return identifikátory uzlů, které byly změněny
+     */
+    List<Integer> findNewerNodeIdsInParents(int nodeId, Timestamp lastUpdate);
 
     /**
      * Vyhledání potomků v podstromu.
@@ -108,22 +117,15 @@ public interface LevelRepositoryCustom {
     List<ArrLevel> findLevelsSubtree(Integer nodeId, final int skip, final int max, final boolean ignoreRootNode);
 
     /**
-     * Iterate subtree BFS from specified node.
+     * Iterate subtree BFS from specified node. Nodes in same depth are not ordered correctly,
+     * but their position is fixed by sort of parent nodeId and level position.
      *
-     * @param nodeId root node id
-     * @param change when null current version is used
-     * @param levelAction action for each returned level
+     * @param nodeId root node id of subtree
+     * @param change when null open version is used
+     * @param excludeRoot if true root node will be excluded
+     * @param treeLevelConsumer action for each result
      */
-    long iterateSubtree(int nodeId, ArrChange change, Consumer<ArrLevel> levelAction);
-
-    /**
-     * Vyhledá rodiče, které mají vyšší datum poslední změny, než je v ArrChange.
-     *
-     * @param node   uzel od kterého prohledáváme
-     * @param change změna podle které filtrujeme uzly
-     * @return identifikátory uzlů, které byly změněny
-     */
-    List<Integer> findNodeIdsParent(ArrNode node, ArrChange change);
+    long readLevelTree(Integer nodeId, ArrChange change, boolean excludeRoot, TreeLevelConsumer treeLevelConsumer);
 
     /**
      * Provede načtení všech uzlů ve stromu dané verze.
@@ -132,6 +134,11 @@ public interface LevelRepositoryCustom {
      * @return seznam všech uzlů ve stromu
      */
     List<LevelInfo> readTree(ArrFundVersion version);
+
+    public interface TreeLevelConsumer {
+
+        void accept(ArrLevel level, int depth);
+    }
 
     /**
      * Uzel stromu, obsahuje pouze základní informace.

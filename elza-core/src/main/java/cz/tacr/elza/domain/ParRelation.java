@@ -51,6 +51,9 @@ public class ParRelation extends AbstractVersionableEntity implements Versionabl
     @JoinColumn(name = "relationTypeId", nullable = false)
     private ParRelationType relationType;
 
+    @Column(nullable = false, insertable = false, updatable = false)
+    private Integer relationTypeId;
+
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ParUnitdate.class)
     @JoinColumn(name = "fromUnitdateId")
     private ParUnitdate from;
@@ -90,6 +93,11 @@ public class ParRelation extends AbstractVersionableEntity implements Versionabl
 
     public void setRelationType(final ParRelationType relationType) {
         this.relationType = relationType;
+        this.relationTypeId = relationType != null ? relationType.getRelationTypeId() : null;
+    }
+
+    public Integer getRelationTypeId() {
+        return relationTypeId;
     }
 
     public ParUnitdate getFrom() {

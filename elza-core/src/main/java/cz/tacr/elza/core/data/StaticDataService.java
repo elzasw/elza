@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.collect.MapMaker;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.ComplementTypeRepository;
 import cz.tacr.elza.repository.DataTypeRepository;
@@ -28,8 +29,9 @@ import cz.tacr.elza.repository.PartyNameFormTypeRepository;
 import cz.tacr.elza.repository.PartyTypeComplementTypeRepository;
 import cz.tacr.elza.repository.PartyTypeRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
+import cz.tacr.elza.repository.RelationTypeRepository;
+import cz.tacr.elza.repository.RelationTypeRoleTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
-import cz.tacr.elza.utils.HibernateUtils;
 
 /**
  * Service for static data
@@ -80,6 +82,10 @@ public class StaticDataService {
 
     final RegisterTypeRepository registerTypeRepository;
 
+    final RelationTypeRepository relationTypeRepository;
+
+    final RelationTypeRoleTypeRepository relationTypeRoleTypeRepository;
+
     @Autowired
     public StaticDataService(EntityManager em,
                              RuleSetRepository ruleSetRepository,
@@ -93,7 +99,9 @@ public class StaticDataService {
                              PartyNameFormTypeRepository partyNameFormTypeRepository,
                              ComplementTypeRepository complementTypeRepository,
                              PartyTypeComplementTypeRepository partyTypeComplementTypeRepository,
-                             RegisterTypeRepository registerTypeRepository) {
+                             RegisterTypeRepository registerTypeRepository,
+                             RelationTypeRepository relationTypeRepository,
+                             RelationTypeRoleTypeRepository relationTypeRoleTypeRepository) {
         this.em = em;
         this.ruleSetRepository = ruleSetRepository;
         this.packetTypeRepository = packetTypeRepository;
@@ -107,6 +115,8 @@ public class StaticDataService {
         this.complementTypeRepository = complementTypeRepository;
         this.partyTypeComplementTypeRepository = partyTypeComplementTypeRepository;
         this.registerTypeRepository = registerTypeRepository;
+        this.relationTypeRepository = relationTypeRepository;
+        this.relationTypeRoleTypeRepository = relationTypeRoleTypeRepository;
     }
 
     /**
@@ -120,8 +130,13 @@ public class StaticDataService {
         PartyType.init(partyTypeRepository);
         CalendarType.init(calendarTypeRepository);
         activeProvider = initializeProvider();
+
         // init interceptor
         StaticDataTransactionInterceptor.INSTANCE.begin(this);
+
+        // register provider for current transaction
+        Transaction tx = getCurrentActiveTransaction();
+        registeredTxMap.put(tx, activeProvider);
     }
 
     /**

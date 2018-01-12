@@ -1,8 +1,6 @@
 package cz.tacr.elza.drools;
 
-import java.io.File;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -12,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.domain.ArrOutputDefinition;
 import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulRule;
@@ -29,7 +28,7 @@ public class OutputItemTypesRules extends Rules {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Autowired
-    private RulesExecutor rulesExecutor;
+    private ResourcePathResolver resourcePathResolver;
 
     /**
      * Spuštění zpracování pravidel.
@@ -56,7 +55,7 @@ public class OutputItemTypesRules extends Rules {
                 throw new IllegalStateException("Neplatný typ pravidel pro výstup: " + rule.getRuleType().name());
             }
 
-            Path path = Paths.get(rulesExecutor.getDroolsDir(rule.getRuleSet().getCode()) + File.separator + rule.getFilename());
+            Path path = resourcePathResolver.getDroolFile(rule);
             StatelessKieSession session = createNewStatelessKieSession(path);
             execute(session, facts);
         }

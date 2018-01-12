@@ -35,10 +35,9 @@ import org.springframework.util.Assert;
 import com.google.common.collect.Iterables;
 
 import cz.tacr.elza.ElzaTools;
-import cz.tacr.elza.annotation.AuthMethod;
-import cz.tacr.elza.annotation.AuthParam;
 import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
 import cz.tacr.elza.bulkaction.BulkActionService;
+import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.controller.ArrangementController;
 import cz.tacr.elza.controller.ArrangementController.Depth;
 import cz.tacr.elza.controller.ArrangementController.TreeNodeFulltext;
@@ -48,6 +47,8 @@ import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
 import cz.tacr.elza.controller.vo.filter.SearchParam;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.core.security.AuthMethod;
+import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDescItem;
@@ -121,7 +122,6 @@ import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventFund;
 import cz.tacr.elza.service.eventnotification.events.EventType;
-import cz.tacr.elza.utils.ObjectListIterator;
 
 /**
  * Main arrangement service.
@@ -192,7 +192,7 @@ public class ArrangementService {
     private RegistryService registryService;
 
 	@Autowired
-	ArrangementServiceInternal arrangementInternal;
+	DescriptionItemServiceInternal arrangementInternal;
     @Autowired
     private PolicyService policyService;
 
@@ -630,6 +630,8 @@ public class ArrangementService {
         ArrFundVersion version = getOpenVersionByFundId(fundId);
         ArrFund fund = version.getFund();
 
+        faBulkActionRepository.deleteByFundVersionFund(fund);
+
         List<ArrOutputDefinition> outputDefinitions = outputDefinitionRepository.findByFund(fund);
 
         if (!outputDefinitions.isEmpty()) {
@@ -639,7 +641,6 @@ public class ArrangementService {
                 nodeOutputRepository.delete(outputDefinition.getOutputNodes());
                 dataIdsToDelete.addAll(dataRepository.findByIdsOutputDefinition(outputDefinition));
                 outputItemRepository.deleteByOutputDefinition(outputDefinition);
-                faBulkActionRepository.deleteByOutputDefinition(outputDefinition);
                 itemSettingsRepository.deleteByOutputDefinition(outputDefinition);
                 outputFileRepository.deleteByOutputDefinition(outputDefinition);
                 outputResultRepository.deleteByOutputDefinition(outputDefinition);
@@ -1574,48 +1575,6 @@ public class ArrangementService {
                 recursiveAddNodes(nodeIds, node, nodePolicyTypes, policiesMap, nodeProblemsMap, foundNode);
             }
         }
-    }
-
-    /**
-     * Detekuje, zdali nad předanými uzly byly provedené změny po předaných změnách.
-     *
-     * @param nodes           seznam nodů od kterých prohledáváme
-     * @param changes         seznam změn vůči kterým porovnáváme
-     * @param includeParents  zahrnout rodiče k root?
-     * @param includeChildren zahrnout podstrom?
-     * @return mapa, zdali bylo něco upraveno podle změn
-     */
-    public Map<ArrChange, Boolean> detectChangeNodes(final Set<ArrNode> nodes,
-                                                     final Set<ArrChange> changes,
-                                                     final boolean includeParents,
-                                                     final boolean includeChildren) {
-
-        Map<ArrChange, Boolean> result = new HashMap<>();
-
-        for (ArrChange change : changes) {
-            for (ArrNode node : nodes) {
-
-                if (includeChildren) {
-                    List<Integer> nodeIdsSubtree = levelRepository.findNodeIdsSubtree(node, change);
-                    if (nodeIdsSubtree.size() > 0) {
-                        result.put(change, true);
-                        break;
-                    }
-                }
-
-                if (includeParents) {
-                    List<Integer> nodeIdsParent = levelRepository.findNodeIdsParent(node, change);
-                    if (nodeIdsParent.size() > 0) {
-                        result.put(change, true);
-                        break;
-                    }
-                }
-
-                result.put(change, false);
-            }
-        }
-
-        return result;
     }
 
     /**

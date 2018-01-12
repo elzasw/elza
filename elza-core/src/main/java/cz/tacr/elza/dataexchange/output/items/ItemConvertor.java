@@ -4,6 +4,7 @@ import java.util.Map;
 
 import org.apache.commons.lang.Validate;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.core.data.RuleSystemItemType;
@@ -12,7 +13,6 @@ import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.schema.v2.DescriptionItem;
 import cz.tacr.elza.schema.v2.DescriptionItemUndefined;
-import cz.tacr.elza.utils.HibernateUtils;
 
 /**
  * Converter for description item from domain to XML object.

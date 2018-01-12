@@ -1,0 +1,21 @@
+package cz.tacr.elza.print.item.convertors;
+
+import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.domain.ArrDataCoordinates;
+import cz.tacr.elza.domain.ArrItem;
+import cz.tacr.elza.print.item.AbstractItem;
+import cz.tacr.elza.print.item.ItemCoordinates;
+import cz.tacr.elza.print.item.ItemType;
+
+public class CoordinatesItemConvertor extends AbstractItemConvertor {
+
+    @Override
+    protected AbstractItem convert(ArrItem item, ItemType itemType) {
+        if (itemType.getDataType() != DataType.COORDINATES) {
+            return null;
+        }
+        ArrDataCoordinates data = (ArrDataCoordinates) item.getData();
+
+        return new ItemCoordinates(data.getValue());
+    }
+}

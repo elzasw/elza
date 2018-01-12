@@ -65,7 +65,7 @@
 				<textElement>
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA["archivní pomůcka č. "+$P{output}.getInternal_code()]]></textFieldExpression>
+				<textFieldExpression><![CDATA["archivní pomůcka č. "+$P{output}.getInternalCode()]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="0" y="114" width="455" height="14" uuid="4aeda5cf-c599-4af0-8152-15902d195e51">
@@ -74,7 +74,7 @@
 				<textElement>
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA["NAD č. "+$P{output}.getNodesDFS().next().getItemsValueByCode("ZP2015_NAD")]]></textFieldExpression>
+				<textFieldExpression><![CDATA["NAD č. "+$P{fund}.getRootNode().getSingleItemValue("ZP2015_NAD")]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="0" y="80" width="455" height="20" uuid="23d30e4b-4b64-42af-bd93-1e68ba43e2ba">

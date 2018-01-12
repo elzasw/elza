@@ -37,10 +37,10 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
-import cz.tacr.elza.annotation.AuthMethod;
-import cz.tacr.elza.annotation.AuthParam;
-import cz.tacr.elza.aop.Authorization;
 import cz.tacr.elza.controller.vo.UserInfoVO;
+import cz.tacr.elza.core.security.AuthMethod;
+import cz.tacr.elza.core.security.AuthParam;
+import cz.tacr.elza.core.security.Authorization;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.RegRecord;
@@ -156,10 +156,10 @@ public class UserService {
 		UserDetail userDetail = getLoggedUserDetail();
 
 		if (userDetail.hasPermission(UsrPermission.Permission.USR_PERM)) {
-			// nefiltruje se dle přiřazených oprávnění, vrací všechny AS            
+			// nefiltruje se dle přiřazených oprávnění, vrací všechny AS
 			return fundRepository.findFunds(search, firstResult, maxResults);
 		} else {
-			// filtruje se dle přiřazeníé oprávnění na AS pro daného uživatele			
+			// filtruje se dle přiřazeníé oprávnění na AS pro daného uživatele
 			return fundRepository.findFundsWithPermissions(search, firstResult, maxResults, userDetail.getId());
 		}
     }
@@ -968,7 +968,7 @@ public class UserService {
 	 * Kontroluje oprávnění přihlášeného uživatele.
 	 *
 	 * Check have to be called inside existing transaction
-	 * 
+	 *
 	 * @param permission
 	 *            typ oprávnění
 	 * @param entityId
@@ -984,7 +984,7 @@ public class UserService {
 
     /**
 	 * Kontroluje oprávnění přihlášeného uživatele.
-	 * 
+	 *
 	 * Check have to be called inside existing transaction
 	 *
 	 * @param permission
@@ -1162,9 +1162,7 @@ public class UserService {
 	}
 
 	/**
-	 * Vyhledá list uživatelů podle oprávnění typu všechny AS.
-	 * 
-	 * @return list uživatelů
+     * Vyhledá list uživatelů podle oprávnění typu všechny AS.
 	 */
 	public List<UsrUser> findUsersByFundAll() {
 		List<UsrUser> users = userRepository.findByPermissions(UsrPermission.Permission.getFundAllPerms());
@@ -1175,17 +1173,18 @@ public class UserService {
 	/**
 	 * Filter list of users to contain only users which might be administered by
 	 * logged user
-	 * 
+	 *
 	 * Method will run query for each user in the list.
-	 * 
+	 *
 	 * @param users
 	 * @return
 	 */
 	private List<UsrUser> filterUsersByAdminPermission(List<UsrUser> users) {
     	// check permissions
     	UserDetail userDetail = this.getLoggedUserDetail();
-		if (userDetail.hasPermission(UsrPermission.Permission.USR_PERM))
-			return users;
+		if (userDetail.hasPermission(UsrPermission.Permission.USR_PERM)) {
+            return users;
+        }
 
 		// check each user if might be accessed
 		List<UsrUser> result = new ArrayList<>(users.size());
@@ -1221,17 +1220,16 @@ public class UserService {
     }
 
 	/**
-	 * Filter list of groups to contain only groups which might be administered
-	 * by logged user
-	 * 
-	 * @param groups
-	 * @return
-	 */
+     * Event změněného uživatele.
+     *
+     * @param user uživatel
+     */
 	private List<UsrGroup> filterGroupsByAdminPermission(List<UsrGroup> groups) {
 		// check permissions
 		UserDetail userDetail = this.getLoggedUserDetail();
-		if (userDetail.hasPermission(UsrPermission.Permission.USR_PERM))
-			return groups;
+		if (userDetail.hasPermission(UsrPermission.Permission.USR_PERM)) {
+            return groups;
+        }
 
 		// check each user if might be accessed
 		List<UsrGroup> result = new ArrayList<>(groups.size());
@@ -1348,9 +1346,6 @@ public class UserService {
 
 	/**
 	 * Authorize request or throw exception
-	 * 
-	 * @param authRequest
-	 *            Request to be authorized
 	 */
 	@Transactional(value = TxType.MANDATORY)
 	public void authorizeRequest(AuthorizationRequest authRequest) {
@@ -1368,7 +1363,7 @@ public class UserService {
 
 	/**
 	 * Return detail information about logged user
-	 * 
+	 *
 	 * This method can be called by any user, no permissions are required
 	 * @return
 	 */
@@ -1392,9 +1387,9 @@ public class UserService {
 
 	/**
 	 * Add admin permissions to user/group for given fund
-	 * 
+	 *
 	 * Method is used only for newly created fund.
-	 * 
+	 *
 	 * @param userId
 	 *            Can be null
 	 * @param groupId
@@ -1419,7 +1414,7 @@ public class UserService {
 		}
 
 		// if we do not have right FUND_ADMIN or USR_PERM
-		// we have to have rights FUND_CREATE (In such case we can create it only for logged user) 
+		// we have to have rights FUND_CREATE (In such case we can create it only for logged user)
 		// or USER_CONTROL_ENTITITY (In such case we can create it only for managed entities).
 
 		boolean hasPermission = false;
@@ -1440,7 +1435,7 @@ public class UserService {
 			}
 
 			if (userPermission.isPermissionType(UsrPermission.Permission.USER_CONTROL_ENTITITY)) {
-				// check if entity is managed			
+				// check if entity is managed
 				if (userPermission.isControllsUser(userId)) {
 					hasPermission = true;
 					break;

@@ -1,16 +1,5 @@
 elza:
-  treenode:
-    title: ${elza.conf.treenode.title}
-    defaultTitle: ${elza.conf.treenode.default.title}
   workingDir: ./work
-  xmlImport:
-    transformationDir: ${elza.workingDir}/transformations/
-  xmlExport:
-    transformationDir: ${elza.workingDir}/xmlExportTransformations/
-  rulesDir: ${elza.workingDir}/rules
-  groovy:
-    groovyDir: ${elza.workingDir}/groovy
-  dmsDir: ${elza.workingDir}/dms/
 
 spring:
   application:
@@ -33,14 +22,7 @@ spring:
     #show-sql: true
     properties:
         net.sf.ehcache.configurationResourceName: /ehcache.xml
-        hibernate:
-            #zmena defaultniho generovani PK (pokud anotace @GeneratedValue neuvede jinak pouzije se tento generator)
-            #viz org.hibernate.jpa.AvailableSettings.IDENTIFIER_GENERATOR_STRATEGY_PROVIDER
-            ejb.identifier_generator_strategy_provider: cz.tacr.elza.hibernate.IdentifierGeneratorStrategyProvider
-        
-            #viz org.hibernate.cfg.AnnotationBinder.generatorType
-            id.new_generator_mappings: true
-        
+        hibernate:       
             cache:
               use_second_level_cache: true
               region.factory_class: org.hibernate.cache.ehcache.EhCacheRegionFactory

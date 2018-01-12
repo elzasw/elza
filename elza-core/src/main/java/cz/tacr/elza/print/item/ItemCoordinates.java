@@ -7,26 +7,25 @@ import com.vividsolutions.jts.io.WKTWriter;
  * Coordinates
  */
 public class ItemCoordinates extends AbstractItem {
-	
-	Geometry value;
+
+    private final Geometry value;
 
     public ItemCoordinates(final Geometry geometry) {
-        super();
         this.value = geometry;
     }
 
     @Override
-    public String serializeValue() {
+    public String getSerializedValue() {
         return new WKTWriter().writeFormatted(value);
     }
 
     @Override
-    public Object getValue() {
-    	return value;
+    public boolean isValueSerializable() {
+        return true;
     }
 
-    public Geometry getGeometry() {
+    @Override
+    protected Geometry getValue() {
         return value;
     }
-
 }

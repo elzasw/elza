@@ -1,8 +1,6 @@
 package cz.tacr.elza.drools;
 
-import java.io.File;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -14,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
+import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.RulRule;
 import cz.tacr.elza.domain.RulRuleSet;
@@ -38,7 +37,7 @@ public class ChangeImpactRules extends Rules {
     private ScriptModelFactory factory;
 
     @Autowired
-    private RulesExecutor rulesExecutor;
+    private ResourcePathResolver resourcePathResolver;
 
 
     /**
@@ -62,12 +61,11 @@ public class ChangeImpactRules extends Rules {
 
         Set<RelatedNodeDirection> relatedNodeDirections = new HashSet<>();
 
-        Path path;
         List<RulRule> rulPackageRules = packageRulesRepository.findByRuleSetAndRuleTypeOrderByPriorityAsc(
                 rulRuleSet, RulRule.RuleType.CONFORMITY_IMPACT);
 
         for (RulRule rulPackageRule : rulPackageRules) {
-            path = Paths.get(rulesExecutor.getDroolsDir(rulRuleSet.getCode()) + File.separator + rulPackageRule.getFilename());
+            Path path = resourcePathResolver.getDroolFile(rulPackageRule);
 
             StatelessKieSession session = createNewStatelessKieSession(path);
 

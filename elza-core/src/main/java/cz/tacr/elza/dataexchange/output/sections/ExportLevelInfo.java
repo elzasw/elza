@@ -1,19 +1,21 @@
 package cz.tacr.elza.dataexchange.output.sections;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.ArrNodeRegister;
 
 public class ExportLevelInfo {
+
+    private final List<ArrItem> items = new ArrayList<>();
 
     private final int nodeId;
 
     private final Integer parentNodeId;
 
     private String nodeUuid;
-
-    private List<ArrDescItem> descItems;
 
     private List<ArrNodeRegister> nodeAPs;
 
@@ -38,12 +40,12 @@ public class ExportLevelInfo {
         this.nodeUuid = nodeUuid;
     }
 
-    public List<ArrDescItem> getDescItems() {
-        return descItems;
+    public List<ArrItem> getItems() {
+        return Collections.unmodifiableList(items);
     }
 
-    void setDescItems(List<ArrDescItem> descItems) {
-        this.descItems = descItems;
+    public void addItem(ArrItem item) {
+        items.add(item);
     }
 
     public List<ArrNodeRegister> getNodeAPs() {

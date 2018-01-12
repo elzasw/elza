@@ -1,23 +1,15 @@
 package cz.tacr.elza.print;
 
 import java.util.Collection;
-import java.util.Map;
+import java.util.List;
 
-/**
- * Interface pro hromadné načítání uzlů.
- *
- * @author Martin Šlapa
- * @since 29.08.2016
- */
 public interface NodeLoader {
 
     /**
-     * Načtení uzlů podle požadovaných identifikátorů.
+     * Initializes all nodes by specified ids.
      *
-     * @param output  výstup
-     * @param nodeIds seznam identifikátorů uzlů, které načítáme
-     * @return mapa - klíč identifikátor uzlu, uzel
+     * @param nodeIds not-null
+     * @return List of initialized nodes which preserve order of specified ids.
      */
-    Map<Integer, Node> loadNodes(OutputImpl output, Collection<NodeId> nodeIds);
-
+    List<Node> loadNodes(Collection<NodeId> nodeIds);
 }

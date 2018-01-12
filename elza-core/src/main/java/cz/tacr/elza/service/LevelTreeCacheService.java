@@ -33,6 +33,7 @@ import com.google.common.eventbus.Subscribe;
 
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.EventBusListener;
+import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.config.ConfigView;
 import cz.tacr.elza.config.ConfigView.ViewTitles;
 import cz.tacr.elza.controller.ArrangementController.Depth;
@@ -67,7 +68,6 @@ import cz.tacr.elza.service.eventnotification.events.EventDeleteNode;
 import cz.tacr.elza.service.eventnotification.events.EventNodeMove;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.eventnotification.events.EventVersion;
-import cz.tacr.elza.utils.ObjectListIterator;
 
 
 /**

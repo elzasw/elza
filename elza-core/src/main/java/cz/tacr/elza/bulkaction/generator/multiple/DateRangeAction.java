@@ -99,7 +99,7 @@ public class DateRangeAction extends Action {
 			        "Datový typ atributu musí být " + DataType.TEXT + " (item type " + outputType + ")",
 			        BaseCode.ID_NOT_EXIST);
 		}
-		
+
 		String inputType = config.getInputType();
 		if (inputType == null) {
 			throw new BusinessException("Není vyplněn parametr 'inputType' v akci.", BaseCode.PROPERTY_NOT_EXIST)
@@ -107,7 +107,7 @@ public class DateRangeAction extends Action {
 		}
 		inputItemType = ruleSystem.getItemTypeByCode(inputType);
 		checkValidDataType(inputItemType, DataType.UNITDATE);
-		
+
         String bulkRangeCode = config.getBulkRangeType();
         if (bulkRangeCode == null) {
             throw new BusinessException("Není vyplněn parametr 'bulkRangeType' v akci.", BaseCode.PROPERTY_NOT_EXIST)
@@ -115,7 +115,7 @@ public class DateRangeAction extends Action {
 		}
         bulkRangeType = ruleSystem.getItemTypeByCode(bulkRangeCode);
         checkValidDataType(bulkRangeType, DataType.UNITDATE);
-		
+
     }
 
     @Override

@@ -6,51 +6,42 @@ import net.sf.jasperreports.engine.JRField;
 
 /**
  * Implementace datového zdroje pro iterující uzly.
- *
- * @author Martin Šlapa
- * @since 30.08.2016
  */
 public class JRDataIterableNodes implements JRDataSource {
 
     /**
      * Iterátor uzlů, které procházíme.
      */
-    private final IteratorNodes iteratorNodes;
+    private final NodeIterator nodeIterator;
 
     /**
      * Poslední vrácený uzel.
      */
     private Node actual;
 
-    public JRDataIterableNodes(final IteratorNodes iteratorNodes) {
-        this.iteratorNodes = iteratorNodes;
+    public JRDataIterableNodes(final NodeIterator nodeIterator) {
+        this.nodeIterator = nodeIterator;
     }
 
     @Override
     public boolean next() throws JRException {
-        boolean hasNext = iteratorNodes.hasNext();
+        boolean hasNext = nodeIterator.hasNext();
         if (hasNext) {
-            actual = iteratorNodes.next();
+            actual = nodeIterator.next();
         }
         return hasNext;
     }
-
 
     @Override
     public Object getFieldValue(final JRField jrField) throws JRException {
         String name = jrField.getName();
         switch (name) {
-            case "depth": {
+            case "depth":
                 return actual.getDepth();
-            }
-
-            case "node": {
+            case "node":
                 return actual;
-            }
-
             default:
-                throw new IllegalStateException("Neimplementovaný typ fieldu: " + name);
+                throw new IllegalStateException("Uknown field, name: " + name);
         }
     }
-
 }

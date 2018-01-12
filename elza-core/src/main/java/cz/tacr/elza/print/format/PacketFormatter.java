@@ -11,58 +11,56 @@ import cz.tacr.elza.print.item.ItemSpec;
 
 /**
  * Packet formatter
- *
  */
 public class PacketFormatter implements FormatAction {
 
-	/**
-	 * Code of item to format
-	 */
-	String itemType;
-	
-	/**
-	 * Format type
-	 */
-	FormatType formatType;
+    /**
+     * Code of item to format
+     */
+    private final String itemType;
 
-	public PacketFormatter(String itemType, FormatType formatType) {
-		this.itemType = itemType;
-		this.formatType = formatType;
-	}
+    /**
+     * Format type
+     */
+    private final FormatType formatType;
 
-	@Override
-	public void format(FormatContext ctx, List<Item> items) {
-		for(Item item: items) 
-		{
-			if(item.getType().getCode().equals(itemType)) {
-				formatItem(ctx, item);
-			}
-		}
-	}
+    public PacketFormatter(String itemType, FormatType formatType) {
+        this.itemType = itemType;
+        this.formatType = formatType;
+    }
 
-	/**
-	 * Format one item
-	 * @param ctx
-	 * @param item
-	 */
-	private void formatItem(FormatContext ctx, Item item) {
-		Packet packet = item.getValue(Packet.class);
-		String value = packet.formatAsString(formatType);
-		if(StringUtils.isEmpty(value)) {
-			return;
-		}
-		ItemSpec spec = item.getSpecification();			
-		if(spec!=null) {
-			// write value with specification
-			String specName = spec.getShortcut();
-			if(StringUtils.isEmpty(specName)) {
-				specName = spec.getName();
-			}			
-			ctx.appendSpecWithValue(specName, value);
-		} else {
-			// write value without specification
-			ctx.appendValue(value);
-		}		
-	}
+    @Override
+    public void format(FormatContext ctx, List<Item> items) {
+        for (Item item : items) {
+            if (item.getType().getCode().equals(itemType)) {
+                formatItem(ctx, item);
+            }
+        }
+    }
 
+    /**
+     * Format one item
+     *
+     * @param ctx
+     * @param item
+     */
+    private void formatItem(FormatContext ctx, Item item) {
+        Packet packet = item.getValue(Packet.class);
+        String value = packet.formatAsString(formatType);
+        if (StringUtils.isEmpty(value)) {
+            return;
+        }
+        ItemSpec spec = item.getSpecification();
+        if (spec != null) {
+            // write value with specification
+            String specName = spec.getShortcut();
+            if (StringUtils.isEmpty(specName)) {
+                specName = spec.getName();
+            }
+            ctx.appendSpecWithValue(specName, value);
+        } else {
+            // write value without specification
+            ctx.appendValue(value);
+        }
+    }
 }

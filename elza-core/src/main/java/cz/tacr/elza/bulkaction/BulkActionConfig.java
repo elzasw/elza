@@ -8,14 +8,12 @@ public abstract interface BulkActionConfig {
 
 	/**
 	 * Return name of bulk action
-	 * 
+	 *
 	 * @return
 	 */
 	public String getName();
 
 	public String getCode();
-
-	public void setCode(String code);
 
 	public String getDescription();
 

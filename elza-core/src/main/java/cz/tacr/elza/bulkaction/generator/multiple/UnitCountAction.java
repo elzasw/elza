@@ -50,11 +50,11 @@ public class UnitCountAction extends Action {
 
     /**
 	 * Počet EJ
-	 * 
+	 *
 	 * Map is order according type
 	 */
 	private Map<String, Integer> resultMap = new TreeMap<>();
-    
+
 	final UnitCountConfig config;
 
 	UnitCountAction(final UnitCountConfig config) {
@@ -171,7 +171,7 @@ public class UnitCountAction extends Action {
 
 	/**
 	 * Add value to the result
-	 * 
+	 *
 	 * @param value
 	 * @param count
 	 */

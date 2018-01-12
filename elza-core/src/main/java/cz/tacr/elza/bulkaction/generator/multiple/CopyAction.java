@@ -75,7 +75,7 @@ public class CopyAction extends Action {
 
 	/**
 	 * Check if specification is used in output
-	 * 
+	 *
 	 * @param itemSpecId
 	 * @return
 	 */

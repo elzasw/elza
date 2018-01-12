@@ -13,8 +13,8 @@ import javax.persistence.criteria.Root;
 import org.apache.commons.lang3.Validate;
 import org.springframework.stereotype.Component;
 
-import cz.tacr.elza.core.DatabaseType;
-import cz.tacr.elza.core.RecursiveQueryBuilder;
+import cz.tacr.elza.common.db.DatabaseType;
+import cz.tacr.elza.common.db.RecursiveQueryBuilder;
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrFund;
 

@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
+import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.controller.factory.ExtendedObjectsFactory;
 import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.core.data.RuleSystemItemType;
@@ -57,7 +58,6 @@ import cz.tacr.elza.exception.LockVersionChangeException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
-import cz.tacr.elza.exception.codes.OutputCode;
 import cz.tacr.elza.packageimport.PackageService;
 import cz.tacr.elza.packageimport.xml.SettingGridView;
 import cz.tacr.elza.repository.FundVersionRepository;
@@ -69,9 +69,9 @@ import cz.tacr.elza.repository.NodeConformityErrorRepository;
 import cz.tacr.elza.repository.NodeConformityMissingRepository;
 import cz.tacr.elza.repository.NodeConformityRepository;
 import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.repository.OutputDefinitionRepository;
 import cz.tacr.elza.repository.OutputTypeRepository;
 import cz.tacr.elza.repository.TemplateRepository;
-import cz.tacr.elza.utils.ObjectListIterator;
 import cz.tacr.elza.validation.ArrDescItemsPostValidator;
 
 
@@ -120,15 +120,14 @@ public class RuleService {
     private ArrDescItemsPostValidator descItemsPostValidator;
 
     @Autowired
-    private OutputService outputService;
-
-    @Autowired
     private ItemTypeActionRepository itemTypeActionRepository;
 
     @Autowired
     private ItemSettingsRepository itemSettingsRepository;
     @Autowired
     private OutputTypeRepository outputTypeRepository;
+    @Autowired
+    private OutputDefinitionRepository outputDefinitionRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(RuleService.class);
 
@@ -559,25 +558,6 @@ public class RuleService {
         }
 
         return null;
-    }
-
-    /**
-     * Získání rozšířených typů hodnot atributů se specifikacemi.
-     * Používá výchozí strategie
-     *
-     * @param outputDefinitionId identifikátor výstupu
-     * @return seznam typů hodnot atributů se specifikacemi
-     */
-    public List<RulItemTypeExt> getOutputItemTypes(final Integer outputDefinitionId) {
-        Assert.notNull(outputDefinitionId, "Identifikátor definice výstupu musí být vyplněn");
-
-        ArrOutputDefinition outputDefinition = outputService.findOutputDefinition(outputDefinitionId);
-
-        if (outputDefinition == null) {
-            throw new ObjectNotFoundException("Nebyl nalezen výstup s ID=" + outputDefinitionId, OutputCode.OUTPUT_NOT_EXISTS).set("id", outputDefinitionId);
-        }
-
-        return getOutputItemTypes(outputDefinition);
     }
 
     /**

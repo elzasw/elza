@@ -14,7 +14,7 @@ import org.apache.commons.lang.Validate;
 
 import com.google.common.collect.Iterables;
 
-import cz.tacr.elza.aop.Authorization;
+import cz.tacr.elza.core.security.Authorization;
 import cz.tacr.elza.dataexchange.output.DEExportException;
 import cz.tacr.elza.dataexchange.output.context.ExportContext;
 import cz.tacr.elza.dataexchange.output.context.ExportInitHelper;

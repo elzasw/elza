@@ -93,7 +93,7 @@ public class TextAggregationAction extends Action {
 					// skip if not defined
 					continue;
                 }
-                
+
 				String value;
                 switch(itemType.getDataType())
                 {

@@ -1,24 +1,22 @@
 package cz.tacr.elza.bulkaction;
 
 
-import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
+import javax.transaction.Transactional.TxType;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -38,39 +36,40 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureCallback;
 
-import cz.tacr.elza.annotation.AuthMethod;
-import cz.tacr.elza.annotation.AuthParam;
+import cz.tacr.elza.bulkaction.generator.result.ActionResult;
+import cz.tacr.elza.core.security.AuthMethod;
+import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.domain.ArrBulkActionNode;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrBulkActionRun.State;
 import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrChange.Type;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeConformityExt;
+import cz.tacr.elza.domain.ArrOutputDefinition;
 import cz.tacr.elza.domain.ArrOutputDefinition.OutputState;
 import cz.tacr.elza.domain.RulAction;
-import cz.tacr.elza.domain.RulActionRecommended;
 import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.UsrPermission;
-import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.PackageCode;
-import cz.tacr.elza.repository.ActionRecommendedRepository;
 import cz.tacr.elza.repository.ActionRepository;
 import cz.tacr.elza.repository.BulkActionNodeRepository;
 import cz.tacr.elza.repository.BulkActionRunRepository;
-import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.service.ArrangementService;
+import cz.tacr.elza.service.FundLevelServiceInternal;
+import cz.tacr.elza.service.IEventNotificationService;
 import cz.tacr.elza.service.LevelTreeCacheService;
-import cz.tacr.elza.service.OutputService;
+import cz.tacr.elza.service.OutputItemConnector;
+import cz.tacr.elza.service.OutputServiceInternal;
 import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.eventnotification.EventFactory;
-import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 
 /**
@@ -79,8 +78,7 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
  */
 @Service
 @Configuration
-public class BulkActionService implements InitializingBean, ListenableFutureCallback<BulkActionWorker> {
-
+public class BulkActionService implements ListenableFutureCallback<BulkActionWorker> {
 
     /**
      * Počet hromadných akcí v listu MAX_BULK_ACTIONS_LIST.
@@ -109,10 +107,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
     private BulkActionNodeRepository bulkActionNodeRepository;
 
     @Autowired
-    private EventNotificationService eventNotificationService;
-
-    @Autowired
-    private ChangeRepository changeRepository;
+    private IEventNotificationService eventNotificationService;
 
     @Autowired
     private LevelTreeCacheService levelTreeCacheService;
@@ -121,7 +116,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
     private NodeRepository nodeRepository;
 
     @Autowired
-    private OutputService outputService;
+    private OutputServiceInternal outputServiceInternal;
 
     @Autowired
     private ArrangementService arrangementService;
@@ -130,11 +125,11 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
     private ActionRepository actionRepository;
 
     @Autowired
-    private ActionRecommendedRepository actionRecommendedRepository;
+    @Qualifier("transactionManager")
+    private PlatformTransactionManager txManager;
 
     @Autowired
-    @Qualifier("transactionManager")
-    protected PlatformTransactionManager txManager;
+    private FundLevelServiceInternal fundLevelServiceInternal;
 
     /**
      * Seznam běžících úloh instancí hromadných akcí.
@@ -142,11 +137,6 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
      * FA_ID -> WORKER
      */
     private HashMap<Integer, BulkActionWorker> runningWorkers = new HashMap<>();
-
-    @Override
-    public void afterPropertiesSet() throws Exception {
-        bulkActionConfigManager.load();
-    }
 
     /**
      * Testuje, zda-li může být úloha spuštěna/naplánována.
@@ -173,11 +163,10 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
         ArrBulkActionRun bulkActionRun = result.getBulkActionRun();
 
         // změna stavu výstupů na open
-        outputService.changeOutputsStateByNodes(bulkActionRun.getFundVersion(),
-                bulkActionRun.getArrBulkActionNodes()
-                        .stream()
-                        .map(ArrBulkActionNode::getNode)
-                        .collect(Collectors.toSet()),
+        outputServiceInternal.changeOutputsStateByNodes(bulkActionRun.getFundVersion(),
+                bulkActionRun.getArrBulkActionNodes().stream()
+                        .map(ArrBulkActionNode::getNodeId)
+                        .collect(Collectors.toList()),
                 OutputState.OPEN,
                 OutputState.COMPUTING);
 
@@ -227,8 +216,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
 
         RulRuleSet ruleSet = version.getRuleSet();
         List<RulAction> byRulPackage = actionRepository.findByRuleSet(ruleSet);
-        String actionFileName = bulkActionCode + bulkActionConfigManager.getExtension();
-        if (byRulPackage.stream().noneMatch(i -> i.getFilename().equals(actionFileName))) {
+        if (byRulPackage.stream().noneMatch(i -> i.getCode().equals(bulkActionCode))) {
             throw new BusinessException("Hromadná akce nepatří do stejných pravidel jako pravidla verze AP.", PackageCode.OTHER_PACKAGE)
                     .set("code", bulkActionCode)
                     .set("ruleSet", ruleSet.getCode());
@@ -264,16 +252,15 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
      * @return objekt hromadné akce
      */
     private ArrBulkActionRun run(final ArrBulkActionRun bulkActionRun) {
-		BulkActionWorker bulkActionWorker = new BulkActionWorker(this, bulkActionRun);
+		BulkActionWorker bulkActionWorker = new BulkActionWorker(bulkActionRun, this, txManager);
 		bulkActionWorker.init();
         runningWorkers.put(bulkActionRun.getFundVersionId(), bulkActionWorker);
 
         // změna stavu výstupů na počítání
-        outputService.changeOutputsStateByNodes(bulkActionRun.getFundVersion(),
-                bulkActionRun.getArrBulkActionNodes()
-                        .stream()
-                        .map(ArrBulkActionNode::getNode)
-                        .collect(Collectors.toSet()),
+        outputServiceInternal.changeOutputsStateByNodes(bulkActionRun.getFundVersion(),
+                bulkActionRun.getArrBulkActionNodes().stream()
+                        .map(ArrBulkActionNode::getNodeId)
+                        .collect(Collectors.toList()),
                 OutputState.COMPUTING,
                 OutputState.OPEN);
 
@@ -295,7 +282,6 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
         return bulkActionWorker.getBulkActionRun();
     }
 
-
     /**
      * Zjistí, zda-li nad verzí AS neběží nějaká hromadná akce.
      *
@@ -305,18 +291,6 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
     public boolean isRunning(final ArrFundVersion version) {
         return runningWorkers.containsKey(version.getFundVersionId());
     }
-
-    /**
-     * Přenačtení konfigurací hromadných akcí.
-     */
-    public void reload() {
-        try {
-            bulkActionConfigManager.load();
-        } catch ( IOException e) {
-            throw new IllegalStateException("Nastal problem při načítání hromadných akcí", e);
-        }
-    }
-
 
     /**
      * Spuštění dalších hromadných akcí, pokud splňují podmínky pro spuštění.
@@ -405,31 +379,13 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
     /// Operace s repositories, getry atd..
 
     /**
-     * Vytvoření nové změny.
-     *
-     * @param userId the user id
-     * @return vytvořená změna
-     */
-    @Transactional(value = javax.transaction.Transactional.TxType.REQUIRES_NEW)
-    public ArrChange createChange(final Integer userId) {
-        ArrChange change = new ArrChange();
-        change.setChangeDate(LocalDateTime.now());
-        if (userId != null) {
-            UsrUser user = new UsrUser();
-            user.setUserId(userId);
-            change.setUser(user);
-        }
-        change.setType(ArrChange.Type.BULK_ACTION);
-        return changeRepository.save(change);
-    }
-
-    /**
      * Event publish bulk action.
      *
      * @param bulkActionRun the bulk action run
      */
+    @Transactional(TxType.MANDATORY)
     public void eventPublishBulkAction(final ArrBulkActionRun bulkActionRun) {
-        eventNotificationService.forcePublish(
+        eventNotificationService.publishEvent(
                 EventFactory.createIdInVersionEvent(
                         EventType.BULK_ACTION_STATE_CHANGE,
                         bulkActionRun.getFundVersion(),
@@ -470,21 +426,21 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
      *
      * @param fundVersionId id verze archivní pomůcky
      */
-    public void checkOutdatedActions(final Integer fundVersionId) {
+    @Transactional(TxType.MANDATORY)
+    public void checkOutdatedActions(int fundVersionId) {
         List<ArrBulkActionRun> bulkActions = bulkActionRepository.findByFundVersionIdAndState(fundVersionId, State.FINISHED);
 
         for (ArrBulkActionRun bulkAction : bulkActions) {
-            if (bulkAction.getState() == State.FINISHED) {
-                Set<ArrNode> arrNodes = bulkAction.getArrBulkActionNodes().stream().map(ArrBulkActionNode::getNode).collect(Collectors.toSet());
-                HashSet<ArrChange> arrChanges = new HashSet<>(1);
-                ArrChange changeBulkAction = bulkAction.getChange();
-                arrChanges.add(changeBulkAction);
+            ArrChange baChange = bulkAction.getChange();
 
-                Map<ArrChange, Boolean> arrChangeBooleanMap = arrangementService.detectChangeNodes(arrNodes, arrChanges, true, true);
-                if (arrChangeBooleanMap.containsKey(changeBulkAction) && arrChangeBooleanMap.get(changeBulkAction)) {
+            for (ArrBulkActionNode baNode : bulkAction.getArrBulkActionNodes()) {
+                int nodeId = baNode.getNode().getNodeId(); // id without fetch -> access type property
+
+                if (!fundLevelServiceInternal.isLastChange(baChange, nodeId, true, true)) {
                     bulkAction.setState(State.OUTDATED);
                     bulkActionRepository.save(bulkAction);
                     eventPublishBulkAction(bulkAction);
+                    break; // continue to next action
                 }
             }
         }
@@ -541,13 +497,15 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
             throw new IllegalArgumentException("Verze archivní pomůcky neexistuje!");
         }
 
-        Map<String, RulAction> byRulPackage = actionRepository.findByRuleSet(version.getRuleSet())
-                .stream()
-                .collect(Collectors.toMap(RulAction::getFilename, p -> p));
+        List<RulAction> ruleActions = actionRepository.findByRuleSet(version.getRuleSet());
+        List<BulkActionConfig> configs = new ArrayList<>(ruleActions.size());
 
-        return bulkActionConfigManager.getBulkActions().stream()
-                .filter(i -> byRulPackage.containsKey(i.getCode() + bulkActionConfigManager.getExtension()))
-                .collect(Collectors.toList());
+        for (RulAction action : ruleActions) {
+            BulkActionConfig config = bulkActionConfigManager.get(action.getCode());
+            configs.add(config);
+        }
+
+        return configs;
     }
 
     /**
@@ -593,41 +551,68 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
      *
      * @param bulkActionRun objekt hromadné akce
      */
-    public void finished(final ArrBulkActionRun bulkActionRun) {
-        Set<ArrNode> nodes = new HashSet<>();
+    // TODO: implements concurrent strategy like sub-tree exclusive execute of action or output
+    @Transactional(TxType.MANDATORY)
+    public void onFinished(final ArrBulkActionRun bulkActionRun) {
+        // find action nodes for output update
         List<ArrBulkActionNode> arrBulkActionNodes = bulkActionRun.getArrBulkActionNodes();
-        nodes.addAll(arrBulkActionNodes.stream().map(ArrBulkActionNode::getNode).collect(Collectors.toSet()));
+        List<Integer> nodeIds = arrBulkActionNodes.stream().map(ArrBulkActionNode::getNodeId).collect(Collectors.toList());
 
-        try {
-            logger.info("Zahájení překlopení výsledku hromadné akce do výstupů");
-            outputService.storeResultBulkAction(bulkActionRun, nodes, null);
-            logger.info("Překlopení výsledku hromadné akce bylo úspěšně dokončeno");
-        } catch (Exception e) {
-            logger.error("Nastal problém při překlopení výsledků hromadné akce do výstupů", e);
+        // find all related output definitions
+        List<ArrOutputDefinition> outputDefinitions = outputServiceInternal.findOutputsByNodes(bulkActionRun.getFundVersion(), nodeIds, OutputState.OPEN, OutputState.COMPUTING);
+
+        // prepare ArrChange provider applied only if update occurs, change shared between connectors
+        Supplier<ArrChange> changeSupplier = new Supplier<ArrChange>() {
+            private ArrChange change;
+
+            @Override
+            public ArrChange get() {
+                if (change == null) {
+                    change = arrangementService.createChange(Type.UPDATE_OUTPUT);
+                }
+                return change;
+            }
+        };
+
+        // update each output definition
+        logger.info("Dispatching result to outputs");
+        for (ArrOutputDefinition definition : outputDefinitions) {
+            OutputItemConnector connector = outputServiceInternal.createItemConnector(bulkActionRun.getFundVersion(), definition);
+            connector.setChangeSupplier(changeSupplier);
+
+            // update definition by each result
+            for (ActionResult result : bulkActionRun.getResult().getResults()) {
+                result.createOutputItems(connector);
+            }
+
+            // update to open state
+            definition.setState(OutputState.OPEN); // saved by commit
+            outputServiceInternal.publishOutputStateChanged(definition, bulkActionRun.getFundVersionId());
         }
+        logger.info("Result dispatched to outputs");
     }
 
     /**
-     * Vyhledání výstupů podle uzlů.
-     *
-     * @param fundVersion verze AS
-     * @param nodes       seznam uzlů
-     * @return seznam hromadných akcí
+     * Searches latest finished bulk actions for specified node ids.
      */
-    public List<ArrBulkActionRun> findBulkActionsByNodes(final ArrFundVersion fundVersion,
-                                                         final Set<ArrNode> nodes) {
-        return bulkActionRepository.findBulkActionsByNodes(fundVersion, nodes, State.FINISHED);
+    public List<ArrBulkActionRun> findFinishedBulkActionsByNodes(ArrFundVersion fundVersion, Collection<ArrNode> nodes) {
+        List<Integer> nodeIds = new ArrayList<>(nodes.size());
+        nodes.forEach(n -> nodeIds.add(n.getNodeId()));
+        return findFinishedBulkActionsByNodeIds(fundVersion, nodeIds);
     }
 
     /**
-     * Vyhledání výstupů podle uzlů.
-     *
-     * @param fundVersion verze AS
-     * @param nodes       seznam uzlů
-     * @return seznam hromadných akcí
+     * Searches latest finished bulk actions for specified node ids.
      */
-    public List<ArrBulkActionRun> findBulkActionsByNodes(final ArrFundVersion fundVersion, final Set<ArrNode> nodes, final State... states) {
-        return bulkActionRepository.findBulkActionsByNodes(fundVersion, nodes, states);
+    public List<ArrBulkActionRun> findFinishedBulkActionsByNodeIds(ArrFundVersion fundVersion, Collection<Integer> nodeIds) {
+        return bulkActionRepository.findBulkActionsByNodes(fundVersion.getFundVersionId(), nodeIds, State.FINISHED);
+    }
+
+    /**
+     * Searches latest executions of bulk actions for specified node ids.
+     */
+    public List<ArrBulkActionRun> findBulkActionsByNodeIds(ArrFundVersion fundVersion, Collection<Integer> nodeIds) {
+        return bulkActionRepository.findBulkActionsByNodes(fundVersion.getFundVersionId(), nodeIds, null);
     }
 
     /**
@@ -637,7 +622,8 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
      * @return hromadná akce
      */
     public RulAction getBulkActionByCode(final String code) {
-        return actionRepository.findOneByFilename(code + ".yaml");
+        String fileName = RulAction.getFileNameFromCode(code);
+        return actionRepository.findOneByFilename(fileName);
     }
 
     /**
@@ -650,11 +636,11 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
         if (CollectionUtils.isEmpty(codes)) {
             return Collections.emptyList();
         }
-        List<String> collect = codes.stream().map(code -> code + ".yaml").collect(Collectors.toList());
-        return actionRepository.findByFilenameIn(collect);
+        List<String> fileNames = codes.stream().map(RulAction::getFileNameFromCode).collect(Collectors.toList());
+        return actionRepository.findByFilenameIn(fileNames);
     }
 
-    public Set<RulAction> getRecommendedActions(final RulOutputType outputType) {
-        return actionRecommendedRepository.findByOutputType(outputType).stream().map(RulActionRecommended::getAction).collect(Collectors.toSet());
+    public List<RulAction> getRecommendedActions(RulOutputType outputType) {
+        return actionRepository.findByRecommendedActionOutputType(outputType);
     }
 }

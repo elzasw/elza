@@ -5,24 +5,21 @@ import java.util.List;
 import cz.tacr.elza.print.item.Item;
 
 /**
- * Set separator between title and value
- * @author Petr Pytelka
- *
+ * Set separator between title and value.
  */
 public class SetTitleSeparator implements FormatAction {
-	
-	/**
-	 * Separator between title and value
-	 */
-	String titleSeparator;
 
-	public SetTitleSeparator(String titleSeparator) {
-		this.titleSeparator = titleSeparator;
-	}
+    /**
+     * Separator between title and value
+     */
+    private final String titleSeparator;
 
-	@Override
-	public void format(FormatContext ctx, List<Item> items) {
-		ctx.setTitleSeparator(titleSeparator);
-	}
+    public SetTitleSeparator(String titleSeparator) {
+        this.titleSeparator = titleSeparator;
+    }
 
+    @Override
+    public void format(FormatContext ctx, List<Item> items) {
+        ctx.setTitleSeparator(titleSeparator);
+    }
 }

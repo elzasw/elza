@@ -37,10 +37,6 @@ public class EventNotificationService implements IEventNotificationService {
 
     private List<AbstractEventSimple> committedEvents = new LinkedList<>();
 
-    public void forcePublish(final AbstractEventSimple event) {
-        eventDispatcher.dispatchEvent(event);
-    }
-
     @Override
     public void publishEvent(final AbstractEventSimple event) {
         Validate.notNull(event);

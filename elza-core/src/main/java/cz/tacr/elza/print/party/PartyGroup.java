@@ -1,5 +1,6 @@
 package cz.tacr.elza.print.party;
 
+import cz.tacr.elza.core.data.PartyType;
 import cz.tacr.elza.domain.ParPartyGroup;
 
 /**
@@ -8,17 +9,19 @@ import cz.tacr.elza.domain.ParPartyGroup;
 public class PartyGroup extends Party {
 
     private final String scope;
+
     private final String foundingNorm;
+
     private final String scopeNorm;
+
     private final String organization;
-    
-    private PartyGroup(ParPartyGroup parPartyGroup, PartyInitHelper initHelper)
-    {
-    	super(parPartyGroup, initHelper);
-    	this.scope = parPartyGroup.getScope();
-    	this.foundingNorm = parPartyGroup.getFoundingNorm();
-    	this.scopeNorm = parPartyGroup.getScopeNorm();
-    	this.organization = parPartyGroup.getOrganization();
+
+    public PartyGroup(ParPartyGroup parPartyGroup, PartyInitHelper initHelper) {
+        super(parPartyGroup, initHelper);
+        this.scope = parPartyGroup.getScope();
+        this.foundingNorm = parPartyGroup.getFoundingNorm();
+        this.scopeNorm = parPartyGroup.getScopeNorm();
+        this.organization = parPartyGroup.getOrganization();
     }
 
     public String getFoundingNorm() {
@@ -37,8 +40,8 @@ public class PartyGroup extends Party {
         return scopeNorm;
     }
 
-	public static PartyGroup newInstance(ParPartyGroup parPartyGroup, PartyInitHelper initHelper) {
-		PartyGroup partyGroup = new PartyGroup(parPartyGroup, initHelper);
-		return partyGroup;
-	}
+    @Override
+    protected PartyType getPartyType() {
+        return PartyType.GROUP_PARTY;
+    }
 }
