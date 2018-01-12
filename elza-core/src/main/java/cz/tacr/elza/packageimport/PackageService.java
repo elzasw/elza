@@ -453,19 +453,19 @@ public class PackageService {
                     throw new BusinessException("RulRuleSet s code=" + ruleCode + " nenalezen", PackageCode.CODE_NOT_FOUND).set("code", ruleCode).set("file", RULE_SET_XML);
                 }
 
-                File dirActions = resourcePathResolver.getFunctionsDir(rulPackage.getPackageId(), rulRuleSet.getRuleSetId()).toFile();
+                File dirActions = resourcePathResolver.getFunctionsDir(rulPackage, rulRuleSet).toFile();
                 dirsActions.add(dirActions);
                 if (!dirActions.exists()) {
                     dirActions.mkdirs();
                 }
 
-                File dirRules = resourcePathResolver.getDroolsDir(rulPackage.getPackageId(), rulRuleSet.getRuleSetId()).toFile();
+                File dirRules = resourcePathResolver.getDroolsDir(rulPackage, rulRuleSet).toFile();
                 dirsRules.add(dirRules);
                 if (!dirRules.exists()) {
                     dirRules.mkdirs();
                 }
 
-                File dirTemplates = resourcePathResolver.getTemplatesDir(rulPackage.getPackageId(), rulRuleSet.getRuleSetId()).toFile();
+                File dirTemplates = resourcePathResolver.getTemplatesDir(rulPackage, rulRuleSet).toFile();
                 dirsTemplates.add(dirTemplates);
                 if (!dirTemplates.exists()) {
                     dirTemplates.mkdirs();

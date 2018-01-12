@@ -13,11 +13,13 @@ import org.springframework.stereotype.Service;
 
 import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.RuleSystem;
+import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.RulAction;
 import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.RulRule;
+import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.RulTemplate;
 
 @Service
@@ -108,7 +110,21 @@ public class ResourcePathResolver {
      */
     @Transactional
     public Path getTemplatesDir(int packageId, int ruleSetId) {
-        Path ruleSetPath = getRuleSetDir(packageId, ruleSetId);
+        StaticDataProvider staticData = staticDataService.getData();
+        RulPackage rulPackage = staticData.getPackageById(packageId);
+        RuleSystem ruleSystem = staticData.getRuleSystems().getByRuleSetId(ruleSetId);
+
+        Path path = getTemplatesDir(rulPackage, ruleSystem.getRuleSet());
+
+        return path;
+    }
+
+    /**
+     * @return Path to templates directory (may not exist).
+     */
+    @Transactional(TxType.MANDATORY)
+    public Path getTemplatesDir(RulPackage rulPackage, RulRuleSet ruleSet) {
+        Path ruleSetPath = getRuleSetDir(rulPackage, ruleSet);
 
         Path path = ruleSetPath.resolve(RULESET_TEMPLATES_DIR);
 
@@ -134,7 +150,21 @@ public class ResourcePathResolver {
      */
     @Transactional
     public Path getDroolsDir(int packageId, int ruleSetId) {
-        Path ruleSetPath = getRuleSetDir(packageId, ruleSetId);
+        StaticDataProvider staticData = staticDataService.getData();
+        RulPackage rulPackage = staticData.getPackageById(packageId);
+        RuleSystem ruleSystem = staticData.getRuleSystems().getByRuleSetId(ruleSetId);
+
+        Path path = getDroolsDir(rulPackage, ruleSystem.getRuleSet());
+
+        return path;
+    }
+
+    /**
+     * @return Path to rule set drools directory (may not exist).
+     */
+    @Transactional(TxType.MANDATORY)
+    public Path getDroolsDir(RulPackage rulPackage, RulRuleSet ruleSet) {
+        Path ruleSetPath = getRuleSetDir(rulPackage, ruleSet);
 
         Path path = ruleSetPath.resolve(RULESET_DROOLS);
 
@@ -159,28 +189,38 @@ public class ResourcePathResolver {
      */
     @Transactional
     public Path getFunctionsDir(int packageId, int ruleSetId) {
-        Path ruleSetPath = getRuleSetDir(packageId, ruleSetId);
+        StaticDataProvider staticData = staticDataService.getData();
+        RulPackage rulPackage = staticData.getPackageById(packageId);
+        RuleSystem ruleSystem = staticData.getRuleSystems().getByRuleSetId(ruleSetId);
+
+        Path path = getFunctionsDir(rulPackage, ruleSystem.getRuleSet());
+
+        return path;
+    }
+
+    /**
+     * @return Path to rule set functions directory (may not exist).
+     */
+    @Transactional(TxType.MANDATORY)
+    public Path getFunctionsDir(RulPackage rulPackage, RulRuleSet ruleSet) {
+        Path ruleSetPath = getRuleSetDir(rulPackage, ruleSet);
 
         Path path = ruleSetPath.resolve(RULESET_FUNCTIONS);
 
         return path;
     }
 
-    private Path getRuleSetDir(int packageId, int ruleSetId) {
-        RuleSystem ruleSystem = staticDataService.getData().getRuleSystems().getByRuleSetId(ruleSetId);
-
-        Path packagePath = getPackageDir(packageId);
-        String ruleSetDir = ruleSystem.getRuleSet().getCode();
+    private Path getRuleSetDir(RulPackage rulPackage, RulRuleSet ruleSet) {
+        Path packagePath = getPackageDir(rulPackage);
+        String ruleSetDir = ruleSet.getCode();
 
         Path path = packagePath.resolve(ruleSetDir);
 
         return path;
     }
 
-    private Path getPackageDir(int packageId) {
-        RulPackage staticPackage = staticDataService.getData().getPackageById(packageId);
-
-        String packageDir = staticPackage.getCode();
+    private Path getPackageDir(RulPackage rulPackage) {
+        String packageDir = rulPackage.getCode();
 
         Path path = Paths.get(workDir, PACKAGES_DIR, packageDir);
 

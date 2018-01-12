@@ -421,32 +421,6 @@ public class BulkActionService implements ListenableFutureCallback<BulkActionWor
     }
 
     /**
-     * Kontroluje ve verzi dokončené hromadné akce, jestli zda-li jsou aktuální.
-     * V případě, že je detekovaná změna, provede změnu stavu hromadné akce na neaktuální.
-     *
-     * @param fundVersionId id verze archivní pomůcky
-     */
-    @Transactional(TxType.MANDATORY)
-    public void checkOutdatedActions(int fundVersionId) {
-        List<ArrBulkActionRun> bulkActions = bulkActionRepository.findByFundVersionIdAndState(fundVersionId, State.FINISHED);
-
-        for (ArrBulkActionRun bulkAction : bulkActions) {
-            ArrChange baChange = bulkAction.getChange();
-
-            for (ArrBulkActionNode baNode : bulkAction.getArrBulkActionNodes()) {
-                int nodeId = baNode.getNode().getNodeId(); // id without fetch -> access type property
-
-                if (!fundLevelServiceInternal.isLastChange(baChange, nodeId, true, true)) {
-                    bulkAction.setState(State.OUTDATED);
-                    bulkActionRepository.save(bulkAction);
-                    eventPublishBulkAction(bulkAction);
-                    break; // continue to next action
-                }
-            }
-        }
-    }
-
-    /**
      * Pomocná metoda pro zjištění oprávnění na AS.
      *
      * @param fundVersion verze AS
