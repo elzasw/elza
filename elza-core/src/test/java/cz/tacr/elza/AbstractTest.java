@@ -1,5 +1,6 @@
 package cz.tacr.elza;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,7 @@ import cz.tacr.elza.repository.DataTypeRepository;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.service.StartupService;
 
 
 
@@ -41,8 +43,13 @@ public abstract class AbstractTest {
     @Autowired
     protected HelperTestService helperTestService;
 
+    @Autowired
+    protected StartupService startupService;
+
     @Before
     public void setUp() throws Exception {
+        // startup service have to be initialized
+        Assert.assertTrue(startupService.isRunning());
 
     	helperTestService.loadPackage("CZ_BASE", "package-cz-base");
     	helperTestService.loadPackage("ZP2015", "rules-cz-zp2015");

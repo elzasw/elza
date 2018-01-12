@@ -34,7 +34,7 @@ import cz.tacr.elza.service.cache.NodeCacheService;
 @Service
 public class StartupService implements SmartLifecycle {
 
-    private static final Logger LOG = LoggerFactory.getLogger(StartupService.class);
+    private static final Logger logger = LoggerFactory.getLogger(StartupService.class);
 
     private final NodeRepository nodeRepository;
 
@@ -84,12 +84,17 @@ public class StartupService implements SmartLifecycle {
     @Override
     @Transactional(value = TxType.REQUIRES_NEW)
     public void start() {
-        running = true;
+        logger.info("Elza startup service ...");
+
         startInTransaction();
+        running = true;
+
+        logger.info("Elza startup finished");
     }
 
     @Override
     public void stop() {
+        logger.info("Elza stopping ...");
         // TODO: stop async processes
         running = false;
     }
@@ -146,7 +151,7 @@ public class StartupService implements SmartLifecycle {
     private void clearBulkActions() {
         int affected = bulkActionRunRepository.updateFromStateToState(ArrBulkActionRun.State.RUNNING, ArrBulkActionRun.State.ERROR);
         if (affected > 0) {
-            LOG.warn("Detected unfinished actions, reseting to error state, count:" + affected);
+            logger.warn("Detected unfinished actions, reseting to error state, count:" + affected);
         }
     }
 
@@ -190,13 +195,13 @@ public class StartupService implements SmartLifecycle {
             ArrFundVersion version = fundVersionMap.get(fundId);
 
             if (version == null) {
-                LOG.error("Pro AF s ID=" + fundId + " byly nalezeny nezvalidované uzly (" + entry.getValue()
+                logger.error("Pro AF s ID=" + fundId + " byly nalezeny nezvalidované uzly (" + entry.getValue()
                 + "), které nejsou z otevřené verze AF");
                 continue;
             }
 
             // přidávání nodů je nutné dělat ve vlastní transakci (podle updateInfoForNodesAfterCommit)
-            LOG.info("Přidání " + entry.getValue().size() + " uzlů do fronty pro zvalidování");
+            logger.info("Přidání " + entry.getValue().size() + " uzlů do fronty pro zvalidování");
             updateConformityInfoService.updateInfoForNodesAfterCommit(version.getFundVersionId(), entry.getValue());
         }
     }

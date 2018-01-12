@@ -62,7 +62,7 @@ public class GroovyScriptService {
                                @Value("classpath:/script/groovy/interpiRecord.groovy") Resource interpiRecordListScriptSource,
                                @Value("classpath:/script/groovy/interpiRecordDetail.groovy") Resource interpiRecordDetailScriptSource) {
         try {
-            Path groovyDir = resourcePathResolver.getGroovyDir();
+            Path groovyDir = resourcePathResolver.getGroovyDir(); // TODO: Move initialization to startup service
             Files.createDirectories(groovyDir);
 
             this.createRecordScriptFile = GroovyScriptFile.create(createRecordScriptSource, groovyDir);
