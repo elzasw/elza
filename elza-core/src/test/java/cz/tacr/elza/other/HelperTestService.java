@@ -189,7 +189,7 @@ public class HelperTestService {
     public void importPackage(final File file) {
         packageService.importPackage(file);
         // refresh static structures
-        staticDataService.reloadForCurrentTransaction();
+        staticDataService.reloadForCurrentThread();
         staticDataService.reloadOnCommit();
     }
 
