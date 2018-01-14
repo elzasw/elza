@@ -60,11 +60,13 @@ public class BulkActionConfigManager {
 
     /**
      * Načtení hromadných akcí z adresáře.
+     * 
+     * Function can is used also to reload configuration.
      */
     @Transactional(TxType.MANDATORY)
     public void load() {
 
-        bulkActionConfigMap = new HashMap<>();
+        HashMap<String, BulkActionConfig> configs = new HashMap<>();
 
         List<RulAction> actions = actionRepository.findAll();
 
@@ -72,8 +74,12 @@ public class BulkActionConfigManager {
 
         // load all bulk action configurations
         for (RulAction action : actions) {
-            loadActionConfig(action, yamlLoader);
+            BaseActionConfig config = loadActionConfig(action, yamlLoader);
+            configs.put(config.getCode(), config);
         }
+
+        // publish configs
+        this.bulkActionConfigMap = configs;
     }
 
     /**
@@ -95,7 +101,13 @@ public class BulkActionConfigManager {
         return new ArrayList<>(bulkActionConfigMap.values());
     }
 
-    private void loadActionConfig(RulAction action, Yaml yamlLoader) {
+    /**
+     * Load configuration of single action
+     * 
+     * @param action
+     * @param yamlLoader
+     */
+    private BaseActionConfig loadActionConfig(RulAction action, Yaml yamlLoader) {
         Path configFile = resourcePathResolver.getFunctionFile(action);
         String actionCode = action.getCode();
         BaseActionConfig config = null;
@@ -109,11 +121,18 @@ public class BulkActionConfigManager {
         }
 
         config.setCode(actionCode);
-        bulkActionConfigMap.put(actionCode, config);
+        return config;
     }
 
+    /**
+     * Create yaml loader
+     * 
+     * @return
+     */
     private static Yaml prepareYamlLoader() {
         Constructor yamlCtor = new Constructor();
+
+        // Register type descriptors
         yamlCtor.addTypeDescription(new TypeDescription(FundValidationConfig.class, "!FundValidation"));
         yamlCtor.addTypeDescription(new TypeDescription(SerialNumberConfig.class, "!SerialNumberGenerator"));
         yamlCtor.addTypeDescription(new TypeDescription(UnitIdConfig.class, "!UnitIdGenerator"));
@@ -125,6 +144,7 @@ public class BulkActionConfigManager {
         yamlCtor.addTypeDescription(new TypeDescription(NodeCountConfig.class, "!NodeCount"));
         yamlCtor.addTypeDescription(new TypeDescription(UnitCountConfig.class, "!UnitCount"));
         yamlCtor.addTypeDescription(new TypeDescription(MoveDescItemConfig.class, "!MoveDescItem"));
+
         return new Yaml(yamlCtor);
     }
 }
