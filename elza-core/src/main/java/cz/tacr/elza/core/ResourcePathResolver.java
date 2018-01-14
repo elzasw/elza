@@ -48,6 +48,15 @@ public class ResourcePathResolver {
     }
 
     /**
+     * Return path to the Elza work directory
+     * 
+     * @return Return path from configuration
+     */
+    public String getWorkDir() {
+        return workDir;
+    }
+
+    /**
      * @return Path to data management system (DMS) directory (may not exist).
      */
     @Transactional

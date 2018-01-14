@@ -126,7 +126,7 @@ public class StaticDataService {
         DataType.init(dataTypeRepository);
         PartyType.init(partyTypeRepository);
         CalendarType.init(calendarTypeRepository);
-        activeProvider = initializeProvider();
+        activeProvider = createProvider();
 
         // init interceptor
         StaticDataTransactionInterceptor.INSTANCE.begin(this);
@@ -138,7 +138,7 @@ public class StaticDataService {
     /**
      * Switch data provider for current transaction
      */
-    public StaticDataProvider reloadForCurrentThread() {
+    public StaticDataProvider refreshForCurrentThread() {
         StaticDataProvider provider = activeProvider;
         // update data provider for thread
         threadSpecificProvider.set(provider);
@@ -195,7 +195,7 @@ public class StaticDataService {
 
         // prepare modified provider in current transaction
         try {
-        	StaticDataProvider modifiedProvider = initializeProvider();
+            StaticDataProvider modifiedProvider = createProvider();
 
         	tx.registerSynchronization(new Synchronization(){
 					@Override
@@ -225,7 +225,12 @@ public class StaticDataService {
         return session.getTransaction();
     }
 
-    private StaticDataProvider initializeProvider() {
+    /**
+     * Create new provider and load all data from DB
+     * 
+     * @return
+     */
+    public StaticDataProvider createProvider() {
         StaticDataProvider provider = new StaticDataProvider();
         provider.init(this);
         return provider;

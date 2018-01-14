@@ -62,9 +62,11 @@ public class BulkActionConfigManager {
      * Načtení hromadných akcí z adresáře.
      * 
      * Function can is used also to reload configuration.
+     * 
+     * @param resourcePathResolver
      */
     @Transactional(TxType.MANDATORY)
-    public void load() {
+    public void load(ResourcePathResolver resourcePathResolver) {
 
         HashMap<String, BulkActionConfig> configs = new HashMap<>();
 
@@ -74,12 +76,20 @@ public class BulkActionConfigManager {
 
         // load all bulk action configurations
         for (RulAction action : actions) {
-            BaseActionConfig config = loadActionConfig(action, yamlLoader);
+            Path configFile = resourcePathResolver.getFunctionFile(action);
+            String actionCode = action.getCode();
+
+            BaseActionConfig config = loadActionConfig(actionCode, configFile, yamlLoader);
             configs.put(config.getCode(), config);
         }
 
         // publish configs
         this.bulkActionConfigMap = configs;
+    }
+
+    @Transactional(TxType.MANDATORY)
+    public void load() {
+        load(this.resourcePathResolver);
     }
 
     /**
@@ -105,11 +115,10 @@ public class BulkActionConfigManager {
      * Load configuration of single action
      * 
      * @param action
+     * @param configFile
      * @param yamlLoader
      */
-    private BaseActionConfig loadActionConfig(RulAction action, Yaml yamlLoader) {
-        Path configFile = resourcePathResolver.getFunctionFile(action);
-        String actionCode = action.getCode();
+    private BaseActionConfig loadActionConfig(String actionCode, Path configFile, Yaml yamlLoader) {
         BaseActionConfig config = null;
 
         try (InputStream ios = Files.newInputStream(configFile, StandardOpenOption.READ)) {

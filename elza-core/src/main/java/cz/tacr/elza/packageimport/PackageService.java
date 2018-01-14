@@ -573,20 +573,23 @@ public class PackageService {
                 }
             }
 
-            staticDataService.reloadOnCommit();
+            //StaticDataProvider modifiedProvider = staticDataService.createProvider();            
 
+            staticDataService.reloadOnCommit();
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
                 @Override
                 public void afterCommit() {
+                    staticDataService.refreshForCurrentThread();
+
                     cacheService.resetCache(CacheInvalidateEvent.Type.ALL);
 
                     // Try to reload all actions
-                    // Note: static data have to be reloaded before bulkd actions
-                    //       can be loaded
+                    // Note: static data have to be reloaded before bulk actions
+                    //       can be loaded            
                     bulkActionConfigManager.load();
-
                 }
             });
+
 
             eventNotificationService.publishEvent(new ActionEvent(EventType.PACKAGE));
 
