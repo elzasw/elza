@@ -8,6 +8,7 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -578,6 +579,12 @@ public class PackageService {
                 @Override
                 public void afterCommit() {
                     cacheService.resetCache(CacheInvalidateEvent.Type.ALL);
+
+                    // Try to reload all actions
+                    // Note: static data have to be reloaded before bulkd actions
+                    //       can be loaded
+                    bulkActionConfigManager.load();
+
                 }
             });
 
@@ -629,8 +636,6 @@ public class PackageService {
                         rollBackFiles(dirRules);
                     }
                 }
-
-                bulkActionConfigManager.load();
 
                 if (e instanceof AbstractException) {
                     throw e;
@@ -1574,8 +1579,6 @@ public class PackageService {
             for (RulRule rule : rulRuleNew) {
                 saveFile(mapEntry, dir, ZIP_DIR_RULE_SET + "/" + rulRuleSet.getCode() + "/" + ZIP_DIR_RULES, rule.getFilename());
             }
-
-            bulkActionConfigManager.load();
         } catch (IOException e) {
             throw new SystemException(e);
         }
@@ -1737,7 +1740,6 @@ public class PackageService {
                 saveFile(mapEntry, dir, ZIP_DIR_RULE_SET + "/" + rulRuleSet.getCode() + "/" + ZIP_DIR_ACTIONS, action.getFilename());
             }
 
-            bulkActionConfigManager.load();
         } catch (IOException e) {
             throw new SystemException(e);
         }
@@ -1830,7 +1832,8 @@ public class PackageService {
 
         if (file.exists()) {
             File fileMove = new File(dir.getPath() + File.separator + filename + ".bck");
-            Files.move(file.toPath(), fileMove.toPath());
+            // Allow to replace existing backup files
+            Files.move(file.toPath(), fileMove.toPath(), StandardCopyOption.REPLACE_EXISTING);
         }
 
         BufferedWriter output = null;
@@ -2078,7 +2081,6 @@ public class PackageService {
             for (String file : templateFileKeys) {
                 saveFile(mapEntry, dirFile, templateDir, file);
             }
-            bulkActionConfigManager.load();
         }
     }
 
@@ -2375,7 +2377,6 @@ public class PackageService {
                     rollBackFiles(dirActions);
                     rollBackFiles(dirRules);
 
-                    bulkActionConfigManager.load();
                     throw new SystemException("Nastala chyba během importu balíčku", e);
                 } catch (IOException e1) {
                     throw new SystemException("Nastala chyba během obnovy souborů po selhání importu balíčku", e);
