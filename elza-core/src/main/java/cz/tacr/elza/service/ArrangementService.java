@@ -442,7 +442,7 @@ public class ArrangementService {
 		return fundRepository.save(fund);
     }
 
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_VER_WR})
+    @AuthMethod(permission = { UsrPermission.Permission.FUND_VER_WR, UsrPermission.Permission.FUND_ADMIN })
     public ArrFundVersion createVersion(final ArrChange createChange,
                                          final ArrFund fund,
                                          final RulRuleSet ruleSet,
