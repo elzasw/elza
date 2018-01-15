@@ -66,7 +66,7 @@ public abstract class ArrData implements NodeCacheSerializable {
 		this.dataType = src.dataType;
 		this.dataTypeId = src.dataTypeId;
 
-		// If we are copying new item then dataType have to be set
+        // If we are copying from existing item then dataType have to be set
 		Validate.notNull(dataType);
 		Validate.notNull(dataTypeId);
 	}

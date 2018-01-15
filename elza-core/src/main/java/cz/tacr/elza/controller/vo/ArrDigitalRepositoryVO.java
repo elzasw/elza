@@ -1,10 +1,11 @@
 package cz.tacr.elza.controller.vo;
 
+import cz.tacr.elza.domain.ArrDigitalRepository;
+import cz.tacr.elza.domain.SysExternalSystem;
+
 /**
  * VO pro externí systém - uložiště digitalizátů.
  *
- * @author Martin Šlapa
- * @since 05.12.2016
  */
 public class ArrDigitalRepositoryVO extends SysExternalSystemVO {
 
@@ -36,5 +37,17 @@ public class ArrDigitalRepositoryVO extends SysExternalSystemVO {
 
     public void setSendNotification(final Boolean sendNotification) {
         this.sendNotification = sendNotification;
+    }
+
+    @Override
+    public SysExternalSystem createEntity() {
+        ArrDigitalRepository entity = new ArrDigitalRepository();
+        this.fillEntity(entity);
+
+        entity.setViewDaoUrl(viewDaoUrl);
+        entity.setViewFileUrl(viewFileUrl);
+        entity.setSendNotification(sendNotification);
+
+        return entity;
     }
 }

@@ -1,7 +1,10 @@
 package cz.tacr.elza.controller.vo.nodes.descitems;
 
+import javax.persistence.EntityManager;
+
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
+import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDescItem;
 
 
@@ -90,4 +93,11 @@ public abstract class ArrItemVO {
 		//spec id cannot be set explicitly
 		//descItem.setItemSpecId(descItemSpecId);
 	}
+
+    /**
+     * Create data entity from value object
+     * 
+     * @return
+     */
+    public abstract ArrData createDataEntity(EntityManager em);
 }
