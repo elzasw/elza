@@ -2,9 +2,11 @@
  * Akce pro formulář JP.
  */
 
+import {FOCUS_KEYS} from "../../constants";
+
 // Konfigurace velikosti cache dat pro formulář
-const CACHE_SIZE = 20
-const CACHE_SIZE2 = CACHE_SIZE/2
+const CACHE_SIZE = 20;
+const CACHE_SIZE2 = CACHE_SIZE/2;
 
 import {WebApi} from 'actions/index.jsx';
 import {getMapFromList, indexById, findByRoutingKeyInGlobalState} from 'stores/app/utils.jsx'
@@ -25,12 +27,12 @@ class ItemFormActions {
         this.area = area;
     }
 
-    isSubNodeFormCacheAction(action, area) {
+    isSubNodeFormCacheActionOfArea(action, area) {
         if (action.area === area) {
             switch (action.type) {
                 case types.FUND_SUB_NODE_FORM_CACHE_RESPONSE:
                 case types.FUND_SUB_NODE_FORM_CACHE_REQUEST:
-                    return true
+                    return true;
                 default:
                     return false
             }
@@ -39,7 +41,11 @@ class ItemFormActions {
         }
     }
 
-    isSubNodeFormAction(action, area) {
+    isSubNodeFormCacheAction(action) {
+        return this.isSubNodeFormCacheActionOfArea(action, this.area);
+    }
+
+    isSubNodeFormActionOfArea(action, area) {
         if (action.area === area) {
             switch (action.type) {
                 case types.FUND_SUB_NODE_FORM_REQUEST:
@@ -61,13 +67,17 @@ class ItemFormActions {
                 case types.FUND_SUB_NODE_FORM_VALUE_RESPONSE:
                 case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_COPY_FROM_PREV_RESPONSE:
                 case types.FUND_SUB_NODE_FORM_OUTPUT_CALC_SWITCH:
-                    return true
+                    return true;
                 default:
                     return false
             }
         } else {
             return false;
         }
+    }
+
+    isSubNodeFormAction(action) {
+        return this.isSubNodeFormActionOfArea(action, this.area);
     }
 
     /**
@@ -93,7 +103,7 @@ class ItemFormActions {
      * @param {int} versionId verze AS
      * @param {int} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
      * @param {Object} valueLocation konkrétní umístění atributu
-     * @param {bool} onlyDescItems pokud je true, pouze se odeberou hodnoty atributu, ale daný atribut na formuláři zůstane, pokud je false, odebere se i atribut
+     * @param {boolean} onlyDescItems pokud je true, pouze se odeberou hodnoty atributu, ale daný atribut na formuláři zůstane, pokud je false, odebere se i atribut
      */
     _fundSubNodeFormDescItemTypeDeleteInStore(versionId, routingKey, valueLocation, onlyDescItems) {
         return {
@@ -110,6 +120,7 @@ class ItemFormActions {
      * Informační akce o provedené operaci na serveru.
      * @param {int} versionId verze AS
      * @param {int} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
+     * @param {Object} descItemResult --
      * @param {Object} valueLocation konkrétní umístění atributu nebo hodnoty
      * @param {string} operationType typ operace, jedna z hodnot: hodnota atributu['UPDATE', 'CREATE', 'DELETE'], atribut['DELETE_DESC_ITEM_TYPE']
      */
@@ -212,11 +223,11 @@ class ItemFormActions {
      */
     _fundSubNodeFormFetch(versionId, nodeId, routingKey, needClean) {
         return (dispatch, getState) => {
-            dispatch(this.fundSubNodeFormRequest(versionId, nodeId, routingKey))
+            dispatch(this.fundSubNodeFormRequest(versionId, nodeId, routingKey));
             this._getItemFormData(getState, dispatch, versionId, nodeId, routingKey)
                 .then(json => {
-                    var state = getState()
-                    var subNodeForm = this._getItemFormStore(state, versionId, routingKey);
+                    const state = getState();
+                    const subNodeForm = this._getItemFormStore(state, versionId, routingKey);
                     if (subNodeForm.fetchingId == nodeId) {
                         dispatch(this.fundSubNodeFormReceive(versionId, nodeId, routingKey, json, state.refTables.rulDataTypes, state.refTables.descItemTypes, needClean))
                     }
@@ -235,7 +246,7 @@ class ItemFormActions {
     /**
      * Odeslání hodnoty atributu na server - buď vytvoření nebo aktualizace.
      * @param {Function} dispatch odkaz na funkci dispatch
-     * @param {Object} getState odkaz na funkci pro načtení store
+     * @param {Function} getState odkaz na funkci pro načtení store
      * @param {int} versionId verze AS
      * @param {int} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
      * @param {Object} valueLocation konkrétní umístění hodnoty
@@ -245,7 +256,7 @@ class ItemFormActions {
         const subNodeForm = this._getItemFormStore(state, versionId, routingKey);
         const loc = subNodeForm.getLoc(subNodeForm, valueLocation);
 
-        const refType = subNodeForm.refTypesMap[loc.descItemType.id]
+        const refType = subNodeForm.refTypesMap[loc.descItemType.id];
         const refTables = state.refTables;
 
         const descItem = loc.descItem;
@@ -353,8 +364,8 @@ class ItemFormActions {
      */
     fundSubNodeFormValueUploadCoordinates(versionId, routingKey, descItemTypeId, file) {
         return (dispatch, getState) => {
-            var state = getState();
-            var subNodeForm = this._getItemFormStore(state, versionId, routingKey);
+            const state = getState();
+            const subNodeForm = this._getItemFormStore(state, versionId, routingKey);
             this._callArrCoordinatesImport(versionId, subNodeForm.data.parent.id, subNodeForm.data.parent.version, descItemTypeId, file)
                 .then(() => {
                     dispatch(addToastrSuccess(i18n('import.toast.success'), i18n('import.toast.successCoordinates')));
@@ -377,8 +388,8 @@ class ItemFormActions {
      */
     fundSubNodeFormValueUploadCsv(versionId, routingKey, descItemTypeId, file) {
         return (dispatch, getState) => {
-            var state = getState();
-            var subNodeForm = this._getItemFormStore(state, versionId, routingKey);
+            const state = getState();
+            const subNodeForm = this._getItemFormStore(state, versionId, routingKey);
 
             this._callDescItemCsvImport(versionId, subNodeForm.data.parent.id, subNodeForm.data.parent.version, descItemTypeId, file).then(() => {
                 dispatch(addToastrSuccess(i18n('import.toast.success'), i18n('import.toast.successJsonTable')));
@@ -396,9 +407,9 @@ class ItemFormActions {
      */
     fundSubNodeFormValueValidate(versionId, routingKey, valueLocation) {
         return (dispatch, getState) => {
-            var state = getState();
-            var subNodeForm = this._getItemFormStore(state, versionId, routingKey);
-            var loc = subNodeForm.getLoc(subNodeForm, valueLocation);
+            const state = getState();
+            const subNodeForm = this._getItemFormStore(state, versionId, routingKey);
+            const loc = subNodeForm.getLoc(subNodeForm, valueLocation);
 
             WebApi.validateUnitdate(loc.descItem.value)
                 .then(json => {
@@ -426,7 +437,7 @@ class ItemFormActions {
                 value,
                 dispatch,
                 formActions: this,
-            })
+            });
 
             if (forceStore) {
                 this._formValueStore(dispatch, getState, versionId, routingKey, valueLocation)
@@ -443,9 +454,9 @@ class ItemFormActions {
      */
     fundSubNodeFormValueChangePosition(versionId, routingKey, valueLocation, index) {
         return (dispatch, getState) => {
-            var state = getState();
-            var subNodeForm = this._getItemFormStore(state, versionId, routingKey);
-            var loc = subNodeForm.getLoc(subNodeForm, valueLocation);
+            const state = getState();
+            const subNodeForm = this._getItemFormStore(state, versionId, routingKey);
+            const loc = subNodeForm.getLoc(subNodeForm, valueLocation);
 
             if (!loc.descItem.error.hasError && typeof loc.descItem.id !== 'undefined') {
                 dispatch({
@@ -455,13 +466,13 @@ class ItemFormActions {
                     routingKey,
                     valueLocation,
                     index,
-                })
+                });
 
-                var descItem = {...loc.descItem, position: index + 1}
+                const descItem = {...loc.descItem, position: index + 1};
 
                 this._callUpdateDescItem(versionId, subNodeForm.data.parent.version, descItem)
                     .then(json => {
-                        let newValueLocation = {...valueLocation, descItemIndex: index}
+                        const newValueLocation = {...valueLocation, descItemIndex: index};
                         dispatch(this._fundSubNodeFormDescItemResponse(versionId, routingKey, newValueLocation, json, 'UPDATE'));
                     })
             }
@@ -527,7 +538,7 @@ class ItemFormActions {
                 routingKey,
                 valueLocation,
                 value,
-            })
+            });
 
             // Vynucení uložení na server, pokud je validní jako celek
             this._formValueStore(dispatch, getState, versionId, routingKey, valueLocation)
@@ -543,7 +554,7 @@ class ItemFormActions {
         if (!descItem.error.hasError && descItem.touched) {
             if (typeof descItem.id !== 'undefined') {
                 // Jen pokud se hodnota nebo specifikace změnila
-                var needUpdate = false;
+                let needUpdate = false;
                 if (refType.useSpecification && !valuesEquals(descItem.descItemSpecId, descItem.prevDescItemSpecId)) {
                     needUpdate = true;
                 }
@@ -595,9 +606,9 @@ class ItemFormActions {
      */
     fundSubNodeFormValueDelete(versionId, routingKey, valueLocation) {
         return (dispatch, getState) => {
-            var state = getState();
-            var subNodeForm = this._getItemFormStore(state, versionId, routingKey);
-            var loc = subNodeForm.getLoc(subNodeForm, valueLocation);
+            const state = getState();
+            const subNodeForm = this._getItemFormStore(state, versionId, routingKey);
+            const loc = subNodeForm.getLoc(subNodeForm, valueLocation);
 
             dispatch({
                 type: types.FUND_SUB_NODE_FORM_VALUE_DELETE,
@@ -605,7 +616,7 @@ class ItemFormActions {
                 versionId,
                 routingKey,
                 valueLocation,
-            })
+            });
 
             if (typeof loc.descItem.id !== 'undefined') {
                 this._callDeleteDescItem(versionId, subNodeForm.data.parent.version, loc.descItem)
@@ -618,9 +629,9 @@ class ItemFormActions {
 
     fundSubNodeFormHandleClose(versionId, routingKey) {
         return (dispatch, getState) => {
-            var state = getState()
-            var subNodeForm = this._getItemFormStore(state, versionId, routingKey);
-            const valueLocation = getFocusDescItemLocation(subNodeForm)
+            const state = getState();
+            const subNodeForm = this._getItemFormStore(state, versionId, routingKey);
+            const valueLocation = getFocusDescItemLocation(subNodeForm);
             if (valueLocation !== null) {
                 dispatch(this.fundSubNodeFormValueBlur(versionId, routingKey, valueLocation))
             }
@@ -641,11 +652,11 @@ class ItemFormActions {
                 versionId,
                 routingKey,
                 descItemTypeId
-            })
+            });
 
-            var state = getState()
-            var subNodeForm = this._getItemFormStore(state, versionId, routingKey);
-            dispatch(setFocus('arr', 2, 'subNodeForm', {descItemTypeId: descItemTypeId, descItemObjectId: null}))
+            //const state = getState();
+            //const subNodeForm = this._getItemFormStore(state, versionId, routingKey);
+            dispatch(setFocus(FOCUS_KEYS.ARR, 2, 'subNodeForm', {descItemTypeId: descItemTypeId, descItemObjectId: null}))
         }
     }
 
@@ -713,11 +724,11 @@ class ItemFormActions {
      */
     fundSubNodeFormDescItemTypeDelete(versionId, routingKey, valueLocation) {
         return (dispatch, getState) => {
-            var state = getState();
-            var subNodeForm = this._getItemFormStore(state, versionId, routingKey);
-            var loc = subNodeForm.getLoc(subNodeForm, valueLocation);
+            const state = getState();
+            const subNodeForm = this._getItemFormStore(state, versionId, routingKey);
+            const loc = subNodeForm.getLoc(subNodeForm, valueLocation);
 
-            var hasDescItemsForDelete = false;
+            let hasDescItemsForDelete = false;
             loc.descItemType.descItems.forEach(descItem => {
                 if (typeof descItem.id !== 'undefined') {
                     hasDescItemsForDelete = true;
@@ -779,7 +790,7 @@ class ItemFormActions {
      */
     fundSubNodeFormFetchIfNeeded(versionId, routingKey) {
         return (dispatch, getState) => {
-            var state = getState();
+            const state = getState();
 
             // Fetch může být pouze v případě, že už jsou načteny číselníkové hodnoty na typy položek v ref
             if (
@@ -840,8 +851,11 @@ class ItemFormActions {
 }
 var debouncedGetFundNodeForm = debounce(WebApi.getFundNodeForm,200);
 class NodeFormActions extends ItemFormActions {
+
+    static AREA = "NODE";
+
     constructor() {
-        super("NODE");
+        super(NodeFormActions.AREA);
     }
 
     /**
@@ -869,16 +883,16 @@ class NodeFormActions extends ItemFormActions {
      */
     //@Override
     _getItemFormData(getState, dispatch, versionId, nodeId, routingKey) {
-        const type = getRoutingKeyType(routingKey)
+        const type = getRoutingKeyType(routingKey);
         switch (type) {
             case 'NODE':    // podpora kešování
-                var state = getState()
-                var node = this._getParentObjStore(state, versionId, routingKey);
-                if (node === null) return   // nemělo by nastat
+                const state = getState();
+                const node = this._getParentObjStore(state, versionId, routingKey);
+                if (node === null) return;   // nemělo by nastat
 
-                const subNodeFormCache = node.subNodeFormCache
+                const subNodeFormCache = node.subNodeFormCache;
 
-                var data = subNodeFormCache.dataCache[nodeId]
+                const data = subNodeFormCache.dataCache[nodeId];
                 if (!data) {    // není v cache, načteme ji včetně okolí
                     // ##
                     // # Data pro cache, jen pokud již cache nenačítá
@@ -887,33 +901,33 @@ class NodeFormActions extends ItemFormActions {
                         if (node.isNodeInfoFetching || !node.nodeInfoFetched || node.nodeInfoDirty) {   // nemáme platné okolí (okolní NODE) pro daný NODE, raději je načteme ze serveru; nemáme vlastně okolní NODE pro získání seznamu ID pro načtení formulářů pro cache
                             //console.log('### READ_CACHE', 'around')
 
-                            dispatch(this._fundSubNodeFormCacheRequest(versionId, routingKey))
+                            dispatch(this._fundSubNodeFormCacheRequest(versionId, routingKey));
                             WebApi.getFundNodeFormsWithAround(versionId, nodeId, CACHE_SIZE2)
                                 .then(json => {
                                     dispatch(this._fundSubNodeFormCacheResponse(versionId, routingKey, json.forms))
                                 })
                         } else {    // pro získání id okolí můžeme použít store
                             // Načtení okolí položky
-                            var index = indexById(node.childNodes, nodeId)
-                            var left = node.childNodes.slice(Math.max(index - CACHE_SIZE2, 0), index)
-                            var right = node.childNodes.slice(index, index + CACHE_SIZE2)
+                            const index = indexById(node.childNodes, nodeId);
+                            const left = node.childNodes.slice(Math.max(index - CACHE_SIZE2, 0), index);
+                            const right = node.childNodes.slice(index, index + CACHE_SIZE2);
 
-                            var idsForFetch = []
+                            const idsForFetch = [];
                             left.forEach(n => {
                                 if (!subNodeFormCache.dataCache[n.id]) {
                                     idsForFetch.push(n.id)
                                 }
-                            })
+                            });
                             right.forEach(n => {
                                 if (!subNodeFormCache.dataCache[n.id]) {
                                     idsForFetch.push(n.id)
                                 }
-                            })
+                            });
 
                             //console.log('### READ_CACHE', idsForFetch, node.childNodes, left, right)
 
                             if (idsForFetch.length > 0) {   // máme něco pro načtení
-                                dispatch(this._fundSubNodeFormCacheRequest(versionId, routingKey))
+                                dispatch(this._fundSubNodeFormCacheRequest(versionId, routingKey));
                                 WebApi.getFundNodeForms(versionId, idsForFetch)
                                     .then(json => {
                                         dispatch(this._fundSubNodeFormCacheResponse(versionId, routingKey, json.forms))
@@ -939,17 +953,17 @@ class NodeFormActions extends ItemFormActions {
 
     // @Override
     _getItemFormStore(state, versionId, routingKey) {
-        const type = getRoutingKeyType(routingKey)
+        const type = getRoutingKeyType(routingKey);
         switch (type) {
             case 'NODE':
-                var node = this._getParentObjStore(state, versionId, routingKey)
+                const node = this._getParentObjStore(state, versionId, routingKey);
                 if (node !== null) {
                     return node.subNodeForm
                 } else {
                     return null
                 }
             case 'DATA_GRID':
-                var fundIndex = indexById(state.arrRegion.funds, versionId, "versionId");
+                const fundIndex = indexById(state.arrRegion.funds, versionId, "versionId");
                 if (fundIndex !== null) {
                     return state.arrRegion.funds[fundIndex].fundDataGrid.subNodeForm
                 } else {
@@ -962,19 +976,18 @@ class NodeFormActions extends ItemFormActions {
 
     // @Override
     _getParentObjStore(state, versionId, routingKey) {
-        const type = getRoutingKeyType(routingKey)
+        const type = getRoutingKeyType(routingKey);
         switch (type) {
             case 'NODE':
-                var r = findByRoutingKeyInGlobalState(state, versionId, routingKey);
-                if (r != null) {
+                const r = findByRoutingKeyInGlobalState(state, versionId, routingKey);
+                if (r !== null) {
                     return r.node;
                 }
-                break
+                break;
             case 'DATA_GRID':
-                var fundIndex = indexById(state.arrRegion.funds, versionId, "versionId");
+                const fundIndex = indexById(state.arrRegion.funds, versionId, "versionId");
                 if (fundIndex !== null) {
-                    const fundDataGrid = state.arrRegion.funds[fundIndex].fundDataGrid
-                    return fundDataGrid;
+                    return state.arrRegion.funds[fundIndex].fundDataGrid;
                 }
                 break
         }
@@ -1027,7 +1040,7 @@ class NodeFormActions extends ItemFormActions {
 
     // @Override
     _getParentObjIdInfo(parentObjStore, routingKey) {
-        const type = getRoutingKeyType(routingKey)
+        const type = getRoutingKeyType(routingKey);
         switch (type) {
             case 'NODE':
                 return { parentId: parentObjStore.selectedSubNodeId, parentVersion: parentObjStore.subNodeForm.versionId };
@@ -1038,8 +1051,11 @@ class NodeFormActions extends ItemFormActions {
 }
 
 class OutputFormActions extends ItemFormActions {
+
+    static AREA = "OUTPUT";
+
     constructor() {
-        super("OUTPUT");
+        super(OutputFormActions.AREA);
     }
 
     /** Načtení server dat pro formulář pro aktuálně předané parametry BEZ využití cache. */
@@ -1051,7 +1067,7 @@ class OutputFormActions extends ItemFormActions {
 
     // @Override
     _getItemFormStore(state, versionId, routingKey) {
-        var fundIndex = indexById(state.arrRegion.funds, versionId, "versionId");
+        const fundIndex = indexById(state.arrRegion.funds, versionId, "versionId");
         if (fundIndex !== null) {
             return state.arrRegion.funds[fundIndex].fundOutput.fundOutputDetail.subNodeForm
         } else {
@@ -1061,8 +1077,8 @@ class OutputFormActions extends ItemFormActions {
 
     // @Override
     _getParentObjStore(state, versionId, routingKey) {
-        var fundIndex = indexById(state.arrRegion.funds, versionId, "versionId");
-        if (fundIndex != null) {
+        const fundIndex = indexById(state.arrRegion.funds, versionId, "versionId");
+        if (fundIndex !== null) {
             const fund = state.arrRegion.funds[fundIndex];
             return fund.fundOutput.fundOutputDetail;
         } else {
@@ -1116,8 +1132,90 @@ class OutputFormActions extends ItemFormActions {
     }
 }
 
+class StructureFormActions extends ItemFormActions {
+
+    static AREA = "STRUCTURE";
+
+    constructor() {
+        super(StructureFormActions.AREA);
+    }
+
+    /** Načtení server dat pro formulář pro aktuálně předané parametry BEZ využití cache. */
+    //@Override
+    _getItemFormData(getState, dispatch, versionId, nodeId, routingKey) {
+        // není podpora kešování
+        return WebApi.getFormStructureItems(versionId, nodeId).then(i => ({...i, parent: {...i.parent,version:0}}))
+    }
+
+    // @Override
+    _getItemFormStore(state, versionId, routingKey) {
+        const fundIndex = indexById(state.arrRegion.funds, versionId, "versionId");
+        if (fundIndex !== null) {
+            return state.arrRegion.funds[fundIndex].structureNodeForm.subNodeForm
+        } else {
+            return null
+        }
+    }
+
+    // @Override
+    _getParentObjStore(state, versionId, routingKey) {
+        const fundIndex = indexById(state.arrRegion.funds, versionId, "versionId");
+        if (fundIndex !== null) {
+            const fund = state.arrRegion.funds[fundIndex];
+            return fund.structureNodeForm;
+        } else {
+            return null;
+        }
+    }
+
+    // @Override
+    _callCreateDescItem(versionId, parentId, nodeVersionId, descItemTypeId, descItem) {
+        return WebApi.createStructureItem(versionId, parentId, descItemTypeId, descItem);
+    }
+
+    // @Override
+    _callUpdateDescItem(versionId, parentVersionId, descItem) {
+        return WebApi.updateStructureItem(versionId, descItem);
+    }
+
+    // @Override
+    _callDeleteDescItem(versionId, parentVersionId, descItem) {
+        return WebApi.deleteStructureItem(versionId, descItem);
+    }
+
+    // @Override
+    _callArrCoordinatesImport(versionId, parentId, parentVersionId, descItemTypeId, file) {
+        // Not implemented
+    }
+
+    // @Override
+    _callDescItemCsvImport(versionId, parentId, parentVersionId, descItemTypeId, file) {
+        // Not implemented
+    }
+
+    // @Override
+    _callDeleteDescItemType(versionId, parentId, parentVersionId, descItemTypeId) {
+        return WebApi.deleteStructureItemsByType(versionId, parentId, descItemTypeId);
+    }
+
+    // @Override
+    _callSetNotIdentifiedDescItem(versionId, nodeId, parentNodeVersion, descItemTypeId, descItemSpecId, descItemObjectId) {
+        // Not implemented
+    }
+
+    // @Override
+    _callUnsetNotIdentifiedDescItem(versionId, nodeId, parentNodeVersion, outputItemTypeId, outputItemSpecId, outputItemObjectId) {
+        // Not implemented
+    }
+
+// @Override
+    _getParentObjIdInfo(parentObjStore, routingKey) {
+        return { parentId: parentObjStore.id, parentVersion: parentObjStore.version };
+    }
+}
+
 
 
 export const nodeFormActions = new NodeFormActions();
 export const outputFormActions =  new OutputFormActions();
-
+export const structureFormActions =  new StructureFormActions();

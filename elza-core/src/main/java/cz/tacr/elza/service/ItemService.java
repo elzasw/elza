@@ -14,6 +14,10 @@ import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 
+import cz.tacr.elza.domain.ArrDataStructureRef;
+import cz.tacr.elza.domain.ArrStructureData;
+import cz.tacr.elza.domain.factory.DescItemFactory;
+import cz.tacr.elza.repository.StructureDataRepository;
 import org.apache.commons.lang.NotImplementedException;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.beans.BeanUtils;
@@ -33,7 +37,6 @@ import cz.tacr.elza.domain.ArrDataFileRef;
 import cz.tacr.elza.domain.ArrDataInteger;
 import cz.tacr.elza.domain.ArrDataJsonTable;
 import cz.tacr.elza.domain.ArrDataNull;
-import cz.tacr.elza.domain.ArrDataPacketRef;
 import cz.tacr.elza.domain.ArrDataPartyRef;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ArrDataString;
@@ -50,14 +53,13 @@ import cz.tacr.elza.domain.ArrItemFileRef;
 import cz.tacr.elza.domain.ArrItemFormattedText;
 import cz.tacr.elza.domain.ArrItemInt;
 import cz.tacr.elza.domain.ArrItemJsonTable;
-import cz.tacr.elza.domain.ArrItemPacketRef;
+import cz.tacr.elza.domain.ArrItemStructureRef;
 import cz.tacr.elza.domain.ArrItemPartyRef;
 import cz.tacr.elza.domain.ArrItemRecordRef;
 import cz.tacr.elza.domain.ArrItemString;
 import cz.tacr.elza.domain.ArrItemText;
 import cz.tacr.elza.domain.ArrItemUnitdate;
 import cz.tacr.elza.domain.ArrItemUnitid;
-import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RulItemSpec;
@@ -77,7 +79,7 @@ import cz.tacr.elza.repository.DataFileRefRepository;
 import cz.tacr.elza.repository.DataIntegerRepository;
 import cz.tacr.elza.repository.DataJsonTableRepository;
 import cz.tacr.elza.repository.DataNullRepository;
-import cz.tacr.elza.repository.DataPacketRefRepository;
+import cz.tacr.elza.repository.DataStructureRefRepository;
 import cz.tacr.elza.repository.DataPartyRefRepository;
 import cz.tacr.elza.repository.DataRecordRefRepository;
 import cz.tacr.elza.repository.DataRepository;
@@ -88,7 +90,6 @@ import cz.tacr.elza.repository.DataUnitidRepository;
 import cz.tacr.elza.repository.FundFileRepository;
 import cz.tacr.elza.repository.ItemRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
-import cz.tacr.elza.repository.PacketRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
 import ma.glasnost.orika.CustomMapper;
@@ -153,7 +154,7 @@ public class ItemService implements InitializingBean {
     private DataDecimalRepository dataDecimalRepository;
 
     @Autowired
-    private DataPacketRefRepository dataPacketRefRepository;
+    private DataStructureRefRepository dataStructureRefRepository;
 
     @Autowired
     private DataFileRefRepository dataFileRefRepository;
@@ -171,7 +172,7 @@ public class ItemService implements InitializingBean {
     private PartyRepository partyRepository;
 
     @Autowired
-    private PacketRepository packetRepository;
+    private StructureDataRepository structureDataRepository;
 
     @Autowired
     private FundFileRepository fundFileRepository;
@@ -310,7 +311,7 @@ public class ItemService implements InitializingBean {
         defineMapUnitdate();
         defineMapUnitid();
         defineMapDecimal();
-        defineMapPacketRef();
+        defineMapStructureRef();
         defineMapFileRef();
         defineMapEnum();
         defineMapJsonTable();
@@ -495,36 +496,36 @@ public class ItemService implements InitializingBean {
     }
 
     /**
-     * Nadefinování pravidel pro převod formátu PacketRef.
+     * Nadefinování pravidel pro převod formátu StrucureRef.
      */
-    private void defineMapPacketRef() {
-        factory.classMap(ArrItemPacketRef.class, ArrDataPacketRef.class)
-        .customize(new CustomMapper<ArrItemPacketRef, ArrDataPacketRef>() {
+    private void defineMapStructureRef() {
+        factory.classMap(ArrItemStructureRef.class, ArrDataStructureRef.class)
+        .customize(new CustomMapper<ArrItemStructureRef, ArrDataStructureRef>() {
 
             @Override
-            public void mapAtoB(final ArrItemPacketRef arrDescItemPartyRef,
-                                final ArrDataPacketRef arrDataPartyRef,
+            public void mapAtoB(final ArrItemStructureRef arrDescItemPartyRef,
+                                final ArrDataStructureRef arrDataPartyRef,
                                 final MappingContext context) {
-                arrDataPartyRef.setPacket(arrDescItemPartyRef.getPacket());
+                arrDataPartyRef.setStructureData(arrDescItemPartyRef.getStructureData());
             }
 
             @Override
-            public void mapBtoA(final ArrDataPacketRef arrDataPartyRef,
-                                final ArrItemPacketRef arrDescItemPartyRef,
+            public void mapBtoA(final ArrDataStructureRef arrDataPartyRef,
+                                final ArrItemStructureRef arrDescItemPartyRef,
                                 final MappingContext context) {
-                arrDescItemPartyRef.setPacket(arrDataPartyRef.getPacket());
+                arrDescItemPartyRef.setStructureData(arrDataPartyRef.getStructureData());
             }
 
         }).register();
 
-        factory.classMap(ArrDataPacketRef.class, ArrDataPacketRef.class)
-        .customize(new CustomMapper<ArrDataPacketRef, ArrDataPacketRef>() {
+        factory.classMap(ArrDataStructureRef.class, ArrDataStructureRef.class)
+                .customize(new CustomMapper<ArrDataStructureRef, ArrDataStructureRef>() {
             @Override
-            public void mapAtoB(final ArrDataPacketRef arrDataPartyRef,
-                                final ArrDataPacketRef arrDataPartyRefNew,
+                    public void mapAtoB(final ArrDataStructureRef arrDataPartyRef,
+                                        final ArrDataStructureRef arrDataPartyRefNew,
                                 final MappingContext context) {
                 arrDataPartyRefNew.setDataType(arrDataPartyRef.getDataType());
-                arrDataPartyRefNew.setPacket(arrDataPartyRef.getPacket());
+                        arrDataPartyRefNew.setStructureData(arrDataPartyRef.getStructureData());
             }
         }).register();
     }
@@ -905,7 +906,7 @@ public class ItemService implements InitializingBean {
         mapRepository.put(ArrDataUnitdate.class, dataUnitdateRepository);
         mapRepository.put(ArrDataUnitid.class, dataUnitidRepository);
         mapRepository.put(ArrDataDecimal.class, dataDecimalRepository);
-        mapRepository.put(ArrDataPacketRef.class, dataPacketRefRepository);
+        mapRepository.put(ArrDataStructureRef.class, dataStructureRefRepository);
         mapRepository.put(ArrDataFileRef.class, dataFileRefRepository);
         mapRepository.put(ArrDataNull.class, dataNullRepository);
         mapRepository.put(ArrDataJsonTable.class, dataJsonTableRepository);
@@ -1055,7 +1056,7 @@ public class ItemService implements InitializingBean {
 
         // mapy pro naplnění ID entit
         Map<Integer, ArrDataPartyRef> partyMap = new HashMap<>();
-        Map<Integer, ArrDataPacketRef> packetMap = new HashMap<>();
+        Map<Integer, ArrDataStructureRef> structureMap = new HashMap<>();
         Map<Integer, ArrDataFileRef> fileMap = new HashMap<>();
         Map<Integer, ArrDataRecordRef> recordMap = new HashMap<>();
 
@@ -1066,9 +1067,9 @@ public class ItemService implements InitializingBean {
                 if (data instanceof ArrDataPartyRef) {
                     ParParty party = ((ArrDataPartyRef) data).getParty();
                     partyMap.put(party.getPartyId(), (ArrDataPartyRef) data);
-                } else if (data instanceof ArrDataPacketRef) {
-                    ArrPacket packet = ((ArrDataPacketRef) data).getPacket();
-                    packetMap.put(packet.getPacketId(), (ArrDataPacketRef) data);
+                } else if (data instanceof ArrDataStructureRef) {
+                    ArrStructureData structureData = ((ArrDataStructureRef) data).getStructureData();
+                    structureMap.put(structureData.getStructureDataId(), (ArrDataStructureRef) data);
                 } else if (data instanceof ArrDataFileRef) {
                     ArrFile file = ((ArrDataFileRef) data).getFile();
                     fileMap.put(file.getFileId(), (ArrDataFileRef) data);
@@ -1079,10 +1080,10 @@ public class ItemService implements InitializingBean {
             }
         }
 
-        Set<Integer> packetIds = packetMap.keySet();
-        List<ArrPacket> packetEntities = packetRepository.findAll(packetIds);
-        for (ArrPacket packetEntity : packetEntities) {
-            packetMap.get(packetEntity.getPacketId()).setPacket(packetEntity);
+        Set<Integer> structureDataIds = structureMap.keySet();
+        List<ArrStructureData> structureDataEntities = structureDataRepository.findAll(structureDataIds);
+        for (ArrStructureData structureDataEntity : structureDataEntities) {
+            structureMap.get(structureDataEntity.getStructureDataId()).setStructureData(structureDataEntity);
         }
 
         Set<Integer> partyIds = partyMap.keySet();

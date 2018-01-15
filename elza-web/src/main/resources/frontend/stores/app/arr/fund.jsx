@@ -6,14 +6,13 @@ import fundDataGrid from './fundDataGrid.jsx'
 import bulkActions from './bulkActions.jsx'
 import versionValidation from './versionValidation.jsx'
 import fundNodesPolicy from './fundNodesPolicy.jsx'
-import fundPackets from './fundPackets.jsx'
 import fundFiles from './fundFiles.jsx'
 import fundOutput from './fundOutput.jsx'
 import fundAction from './fundAction.jsx'
 import {consolidateState} from 'components/Utils.jsx'
 import {isBulkAction} from 'actions/arr/bulkActions.jsx'
 import {isFundTreeAction} from 'actions/arr/fundTree.jsx'
-import {nodeFormActions} from 'actions/arr/subNodeForm.jsx'
+import {nodeFormActions, outputFormActions, structureFormActions} from 'actions/arr/subNodeForm.jsx'
 import {isSubNodeInfoAction} from 'actions/arr/subNodeInfo.jsx'
 import {isNodeInfoAction} from 'actions/arr/nodeInfo.jsx'
 import {isVersionValidation} from 'actions/arr/versionValidation.jsx'
@@ -24,7 +23,6 @@ import {isSubNodeDaosAction} from 'actions/arr/subNodeDaos.jsx'
 import {isDeveloperScenariosAction} from 'actions/global/developer.jsx'
 import {isFundDataGridAction} from 'actions/arr/fundDataGrid.jsx'
 import {isFundChangeAction} from 'actions/global/change.jsx'
-import {isFundPacketsAction} from 'actions/arr/fundPackets.jsx'
 import {isFundFilesAction} from 'actions/arr/fundFiles.jsx'
 import {isFundActionAction} from 'actions/arr/fundAction.jsx'
 import {getRoutingKeyType} from 'stores/app/utils.jsx'
@@ -33,6 +31,8 @@ import DetailReducer from "shared/detail/DetailReducer";
 import SimpleListReducer from "shared/list/simple/SimpleListReducer";
 import processAreaStores from "shared/utils/processAreaStores";
 import isCommonArea from "stores/utils/isCommonArea";
+import structureNodeForm from "./structureNodeForm";
+import {isStructureNodeForm} from "../../../actions/arr/structureNodeForm";
 
 export function fundInitState(fundWithVersion) {
     const result = {
@@ -46,7 +46,6 @@ export function fundInitState(fundWithVersion) {
         fundAction: fundAction(),
         fundOutput: fundOutput(),
         fundDataGrid: fundDataGrid(),
-        fundPackets: fundPackets(),
         fundFiles: fundFiles(),
         fundTree: fundTree(undefined, {type: ''}),
         fundTreeMovementsLeft: fundTree(undefined, {type: ''}),
@@ -68,6 +67,7 @@ export function fundInitState(fundWithVersion) {
         nodeDaoList: SimpleListReducer(), // seznam DAO pro node
         nodeDaoListAssign: SimpleListReducer(), // seznam DAO pro node sloužící pro node, které jsou sekundární, např. pro přiřazení atp.
         packageDaoList: SimpleListReducer(), // seznam DAO pro balíček
+        structureNodeForm: structureNodeForm(),
         reducer: fund,
     };
 
@@ -92,22 +92,22 @@ function initFundTreeNodes(fundTreeNodes) {
 function updateFundTree(state, action) {
     switch (action.area) {
         case types.FUND_TREE_AREA_MAIN:
-            state.fundTree = fundTree(state.fundTree, action)
+            state.fundTree = fundTree(state.fundTree, action);
             break;
         case types.FUND_TREE_AREA_MOVEMENTS_LEFT:
-            state.fundTreeMovementsLeft = fundTree(state.fundTreeMovementsLeft, action)
+            state.fundTreeMovementsLeft = fundTree(state.fundTreeMovementsLeft, action);
             break;
         case types.FUND_TREE_AREA_MOVEMENTS_RIGHT:
-            state.fundTreeMovementsRight = fundTree(state.fundTreeMovementsRight, action)
+            state.fundTreeMovementsRight = fundTree(state.fundTreeMovementsRight, action);
             break;
         case types.FUND_TREE_AREA_NODES:
-            state.fundTreeNodes = fundTree(state.fundTreeNodes, action)
+            state.fundTreeNodes = fundTree(state.fundTreeNodes, action);
             break;
         case types.FUND_TREE_AREA_DAOS_LEFT:
-            state.fundTreeDaosLeft = fundTree(state.fundTreeDaosLeft, action)
+            state.fundTreeDaosLeft = fundTree(state.fundTreeDaosLeft, action);
             break;
         case types.FUND_TREE_AREA_DAOS_RIGHT:
-            state.fundTreeDaosRight = fundTree(state.fundTreeDaosRight, action)
+            state.fundTreeDaosRight = fundTree(state.fundTreeDaosRight, action);
             break;
     }
 }
@@ -118,26 +118,26 @@ export function fund(state, action) {
     }
 
     if (isBulkAction(action)) {
-        const result = {...state, bulkActions: bulkActions(state.bulkActions, action)}
+        const result = {...state, bulkActions: bulkActions(state.bulkActions, action)};
         return consolidateState(state, result);
     }
     if (isFundActionAction(action)) {
-        const result = {...state, fundAction: fundAction(state.fundAction, action)}
+        const result = {...state, fundAction: fundAction(state.fundAction, action)};
         return consolidateState(state, result);
     }
 
     if (isFundOutput(action)) {
-        const result = {...state, fundOutput: fundOutput(state.fundOutput, action)}
+        const result = {...state, fundOutput: fundOutput(state.fundOutput, action)};
         return consolidateState(state, result);
     }
 
-    if (isFundPacketsAction(action)) {
-        const result = {...state, fundPackets: fundPackets(state.fundPackets, action)}
+    if (isStructureNodeForm(action)) {
+        const result = {...state, structureNodeForm: structureNodeForm(state.structureNodeForm, action)};
         return consolidateState(state, result);
     }
 
     if (isFundFilesAction(action)) {
-        const result = {...state, fundFiles: fundFiles(state.fundFiles, action)}
+        const result = {...state, fundFiles: fundFiles(state.fundFiles, action)};
         return consolidateState(state, result);
     }
 
@@ -157,15 +157,15 @@ export function fund(state, action) {
         return consolidateState(state, result)
     }
 
-    if (nodeFormActions.isSubNodeFormAction(action, "NODE")) {
-        const type = getRoutingKeyType(action.routingKey)
+    if (nodeFormActions.isSubNodeFormAction(action)) {
+        const type = getRoutingKeyType(action.routingKey);
         switch (type) {
             case 'NODE': {
                 const result = {
                     ...state,
                     nodes: nodes(state.nodes, action),
                     fundTree: fundTree(state.fundTree, action),
-                }
+                };
                 return consolidateState(state, result);
             }
             case 'DATA_GRID': {
@@ -173,8 +173,11 @@ export function fund(state, action) {
                 return consolidateState(state, result)
             }
         }
-    } else if (nodeFormActions.isSubNodeFormAction(action, "OUTPUT")) {
+    } else if (outputFormActions.isSubNodeFormAction(action)) {
         const result = {...state, fundOutput: fundOutput(state.fundOutput, action)};
+        return consolidateState(state, result)
+    } else if (structureFormActions.isSubNodeFormAction(action)) {
+        const result = {...state, structureNodeForm: structureNodeForm(state.structureNodeForm, action)};
         return consolidateState(state, result)
     }
 
@@ -192,7 +195,7 @@ export function fund(state, action) {
             ...state,
             nodes: nodes(state.nodes, action),
             fundTree: fundTree(state.fundTree, action),
-        }
+        };
         return consolidateState(state, result);
     }
 
@@ -203,7 +206,7 @@ export function fund(state, action) {
             fundTree: fundTree(state.fundTree, action),
             fundNodesPolicy: fundNodesPolicy(state.fundNodesPolicy, action),
             fundNodesError: {}
-        }
+        };
         return consolidateState(state, result);
     }
 
@@ -224,7 +227,6 @@ export function fund(state, action) {
                 nodes: nodes(state.nodes, action),
                 fundOutput: fundOutput(state.fundOutput, action),
                 fundDataGrid: fundDataGrid(state.fundDataGrid, action),
-                fundPackets: fundPackets(state.fundPackets, action),
                 fundFiles: fundFiles(state.fundFiles, action),
                 fundNodesPolicy: fundNodesPolicy(state.fundNodesPolicy, action),
                 bulkActions: bulkActions(undefined, {type: ''}),
@@ -239,8 +241,9 @@ export function fund(state, action) {
                 nodeDaoList: SimpleListReducer(),
                 nodeDaoListAssign: SimpleListReducer(),
                 packageDaoList: SimpleListReducer(),
+                structureNodeForm: structureNodeForm(),
                 reducer: fund,
-            }
+            };
         case types.STORE_SAVE:
             const {id, versionId, name, lockDate, activeVersion} = state;
             return {
@@ -257,9 +260,8 @@ export function fund(state, action) {
                 nodes: nodes(state.nodes, action),
                 fundOutput: fundOutput(state.fundOutput, action),
                 fundDataGrid: fundDataGrid(state.fundDataGrid, action),
-                fundPackets: fundPackets(state.fundPackets, action),
                 fundFiles: fundFiles(state.fundFiles, action),
-            }
+            };
         case types.OUTPUT_CHANGES:
         case types.OUTPUT_CHANGES_DETAIL:
         case types.OUTPUT_STATE_CHANGE:
@@ -267,7 +269,7 @@ export function fund(state, action) {
             const result = {
                 ...state,
                 fundOutput: fundOutput(state.fundOutput, action),
-            }
+            };
             return consolidateState(state, result);
         }
         case types.FUND_FUND_CHANGE_READ_MODE: {
@@ -275,7 +277,7 @@ export function fund(state, action) {
                 ...state,
                 nodes: nodes(state.nodes, action),
                 fundOutput: fundOutput(state.fundOutput, action),
-            }
+            };
             return consolidateState(state, result);
         }
         case types.CHANGE_FUND_ACTION: {
@@ -286,11 +288,6 @@ export function fund(state, action) {
             };
             return consolidateState(state, result);
         }
-        case types.CHANGE_PACKETS:
-            return {
-                ...state,
-                fundPackets: fundPackets(state.fundPackets, action)
-            }
         case types.CHANGE_FILES: {
             return {
                 ...state,
@@ -321,7 +318,7 @@ export function fund(state, action) {
             return {
                 ...state,
                 dirty: true,
-            }
+            };
         case types.GLOBAL_CONTEXT_MENU_HIDE: {
             const result = {...state};
             updateFundTree(result, action);
@@ -386,7 +383,7 @@ export function fund(state, action) {
                 bulkActions: bulkActions(state.bulkActions, action),
                 fundNodesPolicy: fundNodesPolicy(state.fundNodesPolicy, action),
                 fundNodesError: {}, // nová instance
-            }
+            };
             return consolidateState(state, result);
         }
         case types.FUND_FUND_APPROVE_VERSION:
@@ -405,7 +402,7 @@ export function fund(state, action) {
             return {
                 ...state,
                 fundNodesPolicy: fundNodesPolicy(state.fundNodesPolicy, action),
-            }
+            };
 
         case types.FUND_INVALID:
             const result = {
@@ -413,7 +410,7 @@ export function fund(state, action) {
                 fundAction: fundAction(state.fundAction, action),
                 fundOutput: fundOutput(state.fundOutput, action),
                 nodes: nodes(state.nodes, action)
-            }
+            };
             return consolidateState(state, result);
 
         case types.NODES_DELETE: {

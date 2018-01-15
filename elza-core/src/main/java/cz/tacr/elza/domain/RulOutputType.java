@@ -9,6 +9,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import cz.tacr.elza.domain.enumeration.StringLength;
 import org.apache.commons.lang.builder.EqualsBuilder;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -26,19 +27,15 @@ public class RulOutputType {
     @GeneratedValue
     private Integer outputTypeId;
 
-    @Column(length = 50, nullable = false)
+    @Column(length = StringLength.LENGTH_50, nullable = false)
     private String code;
 
-    @Column(length = 250, nullable = false)
+    @Column(length = StringLength.LENGTH_250, nullable = false)
     private String name;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulPackage.class)
     @JoinColumn(name = "packageId", nullable = false)
     private RulPackage rulPackage;
-
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulRule.class)
-    @JoinColumn(name = "ruleId")
-    private RulRule rule;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulRuleSet.class)
     @JoinColumn(name = "ruleSetId", nullable = false)
@@ -46,6 +43,10 @@ public class RulOutputType {
 
 	@Column(nullable = true, updatable = false, insertable = false)
 	private Integer ruleSetId;
+
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulComponent.class)
+    @JoinColumn(name = "componentId")
+    private RulComponent component;
 
     public Integer getOutputTypeId() {
         return outputTypeId;
@@ -79,14 +80,6 @@ public class RulOutputType {
         this.rulPackage = rulPackage;
     }
 
-    public RulRule getRule() {
-        return rule;
-    }
-
-    public void setRule(final RulRule rule) {
-        this.rule = rule;
-    }
-
     public RulRuleSet getRuleSet() {
         return ruleSet;
     }
@@ -98,6 +91,14 @@ public class RulOutputType {
     public void setRuleSet(final RulRuleSet ruleSet) {
         this.ruleSet = ruleSet;
 		this.ruleSetId = ruleSet != null ? ruleSet.getRuleSetId() : null;
+    }
+
+    public RulComponent getComponent() {
+        return component;
+    }
+
+    public void setComponent(final RulComponent component) {
+        this.component = component;
     }
 
     @Override

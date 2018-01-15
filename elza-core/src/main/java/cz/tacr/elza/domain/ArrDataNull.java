@@ -32,4 +32,9 @@ public class ArrDataNull extends ArrData {
 		return new ArrDataNull(this);
 	}
 
+
+    @Override
+    public void merge(final ArrData data) {
+
+    }
 }

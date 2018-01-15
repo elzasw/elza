@@ -34,14 +34,14 @@ public class ValidateResult {
     private Collection<String> fileConflicts;
 
     /**
-	 * Konflikt obalů.
+     * Konflikt strukt. hodnot.
 	 */
-	private boolean packetConflict;
+    private boolean structuredConflict;
 
 	/**
-	 * Seznam konfliktů v obalech.
+     * Seznam konfliktů v strukt. hodnotách.
 	 */
-    private Collection<String> packetConflicts;
+    private Collection<String> structuredConflicts;
 
 	public boolean isScopeError() {
 		return scopeError;
@@ -51,8 +51,8 @@ public class ValidateResult {
 		return fileConflict;
 	}
 
-	public boolean isPacketConflict() {
-		return packetConflict;
+    public boolean isStructuredConflict() {
+        return structuredConflict;
 	}
 
 	public Collection<String> getScopeErrors() {
@@ -63,10 +63,12 @@ public class ValidateResult {
         return fileConflicts;
     }
 
-    public Collection<String> getPacketConflicts() {
-        return packetConflicts;
+    public Collection<String> getStructuredConflicts() {
+        return structuredConflicts;
     }
 
+    public void setStructuredConflicts(final Collection<String> structuredConflicts) {
+        this.structuredConflicts = structuredConflicts;
 
 	public void addMissingScope(String code) {
 		if (scopeErrors == null) {

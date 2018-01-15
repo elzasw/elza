@@ -59,6 +59,8 @@ public class ValidationRules extends Rules {
 
 	@Autowired
 	private StaticDataService staticDataService;
+	@Autowired
+	private RuleService ruleService;
 
 	private static final Logger logger = LoggerFactory.getLogger(ValidationRules.class);
 
@@ -82,13 +84,20 @@ public class ValidationRules extends Rules {
 		DataValidationResults validationResults = new DataValidationResults();
 
 		Path path;
-		List<RulRule> rulPackageRules = packageRulesRepository
-				.findByRuleSetAndRuleTypeOrderByPriorityAsc(version.getRuleSet(), RulRule.RuleType.CONFORMITY_INFO);
+		List<RulArrangementRule> rulPackageRules = arrangementRuleRepository
+				.findByRuleSetAndRuleTypeOrderByPriorityAsc(version.getRuleSet(), RulArrangementRule.RuleType.CONFORMITY_INFO);
 
-		for (RulRule rulPackageRule : rulPackageRules) {
-			path = Paths.get(rulesExecutor.getDroolsDir(rulPackageRule.getRuleSet().getCode()) + File.separator + rulPackageRule.getFilename());
+		for (RulArrangementRule rulPackageRule : rulPackageRules) {
+			path = Paths.get(rulesExecutor.getDroolsDir(rulPackageRule.getPackage().getCode(), rulPackageRule.getRuleSet().getCode()) + File.separator + rulPackageRule.getComponent().getFilename());
 			StatelessKieSession session = createNewStatelessKieSession(path);
 			session.setGlobal("results", validationResults);
+			execute(session, facts);
+		}
+
+		List<RulExtensionRule> rulExtensionRules = ruleService.findExtensionRuleByNode(level.getNode(), RulExtensionRule.RuleType.CONFORMITY_INFO);
+		for (RulExtensionRule rulExtensionRule : rulExtensionRules) {
+			path = Paths.get(rulesExecutor.getDroolsDir(rulExtensionRule.getPackage().getCode(), rulExtensionRule.getArrangementExtension().getRuleSet().getCode()) + File.separator + rulExtensionRule.getComponent().getFilename());
+			StatelessKieSession session = createNewStatelessKieSession(path);
 			execute(session, facts);
 		}
 

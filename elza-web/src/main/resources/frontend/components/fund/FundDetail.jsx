@@ -92,7 +92,7 @@ var FundDetail = class FundDetail extends AbstractReactComponent {
 
 FundDetail.propTypes = {
     fundDetail: React.PropTypes.object.isRequired,
-    fundCount: React.PropTypes.object.isRequired
+    fundCount: React.PropTypes.number.isRequired
 };
 
 function mapStateToProps(state) {

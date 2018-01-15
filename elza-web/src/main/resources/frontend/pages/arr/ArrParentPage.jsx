@@ -21,7 +21,6 @@ import {
     NodeTabs,
     ListBox2,
     LazyListBox,
-    VisiblePolicyForm,
     FundPackets,
     FundFiles,
     FundTreeMain
@@ -31,9 +30,7 @@ import {WebApi} from 'actions/index.jsx';
 import {modalDialogShow} from 'actions/global/modalDialog.jsx'
 import {showRegisterJp, fundsFetchIfNeeded} from 'actions/arr/fund.jsx'
 import {versionValidate, versionValidationErrorNext, versionValidationErrorPrevious} from 'actions/arr/versionValidation.jsx'
-import {packetsFetchIfNeeded} from 'actions/arr/packets.jsx'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
-import {packetTypesFetchIfNeeded} from 'actions/refTables/packetTypes.jsx'
 import {developerNodeScenariosRequest} from 'actions/global/developer.jsx'
 import {isFundRootId, getSettings, setSettings, getOneSettings} from 'components/arr/ArrUtils.jsx';
 import {setFocus} from 'actions/global/focus.jsx'
@@ -48,11 +45,11 @@ import {fundTreeFetchIfNeeded} from 'actions/arr/fundTree.jsx'
 import {Shortcuts} from 'react-shortcuts';
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import * as perms from 'actions/user/Permission.jsx';
-import {selectTab} from 'actions/global/tab.jsx'
 import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx'
 import PageLayout from "../shared/layout/PageLayout";
 import {fundChangeReadMode} from 'actions/arr/fund.jsx'
 import defaultKeymap from './ArrParentPageKeymap.jsx';
+import {FOCUS_KEYS} from "../../constants";
 
 export default class ArrParentPage extends AbstractReactComponent {
 
@@ -66,7 +63,6 @@ export default class ArrParentPage extends AbstractReactComponent {
         rulDataTypes: React.PropTypes.object.isRequired,
         calendarTypes: React.PropTypes.object.isRequired,
         descItemTypes: React.PropTypes.object.isRequired,
-        packetTypes: React.PropTypes.object.isRequired,
         focus: React.PropTypes.object.isRequired,
         userDetail: React.PropTypes.object.isRequired,
         ruleSet: React.PropTypes.object.isRequired,
@@ -87,27 +83,27 @@ export default class ArrParentPage extends AbstractReactComponent {
         e.preventDefault();
         switch (action) {
             case 'back':
-                this.dispatch(routerNavigate("/~arr"));
+                this.props.dispatch(routerNavigate("/~arr"));
                 break;
             case 'arr':
-                this.dispatch(routerNavigate('/arr'));
-                this.dispatch(setFocus('arr', 1))
+                this.props.dispatch(routerNavigate('/arr'));
+                this.props.dispatch(setFocus(FOCUS_KEYS.ARR, 1));
                 break;
             case 'movements':
-                this.dispatch(routerNavigate('/arr/movements'));
-                this.dispatch(setFocus(null, 1))
+                this.props.dispatch(routerNavigate('/arr/movements'));
+                this.props.dispatch(setFocus(FOCUS_KEYS.NONE, 1));
                 break;
             case 'dataGrid':
-                this.dispatch(routerNavigate('/arr/dataGrid'));
-                this.dispatch(setFocus(null, 1))
+                this.props.dispatch(routerNavigate('/arr/dataGrid'));
+                this.props.dispatch(setFocus(FOCUS_KEYS.NONE, 1));
                 break;
             case 'output':
-                this.dispatch(routerNavigate('/arr/output'));
-                this.dispatch(setFocus('fund-output', 1))
+                this.props.dispatch(routerNavigate('/arr/output'));
+                this.props.dispatch(setFocus(FOCUS_KEYS.FUND_OUTPUT, 1));
                 break;
             case 'actions':
-                this.dispatch(routerNavigate('/arr/actions'));
-                this.dispatch(setFocus('fund-action', 1))
+                this.props.dispatch(routerNavigate('/arr/actions'));
+                this.props.dispatch(setFocus(FOCUS_KEYS.FUND_ACTION, 1));
                 break;
             case "TOGGLE_READ_MODE":
                 this.toggleReadMode();
@@ -117,24 +113,20 @@ export default class ArrParentPage extends AbstractReactComponent {
 
     componentDidMount() {
         this.dispatch(descItemTypesFetchIfNeeded());
-        this.dispatch(packetTypesFetchIfNeeded());
         this.dispatch(calendarTypesFetchIfNeeded());
         this.dispatch(fundsFetchIfNeeded());
         var activeFund = this.getActiveFund(this.props);
         if (activeFund !== null) {
-            this.dispatch(packetsFetchIfNeeded(activeFund.id));
             this.requestFundTreeData(activeFund);
         }
     }
 
     componentWillReceiveProps(nextProps) {
         this.dispatch(descItemTypesFetchIfNeeded());
-        this.dispatch(packetTypesFetchIfNeeded());
         this.dispatch(calendarTypesFetchIfNeeded());
         this.dispatch(fundsFetchIfNeeded());
         var activeFund = this.getActiveFund(nextProps);
         if (activeFund !== null) {
-            this.dispatch(packetsFetchIfNeeded(activeFund.id));
             this.requestFundTreeData(activeFund);
         }
     }
@@ -154,7 +146,7 @@ export default class ArrParentPage extends AbstractReactComponent {
         this.dispatch(userDetailsSaveSettings(settings));
     }
     getActiveFund(props) {
-        var arrRegion = props.arrRegion;
+        const arrRegion = props.arrRegion;
         return arrRegion.activeIndex != null ? arrRegion.funds[arrRegion.activeIndex] : null;
     }
 
@@ -183,7 +175,7 @@ export default class ArrParentPage extends AbstractReactComponent {
     }
 
     render() {
-        const {splitter, arrRegion, userDetail, ruleSet, rulDataTypes, calendarTypes, descItemTypes, packetTypes} = this.props;
+        const {splitter, arrRegion, userDetail, ruleSet, rulDataTypes, calendarTypes, descItemTypes} = this.props;
 
         var activeFund = arrRegion.activeIndex != null ? arrRegion.funds[arrRegion.activeIndex] : null;
 
@@ -203,12 +195,6 @@ export default class ArrParentPage extends AbstractReactComponent {
                 closed = activeFund.lockDate != null;
 
                 statusHeader = <ArrFundPanel />
-
-                var packets = [];
-                var fundId = activeFund.id;
-                if (fundId && arrRegion.packets[fundId]) {
-                    packets = arrRegion.packets[fundId].items;
-                }
 
                 centerPanel = this.renderCenterPanel(readMode, closed);
                 leftPanel = this.renderLeftPanel(readMode, closed);

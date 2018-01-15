@@ -43,10 +43,6 @@ public final class ItemProcessorFactory {
         return new PartyProcessor<Event, ParEvent>(context, ParEvent.class);
     }
 
-    public static ItemProcessor createSectionPacketProcessor(ImportContext context) {
-        return new SectionPacketProcessor(context.getSections());
-    }
-
     public static ItemProcessor createSectionLevelProcessor(ImportContext context) {
         return new SectionLevelProcessor(context);
     }

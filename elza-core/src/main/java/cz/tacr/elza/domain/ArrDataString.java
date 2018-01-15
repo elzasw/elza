@@ -46,4 +46,10 @@ public class ArrDataString extends ArrData {
 	public ArrDataString makeCopy() {
 		return new ArrDataString(this);
 	}
+
+
+    @Override
+    public void merge(final ArrData data) {
+        this.setValue(((ArrDataString) data).getValue());
+    }
 }

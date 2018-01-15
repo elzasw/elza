@@ -18,6 +18,7 @@ import PageLayout from "../shared/layout/PageLayout";
 // import AutocompleteTest from "./test/AutocompleteTest";
 
 import './HomePage.less'
+import {FOCUS_KEYS} from "../../constants";
 
 /**
  * Home stránka
@@ -44,7 +45,7 @@ class HomePage extends AbstractReactComponent {
                         focusWasSet()
                     })
                 }
-            } else if (isFocusFor(focus, 'home', 1) || isFocusFor(focus, 'home', 1, 'list')) {
+            } else if (isFocusFor(focus, FOCUS_KEYS.HOME, 1) || isFocusFor(focus, FOCUS_KEYS.HOME, 1, 'list')) {
                 this.setState({}, () => {
                     const listEl = ReactDOM.findDOMNode(this.refs.list);
                     Utils.setInputFocus(listEl, false);

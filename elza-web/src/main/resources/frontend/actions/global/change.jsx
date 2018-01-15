@@ -31,6 +31,7 @@ import {
     registryListInvalidate
 } from 'actions/registry/registry.jsx'
 import {refExternalSystemListInvalidate} from 'actions/refTables/externalSystems'
+import {structureTypeInvalidate} from "../arr/structureType";
 
 export function isFundChangeAction(action) {
     switch (action.type) {
@@ -430,5 +431,17 @@ export function nodesDelete(fundVersionId, nodeIds) {
         type: types.NODES_DELETE,
         versionId: fundVersionId,
         nodeIds: nodeIds
+    }
+}
+
+export function structureChange(data) {
+    return (dispatch,getState) => {
+        const store = getState();
+        const list = storeFromArea(store, 'arrStructure');
+        if (list && list.parent && list.parent.fundVersionId) {
+            if (store.arrRegion.funds.filter(i => i.id == data.fundId && i.versionId == list.parent.fundVersionId).length > 0) {
+                dispatch(structureTypeInvalidate())
+            }
+        }
     }
 }

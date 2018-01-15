@@ -11,6 +11,7 @@ import {outputFormActions} from 'actions/arr/subNodeForm.jsx'
 
 import './NodeSubNodeForm.less';
 import SubNodeForm from "./SubNodeForm";
+import objectById from "../../shared/utils/objectById";
 
 /**
  * Formulář detailu a editace jedné JP - jednoho NODE v konkrétní verzi.
@@ -24,8 +25,7 @@ class OutputSubNodeForm extends AbstractReactComponent {
         rulDataTypes: React.PropTypes.object.isRequired,
         calendarTypes: React.PropTypes.object.isRequired,
         descItemTypes: React.PropTypes.object.isRequired,
-        packetTypes: React.PropTypes.object.isRequired,
-        packets: React.PropTypes.array.isRequired,
+        structureTypes: React.PropTypes.object.isRequired,
         subNodeForm: React.PropTypes.object.isRequired,
         closed: React.PropTypes.bool.isRequired,
         readMode: React.PropTypes.bool.isRequired,
@@ -37,8 +37,7 @@ class OutputSubNodeForm extends AbstractReactComponent {
     };
 
     render() {
-        const {versionId, focus, closed, fundId, rulDataTypes, calendarTypes, descItemTypes, packetTypes, packets,
-            subNodeForm, readMode} = this.props;
+        const {versionId, focus, closed, fundId, rulDataTypes, calendarTypes, structureTypes, descItemTypes, subNodeForm, readMode} = this.props;
 
         return (
             <div className="output-item-form-container">
@@ -51,9 +50,8 @@ class OutputSubNodeForm extends AbstractReactComponent {
                     nodeSetting={null}
                     rulDataTypes={rulDataTypes}
                     calendarTypes={calendarTypes}
+                    structureTypes={structureTypes}
                     descItemTypes={descItemTypes}
-                    packetTypes={packetTypes}
-                    packets={packets}
                     subNodeForm={subNodeForm}
                     closed={closed}
                     conformityInfo={{missings: [], errors: []}}
@@ -74,15 +72,18 @@ class OutputSubNodeForm extends AbstractReactComponent {
 }
 
 function mapStateToProps(state) {
-    const {arrRegion, focus} = state;
-    var fund = null;
+    const {arrRegion, focus, refTables} = state;
+    let fund = null;
+    let structureTypes = null;
     if (arrRegion.activeIndex != null) {
         fund = arrRegion.funds[arrRegion.activeIndex];
+        structureTypes = objectById(refTables.structureTypes.data, fund.versionId, "versionId");
     }
 
     return {
         fund,
         focus,
+        structureTypes
     }
 }
 

@@ -62,4 +62,8 @@ public class ArrDataRecordRef extends ArrData {
 	public ArrDataRecordRef makeCopy() {
 		return new ArrDataRecordRef(this);
 	}
+    @Override
+    public void merge(final ArrData data) {
+        this.setRecord(((ArrDataRecordRef) data).getRecord());
+    }
 }

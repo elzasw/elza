@@ -10,15 +10,12 @@ import cz.tacr.elza.dataexchange.input.DEImportException;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.service.ArrangementService;
 
 /**
  * Represents single imported fund or subtree for specified node.
  */
 public class ContextSection {
-
-    private final Map<String, PacketInfo> packetImportIdMap = new HashMap<>();
 
     private final Map<String, ContextNode> contextNodeImportIdMap = new HashMap<>();
 
@@ -65,20 +62,8 @@ public class ContextSection {
         return arrangementService.getNextDescItemObjectId();
     }
 
-    public PacketInfo getPacketInfo(String importId) {
-        return packetImportIdMap.get(importId);
-    }
-
     public ContextNode getContextNode(String importId) {
         return contextNodeImportIdMap.get(importId);
-    }
-
-    public void addPacket(ArrPacket packet, String importId) {
-        PacketInfo packetInfo = new PacketInfo(packet.getPacketType(), packet.getStorageNumber());
-        if (packetImportIdMap.putIfAbsent(importId, packetInfo) != null) {
-            throw new DEImportException("Fund packet has duplicate id, packetId:" + importId);
-        }
-        context.addPacket(new ArrPacketWrapper(packet, packetInfo));
     }
 
     /**
@@ -87,8 +72,6 @@ public class ContextSection {
 	public ContextNode setRootNode(ArrNode rootNode, String importNodeId) {
         Validate.notNull(rootAdapter);
 
-        // save processed packets
-        context.storePackets();
 
         // create root context node
 		return rootAdapter.createRoot(this, rootNode, importNodeId);

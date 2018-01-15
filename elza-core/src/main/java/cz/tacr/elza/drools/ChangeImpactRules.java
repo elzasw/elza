@@ -1,5 +1,20 @@
 package cz.tacr.elza.drools;
 
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.RulArrangementRule;
+import cz.tacr.elza.domain.RulExtensionRule;
+import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.vo.NodeTypeOperation;
+import cz.tacr.elza.domain.vo.RelatedNodeDirection;
+import cz.tacr.elza.drools.model.DescItem;
+import cz.tacr.elza.drools.model.DescItemChange;
+import cz.tacr.elza.drools.service.ScriptModelFactory;
+import cz.tacr.elza.service.RuleService;
+import org.kie.api.runtime.StatelessKieSession;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
+
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -8,20 +23,6 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-
-import org.kie.api.runtime.StatelessKieSession;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
-
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.RulRule;
-import cz.tacr.elza.domain.RulRuleSet;
-import cz.tacr.elza.domain.vo.NodeTypeOperation;
-import cz.tacr.elza.domain.vo.RelatedNodeDirection;
-import cz.tacr.elza.drools.model.DescItem;
-import cz.tacr.elza.drools.model.DescItemChange;
-import cz.tacr.elza.drools.service.ScriptModelFactory;
 
 
 /**
@@ -40,6 +41,8 @@ public class ChangeImpactRules extends Rules {
     @Autowired
     private RulesExecutor rulesExecutor;
 
+    @Autowired
+    private RuleService ruleService;
 
     /**
      * Spuštění zpracování pravidel.
@@ -63,11 +66,11 @@ public class ChangeImpactRules extends Rules {
         Set<RelatedNodeDirection> relatedNodeDirections = new HashSet<>();
 
         Path path;
-        List<RulRule> rulPackageRules = packageRulesRepository.findByRuleSetAndRuleTypeOrderByPriorityAsc(
-                rulRuleSet, RulRule.RuleType.CONFORMITY_IMPACT);
+        List<RulArrangementRule> rulArrangementRules = arrangementRuleRepository.findByRuleSetAndRuleTypeOrderByPriorityAsc(
+                rulRuleSet, RulArrangementRule.RuleType.CONFORMITY_IMPACT);
 
-        for (RulRule rulPackageRule : rulPackageRules) {
-            path = Paths.get(rulesExecutor.getDroolsDir(rulRuleSet.getCode()) + File.separator + rulPackageRule.getFilename());
+        for (RulArrangementRule rulArrangementRule : rulArrangementRules) {
+            path = Paths.get(rulesExecutor.getDroolsDir(rulArrangementRule.getPackage().getCode(), rulRuleSet.getCode()) + File.separator + rulArrangementRule.getComponent().getFilename());
 
             StatelessKieSession session = createNewStatelessKieSession(path);
 
@@ -76,6 +79,20 @@ public class ChangeImpactRules extends Rules {
 
             execute(session, facts);
         }
+
+        // TODO ELZA-1558: jak?
+        /*List<RulExtensionRule> rulExtensionRules = ruleService.findExtensionRuleByNode(level.getNode(), RulExtensionRule.RuleType.CONFORMITY_INFO);
+        for (RulExtensionRule rulExtensionRule : rulExtensionRules) {
+            path = Paths.get(rulesExecutor.getDroolsDir(rulExtensionRule.getPackage().getCode(), rulExtensionRule.getArrangementExtension().getRuleSet().getCode()) + File.separator + rulExtensionRule.getComponent().getFilename());
+
+            StatelessKieSession session = createNewStatelessKieSession(path);
+
+            // přidání globálních proměnných
+            session.setGlobal("results", relatedNodeDirections);
+
+            execute(session, facts);
+        }*/
+
         return relatedNodeDirections;
     }
 

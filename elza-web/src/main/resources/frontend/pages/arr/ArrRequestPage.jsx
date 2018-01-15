@@ -56,9 +56,7 @@ import * as arrRequestActions from 'actions/arr/arrRequestActions';
 import {fundActionFormShow, fundActionFormChange} from 'actions/arr/fundAction.jsx'
 import {routerNavigate} from 'actions/router.jsx'
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx'
-import {packetTypesFetchIfNeeded} from 'actions/refTables/packetTypes.jsx'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
-import {packetsFetchIfNeeded} from 'actions/arr/packets.jsx'
 import {templatesFetchIfNeeded} from 'actions/refTables/templates.jsx'
 import {outputFormActions} from 'actions/arr/subNodeForm.jsx'
 import {outputTypesFetchIfNeeded} from "actions/refTables/outputTypes.jsx";
@@ -76,6 +74,7 @@ const classNames = require('classnames');
 import {Shortcuts} from 'react-shortcuts';
 
 import "./ArrRequestPage.less";
+import {FOCUS_KEYS} from "../../constants";
 
 class ArrRequestPage extends ArrParentPage {
     constructor(props) {
@@ -115,7 +114,7 @@ class ArrRequestPage extends ArrParentPage {
         var {focus} = props
 
         if (canSetFocus()) {
-            if (isFocusFor(focus, 'fund-request', 1)) {
+            if (isFocusFor(focus, FOCUS_KEYS.FUND_REQUEST, 1)) {
                 this.refs.fundOutputList && this.setState({}, () => {
                     ReactDOM.findDOMNode(this.refs.fundOutputList).focus()
                 })
@@ -131,10 +130,10 @@ class ArrRequestPage extends ArrParentPage {
                 this.handleAddOutput();
                 break;
             case 'area1':
-                this.dispatch(setFocus('fund-request', 1));
+                this.dispatch(setFocus(FOCUS_KEYS.FUND_REQUEST, 1));
                 break;
             case 'area2':
-                this.dispatch(setFocus('fund-request', 2));
+                this.dispatch(setFocus(FOCUS_KEYS.FUND_REQUEST, 2));
                 break;
             default:
                 super.handleShortcuts(action);
@@ -320,7 +319,6 @@ function mapStateToProps(state) {
         rulDataTypes: refTables.rulDataTypes,
         calendarTypes: refTables.calendarTypes,
         descItemTypes: refTables.descItemTypes,
-        packetTypes: refTables.packetTypes,
         ruleSet: refTables.ruleSet,
         templates: refTables.templates,
         outputTypes: refTables.outputTypes.items,

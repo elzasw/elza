@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrNodeExtension;
 import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.BaseCode;
@@ -269,4 +270,44 @@ public class ArrangementCacheService {
         nodeCacheService.saveNode(cachedNode);
     }
 
+    /**
+     * Vytvoření vazby mezi JP a definicí řídících pravidel.
+     *
+     * @param nodeId        identifikátor JP
+     * @param nodeExtension přidáváná vazba
+     */
+    public void createNodeExtension(final Integer nodeId, final ArrNodeExtension nodeExtension) {
+        CachedNode cachedNode = nodeCacheService.getNode(nodeId);
+        List<ArrNodeExtension> nodeExtensions = cachedNode.getNodeExtensions();
+        if (nodeExtensions == null) {
+            nodeExtensions = new ArrayList<>();
+            cachedNode.setNodeExtensions(nodeExtensions);
+        }
+        nodeExtensions.add(nodeExtension);
+        nodeCacheService.saveNode(cachedNode);
+    }
+
+    /**
+     * Odstranění vazby mezi JP a definicí řídících pravidel.
+     *
+     * @param nodeId         identifikátor JP
+     * @param nodeExtensionId identifikátor mazaného záznamu
+     */
+    public void deleteNodeExtension(final Integer nodeId, final Integer nodeExtensionId) {
+        CachedNode cachedNode = nodeCacheService.getNode(nodeId);
+        List<ArrNodeExtension> nodeExtensions = cachedNode.getNodeExtensions();
+        if (nodeExtensions == null) {
+            throw new ObjectNotFoundException("Seznam je prázdný, nelze z něj odebírat navázané položky z definic řídících pravidel", BaseCode.ID_NOT_EXIST);
+        }
+        Iterator<ArrNodeExtension> iterator = nodeExtensions.iterator();
+        while (iterator.hasNext()) {
+            ArrNodeExtension item = iterator.next();
+            if (nodeExtensionId.equals(item.getNodeExtensionId())) {
+                iterator.remove();
+                nodeCacheService.saveNode(cachedNode);
+                return;
+            }
+        }
+        throw new ObjectNotFoundException("Záznam nebyl nalezen v seznamu objektů uložených v cache", BaseCode.ID_NOT_EXIST);
+    }
 }

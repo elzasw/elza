@@ -18,7 +18,7 @@ import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.drools.model.DescItem;
 import cz.tacr.elza.drools.model.Level;
-import cz.tacr.elza.drools.model.Packet;
+import cz.tacr.elza.drools.model.Structured;
 
 /**
  * Factory method for the base Drools model objects.
@@ -78,10 +78,11 @@ public class ModelFactory {
 
             if (!voDescItem.isUndefined()) {
 				ArrData data = descItem.getData();
-				if (data.getType() == DataType.PACKET_REF) {
-					ArrDataPacketRef packetRef = (ArrDataPacketRef) descItem.getData();
-                    ArrPacket packet = packetRef.getPacket();
-                    voDescItem.setPacket(createPacket(packet));
+				if (data.getType() == DataType.STRUCTURED) {
+					ArrDataStructureRef structureRef = (ArrDataStructureRef) descItem.getData();
+                    ArrStructureData structureData = structureRef.getStructureData();
+                    voDescItem.setStructured(createStructured(structureData));
+                } else if (descItemTypesForIntegers.contains(descItem.getItemType())) {
 				} else if (data.getType() == DataType.INT) {
 					ArrDataInteger integer = (ArrDataInteger) descItem.getData();
                     voDescItem.setInteger(integer.getValue());
@@ -94,23 +95,12 @@ public class ModelFactory {
 
     /**
      * Create packet for Drools from corresponding object
-     * @param packet
+     * @param structureData
      * @return
      */
-    static public Packet createPacket(final ArrPacket packet) {
-
-        Packet result = new Packet();
-        result.setStorageNumber(packet.getStorageNumber());
-        result.setState(packet.getState());
-
-        if (packet.getPacketType() != null) {
-            RulPacketType packetType = packet.getPacketType();
-            Packet.VOPacketType voPacketType = new Packet.VOPacketType();
-            voPacketType.setCode(packetType.getCode());
-            voPacketType.setName(packetType.getName());
-            voPacketType.setShortcut(packetType.getShortcut());
-            result.setPacketType(voPacketType);
-        }
+    static public Structured createStructured(final ArrStructureData structureData) {
+        Structured result = new Structured();
+        result.setValue(structureData.getValue());
         return result;
     }
 

@@ -152,7 +152,7 @@ public class DescItemRepositoryImpl implements DescItemRepositoryCustom {
     @Override
     public List<ArrDescItem> findDescItemsByNodeIds(final Set<Integer> nodeIds, final Set<RulItemType> itemTypes, final Integer changeId) {
         String hql = "SELECT di FROM arr_item di JOIN FETCH di.node n JOIN FETCH di.itemType dit LEFT JOIN FETCH di.itemSpec dis " +
-                "LEFT JOIN FETCH di.data d LEFT JOIN FETCH d.record drr LEFT JOIN FETCH d.party dpr LEFT JOIN FETCH d.packet dpcr  WHERE ";
+                "LEFT JOIN FETCH di.data d LEFT JOIN FETCH d.record drr LEFT JOIN FETCH d.party dpr WHERE ";
         if (changeId == null) {
             hql += "di.deleteChange IS NULL ";
         } else {

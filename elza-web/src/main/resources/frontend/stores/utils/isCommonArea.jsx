@@ -8,6 +8,7 @@ export default function isCommonArea(area) {
         && !area.startsWith("FUND_TREE")
         && !area.startsWith("NODE")
         && !area.startsWith("OUTPUT")
+        && !area.startsWith("STRUCTURE")
     ) { // zpracovává se jako area, ale stromy nechceme, tam je area z jiného důvodu
         return true;
     } else {

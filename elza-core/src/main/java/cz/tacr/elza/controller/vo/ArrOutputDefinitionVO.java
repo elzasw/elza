@@ -44,6 +44,8 @@ public class ArrOutputDefinitionVO {
 
     private Integer version;
 
+    private String outputSettings;
+
     public Integer getId() {
         return id;
     }
@@ -154,5 +156,13 @@ public class ArrOutputDefinitionVO {
 
     public void setGeneratedDate(final Date generatedDate) {
         this.generatedDate = generatedDate;
+    }
+
+    public String getOutputSettings() {
+        return outputSettings;
+    }
+
+    public void setOutputSettings(String outputSettings) {
+        this.outputSettings = outputSettings;
     }
 }

@@ -46,7 +46,8 @@ import {
     deleteRequest,
     changeRequestItemQueue,
     createRequestItemQueue,
-    nodesDelete
+    nodesDelete,
+    structureChange
 } from 'actions/global/change.jsx';
 
 import Stomp from 'stompjs';
@@ -267,9 +268,6 @@ function processEvents(value) {
             case 'OUTPUT_ITEM_CHANGE':
                 outputItemChange(value);
                 break;
-            case 'PACKETS_CHANGE':
-                packetsChangeEvent(value);
-                break;
 
             case 'FILES_CHANGE':
                 filesChangeEvent(value);
@@ -383,6 +381,14 @@ function processEvents(value) {
                 deleteNodes(value);
                 break;
 
+            case 'FUND_EXTENSION_CHANGE':
+                fundExtensionChange(value);
+                break;
+
+            case 'STRUCTURE_DATA_CHANGE':
+                store.dispatch(structureChange(value));
+                break;
+
             default:
                 console.warn("Nedefinovaný typ eventu: " + value.eventType, value);
                 break;
@@ -426,6 +432,10 @@ function changeRequestItemQueueChange(value) {
 
 function deleteNodes(value) {
     store.dispatch(nodesDelete(value.versionId, value.entityIds))
+}
+
+function fundExtensionChange(value) {
+    store.dispatch(changeNodes(value.versionId, [value.nodeId]))
 }
 
 function approveVersionChange(value) {
@@ -545,12 +555,6 @@ function institutionChange() {
     store.dispatch(changeInstitution());
 }
 
-/**
- * Změna obalů.
- */
-function packetsChangeEvent(value) {
-    store.dispatch(changePackets(value.ids[0]));
-}
 
 function filesChangeEvent(value) {
     store.dispatch(changeFiles(value.versionId, value.entityId));

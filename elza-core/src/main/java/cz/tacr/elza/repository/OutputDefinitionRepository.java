@@ -57,7 +57,7 @@ public interface OutputDefinitionRepository extends JpaRepository<ArrOutputDefin
     List<ArrOutputDefinition> findNonDeletedByTemplatesAndStates(List<RulTemplate> rulTemplateToDelete, List<OutputState> states);
 
     @Query("SELECT no FROM arr_output_definition no WHERE no.outputType IN ?1")
-    List<ArrOutputDefinition> findByOutputTypes(List<RulOutputType> rulPacketTypesDelete);
+    List<ArrOutputDefinition> findByOutputTypes(List<RulOutputType> rulOutputTypes);
 
     @Query("SELECT COUNT(no) > 0 FROM arr_output_definition no WHERE no.name LIKE :name")
     boolean existsByName(@Param("name") String name);

@@ -57,7 +57,7 @@ class FundOutputFiles extends AbstractReactComponent {
     render() {
         const {fundOutputFiles} = this.props;
 
-        return <div className='fund-packets'>
+        return <div className='fund-files'>
             <Button onClick={this.handleDownloadAll}>{i18n('global.action.downloadAll')}</Button>
 
             <StoreHorizontalLoader store={fundOutputFiles} />

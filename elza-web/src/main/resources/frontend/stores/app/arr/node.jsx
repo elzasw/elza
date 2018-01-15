@@ -130,7 +130,7 @@ const nodeInitialState = {
     //nodeInfo: nodeInfo(undefined, {type:''}),
 
 export function node(state = nodeInitialState, action) {
-    if (nodeFormActions.isSubNodeFormAction(action, "NODE")) {
+    if (nodeFormActions.isSubNodeFormAction(action)) {
         const result = {
             ...state,
             subNodeForm: subNodeForm(state.subNodeForm, action),
@@ -138,7 +138,7 @@ export function node(state = nodeInitialState, action) {
         return consolidateState(state, result);
     }
 
-    if (nodeFormActions.isSubNodeFormCacheAction(action, "NODE")) {
+    if (nodeFormActions.isSubNodeFormCacheAction(action)) {
         return {
             ...state,
             subNodeFormCache: subNodeFormCache(state.subNodeFormCache, action),

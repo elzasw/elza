@@ -6,6 +6,7 @@ import java.util.List;
 
 import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrNodeExtension;
 import cz.tacr.elza.domain.ArrNodeRegister;
 
 /**
@@ -33,6 +34,11 @@ public class CachedNode implements NodeCacheSerializable {
      * Seznam návazných entity z rejstříků.
      */
     private List<ArrNodeRegister> nodeRegisters;
+
+    /**
+     * Seznam návazných entity z definic řídících pravidel.
+     */
+    private List<ArrNodeExtension> nodeExtensions;
 
     /**
      * Seznam navázaných entity z digitalizátů.
@@ -77,6 +83,14 @@ public class CachedNode implements NodeCacheSerializable {
 
     public void setNodeRegisters(final List<ArrNodeRegister> nodeRegisters) {
         this.nodeRegisters = nodeRegisters;
+    }
+
+    public List<ArrNodeExtension> getNodeExtensions() {
+        return nodeExtensions;
+    }
+
+    public void setNodeExtensions(final List<ArrNodeExtension> nodeExtensions) {
+        this.nodeExtensions = nodeExtensions;
     }
 
     public List<ArrDaoLink> getDaoLinks() {

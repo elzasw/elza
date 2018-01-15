@@ -14,7 +14,6 @@ import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
-import cz.tacr.elza.repository.PacketTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 
 /**
@@ -62,7 +61,6 @@ public class RuleSystemProvider {
      * Init all values. Method must be called inside transaction and synchronized.
      */
     void init(RuleSetRepository ruleSetRepository,
-              PacketTypeRepository packetTypeRepository,
               ItemTypeRepository itemTypeRepository,
               ItemSpecRepository itemSpecRepository) {
         List<RulRuleSet> ruleSets = ruleSetRepository.findAll();

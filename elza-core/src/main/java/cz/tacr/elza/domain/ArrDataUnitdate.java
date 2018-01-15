@@ -181,4 +181,17 @@ public class ArrDataUnitdate extends ArrData implements IUnitdate {
 	public ArrDataUnitdate makeCopy() {
 		return new ArrDataUnitdate(this);
 	}
+
+    @Override
+    public void merge(final ArrData data) {
+        ArrDataUnitdate dataUnitdate = (ArrDataUnitdate) data;
+        this.setCalendarType(dataUnitdate.getCalendarType());
+        this.setValueFrom(dataUnitdate.getValueFrom());
+        this.setValueTo(dataUnitdate.getValueTo());
+        this.setValueFromEstimated(dataUnitdate.getValueFromEstimated());
+        this.setValueToEstimated(dataUnitdate.getValueToEstimated());
+        this.setNormalizedFrom(dataUnitdate.getNormalizedFrom());
+        this.setNormalizedTo(dataUnitdate.getNormalizedTo());
+        this.setFormat(dataUnitdate.getFormat());
+    }
 }

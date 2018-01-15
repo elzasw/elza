@@ -32,6 +32,7 @@ public class CacheInvalidateEvent {
         ALL,
         RULE,
         VIEW,
+        GROOVY,
         LEVEL_TREE
     }
 

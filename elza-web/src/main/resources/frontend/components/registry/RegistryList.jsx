@@ -18,6 +18,7 @@ import './RegistryList.less';
 import RegistryListItem from "./RegistryListItem";
 import ListPager from "../shared/listPager/ListPager";
 import * as perms from "../../actions/user/Permission";
+import {FOCUS_KEYS} from "../../constants";
 
 class RegistryList extends AbstractReactComponent {
 
@@ -59,7 +60,7 @@ class RegistryList extends AbstractReactComponent {
                         focusWasSet()
                     })
                 }
-            } else if (isFocusFor(focus, 'registry', 1) || isFocusFor(focus, 'registry', 1, 'list')) {
+            } else if (isFocusFor(focus, FOCUS_KEYS.REGISTRY, 1) || isFocusFor(focus, FOCUS_KEYS.REGISTRY, 1, 'list')) {
                 this.setState({}, () => {
                     this.refs.registryList.focus();
                     focusWasSet()

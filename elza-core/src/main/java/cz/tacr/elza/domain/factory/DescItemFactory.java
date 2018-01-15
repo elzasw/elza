@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import cz.tacr.elza.domain.ArrDataStructureRef;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.springframework.beans.factory.InitializingBean;
@@ -24,7 +25,6 @@ import cz.tacr.elza.domain.ArrDataFileRef;
 import cz.tacr.elza.domain.ArrDataInteger;
 import cz.tacr.elza.domain.ArrDataJsonTable;
 import cz.tacr.elza.domain.ArrDataNull;
-import cz.tacr.elza.domain.ArrDataPacketRef;
 import cz.tacr.elza.domain.ArrDataPartyRef;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ArrDataString;
@@ -39,7 +39,7 @@ import cz.tacr.elza.domain.ArrItemFileRef;
 import cz.tacr.elza.domain.ArrItemFormattedText;
 import cz.tacr.elza.domain.ArrItemInt;
 import cz.tacr.elza.domain.ArrItemJsonTable;
-import cz.tacr.elza.domain.ArrItemPacketRef;
+import cz.tacr.elza.domain.ArrItemStructureRef;
 import cz.tacr.elza.domain.ArrItemPartyRef;
 import cz.tacr.elza.domain.ArrItemRecordRef;
 import cz.tacr.elza.domain.ArrItemString;
@@ -56,7 +56,7 @@ import cz.tacr.elza.repository.DataFileRefRepository;
 import cz.tacr.elza.repository.DataIntegerRepository;
 import cz.tacr.elza.repository.DataJsonTableRepository;
 import cz.tacr.elza.repository.DataNullRepository;
-import cz.tacr.elza.repository.DataPacketRefRepository;
+import cz.tacr.elza.repository.DataStructureRefRepository;
 import cz.tacr.elza.repository.DataPartyRefRepository;
 import cz.tacr.elza.repository.DataRecordRefRepository;
 import cz.tacr.elza.repository.DataStringRepository;
@@ -125,7 +125,7 @@ public class DescItemFactory implements InitializingBean {
     private DataDecimalRepository dataDecimalRepository;
 
     @Autowired
-    private DataPacketRefRepository dataPacketRefRepository;
+    private DataStructureRefRepository dataStructureRefRepository;
 
     @Autowired
     private DataFileRefRepository dataFileRefRepository;
@@ -157,7 +157,7 @@ public class DescItemFactory implements InitializingBean {
         defineMapUnitdate();
         defineMapUnitid();
         defineMapDecimal();
-        defineMapPacketRef();
+        defineMapStructureRef();
         defineMapFileRef();
         defineMapEnum();
         defineMapJsonTable();
@@ -347,35 +347,34 @@ public class DescItemFactory implements InitializingBean {
     /**
      * Nadefinování pravidel pro převod formátu PacketRef.
      */
-    private void defineMapPacketRef() {
-        factory.classMap(ArrItemPacketRef.class, ArrDataPacketRef.class)
-                .customize(new CustomMapper<ArrItemPacketRef, ArrDataPacketRef>() {
+    private void defineMapStructureRef() {
+        factory.classMap(ArrItemStructureRef.class, ArrDataStructureRef.class)
+                .customize(new CustomMapper<ArrItemStructureRef, ArrDataStructureRef>() {
 
                     @Override
-                    public void mapAtoB(final ArrItemPacketRef arrDescItemPartyRef,
-                                        final ArrDataPacketRef arrDataPartyRef,
+                    public void mapAtoB(final ArrItemStructureRef itemStructureRef,
+                                        final ArrDataStructureRef dataStructureRef,
                                         final MappingContext context) {
-                        arrDataPartyRef.setPacket(arrDescItemPartyRef.getPacket());
+                        dataStructureRef.setStructureData(itemStructureRef.getStructureData());
                     }
 
                     @Override
-                    public void mapBtoA(final ArrDataPacketRef arrDataPartyRef,
-                                        final ArrItemPacketRef arrDescItemPartyRef,
+                    public void mapBtoA(final ArrDataStructureRef dataStructureRef,
+                                        final ArrItemStructureRef itemStructureRef,
                                         final MappingContext context) {
-                        arrDescItemPartyRef.setPacket(arrDataPartyRef.getPacket());
+                        itemStructureRef.setStructureData(dataStructureRef.getStructureData());
                     }
 
                 }).register();
 
-        factory.classMap(ArrDataPacketRef.class, ArrDataPacketRef.class)
-                .customize(new CustomMapper<ArrDataPacketRef, ArrDataPacketRef>() {
+        factory.classMap(ArrDataStructureRef.class, ArrDataStructureRef.class)
+                .customize(new CustomMapper<ArrDataStructureRef, ArrDataStructureRef>() {
                     @Override
-                    public void mapAtoB(final ArrDataPacketRef arrDataPartyRef,
-                                        final ArrDataPacketRef arrDataPartyRefNew,
+                    public void mapAtoB(final ArrDataStructureRef dataStructureRef,
+                                        final ArrDataStructureRef dataStructureRefNew,
                                         final MappingContext context) {
-                        arrDataPartyRefNew.setDataType(arrDataPartyRef.getDataType());
-                        //arrDataPartyRefNew.setItem(arrDataPartyRef.getItem());
-                        arrDataPartyRefNew.setPacket(arrDataPartyRef.getPacket());
+                        dataStructureRefNew.setDataType(dataStructureRef.getDataType());
+                        dataStructureRefNew.setStructureData(dataStructureRef.getStructureData());
                     }
                 }).register();
     }
@@ -782,7 +781,7 @@ public class DescItemFactory implements InitializingBean {
         mapRepository.put(ArrDataUnitdate.class, dataUnitdateRepository);
         mapRepository.put(ArrDataUnitid.class, dataUnitidRepository);
         mapRepository.put(ArrDataDecimal.class, dataDecimalRepository);
-        mapRepository.put(ArrDataPacketRef.class, dataPacketRefRepository);
+        mapRepository.put(ArrDataStructureRef.class, dataStructureRefRepository);
         mapRepository.put(ArrDataFileRef.class, dataFileRefRepository);
         mapRepository.put(ArrDataNull.class, dataNullRepository);
         mapRepository.put(ArrDataJsonTable.class, dataJsonTableRepository);
@@ -880,8 +879,8 @@ public class DescItemFactory implements InitializingBean {
 			dataNew = facade.map(srcData, ArrDataDecimal.class);
 		} else if (srcData instanceof ArrDataFileRef) {
 			dataNew = facade.map(srcData, ArrDataFileRef.class);
-		} else if (srcData instanceof ArrDataPacketRef) {
-			dataNew = facade.map(srcData, ArrDataPacketRef.class);
+		} else if (srcData instanceof ArrDataStructureRef) {
+			dataNew = facade.map(srcData, ArrDataStructureRef.class);
 		} else if (srcData instanceof ArrDataNull) {
 			dataNew = facade.map(srcData, ArrDataNull.class);
 		} else if (srcData instanceof ArrDataJsonTable) {

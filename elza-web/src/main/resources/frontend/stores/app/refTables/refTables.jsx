@@ -7,14 +7,13 @@ import partyTypes from './partyTypes.jsx'
 import recordTypes from './recordTypes.jsx'
 import rulDataTypes from './rulDataTypes.jsx';
 import calendarTypes from './calendarTypes.jsx';
-import packetTypes from './packetTypes.jsx';
-// import partyList from './partyList.jsx';
 import scopesData from './scopesData.jsx';
 import descItemTypes from './descItemTypes.jsx';
 import visiblePolicyTypes from './visiblePolicyTypes.jsx';
 import outputTypes from './outputTypes.jsx';
 import templates from './templates.jsx';
 import externalSystems from './externalSystems.jsx';
+import structureTypes from "./structureTypes";
 
 const initialState = {
     ruleSet: ruleSet(),
@@ -24,9 +23,8 @@ const initialState = {
     recordTypes: recordTypes(),
     rulDataTypes: rulDataTypes(),
     calendarTypes: calendarTypes(),
-    packetTypes: packetTypes(),
-    // partyList: partyList(),
     scopesData: scopesData(),
+    structureTypes: structureTypes(),
     descItemTypes: descItemTypes(),
     visiblePolicyTypes: visiblePolicyTypes(),
     outputTypes: outputTypes(),
@@ -93,13 +91,6 @@ export default function refTables(state = initialState, action = {}) {
                 calendarTypes: calendarTypes(state.calendarTypes, action)
             }
         }
-        case types.REF_PACKET_TYPES_REQUEST:
-        case types.REF_PACKET_TYPES_RECEIVE:{
-            return {
-                ...state,
-                packetTypes: packetTypes(state.packetTypes, action)
-            }
-        }
         case types.REF_SCOPES_TYPES_DIRTY:
         case types.REF_SCOPES_TYPES_FETCHING:
         case types.REF_SCOPES_TYPES_REQUEST:
@@ -107,6 +98,14 @@ export default function refTables(state = initialState, action = {}) {
             return {
                 ...state,
                 scopesData: scopesData(state.scopesData, action)
+            }
+        }
+        case types.REF_STRUCTURE_TYPES_DIRTY:
+        case types.REF_STRUCTURE_TYPES_FETCHING:
+        case types.REF_STRUCTURE_TYPES_RECEIVE:{
+            return {
+                ...state,
+                structureTypes: structureTypes(state.structureTypes, action)
             }
         }
         case types.REF_DESC_ITEM_TYPES_REQUEST:
@@ -143,7 +142,6 @@ export default function refTables(state = initialState, action = {}) {
         case types.CHANGE_PACKAGE:{
             return {
                 ...state,
-                packetTypes: packetTypes(state.packetTypes, action),
                 ruleSet: ruleSet(state.ruleSet, action),
                 descItemTypes: descItemTypes(state.descItemTypes, action),
                 outputTypes: outputTypes(state.outputTypes, action),

@@ -55,4 +55,9 @@ public class ArrDataJsonTable extends ArrData  {
 	public ArrDataJsonTable makeCopy() {
 		return new ArrDataJsonTable(this);
 	}
+
+    @Override
+    public void merge(final ArrData data) {
+        this.setValue(((ArrDataJsonTable) data).getValue());
+    }
 }

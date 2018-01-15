@@ -74,4 +74,9 @@ public class ArrDataPartyRef extends ArrData {
 	public ArrDataPartyRef makeCopy() {
 		return new ArrDataPartyRef(this);
 	}
+
+    @Override
+    public void merge(final ArrData data) {
+        this.setParty(((ArrDataPartyRef) data).getParty());
+    }
 }

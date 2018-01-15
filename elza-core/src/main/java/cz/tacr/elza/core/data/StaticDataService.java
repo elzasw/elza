@@ -23,7 +23,6 @@ import cz.tacr.elza.repository.DataTypeRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.PackageRepository;
-import cz.tacr.elza.repository.PacketTypeRepository;
 import cz.tacr.elza.repository.PartyNameFormTypeRepository;
 import cz.tacr.elza.repository.PartyTypeComplementTypeRepository;
 import cz.tacr.elza.repository.PartyTypeRepository;
@@ -58,8 +57,6 @@ public class StaticDataService {
 
     final RuleSetRepository ruleSetRepository;
 
-    final PacketTypeRepository packetTypeRepository;
-
     final ItemTypeRepository itemTypeRepository;
 
     final ItemSpecRepository itemSpecRepository;
@@ -83,7 +80,6 @@ public class StaticDataService {
     @Autowired
     public StaticDataService(EntityManager em,
                              RuleSetRepository ruleSetRepository,
-                             PacketTypeRepository packetTypeRepository,
                              ItemTypeRepository itemTypeRepository,
                              ItemSpecRepository itemSpecRepository,
                              DataTypeRepository dataTypeRepository,
@@ -96,7 +92,6 @@ public class StaticDataService {
                              RegisterTypeRepository registerTypeRepository) {
         this.em = em;
         this.ruleSetRepository = ruleSetRepository;
-        this.packetTypeRepository = packetTypeRepository;
         this.itemTypeRepository = itemTypeRepository;
         this.itemSpecRepository = itemSpecRepository;
         this.dataTypeRepository = dataTypeRepository;

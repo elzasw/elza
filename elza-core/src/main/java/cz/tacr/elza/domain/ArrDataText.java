@@ -49,4 +49,9 @@ public class ArrDataText extends ArrData {
 	public ArrDataText makeCopy() {
 		return new ArrDataText(this);
 	}
+
+    @Override
+    public void merge(final ArrData data) {
+        this.setValue(((ArrDataText) data).getValue());
+    }
 }

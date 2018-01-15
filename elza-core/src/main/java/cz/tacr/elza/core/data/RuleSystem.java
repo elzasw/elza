@@ -12,11 +12,7 @@ public class RuleSystem {
 
     private final RulRuleSet ruleSet;
 
-	protected List<RulPacketType> packetTypes;
-
 	protected List<RuleSystemItemType> itemTypes;
-
-	protected Map<Integer, RulPacketType> packetTypeIdMap;
 
 	protected Map<String, RulPacketType> packetTypeCodeMap;
 
@@ -30,20 +26,6 @@ public class RuleSystem {
 
     public RulRuleSet getRuleSet() {
         return ruleSet;
-    }
-
-    public List<RulPacketType> getPacketTypes() {
-        return packetTypes;
-    }
-
-    public RulPacketType getPacketTypeById(Integer id) {
-        Validate.notNull(id);
-        return packetTypeIdMap.get(id);
-    }
-
-    public RulPacketType getPacketTypeByCode(String code) {
-        Validate.notEmpty(code);
-        return packetTypeCodeMap.get(code);
     }
 
     public List<RuleSystemItemType> getItemTypes() {

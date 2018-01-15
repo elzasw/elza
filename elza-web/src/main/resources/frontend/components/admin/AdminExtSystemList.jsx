@@ -13,6 +13,7 @@ import {storeFromArea} from 'shared/utils'
 
 import './AdminExtSystemList.less';
 import AdminExtSystemListItem from "./AdminExtSystemListItem";
+import {FOCUS_KEYS} from "../../constants";
 
 class AdminExtSystemList extends AbstractReactComponent {
 
@@ -45,7 +46,7 @@ class AdminExtSystemList extends AbstractReactComponent {
                         focusWasSet()
                     })
                 }
-            } else if (isFocusFor(focus, 'extSystem', 1) || isFocusFor(focus, 'extSystem', 1, 'list')) {
+            } else if (isFocusFor(focus, FOCUS_KEYS.ADMIN_EXT_SYSTEM, 1) || isFocusFor(focus, FOCUS_KEYS.ADMIN_EXT_SYSTEM, 1, 'list')) {
                 this.setState({}, () => {
                     this.refs.extSystemList.focus();
                     focusWasSet()

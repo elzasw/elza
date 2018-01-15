@@ -12,6 +12,7 @@ import PartyListItem from "./PartyListItem";
 import Autocomplete from "../shared/autocomplete/Autocomplete";
 import ListPager from "../shared/listPager/ListPager";
 import * as perms from "../../actions/user/Permission";
+import {FOCUS_KEYS} from "../../constants";
 
 /**
  * Komponenta list osob
@@ -54,7 +55,7 @@ class PartyList extends AbstractReactComponent {
                         focusWasSet()
                     })
                 }
-            } else if (isFocusFor(focus, 'party', 1) || isFocusFor(focus, 'party', 1, 'list')) {
+            } else if (isFocusFor(focus, FOCUS_KEYS.PARTY, 1) || isFocusFor(focus, FOCUS_KEYS.PARTY, 1, 'list')) {
                 this.setState({}, () => {
                     this.refs.partyList.focus();
                     focusWasSet()

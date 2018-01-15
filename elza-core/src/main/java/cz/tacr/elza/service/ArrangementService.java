@@ -24,6 +24,7 @@ import javax.persistence.Query;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
+import cz.tacr.elza.repository.StructureDataRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -112,7 +113,6 @@ import cz.tacr.elza.repository.OutputFileRepository;
 import cz.tacr.elza.repository.OutputItemRepository;
 import cz.tacr.elza.repository.OutputRepository;
 import cz.tacr.elza.repository.OutputResultRepository;
-import cz.tacr.elza.repository.PacketRepository;
 import cz.tacr.elza.repository.RequestQueueItemRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.VisiblePolicyRepository;
@@ -181,7 +181,7 @@ public class ArrangementService {
     @Autowired
     private BulkActionNodeRepository faBulkActionNodeRepository;
     @Autowired
-    private PacketRepository packetRepository;
+    private StructureDataRepository structureDataRepository;
     @Autowired
     private FundRegisterScopeRepository faRegisterRepository;
     @Autowired
@@ -696,7 +696,7 @@ public class ArrangementService {
 
         dmsService.deleteFilesByFund(fund);
 
-        packetRepository.findByFund(fund).forEach(packet -> packetRepository.delete(packet));
+        structureDataRepository.deleteByFund(fund);
 
         faRegisterRepository.findByFund(fund).forEach(
                 faScope -> faRegisterRepository.delete(faScope)
@@ -1067,6 +1067,10 @@ public class ArrangementService {
         versionNodeIds.retainAll(nodeIds);
 
         return versionNodeIds;
+    }
+
+    public ArrFundVersion getFundVersionById(final Integer fundVersionId) {
+        return fundVersionRepository.getOneCheckExist(fundVersionId);
     }
 
     /**

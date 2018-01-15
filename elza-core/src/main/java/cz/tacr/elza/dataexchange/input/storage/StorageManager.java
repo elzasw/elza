@@ -128,10 +128,6 @@ public class StorageManager implements StorageListener {
         saveEntities(items);
     }
 
-    public void saveSectionPackets(Collection<ArrPacketWrapper> items) {
-        saveEntities(items);
-    }
-
     public void saveSectionNodes(Collection<ArrNodeWrapper> items) {
         saveEntities(items);
     }

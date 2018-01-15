@@ -34,9 +34,9 @@ public class DescItem {
     private Integer integerValue;
 
     /**
-     * Obal.
+     * Strukt. hodnota.
      */
-    private Packet packet;
+    private Structured structured;
 
     /**
      * Typ změny atributu.
@@ -72,7 +72,7 @@ public class DescItem {
         this.specCode = descItem.specCode;
         this.dataType = descItem.dataType;
         this.integerValue = descItem.integerValue;
-        this.packet = descItem.packet;
+        this.structured = descItem.structured;
         this.change = descItem.change;
         this.nodeId = descItem.nodeId;
     }
@@ -117,12 +117,12 @@ public class DescItem {
         this.integerValue = value;
     }
 
-    public Packet getPacket() {
-        return packet;
+    public Structured getStructured() {
+        return structured;
     }
 
-    public void setPacket(final Packet packet) {
-        this.packet = packet;
+    public void setStructured(final Structured structured) {
+        this.structured = structured;
     }
 
     public String getDataType() {

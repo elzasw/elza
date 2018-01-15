@@ -121,6 +121,7 @@ public class ArrDescItem extends ArrItem {
 	@JsonIgnore
 	@Field(name = FULLTEXT_ATT)
     @Analyzer(definition = "customanalyzer")
+    @Override
     public String getFulltextValue() {
 		if (data == null) {
             return null;

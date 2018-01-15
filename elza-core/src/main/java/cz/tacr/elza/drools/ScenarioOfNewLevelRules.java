@@ -1,23 +1,24 @@
 package cz.tacr.elza.drools;
 
-import java.io.File;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.LinkedList;
-import java.util.List;
-
-import org.kie.api.runtime.StatelessKieSession;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.domain.RulRule;
+import cz.tacr.elza.domain.RulArrangementRule;
+import cz.tacr.elza.domain.RulExtensionRule;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.drools.model.Level;
 import cz.tacr.elza.drools.model.NewLevelApproach;
 import cz.tacr.elza.drools.model.NewLevelApproaches;
 import cz.tacr.elza.drools.service.ScriptModelFactory;
+import cz.tacr.elza.service.RuleService;
+import org.kie.api.runtime.StatelessKieSession;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.LinkedList;
+import java.util.List;
 
 
 /**
@@ -33,6 +34,9 @@ public class ScenarioOfNewLevelRules extends Rules {
     @Autowired
     private RulesExecutor rulesExecutor;
 
+    @Autowired
+    private RuleService ruleService;
+
     public synchronized List<ScenarioOfNewLevel> execute(final ArrLevel level,
                                                          final DirectionLevel directionLevel,
                                                          final ArrFundVersion version)
@@ -43,14 +47,21 @@ public class ScenarioOfNewLevelRules extends Rules {
         List<Level> levels = scriptModelFactory.createFactsForNewLevel(level, directionLevel, version);
 
         Path path;
-        List<RulRule> rulPackageRules = packageRulesRepository.findByRuleSetAndRuleTypeOrderByPriorityAsc(
-                version.getRuleSet(), RulRule.RuleType.NEW_LEVEL);
+        List<RulArrangementRule> rulArrangementRules = arrangementRuleRepository.findByRuleSetAndRuleTypeOrderByPriorityAsc(
+                version.getRuleSet(), RulArrangementRule.RuleType.NEW_LEVEL);
 
-        for (RulRule rulPackageRule : rulPackageRules) {
-            path = Paths.get(rulesExecutor.getDroolsDir(rulPackageRule.getRuleSet().getCode()) + File.separator + rulPackageRule.getFilename());
+        for (RulArrangementRule rulArrangementRule : rulArrangementRules) {
+            path = Paths.get(rulesExecutor.getDroolsDir(rulArrangementRule.getPackage().getCode(), rulArrangementRule.getRuleSet().getCode()) + File.separator + rulArrangementRule.getComponent().getFilename());
 
             StatelessKieSession session = createNewStatelessKieSession(path);
             session.setGlobal("results", newLevelApproaches);
+            execute(session, levels);
+        }
+
+        List<RulExtensionRule> rulExtensionRules = ruleService.findExtensionRuleByNode(level.getNode(), RulExtensionRule.RuleType.NEW_LEVEL);
+        for (RulExtensionRule rulExtensionRule : rulExtensionRules) {
+            path = Paths.get(rulesExecutor.getDroolsDir(rulExtensionRule.getPackage().getCode(), rulExtensionRule.getArrangementExtension().getRuleSet().getCode()) + File.separator + rulExtensionRule.getComponent().getFilename());
+            StatelessKieSession session = createNewStatelessKieSession(path);
             execute(session, levels);
         }
 

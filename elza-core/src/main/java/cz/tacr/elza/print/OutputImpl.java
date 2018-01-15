@@ -1,21 +1,24 @@
 package cz.tacr.elza.print;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.validation.constraints.NotNull;
-
+import cz.tacr.elza.domain.*;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.print.item.*;
+import cz.tacr.elza.print.party.*;
+import cz.tacr.elza.service.DmsService;
+import cz.tacr.elza.service.attachment.AttachmentService;
+import cz.tacr.elza.service.output.OutputFactoryService;
+import cz.tacr.elza.utils.AppContext;
+import cz.tacr.elza.utils.HibernateUtils;
+import cz.tacr.elza.utils.PartyType;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.CompareToBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.springframework.core.io.Resource;
 import org.springframework.util.Assert;
 
 import cz.tacr.elza.core.data.PartyType;
@@ -57,66 +60,56 @@ import cz.tacr.elza.utils.HibernateUtils;
 
 /**
  * Základní objekt pro generování výstupu, při tisku se vytváří 1 instance.
- *
  */
-public class OutputImpl implements Output
-{
+public class OutputImpl implements Output, Closeable {
 
     public static final int MAX_CACHED_NODES = 1000; // maximální počet nodů v cache
 
     private final int outputId; // ID pro vazbu do DB na entitu arr_output
-
+    Map<Integer, ItemType> itemTypeMap = new HashMap<>();
+    Map<Integer, ItemSpec> itemSpecMap = new HashMap<>();
     private OutputFactoryService outputFactoryService = AppContext.getBean(OutputFactoryService.class);
-
+    private AttachmentService attachmentService = AppContext.getBean(AttachmentService.class);
+    private DmsService dmsService = AppContext.getBean(DmsService.class);
     private String internal_code;
     private String name;
     private String type;
     private String typeCode;
     private Fund fund;
-
     private int page = 0;
-
     /**
      * Vnitřní iterátor - cache.
      */
     private IteratorNodes iteratorNodes = null;
-
     // seznam všech atributů outputu
     private List<Item> items = new ArrayList<>();
-
     // seznam všech node outputu (přímo přiřazené + jejich potomci + nadřízení až do root);
     // mapa má jako klíč ID Nodu odpovídající ArrNode.arrNodeId
     private Map<Integer, NodeId> nodeIdsMap = new HashMap<>();
-
     // seznam rejstříkových hesel podle  typu
-    private Map<String, FilteredRecords> filteredRecords = new HashMap <>();
-
+    private Map<String, FilteredRecords> filteredRecords = new HashMap<>();
     /**
      * Record type cache
      */
     private Map<Integer, RecordType> recordTypes = new HashMap<>();
-
     /**
      * Cache for party
      */
     private Map<Integer, Party> partyCache = new HashMap<>();
-
     /**
      * Cache for records
      */
     private Map<Integer, Record> recordCache = new HashMap<>();
-
     /**
      * Cache ro relation types
      */
     private Map<Integer, RelationType> partyRelationTypeCache = new HashMap<>();
-
     private Set<Integer> directNodeIds = new HashSet<>();
-
-    Map<Integer, ItemType> itemTypeMap = new HashMap<>();
-    Map<Integer, ItemSpec> itemSpecMap = new HashMap<>();
-
     private Map<Integer, RelationToType> relToTypeCache = new HashMap<>();
+
+    private List<PDDocument> attDocs = new ArrayList<>();
+    private List<InputStream> attStreams = new ArrayList<>();
+    private Integer attPageCount = null;
 
     /**
      * Vytvoření instance s povinnými údaji
@@ -184,19 +177,54 @@ public class OutputImpl implements Output
      * @return sečtená hodnota počtu stránek příloh pdf připojených k nodům v output.
      */
     public Integer getAttachedPages() {
-        return getItemFilePdfs().stream()
-                .mapToInt(ItemFile::getPagesCount)
-                .sum();
+        // pokud není načteno, inicializace
+        if (attPageCount == null) {
+            attPageCount = 0;
+            for (ItemFile itemFile : getAllAttachements()) {
+                final Integer fileId = itemFile.getFileId();
+                final DmsFile dmsFile = dmsService.getFile(fileId);
+                final Resource resource = attachmentService.generate(dmsFile, DmsService.MIME_TYPE_APPLICATION_PDF);
+                if (resource != null) {
+                    try {
+                        InputStream inputStream = resource.getInputStream();
+                        PDDocument attDoc = PDDocument.load(inputStream);
+                        attPageCount += attDoc.getNumberOfPages();
+                        attDocs.add(attDoc);
+                        attStreams.add(inputStream);
+                    } catch (IOException e) {
+                        throw new SystemException("Nepodařilo se zjistit počet stránek přílohy po převodu na PDF", e, BaseCode.SYSTEM_ERROR);
+    }
+                }
+            }
+        }
+
+        return attPageCount;
     }
 
     /**
-     * @return seznam PDF příloh připojených k nodům v output.
+     * @return kolekci s počtem prvků odpovídajícím počtu stran příloh, používá se jako DS pro placeholder stránky
      */
-    public List<ItemFile> getAttachements() {
-        return getItemFilePdfs();
+    public List<JRAttPagePlaceHolder> getAttPagePlaceHolders() {
+        List<JRAttPagePlaceHolder> result = new ArrayList<>();
+        final Integer pages = getAttachedPages();
+        for (int i = 0; i < pages; i++) {
+            result.add(new JRAttPagePlaceHolder());
+    }
+        return result;
     }
 
-    private List<ItemFile> getItemFilePdfs() {
+    /**
+     * @return seznam otevřených PDF příloh pro další zpracování
+     */
+    public List<PDDocument> getAttDocs() {
+        return attDocs;
+    }
+
+    private List<ItemFile> getAllAttachements() {
+        return getItemFileMime(null);
+    }
+
+    private List<ItemFile> getItemFileMime(final String mimeType) {
         IteratorNodes iterator = getNodesBFS();
 
         List<ItemFile> result = new ArrayList<>();
@@ -206,7 +234,7 @@ public class OutputImpl implements Output
             for (Item item : items) {
                 if (item instanceof ItemFile) {
                     ItemFile itemFile = (ItemFile) item;
-                    if (itemFile.getMimeType().equals(DmsService.MIME_TYPE_APPLICATION_PDF)) {
+                    if (StringUtils.isBlank(mimeType) || itemFile.getMimeType().equals(mimeType)) {
                         result.add(itemFile);
                     }
                 }
@@ -233,7 +261,9 @@ public class OutputImpl implements Output
         return result;
     }
 
-    /** Přidá id uzlu přímo přiřazeného k výstupu. */
+    /**
+     * Přidá id uzlu přímo přiřazeného k výstupu.
+     */
     public void addDirectNodeIdentifier(final Integer nodeId) {
         directNodeIds.add(nodeId);
     }
@@ -253,15 +283,15 @@ public class OutputImpl implements Output
         List<Party> parties = new ArrayList<>();
         // set to check if party was added
         Set<Integer> exportedParties = new HashSet<>();
-        items.forEach(item-> {
+        items.forEach(item -> {
             // check item code
-            if(codes.contains(item.getType().getCode())) {
+            if (codes.contains(item.getType().getCode())) {
 
-                ItemPartyRef partyRef = (ItemPartyRef)item;
+                ItemPartyRef partyRef = (ItemPartyRef) item;
                 Party party = partyRef.getParty();
 
                 // check if party already added and add it
-                if(!exportedParties.contains(party.getPartyId())) {
+                if (!exportedParties.contains(party.getPartyId())) {
                     exportedParties.add(party.getPartyId());
                     parties.add(party);
                 }
@@ -274,12 +304,11 @@ public class OutputImpl implements Output
     @Override
     public Item getSingleItem(final String itemTypeCode) {
         Item found = null;
-        for(Item item: items)
-        {
-            if(itemTypeCode.equals(item.getType().getCode())) {
+        for (Item item : items) {
+            if (itemTypeCode.equals(item.getType().getCode())) {
                 // Check if item already found
-                if(found!=null) {
-                    throw new IllegalStateException("Multiple items with same code exists: "+itemTypeCode);
+                if (found != null) {
+                    throw new IllegalStateException("Multiple items with same code exists: " + itemTypeCode);
                 }
                 found = item;
             }
@@ -290,7 +319,7 @@ public class OutputImpl implements Output
     @Override
     public String getSingleItemValue(final String itemTypeCode) {
         Item found = getSingleItem(itemTypeCode);
-        if(found!=null) {
+        if (found != null) {
             return found.getSerializedValue();
         } else {
             return null;
@@ -304,28 +333,6 @@ public class OutputImpl implements Output
                 .filter(item -> !codes.contains(item.getType().getCode()))
                 .sorted(Item::compareToItemViewOrderPosition)
                 .collect(Collectors.toList());
-    }
-
-    /**
-     * @return distinct seznam Packet navázaný přes nodes
-     */
-    public List<Packet> getPacketItemsDistinct() {
-        IteratorNodes iterator = getNodesBFS();
-        Set<Packet> resultsSet = new HashSet<>();
-
-        while (iterator.hasNext()) {
-            Node node = iterator.next();
-            List<Item> items = node.getItems();
-            for (Item item : items) {
-                if (item instanceof ItemPacketRef) {
-                    resultsSet.add(item.getValue(Packet.class));
-                }
-            }
-        }
-
-        List<Packet> results = new ArrayList<>(resultsSet);
-        results.sort(Packet::compareTo);
-        return results;
     }
 
     /**
@@ -370,6 +377,7 @@ public class OutputImpl implements Output
 
     /**
      * Jako výchozí bod vezme root node
+     *
      * @return plochý seznam Nodů seřazený dle prohledávání stromu nodů od root node do hloubky
      */
     @Override
@@ -384,7 +392,7 @@ public class OutputImpl implements Output
     @Override
     public FilteredRecords getRecordsByType(final String code) {
         FilteredRecords recs = filteredRecords.get(code);
-        if(recs==null) {
+        if (recs == null) {
             // prepare records
             recs = filterRecords(code);
             filteredRecords.put(code, recs);
@@ -395,6 +403,7 @@ public class OutputImpl implements Output
 
     /**
      * Prepare filtered list of records
+     *
      * @param code
      * @return
      */
@@ -474,8 +483,9 @@ public class OutputImpl implements Output
 
     /**
      * Return item type for output
-     *
+     * <p>
      * Item type is created if does not exist
+     *
      * @param rulItemType
      * @return
      */
@@ -491,8 +501,9 @@ public class OutputImpl implements Output
 
     /**
      * Return item specification for output
-     *
+     * <p>
      * Item specification is created if does not exist
+     *
      * @param rulItemType
      * @return
      */
@@ -508,12 +519,13 @@ public class OutputImpl implements Output
 
     /**
      * Return party from cache
+     *
      * @param partyId
      * @return
      */
     public Party getParty(final ParParty parParty) {
         Party party = partyCache.get(parParty.getPartyId());
-        if(party==null) {
+        if (party == null) {
             party = createParty(parParty);
         }
         return party;
@@ -521,26 +533,26 @@ public class OutputImpl implements Output
 
     /**
      * Create party object and store it in cache
+     *
      * @param parParty
      * @return
      */
-    private Party createParty(final ParParty parParty)
-    {
+    private Party createParty(final ParParty parParty) {
         String partyTypeCode = parParty.getPartyType().getCode();
         PartyType partyType = PartyType.fromCode(partyTypeCode);
 
         // Prepare corresponding record
         Record record = this.recordCache.get(parParty.getRecord());
-        if(record==null) {
+        if (record == null) {
             record = createRecord(parParty.getRecord());
         }
 
         // create relations
         List<ParRelation> dbrelations = parParty.getRelations();
         List<Relation> rels = null;
-        if(CollectionUtils.isNotEmpty(dbrelations)) {
+        if (CollectionUtils.isNotEmpty(dbrelations)) {
             rels = new ArrayList<>();
-            for(ParRelation dbRelation: dbrelations) {
+            for (ParRelation dbRelation : dbrelations) {
                 Relation rel = createRelation(dbRelation);
                 rels.add(rel);
             }
@@ -567,7 +579,7 @@ public class OutputImpl implements Output
 			ParPerson parPerson = HibernateUtils.unproxy(parParty);
                 party = Person.newInstance(parPerson, initHelper);
                 break;
-            default :
+            default:
                 throw new IllegalStateException("Neznámý typ osoby " + partyType.getCode());
         }
         this.partyCache.put(party.getPartyId(), party);
@@ -578,17 +590,16 @@ public class OutputImpl implements Output
         // prepare relation type
         ParRelationType dbRelType = dbRelation.getRelationType();
         RelationType relType = this.partyRelationTypeCache.get(dbRelType.getRelationTypeId());
-        if(relType==null) {
+        if (relType == null) {
             relType = RelationType.newInstance(dbRelType);
             partyRelationTypeCache.put(dbRelType.getRelationTypeId(), relType);
         }
         // prepare list of relationTo
         List<ParRelationEntity> entities = dbRelation.getRelationEntities();
         List<RelationTo> relsTo = null;
-        if(CollectionUtils.isNotEmpty(entities)) {
+        if (CollectionUtils.isNotEmpty(entities)) {
             relsTo = new ArrayList<>(entities.size());
-            for(ParRelationEntity dbEntity: entities)
-            {
+            for (ParRelationEntity dbEntity : entities) {
                 RelationTo relTo = createRelationTo(dbEntity);
                 relsTo.add(relTo);
             }
@@ -603,7 +614,7 @@ public class OutputImpl implements Output
         // prepare RelationToType
         ParRelationRoleType roleType = dbEntity.getRoleType();
         RelationToType relToType = relToTypeCache.get(roleType.getRoleTypeId());
-        if(relToType==null) {
+        if (relToType == null) {
             relToType = RelationToType.newInstance(roleType);
             relToTypeCache.put(roleType.getRoleTypeId(), relToType);
         }
@@ -616,10 +627,9 @@ public class OutputImpl implements Output
         return relTo;
     }
 
-    public Record getRecord(final RegRecord regRecord)
-    {
+    public Record getRecord(final RegRecord regRecord) {
         Record record = recordCache.get(regRecord.getRecord());
-        if(record==null) {
+        if (record == null) {
             record = createRecord(regRecord);
         }
         return record;
@@ -629,7 +639,7 @@ public class OutputImpl implements Output
         RegRegisterType dbRegisterType = regRecord.getRegisterType();
         // lookup via recordTypeId
         RecordType recordType = this.recordTypes.get(regRecord.getRegisterTypeId());
-        if(recordType==null) {
+        if (recordType == null) {
             recordType = this.createRecordType(dbRegisterType);
         }
 
@@ -640,11 +650,12 @@ public class OutputImpl implements Output
 
     /**
      * Return record type
+     *
      * @return
      */
     public RecordType getRecordType(RegRegisterType dbRegisterType) {
         RecordType  recordType = this.recordTypes.get(dbRegisterType.getRegisterTypeId());
-        if(recordType==null) {
+        if (recordType == null) {
             recordType = createRecordType(dbRegisterType);
         }
         return recordType;
@@ -652,13 +663,14 @@ public class OutputImpl implements Output
 
     /**
      * Add new record type
+     *
      * @return
      */
     private RecordType createRecordType(RegRegisterType dbRegisterType) {
         // prepare parent
         RecordType parentType = null;
         RegRegisterType dbParentRegisterType = dbRegisterType.getParentRegisterType();
-        if(dbParentRegisterType!=null) {
+        if (dbParentRegisterType != null) {
             parentType = getRecordType(dbParentRegisterType);
         }
         RecordType recordType = RecordType.newInstance(parentType, dbRegisterType);
@@ -668,6 +680,7 @@ public class OutputImpl implements Output
 
     /**
      * Return record from cache
+     *
      * @param recordId
      * @return
      */
@@ -677,5 +690,11 @@ public class OutputImpl implements Output
 
     public Party getPartyFromCache(Integer partyId) {
         return partyCache.get(partyId);
+    }
+
+    @Override
+    public void close() throws IOException {
+        attDocs.forEach(IOUtils::closeQuietly);
+        attStreams.forEach(IOUtils::closeQuietly);
     }
 }

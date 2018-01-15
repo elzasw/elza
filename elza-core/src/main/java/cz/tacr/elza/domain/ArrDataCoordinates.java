@@ -47,4 +47,9 @@ public class ArrDataCoordinates extends ArrData {
 		ArrDataCoordinates copy = new ArrDataCoordinates(this);
 		return copy;
 	}
+
+    @Override
+    public void merge(final ArrData data) {
+        this.setValue(((ArrDataCoordinates) data).getValue());
+    }
 }

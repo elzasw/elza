@@ -18,11 +18,10 @@ import com.google.common.collect.Lists;
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.RegScope;
 import cz.tacr.elza.repository.FundFileRepository;
-import cz.tacr.elza.repository.PacketRepository;
 import cz.tacr.elza.repository.ScopeRepository;
+import cz.tacr.elza.repository.StructureDataRepository;
 import cz.tacr.elza.service.ArrMoveLevelService;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.importnodes.vo.ImportParams;
@@ -48,7 +47,7 @@ public class ImportNodesFromSource {
     private FundFileRepository fundFileRepository;
 
     @Autowired
-    private PacketRepository packetRepository;
+    private StructureDataRepository structureDataRepository;
 
     /**
      * Validace dat před samotným importem.
@@ -87,9 +86,10 @@ public class ImportNodesFromSource {
 		}
 
         // zjištění existujících obalů v cílovém archivním souboru
-		List<ArrPacket> packetsFund = packetRepository.findByFund(targetFundVersion.getFund(),
+		List<ArrStructuredData> packetsFund = structureDataRepository.findByFundAndDeleteChangeIsNull(targetFundVersion.getFund(),
 		        Lists.newArrayList(ArrPacket.State.OPEN, ArrPacket.State.CLOSED));
         // zjištění používaných obalů v podstromech vybraných JP
+        Set<? extends Packet> packets = source.getStructuredList();
 		List<ArrPacket> packets = source.getPackets();
 		for (ArrPacket srcPacket : packets) {
 			for (ArrPacket currPacket : packetsFund) {

@@ -156,25 +156,26 @@ abstract class OutputGeneratorWorkerAbstract implements Callable<OutputGenerator
 
             // sestavení outputu
             logger.info("Sestavování modelu výstupu výstupu pro arr_output id={} spuštěno", arrOutputId);
-            final OutputImpl output = outputFactoryService.createOutput(arrOutput);
-            logger.info("Sestavování modelu výstupu výstupu pro arr_output id={} dokončeno", arrOutputId);
+            try (final OutputImpl output = outputFactoryService.createOutput(arrOutput)) {
+                logger.info("Sestavování modelu výstupu výstupu pro arr_output id={} dokončeno", arrOutputId);
 
-            // skutečné vytvoření výstupného souboru na základě definice
-            logger.info("Spuštěno generování souboru pro arr_output id={}", arrOutputId);
-            final InputStream content = getContent(arrOutputDefinition, rulTemplate, output);
+                // skutečné vytvoření výstupného souboru na základě definice
+                logger.info("Spuštěno generování souboru pro arr_output id={}", arrOutputId);
+                final InputStream content = getContent(arrOutputDefinition, rulTemplate, output);
 
-            // Uložení do výstupní struktury a DMS
-            storeOutputInDms(arrOutputDefinition, rulTemplate, content);
+                // Uložení do výstupní struktury a DMS
+                storeOutputInDms(arrOutputDefinition, rulTemplate, content);
 
-            content.close();
+                content.close();
 
-            waitForGeneratorThread();
+                waitForGeneratorThread();
 
-            if (exception != null) {
-                throw exception;
+                if (exception != null) {
+                    throw exception;
+                }
+
+                arrOutputDefinition.setError(null);
             }
-
-            arrOutputDefinition.setError(null);
         } catch (Throwable ex) {
             throw new ProcessException(arrOutputId, ex);
         }
@@ -267,7 +268,7 @@ abstract class OutputGeneratorWorkerAbstract implements Callable<OutputGenerator
 
     protected File getTemplatesDir(final RulTemplate rulTemplate) {
         final String rulTemplateDirectory = rulTemplate.getDirectory();
-        final File templateDir = Paths.get(outputGeneratorService.getTemplatesDir(rulTemplate.getPackage().getCode()), rulTemplateDirectory).toFile();
+        final File templateDir = Paths.get(outputGeneratorService.getTemplatesDir(rulTemplate.getPackage().getCode(), rulTemplate.getOutputType().getRuleSet().getCode()), rulTemplateDirectory).toFile();
         Assert.isTrue(templateDir.exists() && templateDir.isDirectory(), "Nepodařilo se najít adresář s definicí šablony: " + templateDir.getAbsolutePath());
         return templateDir;
     }

@@ -3,6 +3,7 @@ package cz.tacr.elza.repository;
 import java.util.Collection;
 import java.util.List;
 
+import cz.tacr.elza.domain.ArrStructureData;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -38,4 +39,7 @@ public interface DataRepository extends JpaRepository<ArrData, Integer>, DataRep
     @Query("SELECT d.dataId FROM arr_data d WHERE d IN (SELECT o.data FROM arr_output_item o WHERE o.outputDefinition = :outputDefinition)")
     Collection<Integer> findByIdsOutputDefinition(@Param("outputDefinition") ArrOutputDefinition outputDefinition);
 
+    @Modifying
+    @Query("DELETE FROM arr_data d WHERE d.dataId IN (SELECT i.dataId FROM arr_structure_item i WHERE i.structureData = :structureData)")
+    void deleteByStructureData(@Param("structureData") ArrStructureData structureData);
 }

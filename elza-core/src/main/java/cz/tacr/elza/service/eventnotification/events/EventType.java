@@ -46,6 +46,7 @@ public enum EventType {
     DESC_ITEM_CHANGE(EventChangeDescItem.class),
     OUTPUT_ITEM_CHANGE(EventChangeOutputItem.class),
     FUND_RECORD_CHANGE(EventNodeIdVersionInVersion.class),
+    FUND_EXTENSION_CHANGE(EventNodeIdVersionInVersion.class),
 
     DAO_LINK_CREATE(EventIdNodeIdInVersion.class),
     DAO_LINK_DELETE(EventIdNodeIdInVersion.class),
@@ -54,8 +55,6 @@ public enum EventType {
 
     PACKAGE(ActionEvent.class),
 
-    PACKETS_CHANGE(EventId.class),
-
     FILES_CHANGE(EventStringInVersion.class),
 
     INSTITUTION_CHANGE(ActionEvent.class),
@@ -63,6 +62,8 @@ public enum EventType {
     VISIBLE_POLICY_CHANGE(EventIdsInVersion.class),
 
     CONFORMITY_INFO(EventIdsInVersion.class),
+
+    STRUCTURE_DATA_CHANGE(EventStructureDataChange.class),
 
     OUTPUT_STATE_CHANGE(EventIdAndStringInVersion.class),
     OUTPUT_CHANGES(EventIdsInVersion.class),

@@ -28,7 +28,7 @@ public interface ImportSource {
     /**
      * @return seznam použitých obalů
      */
-	List<ArrPacket> getPackets();
+	List<ArrStructuredData> getStructuredList();
 
     /**
      * @return má další uzel?

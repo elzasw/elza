@@ -2,6 +2,7 @@
  * Vstupní soubor pro UI - inicializace a zobrazení VIEW.
  */
 
+
 'use strict'
 
 // Import css Bootstrapu
@@ -114,10 +115,11 @@ SplitToggle.defaultProps = {
 
 // Pokud dostane focus body, chceme jej změnit na implcitiní focus pro ribbon
 import {setFocus} from 'actions/global/focus.jsx';
+import {FOCUS_KEYS} from "./constants";
 {
     const testBodyfocus = () => {
         if (document.activeElement === document.body) { // focus je na body, nastavíme ho podle aktuálně přepnuté oblasti
-            store.dispatch(setFocus(null, 1));
+            store.dispatch(setFocus(FOCUS_KEYS.NONE, 1));
         }
 
         setTimeout(testBodyfocus, 150)

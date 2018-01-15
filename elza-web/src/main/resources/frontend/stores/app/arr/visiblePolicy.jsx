@@ -2,8 +2,12 @@ import * as types from 'actions/constants/ActionTypes.js';
 
 import {indexById} from 'stores/app/utils.jsx'
 
+/**
+ * Zdůvodu zpětné kompatibility jsou zachována původní policyTypeIds jako data a ostatní data jsou z requestu odlita do sekundárního attr
+ */
 const initialState = {
-    data: null
+    data: null,
+    otherData: null
 };
 
 export default function visiblePolicy(state = initialState, action = {}) {
@@ -26,6 +30,7 @@ export default function visiblePolicy(state = initialState, action = {}) {
                 ...state,
                 nodeId: action.nodeId,
                 fundVersionId: action.fundVersionId,
+                otherData: action.otherData,
                 data: data,
                 isFetching: false,
                 fetched: true,

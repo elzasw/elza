@@ -7,7 +7,7 @@
 import * as types from 'actions/constants/ActionTypes.js';
 
 // Vnitřní proměnná, které určuje, zda je nutné focus nastavit
-var _setFocus = false
+var _setFocus = false;
 
 /**
  * Prvek nastavil focus, metoda pro informaci, že ho nastavil.
@@ -63,28 +63,18 @@ export function canSetFocus() {
 
 /**
  * Vyvolání akce pro nastavení focusu.
- * @param {Object} region region, např. 'arr', 'party' atp.
+ * @param {Object} region region viz. constant.jsx FOCUS_KEYS
  * @param {Object} area oblast v regionu, např. 0, 1, 2, 3, atp.
  * @param {Object} component komponenta, např. 'tree', 'list', atp.
  * @param {Object} item doplňující identifikace v komponentě, většinou objekt s dalšími atributy, např. {descItemTypeId: 123}, atp.
  */
-export function setFocus(region, area, component, item) {
-    return (dispatch, getState) => {
-        _setFocus = true;
-
-        var state = getState()
-        var focus = state.focus
-        focus.region = null
-        focus.area = null
-        focus.component = null
-        focus.item = null
-
-        dispatch({
-            type: types.SET_FOCUS,
-            region,
-            area,
-            component,
-            item
-        })
+export function setFocus(region, area, component = null, item = null) {
+    _setFocus = true;
+    return {
+        type: types.SET_FOCUS,
+        region,
+        area,
+        component,
+        item
     }
 }

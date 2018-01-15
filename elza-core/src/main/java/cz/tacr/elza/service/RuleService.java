@@ -24,6 +24,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import cz.tacr.elza.annotation.AuthMethod;
+import cz.tacr.elza.annotation.AuthParam;
 import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
 import cz.tacr.elza.controller.factory.ExtendedObjectsFactory;
 import cz.tacr.elza.core.data.RuleSystem;
@@ -41,12 +43,14 @@ import cz.tacr.elza.domain.ArrNodeConformity;
 import cz.tacr.elza.domain.ArrNodeConformityError;
 import cz.tacr.elza.domain.ArrNodeConformityExt;
 import cz.tacr.elza.domain.ArrNodeConformityMissing;
+import cz.tacr.elza.domain.ArrNodeExtension;
 import cz.tacr.elza.domain.ArrOutputDefinition;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulItemTypeAction;
 import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.RulStructureType;
 import cz.tacr.elza.domain.RulTemplate;
 import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.vo.DataValidationResult;
@@ -68,11 +72,39 @@ import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeConformityErrorRepository;
 import cz.tacr.elza.repository.NodeConformityMissingRepository;
 import cz.tacr.elza.repository.NodeConformityRepository;
+import cz.tacr.elza.repository.NodeExtensionRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.OutputTypeRepository;
 import cz.tacr.elza.repository.TemplateRepository;
+import cz.tacr.elza.service.eventnotification.events.EventNodeIdVersionInVersion;
+import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.utils.ObjectListIterator;
 import cz.tacr.elza.validation.ArrDescItemsPostValidator;
+import org.apache.commons.collections4.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
+import javax.annotation.Nullable;
+import javax.persistence.EntityManager;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 
 /**
@@ -129,6 +161,21 @@ public class RuleService {
     private ItemSettingsRepository itemSettingsRepository;
     @Autowired
     private OutputTypeRepository outputTypeRepository;
+
+    @Autowired
+    private NodeExtensionRepository nodeExtensionRepository;
+
+    @Autowired
+    private IEventNotificationService eventNotificationService;
+
+    @Autowired
+    private ArrangementCacheService arrangementCacheService;
+
+    @Autowired
+    private ArrangementExtensionRepository arrangementExtensionRepository;
+
+    @Autowired
+    private ExtensionRuleRepository extensionRuleRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(RuleService.class);
 
@@ -614,5 +661,295 @@ public class RuleService {
         }
 
         return rulesExecutor.executeOutputItemTypesRules(outputDefinition, rulDescItemTypeExtList);
+    }
+
+    /**
+     * Vytvoření vazby mezi JP a definicí řídících pravidel.
+     *
+     * @param versionId     identifikátor verze AP
+     * @param nodeId        identifikátor JP
+     * @param nodeExtension  vazba
+     * @return  vazba
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN, UsrPermission.Permission.FUND_VER_WR})
+    public ArrNodeExtension createNodeExtension(@AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer versionId,
+                                                final Integer nodeId,
+                                                final ArrNodeExtension nodeExtension) {
+        Assert.notNull(nodeExtension, "Přirazení musí být vyplněno");
+        Assert.isNull(nodeExtension.getNodeExtensionId(), "Identifikátor přiřazení nesmí být vyplěn");
+
+        ArrNode node = nodeRepository.findOne(nodeId);
+
+        ArrChange change = arrangementService.createChange(ArrChange.Type.ADD_NODE_EXTENSION, node);
+
+        node.setVersion(nodeExtension.getNode().getVersion());
+        saveNode(node, change);
+
+        validateNodeExtension(nodeExtension, versionId);
+
+        nodeExtension.setNode(node);
+        nodeExtension.setCreateChange(change);
+        eventNotificationService.publishEvent(new EventNodeIdVersionInVersion(EventType.FUND_EXTENSION_CHANGE, versionId, nodeExtension.getNode().getNodeId(), nodeExtension.getNode().getVersion()));
+
+        nodeExtensionRepository.saveAndFlush(nodeExtension);
+        arrangementCacheService.createNodeExtension(nodeId, nodeExtension);
+
+        deleteConformityInfo(versionId, Collections.singleton(nodeId), Collections.singleton(RelatedNodeDirection.DESCENDANTS));
+
+        return nodeExtension;
+    }
+
+    /**
+     * Odstranění vazby mezi nodem a definicí řídících pravidel.
+     *
+     * @param versionId     identifikátor verze AP
+     * @param nodeId        identifikátor JP
+     * @param nodeExtension  vazba
+     * @return vazba
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN, UsrPermission.Permission.FUND_VER_WR})
+    public ArrNodeExtension deleteNodeExtension(@AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer versionId,
+                                                final Integer nodeId,
+                                                final ArrNodeExtension nodeExtension) {
+        Assert.notNull(nodeExtension, "Rejstříkové heslo musí být vyplněno");
+        Assert.notNull(nodeExtension.getNodeExtensionId(), "Identifikátor musí být vyplněn");
+
+        ArrNodeExtension nodeExtensionDB = nodeExtensionRepository.findOne(nodeExtension.getNodeExtensionId());
+
+        ArrNode node = nodeRepository.findOne(nodeId);
+
+        ArrChange change = arrangementService.createChange(ArrChange.Type.DELETE_NODE_EXTENSION, node);
+
+        node.setVersion(nodeExtension.getNode().getVersion());
+        saveNode(node, change);
+
+        validateNodeExtension(nodeExtensionDB, versionId);
+
+        nodeExtensionDB.setDeleteChange(change);
+
+        eventNotificationService.publishEvent(new EventNodeIdVersionInVersion(EventType.FUND_EXTENSION_CHANGE, versionId, node.getNodeId(), node.getVersion()));
+
+        nodeExtensionRepository.save(nodeExtensionDB);
+        arrangementCacheService.deleteNodeExtension(nodeId, nodeExtensionDB.getNodeExtensionId());
+
+        deleteConformityInfo(versionId, Collections.singleton(nodeId), Collections.singleton(RelatedNodeDirection.DESCENDANTS));
+
+        return nodeExtensionDB;
+    }
+
+    /**
+     * Uložení uzlu - optimistické zámky
+     *
+     * @param node   uzel
+     * @param change
+     * @return uložený uzel
+     */
+    private ArrNode saveNode(final ArrNode node, final ArrChange change) {
+        node.setLastUpdate(change.getChangeDate());
+        nodeRepository.save(node);
+        nodeRepository.flush();
+        return node;
+    }
+
+    /**
+     * Validuje entitu před uložením.
+     *
+     * @param nodeExtension entita
+     * @param fundVersionId
+     */
+    private void validateNodeExtension(final ArrNodeExtension nodeExtension, final Integer fundVersionId) {
+        if (nodeExtension.getDeleteChange() != null) {
+            throw new IllegalStateException("Nelze vytvářet či modifikovat změnu," +
+                    " která již byla smazána (má delete change).");
+        }
+
+        if (nodeExtension.getNode() == null) {
+            throw new IllegalArgumentException("Není vyplněna JP");
+        }
+        if (nodeExtension.getArrangementExtension() == null) {
+            throw new IllegalArgumentException("Nejsou definovány rozšířené pravidla");
+        }
+        List<RulArrangementExtension> arrangementExtensions = findArrangementExtensionsByFundVersionId(fundVersionId);
+        if (!arrangementExtensions.contains(nodeExtension.getArrangementExtension())) {
+            throw new IllegalArgumentException("Řídící pravidla nejsou pro pravidla AS");
+        }
+    }
+
+    /**
+     * Vyhledá možné definice rozšíření pro řídící pravidla podle verze AS.
+     *
+     * @param fundVersionId identifikátor verze archivní pomůcky
+     * @return nalezené definice
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN, UsrPermission.Permission.FUND_VER_WR})
+    public List<RulArrangementExtension> findArrangementExtensionsByFundVersionId(@AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId) {
+        Assert.notNull(fundVersionId, "Identifikátor verze AS musí být vyplněn");
+        ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
+        RulRuleSet ruleSet = version.getRuleSet();
+        return arrangementExtensionRepository.findByRuleSet(ruleSet);
+    }
+
+    /**
+     * Vyhledá nastavené definice rozšíření pro řídící pravidla pro JP z verze AS.
+     *
+     * @param fundVersionId  identifikátor verze archivní pomůcky
+     * @param nodeId identifikátor JP
+     * @return nalezené definice
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN, UsrPermission.Permission.FUND_VER_WR})
+    public List<RulArrangementExtension> findArrangementExtensionsByNodeId(@AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId,
+                                                                           final Integer nodeId) {
+        Assert.notNull(nodeId, "Identifikátor JP musí být vyplněn");
+        Assert.notNull(fundVersionId, "Identifikátor verze AS musí být vyplněn");
+        ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
+        ArrNode node = nodeRepository.getOneCheckExist(nodeId);
+        if (!node.getFundId().equals(version.getFundId())) {
+            throw new IllegalArgumentException("JP nespadá pod verzi AS");
+        }
+        return arrangementExtensionRepository.findByNode(node);
+    }
+
+    /**
+     * Vyhledá všechny použité/zděděné definice rozšíření pro řídící pravidla pro JP. Seřazené podle názvu.
+     *
+     * @param nodeId identifikátor JP
+     * @return nalezené definice
+     */
+    public List<RulArrangementExtension> findAllArrangementExtensionsByNodeId(final Integer nodeId) {
+        Assert.notNull(nodeId, "Identifikátor JP musí být vyplněn");
+        return arrangementExtensionRepository.findByNodeIdToRoot(nodeId);
+    }
+
+    public RulItemType getItemTypeById(final Integer itemTypeId) {
+        RulItemType itemType = itemTypeRepository.findOne(itemTypeId);
+        if (itemType == null) {
+            throw new ObjectNotFoundException("Neexistuje typ: " + itemTypeId, BaseCode.ID_NOT_EXIST).setId(itemTypeId);
+        }
+        return itemType;
+    }
+
+    public List<RulExtensionRule> findExtensionRuleByNode(final ArrNode node, final RulExtensionRule.RuleType attributeTypes) {
+        Assert.notNull(node, "JP musí být vyplněna");
+
+        List<ArrNodeExtension> nodeExtensions = nodeExtensionRepository.findAllByNodeIdFromRoot(node.getNodeId());
+
+        LinkedHashSet<RulArrangementExtension> arrangementExtensions = new LinkedHashSet<>();
+        for (ArrNodeExtension nodeExtension : nodeExtensions) {
+            arrangementExtensions.add(nodeExtension.getArrangementExtension());
+        }
+        List<RulArrangementExtension> arrangementExtensionsFinal = new ArrayList<>(arrangementExtensions);
+
+        return extensionRuleRepository.findExtensionRules(arrangementExtensionsFinal, attributeTypes);
+    }
+
+    /**
+     * Nastaví nodu konkrétní extensions. Synchronizuje dodaný set. Dovytvoří potřebné, smaže nepotřebné.
+     *
+     * @param versionId Fund version Id
+     * @param nodeId Node Id
+     * @param arrExtensionIds Set Id nastavovaných ArrExtensions
+     */
+    public void syncNodeExtensions(@AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer versionId,
+                                   final Integer nodeId,
+                                   final Set<Integer> arrExtensionIds) {
+
+        Assert.notNull(arrExtensionIds, "Musí být předán seznam rozšíření");
+
+        ArrNode node = nodeRepository.getOneCheckExist(nodeId);
+
+        final Set<Integer> toDeleteIds = arrangementExtensionRepository.findByNode(node).stream().map(RulArrangementExtension::getArrangementExtensionId).collect(Collectors.toSet());
+        final Set<Integer> toAddIds = new HashSet<>();
+        arrExtensionIds.forEach(i -> {
+            if (toDeleteIds.contains(i)) {
+                toDeleteIds.remove(i);
+            } else {
+                toAddIds.add(i);
+            }
+        });
+
+        if (toDeleteIds.isEmpty() && toAddIds.isEmpty()) {
+            // Vše je v konzistentním stavu
+            return;
+        }
+
+        // Změna pod kterou uvidíme nastavení
+        final ArrChange change = arrangementService.createChange(ArrChange.Type.SET_NODE_EXTENSION, node);
+
+        // Uložení node pro zaznamenání change
+        saveNode(node, change);
+
+        List<ArrNodeExtension> toDelete = null;
+        if (!toDeleteIds.isEmpty()) {
+            // Seznam ke smazání
+            toDelete = nodeExtensionRepository.findByArrExtensionIdsAndNodeNotDeleted(toDeleteIds, node);
+
+            // Nastavení smazání
+            toDelete.forEach(i -> i.setDeleteChange(change));
+
+            toDelete = nodeExtensionRepository.save(toDelete);
+        }
+
+        List<ArrNodeExtension> toAdd = null;
+        if (!toAddIds.isEmpty()) {
+            // Seznam ArrExts k přidání
+            final List<RulArrangementExtension> toAddExts = arrangementExtensionRepository.findAll(toAddIds);
+
+            // Seznam platných rozšíření pro verzi fund
+            final List<RulArrangementExtension> validArrExts = findArrangementExtensionsByFundVersionId(versionId);
+
+            // Validace + příprava listu k uložení
+            toAdd = toAddExts.stream().map(i -> {
+                if (!validArrExts.contains(i)) {
+                    throw new IllegalArgumentException("Řídící pravidla nejsou pro pravidla AS");
+                }
+                final ArrNodeExtension ext = new ArrNodeExtension();
+                ext.setCreateChange(change);
+                ext.setNode(node);
+                ext.setArrangementExtension(i);
+                return ext;
+            }).collect(Collectors.toList());
+
+            toAdd = nodeExtensionRepository.save(toAdd);
+        }
+
+        nodeExtensionRepository.flush();
+
+        eventNotificationService.publishEvent(new EventNodeIdVersionInVersion(EventType.FUND_EXTENSION_CHANGE, versionId, node.getNodeId(), node.getVersion()));
+
+        if (toDelete != null) {
+            toDelete.forEach(i -> arrangementCacheService.deleteNodeExtension(nodeId, i.getNodeExtensionId()));
+        }
+
+        if (toAdd != null) {
+            toAdd.forEach(i -> arrangementCacheService.createNodeExtension(nodeId, i));
+        }
+
+        deleteConformityInfo(versionId, Collections.singleton(nodeId), Lists.newArrayList(RelatedNodeDirection.NODE, RelatedNodeDirection.DESCENDANTS));
+    }
+
+    /**
+     * Získání seznamu typů atributů podle strukt. typu a verze AS.
+     *
+     * @param structureType strukturovaný typ
+     * @param fundVersion   verze AS
+     * @return seznam typu atributů
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    public List<RulItemTypeExt> getStructureItemTypes(final RulStructureType structureType,
+                                                      @AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion) {
+        List<RulItemTypeExt> rulDescItemTypeExtList = getAllItemTypes(structureType.getRuleSet());
+        return rulesExecutor.executeStructureItemTypesRules(structureType, rulDescItemTypeExtList, fundVersion);
+    }
+
+    /**
+     * Získání seznamu typů atributů podle strukt. typu a verze AS - internal.
+     *
+     * @param structureType strukturovaný typ
+     * @param fundVersion   verze AS
+     * @return seznam typu atributů
+     */
+    public List<RulItemTypeExt> getStructureItemTypesInternal(final RulStructureType structureType,
+                                                              final ArrFundVersion fundVersion) {
+        return getStructureItemTypes(structureType, fundVersion);
     }
 }

@@ -17,6 +17,7 @@ import {
 import { propsEquals } from 'components/Utils.jsx';
 import { canSetFocus, focusWasSet, isFocusFor } from 'actions/global/focus.jsx';
 import { fundTreeSelectNode } from '../../actions/arr/fundTree';
+import {FOCUS_KEYS} from "../../constants";
 
 class FundTreeUsage extends AbstractReactComponent {
     constructor(props) {
@@ -57,7 +58,7 @@ class FundTreeUsage extends AbstractReactComponent {
                         focusWasSet();
                     });
                 }
-            } else if (isFocusFor(focus, 'arr', 1, 'treeUsage') || isFocusFor(focus, 'arr', 1)) {
+            } else if (isFocusFor(focus, FOCUS_KEYS.ARR, 1, 'treeUsage') || isFocusFor(focus, FOCUS_KEYS.ARR, 1)) {
                 this.setState({}, () => {
                     this.refs.treeUsage.getWrappedInstance().focus();
                     focusWasSet();

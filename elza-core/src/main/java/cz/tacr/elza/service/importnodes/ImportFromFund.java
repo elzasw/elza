@@ -23,16 +23,16 @@ import cz.tacr.elza.domain.ArrDataFileRef;
 import cz.tacr.elza.domain.ArrDataInteger;
 import cz.tacr.elza.domain.ArrDataJsonTable;
 import cz.tacr.elza.domain.ArrDataNull;
-import cz.tacr.elza.domain.ArrDataPacketRef;
 import cz.tacr.elza.domain.ArrDataPartyRef;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ArrDataString;
+import cz.tacr.elza.domain.ArrDataStructureRef;
 import cz.tacr.elza.domain.ArrDataText;
 import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDataUnitid;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFile;
-import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.ArrFundVersion;import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.RegScope;
@@ -40,8 +40,8 @@ import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.repository.FundFileRepository;
 import cz.tacr.elza.repository.LevelRepository;
-import cz.tacr.elza.repository.PacketRepository;
 import cz.tacr.elza.repository.ScopeRepository;
+import cz.tacr.elza.repository.StructureDataRepository;
 import cz.tacr.elza.service.DmsService;
 import cz.tacr.elza.service.cache.CachedNode;
 import cz.tacr.elza.service.cache.NodeCacheService;
@@ -51,6 +51,8 @@ import cz.tacr.elza.service.importnodes.vo.DeepCallback;
 import cz.tacr.elza.service.importnodes.vo.ImportSource;
 import cz.tacr.elza.service.importnodes.vo.Node;
 import cz.tacr.elza.service.importnodes.vo.NodeRegister;
+import cz.tacr.elza.service.importnodes.vo.Structured;
+import cz.tacr.elza.service.importnodes.vo.Scope;
 import cz.tacr.elza.service.importnodes.vo.descitems.Item;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemCoordinates;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemDecimal;
@@ -59,7 +61,7 @@ import cz.tacr.elza.service.importnodes.vo.descitems.ItemFileRef;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemFormattedText;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemInt;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemJsonTable;
-import cz.tacr.elza.service.importnodes.vo.descitems.ItemPacketRef;
+import cz.tacr.elza.service.importnodes.vo.descitems.ItemStructureRef;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemPartyRef;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemRecordRef;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemString;
@@ -83,7 +85,7 @@ public class ImportFromFund implements ImportSource {
     private FundFileRepository fundFileRepository;
 
     @Autowired
-    private PacketRepository packetRepository;
+    private StructureDataRepository structureDataRepository;
 
     @Autowired
     private LevelRepository levelRepository;
@@ -125,8 +127,10 @@ public class ImportFromFund implements ImportSource {
     }
 
     @Override
-	public List<ArrPacket> getPackets() {
-        return packetRepository.findPacketsBySubtreeNodeIds(nodeIds, ignoreRootNodes);
+
+    @Override
+    public Set<? extends Structured> getStructuredList() {
+        return structureDataRepository.findStructureDataBySubtreeNodeIds(nodeIds, ignoreRootNodes);
     }
 
     @Override
@@ -346,8 +350,8 @@ public class ImportFromFund implements ImportSource {
             result = new ItemPartyRefImpl(item, (ArrDataPartyRef) itemData);
         } else if (itemData instanceof ArrDataRecordRef) {
             result = new ItemRecordRefImpl(item, (ArrDataRecordRef) itemData);
-        } else if (itemData instanceof ArrDataPacketRef) {
-            result = new ItemPacketRefImpl(item, (ArrDataPacketRef) itemData);
+        } else if (itemData instanceof ArrDataStructureRef) {
+            result = new ItemStructureRefImpl(item, (ArrDataStructureRef) itemData);
         } else if (itemData instanceof ArrDataCoordinates) {
             result = new ItemCoordinatesRefImpl(item, (ArrDataCoordinates) itemData);
         } else {
@@ -523,18 +527,18 @@ public class ImportFromFund implements ImportSource {
         }
     }
 
-    private class ItemPacketRefImpl extends ItemImpl implements ItemPacketRef {
+    private class ItemStructureRefImpl extends ItemImpl implements ItemStructureRef {
 
-        private final Integer packetId;
+        private final Integer structureDataId;
 
-        public ItemPacketRefImpl(final ArrDescItem item, final ArrDataPacketRef itemData) {
+        public ItemStructureRefImpl(final ArrDescItem item, final ArrDataStructureRef itemData) {
             super(item);
-            packetId = itemData.getPacketId();
+            structureDataId = itemData.getStructureDataId();
         }
 
         @Override
-        public Integer getPacketId() {
-            return packetId;
+        public Integer getStructureDataId() {
+            return structureDataId;
         }
     }
 

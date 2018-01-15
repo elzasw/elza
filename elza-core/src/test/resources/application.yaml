@@ -54,7 +54,7 @@ elza:
   xmlExport:
     transformationDir: ${elza.workingDir}/xmlExportTransformations/
 
-  rulesDir: ${elza.workingDir}/rules
+  packagesDir: ${elza.workingDir}/packages
 
   dmsDir: ${elza.workingDir}/dms/
 

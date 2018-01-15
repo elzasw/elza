@@ -19,9 +19,13 @@ import javax.transaction.Transactional;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
+import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.gson.GsonAutoConfiguration;
+import org.springframework.boot.json.GsonJsonParser;
+import org.springframework.boot.json.JsonJsonParser;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -2042,5 +2046,13 @@ public class OutputService {
         // sockety
         publishChangeOutputItem(fundVersion, outputItemCreated);
         return outputItemCreated;
+    }
+
+    public void setOutputSettings(OutputSettingsVO outputConfig, Integer outputId) throws JsonProcessingException {
+        ArrOutputDefinition outputDefinition = outputDefinitionRepository.findByOutputId(outputId);
+        ObjectMapper mapper = new ObjectMapper();
+        String s = mapper.writeValueAsString(outputConfig);
+        outputDefinition.setOutputSettings(s);
+        outputDefinitionRepository.save(outputDefinition);
     }
 }
