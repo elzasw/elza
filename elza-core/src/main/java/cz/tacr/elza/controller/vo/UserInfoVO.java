@@ -21,7 +21,14 @@ public class UserInfoVO extends UsrUserVO {
 
     private Collection<UISettingsVO> settings;
 
-	protected UserInfoVO(final String preferredName, final UserDetail userDetail) {
+    /**
+     * Default empty constructor for deserialization
+     */
+    public UserInfoVO() {
+
+    }
+
+    protected UserInfoVO(final String preferredName, final UserDetail userDetail) {
 		super(userDetail);
 		this.preferredName = preferredName;
 	}
@@ -29,6 +36,10 @@ public class UserInfoVO extends UsrUserVO {
 	public String getPreferredName() {
 		return preferredName;
 	}
+
+    public void setPreferredName(String preferredName) {
+        this.preferredName = preferredName;
+    }
 
     public Collection<UserPermissionInfoVO> getUserPermissions() {
         return userPermissions;
