@@ -10,11 +10,12 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.RulStructureType;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
+import cz.tacr.elza.repository.StructureTypeRepository;
 
 /**
  * Manage information about all rule systems
@@ -62,7 +63,8 @@ public class RuleSystemProvider {
      */
     void init(RuleSetRepository ruleSetRepository,
               ItemTypeRepository itemTypeRepository,
-              ItemSpecRepository itemSpecRepository) {
+            ItemSpecRepository itemSpecRepository,
+            StructureTypeRepository structuredTypeRepository) {
         List<RulRuleSet> ruleSets = ruleSetRepository.findAll();
 
 		// prepare fields
@@ -81,7 +83,7 @@ public class RuleSystemProvider {
         }
 
 		// prepare packet types
-		initPacketTypes(packetTypeRepository);
+        initStructuredTypes(structuredTypeRepository);
 
 		// prepare item types
 		initItemTypes(itemTypeRepository, itemSpecRepository);
@@ -90,12 +92,12 @@ public class RuleSystemProvider {
 		rulesSystems = rulesSystemsImpl.stream().map(a -> a.sealUp()).collect(Collectors.toList());
     }
 
-	private void initPacketTypes(PacketTypeRepository packetTypeRepository) {
-		List<RulPacketType> packetTypes = packetTypeRepository.findAll();
+    private void initStructuredTypes(StructureTypeRepository structuredTypeRepository) {
+        List<RulStructureType> structuredTypes = structuredTypeRepository.findAll();
 
-		for (RulPacketType pt : packetTypes) {
-			RuleSystemImpl ruleSetImpl = ruleSetIdMap.get(pt.getRuleSet().getRuleSetId());
-			ruleSetImpl.addPacketType(pt);
+        for (RulStructureType st : structuredTypes) {
+            RuleSystemImpl ruleSetImpl = ruleSetIdMap.get(st.getRuleSet().getRuleSetId());
+            ruleSetImpl.addStructuredType(st);
 		}
 	}
 

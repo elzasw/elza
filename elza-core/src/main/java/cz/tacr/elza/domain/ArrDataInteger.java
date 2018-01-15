@@ -49,9 +49,4 @@ public class ArrDataInteger extends ArrData {
 	public ArrDataInteger makeCopy() {
 		return new ArrDataInteger(this);
 	}
-
-    @Override
-    public void merge(final ArrData data) {
-        this.setValue(((ArrDataInteger) data).getValue());
-    }
 }

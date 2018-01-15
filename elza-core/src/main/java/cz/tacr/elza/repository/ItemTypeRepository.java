@@ -6,6 +6,7 @@ import java.util.Set;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.RulRuleSet;

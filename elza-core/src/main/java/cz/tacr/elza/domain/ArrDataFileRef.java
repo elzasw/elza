@@ -62,9 +62,4 @@ public class ArrDataFileRef extends ArrData {
 	public ArrDataFileRef makeCopy() {
 		return new ArrDataFileRef(this);
 	}
-
-    @Override
-    public void merge(final ArrData data) {
-        this.setFile(((ArrDataFileRef) data).getFile());
-    }
 }

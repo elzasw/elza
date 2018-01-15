@@ -100,7 +100,7 @@ public class StaticDataProvider {
      */
     void init(StaticDataService service) {
         ruleSystemProvider.init(service.ruleSetRepository, service.itemTypeRepository,
-                service.itemSpecRepository);
+                service.itemSpecRepository, service.structuredTypeRepository);
         initPackages(service.packageRepository);
         initPartyNameFormTypes(service.partyNameFormTypeRepository);
         initComplementTypes(service.complementTypeRepository, service.partyTypeComplementTypeRepository);

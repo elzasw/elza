@@ -32,9 +32,8 @@ import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDataUnitid;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFile;
-import cz.tacr.elza.domain.ArrFundVersion;import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.RegScope;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.domain.table.ElzaTable;
@@ -52,7 +51,6 @@ import cz.tacr.elza.service.importnodes.vo.ImportSource;
 import cz.tacr.elza.service.importnodes.vo.Node;
 import cz.tacr.elza.service.importnodes.vo.NodeRegister;
 import cz.tacr.elza.service.importnodes.vo.Structured;
-import cz.tacr.elza.service.importnodes.vo.Scope;
 import cz.tacr.elza.service.importnodes.vo.descitems.Item;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemCoordinates;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemDecimal;
@@ -61,10 +59,10 @@ import cz.tacr.elza.service.importnodes.vo.descitems.ItemFileRef;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemFormattedText;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemInt;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemJsonTable;
-import cz.tacr.elza.service.importnodes.vo.descitems.ItemStructureRef;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemPartyRef;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemRecordRef;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemString;
+import cz.tacr.elza.service.importnodes.vo.descitems.ItemStructureRef;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemText;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemUnitdate;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemUnitid;
@@ -125,8 +123,6 @@ public class ImportFromFund implements ImportSource {
         List<ArrFile> files = fundFileRepository.findFilesBySubtreeNodeIds(nodeIds, ignoreRootNodes);
 		return files;
     }
-
-    @Override
 
     @Override
     public Set<? extends Structured> getStructuredList() {

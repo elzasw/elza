@@ -1,16 +1,5 @@
 package cz.tacr.elza.bulkaction;
 
-import cz.tacr.elza.domain.RulAction;
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.repository.ActionRepository;
-import cz.tacr.elza.utils.Yaml;
-import liquibase.util.file.FilenameUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-
-import javax.transaction.Transactional;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;

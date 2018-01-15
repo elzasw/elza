@@ -28,6 +28,7 @@ import cz.tacr.elza.repository.PartyTypeComplementTypeRepository;
 import cz.tacr.elza.repository.PartyTypeRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
+import cz.tacr.elza.repository.StructureTypeRepository;
 import cz.tacr.elza.utils.HibernateUtils;
 
 /**
@@ -61,6 +62,8 @@ public class StaticDataService {
 
     final ItemSpecRepository itemSpecRepository;
 
+    final StructureTypeRepository structuredTypeRepository;
+
     final DataTypeRepository dataTypeRepository;
 
     final CalendarTypeRepository calendarTypeRepository;
@@ -86,6 +89,7 @@ public class StaticDataService {
                              CalendarTypeRepository calendarTypeRepository,
                              PartyTypeRepository partyTypeRepository,
                              PackageRepository packageRepository,
+                             StructureTypeRepository structuredTypeRepository,
                              PartyNameFormTypeRepository partyNameFormTypeRepository,
                              ComplementTypeRepository complementTypeRepository,
                              PartyTypeComplementTypeRepository partyTypeComplementTypeRepository,
@@ -98,6 +102,7 @@ public class StaticDataService {
         this.calendarTypeRepository = calendarTypeRepository;
         this.partyTypeRepository = partyTypeRepository;
         this.packageRepository = packageRepository;
+        this.structuredTypeRepository = structuredTypeRepository;
         this.partyNameFormTypeRepository = partyNameFormTypeRepository;
         this.complementTypeRepository = complementTypeRepository;
         this.partyTypeComplementTypeRepository = partyTypeComplementTypeRepository;

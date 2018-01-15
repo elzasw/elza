@@ -21,8 +21,9 @@ import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.RulArrangementRule;
+import cz.tacr.elza.domain.RulExtensionRule;
 import cz.tacr.elza.domain.RulPolicyType;
-import cz.tacr.elza.domain.RulRule;
 import cz.tacr.elza.domain.vo.DataValidationResult;
 import cz.tacr.elza.domain.vo.DataValidationResults;
 import cz.tacr.elza.drools.model.ActiveLevel;
@@ -31,8 +32,8 @@ import cz.tacr.elza.drools.service.ScriptModelFactory;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.DescItemRepository;
-import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.PolicyTypeRepository;
+import cz.tacr.elza.service.RuleService;
 
 /**
  * Zpracování pravidel pro validaci parametrů uzlu.
@@ -44,9 +45,6 @@ public class ValidationRules extends Rules {
 
 	@Autowired
 	private ScriptModelFactory scriptModelFactory;
-
-	@Autowired
-	private ItemTypeRepository itemTypeRepository;
 
 	@Autowired
 	private DescItemRepository descItemRepository;

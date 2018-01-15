@@ -1,52 +1,36 @@
 package cz.tacr.elza.core.data;
 
 import java.util.List;
-import java.util.Map;
 
-import org.apache.commons.lang3.Validate;
-
-import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.RulStructureType;
 
-public class RuleSystem {
+public interface RuleSystem {
 
-    private final RulRuleSet ruleSet;
+    RulRuleSet getRuleSet();
 
-	protected List<RuleSystemItemType> itemTypes;
+    /**
+     * Return collection of all structured types
+     * 
+     * @return
+     */
+    List<RulStructureType> getStructuredTypes();
 
-	protected Map<String, RulPacketType> packetTypeCodeMap;
+    RulStructureType getStructuredTypeById(Integer id);
 
-	protected Map<Integer, RuleSystemItemType> itemTypeIdMap;
+    RulStructureType getStructuredTypeByCode(String code);
 
-	protected Map<String, RuleSystemItemType> itemTypeCodeMap;
+    List<RuleSystemItemType> getItemTypes();
 
-    RuleSystem(RulRuleSet ruleSet) {
-        this.ruleSet = Validate.notNull(ruleSet);
-    }
+    RuleSystemItemType getItemTypeById(Integer id);
 
-    public RulRuleSet getRuleSet() {
-        return ruleSet;
-    }
-
-    public List<RuleSystemItemType> getItemTypes() {
-        return itemTypes;
-    }
-
-    public RuleSystemItemType getItemTypeById(Integer id) {
-        Validate.notNull(id);
-        return itemTypeIdMap.get(id);
-    }
-
-	/**
-	 * Return description item by code
-	 * 
-	 * @param code
-	 *            Item type code
-	 * @return Return description item. If item does not exist return null.
-	 */
-    public RuleSystemItemType getItemTypeByCode(String code) {
-        Validate.notEmpty(code);
-        return itemTypeCodeMap.get(code);
-    }
+    /**
+     * Return description item by code
+     * 
+     * @param code
+     *            Item type code
+     * @return Return description item. If item does not exist return null.
+     */
+    RuleSystemItemType getItemTypeByCode(String code);
 
 }

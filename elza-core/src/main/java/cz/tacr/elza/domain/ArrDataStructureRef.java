@@ -1,14 +1,15 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.springframework.data.rest.core.annotation.RestResource;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+
+import org.springframework.data.rest.core.annotation.RestResource;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity(name = "arr_data_structure_ref")
 @Table
@@ -24,6 +25,26 @@ public class ArrDataStructureRef extends ArrData {
 
     @Column(name = "structureDataId", updatable = false, insertable = false)
     private Integer structureDataId;
+
+    /**
+     * Public empty constructor
+     */
+    public ArrDataStructureRef() {
+
+    }
+
+    /**
+     * Copy constructor
+     * 
+     * Copy constuctor is used internally, see method makeCopy
+     * 
+     * @param src
+     */
+    protected ArrDataStructureRef(ArrDataStructureRef src) {
+        super(src);
+        this.structureData = src.structureData;
+        this.structureDataId = src.structureDataId;
+    }
 
     public ArrStructureData getStructureData() {
         return structureData;
@@ -44,16 +65,8 @@ public class ArrDataStructureRef extends ArrData {
     }
 
     @Override
-    public ArrData copy() {
-        ArrDataStructureRef data = new ArrDataStructureRef();
-        data.setDataType(this.getDataType());
-        data.setStructureData(this.getStructureData());
-        return data;
-    }
-
-    @Override
-    public void merge(final ArrData data) {
-        this.setStructureData(((ArrDataStructureRef) data).getStructureData());
+    public ArrData makeCopy() {
+        return new ArrDataStructureRef(this);
     }
 }
 

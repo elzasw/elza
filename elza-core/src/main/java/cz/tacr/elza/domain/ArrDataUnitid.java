@@ -46,10 +46,4 @@ public class ArrDataUnitid extends ArrData {
 	public ArrDataUnitid makeCopy() {
 		return new ArrDataUnitid(this);
 	}
-
-
-    @Override
-    public void merge(final ArrData data) {
-        this.setValue(((ArrDataUnitid) data).getValue());
-    }
 }

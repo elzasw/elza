@@ -100,20 +100,6 @@ public abstract class ArrData implements NodeCacheSerializable {
         return DataType.fromId(dataTypeId);
     }
 
-    /**
-     * Provede kopii dat. Bez primárního klíče!
-     *
-     * @return zkopírovaná entita
-     */
-    public abstract ArrData copy();
-
-    /**
-     * Provede zamergování dat. Ignorují se property: dataId, dataType.
-     *
-     * @param data mergované data
-     */
-    public abstract void merge(final ArrData data);
-
     @Override
     public boolean equals(final Object obj) {
         if (!(obj instanceof ArrData)) {

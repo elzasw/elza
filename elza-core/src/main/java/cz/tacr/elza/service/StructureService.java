@@ -1,6 +1,26 @@
 package cz.tacr.elza.service;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.castor.core.util.Assert;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+
 import com.google.common.collect.Lists;
+
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.annotation.AuthParam;
 import cz.tacr.elza.core.data.DataType;
@@ -33,23 +53,6 @@ import cz.tacr.elza.repository.StructureItemRepository;
 import cz.tacr.elza.repository.StructureTypeRepository;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventStructureDataChange;
-import org.apache.commons.collections4.CollectionUtils;
-import org.castor.core.util.Assert;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
-
-import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Servisní třída pro práci se strukturovanými datovými typy.
@@ -368,7 +371,7 @@ public class StructureService {
         if (createNewDataVersion) {
             List<ArrData> resultDataList = new ArrayList<>(resultStructureItems.size());
             for (ArrStructureItem newStructureItem : resultStructureItems) {
-                ArrData newData = newStructureItem.getData().copy();
+                ArrData newData = ArrData.makeCopyWithoutId(newStructureItem.getData());
                 newStructureItem.setData(newData);
                 resultDataList.add(newData);
             }
@@ -545,7 +548,7 @@ public class StructureService {
      * @return vytvořená data
      */
     private ArrData createData(final ArrData data, final RulDataType dataType) {
-        ArrData copy = data.copy();
+        ArrData copy = ArrData.makeCopyWithoutId(data);
         copy.setDataType(dataType);
         return dataRepository.save(copy);
     }
@@ -560,7 +563,7 @@ public class StructureService {
      */
     private ArrData updateData(final ArrData data, final boolean createNewVersion, final RulDataType dataType) {
         if (createNewVersion) {
-            ArrData copy = data.copy();
+            ArrData copy = ArrData.makeCopyWithoutId(data);
             copy.setDataType(dataType);
             return dataRepository.save(copy);
         } else {
@@ -929,7 +932,7 @@ public class StructureService {
             for (ArrStructureData newStructureData : structureDataList) {
                 for (ArrStructureItem structureItem : structureItems) {
                     ArrStructureItem copyStructureItem = new ArrStructureItem();
-                    ArrData newData = structureItem.getData().copy();
+                    ArrData newData = ArrData.makeCopyWithoutId(structureItem.getData());
                     Integer val = autoincrementMap.get(structureItem.getItemType());
                     if (val != null) {
                         val++;
@@ -1082,7 +1085,7 @@ public class StructureService {
                 itemTypePositionMap.put(structureItem.getItemType(), position);
 
                 ArrStructureItem copyStructureItem = new ArrStructureItem();
-                ArrData newData = structureItem.getData().copy();
+                ArrData newData = ArrData.makeCopyWithoutId(structureItem.getData());
                 newData.setDataType(structureItem.getItemType().getDataType());
                 Integer val = autoincrementMap.get(structureItem.getItemType());
                 if (val != null) {

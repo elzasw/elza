@@ -13,11 +13,10 @@ import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.core.data.RuleSystemItemType;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataInteger;
-import cz.tacr.elza.domain.ArrDataPacketRef;
+import cz.tacr.elza.domain.ArrDataStructureRef;
 import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrPacket;
+import cz.tacr.elza.domain.ArrStructureData;
 import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.RulPacketType;
 
 public class UnitCounter {
 
@@ -86,7 +85,7 @@ public class UnitCounter {
 		if (objectTypeCode != null) {
 			objectType = ruleSystem.getItemTypeByCode(objectTypeCode);
 			Validate.notNull(objectType);
-			Validate.isTrue(objectType.getDataType() == DataType.PACKET_REF);
+            Validate.isTrue(objectType.getDataType() == DataType.STRUCTURED);
 
 			// prepare packet type mapping
 			Map<String, String> packetTypeMapping = config.getObjectMapping();
@@ -152,8 +151,8 @@ public class UnitCounter {
 					continue;
 				}
 
-				ArrPacket packet = ((ArrDataPacketRef) item.getData()).getPacket();
-				Integer packetId = packet.getPacketId();
+                ArrStructureData packet = ((ArrDataStructureRef) item.getData()).getStructureData();
+                Integer packetId = packet.getStructureDataId();
 				if (!countedObjects.contains(packetId)) {
 					//TODO: change to id getter - object not needed
 					RulPacketType packetType = packet.getPacketType();

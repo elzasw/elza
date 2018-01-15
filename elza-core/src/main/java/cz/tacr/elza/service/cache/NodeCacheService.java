@@ -17,9 +17,6 @@ import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
-import cz.tacr.elza.domain.ArrDataStructureRef;
-import cz.tacr.elza.domain.ArrStructureData;
-import cz.tacr.elza.repository.StructureDataRepository;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 import org.castor.core.util.Assert;
@@ -49,11 +46,13 @@ import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataFileRef;
 import cz.tacr.elza.domain.ArrDataPartyRef;
 import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrDataStructureRef;
 import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeRegister;
+import cz.tacr.elza.domain.ArrStructureData;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RulItemSpec;
@@ -67,6 +66,7 @@ import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
+import cz.tacr.elza.repository.StructureDataRepository;
 import cz.tacr.elza.utils.HibernateUtils;
 
 /**
@@ -498,8 +498,8 @@ public class NodeCacheService {
 					ArrData data = descItem.getData();
 					if (data != null) {
 						// restore dataType
-						if (data instanceof ArrDataPacketRef) {
-							itemPacketsMap.put(descItem, ((ArrDataPacketRef) data).getPacketId());
+						if (data instanceof ArrDataStructureRef) {
+						    itemStructureDataMap.put(descItem, ((ArrDataStructureRef) data).getStructureDataId());
 						} else if (data instanceof ArrDataPartyRef) {
 							itemPartiesMap.put(descItem, ((ArrDataPartyRef) data).getPartyId());
 						} else if (data instanceof ArrDataRecordRef) {
@@ -509,18 +509,7 @@ public class NodeCacheService {
 						} else if (data instanceof ArrDataUnitdate) {
 							loadUnitdate((ArrDataUnitdate) data);
 						}
-
-                    if (descItem.getData() instanceof ArrDataStructureRef) {
-                        itemStructureDataMap.put(descItem, ((ArrDataStructureRef) descItem.getData()).getStructureDataId());
-                    } else if (descItem.getData() instanceof ArrDataPartyRef) {
-                        itemPartiesMap.put(descItem, ((ArrDataPartyRef) descItem.getData()).getPartyId());
-                    } else if (descItem.getData() instanceof ArrDataRecordRef) {
-                        itemRecordsMap.put(descItem, ((ArrDataRecordRef) descItem.getData()).getRecordId());
-                    } else if (descItem.getData() instanceof ArrDataFileRef) {
-                        itemFilesMap.put(descItem, ((ArrDataFileRef) descItem.getData()).getFileId());
-                    } else if (descItem.getData() instanceof ArrDataUnitdate) {
-                        itemUnitdateMap.put(descItem, ((ArrDataUnitdate) descItem.getData()).getCalendarTypeId());
-					}
+                    }
                 }
             }
 			if (CollectionUtils.isNotEmpty(restoredNode.getDaoLinks())) {

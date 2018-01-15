@@ -49,10 +49,4 @@ public class ArrDataDecimal extends ArrData {
 	public ArrDataDecimal makeCopy() {
 		return new ArrDataDecimal(this);
 	}
-
-
-    @Override
-    public void merge(final ArrData data) {
-        this.setValue(((ArrDataDecimal) data).getValue());
-    }
 }

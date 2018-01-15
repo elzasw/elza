@@ -31,10 +31,4 @@ public class ArrDataNull extends ArrData {
 	public ArrDataNull makeCopy() {
 		return new ArrDataNull(this);
 	}
-
-
-    @Override
-    public void merge(final ArrData data) {
-
-    }
 }
