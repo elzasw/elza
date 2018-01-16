@@ -53,7 +53,7 @@ public class OutputGeneratorFactory {
                 return createFreemarkerOutputGenerator();
             case JASPER:
                 return createJasperOutputGenerator();
-            case DEXML:
+            case DE_XML:
                 return createDEXmlOutputGenerator();
             default:
                 throw new IllegalStateException("Uknown output engine, name:" + engine);

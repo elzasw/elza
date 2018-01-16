@@ -12,6 +12,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrChange.Type;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNodeOutput;
 import cz.tacr.elza.domain.ArrOutputDefinition;
@@ -20,6 +21,7 @@ import cz.tacr.elza.domain.ArrOutputItem;
 import cz.tacr.elza.domain.RulTemplate.Engine;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.FundLevelServiceInternal;
 import cz.tacr.elza.service.OutputServiceInternal;
 import cz.tacr.elza.service.output.generator.OutputGenerator;
@@ -32,8 +34,6 @@ public class OutputGeneratorWorker implements Runnable {
     private final int outputDefinitionId;
 
     private final int fundVersionId;
-
-    private final Integer userId;
 
     /* managed components */
 
@@ -49,24 +49,26 @@ public class OutputGeneratorWorker implements Runnable {
 
     private final PlatformTransactionManager transactionManager;
 
+    private final ArrangementService arrangementService;
+
     public OutputGeneratorWorker(int outputDefinitionId,
                                  int fundVersionId,
-                                 Integer userId,
                                  EntityManager em,
                                  OutputGeneratorFactory outputGeneratorFactory,
                                  OutputServiceInternal outputServiceInternal,
                                  ResourcePathResolver resourcePathResolver,
                                  FundLevelServiceInternal fundLevelServiceInternal,
-                                 PlatformTransactionManager transactionManager) {
+                                 PlatformTransactionManager transactionManager,
+                                 ArrangementService arrangementService) {
         this.outputDefinitionId = outputDefinitionId;
         this.fundVersionId = fundVersionId;
-        this.userId = userId;
         this.em = em;
         this.outputGeneratorFactory = outputGeneratorFactory;
         this.outputServiceInternal = outputServiceInternal;
         this.resourcePathResolver = resourcePathResolver;
         this.fundLevelServiceInternal = fundLevelServiceInternal;
         this.transactionManager = transactionManager;
+        this.arrangementService = arrangementService;
     }
 
     public int getOutputDefinitionId() {
@@ -124,7 +126,7 @@ public class OutputGeneratorWorker implements Runnable {
                     fundVersionId);
         }
 
-        ArrChange change = outputServiceInternal.createGenerateChange(userId);
+        ArrChange change = arrangementService.createChange(Type.GENERATE_OUTPUT);
 
         List<ArrNodeOutput> outputNodes = outputServiceInternal.getOutputNodes(definition, fundVersion.getLockChange());
 

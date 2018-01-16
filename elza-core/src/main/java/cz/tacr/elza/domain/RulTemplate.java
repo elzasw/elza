@@ -185,6 +185,6 @@ public class RulTemplate {
         JASPER,
         FREEMARKER,
         DOCX,
-        DEXML
+        DE_XML
     }
 }

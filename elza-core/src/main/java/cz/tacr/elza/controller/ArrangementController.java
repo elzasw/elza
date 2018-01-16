@@ -2201,15 +2201,11 @@ public class ArrangementController {
 	@Transactional
     public GenerateOutputResult generateOutput(@PathVariable(value = "outputId") int outputId,
                                                @RequestParam(value = "forced", defaultValue = "false") boolean forced) {
-
-        UserDetail userDetail = userService.getLoggedUserDetail();
-        Integer userId = userDetail != null ? userDetail.getId() : null;
-
         ArrOutput output = outputService.getOutput(outputId);
         ArrOutputDefinition definition = output.getOutputDefinition();
 
         ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(definition.getFundId());
-        OutputRequestStatus requestStatus = outputService.addRequest(outputId, fundVersion, userId, !forced);
+        OutputRequestStatus requestStatus = outputService.addRequest(outputId, fundVersion, !forced);
 
         GenerateOutputResult generateOutputResult = new GenerateOutputResult();
         generateOutputResult.setStatus(requestStatus);

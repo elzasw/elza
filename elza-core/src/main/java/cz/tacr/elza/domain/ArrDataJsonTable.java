@@ -37,6 +37,10 @@ public class ArrDataJsonTable extends ArrData  {
         return ElzaTable.fromJsonString(value);
     }
 
+    public String getJsonValue() {
+        return value;
+    }
+
     public void setValue(final ElzaTable value) {
         try {
             this.value = objectMapper.writeValueAsString(value);

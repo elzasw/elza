@@ -1,4 +1,4 @@
-package cz.tacr.elza.service.output;
+package cz.tacr.elza.common;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -8,7 +8,7 @@ import java.util.concurrent.Executors;
 
 import org.apache.commons.lang.Validate;
 
-public class OutputQueueManager {
+public class TaskExecutor {
 
     /**
      * Internal state. Do not change definition order!
@@ -17,9 +17,9 @@ public class OutputQueueManager {
         INIT, RUNNING, STOPPING, TERMINATED
     }
 
-    private final LinkedList<OutputGeneratorWorker> workerQueue = new LinkedList<>();
+    private final LinkedList<Runnable> taskQueue = new LinkedList<>();
 
-    private final List<OutputGeneratorWorker> runningWorkers;
+    private final List<Runnable> runningTasks;
 
     private final ExecutorService executorService;
 
@@ -29,10 +29,10 @@ public class OutputQueueManager {
 
     private Thread managerThread;
 
-    public OutputQueueManager(int threadPoolSize) {
+    public TaskExecutor(int threadPoolSize) {
         Validate.isTrue(threadPoolSize > 0);
 
-        this.runningWorkers = new ArrayList<>(threadPoolSize);
+        this.runningTasks = new ArrayList<>(threadPoolSize);
         this.executorService = Executors.newFixedThreadPool(threadPoolSize);
         this.threadPoolSize = threadPoolSize;
     }
@@ -44,7 +44,7 @@ public class OutputQueueManager {
         Validate.isTrue(state == State.INIT);
 
         state = State.RUNNING;
-        managerThread = new Thread(this::run, "OutputQueueManager");
+        managerThread = new Thread(this::run, "TaskExecutor_managerThread");
         managerThread.start();
     }
 
@@ -52,7 +52,7 @@ public class OutputQueueManager {
      * Caller stop async queue processing. This operation will block caller thread
      * until manager thread does not terminate.
      *
-     * When terminated no more workers will be passed to execution.
+     * When terminated no more tasks will be passed to execution.
      */
     public synchronized void stop() {
         if (state == State.RUNNING) {
@@ -70,24 +70,24 @@ public class OutputQueueManager {
     }
 
     /**
-     * Adds worker to queue for processing.
+     * Adds task to queue for processing.
      *
-     * @return False when worker already in queue.
+     * @return False when task already in queue.
      */
-    public synchronized void addWorker(OutputGeneratorWorker worker) {
+    public synchronized void addTask(Runnable task) {
         Validate.isTrue(state.ordinal() <= State.RUNNING.ordinal());
-        Validate.notNull(worker);
+        Validate.notNull(task);
 
-        workerQueue.addLast(worker);
-        // notify manager thread about new worker
-        if (runningWorkers.size() < threadPoolSize) {
+        taskQueue.addLast(task);
+        // notify manager thread about new task
+        if (runningTasks.size() < threadPoolSize) {
             notify();
         }
     }
 
     private synchronized void run() {
         while (state == State.RUNNING) {
-            if (runningWorkers.size() >= threadPoolSize || workerQueue.isEmpty()) {
+            if (runningTasks.size() >= threadPoolSize || taskQueue.isEmpty()) {
                 try {
                     wait();
                 } catch (InterruptedException e) {
@@ -95,24 +95,24 @@ public class OutputQueueManager {
                 continue;
             }
 
-            OutputGeneratorWorker worker = workerQueue.removeFirst();
+            Runnable task = taskQueue.removeFirst();
 
-            runningWorkers.add(worker);
+            runningTasks.add(task);
             executorService.submit(() -> {
                 try {
-                    worker.run();
+                    task.run();
                 } finally {
-                    onWorkerFinished(worker);
+                    onTaskFinished(task);
                 }
             });
         }
         state = State.TERMINATED;
     }
 
-    private synchronized void onWorkerFinished(OutputGeneratorWorker worker) {
-        runningWorkers.remove(worker);
-        // notify manager thread about ended worker
-        if (workerQueue.size() > 0) {
+    private synchronized void onTaskFinished(Runnable task) {
+        runningTasks.remove(task);
+        // notify manager thread about ended task
+        if (taskQueue.size() > 0) {
             notify();
         }
     }
