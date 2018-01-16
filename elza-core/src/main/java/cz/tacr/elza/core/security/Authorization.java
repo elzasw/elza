@@ -11,6 +11,10 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.concurrent.DelegatingSecurityContextRunnable;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import cz.tacr.elza.api.interfaces.IArrFund;
@@ -328,5 +332,21 @@ public class Authorization {
 
 	public static AccessDeniedException createAccessDeniedException(Permission... deniedPermissions) {
 		return new AccessDeniedException("Chybějící oprávnění: " + Arrays.toString(deniedPermissions), deniedPermissions);
+	}
+
+	/**
+	 * Creates runnable with current security context.
+	 *
+	 * @param runnable original runnable
+	 */
+	public static Runnable createRunnableWithCurrentSecurity(Runnable runnable) {
+	    SecurityContext ctx = SecurityContextHolder.getContext();
+
+	    // create copy of security context, see SEC-2025
+        Authentication auth = ctx.getAuthentication();
+        ctx = SecurityContextHolder.createEmptyContext();
+        ctx.setAuthentication(auth);
+
+	    return new DelegatingSecurityContextRunnable(runnable, ctx);
 	}
 }

@@ -22,8 +22,10 @@ import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationAdapter;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+import cz.tacr.elza.common.TaskExecutor;
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.core.security.Authorization;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrBulkActionRun.State;
 import cz.tacr.elza.domain.ArrChange;
@@ -52,7 +54,6 @@ import cz.tacr.elza.service.eventnotification.events.EventChangeOutputItem;
 import cz.tacr.elza.service.eventnotification.events.EventIdAndStringInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.output.OutputGeneratorWorker;
-import cz.tacr.elza.service.output.OutputQueueManager;
 import cz.tacr.elza.service.output.OutputRequestStatus;
 import cz.tacr.elza.service.output.generator.OutputGeneratorFactory;
 
@@ -61,7 +62,7 @@ public class OutputServiceInternal {
 
     private final static Logger logger = LoggerFactory.getLogger(OutputServiceInternal.class);
 
-    private final OutputQueueManager queueManager = new OutputQueueManager(2);
+    private final TaskExecutor taskExecutor = new TaskExecutor(2);
 
     private final PlatformTransactionManager transactionManager;
 
@@ -145,7 +146,7 @@ public class OutputServiceInternal {
         }
 
         // start queue manager
-        queueManager.start();
+        taskExecutor.start();
     }
 
     /**
@@ -275,7 +276,6 @@ public class OutputServiceInternal {
     @Transactional(TxType.MANDATORY)
     public OutputRequestStatus addRequest(int outputDefinitionId,
                                           ArrFundVersion fundVersion,
-                                          Integer userId,
                                           boolean checkBulkActions) {
         // find open output definition
         ArrOutputDefinition definition = getOutputDefinition(outputDefinitionId);
@@ -296,15 +296,18 @@ public class OutputServiceInternal {
         definition.setState(OutputState.GENERATING);
 
         // create worker
-        OutputGeneratorWorker worker = new OutputGeneratorWorker(outputDefinitionId, fundVersion.getFundVersionId(), userId, em,
-                outputGeneratorFactory, this, resourcePathResolver, fundLevelServiceInternal, transactionManager);
+        OutputGeneratorWorker worker = new OutputGeneratorWorker(outputDefinitionId, fundVersion.getFundVersionId(), em,
+                outputGeneratorFactory, this, resourcePathResolver, fundLevelServiceInternal, transactionManager, arrangementService);
+
+        // delegate security context
+        Runnable runnable = Authorization.createRunnableWithCurrentSecurity(worker);
 
         // register after commit action
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
             @Override
             public void afterCompletion(int status) {
                 if (status == TransactionSynchronization.STATUS_COMMITTED) {
-                    queueManager.addWorker(worker);
+                    taskExecutor.addTask(runnable);
                 } else {
                     logger.warn("Request for output is cancelled due to rollback of source transaction, outputDefinitionId:{}",
                             worker.getOutputDefinitionId());

@@ -51,6 +51,10 @@ public class ItemDataConvertorFactory {
         return new UnitidValueConvertor();
     }
 
+    private JsonTableConvertor createJsonTableConvertor() {
+        return new JsonTableConvertor();
+    }
+
     public StructObjRefConvertor createStructuredObjectRefConvertor() {
         return new StructObjRefConvertor();
     }
@@ -69,6 +73,7 @@ public class ItemDataConvertorFactory {
         map.put(DataType.RECORD_REF, createAPRefConvertor());
         map.put(DataType.PARTY_REF, createPartyRefConvertor());
         map.put(DataType.STRUCTURED, createStructuredObjectRefConvertor());
+        map.put(DataType.JSON_TABLE, createJsonTableConvertor());
         return map;
     }
 }
