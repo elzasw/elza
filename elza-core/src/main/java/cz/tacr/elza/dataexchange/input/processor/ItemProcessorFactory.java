@@ -8,7 +8,6 @@ import cz.tacr.elza.dataexchange.input.parties.FamilyProcessor;
 import cz.tacr.elza.dataexchange.input.parties.PartyGroupProcessor;
 import cz.tacr.elza.dataexchange.input.parties.PartyProcessor;
 import cz.tacr.elza.dataexchange.input.sections.SectionLevelProcessor;
-import cz.tacr.elza.dataexchange.input.sections.SectionPacketProcessor;
 import cz.tacr.elza.domain.ParEvent;
 import cz.tacr.elza.domain.ParPerson;
 import cz.tacr.elza.schema.v2.Event;

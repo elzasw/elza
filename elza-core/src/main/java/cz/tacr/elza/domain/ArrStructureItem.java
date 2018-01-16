@@ -1,14 +1,14 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 
 /**
@@ -28,6 +28,17 @@ public class ArrStructureItem extends ArrItem {
 
     @Column(name = "structureDataId", updatable = false, insertable = false)
     private Integer structureDataId;
+
+    public ArrStructureItem() {
+
+    }
+
+    protected ArrStructureItem(ArrStructureItem src) {
+        super(src);
+
+        this.structureData = src.structureData;
+        this.structureDataId = src.structureDataId;
+    }
 
     @Override
     public Integer getNodeId() {
@@ -64,16 +75,8 @@ public class ArrStructureItem extends ArrItem {
         this.structureDataId = structureData == null ? null : structureData.getStructureDataId();
     }
 
-    public ArrStructureItem copy() {
-        ArrStructureItem item = new ArrStructureItem();
-        item.setItemSpec(this.getItemSpec());
-        item.setItemType(this.getItemType());
-        item.setDescItemObjectId(this.getDescItemObjectId());
-        item.setStructureData(this.getStructureData());
-        item.setData(this.getData());
-        item.setPosition(this.getPosition());
-        item.setCreateChange(this.getCreateChange());
-        item.setDeleteChange(this.getDeleteChange());
-        return item;
+    @Override
+    public ArrItem makeCopy() {
+        return new ArrStructureItem(this);
     }
 }

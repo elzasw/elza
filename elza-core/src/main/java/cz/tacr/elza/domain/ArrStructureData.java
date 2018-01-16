@@ -1,10 +1,6 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import cz.tacr.elza.api.interfaces.IArrFund;
-import cz.tacr.elza.domain.enumeration.StringLength;
-import cz.tacr.elza.service.importnodes.vo.Structured;
-import org.hibernate.annotations.Type;
+import static cz.tacr.elza.domain.enumeration.StringLength.LENGTH_ENUM;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -18,7 +14,13 @@ import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
-import static cz.tacr.elza.domain.enumeration.StringLength.LENGTH_ENUM;
+import org.hibernate.annotations.Type;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import cz.tacr.elza.api.interfaces.IArrFund;
+import cz.tacr.elza.domain.enumeration.StringLength;
+import cz.tacr.elza.service.importnodes.vo.Structured;
 
 
 /**
@@ -30,6 +32,8 @@ import static cz.tacr.elza.domain.enumeration.StringLength.LENGTH_ENUM;
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ArrStructureData implements IArrFund, Structured {
+
+    public final static String STRUCTURE_DATA_ID = "structureDataId";
 
     public static String VALUE = "value";
 

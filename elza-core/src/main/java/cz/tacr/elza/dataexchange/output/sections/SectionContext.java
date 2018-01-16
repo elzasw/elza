@@ -17,13 +17,13 @@ import cz.tacr.elza.service.cache.NodeCacheService;
 
 public class SectionContext {
 
-    private final Set<Integer> processedPacketIds = new HashSet<>();
+    private final Set<Integer> processedStructuredObjectIds = new HashSet<>();
 
     private final Set<Integer> processedNodeIds = new HashSet<>();
 
     private final LevelInfoLoader levelInfoLoader;
 
-    private final PacketLoader packetLoader;
+    private final StructuredObjectLoader structObjLoader;
 
     private final ArrFundVersion fundVersion;
 
@@ -49,7 +49,7 @@ public class SectionContext {
                    NodeCacheService nodeCacheService,
                    EntityManager em) {
         this.levelInfoLoader = new LevelInfoLoader(context.getBatchSize(), nodeCacheService);
-        this.packetLoader = new PacketLoader(em, context.getBatchSize());
+        this.structObjLoader = new StructuredObjectLoader(em, context.getBatchSize());
         this.fundVersion = Validate.notNull(fundVersion);
         this.context = Validate.notNull(context);
         this.multipleSections = multipleSections;
@@ -82,15 +82,15 @@ public class SectionContext {
         return ruleSystem;
     }
 
-    public void addPacketId(Integer packetId) {
-        Validate.notNull(packetId);
+    public void addStructeredObjectId(Integer structObjId) {
+        Validate.notNull(structObjId);
 
-        if (!processedPacketIds.add(packetId)) {
-            return; // packet already processed
+        if (!processedStructuredObjectIds.add(structObjId)) {
+            return; // already processed
         }
 
-        PacketDispatcher packetDispatcher = new PacketDispatcher(getOutputStream(), ruleSystem, fundVersion.getFund());
-        packetLoader.addRequest(packetId, packetDispatcher);
+        StructuredObjectDispatcher packetDispatcher = new StructuredObjectDispatcher(getOutputStream(), ruleSystem, fundVersion.getFund());
+        structObjLoader.addRequest(structObjId, packetDispatcher);
     }
 
     /* internal methods */
@@ -113,7 +113,7 @@ public class SectionContext {
      */
     void processed() {
         levelInfoLoader.flush();
-        packetLoader.flush();
+        structObjLoader.flush();
         if (outputStream != null) {
             outputStream.processed();
         }

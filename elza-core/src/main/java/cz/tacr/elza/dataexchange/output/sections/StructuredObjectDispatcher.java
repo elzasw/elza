@@ -6,10 +6,9 @@ import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.dataexchange.output.loaders.LoadDispatcher;
 import cz.tacr.elza.dataexchange.output.writer.SectionOutputStream;
 import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrPacket;
-import cz.tacr.elza.domain.RulPacketType;
+import cz.tacr.elza.domain.ArrStructureData;
 
-public class PacketDispatcher implements LoadDispatcher<ArrPacket> {
+public class StructuredObjectDispatcher implements LoadDispatcher<ArrStructureData> {
 
     private final SectionOutputStream os;
 
@@ -17,9 +16,9 @@ public class PacketDispatcher implements LoadDispatcher<ArrPacket> {
 
     private final ArrFund fund;
 
-    private ArrPacket packet;
+    private ArrStructureData structuredData;
 
-    public PacketDispatcher(SectionOutputStream os, RuleSystem ruleSystem, ArrFund fund) {
+    public StructuredObjectDispatcher(SectionOutputStream os, RuleSystem ruleSystem, ArrFund fund) {
         this.os = os;
         this.ruleSystem = ruleSystem;
         this.fund = Validate.notNull(fund);
@@ -30,22 +29,24 @@ public class PacketDispatcher implements LoadDispatcher<ArrPacket> {
     }
 
     @Override
-    public void onLoad(ArrPacket result) {
-        Validate.isTrue(packet == null);
-        packet = result;
+    public void onLoad(ArrStructureData result) {
+        Validate.isTrue(structuredData == null);
+        structuredData = result;
     }
 
     @Override
     public void onLoadEnd() {
+        // TODO: Finish implementation
+        /*
         // update packet type reference
-        if (packet.getPacketTypeId() != null) {
+        if (structuredData.getStructureDataId() != null) {
             RulPacketType packetType = ruleSystem.getPacketTypeById(packet.getPacketTypeId());
             Validate.notNull(packetType);
             packet.setPacketType(packetType);
-        }
+        }*/
         // update fund reference
-        packet.setFund(fund);
+        structuredData.setFund(fund);
 
-        os.addPacket(packet);
+        os.addStructuredObject(structuredData);
     }
 }

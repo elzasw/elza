@@ -14,15 +14,14 @@ import javax.xml.stream.XMLStreamWriter;
 import org.apache.commons.lang.Validate;
 
 import cz.tacr.elza.common.XmlUtils;
-import cz.tacr.elza.dataexchange.common.PacketStateConvertor;
 import cz.tacr.elza.dataexchange.common.items.DescriptionItemAPRefImpl;
-import cz.tacr.elza.dataexchange.common.items.DescriptionItemPacketRefImpl;
 import cz.tacr.elza.dataexchange.common.items.DescriptionItemPartyRefImpl;
+import cz.tacr.elza.dataexchange.common.items.DescriptionItemStructObjectRefImpl;
 import cz.tacr.elza.dataexchange.output.items.APRefConvertor;
 import cz.tacr.elza.dataexchange.output.items.ItemConvertor;
 import cz.tacr.elza.dataexchange.output.items.ItemDataConvertorFactory;
-import cz.tacr.elza.dataexchange.output.items.PacketRefConvertor;
 import cz.tacr.elza.dataexchange.output.items.PartyRefConvertor;
+import cz.tacr.elza.dataexchange.output.items.StructObjRefConvertor;
 import cz.tacr.elza.dataexchange.output.sections.ExportLevelInfo;
 import cz.tacr.elza.dataexchange.output.sections.SectionContext;
 import cz.tacr.elza.dataexchange.output.writer.SectionOutputStream;
@@ -30,26 +29,26 @@ import cz.tacr.elza.dataexchange.output.writer.xml.nodes.FileNode;
 import cz.tacr.elza.dataexchange.output.writer.xml.nodes.InternalNode;
 import cz.tacr.elza.dataexchange.output.writer.xml.nodes.JaxbNode;
 import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDataPacketRef;
 import cz.tacr.elza.domain.ArrDataPartyRef;
 import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrDataStructureRef;
 import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.ArrNodeRegister;
-import cz.tacr.elza.domain.ArrPacket;
+import cz.tacr.elza.domain.ArrStructureData;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.schema.v2.AccessPointRefs;
 import cz.tacr.elza.schema.v2.DescriptionItem;
 import cz.tacr.elza.schema.v2.FundInfo;
 import cz.tacr.elza.schema.v2.Level;
-import cz.tacr.elza.schema.v2.Packet;
+import cz.tacr.elza.schema.v2.StructuredObject;
 
 /**
  * XML output stream for section export.
  */
 class XmlSectionOutputStream implements SectionOutputStream {
 
-    private final JAXBContext jaxbContext = XmlUtils.createJAXBContext(Level.class, Packet.class);
+    private final JAXBContext jaxbContext = XmlUtils.createJAXBContext(Level.class, StructuredObject.class);
 
     private final InternalNode parentNode;
 
@@ -91,18 +90,19 @@ class XmlSectionOutputStream implements SectionOutputStream {
     }
 
     @Override
-    public void addPacket(ArrPacket packet) {
+    public void addStructuredObject(ArrStructureData structuredData) {
         Validate.isTrue(!processed);
 
-        Packet element = new Packet();
-        element.setId(packet.getPacketId().toString());
-        element.setN(packet.getStorageNumber());
+        StructuredObject element = new StructuredObject();
+        element.setId(structuredData.getStructureDataId().toString());
+        // TODO: nastaveni dalsich polozek
+        /*element.setN(packet.getStorageNumber());
         element.setS(PacketStateConvertor.convert(packet.getState()));
         if (packet.getPacketType() != null) {
             element.setT(packet.getPacketType().getCode());
-        }
+        }*/
         try {
-            writePacket(element);
+            writeStructuredObject(element);
         } catch (Exception e) {
             throw new SystemException(e);
         }
@@ -197,14 +197,16 @@ class XmlSectionOutputStream implements SectionOutputStream {
         serializeJaxbType(sw, XmlElementName.LEVEL, level);
     }
 
-    private void writePacket(Packet packet) throws Exception {
+    private void writeStructuredObject(StructuredObject stuctObj) throws Exception {
+        /*
         if (!packetsFragment.isOpen()) {
             XMLStreamWriter sw = packetsFragment.openStreamWriter();
             sw.writeStartDocument();
-            sw.writeStartElement(XmlElementName.PACKETS);
+            sw.writeStartElement(XmlElementName.);
         }
         XMLStreamWriter sw = packetsFragment.getStreamWriter();
         serializeJaxbType(sw, XmlElementName.PACKET, packet);
+        */
     }
 
     private void serializeJaxbType(XMLStreamWriter streamWriter, String localName, Object value) throws JAXBException {
@@ -247,14 +249,14 @@ class XmlSectionOutputStream implements SectionOutputStream {
         }
 
         @Override
-        public PacketRefConvertor createPacketRefConvertor() {
-            return new PacketRefConvertor() {
+        public StructObjRefConvertor createPacketRefConvertor() {
+            return new StructObjRefConvertor() {
                 @Override
-                public DescriptionItemPacketRefImpl convert(ArrData data) {
-                    DescriptionItemPacketRefImpl item = super.convert(data);
+                public DescriptionItemStructObjectRefImpl convert(ArrData data) {
+                    DescriptionItemStructObjectRefImpl item = super.convert(data);
                     if (item != null) {
-                        ArrDataPacketRef packetRef = (ArrDataPacketRef) data;
-                        sectionContext.addPacketId(packetRef.getPacketId());
+                        ArrDataStructureRef structObjRef = (ArrDataStructureRef) data;
+                        sectionContext.addStructeredObjectId(structObjRef.getStructureDataId());
                     }
                     return item;
                 }

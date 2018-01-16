@@ -42,7 +42,7 @@ public class SectionElementHandler extends ContextAwareElementHandler {
 	 */
 	private void installSectionHandlers() {
 		reader.addElementHandler("/edx/fs/s/fi", new FundInfoElementHandler(context));
-		reader.addElementHandler("/edx/fs/s/pcks/pck", new SectionPacketElementHandler(context));
+        //reader.addElementHandler("/edx/fs/s/pcks/pck", new SectionPacketElementHandler(context));
 
 		SectionLevelElementHandler levelHandler;
 		if (ignoreRootNodes) {

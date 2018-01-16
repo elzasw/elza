@@ -25,7 +25,6 @@ import cz.tacr.elza.dataexchange.input.sections.context.ArrDescItemWrapper;
 import cz.tacr.elza.dataexchange.input.sections.context.ArrLevelWrapper;
 import cz.tacr.elza.dataexchange.input.sections.context.ArrNodeRegisterWrapper;
 import cz.tacr.elza.dataexchange.input.sections.context.ArrNodeWrapper;
-import cz.tacr.elza.dataexchange.input.sections.context.ArrPacketWrapper;
 
 /**
  * Storage manager for all imported items. Must be initialized with active session.
