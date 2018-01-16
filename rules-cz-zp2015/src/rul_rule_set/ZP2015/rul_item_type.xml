@@ -108,6 +108,7 @@
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
+    <!-- Obsolete, již se nebude dále používat -->
     <item-type code="ZP2015_UNIT_DATE_PRE" data-type="UNITDATE">
         <name>Datace prior vzniku jednotky popisu - strojově čitelný</name>
         <shortcut>Dat. vzniku - prior</shortcut>
@@ -117,13 +118,22 @@
         <use-specification>false</use-specification>
     </item-type>
     <item-type code="ZP2015_UNIT_DATE" data-type="UNITDATE">
-        <name>Datace vzniku jednotky popisu - strojově čitelný</name>
+        <name>Datace vzniku jednotky popisu</name>
         <shortcut>Dat. vzniku</shortcut>
         <description>ZP4.2.5 Datace vzniku jednotky popisu - strojově čitelný</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
+    <item-type code="ZP2015_UNIT_DATE_BULK" data-type="UNITDATE">
+        <name>Vlastní časový rozsah</name>
+        <shortcut>Vl. čas rozsah</shortcut>
+        <description>ZP4.2.5 Datace vzniku jednotky popisu (vlastní časový rozsah)</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>true</can-be-ordered>
+        <use-specification>false</use-specification>
+    </item-type>
+    <!-- Obsolete, již se nebude dále používat -->
     <item-type code="ZP2015_UNIT_DATE_POST" data-type="UNITDATE">
         <name>Datace posterior vzniku jednotky popisu - strojově čitelný</name>
         <shortcut>Dat. vzniku - posterior</shortcut>

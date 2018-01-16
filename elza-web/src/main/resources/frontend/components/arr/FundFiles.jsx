@@ -98,7 +98,7 @@ class FundFiles extends AbstractReactComponent {
     };
 
     handleDownload = (id) => {
-        this.dispatch(downloadFile("arr-file-" + id, UrlFactory.downloadDmsFile(id)));
+        this.dispatch(downloadFile(UrlFactory.downloadDmsFile(id)));
     };
 
     handleReplace = (id) => {

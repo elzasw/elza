@@ -1,7 +1,5 @@
 package cz.tacr.elza.domain;
 
-import java.io.Serializable;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -39,6 +37,9 @@ public class ParRelationTypeRoleType {
     @JoinColumn(name = "relationTypeId", nullable = false)
     private ParRelationType relationType;
 
+    @Column(nullable = false, insertable = false, updatable = false)
+    private Integer relationTypeId;
+
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ParRelationRoleType.class)
     @JoinColumn(name = "roleTypeId", nullable = false)
@@ -65,6 +66,11 @@ public class ParRelationTypeRoleType {
 
     public void setRelationType(final ParRelationType relationType) {
         this.relationType = relationType;
+        this.relationTypeId = relationType != null ? relationType.getRelationTypeId() : null;
+    }
+
+    public Integer getRelationTypeId() {
+        return relationTypeId;
     }
 
     public ParRelationRoleType getRoleType() {

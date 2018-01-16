@@ -78,4 +78,9 @@ public class ArrOutputItem extends ArrItem {
     public ArrNode getNode() {
         return null; //throw new NotImplementedException();
     }
+
+    @Override
+    public ArrItem makeCopy() {
+        return new ArrOutputItem(this);
+    }
 }

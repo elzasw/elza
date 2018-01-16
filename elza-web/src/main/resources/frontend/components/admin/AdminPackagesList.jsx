@@ -32,7 +32,7 @@ class AdminPackagesList extends AbstractReactComponent {
 
     handleDownload = (code) => {
         const {getExportUrl} = this.props;
-        this.dispatch(downloadFile("package-" + code, getExportUrl(code)));
+        this.dispatch(downloadFile(getExportUrl(code)));
     };
 
     render() {

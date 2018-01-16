@@ -86,8 +86,6 @@ import cz.tacr.elza.controller.vo.RulTemplateVO;
 import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
 import cz.tacr.elza.controller.vo.UIPartyGroupVO;
 import cz.tacr.elza.controller.vo.UISettingsVO;
-import cz.tacr.elza.controller.vo.UserInfoVO;
-import cz.tacr.elza.controller.vo.UserPermissionInfoVO;
 import cz.tacr.elza.controller.vo.UsrGroupVO;
 import cz.tacr.elza.controller.vo.UsrPermissionVO;
 import cz.tacr.elza.controller.vo.UsrUserVO;
@@ -210,8 +208,6 @@ import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.OutputResultRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
-import cz.tacr.elza.security.UserDetail;
-import cz.tacr.elza.security.UserPermission;
 import cz.tacr.elza.service.RuleService;
 import ma.glasnost.orika.CustomMapper;
 import ma.glasnost.orika.MapperFactory;
@@ -962,14 +958,6 @@ public class ConfigMapperConfiguration {
                     }
                 }).exclude("value").byDefault().register();
 
-        mapperFactory.classMap(UserDetail.class, UserInfoVO.class)
-                .byDefault()
-                .field("userPermission", "userPermissions")
-                .register();
-        mapperFactory.classMap(UserPermission.class, UserPermissionInfoVO.class)
-                .byDefault()
-                .register();
-
         mapperFactory.classMap(UsrUser.class, UsrUserVO.class)
                 .byDefault()
                 .field("userId", "id")
@@ -1111,6 +1099,7 @@ public class ConfigMapperConfiguration {
                             unitdate.setNormalizedFrom(Long.MIN_VALUE);
                         }
 
+                        // I like mappers, this code is nice joke :-)
                         unitdate.setNormalizedFrom(unitdate.getNormalizedFrom());
 
                         value = unitdate.getValueTo();
@@ -1120,6 +1109,7 @@ public class ConfigMapperConfiguration {
                             unitdate.setNormalizedTo(Long.MAX_VALUE);
                         }
 
+                        // Look, the same joke twice ! 
                         unitdate.setNormalizedTo(unitdate.getNormalizedTo());
                     }
                 }).byDefault().register();

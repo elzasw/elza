@@ -4,25 +4,28 @@ import org.apache.commons.lang.StringUtils;
 
 /**
  * Item string
- * 
+ *
  */
 public class ItemString extends AbstractItem {
-	
-	String value;
+
+    private final String value;
 
     public ItemString(final String value) {
-        super();
-        
         this.value = value;
     }
 
     @Override
-    public String serializeValue() {
+    public String getSerializedValue() {
         return StringUtils.trim(value);
     }
 
-	@Override
-	public Object getValue() {
-		return value;
-	}
+    @Override
+    public boolean isValueSerializable() {
+        return true;
+    }
+
+    @Override
+    protected String getValue() {
+        return value;
+    }
 }

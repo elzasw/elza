@@ -906,12 +906,15 @@ class ArrPage extends ArrParentPage {
     }
 
     renderCenterPanel(readMode, closed) {
-        const {focus, arrRegion, rulDataTypes, calendarTypes, descItemTypes, fundId} = this.props;
+        const {focus, arrRegion, rulDataTypes, calendarTypes, descItemTypes, userDetail, fundId} = this.props;
         const showRegisterJp = arrRegion.showRegisterJp;
         const showDaosJp = arrRegion.showDaosJp;
         const activeFund = this.getActiveFund(this.props);
 
         if (arrRegion.extendedView) {   // extended view - jiné větší zobrazení stromu, renderuje se zde
+            let centerSettings = getOneSettings(userDetail.settings, 'FUND_CENTER_PANEL', 'FUND', activeFund.id);
+            let centerSettingsValues = centerSettings.value ? JSON.parse(centerSettings.value) : null;
+            let colorCoded = !(centerSettingsValues && centerSettingsValues.treeColorCoding === false);
             return (
                 <FundTreeMain
                     focus={focus}
@@ -921,6 +924,7 @@ class ArrPage extends ArrParentPage {
                     versionId={activeFund.versionId}
                     {...activeFund.fundTree}
                     actionAddons={<Button onClick={() => {this.handleSetExtendedView(false)}} className='extended-view-toggle'><Icon glyph='fa-compress'/></Button>}
+                    colorCoded={colorCoded}
                 />
             )
         } else if(activeFund.nodes.activeIndex === null){

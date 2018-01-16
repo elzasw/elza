@@ -34,9 +34,15 @@ public class RulArrangementRule {
     @JoinColumn(name = "ruleSetId", nullable = false)
     private RulRuleSet ruleSet;
 
+    @Column(nullable = false, insertable = false, updatable = false)
+    private Integer ruleSetId;
+
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulPackage.class)
     @JoinColumn(name = "packageId", nullable = false)
     private RulPackage rulPackage;
+
+    @Column(nullable = false, insertable = false, updatable = false)
+    private Integer packageId;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulComponent.class)
     @JoinColumn(name = "componentId", nullable = false)
@@ -75,6 +81,11 @@ public class RulArrangementRule {
      */
     public void setRuleSet(final RulRuleSet ruleSet) {
         this.ruleSet = ruleSet;
+        this.ruleSetId = ruleSet != null ? ruleSet.getRuleSetId() : null;
+    }
+
+    public Integer getRuleSetId() {
+        return ruleSetId;
     }
 
     /**
@@ -89,6 +100,11 @@ public class RulArrangementRule {
      */
     public void setPackage(final RulPackage rulPackage) {
         this.rulPackage = rulPackage;
+        this.packageId = rulPackage != null ? rulPackage.getPackageId() : null;
+    }
+
+    public Integer getPackageId() {
+        return packageId;
     }
 
     public RulComponent getComponent() {

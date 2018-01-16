@@ -168,9 +168,31 @@
         <sql dbms="h2">UPDATE ui_settings SET entity_id = (SELECT rs.rule_set_id FROM rul_rule_set rs WHERE rs.package_id = ui_settings.package_id) WHERE ui_settings.entity_type = 'RULE' AND ui_settings.entity_id IS NULL</sql>
     </changeSet>
     
-    <!-- added node uuid to cache -->
+    <!-- added node uuid to cache -> delete current cached nodes -->
     <changeSet id="201711220900" author="jtodt">
         <delete tableName="arr_cached_node" />
+    </changeSet>
+
+    <!-- rebuild cache to add normalized from/to for unitdate -->
+    <changeSet id="201801040001" author="ppyt">
+        <delete tableName="arr_cached_node" />
+    </changeSet>
+
+    <!-- Fix incorrect data in output, TEXT data were stored in STRING table -->
+    <changeSet id="201801120001" author="ppyt">
+       <!-- Move data from string table to text table -->
+       <sql>insert into arr_data_text 
+            select ds.data_id, ds.value from arr_data_string ds
+            join arr_data d on d.data_id = ds.data_id
+            join rul_data_type dt on dt.data_type_id = d.data_type_id
+            where dt.code = 'TEXT'</sql>
+
+       <!-- Date data from string table -->
+       <sql>delete from arr_data_string where data_id in (
+            select ds.data_id darr_data_string from arr_data_string ds
+            join arr_data d on d.data_id = ds.data_id
+            join rul_data_type dt on dt.data_type_id = d.data_type_id
+            where dt.code = 'TEXT')</sql>
     </changeSet>
 
 </databaseChangeLog>

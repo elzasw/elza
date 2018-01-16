@@ -4,33 +4,28 @@ import cz.tacr.elza.domain.ParRelationEntity;
 import cz.tacr.elza.print.Record;
 
 public class RelationTo {
-	
-	private final RelationToType relationToType;
-	private final Record record;
-	private final String note;
 
-	private RelationTo(ParRelationEntity dbEntity, RelationToType relToType, Record record)
-	{
-		note = dbEntity.getNote();
-		this.relationToType = relToType; 
-		this.record = record;
-	}
+    private final RelationToType roleType;
 
-	public RelationToType getRelationToType() {
-		return relationToType;
-	}
+    private final Record record;
 
-	public Record getRecord() {
-		return record;
-	}
+    private final String note;
 
-	public String getNote() {
-		return note;
-	}
+    public RelationTo(ParRelationEntity parRelationEntity, RelationToType roleType, Record record) {
+        this.note = parRelationEntity.getNote();
+        this.roleType = roleType;
+        this.record = record;
+    }
 
-	public static RelationTo newInstance(ParRelationEntity dbEntity, RelationToType relToType, Record record) {
-		RelationTo relTo = new RelationTo(dbEntity, relToType, record);
-		return relTo;
-	}
+    public RelationToType getRoleType() {
+        return roleType;
+    }
 
+    public Record getRecord() {
+        return record;
+    }
+
+    public String getNote() {
+        return note;
+    }
 }

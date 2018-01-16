@@ -80,9 +80,8 @@
                 <type code="ZP2015_TITLE" width="0"/>
                 <!-- 4.2.4 Formální název jednotky popisu -->
                 <type code="ZP2015_FORMAL_TITLE" width="0"/>
-                <type code="ZP2015_UNIT_DATE_PRE" width="1"/>
                 <type code="ZP2015_UNIT_DATE" width="1"/>
-                <type code="ZP2015_UNIT_DATE_POST" width="1"/>
+                <type code="ZP2015_UNIT_DATE_BULK" width="1"/>
                 <type code="ZP2015_UNIT_DATE_TEXT" width="2"/>
                 <!-- 5.2.1 Jiné datace jednotky popisu než datace vzniku jednotky popisu - specifikace a hodnota -->
                 <type code="ZP2015_DATE_OTHER" width="2"/>

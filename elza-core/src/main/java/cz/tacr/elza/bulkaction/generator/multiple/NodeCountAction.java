@@ -14,7 +14,7 @@ import cz.tacr.elza.domain.ArrBulkActionRun;
 
 /**
  * Akce na počítání počtu uzlů.
- * 
+ *
  */
 @Component
 @Scope("prototype")

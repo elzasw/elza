@@ -12,6 +12,7 @@ import {modalDialogShow} from 'actions/global/modalDialog.jsx'
 import {createFund} from 'actions/arr/fund.jsx'
 import {storeLoadData, storeLoad} from 'actions/store/store.jsx'
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
+import * as perms from 'actions/user/Permission.jsx';
 import PageLayout from "../shared/layout/PageLayout";
 
 // Testování
@@ -56,18 +57,30 @@ class HomePage extends AbstractReactComponent {
     };
 
     handleAddFund = () => {
+        const {userDetail} = this.props;
+        let initData = {};
+        if(!userDetail.hasOne(perms.ADMIN, perms.FUND_ADMIN)){
+            initData.fundAdmins = [{id:"default", user:userDetail}];
+        }
         this.dispatch(modalDialogShow(
             this,
             i18n('arr.fund.title.add'),
-            <FundForm create onSubmitForm={(data) => {return this.dispatch(createFund(data))}}/>
+            <FundForm 
+                create 
+                initData={initData}
+                onSubmitForm={(data) => {return this.dispatch(createFund(data))}}
+            />
         ));
     };
 
     buildRibbon = () => {
+        const {userDetail} = this.props;
         const altActions = [];
-        altActions.push(
-            <Button key="add-fa" onClick={this.handleAddFund}><Icon glyph="fa-plus-circle" /><div><span className="btnText">{i18n('ribbon.action.arr.fund.add')}</span></div></Button>
-        );
+        if (userDetail.hasOne(perms.FUND_ADMIN, perms.FUND_CREATE)) {
+            altActions.push(
+                <Button key="add-fa" onClick={this.handleAddFund}><Icon glyph="fa-plus-circle" /><div><span className="btnText">{i18n('ribbon.action.arr.fund.add')}</span></div></Button>
+            );
+        }
 
         let altSection;
         if (altActions.length > 0) {

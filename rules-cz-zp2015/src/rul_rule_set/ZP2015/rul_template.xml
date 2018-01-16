@@ -5,7 +5,7 @@
         <directory>MANIP_SEZNAM_TXT_FREEMARKER</directory>
     </template>
     <template code="ZP2015_MANIP_SEZNAM_PDF_JASPER" output-type="ZP2015_MANIP_SEZNAM" mime-type="application/pdf" extension="pdf">
-        <name>Neplatné - Manipulační seznam, PDF</name>
+        <name>Manipulační seznam, PDF</name>
         <engine>JASPER</engine>
         <directory>MANIP_SEZNAM_PDF_JASPER</directory>
     </template>
@@ -15,14 +15,19 @@
         <directory>MANIP_SEZNAM_ATT_PDF_JASPER</directory>
     </template>
     <template code="ZP2015_INVENTAR_PDF_JASPER" output-type="ZP2015_INVENTAR" mime-type="application/pdf" extension="pdf">
-        <name>PDF - kompaktní</name>
+        <name>PDF - varianta A</name>
         <engine>JASPER</engine>
         <directory>INVENTAR_PDF_JASPER</directory>
     </template>
     <template code="ZP2015_INVENTAR_PDF_JASPER_ZAMRSK" output-type="ZP2015_INVENTAR" mime-type="application/pdf" extension="pdf">
-        <name>PDF - podrobné</name>
+        <name>PDF - varianta B</name>
         <engine>JASPER</engine>
         <directory>INVENTAR_PDF_JASPER_ZAMRSK</directory>
+    </template>
+    <template code="STARSI_POMUCKA_1958_JASPER" output-type="STARSI_POMUCKA_1958" mime-type="application/pdf" extension="pdf">
+        <name>Starší pomůcka do PDF</name>
+        <engine>JASPER</engine>
+        <directory>STARSI_POMUCKA_1958_JASPER</directory>
     </template>
     <template code="ZP2015_STITKY_PDF_JASPER" output-type="ZP2015_STITKY" mime-type="application/pdf" extension="pdf">
         <name>Štítky na obaly do PDF</name>

@@ -8,23 +8,24 @@ import java.util.List;
  *
  */
 public class RelationsByType {
-	private RelationType relType;
-	
-	final List<Relation> relations = new ArrayList<>();
 
-	public RelationsByType(RelationType relType) {
-		this.relType = relType;
-	}
+    private final List<Relation> relations = new ArrayList<>();
 
-	public RelationType getRelationType() {
-		return relType;
-	}
-	
-	public List<Relation> getRelations() {
-		return relations;
-	}
+    private final RelationType relationType;
 
-	void addRelation(Relation rel) {
-		relations.add(rel);
-	}
+    public RelationsByType(RelationType relationType) {
+        this.relationType = relationType;
+    }
+
+    public RelationType getRelationType() {
+        return relationType;
+    }
+
+    public List<Relation> getRelations() {
+        return relations;
+    }
+
+    void addRelation(Relation relation) {
+        relations.add(relation);
+    }
 }

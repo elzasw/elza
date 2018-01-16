@@ -1,20 +1,20 @@
 package cz.tacr.elza.bulkaction;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.transaction.Transactional;
+import javax.transaction.Transactional.TxType;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.yaml.snakeyaml.TypeDescription;
 import org.yaml.snakeyaml.Yaml;
@@ -31,11 +31,9 @@ import cz.tacr.elza.bulkaction.generator.multiple.DateRangeConfig;
 import cz.tacr.elza.bulkaction.generator.multiple.NodeCountConfig;
 import cz.tacr.elza.bulkaction.generator.multiple.TextAggregationConfig;
 import cz.tacr.elza.bulkaction.generator.multiple.UnitCountConfig;
+import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.domain.RulAction;
-import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.repository.ActionRepository;
-import liquibase.util.file.FilenameUtils;
-
 
 /**
  * Manager konfigurace hromadných akcí.
@@ -45,106 +43,53 @@ public class BulkActionConfigManager {
 
 	private static final Logger logger = LoggerFactory.getLogger(BulkActionConfigManager.class);
 
-    /**
-     * Název složky v pravidlech.
-     */
-    public final static String FOLDER = "functions";
+    private final ActionRepository actionRepository;
 
-    /**
-     * Cesta adresáře pro konfiguraci pravidel.
-     */
-    @Value("${elza.packagesDir}")
-    private String packagesDir;
-
-    @Autowired
-    private ActionRepository actionRepository;
-
-    /**
-     * Podporovaný formát souborů pro konfiguraci - použité pro ukládání nových a vyhledání v adresáři.
-     */
-    private String extension = ".yaml";
+    private final ResourcePathResolver resourcePathResolver;
 
     /**
      * Mapa konfigurací hromadných akcí.
      */
-    private Map<String, BulkActionConfig> bulkActionConfigMap = new HashMap<>();
+    private Map<String, BulkActionConfig> bulkActionConfigMap;
 
-    /**
-     * @return cesta k pravidlům
-     */
-    public String getPackagesDir() {
-        return packagesDir;
-    }
-
-    /**
-     * @return přípona
-     */
-    public String getExtension() {
-        return extension;
+    @Autowired
+    public BulkActionConfigManager(ActionRepository actionRepository, ResourcePathResolver resourcePathResolver) {
+        this.actionRepository = actionRepository;
+        this.resourcePathResolver = resourcePathResolver;
     }
 
     /**
      * Načtení hromadných akcí z adresáře.
+     * 
+     * Function can is used also to reload configuration.
+     * 
+     * @param resourcePathResolver
      */
-    @Transactional
-    public void load() throws IOException {
+    @Transactional(TxType.MANDATORY)
+    public void load(ResourcePathResolver resourcePathResolver) {
 
-        bulkActionConfigMap = new HashMap<>();
-
-        File dir = new File(packagesDir);
-
-        if (!dir.exists()) {
-            dir.mkdirs();
-        }
+        HashMap<String, BulkActionConfig> configs = new HashMap<>();
 
         List<RulAction> actions = actionRepository.findAll();
 
-        // vyhledání souborů v adresáři
-        File[] files = new File[actions.size()];
+        Yaml yamlLoader = prepareYamlLoader();
 
-        for (int i = 0; i < actions.size(); i++) {
-            RulAction action = actions.get(i);
-            String filePath = getFunctionsDir(action.getPackage().getCode(), action.getRuleSet().getCode()) + File.separator + action.getFilename();
-            files[i] = new File(filePath);
-            if (!files[i].exists()) {
-                throw new SystemException("Soubor neexistuje: " + filePath);
+        // load all bulk action configurations
+        for (RulAction action : actions) {
+            Path configFile = resourcePathResolver.getFunctionFile(action);
+            String actionCode = action.getCode();
+
+            BaseActionConfig config = loadActionConfig(actionCode, configFile, yamlLoader);
+            configs.put(config.getCode(), config);
             }
-        }
 
-		// prepare yaml loader
-		Constructor yamlCons = new Constructor();
-		yamlCons.addTypeDescription(new TypeDescription(FundValidationConfig.class, "!FundValidation"));
-		yamlCons.addTypeDescription(new TypeDescription(SerialNumberConfig.class, "!SerialNumberGenerator"));
-		yamlCons.addTypeDescription(new TypeDescription(UnitIdConfig.class, "!UnitIdGenerator"));
-		yamlCons.addTypeDescription(new TypeDescription(TestDataConfig.class, "!TestDataGenerator"));
-		yamlCons.addTypeDescription(new TypeDescription(MultiActionConfig.class, "!MultiAction"));
-		yamlCons.addTypeDescription(new TypeDescription(DateRangeConfig.class, "!DateRange"));
-		yamlCons.addTypeDescription(new TypeDescription(TextAggregationConfig.class, "!TextAggregation"));
-		yamlCons.addTypeDescription(new TypeDescription(CopyConfig.class, "!Copy"));
-		yamlCons.addTypeDescription(new TypeDescription(NodeCountConfig.class, "!NodeCount"));
-		yamlCons.addTypeDescription(new TypeDescription(UnitCountConfig.class, "!UnitCount"));
-		yamlCons.addTypeDescription(new TypeDescription(MoveDescItemConfig.class, "!MoveDescItem"));
-		Yaml yamlLoader = new Yaml(yamlCons);
-
-		// load files
-        for (File file : files) {
-			// load bulk action
-			String actionCode = FilenameUtils.getBaseName(file.getName());
-
-			BulkActionConfig bulkActionConfig = null;
-			try (InputStream ios = new FileInputStream(file)) {
-				bulkActionConfig = (BulkActionConfig) yamlLoader.load(ios);
-			} catch (Exception e) {
-				logger.error(
-				        "Failed to initialize action, consider updating package with action, actionCode=" + actionCode,
-				        e);
-				// on failure - log problem and create empty action
-				bulkActionConfig = new BrokenActionConfig(e);
+        // publish configs
+        this.bulkActionConfigMap = configs;
 			}
-			bulkActionConfig.setCode(actionCode);
-			bulkActionConfigMap.put(actionCode, bulkActionConfig);
-        }
 
+    @Transactional(TxType.MANDATORY)
+    public void load() {
+        load(this.resourcePathResolver);
     }
 
     /**
@@ -167,14 +112,48 @@ public class BulkActionConfigManager {
     }
 
     /**
-     * Vrací úplnou cestu k adresáři funkcí podle balíčku a pravidel.
-     *
-     *
-     * @param packageCode kód balíčku
-     * @param code kód pravidel
-     * @return cesta k adresáři funkcí
+     * Load configuration of single action
+     * 
+     * @param action
+     * @param configFile
+     * @param yamlLoader
      */
-    public String getFunctionsDir(final String packageCode, final String code) {
-        return packagesDir + File.separator + packageCode + File.separator + code + File.separator + FOLDER;
+    private BaseActionConfig loadActionConfig(String actionCode, Path configFile, Yaml yamlLoader) {
+        BaseActionConfig config = null;
+
+        try (InputStream ios = Files.newInputStream(configFile, StandardOpenOption.READ)) {
+            config = (BaseActionConfig) yamlLoader.load(ios);
+        } catch (Exception e) {
+            logger.error("Failed to initialize action, consider updating package with action, actionCode=" + actionCode, e);
+            // on failure - log problem and create empty action
+            config = new BrokenActionConfig(e);
+    }
+
+        config.setCode(actionCode);
+        return config;
+    }
+
+    /**
+     * Create yaml loader
+     * 
+     * @return
+     */
+    private static Yaml prepareYamlLoader() {
+        Constructor yamlCtor = new Constructor();
+
+        // Register type descriptors
+        yamlCtor.addTypeDescription(new TypeDescription(FundValidationConfig.class, "!FundValidation"));
+        yamlCtor.addTypeDescription(new TypeDescription(SerialNumberConfig.class, "!SerialNumberGenerator"));
+        yamlCtor.addTypeDescription(new TypeDescription(UnitIdConfig.class, "!UnitIdGenerator"));
+        yamlCtor.addTypeDescription(new TypeDescription(TestDataConfig.class, "!TestDataGenerator"));
+        yamlCtor.addTypeDescription(new TypeDescription(MultiActionConfig.class, "!MultiAction"));
+        yamlCtor.addTypeDescription(new TypeDescription(DateRangeConfig.class, "!DateRange"));
+        yamlCtor.addTypeDescription(new TypeDescription(TextAggregationConfig.class, "!TextAggregation"));
+        yamlCtor.addTypeDescription(new TypeDescription(CopyConfig.class, "!Copy"));
+        yamlCtor.addTypeDescription(new TypeDescription(NodeCountConfig.class, "!NodeCount"));
+        yamlCtor.addTypeDescription(new TypeDescription(UnitCountConfig.class, "!UnitCount"));
+        yamlCtor.addTypeDescription(new TypeDescription(MoveDescItemConfig.class, "!MoveDescItem"));
+
+        return new Yaml(yamlCtor);
     }
 }

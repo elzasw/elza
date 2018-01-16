@@ -99,9 +99,7 @@ import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.domain.RulRuleSet;
-import cz.tacr.elza.domain.UsrGroup;
 import cz.tacr.elza.domain.UsrPermission;
-import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ConcurrentUpdateException;
@@ -116,6 +114,7 @@ import cz.tacr.elza.repository.DaoLinkRepository;
 import cz.tacr.elza.repository.DaoPackageRepository;
 import cz.tacr.elza.repository.DaoRepository;
 import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.FilteredResult;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
@@ -126,13 +125,13 @@ import cz.tacr.elza.repository.OutputItemRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.ArrIOService;
-import cz.tacr.elza.service.ArrMoveLevelService;
 import cz.tacr.elza.service.ArrangementFormService;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.DaoService;
 import cz.tacr.elza.service.DescriptionItemService;
 import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.FilterTreeService;
+import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.service.OutputService;
 import cz.tacr.elza.service.PolicyService;
@@ -148,8 +147,7 @@ import cz.tacr.elza.service.importnodes.ImportNodesFromSource;
 import cz.tacr.elza.service.importnodes.vo.ConflictResolve;
 import cz.tacr.elza.service.importnodes.vo.ImportParams;
 import cz.tacr.elza.service.importnodes.vo.ValidateResult;
-import cz.tacr.elza.service.output.OutputGeneratorService;
-import cz.tacr.elza.service.output.StatusGenerate;
+import cz.tacr.elza.service.output.OutputRequestStatus;
 import cz.tacr.elza.service.vo.ChangesResult;
 
 
@@ -214,7 +212,7 @@ public class ArrangementController {
     private DescriptionItemService descriptionItemService;
 
     @Autowired
-    private ArrMoveLevelService moveLevelService;
+    private FundLevelService moveLevelService;
 
     @Autowired
     private DaoService daoService;
@@ -250,9 +248,6 @@ public class ArrangementController {
     private ArrIOService arrIOService;
 
     @Autowired
-    private OutputGeneratorService outputGeneratorService;
-
-    @Autowired
     private RevertingChangesService revertingChangesService;
 
     @Autowired
@@ -271,7 +266,7 @@ public class ArrangementController {
     private ImportNodesFromSource importNodesFromSource;
 
 	@Autowired
-	ArrangementFormService formService;
+	private ArrangementFormService formService;
 
     /**
      *  Poskytuje seznam balíčků digitalizátů pouze pod archivní souborem (AS).
@@ -962,12 +957,11 @@ public class ArrangementController {
         Assert.notNull(outputItemVO, "Výstup musí být vyplněn");
         Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
         Assert.notNull(outputDefinitionVersion, "Verze definice výstupu musí být vyplněna");
-        Assert.notNull(createNewVersion, "Vytvořit novou verzi musí být vyplněno");
+        Validate.isTrue(createNewVersion); // TODO: remove from API (update client)
 
         ArrOutputItem outputItem = factoryDO.createOutputItem(outputItemVO);
 
-        ArrOutputItem outputItemUpdated = outputService
-                .updateOutputItem(outputItem, outputDefinitionVersion, fundVersionId, createNewVersion);
+        ArrOutputItem outputItemUpdated = outputService.updateOutputItem(outputItem, outputDefinitionVersion, fundVersionId);
 
         OutputItemResult outputItemResult = new OutputItemResult();
         outputItemResult.setItem(factoryVo.createDescItem(outputItemUpdated));
@@ -990,7 +984,7 @@ public class ArrangementController {
                                         @PathVariable(value = "itemTypeId") final Integer itemTypeId,
                                         @RequestParam(value = "strict", required = false, defaultValue = "false") final Boolean strict) {
         ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
-        ArrOutputDefinition outputDefinition = outputService.findOutputDefinition(outputDefinitionId);
+        ArrOutputDefinition outputDefinition = outputService.getOutputDefinition(outputDefinitionId);
         RulItemType itemType = itemTypeRepository.findOne(itemTypeId);
 
         outputService.switchOutputCalculating(outputDefinition, version, itemType, strict);
@@ -1011,10 +1005,9 @@ public class ArrangementController {
         Assert.notNull(outputDefinitionId, "Identifikátor výstupu musí být vyplněn");
 
         ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
-        ArrOutputDefinition outputDefinition = outputService.findOutputDefinition(outputDefinitionId);
+        ArrOutputDefinition outputDefinition = outputService.getOutputDefinition(outputDefinitionId);
 
         Assert.notNull(version, "Verze AP neexistuje");
-        Assert.notNull(outputDefinition, "Výstup neexistuje");
 
         List<ArrOutputItem> outputItems = outputService.getOutputItems(version, outputDefinition);
 
@@ -1048,17 +1041,37 @@ public class ArrangementController {
     @RequestMapping(value = "/getFunds", method = RequestMethod.GET)
 	@Transactional
     public FundListCountResult getFunds(@RequestParam(value = "fulltext", required = false) final String fulltext,
-                                        @RequestParam(value = "max") final Integer max) {
-        List<ArrFundVO> fundList = new LinkedList<>();
-        boolean readAllFunds = userService.hasPermission(UsrPermission.Permission.FUND_RD_ALL);
-        UsrUser user = userService.getLoggedUser();
-        fundRepository.findByFulltext(fulltext, max, readAllFunds, user).forEach(f -> {
+	        @RequestParam(value = "max") final Integer max) {
+		UserDetail userDetail = userService.getLoggedUserDetail();
+
+		FilteredResult<ArrFund> funds;
+
+		if (userDetail.hasPermission(UsrPermission.Permission.FUND_RD_ALL)) {
+			// read all funds
+			funds = fundRepository.findFunds(fulltext, 0, max);
+		} else {
+			Integer userId = userDetail.getId();
+			funds = fundRepository.findFundsWithPermissions(fulltext, 0, max, userId);
+		}
+
+		/*
+		List<ArrFundOpenVersion> funds = fundRepository.findByFulltext(fulltext, max, userId);
+		int fundsCount = funds.size();
+		if (fundsCount >= max) {
+			// read real funds count
+			fundsCount = fundRepository.findCountByFulltext(fulltext, userId);
+		}*/
+
+		List<ArrFund> fundList = funds.getList();
+
+		List<ArrFundVO> fundVOList = new ArrayList<>(fundList.size());
+		fundList.forEach(f -> {
             ArrFundVO fundVO = factoryVo.createFundVO(f.getFund(), false);
-            fundVO.setVersions(Arrays.asList(factoryVo.createFundVersion(f.getOpenVersion())));
-            fundList.add(fundVO);
+			//fundVO.setVersions(Arrays.asList(factoryVo.createFundVersion(f.getOpenVersion())));
+			fundVOList.add(fundVO);
         });
 
-        return new FundListCountResult(fundList, fundRepository.findCountByFulltext(fulltext, readAllFunds, user));
+		return new FundListCountResult(fundVOList, funds.getTotalCount());
     }
 
     /**
@@ -1101,7 +1114,7 @@ public class ArrangementController {
     public List<ArrFundVO> getFundsByVersionIds(@RequestBody final IdsParam idsParam) {
 
         if (CollectionUtils.isEmpty(idsParam.getIds())) {
-            return Collections.EMPTY_LIST;
+			return Collections.emptyList();
         }
 
         List<ArrFundVersion> versions = fundVersionRepository.findAll(idsParam.getIds());
@@ -1275,18 +1288,6 @@ public class ArrangementController {
         return factoryVo.createCalendarTypes(calendarTypes);
     }
 
-    /**
-     * Seznam oprávnění, které se mají nastavit při vytváření AS a přiřazení uživatele nebo skupiny jako správce.
-     */
-    private static final UsrPermission.Permission FUND_ADMIN_PERMISSIONS[] = {
-            UsrPermission.Permission.FUND_RD,
-            UsrPermission.Permission.FUND_ARR,
-            UsrPermission.Permission.FUND_OUTPUT_WR,
-            UsrPermission.Permission.FUND_CL_VER_WR,
-            UsrPermission.Permission.FUND_EXPORT,
-            UsrPermission.Permission.FUND_BA,
-            UsrPermission.Permission.FUND_VER_WR,
-    };
 
     @Transactional
     @RequestMapping(value = "/funds", method = RequestMethod.POST,
@@ -1342,36 +1343,15 @@ public class ArrangementController {
 
         // Oprávnění na uživatele a skupiny
         if (createFund.getAdminUsers() != null && !createFund.getAdminUsers().isEmpty()) {
-            final List<UsrPermission> usrPermissions = new ArrayList<>();
-            createFund.getAdminUsers().stream()
-                    .forEach(u -> {
-                        UsrUser user = userService.getUser(u.getId());
-                        for (UsrPermission.Permission permission : FUND_ADMIN_PERMISSIONS) {
-                            UsrPermission perm = new UsrPermission();
-                            perm.setFund(newFund);
-                            perm.setUser(user);
-                            perm.setPermission(permission);
-                            usrPermissions.add(perm);
-                        }
-                        userService.addUserPermission(user, usrPermissions, false);
-                    });
+			// add permissions to selectected users
+			createFund.getAdminUsers().forEach(
+			        u -> userService.addFundAdminPermissions(u.getId(), null, newFund));
         }
         if (createFund.getAdminGroups() != null && !createFund.getAdminGroups().isEmpty()) {
-            final List<UsrPermission> usrPermissions = new ArrayList<>();
-            createFund.getAdminGroups().stream()
-                    .forEach(g -> {
-                        UsrGroup group = userService.getGroup(g.getId());
-                        for (UsrPermission.Permission permission : FUND_ADMIN_PERMISSIONS) {
-                            UsrPermission perm = new UsrPermission();
-                            perm.setFund(newFund);
-                            perm.setGroup(group);
-                            perm.setPermission(permission);
-                            usrPermissions.add(perm);
-                        }
-                        userService.addGroupPermission(group, usrPermissions, false);
-                    });
+			// add permissions to selectected groups
+			createFund.getAdminGroups().forEach(
+			        g -> userService.addFundAdminPermissions(null, g.getId(), newFund));
         }
-
 
         return factoryVo.createFundVO(newFund, true);
     }
@@ -2070,14 +2050,20 @@ public class ArrangementController {
 
     @RequestMapping(value = "/output/generate/{outputId}", method = RequestMethod.GET)
 	@Transactional
-    public GenerateOutputResult generateOutput(@PathVariable(value = "outputId") final Integer outputId,
-                                               @RequestParam(value = "forced", required = false, defaultValue = "false") final Boolean forced) {
-        ArrOutput output = outputService.getOutput(outputId);
+    public GenerateOutputResult generateOutput(@PathVariable(value = "outputId") int outputId,
+                                               @RequestParam(value = "forced", defaultValue = "false") boolean forced) {
+
         UserDetail userDetail = userService.getLoggedUserDetail();
         Integer userId = userDetail != null ? userDetail.getId() : null;
+
+        ArrOutput output = outputService.getOutput(outputId);
+        ArrOutputDefinition definition = output.getOutputDefinition();
+
+        ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(definition.getFundId());
+        OutputRequestStatus requestStatus = outputService.addRequest(outputId, fundVersion, userId, !forced);
+
         GenerateOutputResult generateOutputResult = new GenerateOutputResult();
-        StatusGenerate statusGenerate = outputGeneratorService.generateOutput(output, userId, output.getOutputDefinition().getFund(), forced);
-        generateOutputResult.setStatus(statusGenerate);
+        generateOutputResult.setStatus(requestStatus);
         return generateOutputResult;
     }
 
@@ -2922,7 +2908,7 @@ public class ArrangementController {
         /**
          * Směr přidávání uzlu (před, za, pod)
          */
-        private ArrMoveLevelService.AddLevelDirection direction;
+        private FundLevelService.AddLevelDirection direction;
         /**
          * Název scénáře, ze kterého se mají převzít výchozí hodnoty atributů.
          */
@@ -2935,11 +2921,11 @@ public class ArrangementController {
         @Nullable
         private Set<Integer> descItemCopyTypes;
 
-        public ArrMoveLevelService.AddLevelDirection getDirection() {
+        public FundLevelService.AddLevelDirection getDirection() {
             return direction;
         }
 
-        public void setDirection(final ArrMoveLevelService.AddLevelDirection direction) {
+        public void setDirection(final FundLevelService.AddLevelDirection direction) {
             this.direction = direction;
         }
 
@@ -2961,13 +2947,13 @@ public class ArrangementController {
     }
 
     public static class GenerateOutputResult {
-        private StatusGenerate status;
+        private OutputRequestStatus status;
 
-        public StatusGenerate getStatus() {
+        public OutputRequestStatus getStatus() {
             return status;
         }
 
-        public void setStatus(final StatusGenerate status) {
+        public void setStatus(final OutputRequestStatus status) {
             this.status = status;
         }
     }

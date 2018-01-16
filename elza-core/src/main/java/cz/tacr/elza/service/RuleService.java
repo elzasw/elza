@@ -31,6 +31,7 @@ import com.google.common.collect.Lists;
 import cz.tacr.elza.annotation.AuthMethod;
 import cz.tacr.elza.annotation.AuthParam;
 import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
+import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.controller.factory.ExtendedObjectsFactory;
 import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.core.data.RuleSystemItemType;
@@ -69,8 +70,6 @@ import cz.tacr.elza.exception.LockVersionChangeException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
-import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.exception.codes.OutputCode;
 import cz.tacr.elza.packageimport.PackageService;
 import cz.tacr.elza.packageimport.xml.SettingGridView;
 import cz.tacr.elza.repository.ArrangementExtensionRepository;
@@ -85,11 +84,9 @@ import cz.tacr.elza.repository.NodeConformityMissingRepository;
 import cz.tacr.elza.repository.NodeConformityRepository;
 import cz.tacr.elza.repository.NodeExtensionRepository;
 import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.repository.OutputDefinitionRepository;
 import cz.tacr.elza.repository.OutputTypeRepository;
 import cz.tacr.elza.repository.TemplateRepository;
-import cz.tacr.elza.service.eventnotification.events.EventNodeIdVersionInVersion;
-import cz.tacr.elza.service.eventnotification.events.EventType;
-import cz.tacr.elza.utils.ObjectListIterator;
 import cz.tacr.elza.validation.ArrDescItemsPostValidator;
 
 
@@ -138,15 +135,14 @@ public class RuleService {
     private ArrDescItemsPostValidator descItemsPostValidator;
 
     @Autowired
-    private OutputService outputService;
-
-    @Autowired
     private ItemTypeActionRepository itemTypeActionRepository;
 
     @Autowired
     private ItemSettingsRepository itemSettingsRepository;
     @Autowired
     private OutputTypeRepository outputTypeRepository;
+    @Autowired
+    private OutputDefinitionRepository outputDefinitionRepository;
 
     @Autowired
     private NodeExtensionRepository nodeExtensionRepository;
@@ -592,25 +588,6 @@ public class RuleService {
         }
 
         return null;
-    }
-
-    /**
-     * Získání rozšířených typů hodnot atributů se specifikacemi.
-     * Používá výchozí strategie
-     *
-     * @param outputDefinitionId identifikátor výstupu
-     * @return seznam typů hodnot atributů se specifikacemi
-     */
-    public List<RulItemTypeExt> getOutputItemTypes(final Integer outputDefinitionId) {
-        Assert.notNull(outputDefinitionId, "Identifikátor definice výstupu musí být vyplněn");
-
-        ArrOutputDefinition outputDefinition = outputService.findOutputDefinition(outputDefinitionId);
-
-        if (outputDefinition == null) {
-            throw new ObjectNotFoundException("Nebyl nalezen výstup s ID=" + outputDefinitionId, OutputCode.OUTPUT_NOT_EXISTS).set("id", outputDefinitionId);
-        }
-
-        return getOutputItemTypes(outputDefinition);
     }
 
     /**

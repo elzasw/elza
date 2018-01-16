@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.Validate;
 
+import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.RulStructureType;
@@ -19,44 +20,60 @@ import cz.tacr.elza.repository.StructureTypeRepository;
 
 /**
  * Manage information about all rule systems
- * 
- *
  */
 public class RuleSystemProvider {
 
 	private List<RuleSystem> rulesSystems;
 
-	private Map<Integer, RuleSystemImpl> ruleSetIdMap;
+    private Map<Integer, RuleSystemImpl> ruleSystemIdMap;
 
-    private Map<String, RuleSystem> ruleSetCodeMap;
+    private Map<String, RuleSystem> ruleSystemCodeMap;
 
 	/**
 	 * Map of all item types
-	 * 
+     *
 	 * Key is ID of the Item type
 	 */
-	private Map<Integer, RuleSystemItemType> itemTypes;
+    private Map<Integer, RuleSystemItemType> itemTypeIdMap;
+
+    private Map<Integer, RulItemSpec> itemSpecIdMap;
 
     RuleSystemProvider() {
     }
 
     public RuleSystem getByRuleSetId(int id) {
-        return ruleSetIdMap.get(id);
+        return ruleSystemIdMap.get(id);
     }
 
     public RuleSystem getByRuleSetCode(String code) {
         Validate.notEmpty(code);
-        return ruleSetCodeMap.get(code);
+        return ruleSystemCodeMap.get(code);
     }
 
 	/**
 	 * Get list of available rule systems
-	 * 
+     *
 	 * @return Return unmodifiable collection
 	 */
 	public List<RuleSystem> getRulesSystems() {
 		return Collections.unmodifiableList(rulesSystems);
 	}
+
+    /**
+     * Get item type by id
+     *
+     * @param itemTypeId
+     * @return
+     */
+    public RuleSystemItemType getItemType(Integer itemTypeId) {
+        Validate.notNull(itemTypeId);
+        return itemTypeIdMap.get(itemTypeId);
+    }
+
+    public RulItemSpec getItemSpec(Integer itemSpecId) {
+        Validate.notNull(itemSpecId);
+        return itemSpecIdMap.get(itemSpecId);
+    }
 
     /**
      * Init all values. Method must be called inside transaction and synchronized.
@@ -69,8 +86,8 @@ public class RuleSystemProvider {
 
 		// prepare fields
 		List<RuleSystemImpl> rulesSystemsImpl = new ArrayList<>(ruleSets.size());
-		ruleSetIdMap = new HashMap<>(ruleSets.size());
-		ruleSetCodeMap = new HashMap<>(ruleSets.size());
+        ruleSystemIdMap = new HashMap<>(ruleSets.size());
+        ruleSystemCodeMap = new HashMap<>(ruleSets.size());
 
         for (RulRuleSet rs : ruleSets) {
             // create initialized rule system
@@ -78,8 +95,8 @@ public class RuleSystemProvider {
 
 			rulesSystemsImpl.add(ruleSystem);
             // update lookups
-			ruleSetIdMap.put(rs.getRuleSetId(), ruleSystem);
-			ruleSetCodeMap.put(rs.getCode(), ruleSystem);
+            ruleSystemIdMap.put(rs.getRuleSetId(), ruleSystem);
+            ruleSystemCodeMap.put(rs.getCode(), ruleSystem);
         }
 
 		// prepare packet types
@@ -103,40 +120,51 @@ public class RuleSystemProvider {
 
 	/**
 	 * Initialize all item types
-	 * 
+     *
 	 * @param itemTypeRepository
 	 * @param itemSpecRepository
 	 */
 	private void initItemTypes(ItemTypeRepository itemTypeRepository, ItemSpecRepository itemSpecRepository) {
 		List<RulItemType> itemTypes = itemTypeRepository.findAll();
-		//.findByRulPackage(ruleSet.getPackage());
 
-		this.itemTypes = new HashMap<>(itemTypes.size());
+        itemTypeIdMap = new HashMap<>(itemTypes.size());
+        itemSpecIdMap = new HashMap<>();
+
 		for (RulItemType it : itemTypes) {
 			// update data type reference from cache
 			DataType dataType = DataType.fromId(it.getDataTypeId());
 			it.setDataType(dataType.getEntity());
 
-			// Find rule system
-			RuleSystemImpl ruleSetImpl = ruleSetIdMap.get(it.getRuleSet().getRuleSetId());
+            // find rule system
+            RuleSystemImpl ruleSystemImpl = ruleSystemIdMap.get(it.getRuleSet().getRuleSetId());
 
 			// create initialized rule system item type
-			RuleSystemItemType rsit = new RuleSystemItemType(ruleSetImpl, it, dataType);
-			rsit.init(itemSpecRepository);
+            RuleSystemItemType rsit = new RuleSystemItemType(ruleSystemImpl, it, dataType);
 
-			ruleSetImpl.addItemType(rsit);
+            // prepare item spec
+            initItemSpecs(rsit, itemSpecRepository);
 
-			this.itemTypes.put(it.getItemTypeId(), rsit);
+            rsit.sealUp();
+
+            ruleSystemImpl.addItemType(rsit);
+
+            itemTypeIdMap.put(it.getItemTypeId(), rsit);
 		}
 	}
 
-	/**
-	 * Get item type by id
-	 * 
-	 * @param itemTypeId
-	 * @return
-	 */
-	public RuleSystemItemType getItemType(Integer itemTypeId) {
-		return itemTypes.get(itemTypeId);
+    private void initItemSpecs(RuleSystemItemType rsit, ItemSpecRepository itemSpecRepository) {
+        if (!rsit.hasSpecifications()) {
+            return;
 	}
+
+        List<RulItemSpec> itemSpecs = itemSpecRepository.findByItemType(rsit.getEntity());
+        for (RulItemSpec is : itemSpecs) {
+            // check if initialized in same transaction
+            Validate.isTrue(rsit.getEntity() == is.getItemType());
+
+            rsit.addItemSpec(is);
+
+            itemSpecIdMap.put(is.getItemSpecId(), is);
+        }
+    }
 }

@@ -33,7 +33,6 @@
     <registry-role register-type="PERSON_INDIVIDUAL" role-type="FRIEND"/>
     <registry-role register-type="PERSON_INDIVIDUAL" role-type="TEACHER"/>
     <registry-role register-type="PERSON_INDIVIDUAL" role-type="SCHOOLMATE"/>
-    <registry-role register-type="PERSON_INDIVIDUAL" role-type="WORKPLACE"/>
     <registry-role register-type="PERSON_INDIVIDUAL" role-type="SUPERIOR_PERSON"/>
     <registry-role register-type="PERSON_INDIVIDUAL" role-type="SUBORDINATE_PERSON"/>
     <registry-role register-type="PERSON_INDIVIDUAL" role-type="COLLEAGUE"/>
@@ -81,6 +80,7 @@
     <registry-role register-type="GEO" role-type="RESIDENCY"/>
     <registry-role register-type="GEO" role-type="NAMED_AFTER"/>
     <registry-role register-type="GEO" role-type="UNIT"/>
+    <registry-role register-type="GEO" role-type="WORKPLACE"/>
     <!-- pravděpodobně synonymum s UNIT, docasne vypnuto -->
     <!-- <registry-role register-type="GEO" role-type="GROUP"/>-->
     <registry-role register-type="ARTWORK" role-type="RELATED"/>
@@ -93,6 +93,7 @@
     <registry-role register-type="ARTWORK" role-type="CREATION"/>
     <registry-role register-type="ARTWORK" role-type="NAMED_AFTER"/>
     <registry-role register-type="ARTWORK" role-type="UNIT"/>
+    <registry-role register-type="ARTWORK" role-type="WORKPLACE"/>
     <!-- pravděpodobně synonymum s UNIT, docasne vypnuto -->
     <!--  <registry-role register-type="ARTWORK" role-type="GROUP"/>-->
     <registry-role register-type="EVENT" role-type="RELATED"/>

@@ -18,6 +18,8 @@ import javax.persistence.criteria.Root;
 
 import org.apache.commons.lang3.Validate;
 
+import cz.tacr.elza.common.db.HibernateUtils;
+
 /**
  * Abstract implementation for entity batch loader.
  */
@@ -50,6 +52,8 @@ public abstract class AbstractEntityLoader<REQ_ID, ENTITY> extends AbstractBatch
 
             // TODO: replace detach for stateless session
             em.detach(entity);
+            // can be initialized (detached) proxy
+            entity = HibernateUtils.unproxy(entity);
 
             for (BatchEntry entry : requestIdMap.get(requestId)) {
                 entry.addResult(entity);

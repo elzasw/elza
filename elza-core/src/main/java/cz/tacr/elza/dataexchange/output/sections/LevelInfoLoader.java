@@ -62,8 +62,8 @@ public class LevelInfoLoader extends AbstractBatchLoader<ArrLevel, ExportLevelIn
 
         ExportLevelInfo levelInfo = new ExportLevelInfo(nodeId, parentNodeId);
         levelInfo.setNodeUuid(cachedNode.getUuid());
-        levelInfo.setDescItems(cachedNode.getDescItems());
         levelInfo.setNodeAPs(cachedNode.getNodeRegisters());
+        cachedNode.getDescItems().forEach(levelInfo::addItem);
 
         return levelInfo;
     }

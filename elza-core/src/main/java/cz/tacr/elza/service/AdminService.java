@@ -12,7 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import cz.tacr.elza.annotation.AuthMethod;
+import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.search.IndexerProgressMonitor;
 

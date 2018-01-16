@@ -1,8 +1,6 @@
 package cz.tacr.elza.drools;
 
-import java.io.File;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -16,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
@@ -50,7 +49,7 @@ public class ValidationRules extends Rules {
 	private DescItemRepository descItemRepository;
 
 	@Autowired
-	private RulesExecutor rulesExecutor;
+	private ResourcePathResolver resourcePathResolver;
 
 	@Autowired
 	private PolicyTypeRepository policyTypeRepository;
@@ -81,12 +80,11 @@ public class ValidationRules extends Rules {
 
 		DataValidationResults validationResults = new DataValidationResults();
 
-		Path path;
 		List<RulArrangementRule> rulPackageRules = arrangementRuleRepository
 				.findByRuleSetAndRuleTypeOrderByPriorityAsc(version.getRuleSet(), RulArrangementRule.RuleType.CONFORMITY_INFO);
 
-		for (RulArrangementRule rulPackageRule : rulPackageRules) {
-			path = Paths.get(rulesExecutor.getDroolsDir(rulPackageRule.getPackage().getCode(), rulPackageRule.getRuleSet().getCode()) + File.separator + rulPackageRule.getComponent().getFilename());
+		for (RulRule rulPackageRule : rulPackageRules) {
+			Path path = resourcePathResolver.getDroolFile(rulPackageRule);
 			StatelessKieSession session = createNewStatelessKieSession(path);
 			session.setGlobal("results", validationResults);
 			execute(session, facts);

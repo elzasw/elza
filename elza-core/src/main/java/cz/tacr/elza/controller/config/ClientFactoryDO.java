@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
+import javax.persistence.EntityManager;
 
 import cz.tacr.elza.domain.ArrStructureItem;
 import org.apache.commons.collections4.CollectionUtils;
@@ -107,15 +108,12 @@ import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
-import cz.tacr.elza.service.DescriptionItemService;
 import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MapperFactory;
 
 /**
  * Továrna na vytváření DO objektů z VO objektů.
  *
- * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
- * @since 07.01.2016
  */
 @Service
 public class ClientFactoryDO {
@@ -123,6 +121,9 @@ public class ClientFactoryDO {
     @Autowired
     @Qualifier("configVOMapper")
     private MapperFactory mapperFactory;
+
+    @Autowired
+    private EntityManager em;
 
     @Autowired
     private ItemTypeRepository itemTypeRepository;
@@ -141,9 +142,6 @@ public class ClientFactoryDO {
 
     @Autowired
     private CalendarTypeRepository calendarTypeRepository;
-
-    @Autowired
-    private DescriptionItemService descriptionItemService;
 
     /**
      * Vytvoří node z VO.
@@ -881,9 +879,8 @@ public class ClientFactoryDO {
     }
 
     public ArrOutputItem createOutputItem(final ArrItemVO outputItemVO, final Integer itemTypeId) {
-        MapperFacade mapper = mapperFactory.getMapperFacade();
 
-        ArrData data = mapper.map(outputItemVO, ArrData.class);
+        ArrData data = outputItemVO.createDataEntity(em);
         ArrOutputItem outputItem = new ArrOutputItem();
         outputItem.setData(data);
 
@@ -905,8 +902,7 @@ public class ClientFactoryDO {
     }
 
     public ArrOutputItem createOutputItem(final ArrItemVO descItemVO) {
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        ArrData data = mapper.map(descItemVO, ArrData.class);
+        ArrData data = descItemVO.createDataEntity(em);
         ArrOutputItem outputItem = new ArrOutputItem();
         outputItem.setData(data);
         BeanUtils.copyProperties(descItemVO, outputItem);
@@ -967,21 +963,5 @@ public class ClientFactoryDO {
     public List<UISettings> createSettingsList(final List<UISettingsVO> settings) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         return mapper.mapAsList(settings, UISettings.class);
-    }
-
-    public <T, R> R createSimpleEntity(final T entity, final Class<R> clazz) {
-        if (entity == null) {
-            return null;
-        }
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        return mapper.map(entity, clazz);
-    }
-
-    public <T, R> List<R> createSimpleEntity(final Collection<T> entity, final Class<R> clazz) {
-        if (entity == null) {
-            return null;
-        }
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        return mapper.mapAsList(entity, clazz);
     }
 }

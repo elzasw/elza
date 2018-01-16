@@ -1,5 +1,11 @@
 package cz.tacr.elza.controller.vo.nodes.descitems;
 
+import javax.persistence.EntityManager;
+
+import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataUnitid;
+
 /**
  * VO hodnoty atributu - unit id.
  *
@@ -19,5 +25,13 @@ public class ArrItemUnitidVO extends ArrItemVO {
 
     public void setValue(final String value) {
         this.value = value;
+    }
+
+    @Override
+    public ArrData createDataEntity(EntityManager em) {
+        ArrDataUnitid data = new ArrDataUnitid();
+        data.setValue(value);
+        data.setDataType(DataType.UNITID.getEntity());
+        return data;
     }
 }

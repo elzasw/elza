@@ -11,7 +11,11 @@
 	<property name="com.jaspersoft.studio.unit.rightMargin" value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
-	<style name="ElzaBase" isDefault="true" fontName="Arial"/>
+	<style name="Text" isDefault="true" hTextAlign="Justified" fontName="DejaVu Sans" fontSize="10" pdfEncoding="CP1250 (Central European)"/>
+	<style name="Heading 1" style="Text" hTextAlign="Left" vTextAlign="Middle" fontSize="16" isBold="true"/>
+	<style name="Heading 2" style="Text" hTextAlign="Left" vTextAlign="Middle" fontSize="12" isBold="true" isItalic="false"/>
+	<style name="Heading 3" style="Text" hTextAlign="Left" vTextAlign="Middle" fontSize="10" isBold="true" isItalic="false"/>
+	<style name="Title" style="Text" fontSize="18" isBold="true"/>
 	<parameter name="fund" class="cz.tacr.elza.print.Fund"/>
 	<parameter name="output" class="cz.tacr.elza.print.Output"/>
 	<queryString>
@@ -21,17 +25,15 @@
 		<band height="702">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<textField>
-				<reportElement x="0" y="303" width="455" height="50" uuid="6169d08a-6fdd-4b38-86fa-d19042c2b9d9"/>
+				<reportElement style="Title" x="0" y="303" width="455" height="50" uuid="6169d08a-6fdd-4b38-86fa-d19042c2b9d9"/>
 				<textElement textAlignment="Center">
-					<font size="18" isBold="true" pdfEncoding="Cp1250"/>
+					<font pdfEncoding="Cp1250"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{output}.getName()]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="0" y="353" width="455" height="30" uuid="a5fb06e6-7955-4fdf-b60e-dfa9f3a72a8f"/>
-				<textElement textAlignment="Center">
-					<font size="16" isBold="true"/>
-				</textElement>
+				<reportElement style="Heading 1" x="0" y="353" width="455" height="30" uuid="a5fb06e6-7955-4fdf-b60e-dfa9f3a72a8f"/>
+				<textElement textAlignment="Center"/>
 				<textFieldExpression><![CDATA[$P{output}.getSingleItemValue( "ZP2015_DATE_RANGE" )]]></textFieldExpression>
 			</textField>
 			<textField>
@@ -63,7 +65,7 @@
 				<textElement>
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA["archivní pomůcka č. "+$P{output}.getInternal_code()]]></textFieldExpression>
+				<textFieldExpression><![CDATA["archivní pomůcka č. "+$P{output}.getInternalCode()]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="0" y="114" width="455" height="14" uuid="4aeda5cf-c599-4af0-8152-15902d195e51">
@@ -72,7 +74,7 @@
 				<textElement>
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA["NAD č. "+$P{output}.getNodesDFS().next().getItemsValueByCode("ZP2015_NAD")]]></textFieldExpression>
+				<textFieldExpression><![CDATA["NAD č. "+$P{fund}.getRootNode().getSingleItemValue("ZP2015_NAD")]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="0" y="80" width="455" height="20" uuid="23d30e4b-4b64-42af-bd93-1e68ba43e2ba">

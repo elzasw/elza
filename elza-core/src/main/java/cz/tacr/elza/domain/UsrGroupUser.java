@@ -77,6 +77,10 @@ public class UsrGroupUser {
         this.groupId = group == null ? null : group.getGroupId();
     }
 
+	public Integer getGroupId() {
+		return groupId;
+	}
+
     /**
      * @return uživatel ve skupině
      */
@@ -91,4 +95,8 @@ public class UsrGroupUser {
         this.user = user;
         this.userId = user == null ? null : user.getUserId();
     }
+
+	public Integer getUserId() {
+		return userId;
+	}
 }

@@ -21,9 +21,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionSynchronizationAdapter;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeConformity;
-import cz.tacr.elza.utils.HibernateUtils;
 
 /**
  * Servisní třída pro spouštění vláken na aktualizaci {@link ArrNodeConformity}.

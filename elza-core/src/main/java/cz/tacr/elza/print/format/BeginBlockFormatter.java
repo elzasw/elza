@@ -6,14 +6,11 @@ import cz.tacr.elza.print.item.Item;
 
 /**
  * Begin formatting block
- * @author Petr Pytelka
- *
  */
 public class BeginBlockFormatter implements FormatAction {
 
-	@Override
-	public void format(FormatContext ctx, List<Item> items) {
-		ctx.beginBlock();
-	}
-
+    @Override
+    public void format(FormatContext ctx, List<Item> items) {
+        ctx.beginBlock();
+    }
 }

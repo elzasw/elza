@@ -1,25 +1,28 @@
 package cz.tacr.elza.print.item;
 
-
 /**
  * Integer item for print
  */
 public class ItemInteger extends AbstractItem {
-	
-	Integer value;
+
+    private final Integer value;
 
     public ItemInteger(final Integer value) {
-        super();
         this.value = value;
     }
 
     @Override
-    public String serializeValue() {
+    public String getSerializedValue() {
         return value.toString();
     }
 
-	@Override
-	public Object getValue() {
-		return value;
-	}
+    @Override
+    public boolean isValueSerializable() {
+        return true;
+    }
+
+    @Override
+    protected Integer getValue() {
+        return value;
+    }
 }

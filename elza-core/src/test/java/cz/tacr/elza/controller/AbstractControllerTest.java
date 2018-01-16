@@ -110,7 +110,7 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
 import cz.tacr.elza.domain.ArrStructureData;
 import cz.tacr.elza.domain.table.ElzaTable;
-import cz.tacr.elza.service.ArrMoveLevelService;
+import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.vo.ChangesResult;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
@@ -701,7 +701,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param parentStaticNode  rodič uzlu vůči kterému přidávám
      * @return vytvořený uzel
      */
-    protected ArrangementController.NodeWithParent addLevel(final ArrMoveLevelService.AddLevelDirection direction,
+    protected ArrangementController.NodeWithParent addLevel(final FundLevelService.AddLevelDirection direction,
                                                             final ArrFundVersionVO fundVersion,
                                                             final ArrNodeVO staticNode,
                                                             final ArrNodeVO parentStaticNode,
@@ -2299,7 +2299,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected UsrUserVO changePassword(final Integer userId,
                                        final UserController.ChangePassword params) {
         return put(spec -> spec.body(params)
-                .pathParameter("userId", userId), CHANGE_PASSWORD).as(UserInfoVO.class);
+		        .pathParameter("userId", userId), CHANGE_PASSWORD).as(UsrUserVO.class);
     }
 
     /**
@@ -2309,7 +2309,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @return uživatel
      */
     protected UsrUserVO changePassword(final UserController.ChangePassword params) {
-        return put(spec -> spec.body(params), CHANGE_PASSWORD_USER).as(UserInfoVO.class);
+		return put(spec -> spec.body(params), CHANGE_PASSWORD_USER).as(UsrUserVO.class);
     }
 
 

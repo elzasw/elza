@@ -1,8 +1,13 @@
 package cz.tacr.elza.dataexchange.input;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
@@ -13,14 +18,16 @@ import org.apache.commons.lang3.Validate;
 import org.hibernate.FlushMode;
 import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.xml.sax.SAXException;
 
-import cz.tacr.elza.annotation.AuthMethod;
-import cz.tacr.elza.aop.Authorization;
+import cz.tacr.elza.common.XmlUtils;
+import cz.tacr.elza.common.db.HibernateUtils;
+import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.core.security.AuthMethod;
+import cz.tacr.elza.core.security.Authorization;
 import cz.tacr.elza.dataexchange.input.DEImportParams.ImportPositionParams;
 import cz.tacr.elza.dataexchange.input.aps.context.AccessPointsContext;
 import cz.tacr.elza.dataexchange.input.context.ImportContext;
@@ -67,8 +74,6 @@ import cz.tacr.elza.service.GroovyScriptService;
 import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.cache.NodeCacheService;
-import cz.tacr.elza.utils.HibernateUtils;
-import cz.tacr.elza.utils.XmlUtils;
 
 /**
  * Service for data-exchange import.
@@ -92,7 +97,7 @@ public class DEImportService {
 
     private final LevelTreeCacheService levelTreeCacheService;
 
-    private final String transformationsDir;
+    private final ResourcePathResolver resourcePathResolver;
 
     @Autowired
     public DEImportService(EntityManager em,
@@ -116,7 +121,7 @@ public class DEImportService {
                            FundVersionRepository fundVersionRepository,
                            LevelRepository levelRepository,
                            LevelTreeCacheService levelTreeCacheService,
-                           @Value("${elza.xmlImport.transformationDir}") String transformationsDir) {
+                           ResourcePathResolver resourcePathResolver) {
 
         this.initHelper = new ImportInitHelper(externalSystemRepository, groovyScriptService, institutionRepository,
                 institutionTypeRepository, arrangementService, levelRepository, recordRepository, coordinatesRepository,
@@ -129,11 +134,19 @@ public class DEImportService {
         this.scopeRepository = scopeRepository;
         this.fundVersionRepository = fundVersionRepository;
         this.levelTreeCacheService = levelTreeCacheService;
-        this.transformationsDir = transformationsDir;
+        this.resourcePathResolver = resourcePathResolver;
     }
 
-    public List<String> getTransformationNames() {
-        return XmlUtils.getXsltFileNames(transformationsDir);
+    public List<String> getTransformationNames() throws IOException {
+        Path transformDir = resourcePathResolver.getImportXmlTrasnformDir();
+        if (!Files.exists(transformDir)) {
+            return Collections.emptyList();
+        }
+        return Files.list(transformDir)
+                .filter(p -> p.endsWith(".xslt"))
+                .map(p -> p.getFileName().toString())
+                .map(n -> n.substring(0, n.length() - 5))
+                .sorted().collect(Collectors.toList());
     }
 
     public void validateData(InputStream is) {

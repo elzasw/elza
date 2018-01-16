@@ -38,6 +38,9 @@ public class ArrOutputDefinition extends AbstractVersionableEntity {
     @JoinColumn(name = "fundId", nullable = false)
     private ArrFund fund;
 
+    @Column(nullable = false, insertable = false, updatable = false)
+    private Integer fundId;
+
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulOutputType.class)
     @JoinColumn(name = "outputTypeId", nullable = false)
     private RulOutputType outputType;
@@ -111,6 +114,11 @@ public class ArrOutputDefinition extends AbstractVersionableEntity {
      */
     public void setFund(final ArrFund fund) {
         this.fund = fund;
+        this.fundId = fund != null ? fund.getFundId() : null;
+    }
+
+    public Integer getFundId() {
+        return fundId;
     }
 
     /**

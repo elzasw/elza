@@ -26,21 +26,8 @@ import cz.tacr.elza.domain.enumeration.StringLength;
 @Cache(region = "domain", usage = CacheConcurrencyStrategy.READ_WRITE)
 public class ParRelationClassType {
 
-    public enum ClassType{
-        VZNIK("B"),
-        ZANIK("E"),
-        VZTAH("R");
-
-        private String classType;
-
-        ClassType(final String classType) {
-            this.classType = classType;
-        }
-
-        public String getClassType() {
-            return classType;
-        }
-    }
+    public static final String CREATION_CODE = "B";
+    public static final String DESTRUCTION_CODE = "E";
 
     @Id
     @GeneratedValue

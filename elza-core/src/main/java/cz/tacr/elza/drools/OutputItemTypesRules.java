@@ -1,20 +1,19 @@
 package cz.tacr.elza.drools;
 
-import cz.tacr.elza.domain.ArrOutputDefinition;
-import cz.tacr.elza.domain.RulComponent;
-import cz.tacr.elza.domain.RulItemTypeExt;
-import cz.tacr.elza.domain.RulOutputType;
+import java.nio.file.Path;
+import java.util.LinkedList;
+import java.util.List;
+
 import org.kie.api.runtime.StatelessKieSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.io.File;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.LinkedList;
-import java.util.List;
+import cz.tacr.elza.core.ResourcePathResolver;
+import cz.tacr.elza.domain.ArrOutputDefinition;
+import cz.tacr.elza.domain.RulItemTypeExt;
+import cz.tacr.elza.domain.RulRule;
 
 
 /**
@@ -29,7 +28,7 @@ public class OutputItemTypesRules extends Rules {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Autowired
-    private RulesExecutor rulesExecutor;
+    private ResourcePathResolver resourcePathResolver;
 
     /**
      * Spuštění zpracování pravidel.
@@ -54,7 +53,11 @@ public class OutputItemTypesRules extends Rules {
             logger.warn("Při vykonávání OutputItemTypesRules.execute() nebyly nalezeny pravidla pro typ výstupu '"
                     + outputType.getCode() + "'");
         } else {
-            Path path = Paths.get(rulesExecutor.getDroolsDir(outputType.getPackage().getCode(), outputType.getRuleSet().getCode()) + File.separator + component.getFilename());
+            if (!rule.getRuleType().equals(RulRule.RuleType.OUTPUT_ATTRIBUTE_TYPES)) {
+                throw new IllegalStateException("Neplatný typ pravidel pro výstup: " + rule.getRuleType().name());
+            }
+
+            Path path = resourcePathResolver.getDroolFile(rule);
             StatelessKieSession session = createNewStatelessKieSession(path);
             execute(session, facts);
         }

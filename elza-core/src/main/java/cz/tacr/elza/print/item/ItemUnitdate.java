@@ -4,29 +4,28 @@ import cz.tacr.elza.print.UnitDate;
 
 /**
  * Unit date
- * 
+ *
  */
 public class ItemUnitdate extends AbstractItem {
-	
-	UnitDate value;
+
+    private final UnitDate value;
 
     public ItemUnitdate(final UnitDate value) {
-        super();
-        
         this.value = value;
     }
 
     @Override
-    public String serializeValue() {
-        return value.serialize();
+    public String getSerializedValue() {
+        return value.getValueText();
     }
 
     @Override
-    public Object getValue() {
-        return value;
+    public boolean isValueSerializable() {
+        return true;
     }
 
-    public UnitDate getUnitDate() {
+    @Override
+    protected UnitDate getValue() {
         return value;
     }
 }

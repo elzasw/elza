@@ -2,6 +2,8 @@ package cz.tacr.elza.domain;
 
 import java.util.List;
 
+import javax.persistence.Access;
+import javax.persistence.AccessType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -51,6 +53,7 @@ public class ParParty extends AbstractVersionableEntity implements IRegScope {
 
     @Id
     @GeneratedValue
+    @Access(AccessType.PROPERTY)
     private Integer partyId;
 
     @RestResource(exported = false)
@@ -58,6 +61,11 @@ public class ParParty extends AbstractVersionableEntity implements IRegScope {
     @JoinColumn(name = "recordId", nullable = false)
     @JsonIgnore
     private RegRecord record;
+
+    @RestResource(exported = false)
+    @JsonIgnore
+    @Column(nullable = false, insertable = false, updatable = false)
+    private Integer recordId;
 
     @RestResource(exported = false)
 	@ManyToOne(fetch=FetchType.LAZY, targetEntity = ParPartyType.class)
@@ -139,6 +147,11 @@ public class ParParty extends AbstractVersionableEntity implements IRegScope {
      */
     public void setRecord(final RegRecord record) {
         this.record = record;
+        this.recordId = record != null ? record.getRecordId() : null;
+    }
+
+    public Integer getRecordId() {
+        return recordId;
     }
 
     /**

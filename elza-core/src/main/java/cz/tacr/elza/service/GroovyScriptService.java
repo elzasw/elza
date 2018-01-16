@@ -3,6 +3,8 @@ package cz.tacr.elza.service;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,9 +18,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
 
 import cz.tacr.elza.ElzaTools;
+import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ParComplementType;
 import cz.tacr.elza.domain.ParParty;
@@ -55,17 +57,19 @@ public class GroovyScriptService {
     private final GroovyScriptFile interpiRecordDetailScriptFile;
 
     @Autowired
-    public GroovyScriptService(@Value("${elza.groovy.groovyDir}") String groovyScriptDirPath,
+    public GroovyScriptService(ResourcePathResolver resourcePathResolver,
                                @Value("classpath:/script/groovy/createRecord.groovy") Resource createRecordScriptSource,
                                @Value("classpath:/script/groovy/createDid.groovy") Resource createDidScriptSource,
                                @Value("classpath:/script/groovy/interpiRecord.groovy") Resource interpiRecordListScriptSource,
                                @Value("classpath:/script/groovy/interpiRecordDetail.groovy") Resource interpiRecordDetailScriptSource) {
         try {
-            File workDir = createGroovyScriptDir(groovyScriptDirPath);
-            this.createRecordScriptFile = GroovyScriptFile.create(createRecordScriptSource, workDir);
-            this.createDidScriptFile = GroovyScriptFile.create(createDidScriptSource, workDir);
-            this.interpiRecordListScriptFile = GroovyScriptFile.create(interpiRecordListScriptSource, workDir);
-            this.interpiRecordDetailScriptFile = GroovyScriptFile.create(interpiRecordDetailScriptSource, workDir);
+            Path groovyDir = resourcePathResolver.getGroovyDir(); // TODO: Move initialization to startup service
+            Files.createDirectories(groovyDir);
+
+            this.createRecordScriptFile = GroovyScriptFile.create(createRecordScriptSource, groovyDir);
+            this.createDidScriptFile = GroovyScriptFile.create(createDidScriptSource, groovyDir);
+            this.interpiRecordListScriptFile = GroovyScriptFile.create(interpiRecordListScriptSource, groovyDir);
+            this.interpiRecordDetailScriptFile = GroovyScriptFile.create(interpiRecordDetailScriptSource, groovyDir);
         } catch (Throwable t) {
             throw new SystemException("Failed to initialize groovy scripts", t);
         }
@@ -125,12 +129,6 @@ public class GroovyScriptService {
         return (ExternalRecordVO) interpiRecordDetailScriptFile.evaluate(input);
     }
 
-    private static File createGroovyScriptDir(String groovyScriptDirPath) throws IOException {
-        File workDir = new File(groovyScriptDirPath);
-        workDir.mkdirs();
-        return workDir;
-    }
-
     public static class GroovyScriptFile {
 
         private final File scriptFile;
@@ -175,10 +173,11 @@ public class GroovyScriptService {
             return loader.parseClass(source, false);
         }
 
-        private static GroovyScriptFile create(Resource resource, File workDir) throws IOException {
+        private static GroovyScriptFile create(Resource resource, Path scriptsDir) throws IOException {
             String fileName = resource.getFilename();
-            Assert.hasLength(fileName, "Resource does not have a filename");
-            File scriptFile = new File(workDir, fileName);
+            Validate.notBlank(fileName);
+
+            File scriptFile = scriptsDir.resolve(fileName).toFile();
 
             long resourceLM = resource.lastModified();
             if (!scriptFile.exists() || resourceLM > scriptFile.lastModified()) {

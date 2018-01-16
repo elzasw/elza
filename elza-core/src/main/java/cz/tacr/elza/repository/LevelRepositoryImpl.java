@@ -8,7 +8,6 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
@@ -28,18 +27,19 @@ import org.hibernate.CacheMode;
 import org.hibernate.ScrollMode;
 import org.hibernate.ScrollableResults;
 import org.hibernate.query.NativeQuery;
+import org.hibernate.type.StandardBasicTypes;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
-import cz.tacr.elza.core.DatabaseType;
-import cz.tacr.elza.core.RecursiveQueryBuilder;
+import cz.tacr.elza.common.ObjectListIterator;
+import cz.tacr.elza.common.db.DatabaseType;
+import cz.tacr.elza.common.db.RecursiveQueryBuilder;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
-import cz.tacr.elza.utils.ObjectListIterator;
 
 
 /**
@@ -346,21 +346,39 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
     }
 
     @Override
-    public List<Integer> findNodeIdsSubtree(final ArrNode node, final ArrChange change) {
+    public List<Integer> findNewerNodeIdsInSubtree(final int nodeId, final Timestamp lastUpdate) {
         RecursiveQueryBuilder<Integer> rqBuilder = DatabaseType.getCurrent().createRecursiveQueryBuilder(Integer.class);
 
         rqBuilder.addSqlPart("WITH RECURSIVE treeData AS (")
 
         .addSqlPart("SELECT t.* FROM arr_level t WHERE t.node_id = :nodeId ")
         .addSqlPart("UNION ALL ")
-        .addSqlPart(" SELECT t.* FROM arr_level t JOIN treeData td ON td.node_id = t.node_id_parent) ")
+        .addSqlPart("SELECT t.* FROM arr_level t JOIN treeData td ON td.node_id = t.node_id_parent) ")
 
         .addSqlPart("SELECT DISTINCT n.node_id FROM treeData t JOIN arr_node n ON n.node_id = t.node_id ")
-        .addSqlPart("WHERE t.delete_change_id IS NULL AND n.last_update > :date");
+        .addSqlPart("WHERE t.delete_change_id IS NULL AND n.last_update > :lastUpdate");
 
         rqBuilder.prepareQuery(entityManager);
-        rqBuilder.setParameter("nodeId", node.getNodeId());
-        rqBuilder.setParameter("date", Timestamp.valueOf(change.getChangeDate()));
+        rqBuilder.setParameter("nodeId", nodeId);
+        rqBuilder.setParameter("lastUpdate", lastUpdate);
+        return rqBuilder.getQuery().getResultList();
+    }
+
+    @Override
+    public List<Integer> findNewerNodeIdsInParents(final int nodeId, final Timestamp lastUpdate) {
+        RecursiveQueryBuilder<Integer> rqBuilder = DatabaseType.getCurrent().createRecursiveQueryBuilder(Integer.class);
+
+        rqBuilder.addSqlPart("WITH RECURSIVE treeData AS (")
+        .addSqlPart("SELECT t.* FROM arr_level t WHERE t.node_id = :nodeId ")
+        .addSqlPart("UNION ALL ")
+        .addSqlPart("SELECT t.* FROM arr_level t JOIN treeData td ON td.node_id_parent = t.node_id) ")
+
+        .addSqlPart("SELECT DISTINCT n.node_id FROM treeData t JOIN arr_node n ON n.node_id = t.node_id ")
+        .addSqlPart("WHERE t.delete_change_id IS NULL AND n.last_update > :lastUpdate");
+
+        rqBuilder.prepareQuery(entityManager);
+        rqBuilder.setParameter("nodeId", nodeId);
+        rqBuilder.setParameter("lastUpdate", lastUpdate);
         return rqBuilder.getQuery().getResultList();
     }
 
@@ -393,31 +411,38 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
     }
 
     @Override
-    public long iterateSubtree(int nodeId, ArrChange change, Consumer<ArrLevel> levelAction) {
-        // TODO: implement condition for not null change
-        Validate.isTrue(change == null, "Not implemented");
+    public long readLevelTree(Integer nodeId, ArrChange change, boolean excludeRoot, TreeLevelConsumer treeLevelConsumer) {
+        Validate.notNull(nodeId);
+        Validate.isTrue(change == null, "Not implemented"); // TODO: implement condition for closed versions
 
         RecursiveQueryBuilder<ArrLevel> rqBuilder = DatabaseType.getCurrent().createRecursiveQueryBuilder(ArrLevel.class);
 
-        rqBuilder.addSqlPart("WITH RECURSIVE fundTree(level_id, create_change_id, delete_change_id, node_id, node_id_parent, position, parentPosition, depth) AS (")
-
-        .addSqlPart("SELECT l.*, l.position, 1 FROM arr_level l WHERE l.node_id = :nodeId AND l.delete_change_id IS NULL ")
+        rqBuilder.addSqlPart("WITH RECURSIVE fundTree(level_id, create_change_id, delete_change_id, node_id, node_id_parent, position, depth) AS (")
+        .addSqlPart("SELECT l.*, 0 FROM arr_level l WHERE l.node_id = :nodeId AND l.delete_change_id IS NULL ")
         .addSqlPart("UNION ALL ")
-        .addSqlPart("SELECT l.*, ft.position, ft.depth + 1 FROM arr_level l JOIN fundTree ft ON ft.node_id=l.node_id_parent WHERE l.delete_change_id IS NULL) ")
+        .addSqlPart("SELECT l.*, ft.depth + 1 FROM arr_level l JOIN fundTree ft ON ft.node_id=l.node_id_parent WHERE l.delete_change_id IS NULL) ")
 
-        .addSqlPart("SELECT * FROM fundTree ORDER BY depth, parentPosition, position");
+        .addSqlPart("SELECT * FROM fundTree ft ");
+        if (excludeRoot) {
+            rqBuilder.addSqlPart("WHERE node_id <> :nodeId ");
+        }
+        rqBuilder.addSqlPart("ORDER BY depth, node_id_parent, position");
 
         rqBuilder.prepareQuery(entityManager);
         rqBuilder.setParameter("nodeId", nodeId);
 
-        org.hibernate.query.Query<ArrLevel> query = rqBuilder.getQuery();
+        NativeQuery<ArrLevel> query = rqBuilder.getQuery();
+
+        // probably false positive due to SQLQuery -> NativeQuery migration (should be fixed in HB 6.0)
+        query.addScalar("depth", StandardBasicTypes.INTEGER);
         query.setCacheMode(CacheMode.IGNORE);
 
         long count = 0;
         try (ScrollableResults scrollableResults = query.scroll(ScrollMode.FORWARD_ONLY)) {
             while (scrollableResults.next()) {
                 ArrLevel level = (ArrLevel) scrollableResults.get(0);
-                levelAction.accept(level);
+                int depth = scrollableResults.getInteger(1).intValue();
+                treeLevelConsumer.accept(level, depth);
                 count++;
             }
         }
@@ -425,22 +450,5 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
             throw new IllegalArgumentException("Root node not found, nodeId:" + nodeId);
         }
         return count;
-    }
-
-    @Override
-    public List<Integer> findNodeIdsParent(final ArrNode node, final ArrChange change) {
-        RecursiveQueryBuilder<Integer> rqBuilder = DatabaseType.getCurrent().createRecursiveQueryBuilder(Integer.class);
-
-        rqBuilder.addSqlPart("WITH RECURSIVE treeData AS (SELECT t.* FROM arr_level t WHERE t.node_id = :nodeId ")
-        .addSqlPart("UNION ALL ")
-        .addSqlPart("SELECT t.* FROM arr_level t JOIN treeData td ON td.node_id_parent = t.node_id) ")
-
-        .addSqlPart("SELECT DISTINCT n.node_id FROM treeData t JOIN arr_node n ON n.node_id = t.node_id ")
-        .addSqlPart("WHERE t.delete_change_id IS NULL AND n.last_update > :date");
-
-        rqBuilder.prepareQuery(entityManager);
-        rqBuilder.setParameter("nodeId", node.getNodeId());
-        rqBuilder.setParameter("date", Timestamp.valueOf(change.getChangeDate()));
-        return rqBuilder.getQuery().getResultList();
     }
 }

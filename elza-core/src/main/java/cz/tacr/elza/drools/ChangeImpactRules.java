@@ -1,28 +1,22 @@
 package cz.tacr.elza.drools;
 
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+
+
+import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.RulArrangementRule;
-import cz.tacr.elza.domain.RulExtensionRule;
+import cz.tacr.elza.domain.RulRule;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.vo.NodeTypeOperation;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
 import cz.tacr.elza.drools.model.DescItem;
 import cz.tacr.elza.drools.model.DescItemChange;
 import cz.tacr.elza.drools.service.ScriptModelFactory;
-import cz.tacr.elza.service.RuleService;
-import org.kie.api.runtime.StatelessKieSession;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
-
-import java.io.File;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
 
 
 /**
@@ -39,7 +33,7 @@ public class ChangeImpactRules extends Rules {
     private ScriptModelFactory factory;
 
     @Autowired
-    private RulesExecutor rulesExecutor;
+    private ResourcePathResolver resourcePathResolver;
 
     @Autowired
     private RuleService ruleService;
@@ -65,12 +59,11 @@ public class ChangeImpactRules extends Rules {
 
         Set<RelatedNodeDirection> relatedNodeDirections = new HashSet<>();
 
-        Path path;
         List<RulArrangementRule> rulArrangementRules = arrangementRuleRepository.findByRuleSetAndRuleTypeOrderByPriorityAsc(
                 rulRuleSet, RulArrangementRule.RuleType.CONFORMITY_IMPACT);
 
-        for (RulArrangementRule rulArrangementRule : rulArrangementRules) {
-            path = Paths.get(rulesExecutor.getDroolsDir(rulArrangementRule.getPackage().getCode(), rulRuleSet.getCode()) + File.separator + rulArrangementRule.getComponent().getFilename());
+        for (RulRule rulPackageRule : rulPackageRules) {
+            Path path = resourcePathResolver.getDroolFile(rulPackageRule);
 
             StatelessKieSession session = createNewStatelessKieSession(path);
 

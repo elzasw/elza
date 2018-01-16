@@ -30,7 +30,7 @@ import cz.tacr.elza.service.cache.NodeCacheSerializable;
 @Entity(name = "arr_data")
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler"})
 @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
 public abstract class ArrData implements NodeCacheSerializable {
 
@@ -66,7 +66,7 @@ public abstract class ArrData implements NodeCacheSerializable {
 		this.dataType = src.dataType;
 		this.dataTypeId = src.dataTypeId;
 
-		// If we are copying new item then dataType have to be set
+        // If we are copying from existing item then dataType have to be set
 		Validate.notNull(dataType);
 		Validate.notNull(dataTypeId);
 	}
@@ -93,6 +93,7 @@ public abstract class ArrData implements NodeCacheSerializable {
     }
 
     // TODO: consider to remove getDataType() and setDataType(...), rename this method to getDataType()
+    @JsonIgnore
     public DataType getType() {
         if (dataTypeId == null) {
             return null;

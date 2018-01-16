@@ -1,28 +1,25 @@
 package cz.tacr.elza.bulkaction.generator.result;
 
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrItem;
-import cz.tacr.elza.domain.ArrItemData;
-
 import java.util.List;
+
+import cz.tacr.elza.core.data.RuleSystemItemType;
+import cz.tacr.elza.domain.ArrItem;
+import cz.tacr.elza.service.OutputItemConnector;
 
 /**
  * Výsledek z akce {@link cz.tacr.elza.bulkaction.generator.multiple.CopyAction}
- *
- * @author Martin Šlapa
- * @since 29.06.2016
  */
 public class CopyActionResult extends ActionResult {
 
-    private String itemType;
-
     private List<ArrItem> dataItems;
+
+    private String itemType;
 
     public List<ArrItem> getDataItems() {
         return dataItems;
     }
 
-    public void setDataItems(final List<ArrItem> dataItems) {
+    public void setDataItems(List<ArrItem> dataItems) {
         this.dataItems = dataItems;
     }
 
@@ -30,7 +27,16 @@ public class CopyActionResult extends ActionResult {
         return itemType;
     }
 
-    public void setItemType(final String itemType) {
+    public void setItemType(String itemType) {
         this.itemType = itemType;
+    }
+
+    @Override
+    public void createOutputItems(OutputItemConnector connector) {
+        if (dataItems == null) {
+            return;
+        }
+        RuleSystemItemType rsit = connector.getRuleSystem().getItemTypeByCode(itemType);
+        connector.addItems(dataItems, rsit);
     }
 }

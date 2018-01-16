@@ -2,6 +2,7 @@ package cz.tacr.elza.dataexchange.input.aps;
 
 import org.apache.commons.lang3.StringUtils;
 
+import cz.tacr.elza.common.XmlUtils;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.dataexchange.input.DEImportException;
 import cz.tacr.elza.dataexchange.input.aps.context.AccessPointInfo;
@@ -13,7 +14,6 @@ import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.schema.v2.AccessPointEntry;
 import cz.tacr.elza.schema.v2.ExternalId;
-import cz.tacr.elza.utils.XmlUtils;
 
 /**
  * Processing access point entries for access points or parties. Implementation is not thread-safe.

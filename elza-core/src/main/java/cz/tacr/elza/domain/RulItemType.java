@@ -3,6 +3,8 @@ package cz.tacr.elza.domain;
 import java.io.IOException;
 import java.util.List;
 
+import javax.persistence.Access;
+import javax.persistence.AccessType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -19,8 +21,6 @@ import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.data.rest.core.annotation.RestResource;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -46,11 +46,10 @@ public class RulItemType {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    private static final Logger logger = LoggerFactory.getLogger(RulItemType.class);
-
     @Id
     @GeneratedValue
     @Column(name = "item_type_id")
+    @Access(AccessType.PROPERTY) // required to read id without fetch from db
     private Integer itemTypeId;
 
     @Column(updatable = false, insertable = false)
@@ -135,7 +134,7 @@ public class RulItemType {
 
 	/**
 	 * Copy constructor for derived types
-	 * 
+	 *
 	 * @param src
 	 */
 	protected RulItemType(RulItemType src) {

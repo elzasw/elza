@@ -15,7 +15,7 @@ import cz.tacr.elza.drools.ValidationRules;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.repository.DescItemRepository;
-import cz.tacr.elza.service.ArrangementServiceInternal;
+import cz.tacr.elza.service.DescriptionItemServiceInternal;
 import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.cache.RestoredNode;
@@ -43,7 +43,7 @@ public class ArrDescItemsPostValidatorImpl implements ArrDescItemsPostValidator 
     private ValidationRules validationRules;
 
 	@Autowired
-	ArrangementServiceInternal arrangementServiceInternal;
+	DescriptionItemServiceInternal arrangementServiceInternal;
 
 	@Autowired
 	NodeCacheService nodeCache;

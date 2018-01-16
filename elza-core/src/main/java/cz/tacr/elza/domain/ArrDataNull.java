@@ -5,7 +5,6 @@ import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-
 /**
  * Atributu archivního popisu bez hodnoty - napr. enum
  */

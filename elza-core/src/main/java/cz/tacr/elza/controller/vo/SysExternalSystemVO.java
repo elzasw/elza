@@ -2,6 +2,8 @@ package cz.tacr.elza.controller.vo;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
+import cz.tacr.elza.domain.SysExternalSystem;
+
 /**
  * VO pro externí systém.
  *
@@ -79,5 +81,22 @@ public abstract class SysExternalSystemVO {
 
     public void setElzaCode(String elzaCode) {
         this.elzaCode = elzaCode;
+    }
+
+    /**
+     * Convert VO object to the domain object
+     * 
+     * @return
+     */
+    abstract public SysExternalSystem createEntity();
+
+    protected void fillEntity(SysExternalSystem entity) {
+        entity.setCode(code);
+        entity.setElzaCode(elzaCode);
+        entity.setExternalSystemId(id);
+        entity.setName(name);
+        entity.setPassword(password);
+        entity.setUrl(url);
+        entity.setUsername(username);
     }
 }

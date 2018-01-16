@@ -67,8 +67,8 @@ import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
+import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.repository.StructureDataRepository;
-import cz.tacr.elza.service.ArrMoveLevelService;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.DmsService;
 import cz.tacr.elza.service.IEventNotificationService;
@@ -164,7 +164,7 @@ public class ImportProcess {
     private DmsService dmsService;
 
     @Autowired
-    private ArrMoveLevelService arrMoveLevelService;
+    private FundLevelService arrMoveLevelService;
 
     /**
      * Zdroj dat pro import.
@@ -194,7 +194,7 @@ public class ImportProcess {
     /**
      * Směr zakládání nodů.
      */
-    private ArrMoveLevelService.AddLevelDirection selectedDirection;
+    private FundLevelService.AddLevelDirection selectedDirection;
 
     private List<ArrLevel> levels = new ArrayList<>();
     private List<ArrNodeRegister> nodeRegisters = new ArrayList<>();
@@ -237,7 +237,7 @@ public class ImportProcess {
                      final ArrFundVersion targetFundVersion,
                      final ArrNode targetNode,
                      final ArrNode targetParentNode,
-                     final ArrMoveLevelService.AddLevelDirection selectedDirection) {
+                     final FundLevelService.AddLevelDirection selectedDirection) {
         logger.info("Inicializace importu do AS");
         this.source = source;
         this.params = params;
@@ -483,9 +483,9 @@ public class ImportProcess {
                         case AFTER:
                         case BEFORE: {
                             ArrLevel staticLevel = levelRepository.findByNode(targetNode, targetFundVersion.getLockChange());
-                            int position = selectedDirection.equals(ArrMoveLevelService.AddLevelDirection.AFTER) ? staticLevel.getPosition() + 1 : staticLevel.getPosition();
+                            int position = selectedDirection.equals(FundLevelService.AddLevelDirection.AFTER) ? staticLevel.getPosition() + 1 : staticLevel.getPosition();
                             levelsToShift = arrMoveLevelService.nodesToShift(staticLevel);
-                            if (selectedDirection.equals(ArrMoveLevelService.AddLevelDirection.BEFORE)) {
+                            if (selectedDirection.equals(FundLevelService.AddLevelDirection.BEFORE)) {
                                 levelsToShift.add(0, staticLevel);
                             }
                             Assert.notNull(targetParentNode, "Musí být vyplněn rodič uzlu");

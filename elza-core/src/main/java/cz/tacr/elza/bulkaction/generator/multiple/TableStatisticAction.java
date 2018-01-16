@@ -70,19 +70,19 @@ public class TableStatisticAction extends Action {
 		inputItemTypes = findItemTypes(inputTypes);
 		outputItemType = findItemType(outputType, "output_type");
 		checkValidDataType(outputItemType, "JSON_TABLE");
-		
+
 		List<ElzaColumn> columnsDefinition = outputItemType.getColumnsDefinition();
-		
+
 		String outputTableCode = config.getString("output_table_code", null);
 		String outputTableType = config.getString("output_table_type", null);
-		
+
 		for (ElzaColumn column : columnsDefinition) {
 		    if (column.getCode().equals(outputTableCode) && column.getDataType().name().equals(outputTableType)) {
 		        columnCode = column.getCode();
 		        columnDataType = column.getDataType();
 		    }
 		}
-		
+
 		if (columnCode == null) {
 		    throw new IllegalArgumentException("Neplatný sloupec tabulky výstupního atributu");
 		}

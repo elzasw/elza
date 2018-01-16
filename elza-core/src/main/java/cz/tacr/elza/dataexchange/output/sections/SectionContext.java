@@ -7,13 +7,13 @@ import javax.persistence.EntityManager;
 
 import org.apache.commons.lang3.Validate;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.dataexchange.output.context.ExportContext;
 import cz.tacr.elza.dataexchange.output.writer.SectionOutputStream;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.service.cache.NodeCacheService;
-import cz.tacr.elza.utils.HibernateUtils;
 
 public class SectionContext {
 

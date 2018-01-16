@@ -67,7 +67,7 @@ import cz.tacr.elza.domain.table.ElzaRow;
 import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.service.ArrIOService;
-import cz.tacr.elza.service.ArrMoveLevelService;
+import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.vo.ChangesResult;
 
 public class ArrangementControllerTest extends AbstractControllerTest {
@@ -665,7 +665,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         rootNode.setVersion(rootNode.getVersion() + 1);
 
         // přidání třetího levelu na první pozici pod root
-        ArrangementController.NodeWithParent newLevel5 = addLevel(ArrMoveLevelService.AddLevelDirection.CHILD,
+        ArrangementController.NodeWithParent newLevel5 = addLevel(FundLevelService.AddLevelDirection.CHILD,
                 fundVersion, rootNode, rootNode, null);
 
         parentNode = newLevel5.getParentNode();
@@ -706,7 +706,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         ArrNodeVO rootNode = convertTreeNode(rootTreeNodeClient);
 
         // přidání prvního levelu pod root
-        ArrangementController.NodeWithParent newLevel1 = addLevel(ArrMoveLevelService.AddLevelDirection.CHILD,
+        ArrangementController.NodeWithParent newLevel1 = addLevel(FundLevelService.AddLevelDirection.CHILD,
                 fundVersion, rootNode, rootNode, "Série");
 
         // Rodič nového uzlu musí být root
@@ -719,7 +719,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         rootNode.setVersion(parentNode.getVersion());
 
         // přidání druhého levelu pod root
-        ArrangementController.NodeWithParent newLevel2 = addLevel(ArrMoveLevelService.AddLevelDirection.CHILD,
+        ArrangementController.NodeWithParent newLevel2 = addLevel(FundLevelService.AddLevelDirection.CHILD,
                 fundVersion, rootNode, rootNode, null);
 
         // Rodič nového uzlu musí být root
@@ -732,7 +732,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         rootNode.setVersion(parentNode.getVersion());
 
         // přidání třetího levelu na první pozici pod root
-        ArrangementController.NodeWithParent newLevel3 = addLevel(ArrMoveLevelService.AddLevelDirection.BEFORE,
+        ArrangementController.NodeWithParent newLevel3 = addLevel(FundLevelService.AddLevelDirection.BEFORE,
                 fundVersion, newLevel1.getNode(), rootNode, null);
 
         // "Rodič nového uzlu musí být root"
@@ -745,7 +745,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         rootNode.setVersion(parentNode.getVersion());
 
         // přidání uzlu za první uzel pod root (za child3)
-        ArrangementController.NodeWithParent newLevel4 = addLevel(ArrMoveLevelService.AddLevelDirection.AFTER,
+        ArrangementController.NodeWithParent newLevel4 = addLevel(FundLevelService.AddLevelDirection.AFTER,
                 fundVersion, newLevel3.getNode(), rootNode, null);
 
         // "Rodič nového uzlu musí být root"
@@ -1079,7 +1079,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         copyNodesParams.setIgnoreRootNodes(true);
         copyNodesParams.setFilesConflictResolve(null);
         copyNodesParams.setStructuredsConflictResolve(null);
-        copyNodesParams.setSelectedDirection(ArrMoveLevelService.AddLevelDirection.CHILD);
+        copyNodesParams.setSelectedDirection(FundLevelService.AddLevelDirection.CHILD);
 
         copyLevels(copyNodesParams);
     }

@@ -58,6 +58,9 @@ public class RulTemplate {
     @JoinColumn(name = "packageId", nullable = false)
     private RulPackage rulPackage;
 
+    @Column(nullable = false, insertable = false, updatable = false)
+    private Integer packageId;
+
     @Column(nullable = false)
     private Boolean deleted;
 
@@ -116,6 +119,11 @@ public class RulTemplate {
      */
     public void setPackage(final RulPackage rulPackage) {
         this.rulPackage = rulPackage;
+        this.packageId = rulPackage != null ? rulPackage.getPackageId() : null;
+    }
+
+    public Integer getPackageId() {
+        return packageId;
     }
 
     /**
@@ -176,6 +184,7 @@ public class RulTemplate {
     public enum Engine {
         JASPER,
         FREEMARKER,
-        DOCX
+        DOCX,
+        DEXML
     }
 }

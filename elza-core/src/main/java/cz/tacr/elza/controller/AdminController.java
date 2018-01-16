@@ -86,7 +86,7 @@ public class AdminController {
     @RequestMapping(value = "/externalSystems", method = RequestMethod.POST)
     @Transactional
     public SysExternalSystemVO createExternalSystem(@RequestBody final SysExternalSystemVO externalSystemVO) {
-        SysExternalSystem externalSystem = factoryDo.createSimpleEntity(externalSystemVO, SysExternalSystem.class);
+        SysExternalSystem externalSystem = externalSystemVO.createEntity();
         return factoryVo.createSimpleEntity(externalSystemService.create(externalSystem), SysExternalSystemVO.class);
     }
 
@@ -111,7 +111,8 @@ public class AdminController {
     @RequestMapping(value = "/externalSystems/{externalSystemId}", method = RequestMethod.PUT)
     @Transactional
     public SysExternalSystemVO updateExternalSystem(@RequestBody final SysExternalSystemVO externalSystemVO) {
-        SysExternalSystem externalSystem = factoryDo.createSimpleEntity(externalSystemVO, SysExternalSystem.class);
+        SysExternalSystem externalSystem = externalSystemVO.createEntity();
+
         return factoryVo.createSimpleEntity(externalSystemService.update(externalSystem), SysExternalSystemVO.class);
     }
 

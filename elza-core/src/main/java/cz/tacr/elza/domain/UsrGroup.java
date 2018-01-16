@@ -1,9 +1,13 @@
 package cz.tacr.elza.domain;
 
+import java.util.List;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -13,15 +17,20 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 /**
  * Uživatelká skupina.
  *
- * @author Martin Šlapa
- * @since 11.04.2016
  */
 @Entity(name = "usr_group")
 @Cache(region = "domain", usage = CacheConcurrencyStrategy.READ_WRITE)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
 public class UsrGroup {
 
-    @Id
+	/* Konstanty pro vazby a fieldy. */
+	public static final String GROUP_ID = "groupId";
+	public static final String CODE = "code";
+	public static final String NAME = "name";
+	public static final String DESCRIPTION = "description";
+	public static final String USERS = "users";
+
+	@Id
     @GeneratedValue
     private Integer groupId;
 
@@ -34,11 +43,8 @@ public class UsrGroup {
     @Column(length = 250, nullable = true)
     private String description;
 
-    /* Konstanty pro vazby a fieldy. */
-    public static final String GROUP_ID = "groupId";
-    public static final String CODE = "code";
-    public static final String NAME = "name";
-    public static final String DESCRIPTION = "description";
+	@OneToMany(mappedBy = "group", fetch = FetchType.LAZY)
+	private List<UsrGroupUser> users;
 
     /**
      * @return identifikátor entity
@@ -95,4 +101,12 @@ public class UsrGroup {
     public void setDescription(final String description) {
         this.description = description;
     }
+
+	public List<UsrGroupUser> getUsers() {
+		return users;
+	}
+
+	public void setUsers(List<UsrGroupUser> users) {
+		this.users = users;
+	}
 }

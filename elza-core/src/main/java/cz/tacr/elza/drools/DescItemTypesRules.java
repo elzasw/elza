@@ -1,8 +1,6 @@
 package cz.tacr.elza.drools;
 
-import java.io.File;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -13,6 +11,7 @@ import org.kie.api.runtime.StatelessKieSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.RulItemTypeExt;
@@ -34,8 +33,9 @@ public class DescItemTypesRules extends Rules {
 
     @Autowired
     private ScriptModelFactory scriptModelFactory;
+
     @Autowired
-    private RulesExecutor rulesExecutor;
+    private ResourcePathResolver resourcePathResolver;
     @Autowired
     private RuleService ruleService;
 
@@ -61,12 +61,12 @@ public class DescItemTypesRules extends Rules {
 
     	final RulRuleSet rulRuleSet = version.getRuleSet();
 
-        Path path;
+        ;
         List<RulArrangementRule> rulArrangementRules = arrangementRuleRepository.findByRuleSetAndRuleTypeOrderByPriorityAsc(
                 rulRuleSet, RulArrangementRule.RuleType.ATTRIBUTE_TYPES);
 
-        for (RulArrangementRule rulArrangementRule : rulArrangementRules) {
-            path = Paths.get(rulesExecutor.getDroolsDir(rulArrangementRule.getPackage().getCode(), rulArrangementRule.getRuleSet().getCode()) + File.separator + rulArrangementRule.getComponent().getFilename());
+        for (RulRule rulPackageRule : rulPackageRules) {
+            Path path = resourcePathResolver.getDroolFile(rulPackageRule);
             StatelessKieSession session = createNewStatelessKieSession(path);
             execute(session, facts);
         }

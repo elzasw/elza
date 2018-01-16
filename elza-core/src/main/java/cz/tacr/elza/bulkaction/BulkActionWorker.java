@@ -4,13 +4,14 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-import org.apache.commons.lang.Validate;
+import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrBulkActionRun.State;
-import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.exception.SystemException;
 
 /**
@@ -20,6 +21,15 @@ import cz.tacr.elza.exception.SystemException;
 public class BulkActionWorker implements Callable<BulkActionWorker> {
 
 	private static final Logger logger = LoggerFactory.getLogger(BulkActionWorker.class);
+
+    /**
+     * Hromadná akce reprezentovaná v DB
+     */
+    private final ArrBulkActionRun bulkActionRun;
+
+    private final BulkActionService bulkActionService;
+
+    private final PlatformTransactionManager transactionManager;
 
     /**
      * Hromadná akce
@@ -36,25 +46,10 @@ public class BulkActionWorker implements Callable<BulkActionWorker> {
      */
     private List<Integer> inputNodeIds;
 
-    /**
-     * Hromadná akce reprezentovaná v DB
-     */
-    private ArrBulkActionRun bulkActionRun;
-
-    private BulkActionService bulkActionService;
-
-    /**
-     * Identfikátor uživatele, který spustil hromadnou akci (null, pokud to bylo systémové - od admina)
-     */
-    //private Integer userId;
-
-    private Integer processId;
-
-	public BulkActionWorker(BulkActionService bulkActionService, ArrBulkActionRun bulkActionRun) {
-		Validate.notNull(bulkActionRun);
-
+	public BulkActionWorker(ArrBulkActionRun bulkActionRun, BulkActionService bulkActionService, PlatformTransactionManager transactionManager) {
+        this.bulkActionRun = Validate.notNull(bulkActionRun);
 		this.bulkActionService = bulkActionService;
-		this.bulkActionRun = bulkActionRun;
+		this.transactionManager = transactionManager;
 	}
 
 	public void init() {
@@ -64,7 +59,6 @@ public class BulkActionWorker implements Callable<BulkActionWorker> {
 		bulkAction = bulkActionService.getBulkAction(bulkActionRun.getBulkActionCode());
     }
 
-
     /**
      * Vrací stav hromadné akce.
      *
@@ -72,75 +66,6 @@ public class BulkActionWorker implements Callable<BulkActionWorker> {
      */
     public ArrBulkActionRun getBulkActionRun() {
         return bulkActionRun;
-    }
-
-    public void setStateAndPublish(State state) {
-        bulkActionRun.setState(state);
-        bulkActionService.storeBulkActionRun(bulkActionRun);
-        bulkActionService.eventPublishBulkAction(bulkActionRun);
-
-        if (state.equals(State.FINISHED)) {
-            bulkActionService.finished(bulkActionRun);
-        }
-    }
-
-
-    /**
-     * Vytvoření nové změny.
-     *
-     * @return vytvořená změna
-     */
-    protected ArrChange createChange(final Integer userId) {
-        return bulkActionService.createChange(userId);
-    }
-
-    /**
-     * Vrací stav hromadné akce.
-     *
-     * @return stav
-     */
-    public State getState() {
-        return bulkActionRun.getState();
-    }
-
-	// Method is not running in transaction
-	// all changes are published to user
-    @Override
-    public BulkActionWorker call() throws Exception {
-        logger.info("Spuštěna hromadná akce: " + this);
-        bulkActionRun.setDateStarted(new Date());
-        setStateAndPublish(State.RUNNING);
-        processId = ((int) Thread.currentThread().getId());
-        try {
-            //bulkActionRun.setChange(createChange(userId));
-            bulkActionService.storeBulkActionRun(bulkActionRun);
-			// prepare context object
-			ActionRunContext runContext = new ActionRunContext(inputNodeIds, bulkActionRun);
-
-			bulkAction.execute(runContext);
-
-            //Thread.sleep(30000); // PRO TESTOVÁNÍ A DALŠÍ VÝVOJ
-
-			// TODO: Add check that action was not interrupted
-            bulkActionRun.setDateFinished(new Date());
-            setStateAndPublish(State.FINISHED);
-            logger.info("Hromadná akce úspěšně dokončena: " + this);
-        } catch (Exception e) {
-            bulkActionRun.setError(e.getLocalizedMessage());
-            setStateAndPublish(State.ERROR);
-
-            logger.error("Hromadná akce skončila chybou: " + this, e);
-        }
-        return this;
-    }
-
-    /**
-     * Vrací hromadnou akci.
-     *
-     * @return hromadná akce
-     */
-    public BulkAction getBulkAction() {
-        return bulkAction;
     }
 
     /**
@@ -152,26 +77,69 @@ public class BulkActionWorker implements Callable<BulkActionWorker> {
         return versionId;
     }
 
+    public void setStateAndPublish(State state) {
+        bulkActionRun.setState(state);
+        bulkActionService.storeBulkActionRun(bulkActionRun);
+        bulkActionService.eventPublishBulkAction(bulkActionRun);
+    }
+
     @Override
-    public String toString() {
-        return "BulkActionWorker{" +
-                "bulkAction=" + bulkAction +
-                ", versionId=" + versionId +
-                ", bulkActionRun=" + bulkActionRun +
-                '}';
+    public BulkActionWorker call() throws Exception {
+        logger.info("Bulk action started: {}", this);
+
+        try {
+            new TransactionTemplate(transactionManager).execute(status -> {
+                executeInTransaction();
+                logger.info("Bulk action succesfully finished: {}", this);
+                return null;
+            });
+        } catch (Exception e) {
+            new TransactionTemplate(transactionManager).execute(status -> {
+                handleException(e);
+                logger.error("Bulk action failed, action: "+ this +", error: ", e);
+                return null;
+            });
+        }
+        return this;
+    }
+
+    private void executeInTransaction() {
+        bulkActionRun.setDateStarted(new Date());
+        setStateAndPublish(State.RUNNING);
+
+        //bulkActionRun.setChange(createChange(userId));
+        bulkActionService.storeBulkActionRun(bulkActionRun);
+        // prepare context object
+        ActionRunContext runContext = new ActionRunContext(inputNodeIds, bulkActionRun);
+
+        bulkAction.execute(runContext);
+
+        //Thread.sleep(30000); // PRO TESTOVÁNÍ A DALŠÍ VÝVOJ
+
+        // TODO: Add check that action was not interrupted
+        bulkActionRun.setDateFinished(new Date());
+        setStateAndPublish(State.FINISHED);
+        bulkActionService.onFinished(bulkActionRun);
+    }
+
+    private void handleException(Exception e) {
+        bulkActionRun.setError(e.getLocalizedMessage());
+        setStateAndPublish(State.ERROR);
     }
 
     /**
      * Ukončí běžící hromadnou akci.
      */
     public void terminate() {
-        if (getState() != State.RUNNING) {
+        State state = bulkActionRun.getState();
+
+        if (state != State.RUNNING) {
             return;
         }
 
         bulkActionRun.setInterrupted(true);
 
-        while (getState() == State.RUNNING) {
+        while (state == State.RUNNING) {
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
@@ -182,5 +150,14 @@ public class BulkActionWorker implements Callable<BulkActionWorker> {
         setStateAndPublish(State.INTERRUPTED);
 
         bulkActionRun.setInterrupted(false);
+    }
+
+    @Override
+    public String toString() {
+        return "BulkActionWorker{" +
+                "bulkAction=" + bulkAction +
+                ", versionId=" + versionId +
+                ", bulkActionRun=" + bulkActionRun +
+                '}';
     }
 }

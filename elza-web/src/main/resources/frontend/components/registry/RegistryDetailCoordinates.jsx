@@ -85,7 +85,7 @@ class RegistryDetailCoordinates extends AbstractReactComponent {
     };
 
     handleDownload = (objectId) => {
-        this.dispatch(downloadFile("registry-coordinates-" + objectId, UrlFactory.exportRegCoordinate(objectId)));
+        this.dispatch(downloadFile(UrlFactory.exportRegCoordinate(objectId)));
     };
 
     handleDelete = (item, index) => {

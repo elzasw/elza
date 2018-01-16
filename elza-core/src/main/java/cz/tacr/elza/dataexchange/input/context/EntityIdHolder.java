@@ -5,19 +5,19 @@ import java.io.Serializable;
 import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
 
-import cz.tacr.elza.utils.HibernateUtils;
+import cz.tacr.elza.common.db.HibernateUtils;
 
 public class EntityIdHolder<E> {
 
-    private final Class<E> entityClass;
+    private final Class<? extends E> entityClass;
 
     private Serializable entityId;
 
-    public EntityIdHolder(Class<E> entityClass) {
+    public EntityIdHolder(Class<? extends E> entityClass) {
         this.entityClass = Validate.notNull(entityClass);
     }
 
-    public Class<E> getEntityClass() {
+    public Class<? extends E> getEntityClass() {
         return entityClass;
     }
 
