@@ -1,10 +1,14 @@
 package cz.tacr.elza.controller;
 
 import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
 import java.util.function.Function;
 
 import javax.annotation.Nullable;
@@ -14,7 +18,9 @@ import javax.transaction.Transactional;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -38,8 +44,8 @@ import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.FilteredResult;
 import cz.tacr.elza.repository.OutputResultRepository;
-import cz.tacr.elza.service.attachment.AttachmentService;
 import cz.tacr.elza.service.DmsService;
+import cz.tacr.elza.service.attachment.AttachmentService;
 
 /**
  * @author Petr Compel <petr.compel@marbes.cz>

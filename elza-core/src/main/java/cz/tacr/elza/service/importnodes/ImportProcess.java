@@ -5,21 +5,15 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Stack;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import cz.tacr.elza.domain.ArrDataStructureRef;
-import cz.tacr.elza.domain.ArrStructureData;
-import cz.tacr.elza.repository.StructureDataRepository;
-import cz.tacr.elza.service.eventnotification.events.EventStructureDataChange;
 import org.apache.commons.collections4.CollectionUtils;
 import org.castor.core.util.Assert;
 import org.slf4j.Logger;
@@ -45,6 +39,7 @@ import cz.tacr.elza.domain.ArrDataNull;
 import cz.tacr.elza.domain.ArrDataPartyRef;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ArrDataString;
+import cz.tacr.elza.domain.ArrDataStructureRef;
 import cz.tacr.elza.domain.ArrDataText;
 import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDataUnitid;
@@ -54,6 +49,7 @@ import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeRegister;
+import cz.tacr.elza.domain.ArrStructureData;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.convertor.CalendarConverter;
@@ -71,6 +67,7 @@ import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
+import cz.tacr.elza.repository.StructureDataRepository;
 import cz.tacr.elza.service.ArrMoveLevelService;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.DmsService;
@@ -85,7 +82,6 @@ import cz.tacr.elza.service.importnodes.vo.ImportParams;
 import cz.tacr.elza.service.importnodes.vo.ImportSource;
 import cz.tacr.elza.service.importnodes.vo.Node;
 import cz.tacr.elza.service.importnodes.vo.NodeRegister;
-import cz.tacr.elza.service.importnodes.vo.Structured;
 import cz.tacr.elza.service.importnodes.vo.descitems.Item;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemCoordinates;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemDecimal;
@@ -94,10 +90,10 @@ import cz.tacr.elza.service.importnodes.vo.descitems.ItemFileRef;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemFormattedText;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemInt;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemJsonTable;
-import cz.tacr.elza.service.importnodes.vo.descitems.ItemStructureRef;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemPartyRef;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemRecordRef;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemString;
+import cz.tacr.elza.service.importnodes.vo.descitems.ItemStructureRef;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemText;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemUnitdate;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemUnitid;
@@ -394,11 +390,11 @@ public class ImportProcess {
             ArrFile file = fundFileRepository.findOne(((ItemFileRef) item).getFileId());
             ArrFile fileNew = filesMapper.get(file.getName());
             ((ArrDataFileRef) data).setFile(fileNew);
-            ((ArrDataPacketRef) data).setStructureData(structureDataNew);
         } else if (item instanceof ItemStructureRef) {
-            data = new ArrDataPacketRef();
-            ArrStructureData structureData = structureDataRepository.findOne(((ItemStructureRef) item).getStructuredId());
-			ArrStructureData structureDataNew = structureDataMapper.get(structureData.getStructuredId());
+            data = new ArrDataStructureRef();
+            ArrStructureData structureData = structureDataRepository
+                    .findOne(((ItemStructureRef) item).getStructureDataId());
+            ArrStructureData structureDataNew = structureDataMapper.get(structureData.getStructureDataId());
             ((ArrDataStructureRef) data).setStructureData(structureDataNew);
         } else if (item instanceof ItemPartyRef) {
             data = new ArrDataPartyRef();
@@ -544,12 +540,6 @@ public class ImportProcess {
 		return result;
     }
 
-	private Pair<Integer, String> createPacketKey(ArrPacket packet) {
-		RulPacketType packetType = packet.getPacketType();
-		Integer packetTypeId = (packetType != null) ? packetType.getPacketTypeId() : null;
-		return new Pair<>(packetTypeId, packet.getStorageNumber());
-	}
-
     /**
      * Vyřešení konfliktů v obalech.
      *
@@ -557,25 +547,27 @@ public class ImportProcess {
      */
 	private Map<Integer, ArrStructureData> resolveStructureDataConflict() {
 		// get current packets
-		Map<Pair<Integer, String>, ArrStructureData> fundPacketsMapName = structureDataRepository
-		        .findByFund(targetFundVersion.getFund(), Arrays.asList(ArrPacket.State.OPEN, ArrPacket.State.CLOSED))
+		Map<String, ArrStructureData> fundPacketsMapName = structureDataRepository
+                .findByFundAndDeleteChangeIsNull(targetFundVersion.getFund())
 		        .stream().collect(
-		                Collectors.toMap(packet -> createPacketKey(packet), Function.identity())
+		                Collectors.toMap(structuredObject -> structuredObject.getValue(), Function.identity())
 		        );
 
 		// Map PacketId to ArrPacket
-		Map<Integer, ArrPacket> result = new HashMap<>();
+		Map<Integer, ArrStructureData> result = new HashMap<>();
 
-		List<ArrPacket> sourcePackets = source.getPackets();
-		for (ArrPacket sourcePacket : sourcePackets) {
-			ArrPacket packet = null;
+        List<ArrStructureData> sourcePackets = source.getStructuredList();
+        for (ArrStructureData sourcePacket : sourcePackets) {
+            ArrStructureData structuredObject = null;
 			// switch
-			switch (params.getPacketConflictResolve()) {
+            switch (params.getStructuredConflictResolve()) {
 			case USE_TARGET:
-				Pair<Integer, String> srcPacketKey = createPacketKey(sourcePacket);
-				packet = fundPacketsMapName.get(srcPacketKey);
-				if (packet == null) {
-					packet = copyPacketFromSource(sourcePacket, fundPacketsMapName);
+				String srcPacketKey = sourcePacket.getValue();
+                structuredObject = fundPacketsMapName.get(srcPacketKey);
+                if (structuredObject == null) {
+                    throw new IllegalStateException("Not implemented");
+                    // TODO:
+                    //structuredObject = copyStrcutureDataFromSource(sourcePacket, fundPacketsMapName);
 				}
 				break;
 			/*case COPY_AND_RENAME:
@@ -584,12 +576,10 @@ public class ImportProcess {
 			default:
 				throw new SystemException("Neplatné vyřešení konfliktu: " + params.getFileConflictResolve(),
 				        BaseCode.INVALID_STATE);
-			}
-            } else {
-                throw new SystemException("Neimplementované vyřešení konfliknu: " + params.getFileConflictResolve(), BaseCode.INVALID_STATE);
+            }
 		}
 
-        return structureDataMapper;
+        return result;
     }
 
     /**
@@ -615,32 +605,6 @@ public class ImportProcess {
         eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.PACKETS_CHANGE, targetFundVersion.getFund().getFundId()));
 		return packet;
     }*/
-
-	private String preparePacketName(ArrPacket sourcePacket, Map<Pair<Integer, String>, ArrPacket> packets) {
-		String tmpName = sourcePacket.getStorageNumber();
-		// prepare packet type id
-		Integer packetTypeId = null;
-		RulPacketType packetType = sourcePacket.getPacketType();
-		if (packetType != null) {
-			packetTypeId = packetType.getPacketTypeId();
-		}
-
-		boolean conflict = false;
-		int i = 0;
-		do {
-			if (conflict) {
-				i++;
-				conflict = false;
-				tmpName = includeNumber(tmpName, i);
-			}
-			Pair<Integer, String> packetKey = new Pair<>(packetTypeId, tmpName);
-			if (packets.containsKey(packetKey)) {
-				conflict = true;
-				break;
-			}
-		} while (conflict);
-		return tmpName;
-	}
 
 	/**
 	 * Zkopírování souboru ze zdroje do AS.
@@ -800,46 +764,4 @@ public class ImportProcess {
             this.prevNode = prevNode;
         }
     }
-
-    /**
-     * Pomocná třída pro pár v obalech.
-     */
-    private class Pair<K, V> {
-
-        private K key;
-
-        private V value;
-
-        public Pair(final K key, final V value) {
-            this.key = key;
-            this.value = value;
-        }
-
-        @Override
-        public boolean equals(final Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (o == null || getClass() != o.getClass()) {
-                return false;
-            }
-			Pair<?, ?> pair = (Pair<?, ?>) o;
-            return Objects.equals(key, pair.key) &&
-                    Objects.equals(value, pair.value);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(key, value);
-        }
-
-        @Override
-        public String toString() {
-            return "Pair{" +
-                    "key='" + key + '\'' +
-                    ", value='" + value + '\'' +
-                    '}';
-        }
-    }
-
 }

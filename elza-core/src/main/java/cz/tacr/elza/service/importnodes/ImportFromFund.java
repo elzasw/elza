@@ -34,6 +34,7 @@ import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrStructureData;
 import cz.tacr.elza.domain.RegScope;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.domain.table.ElzaTable;
@@ -41,7 +42,6 @@ import cz.tacr.elza.repository.FundFileRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.StructureDataRepository;
-import cz.tacr.elza.service.DmsService;
 import cz.tacr.elza.service.cache.CachedNode;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.cache.RestoredNode;
@@ -50,7 +50,6 @@ import cz.tacr.elza.service.importnodes.vo.DeepCallback;
 import cz.tacr.elza.service.importnodes.vo.ImportSource;
 import cz.tacr.elza.service.importnodes.vo.Node;
 import cz.tacr.elza.service.importnodes.vo.NodeRegister;
-import cz.tacr.elza.service.importnodes.vo.Structured;
 import cz.tacr.elza.service.importnodes.vo.descitems.Item;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemCoordinates;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemDecimal;
@@ -91,9 +90,6 @@ public class ImportFromFund implements ImportSource {
     @Autowired
     private NodeCacheService nodeCacheService;
 
-    @Autowired
-    private DmsService dmsService;
-
     private Set<Integer> nodeIds;
     private Iterator<Integer> nodeIdsIterator;
     private boolean ignoreRootNodes;
@@ -125,7 +121,7 @@ public class ImportFromFund implements ImportSource {
     }
 
     @Override
-    public Set<? extends Structured> getStructuredList() {
+    public List<ArrStructureData> getStructuredList() {
         return structureDataRepository.findStructureDataBySubtreeNodeIds(nodeIds, ignoreRootNodes);
     }
 
