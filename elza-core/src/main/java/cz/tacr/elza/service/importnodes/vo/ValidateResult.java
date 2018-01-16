@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 
-import cz.tacr.elza.domain.ArrPacket;
+import cz.tacr.elza.domain.ArrStructureData;
 
 /**
  * Výsledek validace.
@@ -67,8 +67,6 @@ public class ValidateResult {
         return structuredConflicts;
     }
 
-    public void setStructuredConflicts(final Collection<String> structuredConflicts) {
-        this.structuredConflicts = structuredConflicts;
 
 	public void addMissingScope(String code) {
 		if (scopeErrors == null) {
@@ -78,12 +76,12 @@ public class ValidateResult {
 		scopeErrors.add(code);
 	}
 
-	public void addPacketConflicts(ArrPacket srcPacket) {
-		if (packetConflicts == null) {
-			packetConflict = true;
-			packetConflicts = new ArrayList<>();
+    public void addStructObjConflicts(ArrStructureData srcObj) {
+        if (structuredConflicts == null) {
+            structuredConflict = true;
+            structuredConflicts = new ArrayList<>();
 		}
-		packetConflicts.add(srcPacket.getStorageNumber());
+        structuredConflicts.add(srcObj.getValue());
 	}
 
 	public void addFileConflict(String name) {

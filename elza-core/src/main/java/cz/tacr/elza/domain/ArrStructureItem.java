@@ -76,7 +76,7 @@ public class ArrStructureItem extends ArrItem {
     }
 
     @Override
-    public ArrItem makeCopy() {
+    public ArrStructureItem makeCopy() {
         return new ArrStructureItem(this);
     }
 }

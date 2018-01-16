@@ -21,9 +21,9 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.collect.Lists;
 
-import cz.tacr.elza.annotation.AuthMethod;
-import cz.tacr.elza.annotation.AuthParam;
 import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.core.security.AuthMethod;
+import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataInteger;
@@ -355,7 +355,10 @@ public class StructureService {
         List<ArrStructureItem> resultStructureItems = new ArrayList<>(structureItems.size());
 
         for (ArrStructureItem structureItem : structureItems) {
-            ArrStructureItem newStructureItem = structureItem.copy();
+            // make copy without data and item_id
+            ArrStructureItem newStructureItem = structureItem.makeCopy();
+            newStructureItem.setData(null);
+            newStructureItem.setItemId(null);
 
             structureItem.setDeleteChange(change);
             newStructureItem.setCreateChange(change);
@@ -459,7 +462,7 @@ public class StructureService {
             }
 
 
-            ArrData updateData = updateData(structureItem.getData(), true, structureItemDB.getItemType().getDataType());
+            ArrData updateData = updateData(structureItem.getData(), structureItemDB.getItemType().getDataType());
 
             updateStructureItem = new ArrStructureItem();
             updateStructureItem.setData(updateData);
@@ -472,9 +475,13 @@ public class StructureService {
         } else {
             updateStructureItem = structureItemDB;
             updateStructureItem.setItemSpec(structureItem.getItemSpec());
-            ArrData updateData = updateStructureItem.getData();
-            updateData.merge(structureItem.getData());
-            updateData(updateData, false, structureItemDB.getItemType().getDataType());
+            // db data item
+            ArrData currData = updateStructureItem.getData();
+            // prepare dataToDb
+            ArrData dataToDb = structureItem.getData().makeCopy();
+            dataToDb.setDataId(currData.getDataId());
+            dataToDb = dataRepository.save(dataToDb);
+            updateStructureItem.setData(dataToDb);
         }
 
         ArrStructureItem save = structureItemRepository.save(updateStructureItem);
@@ -561,15 +568,10 @@ public class StructureService {
      * @param dataType         datový typ dat
      * @return uložená / nová data
      */
-    private ArrData updateData(final ArrData data, final boolean createNewVersion, final RulDataType dataType) {
-        if (createNewVersion) {
-            ArrData copy = ArrData.makeCopyWithoutId(data);
-            copy.setDataType(dataType);
-            return dataRepository.save(copy);
-        } else {
-            Assert.notNull(data.getDataId(), "Identifikátor musí být vyplněn");
-            return dataRepository.save(data);
-        }
+    private ArrData updateData(final ArrData data, final RulDataType dataType) {
+        ArrData copy = ArrData.makeCopyWithoutId(data);
+        copy.setDataType(dataType);
+        return dataRepository.save(copy);
     }
 
     /**

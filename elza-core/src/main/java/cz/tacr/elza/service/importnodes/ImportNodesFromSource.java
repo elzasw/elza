@@ -2,7 +2,6 @@ package cz.tacr.elza.service.importnodes;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -13,17 +12,16 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import com.google.common.collect.Lists;
-
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrStructureData;
 import cz.tacr.elza.domain.RegScope;
 import cz.tacr.elza.repository.FundFileRepository;
 import cz.tacr.elza.repository.ScopeRepository;
-import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.repository.StructureDataRepository;
 import cz.tacr.elza.service.ArrangementService;
+import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.importnodes.vo.ImportParams;
 import cz.tacr.elza.service.importnodes.vo.ImportSource;
 import cz.tacr.elza.service.importnodes.vo.ValidateResult;
@@ -86,19 +84,17 @@ public class ImportNodesFromSource {
 		}
 
         // zjištění existujících obalů v cílovém archivním souboru
-		List<ArrStructuredData> packetsFund = structureDataRepository.findByFundAndDeleteChangeIsNull(targetFundVersion.getFund(),
-		        Lists.newArrayList(ArrPacket.State.OPEN, ArrPacket.State.CLOSED));
+        List<ArrStructureData> packetsFund = structureDataRepository
+                .findByFundAndDeleteChangeIsNull(targetFundVersion.getFund());
         // zjištění používaných obalů v podstromech vybraných JP
-        Set<? extends Packet> packets = source.getStructuredList();
-		List<ArrPacket> packets = source.getPackets();
-		for (ArrPacket srcPacket : packets) {
-			for (ArrPacket currPacket : packetsFund) {
+        List<ArrStructureData> packets = source.getStructuredList();
+        for (ArrStructureData srcPacket : packets) {
+            for (ArrStructureData currPacket : packetsFund) {
 
 				//TODO: compare packet id instead of objects
-				if (StringUtils.equalsIgnoreCase(srcPacket.getStorageNumber(), currPacket.getStorageNumber()) &&
-				        Objects.equals(srcPacket.getPacketType(), currPacket.getPacketType())) {
+                if (StringUtils.equalsIgnoreCase(srcPacket.getValue(), currPacket.getValue())) {
 					// we found a conflict
-					result.addPacketConflicts(srcPacket);
+                    result.addStructObjConflicts(srcPacket);
 					break;
 				}
 			}

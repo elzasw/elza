@@ -34,7 +34,7 @@ public class OutputItemConvertor implements ItemConvertor {
                 new EnumItemConvertor(),
                 new RecordRefItemConvertor(),
                 new PartyRefItemConvertor(),
-                new PacketRefItemConvertor(),
+                new StructuredObjectRefItemConvertor(),
                 new FileRefItemConvertor(),
                 new JsonTableItemConvertor());
     }
