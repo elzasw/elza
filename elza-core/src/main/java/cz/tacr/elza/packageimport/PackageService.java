@@ -546,7 +546,6 @@ public class PackageService {
                     dirGroovies.mkdirs();
                 }
 
-                File dirTemplates = new File(outputGeneratorService.getTemplatesDir(rulPackage.getCode(), ruleCode));
                 File dirTemplates = resourcePathResolver.getTemplatesDir(rulPackage, rulRuleSet).toFile();
                 dirsTemplates.add(dirTemplates);
                 if (!dirTemplates.exists()) {
@@ -3000,9 +2999,8 @@ public class PackageService {
         entityManager.flush();
 
         for (RulRuleSet ruleSet : ruleSets) {
-            File dirActions = new File(bulkActionConfigManager.getFunctionsDir(rulPackage.getCode(), ruleSet.getCode()));
-            File dirRules = new File(rulesExecutor.getDroolsDir(rulPackage.getCode(), ruleSet.getCode()));
-            File dirGroovies = new File(rulesExecutor.getGroovyDir(rulPackage.getCode(), ruleSet.getCode()));
+            File dirGroovies = resourcePathResolver.getGroovyDir(rulPackage.getPackageId(), ruleSet.getRuleSetId())
+                    .toFile();
             File dirActions = resourcePathResolver.getFunctionsDir(rulPackage.getPackageId(), ruleSet.getRuleSetId()).toFile();
             File dirRules = resourcePathResolver.getDroolsDir(rulPackage.getPackageId(), ruleSet.getRuleSetId()).toFile();
 
@@ -3226,13 +3224,16 @@ public class PackageService {
             List<RulExtensionRule> ruleList = entry.getValue();
             List<ExtensionRule> extensionRuleList = new ArrayList<>(ruleList.size());
             extensionRules.setExtensionRules(extensionRuleList);
-            String ruleSetCode = entry.getKey().getCode();
+            RulRuleSet ruleSet = entry.getKey();
+            String ruleSetCode = ruleSet.getCode();
             for (RulExtensionRule rulExtensionRule : ruleList) {
                 ExtensionRule extensionRule = new ExtensionRule();
                 convertExtensionRule(rulExtensionRule, extensionRule);
                 extensionRuleList.add(extensionRule);
-                addToZipFile(ZIP_DIR_RULE_SET + "/" + ruleSetCode + "/" + ZIP_DIR_RULES + "/" + rulExtensionRule.getComponent().getFilename(), new File(rulesExecutor.getDroolsDir(rulPackage.getCode(), ruleSetCode)
-                        + File.separator + rulExtensionRule.getComponent().getFilename()), zos);
+                addToZipFile(ZIP_DIR_RULE_SET + "/" + ruleSetCode + "/" + ZIP_DIR_RULES + "/" + rulExtensionRule.getComponent().getFilename(), 
+                        resourcePathResolver.getDroolsDir(rulPackage, ruleSet)
+                                .resolve(rulExtensionRule.getComponent().getFilename()).toFile(),
+                        zos);
             }
 
             addObjectToZipFile(extensionRules, zos, ZIP_DIR_RULE_SET + "/" + ruleSetCode + "/" + EXTENSION_RULE_XML);
@@ -3756,8 +3757,9 @@ public class PackageService {
                 convertArrangementRule(rulArrangementRule, packageRule);
                 packageRuleList.add(packageRule);
 
-                File ruleFile = resourcePathResolver.getDroolFile(rulPackageRule).toFile();
-                addToZipFile(ZIP_DIR_RULE_SET + "/" + ruleSetCode + "/" + ZIP_DIR_RULES + "/" + rulPackageRule.getFilename(), ruleFile, zos);
+                File ruleFile = resourcePathResolver.getDroolFile(rulArrangementRule).toFile();
+                addToZipFile(ZIP_DIR_RULE_SET + "/" + ruleSetCode + "/" + ZIP_DIR_RULES + "/"
+                        + rulArrangementRule.getComponent().getFilename(), ruleFile, zos);
 
             }
 

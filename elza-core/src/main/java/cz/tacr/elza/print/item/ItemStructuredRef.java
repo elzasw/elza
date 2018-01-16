@@ -15,16 +15,18 @@ public class ItemStructuredRef extends AbstractItem {
     }
 
     @Override
-    public String serializeValue() {
+    public String getSerializedValue() {
         return structured.getValue();
     }
 
     @Override
-    public Object getValue() {
+    public boolean isValueSerializable() {
+        return true;
+    }
+
+    @Override
+    public Structured getValue() {
     	return structured;
     }
 
-    public Structured getStructured() {
-    	return structured;
-    }
 }

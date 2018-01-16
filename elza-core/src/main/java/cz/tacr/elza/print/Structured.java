@@ -1,25 +1,29 @@
 package cz.tacr.elza.print;
 
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.Set;
-import java.util.StringJoiner;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.CompareToBuilder;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
+import org.apache.commons.lang3.Validate;
+
+import cz.tacr.elza.core.data.RuleSystem;
+import cz.tacr.elza.domain.ArrStructureData;
 
 /**
  * Structured
  * @Since  16.11.2017
  */
-public class Structured implements Comparable<Structured> {
+public class Structured {
+
+    private final List<NodeId> nodeIds = new ArrayList<>();
+
+    private final NodeLoader nodeLoader;
 
     private String value;
-    private Set<Node> nodes;
+
+    private Structured(NodeLoader nodeLoader) {
+        this.nodeLoader = nodeLoader;
+    }
 
     /**
      * Metoda pro získání hodnoty do fieldu v Jasper.
@@ -39,41 +43,20 @@ public class Structured implements Comparable<Structured> {
         this.value = value;
     }
 
-    public Set<Node> getNodes() {
-        if (nodes == null) {
-            return Collections.emptySet();
-        }
-        return nodes;
+    public NodeIterator getNodes() {
+        Iterator<NodeId> nodeIdIterator = nodeIds.iterator();
+        return new NodeIterator(nodeLoader, nodeIdIterator);
     }
 
-    public void setNodes(final Set<Node> nodes) {
-        this.nodes = nodes;
+    void addNodeId(NodeId nodeId) {
+        Validate.notNull(nodeId);
+        nodeIds.add(nodeId);
     }
 
-    public void addNode(final Node node) {
-        if (nodes == null) {
-            nodes = new LinkedHashSet<>();
-        }
-        nodes.add(node);
-    }
-
-    @Override
-    public boolean equals(final Object o) {
-        return EqualsBuilder.reflectionEquals(o, this);
-    }
-
-    @Override
-    public int hashCode() {
-        return HashCodeBuilder.reflectionHashCode(this);
-    }
-
-    @Override
-    public String toString() {
-        return ToStringBuilder.reflectionToString(this, ToStringStyle.SIMPLE_STYLE);
-    }
-
-    @Override
-    public int compareTo(final Structured o) {
-        return CompareToBuilder.reflectionCompare(this, o);
+    public static Structured newInstance(ArrStructureData structObj,
+            RuleSystem ruleSystem, NodeLoader nodeLoader) {
+        Structured result = new Structured(nodeLoader);
+        result.setValue(structObj.getValue());
+        return result;
     }
 }

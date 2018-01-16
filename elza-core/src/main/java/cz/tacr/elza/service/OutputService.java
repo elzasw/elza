@@ -20,11 +20,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import cz.tacr.elza.bulkaction.BulkActionService;
 import cz.tacr.elza.bulkaction.generator.result.ActionResult;
+import cz.tacr.elza.controller.vo.OutputSettingsVO;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
-import cz.tacr.elza.controller.vo.OutputSettingsVO;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFundVersion;

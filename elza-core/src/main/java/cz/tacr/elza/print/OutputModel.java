@@ -36,7 +36,7 @@ import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNodeOutput;
 import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ArrOutputDefinition;
-import cz.tacr.elza.domain.ArrPacket;
+import cz.tacr.elza.domain.ArrStructureData;
 import cz.tacr.elza.domain.ParDynasty;
 import cz.tacr.elza.domain.ParEvent;
 import cz.tacr.elza.domain.ParInstitution;
@@ -57,8 +57,8 @@ import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.print.item.Item;
-import cz.tacr.elza.print.item.ItemPacketRef;
 import cz.tacr.elza.print.item.ItemSpec;
+import cz.tacr.elza.print.item.ItemStructuredRef;
 import cz.tacr.elza.print.item.ItemType;
 import cz.tacr.elza.print.item.convertors.ItemConvertor;
 import cz.tacr.elza.print.item.convertors.ItemConvertorContext;
@@ -123,7 +123,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
     private final Map<Integer, RelationToType> relationRoleTypeIdMap = new HashMap<>();
 
-    private final Map<Integer, Packet> packetIdMap = new HashMap<>();
+    private final Map<Integer, Structured> structObjIdMap = new HashMap<>();
 
     private final Map<Integer, File> fileIdMap = new HashMap<>();
 
@@ -326,8 +326,8 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
                     .map(i -> {
                         Item item = conv.convert(i, this);
                         // add packet reference
-                        if (item instanceof ItemPacketRef) {
-                            item.getValue(Packet.class).addNodeId(node.getNodeId());
+                        if (item instanceof ItemStructuredRef) {
+                            item.getValue(Structured.class).addNodeId(node.getNodeId());
                         }
                         return item;
                     })
@@ -693,20 +693,18 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
     }
 
     @Override
-    public Packet getPacket(ArrPacket arrPacket) {
-        Validate.isTrue(HibernateUtils.isInitialized(arrPacket));
+    public Structured getStructured(ArrStructureData structObj) {
+        Validate.isTrue(HibernateUtils.isInitialized(structObj));
 
-        Packet packet = packetIdMap.get(arrPacket.getPacketId());
-        if (packet != null) {
-            return packet;
+        Structured result = structObjIdMap.get(structObj.getStructureDataId());
+        if (result == null) {
+            result = Structured.newInstance(structObj, ruleSystem, this);
+
+            // add to lookup
+            structObjIdMap.put(structObj.getStructureDataId(), result);
         }
 
-        packet = Packet.newInstance(arrPacket, ruleSystem, this);
-
-        // add to lookup
-        packetIdMap.put(arrPacket.getPacketId(), packet);
-
-        return packet;
+        return result;
     }
 
     @Override
@@ -724,5 +722,11 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         fileIdMap.put(arrFile.getFileId(), file);
 
         return file;
+    }
+
+    @Override
+    public List<JRAttPagePlaceHolder> getAttPagePlaceHolders() {
+        // TODO Auto-generated method stub
+        return null;
     }
 }
