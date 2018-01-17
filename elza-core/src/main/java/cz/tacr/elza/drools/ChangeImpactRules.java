@@ -7,16 +7,21 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.collections4.CollectionUtils;
+import org.kie.api.runtime.StatelessKieSession;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.RulRule;
+import cz.tacr.elza.domain.RulArrangementRule;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.vo.NodeTypeOperation;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
 import cz.tacr.elza.drools.model.DescItem;
 import cz.tacr.elza.drools.model.DescItemChange;
 import cz.tacr.elza.drools.service.ScriptModelFactory;
+import cz.tacr.elza.service.RuleService;
 
 
 /**
@@ -62,7 +67,7 @@ public class ChangeImpactRules extends Rules {
         List<RulArrangementRule> rulArrangementRules = arrangementRuleRepository.findByRuleSetAndRuleTypeOrderByPriorityAsc(
                 rulRuleSet, RulArrangementRule.RuleType.CONFORMITY_IMPACT);
 
-        for (RulRule rulPackageRule : rulPackageRules) {
+        for (RulArrangementRule rulPackageRule : rulArrangementRules) {
             Path path = resourcePathResolver.getDroolFile(rulPackageRule);
 
             StatelessKieSession session = createNewStatelessKieSession(path);

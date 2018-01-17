@@ -21,6 +21,8 @@ import cz.tacr.elza.domain.RulExtensionRule;
 import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.RulStructureDefinition;
+import cz.tacr.elza.domain.RulStructureExtensionDefinition;
 import cz.tacr.elza.domain.RulTemplate;
 
 @Service
@@ -177,6 +179,34 @@ public class ResourcePathResolver {
     public Path getDroolFile(RulOutputType outputType) {
         Path droolsDir = getDroolsDir(outputType.getPackage().getPackageId(), outputType.getRuleSetId());
         String droolFile = outputType.getComponent().getFilename();
+
+        Path path = droolsDir.resolve(droolFile);
+
+        return path;
+    }
+
+    /**
+     * @return Path to drool file (may not exist).
+     */
+    @Transactional(TxType.MANDATORY)
+    public Path getDroolsFile(RulStructureDefinition structureDefinition) {
+        Path droolsDir = getDroolsDir(structureDefinition.getRulPackage().getPackageId(),
+                structureDefinition.getStructureType().getRuleSet().getRuleSetId());
+        String droolFile = structureDefinition.getComponent().getFilename();
+
+        Path path = droolsDir.resolve(droolFile);
+
+        return path;
+    }
+
+    /**
+     * @return Path to drool file (may not exist).
+     */
+    @Transactional(TxType.MANDATORY)
+    public Path getDroolsFile(RulStructureExtensionDefinition structureExtensionDefinition) {
+        Path droolsDir = getDroolsDir(structureExtensionDefinition.getRulPackage().getPackageId(),
+                structureExtensionDefinition.getStructureExtension().getStructureType().getRuleSet().getRuleSetId());
+        String droolFile = structureExtensionDefinition.getComponent().getFilename();
 
         Path path = droolsDir.resolve(droolFile);
 

@@ -4,9 +4,6 @@ import java.nio.file.Path;
 import java.util.LinkedList;
 import java.util.List;
 
-import cz.tacr.elza.domain.RulArrangementRule;
-import cz.tacr.elza.domain.RulExtensionRule;
-import cz.tacr.elza.service.RuleService;
 import org.kie.api.runtime.StatelessKieSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -14,11 +11,14 @@ import org.springframework.stereotype.Component;
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.RulArrangementRule;
+import cz.tacr.elza.domain.RulExtensionRule;
 import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.drools.model.ActiveLevel;
 import cz.tacr.elza.drools.service.ModelFactory;
 import cz.tacr.elza.drools.service.ScriptModelFactory;
+import cz.tacr.elza.service.RuleService;
 
 
 /**
@@ -65,7 +65,7 @@ public class DescItemTypesRules extends Rules {
         List<RulArrangementRule> rulArrangementRules = arrangementRuleRepository.findByRuleSetAndRuleTypeOrderByPriorityAsc(
                 rulRuleSet, RulArrangementRule.RuleType.ATTRIBUTE_TYPES);
 
-        for (RulRule rulPackageRule : rulPackageRules) {
+        for (RulArrangementRule rulPackageRule : rulArrangementRules) {
             Path path = resourcePathResolver.getDroolFile(rulPackageRule);
             StatelessKieSession session = createNewStatelessKieSession(path);
             execute(session, facts);
@@ -73,7 +73,7 @@ public class DescItemTypesRules extends Rules {
 
         List<RulExtensionRule> rulExtensionRules = ruleService.findExtensionRuleByNode(level.getNode(), RulExtensionRule.RuleType.ATTRIBUTE_TYPES);
         for (RulExtensionRule rulExtensionRule : rulExtensionRules) {
-            path = Paths.get(rulesExecutor.getDroolsDir(rulExtensionRule.getPackage().getCode(), rulExtensionRule.getArrangementExtension().getRuleSet().getCode()) + File.separator + rulExtensionRule.getComponent().getFilename());
+            Path path = resourcePathResolver.getDroolFile(rulExtensionRule);
             StatelessKieSession session = createNewStatelessKieSession(path);
             execute(session, facts);
         }

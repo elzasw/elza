@@ -1,5 +1,15 @@
 package cz.tacr.elza.drools;
 
+import java.nio.file.Path;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.kie.api.runtime.StatelessKieSession;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulPackage;
@@ -12,16 +22,6 @@ import cz.tacr.elza.repository.PackageDependencyRepository;
 import cz.tacr.elza.repository.PackageRepository;
 import cz.tacr.elza.repository.StructureDefinitionRepository;
 import cz.tacr.elza.repository.StructureExtensionDefinitionRepository;
-import org.kie.api.runtime.StatelessKieSession;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import java.io.File;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.stream.Collectors;
 
 
 /**
@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
 public class StructureItemTypesRules extends Rules {
 
     @Autowired
-    private RulesExecutor rulesExecutor;
+    private ResourcePathResolver resourcePathResolver;
 
     @Autowired
     private StructureDefinitionRepository structureDefinitionRepository;
@@ -60,12 +60,13 @@ public class StructureItemTypesRules extends Rules {
         LinkedList<Object> facts = new LinkedList<>();
         facts.addAll(rulDescItemTypeExtList);
 
-        Path path;
         List<RulStructureDefinition> rulStructureDefinitions = structureDefinitionRepository
                 .findByStructureTypeAndDefTypeOrderByPriority(structureType, RulStructureDefinition.DefType.ATTRIBUTE_TYPES);
 
         for (RulStructureDefinition rulStructureDefinition : rulStructureDefinitions) {
-            path = Paths.get(rulesExecutor.getDroolsDir(rulStructureDefinition.getRulPackage().getCode(), structureType.getRuleSet().getCode()) + File.separator + rulStructureDefinition.getComponent().getFilename());
+            // TODO: Consider using structureType in getDroolsFile?
+            Path path = resourcePathResolver.getDroolsFile(rulStructureDefinition);
+
             StatelessKieSession session = createNewStatelessKieSession(path);
             execute(session, facts);
         }
@@ -108,7 +109,9 @@ public class StructureItemTypesRules extends Rules {
         });
 
         for (RulStructureExtensionDefinition rulStructureExtensionDefinition : rulStructureExtensionDefinitions) {
-            path = Paths.get(rulesExecutor.getDroolsDir(rulStructureExtensionDefinition.getRulPackage().getCode(), structureType.getRuleSet().getCode()) + File.separator + rulStructureExtensionDefinition.getComponent().getFilename());
+            // TODO: Consider using structureType in getDroolsFile?
+            Path path = resourcePathResolver.getDroolsFile(rulStructureExtensionDefinition);
+
             StatelessKieSession session = createNewStatelessKieSession(path);
             execute(session, facts);
         }

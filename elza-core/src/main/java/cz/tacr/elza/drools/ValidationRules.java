@@ -83,7 +83,7 @@ public class ValidationRules extends Rules {
 		List<RulArrangementRule> rulPackageRules = arrangementRuleRepository
 				.findByRuleSetAndRuleTypeOrderByPriorityAsc(version.getRuleSet(), RulArrangementRule.RuleType.CONFORMITY_INFO);
 
-		for (RulRule rulPackageRule : rulPackageRules) {
+        for (RulArrangementRule rulPackageRule : rulPackageRules) {
 			Path path = resourcePathResolver.getDroolFile(rulPackageRule);
 			StatelessKieSession session = createNewStatelessKieSession(path);
 			session.setGlobal("results", validationResults);
@@ -92,7 +92,7 @@ public class ValidationRules extends Rules {
 
 		List<RulExtensionRule> rulExtensionRules = ruleService.findExtensionRuleByNode(level.getNode(), RulExtensionRule.RuleType.CONFORMITY_INFO);
 		for (RulExtensionRule rulExtensionRule : rulExtensionRules) {
-			path = Paths.get(rulesExecutor.getDroolsDir(rulExtensionRule.getPackage().getCode(), rulExtensionRule.getArrangementExtension().getRuleSet().getCode()) + File.separator + rulExtensionRule.getComponent().getFilename());
+            Path path = resourcePathResolver.getDroolFile(rulExtensionRule);
 			StatelessKieSession session = createNewStatelessKieSession(path);
 			execute(session, facts);
 		}
