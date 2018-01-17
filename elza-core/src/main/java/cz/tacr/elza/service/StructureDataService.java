@@ -1,36 +1,19 @@
 package cz.tacr.elza.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.eventbus.Subscribe;
-import cz.tacr.elza.EventBusListener;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrStructureData;
-import cz.tacr.elza.domain.ArrStructureItem;
-import cz.tacr.elza.domain.RulComponent;
-import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.RulItemTypeExt;
-import cz.tacr.elza.domain.RulPackage;
-import cz.tacr.elza.domain.RulStructureDefinition;
-import cz.tacr.elza.domain.RulStructureExtensionDefinition;
-import cz.tacr.elza.domain.RulStructureType;
-import cz.tacr.elza.domain.UISettings;
-import cz.tacr.elza.drools.RulesExecutor;
-import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.ObjectNotFoundException;
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.repository.ChangeRepository;
-import cz.tacr.elza.repository.SettingsRepository;
-import cz.tacr.elza.repository.StructureDataRepository;
-import cz.tacr.elza.repository.StructureDefinitionRepository;
-import cz.tacr.elza.repository.StructureExtensionDefinitionRepository;
-import cz.tacr.elza.repository.StructureItemRepository;
-import cz.tacr.elza.service.event.CacheInvalidateEvent;
-import cz.tacr.elza.service.eventnotification.EventNotificationService;
-import cz.tacr.elza.service.eventnotification.events.EventStructureDataChange;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.InvalidPropertiesFormatException;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.stream.Collectors;
+
+import javax.transaction.Transactional;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -44,18 +27,38 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionSynchronizationAdapter;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
-import javax.transaction.Transactional;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.InvalidPropertiesFormatException;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.stream.Collectors;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.eventbus.Subscribe;
+
+import cz.tacr.elza.EventBusListener;
+import cz.tacr.elza.core.ResourcePathResolver;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrStructureData;
+import cz.tacr.elza.domain.ArrStructureItem;
+import cz.tacr.elza.domain.RulComponent;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulItemTypeExt;
+import cz.tacr.elza.domain.RulPackage;
+import cz.tacr.elza.domain.RulStructureDefinition;
+import cz.tacr.elza.domain.RulStructureExtensionDefinition;
+import cz.tacr.elza.domain.RulStructureType;
+import cz.tacr.elza.domain.UISettings;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.repository.ChangeRepository;
+import cz.tacr.elza.repository.SettingsRepository;
+import cz.tacr.elza.repository.StructureDataRepository;
+import cz.tacr.elza.repository.StructureDefinitionRepository;
+import cz.tacr.elza.repository.StructureExtensionDefinitionRepository;
+import cz.tacr.elza.repository.StructureItemRepository;
+import cz.tacr.elza.service.event.CacheInvalidateEvent;
+import cz.tacr.elza.service.eventnotification.EventNotificationService;
+import cz.tacr.elza.service.eventnotification.events.EventStructureDataChange;
 
 /**
  * Servisní třída pro aktualizaci hodnot strukturovaných dat.
@@ -72,13 +75,13 @@ public class StructureDataService {
     private final StructureExtensionDefinitionRepository structureExtensionDefinitionRepository;
     private final StructureDefinitionRepository structureDefinitionRepository;
     private final StructureDataRepository structureDataRepository;
-    private final RulesExecutor rulesExecutor;
     private final ArrangementService arrangementService;
     private final RuleService ruleService;
     private final ApplicationContext applicationContext;
     private final ChangeRepository changeRepository;
     private final EventNotificationService notificationService;
     private final SettingsRepository settingsRepository;
+    private final ResourcePathResolver resourcePathResolver;
 
     private Queue<Integer> queueStructureDataIds = new ConcurrentLinkedQueue<>();
     private final Object lock = new Object();
@@ -97,23 +100,24 @@ public class StructureDataService {
                                 final StructureExtensionDefinitionRepository structureExtensionDefinitionRepository,
                                 final StructureDefinitionRepository structureDefinitionRepository,
                                 final StructureDataRepository structureDataRepository,
-                                final RulesExecutor rulesExecutor,
                                 final ArrangementService arrangementService,
                                 final RuleService ruleService,
                                 final ApplicationContext applicationContext,
                                 final ChangeRepository changeRepository,
-                                final EventNotificationService notificationService, final SettingsRepository settingsRepository) {
+            final EventNotificationService notificationService,
+            final SettingsRepository settingsRepository,
+            final ResourcePathResolver resourcePathResolver) {
         this.structureItemRepository = structureItemRepository;
         this.structureExtensionDefinitionRepository = structureExtensionDefinitionRepository;
         this.structureDefinitionRepository = structureDefinitionRepository;
         this.structureDataRepository = structureDataRepository;
-        this.rulesExecutor = rulesExecutor;
         this.arrangementService = arrangementService;
         this.ruleService = ruleService;
         this.applicationContext = applicationContext;
         this.changeRepository = changeRepository;
         this.notificationService = notificationService;
         this.settingsRepository = settingsRepository;
+        this.resourcePathResolver = resourcePathResolver;
     }
 
     /**
@@ -397,8 +401,10 @@ public class StructureDataService {
                 throw new SystemException("Strukturovaný typ '" + structureType.getCode() + "' nemá žádný script pro výpočet hodnoty", BaseCode.INVALID_STATE);
             }
         }
-        return new File(rulesExecutor.getGroovyDir(rulPackage.getCode(), structureType.getRuleSet().getCode())
-                + File.separator + component.getFilename());
+
+        return resourcePathResolver.getGroovyDir(rulPackage, structureType.getRuleSet())
+                .resolve(component.getFilename())
+                .toFile();
     }
 
     /**

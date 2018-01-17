@@ -81,7 +81,6 @@ public class ModelFactory {
 					ArrDataStructureRef structureRef = (ArrDataStructureRef) descItem.getData();
                     ArrStructureData structureData = structureRef.getStructureData();
                     voDescItem.setStructured(createStructured(structureData));
-                } else if (descItemTypesForIntegers.contains(descItem.getItemType())) {
 				} else if (data.getType() == DataType.INT) {
 					ArrDataInteger integer = (ArrDataInteger) descItem.getData();
                     voDescItem.setInteger(integer.getValue());

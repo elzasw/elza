@@ -14,20 +14,12 @@ import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrOutputDefinition;
 import cz.tacr.elza.domain.RulItemTypeExt;
-import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.RulStructureType;
 import cz.tacr.elza.domain.vo.DataValidationResult;
 import cz.tacr.elza.domain.vo.NodeTypeOperation;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.exception.SystemException;
-
-import java.io.File;
-import java.nio.file.NoSuchFileException;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 
 /**
@@ -183,17 +175,4 @@ public class RulesExecutor {
             throw new SystemException(e);
         }
     }
-
-    /**
-     * Vrací úplnou cestu k adresáři drools podle balíčku.
-     *
-     *
-     * @param packageCode
-     * @param ruleCode kód pravidel
-     * @return cesta k adresáři drools
-     */
-    public String getGroovyDir(final String packageCode, final String ruleCode) {
-        return packagesDir + File.separator + packageCode + File.separator + ruleCode + File.separator + GROOVY_FOLDER;
-    }
-
 }

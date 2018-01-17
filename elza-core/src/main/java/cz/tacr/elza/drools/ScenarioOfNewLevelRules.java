@@ -19,15 +19,6 @@ import cz.tacr.elza.drools.model.NewLevelApproach;
 import cz.tacr.elza.drools.model.NewLevelApproaches;
 import cz.tacr.elza.drools.service.ScriptModelFactory;
 import cz.tacr.elza.service.RuleService;
-import org.kie.api.runtime.StatelessKieSession;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import java.io.File;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.LinkedList;
-import java.util.List;
 
 
 /**
@@ -58,7 +49,7 @@ public class ScenarioOfNewLevelRules extends Rules {
         List<RulArrangementRule> rulArrangementRules = arrangementRuleRepository.findByRuleSetAndRuleTypeOrderByPriorityAsc(
                 version.getRuleSet(), RulArrangementRule.RuleType.NEW_LEVEL);
 
-        for (RulRule rulPackageRule : rulPackageRules) {
+        for (RulArrangementRule rulPackageRule : rulArrangementRules) {
             Path path = resourcePathResolver.getDroolFile(rulPackageRule);
 
             StatelessKieSession session = createNewStatelessKieSession(path);
@@ -68,8 +59,10 @@ public class ScenarioOfNewLevelRules extends Rules {
 
         List<RulExtensionRule> rulExtensionRules = ruleService.findExtensionRuleByNode(level.getNode(), RulExtensionRule.RuleType.NEW_LEVEL);
         for (RulExtensionRule rulExtensionRule : rulExtensionRules) {
-            path = Paths.get(rulesExecutor.getDroolsDir(rulExtensionRule.getPackage().getCode(), rulExtensionRule.getArrangementExtension().getRuleSet().getCode()) + File.separator + rulExtensionRule.getComponent().getFilename());
+            Path path = resourcePathResolver.getDroolFile(rulExtensionRule);
+
             StatelessKieSession session = createNewStatelessKieSession(path);
+            session.setGlobal("results", newLevelApproaches);
             execute(session, levels);
         }
 

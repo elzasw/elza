@@ -540,7 +540,7 @@ public class PackageService {
                     dirRules.mkdirs();
                 }
 
-                File dirGroovies = new File(rulesExecutor.getGroovyDir(rulPackage.getCode(), ruleCode));
+                File dirGroovies = resourcePathResolver.getDroolsDir(rulPackage, rulRuleSet).toFile();
                 dirsGroovies.add(dirGroovies);
                 if (!dirGroovies.exists()) {
                     dirGroovies.mkdirs();
