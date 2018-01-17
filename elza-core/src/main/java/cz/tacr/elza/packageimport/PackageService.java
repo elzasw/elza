@@ -2864,8 +2864,8 @@ public class PackageService {
 
         Map<Integer, Set<Integer>> dependencies = new HashMap<>();
         for (RulPackageDependency packageDependency : packageDependencies) {
-            Set<Integer> targetIds = dependencies.computeIfAbsent(packageDependency.getSourcePackageId(), k -> new HashSet<>());
-            targetIds.add(packageDependency.getTargetPackageId());
+            Set<Integer> packageIds = dependencies.computeIfAbsent(packageDependency.getPackageId(), k -> new HashSet<>());
+            packageIds.add(packageDependency.getDependsOnPackageId());
         }
 
         for (Integer id : dependencies.keySet()) {
@@ -2902,7 +2902,7 @@ public class PackageService {
     private void processRulPackageDependencies(final PackageInfo packageInfo, final RulPackage rulPackage) {
 
         // odeberu současné vazby
-        packageDependencyRepository.deleteBySourcePackage(rulPackage);
+        packageDependencyRepository.deleteByRulPackage(rulPackage);
 
         // packageCode / minVersion
         Map<String, Integer> packageCodeVersion = new HashMap<>();
@@ -2933,8 +2933,8 @@ public class PackageService {
             }
             RulPackageDependency packageDependency = new RulPackageDependency();
             packageDependency.setMinVersion(minVersion);
-            packageDependency.setSourcePackage(rulPackage);
-            packageDependency.setTargetPackage(requiredDependency);
+            packageDependency.setRulPackage(rulPackage);
+            packageDependency.setDependsOnPackage(requiredDependency);
             newDependencies.add(packageDependency);
         }
         packageDependencyRepository.save(newDependencies);
@@ -2953,12 +2953,12 @@ public class PackageService {
         }
 
         // kontrola na existující zavíslostí z jiných balíčků
-        List<RulPackageDependency> targetPackages = packageDependencyRepository.findByTargetPackage(rulPackage);
+        List<RulPackageDependency> targetPackages = packageDependencyRepository.findByDependsOnPackage(rulPackage);
         if (targetPackages.size() > 0) {
             throw new BusinessException("Balíček nelze odebrat, protože je používán jiným balíčkem", PackageCode.FOREIGN_DEPENDENCY)
-                    .set("foreignPackageCodes", targetPackages.stream().map(pd -> pd.getSourcePackage().getCode()).collect(Collectors.toList()));
+                    .set("foreignPackageCodes", targetPackages.stream().map(pd -> pd.getRulPackage().getCode()).collect(Collectors.toList()));
         }
-        packageDependencyRepository.deleteBySourcePackage(rulPackage);
+        packageDependencyRepository.deleteByRulPackage(rulPackage);
 
         List<RulItemSpec> rulDescItemSpecs = itemSpecRepository.findByRulPackage(rulPackage);
         for (RulItemSpec rulDescItemSpec : rulDescItemSpecs) {
@@ -3700,11 +3700,11 @@ public class PackageService {
         packageInfo.setDescription(rulPackage.getDescription());
         packageInfo.setVersion(rulPackage.getVersion());
 
-        List<RulPackageDependency> dependencies = packageDependencyRepository.findBySourcePackage(rulPackage);
+        List<RulPackageDependency> dependencies = packageDependencyRepository.findByRulPackage(rulPackage);
         packageInfo.setDependencies(dependencies.stream()
                 .map(d -> {
                     PackageDependency pd = new PackageDependency();
-                    pd.setCode(d.getTargetPackage().getCode());
+                    pd.setCode(d.getDependsOnPackage().getCode());
                     pd.setMinVersion(d.getMinVersion());
                     return pd;
                 }).collect(Collectors.toList()));

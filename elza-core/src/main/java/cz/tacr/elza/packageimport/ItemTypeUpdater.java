@@ -261,7 +261,7 @@ public class ItemTypeUpdater {
         List<RulPackage> packages = packageRepository.findAll();
         PackageUtils.Graph<RulPackage> g = new PackageUtils.Graph<>(packages.size());
         List<RulPackageDependency> dependencies = packageDependencyRepository.findAll();
-        dependencies.forEach(d -> g.addEdge(d.getSourcePackage(), d.getTargetPackage()));
+        dependencies.forEach(d -> g.addEdge(d.getRulPackage(), d.getDependsOnPackage()));
         return g.topologicalSort();
     }
 

@@ -27,21 +27,21 @@ public class RulPackageDependency {
      * Balíček který vyžaduje závislost na jiný.
      */
     @ManyToOne(fetch = FetchType.EAGER, targetEntity = RulPackage.class)
-    @JoinColumn(name = "sourcePackageId", nullable = false)
-    private RulPackage sourcePackage;
+    @JoinColumn(name = "packageId", nullable = false)
+    private RulPackage rulPackage;
 
-    @Column(name = "sourcePackageId", updatable = false, insertable = false)
-    private Integer sourcePackageId;
+    @Column(name = "packageId", updatable = false, insertable = false)
+    private Integer packageId;
 
     /**
      * Balíček na který je tvořena závislost.
      */
     @ManyToOne(fetch = FetchType.EAGER, targetEntity = RulPackage.class)
-    @JoinColumn(name = "targetPackageId", nullable = false)
-    private RulPackage targetPackage;
+    @JoinColumn(name = "dependsOnPackageId", nullable = false)
+    private RulPackage dependsOnPackage;
 
-    @Column(name = "targetPackageId", updatable = false, insertable = false)
-    private Integer targetPackageId;
+    @Column(name = "dependsOnPackageId", updatable = false, insertable = false)
+    private Integer dependsOnPackageId;
 
     /**
      * Minimální verze, kterou cílový balíček musí mít.
@@ -66,45 +66,45 @@ public class RulPackageDependency {
     /**
      * @return balíček na který je tvořena závislost
      */
-    public RulPackage getSourcePackage() {
-        return sourcePackage;
+    public RulPackage getRulPackage() {
+        return rulPackage;
     }
 
     /**
-     * @param sourcePackage balíček na který je tvořena závislost
+     * @param rulPackage balíček na který je tvořena závislost
      */
-    public void setSourcePackage(final RulPackage sourcePackage) {
-        this.sourcePackage = sourcePackage;
-        this.sourcePackageId = sourcePackage == null ? null : sourcePackage.getPackageId();
+    public void setRulPackage(final RulPackage rulPackage) {
+        this.rulPackage = rulPackage;
+        this.packageId = rulPackage == null ? null : rulPackage.getPackageId();
     }
 
     /**
      * @return identifikátor balíčeku na který je tvořena závislost
      */
-    public Integer getSourcePackageId() {
-        return sourcePackageId;
+    public Integer getPackageId() {
+        return packageId;
     }
 
     /**
      * @return balíček na který je tvořena závislost
      */
-    public RulPackage getTargetPackage() {
-        return targetPackage;
+    public RulPackage getDependsOnPackage() {
+        return dependsOnPackage;
     }
 
     /**
-     * @param targetPackage balíček na který je tvořena závislost
+     * @param dependsOnPackage balíček na který je tvořena závislost
      */
-    public void setTargetPackage(final RulPackage targetPackage) {
-        this.targetPackage = targetPackage;
-        this.targetPackageId = targetPackage == null ? null : targetPackage.getPackageId();
+    public void setDependsOnPackage(final RulPackage dependsOnPackage) {
+        this.dependsOnPackage = dependsOnPackage;
+        this.dependsOnPackageId = dependsOnPackage == null ? null : dependsOnPackage.getPackageId();
     }
 
     /**
      * @return identifikátor balíčku na který je tvořena závislost
      */
-    public Integer getTargetPackageId() {
-        return targetPackageId;
+    public Integer getDependsOnPackageId() {
+        return dependsOnPackageId;
     }
 
     /**

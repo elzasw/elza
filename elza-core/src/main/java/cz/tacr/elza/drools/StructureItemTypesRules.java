@@ -120,7 +120,7 @@ public class StructureItemTypesRules extends Rules {
         List<RulPackage> packagesAll = packageRepository.findAll();
         PackageUtils.Graph<RulPackage> g = new PackageUtils.Graph<>(packagesAll.size());
         List<RulPackageDependency> dependencies = packageDependencyRepository.findAll();
-        dependencies.forEach(d -> g.addEdge(d.getSourcePackage(), d.getTargetPackage()));
+        dependencies.forEach(d -> g.addEdge(d.getRulPackage(), d.getDependsOnPackage()));
         List<RulPackage> rulPackages = g.topologicalSort();
         rulPackages.retainAll(packages);
         return rulPackages;
