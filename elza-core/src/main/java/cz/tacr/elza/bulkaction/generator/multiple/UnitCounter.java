@@ -2,6 +2,7 @@ package cz.tacr.elza.bulkaction.generator.multiple;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -15,159 +16,181 @@ import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataInteger;
 import cz.tacr.elza.domain.ArrDataStructureRef;
 import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrStructureData;
+import cz.tacr.elza.domain.ArrStructureItem;
 import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.repository.StructureItemRepository;
 
 public class UnitCounter {
 
-	final UnitCounterConfig config;
+    final UnitCounterConfig config;
 
-	WhenCondition when;
+    final StructureItemRepository structureItemRepository;
 
-	RuleSystemItemType itemType;
-	Map<Integer, String> itemSpecMapping = new HashMap<>();
-	RuleSystemItemType itemCount;
+    WhenCondition when;
 
-	/**
-	 * Type of item for object mapping.
-	 * 
-	 * If null not applied
-	 */
-	private RuleSystemItemType objectType;
-	/**
-	 * Packet type mapping
-	 */
-	Map<Integer, String> objectMapping = new HashMap<>();
+    RuleSystemItemType itemType;
+    Map<Integer, String> itemSpecMapping = new HashMap<>();
+    RuleSystemItemType itemCount;
 
-	/**
-	 * Již zapracované obaly
-	 */
-	private Set<Integer> countedObjects = new HashSet<>();
+    /**
+     * Type of item for packets.
+     * 
+     * If null not applied
+     */
+    private RuleSystemItemType objectType;
 
-	UnitCounter(UnitCounterConfig counterCfg, RuleSystem ruleSystem) {
-		this.config = counterCfg;
-		init(ruleSystem);
-	}
+    /**
+     * Type of item for object mapping.
+     */
+    private RuleSystemItemType objectItemType;
 
-	private void init(RuleSystem ruleSystem) {
-		WhenConditionConfig whenConfig = config.getWhen();
-		if (whenConfig != null) {
-			when = new WhenCondition(whenConfig, ruleSystem);
-		}
+    /**
+     * Packet type mapping
+     */
+    Map<Integer, String> objectMapping = new HashMap<>();
 
-		// item type with specification
-		String itemTypeCode = config.getItemType();
-		if(itemTypeCode!=null) {
-			itemType = ruleSystem.getItemTypeByCode(itemTypeCode);
-			Validate.notNull(itemType);
-			Validate.isTrue(itemType.hasSpecifications());
-			// only enums and INTs are supported
-			Validate.isTrue(itemType.getDataType() == DataType.ENUM || itemType.getDataType() == DataType.INT);
+    /**
+     * Již zapracované obaly
+     */
+    private Set<Integer> countedObjects = new HashSet<>();
 
-			// prepare mapping
-			Map<String, String> specConfig = config.getItemSpecMapping();
-			specConfig.forEach((a, b) -> {
-				RulItemSpec spec = itemType.getItemSpecByCode(a);
-				Validate.notNull(spec, "Cannot find specification: " + a);
-				itemSpecMapping.put(spec.getItemSpecId(), b);
-			});
-		}
-		
-		String itemCountCode = config.getItemCount();
-		if (itemCountCode != null) {
-			itemCount = ruleSystem.getItemTypeByCode(itemCountCode);
-			Validate.notNull(itemCount);
-			Validate.isTrue(itemCount.getDataType() == DataType.INT);
-		}
+    UnitCounter(UnitCounterConfig counterCfg,
+            final StructureItemRepository structureItemRepository,
+            RuleSystem ruleSystem) {
+        this.config = counterCfg;
+        this.structureItemRepository = structureItemRepository;
+        init(ruleSystem);
+    }
 
-		// object / packet mapping
-		String objectTypeCode = config.getObjectType();
-		if (objectTypeCode != null) {
-			objectType = ruleSystem.getItemTypeByCode(objectTypeCode);
-			Validate.notNull(objectType);
+    private void init(RuleSystem ruleSystem) {
+        WhenConditionConfig whenConfig = config.getWhen();
+        if (whenConfig != null) {
+            when = new WhenCondition(whenConfig, ruleSystem);
+        }
+
+        // item type with specification
+        String itemTypeCode = config.getItemType();
+        if (itemTypeCode != null) {
+            itemType = ruleSystem.getItemTypeByCode(itemTypeCode);
+            Validate.notNull(itemType);
+            Validate.isTrue(itemType.hasSpecifications());
+            // only enums and INTs are supported
+            Validate.isTrue(itemType.getDataType() == DataType.ENUM || itemType.getDataType() == DataType.INT);
+
+            // prepare mapping
+            Map<String, String> specConfig = config.getItemSpecMapping();
+            specConfig.forEach((a, b) -> {
+                RulItemSpec spec = itemType.getItemSpecByCode(a);
+                Validate.notNull(spec, "Cannot find specification: " + a);
+                itemSpecMapping.put(spec.getItemSpecId(), b);
+            });
+        }
+
+        String itemCountCode = config.getItemCount();
+        if (itemCountCode != null) {
+            itemCount = ruleSystem.getItemTypeByCode(itemCountCode);
+            Validate.notNull(itemCount);
+            Validate.isTrue(itemCount.getDataType() == DataType.INT);
+        }
+
+        // object / packet mapping
+        String objectTypeCode = config.getObjectType();
+        if (objectTypeCode != null) {
+            objectType = ruleSystem.getItemTypeByCode(objectTypeCode);
+            Validate.notNull(objectType);
             Validate.isTrue(objectType.getDataType() == DataType.STRUCTURED);
 
-			// prepare packet type mapping
-			Map<String, String> packetTypeMapping = config.getObjectMapping();
-			packetTypeMapping.forEach((packetTypeCode, targetValue) -> {
-				RulPacketType packetType = ruleSystem.getPacketTypeByCode(packetTypeCode);
-				objectMapping.put(packetType.getPacketTypeId(), targetValue);
-			});
-		}
-	}
+            // get item type with packets
+            objectItemType = ruleSystem.getItemTypeByCode(config.getObjectItemType());
+            Validate.notNull(objectItemType);
+            Validate.notNull(objectItemType.getDataType() == DataType.ENUM);
 
-	public void apply(LevelWithItems level, UnitCountAction unitCountAction) {
-		// check when condition
-		if (when != null) {
-			if (!when.isTrue(level)) {
-				return;
-			}
-		}
-		// stop further processing if set
-		if (config.isStopProcessing()) {
-			unitCountAction.setSkipSubtree(level);
-		}
+            // prepare packet type mapping            
+            Map<String, String> packetTypeMapping = config.getObjectItemMapping();
+            packetTypeMapping.forEach((packetTypeCode, targetValue) -> {
+                RulItemSpec itemSpec = objectItemType.getItemSpecByCode(packetTypeCode);
+                Validate.notNull(itemSpec);
+                objectMapping.put(itemSpec.getItemSpecId(), targetValue);
+            });
+        }
+    }
 
-		// read default count from extra item
-		int defaultCount = 1;
-		if (itemCount != null) {
-			for (ArrDescItem item : level.getDescItems()) {
-				// check if type match
-				if (!itemCount.getItemTypeId().equals(item.getItemTypeId())) {
-					continue;
-				}
-				ArrData data = item.getData();
-				Integer vCnt = ((ArrDataInteger) data).getValue();
-				defaultCount = vCnt;
-			}
-		}
+    public void apply(LevelWithItems level, UnitCountAction unitCountAction) {
+        // check when condition
+        if (when != null) {
+            if (!when.isTrue(level)) {
+                return;
+            }
+        }
+        // stop further processing if set
+        if (config.isStopProcessing()) {
+            unitCountAction.setSkipSubtree(level);
+        }
 
-		// prepare output
-		if (itemType != null) {
-			for (ArrDescItem item : level.getDescItems()) {
-				// check if type match
-				if (!itemType.getItemTypeId().equals(item.getItemTypeId())) {
-					continue;
-				}
-				// count
-				int count = defaultCount;
-				// read count from int value
-				if (itemType.getDataType() == DataType.INT) {
-					Integer vCnt = ((ArrDataInteger) item.getData()).getValue();
-					count = vCnt;
-				}
-				// get mapping
-				String value = itemSpecMapping.get(item.getItemSpecId());
-				if (value != null) {
-					unitCountAction.addValue(value, count);
-				}
-			}
-		}
+        // read default count from extra item
+        int defaultCount = 1;
+        if (itemCount != null) {
+            for (ArrDescItem item : level.getDescItems()) {
+                // check if type match
+                if (!itemCount.getItemTypeId().equals(item.getItemTypeId())) {
+                    continue;
+                }
+                ArrData data = item.getData();
+                Integer vCnt = ((ArrDataInteger) data).getValue();
+                defaultCount = vCnt;
+            }
+        }
 
-		if (objectType != null) {
-			for (ArrDescItem item : level.getDescItems()) {
-				// check if type match
-				if (!objectType.getItemTypeId().equals(item.getItemTypeId())) {
-					continue;
-				}
+        // prepare output
+        if (itemType != null) {
+            for (ArrDescItem item : level.getDescItems()) {
+                // check if type match
+                if (!itemType.getItemTypeId().equals(item.getItemTypeId())) {
+                    continue;
+                }
+                // count
+                int count = defaultCount;
+                // read count from int value
+                if (itemType.getDataType() == DataType.INT) {
+                    Integer vCnt = ((ArrDataInteger) item.getData()).getValue();
+                    count = vCnt;
+                }
+                // get mapping
+                String value = itemSpecMapping.get(item.getItemSpecId());
+                if (value != null) {
+                    unitCountAction.addValue(value, count);
+                }
+            }
+        }
 
-                ArrStructureData packet = ((ArrDataStructureRef) item.getData()).getStructureData();
-                Integer packetId = packet.getStructureDataId();
-				if (!countedObjects.contains(packetId)) {
-					//TODO: change to id getter - object not needed
-					RulPacketType packetType = packet.getPacketType();
-					if (packetType != null) {
-						// find mapping
-						String value = objectMapping.get(packetType.getPacketTypeId());
-						if (value != null) {
-							unitCountAction.addValue(value, 1);
+        if (objectType != null) {
+            for (ArrDescItem item : level.getDescItems()) {
+                // check if type match
+                if (!objectType.getItemTypeId().equals(item.getItemTypeId())) {
+                    continue;
+                }
 
-							// mark as counted
-							countedObjects.add(packetId);
-						}
-					}
-				}
-			}
-		}
-	}
+                // fetch valid items from packet				
+                Integer packetId = ((ArrDataStructureRef) item.getData()).getStructureDataId();
+                if (!countedObjects.contains(packetId)) {
+                    // TODO: Do filtering in DB
+                    List<ArrStructureItem> structObjItems = this.structureItemRepository
+                            .findByStructureDataAndDeleteChangeIsNullFetchData(packetId);
+                    // filter only our item types
+                    for (ArrStructureItem structObjItem : structObjItems) {
+                        if (structObjItem.getItemTypeId().equals(this.objectItemType.getItemTypeId())) {
+                            // find mapping
+                            String value = objectMapping.get(structObjItem.getItemSpecId());
+                            if (value != null) {
+                                unitCountAction.addValue(value, 1);
+
+                                // mark as counted
+                                countedObjects.add(packetId);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }

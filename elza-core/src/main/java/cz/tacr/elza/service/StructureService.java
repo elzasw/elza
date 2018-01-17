@@ -110,7 +110,7 @@ public class StructureService {
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public List<ArrStructureItem> findStructureItems(@AuthParam(type = AuthParam.Type.FUND) final ArrStructureData structureData) {
-        return structureItemRepository.findByStructureDataAndDeleteChangeIsNull(structureData);
+        return structureItemRepository.findByStructureDataAndDeleteChangeIsNullFetchData(structureData);
     }
 
     /**

@@ -209,6 +209,7 @@ actions:
                itemSpec: ZP2015_FOLDER_UNITS
              stopProcessing: true
              objectType: ZP2015_STORAGE_ID
-             objectMapping:
+             objectItemType: ZP2015_PACKET_TYPE
+             objectItemMapping:
                ZP2015_BOX: kar
                ZP2015_FASCICLE: fas

@@ -9,6 +9,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.Validate;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -24,6 +25,7 @@ import cz.tacr.elza.domain.table.ElzaRow;
 import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.repository.StructureItemRepository;
 
 /**
  * Unit count action
@@ -55,11 +57,18 @@ public class UnitCountAction extends Action {
 	 */
 	private Map<String, Integer> resultMap = new TreeMap<>();
 
+    final StructureItemRepository structureItemRepository;
+
 	final UnitCountConfig config;
 
-	UnitCountAction(final UnitCountConfig config) {
+    @Autowired
+    UnitCountAction(final UnitCountConfig config,
+            final StructureItemRepository structureItemRepository) {
 		Validate.notNull(config);
+        Validate.notNull(structureItemRepository);
+
 		this.config = config;
+        this.structureItemRepository = structureItemRepository;
     }
 
     @Override
@@ -84,7 +93,7 @@ public class UnitCountAction extends Action {
 
 		// initialize counters
 		for (UnitCounterConfig counterCfg : config.getAggegators()) {
-			UnitCounter uc = new UnitCounter(counterCfg, ruleSystem);
+            UnitCounter uc = new UnitCounter(counterCfg, structureItemRepository, ruleSystem);
 			counters.add(uc);
 		}
     }

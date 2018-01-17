@@ -1,8 +1,7 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.ArrStructureData;
-import cz.tacr.elza.domain.ArrStructureItem;
-import cz.tacr.elza.domain.RulItemType;
+import java.util.List;
+
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -10,7 +9,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import cz.tacr.elza.domain.ArrStructureData;
+import cz.tacr.elza.domain.ArrStructureItem;
+import cz.tacr.elza.domain.RulItemType;
 
 /**
  * Repozitory pro {@link ArrStructureItem}
@@ -20,7 +21,11 @@ import java.util.List;
 @Repository
 public interface StructureItemRepository extends JpaRepository<ArrStructureItem, Integer> {
 
-    List<ArrStructureItem> findByStructureDataAndDeleteChangeIsNull(ArrStructureData structureData);
+    @Query("SELECT i FROM arr_structure_item i JOIN FETCH i.data d WHERE i.deleteChange IS NULL AND i.structureDataId = :structureDataId")
+    List<ArrStructureItem> findByStructureDataAndDeleteChangeIsNullFetchData(Integer structureDataId);
+
+    @Query("SELECT i FROM arr_structure_item i JOIN FETCH i.data d WHERE i.deleteChange IS NULL AND i.structureData = :structureData")
+    List<ArrStructureItem> findByStructureDataAndDeleteChangeIsNullFetchData(ArrStructureData structureData);
 
     @Query("SELECT i FROM arr_structure_item i JOIN FETCH i.data d WHERE i.deleteChange IS NULL AND i.structureData IN :structureDataList")
     List<ArrStructureItem> findByStructureDataListAndDeleteChangeIsNullFetchData(@Param("structureDataList") List<ArrStructureData> structureDataList);

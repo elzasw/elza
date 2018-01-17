@@ -253,7 +253,7 @@ public class StructureDataService {
         ArrStructureData.State state = ArrStructureData.State.OK;
         ValidationErrorDescription validationErrorDescription = new ValidationErrorDescription();
 
-        List<ArrStructureItem> structureItems = structureItemRepository.findByStructureDataAndDeleteChangeIsNull(structureData);
+        List<ArrStructureItem> structureItems = structureItemRepository.findByStructureDataAndDeleteChangeIsNullFetchData(structureData);
 
         validateStructureItems(validationErrorDescription, structureData, structureItems);
 
