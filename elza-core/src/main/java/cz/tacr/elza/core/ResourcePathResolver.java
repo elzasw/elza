@@ -156,13 +156,27 @@ public class ResourcePathResolver {
     }
 
     /**
-     * @return Path to drool file
+     * @return Path to drool file (may not exist).
      */
     @Transactional(TxType.MANDATORY)
     public Path getDroolFile(RulExtensionRule rulExtensionRule) {
         Path droolsDir = getDroolsDir(rulExtensionRule.getPackage().getPackageId(),
                 rulExtensionRule.getArrangementExtension().getRuleSet().getRuleSetId());
         String droolFile = rulExtensionRule.getComponent().getFilename();
+
+        Path path = droolsDir.resolve(droolFile);
+
+        return path;
+    }
+
+
+    /**
+     * @return Path to drool file (may not exist).
+     */
+    @Transactional(TxType.MANDATORY)
+    public Path getDroolFile(RulOutputType outputType) {
+        Path droolsDir = getDroolsDir(outputType.getPackage().getPackageId(), outputType.getRuleSetId());
+        String droolFile = outputType.getComponent().getFilename();
 
         Path path = droolsDir.resolve(droolFile);
 
@@ -273,5 +287,4 @@ public class ResourcePathResolver {
 
         return path;
     }
-
 }

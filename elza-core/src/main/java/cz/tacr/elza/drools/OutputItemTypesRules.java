@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.domain.ArrOutputDefinition;
 import cz.tacr.elza.domain.RulItemTypeExt;
-import cz.tacr.elza.domain.RulRule;
+import cz.tacr.elza.domain.RulOutputType;
 
 
 /**
@@ -47,17 +47,12 @@ public class OutputItemTypesRules extends Rules {
         facts.add(outputDefinition);
         facts.add(outputType);
 
-        RulComponent component = outputType.getComponent();
+        Path path = resourcePathResolver.getDroolFile(outputType);
 
-        if (component == null) {
+        if (path == null) {
             logger.warn("Při vykonávání OutputItemTypesRules.execute() nebyly nalezeny pravidla pro typ výstupu '"
                     + outputType.getCode() + "'");
         } else {
-            if (!rule.getRuleType().equals(RulRule.RuleType.OUTPUT_ATTRIBUTE_TYPES)) {
-                throw new IllegalStateException("Neplatný typ pravidel pro výstup: " + rule.getRuleType().name());
-            }
-
-            Path path = resourcePathResolver.getDroolFile(rule);
             StatelessKieSession session = createNewStatelessKieSession(path);
             execute(session, facts);
         }
