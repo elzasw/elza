@@ -13,13 +13,6 @@ import java.util.zip.ZipOutputStream;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
-import cz.tacr.elza.repository.FundStructureExtensionRepository;
-import cz.tacr.elza.repository.NodeExtensionRepository;
-import cz.tacr.elza.repository.StructureDataRepository;
-import cz.tacr.elza.repository.StructureDefinitionRepository;
-import cz.tacr.elza.repository.StructureExtensionDefinitionRepository;
-import cz.tacr.elza.repository.StructureExtensionRepository;
-import cz.tacr.elza.repository.StructureTypeRepository;
 import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +33,7 @@ import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.ExternalSystemRepository;
 import cz.tacr.elza.repository.FundRegisterScopeRepository;
 import cz.tacr.elza.repository.FundRepository;
+import cz.tacr.elza.repository.FundStructureExtensionRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.GroupRepository;
 import cz.tacr.elza.repository.GroupUserRepository;
@@ -53,6 +47,7 @@ import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeConformityErrorRepository;
 import cz.tacr.elza.repository.NodeConformityMissingRepository;
 import cz.tacr.elza.repository.NodeConformityRepository;
+import cz.tacr.elza.repository.NodeExtensionRepository;
 import cz.tacr.elza.repository.NodeOutputRepository;
 import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.NodeRepository;
@@ -76,6 +71,7 @@ import cz.tacr.elza.repository.RelationRepository;
 import cz.tacr.elza.repository.RelationRoleTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRoleTypeRepository;
+import cz.tacr.elza.repository.StructureDataRepository;
 import cz.tacr.elza.repository.UserRepository;
 
 
@@ -269,6 +265,10 @@ public class HelperTestService {
 	public FundRepository getFundRepository() {
 		return fundRepository;
 	}
+
+    public OutputDefinitionRepository getOutputDefinitionRepository() {
+        return outputDefinitionRepository;
+    }
 
     // Each package have to be loaded in separate transaction
     // this allows to commit package and reload static data

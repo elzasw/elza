@@ -1,15 +1,17 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.ArrNodeExtension;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.springframework.util.Assert;
+import java.util.List;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
-import java.util.Collections;
-import java.util.List;
+
+import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
+
+import cz.tacr.elza.common.db.DatabaseType;
+import cz.tacr.elza.common.db.RecursiveQueryBuilder;
+import cz.tacr.elza.domain.ArrNodeExtension;
 
 /**
  * Implementace repository pro {@link ArrNodeExtension} - Custom.
@@ -22,14 +24,15 @@ public class NodeExtensionRepositoryImpl implements NodeExtensionRepositoryCusto
     @PersistenceContext
     private EntityManager entityManager;
 
-    @Autowired
-    private LevelRepository levelRepository;
-
     @Override
     public List<ArrNodeExtension> findAllByNodeIdFromRoot(final Integer nodeId) {
         Assert.notNull(nodeId, "Identifikátor JP musí být vyplněn");
 
-        String sql_nodes = "WITH " + levelRepository.getRecursivePart() + " treeData(level_id, create_change_id, delete_change_id, node_id, node_id_parent, position, path) AS" +
+        RecursiveQueryBuilder<ArrNodeExtension> rqBuilder = DatabaseType.getCurrent()
+                .createRecursiveQueryBuilder(ArrNodeExtension.class);
+
+        String sql_nodes = "WITH RECURSIVE treeData(level_id, create_change_id, delete_change_id, node_id, node_id_parent, position, path) AS"
+                +
                 " (" +
                 "  (" +
                 "   SELECT t.*, '000001' AS path" +
@@ -48,9 +51,11 @@ public class NodeExtensionRepositoryImpl implements NodeExtensionRepositoryCusto
         String sql = "SELECT ne.* FROM (" + sql_nodes + ") n JOIN arr_node_extension ne ON n.node_id = ne.node_id JOIN rul_arrangement_extension ae ON ae.arrangement_extension_id = ne.arrangement_extension_id" +
                 " WHERE ne.delete_change_id IS NULL ORDER BY n.path DESC, ne.node_extension_id ASC";
 
-        Query query = entityManager.createNativeQuery(sql, ArrNodeExtension.class);
-        query.setParameter("nodeId", nodeId);
+        rqBuilder.addSqlPart(sql);
+        rqBuilder.prepareQuery(entityManager);
+        rqBuilder.setParameter("nodeId", nodeId);
 
+        Query query = rqBuilder.getQuery();
         return query.getResultList();
     }
 }

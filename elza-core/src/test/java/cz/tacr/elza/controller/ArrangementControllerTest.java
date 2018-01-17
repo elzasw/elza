@@ -1,5 +1,6 @@
 package cz.tacr.elza.controller;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -23,12 +24,13 @@ import java.util.stream.Collectors;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.csv.CSVRecord;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
 import cz.tacr.elza.controller.vo.ArrFundVO;
@@ -36,9 +38,6 @@ import cz.tacr.elza.controller.vo.ArrFundVersionVO;
 import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
 import cz.tacr.elza.controller.vo.ArrOutputDefinitionVO;
 import cz.tacr.elza.controller.vo.ArrOutputExtVO;
-import cz.tacr.elza.controller.vo.CopyNodesParams;
-import cz.tacr.elza.controller.vo.CopyNodesValidate;
-import cz.tacr.elza.controller.vo.CopyNodesValidateResult;
 import cz.tacr.elza.controller.vo.CopyNodesParams;
 import cz.tacr.elza.controller.vo.CopyNodesValidate;
 import cz.tacr.elza.controller.vo.CopyNodesValidateResult;
@@ -348,7 +347,8 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
 
         super.setOutputSettings(outputDetail.getOutputDefinition().getId(), outputSettings);
-        ArrOutputDefinition one = outputDefinitionRepository.findOne(outputDetail.getOutputDefinition().getId());
+        ArrOutputDefinition one = this.helperTestService.getOutputDefinitionRepository()
+                .findOne(outputDetail.getOutputDefinition().getId());
 
         String outputSettings1 = one.getOutputSettings();
         ObjectMapper mapper = new ObjectMapper();
