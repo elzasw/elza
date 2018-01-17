@@ -1,37 +1,5 @@
 package cz.tacr.elza.controller;
 
-import cz.tacr.elza.annotation.AuthParam;
-import cz.tacr.elza.controller.config.ClientFactoryVO;
-import cz.tacr.elza.controller.vo.PackageDependencyVO;
-import cz.tacr.elza.controller.vo.PackageVO;
-import cz.tacr.elza.controller.vo.RulArrangementExtensionVO;
-import cz.tacr.elza.controller.vo.RulDataTypeVO;
-import cz.tacr.elza.controller.vo.RulPolicyTypeVO;
-import cz.tacr.elza.controller.vo.RulRuleSetVO;
-import cz.tacr.elza.controller.vo.RulTemplateVO;
-import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
-import cz.tacr.elza.domain.*;
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.packageimport.PackageService;
-import cz.tacr.elza.repository.DataTypeRepository;
-import cz.tacr.elza.repository.FundVersionRepository;
-import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.repository.RuleSetRepository;
-import cz.tacr.elza.service.PolicyService;
-import cz.tacr.elza.service.RuleService;
-import org.apache.tomcat.util.http.fileupload.IOUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
-
-import javax.servlet.http.HttpServletResponse;
-import javax.transaction.Transactional;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -44,6 +12,47 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import javax.servlet.http.HttpServletResponse;
+import javax.transaction.Transactional;
+
+import org.apache.tomcat.util.http.fileupload.IOUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
+import cz.tacr.elza.controller.config.ClientFactoryVO;
+import cz.tacr.elza.controller.vo.PackageDependencyVO;
+import cz.tacr.elza.controller.vo.PackageVO;
+import cz.tacr.elza.controller.vo.RulArrangementExtensionVO;
+import cz.tacr.elza.controller.vo.RulDataTypeVO;
+import cz.tacr.elza.controller.vo.RulPolicyTypeVO;
+import cz.tacr.elza.controller.vo.RulRuleSetVO;
+import cz.tacr.elza.controller.vo.RulTemplateVO;
+import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.RulArrangementExtension;
+import cz.tacr.elza.domain.RulDataType;
+import cz.tacr.elza.domain.RulItemTypeExt;
+import cz.tacr.elza.domain.RulPackage;
+import cz.tacr.elza.domain.RulPackageDependency;
+import cz.tacr.elza.domain.RulPolicyType;
+import cz.tacr.elza.domain.RulTemplate;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.packageimport.PackageService;
+import cz.tacr.elza.repository.DataTypeRepository;
+import cz.tacr.elza.repository.FundVersionRepository;
+import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.repository.RuleSetRepository;
+import cz.tacr.elza.service.PolicyService;
+import cz.tacr.elza.service.RuleService;
 
 
 /**
@@ -92,7 +101,7 @@ public class RuleController {
 
     @RequestMapping(value = "/descItemTypes", method = RequestMethod.GET)
     public List<RulDescItemTypeExtVO> getDescItemTypes() {
-        List<RulItemTypeExt> descItemTypes = ruleService.getAllItemTypes();
+        List<RulItemTypeExt> descItemTypes = ruleService.getAllDescriptionItemTypes();
         return factoryVo.createDescItemTypeExtList(descItemTypes);
     }
 
@@ -105,7 +114,7 @@ public class RuleController {
     // zatím totožná s getDescItemTypes(), časem se možná změní
     @RequestMapping(value = "/outputItemTypes", method = RequestMethod.GET)
     public List<RulDescItemTypeExtVO> getOutputItemTypes() {
-        List<RulItemTypeExt> descItemTypes = ruleService.getAllItemTypes();
+        List<RulItemTypeExt> descItemTypes = ruleService.getAllDescriptionItemTypes();
         return factoryVo.createDescItemTypeExtList(descItemTypes);
     }
 

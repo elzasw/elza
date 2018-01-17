@@ -903,7 +903,8 @@ public class RuleService {
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public List<RulItemTypeExt> getStructureItemTypes(final RulStructureType structureType,
                                                       @AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion) {
-        List<RulItemTypeExt> rulDescItemTypeExtList = getAllItemTypes(structureType.getRuleSet());
+        List<RulItemTypeExt> rulDescItemTypeExtList = getRulesetDescriptionItemTypes(
+                structureType.getRuleSet().getRuleSetId());
         return rulesExecutor.executeStructureItemTypesRules(structureType, rulDescItemTypeExtList, fundVersion);
     }
 

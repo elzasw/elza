@@ -40,6 +40,9 @@ public interface OutputDefinitionRepository extends JpaRepository<ArrOutputDefin
 
     List<ArrOutputDefinition> findByFund(ArrFund fund);
 
+    @Query("SELECT no FROM arr_output_definition no JOIN no.outputs o WHERE o.outputId=?1")
+    ArrOutputDefinition findByOutputId(Integer outputId);
+
     @Query("SELECT od FROM arr_output_definition od JOIN FETCH od.outputType ot JOIN FETCH od.template t JOIN FETCH od.fund f WHERE od.outputDefinitionId=?1")
     ArrOutputDefinition findOneFetchTypeAndTemplateAndFund(int outputDefinitionId);
 
