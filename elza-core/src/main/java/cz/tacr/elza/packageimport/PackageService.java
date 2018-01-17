@@ -581,7 +581,7 @@ public class PackageService {
                 List<RulExtensionRule> rulExtensionRuleList = processExtensionRules(extensionRules, rulPackage, rulArrangementExtensions, mapEntry, rulRuleSet, dirRules);
                 rulExtensionRules.addAll(rulExtensionRuleList);
 
-                List<RulOutputType> rulOutputTypes = processOutputTypes(outputTypes, templates, rulPackage, mapEntry, dirTemplates, rulRuleSet);
+                List<RulOutputType> rulOutputTypes = processOutputTypes(outputTypes, templates, rulPackage, mapEntry, dirTemplates, rulRuleSet, dirRules);
 
                 checkUniqueFilename(rulArrangementRuleList, rulExtensionRuleList, rulOutputTypes);
 
@@ -2550,6 +2550,7 @@ public class PackageService {
      * @param rulPackage   balíček
      * @param dirTemplates
      * @param rulRuleSet   pravidla
+     * @param dirRules     cesta k adresáři pravidel
      * @return výsledný seznam atributů v db
      */
     private List<RulOutputType> processOutputTypes(final OutputTypes outputTypes,
@@ -2557,7 +2558,8 @@ public class PackageService {
                                                    final RulPackage rulPackage,
                                                    final Map<String, ByteArrayInputStream> mapEntry,
                                                    final File dirTemplates,
-                                                   final RulRuleSet rulRuleSet) {
+                                                   final RulRuleSet rulRuleSet,
+                                                   final File dirRules) {
 
         List<RulOutputType> rulOutputTypes = outputTypeRepository.findByRulPackageAndRuleSet(rulPackage, rulRuleSet);
         List<RulOutputType> rulOutputTypesNew = new ArrayList<>();
@@ -2594,6 +2596,23 @@ public class PackageService {
             List<RulComponent> rulComponentsDelete = rulOutputTypesDelete.stream().map(RulOutputType::getComponent).filter(Objects::nonNull).collect(Collectors.toList());
             outputTypeRepository.delete(rulOutputTypesDelete);
             componentRepository.delete(rulComponentsDelete);
+        }
+
+        try {
+            for (RulOutputType outputType : rulOutputTypesDelete) {
+                RulComponent component = outputType.getComponent();
+                if (component != null && component.getFilename() != null) {
+                    deleteFile(dirRules, component.getFilename());
+                }
+            }
+            for (RulOutputType outputType : rulOutputTypesNew) {
+                RulComponent component = outputType.getComponent();
+                if (component != null && component.getFilename() != null) {
+                    saveFile(mapEntry, dirRules, ZIP_DIR_RULE_SET + "/" + rulRuleSet.getCode() + "/" + ZIP_DIR_RULES, component.getFilename());
+                }
+            }
+        } catch (IOException e) {
+            throw new SystemException(e);
         }
 
         return rulOutputTypesNew;
@@ -2971,6 +2990,7 @@ public class PackageService {
         List<RulStructureExtensionDefinition> structureExtensionDefinitions = structureExtensionDefinitionRepository.findByRulPackage(rulPackage);
         List<RulStructureDefinition> structureDefinitions = structureDefinitionRepository.findByRulPackage(rulPackage);
         List<RulAction> actions = packageActionsRepository.findByRulPackage(rulPackage);
+        List<RulOutputType> outputTypes = outputTypeRepository.findByRulPackage(rulPackage);
 
         packageActionsRepository.findByRulPackage(rulPackage).forEach(this::deleteActionLink);
         itemTypeRepository.deleteByRulPackage(rulPackage);
@@ -3047,6 +3067,13 @@ public class PackageService {
 
                 for (RulAction rulPackageAction : actions) {
                     deleteFile(dirActions, rulPackageAction.getFilename());
+                }
+
+                for (RulOutputType outputType : outputTypes) {
+                    RulComponent component = outputType.getComponent();
+                    if (component != null && component.getFilename() != null) {
+                        deleteFile(dirRules, component.getFilename());
+                    }
                 }
 
                 entityManager.flush();
