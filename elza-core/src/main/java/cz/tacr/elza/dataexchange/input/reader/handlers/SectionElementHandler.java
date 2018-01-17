@@ -61,7 +61,7 @@ public class SectionElementHandler extends ContextAwareElementHandler {
 
 	private void uninstallSectionHandlers() {
 		reader.removeElementHandler("/edx/fs/s/lvls/lvl");
-		reader.removeElementHandler("/edx/fs/s/pcks/pck");
+        //reader.removeElementHandler("/edx/fs/s/pcks/pck");
 		reader.removeElementHandler("/edx/fs/s/fi");
 	}
 }
