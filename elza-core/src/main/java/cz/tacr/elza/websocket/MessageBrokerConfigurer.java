@@ -59,6 +59,12 @@ public class MessageBrokerConfigurer extends AbstractSecurityWebSocketMessageBro
     @Override
     protected void configureInbound(final MessageSecurityMetadataSourceRegistry messages) {
         messages.simpDestMatchers("/app/**").authenticated();
+        /* TODO: replace current security with strict authentication (below) after client update
+         * messages
+         *      .nullDestMatcher().authenticated()
+         *      .simpTypeMatchers(SimpMessageType.MESSAGE, SimpMessageType.SUBSCRIBE).authenticated()
+         *      .anyMessage().denyAll();
+         */
     }
 
     @Override

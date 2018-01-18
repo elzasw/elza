@@ -59,7 +59,7 @@ public class ArrOutputDefinition extends AbstractVersionableEntity {
     @Column(length = 12, nullable = false)
     private OutputState state;
 
-    @Column(length = 10000)
+    @Column
     private String error;
 
     @Column(nullable = false)
