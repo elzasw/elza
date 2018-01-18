@@ -1,3 +1,4 @@
+import cz.tacr.elza.domain.ArrData
 import cz.tacr.elza.domain.ArrStructureItem
 import org.apache.commons.lang3.StringUtils
 
@@ -6,23 +7,23 @@ int packetLeadingZeros = PACKET_LEADING_ZEROS
 return toString(items, packetLeadingZeros)
 
 static String toString(List<ArrStructureItem> items, int packetLeadingZeros) {
-    List<String> result = new ArrayList<>()
+    StringBuilder result = new StringBuilder()
     addNotEmpty(result, toStringValue(items, "ZP2015_PACKET_TYPE"), " ")
     addNotEmpty(result, toStringValue(items, "ZP2015_PACKET_PREFIX"))
     addNotEmpty(result, addZerosBefore(toStringValue(items, "ZP2015_PACKET_NUMBER"), packetLeadingZeros))
     addNotEmpty(result, toStringValue(items, "ZP2015_PACKET_POSTFIX"))
-    return String.join("", result).trim()
+    return result.toString().trim()
 }
 
-static void addNotEmpty(List<String> values, String value) {
+static void addNotEmpty(StringBuilder result, String value) {
     if (StringUtils.isNotBlank(value)) {
-        values.add(value)
+        result.append(value);
     }
 }
 
-static void addNotEmpty(List<String> values, String value, String valuePostfix) {
+static void addNotEmpty(StringBuilder result, String value, String valuePostfix) {
     if (StringUtils.isNotBlank(value)) {
-        values.add(value + valuePostfix)
+        result.append(value).append(valuePostfix);
     }
 }
 
@@ -41,7 +42,11 @@ static String addZerosBefore(String value, int totalLength) {
 static String toStringValue(List<ArrStructureItem> items, String itemTypeCode) {
     for (ArrStructureItem item : items) {
         if (item.getItemType().getCode().equalsIgnoreCase(itemTypeCode)) {
-            return item.getFulltextValue();
+            ArrData data = item.getData();
+            if(data==null) {
+                return null;
+            }
+            return data.getFulltextValue();
         }
     }
     return null;
