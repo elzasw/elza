@@ -4,6 +4,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -41,6 +42,12 @@ public class ArrDataJsonTable extends ArrData  {
         return ElzaTable.fromJsonString(value);
     }
 
+    /**
+     * Return raw Json value without any interpretation
+     * 
+     * @return
+     */
+    @JsonIgnore
     public String getJsonValue() {
         return value;
     }
