@@ -106,7 +106,7 @@ public class StructureDataRepositoryImpl implements StructureDataRepositoryCusto
 
         rqBuilder.addSqlPart("SELECT p.* FROM arr_structure_data p WHERE p.structure_data_id IN (")
 
-                .addSqlPart("SELECT dpr.packet_id FROM arr_data_structure_ref dpr ")
+                .addSqlPart("SELECT dpr.structure_data_id FROM arr_data_structure_ref dpr ")
                 .addSqlPart(
                         "JOIN arr_structure_data ap ON ap.structure_data_id = dpr.structure_data_id WHERE dpr.data_id IN (")
 
