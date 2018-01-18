@@ -323,17 +323,17 @@ public class PackageService {
     /**
      * adresář pro hromadné akce v zip
      */
-    private final String ZIP_DIR_ACTIONS = "bulk_actions";
+    static private final String ZIP_DIR_ACTIONS = "bulk_actions";
 
     /**
      * adresář pro pravidla v zip
      */
-    private final String ZIP_DIR_RULES = "rules";
+    static private final String ZIP_DIR_RULES = "rules";
 
     /**
      * adresář pro groovy v zip
      */
-    private final String ZIP_DIR_GROOVIES = "groovies";
+    static private final String ZIP_DIR_SCRIPTS = "scripts";
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -540,7 +540,7 @@ public class PackageService {
                     dirRules.mkdirs();
                 }
 
-                File dirGroovies = resourcePathResolver.getDroolsDir(rulPackage, rulRuleSet).toFile();
+                File dirGroovies = resourcePathResolver.getGroovyDir(rulPackage, rulRuleSet).toFile();
                 dirsGroovies.add(dirGroovies);
                 if (!dirGroovies.exists()) {
                     dirGroovies.mkdirs();
@@ -1047,7 +1047,7 @@ public class PackageService {
             case ATTRIBUTE_TYPES:
                 return ZIP_DIR_RULES;
             case SERIALIZED_VALUE:
-                return ZIP_DIR_GROOVIES;
+                return ZIP_DIR_SCRIPTS;
             default:
                 throw new NotImplementedException("Def type: " + definition.getDefType());
         }
@@ -1069,7 +1069,7 @@ public class PackageService {
             case ATTRIBUTE_TYPES:
                 return ZIP_DIR_RULES;
             case SERIALIZED_VALUE:
-                return ZIP_DIR_GROOVIES;
+                return ZIP_DIR_SCRIPTS;
             default:
                 throw new NotImplementedException("Def type: " + extensionDefinition.getDefType());
         }

@@ -31,11 +31,6 @@ import cz.tacr.elza.exception.SystemException;
 @Service
 public class RulesExecutor {
 
-    /**
-     * Název složky v groovies.
-     */
-    public static final String GROOVY_FOLDER = "groovies";
-
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Autowired
