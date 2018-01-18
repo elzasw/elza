@@ -165,6 +165,26 @@ public abstract class ArrData implements NodeCacheSerializable {
 	 */
 	abstract public ArrData makeCopy();
 
+    /**
+     * Merge data from source object
+     *
+     * Method is called from merge method and 
+     * data type is already checked.
+     */
+    abstract protected void mergeInternal(final ArrData srcData);
+
+    /**
+     * Merge values from source.
+     * 
+     * dataType of source have to match dataType of this object
+     *
+     * @param srcData
+     *            Source object
+     */
+    public void merge(final ArrData srcData) {
+        mergeInternal(srcData);
+    }
+
 	/**
 	 * Make copy of the source data object and set id to null
 	 * 

@@ -42,6 +42,10 @@ public class ArrDataStructureRef extends ArrData {
      */
     protected ArrDataStructureRef(ArrDataStructureRef src) {
         super(src);
+        copyValue(src);
+    }
+
+    private void copyValue(ArrDataStructureRef src) {
         this.structureData = src.structureData;
         this.structureDataId = src.structureDataId;
     }
@@ -67,6 +71,12 @@ public class ArrDataStructureRef extends ArrData {
     @Override
     public ArrData makeCopy() {
         return new ArrDataStructureRef(this);
+    }
+
+    @Override
+    public void mergeInternal(final ArrData srcData) {
+        ArrDataStructureRef src = (ArrDataStructureRef) srcData;
+        copyValue(src);
     }
 }
 

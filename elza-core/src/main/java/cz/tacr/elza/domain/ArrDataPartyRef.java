@@ -39,10 +39,14 @@ public class ArrDataPartyRef extends ArrData {
 
 	protected ArrDataPartyRef(ArrDataPartyRef src) {
 		super(src);
-		this.party = src.party;
-		this.partyId = src.partyId;
-		this.position = src.position;
+        copyValue(src);
 	}
+
+    private void copyValue(ArrDataPartyRef src) {
+        this.party = src.party;
+        this.partyId = src.partyId;
+        this.position = src.position;
+    }
 
     public Integer getPosition() {
         return position;
@@ -74,4 +78,10 @@ public class ArrDataPartyRef extends ArrData {
 	public ArrDataPartyRef makeCopy() {
 		return new ArrDataPartyRef(this);
 	}
+
+    @Override
+    public void mergeInternal(final ArrData srcData) {
+        ArrDataPartyRef src = (ArrDataPartyRef) srcData;
+        copyValue(src);
+    }
 }

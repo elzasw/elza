@@ -30,8 +30,12 @@ public class ArrDataJsonTable extends ArrData  {
 
 	protected ArrDataJsonTable(ArrDataJsonTable src) {
 		super(src);
-		this.value = src.value;
+        copyValue(src);
 	}
+
+    private void copyValue(ArrDataJsonTable src) {
+        this.value = src.value;
+    }
 
     public ElzaTable getValue() {
         return ElzaTable.fromJsonString(value);
@@ -59,4 +63,10 @@ public class ArrDataJsonTable extends ArrData  {
 	public ArrDataJsonTable makeCopy() {
 		return new ArrDataJsonTable(this);
 	}
+
+    @Override
+    public void mergeInternal(final ArrData srcData) {
+        ArrDataJsonTable src = (ArrDataJsonTable) srcData;
+        copyValue(src);
+    }
 }

@@ -24,10 +24,14 @@ public class ArrDataDecimal extends ArrData {
 
 	protected ArrDataDecimal(final ArrDataDecimal src) {
 		super(src);
-		this.value = src.value;
+        copyValue(src);
 	}
 
-	public BigDecimal getValue() {
+    private void copyValue(ArrDataDecimal src) {
+        this.value = src.value;
+    }
+
+    public BigDecimal getValue() {
         return value;
     }
 
@@ -49,4 +53,10 @@ public class ArrDataDecimal extends ArrData {
 	public ArrDataDecimal makeCopy() {
 		return new ArrDataDecimal(this);
 	}
+
+    @Override
+    public void mergeInternal(final ArrData srcData) {
+        ArrDataDecimal src = (ArrDataDecimal)srcData;
+        copyValue(src);
+    }
 }

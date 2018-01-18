@@ -36,9 +36,13 @@ public class ArrDataFileRef extends ArrData {
 
 	protected ArrDataFileRef(ArrDataFileRef src) {
 		super(src);
-		this.file = src.file;
-		this.fileId = src.fileId;
+        copyValue(src);
 	}
+
+    private void copyValue(ArrDataFileRef src) {
+        this.file = src.file;
+        this.fileId = src.fileId;
+    }
 
     public ArrFile getFile() {
         return file;
@@ -62,4 +66,10 @@ public class ArrDataFileRef extends ArrData {
 	public ArrDataFileRef makeCopy() {
 		return new ArrDataFileRef(this);
 	}
+
+    @Override
+    public void mergeInternal(final ArrData srcData) {
+        ArrDataFileRef src = (ArrDataFileRef)srcData;
+        copyValue(src);
+    }
 }

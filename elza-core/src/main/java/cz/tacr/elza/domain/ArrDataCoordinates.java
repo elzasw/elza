@@ -26,10 +26,14 @@ public class ArrDataCoordinates extends ArrData {
 
 	protected ArrDataCoordinates(final ArrDataCoordinates src) {
 		super(src);
-		this.value = src.value;
+        copyValue(src);
 	}
 
-	public Geometry getValue() {
+    private void copyValue(ArrDataCoordinates src) {
+        this.value = src.value;
+    }
+
+    public Geometry getValue() {
         return value;
     }
 
@@ -47,4 +51,10 @@ public class ArrDataCoordinates extends ArrData {
 		ArrDataCoordinates copy = new ArrDataCoordinates(this);
 		return copy;
 	}
+
+    @Override
+    public void mergeInternal(final ArrData srcData) {
+        ArrDataCoordinates src = (ArrDataCoordinates) srcData;
+        copyValue(src);
+    }
 }

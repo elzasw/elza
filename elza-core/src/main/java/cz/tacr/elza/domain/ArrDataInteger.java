@@ -24,8 +24,12 @@ public class ArrDataInteger extends ArrData {
 
 	protected ArrDataInteger(ArrDataInteger src) {
 		super(src);
-		this.value = src.value;
+        copyValue(src);
 	}
+
+    private void copyValue(ArrDataInteger src) {
+        this.value = src.value;
+    }
 
     public Integer getValue() {
         return value;
@@ -49,4 +53,10 @@ public class ArrDataInteger extends ArrData {
 	public ArrDataInteger makeCopy() {
 		return new ArrDataInteger(this);
 	}
+
+    @Override
+    public void mergeInternal(final ArrData srcData) {
+        ArrDataInteger src = (ArrDataInteger) srcData;
+        copyValue(src);
+    }
 }

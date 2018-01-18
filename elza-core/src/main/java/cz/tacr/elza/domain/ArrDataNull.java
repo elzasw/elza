@@ -30,4 +30,9 @@ public class ArrDataNull extends ArrData {
 	public ArrDataNull makeCopy() {
 		return new ArrDataNull(this);
 	}
+
+    @Override
+    public void mergeInternal(final ArrData srcData) {
+        ArrDataNull src = (ArrDataNull)srcData;
+    }
 }

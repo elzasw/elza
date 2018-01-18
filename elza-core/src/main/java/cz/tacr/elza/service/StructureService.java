@@ -476,12 +476,10 @@ public class StructureService {
             updateStructureItem = structureItemDB;
             updateStructureItem.setItemSpec(structureItem.getItemSpec());
             // db data item
-            ArrData currData = updateStructureItem.getData();
+            ArrData updateData = updateStructureItem.getData();
             // prepare dataToDb
-            ArrData dataToDb = structureItem.getData().makeCopy();
-            dataToDb.setDataId(currData.getDataId());
-            dataToDb = dataRepository.save(dataToDb);
-            updateStructureItem.setData(dataToDb);
+            updateData.merge(structureItem.getData());
+            dataRepository.save(updateData);
         }
 
         ArrStructureItem save = structureItemRepository.save(updateStructureItem);
