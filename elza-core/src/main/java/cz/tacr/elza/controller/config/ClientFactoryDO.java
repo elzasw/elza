@@ -15,7 +15,6 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 
-import cz.tacr.elza.domain.ArrStructureItem;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -57,6 +56,7 @@ import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ArrOutputFile;
 import cz.tacr.elza.domain.ArrOutputItem;
+import cz.tacr.elza.domain.ArrStructureItem;
 import cz.tacr.elza.domain.DmsFile;
 import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.ParParty;
@@ -256,9 +256,7 @@ public class ClientFactoryDO {
     }
 
     public ArrStructureItem createStructureItem(final ArrItemVO itemVO, final Integer itemTypeId) {
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-
-        ArrData data = mapper.map(itemVO, ArrData.class);
+        ArrData data = itemVO.createDataEntity(em);
         ArrStructureItem structureItem = new ArrStructureItem();
         structureItem.setData(data);
 
@@ -280,8 +278,7 @@ public class ClientFactoryDO {
     }
 
     public ArrStructureItem createStructureItem(final ArrItemVO descItemVO) {
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        ArrData data = mapper.map(descItemVO, ArrData.class);
+        ArrData data = descItemVO.createDataEntity(em);
         ArrStructureItem structureItem = new ArrStructureItem();
         structureItem.setData(data);
         BeanUtils.copyProperties(descItemVO, structureItem);
