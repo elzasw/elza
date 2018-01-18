@@ -1,24 +1,28 @@
 package cz.tacr.elza.validation.impl;
 
-import cz.tacr.elza.ElzaTools;
-import cz.tacr.elza.domain.*;
-import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.factory.DescItemFactory;
-import cz.tacr.elza.domain.vo.ArrDescItems;
-import cz.tacr.elza.domain.vo.DataValidationResult;
-import cz.tacr.elza.domain.vo.DataValidationResults;
-import cz.tacr.elza.service.ArrangementService;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.BooleanUtils;
-import org.springframework.util.Assert;
-
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.BooleanUtils;
+import org.springframework.util.Assert;
+
+import cz.tacr.elza.ElzaTools;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemSpecExt;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulItemTypeExt;
+import cz.tacr.elza.domain.factory.DescItemFactory;
+import cz.tacr.elza.domain.vo.DataValidationResult;
+import cz.tacr.elza.domain.vo.DataValidationResults;
+import cz.tacr.elza.service.ArrangementService;
 
 /**
  * Implementation of separate validator object
@@ -27,14 +31,26 @@ public class Validator {
 
 	DataValidationResults validationResults = new DataValidationResults();
 
-	List<RulItemTypeExt> nodeTypes;
+    /**
+     * List of required types
+     */
+    final List<RulItemTypeExt> requiredItemTypes;
 
-	List<ArrDescItem> descItems;
-	DescItemFactory descItemFactory;
+    /**
+     * List of current description items
+     */
+    final List<ArrDescItem> descItems;
 
-	public Validator(List<RulItemTypeExt> nodeTypes, List<ArrDescItem> descItems, DescItemFactory descItemFactory) {
-		this.nodeTypes = nodeTypes;
-		this.descItems = descItems;
+    final DescItemFactory descItemFactory;
+
+    public Validator(final List<RulItemTypeExt> requiredItemTypes, final List<ArrDescItem> descItems,
+            final DescItemFactory descItemFactory) {
+        this.requiredItemTypes = requiredItemTypes;
+        if (descItems == null) {
+            this.descItems = Collections.emptyList();
+        } else {
+            this.descItems = descItems;
+        }
 		this.descItemFactory = descItemFactory;
 	}
 
@@ -108,7 +124,7 @@ public class Validator {
             }
         }
 
-        Map<Integer, RulItemTypeExt> extNodeTypes = ElzaTools.createEntityMap(nodeTypes, typex ->
+        Map<Integer, RulItemTypeExt> extNodeTypes = ElzaTools.createEntityMap(requiredItemTypes, typex ->
                 typex.getItemTypeId());
 
         for (ArrDescItem descItem : descItemsOfType) {
@@ -154,7 +170,8 @@ public class Validator {
 	 * Run the validation
 	 */
 	public void validate() {
-        Map<Integer, RulItemTypeExt> extNodeTypes = ElzaTools.createEntityMap(nodeTypes, RulItemType::getItemTypeId);
+        Map<Integer, RulItemTypeExt> extNodeTypes = ElzaTools.createEntityMap(requiredItemTypes,
+                RulItemType::getItemTypeId);
 
         //rozdělení hodnot podle typu
         Map<Integer, List<ArrDescItem>> descItemsInTypeMap = new HashMap<>();
@@ -171,7 +188,7 @@ public class Validator {
         }
 
         // Set of required but non existing types
-        Set<RulItemTypeExt> requiredTypes = new HashSet<>(nodeTypes);
+        Set<RulItemTypeExt> requiredTypes = new HashSet<>(requiredItemTypes);
         for (Integer destItemTypeId : descItemsInTypeMap.keySet()) {
             RulItemTypeExt extType = extNodeTypes.get(destItemTypeId);
             if(extType != null){
