@@ -22,10 +22,12 @@ import cz.tacr.elza.domain.RulItemType;
 public interface StructureItemRepository extends JpaRepository<ArrStructureItem, Integer> {
 
     @Query("SELECT i FROM arr_structure_item i JOIN FETCH i.data d WHERE i.deleteChange IS NULL AND i.structureDataId = :structureDataId")
-    List<ArrStructureItem> findByStructureDataAndDeleteChangeIsNullFetchData(Integer structureDataId);
+    List<ArrStructureItem> findByStructureDataAndDeleteChangeIsNullFetchData(
+            @Param("structureDataId") Integer structureDataId);
 
     @Query("SELECT i FROM arr_structure_item i JOIN FETCH i.data d WHERE i.deleteChange IS NULL AND i.structureData = :structureData")
-    List<ArrStructureItem> findByStructureDataAndDeleteChangeIsNullFetchData(ArrStructureData structureData);
+    List<ArrStructureItem> findByStructureDataAndDeleteChangeIsNullFetchData(
+            @Param("structureData") ArrStructureData structureData);
 
     @Query("SELECT i FROM arr_structure_item i JOIN FETCH i.data d WHERE i.deleteChange IS NULL AND i.structureData IN :structureDataList")
     List<ArrStructureItem> findByStructureDataListAndDeleteChangeIsNullFetchData(@Param("structureDataList") List<ArrStructureData> structureDataList);
