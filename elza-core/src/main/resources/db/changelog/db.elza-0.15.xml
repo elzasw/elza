@@ -410,4 +410,15 @@
             <where>code = 'PACKET_REF'</where>
         </delete>
     </changeSet>
+
+    <changeSet id="20180117073700" author="slapa">
+        <renameColumn columnDataType="int"
+                      oldColumnName="source_package_id"
+                      newColumnName="package_id"
+                      tableName="rul_package_dependency"/>
+        <renameColumn columnDataType="int"
+                      oldColumnName="target_package_id"
+                      newColumnName="depends_on_package_id"
+                      tableName="rul_package_dependency"/>
+    </changeSet>
 </databaseChangeLog>

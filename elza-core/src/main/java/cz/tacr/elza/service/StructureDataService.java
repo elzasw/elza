@@ -51,6 +51,7 @@ import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ChangeRepository;
+import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.SettingsRepository;
 import cz.tacr.elza.repository.StructureDataRepository;
 import cz.tacr.elza.repository.StructureDefinitionRepository;
@@ -75,7 +76,7 @@ public class StructureDataService {
     private final StructureExtensionDefinitionRepository structureExtensionDefinitionRepository;
     private final StructureDefinitionRepository structureDefinitionRepository;
     private final StructureDataRepository structureDataRepository;
-    private final ArrangementService arrangementService;
+    private final FundVersionRepository fundVersionRepository;
     private final RuleService ruleService;
     private final ApplicationContext applicationContext;
     private final ChangeRepository changeRepository;
@@ -100,18 +101,18 @@ public class StructureDataService {
                                 final StructureExtensionDefinitionRepository structureExtensionDefinitionRepository,
                                 final StructureDefinitionRepository structureDefinitionRepository,
                                 final StructureDataRepository structureDataRepository,
-                                final ArrangementService arrangementService,
+                                final FundVersionRepository fundVersionRepository,
                                 final RuleService ruleService,
                                 final ApplicationContext applicationContext,
                                 final ChangeRepository changeRepository,
-            final EventNotificationService notificationService,
-            final SettingsRepository settingsRepository,
-            final ResourcePathResolver resourcePathResolver) {
+                                final EventNotificationService notificationService,
+                                final SettingsRepository settingsRepository,
+                                final ResourcePathResolver resourcePathResolver) {
         this.structureItemRepository = structureItemRepository;
         this.structureExtensionDefinitionRepository = structureExtensionDefinitionRepository;
         this.structureDefinitionRepository = structureDefinitionRepository;
         this.structureDataRepository = structureDataRepository;
-        this.arrangementService = arrangementService;
+        this.fundVersionRepository = fundVersionRepository;
         this.ruleService = ruleService;
         this.applicationContext = applicationContext;
         this.changeRepository = changeRepository;
@@ -288,7 +289,7 @@ public class StructureDataService {
     private void validateStructureItems(final ValidationErrorDescription validationErrorDescription,
                                         final ArrStructureData structureData,
                                         final List<ArrStructureItem> structureItems) {
-        ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(structureData.getFundId());
+        ArrFundVersion fundVersion = fundVersionRepository.findByFundIdAndLockChangeIsNull(structureData.getFundId());
         List<RulItemTypeExt> structureItemTypes = ruleService.getStructureItemTypesInternal(structureData.getStructureType(), fundVersion);
         List<RulItemTypeExt> requiredItemTypes = structureItemTypes.stream().filter(itemType -> RulItemType.Type.REQUIRED == itemType.getType()).collect(Collectors.toList());
         List<RulItemTypeExt> impossibleItemTypes = structureItemTypes.stream().filter(itemType -> RulItemType.Type.IMPOSSIBLE == itemType.getType()).collect(Collectors.toList());

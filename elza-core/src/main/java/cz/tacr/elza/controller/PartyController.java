@@ -11,6 +11,7 @@ import java.util.Set;
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
+import cz.tacr.elza.exception.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
@@ -51,10 +52,6 @@ import cz.tacr.elza.domain.ParRelationTypeRoleType;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.UIPartyGroup;
-import cz.tacr.elza.exception.DeleteException;
-import cz.tacr.elza.exception.Level;
-import cz.tacr.elza.exception.ObjectNotFoundException;
-import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.exception.codes.UserCode;
@@ -197,6 +194,11 @@ public class PartyController {
     @RequestMapping(value = "/{partyId}", method = RequestMethod.PUT)
     @Transactional
     public ParPartyVO updateParty(@PathVariable final Integer partyId, @RequestBody final ParPartyVO partyVO) {
+
+        if (partyVO.getRecord().isInvalid()) {
+            throw new IllegalStateException("Zneplatněné osodby není možno upravovat");
+        }
+
         Assert.notNull(partyId, "Identifikátor osoby musí být vyplněna");
         Assert.notNull(partyVO, "Osoba musí být vyplněna");
 

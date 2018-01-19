@@ -194,6 +194,7 @@ import cz.tacr.elza.repository.DigitizationRequestNodeRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.GroupRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
+import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.OutputDefinitionRepository;
 import cz.tacr.elza.repository.PartyNameRepository;
@@ -211,7 +212,6 @@ import cz.tacr.elza.service.DaoService;
 import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.service.OutputServiceInternal;
 import cz.tacr.elza.service.SettingsService;
-import cz.tacr.elza.service.attachment.AttachmentService;
 import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MapperFactory;
 import ma.glasnost.orika.MappingContext;
@@ -311,10 +311,10 @@ public class ClientFactoryVO {
     private DaoFileGroupRepository daoFileGroupRepository;
 
     @Autowired
-    private PackageService packageServise;
+    private ItemSpecRepository itemSpecRepository;
 
     @Autowired
-    private ItemSpecRepository itemSpecRepository;
+    private ItemTypeRepository itemTypeRepository;
 
     @Autowired
     private ConfigView configView;
@@ -1318,7 +1318,7 @@ public class ClientFactoryVO {
         // naplnění mapy podle oblíbených z nastavení
         Map<Integer, List<Integer>> typeSpecsMap = new HashMap<>();
         for (UISettings favoritesItemType : favoritesItemTypes) {
-            SettingFavoriteItemSpecs setting = (SettingFavoriteItemSpecs) packageServise.convertSetting(favoritesItemType, null);
+            SettingFavoriteItemSpecs setting = (SettingFavoriteItemSpecs) PackageService.convertSetting(favoritesItemType, itemTypeRepository);
             if (CollectionUtils.isNotEmpty(setting.getFavoriteItems())) {
                 List<RulItemSpec> itemSpecs = itemSpecRepository.findOneByCodes(setting.getFavoriteItems().stream()
                         .map(SettingFavoriteItemSpecs.FavoriteItem::getValue).collect(Collectors.toList()));

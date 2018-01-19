@@ -143,7 +143,7 @@ class PartyDetailNames extends AbstractReactComponent {
                     <div key={partyName.id} className={partyName.prefferedName ? "preffered value-group" : "value-group"}>
                         <div className="value">{this.getPartyName(partyName, partyType)}</div>
                         <div className="actions">
-                            <Button  bsStyle="action" onClick={() => this.handlePartyNameUpdate(partyName)}><Icon glyph="fa-pencil" /></Button>
+                            {canEdit && <Button  bsStyle="action" onClick={() => this.handlePartyNameUpdate(partyName)}><Icon glyph="fa-pencil" /></Button>}
                             {canEdit
                             && !partyName.prefferedName
                             && <span>

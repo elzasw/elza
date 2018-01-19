@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.repository.ItemTypeRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.ObjectUtils;
 import org.springframework.beans.factory.BeanFactory;
@@ -144,9 +145,6 @@ public class RegistryService {
     private SettingsRepository settingsRepository;
 
     @Autowired
-    private PackageService packageService;
-
-    @Autowired
     private ArrangementCacheService arrangementCacheService;
 
     @Autowired
@@ -170,6 +168,8 @@ public class RegistryService {
     @Autowired
     private DescItemRepository descItemRepository;
 
+    @Autowired
+    private ItemTypeRepository itemTypeRepository;
     /**
      * Kody tříd rejstříků nastavené v konfiguraci elzy.
      */
@@ -793,7 +793,7 @@ public class RegistryService {
             List<UISettings> uiSettingsList = settingsRepository.findByUserAndSettingsTypeAndEntityType(null, UISettings.SettingsType.RECORD, null);
             if (uiSettingsList.size() > 0) {
                 uiSettingsList.forEach(uiSettings -> {
-                    SettingRecord setting = (SettingRecord) packageService.convertSetting(uiSettings, null);
+                    SettingRecord setting = (SettingRecord) PackageService.convertSetting(uiSettings, itemTypeRepository);
                     List<SettingRecord.ScopeCode> scopeCodes = setting.getScopeCodes();
                     if (CollectionUtils.isEmpty(scopeCodes)) {
                         this.scopeCodes = new ArrayList<>();
@@ -1261,35 +1261,7 @@ public class RegistryService {
             }
             self.updateRegisterLink(fundVersions.get(fundId).getFundVersionId(), i.getNodeId(), arrNodeRegister);
         });
-
-        // relace
-        final List<ParRelationEntity> byRecord = relationEntityRepository.findByRecord(replaced);
-
-        final Map<ParRelation, Map<Integer, ParRelationEntity>> relationWithEntities = new HashMap<>();
-        byRecord.forEach(i -> {
-            ParRelationEntity relationEntity = relationWithEntities.computeIfAbsent(i.getRelation(), n -> relationEntityRepository.findByRelation(n).stream()
-                    .collect(Collectors.toMap(ParRelationEntity::getRelationEntityId, Function.identity()))
-            ).get(i.getRelationEntityId());
-
-            relationEntity.setRecord(replacement);
-        });
-
-        // oprávnění relací
-        Set<ParParty> hasPermForParty = new HashSet<>();
-        boolean isScopeAdmin = userService.hasPermission(UsrPermission.Permission.REG_SCOPE_WR_ALL);
-        relationWithEntities.forEach((rel, relEnt) -> {
-            if (!hasPermForParty.contains(rel.getParty())) {
-                Integer scopeId = rel.getParty().getRegScope().getScopeId();
-                if (!isScopeAdmin &&
-                        !userService.hasPermission(UsrPermission.Permission.REG_SCOPE_WR, scopeId)) {
-                    throw new SystemException("Uživatel nemá oprávnění na scope.", BaseCode.INSUFFICIENT_PERMISSIONS).set("scopeId", scopeId);
-
                 }
-                hasPermForParty.add(rel.getParty());
-            }
-            partyService.saveRelation(rel, relEnt.values());
-        });
-    }
 
     public boolean canBeDeleted(RegRecord record) {
         return CollectionUtils.isEmpty(dataRecordRefRepository.findByRecord(record)) &&

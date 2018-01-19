@@ -52,12 +52,6 @@ public class RulesExecutor {
     private ScenarioOfNewLevelRules scenarioOfNewLevelRules;
 
     /**
-     * Přípona souborů pravidel
-     */
-    public static final String FILE_EXTENSION = ".drl";
-
-
-    /**
      * Spustí pravidla nad typy atributů a jejich specifikacema.
      *
      * @param level                  checked level

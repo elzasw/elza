@@ -39,8 +39,10 @@ import cz.tacr.elza.domain.RulStructureExtension;
 import cz.tacr.elza.domain.RulStructureType;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.Level;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.DataRepository;
@@ -213,6 +215,15 @@ public class StructureService {
             changeRepository.delete(change);
             return structureData;
         } else {
+
+            Integer count = structureItemRepository.countItemsByStructureData(structureData);
+            if (count > 0) {
+                throw new BusinessException("Existují návazné entity, položka nelze smazat", ArrangementCode.STRUCTURE_DATA_DELETE_ERROR)
+                        .level(Level.WARNING)
+                        .set("count", count)
+                        .set("id", structureData.getStructureDataId());
+            }
+
             ArrChange change = arrangementService.createChange(ArrChange.Type.DELETE_STRUCTURE_DATA);
             structureData.setDeleteChange(change);
 

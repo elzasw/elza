@@ -114,9 +114,6 @@ public class RuleService {
     @Autowired
     private SettingsService settingsService;
     @Autowired
-    private PackageService packageService;
-
-    @Autowired
     private LevelRepository levelRepository;
     @Autowired
     private NodeRepository nodeRepository;
@@ -583,7 +580,7 @@ public class RuleService {
 
         for (UISettings gridView : gridViews) {
             if (gridView.getRulPackage().getPackageId().equals(ruleSet.getPackage().getPackageId())) {
-                SettingGridView view = (SettingGridView) packageService.convertSetting(gridView, ruleSet);
+                SettingGridView view = (SettingGridView) PackageService.convertSetting(gridView, itemTypeRepository);
                 if (CollectionUtils.isNotEmpty(view.getItemTypes())) {
                     return view.getItemTypes();
                 }

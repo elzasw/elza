@@ -100,7 +100,6 @@ import cz.tacr.elza.domain.UIPartyGroup;
 import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.UISettings.EntityType;
 import cz.tacr.elza.domain.table.ElzaColumn;
-import cz.tacr.elza.drools.RulesExecutor;
 import cz.tacr.elza.exception.AbstractException;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
@@ -372,9 +371,6 @@ public class PackageService {
     private EventNotificationService eventNotificationService;
 
     @Autowired
-    private RulesExecutor rulesExecutor;
-
-    @Autowired
     private OutputTypeRepository outputTypeRepository;
 
     @Autowired
@@ -517,6 +513,12 @@ public class PackageService {
             List<UISettings> uiSettings = new ArrayList<>();
 
             List<RulRuleSet> rulRuleSets = processRuleSets(ruleSets, rulPackage, rulRuleSetsDelete);
+            for (RulRuleSet rulRuleSet : rulRuleSetsDelete) {
+                rulePaths.put(rulRuleSet.getCode(), ZIP_DIR_RULE_SET + "/" + rulRuleSet.getCode() + "/");
+            }
+            for (RulRuleSet rulRuleSet : rulRuleSets) {
+                rulePaths.put(rulRuleSet.getCode(), ZIP_DIR_RULE_SET + "/" + rulRuleSet.getCode() + "/");
+            }
 
             for (Map.Entry<String, String> ruleEntry : rulePaths.entrySet()) {
                 String ruleDirPath = ruleEntry.getValue();
@@ -587,7 +589,7 @@ public class PackageService {
                 List<RulExtensionRule> rulExtensionRuleList = processExtensionRules(extensionRules, rulPackage, rulArrangementExtensions, mapEntry, rulRuleSet, dirRules);
                 rulExtensionRules.addAll(rulExtensionRuleList);
 
-                List<RulOutputType> rulOutputTypes = processOutputTypes(outputTypes, templates, rulPackage, mapEntry, dirTemplates, rulRuleSet);
+                List<RulOutputType> rulOutputTypes = processOutputTypes(outputTypes, templates, rulPackage, mapEntry, dirTemplates, rulRuleSet, dirRules);
 
                 checkUniqueFilename(rulArrangementRuleList, rulExtensionRuleList, rulOutputTypes);
 
@@ -2553,6 +2555,7 @@ public class PackageService {
      * @param rulPackage   balíček
      * @param dirTemplates
      * @param rulRuleSet   pravidla
+     * @param dirRules     cesta k adresáři pravidel
      * @return výsledný seznam atributů v db
      */
     private List<RulOutputType> processOutputTypes(final OutputTypes outputTypes,
@@ -2560,7 +2563,8 @@ public class PackageService {
                                                    final RulPackage rulPackage,
                                                    final Map<String, ByteArrayInputStream> mapEntry,
                                                    final File dirTemplates,
-                                                   final RulRuleSet rulRuleSet) {
+                                                   final RulRuleSet rulRuleSet,
+                                                   final File dirRules) {
 
         List<RulOutputType> rulOutputTypes = outputTypeRepository.findByRulPackageAndRuleSet(rulPackage, rulRuleSet);
         List<RulOutputType> rulOutputTypesNew = new ArrayList<>();
@@ -2597,6 +2601,23 @@ public class PackageService {
             List<RulComponent> rulComponentsDelete = rulOutputTypesDelete.stream().map(RulOutputType::getComponent).filter(Objects::nonNull).collect(Collectors.toList());
             outputTypeRepository.delete(rulOutputTypesDelete);
             componentRepository.delete(rulComponentsDelete);
+        }
+
+        try {
+            for (RulOutputType outputType : rulOutputTypesDelete) {
+                RulComponent component = outputType.getComponent();
+                if (component != null && component.getFilename() != null) {
+                    deleteFile(dirRules, component.getFilename());
+                }
+            }
+            for (RulOutputType outputType : rulOutputTypesNew) {
+                RulComponent component = outputType.getComponent();
+                if (component != null && component.getFilename() != null) {
+                    saveFile(mapEntry, dirRules, ZIP_DIR_RULE_SET + "/" + rulRuleSet.getCode() + "/" + ZIP_DIR_RULES, component.getFilename());
+                }
+            }
+        } catch (IOException e) {
+            throw new SystemException(e);
         }
 
         return rulOutputTypesNew;
@@ -2861,8 +2882,8 @@ public class PackageService {
 
         Map<Integer, Set<Integer>> dependencies = new HashMap<>();
         for (RulPackageDependency packageDependency : packageDependencies) {
-            Set<Integer> targetIds = dependencies.computeIfAbsent(packageDependency.getSourcePackageId(), k -> new HashSet<>());
-            targetIds.add(packageDependency.getTargetPackageId());
+            Set<Integer> packageIds = dependencies.computeIfAbsent(packageDependency.getPackageId(), k -> new HashSet<>());
+            packageIds.add(packageDependency.getDependsOnPackageId());
         }
 
         for (Integer id : dependencies.keySet()) {
@@ -2899,7 +2920,7 @@ public class PackageService {
     private void processRulPackageDependencies(final PackageInfo packageInfo, final RulPackage rulPackage) {
 
         // odeberu současné vazby
-        packageDependencyRepository.deleteBySourcePackage(rulPackage);
+        packageDependencyRepository.deleteByRulPackage(rulPackage);
 
         // packageCode / minVersion
         Map<String, Integer> packageCodeVersion = new HashMap<>();
@@ -2930,8 +2951,8 @@ public class PackageService {
             }
             RulPackageDependency packageDependency = new RulPackageDependency();
             packageDependency.setMinVersion(minVersion);
-            packageDependency.setSourcePackage(rulPackage);
-            packageDependency.setTargetPackage(requiredDependency);
+            packageDependency.setRulPackage(rulPackage);
+            packageDependency.setDependsOnPackage(requiredDependency);
             newDependencies.add(packageDependency);
         }
         packageDependencyRepository.save(newDependencies);
@@ -2950,12 +2971,12 @@ public class PackageService {
         }
 
         // kontrola na existující zavíslostí z jiných balíčků
-        List<RulPackageDependency> targetPackages = packageDependencyRepository.findByTargetPackage(rulPackage);
+        List<RulPackageDependency> targetPackages = packageDependencyRepository.findByDependsOnPackage(rulPackage);
         if (targetPackages.size() > 0) {
             throw new BusinessException("Balíček nelze odebrat, protože je používán jiným balíčkem", PackageCode.FOREIGN_DEPENDENCY)
-                    .set("foreignPackageCodes", targetPackages.stream().map(pd -> pd.getSourcePackage().getCode()).collect(Collectors.toList()));
+                    .set("foreignPackageCodes", targetPackages.stream().map(pd -> pd.getRulPackage().getCode()).collect(Collectors.toList()));
         }
-        packageDependencyRepository.deleteBySourcePackage(rulPackage);
+        packageDependencyRepository.deleteByRulPackage(rulPackage);
 
         List<RulItemSpec> rulDescItemSpecs = itemSpecRepository.findByRulPackage(rulPackage);
         for (RulItemSpec rulDescItemSpec : rulDescItemSpecs) {
@@ -2968,6 +2989,7 @@ public class PackageService {
         List<RulStructureExtensionDefinition> structureExtensionDefinitions = structureExtensionDefinitionRepository.findByRulPackage(rulPackage);
         List<RulStructureDefinition> structureDefinitions = structureDefinitionRepository.findByRulPackage(rulPackage);
         List<RulAction> actions = packageActionsRepository.findByRulPackage(rulPackage);
+        List<RulOutputType> outputTypes = outputTypeRepository.findByRulPackage(rulPackage);
 
         packageActionsRepository.findByRulPackage(rulPackage).forEach(this::deleteActionLink);
         itemTypeRepository.deleteByRulPackage(rulPackage);
@@ -3045,6 +3067,13 @@ public class PackageService {
 
                 for (RulAction rulPackageAction : actions) {
                     deleteFile(dirActions, rulPackageAction.getFilename());
+                }
+
+                for (RulOutputType outputType : outputTypes) {
+                    RulComponent component = outputType.getComponent();
+                    if (component != null && component.getFilename() != null) {
+                        deleteFile(dirRules, component.getFilename());
+                    }
                 }
 
                 entityManager.flush();
@@ -3291,7 +3320,8 @@ public class PackageService {
             export(rulPackage, zos, settingsRepository, Settings.class, Setting.class,
                     (settingList, settings) -> settings.setSettings(settingList),
                     (uiSetting, setting) -> setting.setValue(uiSetting.getValue()),
-                    this::convertSetting, (s) -> filterSettingByType(s, ruleSet), path, ruleSet);
+                    (uiSetting, rulRuleSet) -> PackageService.convertSetting(uiSetting, itemTypeRepository),
+                    (s) -> filterSettingByType(s, ruleSet), path, ruleSet);
         }
     }
 
@@ -3324,7 +3354,7 @@ public class PackageService {
         return true;
     }
 
-    public Setting convertSetting(final UISettings uiSettings, final RulRuleSet ruleSet) {
+    public static Setting convertSetting(final UISettings uiSettings, final ItemTypeRepository itemTypeRepository) {
         // factory
         Setting entity;
         if (Objects.equals(uiSettings.getSettingsType(), UISettings.SettingsType.FUND_VIEW)
@@ -3718,11 +3748,11 @@ public class PackageService {
         packageInfo.setDescription(rulPackage.getDescription());
         packageInfo.setVersion(rulPackage.getVersion());
 
-        List<RulPackageDependency> dependencies = packageDependencyRepository.findBySourcePackage(rulPackage);
+        List<RulPackageDependency> dependencies = packageDependencyRepository.findByRulPackage(rulPackage);
         packageInfo.setDependencies(dependencies.stream()
                 .map(d -> {
                     PackageDependency pd = new PackageDependency();
-                    pd.setCode(d.getTargetPackage().getCode());
+                    pd.setCode(d.getDependsOnPackage().getCode());
                     pd.setMinVersion(d.getMinVersion());
                     return pd;
                 }).collect(Collectors.toList()));

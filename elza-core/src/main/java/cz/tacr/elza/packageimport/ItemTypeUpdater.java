@@ -120,16 +120,17 @@ public class ItemTypeUpdater {
 
     /**
      * Zpracování specifikací atributů.
-     *
-     * @param itemSpecs       seznam importovaných specifikací
+     *  @param itemSpecs       seznam importovaných specifikací
      * @param rulPackage          balíček
      * @param rulDescItemTypes    seznam typů atributů
+     * @param rulRuleSet
      */
     private void processDescItemSpecs(final ItemSpecs itemSpecs,
                                       final RulPackage rulPackage,
-                                      final List<RulItemType> rulDescItemTypes) {
+                                      final List<RulItemType> rulDescItemTypes,
+                                      final RulRuleSet rulRuleSet) {
 
-        List<RulItemSpec> rulDescItemSpecs = itemSpecRepository.findByRulPackage(rulPackage);
+        List<RulItemSpec> rulDescItemSpecs = itemSpecRepository.findByRulPackageAndRuleSet(rulPackage, rulRuleSet);
         List<RulItemSpec> rulDescItemSpecsNew = new ArrayList<>();
 
         // item type code -> local view order
@@ -185,7 +186,7 @@ public class ItemTypeUpdater {
 		this.rulDataTypes = rulDataTypes;
 		this.rulPackage = rulPackage;
 
-		prepareForUpdate();
+		prepareForUpdate(rulRuleSet);
 
         List<RulItemType> rulItemTypesUpdated = new ArrayList<>();
         if (itemTypes != null) {
@@ -202,7 +203,7 @@ public class ItemTypeUpdater {
         rulItemTypesAllByRules.addAll(itemTypeRepository.findByRuleSet(rulRuleSet));
 
         // update specifications
-        processDescItemSpecs(itemSpecs, rulPackage, rulItemTypesAllByRules);
+        processDescItemSpecs(itemSpecs, rulPackage, rulItemTypesAllByRules, rulRuleSet);
         postSpecsOrder();
 
 		// delete unused item types
@@ -260,7 +261,7 @@ public class ItemTypeUpdater {
         List<RulPackage> packages = packageRepository.findAll();
         PackageUtils.Graph<RulPackage> g = new PackageUtils.Graph<>(packages.size());
         List<RulPackageDependency> dependencies = packageDependencyRepository.findAll();
-        dependencies.forEach(d -> g.addEdge(d.getSourcePackage(), d.getTargetPackage()));
+        dependencies.forEach(d -> g.addEdge(d.getRulPackage(), d.getDependsOnPackage()));
         return g.topologicalSort();
     }
 
@@ -413,7 +414,7 @@ public class ItemTypeUpdater {
             rulDescItemType.setColumnsDefinition(elzaColumns);
         }
 
-        rulDescItemType.setPackage(rulPackage);
+        rulDescItemType.setRulPackage(rulPackage);
         rulDescItemType.setRuleSet(rulRuleSet);
     }
 
@@ -547,11 +548,12 @@ public class ItemTypeUpdater {
 
     /**
 	 * Prepare item types to be updated
-	 * @return
-	 */
-	private void prepareForUpdate() {
 
-		rulItemTypesOrig = itemTypeRepository.findByRulPackage(rulPackage);
+     * @param rulRuleSet rule set
+	 */
+	private void prepareForUpdate(final RulRuleSet rulRuleSet) {
+
+		rulItemTypesOrig = itemTypeRepository.findByRulPackageAndRuleSet(rulRuleSet.getPackage(), rulRuleSet);
 
 		// read first free view-order id
 		RulItemType itemTypeHighest = itemTypeRepository.findFirstByOrderByViewOrderDesc();

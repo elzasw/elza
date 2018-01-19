@@ -125,8 +125,8 @@ public class RuleController {
         Map<Integer, PackageVO> packageVOMap = packageVO.stream().collect(Collectors.toMap(PackageVO::getPackageId, Function.identity()));
         List<RulPackageDependency> packagesDependencies = packageService.getPackagesDependencies();
         for (RulPackageDependency dependency : packagesDependencies) {
-            PackageVO pSource = packageVOMap.get(dependency.getSourcePackageId());
-            PackageVO pTarget = packageVOMap.get(dependency.getTargetPackageId());
+            PackageVO pSource = packageVOMap.get(dependency.getPackageId());
+            PackageVO pTarget = packageVOMap.get(dependency.getDependsOnPackageId());
             List<PackageDependencyVO> dependencies = pSource.getDependencies();
             if (dependencies == null) {
                 dependencies = new ArrayList<>();

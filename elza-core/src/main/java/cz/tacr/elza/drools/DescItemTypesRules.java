@@ -65,8 +65,8 @@ public class DescItemTypesRules extends Rules {
         List<RulArrangementRule> rulArrangementRules = arrangementRuleRepository.findByRuleSetAndRuleTypeOrderByPriorityAsc(
                 rulRuleSet, RulArrangementRule.RuleType.ATTRIBUTE_TYPES);
 
-        for (RulArrangementRule rulPackageRule : rulArrangementRules) {
-            Path path = resourcePathResolver.getDroolFile(rulPackageRule);
+        for (RulArrangementRule rulArrangementRule : rulArrangementRules) {
+            Path path = resourcePathResolver.getDroolFile(rulArrangementRule);
             StatelessKieSession session = createNewStatelessKieSession(path);
             execute(session, facts);
         }

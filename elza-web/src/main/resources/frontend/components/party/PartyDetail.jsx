@@ -193,6 +193,8 @@ class PartyDetail extends AbstractReactComponent {
 
             if (id) {
                 resolve(this.dispatch(partyDetailFetchIfNeeded(id)));
+        } else {
+            return Promise.resolve(null);
             }
         });
     };
@@ -306,6 +308,10 @@ class PartyDetail extends AbstractReactComponent {
             var icon = PartyListItem.partyIconByPartyTypeCode(type);
 
             let canEdit = userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_WR, scopeId: party.record.scopeId});
+
+            if (partyDetail.data.record.invalid) {
+                canEdit = false;
+            }
 
             const partyType = this.getPartyType();
 

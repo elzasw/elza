@@ -49,8 +49,8 @@ public class ScenarioOfNewLevelRules extends Rules {
         List<RulArrangementRule> rulArrangementRules = arrangementRuleRepository.findByRuleSetAndRuleTypeOrderByPriorityAsc(
                 version.getRuleSet(), RulArrangementRule.RuleType.NEW_LEVEL);
 
-        for (RulArrangementRule rulPackageRule : rulArrangementRules) {
-            Path path = resourcePathResolver.getDroolFile(rulPackageRule);
+        for (RulArrangementRule rulArrangementRule : rulArrangementRules) {
+            Path path = resourcePathResolver.getDroolFile(rulArrangementRule);
 
             StatelessKieSession session = createNewStatelessKieSession(path);
             session.setGlobal("results", newLevelApproaches);
