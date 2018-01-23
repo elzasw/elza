@@ -82,7 +82,7 @@ function resolveException(status, statusText, data) {
             level: data.level,
             properties: data.properties,
             message: data.message,
-            devMessage: data.devMessage,
+            stackTrace: data.stackTrace,
             status: status,
             statusText: statusText
         };

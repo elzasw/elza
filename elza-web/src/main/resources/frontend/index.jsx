@@ -11,7 +11,6 @@ import React from 'react';
 
 import {Utils} from 'components/shared';
 import {WebApi, WebApiCls} from 'actions/index.jsx';
-import {loginFail} from 'actions/global/login.jsx';
 import {userDetailChange} from 'actions/user/userDetail.jsx'
 
 
@@ -87,16 +86,16 @@ import {addToastr} from "components/shared/toastr/ToastrActions.jsx"
 store.dispatch(storeRestoreFromStorage());
 
 window.onerror = function(message, url, line, column, error) {
-    let devMessage = error;
+    let stackTrace = error;
     try {
-        if (devMessage.stack) {
-            devMessage = devMessage.stack
+        if (stackTrace.stack) {
+            stackTrace = stackTrace.stack
         }
     } catch (e) {}
 
     store.dispatch(addToastr(i18n('exception.client'), [<Exception key="exception-key-onerror" title={i18n('exception.client')} data={{
         message,
-        devMessage: devMessage,
+        stackTrace: stackTrace,
         properties: {
             url,
             line,
@@ -140,59 +139,10 @@ function scheduleStoreSave() {
 }
 scheduleStoreSave();
 
-// seznam callbacků, které kvůli nepříhlášení se musí ještě vykonat
-let calbacks = [];
-
-const login = (callback) => {
-    calbacks.push(callback);
-    store.dispatch(loginFail(() => {
-        calbacks.forEach(callback => callback());
-        calbacks = [];
-    }));
-}
-
-// zjištění všech metod z api
-const methods = Object.getOwnPropertyNames(WebApiCls.prototype);
-
-// přetížení všech metod ve WebApi, původní metody mají prefix podtržítka
-for(const i in  methods) {
-    const method =  methods[i];
-    WebApi["_" + method] = WebApi[method];
-    WebApi[method] = (...x) => {
-        return new Promise((resolve, reject) => {
-            const ret = WebApi["_" + x[0]].call(...x);
-
-            ret.then((json) => {
-                resolve(json);
-            }).catch((err) => {
-                if (err.unauthorized) {
-                    login(() => {
-                        WebApi[x[0]].call(...x).then(resolve).catch(reject);
-                    });
-                } else {
-                    reject(err);
-                }
-            });
-        });
-
-    }
-    WebApi[method] = WebApi[method].bind(this, method);
-
-}
-
-// Načtení oprávnění a jeho uložení do store po přihlášení
-WebApi.getUserDetail()
-    .then(userDetail => {
-        store.dispatch(userDetailChange(userDetail))
-    })
-
 // Aplikace
 import {AppContainer} from 'react-hot-loader'
 import Redbox from 'redbox-react'
 import ReactDOM from 'react-dom'
-
-
-
 
 class CustomRedbox extends React.Component {
     static PropTypes = {

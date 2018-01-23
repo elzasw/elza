@@ -3,8 +3,7 @@ import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {Modal, Button, Form} from 'react-bootstrap';
 import {decorateFormField} from 'components/form/FormUtils.jsx'
-import {WebApi} from 'actions/index.jsx';
-import {loginSuccess} from 'actions/global/login.jsx';
+import {login, checkUserLogged} from 'actions/global/login.jsx';
 
 import './Login.less';
 import ModalDialogWrapper from "../dialog/ModalDialogWrapper";
@@ -35,6 +34,10 @@ class Login extends AbstractReactComponent {
         error: null
     };
 
+    componentWillMount(){
+        this.dispatch(checkUserLogged());
+    }
+
     state = {
         ...this.defaultState
     };
@@ -43,37 +46,36 @@ class Login extends AbstractReactComponent {
         this.setState({[field]: event.target.value});
     };
 
+    handleLoginError = (err) => {
+        console.log(err);
+        if (err.data && err.data.message) {
+            this.setState({error: err.data.message});
+        } else {
+            this.setState({error: i18n('login.error.unknown')});
+        }
+    }
+
     handleLogin = (e) => {
         e.preventDefault();
-        const {login} = this.props;
         const {username, password} = this.state;
 
-        // volám nepřetížený api
-        WebApi._login(username, password).then((data) => {
-            console.log("xxxxx");
-            this.dispatch(loginSuccess());
-            try {
-                login.callback && login.callback();
-            } catch (ex) {
-                console.error("Error calling login callback.", ex)
-            }
+        this.dispatch(login(username, password)).then((data) => {
             this.setState(this.defaultState);
         }).catch((err) => {
-            console.log(err);
-            if (err.data && err.data.message) {
-                this.setState({error: err.data.message});
-            } else {
-                this.setState({error: i18n('login.error.unknown')});
-            }
+            this.handleLoginError(err);
         });
     };
 
     render() {
-        const {login, submitting} = this.props;
+        const {login, submitting, userDetail} = this.props;
         const {error, username, password} = this.state;
 
+        // Login dialog is shown only when user is not logged in and data about user have been fetched
+        // to prevent flicker on page reload
+        const displayLoginDialog = !login.logged && userDetail.fetched;
+
         return <div className="login-container">
-            {!login.logged && <ModalDialogWrapper className="login" ref='wrapper' title={i18n('login.form.title')}>
+            {displayLoginDialog && <ModalDialogWrapper className="login" ref='wrapper' title={i18n('login.form.title')}>
                 <Form onSubmit={this.handleLogin}>
                     <Modal.Body>
                         {defaultEnabled && <div className="error">{i18n('login.defaultUserEnabled')}</div>}
@@ -90,4 +92,8 @@ class Login extends AbstractReactComponent {
     }
 }
 
-export default connect(({login}) => ({login}))(Login);
+export default connect((state) => {
+        const {userDetail, login} = state;
+        return {userDetail, login};
+    }
+)(Login);

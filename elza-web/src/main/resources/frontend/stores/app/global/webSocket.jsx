@@ -3,8 +3,7 @@ import * as types from 'actions/constants/ActionTypes.js';
 const initialState = {
     connected: false,
     loading: true,
-    disconnectedOnError: false, // v případě, že byl proveden disconnect na základě chyby, je zde true a je vyplněna zpráva - disconnectedErrorMessage
-    disconnectedErrorMessage: null,
+    disconnectedOnError: false // je true v případě, že byl proveden disconnect na základě chyby
 }
 
 export default function webSocket(state = initialState, action) {
@@ -18,8 +17,7 @@ export default function webSocket(state = initialState, action) {
             return {
                 ...state,
                 connected: false,
-                disconnectedOnError: action.disconnectedOnError,
-                disconnectedErrorMessage: action.disconnectedErrorMessage
+                disconnectedOnError: action.disconnectedOnError
             }
         default:
             return state
