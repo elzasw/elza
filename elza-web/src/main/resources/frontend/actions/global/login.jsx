@@ -2,7 +2,6 @@ import * as types from 'actions/constants/ActionTypes.js';
 import {WebApi} from 'actions/index.jsx';
 import {userDetailChange, userDetailClear, userDetailRequest} from 'actions/user/userDetail.jsx'
 import {routerNavigate} from "actions/router.jsx"
-import {stompDisconnect, stompConnect} from "websocketActions.jsx"
 import {partyListInvalidate, partyDetailInvalidate, partyDetailClear} from 'actions/party/party.jsx'
 
 
