@@ -24,7 +24,13 @@ export function reloadUserDetail(userIds) {
 
 export function userDetailClear() {
     return {
-        type: types.USER_DETAIL_CLEAR,
+        type: types.USER_DETAIL_CLEAR
+    }
+}
+
+export function userDetailRequest(){
+    return {
+        type: types.USER_DETAIL_REQUEST
     }
 }
 

@@ -5,8 +5,9 @@ import {webSocketConnect, webSocketDisconnect} from 'actions/global/webSocket.js
 import * as arrRequestActions from 'actions/arr/arrRequestActions';
 import * as daoActions from 'actions/arr/daoActions';
 import {store} from 'stores/index.jsx';
-import {addToastrDanger} from 'components/shared/toastr/ToastrActions.jsx'
-import {i18n} from 'components/shared'
+import {addToastrDanger} from 'components/shared/toastr/ToastrActions.jsx';
+import {i18n} from "components/shared";
+import {checkUserLogged} from "actions/global/login.jsx";
 
 import {
     changeConformityInfo,
@@ -58,148 +59,130 @@ import {shouldSkipNodeEvent} from "websocketController.jsx";
 
 const url = new URLParse(serverContextPath + '/stomp');
 
-var wsProtocol = url.protocol === "https:" ? "wss:" : "ws:";
+const wsProtocol = url.protocol === "https:" ? "wss:" : "ws:";
 
 const wsUrl = wsProtocol+ "//" + url.host + url.pathname;
 console.log("Websocekt URL", wsUrl)
-var refresh = false;
-var stompClient;
 
-/** Odpojení od websocketů. */
-export function stompDisconnect() {
-    if (stompClient != null) {
-        stompClient.disconnect();
-        stompClient = null;
-    }
-    console.log('Websocket disconnected');
-}
-
-/** Připojení websocketů. */
-export function stompConnect() {
-    stompClient = Stomp.client(wsUrl);
-    stompClient.debug = null
-    stompClient.heartbeat.outgoing = 20000;
-    stompClient.heartbeat.incoming = 20000;
-    stompClient.onreceipt = receiptCallback;
-    console.info("Websocket connecting to " + wsUrl);
-    stompClient.connect({}, stompOnConnect, stompOnError);
-}
-stompConnect();
-
-class ws {
-    constructor() {
+class websocket{
+    constructor(url, eventMap) {
         this.nextReceiptId = 0;
         this.pendingRequests = {};
+        this.stompClient;
+        this.url = url;
+        this.eventMap = eventMap;
     }
 
-    static stompDisconnect = stompDisconnect;
-
-    static stompConnect = stompConnect;
-
-    stompConnect = () => {
-        ws.stompConnect();
-    };
+    connect = (heartbeatOut = 20000, heartbeatIn = 20000) => {
+        this.stompClient = Stomp.client(this.url);
+        this.stompClient.debug = null
+        this.stompClient.heartbeat.outgoing = heartbeatOut;
+        this.stompClient.heartbeat.incoming = heartbeatIn;
+        this.stompClient.onreceipt = this.onReceipt;
+        this.stompClient.onerror = this.onError; // Napodobeni chovani z vyssi verze
+        console.info("Websocket connecting to " + url);
+        this.stompClient.connect({}, this.onConnect, this.onError);
+    }
     
-    // Funkce
-    send = (url, data, successCallback, errorCallback) => {
+    disconnect = (error=false) => {
+        if (this.stompClient && this.stompClient.ws.readyState < 3) {
+            // When ready state is not CLOSING(2) or CLOSED(3) and stompClient exists 
+            console.log("Websocket disconnected");
+            this.stompClient.disconnect();
+            this.stompClient = null;
+        }
+        store.dispatch(webSocketDisconnect(error));
+    }
+
+    reconnect = () => {
+        this.disconnect();
+        this.connect();
+    }
+    
+    send = (url, data, onSuccess, onError) => {
         const headers = {};
 
-        if (successCallback || errorCallback) {
+        if (onSuccess || onError) {
             headers.receipt = this.nextReceiptId;
 
             let nextRequest = {
                 url: url,
                 headers: headers,
                 data: data,
-                onSuccess: successCallback,
-                onError: errorCallback
+                onSuccess: onSuccess,
+                onError: onError
             }
 
             this.pendingRequests[this.nextReceiptId] = nextRequest;
             this.nextReceiptId++;
         }
 
-        stompClient.send(url, headers, data);
+        this.stompClient.send(url, headers, data);
     };
 
-    processCallback(body, headers) {
-        if (!body || !headers) {
-            return false;
+    onConnect = (frame) => {
+        store.dispatch(webSocketConnect());
+        console.info('Websocket connected');
+        this.stompClient.subscribe('/topic/api/changes', this.onMessage);
         }
 
-        // console.log("#####processCallback", "body: ", body, "headers: ", headers)
-        const receiptIdStr = headers["receipt-id"];
-        if ((typeof receiptIdStr === "string" && receiptIdStr.length > 0) || (typeof receiptIdStr === "number")) {
-            const receiptId = typeof receiptIdStr === "number" ? receiptIdStr : parseInt(receiptIdStr);
+    onError = (error) => {
+        const {body, headers, command} = error;
 
+        if (command === "ERROR" && headers) {
+            // Error message received from server
+            
+            this.disconnect(true);
+            store.dispatch(checkUserLogged((logged)=>{
+                if(logged){
+                    let message = headers.message || "";
+
+                    if(body){
             const bodyObj = JSON.parse(body);
-            console.info("WEBSOCKET MESSAGE:", bodyObj, "| Remaining requests:", this.pendingRequests);
+                        message = bodyObj.message;
+                    } 
 
-            let request = this.pendingRequests[receiptId];
-            if(request){
-                if(bodyObj && !bodyObj.errorMessage){
-                    request.onSuccess(bodyObj);
-                } else {
-                    request.onError(bodyObj);
+                    store.dispatch(addToastrDanger(i18n('global.error.ws'), message));
                 }
-                delete this.pendingRequests[receiptId];
+            }));
+                } else {
+            // Unknown error -> probably lost connection -> try to reconnect
+            this.disconnect();
+            console.info('Websocket lost connection. Reconnecting...');
+            setTimeout(this.connect, 5000);
+                }
             }
 
-            return true;
-        }
-
-        return false;
-    }
-}
-if (!window.ws) {
-    window.ws = new ws();
-}
-
-function receiptCallback(frame) {
-    let body = frame.body;
-    let headers = frame.headers;
-    console.info("WEBSOCKET RECEIPT:", frame);
-    window.ws.processCallback(body, headers);
-}
-
-/**
- * Callback příchozích dat z websocketů.
- * @param frame {object}
- */
-function stompOnConnect(frame) {
-    store.dispatch(webSocketConnect());
-
-    if (!refresh) {
-        refresh = true;
-    } else {
-        location.reload(true);
-    }
-    stompClient.subscribe('/topic/api/changes', function(frame) {
+    onMessage = (frame) => {
         var body = JSON.parse(frame.body);
-        processEvents(body);
-    });
-}
+        const eventType = body.eventType;
+        console.info("WEBSOCKET MESSAGE:", body);
 
-
-/**
- * Callback při ztráně spojení.
- *
- * @param error {string} text chyby
- */
-function stompOnError(error) {
-    console.error("Websocket - failure", error);
-
-    const {body, headers} = error;
-    if (error.command === "ERROR" && body && headers) {
-        stompDisconnect();
-
-        const bodyObj = JSON.parse(body);
-        store.dispatch(addToastrDanger(i18n('global.error.ws'), bodyObj.message));
-        store.dispatch(webSocketDisconnect(true, bodyObj.message));
+        if(this.eventMap[eventType]){
+            this.eventMap[eventType](body);
     } else {
-        store.dispatch(webSocketDisconnect(false));
-        setTimeout(stompConnect, 5000);
-        console.info('WebSocket: Obnovení spojení za 5 sekund...');
+            console.warn("Unknown event type '" + eventType + "'", body);
+    }
+    }
+
+    onReceipt = (frame) => {
+        let {body, headers} = frame;
+        const receiptId = headers["receipt-id"];
+        console.info("WEBSOCKET RECEIPT:", frame, "| Remaining requests:", this.pendingRequests);
+
+        let request = receiptId && this.pendingRequests[receiptId];
+
+        if(request){
+        const bodyObj = JSON.parse(body);
+            if(bodyObj && !bodyObj.errorMessage){
+                request.onSuccess(bodyObj);
+    } else {
+                request.onError(bodyObj);
+    }
+            delete this.pendingRequests[receiptId];
+        } else {
+            console.warn("Unknown request - id:",receiptId);
+        }
     }
 }
 
@@ -209,191 +192,67 @@ function stompOnError(error) {
  *
  * @param values {array} seznam příchozí eventů
  */
-function processEvents(value) {
-        switch (value.eventType) {
-            case 'DAO_LINK_CREATE':
-            case 'DAO_LINK_DELETE':
-                daoLink(value);
-                break;
-            case 'REQUEST_CHANGE':
-            case 'REQUEST_DAO_CHANGE':
-                arrRequest(value);
-                break;
-            case 'REQUEST_CREATE':
-            case 'REQUEST_DAO_CREATE':
-                arrRequest(value);
-                break;
-            case 'CONFORMITY_INFO':
-                conformityInfo(value);
-                break;
 
-            case 'INDEXING_FINISHED':
-                indexingFinished();
-                break;
-
-            case 'PACKAGE':
-                packageEvent();
-                break;
-
-            case 'INSTITUTION_CHANGE':
-                institutionChange();
-                break;
-
-            case 'PARTY_DELETE':
-                partyDelete(value);
-                break;
-
-            case 'PARTIES_CREATE':
-                partyCreate(value);
-                break;
-            case 'PARTY_UPDATE':
-                partyUpdate(value);
-                break;
-
-            case 'EXTERNAL_SYSTEM_CREATE':
-                extSystemCreate(value);
-                break;
-            case 'EXTERNAL_SYSTEM_UPDATE':
-                extSystemUpdate(value);
-                break;
-            case 'EXTERNAL_SYSTEM_DELETE':
-                extSystemDelete(value);
-                break;
-
-            case 'NODES_CHANGE':
-                shouldSkipNodeEvent(value.entityIds,()=>{
-                    nodesChange(value);
-                })
-                break;
-            case 'OUTPUT_ITEM_CHANGE':
-                outputItemChange(value);
-                break;
-
-            case 'FILES_CHANGE':
-                filesChangeEvent(value);
-                break;
-
-            case 'BULK_ACTION_STATE_CHANGE':
-                fundActionActionChange(value);
-                break;
-
-            case 'DELETE_LEVEL':
-                deleteLevelChange(value);
-                break;
-
-            case 'ADD_LEVEL_AFTER':
-                addLevelAfterChange(value);
-                break;
-
-            case 'ADD_LEVEL_BEFORE':
-                addLevelBeforeChange(value);
-                break;
-
-            case 'ADD_LEVEL_UNDER':
-                addLevelUnderChange(value);
-                break;
-
-            case 'APPROVE_VERSION':
-                approveVersionChange(value);
-                break;
-
-            case 'MOVE_LEVEL_AFTER':
-                moveLevelAfterChange(value);
-                break;
-
-            case 'MOVE_LEVEL_BEFORE':
-                moveLevelBeforeChange(value);
-                break;
-
-            case 'MOVE_LEVEL_UNDER':
-                moveLevelUnderChange(value);
-                break;
-
-            case 'RECORD_UPDATE':
-                registryChange(value);
-                break;
-
-            case 'FUND_UPDATE':
-            case 'FUND_CREATE':
-                fundChange(value);
-                break;
-            case 'FUND_RECORD_CHANGE':
-                fundRecordChange(value);
-                break;
-
-            case 'VISIBLE_POLICY_CHANGE':
-                visiblePolicyChange(value);
-                break;
-
-            case 'FUND_DELETE':
-                fundDelete(value);
-                break;
-
-            case 'OUTPUT_STATE_CHANGE':
-                outputStateChange(value);
-                break;
-
-            case 'OUTPUT_CHANGES':
-                outputChanges(value);
-                break;
-
-            case 'FUND_INVALID':
-                fundInvalid(value);
-                break;
-
-            case 'OUTPUT_CHANGES_DETAIL':
-                outputChangesDetail(value);
-                break;
-            case 'USER_CREATE':
-            case 'USER_CHANGE':
-                changeUser(value);
-                break;
-            case 'GROUP_CREATE':
-            case 'GROUP_CHANGE':
-                changeGroup(value);
-                break;
-            case 'GROUP_DELETE':
-                deleteGroup(value);
-                break;
-
-            case 'REQUEST_CREATE':
-                requestCreate(value);
-                break;
-
-            case 'REQUEST_CHANGE':
-                requestChange(value);
-                break;
-
-            case 'REQUEST_DELETE':
-                requestDelete(value);
-                break;
-
-            case 'REQUEST_ITEM_QUEUE_CREATE':
-            case 'REQUEST_ITEM_QUEUE_DELETE':
-                createRequestItemQueueChange(value);
-                break;
-
-            case 'REQUEST_ITEM_QUEUE_CHANGE':
-                changeRequestItemQueueChange(value);
-                break;
-
-            case 'DELETE_NODES':
-                deleteNodes(value);
-                break;
-
-            case 'FUND_EXTENSION_CHANGE':
-                fundExtensionChange(value);
-                break;
-
-            case 'STRUCTURE_DATA_CHANGE':
-                store.dispatch(structureChange(value));
-                break;
-
-            default:
-                console.warn("Nedefinovaný typ eventu: " + value.eventType, value);
-                break;
-        }
+let eventMap = {
+    'DAO_LINK_CREATE': daoLink,
+    'DAO_LINK_DELETE': daoLink,
+    'REQUEST_CHANGE': arrRequest,
+    'REQUEST_DAO_CHANGE': arrRequest,
+    'REQUEST_CREATE': arrRequest,
+    'REQUEST_DAO_CREATE': arrRequest,
+    'CONFORMITY_INFO': conformityInfo,
+    'INDEXING_FINISHED': indexingFinished,
+    'PACKAGE': packageEvent,
+    'INSTITUTION_CHANGE': institutionChange,
+    'PARTY_DELETE': partyDelete,
+    'PARTIES_CREATE': partyCreate,
+    'PARTY_UPDATE': partyUpdate,
+    'EXTERNAL_SYSTEM_CREATE': extSystemCreate,
+    'EXTERNAL_SYSTEM_UPDATE': extSystemUpdate,
+    'EXTERNAL_SYSTEM_DELETE': extSystemDelete,
+    'NODES_CHANGE': nodesChange,
+    'OUTPUT_ITEM_CHANGE': outputItemChange,
+    'FILES_CHANGE': filesChangeEvent,
+    'BULK_ACTION_STATE_CHANGE': fundActionActionChange,
+    'DELETE_LEVEL': deleteLevelChange,
+    'ADD_LEVEL_AFTER': addLevelAfterChange,
+    'ADD_LEVEL_BEFORE': addLevelBeforeChange,
+    'ADD_LEVEL_UNDER': addLevelUnderChange,
+    'APPROVE_VERSION': approveVersionChange,
+    'MOVE_LEVEL_AFTER': moveLevelAfterChange,
+    'MOVE_LEVEL_BEFORE': moveLevelBeforeChange,
+    'MOVE_LEVEL_UNDER': moveLevelUnderChange,
+    'RECORD_UPDATE': registryChange,
+    'FUND_UPDATE': fundChange,
+    'FUND_CREATE': fundChange,
+    'FUND_RECORD_CHANGE': fundRecordChange,
+    'VISIBLE_POLICY_CHANGE': visiblePolicyChange,
+    'FUND_DELETE': fundDelete,
+    'OUTPUT_STATE_CHANGE': outputStateChange,
+    'OUTPUT_CHANGES': outputChanges,
+    'FUND_INVALID': fundInvalid,
+    'OUTPUT_CHANGES_DETAIL': outputChangesDetail,
+    'USER_CREATE': changeUser,
+    'USER_CHANGE': changeUser,
+    'GROUP_CREATE': changeGroup,
+    'GROUP_CHANGE': changeGroup,
+    'GROUP_DELETE': deleteGroup,
+    'REQUEST_CREATE': requestCreate,
+    'REQUEST_CHANGE': requestChange,
+    'REQUEST_DELETE': requestDelete,
+    'REQUEST_ITEM_QUEUE_CREATE': createRequestItemQueueChange,
+    'REQUEST_ITEM_QUEUE_DELETE': createRequestItemQueueChange,
+    'REQUEST_ITEM_QUEUE_CHANGE': changeRequestItemQueueChange,
+    'DELETE_NODES': deleteNodes,
+    'FUND_EXTENSION_CHANGE': fundExtensionChange,
+    'STRUCTURE_DATA_CHANGE': structureDataChange
 }
+
+if (!window.ws) {
+    window.ws = new websocket(wsUrl, eventMap);
+    //window.ws.connect();
+}
+
 
 /**
  * Změna uživatele
@@ -438,6 +297,9 @@ function fundExtensionChange(value) {
     store.dispatch(changeNodes(value.versionId, [value.nodeId]))
 }
 
+function structureDataChange(value) {
+    store.dispatch(structureChange(value));
+}
 function approveVersionChange(value) {
     store.dispatch(changeApproveVersion(value.fundId, value.versionId));
 }
@@ -561,7 +423,9 @@ function filesChangeEvent(value) {
 }
 
 function nodesChange(value) {
+    shouldSkipNodeEvent(value.entityIds,()=>{
     store.dispatch(changeNodes(value.versionId, value.entityIds));
+    });
 }
 function outputItemChange(value) {
     store.dispatch(changeOutputs(value.versionId, [value.outputDefinitionId]));
@@ -595,6 +459,10 @@ function partyDelete(value){
  */
 
 function extSystemCreate(value){
+    store.dispatch(createExtSystem(value.ids[0]));
+}
+
+function extSystemUpdate(value){
     store.dispatch(createExtSystem(value.ids[0]));
 }
 

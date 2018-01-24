@@ -1,60 +1,99 @@
 import * as types from 'actions/constants/ActionTypes.js';
 import {WebApi} from 'actions/index.jsx';
-import {userDetailChange, userDetailClear} from 'actions/user/userDetail.jsx'
+import {userDetailChange, userDetailClear, userDetailRequest} from 'actions/user/userDetail.jsx'
 import {routerNavigate} from "actions/router.jsx"
-import {stompDisconnect, stompConnect} from "websocketActions.jsx"
 import {partyListInvalidate, partyDetailInvalidate, partyDetailClear} from 'actions/party/party.jsx'
 
-export function loginFail(callback) {
-    return {
-        type: types.LOGIN_FAIL,
-        callback
-    }
-}
 
-export function loginSuccess() {
+/**
+ * Checks if user is logged on server by requesting userDetail. 
+ * If yes, saves the returned detail to store.
+ * If not, resets store to default.
+ */
+export function checkUserLogged(callback=()=>{}) {
     return (dispatch, getState) => {
-        // Reconnect websocketu - jinak by házelo AccessDenied, protože websocket byl inicializován s jiným přihlášením
-        stompDisconnect();
-        stompConnect();
+        const state = getState();
+        dispatch(userDetailRequest());
+        WebApi.getUserDetail().then(userDetail => {
+            if(userDetail && !state.login.logged){
+                // fake local login if user is logged on server
+                dispatch(loginSuccess(userDetail));
+                callback(true);
+            }
+        }, (error) => {
+            dispatch(userDetailChange(null))
+            dispatch(loginFail());
+            callback(false);
+        });
+    }
+}
+/**
+ * Changes the state to logged-in and connects the websockets.
+ */
+function loginSuccess(forcedUserDetail) {
+    return (dispatch, getState) => {
+        const state = getState();
 
-        // ---
-        let state = getState();
-        WebApi.getUserDetail()
-            .then(userDetail => {
-                let action = {
-                    type: types.LOGIN_SUCCESS,
-                    reset: false,
-                }
-                if (state.userDetail.id != userDetail.id) {
-                    dispatch(routerNavigate('/'));
-                    dispatch(partyListInvalidate());
-                    dispatch(partyDetailInvalidate());
-                    dispatch(partyDetailClear());
-                    action.reset = true;
-                }
-                dispatch(action)
-                dispatch(userDetailChange(userDetail))
+        window.ws.connect();
+        
+        let action = {
+            type: types.LOGIN_SUCCESS
+        };
+
+        if(forcedUserDetail){
+            dispatch(saveLoggedUser(forcedUserDetail));
+            action.reset = state.userDetail.id != forcedUserDetail.id;
+            dispatch(action);
+        } else {
+            dispatch(userDetailRequest());
+            WebApi.getUserDetail().then((userDetail)=>{
+                dispatch(saveLoggedUser(userDetail));
+                action.reset = state.userDetail.id != userDetail.id;
+                dispatch(action);
             })
+        }
     }
 }
 
+function loginFail() {
+    return {
+        type: types.LOGIN_FAIL
+    }
+}
+/**
+ * Saves the given userDetail as currently logged-in user's detail
+ */
+function saveLoggedUser(userDetail, reset) {
+    return (dispatch, getState) => {
+        if (reset) {
+            dispatch(routerNavigate('/'));
+            dispatch(partyListInvalidate());
+            dispatch(partyDetailInvalidate());
+            dispatch(partyDetailClear());
+        }
+        dispatch(userDetailChange(userDetail));
+    }
+}
+
+export function login(username, password) {
+    return(dispatch, getState) => {
+        return WebApi.login(username, password).then((data) => {
+            dispatch(loginSuccess());
+        })
+    }
+}
+/**
+ * Disconnects websockets, logs out the user and changes the state to logged-out.
+ */
 export function logout() {
     return dispatch => {
+        window.ws.disconnect();
         dispatch(routerNavigate('/'));
-        return WebApi.logout()
-            .then(() => {
-                dispatch({
-                    type: types.LOGOUT,
-                    reset: true,
-                });
-                //dispatch(userDetailClear())
-            }).catch(() => {
-                dispatch({
-                    type: types.LOGOUT,
-                    reset: true,
-                });
-                //dispatch(userDetailClear())
-            });
+        dispatch({
+            type: types.LOGOUT,
+            reset: true
+        });
+
+        return WebApi.logout()            
     }
 }
