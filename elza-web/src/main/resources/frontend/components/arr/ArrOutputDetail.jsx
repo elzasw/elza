@@ -191,31 +191,28 @@ class ArrOutputDetail extends AbstractReactComponent {
             readMode={closed || readMode}
         />;
 
-        return <Shortcuts name='ArrOutputDetail' handler={this.handleShortcuts}>
-            <div className={"arr-output-detail-container"}>
-                <div className="output-definition-commons">
-                    <OutputInlineForm
-                        disabled={closed || readMode || !this.isEditable()}
-                        initData={fundOutputDetail.outputDefinition}
-                        onSave={this.handleSaveOutput}
-                    />
-                    {fundOutputDetail.outputDefinition.error && <div>
-                        <FormInput componentClass="textarea" value={fundOutputDetail.outputDefinition.error} disabled label={i18n('arr.output.title.error')}/>
-                    </div>}
-                </div>
-
-                <div>
-                    <label className="control-label">{i18n("arr.output.title.nodes")}</label>
-                    <FundNodesList
-                        nodes={fundOutputDetail.outputDefinition.nodes}
-                        onDeleteNode={this.handleRemoveNode}
-                        onAddNode={this.handleAddNodes}
-                        readOnly={closed || readMode || !this.isEditable()}
-                    />
-                </div>
-                <hr className="small"/>
-                {form}
+        return <Shortcuts name='ArrOutputDetail' className={"arr-output-detail-container"} style={{height: "100%"}} handler={this.handleShortcuts}>
+            <div className="output-definition-commons">
+                <OutputInlineForm
+                    disabled={closed || readMode || !this.isEditable()}
+                    initData={fundOutputDetail.outputDefinition}
+                    onSave={this.handleSaveOutput}
+                />
+                {fundOutputDetail.outputDefinition.error && <div>
+                    <FormInput componentClass="textarea" value={fundOutputDetail.outputDefinition.error} disabled label={i18n('arr.output.title.error')}/>
+                </div>}
             </div>
+            <div>
+                <label className="control-label">{i18n("arr.output.title.nodes")}</label>
+                <FundNodesList
+                    nodes={fundOutputDetail.outputDefinition.nodes}
+                    onDeleteNode={this.handleRemoveNode}
+                    onAddNode={this.handleAddNodes}
+                    readOnly={closed || readMode || !this.isEditable()}
+                />
+            </div>
+            <hr className="small"/>
+            {form}
         </Shortcuts>;
     }
 }
