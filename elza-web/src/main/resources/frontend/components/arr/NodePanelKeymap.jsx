@@ -14,8 +14,8 @@ var defaultKeymap = {
     NodePanel: {
         searchItem: keyModifier + 'f',                      //SEARCH_ITEM
         addDescItemType: [keyModifier + 'p',"n p"],         //ADD_DESC_ITEM
-        addNodeAfter: [keyModifier + "+","n j down"],       //ADD_NODE_AFTER
-        addNodeBefore: [keyModifier + "-","n j up"],        //ADD_NODE_BEFORE
+        addNodeAfter: [keyModifier + "plus","n j down"],       //ADD_NODE_AFTER
+        addNodeBefore: [keyModifier + "minus","n j up"],        //ADD_NODE_BEFORE
         addNodeChild: [keyModifier + '*',"n j right"],      //ADD_NODE_CHILD
         addNodeEnd: [keyModifier + '/',"n j shift+down"]    //ADD_NODE_END
     },
