@@ -102,9 +102,6 @@ public class UserService {
     @Autowired
     private ScopeRepository scopeRepository;
 
-    @Autowired
-    private SessionRegistry sessionRegistry;
-
     @Value("${elza.security.salt:kdFss=+4Df_%}")
     private String SALT;
 
@@ -610,14 +607,14 @@ public class UserService {
                           @NotEmpty final Set<UsrUser> users) {
         for (UsrUser user : users) {
             for (UsrGroup group : groups) {
-                UsrGroupUser item = groupUserRepository.findOneByGroupAndUser(group, user);
+                List<UsrGroupUser> rels = groupUserRepository.findByGroupAndUser(group, user);
 
-                if (item != null) {
-                    throw new BusinessException("Uživatel '" + user.getUsername() + "' je již členem skupiny '" + group.getName() + "'",
+                if (CollectionUtils.isNotEmpty(rels)) {
+                    throw new BusinessException("User '" + user.getUsername() + "' is already member of the group '" + group.getName() + "'",
                             UserCode.ALREADY_IN_GROUP).set("user", user.getUsername()).set("group", group.getName());
                 }
 
-                item = new UsrGroupUser();
+                UsrGroupUser item = new UsrGroupUser();
                 item.setGroup(group);
                 item.setUser(user);
 
@@ -639,14 +636,16 @@ public class UserService {
     @AuthMethod(permission = {UsrPermission.Permission.USR_PERM})
     public void leaveGroup(@NotNull final UsrGroup group,
                            @NotNull final UsrUser user) {
-        UsrGroupUser item = groupUserRepository.findOneByGroupAndUser(group, user);
+        List<UsrGroupUser> items = groupUserRepository.findByGroupAndUser(group, user);
 
-        if (item == null) {
-            throw new BusinessException("Uživatel '" + user.getUsername() + "' není členem skupiny '" + group.getName() + "'",
+        if (CollectionUtils.isEmpty(items)) {
+            throw new BusinessException("User '" + user.getUsername() + "' is not memeber of the group '" + group.getName() + "'",
                     UserCode.NOT_IN_GROUP).set("user", user.getUsername()).set("group", group.getName());
         }
-
-        groupUserRepository.delete(item);
+        
+        // delete all relations
+      	groupUserRepository.delete(items);
+        
         invalidateCache(user);
         changeUserEvent(user);
         changeGroupEvent(group);

@@ -975,8 +975,6 @@ public class ArrangementService {
 
         final List<ArrDescItem> newDescItems = descriptionItemService
                     .copyDescItemWithDataToNode(level.getNode(), siblingDescItems, change, version);
-        // update cache
-        arrangementCacheService.createDescItems(level.getNodeId(), newDescItems);
 
         descItemRepository.flush();
 

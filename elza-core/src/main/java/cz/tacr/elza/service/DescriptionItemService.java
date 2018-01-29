@@ -678,8 +678,10 @@ public class DescriptionItemService {
     }
 
     /**
-     * Vytvoří kopii seznamu atributů. Kopírovaný atribut patří zvolenému uzlu.
-     *  @param node            uzel, který dostane kopírované atributy
+     * Vytvoří kopii prvků popisu. Kopírovaný atribut patří zvolenému uzlu.
+     * 
+     * Method will also update nodeCache.
+     * @param node            uzel, který dostane kopírované atributy
      * @param sourceDescItems zdrojové atributy ke zkopírování
      * @param createChange    čas vytvoření nové kopie
      */
@@ -708,9 +710,6 @@ public class DescriptionItemService {
             descItemNew.setDescItemObjectId(arrangementService.getNextDescItemObjectId());
 
             descItemRepository.save(descItemNew);
-
-            // sockety
-            //publishChangeDescItem(version, descItemNew);
 
             result.add(descItemNew);
         }

@@ -12,8 +12,8 @@
         <ns2:default>
             <title>&lt;Není nastaveno&gt;</title>
             <strict-mode>true</strict-mode>
-            <tree>ZP2015_NAD ZP2015_TITLE ZP2015_UNIT_DATE</tree>
-            <accordion-left>ZP2015_NAD ZP2015_TITLE ZP2015_UNIT_DATE</accordion-left>
+            <tree>ZP2015_NAD ZP2015_ZNACKA_FONDU ZP2015_TITLE ZP2015_UNIT_DATE</tree>
+            <accordion-left>ZP2015_NAD ZP2015_ZNACKA_FONDU ZP2015_TITLE ZP2015_UNIT_DATE</accordion-left>
             <accordion-right>ZP2015_FOLDER_TYPE ZP2015_STORAGE_ID</accordion-right>
             <hierarchy-level code="ZP2015_LEVEL_TYPE">
                 <hierarchy-item code="ZP2015_LEVEL_ROOT">
@@ -60,6 +60,7 @@
                 <name>Typ jednotky</name>
                 <type code="ZP2015_LEVEL_TYPE" width="1"/>
                 <type code="ZP2015_NAD" width="1"/>
+                <type code="ZP2015_ZNACKA_FONDU" width="1"/>
                 <type code="ZP2015_FOLDER_TYPE" width="1"/>
                 <type code="ZP2015_UNIT_TYPE" width="1"/>
                 <type code="ZP2015_UNIT_COUNT" width="1"/>
@@ -168,10 +169,6 @@
             <show-default>true</show-default>
             <width>210</width>
         </item-type>
-        <item-type code="ZP2015_STORAGE_ID">
-            <show-default>true</show-default>
-            <width>220</width>
-        </item-type>
         <item-type code="ZP2015_LEVEL_TYPE">
             <show-default>true</show-default>
         </item-type>
@@ -183,9 +180,6 @@
         </item-type>
         <item-type code="ZP2015_UNIT_TYPE">
             <show-default>true</show-default>
-        </item-type>
-        <item-type code="ZP2015_NAD">
-            <width>250</width>
         </item-type>
     </grid-view>
 </settings>
