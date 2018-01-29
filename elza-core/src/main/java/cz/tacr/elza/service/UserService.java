@@ -1412,13 +1412,14 @@ public class UserService {
 			group = groupRepository.getOneCheckExist(groupId);
 		}
 
-		// if we do not have right FUND_ADMIN or USR_PERM
+		// if we do not have right ADMIN, FUND_ADMIN or USR_PERM
 		// we have to have rights FUND_CREATE (In such case we can create it only for logged user)
 		// or USER_CONTROL_ENTITITY (In such case we can create it only for managed entities).
 
 		boolean hasPermission = false;
 		for (UserPermission userPermission : getUserPermission()) {
 			if (userPermission.isPermissionType(UsrPermission.Permission.FUND_ADMIN)
+					|| userPermission.isPermissionType(UsrPermission.Permission.ADMIN)
 			        || userPermission.isPermissionType(UsrPermission.Permission.USR_PERM)) {
 				hasPermission = true;
 				break;
