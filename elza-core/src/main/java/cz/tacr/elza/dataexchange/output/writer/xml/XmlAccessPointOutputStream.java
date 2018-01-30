@@ -95,10 +95,10 @@ public class XmlAccessPointOutputStream implements AccessPointsOutputStream {
         if (!fragment.isOpen()) {
             XMLStreamWriter sw = fragment.openStreamWriter();
             sw.writeStartDocument();
-            sw.writeStartElement(XmlElementName.ACCESS_POINTS);
+            sw.writeStartElement(XmlNameConsts.ACCESS_POINTS);
         }
         XMLStreamWriter sw = fragment.getStreamWriter();
-        JAXBElement<?> jaxbElement = XmlUtils.wrapElement(XmlElementName.PARTY, ap);
+        JAXBElement<?> jaxbElement = XmlUtils.wrapElement(XmlNameConsts.PARTY, ap);
         Marshaller marshaller = jaxbContext.createMarshaller();
         marshaller.setProperty(Marshaller.JAXB_FRAGMENT, Boolean.TRUE);
         marshaller.marshal(jaxbElement, sw);

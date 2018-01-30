@@ -43,7 +43,6 @@ import cz.tacr.elza.dataexchange.input.reader.handlers.InstitutionElementHandler
 import cz.tacr.elza.dataexchange.input.reader.handlers.PartyGroupElementHandler;
 import cz.tacr.elza.dataexchange.input.reader.handlers.PersonElementHandler;
 import cz.tacr.elza.dataexchange.input.reader.handlers.SectionElementHandler;
-import cz.tacr.elza.dataexchange.input.sections.context.SectionStorageDispatcher;
 import cz.tacr.elza.dataexchange.input.sections.context.SectionsContext;
 import cz.tacr.elza.dataexchange.input.sections.context.SectionsContext.ImportPosition;
 import cz.tacr.elza.dataexchange.input.storage.StorageManager;
@@ -202,7 +201,7 @@ public class DEImportService {
 
 	/**
 	 * Check if all parameters are logically consistent
-	 * 
+	 *
 	 * @param params
 	 */
     private void checkParameters(DEImportParams params) {
@@ -217,7 +216,7 @@ public class DEImportService {
 
 	/**
 	 * Prepare ImportContext object
-	 * 
+	 *
 	 * @param params
 	 * @param session
 	 * @return
@@ -252,15 +251,12 @@ public class DEImportService {
 
     private SectionsContext initSectionsContext(StorageManager storageManager,
                                                 DEImportParams params,
-                                                RegScope scope,
+                                                RegScope importScope,
                                                 StaticDataProvider staticData) {
         ArrangementService arrangementService = initHelper.getArrangementService();
 
         // create global import change
         ArrChange createChange = arrangementService.createChange(Type.IMPORT);
-
-        // init storage dispatcher
-        SectionStorageDispatcher storageDispatcher = new SectionStorageDispatcher(storageManager, params.getBatchSize());
 
         // prepare import position
         ImportPositionParams posParams = params.getPositionParams();
@@ -278,7 +274,7 @@ public class DEImportService {
             pos = new ImportPosition(fundVersion, parentLevel, targetLevel, posParams.getDirection());
         }
 
-        return new SectionsContext(storageDispatcher, createChange, scope, pos, staticData, initHelper);
+        return new SectionsContext(storageManager, params.getBatchSize(), createChange, importScope, pos, staticData, initHelper);
     }
 
 	private static XmlElementReader prepareReader(InputStream is, ImportContext context, boolean ignoreRootNodes) {

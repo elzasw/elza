@@ -7,9 +7,13 @@ import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.dataexchange.input.DEImportException;
+import cz.tacr.elza.dataexchange.input.context.ImportInitHelper;
+import cz.tacr.elza.dataexchange.input.storage.StorageManager;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrStructureData;
+import cz.tacr.elza.domain.RulStructureType;
 import cz.tacr.elza.service.ArrangementService;
 
 /**
@@ -19,7 +23,11 @@ public class ContextSection {
 
     private final Map<String, ContextNode> contextNodeImportIdMap = new HashMap<>();
 
-    private final SectionsContext context;
+    private final Map<String, ContextStructObject> contextStructObjectImportIdMap = new HashMap<>();
+
+    private final NodeStorageDispatcher nodeStorageDispatcher;
+
+    private final StructObjectStorageDispatcher structObjectStorageDispatcher;
 
     private final ArrChange createChange;
 
@@ -27,17 +35,20 @@ public class ContextSection {
 
     private final ArrangementService arrangementService;
 
+    private RulStructureType processingStructType;
+
     private SectionRootAdapter rootAdapter;
 
-    ContextSection(SectionsContext context, ArrChange createChange, RuleSystem ruleSystem, ArrangementService arrangementService) {
-        this.context = Validate.notNull(context);
+    ContextSection(StorageManager storageManager,
+                   int batchSize,
+                   ArrChange createChange,
+                   RuleSystem ruleSystem,
+                   ImportInitHelper initHelper) {
+        this.nodeStorageDispatcher = new NodeStorageDispatcher(storageManager, batchSize);
+        this.structObjectStorageDispatcher = new StructObjectStorageDispatcher(storageManager, batchSize);
         this.createChange = Validate.notNull(createChange);
         this.ruleSystem = Validate.notNull(ruleSystem);
-        this.arrangementService = Validate.notNull(arrangementService);
-    }
-
-    public SectionsContext getContext() {
-        return context;
+        this.arrangementService = initHelper.getArrangementService();
     }
 
     public ArrChange getCreateChange() {
@@ -66,15 +77,51 @@ public class ContextSection {
         return contextNodeImportIdMap.get(importId);
     }
 
+    public ContextStructObject getContextStructObject(String importId) {
+        return contextStructObjectImportIdMap.get(importId);
+    }
+
     /**
      * Create root node for section and stores all remaining packets.
      */
-	public ContextNode setRootNode(ArrNode rootNode, String importNodeId) {
+    public ContextNode setRootNode(ArrNode rootNode, String importNodeId) {
         Validate.notNull(rootAdapter);
 
+        // store all previous entities before node processing
+        structObjectStorageDispatcher.dispatchAll();
+        processingStructType = null;
 
         // create root context node
-		return rootAdapter.createRoot(this, rootNode, importNodeId);
+        return rootAdapter.createRoot(this, rootNode, importNodeId);
+    }
+
+    public void setProcessingStructType(String structTypeCode) {
+        RulStructureType st = ruleSystem.getStructuredTypeByCode(structTypeCode);
+        this.processingStructType = Validate.notNull(st);
+    }
+
+    public ContextStructObject addStructObject(ArrStructureData structObject, String importId) {
+        Validate.notNull(processingStructType);
+
+        // update structured type reference
+        structObject.setStructureType(processingStructType);
+
+        ArrStructObjectWrapper wrapper = new ArrStructObjectWrapper(structObject, importId);
+        ContextStructObject cso = new ContextStructObject(this, wrapper.getIdHolder(), structObjectStorageDispatcher);
+        if (contextStructObjectImportIdMap.putIfAbsent(importId, cso) != null) {
+            throw new DEImportException("Structured object has duplicate id, soId:" + importId);
+        }
+
+        // store object wrapper
+        structObjectStorageDispatcher.addStructObject(wrapper);
+        return cso;
+    }
+
+    /**
+     * Store all section nodes and related entities.
+     */
+    public void storeNodes() {
+        nodeStorageDispatcher.dispatchAll();
     }
 
     public void close() {
@@ -86,57 +133,44 @@ public class ContextSection {
 
     /* package methods */
 
-    ContextNode addNode(ArrNodeWrapper nodeWrapper, ArrLevelWrapper levelWrapper, String importId, int depth) {
-        ContextNode node = new ContextNode(this, nodeWrapper.getIdHolder(), depth);
-        if (contextNodeImportIdMap.putIfAbsent(importId, node) != null) {
-            throw new DEImportException("Fund level has duplicate id, levelId:" + importId);
-        }
-        context.addNode(nodeWrapper, depth);
-        context.addLevel(levelWrapper, depth);
-        return node;
-    }
-
-    void addNodeRegister(ArrNodeRegisterWrapper wrapper, int depth) {
-        context.addNodeRegister(wrapper, depth);
-    }
-
-    void addDescItem(ArrDescItemWrapper itemWrapper, int depth) {
-        context.addDescItem(itemWrapper, depth);
-    }
-
-    void addData(ArrDataWrapper dataWrapper, int depth) {
-        context.addData(dataWrapper, depth);
-    }
-
     void setRootAdapter(SectionRootAdapter rootAdapter) {
         this.rootAdapter = rootAdapter;
     }
 
-	/**
-	 * Interface to create wrapper objects
-	 * 
-	 * This adapter can be used to change parent node of imported item.
-	 *
-	 */
+    ContextNode addNode(ArrNodeWrapper nodeWrapper, ArrLevelWrapper levelWrapper, String importId, int depth) {
+        ContextNode node = new ContextNode(this, nodeWrapper.getIdHolder(), nodeStorageDispatcher, depth);
+        if (contextNodeImportIdMap.putIfAbsent(importId, node) != null) {
+            throw new DEImportException("Fund level has duplicate id, levelId:" + importId);
+        }
+        nodeStorageDispatcher.addNode(nodeWrapper, depth);
+        nodeStorageDispatcher.addLevel(levelWrapper, depth);
+        return node;
+    }
+
+    /**
+     * Interface to create wrapper objects
+     *
+     * This adapter can be used to change parent node of imported item.
+     *
+     */
     interface SectionRootAdapter {
 
-		/**
-		 * Return target fund
-		 * 
-		 * @return return fund
-		 */
+        /**
+         * Return target fund
+         *
+         * @return return fund
+         */
         ArrFund getFund();
 
-		/**
-		 * Create root node for section
-		 * 
-		 * @param contextSection
-		 * @param rootNode
-		 * @param importNodeId
-		 *            ID of imported node
-		 * @return
-		 */
-		ContextNode createRoot(ContextSection contextSection, ArrNode rootNode, String importNodeId);
+        /**
+         * Create root node for section
+         *
+         * @param contextSection
+         * @param rootNode
+         * @param importNodeId ID of imported node
+         * @return
+         */
+        ContextNode createRoot(ContextSection contextSection, ArrNode rootNode, String importNodeId);
 
         /**
          * Called when section is processed.

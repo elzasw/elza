@@ -5,7 +5,7 @@ import cz.tacr.elza.dataexchange.input.context.ImportContext;
 import cz.tacr.elza.dataexchange.input.institutions.context.InstitutionsContext;
 import cz.tacr.elza.dataexchange.input.parties.context.PartiesContext;
 import cz.tacr.elza.dataexchange.input.parties.context.PartyInfo;
-import cz.tacr.elza.dataexchange.input.processor.ItemProcessor;
+import cz.tacr.elza.dataexchange.input.reader.ItemProcessor;
 import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.ParInstitutionType;
 import cz.tacr.elza.schema.v2.Institution;

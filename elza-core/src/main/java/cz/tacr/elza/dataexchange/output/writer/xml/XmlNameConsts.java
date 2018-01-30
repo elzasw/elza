@@ -11,7 +11,7 @@ import cz.tacr.elza.schema.v2.Person;
 /**
  * Constants for XML element names specified by http://elza.tacr.cz/schema/v2
  */
-public class XmlElementName {
+public class XmlNameConsts {
 
     public static final QName ROOT = new QName("http://elza.tacr.cz/schema/v2", "edx", "ns2");
 
@@ -33,9 +33,15 @@ public class XmlElementName {
 
     public static final String LEVEL = "lvl";
 
-    public static final String PACKETS = "pcks";
+    public static final String STRUCT_TYPES = "sts";
 
-    public static final String PACKET = "pck";
+    public static final String STRUCT_TYPE = "st";
+
+    public static final String STRUCT_TYPE_CODE = "c";
+
+    public static final String STRUCT_OBJECTS = "sos";
+
+    public static final String STRUCT_OBJECT = "so";
 
     public static final String getPartyName(Party party) {
         Class<? extends Party> partyType = party.getClass();

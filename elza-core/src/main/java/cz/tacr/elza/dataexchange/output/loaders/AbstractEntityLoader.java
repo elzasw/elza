@@ -9,7 +9,6 @@ import java.util.Set;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Tuple;
-import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.FetchParent;
@@ -17,80 +16,103 @@ import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Root;
 
 import org.apache.commons.lang3.Validate;
+import org.hibernate.ScrollMode;
+import org.hibernate.ScrollableResults;
+import org.hibernate.Session;
+import org.hibernate.query.Query;
 
 import cz.tacr.elza.common.db.HibernateUtils;
 
 /**
  * Abstract implementation for entity batch loader.
  */
-public abstract class AbstractEntityLoader<REQ_ID, ENTITY> extends AbstractBatchLoader<REQ_ID, ENTITY> {
+public abstract class AbstractEntityLoader<RES> extends AbstractBatchLoader<Object, RES> {
 
-    private final Class<ENTITY> entityClass;
+    private final Class<?> entityClass;
 
-    private final String entityRequestIdPath;
+    private final String queryEntityIdPath;
 
     private final EntityManager em;
 
-    public AbstractEntityLoader(Class<ENTITY> entityClass, String entityRequestIdPath, EntityManager em, int batchSize) {
+    protected AbstractEntityLoader(Class<?> entityClass,
+                                   String queryEntityIdPath,
+                                   EntityManager em,
+                                   int batchSize) {
         super(batchSize);
         this.entityClass = Validate.notNull(entityClass);
-        this.entityRequestIdPath = Validate.notNull(entityRequestIdPath);
+        this.queryEntityIdPath = Validate.notNull(queryEntityIdPath);
         this.em = Validate.notNull(em);
+
     }
 
     @Override
     protected final void processBatch(ArrayList<BatchEntry> entries) {
-        Map<REQ_ID, List<BatchEntry>> requestIdMap = getRequestIdMap(entries);
+        Map<Object, List<BatchEntry>> idLookup = getQueryEntityIdLookup(entries);
 
-        TypedQuery<Tuple> query = createQuery(requestIdMap.keySet());
+        CriteriaQuery<Tuple> cq = createCriteriaQuery(idLookup.keySet());
+        Query<Tuple> q = createHibernateQuery(cq);
 
-        List<Tuple> results = query.getResultList();
+        try (ScrollableResults results = q.scroll(ScrollMode.FORWARD_ONLY)) {
+            while (results.next()) {
+                Object queryEntityId = results.get(0);
+                Object entity = results.get(1);
 
-        for (Tuple result : results) {
-            Object requestId = result.get(0);
-            ENTITY entity = result.get(1, entityClass);
+                // TODO: replace detach for stateless session
+                em.detach(entity);
+                // can be initialized (detached) proxy
+                entity = HibernateUtils.unproxy(entity);
 
-            // TODO: replace detach for stateless session
-            em.detach(entity);
-            // can be initialized (detached) proxy
-            entity = HibernateUtils.unproxy(entity);
-
-            for (BatchEntry entry : requestIdMap.get(requestId)) {
-                entry.addResult(entity);
+                for (BatchEntry entry : idLookup.get(queryEntityId)) {
+                    RES result = createResult(entity);
+                    entry.addResult(result);
+                }
             }
         }
     }
 
-    protected void addFetches(FetchParent<?, ENTITY> parent) {
+    @SuppressWarnings("unchecked")
+    protected RES createResult(Object entity) {
+        return (RES) entity;
     }
 
-    private Map<REQ_ID, List<BatchEntry>> getRequestIdMap(Collection<BatchEntry> entries) {
-        Map<REQ_ID, List<BatchEntry>> map = new HashMap<>(entries.size());
+    protected void setEntityFetch(FetchParent<?, ?> baseEntity) {
+    }
+
+    private Map<Object, List<BatchEntry>> getQueryEntityIdLookup(Collection<BatchEntry> entries) {
+        Map<Object, List<BatchEntry>> map = new HashMap<>(entries.size());
 
         for (BatchEntry entry : entries) {
-            REQ_ID requestId = entry.getRequest();
-            List<BatchEntry> group = map.get(requestId);
+            Object id = entry.getRequest();
+            List<BatchEntry> group = map.get(id);
             if (group == null) {
-                map.put(requestId, group = new ArrayList<>());
+                map.put(id, group = new ArrayList<>());
             }
             group.add(entry);
         }
         return map;
     }
 
-    private TypedQuery<Tuple> createQuery(Set<REQ_ID> requestIds) {
+    private <T> Query<T> createHibernateQuery(CriteriaQuery<T> criteriaQuery) {
+        Session session = em.unwrap(Session.class);
+        Query<T> query = session.createQuery(criteriaQuery);
+        query.setCacheable(false);
+        query.setReadOnly(true);
+        return query;
+    }
+
+    private CriteriaQuery<Tuple> createCriteriaQuery(Set<Object> queryEntityIds) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Tuple> cq = cb.createTupleQuery();
 
-        Root<ENTITY> root = cq.from(entityClass);
-        addFetches(root);
+        Root<?> root = cq.from(entityClass);
+        setEntityFetch(root);
 
-        Path<REQ_ID> reqIdPath = getPath(root, entityRequestIdPath);
-        cq.where(reqIdPath.in(requestIds));
+        Path<?> idPath = getPath(root, queryEntityIdPath);
+        cq.where(idPath.in(queryEntityIds));
 
-        cq.multiselect(reqIdPath, root);
+        cq.multiselect(idPath, root);
 
-        return em.createQuery(cq);
+        return cq;
     }
 
     /**
@@ -100,8 +122,7 @@ public abstract class AbstractEntityLoader<REQ_ID, ENTITY> extends AbstractBatch
      * @param path to attribute
      * @return Simple or compound path to attribute.
      */
-    @SuppressWarnings("unchecked")
-    public static <T> Path<T> getPath(Root<?> root, String path) {
+    public static Path<?> getPath(Root<?> root, String path) {
         final String[] parts = path.split("\\.");
         if (parts.length == 0) {
             return root.get(path);
@@ -110,6 +131,6 @@ public abstract class AbstractEntityLoader<REQ_ID, ENTITY> extends AbstractBatch
         for (int i = 1; i < parts.length; i++) {
             last = last.get(parts[i]);
         }
-        return (Path<T>) last;
+        return last;
     }
 }

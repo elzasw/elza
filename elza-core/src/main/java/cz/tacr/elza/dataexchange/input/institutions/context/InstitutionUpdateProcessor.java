@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.Validate;
 
@@ -28,7 +28,7 @@ import cz.tacr.elza.repository.InstitutionRepository;
 /**
  * Manager for importing institutions.
  */
-class InstitutionImportManager implements ImportPhaseChangeListener {
+class InstitutionUpdateProcessor implements ImportPhaseChangeListener {
 
     private final Set<Integer> partyIdCreateFilter = new HashSet<>();
 
@@ -36,25 +36,30 @@ class InstitutionImportManager implements ImportPhaseChangeListener {
 
     private final InstitutionRepository institutionRepository;
 
-    private Map<Integer, InstitutionInfo> partyIdCurrentInstitutionMap;
+    /**
+     * Map contains institutions with updated party.
+     */
+    private Map<Integer, InstitutionInfo> partyIdInstitutionMap;
 
-    public InstitutionImportManager(int batchSize, InstitutionRepository institutionRepository) {
+    public InstitutionUpdateProcessor(int batchSize, InstitutionRepository institutionRepository) {
         this.batchSize = batchSize;
         this.institutionRepository = institutionRepository;
     }
 
     public InstitutionWrapper createWrapper(ParInstitution entity, PartyInfo partyInfo) {
-        Validate.notNull(partyIdCurrentInstitutionMap);
+        Validate.notNull(partyIdInstitutionMap);
         Validate.isTrue(partyInfo.isInitialized());
 
-        InstitutionInfo info = partyIdCurrentInstitutionMap.get(partyInfo.getEntityId());
+        InstitutionInfo info = partyIdInstitutionMap.get(partyInfo.getEntityId());
         if (info != null) {
+            // mark institution as imported
             if (info.isImported()) {
                 throw new DEImportException("Party cannot have more than one institution, partyId:" + partyInfo.getImportId());
             }
             entity.setInstitutionId(info.getInstitutionId());
             info.setAsImported();
         } else {
+            // only check import duplicate
             if (!partyIdCreateFilter.add(partyInfo.getEntityId())) {
                 throw new DEImportException("Party cannot have more than one institution, partyId:" + partyInfo.getImportId());
             }
@@ -66,20 +71,22 @@ class InstitutionImportManager implements ImportPhaseChangeListener {
     public boolean onPhaseChange(ImportPhase previousPhase, ImportPhase nextPhase, ImportContext context) {
         PartiesContext parties = context.getParties();
         if (nextPhase == ImportPhase.INSTITUTIONS) {
-            Validate.isTrue(partyIdCurrentInstitutionMap == null);
-            partyIdCurrentInstitutionMap = createPartyIdCurrentInstitutionMap(parties.getAllPartyInfo());
+            // begin -> prepare institutions from updated parties
+            Validate.isTrue(partyIdInstitutionMap == null);
+            partyIdInstitutionMap = createPartyIdMapFromUpdatedParties(parties.getAllPartyInfo());
             return true;
         }
         if (previousPhase == ImportPhase.INSTITUTIONS) {
-            Validate.notNull(partyIdCurrentInstitutionMap);
-            deleteNotImportedInstitutions(partyIdCurrentInstitutionMap.values());
+            // end -> delete not imported institutions with updated party
+            Validate.notNull(partyIdInstitutionMap);
+            deleteNotImportedInstitutions(partyIdInstitutionMap.values());
             return false;
         }
         return !ImportPhase.INSTITUTIONS.isSubsequent(nextPhase);
     }
 
-    private Map<Integer, InstitutionInfo> createPartyIdCurrentInstitutionMap(Collection<PartyInfo> allPartyInfo) {
-        // prepare party id list, all parties should be stored
+    private Map<Integer, InstitutionInfo> createPartyIdMapFromUpdatedParties(Collection<PartyInfo> allPartyInfo) {
+        // prepare list of party ids
         List<Integer> updatedPartyIds = new ArrayList<>();
         for (PartyInfo info : allPartyInfo) {
             Validate.isTrue(info.isInitialized());
@@ -87,17 +94,14 @@ class InstitutionImportManager implements ImportPhaseChangeListener {
                 updatedPartyIds.add(info.getEntityId());
             }
         }
-        // find current institutions by party id and fill map
+        // find related institutions
         Map<Integer, InstitutionInfo> map = new HashMap<>();
         for (List<Integer> partyIdBatch : Iterables.partition(updatedPartyIds, batchSize)) {
-            // find current institutions
-            List<ParInstitution> currentInstitutions = institutionRepository.findByPartyIdIn(partyIdBatch);
-            // fill partyId - info map
-            for (ParInstitution currInstitution : currentInstitutions) {
-                InstitutionInfo currInfo = new InstitutionInfo(currInstitution.getInstitutionId());
-                if (map.put(currInstitution.getPartyId(), currInfo) != null) {
-                    throw new SystemException(
-                            "Current party has more than one institution, current partyId:" + currInstitution.getPartyId(),
+            List<ParInstitution> institutions = institutionRepository.findByPartyIdIn(partyIdBatch);
+            for (ParInstitution inst : institutions) {
+                InstitutionInfo info = new InstitutionInfo(inst.getInstitutionId());
+                if (map.put(inst.getPartyId(), info) != null) {
+                    throw new SystemException("Current party has more than one institution, current partyId:" + inst.getPartyId(),
                             BaseCode.DB_INTEGRITY_PROBLEM);
                 }
             }
@@ -105,16 +109,11 @@ class InstitutionImportManager implements ImportPhaseChangeListener {
         return map;
     }
 
-    private void deleteNotImportedInstitutions(Collection<InstitutionInfo> currentInstitutions) {
-        List<Integer> deleteInstitutionIds = new ArrayList<>();
-        Iterator<InstitutionInfo> iterator = currentInstitutions.iterator();
-        while (iterator.hasNext()) {
-            InstitutionInfo info = iterator.next();
-            if (!info.isImported()) {
-                deleteInstitutionIds.add(info.getInstitutionId());
-                iterator.remove();
-            }
-        }
+    private void deleteNotImportedInstitutions(Collection<InstitutionInfo> institutionInfoList) {
+        List<Integer> deleteInstitutionIds = institutionInfoList.stream()
+                .filter(info -> !info.isImported())
+                .map(info -> info.getInstitutionId())
+                .collect(Collectors.toList());
         for (List<Integer> institutionIdBatch : Iterables.partition(deleteInstitutionIds, batchSize)) {
             institutionRepository.deleteByInstitutionIdIn(institutionIdBatch);
         }

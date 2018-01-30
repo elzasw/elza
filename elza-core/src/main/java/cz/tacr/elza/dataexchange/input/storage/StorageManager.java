@@ -25,6 +25,8 @@ import cz.tacr.elza.dataexchange.input.sections.context.ArrDescItemWrapper;
 import cz.tacr.elza.dataexchange.input.sections.context.ArrLevelWrapper;
 import cz.tacr.elza.dataexchange.input.sections.context.ArrNodeRegisterWrapper;
 import cz.tacr.elza.dataexchange.input.sections.context.ArrNodeWrapper;
+import cz.tacr.elza.dataexchange.input.sections.context.ArrStructItemWrapper;
+import cz.tacr.elza.dataexchange.input.sections.context.ArrStructObjectWrapper;
 
 /**
  * Storage manager for all imported items. Must be initialized with active session.
@@ -143,7 +145,15 @@ public class StorageManager implements StorageListener {
         saveEntities(items);
     }
 
-    public void saveSectionData(Collection<ArrDataWrapper> items) {
+    public void saveStructItems(Collection<ArrStructItemWrapper> items) {
+        saveEntities(items);
+    }
+
+    public void saveStructObjects(Collection<ArrStructObjectWrapper> items) {
+        saveEntities(items);
+    }
+
+    public void saveData(Collection<ArrDataWrapper> items) {
         saveEntities(items);
     }
 
