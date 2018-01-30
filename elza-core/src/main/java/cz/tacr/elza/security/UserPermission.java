@@ -4,9 +4,12 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
+import org.apache.commons.lang3.Validate;
+
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrPermission.Permission;
+import cz.tacr.elza.domain.UsrPermission.PermissionType;
 
 /**
  * Oprávnění uživatele.
@@ -101,6 +104,24 @@ public class UserPermission {
 			return false;
 		}
 		return true;
+	}
+
+	/**
+	 * Check specific fund related permission
+	 * @param perm
+	 * @param fundId
+	 * @return
+	 */
+	public boolean hasFundPermission(Permission perm, Integer fundId) {
+		Validate.isTrue(perm.getType()==PermissionType.FUND);
+		
+		if (this.permission != perm) {
+			return false;
+		}
+		if (!fundIds.contains(fundId)) {
+			return false;
+		}
+		return true;		
 	}
 
 	/**
