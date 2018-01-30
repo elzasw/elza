@@ -287,53 +287,15 @@ public class UserService {
      * @param permissions kontrolovaná oprávnění
      */
     private void checkPermission(final List<UsrPermission> permissions) {
-        if (hasPermission(UsrPermission.Permission.ADMIN) || hasPermission(UsrPermission.Permission.USR_PERM)) {
+        UserDetail userDetail = getLoggedUserDetail();
+        if(userDetail.hasPermission(UsrPermission.Permission.USR_PERM)) 
             return;
-        }
-
-        Collection<UserPermission> userPermission = getUserPermission();
+        
+        // Check new permissions
         for (UsrPermission usrPermission : permissions) {
-            UsrPermission.Permission permission = usrPermission.getPermission();
-            boolean hasPermission = false;
-            for (UserPermission perm : userPermission) {
-                if (perm.getPermission().equals(permission)) {
-                    switch (permission.getType()) {
-                        case ALL:
-                            hasPermission = true;
-                            break;
-                        case FUND:
-                            if (perm.getFundIds().contains(usrPermission.getFundId())) {
-                                hasPermission = true;
-                            }
-                            break;
-                        case USER:
-                            if (perm.getControlUserIds().contains(usrPermission.getUserControlId())) {
-                                hasPermission = true;
-                            }
-                            break;
-					/*
-					case GROUP:
-					    if (perm.getControlGroupIds().contains(usrPermission.getGroupControlId())) {
-					        hasPermission = true;
-					    }
-					    break;
-					   */
-                        case SCOPE:
-                            if (perm.getScopeIds().contains(usrPermission.getScopeId())) {
-                                hasPermission = true;
-                            }
-                            break;
-                        default:
-                            throw new NotImplementedException("Neimplementovaný typ oprvánění: " + permission.getType());
-                    }
-                    if (hasPermission) {
-                        break;
-                    }
-                }
-            }
-            if (!hasPermission) {
-                throw Authorization.createAccessDeniedException(permission)
-                        .level(Level.WARNING);
+            if(!userDetail.hasPermission(usrPermission)) {
+                throw Authorization.createAccessDeniedException(usrPermission.getPermission())
+                    .level(Level.WARNING);                
             }
         }
 
