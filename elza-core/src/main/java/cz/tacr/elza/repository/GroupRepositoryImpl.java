@@ -22,8 +22,6 @@ import cz.tacr.elza.domain.UsrGroupUser;
 import cz.tacr.elza.domain.UsrPermission;
 
 /**
- * @author Pavel Stánek
- * @since 15.06.2016
  */
 public class GroupRepositoryImpl implements GroupRepositoryCustom {
     @PersistenceContext
@@ -96,70 +94,4 @@ public class GroupRepositoryImpl implements GroupRepositoryCustom {
         return new FilteredResult<>(firstResult, maxResults, count, list);
     }
 
-    /**
-     * Sestaví dotaz pro seznam kupin nebo jejich počet dle podmínek.
-     * @param dataQuery pokud je true, vrátí se query se seznamem skupin, pokud je false, vrátí se query, které vrací počet skupin
-     * @param search hledaný výraz
-     * @param firstResult stránkování
-     * @param maxResults stránkování, pokud je -1 neomezuje se
-     * @param userId identifikátor uživatele, podle kterého filtrujeme (pokud je null, nefiltrujeme)
-     * @return query
-     */
-    private TypedQuery buildGroupFindQuery(final boolean dataQuery, final String search, final Integer firstResult,
-                                           final Integer maxResults, final Integer userId) {
-        StringBuilder conds = new StringBuilder();
-
-        StringBuilder query = new StringBuilder();
-        query.append("from usr_group g" +
-                " left join usr_permission pu on pu.group = g"
-        );
-
-        query.append(" where pu.permission = :permission");
-
-        // Podmínky hledání
-        Map<String, Object> parameters = new HashMap<>();
-        if (!StringUtils.isEmpty(search)) {
-            conds.append(" and (lower(g.name) like :search or lower(g.code) like :search or lower(g.description) like :search)");
-            parameters.put("search", "%" + search.toLowerCase() + "%");
-        }
-
-        if (userId != null) {
-            conds.append(" AND g.groupId IN (SELECT p.groupControlId FROM usr_permission p WHERE p.userId = :userId OR p.groupId IN (SELECT gu.groupId FROM usr_group_user gu WHERE gu.userId = :userId))");
-            parameters.put("userId", userId);
-        }
-
-        // Připojení podmínek ke query
-        if (conds.length() > 0) {
-            query.append(conds.toString());
-        }
-
-        TypedQuery q;
-        if (dataQuery) {
-            String dataQueryStr = "select distinct g " + query.toString() + " order by g.name, g.groupId";
-            q = entityManager.createQuery(dataQueryStr, UsrGroup.class);
-        } else {
-            String countQueryStr = "select count(distinct g) " + query.toString();
-            q = entityManager.createQuery(countQueryStr, Number.class);
-        }
-
-        q.setParameter("permission", UsrPermission.Permission.FUND_CREATE);
-        parameters.entrySet().forEach(e -> q.setParameter(e.getKey(), e.getValue()));
-
-        if (dataQuery) {
-            q.setFirstResult(firstResult);
-            if (maxResults >= 0) {
-                q.setMaxResults(maxResults);
-            }
-        }
-
-        return q;
-    }
-
-    @Override
-    public FilteredResult<UsrGroup> findGroupWithFundCreateByTextCount(final String search, final Integer firstResult, final Integer maxResults, final Integer userId) {
-        TypedQuery data = buildGroupFindQuery(true, search, firstResult, maxResults, userId);
-        TypedQuery count = buildGroupFindQuery(false, search, firstResult, maxResults, userId);
-		return new FilteredResult<>(firstResult, maxResults, ((Number) count.getSingleResult()).intValue(),
-		        data.getResultList());
-    }
 }

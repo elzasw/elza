@@ -75,9 +75,11 @@ public class AuthorizationRequest {
 	public AuthorizationRequest or(Permission perm) {
 		// only some permission type checks are supported
 		Validate.isTrue(perm == Permission.ADMIN || perm == Permission.FUND_ARR_ALL 
+		        || perm == Permission.FUND_ADMIN
 				|| perm == Permission.FUND_BA_ALL || perm == Permission.FUND_CL_VER_WR_ALL
 				|| perm == Permission.FUND_EXPORT_ALL || perm == Permission.FUND_OUTPUT_WR_ALL
-				|| perm == Permission.FUND_RD_ALL);
+				|| perm == Permission.FUND_RD_ALL
+				|| perm == Permission.USR_PERM);
 
 		checkList.add(new AuthCheck(perm));
 		return this;

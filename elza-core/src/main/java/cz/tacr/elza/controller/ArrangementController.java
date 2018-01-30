@@ -1472,16 +1472,16 @@ public class ArrangementController {
                 .createFundWithScenario(createFund.getName(), ruleSet, createFund.getInternalCode(), institution, createFund.getDateRange());
 
         // Kontrola na vyplněnost uživatele nebo skupiny jako správce, pokud není admin
-        if (!userService.hasPermission(UsrPermission.Permission.ADMIN)) {
+        if (!userService.hasPermission(UsrPermission.Permission.FUND_ADMIN)) {
             if (ObjectUtils.isEmpty(createFund.getAdminUsers()) && ObjectUtils.isEmpty(createFund.getAdminGroups())) {
                 Assert.isTrue(false, "Nebyl vybrán správce");
             }
-        }
 
-        // Kontrola, zda daní uživatelé a skupiny mají oprávnění zakládat AS
-        if (!userService.hasPermission(UsrPermission.Permission.ADMIN)) {   // pokud není admin, musí zadat je uživatele, kteří mají oprávnění (i zděděné) na zakládání nových AS
+            // Kontrola, zda daní uživatelé a skupiny mají oprávnění zakládat AS
+            // pokud není admin, musí zadat je uživatele, kteří mají oprávnění (i zděděné) na zakládání nových AS
             if (createFund.getAdminUsers() != null && !createFund.getAdminUsers().isEmpty()) {
-                final Set<Integer> userIds = userService.findUserWithFundCreate(null, false, false, 0, -1, null).getList().stream()
+                // TODO: Remove stream and user more direct query
+                final Set<Integer> userIds = userService.findUserWithFundCreate(null, 0, -1).getList().stream()
                         .map(x -> x.getUserId())
                         .collect(Collectors.toSet());
                 createFund.getAdminUsers()

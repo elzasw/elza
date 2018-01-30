@@ -82,8 +82,8 @@ public class UserDetail {
     }
 
 	public void setUserPermission(Collection<UserPermission> perms) {
-		userPermission.clear();
-		userPermission.addAll(perms);
+	    // update current permissions with new object
+	    this.userPermission = new ArrayList<>(perms);
 	}
 
 	/**
@@ -145,4 +145,22 @@ public class UserDetail {
 		}
 		return false;
 	}
+
+    public boolean isControllsUser(Integer userId) {
+        for (UserPermission userPermission : userPermission) {
+            if (userPermission.isControllsUser(userId)) {                
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean isControllsGroup(Integer groupId) {
+        for (UserPermission userPermission : userPermission) {
+            if (userPermission.isControllsGroup(groupId)) {                
+                return true;
+            }
+        }
+        return false;
+    }
 }

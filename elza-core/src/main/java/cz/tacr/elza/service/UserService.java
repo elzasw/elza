@@ -26,7 +26,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.encoding.ShaPasswordEncoder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionSynchronizationAdapter;
@@ -1019,7 +1018,7 @@ public class UserService {
 		} else {
 			return userRepository.findUserByTextAndStateCount(search, active, disabled, firstResult, maxResults,
 			        excludedGroupId,
-			        userDetail.getId());
+			        userDetail.getId(), false);
 		}
     }
 
@@ -1033,8 +1032,23 @@ public class UserService {
      * @param maxResults  maximální počet vrácených záznamů, pokud je -1 neomezuje se
      * @return výsledky hledání
      */
-    public FilteredResult<UsrUser> findUserWithFundCreate(final String search, final Boolean active, final Boolean disabled, final Integer firstResult, final Integer maxResults, final Integer excludedGroupId) {
-        return userRepository.findUserWithFundCreateByTextAndStateCount(search, active, disabled, firstResult, maxResults, excludedGroupId, null);
+	@Transactional
+	@AuthMethod(permission={UsrPermission.Permission.FUND_ADMIN, UsrPermission.Permission.FUND_CREATE, 
+			UsrPermission.Permission.USR_PERM})
+	public FilteredResult<UsrUser> findUserWithFundCreate(final String search, final Integer firstResult, final Integer maxResults) {
+		// get current user
+		UserDetail userDetail = getLoggedUserDetail();
+    	// if has admin rights -> we can find any user
+		AuthorizationRequest authRequest = AuthorizationRequest.hasPermission(UsrPermission.Permission.FUND_ADMIN)
+				.or(UsrPermission.Permission.USR_PERM);
+		if (authRequest.matches(userDetail)) {
+			// find in all users
+			return this.findUser(search, true, false, firstResult, maxResults, null);
+		}
+		
+		// only create permission -> have to return himself + or any controlled user    	
+        return userRepository.findUserByTextAndStateCount(search, true, false, firstResult, maxResults, null, 
+                userDetail.getId(), true);
     }
 
     /**
@@ -1059,10 +1073,23 @@ public class UserService {
      * @param maxResults  maximální počet vrácených záznamů, pokud je -1 neomezuje se
      * @return výsledky hledání
      */
+    @Transactional
+    @AuthMethod(permission={UsrPermission.Permission.FUND_ADMIN, UsrPermission.Permission.FUND_CREATE, 
+            UsrPermission.Permission.USR_PERM})    
     public FilteredResult<UsrGroup> findGroupWithFundCreate(final String search, final Integer firstResult, final Integer maxResults) {
-        boolean filterByUser = !hasPermission(UsrPermission.Permission.USR_PERM);
-        UsrUser user = getLoggedUser();
-        return groupRepository.findGroupWithFundCreateByTextCount(search, firstResult, maxResults, filterByUser && user != null ? user.getUserId() : null);
+        
+        // get current user
+        UserDetail userDetail = getLoggedUserDetail();
+        // if has admin rights -> we can find any group
+        AuthorizationRequest authRequest = AuthorizationRequest.hasPermission(UsrPermission.Permission.FUND_ADMIN)
+                .or(UsrPermission.Permission.USR_PERM);
+        if (authRequest.matches(userDetail)) {
+            // find in all users
+            return groupRepository.findGroupByTextCount(search, firstResult, maxResults, null);
+        }
+        
+        // only create permission -> have to return list of controlled group
+        return groupRepository.findGroupByTextCount(search, firstResult, maxResults, userDetail.getId());
     }
 
     /**
@@ -1416,38 +1443,23 @@ public class UserService {
 		// we have to have rights FUND_CREATE (In such case we can create it only for logged user)
 		// or USER_CONTROL_ENTITITY (In such case we can create it only for managed entities).
 
+        // check if user is same as logged user
+        UserDetail userDetail = getLoggedUserDetail();
+		
 		boolean hasPermission = false;
-		for (UserPermission userPermission : getUserPermission()) {
-			if (userPermission.isPermissionType(UsrPermission.Permission.FUND_ADMIN)
-					|| userPermission.isPermissionType(UsrPermission.Permission.ADMIN)
-			        || userPermission.isPermissionType(UsrPermission.Permission.USR_PERM)) {
-				hasPermission = true;
-				break;
-			}
-
-			if (userPermission.isPermissionType(UsrPermission.Permission.FUND_CREATE)) {
-				// check if user is same as logged user
-				UserDetail userDetail = getLoggedUserDetail();
-				if (userDetail.getId() == userId) {
-					hasPermission = true;
-					break;
-				}
-			}
-
-			if (userPermission.isPermissionType(UsrPermission.Permission.USER_CONTROL_ENTITITY)) {
-				// check if entity is managed
-				if (userPermission.isControllsUser(userId)) {
-					hasPermission = true;
-					break;
-				}
-			}
-			if (userPermission.isPermissionType(UsrPermission.Permission.GROUP_CONTROL_ENTITITY)) {
-				if (userPermission.isControllsGroup(groupId)) {
-					hasPermission = true;
-					break;
-				}
-			}
-		}
+        if (userDetail.hasPermission(UsrPermission.Permission.FUND_ADMIN)
+                || userDetail.hasPermission(UsrPermission.Permission.USR_PERM)
+                || userDetail.hasPermission(UsrPermission.Permission.FUND_CREATE)
+                ) {
+            hasPermission = true;
+        } else 
+        if (userId!=null && userDetail.isControllsUser(userId)) 
+        {
+            hasPermission = true;
+        } else 
+        if(groupId!=null && userDetail.isControllsGroup(groupId)) {
+            hasPermission = true;
+        }
 
 		if (!hasPermission) {
 			Permission[] perms = { UsrPermission.Permission.FUND_ADMIN, UsrPermission.Permission.USR_PERM,
