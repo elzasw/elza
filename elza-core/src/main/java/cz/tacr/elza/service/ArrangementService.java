@@ -49,6 +49,7 @@ import cz.tacr.elza.controller.vo.filter.SearchParam;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
+import cz.tacr.elza.core.security.AuthParam.Type;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDescItem;
@@ -444,7 +445,7 @@ public class ArrangementService {
 
     @AuthMethod(permission = { UsrPermission.Permission.FUND_VER_WR, UsrPermission.Permission.FUND_ADMIN })
     public ArrFundVersion createVersion(final ArrChange createChange,
-                                         final ArrFund fund,
+                                         @AuthParam(type = Type.FUND) final ArrFund fund,
                                          final RulRuleSet ruleSet,
                                          final ArrNode rootNode,
                                          final String dateRange) {
