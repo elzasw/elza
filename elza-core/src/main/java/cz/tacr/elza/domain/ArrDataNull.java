@@ -31,4 +31,8 @@ public class ArrDataNull extends ArrData {
 		return new ArrDataNull(this);
 	}
 
+    @Override
+    protected boolean isEqualValueInternal(ArrData srcData) {
+        return true;
+    }
 }

@@ -46,4 +46,10 @@ public class ArrDataUnitid extends ArrData {
 	public ArrDataUnitid makeCopy() {
 		return new ArrDataUnitid(this);
 	}
+
+    @Override
+    protected boolean isEqualValueInternal(ArrData srcData) {
+        ArrDataUnitid src = (ArrDataUnitid)srcData;
+        return value.equals(src.value);
+    }
 }

@@ -62,4 +62,10 @@ public class ArrDataFileRef extends ArrData {
 	public ArrDataFileRef makeCopy() {
 		return new ArrDataFileRef(this);
 	}
+
+    @Override
+    protected boolean isEqualValueInternal(ArrData srcData) {
+        ArrDataFileRef src = (ArrDataFileRef)srcData;
+        return fileId.equals(src.fileId);
+    }
 }

@@ -66,4 +66,10 @@ public class ArrDataJsonTable extends ArrData  {
 	public ArrDataJsonTable makeCopy() {
 		return new ArrDataJsonTable(this);
 	}
+
+    @Override
+    protected boolean isEqualValueInternal(ArrData srcData) {
+        ArrDataJsonTable src = (ArrDataJsonTable)srcData;
+        return value.equals(src.value);
+    }
 }

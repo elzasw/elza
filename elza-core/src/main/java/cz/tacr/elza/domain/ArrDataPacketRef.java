@@ -58,5 +58,11 @@ public class ArrDataPacketRef extends ArrData {
 	public ArrDataPacketRef makeCopy() {
 		return new ArrDataPacketRef(this);
 	}
+
+    @Override
+    protected boolean isEqualValueInternal(ArrData srcData) {
+        ArrDataPacketRef src = (ArrDataPacketRef)srcData;
+        return packetId.equals(src.packetId);
+    }
 }
 
