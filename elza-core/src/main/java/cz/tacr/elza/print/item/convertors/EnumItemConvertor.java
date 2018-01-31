@@ -16,7 +16,9 @@ public class EnumItemConvertor extends AbstractItemConvertor {
         if (itemType.getDataType() != DataType.ENUM) {
             return null;
         }
-        Validate.isTrue(item.getData() instanceof ArrDataNull);
+        Validate.isTrue(item.getData().getClass() == ArrDataNull.class);
+        // integrity check - spec must be set for defined item
+        Validate.notNull(item.getItemSpecId());
 
         return new ItemEnum();
     }

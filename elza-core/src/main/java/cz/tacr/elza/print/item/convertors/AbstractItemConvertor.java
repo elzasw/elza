@@ -15,27 +15,27 @@ public abstract class AbstractItemConvertor implements ItemConvertor {
 
     @Override
     public final Item convert(ArrItem arrItem, ItemConvertorContext context) {
-        this.context = context;
+        this.context = context; // prepare context for implementation
 
         ItemType itemType = context.getItemTypeById(arrItem.getItemTypeId());
 
         AbstractItem item;
         try {
             item = convert(arrItem, itemType);
-            // check if item was converter by this convertor
-            if (item == null) {
-                return null;
-            }
         } catch (Exception e) {
             ArrData data = arrItem.getData();
-            String descr = "Failed to convert item, itemId = " + arrItem.getItemId() + ", targetItemType="
-                    + itemType.getCode()
-                    + ", dataType=" + ((data == null) ? "null" : data.getClass().getCanonicalName());
-            throw new BusinessException(descr, e, BaseCode.DB_INTEGRITY_PROBLEM);
+            throw new BusinessException(
+                    "Failed to convert item, itemId = " + arrItem.getItemId() + ", targetItemType=" + itemType.getCode()
+                            + ", dataType=" + ((data == null) ? "null" : data.getClass().getCanonicalName()),
+                    e, BaseCode.DB_INTEGRITY_PROBLEM);
         }
+        // check if item was converter by this converter
+        if (item == null) {
+            return null;
+        }
+        // update common properties
         item.setPosition(arrItem.getPosition());
         item.setType(itemType);
-
         if (arrItem.getItemSpecId() != null) {
             ItemSpec itemSpec = context.getItemSpecById(arrItem.getItemSpecId());
             item.setSpecification(itemSpec);

@@ -17,11 +17,6 @@ public class ItemInteger extends AbstractItem {
     }
 
     @Override
-    public boolean isValueSerializable() {
-        return true;
-    }
-
-    @Override
     protected Integer getValue() {
         return value;
     }
