@@ -128,12 +128,12 @@ class websocket{
     onError = (error) => {
         const {body, headers, command} = error;
 
-        if (command === "ERROR" && headers) {
-            // Error message received from server
-            
-            this.disconnect(true);
-            store.dispatch(checkUserLogged((logged)=>{
-                if(logged){
+        store.dispatch(checkUserLogged((logged)=>{
+            if(logged){
+                if (command === "ERROR" && headers) {
+                    // Error message received from server
+                    
+                    this.disconnect(true);
                     let message = headers.message || "";
 
                     if(body){
@@ -142,14 +142,14 @@ class websocket{
                     } 
 
                     store.dispatch(addToastrDanger(i18n('global.error.ws'), message));
+                } else {
+                    // Unknown error -> probably lost connection -> try to reconnect
+                    this.disconnect();
+                    console.info('Websocket lost connection. Reconnecting...');
+                    setTimeout(this.connect, 5000);
                 }
-            }));
-        } else {
-            // Unknown error -> probably lost connection -> try to reconnect
-            this.disconnect();
-            console.info('Websocket lost connection. Reconnecting...');
-            setTimeout(this.connect, 5000);
-        }
+            }
+        }));
     }
 
     onMessage = (frame) => {
