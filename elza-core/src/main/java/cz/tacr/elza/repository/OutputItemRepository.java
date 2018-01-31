@@ -46,8 +46,8 @@ public interface OutputItemRepository extends JpaRepository<ArrOutputItem, Integ
 	@Query("SELECT i FROM arr_output_item i LEFT JOIN FETCH i.data WHERE i.deleteChange IS NULL AND i.descItemObjectId = :itemObjectId")
     List<ArrOutputItem> findOpenOutputItems(@Param("itemObjectId") Integer descItemObjectId);
 
-    @Query("SELECT i FROM arr_output_item i WHERE i.deleteChange IS NULL AND i.itemType = :itemType AND i.outputDefinition = :outputDefinition")
-    List<ArrOutputItem> findOpenOutputItems(@Param("itemType") RulItemType itemType,
+    @Query("SELECT i FROM arr_output_item i WHERE i.deleteChange IS NULL AND i.itemTypeId = :itemTypeId AND i.outputDefinition = :outputDefinition")
+    List<ArrOutputItem> findOpenOutputItems(@Param("itemTypeId") Integer itemTypeId,
                                             @Param("outputDefinition") ArrOutputDefinition outputDefinition);
 
     /**

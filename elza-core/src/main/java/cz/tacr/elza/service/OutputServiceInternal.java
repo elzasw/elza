@@ -361,8 +361,7 @@ public class OutputServiceInternal {
         return connector;
     }
 
-    @Transactional
-    public Set<Integer> getIgnoredItemTypeIds(ArrOutputDefinition outputDefinition) {
+    protected Set<Integer> getIgnoredItemTypeIds(ArrOutputDefinition outputDefinition) {
         Set<Integer> ignoredItemTypeIds = new HashSet<>();
 
         // add all manually calculating items from settings
@@ -423,10 +422,10 @@ public class OutputServiceInternal {
     @Transactional(TxType.MANDATORY)
     public int deleteOutputItemsByType(ArrFundVersion fundVersion,
                                        ArrOutputDefinition outputDefinition,
-                                       RulItemType itemType,
+                                       Integer itemTypeId,
                                        ArrChange deleteChange) {
         Validate.notNull(outputDefinition);
-        Validate.notNull(itemType);
+        Validate.notNull(itemTypeId);
         Validate.notNull(deleteChange);
 
         if (fundVersion.getLockChange() != null) {
@@ -434,7 +433,7 @@ public class OutputServiceInternal {
                     ArrangementCode.VERSION_ALREADY_CLOSED);
         }
 
-        List<ArrOutputItem> outputItems = outputItemRepository.findOpenOutputItems(itemType, outputDefinition);
+        List<ArrOutputItem> outputItems = outputItemRepository.findOpenOutputItems(itemTypeId, outputDefinition);
 
         for (ArrOutputItem item : outputItems) {
             item.setDeleteChange(deleteChange); // saved by commit
