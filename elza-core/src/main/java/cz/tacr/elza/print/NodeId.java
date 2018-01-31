@@ -20,7 +20,7 @@ public class NodeId {
 
     private final int depth;
 
-    List<NodeId> children;
+    private List<NodeId> children;
 
     /**
      * Creates internal or leaf node.
