@@ -11,6 +11,7 @@ import org.springframework.data.rest.core.annotation.RestResource;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.google.common.base.Objects;
 
 import cz.tacr.elza.api.IUnitdate;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
@@ -184,4 +185,21 @@ public class ArrDataUnitdate extends ArrData implements IUnitdate {
 	public ArrDataUnitdate makeCopy() {
 		return new ArrDataUnitdate(this);
 	}
+
+	@Override
+    protected boolean isEqualValueInternal(ArrData srcData) {
+	    ArrDataUnitdate src = (ArrDataUnitdate)srcData;
+	    
+	    if(!calendarTypeId.equals(src.calendarTypeId)||
+	       !Objects.equal(valueFrom, src.valueFrom)||
+	       !Objects.equal(valueFromEstimated, src.valueFromEstimated)||
+	       !Objects.equal(valueTo, src.valueTo)||
+	       !Objects.equal(valueToEstimated, src.valueToEstimated)||
+	       !Objects.equal(format, src.format)
+	            )
+	    {
+	        return false;
+	    }
+        return true;
+    }
 }

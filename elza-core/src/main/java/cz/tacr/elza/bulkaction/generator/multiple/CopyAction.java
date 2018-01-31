@@ -16,8 +16,8 @@ import cz.tacr.elza.bulkaction.generator.result.CopyActionResult;
 import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.core.data.RuleSystemItemType;
 import cz.tacr.elza.domain.ArrBulkActionRun;
+import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
 
@@ -74,24 +74,26 @@ public class CopyAction extends Action {
     }
 
 	/**
-	 * Check if specification is used in output
+	 * Check if item is used in output
 	 *
 	 * @param itemSpecId
 	 * @return
 	 */
-	private boolean isSpecificationUsed(Integer itemSpecId) {
-		for (ArrDescItem dataItem : dataItems) {
-			RulItemSpec spec = dataItem.getItemSpec();
-			Integer currSpecd = null;
-			if (spec != null) {
-				currSpecd = spec.getItemSpecId();
-			}
-			if (Objects.equals(itemSpecId, currSpecd)) {
-				return true;
-			}
-		}
-		return false;
-	}
+    private boolean isInResult(ArrDescItem item) {
+        for (ArrDescItem dataItem : dataItems) {
+
+            if(!Objects.equals(item.getItemSpecId(),  dataItem.getItemSpecId())) {
+                break;
+            }
+            ArrData cmpData = dataItem.getData();
+            ArrData data = item.getData();
+            // data are not null -> we can compare them
+            if(data.isEqualValue(cmpData)) {
+                return true;
+            }            
+        }
+        return false;
+    }
 
 	@Override
 	public void apply(LevelWithItems level, TypeLevel typeLevel) {
@@ -109,8 +111,7 @@ public class CopyAction extends Action {
 			}
 			// check if exists
 			if (config.isDistinct()) {
-				Integer itemSpecId = item.getItemSpecId();
-				if (isSpecificationUsed(itemSpecId)) {
+				if (isInResult(item)) {
 					continue;
 				}
 			}

@@ -47,4 +47,10 @@ public class ArrDataCoordinates extends ArrData {
 		ArrDataCoordinates copy = new ArrDataCoordinates(this);
 		return copy;
 	}
+
+    @Override
+    protected boolean isEqualValueInternal(ArrData srcData) {
+        ArrDataCoordinates src = (ArrDataCoordinates)srcData;
+        return value.equals(src.value);
+    }
 }

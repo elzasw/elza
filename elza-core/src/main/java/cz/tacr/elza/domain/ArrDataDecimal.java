@@ -49,4 +49,10 @@ public class ArrDataDecimal extends ArrData {
 	public ArrDataDecimal makeCopy() {
 		return new ArrDataDecimal(this);
 	}
+
+    @Override
+    protected boolean isEqualValueInternal(ArrData srcData) {
+        ArrDataDecimal src = (ArrDataDecimal)srcData;
+        return value.equals(src.value);
+    }
 }

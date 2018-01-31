@@ -20,6 +20,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.service.cache.NodeCacheSerializable;
 
@@ -154,6 +155,32 @@ public abstract class ArrData implements NodeCacheSerializable {
     public Long getNormalizedTo() {
         return null;
     }
+    
+    /**
+     * Compare values
+     * 
+     * Method is comparing only values without IDs
+     * 
+     * @param srcData
+     * @return
+     */
+    public boolean isEqualValue(ArrData srcData) {
+        // we can compare only real objects
+        srcData = HibernateUtils.unproxyInitialized(srcData);
+        
+        // check data type
+        Validate.isTrue(srcData.dataTypeId==this.dataTypeId);
+        
+        return isEqualValueInternal(srcData);
+    }
+    
+    /**
+     * Internal implementation of value comparator
+     * 
+     * @param srcData
+     * @return
+     */
+    abstract protected boolean isEqualValueInternal(ArrData srcData);
 
 	/**
 	 * Prepare copy of the data object

@@ -49,4 +49,10 @@ public class ArrDataInteger extends ArrData {
 	public ArrDataInteger makeCopy() {
 		return new ArrDataInteger(this);
 	}
+
+    @Override
+    protected boolean isEqualValueInternal(ArrData srcData) {
+        ArrDataInteger src = (ArrDataInteger)srcData;
+        return value.equals(src.value);
+    }
 }
