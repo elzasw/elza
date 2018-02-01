@@ -380,7 +380,7 @@ public class DmsService {
         ZipOutputStream zos = null;
 
         try {
-            file = File.createTempFile(result.getOutputDefinition().getName(), ".zip");
+            file = File.createTempFile("ElzaOutput", ".zip");
             fos = new FileOutputStream(file);
             zos = new ZipOutputStream(fos);
 
