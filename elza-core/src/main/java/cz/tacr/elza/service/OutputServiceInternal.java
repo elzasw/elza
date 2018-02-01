@@ -24,6 +24,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 
 import cz.tacr.elza.common.TaskExecutor;
 import cz.tacr.elza.core.ResourcePathResolver;
+import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.Authorization;
 import cz.tacr.elza.domain.ArrBulkActionRun;
@@ -392,7 +393,9 @@ public class OutputServiceInternal {
                     ArrangementCode.VERSION_ALREADY_CLOSED);
         }
 
-        itemService.checkValidTypeAndSpec(outputItem);
+        RuleSystem ruleSystem = this.staticDataService.getData().getRuleSystems()
+                .getByRuleSetId(fundVersion.getFundId());
+        itemService.checkValidTypeAndSpec(ruleSystem, outputItem);
 
         int maxPosition = outputItemRepository.findMaxItemPosition(outputItem.getItemType(), outputItem.getOutputDefinition());
 

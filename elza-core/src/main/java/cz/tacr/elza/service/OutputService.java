@@ -16,13 +16,16 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
-import org.apache.commons.lang.Validate;
+import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import cz.tacr.elza.bulkaction.BulkActionService;
 import cz.tacr.elza.bulkaction.generator.result.ActionResult;
+import cz.tacr.elza.core.data.RuleSystem;
+import cz.tacr.elza.core.data.RuleSystemItemType;
+import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.core.security.AuthParam.Type;
@@ -57,9 +60,7 @@ import cz.tacr.elza.exception.codes.OutputCode;
 import cz.tacr.elza.repository.ActionRecommendedRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.ItemSettingsRepository;
-import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeActionRepository;
-import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.NodeOutputRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.OutputDefinitionRepository;
@@ -109,9 +110,6 @@ public class OutputService {
     private EventNotificationService eventNotificationService;
 
     @Autowired
-    private ItemTypeRepository itemTypeRepository;
-
-    @Autowired
     private ItemService itemService;
 
     @Autowired
@@ -136,10 +134,7 @@ public class OutputService {
     private ItemTypeActionRepository itemTypeActionRepository;
 
     @Autowired
-    private RuleService ruleService;
-
-    @Autowired
-    private ItemSpecRepository itemSpecRepository;
+    private StaticDataService staticDataService;
 
     public ArrOutputDefinition getOutputDefinition(int outputDefinitionId) {
         return outputServiceInternal.getOutputDefinition(outputDefinitionId);
@@ -879,18 +874,19 @@ public class OutputService {
      * @return vytvořená hodnota atributu
      */
     private ArrOutputItem createOutputItem(final ArrOutputItem outputItem,
-                                           final ArrFundVersion version,
+                                           final ArrFundVersion fundVersion,
                                            final ArrChange change) {
         Assert.notNull(outputItem, "Výstup musí být vyplněn");
-        Assert.notNull(version, "Verze AS musí být vyplněna");
+        Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
         Assert.notNull(change, "Změna musí být vyplněna");
 
-        if (version.getLockChange() != null) {
+        if (fundVersion.getLockChange() != null) {
             throw new BusinessException("Nelze vytvořit prvek popisu pro výstup v uzavřené verzi.", ArrangementCode.VERSION_ALREADY_CLOSED);
         }
 
         // kontrola validity typu a specifikace
-        itemService.checkValidTypeAndSpec(outputItem);
+        RuleSystem ruleSystem = staticDataService.getData().getRuleSystems().getByRuleSetId(fundVersion.getFundId());
+        itemService.checkValidTypeAndSpec(ruleSystem, outputItem);
 
         int maxPosition = outputItemRepository.findMaxItemPosition(outputItem.getItemType(), outputItem.getOutputDefinition());
 
@@ -1240,20 +1236,22 @@ public class OutputService {
 
         ArrChange change = arrangementService.createChange(null);
         ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
-        RulItemType itemType = itemTypeRepository.findOne(itemTypeId);
+        Validate.notNull(fundVersion, "Verze archivní pomůcky neexistuje");
 
-        Assert.notNull(fundVersion, "Verze archivní pomůcky neexistuje");
-        Assert.notNull(itemType, "Typ atributu neexistuje");
+        RuleSystem ruleSystem = staticDataService.getData().getRuleSystems().getByRuleSetId(fundVersion.getRuleSetId());
+        RuleSystemItemType itemType = ruleSystem.getItemTypeById(itemTypeId);
+
+        Validate.notNull(itemType, "Typ atributu neexistuje");
 
         ArrOutputDefinition outputDefinition = outputDefinitionRepository.findOne(outputDefinitionId);
-        Assert.notNull(outputDefinition, "Definice výstupu musí být vyplněna");
+        Validate.notNull(outputDefinition, "Definice výstupu musí být vyplněna");
 
         List<OutputState> allowStates = Collections.singletonList(OutputState.OPEN);
         if (!allowStates.contains(outputDefinition.getState())) {
             throw new BusinessException("Nelze upravit výstup, který není ve stavu otevřený", OutputCode.NOT_PROCESS_IN_STATE);
         }
 
-        checkCalculatingAttribute(outputDefinition, itemType);
+        checkCalculatingAttribute(outputDefinition, itemType.getEntity());
 
         outputDefinition.setVersion(outputDefinitionVersion);
         saveOutputDefinition(outputDefinition);
@@ -1440,20 +1438,15 @@ public class OutputService {
             throw new ObjectNotFoundException("Nebyla nalezena verze AS s ID=" + fundVersionId, ArrangementCode.FUND_VERSION_NOT_FOUND).set("id", fundVersionId);
         }
 
-        List<RulItemTypeExt> outputItemTypes = ruleService.getOutputItemTypes(outputDefinition);
-        RulItemType outputItemType = outputItemTypes.stream().filter(rulItemTypeExt -> rulItemTypeExt.getItemTypeId().equals(outputItemTypeId)).findFirst().orElse(null);
-        if (outputItemType == null) {
+        RuleSystem ruleSystem = staticDataService.getData().getRuleSystems().getByRuleSetId(fundVersion.getRuleSetId());
+        RuleSystemItemType itemType = ruleSystem.getItemTypeById(outputItemTypeId);
+        if (itemType == null) {
             throw new ObjectNotFoundException("Nebyla nalezen typ atributu s ID=" + outputItemTypeId, ArrangementCode.ITEM_TYPE_NOT_FOUND).set("id", outputItemTypeId);
-        }
-
-        if (!outputItemType.getIndefinable()) {
-            throw new BusinessException("Položku není možné nastavit jako '" + ArrangementService.UNDEFINED + "'", ArrangementCode.CANT_SET_INDEFINABLE)
-            	.set("itemDesc", outputItemType.getCode());
         }
 
         RulItemSpec outputItemSpec = null;
         if (outputItemSpecId != null) {
-            outputItemSpec = itemSpecRepository.findOne(outputItemSpecId);
+            outputItemSpec = itemType.getItemSpecById(outputItemSpecId);
             if (outputItemSpec == null) {
                 throw new ObjectNotFoundException("Nebyla nalezena specifikace atributu s ID=" + outputItemSpecId, ArrangementCode.ITEM_SPEC_NOT_FOUND).set("id", outputItemSpecId);
             }
@@ -1477,7 +1470,7 @@ public class OutputService {
         saveOutputDefinition(outputDefinition);
 
         ArrOutputItem outputItem = new ArrOutputItem();
-        outputItem.setItemType(outputItemType);
+        outputItem.setItemType(itemType.getEntity());
         outputItem.setItemSpec(outputItemSpec);
         outputItem.setOutputDefinition(outputDefinition);
         outputItem.setCreateChange(change);
