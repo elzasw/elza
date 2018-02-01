@@ -569,15 +569,6 @@ public class BulkActionService implements ListenableFutureCallback<BulkActionWor
     /**
      * Searches latest finished bulk actions for specified node ids.
      */
-    public List<ArrBulkActionRun> findFinishedBulkActionsByNodes(ArrFundVersion fundVersion, Collection<ArrNode> nodes) {
-        List<Integer> nodeIds = new ArrayList<>(nodes.size());
-        nodes.forEach(n -> nodeIds.add(n.getNodeId()));
-        return findFinishedBulkActionsByNodeIds(fundVersion, nodeIds);
-    }
-
-    /**
-     * Searches latest finished bulk actions for specified node ids.
-     */
     public List<ArrBulkActionRun> findFinishedBulkActionsByNodeIds(ArrFundVersion fundVersion, Collection<Integer> nodeIds) {
         return bulkActionRepository.findBulkActionsByNodes(fundVersion.getFundVersionId(), nodeIds, State.FINISHED);
     }

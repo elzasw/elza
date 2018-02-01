@@ -2,6 +2,8 @@ package cz.tacr.elza.print;
 
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.ListIterator;
 import java.util.NoSuchElementException;
 
 /**
@@ -26,8 +28,13 @@ public class NodeIdIterator implements Iterator<NodeId> {
             throw new NoSuchElementException();
         }
         NodeId node = nodeIdStack.removeFirst();
-        if (node.children != null) {
-            node.children.forEach(nodeIdStack::addFirst);
+        // add children to stack
+        List<NodeId> children = node.getChildren();
+        if (!children.isEmpty()) {
+            ListIterator<NodeId> clit = children.listIterator(children.size());
+            while (clit.hasPrevious()) {
+                nodeIdStack.addFirst(clit.previous());
+            }
         }
         return node;
     }

@@ -185,7 +185,7 @@ public class OutputItemConnectorImpl implements OutputItemConnector {
 
         // check if not already deleted
         if (deleteItemTypeIds.add(rsit.getItemTypeId())) {
-            outputServiceInternal.deleteOutputItemsByType(fundVersion, outputDefinition, rsit.getEntity(), change);
+            outputServiceInternal.deleteOutputItemsByType(fundVersion, outputDefinition, rsit.getItemTypeId(), change);
         }
 
         outputServiceInternal.createOutputItem(outputItem, fundVersion, change);

@@ -420,8 +420,10 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         for (ArrNodeOutput outputNode : outputNodes) {
             TreeNode treeNode = fundTree.getNode(outputNode.getNodeId());
 
+            // convert output node to NodeId with all parents up to root
             NodeId nodeId = createNodeIdWithParents(treeNode, nodeIdMap);
 
+            // convert node tree of each output node child to NodeIds
             treeNode.getChildren().forEach(child -> initNodeIdSubtree(child, nodeId, nodeIdMap));
         }
 
@@ -598,14 +600,14 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
     /**
      * Convert party to output specific object
-     * 
+     *
      * @param party
      *            have to be non null
      * @param initHelper
      * @return
      */
     private static Party convertParty(ParParty party, PartyInitHelper initHelper) {
-        // input data have to be initialized 
+        // input data have to be initialized
         party = HibernateUtils.unproxyInitialized(party);
 
         PartyType partyType = PartyType.fromId(party.getPartyTypeId());

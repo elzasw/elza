@@ -53,6 +53,12 @@ public class ArrDataCoordinates extends ArrData {
 	}
 
     @Override
+    protected boolean isEqualValueInternal(ArrData srcData) {
+        ArrDataCoordinates src = (ArrDataCoordinates)srcData;
+        return value.equals(src.value);
+    }
+
+    @Override
     public void mergeInternal(final ArrData srcData) {
         ArrDataCoordinates src = (ArrDataCoordinates) srcData;
         copyValue(src);

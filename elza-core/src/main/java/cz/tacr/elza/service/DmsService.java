@@ -27,6 +27,7 @@ import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrOutputDefinition;
 import cz.tacr.elza.domain.ArrOutputFile;
 import cz.tacr.elza.domain.ArrOutputResult;
 import cz.tacr.elza.domain.DmsFile;
@@ -39,6 +40,7 @@ import cz.tacr.elza.repository.FundFileRepository;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.OutputFileRepository;
 import cz.tacr.elza.repository.OutputResultRepository;
+import cz.tacr.elza.security.AuthorizationRequest;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventStringInVersion;
@@ -76,6 +78,9 @@ public class DmsService {
 
     @Autowired
     private EventNotificationService eventNotificationService;
+    
+    @Autowired
+    private UserService userService;
 
     /**
      * Uloží DMS soubor se streamem a publishne event
@@ -354,10 +359,19 @@ public class DmsService {
      * @return filtrovaný list
      */
 	@Transactional
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_RD, UsrPermission.Permission.FUND_RD_ALL})
     public FilteredResult<ArrOutputFile> findOutputFiles(final String search, final Integer outputResultId, final Integer from, final Integer count) {
-        Assert.notNull(outputResultId, "Identifikátor výstupu musí být vyplněn");
-        return outputFileRepository.findByTextAndResult(search, outputResultRepository.getOneCheckExist(outputResultId), from, count);
+		Assert.notNull(outputResultId, "Identifikátor výstupu musí být vyplněn");
+		
+		// get output result to check permissions
+		ArrOutputResult outputResult = outputResultRepository.findOneByOutputResultId(outputResultId);
+		ArrOutputDefinition outputDef = outputResult.getOutputDefinition();
+		
+		// check permissions
+		AuthorizationRequest authRequest = AuthorizationRequest.hasPermission(UsrPermission.Permission.FUND_RD_ALL)
+		    .or(UsrPermission.Permission.FUND_RD, outputDef.getFundId());		
+		userService.authorizeRequest(authRequest);
+		
+        return outputFileRepository.findByTextAndResult(search, outputResult, from, count);
     }
 
     public File getOutputFilesZip(final ArrOutputResult result) {
@@ -367,7 +381,7 @@ public class DmsService {
         ZipOutputStream zos = null;
 
         try {
-            file = File.createTempFile(result.getOutputDefinition().getName(), ".zip");
+            file = File.createTempFile("ElzaOutput", ".zip");
             fos = new FileOutputStream(file);
             zos = new ZipOutputStream(fos);
 

@@ -37,9 +37,6 @@ public class ValueFormatter implements FormatAction {
      * @param item
      */
     private void formatItem(FormatContext ctx, Item item) {
-        if (!item.isValueSerializable()){
-            return;
-        }
         String value = item.getSerializedValue();
 
         ItemSpec spec = item.getSpecification();

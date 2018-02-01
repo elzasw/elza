@@ -18,15 +18,27 @@ public class SetBlockSeparators implements FormatAction {
      * Separator ending the block
      */
     private final String endBlockSeparator;
-
-    public SetBlockSeparators(String beginBlockSeparator, String endBlockSeparator) {
+    
+    private boolean useBeginSeparatorAlways = true;
+    
+    private boolean useEndSeparatorAlways = true;
+    
+    public SetBlockSeparators(final String beginBlockSeparator, final String endBlockSeparator) {
         this.beginBlockSeparator = beginBlockSeparator;
         this.endBlockSeparator = endBlockSeparator;
     }
 
+    public SetBlockSeparators(final String beginBlockSeparator, final String endBlockSeparator, 
+                              final boolean useBeginSeparatorAlways, final boolean useEndSeparatorAlways) {
+        this.beginBlockSeparator = beginBlockSeparator;
+        this.endBlockSeparator = endBlockSeparator;
+        this.useBeginSeparatorAlways = useBeginSeparatorAlways;
+        this.useEndSeparatorAlways = useEndSeparatorAlways;
+    }
+
     @Override
     public void format(FormatContext ctx, List<Item> items) {
-        ctx.setBeginBlockSeparator(beginBlockSeparator);
-        ctx.setEndBlockSeparator(endBlockSeparator);
+        ctx.setBeginBlockSeparator(beginBlockSeparator, useBeginSeparatorAlways);
+        ctx.setEndBlockSeparator(endBlockSeparator, useEndSeparatorAlways);
     }
 }

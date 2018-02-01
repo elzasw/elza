@@ -17,8 +17,9 @@ import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.core.data.RuleSystemItemType;
-import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataFileRef;
@@ -36,10 +37,16 @@ import cz.tacr.elza.domain.table.ElzaColumn;
 import cz.tacr.elza.domain.table.ElzaRow;
 import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.Level;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.FundFileRepository;
 import cz.tacr.elza.repository.ItemRepository;
+import cz.tacr.elza.repository.ItemSpecRegisterRepository;
+import cz.tacr.elza.repository.PacketRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.StructureDataRepository;
@@ -69,7 +76,10 @@ public class ItemService {
     private RegRecordRepository recordRepository;
 
     @Autowired
-    private StaticDataService staticDataService;
+    private ItemSpecRegisterRepository itemSpecRegisterRepository;
+
+    @Autowired
+    private RegisterTypeRepository registerTypeRepository;
 
     @Autowired
     private EntityManager em;
@@ -165,19 +175,49 @@ public class ItemService {
      * @param item hodnota atributu
      */
     @Transactional(TxType.MANDATORY)
-    public void checkValidTypeAndSpec(final ArrItem item) {
-        Integer itemTypeId = item.getItemTypeId();
-        Integer itemSpecId = item.getItemSpecId();
+    public void checkValidTypeAndSpec(final RuleSystem ruleSystem, final ArrItem descItem) {
+        RuleSystemItemType descItemType = ruleSystem.getItemTypeById(descItem.getItemTypeId());
+        Validate.notNull(descItemType, "Invalid description item type");
 
-        RuleSystemItemType staticItemType = staticDataService.getData().getRuleSystems().getItemType(itemTypeId);
+        Integer descItemSpecId = descItem.getItemSpecId();
 
-        if (staticItemType.hasSpecifications()) {
-            RulItemSpec itemSpec = staticItemType.getItemSpecById(itemSpecId);
-            Validate.notNull(itemSpec);
-        } else {
-            Validate.isTrue(itemSpecId == null);
-        }
+        // check if defined specification
+        if (descItemType.hasSpecifications()) {
+            if (descItemSpecId == null) {
+                throw new BusinessException("Pro typ atributu je nutné specifikaci vyplnit",
+                        ArrangementCode.ITEM_SPEC_NOT_FOUND).level(Level.WARNING);
             }
+
+            RulItemSpec descItemSpec = descItemType.getItemSpecById(descItemSpecId);
+            if (descItemSpec == null) {
+                throw new SystemException("Specifikace neodpovídá typu hodnoty atributu");
+            }
+
+            // extra check for data
+            ArrData data = descItem.getData();
+            if (data != null) {
+                // check record_ref
+                if (descItemType.getDataType().equals(DataType.RECORD_REF)) {
+                    ArrDataRecordRef dataRecordRef = (ArrDataRecordRef) data;
+
+                    // TODO: refactor and use static data
+                    Set<Integer> registerTypeIds = itemSpecRegisterRepository.findIdsByItemSpecId(descItemSpec);
+                    Set<Integer> registerTypeIdTree = registerTypeRepository.findSubtreeIds(registerTypeIds);
+
+                    if (!registerTypeIdTree.contains(dataRecordRef.getRecord().getRegisterTypeId())) {
+                        throw new BusinessException("Hodnota neodpovídá typu rejstříku podle specifikace",
+                                RegistryCode.FOREIGN_ENTITY_INVALID_SUBTYPE).level(Level.WARNING);
+                    }
+                }
+            }
+
+        } else {
+            if (descItemSpecId != null) {
+                throw new BusinessException("Pro typ atributu nesmí být specifikace vyplněná",
+                        ArrangementCode.ITEM_SPEC_FOUND).level(Level.WARNING);
+            }
+        }
+    }
 
     /**
      * Donačítá položky, které jsou typově jako odkaz, podle ID.

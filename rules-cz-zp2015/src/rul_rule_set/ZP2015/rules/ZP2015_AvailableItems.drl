@@ -54,7 +54,7 @@ when
         "ZP2015_ORIENTATION", "ZP2015_ITEM_MAT", "ZP2015_PART", "ZP2015_EDITION",
         "ZP2015_EXERQUE", "ZP2015_PAINTING_CHAR", "ZP2015_CORROBORATION", "ZP2015_IMPRINT_COUNT",
         "ZP2015_IMPRINT_ORDER", "ZP2015_LEGEND", "ZP2015_MOVIE_LENGTH", "ZP2015_RECORD_LENGTH",
-        "ZP2015_COLL_EXTENT_LENGTH", "ZP2015_NAD", "ZP2015_DESCRIPTION_DATE",
+        "ZP2015_COLL_EXTENT_LENGTH", "ZP2015_NAD", "ZP2015_ZNACKA_FONDU", "ZP2015_DESCRIPTION_DATE",
         "ZP2015_WRITING"))
 then
     $itemType.setRepeatable(false);
@@ -165,13 +165,12 @@ then
     $itemSpec.setType(RulItemSpec.Type.REQUIRED);
 end
 
-// Číslo NAD na kořeni a dílčím listu
-rule "NAD na kořeni a dílčím listu"
+rule "Doporučené označení fondu na kořeni a dílčím listu"
 no-loop
 when
     $activeLevel : ActiveLevel( )
     DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ROOT", "ZP2015_LEVEL_SECTION") ) from $activeLevel.descItems
-    $itemType : RulItemTypeExt(code == "ZP2015_NAD")
+    $itemType : RulItemTypeExt(code in ("ZP2015_NAD", "ZP2015_ZNACKA_FONDU") )
 then
     $itemType.setType(RulItemType.Type.RECOMMENDED);
 end
@@ -814,7 +813,7 @@ then
     $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
 end
 
-rule "Doporučení pro první nastavení typu pomůcky"
+rule "Doporučené prvky pro první nastavení typu pomůcky (všechny typy)"
 no-loop
 salience -100
 when $activeLevel: ActiveLevel( )
@@ -826,8 +825,8 @@ when $activeLevel: ActiveLevel( )
          DescItem(type in ( "ZP2015_ARRANGEMENT_TYPE" ) )
           from $level.descItems )    
     $itemType: RulItemTypeExt( code in (
-        // 4.3.4 Tematický popis jednotky popisu
-        "ZP2015_UNIT_CONTENT",
+        // ZP4.3.3 Způsob uspořádání jednotky popisu
+        "ZP2015_UNIT_ARR", 
         // 4.3.5 Přímý zdroj akvizice
         "ZP2015_UNIT_SOURCE",
         // 4.4.4 Fyzický stav jednotky popisu a technické požadavky 
@@ -840,16 +839,53 @@ then
     $itemType.setType(RulItemType.Type.RECOMMENDED);
 end
 
-// Doporučení pro kořen inventáře a katalogu - vyhodnoceno později
-// ZP4.3.2 Dějiny jednotky popisu
-// ZP4.3.3 Způsob uspořádání jednotky popisu
-// ZP4.3.6 Budoucí přírůstky
+rule "Doporučené prvky pro první nastavení typu pomůcky (inv, kat)"
+no-loop
+salience -100
+when $activeLevel: ActiveLevel( )
+    $descItem : DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in (
+        "ZP2015_ARRANGEMENT_INV", "ZP2015_ARRANGEMENT_KAT"
+        ) ) from $activeLevel.descItems
+    // nesmi existovat rodic, ktery by mel jiz vyhodnoceni nastaveno
+    not ( $level: Level( this!=$activeLevel && $parentItems: descItems ) and
+         DescItem(type in ( "ZP2015_ARRANGEMENT_TYPE" ) )
+          from $level.descItems )    
+    $itemType: RulItemTypeExt( code in (
+        // 4.3.4 Tematický popis jednotky popisu
+        "ZP2015_UNIT_CONTENT"
+        ) )
+then
+    $itemType.setType(RulItemType.Type.RECOMMENDED);
+end
+
+rule "Doporučené prvky pro první nastavení typu pomůcky (inv, kat, starsi)"
+no-loop
+salience -100
+when $activeLevel: ActiveLevel( )
+    $descItem : DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in (
+        "ZP2015_ARRANGEMENT_OTHER", "ZP2015_ARRANGEMENT_INV", "ZP2015_ARRANGEMENT_KAT"
+        ) ) from $activeLevel.descItems
+    // nesmi existovat rodic, ktery by mel jiz vyhodnoceni nastaveno
+    not ( $level: Level( this!=$activeLevel && $parentItems: descItems ) and
+         DescItem(type in ( "ZP2015_ARRANGEMENT_TYPE" ) )
+          from $level.descItems )    
+    $itemType: RulItemTypeExt( code in (
+        // ZP4.3.2 Dějiny jednotky popisu    
+    	"ZP2015_UNIT_HIST" 
+        ) )
+then
+    $itemType.setType(RulItemType.Type.RECOMMENDED);
+end
+
 rule "Doporučení pro kořen inventáře a katalogu"
 no-loop
 salience -100
 when $activeLevel: ActiveLevel( parent == null )
     $descItem : DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV", "ZP2015_ARRANGEMENT_KAT") ) from $activeLevel.descItems
-    $itemType: RulItemTypeExt( code in ("ZP2015_UNIT_HIST", "ZP2015_UNIT_ARR", "ZP2015_FUTURE_UNITS") )
+    $itemType: RulItemTypeExt( code in (
+    	// ZP4.3.6 Budoucí přírůstky
+    	"ZP2015_FUTURE_UNITS"
+	) )
 then
     $itemType.setType(RulItemType.Type.RECOMMENDED);
 end

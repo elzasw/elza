@@ -64,7 +64,7 @@
 		<part uuid="43ca8116-fb27-4587-a630-b8b6559634f9">
 			<p:subreportPart xmlns:p="http://jasperreports.sourceforge.net/jasperreports/parts" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/parts http://jasperreports.sourceforge.net/xsd/parts.xsd">
 				<subreportParameter name="REPORT_DATA_SOURCE">
-					<subreportParameterExpression><![CDATA[new JRDataIterableNodes($P{output}.getNodesDFS())]]></subreportParameterExpression>
+					<subreportParameterExpression><![CDATA[new JRDataIterableNodes($P{output}.createFlatNodeIterator())]]></subreportParameterExpression>
 				</subreportParameter>
 				<subreportParameter name="output">
 					<subreportParameterExpression><![CDATA[$P{output}]]></subreportParameterExpression>

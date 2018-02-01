@@ -72,6 +72,12 @@ public class ArrDataJsonTable extends ArrData  {
 	}
 
     @Override
+    protected boolean isEqualValueInternal(ArrData srcData) {
+        ArrDataJsonTable src = (ArrDataJsonTable)srcData;
+        return value.equals(src.value);
+    }
+
+    @Override
     public void mergeInternal(final ArrData srcData) {
         ArrDataJsonTable src = (ArrDataJsonTable) srcData;
         copyValue(src);

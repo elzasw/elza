@@ -20,11 +20,6 @@ public class ItemRecordRef extends AbstractItem {
     }
 
     @Override
-    public boolean isValueSerializable() {
-        return true;
-    }
-
-    @Override
     protected Record getValue() {
         return record;
     }

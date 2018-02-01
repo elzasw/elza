@@ -43,6 +43,11 @@ public class ArrNodeVO {
         this.version = version;
     }
 
+    /**
+     * Create entity from this value object
+     * 
+     * @return
+     */
     public ArrNode createEntity() {
         ArrNode node = new ArrNode();
         node.setNodeId(id);

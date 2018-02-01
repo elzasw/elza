@@ -55,6 +55,12 @@ public class ArrDataDecimal extends ArrData {
 	}
 
     @Override
+    protected boolean isEqualValueInternal(ArrData srcData) {
+        ArrDataDecimal src = (ArrDataDecimal)srcData;
+        return value.equals(src.value);
+    }
+
+    @Override
     public void mergeInternal(final ArrData srcData) {
         ArrDataDecimal src = (ArrDataDecimal)srcData;
         copyValue(src);

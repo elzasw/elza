@@ -52,6 +52,12 @@ public class ArrDataUnitid extends ArrData {
 	}
 
     @Override
+    protected boolean isEqualValueInternal(ArrData srcData) {
+        ArrDataUnitid src = (ArrDataUnitid)srcData;
+        return value.equals(src.value);
+    }
+
+    @Override
     public void mergeInternal(final ArrData srcData) {
         ArrDataUnitid src = (ArrDataUnitid) srcData;
         copyValue(src);

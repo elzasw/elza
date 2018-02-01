@@ -3,6 +3,8 @@ package cz.tacr.elza.repository;
 import cz.tacr.elza.domain.RulAction;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulItemTypeAction;
+import cz.tacr.elza.domain.RulOutputType;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -32,4 +34,12 @@ public interface ItemTypeActionRepository extends JpaRepository<RulItemTypeActio
 
     @Query("SELECT it FROM rul_item_type_action i JOIN i.itemType it WHERE i.action IN (:actions)")
     List<RulItemType> findByAction(@Param("actions") List<RulAction> actions);
+
+    /**
+     * Return computed item type for given output type
+     * @param outputType
+     * @return
+     */
+    @Query("SELECT ita from rul_item_type_action ita JOIN rul_action_recommended ar on ar.action=ita.action where ar.outputType= :outputType")
+    List<RulItemTypeAction> findByOutputType(@Param("outputType") RulOutputType outputType);
 }
