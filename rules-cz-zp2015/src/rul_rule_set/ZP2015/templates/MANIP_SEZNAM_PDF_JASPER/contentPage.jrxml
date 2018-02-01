@@ -356,9 +356,7 @@ $F{node}.getItemsWithSpec("ZP2015_LEVEL_TYPE","ZP2015_LEVEL_ROOT").size() > 0]]>
 	.setSpecSeparator(": ")
 	.setItemSeparator("<br>")
 	.setBlockSeparators("","")
-	.beginBlock()		
-		.addValue("ZP2015_OTHER_ID")
-	.endBlock()]]></defaultValueExpression>
+	.beginBlock().addValue("ZP2015_OTHER_ID").endBlock()]]></defaultValueExpression>
 	</parameter>
 	<parameter name="shortDetailFormatter" class="cz.tacr.elza.print.format.Formatter" isForPrompting="false">
 		<parameterDescription><![CDATA[]]></parameterDescription>
@@ -699,11 +697,12 @@ $F{node}.getItemsWithSpec("ZP2015_LEVEL_TYPE","ZP2015_LEVEL_ROOT").size() > 0]]>
 		<band height="24" splitType="Prevent">
 			<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
 			<frame>
-				<reportElement key="" style="OuterFrame" positionType="Float" x="0" y="0" width="455" height="10" isRemoveLineWhenBlank="true" backcolor="#000DFF" uuid="69465714-e8c2-4441-a4e1-f4744308f7a4">
+				<reportElement key="" style="OuterFrame" positionType="Float" mode="Transparent" x="0" y="0" width="455" height="10" isRemoveLineWhenBlank="true" backcolor="#000DFF" uuid="69465714-e8c2-4441-a4e1-f4744308f7a4">
 					<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
+					<property name="ShowOutOfBoundContent" value="false"/>
 				</reportElement>
 				<frame>
-					<reportElement style="ItemIds" positionType="Float" stretchType="ContainerHeight" x="0" y="0" width="455" height="5" isRemoveLineWhenBlank="true" uuid="24c7a650-6a35-4a55-8bcc-4acfdd4bd53a">
+					<reportElement style="ItemIds" positionType="Float" x="0" y="0" width="455" height="5" isRemoveLineWhenBlank="true" uuid="24c7a650-6a35-4a55-8bcc-4acfdd4bd53a">
 						<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					</reportElement>
@@ -736,7 +735,7 @@ $F{node}.getItemsWithSpec("ZP2015_LEVEL_TYPE","ZP2015_LEVEL_ROOT").size() > 0]]>
 					</textField>
 				</frame>
 				<textField isStretchWithOverflow="true" pattern="">
-					<reportElement key="" style="Item" positionType="Float" mode="Transparent" x="0" y="5" width="455" height="5" isRemoveLineWhenBlank="true" backcolor="#22FF00" uuid="fe1d4ca3-1c86-4e35-a4e7-7f96834e3481"/>
+					<reportElement key="" style="Item" positionType="Float" mode="Transparent" x="0" y="5" width="455" height="5" backcolor="#22FF00" uuid="fe1d4ca3-1c86-4e35-a4e7-7f96834e3481"/>
 					<textElement markup="html">
 						<font pdfEncoding="Cp1250"/>
 					</textElement>
