@@ -1,5 +1,5 @@
 import * as types from 'actions/constants/ActionTypes.js';
-import {WebApi} from 'actions/index.jsx';
+import {WebApi, _WebApi} from 'actions/index.jsx';
 import {userDetailChange, userDetailClear, userDetailRequest} from 'actions/user/userDetail.jsx'
 import {routerNavigate} from "actions/router.jsx"
 import {partyListInvalidate, partyDetailInvalidate, partyDetailClear} from 'actions/party/party.jsx'
@@ -14,7 +14,8 @@ export function checkUserLogged(callback=()=>{}) {
     return (dispatch, getState) => {
         const state = getState();
         dispatch(userDetailRequest());
-        WebApi.getUserDetail().then(userDetail => {
+        // calls original _getUserDetail method, which is not postponed until login
+        _WebApi.getUserDetail().then(userDetail => {
             if(userDetail && !state.login.logged){
                 // fake local login if user is logged on server
                 dispatch(loginSuccess(userDetail));
@@ -52,6 +53,8 @@ function loginSuccess(forcedUserDetail) {
                 dispatch(action);
             })
         }
+
+        WebApi.onLogin();
     }
 }
 
