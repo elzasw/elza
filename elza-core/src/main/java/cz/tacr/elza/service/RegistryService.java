@@ -244,6 +244,15 @@ public class RegistryService {
             throw new BusinessException("Nelze smazat rejstříkové heslo, které má potomky.", RegistryCode.EXISTS_CHILD);
         }
 
+        // vztah osoby par_relation_entity
+        List<ParRelationEntity> relationEntities = relationEntityRepository.findActiveByRecord(record);
+        if (CollectionUtils.isNotEmpty(relationEntities)) {
+            throw new BusinessException("Nelze smazat/zneplatnit rejstříkové heslo na kterou mají vazbu jiné aktivní osoby v relacích.", RegistryCode.EXIST_FOREIGN_DATA)
+                    .set("recordId", record.getRecordId())
+                    .set("relationEntities", relationEntities.stream().map(ParRelationEntity::getRelationEntityId).collect(Collectors.toList()))
+                    .set("partyIds", relationEntities.stream().map(ParRelationEntity::getRelation).map(ParRelation::getParty).map(ParParty::getPartyId).collect(Collectors.toList()));
+        }
+
     }
 
     /**
@@ -968,14 +977,15 @@ public class RegistryService {
 
 					List<OccurrenceVO> occurrences = new LinkedList<>();
 					partyVO.setOccurrences(occurrences);
+					partyVOMap.put(creator.getPartyId(), partyVO);
 				}
 
 				OccurrenceVO occurrenceVO = new OccurrenceVO(c.getCreatorId(), OccurrenceType.PAR_CREATOR);
 				partyVO.getOccurrences().add(occurrenceVO);
 			});
-
-			usedParties.addAll(partyVOMap.values());
 		}
+
+        usedParties.addAll(partyVOMap.values());
 
 		return usedParties;
 	}
