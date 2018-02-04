@@ -16,7 +16,7 @@ import cz.tacr.elza.domain.RegRecord;
  * Respozitory pro vazby mezi node a heslem rejstříku.
  */
 @Repository
-public interface NodeRegisterRepository extends JpaRepository<ArrNodeRegister, Integer>, NodeRegisterRepositoryCustom {
+public interface NodeRegisterRepository extends JpaRepository<ArrNodeRegister, Integer> {
 
     /**
      * Pro otevženou verzi.

@@ -177,8 +177,8 @@ class FundForm extends AbstractReactComponent {
                     renderTagItem={renderUserOrGroupLabel}
                     fieldComponent={UserAndGroupField}
                     fieldComponentProps={{
-                        findUserApi: admin ? WebApi.findUser : WebApi.findUserWithFundCreate,
-                        findGroupApi: admin ? WebApi.findGroup : WebApi.findGroupWithFundCreate
+                        findUserApi: WebApi.findUserWithFundCreate,
+                        findGroupApi: WebApi.findGroupWithFundCreate
                     }}
                 />}
             </Modal.Body>

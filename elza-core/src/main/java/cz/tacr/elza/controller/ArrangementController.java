@@ -128,13 +128,13 @@ import cz.tacr.elza.repository.PacketTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.ArrIOService;
-import cz.tacr.elza.service.ArrMoveLevelService;
 import cz.tacr.elza.service.ArrangementFormService;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.DaoService;
 import cz.tacr.elza.service.DescriptionItemService;
 import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.FilterTreeService;
+import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.service.OutputService;
 import cz.tacr.elza.service.PacketService;
@@ -151,8 +151,7 @@ import cz.tacr.elza.service.importnodes.ImportNodesFromSource;
 import cz.tacr.elza.service.importnodes.vo.ConflictResolve;
 import cz.tacr.elza.service.importnodes.vo.ImportParams;
 import cz.tacr.elza.service.importnodes.vo.ValidateResult;
-import cz.tacr.elza.service.output.OutputGeneratorService;
-import cz.tacr.elza.service.output.StatusGenerate;
+import cz.tacr.elza.service.output.OutputRequestStatus;
 import cz.tacr.elza.service.vo.ChangesResult;
 
 
@@ -217,7 +216,7 @@ public class ArrangementController {
     private DescriptionItemService descriptionItemService;
 
     @Autowired
-    private ArrMoveLevelService moveLevelService;
+    private FundLevelService moveLevelService;
 
     @Autowired
     private PacketService packetService;
@@ -259,9 +258,6 @@ public class ArrangementController {
     private ArrIOService arrIOService;
 
     @Autowired
-    private OutputGeneratorService outputGeneratorService;
-
-    @Autowired
     private RevertingChangesService revertingChangesService;
 
     @Autowired
@@ -280,7 +276,7 @@ public class ArrangementController {
     private ImportNodesFromSource importNodesFromSource;
 
 	@Autowired
-	ArrangementFormService formService;
+	private ArrangementFormService formService;
 
     /**
      * Seznam typů obalů.
@@ -1124,12 +1120,11 @@ public class ArrangementController {
         Assert.notNull(outputItemVO, "Výstup musí být vyplněn");
         Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
         Assert.notNull(outputDefinitionVersion, "Verze definice výstupu musí být vyplněna");
-        Assert.notNull(createNewVersion, "Vytvořit novou verzi musí být vyplněno");
+        Validate.isTrue(createNewVersion); // TODO: remove from API (update client)
 
         ArrOutputItem outputItem = factoryDO.createOutputItem(outputItemVO);
 
-        ArrOutputItem outputItemUpdated = outputService
-                .updateOutputItem(outputItem, outputDefinitionVersion, fundVersionId, createNewVersion);
+        ArrOutputItem outputItemUpdated = outputService.updateOutputItem(outputItem, outputDefinitionVersion, fundVersionId);
 
         OutputItemResult outputItemResult = new OutputItemResult();
         outputItemResult.setItem(factoryVo.createDescItem(outputItemUpdated));
@@ -1152,7 +1147,7 @@ public class ArrangementController {
                                         @PathVariable(value = "itemTypeId") final Integer itemTypeId,
                                         @RequestParam(value = "strict", required = false, defaultValue = "false") final Boolean strict) {
         ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
-        ArrOutputDefinition outputDefinition = outputService.findOutputDefinition(outputDefinitionId);
+        ArrOutputDefinition outputDefinition = outputService.getOutputDefinition(outputDefinitionId);
         RulItemType itemType = itemTypeRepository.findOne(itemTypeId);
 
         outputService.switchOutputCalculating(outputDefinition, version, itemType, strict);
@@ -1173,10 +1168,9 @@ public class ArrangementController {
         Assert.notNull(outputDefinitionId, "Identifikátor výstupu musí být vyplněn");
 
         ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
-        ArrOutputDefinition outputDefinition = outputService.findOutputDefinition(outputDefinitionId);
+        ArrOutputDefinition outputDefinition = outputService.getOutputDefinition(outputDefinitionId);
 
         Assert.notNull(version, "Verze AP neexistuje");
-        Assert.notNull(outputDefinition, "Výstup neexistuje");
 
         List<ArrOutputItem> outputItems = outputService.getOutputItems(version, outputDefinition);
 
@@ -1478,16 +1472,16 @@ public class ArrangementController {
                 .createFundWithScenario(createFund.getName(), ruleSet, createFund.getInternalCode(), institution, createFund.getDateRange());
 
         // Kontrola na vyplněnost uživatele nebo skupiny jako správce, pokud není admin
-        if (!userService.hasPermission(UsrPermission.Permission.ADMIN)) {
+        if (!userService.hasPermission(UsrPermission.Permission.FUND_ADMIN)) {
             if (ObjectUtils.isEmpty(createFund.getAdminUsers()) && ObjectUtils.isEmpty(createFund.getAdminGroups())) {
                 Assert.isTrue(false, "Nebyl vybrán správce");
             }
-        }
 
-        // Kontrola, zda daní uživatelé a skupiny mají oprávnění zakládat AS
-        if (!userService.hasPermission(UsrPermission.Permission.ADMIN)) {   // pokud není admin, musí zadat je uživatele, kteří mají oprávnění (i zděděné) na zakládání nových AS
+            // Kontrola, zda daní uživatelé a skupiny mají oprávnění zakládat AS
+            // pokud není admin, musí zadat je uživatele, kteří mají oprávnění (i zděděné) na zakládání nových AS
             if (createFund.getAdminUsers() != null && !createFund.getAdminUsers().isEmpty()) {
-                final Set<Integer> userIds = userService.findUserWithFundCreate(null, false, false, 0, -1, null).getList().stream()
+                // TODO: Remove stream and user more direct query
+                final Set<Integer> userIds = userService.findUserWithFundCreate(null, 0, -1).getList().stream()
                         .map(x -> x.getUserId())
                         .collect(Collectors.toSet());
                 createFund.getAdminUsers()
@@ -2205,14 +2199,16 @@ public class ArrangementController {
 
     @RequestMapping(value = "/output/generate/{outputId}", method = RequestMethod.GET)
 	@Transactional
-    public GenerateOutputResult generateOutput(@PathVariable(value = "outputId") final Integer outputId,
-                                               @RequestParam(value = "forced", required = false, defaultValue = "false") final Boolean forced) {
+    public GenerateOutputResult generateOutput(@PathVariable(value = "outputId") int outputId,
+                                               @RequestParam(value = "forced", defaultValue = "false") boolean forced) {
         ArrOutput output = outputService.getOutput(outputId);
-        UserDetail userDetail = userService.getLoggedUserDetail();
-        Integer userId = userDetail != null ? userDetail.getId() : null;
+        ArrOutputDefinition definition = output.getOutputDefinition();
+
+        ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(definition.getFundId());
+        OutputRequestStatus requestStatus = outputService.addRequest(outputId, fundVersion, !forced);
+
         GenerateOutputResult generateOutputResult = new GenerateOutputResult();
-        StatusGenerate statusGenerate = outputGeneratorService.generateOutput(output, userId, output.getOutputDefinition().getFund(), forced);
-        generateOutputResult.setStatus(statusGenerate);
+        generateOutputResult.setStatus(requestStatus);
         return generateOutputResult;
     }
 
@@ -3243,7 +3239,7 @@ public class ArrangementController {
         /**
          * Směr přidávání uzlu (před, za, pod)
          */
-        private ArrMoveLevelService.AddLevelDirection direction;
+        private FundLevelService.AddLevelDirection direction;
         /**
          * Název scénáře, ze kterého se mají převzít výchozí hodnoty atributů.
          */
@@ -3256,11 +3252,11 @@ public class ArrangementController {
         @Nullable
         private Set<Integer> descItemCopyTypes;
 
-        public ArrMoveLevelService.AddLevelDirection getDirection() {
+        public FundLevelService.AddLevelDirection getDirection() {
             return direction;
         }
 
-        public void setDirection(final ArrMoveLevelService.AddLevelDirection direction) {
+        public void setDirection(final FundLevelService.AddLevelDirection direction) {
             this.direction = direction;
         }
 
@@ -3282,13 +3278,13 @@ public class ArrangementController {
     }
 
     public static class GenerateOutputResult {
-        private StatusGenerate status;
+        private OutputRequestStatus status;
 
-        public StatusGenerate getStatus() {
+        public OutputRequestStatus getStatus() {
             return status;
         }
 
-        public void setStatus(final StatusGenerate status) {
+        public void setStatus(final OutputRequestStatus status) {
             this.status = status;
         }
     }

@@ -1219,10 +1219,64 @@ export class UrlFactory {
         return serverContextPath + '/api/outputResult/' + id
     }
 }
+/**
+ * Class that overrides the original WebApiCls and replaces them with methods,
+ * that postpone requests, when user is not logged in (unauthorized)
+ */
+export class WebApiOverride extends WebApiCls{
+    constructor(){
+        super();
+        this.callbacks = [];
+        // get all method names from WebApiCls
+        this.origMethodNames = Object.getOwnPropertyNames(WebApiCls.prototype);
+        this.overrideMethods();
+    }
+    /**
+     * Overrides the old WebApi methods with new
+     */
+    overrideMethods(){
+        const {origMethodNames} = this;
 
+        for(const i in  origMethodNames) {
+            const methodName =  origMethodNames[i];
+            const origMethod = this[methodName];
 
+            this[methodName] = (...args) => {
+                return this.newMethod(origMethod, args);
+            }
+        }
+    }
+    /**
+     * Creates new WebApi method, which postpones the requests that failed, due to user being unauthorized
+     */
+    newMethod(origMethod, args){
+        return new Promise((resolve, reject) => {
+            origMethod.call(this, ...args).then((json) => {
+                resolve(json);
+            }).catch((err) => {
+                if (err.unauthorized) {
+                    this.callbacks.push(() => {
+                        origMethod.call(this, ...args).then(resolve).catch(reject);
+                    });
+                } else {
+                    reject(err);
+                }
+            });
+        });
+    }
+    /**
+     * Repeats all postponed requests 
+     */
+    onLogin() {
+        if(this.callbacks && this.callbacks.length > 0){
+            this.callbacks.forEach(callback => callback());
+            this.callbacks = [];
+        }
+    }
+}
 
-export const WebApi = new WebApiCls();
+export const WebApi = new WebApiOverride();
+export const _WebApi = new WebApiCls();
 
 // export default {
 //     WebApi: new WebApi(),

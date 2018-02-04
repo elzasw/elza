@@ -11,6 +11,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import javax.transaction.Transactional;
+import javax.transaction.Transactional.TxType;
 
 import org.junit.Assert;
 import org.slf4j.Logger;
@@ -189,8 +190,7 @@ public class HelperTestService {
     public void importPackage(final File file) {
         packageService.importPackage(file);
         // refresh static structures
-        staticDataService.reloadForCurrentTransaction();
-        staticDataService.reloadOnCommit();
+        staticDataService.refreshForCurrentThread();
     }
 
     public List<RulPackage> getPackages() {
@@ -258,7 +258,9 @@ public class HelperTestService {
 		return fundRepository;
 	}
 
-	@Transactional
+    // Each package have to be loaded in separate transaction
+    // this allows to commit package and reload static data
+    @Transactional(value = TxType.REQUIRES_NEW)
 	public void loadPackage(String packageCode, String packageDir) {
     	RulPackage rulPackage = getPackage(packageCode);
         if (rulPackage == null || rulPackage.getVersion()<=0 ) {

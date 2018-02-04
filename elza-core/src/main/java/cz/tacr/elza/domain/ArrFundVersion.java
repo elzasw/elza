@@ -2,6 +2,8 @@ package cz.tacr.elza.domain;
 
 import java.io.Serializable;
 
+import javax.persistence.Access;
+import javax.persistence.AccessType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -36,6 +38,7 @@ public class ArrFundVersion extends AbstractVersionableEntity implements Version
 
     @Id
     @GeneratedValue
+    @Access(AccessType.PROPERTY) // required to read id without fetch from db
     private Integer fundVersionId;
 
     @RestResource(exported = false)
@@ -47,6 +50,9 @@ public class ArrFundVersion extends AbstractVersionableEntity implements Version
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrChange.class)
     @JoinColumn(name = "lockChangeId", nullable = true)
     private ArrChange lockChange;
+
+    @Column(nullable = true, insertable = false, updatable = false)
+    private Integer lockChangeId;
 
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrNode.class)
@@ -110,6 +116,11 @@ public class ArrFundVersion extends AbstractVersionableEntity implements Version
      */
     public void setLockChange(final ArrChange lockChange) {
         this.lockChange = lockChange;
+        this.lockChangeId = lockChange != null ? lockChange.getChangeId() : null;
+    }
+
+    public Integer getLockChangeId() {
+        return lockChangeId;
     }
 
     /**
@@ -141,11 +152,11 @@ public class ArrFundVersion extends AbstractVersionableEntity implements Version
      */
     public void setFund(final ArrFund fund) {
         this.fund = fund;
-        if (fund == null) {
-        	this.fundId = null;
-        } else {
-        	this.fundId = fund.getFundId();
-        }
+        this.fundId = fund != null ? fund.getFundId() : null;
+    }
+
+    public Integer getFundId() {
+        return fundId;
     }
 
     /**
@@ -208,8 +219,4 @@ public class ArrFundVersion extends AbstractVersionableEntity implements Version
     public int hashCode() {
         return fundVersionId != null ? fundVersionId.hashCode() : 0;
     }
-
-	public Integer getFundId() {
-		return fundId;
-	}
 }

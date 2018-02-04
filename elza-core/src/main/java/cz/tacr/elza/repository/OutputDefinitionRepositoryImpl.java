@@ -1,22 +1,18 @@
 package cz.tacr.elza.repository;
 
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
-import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.validation.constraints.NotNull;
 
-import org.hibernate.validator.constraints.NotEmpty;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.apache.commons.lang.Validate;
+import org.hibernate.Session;
+import org.hibernate.query.NativeQuery;
 import org.springframework.stereotype.Component;
 
 import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrOutputDefinition;
 import cz.tacr.elza.domain.ArrOutputDefinition.OutputState;
 
@@ -30,46 +26,53 @@ import cz.tacr.elza.domain.ArrOutputDefinition.OutputState;
 public class OutputDefinitionRepositoryImpl implements OutputDefinitionRepositoryCustom {
 
     @PersistenceContext
-    private EntityManager entityManager;
-
-    @Autowired
-    private OutputDefinitionRepository outputDefinitionRepository;
+    private EntityManager em;
 
     @Override
-    public List<ArrOutputDefinition> findOutputsByNodes(@NotNull final ArrFundVersion fundVersion,
-                                                        @NotEmpty final Set<ArrNode> nodes,
-                                                        @Nullable final OutputState... states) {
+    public List<ArrOutputDefinition> findOutputsByNodes(ArrFundVersion fundVersion,
+                                                        Collection<Integer> nodeIds,
+                                                        OutputState... currentStates) {
+        Validate.notEmpty(nodeIds);
 
-        List<Integer> nodeIds = nodes.stream().map(ArrNode::getNodeId).collect(Collectors.toList());
-
-        String sql = "SELECT x.output_definition_id FROM " +
-                "(" +
-                "SELECT no.output_definition_id FROM arr_node_output no WHERE no.delete_change_id is null GROUP BY no.output_definition_id HAVING count(*) = :count" +
-                ") x JOIN " +
-                "(" +
-                "SELECT DISTINCT no.output_definition_id FROM arr_node_output no WHERE no.node_id in (:nodeIds) and no.delete_change_id is null GROUP BY no.output_definition_id HAVING count(*) = :count" +
-                ") z ON x.output_definition_id = z.output_definition_id " +
-                " JOIN arr_output_definition od ON od.output_definition_id = x.output_definition_id WHERE od.fund_id = :fundId";
-
-        if (states != null && states.length > 0) {
-            sql += " AND od.state IN :states";
+        // lock change condition
+        String sql1 = "JOIN arr_level l ON l.node_id = no.node_id WHERE ";
+        if (fundVersion.getLockChangeId() == null) {
+            sql1 += "l.delete_change_id is null AND no.delete_change_id is null";
+        } else {
+            sql1 += "no.create_change_id < :changeId AND (l.delete_change_id is null or l.delete_change_id > :changeId) AND (no.delete_change_id is null or no.delete_change_id > :changeId)";
         }
 
-        javax.persistence.Query query = entityManager.createNativeQuery(sql);
-        query.setParameter("count", nodes.size());
+        String sql2 = "SELECT od.* FROM arr_output_definition od" +
+                " JOIN (SELECT no.output_definition_id FROM arr_node_output no " + sql1 + " AND no.node_id in (:nodeIds) GROUP BY no.output_definition_id HAVING count(*) = :count) c1" +
+                    " ON c1.output_definition_id = od.output_definition_id" +
+                " JOIN (SELECT no.output_definition_id FROM arr_node_output no " + sql1 + " GROUP BY no.output_definition_id HAVING count(*) = :count) c2" +
+                    " ON c2.output_definition_id = od.output_definition_id" +
+                " WHERE od.fund_id = :fundId";
+
+        if (currentStates != null) {
+            sql2 += " AND od.state IN :states";
+        }
+
+        Session session = em.unwrap(Session.class);
+
+        NativeQuery<ArrOutputDefinition> query = session.createNativeQuery(sql2, ArrOutputDefinition.class);
+
+        query.setParameter("count", nodeIds.size());
         query.setParameter("nodeIds", nodeIds);
-        query.setParameter("fundId", fundVersion.getFund().getFundId());
+        query.setParameter("fundId", fundVersion.getFundId());
 
-        if (states != null && states.length > 0) {
-            query.setParameter("states", Arrays.asList(states).stream().map(OutputState::name).collect(Collectors.toList()));
+        if (fundVersion.getLockChangeId() != null) {
+            query.setParameter("changeId", fundVersion.getLockChangeId());
         }
 
-		@SuppressWarnings("unchecked")
-		List<Integer> outputDefIDs = query.getResultList();
-		if (outputDefIDs.size() == 0) {
-			return Collections.emptyList();
-		}
+        if (currentStates != null) {
+            List<String> stateNames = new ArrayList<>(currentStates.length);
+            for (OutputState cs : currentStates) {
+                stateNames.add(cs.name());
+            }
+            query.setParameter("states", stateNames);
+        }
 
-		return outputDefinitionRepository.findAll(outputDefIDs);
+		return query.getResultList();
     }
 }

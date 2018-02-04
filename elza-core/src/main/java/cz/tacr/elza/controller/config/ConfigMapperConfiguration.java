@@ -1123,6 +1123,7 @@ public class ConfigMapperConfiguration {
                             unitdate.setNormalizedFrom(Long.MIN_VALUE);
                         }
 
+                        // I like mappers, this code is nice joke :-)
                         unitdate.setNormalizedFrom(unitdate.getNormalizedFrom());
 
                         value = unitdate.getValueTo();
@@ -1132,6 +1133,7 @@ public class ConfigMapperConfiguration {
                             unitdate.setNormalizedTo(Long.MAX_VALUE);
                         }
 
+                        // Look, the same joke twice ! 
                         unitdate.setNormalizedTo(unitdate.getNormalizedTo());
                     }
                 }).byDefault().register();

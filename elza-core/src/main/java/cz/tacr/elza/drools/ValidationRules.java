@@ -1,8 +1,6 @@
 package cz.tacr.elza.drools;
 
-import java.io.File;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -16,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
@@ -31,7 +30,6 @@ import cz.tacr.elza.drools.service.ScriptModelFactory;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.DescItemRepository;
-import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.PolicyTypeRepository;
 
 /**
@@ -46,13 +44,10 @@ public class ValidationRules extends Rules {
 	private ScriptModelFactory scriptModelFactory;
 
 	@Autowired
-	private ItemTypeRepository itemTypeRepository;
-
-	@Autowired
 	private DescItemRepository descItemRepository;
 
 	@Autowired
-	private RulesExecutor rulesExecutor;
+	private ResourcePathResolver resourcePathResolver;
 
 	@Autowired
 	private PolicyTypeRepository policyTypeRepository;
@@ -81,12 +76,11 @@ public class ValidationRules extends Rules {
 
 		DataValidationResults validationResults = new DataValidationResults();
 
-		Path path;
 		List<RulRule> rulPackageRules = packageRulesRepository
 				.findByRuleSetAndRuleTypeOrderByPriorityAsc(version.getRuleSet(), RulRule.RuleType.CONFORMITY_INFO);
 
 		for (RulRule rulPackageRule : rulPackageRules) {
-			path = Paths.get(rulesExecutor.getDroolsDir(rulPackageRule.getRuleSet().getCode()) + File.separator + rulPackageRule.getFilename());
+			Path path = resourcePathResolver.getDroolFile(rulPackageRule);
 			StatelessKieSession session = createNewStatelessKieSession(path);
 			session.setGlobal("results", validationResults);
 			execute(session, facts);

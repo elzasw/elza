@@ -25,6 +25,11 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = {"outputDefinitionId"}))
 public class ArrOutputResult {
+	
+	/**
+	 * Name of field with link to output definition
+	 */
+	public static final String OUTPUT_DEFINITION="outputDefinition"; 
 
     @Id
     @GeneratedValue

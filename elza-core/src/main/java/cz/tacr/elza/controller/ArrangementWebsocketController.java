@@ -33,7 +33,7 @@ import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
-import cz.tacr.elza.service.ArrMoveLevelService;
+import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.ArrangementFormService;
 import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.websocket.WebSocketAwareController;
@@ -59,7 +59,7 @@ public class ArrangementWebsocketController {
     @Autowired
     private ItemTypeRepository itemTypeRepository;
     @Autowired
-    private ArrMoveLevelService moveLevelService;
+    private FundLevelService moveLevelService;
     @Autowired
     private LevelTreeCacheService levelTreeCacheService;
 

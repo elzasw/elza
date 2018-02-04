@@ -11,7 +11,7 @@ import org.springframework.stereotype.Repository;
 
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrBulkActionRun.State;
-import cz.tacr.elza.domain.ArrOutputDefinition;
+import cz.tacr.elza.domain.ArrFund;
 
 
 @Repository
@@ -54,5 +54,5 @@ public interface BulkActionRunRepository extends JpaRepository<ArrBulkActionRun,
 
     List<ArrBulkActionRun> findByState(@Param(value = "state") final State state);
 
-    void deleteByOutputDefinition(ArrOutputDefinition outputDefinition);
+    void deleteByFundVersionFund(ArrFund fund);
 }

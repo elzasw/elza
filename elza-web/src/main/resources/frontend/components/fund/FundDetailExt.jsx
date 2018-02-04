@@ -41,7 +41,7 @@ const FundDetailExt = class FundDetailExt extends AbstractReactComponent {
     }
 
     handleDownload = (id) => {
-        this.dispatch(downloadFile("arr-output-file-" + id, UrlFactory.downloadDmsFile(id)));
+        this.dispatch(downloadFile(UrlFactory.downloadOutputResult(id)));
     };
 
     render() {
@@ -56,7 +56,7 @@ const FundDetailExt = class FundDetailExt extends AbstractReactComponent {
                 return (
                     <div className="output" key={index}>
                         <div className="output-label">{outputDefinition.name}</div>
-                        <Button 
+                        <Button
                             onClick={()=>{this.handleDownload(outputDefinition.outputResultId);}}
                             bsStyle="link"
                         >
@@ -124,4 +124,3 @@ const FundDetailExt = class FundDetailExt extends AbstractReactComponent {
 }
 
 export default connect()(FundDetailExt);
-

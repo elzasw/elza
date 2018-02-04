@@ -117,6 +117,8 @@ const initialState = {
     username: '',
     userPermissions: {},
     permissionsMap: {},
+    fetched: false,
+    fetching: false
 }
 
 export default function userDetail(state = initialState, action = {}) {
@@ -137,8 +139,17 @@ function userDetailInt(state, action) {
     switch (action.type) {
         case types.USER_DETAIL_CLEAR:
             return {...initialState}
+        case types.USER_DETAIL_REQUEST: {
+            return {
+                ...state,
+                fetching: true,
+                fetched: false
+            }
+        }
+
         case types.USER_DETAIL_CHANGE: {
             let permissionsMap = {}
+            let userDetail = {};
 
             // action.userDetail.userPermissions = [
             //     {permission: 'FUND_ARR_ALL', fundIds: [], scopeIds: [1]},
@@ -147,17 +158,22 @@ function userDetailInt(state, action) {
             //     {permission: 'REG_SCOPE_WR', fundIds: [], scopeIds: [2]},
             // ]
 
-            action.userDetail.userPermissions.forEach(perm => {
-                permissionsMap[perm.permission] = perm
-
-                perm.fundIdsMap = getSetFromIdsList(perm.fundIds)
-                perm.scopeIdsMap = getSetFromIdsList(perm.scopeIds)
-            })
+            if(action.userDetail){
+                userDetail = action.userDetail;
+                userDetail.userPermissions.forEach(perm => {
+                    permissionsMap[perm.permission] = perm
+                    perm.fundIdsMap = getSetFromIdsList(perm.fundIds)
+                    perm.scopeIdsMap = getSetFromIdsList(perm.scopeIds)
+                })
+            }
+            
 
             return {
                 ...state,
-                ...action.userDetail,
+                ...userDetail,
                 permissionsMap,
+                fetching: false,
+                fetched: true
             }
         }
         case types.USER_DETAIL_RESPONSE_SETTINGS: {

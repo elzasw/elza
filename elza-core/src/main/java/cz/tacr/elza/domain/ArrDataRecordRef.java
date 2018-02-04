@@ -62,4 +62,10 @@ public class ArrDataRecordRef extends ArrData {
 	public ArrDataRecordRef makeCopy() {
 		return new ArrDataRecordRef(this);
 	}
+
+    @Override
+    protected boolean isEqualValueInternal(ArrData srcData) {
+        ArrDataRecordRef src = (ArrDataRecordRef)srcData;
+        return recordId.equals(src.recordId);
+    }
 }

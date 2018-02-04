@@ -1,8 +1,6 @@
 package cz.tacr.elza.drools;
 
-import java.io.File;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -10,6 +8,7 @@ import org.kie.api.runtime.StatelessKieSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.RulRule;
@@ -31,7 +30,7 @@ public class ScenarioOfNewLevelRules extends Rules {
     private ScriptModelFactory scriptModelFactory;
 
     @Autowired
-    private RulesExecutor rulesExecutor;
+    private ResourcePathResolver resourcePathResolver;
 
     public synchronized List<ScenarioOfNewLevel> execute(final ArrLevel level,
                                                          final DirectionLevel directionLevel,
@@ -42,12 +41,11 @@ public class ScenarioOfNewLevelRules extends Rules {
 
         List<Level> levels = scriptModelFactory.createFactsForNewLevel(level, directionLevel, version);
 
-        Path path;
         List<RulRule> rulPackageRules = packageRulesRepository.findByRuleSetAndRuleTypeOrderByPriorityAsc(
                 version.getRuleSet(), RulRule.RuleType.NEW_LEVEL);
 
         for (RulRule rulPackageRule : rulPackageRules) {
-            path = Paths.get(rulesExecutor.getDroolsDir(rulPackageRule.getRuleSet().getCode()) + File.separator + rulPackageRule.getFilename());
+            Path path = resourcePathResolver.getDroolFile(rulPackageRule);
 
             StatelessKieSession session = createNewStatelessKieSession(path);
             session.setGlobal("results", newLevelApproaches);

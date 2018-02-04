@@ -1,6 +1,6 @@
 package cz.tacr.elza.exception;
 
-import cz.tacr.elza.aop.MethodLoggerIgnoreException;
+import cz.tacr.elza.exception.codes.BaseCode;
 
 
 /**
@@ -8,12 +8,14 @@ import cz.tacr.elza.aop.MethodLoggerIgnoreException;
  *
  * @since 09.12.2015
  */
-public class LockVersionChangeException extends RuntimeException implements MethodLoggerIgnoreException {
+public class LockVersionChangeException extends AbstractException {
+
+    private static final long serialVersionUID = 1L; // default id
 
     /**
      * @param message text chyby
      */
     public LockVersionChangeException(final String message) {
-        super(message);
+        super(message, BaseCode.OPTIMISTIC_LOCKING_ERROR);
     }
 }

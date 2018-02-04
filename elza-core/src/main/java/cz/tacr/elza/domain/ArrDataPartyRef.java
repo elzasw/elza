@@ -74,4 +74,10 @@ public class ArrDataPartyRef extends ArrData {
 	public ArrDataPartyRef makeCopy() {
 		return new ArrDataPartyRef(this);
 	}
+
+    @Override
+    protected boolean isEqualValueInternal(ArrData srcData) {
+        ArrDataPartyRef src = (ArrDataPartyRef)srcData;
+        return partyId.equals(src.partyId);
+    }
 }

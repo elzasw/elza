@@ -17,8 +17,6 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import cz.tacr.elza.domain.*;
-import cz.tacr.elza.exception.SystemException;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.ObjectUtils;
 import org.springframework.beans.factory.BeanFactory;
@@ -27,8 +25,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import cz.tacr.elza.annotation.AuthMethod;
-import cz.tacr.elza.annotation.AuthParam;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
 import cz.tacr.elza.controller.vo.usage.FundVO;
 import cz.tacr.elza.controller.vo.usage.NodeVO;
@@ -36,9 +32,32 @@ import cz.tacr.elza.controller.vo.usage.OccurrenceType;
 import cz.tacr.elza.controller.vo.usage.OccurrenceVO;
 import cz.tacr.elza.controller.vo.usage.PartyVO;
 import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
+import cz.tacr.elza.core.security.AuthMethod;
+import cz.tacr.elza.core.security.AuthParam;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrNodeRegister;
+import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.ParRelation;
+import cz.tacr.elza.domain.ParRelationEntity;
+import cz.tacr.elza.domain.RegCoordinates;
+import cz.tacr.elza.domain.RegExternalSystem;
+import cz.tacr.elza.domain.RegRecord;
+import cz.tacr.elza.domain.RegRegisterType;
+import cz.tacr.elza.domain.RegScope;
+import cz.tacr.elza.domain.RegVariantRecord;
+import cz.tacr.elza.domain.UISettings;
+import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ExceptionUtils;
 import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.packageimport.PackageService;
@@ -853,16 +872,6 @@ public class RegistryService {
     public RegRecord getRecord(@AuthParam(type = AuthParam.Type.REGISTRY) final Integer recordId) {
         Assert.notNull(recordId, "Identifikátor rejstříkového hesla musí být vyplněn");
         return regRecordRepository.findOne(recordId);
-    }
-
-    /**
-     * Vyhledání rejstříkových hesel k požadovaným jednotkám popisu.
-     *
-     * @param nodeIds identifikátory jednotky popisu
-     * @return mapa - klíč identifikátor jed. popisu, hodnota - seznam rejstříkových hesel
-     */
-    public Map<Integer, List<RegRecord>> findByNodes(final Collection<Integer> nodeIds) {
-        return nodeRegisterRepository.findByNodes(nodeIds);
     }
 
     /**

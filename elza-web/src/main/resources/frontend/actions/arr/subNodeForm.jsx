@@ -261,7 +261,9 @@ class ItemFormActions {
             if (typeof loc.descItem.id !== 'undefined') {
                 this._callUpdateDescItem(versionId, parentVersionId, parentId, descItem)
                     .then(json => {
-                        //dispatch(this._fundSubNodeFormDescItemResponse(versionId, routingKey, valueLocation, json, 'UPDATE'));
+                        if(this.area === "OUTPUT"){
+                            dispatch(this._fundSubNodeFormDescItemResponse(versionId, routingKey, valueLocation, json, 'UPDATE'));
+                        }
                         dispatch(this._fundSubNodeUpdate(versionId, refTables, json));
                         dispatch(statusSaved());
                     })

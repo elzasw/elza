@@ -8,6 +8,9 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.apache.commons.lang3.Validate;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -22,6 +25,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class RulAction {
 
+    public static final String FILE_EXTENSION = ".yaml";
+
     @Id
     @GeneratedValue
     private Integer actionId;
@@ -30,12 +35,18 @@ public class RulAction {
     @JoinColumn(name = "packageId", nullable = false)
     private RulPackage rulPackage;
 
+    @Column(nullable = false, insertable = false, updatable = false)
+    private Integer packageId;
+
     @Column(length = 250, nullable = false)
     private String filename;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulRuleSet.class)
     @JoinColumn(name = "ruleSetId", nullable = false)
     private RulRuleSet ruleSet;
+
+    @Column(nullable = false, insertable = false, updatable = false)
+    private Integer ruleSetId;
 
     /**
      * @return identifikátor entity
@@ -63,6 +74,11 @@ public class RulAction {
      */
     public void setPackage(final RulPackage rulPackage) {
         this.rulPackage = rulPackage;
+        this.packageId = rulPackage != null ? rulPackage.getPackageId() : null;
+    }
+
+    public Integer getPackageId() {
+        return packageId;
     }
 
     /**
@@ -91,5 +107,23 @@ public class RulAction {
      */
     public void setRuleSet(final RulRuleSet ruleSet) {
         this.ruleSet = ruleSet;
+        this.ruleSetId = ruleSet != null ? ruleSet.getRuleSetId() : null;
+    }
+
+    public Integer getRuleSetId() {
+        return ruleSetId;
+    }
+
+    /**
+     * @return Code from filename (without extension).
+     */
+    @Transient
+    public String getCode() {
+        int len = filename.length() - FILE_EXTENSION.length();
+        return filename.substring(0, len);
+    }
+
+    public static String getFileNameFromCode(String code) {
+        return Validate.notEmpty(code) + FILE_EXTENSION;
     }
 }

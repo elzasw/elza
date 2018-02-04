@@ -51,6 +51,10 @@ public class ItemDataConvertorFactory {
         return new UnitidValueConvertor();
     }
 
+    private JsonTableConvertor createJsonTableConvertor() {
+        return new JsonTableConvertor();
+    }
+
     public final Map<DataType, ItemDataConvertor> createAll() {
         Map<DataType, ItemDataConvertor> map = new EnumMap<>(DataType.class);
         map.put(DataType.STRING, createStringValueConvertor());
@@ -65,6 +69,7 @@ public class ItemDataConvertorFactory {
         map.put(DataType.RECORD_REF, createAPRefConvertor());
         map.put(DataType.PARTY_REF, createPartyRefConvertor());
         map.put(DataType.PACKET_REF, createPacketRefConvertor());
+        map.put(DataType.JSON_TABLE, createJsonTableConvertor());
         return map;
     }
 }

@@ -272,7 +272,7 @@ public class TimeIntervalConvertorTest {
         } catch (IllegalArgumentException e) {
             exMsg = e.getMessage();
         }
-        assertEquals("Cannot create boundary with precision of fractional seconds", exMsg);
+        assertEquals("Fractional seconds cannot be converted", exMsg);
     }
 
     @Test

@@ -7,19 +7,22 @@ import cz.tacr.elza.domain.RulItemSpec;
  */
 public class ItemSpec {
 
-    public String name;
-    public String shortcut;
-    public String description;
-    public String code;
+    private final String name;
+
+    private final String shortcut;
+
+    private final String description;
+
+    private final String code;
 
     public ItemSpec(RulItemSpec rulItemSpec) {
-        name = rulItemSpec.getName();
-        shortcut = rulItemSpec.getShortcut();
-        description = rulItemSpec.getDescription();
-        code = rulItemSpec.getCode();
-	}
+        this.name = rulItemSpec.getName();
+        this.shortcut = rulItemSpec.getShortcut();
+        this.description = rulItemSpec.getDescription();
+        this.code = rulItemSpec.getCode();
+    }
 
-	public String getCode() {
+    public String getCode() {
         return code;
     }
 
@@ -33,9 +36,5 @@ public class ItemSpec {
 
     public String getShortcut() {
         return shortcut;
-    }
-
-    public static ItemSpec instanceOf(final RulItemSpec rulItemSpec) {
-    	return new ItemSpec(rulItemSpec); 
     }
 }

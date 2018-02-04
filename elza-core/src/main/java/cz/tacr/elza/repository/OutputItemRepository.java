@@ -39,16 +39,25 @@ public interface OutputItemRepository extends JpaRepository<ArrOutputItem, Integ
 
 	/**
 	 * Return list of output items with fetched data
-	 * 
+	 *
 	 * @param descItemObjectId
 	 * @return
 	 */
 	@Query("SELECT i FROM arr_output_item i LEFT JOIN FETCH i.data WHERE i.deleteChange IS NULL AND i.descItemObjectId = :itemObjectId")
     List<ArrOutputItem> findOpenOutputItems(@Param("itemObjectId") Integer descItemObjectId);
 
-    @Query("SELECT i FROM arr_output_item i WHERE i.deleteChange IS NULL AND i.itemType = :itemType AND i.outputDefinition = :outputDefinition")
-    List<ArrOutputItem> findOpenOutputItems(@Param("itemType") RulItemType itemType,
+    @Query("SELECT i FROM arr_output_item i WHERE i.deleteChange IS NULL AND i.itemTypeId = :itemTypeId AND i.outputDefinition = :outputDefinition")
+    List<ArrOutputItem> findOpenOutputItems(@Param("itemTypeId") Integer itemTypeId,
                                             @Param("outputDefinition") ArrOutputDefinition outputDefinition);
+
+    /**
+     * Finds maximum item position for specified type and definition. Only look up for open items.
+     *
+     * @return Maximum position or 0 when no item found.
+     */
+    @Query("SELECT COALESCE(MAX(i.position), 0) FROM arr_output_item i WHERE i.deleteChange IS NULL AND i.itemType = :itemType AND i.outputDefinition = :outputDefinition")
+    int findMaxItemPosition(@Param("itemType") RulItemType itemType,
+                            @Param("outputDefinition") ArrOutputDefinition outputDefinition);
 
     @Query("SELECT i FROM arr_output_item i WHERE i.descItemObjectId = ?1 AND i.createChange >= ?2 AND (i.deleteChange >= ?2 OR i.deleteChange IS NULL)")
     List<ArrOutputItem> findByDescItemObjectIdAndBetweenVersionChangeId(Integer descItemObjectId, ArrChange change);

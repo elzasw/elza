@@ -1,10 +1,9 @@
 package cz.tacr.elza.print;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
+import java.util.Objects;
 
 import cz.tacr.elza.api.IUnitdate;
+import cz.tacr.elza.core.data.CalendarType;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 
@@ -12,48 +11,45 @@ import cz.tacr.elza.domain.convertor.UnitDateConvertor;
  * Rozšiřuje {@link UnitDateText} o strukturovaný zápis datumu.
  *
  */
-public class UnitDate extends UnitDateText implements IUnitdate {
+public class UnitDate implements IUnitdate {
 
-	private String valueFrom;
-    private String valueTo;
-    private Boolean valueFromEstimated;
-    private Boolean valueToEstimated;
+    private final String valueFrom;
+
+    private final String valueTo;
+
+    private final Boolean valueFromEstimated;
+
+    private final Boolean valueToEstimated;
+
+    private final CalendarType calendarType;
+
     private String format;
 
-    private String calendar;
-    private String calendarCode;
-    private ArrCalendarType calendarType;
+    private String valueText;
 
-    private UnitDate(IUnitdate srcItemData, ArrCalendarType calendarType) {
-		this.valueFrom = srcItemData.getValueFrom();
-		this.valueTo = srcItemData.getValueTo();
-		this.valueFromEstimated = srcItemData.getValueFromEstimated();
-		this.valueToEstimated = srcItemData.getValueToEstimated();
-		this.format = srcItemData.getFormat();
-        this.calendarType = calendarType;
-        this.calendar = calendarType.getName();
-        this.calendarCode = calendarType.getCode();
+    public UnitDate(IUnitdate srcItemData) {
+        this.valueFrom = srcItemData.getValueFrom();
+        this.valueTo = srcItemData.getValueTo();
+        this.valueFromEstimated = srcItemData.getValueFromEstimated();
+        this.valueToEstimated = srcItemData.getValueToEstimated();
+        this.format = srcItemData.getFormat();
+        // id without fetch -> access type property
+        this.calendarType = CalendarType.fromId(srcItemData.getCalendarType().getCalendarTypeId());
+    }
 
-        String textForm = UnitDateConvertor.convertToString(this);
-        this.setValueText(textForm);
-	}
-
-    /**
-     * @return hodnota valueText
-     */
-    public String serialize() {
-        if (StringUtils.isNotBlank(getValueText())) {
-            return getValueText();
+    public String getValueText() {
+        if (valueText == null) {
+            valueText = UnitDateConvertor.convertToString(this);
         }
-        return UnitDateConvertor.convertToString(this);
+        return valueText;
     }
 
     public String getCalendar() {
-        return calendar;
+        return calendarType.getName();
     }
 
     public String getCalendarCode() {
-        return calendarCode;
+        return calendarType.getCode();
     }
 
     @Override
@@ -63,12 +59,15 @@ public class UnitDate extends UnitDateText implements IUnitdate {
 
     @Override
     public void setFormat(final String format) {
+        if (!Objects.equals(this.format, format)) {
+            resetValueText();
+        }
         this.format = format;
     }
 
     @Override
     public void formatAppend(final String format) {
-        this.format += format;
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -78,7 +77,7 @@ public class UnitDate extends UnitDateText implements IUnitdate {
 
     @Override
     public void setValueFrom(final String valueFrom) {
-        this.valueFrom = valueFrom;
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -88,7 +87,7 @@ public class UnitDate extends UnitDateText implements IUnitdate {
 
     @Override
     public void setValueFromEstimated(final Boolean valueFromEstimated) {
-        this.valueFromEstimated = valueFromEstimated;
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -98,7 +97,7 @@ public class UnitDate extends UnitDateText implements IUnitdate {
 
     @Override
     public void setValueTo(final String valueTo) {
-        this.valueTo = valueTo;
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -108,27 +107,20 @@ public class UnitDate extends UnitDateText implements IUnitdate {
 
     @Override
     public void setValueToEstimated(final Boolean valueToEstimated) {
-        this.valueToEstimated = valueToEstimated;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public ArrCalendarType getCalendarType() {
-        return calendarType;
+        return calendarType.getEntity();
     }
 
-	@Override
-	public void setCalendarType(ArrCalendarType calendarType) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-    public String toString() {
-        return ToStringBuilder.reflectionToString(this, ToStringStyle.SIMPLE_STYLE);
+    @Override
+    public void setCalendarType(ArrCalendarType calendarType) {
+        throw new UnsupportedOperationException();
     }
 
-	public static UnitDate valueOf(IUnitdate itemData, ArrCalendarType calendarType) {
-		UnitDate unitDate = new UnitDate(itemData, calendarType);
-		return unitDate;
-	}
+    private void resetValueText() {
+        this.valueText = null;
+    }
 }

@@ -28,6 +28,9 @@ public class ArrItemSettings {
     @JoinColumn(name = "itemTypeId", nullable = false)
     private RulItemType itemType;
 
+    @Column(nullable = false, insertable = false, updatable = false)
+    private Integer itemTypeId;
+
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrOutputDefinition.class)
     @JoinColumn(name = "outputDefinitionId", nullable = false)
     private ArrOutputDefinition outputDefinition;
@@ -61,6 +64,11 @@ public class ArrItemSettings {
      */
     public void setItemType(final RulItemType itemType) {
         this.itemType = itemType;
+        this.itemTypeId = itemType != null ? itemType.getItemTypeId() : null;
+    }
+
+    public Integer getItemTypeId() {
+        return itemTypeId;
     }
 
     /**

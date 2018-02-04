@@ -23,6 +23,8 @@ import com.google.common.net.HttpHeaders;
 import cz.tacr.elza.dataexchange.output.DEExportParams;
 import cz.tacr.elza.dataexchange.output.DEExportParams.FundSections;
 import cz.tacr.elza.dataexchange.output.DEExportService;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
 
 @RestController
 @RequestMapping(value = "/api/export/")
@@ -37,7 +39,11 @@ public class DEExportController {
 
     @RequestMapping(value = "transformations", method = RequestMethod.GET)
     public List<String> getTransformations() {
-        return exportService.getTransformationNames();
+        try {
+            return exportService.getTransformationNames();
+        } catch (IOException e) {
+            throw new SystemException("Failed to list export transformations", e, BaseCode.SYSTEM_ERROR);
+        }
     }
 
     /**

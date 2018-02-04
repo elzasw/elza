@@ -22,6 +22,15 @@ public class UserPermissionInfoVO {
     /** Seznam identifikátorů scopů, ke kterým se vztahuje oprávnění. */
 	private List<Integer> scopeIds = new ArrayList<>();
 
+    /**
+     * Default constructor for deserialization
+     * 
+     * Should not be used in other cases
+     */
+    public UserPermissionInfoVO() {
+
+    }
+
 	public UserPermissionInfoVO(Permission permission) {
 		this.permission = permission;
 	}

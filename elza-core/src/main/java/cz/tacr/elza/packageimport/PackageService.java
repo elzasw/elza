@@ -8,6 +8,7 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -51,6 +52,8 @@ import cz.tacr.elza.api.UseUnitdateEnum;
 import cz.tacr.elza.api.enums.ParRelationClassTypeRepeatabilityEnum;
 import cz.tacr.elza.api.enums.UIPartyGroupTypeEnum;
 import cz.tacr.elza.bulkaction.BulkActionConfigManager;
+import cz.tacr.elza.core.AppContext;
+import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.core.data.RuleSystemItemType;
 import cz.tacr.elza.core.data.StaticDataService;
@@ -186,8 +189,6 @@ import cz.tacr.elza.service.event.CacheInvalidateEvent;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.ActionEvent;
 import cz.tacr.elza.service.eventnotification.events.EventType;
-import cz.tacr.elza.service.output.OutputGeneratorService;
-import cz.tacr.elza.utils.AppContext;
 
 
 /**
@@ -343,7 +344,7 @@ public class PackageService {
     private ItemTypeActionRepository itemTypeActionRepository;
 
     @Autowired
-    private OutputGeneratorService outputGeneratorService;
+    private ResourcePathResolver resourcePathResolver;
 
     @Autowired
     private OutputDefinitionRepository outputDefinitionRepository;
@@ -453,19 +454,19 @@ public class PackageService {
                     throw new BusinessException("RulRuleSet s code=" + ruleCode + " nenalezen", PackageCode.CODE_NOT_FOUND).set("code", ruleCode).set("file", RULE_SET_XML);
                 }
 
-                File dirActions = new File(bulkActionConfigManager.getFunctionsDir(ruleCode));
+                File dirActions = resourcePathResolver.getFunctionsDir(rulPackage, rulRuleSet).toFile();
                 dirsActions.add(dirActions);
                 if (!dirActions.exists()) {
                     dirActions.mkdirs();
                 }
 
-                File dirRules = new File(rulesExecutor.getDroolsDir(ruleCode));
+                File dirRules = resourcePathResolver.getDroolsDir(rulPackage, rulRuleSet).toFile();
                 dirsRules.add(dirRules);
                 if (!dirRules.exists()) {
                     dirRules.mkdirs();
                 }
 
-                File dirTemplates = new File(outputGeneratorService.getTemplatesDir(ruleCode));
+                File dirTemplates = resourcePathResolver.getTemplatesDir(rulPackage, rulRuleSet).toFile();
                 dirsTemplates.add(dirTemplates);
                 if (!dirTemplates.exists()) {
                     dirTemplates.mkdirs();
@@ -572,14 +573,23 @@ public class PackageService {
                 }
             }
 
-            staticDataService.reloadOnCommit();
+            //StaticDataProvider modifiedProvider = staticDataService.createProvider();            
 
+            staticDataService.reloadOnCommit();
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
                 @Override
                 public void afterCommit() {
+                    staticDataService.refreshForCurrentThread();
+
                     cacheService.resetCache(CacheInvalidateEvent.Type.ALL);
+
+                    // Try to reload all actions
+                    // Note: static data have to be reloaded before bulk actions
+                    //       can be loaded            
+                    bulkActionConfigManager.load();
                 }
             });
+
 
             eventNotificationService.publishEvent(new ActionEvent(EventType.PACKAGE));
 
@@ -629,8 +639,6 @@ public class PackageService {
                         rollBackFiles(dirRules);
                     }
                 }
-
-                bulkActionConfigManager.load();
 
                 if (e instanceof AbstractException) {
                     throw e;
@@ -1574,8 +1582,6 @@ public class PackageService {
             for (RulRule rule : rulRuleNew) {
                 saveFile(mapEntry, dir, ZIP_DIR_RULE_SET + "/" + rulRuleSet.getCode() + "/" + ZIP_DIR_RULES, rule.getFilename());
             }
-
-            bulkActionConfigManager.load();
         } catch (IOException e) {
             throw new SystemException(e);
         }
@@ -1737,7 +1743,6 @@ public class PackageService {
                 saveFile(mapEntry, dir, ZIP_DIR_RULE_SET + "/" + rulRuleSet.getCode() + "/" + ZIP_DIR_ACTIONS, action.getFilename());
             }
 
-            bulkActionConfigManager.load();
         } catch (IOException e) {
             throw new SystemException(e);
         }
@@ -1830,7 +1835,8 @@ public class PackageService {
 
         if (file.exists()) {
             File fileMove = new File(dir.getPath() + File.separator + filename + ".bck");
-            Files.move(file.toPath(), fileMove.toPath());
+            // Allow to replace existing backup files
+            Files.move(file.toPath(), fileMove.toPath(), StandardCopyOption.REPLACE_EXISTING);
         }
 
         BufferedWriter output = null;
@@ -2077,12 +2083,6 @@ public class PackageService {
             }
             for (String file : templateFileKeys) {
                 saveFile(mapEntry, dirFile, templateDir, file);
-            }
-            try {
-                bulkActionConfigManager.load();
-            }
-            catch (IOException e) {
-                throw new IllegalStateException(e);
             }
         }
     }
@@ -2356,8 +2356,8 @@ public class PackageService {
         entityManager.flush();
 
         for (RulRuleSet ruleSet : ruleSets) {
-            File dirActions = new File(bulkActionConfigManager.getFunctionsDir(ruleSet.getCode()));
-            File dirRules = new File(rulesExecutor.getDroolsDir(ruleSet.getCode()));
+            File dirActions = resourcePathResolver.getFunctionsDir(rulPackage.getPackageId(), ruleSet.getRuleSetId()).toFile();
+            File dirRules = resourcePathResolver.getDroolsDir(rulPackage.getPackageId(), ruleSet.getRuleSetId()).toFile();
 
             try {
 
@@ -2380,7 +2380,6 @@ public class PackageService {
                     rollBackFiles(dirActions);
                     rollBackFiles(dirRules);
 
-                    bulkActionConfigManager.load();
                     throw new SystemException("Nastala chyba během importu balíčku", e);
                 } catch (IOException e1) {
                     throw new SystemException("Nastala chyba během obnovy souborů po selhání importu balíčku", e);
@@ -2435,7 +2434,7 @@ public class PackageService {
         ZipOutputStream zos = null;
 
         try {
-            file = File.createTempFile(code + "-", "-package.zip");
+            file = File.createTempFile("ElzaPackage-" + code + "-", "-package.zip");
             fos = new FileOutputStream(file);
             zos = new ZipOutputStream(fos);
 
@@ -2916,13 +2915,13 @@ public class PackageService {
             List<Template> templateList = new ArrayList<>(rulTemplatesList.size());
             outputTypes.setTemplates(templateList);
             String ruleSetCode = entry.getKey().getCode();
-            for (RulTemplate rulOutputType : rulTemplatesList) {
+            for (RulTemplate rulTemplate : rulTemplatesList) {
                 Template outputType = new Template();
-                convertTemplate(rulOutputType, outputType);
+                convertTemplate(rulTemplate, outputType);
                 templateList.add(outputType);
-                File dir = new File(outputGeneratorService.getTemplatesDir(rulPackage.getCode()) + File.separator + rulOutputType.getDirectory() + File.separator);
+                File dir = resourcePathResolver.getTemplateDir(rulTemplate).toFile();
                 for (File dirFile : dir.listFiles()) {
-                    addToZipFile(ZIP_DIR_RULE_SET + "/" + ruleSetCode + "/" + ZIP_DIR_TEMPLATES + "/" + rulOutputType.getDirectory() + "/" + dirFile.getName(), dirFile, zos);
+                    addToZipFile(ZIP_DIR_RULE_SET + "/" + ruleSetCode + "/" + ZIP_DIR_TEMPLATES + "/" + rulTemplate.getDirectory() + "/" + dirFile.getName(), dirFile, zos);
                 }
             }
 
@@ -3039,8 +3038,8 @@ public class PackageService {
                 convertPackageRule(rulPackageRule, packageRule);
                 packageRuleList.add(packageRule);
 
-                addToZipFile(ZIP_DIR_RULE_SET + "/" + ruleSetCode + "/" + ZIP_DIR_RULES + "/" + rulPackageRule.getFilename(), new File(rulesExecutor.getDroolsDir(ruleSetCode)
-                        + File.separator + rulPackageRule.getFilename()), zos);
+                File ruleFile = resourcePathResolver.getDroolFile(rulPackageRule).toFile();
+                addToZipFile(ZIP_DIR_RULE_SET + "/" + ruleSetCode + "/" + ZIP_DIR_RULES + "/" + rulPackageRule.getFilename(), ruleFile, zos);
 
             }
 
@@ -3073,8 +3072,9 @@ public class PackageService {
                 convertPackageAction(rulPackageAction, packageAction);
                 packageActionList.add(packageAction);
 
+                File functionFile = resourcePathResolver.getFunctionFile(rulPackageAction).toFile();
                 addToZipFile(ZIP_DIR_RULE_SET + "/" + ruleSetCode + "/" + ZIP_DIR_ACTIONS + "/" + rulPackageAction.getFilename(),
-                        new File(bulkActionConfigManager.getFunctionsDir(ruleSetCode) + File.separator + rulPackageAction.getFilename()), zos);
+                        functionFile, zos);
             }
 
             addObjectToZipFile(packageActions, zos, ZIP_DIR_RULE_SET + "/" + ruleSetCode + "/" + PACKAGE_ACTIONS_XML);

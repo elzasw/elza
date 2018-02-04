@@ -5,7 +5,7 @@ import java.util.Collections;
 
 import javax.persistence.EntityManager;
 
-import cz.tacr.elza.aop.Authorization;
+import cz.tacr.elza.core.security.Authorization;
 import cz.tacr.elza.dataexchange.output.DEExportException;
 import cz.tacr.elza.dataexchange.output.DEExportParams.FundSections;
 import cz.tacr.elza.dataexchange.output.context.ExportContext;
@@ -99,7 +99,7 @@ public class SectionsReader implements ExportReader {
                 // read parent nodes up to root
                 levelRepository.findAllParentsByNodeId(rootNodeId, lockChange, true).forEach(sectionContext::addLevel);
                 // read subtree
-                levelRepository.iterateSubtree(rootNodeId, lockChange, sectionContext::addLevel);
+                levelRepository.readLevelTree(rootNodeId, lockChange, false, (level, depth) -> sectionContext.addLevel(level));
             }
 
             sectionContext.processed();
@@ -112,7 +112,7 @@ public class SectionsReader implements ExportReader {
         ArrChange lockChange = fundVersion.getLockChange();
         SectionContext sectionContext = new SectionContext(fundVersion, context, false, levelInfoListener, nodeCacheService, em);
         try {
-            levelRepository.iterateSubtree(rootNodeId, lockChange, sectionContext::addLevel);
+            levelRepository.readLevelTree(rootNodeId, lockChange, false, (level, depth) -> sectionContext.addLevel(level));
 
             sectionContext.processed();
         } finally {

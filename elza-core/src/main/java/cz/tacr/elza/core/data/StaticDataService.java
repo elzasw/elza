@@ -2,7 +2,6 @@ package cz.tacr.elza.core.data;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.ConcurrentMap;
 
 import javax.persistence.EntityManager;
 import javax.transaction.Synchronization;
@@ -15,8 +14,7 @@ import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.google.common.collect.MapMaker;
-
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.ComplementTypeRepository;
 import cz.tacr.elza.repository.DataTypeRepository;
@@ -28,8 +26,9 @@ import cz.tacr.elza.repository.PartyNameFormTypeRepository;
 import cz.tacr.elza.repository.PartyTypeComplementTypeRepository;
 import cz.tacr.elza.repository.PartyTypeRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
+import cz.tacr.elza.repository.RelationTypeRepository;
+import cz.tacr.elza.repository.RelationTypeRoleTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
-import cz.tacr.elza.utils.HibernateUtils;
 
 /**
  * Service for static data
@@ -40,9 +39,9 @@ import cz.tacr.elza.utils.HibernateUtils;
 public class StaticDataService {
 
 	/**
-	 * Map of providers for each transaction
+	 * Thread specific providers
 	 */
-    private final ConcurrentMap<Transaction, StaticDataProvider> registeredTxMap = new MapMaker().weakKeys().makeMap();
+    private final ThreadLocal<StaticDataProvider> threadSpecificProvider = new ThreadLocal<StaticDataProvider>();
 
     /**
      * Set of transactions which should refresh StaticDataProvider after commit
@@ -80,6 +79,10 @@ public class StaticDataService {
 
     final RegisterTypeRepository registerTypeRepository;
 
+    final RelationTypeRepository relationTypeRepository;
+
+    final RelationTypeRoleTypeRepository relationTypeRoleTypeRepository;
+
     @Autowired
     public StaticDataService(EntityManager em,
                              RuleSetRepository ruleSetRepository,
@@ -93,7 +96,9 @@ public class StaticDataService {
                              PartyNameFormTypeRepository partyNameFormTypeRepository,
                              ComplementTypeRepository complementTypeRepository,
                              PartyTypeComplementTypeRepository partyTypeComplementTypeRepository,
-                             RegisterTypeRepository registerTypeRepository) {
+                             RegisterTypeRepository registerTypeRepository,
+                             RelationTypeRepository relationTypeRepository,
+                             RelationTypeRoleTypeRepository relationTypeRoleTypeRepository) {
         this.em = em;
         this.ruleSetRepository = ruleSetRepository;
         this.packetTypeRepository = packetTypeRepository;
@@ -107,6 +112,8 @@ public class StaticDataService {
         this.complementTypeRepository = complementTypeRepository;
         this.partyTypeComplementTypeRepository = partyTypeComplementTypeRepository;
         this.registerTypeRepository = registerTypeRepository;
+        this.relationTypeRepository = relationTypeRepository;
+        this.relationTypeRoleTypeRepository = relationTypeRoleTypeRepository;
     }
 
     /**
@@ -119,19 +126,22 @@ public class StaticDataService {
         DataType.init(dataTypeRepository);
         PartyType.init(partyTypeRepository);
         CalendarType.init(calendarTypeRepository);
-        activeProvider = initializeProvider();
+        activeProvider = createProvider();
+
         // init interceptor
         StaticDataTransactionInterceptor.INSTANCE.begin(this);
+
+        // register provider for current transaction/thread
+        threadSpecificProvider.set(activeProvider);
     }
 
     /**
      * Switch data provider for current transaction
      */
-    public StaticDataProvider reloadForCurrentTransaction() {
-    	Transaction tx = getCurrentActiveTransaction();
-    	StaticDataProvider provider = initializeProvider();
-    	// update data provider for transaction
-   		registeredTxMap.put(tx, provider);
+    public StaticDataProvider refreshForCurrentThread() {
+        StaticDataProvider provider = activeProvider;
+        // update data provider for thread
+        threadSpecificProvider.set(provider);
     	return provider;
     }
 
@@ -150,13 +160,7 @@ public class StaticDataService {
     }
 
     public StaticDataProvider getData() {
-        Transaction tx = getCurrentActiveTransaction();
-        return getData(tx);
-    }
-
-    public StaticDataProvider getData(Transaction tx) {
-        checkActiveTransaction(tx);
-        StaticDataProvider provider = registeredTxMap.get(tx);
+        StaticDataProvider provider = threadSpecificProvider.get();
         if (provider == null) {
             throw new IllegalStateException("Static data provider for transaction not found");
         }
@@ -174,14 +178,11 @@ public class StaticDataService {
         // some provider have to exists
         Validate.notNull(provider);
 
-        if (registeredTxMap.putIfAbsent(tx, provider) != null) {
-            tx.markRollbackOnly();
-            throw new IllegalStateException("Transaction already registered");
-        }
+        threadSpecificProvider.set(provider);
     }
 
     void beforeTransactionCommit(Transaction tx) {
-        checkActiveTransaction(tx);
+        //checkActiveTransaction(tx);
 
         synchronized(modificationTransactions)
         {
@@ -194,7 +195,7 @@ public class StaticDataService {
 
         // prepare modified provider in current transaction
         try {
-        	StaticDataProvider modifiedProvider = initializeProvider();
+            StaticDataProvider modifiedProvider = createProvider();
 
         	tx.registerSynchronization(new Synchronization(){
 					@Override
@@ -224,7 +225,12 @@ public class StaticDataService {
         return session.getTransaction();
     }
 
-    private StaticDataProvider initializeProvider() {
+    /**
+     * Create new provider and load all data from DB
+     * 
+     * @return
+     */
+    public StaticDataProvider createProvider() {
         StaticDataProvider provider = new StaticDataProvider();
         provider.init(this);
         return provider;

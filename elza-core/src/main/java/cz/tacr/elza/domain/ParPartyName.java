@@ -59,6 +59,9 @@ public class ParPartyName {
     @JoinColumn(name = "nameFormTypeId")
     private ParPartyNameFormType nameFormType;
 
+    @Column(insertable = false, updatable = false)
+    private Integer nameFormTypeId;
+
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ParParty.class)
     @JoinColumn(name = "partyId", nullable = false)
     private ParParty party;
@@ -226,6 +229,11 @@ public class ParPartyName {
 
     public void setNameFormType(final ParPartyNameFormType nameFormType) {
         this.nameFormType = nameFormType;
+        this.nameFormTypeId = nameFormType != null ? nameFormType.getNameFormTypeId() : null;
+    }
+
+    public Integer getNameFormTypeId() {
+        return nameFormTypeId;
     }
 
     /**

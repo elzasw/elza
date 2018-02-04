@@ -1,22 +1,22 @@
 package cz.tacr.elza.bulkaction.generator.result;
 
+import cz.tacr.elza.core.data.RuleSystemItemType;
+import cz.tacr.elza.service.OutputItemConnector;
+
 /**
  * Výsledek z akce {@link cz.tacr.elza.bulkaction.generator.multiple.NodeCountAction}
- *
- * @author Martin Šlapa
- * @since 29.06.2016
  */
 public class NodeCountActionResult extends ActionResult {
 
-    private String itemType;
-
     private Integer count;
+
+    private String itemType;
 
     public Integer getCount() {
         return count;
     }
 
-    public void setCount(final Integer count) {
+    public void setCount(Integer count) {
         this.count = count;
     }
 
@@ -24,7 +24,16 @@ public class NodeCountActionResult extends ActionResult {
         return itemType;
     }
 
-    public void setItemType(final String itemType) {
+    public void setItemType(String itemType) {
         this.itemType = itemType;
+    }
+
+    @Override
+    public void createOutputItems(OutputItemConnector connector) {
+        if (count == null) {
+            return;
+        }
+        RuleSystemItemType rsit = connector.getRuleSystem().getItemTypeByCode(itemType);
+        connector.addIntItem(count.intValue(), rsit, null);
     }
 }

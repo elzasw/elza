@@ -273,7 +273,7 @@ function mergeDescItems(state, resultDescItemType, prevType, newType) {
             // Nakopírování nově přijatých hodnot, případně ponechání stejných (na základě descItemObjectId a prev value == value ze serveru, které již uživatel upravil a nejsou odeslané)
             newType.descItems.forEach(descItem => {
                 var prevDescItem = prevDescItemMap[descItem.descItemObjectId];
-                if (prevDescItem && (prevDescItemHasSamePrevValue(prevDescItem, descItem) && prevDescItem.touched || !descItem.value)) {   // původní hodnota přijatá ze serveru má stejné hodnoty jako jsou nyní v nově přijatých datech na serveru a uživatel nám aktuální data upravil
+                if (prevDescItem && (prevDescItemHasSamePrevValue(prevDescItem, descItem) && prevDescItem.touched || (!descItem.value && !descItem.undefined))) {   // původní hodnota přijatá ze serveru má stejné hodnoty jako jsou nyní v nově přijatých datech na serveru a uživatel nám aktuální data upravil
                     var item = prevDescItem;
                     if(state.updatedItem && (state.updatedItem.descItemObjectId === descItem.descItemObjectId)){
                         item.value = state.updatedItem.value;

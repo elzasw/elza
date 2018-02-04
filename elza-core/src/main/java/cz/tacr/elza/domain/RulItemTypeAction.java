@@ -1,5 +1,6 @@
 package cz.tacr.elza.domain;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -30,6 +31,9 @@ public class RulItemTypeAction {
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulItemType.class)
     @JoinColumn(name = "itemTypeId", nullable = false)
     private RulItemType itemType;
+    
+    @Column(name = "itemTypeId", nullable = false, updatable = false, insertable = false)
+    private Integer itemTypeId;
 
     /**
      * @return identifikátor entity
@@ -71,5 +75,15 @@ public class RulItemTypeAction {
      */
     public void setItemType(final RulItemType itemType) {
         this.itemType = itemType;
+        this.itemTypeId = (itemType==null)?null:itemType.getItemTypeId();
     }
+
+    public Integer getItemTypeId() {
+        return itemTypeId;
+    }
+    
+    public void setItemTypeId(final Integer itemTypeId) {
+        this.itemTypeId = itemTypeId;
+    }
+
 }

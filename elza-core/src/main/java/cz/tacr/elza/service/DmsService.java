@@ -8,6 +8,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -18,14 +19,15 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import cz.tacr.elza.annotation.AuthMethod;
-import cz.tacr.elza.annotation.AuthParam;
+import cz.tacr.elza.core.ResourcePathResolver;
+import cz.tacr.elza.core.security.AuthMethod;
+import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrOutputDefinition;
 import cz.tacr.elza.domain.ArrOutputFile;
 import cz.tacr.elza.domain.ArrOutputResult;
 import cz.tacr.elza.domain.DmsFile;
@@ -38,6 +40,7 @@ import cz.tacr.elza.repository.FundFileRepository;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.OutputFileRepository;
 import cz.tacr.elza.repository.OutputResultRepository;
+import cz.tacr.elza.security.AuthorizationRequest;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventStringInVersion;
@@ -55,11 +58,8 @@ public class DmsService {
 
     public static final String MIME_TYPE_APPLICATION_PDF = "application/pdf";
 
-    /**
-     * Složka se soubory DMS
-     */
-    @Value("${elza.dmsDir}")
-    private String dmsFileDirectory;
+    @Autowired
+    private ResourcePathResolver resourcePathResolver;
 
     @Autowired
     private FileRepository fileRepository;
@@ -78,6 +78,9 @@ public class DmsService {
 
     @Autowired
     private EventNotificationService eventNotificationService;
+    
+    @Autowired
+    private UserService userService;
 
     /**
      * Uloží DMS soubor se streamem a publishne event
@@ -92,10 +95,9 @@ public class DmsService {
 
         fileRepository.save(dmsFile);
 
-        String filePath = getFilePath(dmsFile);
-        File outputFile = new File(filePath);
+        File outputFile = getFilePath(dmsFile).toFile();
         if (outputFile.exists()) {
-            throw new SystemException("Nelze soubor již existuje: "+ filePath, ArrangementCode.ALREADY_CREATED);
+            throw new SystemException("Nelze soubor již existuje: " + outputFile.getPath(), ArrangementCode.ALREADY_CREATED);
         }
         saveFile(dmsFile, fileStream, outputFile);
 
@@ -164,7 +166,7 @@ public class DmsService {
 
         fileRepository.save(dbFile);
         if (fileStream != null) {
-            File outputFile = new File(getFilePath(dbFile));
+            File outputFile = getFilePath(dbFile).toFile();
             if (outputFile.exists() && !outputFile.delete()) {
                 throw new SystemException("Nelze odstranit existující soubor");
             }
@@ -184,7 +186,7 @@ public class DmsService {
     public InputStream downloadFile(final DmsFile dmsFile) {
         Assert.notNull(dmsFile, "Soubor musí být vyplněn");
 
-        File outputFile = new File(getFilePath(dmsFile));
+        File outputFile = getFilePath(dmsFile).toFile();
         if (!outputFile.exists()) {
             throw new SystemException("Požadovaný soubor neexistuje");
         }
@@ -245,7 +247,7 @@ public class DmsService {
 
         fileRepository.delete(dmsFile);
 
-        File outputFile = new File(getFilePath(dmsFile));
+        File outputFile = getFilePath(dmsFile).toFile();
         if (outputFile.exists() && !outputFile.delete()) {
             throw new SystemException("Nelze odstranit existující soubor");
         }
@@ -290,8 +292,20 @@ public class DmsService {
      * @param file dms file
      * @return cesta
      */
-    public String getFilePath(final DmsFile file) {
-        return dmsFileDirectory + File.separator + file.getFileId();
+    public Path getFilePath(final DmsFile file) {
+        int fileId = file.getFileId();
+        return getFilePath(fileId);
+    }
+
+    /**
+     * Zíkání cesty k reálnému souboru
+     *
+     * @param fileId dms file id
+     * @return cesta
+     */
+    public Path getFilePath(final int fileId) {
+        String strFileId = Integer.toString(fileId);
+        return resourcePathResolver.getDmsDir().resolve(strFileId);
     }
 
     /**
@@ -344,10 +358,19 @@ public class DmsService {
      * @return filtrovaný list
      */
 	@Transactional
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_RD, UsrPermission.Permission.FUND_RD_ALL})
     public FilteredResult<ArrOutputFile> findOutputFiles(final String search, final Integer outputResultId, final Integer from, final Integer count) {
-        Assert.notNull(outputResultId, "Identifikátor výstupu musí být vyplněn");
-        return outputFileRepository.findByTextAndResult(search, outputResultRepository.getOneCheckExist(outputResultId), from, count);
+		Assert.notNull(outputResultId, "Identifikátor výstupu musí být vyplněn");
+		
+		// get output result to check permissions
+		ArrOutputResult outputResult = outputResultRepository.findOneByOutputResultId(outputResultId);
+		ArrOutputDefinition outputDef = outputResult.getOutputDefinition();
+		
+		// check permissions
+		AuthorizationRequest authRequest = AuthorizationRequest.hasPermission(UsrPermission.Permission.FUND_RD_ALL)
+		    .or(UsrPermission.Permission.FUND_RD, outputDef.getFundId());		
+		userService.authorizeRequest(authRequest);
+		
+        return outputFileRepository.findByTextAndResult(search, outputResult, from, count);
     }
 
     public File getOutputFilesZip(final ArrOutputResult result) {
@@ -357,12 +380,12 @@ public class DmsService {
         ZipOutputStream zos = null;
 
         try {
-            file = File.createTempFile(result.getOutputDefinition().getName(), ".zip");
+            file = File.createTempFile("ElzaOutput", ".zip");
             fos = new FileOutputStream(file);
             zos = new ZipOutputStream(fos);
 
             for (ArrOutputFile outputFile : result.getOutputFiles()) {
-                File dmsFile = new File(getFilePath(outputFile));
+                File dmsFile = getFilePath(outputFile).toFile();
                 if (dmsFile.exists()) {
                     addToZipFile(outputFile.getFileName(), dmsFile, zos);
                 }

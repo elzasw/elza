@@ -162,7 +162,7 @@ public class ArrDescItem extends ArrItem {
 
 	/**
 	 * Description item for fulltext indexing
-	 * 
+	 *
 	 * @return
 	 */
 	@JsonIgnore
@@ -230,5 +230,10 @@ public class ArrDescItem extends ArrItem {
 		public Long getNormalizedTo() {
 			return (data == null) ? null : data.getNormalizedTo();
         }
-    };
+    }
+
+    @Override
+    public ArrItem makeCopy() {
+        return new ArrDescItem(this);
+    }
 }

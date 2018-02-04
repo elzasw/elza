@@ -50,18 +50,14 @@ import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.ArrOutputItem;
 import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.RulItemTypeExt;
-import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.domain.table.ElzaColumn;
 import cz.tacr.elza.domain.table.ElzaRow;
 import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.ExternalCode;
-import cz.tacr.elza.repository.DataTypeRepository;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
@@ -75,12 +71,6 @@ import cz.tacr.elza.repository.OutputItemRepository;
  */
 @Service
 public class ArrIOService {
-
-    @Autowired
-    private DescItemFactory descItemFactory;
-
-    @Autowired
-    private DataTypeRepository dataTypeRepository;
 
     @Autowired
     private DescriptionItemService descriptionItemService;
@@ -316,30 +306,6 @@ public class ArrIOService {
         List<Integer> ids = new ArrayList<>();
 
         if (clazz.isAssignableFrom(ArrOutputItem.class)) {
-
-            List<RulItemTypeExt> outputItemTypes = ruleService.getOutputItemTypes(fundVersionId);
-
-            RulItemTypeExt rule = null;
-
-            for (RulItemTypeExt desc : outputItemTypes) {
-                if (descItemType.getItemTypeId().equals(desc.getItemTypeId())) {
-                    rule = desc;
-                    break;
-                }
-            }
-
-            if (rule == null) {
-                throw new ObjectNotFoundException("Typ atributu s ID=" + descItemTypeId + " neexistuje", ArrangementCode.ITEM_TYPE_NOT_FOUND).setId(descItemTypeId);
-            }
-
-            if (!rule.getRepeatable()) {
-                if (toCreate.size() > 1) {
-                    throw new BusinessException("Do neopakovatelného prvku lze importovat pouze jeden geoobjekt.", ArrangementCode.NOT_REPEATABLE);
-                }
-
-                outputService.deleteOutputItemsByTypeWithoutVersion(fundVersionId, parentId, descItemTypeId);
-            }
-
             outputService.createOutputItems((List<ArrOutputItem>) toCreate, parentId, parentVersion, fundVersionId).forEach(arrOutputItem -> {
                 ids.add(arrOutputItem.getDescItemObjectId());
             });

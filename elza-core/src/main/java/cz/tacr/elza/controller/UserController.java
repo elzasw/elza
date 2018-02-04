@@ -267,17 +267,10 @@ public class UserController {
     @RequestMapping(value = "/withFundCreate", method = RequestMethod.GET)
 	@Transactional
     public FilteredResultVO<UsrUserVO> findUserWithFundCreate(@Nullable @RequestParam(value = "search", required = false) final String search,
-                                                @RequestParam("active") final Boolean active,
-                                                @RequestParam("disabled") final Boolean disabled,
                                                 @RequestParam("from") final Integer from,
-                                                @RequestParam("count") final Integer count,
-                                                @RequestParam(value = "excludedGroupId", required = false) final Integer excludedGroupId
+                                                @RequestParam("count") final Integer count                                                
     ) {
-        if (!active && !disabled) {
-            throw new IllegalArgumentException("Musí být uveden alespoň jeden z parametrů: active, disabled.");
-        }
-
-        FilteredResult<UsrUser> users = userService.findUserWithFundCreate(search, active, disabled, from, count, excludedGroupId);
+        FilteredResult<UsrUser> users = userService.findUserWithFundCreate(search, from, count);
         List<UsrUserVO> resultVo = factoryVO.createUserList(users.getList(), false);
         return new FilteredResultVO<>(resultVo, users.getTotalCount());
     }

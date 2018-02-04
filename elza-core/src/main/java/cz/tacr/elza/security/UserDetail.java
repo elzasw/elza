@@ -2,7 +2,6 @@ package cz.tacr.elza.security;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrPermission.Permission;
@@ -50,7 +49,7 @@ public class UserDetail {
     public UserDetail(final String systemUser) {
         this.username = systemUser;
         this.active = true;
-        this.userPermission = new HashSet<>();
+        this.userPermission = new ArrayList<>();
         this.userPermission.add(new UserPermission(UsrPermission.Permission.ADMIN));
     }
 
@@ -83,8 +82,8 @@ public class UserDetail {
     }
 
 	public void setUserPermission(Collection<UserPermission> perms) {
-		userPermission.clear();
-		userPermission.addAll(perms);
+	    // update current permissions with new object
+	    this.userPermission = new ArrayList<>(perms);
 	}
 
 	/**
@@ -110,7 +109,7 @@ public class UserDetail {
 	 * @return
 	 */
 	public boolean hasPermission(Permission permission, Integer entityId) {
-		for (UserPermission userPermission : userPermission) {
+        for (UserPermission userPermission : this.userPermission) {
 			if (userPermission.getPermission().equals(permission)) {
 
 				if (userPermission.getPermission().equals(UsrPermission.Permission.ADMIN)) {
@@ -146,4 +145,59 @@ public class UserDetail {
 		}
 		return false;
 	}
+
+    public boolean isControllsUser(Integer userId) {
+        for (UserPermission userPermission : userPermission) {
+            if (userPermission.isControllsUser(userId)) {                
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean isControllsGroup(Integer groupId) {
+        for (UserPermission userPermission : userPermission) {
+            if (userPermission.isControllsGroup(groupId)) {                
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean hasPermission(UsrPermission usrPermission) {
+        UsrPermission.Permission permission = usrPermission.getPermission();
+        
+        for (UserPermission currPerm: userPermission) {
+            // check if same type
+            if (currPerm.getPermission().equals(permission)) {
+                switch (permission.getType()) {
+                case ALL:
+                    return true;
+                case FUND:
+                    if (currPerm.getFundIds().contains(usrPermission.getFundId())) {
+                        return true;
+                    }
+                    break;
+                case USER:
+                    if (currPerm.getControlUserIds().contains(usrPermission.getUserControlId())) {
+                        return true;
+                    }
+                    break;
+                case GROUP:
+                    if (currPerm.getControlGroupIds().contains(usrPermission.getGroupControlId())) {
+                        return true;
+                    }
+                    break;
+                case SCOPE:
+                    if (currPerm.getScopeIds().contains(usrPermission.getScopeId())) {
+                        return true;
+                    }
+                    break;
+                default:
+                    throw new UnsupportedOperationException("Neimplementovaný typ oprvánění: " + permission.getType());
+                }
+            }            
+        }
+        return false;
+    }
 }

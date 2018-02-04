@@ -1,5 +1,11 @@
 package cz.tacr.elza.controller.vo.nodes.descitems;
 
+import javax.persistence.EntityManager;
+
+import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataNull;
+
 /**
  * VO hodnoty atributu - enum.
  *
@@ -11,4 +17,10 @@ package cz.tacr.elza.controller.vo.nodes.descitems;
 public class ArrItemEnumVO extends ArrItemVO {
 
 
+    @Override
+    public ArrData createDataEntity(EntityManager em) {
+        ArrDataNull data = new ArrDataNull();
+        data.setDataType(DataType.ENUM.getEntity());
+        return data;
+    }
 }

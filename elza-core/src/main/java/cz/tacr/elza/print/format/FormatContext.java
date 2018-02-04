@@ -7,156 +7,232 @@ import org.apache.commons.lang3.StringUtils;
 
 /**
  * Context of active formatting
- *
  */
 public class FormatContext {
-	
-	/**
-	 * Active separator
-	 */
-	String itemSeparator = "; ";
-	
-	/**
-	 * Active separator for specifications
-	 */
-	String specificationSeparator = " ";
-	
-	/**
-	 * Begin block separator
-	 */
-	private String beginBlockSeparator = "\n";
-	
-	/**
-	 * End block separator
-	 */
-	private String endBlockSeparator = "";
+    
+    /**
+     * Helper class to store block on stack
+     */
+    static class Block {
+        StringBuilder resultBuffer;
+        String pendingSeparator;
+        
+        public Block(StringBuilder resultBuffer, String pendingSeparator) {
+            this.resultBuffer = resultBuffer;
+            this.pendingSeparator = pendingSeparator;
+        }
 
-	/**
-	 * Buffer with result
-	 */
-	StringBuilder resultBuffer = new StringBuilder();
-	
-	/**
-	 * Stack of opened blocks
-	 */
-	List<StringBuilder> blockStack = new LinkedList<>();
+        public StringBuilder getResultBuffer() {
+            return resultBuffer;
+        }
 
-	private String titleSeparator;
-	
-	public String getItemSeparator() {
-		return itemSeparator;
-	}
+        public String getPendingSeparator() {
+            return pendingSeparator;
+        }
+        
+    }
 
-	public void setItemSeparator(String separator) {
-		this.itemSeparator = separator;
-	}
+    /**
+     * Active separator
+     */
+    private String itemSeparator = "; ";
 
-	public void setSpecificationSeparator(String specSeparator) {
-		this.specificationSeparator = specSeparator;
-	}
+    /**
+     * Active separator for specifications
+     */
+    private String specificationSeparator = " ";
+    
+    /**
+     * Flag if begin block separator should be use always
+     */
+    private boolean useBeginBlockSeparatorAlways = true;
 
-	public String getSpecificationSeparator() {
-		return specificationSeparator;
-	}
+    /**
+     * Begin block separator
+     */
+    private String beginBlockSeparator = "\n";
 
-	public void setTitleSeparator(String titleSeparator) {
-		this.titleSeparator = titleSeparator;		
-	}
+    /**
+     * Flag if end block separator should be use always
+     */
+    private boolean useEndBlockSeparatorAlways = true;
 
-	public String getTitleSeparator() {
-		return titleSeparator;
-	}
-	
-	public String getBeginBlockSeparator() {
-		return beginBlockSeparator;
-	}
+    /**
+     * End block separator
+     */
+    private String endBlockSeparator = "";
 
-	public void setBeginBlockSeparator(String beginBlockSeparator) {
-		this.beginBlockSeparator = beginBlockSeparator;
-	}
+    /**
+     * Buffer with result
+     * 
+     * Use appendResult to append data to the buffer.
+     * Do not append data directly!
+     */
+    private StringBuilder resultBuffer = new StringBuilder();
+    
+    /**
+     * Conditional separator
+     * 
+     * This pending separator will be added to the resultBuffer if some 
+     * other text will be added also.
+     */
+    private String pendingSeparator;
 
-	public String getEndBlockSeparator() {
-		return endBlockSeparator;
-	}
+    /**
+     * Stack of opened blocks
+     */
+    private List<Block> blockStack = new LinkedList<>();
 
-	public void setEndBlockSeparator(String endBlockSeparator) {
-		this.endBlockSeparator = endBlockSeparator;
-	}
+    private String titleSeparator;
 
-	/**
-	 * Return formatted result
-	 * @return
-	 */
-	public String getResult() {
-		if(blockStack.size()>0) {
-			throw new IllegalStateException("There are unclosed blocks. Each block have to be properly closed");
-		}
-		return resultBuffer.toString();
-	}
+    public String getItemSeparator() {
+        return itemSeparator;
+    }
 
-	/**
-	 * Append value to result
-	 * @param value
-	 */
-	public void appendValue(String value) {
-		if(StringUtils.isBlank(value)) {
-			return;
-		}
+    public void setItemSeparator(String separator) {
+        this.itemSeparator = separator;
+    }
 
-		if(resultBuffer.length()>0) {
-			resultBuffer.append(itemSeparator);
-		}
-		
-		resultBuffer.append(value);	
-	}
-	
-	/**
-	 * Append specificationa and value to result
-	 * @param value
-	 */
-	public void appendSpecWithValue(String spec, String value) {
-		if(resultBuffer.length()>0) {
-			resultBuffer.append(itemSeparator);
-		}
-		resultBuffer.append(spec);		
-		if(StringUtils.isNoneBlank(value)) {
-			resultBuffer.append(specificationSeparator);
-			resultBuffer.append(value);
-		}
-	}
-	
-	/**
-	 * Begin new block
-	 */
-	public void beginBlock() {
-		blockStack.add(resultBuffer);
-		resultBuffer = new StringBuilder();
-	}
+    public void setSpecificationSeparator(String specSeparator) {
+        this.specificationSeparator = specSeparator;
+    }
 
-	/**
-	 * End current block
-	 */
-	public void endBlock() {
-		// Get from stack
-		StringBuilder sb = blockStack.remove(0);
-		
-		if(resultBuffer.length()>0) {
-			// begin block
-			if(beginBlockSeparator!=null)
-				sb.append(beginBlockSeparator);
-			
-			sb.append(resultBuffer.toString());
-			
-			// end block
-			if(endBlockSeparator!=null) 
-				sb.append(endBlockSeparator);
-		}
-		resultBuffer = sb;
-	}
+    public String getSpecificationSeparator() {
+        return specificationSeparator;
+    }
 
-	public void appendTitle(String name) {
-		// TODO Auto-generated method stub
-		
-	}
+    public void setTitleSeparator(String titleSeparator) {
+        this.titleSeparator = titleSeparator;
+    }
 
+    public String getTitleSeparator() {
+        return titleSeparator;
+    }
+
+    public String getBeginBlockSeparator() {
+        return beginBlockSeparator;
+    }
+
+    public void setBeginBlockSeparator(String beginBlockSeparator, boolean useBeginSeparatorAlways) {
+        this.beginBlockSeparator = beginBlockSeparator;
+        this.useBeginBlockSeparatorAlways = useBeginSeparatorAlways;
+    }
+
+    public String getEndBlockSeparator() {
+        return endBlockSeparator;
+    }
+
+    public void setEndBlockSeparator(String endBlockSeparator, boolean useEndSeparatorAlways) {
+        this.endBlockSeparator = endBlockSeparator;
+        this.useEndBlockSeparatorAlways = useEndSeparatorAlways;
+    }
+
+    /**
+     * Return formatted result
+     *
+     * Method is called after all formatting actions are finished
+     * @return
+     */
+    public String getResult() {
+        if (blockStack.size() > 0) {
+            throw new IllegalStateException("There are unclosed blocks. Each block have to be properly closed");
+        }
+        return resultBuffer.toString();
+    }
+
+    /**
+     * Append value to result
+     *
+     * @param value
+     */
+    public void appendValue(String value) {
+        if (StringUtils.isBlank(value)) {
+            return;
+        }
+
+        appendResult(value);
+        
+        this.pendingSeparator = itemSeparator;
+    }
+
+    /**
+     * Append specificationa and value to result
+     *
+     * @param value
+     */
+    public void appendSpecWithValue(String spec, String value) {
+        appendResult(spec);
+        if (StringUtils.isNoneBlank(value)) {
+            appendResult(specificationSeparator);
+            appendResult(value);
+        }
+        
+        this.pendingSeparator = itemSeparator;
+    }
+
+    /**
+     * Begin new block
+     */
+    public void beginBlock() {
+        Block block = new Block(resultBuffer, pendingSeparator);
+        blockStack.add(block);
+        
+        // prepare data for inner block
+        resultBuffer = new StringBuilder();
+        pendingSeparator = null;
+    }
+
+    /**
+     * End current block
+     */
+    public void endBlock() {
+        // get result of the block
+        String appendText = resultBuffer.toString();
+        
+        // Restore from stack
+        Block restoredBlock = blockStack.remove(0); 
+        resultBuffer = restoredBlock.getResultBuffer();
+        pendingSeparator = restoredBlock.getPendingSeparator(); 
+
+        if (appendText.length() > 0) {
+            // begin block
+            if (beginBlockSeparator != null) {
+                // append begin block if required or some text is already in builder
+                if(useBeginBlockSeparatorAlways || resultBuffer.length()>0)
+                {
+                    appendResult(beginBlockSeparator);
+                }
+            }
+
+            appendResult(appendText);
+
+            // end block
+            if (endBlockSeparator != null) {
+                if(useEndBlockSeparatorAlways) {
+                    appendResult(endBlockSeparator);
+                } else {                    
+                    this.pendingSeparator = endBlockSeparator;
+                }
+            }
+        }        
+    }
+
+    /**
+     * Append text to the result
+     * 
+     * Other functions should not directly manipulate with resultBuffer
+     * @param result
+     */
+    private void appendResult(String result) {
+        if(StringUtils.isNotEmpty(result)) {
+            // append pending separator
+            if(pendingSeparator!=null) {
+                resultBuffer.append(pendingSeparator);
+                pendingSeparator = null;
+            }
+            
+            // append result
+            resultBuffer.append(result);
+        }
+    }
 }

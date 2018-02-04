@@ -1,15 +1,12 @@
 package cz.tacr.elza.drools;
 
-import java.io.File;
 import java.nio.file.NoSuchFileException;
 import java.util.List;
 import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import cz.tacr.elza.domain.ArrDescItem;
@@ -31,12 +28,7 @@ import cz.tacr.elza.exception.SystemException;
  * @since 26.11.2015
  */
 @Service
-public class RulesExecutor implements InitializingBean {
-
-    /**
-     * Název složky v drools.
-     */
-    public static final String FOLDER = "drools";
+public class RulesExecutor {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -54,12 +46,6 @@ public class RulesExecutor implements InitializingBean {
 
     @Autowired
     private ScenarioOfNewLevelRules scenarioOfNewLevelRules;
-
-    /**
-     * Cesta adresáře pro konfiguraci pravidel.
-     */
-    @Value("${elza.rulesDir}")
-    private String rulesDir;
 
     /**
      * Přípona souborů pravidel
@@ -165,31 +151,5 @@ public class RulesExecutor implements InitializingBean {
         } catch (Exception e) {
             throw new SystemException(e);
         }
-    }
-
-
-    @Override
-    public void afterPropertiesSet() throws Exception {
-        File dir = new File(rulesDir);
-
-        if (!dir.exists()) {
-            dir.mkdirs();
-        }
-
-        //copyDefaultFromResources(dir);
-    }
-
-    public String getRulesDir() {
-        return rulesDir;
-    }
-
-    /**
-     * Vrací úplnou cestu k adresáři drools podle balíčku.
-     *
-     * @param code kód pravidel
-     * @return cesta k adresáři drools
-     */
-    public String getDroolsDir(final String code) {
-        return rulesDir + File.separator + code + File.separator + FOLDER;
     }
 }

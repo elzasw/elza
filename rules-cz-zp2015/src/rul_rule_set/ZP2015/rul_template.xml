@@ -15,7 +15,7 @@
         <directory>INVENTAR_PDF_JASPER</directory>
     </template>
     <template code="ZP2015_INVENTAR_PDF_JASPER_ZAMRSK" output-type="ZP2015_INVENTAR" mime-type="application/pdf" extension="pdf">
-        <name>PDF - varianta B</name>
+        <name>PDF - varianta B (zatím shodné s A)</name>
         <engine>JASPER</engine>
         <directory>INVENTAR_PDF_JASPER_ZAMRSK</directory>
     </template>
@@ -33,5 +33,10 @@
         <name>Košilky na spisy do PDF</name>
         <engine>JASPER</engine>
         <directory>KOSILKY_PDF_JASPER</directory>
+    </template>
+    <template code="ZP2015_INVENTAR_XML_PUBLICATION" output-type="ZP2015_INVENTAR" mime-type="application/xml" extension="xml">
+        <name>Publikace do XML</name>
+        <engine>DE_XML</engine>
+        <directory>INVENTAR_XML_PUBLICATION</directory>
     </template>
 </templates>

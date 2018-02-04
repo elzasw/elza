@@ -1,8 +1,11 @@
 package cz.tacr.elza.controller;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 
@@ -11,14 +14,14 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.util.FileCopyUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.RegScopeVO;
 import cz.tacr.elza.controller.vo.RulRuleSetVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
+import cz.tacr.elza.core.ResourcePathResolver;
 
 /**
  * @author Petr Compel
@@ -39,8 +42,8 @@ public class DEImportControllerTest extends AbstractControllerTest {
     protected final static String TRANSFORMATION_NAME = "suzap";
     protected final static String INVALID_TRANSFORMATION_NAME = "invalid unknown";
 
-    @Value("${elza.xmlImport.transformationDir}")
-    private String transformationsDirectory;
+    @Autowired
+    private ResourcePathResolver resourcePathResolver;
 
 
     /**
@@ -96,17 +99,17 @@ public class DEImportControllerTest extends AbstractControllerTest {
         Assert.assertTrue(!ruleSets.isEmpty());
         File source = getResourceFile(SUZAP_XSLT);
 
-        File dir = new File(this.transformationsDirectory);
-        logger.info(this.transformationsDirectory);
-        logger.info(dir.getAbsolutePath());
+        Path importTransformDir = resourcePathResolver.getImportXmlTrasnformDir();
 
-        if (!dir.exists()) {
-            Assert.assertTrue(dir.mkdirs());
+        logger.info(importTransformDir.toString());
+        logger.info(importTransformDir.toAbsolutePath().toString());
+
+        Files.createDirectories(importTransformDir);
+
+        Path dest = importTransformDir.resolve("suzap.xslt");
+        try (FileInputStream is = new FileInputStream(source)) {
+            Files.copy(is, dest);
         }
-
-        File dest = new File(this.transformationsDirectory + File.separator + "suzap.xslt");
-        FileCopyUtils.copy(source, dest);
-        Integer ruleSetId = ruleSets.iterator().next().getId();
 
         try {
             importXmlFile(INVALID_TRANSFORMATION_NAME, 1, getResourceFile(SUZAP_XML));

@@ -1,5 +1,11 @@
 package cz.tacr.elza.controller.vo.nodes.descitems;
 
+import javax.persistence.EntityManager;
+
+import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataString;
+
 /**
  * VO hodnoty atributu - string.
  *
@@ -19,5 +25,13 @@ public class ArrItemStringVO extends ArrItemVO {
 
     public void setValue(final String value) {
         this.value = value;
+    }
+
+    @Override
+    public ArrData createDataEntity(EntityManager em) {
+        ArrDataString data = new ArrDataString();
+        data.setValue(value);
+        data.setDataType(DataType.STRING.getEntity());
+        return data;
     }
 }

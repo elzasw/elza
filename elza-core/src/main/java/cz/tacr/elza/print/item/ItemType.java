@@ -2,6 +2,7 @@ package cz.tacr.elza.print.item;
 
 import java.util.List;
 
+import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.table.ElzaColumn;
 
@@ -11,29 +12,35 @@ import cz.tacr.elza.domain.table.ElzaColumn;
  */
 public class ItemType {
 
-    String name;
-    String dataType;
-    String shortcut;
-    String description;
-    String code;
-    Integer viewOrder;
-    List<ElzaColumn> tableDefinition;
+    private final String name;
+
+    private final DataType dataType;
+
+    private final String shortcut;
+
+    private final String description;
+
+    private final String code;
+
+    private final Integer viewOrder;
+
+    private final List<ElzaColumn> tableDefinition;
 
     public ItemType(RulItemType rulItemType) {
-        name = rulItemType.getName();
-        dataType = rulItemType.getDataType().getCode();
-        shortcut = rulItemType.getShortcut();
-        description = rulItemType.getDescription();
-        code = rulItemType.getCode();
-        viewOrder = rulItemType.getViewOrder();
-        tableDefinition = rulItemType.getColumnsDefinition();
-	}
+        this.name = rulItemType.getName();
+        this.dataType = DataType.fromId(rulItemType.getDataTypeId());
+        this.shortcut = rulItemType.getShortcut();
+        this.description = rulItemType.getDescription();
+        this.code = rulItemType.getCode();
+        this.viewOrder = rulItemType.getViewOrder();
+        this.tableDefinition = rulItemType.getColumnsDefinition();
+    }
 
-	public String getCode() {
+    public String getCode() {
         return code;
     }
 
-    public String getDataType() {
+    public DataType getDataType() {
         return dataType;
     }
 
@@ -54,10 +61,6 @@ public class ItemType {
     }
 
     public List<ElzaColumn> getTableDefinition() {
-		return tableDefinition;
-    }
-    
-    public static ItemType instanceOf(final RulItemType rulItemType) {
-    	return new ItemType(rulItemType); 
+        return tableDefinition;
     }
 }

@@ -3,27 +3,21 @@ package cz.tacr.elza.print.party;
 import cz.tacr.elza.domain.ParRelationRoleType;
 
 public class RelationToType {
-	
-	private String code;
-	private String name;
 
-	private RelationToType(ParRelationRoleType roleType)
-	{
-		code = roleType.getCode();
-		name = roleType.getName();
-	}
+    private final String code;
 
-	public String getCode() {
-		return code;
-	}
+    private final String name;
 
-	public String getName() {
-		return name;
-	}
+    public RelationToType(ParRelationRoleType parRelationRoleType) {
+        this.code = parRelationRoleType.getCode();
+        this.name = parRelationRoleType.getName();
+    }
 
-	public static RelationToType newInstance(ParRelationRoleType roleType) {
-		RelationToType relToType = new RelationToType(roleType); 
-		return relToType;
-	}
+    public String getCode() {
+        return code;
+    }
 
+    public String getName() {
+        return name;
+    }
 }

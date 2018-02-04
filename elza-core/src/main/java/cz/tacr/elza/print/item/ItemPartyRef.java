@@ -5,38 +5,31 @@ import cz.tacr.elza.print.party.Party;
 
 /**
  * Party reference
- *         
  */
 public class ItemPartyRef extends AbstractItem {
-	
-	Party party;
+
+    private final Party party;
 
     public ItemPartyRef(final Party party) {
-        super();
-        
         this.party = party;
     }
 
     @Override
-    public String serializeValue() {
+    public String getSerializedValue() {
         return party.getName();
     }
-    
-    public Party getParty() {
-    	return party;
+
+    @Override
+    protected Party getValue() {
+        return party;
     }
 
-	@Override
-	public Object getValue() {
-		return party;
-	}
-	
     @Override
     public <T> T getValue(final Class<T> type) {
-    	// allow to get directly record
-    	if(type == Record.class) {
-    		return type.cast(party.getRecord());
-    	}
+        // allow to get directly AP
+        if (type == Record.class) {
+            return type.cast(party.getRecord());
+        }
         return type.cast(getValue());
-    }	
+    }
 }
