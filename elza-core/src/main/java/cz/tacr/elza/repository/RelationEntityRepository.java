@@ -44,4 +44,12 @@ public interface RelationEntityRepository extends ElzaJpaRepository<ParRelationE
      */
     @Query("SELECT re FROM par_relation_entity re JOIN FETCH re.relation r JOIN FETCH r.party p WHERE re.record = ?1")
 	List<ParRelationEntity> findByRecord(RegRecord record);
+
+    /**
+     * Najde vazby které jsou vázané na předaný rejstřík
+     * @param record
+     * @return
+     */
+    @Query("SELECT re FROM par_relation_entity re JOIN FETCH re.relation r JOIN FETCH r.party p WHERE re.record = ?1 AND p.record.invalid = false")
+	List<ParRelationEntity> findActiveByRecord(RegRecord record);
 }
