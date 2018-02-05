@@ -20,11 +20,6 @@ public class ItemStructuredRef extends AbstractItem {
     }
 
     @Override
-    public boolean isValueSerializable() {
-        return true;
-    }
-
-    @Override
     public Structured getValue() {
     	return structured;
     }

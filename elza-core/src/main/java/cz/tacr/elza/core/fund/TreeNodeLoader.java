@@ -19,8 +19,11 @@ class TreeNodeLoader implements TreeLevelConsumer {
     private int currentDepth;
 
     public TreeNodeLoader(TreeNodeImpl root) {
-        this.currentParent = root;
+        this.parentMap = new HashMap<>();
         this.childMap = new HashMap<>();
+
+        this.parentMap.put(root.getNodeId(), root);
+        this.currentParent = root;
     }
 
     @Override
@@ -29,6 +32,9 @@ class TreeNodeLoader implements TreeLevelConsumer {
         if (depth > currentDepth) {
             currentDepth++;
             Validate.isTrue(depth == currentDepth);
+            // fire loaded event for current parents
+            parentMap.values().forEach(this::onTreeNodeLoaded);
+            // make new parents from children
             parentMap = childMap;
             childMap = new HashMap<>();
         }
@@ -36,7 +42,6 @@ class TreeNodeLoader implements TreeLevelConsumer {
         // check if parent changed
         Integer parentNodeId = level.getNodeIdParent();
         if (currentParent.getNodeId() != parentNodeId.intValue()) {
-            onTreeNodeLoaded(currentParent);
             currentParent = parentMap.get(parentNodeId);
             Validate.notNull(currentParent);
         }
@@ -53,9 +58,8 @@ class TreeNodeLoader implements TreeLevelConsumer {
     }
 
     public void processed() {
-        if (currentParent != null) {
-            onTreeNodeLoaded(currentParent);
-        }
+        parentMap.values().forEach(this::onTreeNodeLoaded);
+        childMap.values().forEach(this::onTreeNodeLoaded);
     }
 
     protected void onTreeNodeLoaded(TreeNodeImpl treeNode) {

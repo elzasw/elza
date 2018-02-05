@@ -21,45 +21,50 @@
 	<queryString>
 		<![CDATA[]]>
 	</queryString>
+	<variable name="znackaFondu" class="java.lang.String">
+		<variableExpression><![CDATA[$P{fund}.getRootNode().getSingleItemValue("ZP2015_ZNACKA_FONDU")]]></variableExpression>
+	</variable>
 	<detail>
-		<band height="702">
+		<band height="682">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-			<textField>
+			<textField isStretchWithOverflow="true">
 				<reportElement style="Title" x="0" y="303" width="455" height="50" uuid="6169d08a-6fdd-4b38-86fa-d19042c2b9d9"/>
+				<box bottomPadding="20"/>
 				<textElement textAlignment="Center">
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{output}.getName()]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="Heading 1" x="0" y="353" width="455" height="30" uuid="a5fb06e6-7955-4fdf-b60e-dfa9f3a72a8f"/>
+				<reportElement style="Heading 1" positionType="Float" x="0" y="353" width="455" height="30" uuid="a5fb06e6-7955-4fdf-b60e-dfa9f3a72a8f"/>
 				<textElement textAlignment="Center"/>
 				<textFieldExpression><![CDATA[$P{output}.getSingleItemValue( "ZP2015_DATE_RANGE" )]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="0" y="0" width="455" height="30" uuid="569bfdb1-6510-4732-ac7e-e7f018d39e20">
+			<textField isStretchWithOverflow="true">
+				<reportElement x="0" y="0" width="455" height="22" uuid="569bfdb1-6510-4732-ac7e-e7f018d39e20">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
-				<box>
+				<box bottomPadding="5">
 					<bottomPen lineWidth="1.0"/>
 				</box>
 				<textElement>
-					<font size="16" pdfEncoding="Cp1250"/>
+					<font size="14" pdfEncoding="Cp1250"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{fund}.getInstitution().getPartyGroup().getRecord().getRecord()]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="0" y="40" width="455" height="30" uuid="702942b3-54f1-49f1-adff-3ad8ae566325"/>
-				<box>
+			<textField isStretchWithOverflow="true">
+				<reportElement positionType="Float" x="0" y="23" width="455" height="27" uuid="702942b3-54f1-49f1-adff-3ad8ae566325"/>
+				<box topPadding="5" bottomPadding="5">
 					<bottomPen lineWidth="1.0"/>
 				</box>
 				<textElement>
-					<font size="16"/>
+					<font size="14"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{fund}.getInstitution().getCode()]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="0" y="100" width="455" height="14" uuid="e204c561-b87d-4e17-8072-843983c327b1">
+				<reportElement positionType="Float" x="0" y="81" width="455" height="14" uuid="e204c561-b87d-4e17-8072-843983c327b1">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement>
@@ -68,7 +73,7 @@
 				<textFieldExpression><![CDATA["archivní pomůcka č. "+$P{output}.getInternalCode()]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="0" y="114" width="455" height="14" uuid="4aeda5cf-c599-4af0-8152-15902d195e51">
+				<reportElement positionType="Float" x="0" y="95" width="455" height="14" uuid="4aeda5cf-c599-4af0-8152-15902d195e51">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement>
@@ -76,8 +81,8 @@
 				</textElement>
 				<textFieldExpression><![CDATA["NAD č. "+$P{fund}.getRootNode().getSingleItemValue("ZP2015_NAD")]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="0" y="80" width="455" height="20" uuid="23d30e4b-4b64-42af-bd93-1e68ba43e2ba">
+			<textField isStretchWithOverflow="true">
+				<reportElement positionType="Float" x="0" y="61" width="455" height="20" uuid="23d30e4b-4b64-42af-bd93-1e68ba43e2ba">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement>
@@ -102,6 +107,16 @@
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{output}.getSingleItemValue( "ZP2015_FINDING_AID_DATE" )]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement positionType="Float" x="0" y="109" width="455" height="14" uuid="34b6d38e-4f0b-4051-86f0-b5e6a4648f36">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<printWhenExpression><![CDATA[!$V{znackaFondu}.isEmpty()]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font pdfEncoding="Cp1250"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Značka fondu: "+$V{znackaFondu}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

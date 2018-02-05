@@ -20,11 +20,13 @@ import org.springframework.stereotype.Component;
 import cz.tacr.elza.api.interfaces.IArrFund;
 import cz.tacr.elza.api.interfaces.IRegScope;
 import cz.tacr.elza.core.security.AuthParam.Type;
+import cz.tacr.elza.core.security.Authorization.MethodParamBasedAccess.PermissionResult;
 import cz.tacr.elza.domain.UsrGroup;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.AccessDeniedException;
+import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
@@ -77,8 +79,23 @@ public class Authorization {
 	 *
 	 */
 	interface MethodParamBasedAccess {
+		
+		enum PermissionResult {
+			/**
+			 * Used when permission cannot be checked with this parameter
+			 */
+			NOT_CHECKED,
+			GRANT_ACCESS,
+			DENY_ACCESS
+		}
 
-		boolean hasPermission(AuthParam authParam, Object parameterValue);
+		/**
+		 * Check if permision can be applied
+		 * @param authParam
+		 * @param parameterValue
+		 * @return
+		 */
+		PermissionResult checkPermission(AuthParam authParam, Object parameterValue);
 
 	}
 
@@ -152,16 +169,34 @@ public class Authorization {
      */
     private boolean hasPermission(MethodInfo methodInfo, MethodParamBasedAccess methodChecker) {
         Parameter[] params = methodInfo.getParameters();
+       
+        // number of applied parameters
+        int appliedParams = 0;
+        
         // permssions for fund
         for (int i = 0; i < params.length; i++) {
             Parameter parameter = params[i];
             Object parameterValue = methodInfo.getPjpArg(i);
             AuthParam[] authParams = parameter.getAnnotationsByType(AuthParam.class);
             for (AuthParam authParam : authParams) {
-                if (methodChecker.hasPermission(authParam, parameterValue)) {
+                switch(methodChecker.checkPermission(authParam, parameterValue)) {
+                case GRANT_ACCESS:
                     return true;
+                case DENY_ACCESS:
+                	appliedParams++;
+                	break;
+				case NOT_CHECKED:
+					break;
+				default:
+					break;
                 }
             }
+        }
+        
+        // check if permissions where checked with at least one parameter
+        if(appliedParams==0) {
+        	throw new SystemException("Failed to check permissions, incorrect configuration, method: "
+        			+ methodInfo.getMethod().toString());
         }
         return false;
     }
@@ -176,13 +211,13 @@ public class Authorization {
 		return hasPermission(methodInfo, (authParam, parameterValue) -> {
 			Integer groupId = loadGroupId(parameterValue, authParam.type());
 			if (userDetail.hasPermission(UsrPermission.Permission.GROUP_CONTROL_ENTITITY, groupId)) {
-				return true;
+				return PermissionResult.GRANT_ACCESS;
 			}
 			List<Integer> perms = userRepository.findPermissionAllowingGroupAccess(userId, groupId);
 			if (CollectionUtils.isNotEmpty(perms)) {
-				return true;
+				return PermissionResult.GRANT_ACCESS;
 			}
-			return false;
+			return PermissionResult.DENY_ACCESS;
 		});
 	}
 
@@ -216,13 +251,13 @@ public class Authorization {
 		return hasPermission(methodInfo, (authParam, parameterValue) -> {
 			Integer entityId = loadUserId(parameterValue, authParam.type());
 			if (userDetail.hasPermission(UsrPermission.Permission.USER_CONTROL_ENTITITY, entityId)) {
-				return true;
+				return PermissionResult.GRANT_ACCESS;
 			}
 			List<Integer> perms = userRepository.findPermissionAllowingUserAccess(userId, entityId);
 			if (CollectionUtils.isNotEmpty(perms)) {
-				return true;
+				return PermissionResult.GRANT_ACCESS;
 			}
-			return false;
+			return PermissionResult.DENY_ACCESS;
 		});
 	}
 
@@ -243,9 +278,9 @@ public class Authorization {
 		return hasPermission(methodInfo, (authParam, parameterValue) -> {
 			Integer entityId = loadFundId(parameterValue, authParam.type());
 			if (userDetail.hasPermission(permission, entityId)) {
-				return true;
+				return PermissionResult.GRANT_ACCESS;
 			}
-			return false;
+			return PermissionResult.DENY_ACCESS;
 		});
 	}
 
@@ -261,9 +296,9 @@ public class Authorization {
 		return hasPermission(methodInfo, (authParam, parameterValue) -> {
 			Integer entityId = loadScopeId(parameterValue, authParam.type());
 			if (userDetail.hasPermission(permission, entityId)) {
-				return true;
+				return PermissionResult.GRANT_ACCESS;
 			}
-			return false;
+			return PermissionResult.DENY_ACCESS;
 		});
 	}
 

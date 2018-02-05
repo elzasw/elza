@@ -18,6 +18,7 @@ import javax.transaction.Transactional;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.Validate;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
@@ -37,6 +38,7 @@ import cz.tacr.elza.controller.vo.ArrOutputFileVO;
 import cz.tacr.elza.controller.vo.DmsFileVO;
 import cz.tacr.elza.controller.vo.FilteredResultVO;
 import cz.tacr.elza.domain.ArrFile;
+import cz.tacr.elza.domain.ArrOutputDefinition;
 import cz.tacr.elza.domain.ArrOutputFile;
 import cz.tacr.elza.domain.ArrOutputResult;
 import cz.tacr.elza.domain.DmsFile;
@@ -356,18 +358,39 @@ public class DmsController {
      * @throws IOException
      */
     @RequestMapping(value = "/api/outputResult/{outputResultId}", method = RequestMethod.GET)
+    @Transactional
     public void getOutputResultZip(HttpServletResponse response, @PathVariable(value = "outputResultId") Integer outputResultId) throws IOException {
-        Assert.notNull(outputResultId, "Identifikátor výstupu musí být vyplněn");
+        Validate.notNull(outputResultId, "Identifikátor výstupu musí být vyplněn");
         ArrOutputResult result = outputResultRepository.getOneCheckExist(outputResultId);
-        File outputFilesZip = dmsService.getOutputFilesZip(result);
-        response.setHeader("Content-Disposition", "attachment;filename="+outputFilesZip.getName());
+        ArrOutputDefinition outputDef = result.getOutputDefinition();
+        
+        // check number of files
+        List<ArrOutputFile> outputFiles = result.getOutputFiles();
+        
+        File fileForDownload = null;
+        String fileName;
+        InputStream in;
+        if(outputFiles.size()==1) {
+            // single file download directly
+            ArrOutputFile singleFile = outputFiles.get(0);
+            in = dmsService.downloadFile(singleFile);
+            fileName = singleFile.getFileName();
+        } else {
+            // multiple files have to be zipped
+            fileForDownload = dmsService.getOutputFilesZip(result);
+            fileName = outputDef.getName() + ".zip";
+            in = new BufferedInputStream(new FileInputStream(fileForDownload));
+        }
+
+        response.setHeader("Content-Disposition", "attachment;filename=" + fileName);
 
         ServletOutputStream out = response.getOutputStream();
-        InputStream in = new BufferedInputStream(new FileInputStream(outputFilesZip));
         IOUtils.copy(in, out);
         IOUtils.closeQuietly(in);
         IOUtils.closeQuietly(out);
-        outputFilesZip.delete();
+        if (fileForDownload != null) {
+            fileForDownload.delete();
+    }
     }
 
     /**

@@ -54,9 +54,6 @@ public class ValueWithTitleFormatter implements FormatAction {
      * @return Return true if item was added
      */
     private boolean formatItem(final boolean firstItem, FormatContext ctx, Item item) {
-        if (!item.isValueSerializable()){
-            return false;
-        }
         String value = item.getSerializedValue();
 
         // Append title

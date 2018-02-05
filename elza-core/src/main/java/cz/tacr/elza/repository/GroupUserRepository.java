@@ -11,8 +11,6 @@ import java.util.List;
 /**
  * Respozitory pro {@link UsrGroupUser}.
  *
- * @author Martin Šlapa
- * @since 11.04.2016
  */
 @Repository
 public interface GroupUserRepository extends JpaRepository<UsrGroupUser, Integer> {
@@ -21,5 +19,14 @@ public interface GroupUserRepository extends JpaRepository<UsrGroupUser, Integer
 
     List<UsrGroupUser> findByGroup(UsrGroup group);
 
-    UsrGroupUser findOneByGroupAndUser(UsrGroup group, UsrUser user);
+    /**
+     * Return collection of relations between group and user
+     * 
+     * Note: Due to the bug in the data there might be multiple relations
+     *       for same user and group
+     * @param group
+     * @param user
+     * @return
+     */
+    List<UsrGroupUser> findByGroupAndUser(UsrGroup group, UsrUser user);
 }

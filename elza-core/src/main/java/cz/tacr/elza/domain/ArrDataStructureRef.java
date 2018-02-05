@@ -74,6 +74,12 @@ public class ArrDataStructureRef extends ArrData {
     }
 
     @Override
+    protected boolean isEqualValueInternal(ArrData srcData) {
+        ArrDataStructureRef data = (ArrDataStructureRef) srcData;
+        return (this.structureDataId.equals(data.structureDataId));
+    }
+
+    @Override
     public void mergeInternal(final ArrData srcData) {
         ArrDataStructureRef src = (ArrDataStructureRef) srcData;
         copyValue(src);

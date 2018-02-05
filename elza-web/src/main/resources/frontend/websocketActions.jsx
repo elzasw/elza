@@ -129,12 +129,12 @@ class websocket{
     onError = (error) => {
         const {body, headers, command} = error;
 
+        store.dispatch(checkUserLogged((logged)=>{
+            if(logged){
         if (command === "ERROR" && headers) {
             // Error message received from server
             
             this.disconnect(true);
-            store.dispatch(checkUserLogged((logged)=>{
-                if(logged){
                     let message = headers.message || "";
 
                     if(body){
@@ -143,8 +143,6 @@ class websocket{
                     } 
 
                     store.dispatch(addToastrDanger(i18n('global.error.ws'), message));
-                }
-            }));
                 } else {
             // Unknown error -> probably lost connection -> try to reconnect
             this.disconnect();
@@ -152,6 +150,8 @@ class websocket{
             setTimeout(this.connect, 5000);
                 }
             }
+        }));
+    }
 
     onMessage = (frame) => {
         var body = JSON.parse(frame.body);

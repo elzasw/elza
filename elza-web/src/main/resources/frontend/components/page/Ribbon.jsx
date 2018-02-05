@@ -79,53 +79,50 @@ class Ribbon extends AbstractReactComponent {
         let section = null;
         // Aktomatické sekce podle vybrané oblasti
         if (this.props.admin) {
-            if (userDetail.hasOne(
-                perms.FUND_ADMIN,
-                perms.USR_PERM,
-                perms.USER_CONTROL_ENTITITY,
-                perms.GROUP_CONTROL_ENTITITY
-            )) {
-                section = (
-                    <RibbonGroup key="ribbon-group-admin" className="large">
-                        <LinkContainer key="ribbon-btn-admin-user" to="/admin/user">
-                            <Button>
-                                <Icon glyph="fa-user"/>
-                                <span className="btnText">{ i18n('ribbon.action.admin.user')}</span>
-                            </Button>
-                        </LinkContainer>
-                        <LinkContainer key="ribbon-btn-admin-groups" to="/admin/group">
-                            <Button>
-                                <Icon glyph="fa-group"/>
-                                <span className="btnText">{i18n('ribbon.action.admin.group')}</span>
-                            </Button>
-                        </LinkContainer>
-                        <LinkContainer key="ribbon-btn-admin-funds" to="/admin/fund">
-                            <Button>
-                                <Icon glyph="fa-database"/>
-                                <span className="btnText">{i18n('ribbon.action.admin.fund')}</span>
-                            </Button>
-                        </LinkContainer>
-                        <LinkContainer key="ribbon-btn-admin-packages" to="/admin/packages">
-                            <Button>
-                                <Icon glyph="fa-archive"/>
-                                <span className="btnText">{i18n('ribbon.action.admin.packages')}</span>
-                            </Button>
-                        </LinkContainer>
-                        <LinkContainer key="ribbon-btn-admin-requestsQueue" to="/admin/requestsQueue">
-                            <Button>
-                                <Icon glyph="fa-shopping-basket"/>
-                                <span className="btnText">{i18n('ribbon.action.admin.requestsQueue')}</span>
-                            </Button>
-                        </LinkContainer>
-                        <LinkContainer key="ribbon-btn-admin-external-systems" to="/admin/extSystem">
-                            <Button>
-                                <Icon glyph="fa-external-link"/>
-                                <span className="btnText">{i18n('ribbon.action.admin.externalSystems')}</span>
-                            </Button>
-                        </LinkContainer>
-                    </RibbonGroup>
-                );
-            }
+            const isSuperuser = userDetail.hasOne(perms.ADMIN);
+            const administersUser = userDetail.hasOne(perms.USER_CONTROL_ENTITITY, perms.USR_PERM);
+            const administersGroup = userDetail.hasOne(perms.GROUP_CONTROL_ENTITITY, perms.USR_PERM);
+
+            section = (
+                <RibbonGroup key="ribbon-group-admin" className="large">
+                    {administersUser && <LinkContainer key="ribbon-btn-admin-user" to="/admin/user">
+                        <Button>
+                            <Icon glyph="fa-user"/>
+                            <span className="btnText">{ i18n('ribbon.action.admin.user')}</span>
+                        </Button>
+                    </LinkContainer>}
+                    {administersGroup && <LinkContainer key="ribbon-btn-admin-groups" to="/admin/group">
+                        <Button>
+                            <Icon glyph="fa-group"/>
+                            <span className="btnText">{i18n('ribbon.action.admin.group')}</span>
+                        </Button>
+                    </LinkContainer>}
+                    {(administersGroup || administersUser) && <LinkContainer key="ribbon-btn-admin-funds" to="/admin/fund">
+                        <Button>
+                            <Icon glyph="fa-database"/>
+                            <span className="btnText">{i18n('ribbon.action.admin.fund')}</span>
+                        </Button>
+                    </LinkContainer>}
+                    {isSuperuser && [<LinkContainer key="ribbon-btn-admin-packages" to="/admin/packages">
+                        <Button>
+                            <Icon glyph="fa-archive"/>
+                            <span className="btnText">{i18n('ribbon.action.admin.packages')}</span>
+                        </Button>
+                    </LinkContainer>,
+                    <LinkContainer key="ribbon-btn-admin-requestsQueue" to="/admin/requestsQueue">
+                        <Button>
+                            <Icon glyph="fa-shopping-basket"/>
+                            <span className="btnText">{i18n('ribbon.action.admin.requestsQueue')}</span>
+                        </Button>
+                    </LinkContainer>,
+                    <LinkContainer key="ribbon-btn-admin-external-systems" to="/admin/extSystem">
+                        <Button>
+                            <Icon glyph="fa-external-link"/>
+                            <span className="btnText">{i18n('ribbon.action.admin.externalSystems')}</span>
+                        </Button>
+                    </LinkContainer>]}
+                </RibbonGroup>
+            );
         }
         if (this.props.arr) {
             const arrParts = [];

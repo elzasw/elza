@@ -168,8 +168,10 @@ class FundsPermissionPanel extends AbstractReactComponent {
                 return -1;
             } else if (b.id === FundsPermissionPanel.ALL_ID) {
                 return 1;
-            } else {
+            } else if (a.fund.name && b.fund.name){
                 return a.fund.name.localeCompare(b.fund.name);
+            } else {
+                return 1;
             }
         });
     }

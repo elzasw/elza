@@ -80,6 +80,12 @@ public class ArrDataPartyRef extends ArrData {
 	}
 
     @Override
+    protected boolean isEqualValueInternal(ArrData srcData) {
+        ArrDataPartyRef src = (ArrDataPartyRef)srcData;
+        return partyId.equals(src.partyId);
+    }
+
+    @Override
     public void mergeInternal(final ArrData srcData) {
         ArrDataPartyRef src = (ArrDataPartyRef) srcData;
         copyValue(src);

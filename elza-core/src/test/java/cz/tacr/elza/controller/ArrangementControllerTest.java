@@ -32,6 +32,8 @@ import org.springframework.http.HttpStatus;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import cz.tacr.elza.controller.ArrangementController.CopySiblingResult;
+import cz.tacr.elza.controller.ArrangementController.DescFormDataNewVO;
 import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
@@ -53,11 +55,13 @@ import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
 import cz.tacr.elza.controller.vo.filter.Filters;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.controller.vo.nodes.ItemTypeDescItemsLiteVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStringVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemTextVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ItemGroupVO;
 import cz.tacr.elza.domain.ArrDataText;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrOutputDefinition;
@@ -686,6 +690,8 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
     /**
      * Vytvoření levelů v archivní pomůcce.
+     * 
+     * Create 4 levels under root
      *
      * @param fundVersion verze archivní pomůcky
      * @return vytvořené levely
@@ -1042,6 +1048,53 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
 
 
+    }
+    
+    /**
+     * Test method copyOlderSiblingAttribute
+     */
+    @Test
+    public void copyOlderSiblingAttribute() {
+    	ArrFundVO fundSource = createdFund();
+    	ArrFundVersionVO fundVersion = getOpenVersion(fundSource);
+    	List<ArrNodeVO> nodesSource = createLevels(fundVersion);
+    	// append one description item under first sublevel
+    	ArrNodeVO node1 = nodesSource.get(1);
+    	ArrNodeVO node2 = nodesSource.get(2);
+
+        // vytvoření hodnoty
+        RulDescItemTypeExtVO type = findDescItemTypeByCode("ZP2015_TITLE");
+        ArrItemVO descItem = buildDescItem(type.getCode(), null, "value", null, null);
+        ArrangementController.DescItemResult descItemResult = createDescItem(descItem, fundVersion, node1,
+                type);
+        ArrItemVO descItemCreated = descItemResult.getItem();
+
+        assertNotNull(((ArrItemTextVO) descItem).getValue()
+                .equals(((ArrItemTextVO) descItemCreated).getValue()));
+        assertNotNull(descItemCreated.getPosition());
+        assertNotNull(descItemCreated.getDescItemObjectId());
+        
+        // copy value
+        CopySiblingResult copyResult = copyOlderSiblingAttribute(fundVersion.getId(), type.getId(), node2);
+        assertNotNull(copyResult);
+        
+        // read from server
+        List<ArrItemVO> items = new ArrayList<>();
+        DescFormDataNewVO formData = getNodeFormData(node2.getId(), fundVersion.getId());
+    	List<ItemGroupVO> groups = formData.getGroups();
+    	for(ItemGroupVO group: groups) {
+    		List<ItemTypeDescItemsLiteVO> voItems = group.getTypes();
+    		for(ItemTypeDescItemsLiteVO voItem: voItems) {
+    			if(voItem.getId().equals(type.getId())) {
+    				items.addAll(voItem.getDescItems());
+    			}
+    		}
+    	}
+    	assertTrue(items.size()==1);
+    	ArrItemVO result = items.get(0);
+    	ArrItemTextVO textVo = (ArrItemTextVO)result;
+    	assertTrue(textVo.getValue().equals("value"));
+    	
     }
 
     @Test

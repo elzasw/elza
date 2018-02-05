@@ -115,15 +115,49 @@ public class Formatter {
 
 	/**
 	 * Set separator for new block
+	 * 
+	 * Separator is added only if block is not last or first
 	 * @param beginBlockSeparator
 	 * @param endBlockSeparator
 	 * @return
 	 */
 	public Formatter setBlockSeparators(String beginBlockSeparator, String endBlockSeparator) {
-		return addAction(new SetBlockSeparators(beginBlockSeparator, endBlockSeparator));
+	    return setBlockSeparators(beginBlockSeparator, endBlockSeparator, false, false);
 	}
 
 	/**
+	 * Set separator for new block
+	 * 
+	 * @param beginBlockSeparator
+	 * @param endBlockSeparator
+	 * @param useAlways If true beginBlockSeparator and endBlockSeparator are added always. If false
+	 *   beginBlockSeparator is added only if item is not first and endBlockSeparator is added only
+	 *   if item is not last
+	 * @return formatter
+	 */
+    public Formatter setBlockSeparators(String beginBlockSeparator, String endBlockSeparator, boolean useAlways) {
+        return setBlockSeparators(beginBlockSeparator, endBlockSeparator, useAlways, useAlways);
+    }
+
+    /**
+     * Set separator for new block
+     * 
+     * @param beginBlockSeparator
+     * @param endBlockSeparator
+     * @param useBeginSeparatorAlways If true beginBlockSeparator is added always. If false
+     *   beginBlockSeparator is added only if item is not first
+     * @param useEndSeparatorAlways If true endBlockSeparator is added always. If false
+     *   endBlockSeparator is added only if item is not last
+     * @return formatter
+     */
+    public Formatter setBlockSeparators(String beginBlockSeparator, String endBlockSeparator, 
+                                        boolean useBeginSeparatorAlways,
+                                        boolean useEndSeparatorAlways) {
+        return addAction(new SetBlockSeparators(beginBlockSeparator, endBlockSeparator, 
+                useBeginSeparatorAlways, useEndSeparatorAlways));
+    }
+
+    /**
 	 * Format items from node
 	 * @param node Node to be formatted
 	 * @return Return string

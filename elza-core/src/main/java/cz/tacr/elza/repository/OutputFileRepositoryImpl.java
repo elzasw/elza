@@ -8,14 +8,13 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Fetch;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
 /**
  * Implementace repository pro ArrOutputFile - Custom
  *
- * @author Petr Compel <petr.compel@marbes.cz>
- * @since 20.6.16
  */
 @Component
 public class OutputFileRepositoryImpl extends AbstractFileRepository<ArrOutputFile> implements OutputFileRepositoryCustom {
@@ -31,7 +30,7 @@ public class OutputFileRepositoryImpl extends AbstractFileRepository<ArrOutputFi
         CriteriaQuery<ArrOutputFile> query = builder.createQuery(ArrOutputFile.class);
         CriteriaQuery<Long> queryCount = builder.createQuery(Long.class);
 
-        Root<ArrOutputFile> file = query.from(ArrOutputFile.class);
+        Root<ArrOutputFile> file = query.from(ArrOutputFile.class);        
         Root<ArrOutputFile> fileCount = queryCount.from(ArrOutputFile.class);
 
         Predicate predicate = prepareFileSearchPredicate(search, file);

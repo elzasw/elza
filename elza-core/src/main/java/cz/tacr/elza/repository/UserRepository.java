@@ -61,12 +61,16 @@ public interface UserRepository extends ElzaJpaRepository<UsrUser, Integer>, Use
 	        @Param("checkedUserId") int checkedUserId);
 
 	/**
-	 * Return list of usr_permission which grant user rights to manage group
-	 * users and groups
+	 * Return list of usr_permission which grant user rights to manage (anyhow) the group
 	 * 
 	 * @return
 	 */
-	@Query("select gu from usr_permission p join p.group g join g.users gu where p.groupControl = :checkedGroupId and gu.userId = :userId")
+	@Query("select distinct p.permissionId from usr_permission p " +
+	        "left join p.group g3 " +
+	        "left join g3.users gu3 " +
+	        "where  (p.userId = :userId or gu3.userId = :userId) " +
+	        "       and p.permission in ('GROUP_CONTROL_ENTITITY') " +
+	        "       and (p.groupControlId = :checkedGroupId)")
 	List<Integer> findPermissionAllowingGroupAccess(@Param("userId") int userId,
 	        @Param("checkedGroupId") int checkedGroupId);
 }

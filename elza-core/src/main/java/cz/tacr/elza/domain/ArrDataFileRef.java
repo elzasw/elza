@@ -68,6 +68,12 @@ public class ArrDataFileRef extends ArrData {
 	}
 
     @Override
+    protected boolean isEqualValueInternal(ArrData srcData) {
+        ArrDataFileRef src = (ArrDataFileRef)srcData;
+        return fileId.equals(src.fileId);
+    }
+
+    @Override
     public void mergeInternal(final ArrData srcData) {
         ArrDataFileRef src = (ArrDataFileRef)srcData;
         copyValue(src);
