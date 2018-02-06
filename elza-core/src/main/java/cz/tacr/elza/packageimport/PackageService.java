@@ -682,7 +682,7 @@ public class PackageService {
                 }
             }
 
-            //StaticDataProvider modifiedProvider = staticDataService.createProvider();            
+            //StaticDataProvider modifiedProvider = staticDataService.createProvider();
 
             staticDataService.reloadOnCommit();
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
@@ -694,7 +694,7 @@ public class PackageService {
 
                     // Try to reload all actions
                     // Note: static data have to be reloaded before bulk actions
-                    //       can be loaded            
+                    //       can be loaded
                     bulkActionConfigManager.load();
                 }
             });
@@ -1391,7 +1391,6 @@ public class PackageService {
         regRegisterType.setRulPackage(rulPackage);
         regRegisterType.setCode(registerType.getCode());
         regRegisterType.setName(registerType.getName());
-        regRegisterType.setHierarchical(registerType.getHierarchical());
         regRegisterType.setAddRecord(registerType.getAddRecord());
         if (registerType.getPartyType() != null) {
             ParPartyType parPartyType = findEntity(parPartyTypes, registerType.getPartyType(), ParPartyType::getCode);
@@ -3259,7 +3258,7 @@ public class PackageService {
                 ExtensionRule extensionRule = new ExtensionRule();
                 convertExtensionRule(rulExtensionRule, extensionRule);
                 extensionRuleList.add(extensionRule);
-                addToZipFile(ZIP_DIR_RULE_SET + "/" + ruleSetCode + "/" + ZIP_DIR_RULES + "/" + rulExtensionRule.getComponent().getFilename(), 
+                addToZipFile(ZIP_DIR_RULE_SET + "/" + ruleSetCode + "/" + ZIP_DIR_RULES + "/" + rulExtensionRule.getComponent().getFilename(),
                         resourcePathResolver.getDroolsDir(rulPackage, ruleSet)
                                 .resolve(rulExtensionRule.getComponent().getFilename()).toFile(),
                         zos);
@@ -3628,7 +3627,6 @@ public class PackageService {
         registerType.setName(regRegisterType.getName());
         registerType.setCode(regRegisterType.getCode());
         registerType.setAddRecord(regRegisterType.getAddRecord());
-        registerType.setHierarchical(regRegisterType.getHierarchical());
         registerType.setPartyType(regRegisterType.getPartyType() == null ? null : regRegisterType.getPartyType().getCode());
         registerType.setParentRegisterType(regRegisterType.getParentRegisterType() == null ? null : regRegisterType.getParentRegisterType().getCode());
     }

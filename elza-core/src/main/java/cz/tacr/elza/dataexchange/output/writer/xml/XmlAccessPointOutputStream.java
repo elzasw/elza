@@ -52,7 +52,6 @@ public class XmlAccessPointOutputStream implements AccessPointsOutputStream {
         element.setApe(createEntry(accessPoint));
         element.setChr(accessPoint.getCharacteristics());
         element.setN(accessPoint.getRecord());
-        element.setNote(accessPoint.getNote());
         element.setVnms(createVariantNames(accessPoint));
 
         try {
@@ -106,9 +105,9 @@ public class XmlAccessPointOutputStream implements AccessPointsOutputStream {
 
 	/**
 	 * Create new access point for XML
-	 * 
+	 *
 	 * This is factory method
-	 * 
+	 *
 	 * @param ap
 	 *            Record
 	 * @return
@@ -119,10 +118,6 @@ public class XmlAccessPointOutputStream implements AccessPointsOutputStream {
         entry.setT(ap.getRegisterType().getCode());
         entry.setUpd(XmlUtils.convertDate(ap.getLastUpdate()));
         entry.setUuid(ap.getUuid());
-
-        if (ap.getParentRecordId() != null) {
-            entry.setPid(ap.getParentRecordId().toString());
-        }
 
 		// prepare external id
 		if (StringUtils.isNotBlank(ap.getExternalId())) {
@@ -137,7 +132,7 @@ public class XmlAccessPointOutputStream implements AccessPointsOutputStream {
 
 	/**
 	 * Create collection of variant names
-	 * 
+	 *
 	 * @param ap
 	 *            record
 	 * @return Return null if variant names does not exists.

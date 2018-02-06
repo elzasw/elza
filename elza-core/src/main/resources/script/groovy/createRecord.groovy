@@ -38,7 +38,6 @@ RegRecord createRecord(ParParty party) {
 
 
     RegRecord record = new RegRecord();
-    record.setNote(party.getRecord().getNote());
     record.setRegisterType(party.getRecord().getRegisterType());
     record.setScope(party.getRecord().getScope());
     record.setRecord(generatePartyNameString(preferedName, party.getPartyType()));

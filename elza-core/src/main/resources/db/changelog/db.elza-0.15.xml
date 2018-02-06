@@ -421,4 +421,19 @@
                       newColumnName="depends_on_package_id"
                       tableName="rul_package_dependency"/>
     </changeSet>
+
+    <changeSet id="20180206092000" author="fric">
+        <dropColumn tableName="reg_register_type" columnName="hierarchical"/>
+        <dropForeignKeyConstraint baseTableName="reg_record" constraintName="fk_regRecord_regRecord"/>
+        <dropColumn tableName="reg_record" columnName="parent_record_id" />
+    </changeSet>
+
+    <changeSet id="20180206135000" author="fric">
+        <dropColumn tableName="reg_record" columnName="note" />
+    </changeSet>
+
+    <changeSet id="20180206142000" author="fric">
+        <dropForeignKeyConstraint baseTableName="reg_coordinates" constraintName="fk_regCoordinates_data"/>
+        <dropTable tableName="reg_coordinates"/>
+    </changeSet>
 </databaseChangeLog>

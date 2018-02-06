@@ -332,9 +332,6 @@ public class InterpiFactory {
         regRecord.setExternalId(interpiPartyId);
         regRecord.setExternalSystem(regExternalSystem);
 
-        String note = getNote(interpiEntity);
-        regRecord.setNote(note);
-
         RegRegisterType regRegisterType = getRegisterType(interpiEntity);
         if (BooleanUtils.isFalse(regRegisterType.getAddRecord())) {
             throw new IllegalStateException("Do typu rejstříku s kódem " + regRegisterType.getCode() + " nelze přidávat záznamy.");
@@ -344,34 +341,6 @@ public class InterpiFactory {
         regRecord.setScope(regScope);
 
         return regRecord;
-    }
-
-    /**
-     * Vytvoří poznámku.
-     *
-     * @param interpiEntity mapa hodnot z interpi
-     *
-     * @return poznámka, může být null
-     */
-    private String getNote(final InterpiEntity interpiEntity) {
-        List<String> notes = new LinkedList<>();
-        List<PopisTyp> popisTypList = interpiEntity.getPopisTyp();
-        for (PopisTyp popisTyp : popisTypList) {
-            switch (popisTyp.getTyp()) {
-                case POPIS:
-                    String popis = StringUtils.trimToNull(popisTyp.getTextPopisu());
-                    if (popis != null) {
-                        notes.add(popis);
-                    }
-                    break;
-                }
-        }
-
-        String note = null;
-        if (!notes.isEmpty()) {
-            note = StringUtils.join(notes, ", ");
-        }
-        return note;
     }
 
     private String getSourceInformation(final InterpiEntity interpiEntity) {

@@ -33,7 +33,6 @@ import cz.tacr.elza.controller.vo.ParPartyNameVO;
 import cz.tacr.elza.controller.vo.ParPartyVO;
 import cz.tacr.elza.controller.vo.ParRelationEntityVO;
 import cz.tacr.elza.controller.vo.ParRelationVO;
-import cz.tacr.elza.controller.vo.RegCoordinatesVO;
 import cz.tacr.elza.controller.vo.RegRecordVO;
 import cz.tacr.elza.controller.vo.RegScopeVO;
 import cz.tacr.elza.controller.vo.RegVariantRecordVO;
@@ -63,7 +62,6 @@ import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyName;
 import cz.tacr.elza.domain.ParRelation;
 import cz.tacr.elza.domain.ParRelationEntity;
-import cz.tacr.elza.domain.RegCoordinates;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegScope;
 import cz.tacr.elza.domain.RegVariantRecord;
@@ -357,22 +355,6 @@ public class ClientFactoryDO {
         }
 
         return descItem;
-    }
-
-    /**
-     * Vytvoří souřadnice rejstříků
-     *
-     * @param coordinatesVO souřadnice VO
-     * @return souřadnice
-     */
-    public RegCoordinates createRegCoordinates(final RegCoordinatesVO coordinatesVO) {
-        Assert.notNull(coordinatesVO, "Koordináty musí být vyplněny");
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        RegRecord regRecord = regRecordRepository.findOne(coordinatesVO.getRegRecordId());
-        Assert.notNull(regRecord, "Rejstříkové heslo neexistuje (ID=" + coordinatesVO.getRegRecordId() + ")");
-        RegCoordinates coordinates = mapper.map(coordinatesVO, RegCoordinates.class);
-        coordinates.setRegRecord(regRecord);
-        return coordinates;
     }
 
     /**

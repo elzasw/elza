@@ -889,7 +889,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         RegRecordVO record = new RegRecordVO();
 
-        record.setRegisterTypeId(getHierarchicalRegRegisterType(types, null, false).getId());
+        record.setRegisterTypeId(getNonHierarchicalRegRegisterType(types, false).getId());
 
         record.setCharacteristics("Ja jsem regRecordA");
 
@@ -897,7 +897,6 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         record.setScopeId(scopeId);
 
-        record.setHierarchical(true);
         record.setAddRecord(true);
 
         record = createRecord(record);
@@ -930,6 +929,23 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         assertTrue(updatedLink.getId().equals(deletedLink.getId()));
     }
 
+    private RegRegisterTypeVO getNonHierarchicalRegRegisterType(final List<RegRegisterTypeVO> list, final boolean hasPartyType) {
+        for (RegRegisterTypeVO type : list) {
+            if (type.getAddRecord() && ((!hasPartyType && type.getPartyTypeId() == null) || (hasPartyType && type.getPartyTypeId() != null))) {
+                return type;
+            }
+        }
+
+        for (RegRegisterTypeVO type : list) {
+            if (type.getChildren() != null) {
+                RegRegisterTypeVO res = getNonHierarchicalRegRegisterType(type.getChildren(), hasPartyType);
+                if (res != null) {
+                    return res;
+                }
+            }
+        }
+        return null;
+    }
 
     @Test
     public void replaceDataValuesTest() {

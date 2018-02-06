@@ -8,7 +8,6 @@ import java.util.List;
 import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
 
-import cz.tacr.elza.dataexchange.input.aps.context.APGeoLocationWrapper;
 import cz.tacr.elza.dataexchange.input.aps.context.APVariantNameWrapper;
 import cz.tacr.elza.dataexchange.input.aps.context.AccessPointWrapper;
 import cz.tacr.elza.dataexchange.input.context.ImportInitHelper;
@@ -87,10 +86,6 @@ public class StorageManager implements StorageListener {
     }
 
     public void saveAPVariantNames(Collection<APVariantNameWrapper> items) {
-        saveEntities(items);
-    }
-
-    public void saveAPGeoLocations(Collection<APGeoLocationWrapper> items) {
         saveEntities(items);
     }
 

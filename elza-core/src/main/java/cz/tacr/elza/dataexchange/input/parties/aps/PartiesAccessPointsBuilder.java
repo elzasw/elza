@@ -66,6 +66,6 @@ public class PartiesAccessPointsBuilder {
         // update fulltext index
         partyInfo.setAPName(name);
         // create party access point
-        return new PartyAccessPointWrapper(partyInfo, name, ap.getCharacteristics(), ap.getNote());
+        return new PartyAccessPointWrapper(partyInfo, name, ap.getCharacteristics());
     }
 }

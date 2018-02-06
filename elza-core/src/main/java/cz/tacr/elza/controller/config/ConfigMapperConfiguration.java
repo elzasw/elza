@@ -69,7 +69,6 @@ import cz.tacr.elza.controller.vo.ParRelationRoleTypeVO;
 import cz.tacr.elza.controller.vo.ParRelationTypeVO;
 import cz.tacr.elza.controller.vo.ParRelationVO;
 import cz.tacr.elza.controller.vo.ParUnitdateVO;
-import cz.tacr.elza.controller.vo.RegCoordinatesVO;
 import cz.tacr.elza.controller.vo.RegExternalSystemSimpleVO;
 import cz.tacr.elza.controller.vo.RegExternalSystemVO;
 import cz.tacr.elza.controller.vo.RegRecordSimple;
@@ -178,7 +177,6 @@ import cz.tacr.elza.domain.ParRelationEntity;
 import cz.tacr.elza.domain.ParRelationRoleType;
 import cz.tacr.elza.domain.ParRelationType;
 import cz.tacr.elza.domain.ParUnitdate;
-import cz.tacr.elza.domain.RegCoordinates;
 import cz.tacr.elza.domain.RegExternalSystem;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
@@ -541,7 +539,6 @@ public class ConfigMapperConfiguration {
 
         mapperFactory.classMap(RegRecord.class, RegRecord.class)
                 .exclude(RegRecord.RECORD_ID)
-                .exclude(RegRecord.PARENT_RECORD)
             .byDefault().register();
 
 
@@ -705,14 +702,8 @@ public class ConfigMapperConfiguration {
                     public void mapAtoB(final RegRecord regRecord,
                                         final RegRecordVO regRecordVO,
                                         final MappingContext context) {
-                        RegRecord parentRecord = regRecord.getParentRecord();
-                        if (parentRecord != null) {
-                            regRecordVO.setParentRecordId(parentRecord.getRecordId());
-                        }
-
                         regRecordVO.setRegisterTypeId(regRecord.getRegisterType().getRegisterTypeId());
                         regRecordVO.setAddRecord(regRecord.getRegisterType().getAddRecord());
-                        regRecordVO.setHierarchical(regRecord.getRegisterType().getHierarchical());
                         regRecordVO.setScopeId(regRecord.getScope().getScopeId());
                         regRecordVO.setInvalid(regRecord.isInvalid());
                     }
@@ -721,11 +712,6 @@ public class ConfigMapperConfiguration {
                     public void mapBtoA(final RegRecordVO regRecordVO,
                                         final RegRecord regRecord,
                                         final MappingContext context) {
-                        if (regRecordVO.getParentRecordId() != null) {
-                            RegRecord parent = new RegRecord();
-                            parent.setRecordId(regRecordVO.getParentRecordId());
-                            regRecord.setParentRecord(parent);
-                        }
 
                         if (regRecordVO.getRegisterTypeId() != null) {
                             RegRegisterType regRegisterType = new RegRegisterType();
@@ -928,36 +914,6 @@ public class ConfigMapperConfiguration {
                     }
                 }).byDefault().register();
 
-        mapperFactory.classMap(RegCoordinates.class, RegCoordinatesVO.class)
-                .field("coordinatesId", "id")
-                .customize(
-                new CustomMapper<RegCoordinates, RegCoordinatesVO>() {
-                    @Override
-                    public void mapAtoB(final RegCoordinates coordinates,
-                                        final RegCoordinatesVO coordinatesVO,
-                                        final MappingContext context) {
-                        String type = coordinates.getValue().getGeometryType().toUpperCase();
-                        if (type.equals("POINT")) {
-                            coordinatesVO.setValue(new WKTWriter().writeFormatted(coordinates.getValue()));
-                        } else {
-                            coordinatesVO.setValue(type + "( " + coordinates.getValue().getCoordinates().length + " )");
-                        }
-                        coordinatesVO.setRegRecordId(coordinates.getRegRecord().getRecordId());
-                    }
-
-                    @Override
-                    public void mapBtoA(final RegCoordinatesVO coordinatesVO,
-                                        final RegCoordinates coordinates,
-                                        final MappingContext context) {
-                        WKTReader reader = new WKTReader();
-                        try {
-                            coordinates.setValue(reader.read(coordinatesVO.getValue()));
-                        } catch (ParseException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }).exclude("value").byDefault().register();
-
         mapperFactory.classMap(UsrUser.class, UsrUserVO.class)
                 .byDefault()
                 .field("userId", "id")
@@ -1109,7 +1065,7 @@ public class ConfigMapperConfiguration {
                             unitdate.setNormalizedTo(Long.MAX_VALUE);
                         }
 
-                        // Look, the same joke twice ! 
+                        // Look, the same joke twice !
                         unitdate.setNormalizedTo(unitdate.getNormalizedTo());
                     }
                 }).byDefault().register();

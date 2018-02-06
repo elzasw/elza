@@ -1,60 +1,10 @@
 package cz.tacr.elza.service;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-
-import cz.tacr.elza.repository.ItemTypeRepository;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.ObjectUtils;
-import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-
 import cz.tacr.elza.controller.vo.TreeNodeClient;
-import cz.tacr.elza.controller.vo.usage.FundVO;
-import cz.tacr.elza.controller.vo.usage.NodeVO;
-import cz.tacr.elza.controller.vo.usage.OccurrenceType;
-import cz.tacr.elza.controller.vo.usage.OccurrenceVO;
-import cz.tacr.elza.controller.vo.usage.PartyVO;
-import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
+import cz.tacr.elza.controller.vo.usage.*;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDataRecordRef;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrNodeRegister;
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.ParRelation;
-import cz.tacr.elza.domain.ParRelationEntity;
-import cz.tacr.elza.domain.RegCoordinates;
-import cz.tacr.elza.domain.RegExternalSystem;
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.domain.RegRegisterType;
-import cz.tacr.elza.domain.RegScope;
-import cz.tacr.elza.domain.RegVariantRecord;
-import cz.tacr.elza.domain.UISettings;
-import cz.tacr.elza.domain.UsrPermission;
-import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.domain.*;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ExceptionUtils;
 import cz.tacr.elza.exception.ObjectNotFoundException;
@@ -63,25 +13,23 @@ import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.packageimport.PackageService;
 import cz.tacr.elza.packageimport.xml.SettingRecord;
-import cz.tacr.elza.repository.DataPartyRefRepository;
-import cz.tacr.elza.repository.DataRecordRefRepository;
-import cz.tacr.elza.repository.DescItemRepository;
-import cz.tacr.elza.repository.FundRegisterScopeRepository;
-import cz.tacr.elza.repository.FundVersionRepository;
-import cz.tacr.elza.repository.NodeRegisterRepository;
-import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.repository.PartyCreatorRepository;
-import cz.tacr.elza.repository.RegCoordinatesRepository;
-import cz.tacr.elza.repository.RegExternalSystemRepository;
-import cz.tacr.elza.repository.RegRecordRepository;
-import cz.tacr.elza.repository.RegVariantRecordRepository;
-import cz.tacr.elza.repository.RegisterTypeRepository;
-import cz.tacr.elza.repository.RelationEntityRepository;
-import cz.tacr.elza.repository.ScopeRepository;
-import cz.tacr.elza.repository.SettingsRepository;
+import cz.tacr.elza.repository.*;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventNodeIdVersionInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.ObjectUtils;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
+import javax.annotation.Nullable;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 
 /**
@@ -128,9 +76,6 @@ public class RegistryService {
 
     @Autowired
     private NodeRepository nodeRepository;
-
-    @Autowired
-    private RegCoordinatesRepository regCoordinatesRepository;
 
     @Autowired
     private ArrangementService arrangementService;
@@ -258,11 +203,6 @@ public class RegistryService {
             throw new BusinessException("Nalezeno použití hesla v tabulce ArrNodeRegister.", RegistryCode.EXIST_FOREIGN_DATA).set("table", "ArrNodeRegister");
         }
 
-        List<RegRecord> childs = regRecordRepository.findByParentRecord(record);
-        if (!childs.isEmpty()) {
-            throw new BusinessException("Nelze smazat rejstříkové heslo, které má potomky.", RegistryCode.EXISTS_CHILD);
-        }
-
         // vztah osoby par_relation_entity
         List<ParRelationEntity> relationEntities = relationEntityRepository.findActiveByRecord(record);
         if (CollectionUtils.isNotEmpty(relationEntities)) {
@@ -303,24 +243,7 @@ public class RegistryService {
             record.setExternalSystem(externalSystem);
         }
 
-        RegRecord parentRecord = null;
-        if (record.getParentRecord() != null && record.getParentRecord().getRecordId() != null){
-            parentRecord = regRecordRepository.findOne(record.getParentRecord().getRecordId());
-            checkRecordCycle(record, parentRecord);
-            record.setParentRecord(parentRecord);
-        }
-
-
-        if (record.getRecordId() != null){
-            //při editaci typu kořenového hesla promítnout změnu na všechny potomky
-            RegRecord dbRecord = regRecordRepository.findOne(record.getRecordId());
-            if (dbRecord.getParentRecord() == null) {
-                if (!ObjectUtils.equals(record.getRegisterType(), dbRecord.getRegisterType())) {
-                    List<RegRecord> childs = regRecordRepository.findByParentRecord(dbRecord);
-                    childs.forEach(child -> hierarchicalUpdateRegisterType(child, registerType));
-                }
-            }
-        } else if (record.getUuid() == null) {
+        if (record.getUuid() == null) {
             record.setUuid(UUID.randomUUID().toString());
         }
 
@@ -331,32 +254,6 @@ public class RegistryService {
         eventNotificationService.publishEvent(EventFactory.createIdEvent(type, result.getRecordId()));
 
         return result;
-    }
-
-    private void hierarchicalUpdateRegisterType(final RegRecord record, final RegRegisterType type) {
-        Assert.notNull(record, "Rejstříkové heslo musí být vyplněno");
-        Assert.notNull(type, "Typ musí být vyplněn");
-
-        record.setRegisterType(type);
-
-        List<RegRecord> childs = regRecordRepository.findByParentRecord(record);
-        childs.forEach(child -> hierarchicalUpdateRegisterType(child, type));
-    }
-
-    /**
-     * Test, že nevkládáme rejstříkové heslo pod svého potomka.
-     *
-     * @param record    heslo
-     * @param newParent nový rodič
-     */
-    private void checkRecordCycle(final RegRecord record, final RegRecord newParent) {
-        RegRecord parent = newParent;
-        while (parent != null) {
-            if (parent.equals(record)) {
-                throw new BusinessException("Nelze vložit pod potomka.", BaseCode.CYCLE_DETECT);
-            }
-            parent = parent.getParentRecord();
-        }
     }
 
     /**
@@ -373,7 +270,6 @@ public class RegistryService {
             eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.RECORD_DELETE, record.getRecordId()));
 
             variantRecordRepository.delete(variantRecordRepository.findByRegRecordId(record.getRecordId()));
-            regCoordinatesRepository.delete(regCoordinatesRepository.findByRegRecordId(record.getRecordId()));
             regRecordRepository.delete(record);
         } else {
             record.setInvalid(true);
@@ -415,43 +311,15 @@ public class RegistryService {
         RegScope scope = scopeRepository.findOne(record.getScope().getScopeId());
         Assert.notNull(scope, "Nebyla nalezena třída rejstříku s id " + record.getScope().getScopeId());
 
-        RegRecord parentRecord = null;
-        if (record.getParentRecord() != null && record.getParentRecord().getRecordId() != null) {
-            parentRecord = regRecordRepository.findOne(record.getParentRecord().getRecordId());
-            Assert.notNull(parentRecord,
-                    "Nebylo nalezeno rejstříkové heslo s id " + record.getParentRecord().getRecordId());
-        }
-
-        if (parentRecord != null) {
-            if (ObjectUtils.equals(parentRecord.getRecordId(), record.getRecordId())) {
-                throw new BusinessException("Nelze nastavit rodiče rejstříkovému heslu sebe samotného.", RegistryCode.CANT_BE_SELF_PARENT);
-            }
-
-            ExceptionUtils.equalsElseBusiness(record.getRegisterType(), parentRecord.getRegisterType(),
-                    "Potomek rejstříkového hesla musí mít stejný typ jako jeho rodič.", RegistryCode.CHILD_AND_PARENT_DIFFERENT_TYPE);
-        }
-
         if (record.getRecordId() == null) {
             if (!regRegisterType.getAddRecord()) {
                 throw new BusinessException(
                         "Nelze přidávat heslo do typu, který nemá přidávání hesel povolené.", RegistryCode.REGISTRY_TYPE_DISABLE);
             }
-
-            if (parentRecord != null && !parentRecord.getRegisterType().getHierarchical()) {
-                throw new BusinessException("Nelze přidávat heslo k rodiči, který není hierarchický.", RegistryCode.PARENT_IS_NOT_HIERARCHICAL);
-            }
         } else {
             RegRecord dbRecord = regRecordRepository.findOne(record.getRecordId());
             if (!record.getScope().getScopeId().equals(dbRecord.getScope().getScopeId())) {
                 throw new BusinessException("Nelze změnit třídu rejstříku.", RegistryCode.SCOPE_CANT_CHANGE);
-            }
-
-            List<RegRecord> childs = regRecordRepository.findByParentRecord(dbRecord);
-            if (dbRecord.getRegisterType().getHierarchical() && !regRegisterType.getHierarchical() && !childs
-                    .isEmpty()) {
-                throw new BusinessException(
-                        "Nelze změnit typ rejstříkového hesla na nehierarchický, pokud má heslo potomky."
-                        , RegistryCode.HIERARCHICAL_RECORD_HAS_CHILDREN);
             }
 
             ParParty party = partyService.findParPartyByRecord(dbRecord);
@@ -508,27 +376,6 @@ public class RegistryService {
         eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.RECORD_UPDATE, recordId));
 
         return saved;
-    }
-
-    public Map<RegRecord, List<RegRecord>> findChildren(final List<RegRecord> records) {
-        Assert.notNull(records, "Musí být vyplněny hesla");
-
-        if (CollectionUtils.isEmpty(records)) {
-            return Collections.emptyMap();
-        }
-
-        Map<RegRecord, List<RegRecord>> result = new HashMap<>();
-        regRecordRepository.findByParentRecords(records).forEach(record -> {
-            RegRecord parent = record.getParentRecord();
-            List<RegRecord> children = result.get(parent);
-            if (children == null) {
-                children = new LinkedList<>();
-                result.put(parent, children);
-            }
-            children.add(record);
-        });
-
-        return result;
     }
 
     /**
@@ -827,84 +674,10 @@ public class RegistryService {
         return defaultScopes;
     }
 
-    /**
-     * Uložení či update souřadnic rejsříkového hesla.
-     *
-     * @param coordinates souřadnice
-     * @return výslendný objekt uložený do db
-     */
-    @AuthMethod(permission = {UsrPermission.Permission.REG_SCOPE_WR_ALL, UsrPermission.Permission.REG_SCOPE_WR})
-    public RegCoordinates saveRegCoordinates(@AuthParam(type = AuthParam.Type.SCOPE) final RegCoordinates coordinates) {
-        Assert.notNull(coordinates, "Musí být vyplněné koordináty");
-
-        RegRecord regRecord = coordinates.getRegRecord();
-        Assert.notNull(regRecord, "RegRecord musí být vyplněno.");
-        Integer recordId = regRecord.getRecordId();
-        Assert.notNull(recordId, "RegRecord nemá vyplněno ID.");
-
-        regRecord = regRecordRepository.findOne(recordId);
-        Assert.notNull(regRecord, "RegRecord nebylo nalezeno podle id " + recordId);
-        coordinates.setRegRecord(regRecord);
-
-        Assert.notNull(coordinates.getValue(), "Hodnota value musí být vyplněna");
-        RegCoordinates savedCords = regCoordinatesRepository.save(coordinates);
-        eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.RECORD_UPDATE, recordId));
-        return savedCords;
-    }
-
-    /**
-     * Uložení či update List souřadnic rejsříkového hesla. - využito pro import kml
-     *
-     * @param coordinatesList souřadnice
-     * @return výslendný objekt uložený do db
-     */
-    @AuthMethod(permission = {UsrPermission.Permission.REG_SCOPE_WR_ALL})
-    public List<RegCoordinates> saveRegCoordinates(final List<RegCoordinates> coordinatesList) {
-        Assert.notEmpty(coordinatesList, "Musí být vyplněn alespoň jeden koordinát");
-        List<Integer> notifiedIds = new ArrayList<>();
-        for (RegCoordinates cord : coordinatesList) {
-            Assert.notNull(cord, "Koodrinát musí být nenulový");
-            Assert.notNull(cord.getRegRecord(), "RegRecord musí být vyplněno.");
-            Integer recordId = cord.getRegRecord().getRecordId();
-            Assert.notNull(recordId, "RegRecord nemá vyplněno ID.");
-            Assert.notNull(cord.getValue(), "Hodnota value musí být vyplněna");
-            if (!notifiedIds.contains(recordId)) {
-                eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.RECORD_UPDATE, recordId));
-                notifiedIds.add(recordId);
-            }
-        }
-
-        return regCoordinatesRepository.save(coordinatesList);
-    }
-
     @AuthMethod(permission = {UsrPermission.Permission.REG_SCOPE_RD_ALL, UsrPermission.Permission.REG_SCOPE_RD})
     public RegRecord getRecord(@AuthParam(type = AuthParam.Type.REGISTRY) final Integer recordId) {
         Assert.notNull(recordId, "Identifikátor rejstříkového hesla musí být vyplněn");
         return regRecordRepository.findOne(recordId);
-    }
-
-    /**
-     * Získání coordinate
-     * včetně oprávnění
-     *
-     * @param coordinatesId coordinate Id
-     * @return coordinate
-     */
-    public RegCoordinates getRegCoordinate(final Integer coordinatesId) {
-        RegCoordinates coordinates = regCoordinatesRepository.getOneCheckExist(coordinatesId);
-        beanFactory.getBean(RegistryService.class).getRecord(coordinates.getRegRecord().getRecordId());
-        return coordinates;
-    }
-
-    /**
-     * Smazání coordinate
-     *
-     * @param coordinate coordinate ke smazání
-     * @param record record z důvodu oprávnění
-     */
-    @AuthMethod(permission = {UsrPermission.Permission.REG_SCOPE_WR_ALL, UsrPermission.Permission.REG_SCOPE_WR})
-    public void deleteRegCoordinate(final RegCoordinates coordinate, @AuthParam(type = AuthParam.Type.REGISTRY) final RegRecord record) {
-        regCoordinatesRepository.delete(coordinate);
     }
 
     /**

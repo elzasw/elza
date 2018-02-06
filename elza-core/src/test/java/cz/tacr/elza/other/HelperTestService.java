@@ -62,7 +62,6 @@ import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.PartyTypeComplementTypeRepository;
 import cz.tacr.elza.repository.PartyTypeRelationRepository;
 import cz.tacr.elza.repository.PermissionRepository;
-import cz.tacr.elza.repository.RegCoordinatesRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RegVariantRecordRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
@@ -160,8 +159,6 @@ public class HelperTestService {
     @Autowired
     protected PartyNameFormTypeRepository partyNameFormTypeRepository;
     @Autowired
-    protected RegCoordinatesRepository regCoordinatesRepository;
-    @Autowired
     protected RegRecordRepository recordRepository;
     @Autowired
     protected PartyNameRepository partyNameRepository;
@@ -242,7 +239,6 @@ public class HelperTestService {
         partyNameRepository.deleteAll();
         variantRecordRepository.deleteAll();
         nodeRegisterRepository.deleteAll();
-        regCoordinatesRepository.deleteAll();
         fundVersionRepository.deleteAll();
         fundRegisterScopeRepository.deleteAll();
         levelRepository.deleteAll();

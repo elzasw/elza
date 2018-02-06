@@ -7,7 +7,6 @@ import cz.tacr.elza.repository.PartyGroupIdentifierRepository;
 import cz.tacr.elza.repository.PartyNameComplementRepository;
 import cz.tacr.elza.repository.PartyNameRepository;
 import cz.tacr.elza.repository.PartyRepository;
-import cz.tacr.elza.repository.RegCoordinatesRepository;
 import cz.tacr.elza.repository.RegExternalSystemRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RegVariantRecordRepository;
@@ -31,8 +30,6 @@ public class ImportInitHelper {
 
     private final RegRecordRepository recordRepository;
 
-    private final RegCoordinatesRepository coordinatesRepository;
-
     private final RegVariantRecordRepository variantRecordRepository;
 
     private final PartyRepository partyRepository;
@@ -52,7 +49,6 @@ public class ImportInitHelper {
                             ArrangementService arrangementService,
                             LevelRepository levelRepository,
                             RegRecordRepository recordRepository,
-                            RegCoordinatesRepository coordinatesRepository,
                             RegVariantRecordRepository variantRecordRepository,
                             PartyRepository partyRepository,
                             PartyNameRepository nameRepository,
@@ -66,7 +62,6 @@ public class ImportInitHelper {
         this.arrangementService = arrangementService;
         this.levelRepository = levelRepository;
         this.recordRepository = recordRepository;
-        this.coordinatesRepository = coordinatesRepository;
         this.variantRecordRepository = variantRecordRepository;
         this.partyRepository = partyRepository;
         this.nameRepository = nameRepository;
@@ -101,10 +96,6 @@ public class ImportInitHelper {
 
     public RegRecordRepository getRecordRepository() {
         return recordRepository;
-    }
-
-    public RegCoordinatesRepository getCoordinatesRepository() {
-        return coordinatesRepository;
     }
 
     public RegVariantRecordRepository getVariantRecordRepository() {

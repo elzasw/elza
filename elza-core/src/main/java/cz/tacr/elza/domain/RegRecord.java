@@ -58,15 +58,6 @@ public class RegRecord extends AbstractVersionableEntity implements Versionable,
     private Integer registerTypeId;
 
     @RestResource(exported = false)
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RegRecord.class)
-    @JoinColumn(name = "parentRecordId")
-    @JsonIgnore
-    private RegRecord parentRecord;
-
-    @Column(updatable = false, insertable = false)
-    private Integer parentRecordId;
-
-    @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RegExternalSystem.class)
     @JoinColumn(name = "externalSystemId")
     @JsonIgnore
@@ -93,10 +84,6 @@ public class RegRecord extends AbstractVersionableEntity implements Versionable,
     @JsonIgnore
     private String characteristics;
 
-    @Column(length = StringLength.LENGTH_1000)
-    @JsonIgnore
-    private String note;
-
     @Column(name = "externalId", length = StringLength.LENGTH_250)
     @JsonIgnore
     private String externalId;
@@ -121,10 +108,8 @@ public class RegRecord extends AbstractVersionableEntity implements Versionable,
     /* Konstanty pro vazby a fieldy. */
     public static final String VARIANT_RECORD_LIST = "variantRecordList";
     public static final String REGISTER_TYPE = "registerType";
-    public static final String PARENT_RECORD = "parentRecord";
     public static final String RECORD = "record";
     public static final String CHARACTERISTICS = "characteristics";
-    public static final String NOTE = "note";
     public static final String LOCAL = "local";
     public static final String RECORD_ID = "recordId";
     public static final String SCOPE = "scope";
@@ -163,27 +148,6 @@ public class RegRecord extends AbstractVersionableEntity implements Versionable,
     public void setRegisterType(final RegRegisterType registerType) {
         this.registerTypeId = registerType == null ? null : registerType.getRegisterTypeId();
         this.registerType = registerType;
-    }
-
-    /**
-     * Nadřazený záznam rejstříku.
-     * @return  nadřazený záznam rejstříku
-     */
-    public RegRecord getParentRecord() {
-        return parentRecord;
-    }
-
-    /**
-     * Nadřazený záznam rejstříku.
-     * @param parentRecord nadřazený záznam rejstříku
-     */
-    public void setParentRecord(final RegRecord parentRecord) {
-        this.parentRecord = parentRecord;
-        this.parentRecordId = parentRecord != null ? parentRecord.getRecordId() : null;
-    }
-
-    public Integer getParentRecordId() {
-        return parentRecordId;
     }
 
     public RegExternalSystem getExternalSystem() {
@@ -229,22 +193,6 @@ public class RegRecord extends AbstractVersionableEntity implements Versionable,
      */
     public void setCharacteristics(final String characteristics) {
         this.characteristics = characteristics;
-    }
-
-    /**
-     * Poznámka k heslu v rejstříku.
-     * @return poznámka k heslu v rejstříku
-     */
-    public String getNote() {
-        return note;
-    }
-
-    /**
-     * Poznámka k heslu v rejstříku.
-     * @param note poznámka k heslu v rejstříku
-     */
-    public void setNote(final String note) {
-        this.note = note;
     }
 
     /**

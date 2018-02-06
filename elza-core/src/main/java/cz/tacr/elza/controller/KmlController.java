@@ -25,11 +25,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.xml.sax.SAXException;
 
-import com.vividsolutions.jts.geom.Geometry;
-
-import cz.tacr.elza.domain.RegCoordinates;
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.repository.RegCoordinatesRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.service.ArrIOService;
 import cz.tacr.elza.service.RegistryService;
@@ -45,9 +40,6 @@ public class KmlController {
 
     @Autowired
     private RegRecordRepository regRecordRepository;
-
-    @Autowired
-    private RegCoordinatesRepository regCoordinatesRepository;
 
     @Autowired
     private RegistryService registryService;
@@ -92,40 +84,7 @@ public class KmlController {
     public List<Integer> importRegCoordinates(
             @RequestParam(value = "regRecordId") final Integer regRecordId,
             @RequestParam(value = "file") final MultipartFile importFile) throws IOException, ParserConfigurationException, SAXException {
-        Assert.notNull(regRecordId, "Identifikátor hesla musí být vyplněn");
-
-        RegRecord record = regRecordRepository.findOne(regRecordId);
-        if (record == null) {
-            throw new SystemException("Typ s ID=" + regRecordId + " neexistuje", BaseCode.ID_NOT_EXIST);
-        }
-
-        Parser parser = new Parser(new KMLConfiguration());
-        SimpleFeature document = (SimpleFeature) parser.parse(importFile.getInputStream());
-        Collection<SimpleFeature> placemarks = arrIOService.getPlacemars(document);
-        List<RegCoordinates> toCreate = new ArrayList<>();
-        for (SimpleFeature placemark : placemarks) {
-            Geometry geometry = (Geometry) placemark.getAttribute("Geometry");
-            switch (geometry.getGeometryType()) {
-                case "Point":
-                case "LineString":
-                case "Polygon":
-                    break;
-                default:
-                    continue;
-            }
-            String decription = (String) placemark.getAttribute("Description");
-            RegCoordinates coordinates = new RegCoordinates();
-            coordinates.setValue(geometry);
-            coordinates.setRegRecord(record);
-            coordinates.setDescription(decription);
-            toCreate.add(coordinates);
-        }
-
-        List<Integer> ids = new ArrayList<>();
-        registryService.saveRegCoordinates(toCreate).forEach(regCoordinates -> {
-            ids.add(regCoordinates.getCoordinatesId());
-        });
-        return ids;
+        throw new SystemException("import koordinat neni podporovan", BaseCode.SYSTEM_ERROR);
     }
 
 
@@ -158,12 +117,7 @@ public class KmlController {
             method = RequestMethod.GET,
             produces = MediaType.APPLICATION_XML_VALUE)
     public void exportRegCoordinates(final HttpServletResponse response, @PathVariable(value = "coordinatesId") final Integer coordinatesId) throws IOException {
-        Assert.notNull(coordinatesId, "Identifikátor koordinátu musí být vyplněn");
-        RegCoordinates cords = regCoordinatesRepository.findOne(coordinatesId);
-
-        Assert.notNull(cords, "Koordinát nexistuje");
-
-       arrIOService.toKml(response, cords.getValue());
+        throw new SystemException("export koordinat neni podporovan", BaseCode.SYSTEM_ERROR);
     }
 
 }

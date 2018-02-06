@@ -507,13 +507,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         }
 
         RegRegisterType regType = staticData.getRegisterTypeById(apTypeId);
-        if (Boolean.TRUE.equals(regType.getHierarchical())) {
-            // recursively create parent types up to root or existing one
-            RecordType parentType = getAPType(regType.getParentRegisterTypeId());
-            type = RecordType.newInstance(parentType, regType);
-        } else {
-            type = RecordType.newInstance(null, regType);
-        }
+        type = RecordType.newInstance(null, regType);
 
         // add to lookup
         apTypeIdMap.put(apTypeId, type);
@@ -598,14 +592,14 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
     /**
      * Convert party to output specific object
-     * 
+     *
      * @param party
      *            have to be non null
      * @param initHelper
      * @return
      */
     private static Party convertParty(ParParty party, PartyInitHelper initHelper) {
-        // input data have to be initialized 
+        // input data have to be initialized
         party = HibernateUtils.unproxyInitialized(party);
 
         PartyType partyType = PartyType.fromId(party.getPartyTypeId());
