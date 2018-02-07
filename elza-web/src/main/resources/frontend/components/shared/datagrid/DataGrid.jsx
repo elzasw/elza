@@ -132,8 +132,9 @@ class DataGrid extends AbstractReactComponent {
             needComputeColumnsWidth = props.staticColumns;
 
             if (props.allowRowCheck) {
-                cols.push({_rowCheck: true, width: 45, resizeable: false})
-                colWidths[0] = 45;
+                const width = 60;
+                cols.push({_rowCheck: true, width: width, resizeable: false})
+                colWidths[0] = width;
             }
             props.cols.forEach((col, colIndex) => {
                 var useColIndex = props.allowRowCheck ? colIndex + 1 : colIndex;
