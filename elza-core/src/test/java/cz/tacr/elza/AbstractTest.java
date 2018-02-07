@@ -11,7 +11,11 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.other.HelperTestService;
-import cz.tacr.elza.repository.*;
+import cz.tacr.elza.repository.DataRepository;
+import cz.tacr.elza.repository.DataTypeRepository;
+import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.ItemTypeRepository;
+import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.service.StartupService;
 
 
@@ -48,7 +52,8 @@ public abstract class AbstractTest {
         Assert.assertTrue(startupService.isRunning());
 
     	helperTestService.loadPackage("CZ_BASE", "package-cz-base");
-    	helperTestService.loadPackage("ZP2015", "rules-cz-zp2015");
+    	// helperTestService.loadPackage("ZP2015", "rules-cz-zp2015");
+    	helperTestService.loadPackage("SIMPLE-DEV", "rules-simple-dev");
 
         helperTestService.deleteTables();
     }

@@ -4,4 +4,47 @@
         <favorite-item>SRD_LANGUAGE_43</favorite-item>
         <favorite-item>SRD_LANGUAGE_8</favorite-item>
     </favorite-item-specs>
+	<type-groups settings-type="TYPE_GROUPS" entity-type="RULE">
+        <ns3:default>
+            <group code="01_BASE">
+                <name>Pořádání</name>
+                <type code="ZP2015_ARRANGEMENT_TYPE" width="2"/>
+                <type code="ZP2015_OUTPUT_TYPE" width="2"/>
+            </group>
+            <group code="02_GROUP1">
+                <name>Typ jednotky</name>
+                <type code="ZP2015_LEVEL_TYPE" width="1"/>
+                <type code="ZP2015_NAD" width="1"/>
+                <type code="ZP2015_ZNACKA_FONDU" width="1"/>
+                <type code="ZP2015_FOLDER_TYPE" width="1"/>
+                <type code="ZP2015_UNIT_TYPE" width="1"/>
+                <type code="ZP2015_UNIT_COUNT" width="1"/>
+                <type code="ZP2015_STORAGE_ID" width="1"/>
+                <type code="ZP2015_EXTRA_UNITS" width="1"/>
+                <type code="ZP2015_UNIT_EXT_TYPE" width="1"/>
+            </group>
+            <group code="03_GROUP2">
+                <name>Identifikátory jednotky popisu</name>
+                <type code="ZP2015_UNIT_ID" width="1"/>
+                <type code="ZP2015_SERIAL_NUMBER" width="1"/>
+                <type code="ZP2015_OTHER_ID" width="2"/>
+                <type code="ZP2015_INV_CISLO" width="2"/>
+                <type code="ZP2015_ITEM_ORDER" width="1"/>
+            </group>
+            <group code="04_GROUP3">
+                <name>Hlavní popis jednotky</name>
+                <type code="ZP2015_TITLE" width="0"/>
+                <!-- 4.2.4 Formální název jednotky popisu -->
+                <type code="ZP2015_FORMAL_TITLE" width="0"/>
+                <type code="ZP2015_UNIT_DATE" width="1"/>
+                <type code="ZP2015_UNIT_DATE_BULK" width="1"/>
+                <type code="ZP2015_UNIT_DATE_TEXT" width="2"/>
+                <!-- 5.2.1 Jiné datace jednotky popisu než datace vzniku jednotky popisu - specifikace a hodnota -->
+                <type code="ZP2015_DATE_OTHER" width="2"/>
+                <!-- 5.2.2 Název autorského díla -->
+                <type code="ZP2015_ITEM_TITLE" width="0"/>
+                <type code="ZP2015_ITEM_TITLE_REF" width="0"/>
+            </group>
+        </ns3:default>
+    </type-groups>
 </settings>

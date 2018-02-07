@@ -1,0 +1,10 @@
+<structure-extension-definitions>
+    <structure-extension-definition structure-type="SRD_PACKET" structure-extension="SRD_PACKET_MZABrno" filename="SRD_PACKET_MZABrno.drl">
+        <def-type>ATTRIBUTE_TYPES</def-type>
+        <priority>1</priority>
+    </structure-extension-definition>
+    <structure-extension-definition structure-type="SRD_PACKET" structure-extension="SRD_PACKET_MZABrno" filename="SRD_PACKET_MZABrno.groovy">
+        <def-type>SERIALIZED_VALUE</def-type>
+        <priority>1</priority>
+    </structure-extension-definition>
+</structure-extension-definitions>

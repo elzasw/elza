@@ -1,0 +1,6 @@
+<extension-rules>
+    <!--<extension-rule filename="ZP2015_AvailableItems2.drl" arrangement-extension="ZP2015_MZABrno">
+        <rule-type>ATTRIBUTE_TYPES</rule-type>
+        <priority>1</priority>
+    </extension-rule>-->
+</extension-rules>

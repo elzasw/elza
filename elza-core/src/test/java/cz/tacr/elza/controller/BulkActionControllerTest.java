@@ -37,9 +37,9 @@ public class BulkActionControllerTest extends AbstractControllerTest {
     private static final String BULK_ACTIONS_LIST = BULK_ACTION_CONTROLLER_URL + "/list/{versionId}";
     private static final String BULK_ACTION_QUEUE = BULK_ACTION_CONTROLLER_URL + "/queue/{versionId}/{code}";
 
-    private static final String BULK_ACTION_FUND_VALIDATION = "ZP2015_FUND_VALIDATION";
-    private static final String BULK_ACTION_GENERATOR_UNIT = "ZP2015_GENERATOR_UNIT_ID";
-    private static final String BULK_ACTION_SERIAL_NUMBER_GENERATOR = "ZP2015_GENERATOR_SERIAL_NUMBER";
+    private static final String BULK_ACTION_FUND_VALIDATION = "SRD_FUND_VALIDATION";
+    private static final String BULK_ACTION_GENERATOR_UNIT = "SRD_GENERATOR_UNIT_ID";
+    private static final String BULK_ACTION_SERIAL_NUMBER_GENERATOR = "SRD_GENERATOR_SERIAL_NUMBER";
 
     private int importAndGetVersionId() {
         importXmlFile(null, 1, DEImportControllerTest.getResourceFile(XML_FILE));
@@ -66,8 +66,8 @@ public class BulkActionControllerTest extends AbstractControllerTest {
         List<BulkActionVO> bulkActionVOs = Arrays.asList(get(spec -> spec.pathParam("versionId", fundVersionId), BULK_ACTIONS).getBody().as(BulkActionVO[].class));
 
 		// number of default bulk actions
-		// Currently 8 for ZP2015
-		Assert.assertEquals(8, bulkActionVOs.size());
+		// SRD has 4
+		Assert.assertEquals(4, bulkActionVOs.size());
 
         Boolean unit = false, serial = false, fa = false;
 

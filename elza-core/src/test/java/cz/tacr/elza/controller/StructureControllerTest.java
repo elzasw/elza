@@ -1,5 +1,18 @@
 package cz.tacr.elza.controller;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+import org.junit.Test;
+
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
 import cz.tacr.elza.controller.vo.ArrStructureDataVO;
@@ -12,17 +25,6 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStringVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ItemGroupVO;
 import cz.tacr.elza.domain.ArrStructureData;
-import org.junit.Test;
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static org.junit.Assert.*;
 
 
 /**
@@ -33,8 +35,8 @@ public class StructureControllerTest extends AbstractControllerTest {
     private static final int BATCH_COUNT = 100;
     private static final String NAME_AS = "Test AS1";
     private static final String CODE_AS = "TST1";
-    private static final String STRUCTURE_TYPE_CODE = "ZP2015_PACKET";
-    private static final String STRUCTURE_EXTENSION_CODE = "ZP2015_PACKET_MZABrno";
+    private static final String STRUCTURE_TYPE_CODE = "SRD_PACKET";
+    private static final String STRUCTURE_EXTENSION_CODE = "SRD_PACKET_MZABrno";
 
     private static final Integer NUMBER_VALUE_1 = 1;
     private static final Integer NUMBER_VALUE_2 = 2;
@@ -65,8 +67,8 @@ public class StructureControllerTest extends AbstractControllerTest {
         createStructureItemPacketPostfix(fundVersion, structureData);
         createStructureItemPacketType(fundVersion, structureData);
 
-        RulDescItemTypeExtVO typePostfix = findDescItemTypeByCode("ZP2015_PACKET_POSTFIX");
-        RulDescItemTypeExtVO typeNumber = findDescItemTypeByCode("ZP2015_PACKET_NUMBER");
+        RulDescItemTypeExtVO typePostfix = findDescItemTypeByCode("SRD_PACKET_POSTFIX");
+        RulDescItemTypeExtVO typeNumber = findDescItemTypeByCode("SRD_PACKET_NUMBER");
         List<Integer> itemTypeIds = Collections.singletonList(typeNumber.getId());
 
         duplicateStructureDataBatch(fundVersion.getId(), structureData.id, BATCH_COUNT, itemTypeIds);
@@ -100,7 +102,7 @@ public class StructureControllerTest extends AbstractControllerTest {
         ArrStructureDataVO structureData = createStructureData(fundVersion);
 
         // vytvoření hodnoty
-        RulDescItemTypeExtVO typeNumber = findDescItemTypeByCode("ZP2015_PACKET_NUMBER");
+        RulDescItemTypeExtVO typeNumber = findDescItemTypeByCode("SRD_PACKET_NUMBER");
         ArrItemVO itemNumber = buildDescItem(typeNumber.getCode(), null, NUMBER_VALUE_1, null, null);
         StructureController.StructureItemResult siNumberCreated = createStructureItem(itemNumber, fundVersion.getId(), typeNumber.getId(), structureData.id);
 
@@ -112,22 +114,22 @@ public class StructureControllerTest extends AbstractControllerTest {
         assertEquals(NUMBER_VALUE_2, itemIntNumber2.getValue());
 
         // vytvoření hodnoty
-        RulDescItemTypeExtVO typePrefix = findDescItemTypeByCode("ZP2015_PACKET_PREFIX");
+        RulDescItemTypeExtVO typePrefix = findDescItemTypeByCode("SRD_PACKET_PREFIX");
         ArrItemVO itemPrefix = buildDescItem(typePrefix.getCode(), null, PREFIX_VALUE, null, null);
         StructureController.StructureItemResult siPrefixCreated = createStructureItem(itemPrefix, fundVersion.getId(), typePrefix.getId(), structureData.id);
         ArrItemStringVO itemStringPrefix = (ArrItemStringVO) siPrefixCreated.getItem();
         assertEquals(PREFIX_VALUE, itemStringPrefix.getValue());
 
         // vytvoření hodnoty
-        RulDescItemTypeExtVO typePostfix = findDescItemTypeByCode("ZP2015_PACKET_POSTFIX");
+        RulDescItemTypeExtVO typePostfix = findDescItemTypeByCode("SRD_PACKET_POSTFIX");
         ArrItemVO itemPostfix = buildDescItem(typePostfix.getCode(), null, POSTFIX_VALUE, null, null);
         StructureController.StructureItemResult siPostfixCreated = createStructureItem(itemPostfix, fundVersion.getId(), typePostfix.getId(), structureData.id);
         ArrItemStringVO itemStringPostfix = (ArrItemStringVO) siPostfixCreated.getItem();
         assertEquals(POSTFIX_VALUE, itemStringPostfix.getValue());
 
         // vytvoření hodnoty
-        RulDescItemTypeExtVO typePacketType = findDescItemTypeByCode("ZP2015_PACKET_TYPE");
-        ArrItemVO itemPacketType = buildDescItem(typePacketType.getCode(), "ZP2015_PACKET_TYPE_BOX", null, null, null);
+        RulDescItemTypeExtVO typePacketType = findDescItemTypeByCode("SRD_PACKET_TYPE");
+        ArrItemVO itemPacketType = buildDescItem(typePacketType.getCode(), "SRD_PACKET_TYPE_BOX", null, null, null);
         StructureController.StructureItemResult siPacketTypeCreated = createStructureItem(itemPacketType, fundVersion.getId(), typePacketType.getId(), structureData.id);
 
         StructureController.StructureDataFormDataVO formStructureItems = getFormStructureItems(fundVersion.getId(), structureData.id);
@@ -153,13 +155,13 @@ public class StructureControllerTest extends AbstractControllerTest {
     }
 
     private StructureController.StructureItemResult createStructureItemPacketType(final ArrFundVersionVO fundVersion, final ArrStructureDataVO structureData) {
-        RulDescItemTypeExtVO typePacketType = findDescItemTypeByCode("ZP2015_PACKET_TYPE");
-        ArrItemVO itemPacketType = buildDescItem(typePacketType.getCode(), "ZP2015_PACKET_TYPE_BOX", null, null, null);
+        RulDescItemTypeExtVO typePacketType = findDescItemTypeByCode("SRD_PACKET_TYPE");
+        ArrItemVO itemPacketType = buildDescItem(typePacketType.getCode(), "SRD_PACKET_TYPE_BOX", null, null, null);
         return createStructureItem(itemPacketType, fundVersion.getId(), typePacketType.getId(), structureData.id);
     }
 
     private StructureController.StructureItemResult createStructureItemPacketPostfix(final ArrFundVersionVO fundVersion, final ArrStructureDataVO structureData) {
-        RulDescItemTypeExtVO typePostfix = findDescItemTypeByCode("ZP2015_PACKET_POSTFIX");
+        RulDescItemTypeExtVO typePostfix = findDescItemTypeByCode("SRD_PACKET_POSTFIX");
         ArrItemVO itemPostfix = buildDescItem(typePostfix.getCode(), null, POSTFIX_VALUE, null, null);
         StructureController.StructureItemResult siPostfixCreated = createStructureItem(itemPostfix, fundVersion.getId(), typePostfix.getId(), structureData.id);
         ArrItemStringVO itemStringPostfix = (ArrItemStringVO) siPostfixCreated.getItem();
@@ -168,7 +170,7 @@ public class StructureControllerTest extends AbstractControllerTest {
     }
 
     private StructureController.StructureItemResult createStructureItemPacketPrefix(final ArrFundVersionVO fundVersion, final ArrStructureDataVO structureData) {
-        RulDescItemTypeExtVO typePrefix = findDescItemTypeByCode("ZP2015_PACKET_PREFIX");
+        RulDescItemTypeExtVO typePrefix = findDescItemTypeByCode("SRD_PACKET_PREFIX");
         ArrItemVO itemPrefix = buildDescItem(typePrefix.getCode(), null, PREFIX_VALUE, null, null);
         StructureController.StructureItemResult siPrefixCreated = createStructureItem(itemPrefix, fundVersion.getId(), typePrefix.getId(), structureData.id);
         ArrItemStringVO itemStringPrefix = (ArrItemStringVO) siPrefixCreated.getItem();
@@ -177,7 +179,7 @@ public class StructureControllerTest extends AbstractControllerTest {
     }
 
     private StructureController.StructureItemResult createStructureItemPacketNumber(final ArrFundVersionVO fundVersion, final ArrStructureDataVO structureData) {
-        RulDescItemTypeExtVO typeNumber = findDescItemTypeByCode("ZP2015_PACKET_NUMBER");
+        RulDescItemTypeExtVO typeNumber = findDescItemTypeByCode("SRD_PACKET_NUMBER");
         ArrItemVO itemNumber = buildDescItem(typeNumber.getCode(), null, NUMBER_VALUE_1, null, null);
         StructureController.StructureItemResult structureItem = createStructureItem(itemNumber, fundVersion.getId(), typeNumber.getId(), structureData.id);
         ArrItemIntVO itemIntPrefix = (ArrItemIntVO) structureItem.getItem();

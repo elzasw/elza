@@ -1,5 +1,5 @@
 <output-types>
-    <output-type code="SRD_INVENTORY" filename="SRD_OutputAvailableItems.drl">
+    <output-type code="SRD_INVENTORY">
         <name>Inventory</name>
     </output-type>
     <output-type code="SRD_ADHOC">
