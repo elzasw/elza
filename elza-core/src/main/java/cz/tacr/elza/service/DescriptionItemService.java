@@ -1486,6 +1486,11 @@ public class DescriptionItemService {
                     itemInteger.setValue(Integer.valueOf(text));
                     data = itemInteger;
                     break;
+                case "UNITID":
+                    ArrDataUnitid itemUnitid = new ArrDataUnitid();
+                    itemUnitid.setValue(text);
+                    data = itemUnitid;
+                    break;
                 case "UNITDATE":
                     ArrDataUnitdate itemUnitdate = createArrDataUnitdate(text);
                     data = itemUnitdate;
@@ -1665,7 +1670,10 @@ public class DescriptionItemService {
 		} else if (dataNew instanceof ArrDataText) {
 			ArrDataText dt = (ArrDataText) dataNew;
 			dt.setValue(getReplacedDataValue(dt.getValue(), searchString, replaceString));
-		} else {
+		} else if (dataNew instanceof ArrDataUnitid) {
+            ArrDataUnitid dt = (ArrDataUnitid) dataNew;
+            dt.setValue(getReplacedDataValue(dt.getValue(), searchString, replaceString));
+        } else {
 			throw new IllegalStateException(
 			        "Zatím není implementováno pro kod " + descItem.getItemType().getCode());
 		}
