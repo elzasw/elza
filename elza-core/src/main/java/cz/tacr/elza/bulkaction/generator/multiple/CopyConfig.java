@@ -1,13 +1,11 @@
 package cz.tacr.elza.bulkaction.generator.multiple;
 
-import java.util.List;
-
 /**
  * Copy action configuration
  */
 public class CopyConfig implements ActionConfig {
 
-	protected List<String> inputTypes;
+	protected String inputType;
 
 	protected String outputType;
 
@@ -16,12 +14,12 @@ public class CopyConfig implements ActionConfig {
 	 */
 	private boolean distinct;
 
-	public List<String> getInputTypes() {
-		return inputTypes;
+	public String getInputType() {
+		return inputType;
 	}
 
-	public void setInputTypes(List<String> inputTypes) {
-		this.inputTypes = inputTypes;
+	public void setInputType(String inputType) {
+		this.inputType = inputType;
 	}
 
 	public String getOutputType() {
