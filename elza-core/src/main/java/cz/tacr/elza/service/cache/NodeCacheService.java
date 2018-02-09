@@ -768,6 +768,10 @@ public class NodeCacheService {
 			// restore node ref
 			restoredNode.setNodeId(cachedNode.getNodeId());
 			restoredNode.setNode(cachedNode.getNode());
+            // Set descItems as empty collection
+            if (restoredNode.getDescItems() == null) {
+                restoredNode.setDescItems(Collections.emptyList());
+            }
 			return restoredNode;
         } catch (IOException e) {
             throw new SystemException("Nastal problém při deserializaci objektu", e);
