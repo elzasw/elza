@@ -1,17 +1,5 @@
 package cz.tacr.elza.validation.impl;
 
-import cz.tacr.elza.ElzaTools;
-import cz.tacr.elza.domain.*;
-import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.factory.DescItemFactory;
-import cz.tacr.elza.domain.vo.ArrDescItems;
-import cz.tacr.elza.domain.vo.DataValidationResult;
-import cz.tacr.elza.domain.vo.DataValidationResults;
-import cz.tacr.elza.service.ArrangementService;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.BooleanUtils;
-import org.springframework.util.Assert;
-
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -19,6 +7,21 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.BooleanUtils;
+import org.springframework.util.Assert;
+
+import cz.tacr.elza.ElzaTools;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemSpecExt;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulItemTypeExt;
+import cz.tacr.elza.domain.factory.DescItemFactory;
+import cz.tacr.elza.domain.vo.DataValidationResult;
+import cz.tacr.elza.domain.vo.DataValidationResults;
+import cz.tacr.elza.service.ArrangementService;
 
 /**
  * Implementation of separate validator object
@@ -159,15 +162,18 @@ public class Validator {
         //rozdělení hodnot podle typu
         Map<Integer, List<ArrDescItem>> descItemsInTypeMap = new HashMap<>();
 
-        for (ArrDescItem descItem : descItems) {
-            if (!extNodeTypes.containsKey(descItem.getItemType().getItemTypeId())) {
-                validationResults.createError(descItem, "Prvek " + descItem.getItemType().getName()
+        if (descItems != null) {
+            for (ArrDescItem descItem : descItems) {
+                if (!extNodeTypes.containsKey(descItem.getItemType().getItemTypeId())) {
+                    validationResults.createError(descItem, "Prvek " + descItem.getItemType().getName()
                                 + " není možný u této jednotky popisu.", extNodeTypes.get(descItem.getItemType().getItemTypeId()).getPolicyTypeCode());
-                continue;
-            }
+                    continue;
+                }
 
-            List<ArrDescItem> itemsInType = descItemsInTypeMap.computeIfAbsent(descItem.getItemType().getItemTypeId(), k -> new LinkedList<>());
-            itemsInType.add(descItem);
+                List<ArrDescItem> itemsInType = descItemsInTypeMap
+                        .computeIfAbsent(descItem.getItemType().getItemTypeId(), k -> new LinkedList<>());
+                itemsInType.add(descItem);
+            }
         }
 
         // Set of required but non existing types
