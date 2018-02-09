@@ -96,7 +96,7 @@ class PartyDetailRelations extends AbstractReactComponent {
     };
 
     render() {
-        const {label, relationClassType} = this.props;
+        const {label, relationClassType, canEdit} = this.props;
         const {relations, allowedRelationTypesMap} = this.state;
 
         let addButton = null;
@@ -112,7 +112,7 @@ class PartyDetailRelations extends AbstractReactComponent {
             <div className="party-detail-relations">
                 <div>
                     <label className="group-label">{label}</label>
-                    {addButton}
+                    {canEdit && addButton}
                 </div>
                 {relationsArray.map((relation, index) =>
                 <div key={relation.id} className="value-group relation-group flex">

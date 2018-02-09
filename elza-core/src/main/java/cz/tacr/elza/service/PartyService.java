@@ -598,8 +598,6 @@ public class PartyService {
     public void deleteParty(final ParParty party){
         Assert.notNull(party, "Osoba nesmí být prázdná");
 
-        checkUsagesBeforeDelete(party);
-
         if (canBeDeleted(party)) {
 
             partyRelationRepository.findByParty(party).forEach(this::deleteRelation);
@@ -638,14 +636,6 @@ public class PartyService {
     }
 
     private boolean canBeDeleted(ParParty party) {
-        return registryService.canBeDeleted(party.getRecord()) &&
-                CollectionUtils.isEmpty(dataPartyRefRepository.findByParty(party)) &&
-                institutionRepository.findByParty(party) == null &&
-                CollectionUtils.isEmpty(userRepository.findByParty(party)) &&
-                CollectionUtils.isEmpty(partyCreatorRepository.findByCreatorParty(party));
-    }
-
-    private void checkUsagesBeforeDelete(ParParty party) {
         // rejstřík AS nebo arch. popis v otevřené verzi.(arr_node_register nebo arr_data_party_ref nebo arr_data_record_ref)
 
         // arr_node_register
@@ -702,6 +692,9 @@ public class PartyService {
                     .set("relationEntities", relationEntities.stream().map(ParRelationEntity::getRelationEntityId).collect(Collectors.toList()))
                     .set("partyIds", relationEntities.stream().map(ParRelationEntity::getRelation).map(ParRelation::getParty).map(ParParty::getPartyId).collect(Collectors.toList()));
         }
+
+        return registryService.canBeDeleted(party.getRecord()) &&
+                CollectionUtils.isEmpty(dataPartyRefRepository.findByParty(party));
     }
 
 
@@ -1079,19 +1072,6 @@ public class PartyService {
                 descriptionItemService.updateDescriptionItem(im, fundVersions.get(i.getFundId()), change, true);
             });
         }
-
-        // creators
-        final List<ParCreator> creatorsUsages = partyCreatorRepository.findByCreatorParty(replaced);
-
-
-        boolean isScopeAdmin = userService.hasPermission(UsrPermission.Permission.REG_SCOPE_WR_ALL);
-        creatorsUsages.forEach(i -> {
-            if (!isScopeAdmin && !userService.hasPermission(UsrPermission.Permission.REG_SCOPE_WR, i.getParty().getRegScope().getScopeId())) {
-                throw new SystemException("Uživatel nemá oprávnění na scope.", BaseCode.INSUFFICIENT_PERMISSIONS).set("scopeId", i.getParty().getRegScope().getScopeId());
-            }
-            i.setCreatorParty(replacement);
-        });
-        partyCreatorRepository.save(creatorsUsages);
 
         // Registry replace
         registryService.replace(replaced.getRecord(), replacement.getRecord());
