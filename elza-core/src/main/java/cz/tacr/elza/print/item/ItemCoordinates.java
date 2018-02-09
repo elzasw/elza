@@ -1,7 +1,8 @@
 package cz.tacr.elza.print.item;
 
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.io.WKTWriter;
+
+import cz.tacr.elza.common.GeometryConvertor;
 
 /**
  * Coordinates
@@ -16,7 +17,8 @@ public class ItemCoordinates extends AbstractItem {
 
     @Override
     public String getSerializedValue() {
-        return new WKTWriter().writeFormatted(value);
+        String str = GeometryConvertor.convert(value);
+        return str;
     }
 
     @Override

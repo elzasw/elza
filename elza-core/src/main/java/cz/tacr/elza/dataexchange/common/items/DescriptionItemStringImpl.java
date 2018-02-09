@@ -1,9 +1,7 @@
 package cz.tacr.elza.dataexchange.common.items;
 
-import com.vividsolutions.jts.io.ParseException;
-
+import cz.tacr.elza.common.GeometryConvertor;
 import cz.tacr.elza.core.data.DataType;
-import cz.tacr.elza.dataexchange.common.GeometryConvertor;
 import cz.tacr.elza.dataexchange.input.DEImportException;
 import cz.tacr.elza.dataexchange.input.context.ImportContext;
 import cz.tacr.elza.domain.ArrDataCoordinates;
@@ -41,11 +39,7 @@ public class DescriptionItemStringImpl extends DescriptionItemString {
                 return new ImportableItemData(txt);
             case COORDINATES:
                 ArrDataCoordinates geo = new ArrDataCoordinates();
-                try {
-                    geo.setValue(GeometryConvertor.convert(getV()));
-                } catch (ParseException e) {
-                    throw new DEImportException("Failed to convert geo location", e);
-                }
+                geo.setValue(GeometryConvertor.convert(getV()));
                 return new ImportableItemData(geo);
             case UNITID:
                 ArrDataUnitid id = new ArrDataUnitid();

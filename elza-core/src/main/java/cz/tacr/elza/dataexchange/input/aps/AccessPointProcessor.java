@@ -2,9 +2,7 @@ package cz.tacr.elza.dataexchange.input.aps;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.vividsolutions.jts.io.ParseException;
-
-import cz.tacr.elza.dataexchange.common.GeometryConvertor;
+import cz.tacr.elza.common.GeometryConvertor;
 import cz.tacr.elza.dataexchange.input.DEImportException;
 import cz.tacr.elza.dataexchange.input.aps.context.AccessPointInfo;
 import cz.tacr.elza.dataexchange.input.context.ImportContext;
@@ -85,11 +83,7 @@ public class AccessPointProcessor extends AccessPointEntryProcessor {
         for (AccessPointGeoLocation geoLocation : geoLocations.getGlc()) {
             RegCoordinates coordinates = new RegCoordinates();
             coordinates.setDescription(geoLocation.getNote());
-            try {
-                coordinates.setValue(GeometryConvertor.convert(geoLocation.getV()));
-            } catch (ParseException e) {
-                throw new DEImportException("Failed to convert geo location", e);
-            }
+            coordinates.setValue(GeometryConvertor.convert(geoLocation.getV()));
             context.addGeoLocation(coordinates, apInfo);
         }
     }
