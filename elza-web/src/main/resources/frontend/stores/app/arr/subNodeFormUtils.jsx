@@ -433,6 +433,9 @@ export function mergeAfterUpdate(state, data, refTables) {
 
     flatLocalForm.update(flatForm);
 
+    // Update info about descItemTypes
+    state.infoTypesMap = flatLocalForm.types;
+    // Update form with new data
     state.formData = restoreFormDataStructure(flatLocalForm);
 
     return state;
