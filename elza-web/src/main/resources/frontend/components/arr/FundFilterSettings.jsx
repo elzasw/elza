@@ -176,7 +176,7 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
         }
 
         const conditionHasValue = state.conditionSelectedCode !== "NONE";
-        const valueHasValue = state.selectedValueItemsType === "selected" || state.selectedValueItems.length > 0;
+        const valueHasValue = state.selectedValueItemsType === "selected" || (state.selectedValueItems && state.selectedValueItems.length > 0);
         if (conditionHasValue || !valueHasValue) {
             state.valueAccodrionType = "CONDITION";
         } else {
@@ -567,7 +567,6 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
     handleRefMarkSubmit = () => {
         const {onSubmitForm} = this.props;
         const {refMarkSelectedNode} = this.state;
-
         const data = {
             nodeId: refMarkSelectedNode.id,
         };

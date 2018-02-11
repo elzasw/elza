@@ -263,6 +263,15 @@ public class RegistryService {
             throw new BusinessException("Nelze smazat rejstříkové heslo, které má potomky.", RegistryCode.EXISTS_CHILD);
         }
 
+        // vztah osoby par_relation_entity
+        List<ParRelationEntity> relationEntities = relationEntityRepository.findActiveByRecord(record);
+        if (CollectionUtils.isNotEmpty(relationEntities)) {
+            throw new BusinessException("Nelze smazat/zneplatnit rejstříkové heslo na kterou mají vazbu jiné aktivní osoby v relacích.", RegistryCode.EXIST_FOREIGN_DATA)
+                    .set("recordId", record.getRecordId())
+                    .set("relationEntities", relationEntities.stream().map(ParRelationEntity::getRelationEntityId).collect(Collectors.toList()))
+                    .set("partyIds", relationEntities.stream().map(ParRelationEntity::getRelation).map(ParRelation::getParty).map(ParParty::getPartyId).collect(Collectors.toList()));
+        }
+
     }
 
     /**
@@ -977,14 +986,15 @@ public class RegistryService {
 
 					List<OccurrenceVO> occurrences = new LinkedList<>();
 					partyVO.setOccurrences(occurrences);
+					partyVOMap.put(creator.getPartyId(), partyVO);
 				}
 
 				OccurrenceVO occurrenceVO = new OccurrenceVO(c.getCreatorId(), OccurrenceType.PAR_CREATOR);
 				partyVO.getOccurrences().add(occurrenceVO);
 			});
-
-			usedParties.addAll(partyVOMap.values());
 		}
+
+        usedParties.addAll(partyVOMap.values());
 
 		return usedParties;
 	}
@@ -1260,34 +1270,6 @@ public class RegistryService {
                 }
             }
             self.updateRegisterLink(fundVersions.get(fundId).getFundVersionId(), i.getNodeId(), arrNodeRegister);
-        });
-
-        // relace
-        final List<ParRelationEntity> byRecord = relationEntityRepository.findByRecord(replaced);
-
-        final Map<ParRelation, Map<Integer, ParRelationEntity>> relationWithEntities = new HashMap<>();
-        byRecord.forEach(i -> {
-            ParRelationEntity relationEntity = relationWithEntities.computeIfAbsent(i.getRelation(), n -> relationEntityRepository.findByRelation(n).stream()
-                    .collect(Collectors.toMap(ParRelationEntity::getRelationEntityId, Function.identity()))
-            ).get(i.getRelationEntityId());
-
-            relationEntity.setRecord(replacement);
-        });
-
-        // oprávnění relací
-        Set<ParParty> hasPermForParty = new HashSet<>();
-        boolean isScopeAdmin = userService.hasPermission(UsrPermission.Permission.REG_SCOPE_WR_ALL);
-        relationWithEntities.forEach((rel, relEnt) -> {
-            if (!hasPermForParty.contains(rel.getParty())) {
-                Integer scopeId = rel.getParty().getRegScope().getScopeId();
-                if (!isScopeAdmin &&
-                        !userService.hasPermission(UsrPermission.Permission.REG_SCOPE_WR, scopeId)) {
-                    throw new SystemException("Uživatel nemá oprávnění na scope.", BaseCode.INSUFFICIENT_PERMISSIONS).set("scopeId", scopeId);
-
-                }
-                hasPermForParty.add(rel.getParty());
-            }
-            partyService.saveRelation(rel, relEnt.values());
         });
     }
 
