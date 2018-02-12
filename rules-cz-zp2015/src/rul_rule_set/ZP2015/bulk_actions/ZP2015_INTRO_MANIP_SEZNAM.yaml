@@ -50,10 +50,8 @@ actions:
         
     # 4.7.1 Zpracovatel jednotky popisu
     - !Copy
-        inputTypes:
-            - ZP2015_ARRANGER
+        inputType: ZP2015_ARRANGER
         distinct: true
-        outputType: ZP2015_ARRANGER
 
     # 4.7.1 Informace o zpracování
     - !TextAggregation
@@ -76,17 +74,13 @@ actions:
 
    # Agregace původce
     - !Copy
-        inputTypes:
-            - ZP2015_ORIGINATOR
+        inputType: ZP2015_ORIGINATOR
         distinct: true
-        outputType: ZP2015_ORIGINATOR
 
     # Agregace jazyků - zatim nefunkcni
     - !Copy
-        inputTypes:
-            - ZP2015_LANGUAGE
+        inputType: ZP2015_LANGUAGE
         distinct: true
-        outputType: ZP2015_LANGUAGE
 
     # Počet JP v pomůcce        
     - !NodeCount

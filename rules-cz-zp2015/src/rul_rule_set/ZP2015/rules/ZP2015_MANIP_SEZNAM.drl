@@ -35,7 +35,6 @@ when
         "ZP2015_UNIT_HIST",
         "ZP2015_FUTURE_UNITS",
 		"ZP2015_UNIT_ARR",
-        "ZP2015_ARRANGER",
         "ZP2015_ARRANGE_RULES",
         "ZP2015_DESCRIPTION_DATE",
         "ZP2015_DATE_RANGE",
@@ -59,9 +58,12 @@ rule "Povinné opakovatelné prvky popisu"
 no-loop
 when
     $itemType : RulItemTypeExt( code in (
-        "ZP2015_ARRANGER", "ZP2015_ORIGINATOR", "ZP2015_LANGUAGE" ) )
+        "ZP2015_ARRANGER",
+        "ZP2015_ORIGINATOR", 
+        "ZP2015_LANGUAGE" ) )
 then
     $itemType.setType(RulItemType.Type.REQUIRED);
+    $itemType.setRepeatable(true);
 end
 
 //
