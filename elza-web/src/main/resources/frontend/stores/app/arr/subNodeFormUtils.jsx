@@ -638,18 +638,15 @@ class FlatFormData{
      * Deletes unused items (items that are empty, not required or recommended, and not added by user).
      */
     _deleteUnusedItems(){
-        let types = this.types;
         let items = this.descItems;
         let newIds = [...items.ids];
 
         for(let i = 0; i < items.ids.length; i++){
             let itemId = items.ids[i];
             let item = items[itemId];
-            let type = types[item.itemType];
-            let forceVisible =  type.type === availability.REQUIRED || type.type === availability.RECOMMENDED;
-            let isEmpty = !item.value && !item.descItemSpecId;
+            let isEmpty = item.value === null || item.descItemSpecId === null;
 
-            if(isEmpty && !item.addedByUser && !forceVisible){
+            if(isEmpty && !item.addedByUser){
                 delete items[itemId];
                 newIds.splice(newIds.indexOf(itemId),1);
             }
