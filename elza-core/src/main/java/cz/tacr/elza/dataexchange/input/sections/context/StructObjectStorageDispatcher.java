@@ -101,6 +101,7 @@ public class StructObjectStorageDispatcher {
             return;
         }
         storageManager.saveStructObjects(objectQueue);
+        objectQueue.clear();
     }
 
     public void storeData(DataType dataType) {
@@ -125,6 +126,7 @@ public class StructObjectStorageDispatcher {
         storeObjects();
         storeData();
         storageManager.saveStructItems(itemQueue);
+        itemQueue.clear();
     }
 
     private class DelayedItemDataPair {

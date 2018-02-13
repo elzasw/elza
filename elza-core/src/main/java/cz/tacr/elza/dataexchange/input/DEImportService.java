@@ -194,9 +194,13 @@ public class DEImportService {
     }
 
     private void checkScopePermissions(int importScopeId) {
-        if (!userService.hasPermission(Permission.ADMIN) && !userService.hasPermission(Permission.REG_SCOPE_WR, importScopeId)) {
-            throw Authorization.createAccessDeniedException(Permission.REG_SCOPE_WR);
+        if (userService.hasPermission(Permission.ADMIN)) {
+            return;
         }
+        if (userService.hasPermission(Permission.REG_SCOPE_WR, importScopeId)) {
+            return;
+        }
+        throw Authorization.createAccessDeniedException(Permission.REG_SCOPE_WR);
     }
 
 	/**

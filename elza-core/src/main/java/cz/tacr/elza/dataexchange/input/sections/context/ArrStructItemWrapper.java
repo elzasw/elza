@@ -21,7 +21,6 @@ public class ArrStructItemWrapper implements EntityWrapper {
     ArrStructItemWrapper(ArrStructureItem entity, EntityIdHolder<ArrStructureData> structObjectIdHolder) {
         this.entity = Validate.notNull(entity);
         this.structObjectIdHolder = Validate.notNull(structObjectIdHolder);
-        this.dataIdHolder = Validate.notNull(dataIdHolder);
     }
 
     void setDataIdHolder(EntityIdHolder<ArrData> dataIdHolder) {

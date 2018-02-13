@@ -24,7 +24,6 @@ import javax.persistence.Query;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
-import cz.tacr.elza.repository.StructureDataRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -117,6 +116,8 @@ import cz.tacr.elza.repository.OutputRepository;
 import cz.tacr.elza.repository.OutputResultRepository;
 import cz.tacr.elza.repository.RequestQueueItemRepository;
 import cz.tacr.elza.repository.ScopeRepository;
+import cz.tacr.elza.repository.StructureDataRepository;
+import cz.tacr.elza.repository.StructureItemRepository;
 import cz.tacr.elza.repository.VisiblePolicyRepository;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.cache.NodeCacheService;
@@ -183,6 +184,8 @@ public class ArrangementService {
     private BulkActionNodeRepository faBulkActionNodeRepository;
     @Autowired
     private StructureDataRepository structureDataRepository;
+    @Autowired
+    private StructureItemRepository structureItemRepository;
     @Autowired
     private FundRegisterScopeRepository faRegisterRepository;
     @Autowired
@@ -697,6 +700,7 @@ public class ArrangementService {
 
         dmsService.deleteFilesByFund(fund);
 
+        structureItemRepository.deleteByFund(fund);
         structureDataRepository.deleteByFund(fund);
 
         faRegisterRepository.findByFund(fund).forEach(
@@ -717,7 +721,6 @@ public class ArrangementService {
         Query deleteNotUseChangesQuery = revertingChangesService.createDeleteNotUseChangesQuery();
         deleteNotUseChangesQuery.executeUpdate();
     }
-
 
     /**
      * Uzavře otevřenou verzi archivní pomůcky a otevře novou verzi.

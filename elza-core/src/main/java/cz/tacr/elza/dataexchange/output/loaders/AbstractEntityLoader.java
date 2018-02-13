@@ -54,8 +54,9 @@ public abstract class AbstractEntityLoader<RES> extends AbstractBatchLoader<Obje
 
         try (ScrollableResults results = q.scroll(ScrollMode.FORWARD_ONLY)) {
             while (results.next()) {
-                Object queryEntityId = results.get(0);
-                Object entity = results.get(1);
+                Tuple tuple = (Tuple) results.get(0);
+                Object queryEntityId = tuple.get(0);
+                Object entity = tuple.get(1);
 
                 // TODO: replace detach for stateless session
                 em.detach(entity);

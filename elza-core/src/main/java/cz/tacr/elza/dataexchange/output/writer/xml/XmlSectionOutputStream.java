@@ -189,6 +189,7 @@ class XmlSectionOutputStream implements SectionOutputStream {
                 FileNode stNode = new FileNode(stFragment.getPath());
                 stsNode.addNode(stNode);
             });
+            sectionNode.addNode(stsNode);
         }
         // create xml node for levels
         if (levelsFragment.isExist()) {
@@ -215,7 +216,7 @@ class XmlSectionOutputStream implements SectionOutputStream {
             XMLStreamWriter sw = structTypeFragment.openStreamWriter();
             sw.writeStartDocument();
             sw.writeStartElement(XmlNameConsts.STRUCT_TYPE);
-            sw.writeAttribute(XmlNameConsts.STRUCT_TYPE_CODE, structType.getName());
+            sw.writeAttribute(XmlNameConsts.STRUCT_TYPE_CODE, structType.getCode());
             sw.writeStartElement(XmlNameConsts.STRUCT_OBJECTS);
             structTypeIdFragmentMap.put(structType.getStructureTypeId(), structTypeFragment);
         }

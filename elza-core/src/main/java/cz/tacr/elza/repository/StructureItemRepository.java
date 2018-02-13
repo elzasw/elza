@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrStructureData;
 import cz.tacr.elza.domain.ArrStructureItem;
 import cz.tacr.elza.domain.RulItemType;
@@ -67,4 +68,8 @@ public interface StructureItemRepository extends JpaRepository<ArrStructureItem,
 
     @Query("SELECT COUNT(i) FROM arr_item i JOIN i.data d WHERE d.structureData = :structureData")
     Integer countItemsByStructureData(@Param("structureData") ArrStructureData structureData);
+
+    @Modifying
+    @Query("DELETE FROM arr_structure_item i WHERE i.structureData in (SELECT d FROM arr_structure_data d WHERE d.fund=?1)")
+    void deleteByFund(ArrFund fund);
 }
