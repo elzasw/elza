@@ -21,7 +21,7 @@ import cz.tacr.elza.domain.RulItemType;
 
 /**
  * Repository for Description items
- * 
+ *
  * Some methods are also fetching related entities like node and data. Please
  * consider which method is suitable for each use.
  */
@@ -62,7 +62,7 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
 	        + " WHERE i.nodeId IN (?1) AND i.deleteChange IS NULL";
 	/**
 	 * Read node and connected data
-	 * 
+	 *
 	 * @param nodeIds
 	 * @return
 	 */
@@ -75,7 +75,7 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
 
 	/**
 	 * Read single description item and connected data
-	 * 
+	 *
 	 * @param node
 	 * @param descItemTypeId
 	 * @return Return description item and fetched data
@@ -85,9 +85,9 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
 
 	/**
 	 * Return list of description items for node.
-	 * 
+	 *
 	 * Function fetch description items and data
-	 * 
+	 *
 	 * @param node
 	 *            Node for which data are fetched. Cannot be null.
 	 * @param change
@@ -103,7 +103,7 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
 
     /**
 	 * Najde otevřené atributy s daným nodem a type a načte je včetně hodnot
-	 * 
+	 *
 	 * @param node
 	 *            nod uzlu
 	 * @param descItemTypes
@@ -151,12 +151,6 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
      */
 	@Query("SELECT i FROM arr_desc_item i LEFT JOIN FETCH i.data WHERE i.deleteChange IS NULL AND i.itemType = ?1 AND i.node = ?2")
     List<ArrDescItem> findOpenDescItems(RulItemType itemType, ArrNode node);
-
-    @Query("SELECT i FROM arr_desc_item i WHERE i.descItemObjectId = ?1 AND i.createChange < ?2 AND (i.deleteChange > ?2 OR i.deleteChange IS NULL)")
-    List<ArrDescItem> findByDescItemObjectIdAndLockChangeId(Integer descItemObjectId, ArrChange change);
-
-    @Query("SELECT i FROM arr_desc_item i WHERE i.descItemObjectId = ?1 AND i.createChange >= ?2 AND (i.deleteChange >= ?2 OR i.deleteChange IS NULL)")
-    List<ArrDescItem> findByDescItemObjectIdAndBetweenVersionChangeId(Integer descItemObjectId, ArrChange change);
 
     /**
      * najde maximální pozici atributu archivního popisu podle nodu a typu atributu archivního popisu pokud je číslo smazání nevyplněné.

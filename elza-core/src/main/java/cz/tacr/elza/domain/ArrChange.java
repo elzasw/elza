@@ -12,6 +12,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
+import org.springframework.data.annotation.AccessType;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
@@ -26,6 +28,7 @@ public class ArrChange {
 
     @Id
     @GeneratedValue
+    @AccessType(AccessType.Type.PROPERTY)
     private Integer changeId;
 
     @Column(nullable = false)
