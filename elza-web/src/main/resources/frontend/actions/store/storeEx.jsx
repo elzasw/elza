@@ -28,10 +28,12 @@ export function storeSave() {
             // Uložení do local storage
             if(typeof(Storage) !== "undefined") {
                 var storeNew = getState();
+                const {stateRegion, splitter, userDetail} = storeNew;
 
                 const localStorageData = {
-                    stateRegion: storeNew.stateRegion,
-                    splitter: storeNew.splitter,
+                    stateRegion,
+                    splitter,
+                    userDetail: {id: userDetail.id}
                 };
 
                 _storeSaveEnabled && localStorage.setItem('ELZA-STORE-STATE', JSON.stringify(localStorageData));
