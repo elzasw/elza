@@ -63,6 +63,7 @@ import cz.tacr.elza.domain.ArrNodeConformity.State;
 import cz.tacr.elza.domain.ArrNodeConformityError;
 import cz.tacr.elza.domain.ArrNodeConformityMissing;
 import cz.tacr.elza.domain.ArrOutputDefinition;
+import cz.tacr.elza.domain.ArrStructureData;
 import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.RegScope;
 import cz.tacr.elza.domain.RulItemType;
@@ -700,8 +701,12 @@ public class ArrangementService {
 
         dmsService.deleteFilesByFund(fund);
 
-        structureItemRepository.deleteByFund(fund);
-        structureDataRepository.deleteByFund(fund);
+        List<ArrStructureData> objList = structureDataRepository.findByFund(fund);
+        objList.forEach(obj -> {
+            structureItemRepository.deleteByStructureData(obj);
+            dataRepository.deleteByStructureData(obj);
+        });
+        structureDataRepository.deleteInBatch(objList);
 
         faRegisterRepository.findByFund(fund).forEach(
                 faScope -> faRegisterRepository.delete(faScope)
