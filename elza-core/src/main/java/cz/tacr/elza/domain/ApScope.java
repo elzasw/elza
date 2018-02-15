@@ -39,6 +39,9 @@ public class ApScope implements IApScope {
     @Column(length = 250, nullable = false)
     private String name;
 
+    @Column(length = 3)
+    private String language;
+
     public Integer getScopeId() {
         return scopeId;
     }
@@ -69,10 +72,24 @@ public class ApScope implements IApScope {
     }
 
     /**
+     * @return @param language 3-místný kód jazyka, podle ISO 639-2.
+     */
+    public String getLanguage() {
+        return this.language;
+    }
+
+    /**
      * @param name Název třídy rejstříku.
      */
     public void setName(final String name) {
         this.name = name;
+    }
+
+    /**
+     * @param language 3-místný kód jazyka, podle ISO 639-2.
+     */
+    public void setLanguage(final String language) {
+        this.language = language;
     }
 
     @Override

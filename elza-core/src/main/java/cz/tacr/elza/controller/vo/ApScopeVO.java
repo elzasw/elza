@@ -14,6 +14,8 @@ public class ApScopeVO {
 
     private String name;
 
+    private String language;
+
     public Integer getId() {
         return id;
     }
@@ -36,5 +38,13 @@ public class ApScopeVO {
 
     public void setName(final String name) {
         this.name = name;
+    }
+
+    public String getLanguage() {
+        return language;
+    }
+
+    public void setLanguage(final String language) {
+        this.language = language;
     }
 }

@@ -546,4 +546,93 @@
         </update>
     </changeSet>
 
+
+    <changeSet id="20180205152600" author="fric">
+        <addColumn tableName="ap_scope">
+            <column name="language" type="nvarchar(3)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20180205153600" author="fric">
+        <createTable tableName="ap_language">
+            <column name="language_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="code" type="nvarchar(3)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="nvarchar(50)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="20180205154400" author="fric">
+        <insert tableName="ap_language">
+            <column name="language_id">0</column>
+            <column name="code">cze</column>
+            <column name="name">čeština</column>
+        </insert>
+
+        <insert tableName="ap_language">
+            <column name="language_id">1</column>
+            <column name="code">eng</column>
+            <column name="name">angličtina</column>
+        </insert>
+
+        <insert tableName="ap_language">
+            <column name="language_id">2</column>
+            <column name="code">ger</column>
+            <column name="name">němčina</column>
+        </insert>
+
+        <insert tableName="ap_language">
+            <column name="language_id">3</column>
+            <column name="code">rus</column>
+            <column name="name">ruština</column>
+        </insert>
+
+        <insert tableName="ap_language">
+            <column name="language_id">4</column>
+            <column name="code">lat</column>
+            <column name="name">latina</column>
+        </insert>
+
+        <insert tableName="ap_language">
+            <column name="language_id">5</column>
+            <column name="code">slo</column>
+            <column name="name">slovenština</column>
+        </insert>
+
+        <insert tableName="ap_language">
+            <column name="language_id">6</column>
+            <column name="code">pol</column>
+            <column name="name">polština</column>
+        </insert>
+
+        <insert tableName="ap_language">
+            <column name="language_id">7</column>
+            <column name="code">ita</column>
+            <column name="name">italština</column>
+        </insert>
+
+        <insert tableName="ap_language">
+            <column name="language_id">8</column>
+            <column name="code">fre</column>
+            <column name="name">francouzština</column>
+        </insert>
+
+        <insert tableName="ap_language">
+            <column name="language_id">9</column>
+            <column name="code">spa</column>
+            <column name="name">španělština</column>
+        </insert>
+
+        <insert tableName="ap_language">
+            <column name="language_id">10</column>
+            <column name="code">heb</column>
+            <column name="name">hebrejština</column>
+        </insert>
+    </changeSet>
+
 </databaseChangeLog>
