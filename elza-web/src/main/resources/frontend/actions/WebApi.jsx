@@ -362,26 +362,26 @@ export class WebApiCls {
     }
 
     /// Registry
-    createRecord(record, characteristics, registerTypeId, parentId, scopeId) {
+    createRecord(record, characteristics, apTypeId, parentId, scopeId) {
         return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/', null, {
-            '@class': 'cz.tacr.elza.controller.vo.RegRecordVO',
+            '@class': 'cz.tacr.elza.controller.vo.ApRecordVO',
             record,
             characteristics,
             local: false,
             scopeId,
             parentRecordId: parentId,
-            registerTypeId
+            apTypeId
         });
     }
 
-    findRegistry(search = null, registryParent = null, registerTypeId = null, versionId = null, itemSpecId = null, from = 0, count = DEFAULT_LIST_SIZE, scopeId = null, excludeInvalid = true) {
+    findRegistry(search = null, registryParent = null, apTypeId = null, versionId = null, itemSpecId = null, from = 0, count = DEFAULT_LIST_SIZE, scopeId = null, excludeInvalid = true) {
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/', {
             search,
             from,
             count,
             itemSpecId,
             parentRecordId: registryParent,
-            registerTypeId: registerTypeId,
+            apTypeId,
             versionId,
             scopeId,
             excludeInvalid
@@ -1126,7 +1126,7 @@ export class WebApiCls {
         return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/output/' + versionId + '/' + outputId + '/clone');
     }
 
-    getRegExternalSystems() {
+    getApExternalSystems() {
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/externalSystems');
     }
 

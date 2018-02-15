@@ -8,9 +8,8 @@ import java.util.Set;
 
 import javax.persistence.EntityManager;
 
-import org.apache.commons.collections4.ListValuedMap;
-import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
-import org.apache.commons.lang.Validate;
+import cz.tacr.elza.domain.ApRecord;
+import cz.tacr.elza.domain.ApType;
 
 import com.google.common.collect.Iterables;
 
@@ -20,10 +19,8 @@ import cz.tacr.elza.dataexchange.output.context.ExportContext;
 import cz.tacr.elza.dataexchange.output.context.ExportInitHelper;
 import cz.tacr.elza.dataexchange.output.context.ExportReader;
 import cz.tacr.elza.dataexchange.output.writer.AccessPointsOutputStream;
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.UsrPermission.Permission;
-import cz.tacr.elza.repository.RegRecordRepository;
+import cz.tacr.elza.repository.ApRecordRepository;
 import cz.tacr.elza.service.UserService;
 
 /**
@@ -40,7 +37,7 @@ public class AccessPointsReader implements ExportReader {
 
     private final EntityManager em;
 
-    private final RegRecordRepository recordRepository;
+    private final ApRecordRepository recordRepository;
 
     private final UserService userService;
 
@@ -77,21 +74,21 @@ public class AccessPointsReader implements ExportReader {
 
     private void readAccessPoints(Collection<Integer> apIds, AccessPointsOutputStream os) {
         // TODO: replace findAccessPointsWithParents with loader after removal of hierarchy
-        List<RegRecord> apWithParents = recordRepository.findAccessPointsWithParents(apIds);
-        List<RegRecord> batch = new ArrayList<>(context.getBatchSize());
+        List<ApRecord> apWithParents = recordRepository.findAccessPointsWithParents(apIds);
+        List<ApRecord> batch = new ArrayList<>(context.getBatchSize());
 
-        boolean globalPermission = userService.hasPermission(Permission.REG_SCOPE_RD_ALL);
+        boolean globalPermission = userService.hasPermission(Permission.AP_SCOPE_RD_ALL);
 
         int rootCount = 0;
 
-        for (RegRecord ap : apWithParents) {
+        for (ApRecord ap : apWithParents) {
             em.detach(ap); // TODO: replace detach for stateless session
 
             // check permission
             Integer scopeId = ap.getScopeId();
             if (!globalPermission && authorizedScopeIds.add(scopeId)) {
-                if (!userService.hasPermission(Permission.REG_SCOPE_RD, scopeId)) {
-                    throw Authorization.createAccessDeniedException(Permission.REG_SCOPE_RD);
+                if (!userService.hasPermission(Permission.AP_SCOPE_RD, scopeId)) {
+                    throw Authorization.createAccessDeniedException(Permission.AP_SCOPE_RD);
                 }
             }
             // increment root count
@@ -116,10 +113,10 @@ public class AccessPointsReader implements ExportReader {
      *
      * @return True when access point can processed.
      */
-    private boolean readAP(RegRecord ap) {
+    private boolean readAP(ApRecord ap) {
         // set register type relation
-        RegRegisterType rt = context.getStaticData().getRegisterTypeById(ap.getRegisterTypeId());
-        ap.setRegisterType(rt);
+        ApType rt = context.getStaticData().getApTypeById(ap.getApTypeId());
+        ap.setApType(rt);
 
         // check party AP
         if (rt.getPartyType() != null) {
@@ -135,7 +132,7 @@ public class AccessPointsReader implements ExportReader {
         return true;
     }
 
-    private void addAccessPoint(RegRecord ap, List<RegRecord> batch, AccessPointsOutputStream os) {
+    private void addAccessPoint(ApRecord ap, List<ApRecord> batch, AccessPointsOutputStream os) {
         variantNameLoader.addRequest(ap.getRecordId(), new VariantNameDispatcher(ap));
         if (ap.getExternalSystemId() != null) {
             externalSystemLoader.addRequest(ap.getExternalSystemId(), new ExternalSystemDispatcher(ap));
@@ -148,7 +145,7 @@ public class AccessPointsReader implements ExportReader {
         }
     }
 
-    private void processBatch(List<RegRecord> batch, AccessPointsOutputStream os) {
+    private void processBatch(List<ApRecord> batch, AccessPointsOutputStream os) {
         variantNameLoader.flush();
         externalSystemLoader.flush();
         batch.forEach(os::addAccessPoint);

@@ -26,7 +26,7 @@ public interface PartyRepositoryCustom {
      */
     List<ParParty> findPartyByTextAndType(String searchRecord,
                                           Integer partyTypeId,
-                                          Set<Integer> registerTypeIds,
+                                          Set<Integer> apTypeIds,
                                           Integer firstResult,
                                           Integer maxResults,
                                           Set<Integer> scopeIds,
@@ -40,7 +40,7 @@ public interface PartyRepositoryCustom {
      * @param scopeIds     seznam tříd rejstříků, ve kterých se vyhledává
      * @param excludeInvalid
      */
-    long findPartyByTextAndTypeCount(String searchRecord, Integer partyTypeId, Set<Integer> registerTypeIds, Set<Integer> scopeIds, Boolean excludeInvalid);
+    long findPartyByTextAndTypeCount(String searchRecord, Integer partyTypeId, Set<Integer> apTypeIds, Set<Integer> scopeIds, Boolean excludeInvalid);
 
 
     /**

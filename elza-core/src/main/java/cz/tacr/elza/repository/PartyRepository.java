@@ -6,7 +6,7 @@ import java.util.List;
 import org.springframework.data.jpa.repository.Query;
 
 import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.RegRecord;
+import cz.tacr.elza.domain.ApRecord;
 import cz.tacr.elza.domain.projection.ParPartyInfo;
 
 
@@ -32,7 +32,7 @@ public interface PartyRepository extends ElzaJpaRepository<ParParty, Integer>, P
      * @return seznam osob s danými hesly
      */
     @Query("SELECT ap FROM par_party ap WHERE ap.record IN (?1)")
-    List<ParParty> findParPartyByRecords(Collection<RegRecord> records);
+    List<ParParty> findParPartyByRecords(Collection<ApRecord> records);
 
     /**
      * Najde seznam osob podle rejstříkových hesel.
@@ -41,7 +41,7 @@ public interface PartyRepository extends ElzaJpaRepository<ParParty, Integer>, P
      * @return seznam osob s danými hesly
      */
     @Query("SELECT ap.partyId, r.recordId FROM par_party ap JOIN ap.record r WHERE r IN (?1)")
-    List<Object[]> findRecordIdAndPartyIdByRecords(Collection<RegRecord> records);
+    List<Object[]> findRecordIdAndPartyIdByRecords(Collection<ApRecord> records);
 
 
     /**

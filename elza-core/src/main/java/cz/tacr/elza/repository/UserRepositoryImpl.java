@@ -17,14 +17,10 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.persistence.criteria.Subquery;
 
+import cz.tacr.elza.domain.*;
 import org.apache.commons.lang.StringUtils;
 
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.domain.UsrGroup;
-import cz.tacr.elza.domain.UsrGroupUser;
-import cz.tacr.elza.domain.UsrPermission;
-import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.domain.ApRecord;
 
 /**
  * Rozšířené repository pro uživatele.
@@ -44,14 +40,14 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
 	        final Integer excludedGroupId,
 	        final CriteriaQuery<T> query) {
 		Join<UsrUser, ParParty> party = user.join(UsrUser.PARTY, JoinType.INNER);
-		Join<ParParty, RegRecord> record = party.join(ParParty.RECORD, JoinType.INNER);
+		Join<ParParty, ApRecord> record = party.join(ParParty.RECORD, JoinType.INNER);
 		List<Predicate> conditions = new ArrayList<>();
 
 		// Search
 		if (StringUtils.isNotBlank(search)) {
 			final String searchValue = "%" + search.toLowerCase() + "%";
 			conditions.add(builder.or(
-			        builder.like(builder.lower(record.get(RegRecord.RECORD)), searchValue),
+			        builder.like(builder.lower(record.get(ApRecord.RECORD)), searchValue),
 			        builder.like(builder.lower(user.get(UsrUser.USERNAME)), searchValue),
 			        builder.like(builder.lower(user.get(UsrUser.DESCRIPTION)), searchValue)));
 		}
@@ -81,7 +77,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
 
 	/*
 	 Inner condition to select users controlled directly or indirectly by the given user:
-	 
+
 	 0. First idea (unions not supported by JPA)
 	 select user_control_id from usr_permission up
 	 where up.permission = 'USER_CONTROL_ENTITITY'
@@ -89,26 +85,26 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
 	 select ugu.user_id from usr_permission up
 	 join usr_group_user ugu on ugu.group_id = up.group_control_id
 	 where up.permission = 'GROUP_CONTROL_ENTITITY'
-	
-	 
+
+
 	 1. Select users controlled by this user:
-	 
+
 	 select * from usr_permission p
 	 left join usr_group g on p.group_control_id  = g.group_id
 	 left join usr_group_user gu on g.group_id = gu.group_id
 	 where  gu.user_id = 22 and p.permission in ('USER_CONTROL_ENTITITY' , 'GROUP_CONTROL_ENTITITY'  )
-	
+
 	 2. Select users controlled by group in which this user is member:
-	 
+
 	 select coalesce(p.user_control_id, gu.user_id) from usr_permission p
 	 left join usr_group g on p.group_control_id = g.group_id
 	 left join usr_group_user gu on gu.group_id = g.group_id
 	 join usr_group g3 on p.group_id = g3.group_id
 	 join usr_group_user gu3 on g3.group_id = gu3.group_id
 	 where  gu3.user_id = 22 and p.permission in ('USER_CONTROL_ENTITITY' , 'GROUP_CONTROL_ENTITITY'  )
-	
+
 	 3. Final query to select users controlled by this user directly or indirectly:
-	 
+
 	 select distinct coalesce(p.user_control_id, gu.user_id) from usr_permission p
 	 left join usr_group g on p.group_control_id = g.group_id
 	 left join usr_group_user gu on gu.group_id = g.group_id
@@ -116,7 +112,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
 	 left join usr_group g3 on p.group_id = g3.group_id
 	 left join usr_group_user gu3 on g3.group_id = gu3.group_id
 	 where  (p.user_id = 22 or gu3.user_id = 22) and p.permission in ('USER_CONTROL_ENTITITY' , 'GROUP_CONTROL_ENTITITY'  )
-	
+
 	 */
 
     private <T> Predicate prepareFindUserByTextAndStateCount(
@@ -129,14 +125,14 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
             final CriteriaQuery<T> query,
 	        final int userId) {
         Join<UsrUser, ParParty> party = user.join(UsrUser.PARTY, JoinType.INNER);
-        Join<ParParty, RegRecord> record = party.join(ParParty.RECORD, JoinType.INNER);
+        Join<ParParty, ApRecord> record = party.join(ParParty.RECORD, JoinType.INNER);
         List<Predicate> conditions = new ArrayList<>();
 
         // Search
         if (StringUtils.isNotBlank(search)) {
             final String searchValue = "%" + search.toLowerCase() + "%";
             conditions.add(builder.or(
-                    builder.like(builder.lower(record.get(RegRecord.RECORD)), searchValue),
+                    builder.like(builder.lower(record.get(ApRecord.RECORD)), searchValue),
                     builder.like(builder.lower(user.get(UsrUser.USERNAME)), searchValue),
                     builder.like(builder.lower(user.get(UsrUser.DESCRIPTION)), searchValue)
             ));
@@ -150,7 +146,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
             conditions.add(builder.and(builder.not(builder.in(user.get(UsrUser.USER_ID)).value(subquery))));
         }
 
-		// Innert query for userId 
+		// Innert query for userId
 		// - see comment above with detail explanation
 		final Subquery<Integer> subquery = query.subquery(Integer.class);
 		final Root<UsrPermission> permissionUserSubq = subquery.from(UsrPermission.class);
@@ -174,7 +170,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
 		subQueryResult.value(permissionUserSubq.get(UsrPermission.USER_CONTROL_ID));
 		subQueryResult.value(ugu.get(UsrGroupUser.USER_ID));
 		subquery.select(subQueryResult);
-		
+
 		// add subquery as in condition
 		conditions.add(
 		        builder.and(
@@ -215,8 +211,8 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
 
 		if (condition != null) {
 			Join<UsrUser, ParParty> party = user.join(UsrUser.PARTY, JoinType.INNER);
-			Join<ParParty, RegRecord> record = party.join(ParParty.RECORD, JoinType.INNER);
-			Order order1 = builder.asc(record.get(RegRecord.RECORD));
+			Join<ParParty, ApRecord> record = party.join(ParParty.RECORD, JoinType.INNER);
+			Order order1 = builder.asc(record.get(ApRecord.RECORD));
 			Order order2 = builder.asc(user.get(UsrUser.USERNAME));
 			query.where(condition).orderBy(order1, order2);
 
@@ -260,8 +256,8 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
 
         if (condition != null) {
             Join<UsrUser, ParParty> party = user.join(UsrUser.PARTY, JoinType.INNER);
-            Join<ParParty, RegRecord> record = party.join(ParParty.RECORD, JoinType.INNER);
-            Order order1 = builder.asc(record.get(RegRecord.RECORD));
+            Join<ParParty, ApRecord> record = party.join(ParParty.RECORD, JoinType.INNER);
+            Order order1 = builder.asc(record.get(ApRecord.RECORD));
             Order order2 = builder.asc(user.get(UsrUser.USERNAME));
             query.where(condition).orderBy(order1, order2);
 

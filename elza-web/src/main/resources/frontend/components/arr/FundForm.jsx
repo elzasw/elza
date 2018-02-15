@@ -99,7 +99,7 @@ class FundForm extends AbstractReactComponent {
     submitReduxForm = (values, dispatch) => submitForm(FundForm.validate,values,this.props,this.props.onSubmitForm,dispatch);
 
     render() {
-        const {error, userDetail, fields: {fundAdmins, name, ruleSetId, regScopes, institutionId, internalCode, dateRange}, handleSubmit, onClose, create, update, approve, ruleSet, refTables, submitting} = this.props;
+        const {error, userDetail, fields: {fundAdmins, name, ruleSetId, apScopes: apScopes, institutionId, internalCode, dateRange}, handleSubmit, onClose, create, update, approve, ruleSet, refTables, submitting} = this.props;
         let approveButton;
         if (approve) {
             if (this.isBulkActionRunning()) {
@@ -150,20 +150,20 @@ class FundForm extends AbstractReactComponent {
                             if (!value || value.name.trim() == '') {
                                 return;
                             }
-                            let index = this.findIndexInFields(this.props.fields.regScopes, value.name, 'name');
+                            let index = this.findIndexInFields(this.props.fields.apScopes, value.name, 'name');
                             if (index === null) {
-                                this.props.fields.regScopes.addField(value);
+                                this.props.fields.apScopes.addField(value);
                             } else {
-                                this.props.fields.regScopes.removeField(index);
+                                this.props.fields.apScopes.removeField(index);
                             }
                         }
                     }
                     value={this.state.autocompleteValue}
                 />}
                 {update && <div className="selected-data-container">
-                    {regScopes.map((scope, scopeIndex) => (
+                    {apScopes.map((scope, scopeIndex) => (
                         <div className="selected-data" key={scopeIndex}>
-                            <span>{scope.name.value}</span><Button onClick={() => {regScopes.removeField(scopeIndex)}}>
+                            <span>{scope.name.value}</span><Button onClick={() => {apScopes.removeField(scopeIndex)}}>
                             <Icon glyph="fa-times"/>
                         </Button>
                         </div>))}
@@ -201,7 +201,7 @@ function mapStateToProps(state) {
 
 export default connect(mapStateToProps)(reduxForm({
         form: 'fundForm',
-        fields: ['name', 'ruleSetId', 'institutionId', 'internalCode', 'dateRange', 'regScopes[].id', 'regScopes[].name', "fundAdmins"]
+        fields: ['name', 'ruleSetId', 'institutionId', 'internalCode', 'dateRange', 'apScopes[].id', 'apScopes[].name', "fundAdmins"]
     }, state => ({
         initialValues: state.form.fundForm.initialValues,
         refTables: state.refTables,

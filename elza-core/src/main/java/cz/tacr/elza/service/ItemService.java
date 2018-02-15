@@ -12,6 +12,7 @@ import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 import javax.validation.constraints.NotNull;
 
+import cz.tacr.elza.domain.*;
 import org.apache.commons.lang3.Validate;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,19 +20,7 @@ import org.springframework.stereotype.Service;
 
 import cz.tacr.elza.core.data.RuleSystemItemType;
 import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDataFileRef;
-import cz.tacr.elza.domain.ArrDataJsonTable;
-import cz.tacr.elza.domain.ArrDataPartyRef;
-import cz.tacr.elza.domain.ArrDataRecordRef;
-import cz.tacr.elza.domain.ArrDataStructureRef;
-import cz.tacr.elza.domain.ArrFile;
-import cz.tacr.elza.domain.ArrItem;
-import cz.tacr.elza.domain.ArrStructureData;
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.ApRecord;
 import cz.tacr.elza.domain.table.ElzaColumn;
 import cz.tacr.elza.domain.table.ElzaRow;
 import cz.tacr.elza.domain.table.ElzaTable;
@@ -41,7 +30,7 @@ import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.FundFileRepository;
 import cz.tacr.elza.repository.ItemRepository;
 import cz.tacr.elza.repository.PartyRepository;
-import cz.tacr.elza.repository.RegRecordRepository;
+import cz.tacr.elza.repository.ApRecordRepository;
 import cz.tacr.elza.repository.StructureDataRepository;
 
 /**
@@ -66,7 +55,7 @@ public class ItemService {
     private FundFileRepository fundFileRepository;
 
     @Autowired
-    private RegRecordRepository recordRepository;
+    private ApRecordRepository recordRepository;
 
     @Autowired
     private StaticDataService staticDataService;
@@ -206,7 +195,7 @@ public class ItemService {
                     ArrFile file = ((ArrDataFileRef) data).getFile();
                     fileMap.put(file.getFileId(), (ArrDataFileRef) data);
                 } else if (data instanceof ArrDataRecordRef) {
-                    RegRecord record = ((ArrDataRecordRef) data).getRecord();
+                    ApRecord record = ((ArrDataRecordRef) data).getRecord();
                     recordMap.put(record.getRecordId(), (ArrDataRecordRef) data);
                 }
             }
@@ -234,8 +223,8 @@ public class ItemService {
         }
 
         Set<Integer> recordIds = recordMap.keySet();
-        List<RegRecord> recordEntities = recordRepository.findAll(recordIds);
-        for (RegRecord recordEntity : recordEntities) {
+        List<ApRecord> recordEntities = recordRepository.findAll(recordIds);
+        for (ApRecord recordEntity : recordEntities) {
             recordMap.get(recordEntity.getRecordId()).setRecord(recordEntity);
         }
     }

@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import cz.tacr.elza.controller.vo.ArrFundVO;
-import cz.tacr.elza.controller.vo.RegScopeVO;
+import cz.tacr.elza.controller.vo.ApScopeVO;
 import cz.tacr.elza.controller.vo.RulRuleSetVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
@@ -59,7 +59,7 @@ public class DEImportControllerTest extends AbstractControllerTest {
      */
     @Test
     public void scenarioTest() {
-        List<RegScopeVO> allScopes = getAllScopes();
+        List<ApScopeVO> allScopes = getAllScopes();
         importXmlFile(null, allScopes.get(0).getId(), getResourceFile(ALL_IN_ONE_XML));
 
         List<ArrFundVO> funds = getFunds();

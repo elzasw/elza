@@ -19,7 +19,7 @@ import org.springframework.data.rest.core.annotation.RestResource;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import cz.tacr.elza.api.interfaces.IRegScope;
+import cz.tacr.elza.api.interfaces.IApScope;
 import cz.tacr.elza.domain.enumeration.StringLength;
 import cz.tacr.elza.domain.interfaces.Versionable;
 
@@ -30,27 +30,27 @@ import cz.tacr.elza.domain.interfaces.Versionable;
  * @author Martin Kužel [<a href="mailto:martin.kuzel@marbes.cz">martin.kuzel@marbes.cz</a>]
  * @since 21.8.2015
  */
-@Entity(name = "reg_variant_record")
+@Entity(name = "ap_variant_record")
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class RegVariantRecord extends AbstractVersionableEntity implements Versionable, Serializable, IRegScope {
+public class ApVariantRecord extends AbstractVersionableEntity implements Versionable, Serializable, IApScope {
 
     @Id
     @GeneratedValue
     private Integer variantRecordId;
 
     @RestResource(exported = false)
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RegRecord.class)
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApRecord.class)
     @JoinColumn(name = "recordId", nullable = false)
-    private RegRecord regRecord;
+    private ApRecord apRecord;
 
     @Column(length = StringLength.LENGTH_1000)
     private String record;
 
     /* Konstanty pro vazby a fieldy. */
     public static final String RECORD = "record";
-    public static final String RECORD_FK = "regRecord.recordId";
+    public static final String RECORD_FK = "apRecord.recordId";
 
     /**
      * Vlastní ID.
@@ -72,16 +72,16 @@ public class RegVariantRecord extends AbstractVersionableEntity implements Versi
      * Vazba na heslo rejstříku.
      * @return  objekt hesla
      */
-    public RegRecord getRegRecord() {
-        return regRecord;
+    public ApRecord getApRecord() {
+        return apRecord;
     }
 
     /**
      * Vazba na heslo rejstříku.
-     * @param regRecord objekt hesla
+     * @param apRecord objekt hesla
      */
-    public void setRegRecord(final RegRecord regRecord) {
-        this.regRecord = regRecord;
+    public void setApRecord(final ApRecord apRecord) {
+        this.apRecord = apRecord;
     }
 
     /**
@@ -102,14 +102,14 @@ public class RegVariantRecord extends AbstractVersionableEntity implements Versi
 
     @Override
     public boolean equals(final Object obj) {
-        if (!(obj instanceof RegVariantRecord)) {
+        if (!(obj instanceof ApVariantRecord)) {
             return false;
         }
         if (this == obj) {
             return true;
         }
 
-        RegVariantRecord other = (RegVariantRecord) obj;
+        ApVariantRecord other = (ApVariantRecord) obj;
 
         return new EqualsBuilder().append(variantRecordId, other.getVariantRecordId()).isEquals();
     }
@@ -121,11 +121,11 @@ public class RegVariantRecord extends AbstractVersionableEntity implements Versi
 
     @Override
     public String toString() {
-        return "RegVariantRecord pk=" + variantRecordId;
+        return "ApVariantRecord pk=" + variantRecordId;
     }
 
     @Override
-    public RegScope getRegScope() {
-        return regRecord.getScope();
+    public ApScope getApScope() {
+        return apRecord.getScope();
     }
 }

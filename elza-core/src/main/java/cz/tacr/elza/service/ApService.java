@@ -18,7 +18,6 @@ import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventNodeIdVersionInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.ObjectUtils;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -39,19 +38,19 @@ import java.util.stream.Collectors;
  * @since 21.12.2015
  */
 @Service
-public class RegistryService {
+public class ApService {
 
     @Autowired
-    private RegRecordRepository regRecordRepository;
+    private ApRecordRepository apRecordRepository;
 
     @Autowired
-    private RegVariantRecordRepository variantRecordRepository;
+    private ApVariantRecordRepository variantRecordRepository;
 
     @Autowired
-    private RegisterTypeRepository registerTypeRepository;
+    private ApTypeRepository apTypeRepository;
 
     @Autowired
-    private RegExternalSystemRepository regExternalSystemRepository;
+    private ApExternalSystemRepository apExternalSystemRepository;
 
     @Autowired
     private PartyService partyService;
@@ -125,7 +124,7 @@ public class RegistryService {
      * nebo pole variantního záznamu obsahují hledaný řetězec. V případě, že hledaný řetězec je null, nevyhodnocuje se.
      *
      * @param searchRecord    hledaný řetězec, může být null
-     * @param registerTypeIds typ záznamu
+     * @param apTypeIds typ záznamu
      * @param firstResult     index prvního záznamu, začíná od 0
      * @param maxResults      počet výsledků k vrácení
      * @param parentRecordId  id rodičovského rejstříku
@@ -133,51 +132,51 @@ public class RegistryService {
      * @param scopeId         id scope, pokud je vyplněno hledají se rejstříky pouze s tímto scope
      * @return vybrané záznamy dle popisu seřazené za record, nbeo prázdná množina
      */
-    public List<RegRecord> findRegRecordByTextAndType(@Nullable final String searchRecord,
-                                                      @Nullable final Collection<Integer> registerTypeIds,
-                                                      final Integer firstResult,
-                                                      final Integer maxResults,
-                                                      final Integer parentRecordId,
-                                                      @Nullable final ArrFund fund,
-                                                      @Nullable final Integer scopeId,
-                                                      @Nullable final Boolean excludeInvalid) {
+    public List<ApRecord> findApRecordByTextAndType(@Nullable final String searchRecord,
+                                                    @Nullable final Collection<Integer> apTypeIds,
+                                                    final Integer firstResult,
+                                                    final Integer maxResults,
+                                                    final Integer parentRecordId,
+                                                    @Nullable final ArrFund fund,
+                                                    @Nullable final Integer scopeId,
+                                                    @Nullable final Boolean excludeInvalid) {
 
         Set<Integer> scopeIdsForSearch = getScopeIdsForSearch(fund, scopeId);
 
-        RegRecord parentRecord = null;
+        ApRecord parentRecord = null;
         if (parentRecordId != null) {
-            parentRecord = regRecordRepository.getOneCheckExist(parentRecordId);
+            parentRecord = apRecordRepository.getOneCheckExist(parentRecordId);
         }
 
-        return regRecordRepository.findRegRecordByTextAndType(searchRecord, registerTypeIds, firstResult,
+        return apRecordRepository.findApRecordByTextAndType(searchRecord, apTypeIds, firstResult,
                 maxResults, parentRecord, scopeIdsForSearch, excludeInvalid);
     }
 
 
     /**
-     * Celkový počet záznamů v DB pro funkci {@link #findRegRecordByTextAndType(String, Collection, Integer, Integer, Integer, ArrFund, Integer, Boolean)}
+     * Celkový počet záznamů v DB pro funkci {@link #findApRecordByTextAndType(String, Collection, Integer, Integer, Integer, ArrFund, Integer, Boolean)}
      *
      * @param searchRecord    hledaný řetězec, může být null
-     * @param registerTypeIds typ záznamu
+     * @param apTypeIds typ záznamu
      * @param parentRecordId  id rodičovského rejstříku
      * @param fund   AP, ze které se použijí třídy rejstříků
      * @param scopeId scope, pokud je vyplněno hledají se rejstříky pouze s tímto scope
      * @return celkový počet záznamů, který je v db za dané parametry
      */
-    public long findRegRecordByTextAndTypeCount(@Nullable final String searchRecord,
-                                                @Nullable final Collection<Integer> registerTypeIds,
-                                                final Integer parentRecordId, @Nullable final ArrFund fund,
-                                                final Integer scopeId,
-                                                final Boolean excludeInvalid) {
+    public long findApRecordByTextAndTypeCount(@Nullable final String searchRecord,
+                                               @Nullable final Collection<Integer> apTypeIds,
+                                               final Integer parentRecordId, @Nullable final ArrFund fund,
+                                               final Integer scopeId,
+                                               final Boolean excludeInvalid) {
 
         Set<Integer> scopeIdsForSearch = getScopeIdsForSearch(fund, scopeId);
 
-        RegRecord parentRecord = null;
+        ApRecord parentRecord = null;
         if (parentRecordId != null) {
-            parentRecord = regRecordRepository.getOneCheckExist(parentRecordId);
+            parentRecord = apRecordRepository.getOneCheckExist(parentRecordId);
         }
 
-        return regRecordRepository.findRegRecordByTextAndTypeCount(searchRecord, registerTypeIds, parentRecord,
+        return apRecordRepository.findApRecordByTextAndTypeCount(searchRecord, apTypeIds, parentRecord,
                 scopeIdsForSearch, excludeInvalid);
     }
 
@@ -187,7 +186,7 @@ public class RegistryService {
      * @param record rejstříkové heslo
      * @throws IllegalStateException napojení na jinou tabulku
      */
-    private void checkRecordUsage(final RegRecord record) {
+    private void checkRecordUsage(final ApRecord record) {
         ParParty parParty = partyService.findParPartyByRecord(record);
         if (parParty != null) {
             throw new BusinessException("Existuje vazba z osoby, nelze smazat.", RegistryCode.EXIST_FOREIGN_PARTY);
@@ -221,25 +220,25 @@ public class RegistryService {
      * @param partySave true - jedná se o ukládání přes ukládání osoby, false -> editace z klienta
      * @return výsledný objekt
      */
-    @AuthMethod(permission = {UsrPermission.Permission.REG_SCOPE_WR_ALL, UsrPermission.Permission.REG_SCOPE_WR})
-    public RegRecord saveRecord(@AuthParam(type = AuthParam.Type.SCOPE) final RegRecord record,
-                                final boolean partySave) {
+    @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
+    public ApRecord saveRecord(@AuthParam(type = AuthParam.Type.SCOPE) final ApRecord record,
+                               final boolean partySave) {
         Assert.notNull(record, "Rejstříkové heslo musí být vyplněno");
 
         checkRecordSave(record, partySave);
 
-        RegRegisterType registerType = registerTypeRepository.findOne(record.getRegisterType().getRegisterTypeId());
-        record.setRegisterType(registerType);
+        ApType apType = apTypeRepository.findOne(record.getApType().getApTypeId());
+        record.setApType(apType);
 
-        RegScope scope = scopeRepository.findOne(record.getScope().getScopeId());
+        ApScope scope = scopeRepository.findOne(record.getScope().getScopeId());
         record.setScope(scope);
 
-        RegExternalSystem externalSystem = record.getExternalSystem();
+        ApExternalSystem externalSystem = record.getExternalSystem();
         if (externalSystem != null) {
             Integer externalSystemId = externalSystem.getExternalSystemId();
-            Assert.notNull(externalSystemId, "RegExternalSystem nemá vyplněné ID.");
-            externalSystem = regExternalSystemRepository.findOne(externalSystemId);
-            Assert.notNull(externalSystem, "RegExternalSystem nebylo nalezeno podle id " + externalSystemId);
+            Assert.notNull(externalSystemId, "ApExternalSystem nemá vyplněné ID.");
+            externalSystem = apExternalSystemRepository.findOne(externalSystemId);
+            Assert.notNull(externalSystem, "ApExternalSystem nebylo nalezeno podle id " + externalSystemId);
             record.setExternalSystem(externalSystem);
         }
 
@@ -249,7 +248,7 @@ public class RegistryService {
 
         record.setLastUpdate(LocalDateTime.now());
 
-        RegRecord result = regRecordRepository.save(record);
+        ApRecord result = apRecordRepository.save(record);
         EventType type = record.getRecordId() == null ? EventType.RECORD_CREATE : EventType.RECORD_UPDATE;
         eventNotificationService.publishEvent(EventFactory.createIdEvent(type, result.getRecordId()));
 
@@ -260,8 +259,8 @@ public class RegistryService {
      * Smaže rej. heslo a jeho variantní hesla. Předpokládá, že již proběhlo ověření, že je možné ho smazat (vazby atd...).
      * @param record heslo
      */
-    @AuthMethod(permission = {UsrPermission.Permission.REG_SCOPE_WR_ALL, UsrPermission.Permission.REG_SCOPE_WR})
-    public void deleteRecord(@AuthParam(type = AuthParam.Type.SCOPE) final RegRecord record, final boolean checkUsage) {
+    @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
+    public void deleteRecord(@AuthParam(type = AuthParam.Type.SCOPE) final ApRecord record, final boolean checkUsage) {
         if (checkUsage) {
             checkRecordUsage(record);
         }
@@ -269,8 +268,8 @@ public class RegistryService {
         if (canBeDeleted(record)) {
             eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.RECORD_DELETE, record.getRecordId()));
 
-            variantRecordRepository.delete(variantRecordRepository.findByRegRecordId(record.getRecordId()));
-            regRecordRepository.delete(record);
+            variantRecordRepository.delete(variantRecordRepository.findByApRecordId(record.getRecordId()));
+            apRecordRepository.delete(record);
         } else {
             record.setInvalid(true);
             saveRecord(record, false);
@@ -284,23 +283,23 @@ public class RegistryService {
      * @param record    heslo
      * @param partySave true - jedná se o ukládání přes ukládání osoby, false -> editace z klienta
      */
-    private void checkRecordSave(final RegRecord record, final boolean partySave) {
+    private void checkRecordSave(final ApRecord record, final boolean partySave) {
         Assert.notNull(record, "Rejstříkové heslo musí být vyplněno");
 
         Assert.notNull(record.getRecord(), "Není vyplněné Record.");
 
-        RegRegisterType regRegisterType = record.getRegisterType();
-        Assert.notNull(regRegisterType, "Není vyplněné RegisterType.");
-        Assert.notNull(regRegisterType.getRegisterTypeId(), "RegisterType nemá vyplněné ID.");
-        regRegisterType = registerTypeRepository.findOne(regRegisterType.getRegisterTypeId());
-        Assert.notNull(regRegisterType, "RegisterType nebylo nalezeno podle id " + regRegisterType.getRegisterTypeId());
+        ApType apType = record.getApType();
+        Assert.notNull(apType, "Není vyplněné ApType.");
+        Assert.notNull(apType.getApTypeId(), "ApType nemá vyplněné ID.");
+        apType = apTypeRepository.findOne(apType.getApTypeId());
+        Assert.notNull(apType, "ApType nebylo nalezeno podle id " + apType.getApTypeId());
 
         if (partySave) {
-            if (regRegisterType.getPartyType() == null) {
+            if (apType.getPartyType() == null) {
                 throw new BusinessException("Typ hesla musí mít vazbu na typ osoby", RegistryCode.REGISTRY_HAS_NOT_TYPE_PARTY);
             }
         } else {
-            if (record.getRecordId() == null && regRegisterType.getPartyType() != null) {
+            if (record.getRecordId() == null && apType.getPartyType() != null) {
                 throw new BusinessException("Nelze vytvořit rejstříkové heslo, které je navázané na typ osoby",
                         RegistryCode.CANT_CREATE_WITH_TYPE_PARTY);
             }
@@ -308,26 +307,26 @@ public class RegistryService {
 
         Assert.notNull(record.getScope(), "Není vyplněna třída rejstříku");
         Assert.notNull(record.getScope().getScopeId(), "Není vyplněno id třídy rejstříku");
-        RegScope scope = scopeRepository.findOne(record.getScope().getScopeId());
+        ApScope scope = scopeRepository.findOne(record.getScope().getScopeId());
         Assert.notNull(scope, "Nebyla nalezena třída rejstříku s id " + record.getScope().getScopeId());
 
         if (record.getRecordId() == null) {
-            if (!regRegisterType.getAddRecord()) {
+            if (!apType.getAddRecord()) {
                 throw new BusinessException(
                         "Nelze přidávat heslo do typu, který nemá přidávání hesel povolené.", RegistryCode.REGISTRY_TYPE_DISABLE);
             }
         } else {
-            RegRecord dbRecord = regRecordRepository.findOne(record.getRecordId());
+            ApRecord dbRecord = apRecordRepository.findOne(record.getRecordId());
             if (!record.getScope().getScopeId().equals(dbRecord.getScope().getScopeId())) {
                 throw new BusinessException("Nelze změnit třídu rejstříku.", RegistryCode.SCOPE_CANT_CHANGE);
             }
 
             ParParty party = partyService.findParPartyByRecord(dbRecord);
             if (party == null) {
-                ExceptionUtils.nullElseBusiness(regRegisterType.getPartyType(),
+                ExceptionUtils.nullElseBusiness(apType.getPartyType(),
                         "Nelze nastavit typ hesla, které je navázané na typ osoby.", RegistryCode.CANT_CHANGE_WITH_TYPE_PARTY);
             } else {
-                ExceptionUtils.equalsElseBusiness(regRegisterType.getPartyType(), party.getPartyType(),
+                ExceptionUtils.equalsElseBusiness(apType.getPartyType(), party.getPartyType(),
                         "Nelze změnit typ rejstříkového hesla osoby, který odkazuje na jiný typ osoby.",
                         RegistryCode.CANT_CREATE_WITH_OTHER_TYPE_PARTY);
 
@@ -359,20 +358,20 @@ public class RegistryService {
      * @param variantRecord variantní záznam, bez vazeb
      * @return výslendný objekt uložený do db
      */
-    @AuthMethod(permission = {UsrPermission.Permission.REG_SCOPE_WR_ALL, UsrPermission.Permission.REG_SCOPE_WR})
-    public RegVariantRecord saveVariantRecord(@AuthParam(type = AuthParam.Type.SCOPE) final RegVariantRecord variantRecord) {
+    @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
+    public ApVariantRecord saveVariantRecord(@AuthParam(type = AuthParam.Type.SCOPE) final ApVariantRecord variantRecord) {
         Assert.notNull(variantRecord, "Heslo musí být vyplněno");
 
-        RegRecord regRecord = variantRecord.getRegRecord();
-        Assert.notNull(regRecord, "RegRecord musí být vyplněno.");
-        Integer recordId = regRecord.getRecordId();
-        Assert.notNull(recordId, "RegRecord nemá vyplněno ID.");
+        ApRecord apRecord = variantRecord.getApRecord();
+        Assert.notNull(apRecord, "ApRecord musí být vyplněno.");
+        Integer recordId = apRecord.getRecordId();
+        Assert.notNull(recordId, "ApRecord nemá vyplněno ID.");
 
-        regRecord = regRecordRepository.findOne(recordId);
-        Assert.notNull(regRecord, "RegRecord nebylo nalezeno podle id " + recordId);
-        variantRecord.setRegRecord(regRecord);
+        apRecord = apRecordRepository.findOne(recordId);
+        Assert.notNull(apRecord, "ApRecord nebylo nalezeno podle id " + recordId);
+        variantRecord.setApRecord(apRecord);
 
-        RegVariantRecord saved = variantRecordRepository.save(variantRecord);
+        ApVariantRecord saved = variantRecordRepository.save(variantRecord);
         eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.RECORD_UPDATE, recordId));
 
         return saved;
@@ -384,15 +383,15 @@ public class RegistryService {
      * @param scope třída k uložení
      * @return uložená třída
      */
-    @AuthMethod(permission = {UsrPermission.Permission.REG_SCOPE_WR_ALL})
-    public RegScope saveScope(final RegScope scope) {
+    @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL})
+    public ApScope saveScope(final ApScope scope) {
         Assert.notNull(scope, "Scope musí být vyplněn");
         checkScopeSave(scope);
 
         if (scope.getScopeId() == null) {
             return scopeRepository.save(scope);
         } else {
-            RegScope targetScope = scopeRepository.findOne(scope.getScopeId());
+            ApScope targetScope = scopeRepository.findOne(scope.getScopeId());
             targetScope.setName(scope.getName());
             return scopeRepository.save(targetScope);
         }
@@ -403,12 +402,12 @@ public class RegistryService {
      *
      * @param scope třída rejstříku
      */
-    @AuthMethod(permission = {UsrPermission.Permission.REG_SCOPE_WR_ALL})
-    public void deleteScope(final RegScope scope) {
+    @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL})
+    public void deleteScope(final ApScope scope) {
         Assert.notNull(scope, "Scope musí být vyplněn");
         Assert.notNull(scope.getScopeId(), "Identifikátor scope musí být vyplněn");
 
-        List<RegRecord> scopeRecords = regRecordRepository.findByScope(scope);
+        List<ApRecord> scopeRecords = apRecordRepository.findByScope(scope);
         ExceptionUtils.isEmptyElseBusiness(scopeRecords, "Nelze smazat třídu rejstříku, která je nastavena na rejstříku.", RegistryCode.USING_SCOPE_CANT_DELETE);
 
         fundRegisterScopeRepository.delete(fundRegisterScopeRepository.findByScope(scope));
@@ -420,13 +419,13 @@ public class RegistryService {
      *
      * @param scope ukládaná třída
      */
-    private void checkScopeSave(final RegScope scope) {
+    private void checkScopeSave(final ApScope scope) {
         Assert.notNull(scope, "Scope musí být vyplněn");
         Assert.notNull(scope.getCode(), "Třída musí mít vyplněný kod");
         Assert.notNull(scope.getName(), "Třída musí mít vyplněný název");
 
-        List<RegScope> scopes = scopeRepository.findByCodes(Arrays.asList(scope.getCode()));
-        RegScope codeScope = scopes.isEmpty() ? null : scopes.get(0);
+        List<ApScope> scopes = scopeRepository.findByCodes(Arrays.asList(scope.getCode()));
+        ApScope codeScope = scopes.isEmpty() ? null : scopes.get(0);
         if (scope.getScopeId() == null) {
             ExceptionUtils.isEmptyElseBusiness(scopes, "Kod třídy rejstříku se již nachází v databázi.", RegistryCode.SCOPE_EXISTS);
         } else {
@@ -436,7 +435,7 @@ public class RegistryService {
 
             ExceptionUtils.equalsElseBusiness(codeScope.getScopeId(), scope.getScopeId(), "Kod třídy rejstříku se již nachází v databázi.", RegistryCode.SCOPE_EXISTS);
 
-            RegScope dbScope = scopeRepository.getOneCheckExist(scope.getScopeId());
+            ApScope dbScope = scopeRepository.getOneCheckExist(scope.getScopeId());
             ExceptionUtils.equalsElseBusiness(dbScope.getCode(), scope.getCode(), "Třídě rejstříku nelze změnít kód, pouze název.", RegistryCode.SCOPE_CODE_CANT_CHANGE);
         }
     }
@@ -449,7 +448,7 @@ public class RegistryService {
      * @return množina id tříd, podle kterých se bude hledat
      */
     public Set<Integer> getScopeIdsForSearch(@Nullable final ArrFund fund, @Nullable final Integer scopeId) {
-    	boolean readAllScopes = userService.hasPermission(UsrPermission.Permission.REG_SCOPE_RD_ALL);
+    	boolean readAllScopes = userService.hasPermission(UsrPermission.Permission.AP_SCOPE_RD_ALL);
     	UsrUser user = userService.getLoggedUser();
 
     	Set<Integer> scopeIdsToSearch;
@@ -662,9 +661,9 @@ public class RegistryService {
         return scopeCodes;
     }
 
-    public List<RegScope> findDefaultScopes() {
+    public List<ApScope> findDefaultScopes() {
         List<String> scopeCodes = getScopeCodes();
-        List<RegScope> defaultScopes;
+        List<ApScope> defaultScopes;
         if (CollectionUtils.isEmpty(scopeCodes)) {
             defaultScopes = Collections.emptyList();
         } else {
@@ -674,10 +673,10 @@ public class RegistryService {
         return defaultScopes;
     }
 
-    @AuthMethod(permission = {UsrPermission.Permission.REG_SCOPE_RD_ALL, UsrPermission.Permission.REG_SCOPE_RD})
-    public RegRecord getRecord(@AuthParam(type = AuthParam.Type.REGISTRY) final Integer recordId) {
+    @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_RD_ALL, UsrPermission.Permission.AP_SCOPE_RD})
+    public ApRecord getRecord(@AuthParam(type = AuthParam.Type.REGISTRY) final Integer recordId) {
         Assert.notNull(recordId, "Identifikátor rejstříkového hesla musí být vyplněn");
-        return regRecordRepository.findOne(recordId);
+        return apRecordRepository.findOne(recordId);
     }
 
     /**
@@ -687,9 +686,9 @@ public class RegistryService {
      * @param variantRecordId variant record id
      * @return variant record
      */
-    public RegVariantRecord getVariantRecord(final Integer variantRecordId) {
-        RegVariantRecord variantRecord = variantRecordRepository.getOneCheckExist(variantRecordId);
-        beanFactory.getBean(RegistryService.class).getRecord(variantRecord.getRegRecord().getRecordId());
+    public ApVariantRecord getVariantRecord(final Integer variantRecordId) {
+        ApVariantRecord variantRecord = variantRecordRepository.getOneCheckExist(variantRecordId);
+        beanFactory.getBean(ApService.class).getRecord(variantRecord.getApRecord().getRecordId());
         return variantRecord;
     }
 
@@ -700,8 +699,8 @@ public class RegistryService {
      * @param variantRecord variant record ke smazání
      * @param record record z důvodu oprávnění
      */
-    @AuthMethod(permission = {UsrPermission.Permission.REG_SCOPE_WR_ALL, UsrPermission.Permission.REG_SCOPE_WR})
-    public void deleteVariantRecord(final RegVariantRecord variantRecord, @AuthParam(type = AuthParam.Type.REGISTRY) final RegRecord record) {
+    @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
+    public void deleteVariantRecord(final ApVariantRecord variantRecord, @AuthParam(type = AuthParam.Type.REGISTRY) final ApRecord record) {
         variantRecordRepository.delete(variantRecord);
     }
 
@@ -713,7 +712,7 @@ public class RegistryService {
      *
      * @return použití rejstříku/osoby
      */
-	public RecordUsageVO findRecordUsage(final RegRecord record, @Nullable final ParParty party) {
+	public RecordUsageVO findRecordUsage(final ApRecord record, @Nullable final ParParty party) {
 		List<FundVO> usedFunds = findUsedFunds(record, party); // výskyt v archivních souborech
 		List<PartyVO> usedParties = findUsedParties(record, party); // výskyt v uzlech
 
@@ -728,7 +727,7 @@ public class RegistryService {
      *
      * @return použití rejstříku/osoby
 	 */
-	private List<PartyVO> findUsedParties(final RegRecord record, final ParParty party) {
+	private List<PartyVO> findUsedParties(final ApRecord record, final ParParty party) {
 		List<PartyVO> usedParties = new LinkedList<>();
 
 		// hledání podle vztahů
@@ -780,7 +779,7 @@ public class RegistryService {
      *
      * @return použití rejstříku/osoby
 	 */
-	private List<FundVO> findUsedFunds(final RegRecord record, final ParParty party) {
+	private List<FundVO> findUsedFunds(final ApRecord record, final ParParty party) {
 		List<ArrData> dataList = new LinkedList<>(dataRecordRefRepository.findByRecord(record));
 		if (party != null) {
 			dataList.addAll(dataPartyRefRepository.findByParty(party));
@@ -956,7 +955,7 @@ public class RegistryService {
      * @param replaced
      * @param replacement
      */
-    public void replace(final RegRecord replaced, final RegRecord replacement) {
+    public void replace(final ApRecord replaced, final ApRecord replacement) {
 
         final List<ArrDescItem> arrItems = descItemRepository.findArrItemByRecord(replaced);
         List<ArrNodeRegister> nodeRegisters = nodeRegisterRepository.findByRecordAndDeleteChangeIsNull(replaced);
@@ -1011,17 +1010,17 @@ public class RegistryService {
                 throw new SystemException("Pro AS neexistují žádné scope.", BaseCode.INVALID_STATE)
                         .set("fundId", fundId);
             } else {
-                if (!fundScopes.contains(replacement.getRegScope().getScopeId())) {
+                if (!fundScopes.contains(replacement.getApScope().getScopeId())) {
                     throw new BusinessException("Nelze nahradit rejsříkové heslo v AS jelikož AS nemá scope rejstříku pomocí kterého nahrazujeme.", BaseCode.INVALID_STATE)
                             .set("fundId", fundId)
-                            .set("scopeId", replacement.getRegScope().getScopeId());
+                            .set("scopeId", replacement.getApScope().getScopeId());
                 }
             }
             descriptionItemService.updateDescriptionItem(im, fundVersions.get(fundId), change, true);
         });
 
 
-        final RegistryService self = applicationContext.getBean(RegistryService.class);
+        final ApService self = applicationContext.getBean(ApService.class);
         nodeRegisters.forEach(i -> {
             final ArrNodeRegister arrNodeRegister = new ArrNodeRegister();
             arrNodeRegister.setRecord(replacement);
@@ -1036,17 +1035,17 @@ public class RegistryService {
                 throw new SystemException("Pro AS neexistují žádné scope.", BaseCode.INVALID_STATE)
                         .set("fundId", fundId);
             } else {
-                if (!fundScopes.contains(replacement.getRegScope().getScopeId())) {
+                if (!fundScopes.contains(replacement.getApScope().getScopeId())) {
                     throw new BusinessException("Nelze nahradit rejsříkové heslo v AS jelikož AS nemá scope rejstříku pomocí kterého nahrazujeme.", BaseCode.INVALID_STATE)
                             .set("fundId", fundId)
-                            .set("scopeId", replacement.getRegScope().getScopeId());
+                            .set("scopeId", replacement.getApScope().getScopeId());
                 }
             }
             self.updateRegisterLink(fundVersions.get(fundId).getFundVersionId(), i.getNodeId(), arrNodeRegister);
         });
                 }
 
-    public boolean canBeDeleted(RegRecord record) {
+    public boolean canBeDeleted(ApRecord record) {
         return CollectionUtils.isEmpty(dataRecordRefRepository.findByRecord(record)) &&
                 CollectionUtils.isEmpty(nodeRegisterRepository.findByRecordId(record)) &&
                 CollectionUtils.isEmpty(relationEntityRepository.findByRecord(record));

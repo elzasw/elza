@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import cz.tacr.elza.domain.ApRecord;
 import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
 import org.slf4j.Logger;
@@ -13,7 +14,6 @@ import cz.tacr.elza.core.data.PartyTypeComplementTypes;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.dataexchange.input.parties.context.PartyInfo;
 import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.service.GroovyScriptService;
 
 /**
@@ -43,7 +43,7 @@ public class PartiesAccessPointsBuilder {
             if (info.isIgnored()) {
                 continue;
             }
-            RegRecord partyRecord = createPartyRecord(info);
+            ApRecord partyRecord = createPartyRecord(info);
             PartyAccessPointWrapper wrapper = createPartyAccessPoint(info, partyRecord);
             results.add(wrapper);
         }
@@ -52,7 +52,7 @@ public class PartiesAccessPointsBuilder {
         return results;
     }
 
-    private RegRecord createPartyRecord(PartyInfo info) {
+    private ApRecord createPartyRecord(PartyInfo info) {
         // supported complement types
         String partyTypeCode = info.getPartyType().getCode();
         PartyTypeComplementTypes partyTypes = staticData.getComplementTypesByPartyTypeCode(partyTypeCode);
@@ -61,7 +61,7 @@ public class PartiesAccessPointsBuilder {
         return groovyScriptService.getRecordFromGroovy(party, partyTypes.getComplementTypes());
     }
 
-    private PartyAccessPointWrapper createPartyAccessPoint(PartyInfo partyInfo, RegRecord ap) {
+    private PartyAccessPointWrapper createPartyAccessPoint(PartyInfo partyInfo, ApRecord ap) {
         String name = Validate.notEmpty(ap.getRecord());
         // update fulltext index
         partyInfo.setAPName(name);

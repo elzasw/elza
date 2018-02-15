@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
+import cz.tacr.elza.domain.ApExternalSystem;
 import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
 
@@ -16,31 +17,30 @@ import cz.tacr.elza.dataexchange.input.DEImportException;
 import cz.tacr.elza.dataexchange.input.aps.context.AccessPointWrapper;
 import cz.tacr.elza.dataexchange.input.context.ImportInitHelper;
 import cz.tacr.elza.dataexchange.input.context.PersistMethod;
-import cz.tacr.elza.domain.RegExternalSystem;
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.domain.projection.RegRecordInfo;
-import cz.tacr.elza.domain.projection.RegRecordInfoExternal;
-import cz.tacr.elza.repository.RegRecordRepository;
-import cz.tacr.elza.repository.RegVariantRecordRepository;
+import cz.tacr.elza.domain.ApRecord;
+import cz.tacr.elza.domain.projection.ApRecordInfo;
+import cz.tacr.elza.domain.projection.ApRecordInfoExternal;
+import cz.tacr.elza.repository.ApRecordRepository;
+import cz.tacr.elza.repository.ApVariantRecordRepository;
 import cz.tacr.elza.service.ArrangementService;
 
 /**
  * Specialization of wrapper storage witch pairs imported records with database state.
  */
-class RegRecordStorage extends EntityStorage<AccessPointWrapper> {
+class ApRecordStorage extends EntityStorage<AccessPointWrapper> {
 
-    private final RegRecordRepository recordRepository;
+    private final ApRecordRepository recordRepository;
 
     private final ArrangementService arrangementService;
 
-    private final RegVariantRecordRepository variantRecordRepository;
+    private final ApVariantRecordRepository variantRecordRepository;
 
     private final LocalDateTime updateDateTime;
 
-    public RegRecordStorage(StorageListener storageListener,
-                            LocalDateTime updateDateTime,
-                            Session session,
-                            ImportInitHelper initHelper) {
+    public ApRecordStorage(StorageListener storageListener,
+                           LocalDateTime updateDateTime,
+                           Session session,
+                           ImportInitHelper initHelper) {
         super(session, storageListener);
         this.updateDateTime = updateDateTime;
         this.recordRepository = initHelper.getRecordRepository();
@@ -71,20 +71,20 @@ class RegRecordStorage extends EntityStorage<AccessPointWrapper> {
      * Deletes current sub-entities for each access point.
      */
     private void prepareCollectionForUpdate(Collection<AccessPointWrapper> items) {
-        List<RegRecord> records = new ArrayList<>(items.size());
+        List<ApRecord> records = new ArrayList<>(items.size());
         for (AccessPointWrapper rw : items) {
-            RegRecord record = rw.getEntity();
+            ApRecord record = rw.getEntity();
             Validate.notNull(record.getRecordId());
             records.add(record);
         }
-        variantRecordRepository.deleteByRegRecordIn(records);
+        variantRecordRepository.deleteByApRecordIn(records);
     }
 
     /**
      * Sets last update dateTime and unique UUID for new entity.
      */
     private void prepareItemForCreate(AccessPointWrapper item) {
-        RegRecord record = item.getEntity();
+        ApRecord record = item.getEntity();
         if (record.getLastUpdate() == null) {
             record.setLastUpdate(updateDateTime);
         }
@@ -106,8 +106,8 @@ class RegRecordStorage extends EntityStorage<AccessPointWrapper> {
             }
         }
         // find pairs by uuid
-        List<RegRecordInfo> pairs = recordRepository.findByUuidIn(uuidMap.keySet());
-        for (RegRecordInfo pair : pairs) {
+        List<ApRecordInfo> pairs = recordRepository.findByUuidIn(uuidMap.keySet());
+        for (ApRecordInfo pair : pairs) {
             AccessPointWrapper rw = uuidMap.get(pair.getUuid());
             rw.setPair(pair);
         }
@@ -127,9 +127,9 @@ class RegRecordStorage extends EntityStorage<AccessPointWrapper> {
         }
         // find pairs by eid
         aggregator.forEach((code, group) -> {
-            List<RegRecordInfoExternal> pairs = recordRepository.findByExternalSystemCodeAndExternalIdIn(code,
+            List<ApRecordInfoExternal> pairs = recordRepository.findByExternalSystemCodeAndExternalIdIn(code,
                     group.getExternalIds());
-            for (RegRecordInfoExternal pair : pairs) {
+            for (ApRecordInfoExternal pair : pairs) {
                 AccessPointWrapper rw = group.getRecord(pair.getExternalId());
                 rw.setPair(pair);
             }
@@ -141,7 +141,7 @@ class RegRecordStorage extends EntityStorage<AccessPointWrapper> {
         private final Map<String, ExternalSystemGroup> codeMap = new HashMap<>();
 
         public void addRecord(AccessPointWrapper record) {
-            RegExternalSystem system = record.getEntity().getExternalSystem();
+            ApExternalSystem system = record.getEntity().getExternalSystem();
             Validate.notNull(system);
             ExternalSystemGroup group = codeMap.computeIfAbsent(system.getCode(), k -> new ExternalSystemGroup());
             group.addRecord(record);

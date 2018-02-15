@@ -10,7 +10,7 @@ import java.util.List;
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 21.12.2015
  */
-public class RegRegisterTypeVO {
+public class ApTypeVO {
 
     /**
      * Id.
@@ -31,7 +31,7 @@ public class RegRegisterTypeVO {
     /**
      * Odkaz na sebe sama (hierarchie typů rejstříků).
      */
-    private Integer parentRegisterTypeId;
+    private Integer parentApTypeId;
     /**
      * Určení, zda hesla daného typu mohou být "abstraktní" osobou/původcem a jakého typu.
      */
@@ -39,7 +39,7 @@ public class RegRegisterTypeVO {
     /**
      * Seznam potomků.
      */
-    private List<RegRegisterTypeVO> children;
+    private List<ApTypeVO> children;
 
     private List<Integer> relationRoleTypIds;
 
@@ -88,23 +88,23 @@ public class RegRegisterTypeVO {
         this.partyTypeId = partyTypeId;
     }
 
-    public Integer getParentRegisterTypeId() {
-        return parentRegisterTypeId;
+    public Integer getParentApTypeId() {
+        return parentApTypeId;
     }
 
-    public void setParentRegisterTypeId(final Integer parentRegisterTypeId) {
-        this.parentRegisterTypeId = parentRegisterTypeId;
+    public void setParentApTypeId(final Integer parentApTypeId) {
+        this.parentApTypeId = parentApTypeId;
     }
 
-    public List<RegRegisterTypeVO> getChildren() {
+    public List<ApTypeVO> getChildren() {
         return children;
     }
 
-    public void setChildren(final List<RegRegisterTypeVO> children) {
+    public void setChildren(final List<ApTypeVO> children) {
         this.children = children;
     }
 
-    public void addChild(final RegRegisterTypeVO child) {
+    public void addChild(final ApTypeVO child) {
         if (children == null) {
             children = new LinkedList<>();
         }

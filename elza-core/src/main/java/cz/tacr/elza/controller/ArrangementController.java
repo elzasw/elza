@@ -135,7 +135,7 @@ import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.service.OutputService;
 import cz.tacr.elza.service.PolicyService;
-import cz.tacr.elza.service.RegistryService;
+import cz.tacr.elza.service.ApService;
 import cz.tacr.elza.service.RequestQueueService;
 import cz.tacr.elza.service.RequestService;
 import cz.tacr.elza.service.RevertingChangesService;
@@ -221,7 +221,7 @@ public class ArrangementController {
     private DaoRepository daoRepository;
 
     @Autowired
-    private RegistryService registryService;
+    private ApService apService;
 
     @Autowired
     private FilterTreeService filterTreeService;
@@ -1372,7 +1372,7 @@ public class ArrangementController {
                 arrangementService.updateFund(
                         factoryDO.createFund(arrFundVO),
                         ruleSetRepository.findOne(ruleSetId),
-                        factoryDO.createScopeList(arrFundVO.getRegScopes()
+                        factoryDO.createScopeList(arrFundVO.getApScopes()
                         )
                 ),
                 false
@@ -1631,7 +1631,7 @@ public class ArrangementController {
             produces = MediaType.APPLICATION_JSON_VALUE)
     public List<ArrNodeRegisterVO> findRegisterLinks(final @PathVariable(value = "versionId") Integer versionId,
                                                      final @PathVariable(value = "nodeId") Integer nodeId) {
-        List<ArrNodeRegister> registerLinks = registryService.findRegisterLinks(versionId, nodeId);
+        List<ArrNodeRegister> registerLinks = apService.findRegisterLinks(versionId, nodeId);
         return factoryVo.createRegisterLinkList(registerLinks);
     }
 
@@ -1670,7 +1670,7 @@ public class ArrangementController {
                                                        final @PathVariable(value = "nodeId") Integer nodeId,
                                                        final @RequestBody ArrNodeRegisterVO nodeRegisterVO) {
         ArrNodeRegister nodeRegister = factoryDO.createRegisterLink(nodeRegisterVO);
-        nodeRegister = registryService.createRegisterLink(versionId, nodeId, nodeRegister);
+        nodeRegister = apService.createRegisterLink(versionId, nodeId, nodeRegister);
         return factoryVo.createRegisterLink(nodeRegister);
     }
 
@@ -1691,7 +1691,7 @@ public class ArrangementController {
                                                  final @PathVariable(value = "nodeId") Integer nodeId,
                                                  final @RequestBody ArrNodeRegisterVO nodeRegisterVO) {
         ArrNodeRegister nodeRegister = factoryDO.createRegisterLink(nodeRegisterVO);
-        nodeRegister = registryService.updateRegisterLink(versionId, nodeId, nodeRegister);
+        nodeRegister = apService.updateRegisterLink(versionId, nodeId, nodeRegister);
         return factoryVo.createRegisterLink(nodeRegister);
     }
 
@@ -1712,7 +1712,7 @@ public class ArrangementController {
                                                  final @PathVariable(value = "nodeId") Integer nodeId,
                                                  final @RequestBody ArrNodeRegisterVO nodeRegisterVO) {
         ArrNodeRegister nodeRegister = factoryDO.createRegisterLink(nodeRegisterVO);
-        nodeRegister = registryService.deleteRegisterLink(versionId, nodeId, nodeRegister);
+        nodeRegister = apService.deleteRegisterLink(versionId, nodeId, nodeRegister);
         return factoryVo.createRegisterLink(nodeRegister);
     }
 

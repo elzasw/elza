@@ -55,7 +55,7 @@ import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ArrStructureData;
 import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.RegRecord;
+import cz.tacr.elza.domain.ApRecord;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.repository.CachedNodeRepository;
@@ -66,7 +66,7 @@ import cz.tacr.elza.repository.FundFileRepository;
 import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.PartyRepository;
-import cz.tacr.elza.repository.RegRecordRepository;
+import cz.tacr.elza.repository.ApRecordRepository;
 import cz.tacr.elza.repository.StructureDataRepository;
 
 /**
@@ -109,7 +109,7 @@ public class NodeCacheService {
     private PartyRepository partyRepository;
 
     @Autowired
-    private RegRecordRepository regRecordRepository;
+    private ApRecordRepository apRecordRepository;
 
     @Autowired
     private FundFileRepository fundFileRepository;
@@ -526,7 +526,7 @@ public class NodeCacheService {
 
         fillArrStructureData(itemStructureDataMap);
         fillParParties(itemPartiesMap);
-        fillRegRecords(itemRecordsMap);
+        fillApRecords(itemRecordsMap);
         fillArrFiles(itemFilesMap);
         fillArrDaoLinks(daoLinksMap);
         fillArrNodeRegisters(nodeRegistersMap);
@@ -588,7 +588,7 @@ public class NodeCacheService {
 	}
 
     /**
-     * Vyplnění návazných entity {@link RegRecord}.
+     * Vyplnění návazných entity {@link ApRecord}.
      *
      * @param nodeRegistersMap mapa entit k vyplnění
      */
@@ -596,9 +596,9 @@ public class NodeCacheService {
         if (nodeRegistersMap.size() == 0) {
             return;
         }
-        List<RegRecord> records = regRecordRepository.findAll(nodeRegistersMap.values());
-        Map<Integer, RegRecord> recordsMapFound = new HashMap<>();
-        for (RegRecord record : records) {
+        List<ApRecord> records = apRecordRepository.findAll(nodeRegistersMap.values());
+        Map<Integer, ApRecord> recordsMapFound = new HashMap<>();
+        for (ApRecord record : records) {
             recordsMapFound.put(record.getRecordId(), record);
         }
 
@@ -652,17 +652,17 @@ public class NodeCacheService {
 
 
     /**
-     * Vyplnění návazných entity {@link RegRecord}.
+     * Vyplnění návazných entity {@link ApRecord}.
      *
      * @param itemRecordsMap mapa entit k vyplnění
      */
-    private void fillRegRecords(final Map<ArrDescItem, Integer> itemRecordsMap) {
+    private void fillApRecords(final Map<ArrDescItem, Integer> itemRecordsMap) {
         if (itemRecordsMap.size() == 0) {
             return;
         }
-        List<RegRecord> records = regRecordRepository.findAll(itemRecordsMap.values());
-        Map<Integer, RegRecord> recordsMapFound = new HashMap<>();
-        for (RegRecord record : records) {
+        List<ApRecord> records = apRecordRepository.findAll(itemRecordsMap.values());
+        Map<Integer, ApRecord> recordsMapFound = new HashMap<>();
+        for (ApRecord record : records) {
             recordsMapFound.put(record.getRecordId(), record);
         }
 

@@ -35,7 +35,7 @@ import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrStructureData;
-import cz.tacr.elza.domain.RegScope;
+import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.repository.FundFileRepository;
@@ -197,7 +197,7 @@ public class ImportFromFund implements ImportSource {
 		 */
 		private void readNext() {
 			levelsSubtree = levelRepository.findLevelsSubtree(nodeId, offset, MAX, ignoreRootNodes);
-			// shift offset 
+			// shift offset
 			offset += levelsSubtree.size();
 			// read nodes from cache
 			List<Integer> nodeIds = levelsSubtree.stream().map(ArrLevel::getNodeId).collect(Collectors.toList());
@@ -578,7 +578,7 @@ public class ImportFromFund implements ImportSource {
     }
 
 	@Override
-	public List<RegScope> getScopes() {
+	public List<ApScope> getScopes() {
 		return scopeRepository.findScopesBySubtreeNodeIds(nodeIds, ignoreRootNodes);
 	}
 }

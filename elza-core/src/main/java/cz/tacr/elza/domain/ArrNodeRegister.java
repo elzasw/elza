@@ -39,9 +39,9 @@ public class ArrNodeRegister implements NodeRegister {
     private Integer nodeId;
 
     @RestResource(exported = false)
-	@ManyToOne(fetch=FetchType.LAZY, targetEntity = RegRecord.class)
+	@ManyToOne(fetch=FetchType.LAZY, targetEntity = ApRecord.class)
     @JoinColumn(name = "recordId", nullable = false)
-    private RegRecord record;
+    private ApRecord record;
 
     @Column(name = "recordId", updatable = false, insertable = false)
     private Integer recordId;
@@ -79,11 +79,11 @@ public class ArrNodeRegister implements NodeRegister {
         this.nodeId = node != null ? node.getNodeId() : null;
     }
 
-    public RegRecord getRecord() {
+    public ApRecord getRecord() {
         return record;
     }
 
-    public void setRecord(final RegRecord record) {
+    public void setRecord(final ApRecord record) {
         this.record = record;
         this.recordId = record != null ? record.getRecordId() : null;
     }

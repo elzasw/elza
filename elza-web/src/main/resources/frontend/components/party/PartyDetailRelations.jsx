@@ -18,7 +18,7 @@ class PartyDetailRelations extends AbstractReactComponent {
         label: React.PropTypes.element.isRequired,
         party: React.PropTypes.object.isRequired,
         relationType: React.PropTypes.object.isRequired,
-        registerTypesMap: React.PropTypes.object
+        apTypesMap: React.PropTypes.object
     };
 
     addIdentifier = (relation) => {
@@ -46,13 +46,13 @@ class PartyDetailRelations extends AbstractReactComponent {
     };
 
     handleRelationAdd = () => {
-        const {label, party, relationType, registerTypesMap} = this.props;
-        this.dispatch(modalDialogShow(this, label, <RelationForm partyId={party.id} registerTypesMap={registerTypesMap} relationType={relationType} onSubmitForm={this.addIdentifier} />, "dialog-lg"));
+        const {label, party, relationType, apTypesMap} = this.props;
+        this.dispatch(modalDialogShow(this, label, <RelationForm partyId={party.id} apTypesMap={apTypesMap} relationType={relationType} onSubmitForm={this.addIdentifier} />, "dialog-lg"));
     };
 
     handleRelationUpdate = (relation) => {
-        const {label, party, relationType, registerTypesMap} = this.props;
-        this.dispatch(modalDialogShow(this, label, <RelationForm partyId={party.id} registerTypesMap={registerTypesMap} relationType={relationType} initialValues={relation} onSubmitForm={this.update.bind(this, relation)} />, "dialog-lg"));
+        const {label, party, relationType, apTypesMap} = this.props;
+        this.dispatch(modalDialogShow(this, label, <RelationForm partyId={party.id} apTypesMap={apTypesMap} relationType={relationType} initialValues={relation} onSubmitForm={this.update.bind(this, relation)} />, "dialog-lg"));
     };
 
     handleRelationDelete = (id) => {

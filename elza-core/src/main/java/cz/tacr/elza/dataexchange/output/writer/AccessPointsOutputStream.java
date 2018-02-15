@@ -1,13 +1,13 @@
 package cz.tacr.elza.dataexchange.output.writer;
 
-import cz.tacr.elza.domain.RegRecord;
+import cz.tacr.elza.domain.ApRecord;
 
 /**
  * Output stream for access points export.
  */
 public interface AccessPointsOutputStream {
 
-    void addAccessPoint(RegRecord accessPoint);
+    void addAccessPoint(ApRecord accessPoint);
 
     void processed();
 

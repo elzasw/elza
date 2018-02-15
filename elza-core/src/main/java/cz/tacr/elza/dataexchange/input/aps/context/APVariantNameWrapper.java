@@ -1,23 +1,23 @@
 package cz.tacr.elza.dataexchange.input.aps.context;
 
+import cz.tacr.elza.domain.ApVariantRecord;
 import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
 
 import cz.tacr.elza.dataexchange.input.context.PersistMethod;
 import cz.tacr.elza.dataexchange.input.storage.EntityMetrics;
 import cz.tacr.elza.dataexchange.input.storage.EntityWrapper;
-import cz.tacr.elza.domain.RegVariantRecord;
 
 /**
  * Access point variant name (i.e. variant record) wrapper.
  */
 public class APVariantNameWrapper implements EntityWrapper, EntityMetrics {
 
-    private final RegVariantRecord entity;
+    private final ApVariantRecord entity;
 
     private final AccessPointInfo apInfo;
 
-    APVariantNameWrapper(RegVariantRecord entity, AccessPointInfo apInfo) {
+    APVariantNameWrapper(ApVariantRecord entity, AccessPointInfo apInfo) {
         this.entity = Validate.notNull(entity);
         this.apInfo = Validate.notNull(apInfo);
     }
@@ -28,7 +28,7 @@ public class APVariantNameWrapper implements EntityWrapper, EntityMetrics {
     }
 
     @Override
-    public RegVariantRecord getEntity() {
+    public ApVariantRecord getEntity() {
         return entity;
     }
 
@@ -39,7 +39,7 @@ public class APVariantNameWrapper implements EntityWrapper, EntityMetrics {
 
     @Override
     public void beforeEntityPersist(Session session) {
-        Validate.isTrue(entity.getRegRecord() == null);
-        entity.setRegRecord(apInfo.getEntityReference(session));
+        Validate.isTrue(entity.getApRecord() == null);
+        entity.setApRecord(apInfo.getEntityReference(session));
     }
 }

@@ -6,7 +6,7 @@ package cz.tacr.elza.controller.vo;
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 07.01.2016
  */
-public class RegVariantRecordVO {
+public class ApVariantRecordVO {
 
     /**
      * Id.
@@ -16,7 +16,7 @@ public class RegVariantRecordVO {
     /**
      * Id rejstříkového hesla.
      */
-    private Integer regRecordId;
+    private Integer apRecordId;
 
     /**
      * Hodnota.
@@ -36,12 +36,12 @@ public class RegVariantRecordVO {
         this.id = id;
     }
 
-    public Integer getRegRecordId() {
-        return regRecordId;
+    public Integer getApRecordId() {
+        return apRecordId;
     }
 
-    public void setRegRecordId(final Integer regRecordId) {
-        this.regRecordId = regRecordId;
+    public void setApRecordId(final Integer apRecordId) {
+        this.apRecordId = apRecordId;
     }
 
     public String getRecord() {

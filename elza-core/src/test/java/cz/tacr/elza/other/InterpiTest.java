@@ -12,6 +12,7 @@ import javax.transaction.Transactional;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 
+import cz.tacr.elza.controller.vo.ApRecordVO;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -34,14 +35,13 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.Assert;
 
 import cz.tacr.elza.ElzaCoreTest;
-import cz.tacr.elza.api.RegExternalSystemType;
+import cz.tacr.elza.api.ApExternalSystemType;
 import cz.tacr.elza.common.XmlUtils;
 import cz.tacr.elza.common.security.NoCheckTrustManager;
 import cz.tacr.elza.controller.AbstractControllerTest;
 import cz.tacr.elza.controller.vo.RecordImportVO;
-import cz.tacr.elza.controller.vo.RegRecordVO;
-import cz.tacr.elza.domain.RegExternalSystem;
-import cz.tacr.elza.domain.RegScope;
+import cz.tacr.elza.domain.ApExternalSystem;
+import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.interpi.service.InterpiService;
 import cz.tacr.elza.interpi.service.pqf.AttributeType;
 import cz.tacr.elza.interpi.service.pqf.ConditionType;
@@ -65,7 +65,7 @@ import cz.tacr.elza.interpi.ws.wo.VyobrazeniTyp;
 import cz.tacr.elza.interpi.ws.wo.ZarazeniTyp;
 import cz.tacr.elza.interpi.ws.wo.ZaznamTyp;
 import cz.tacr.elza.interpi.ws.wo.ZdrojTyp;
-import cz.tacr.elza.repository.RegExternalSystemRepository;
+import cz.tacr.elza.repository.ApExternalSystemRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 
 /**
@@ -91,7 +91,7 @@ public class InterpiTest extends AbstractControllerTest {
     @Autowired
     private InterpiService interpiService;
     @Autowired
-    private RegExternalSystemRepository regExternalSystemRepository;
+    private ApExternalSystemRepository apExternalSystemRepository;
 
     private Integer systemId;
 
@@ -103,20 +103,20 @@ public class InterpiTest extends AbstractControllerTest {
     @Transactional
     public void setUp() throws Exception {
         super.setUp();
-        RegExternalSystem externalSystem = new RegExternalSystem();
+        ApExternalSystem externalSystem = new ApExternalSystem();
         externalSystem.setCode("INTERPI");
         externalSystem.setName("INTERPI");
         externalSystem.setPassword(password);
-        externalSystem.setType(RegExternalSystemType.INTERPI);
+        externalSystem.setType(ApExternalSystemType.INTERPI);
         externalSystem.setUrl(url);
         externalSystem.setUsername(username);
 
-        systemId = regExternalSystemRepository.save(externalSystem).getExternalSystemId();
+        systemId = apExternalSystemRepository.save(externalSystem).getExternalSystemId();
     }
 
     @Test
     public void importByServiceTest() {
-        RegScope scope = scopeRepository.findByCode("GLOBAL");
+        ApScope scope = scopeRepository.findByCode("GLOBAL");
 
         RecordImportVO importVO = new RecordImportVO();
         importVO.setInterpiRecordId("n000022537");
@@ -124,12 +124,12 @@ public class InterpiTest extends AbstractControllerTest {
         importVO.setSystemId(systemId);
         importVO.setOriginator(true);
 
-        RegRecordVO regRecord = post(spec -> spec.body(importVO), "/api/registry/interpi/import").as(RegRecordVO.class);
-        RegRecordVO record = getRecord(regRecord.getId());
-        Assert.isTrue(regRecord.getRecord().equals(record.getRecord()));
+        ApRecordVO apRecord = post(spec -> spec.body(importVO), "/api/registry/interpi/import").as(ApRecordVO.class);
+        ApRecordVO record = getRecord(apRecord.getId());
+        Assert.isTrue(apRecord.getRecord().equals(record.getRecord()));
 
-        RegRecordVO regRecordUpdate = put(spec -> spec.pathParam("recordId", record.getId()).body(importVO), "/api/registry/interpi/import/{recordId}").as(RegRecordVO.class);
-        Assert.isTrue(regRecordUpdate.getId().equals(record.getId()));
+        ApRecordVO apRecordUpdate = put(spec -> spec.pathParam("recordId", record.getId()).body(importVO), "/api/registry/interpi/import/{recordId}").as(ApRecordVO.class);
+        Assert.isTrue(apRecordUpdate.getId().equals(record.getId()));
     }
 
     @Test

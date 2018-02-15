@@ -22,7 +22,7 @@ class RelationClassForm extends AbstractReactComponent {
 
     static PropTypes = {
         relationTypes: React.PropTypes.array.isRequired,
-        registerTypes: React.PropTypes.object.isRequired,
+        apTypes: React.PropTypes.object.isRequired,
         partyId: React.PropTypes.number
     };
 
@@ -89,7 +89,7 @@ class RelationClassForm extends AbstractReactComponent {
     submitReduxForm = (values, dispatch) => submitForm(RelationClassForm.validate,values,this.props,this.props.onSubmitForm,dispatch);
 
     render() {
-        const {relationTypes, onClose, handleSubmit, fields: {from, to, relationEntities, note, source, relationTypeId}, partyId, submitting, registerTypesMap} = this.props;
+        const {relationTypes, onClose, handleSubmit, fields: {from, to, relationEntities, note, source, relationTypeId}, partyId, submitting, apTypesMap} = this.props;
 
         let relationType = null;
         if (relationTypeId.value !== null) {
@@ -114,9 +114,9 @@ class RelationClassForm extends AbstractReactComponent {
                                         {roleTypesList && roleTypesList.filter(t => t.id == i.roleType.id.value || t.repeatable || usedRoles.indexOf(t.id) === -1).map(v => {
                                             let disabled = false;
 
-                                            if (i.record != null && i.record.value != null && i.record.value.registerTypeId != null) {
-                                                let registerTypeId = i.record.value.registerTypeId;
-                                                if (registerTypesMap[registerTypeId] == null || registerTypesMap[registerTypeId].indexOf(v.id) === -1) {
+                                            if (i.record != null && i.record.value != null && i.record.value.apTypeId != null) {
+                                                let apTypeId = i.record.value.apTypeId;
+                                                if (apTypesMap[apTypeId] == null || apTypesMap[apTypeId].indexOf(v.id) === -1) {
                                                     disabled = true;
                                                 }
                                             }

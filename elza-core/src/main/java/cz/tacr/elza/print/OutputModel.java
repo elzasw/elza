@@ -13,6 +13,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.domain.*;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -29,31 +30,7 @@ import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.fund.FundTree;
 import cz.tacr.elza.core.fund.FundTreeProvider;
 import cz.tacr.elza.core.fund.TreeNode;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFile;
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrNodeOutput;
-import cz.tacr.elza.domain.ArrNodeRegister;
-import cz.tacr.elza.domain.ArrOutputDefinition;
-import cz.tacr.elza.domain.ArrStructureData;
-import cz.tacr.elza.domain.ParDynasty;
-import cz.tacr.elza.domain.ParEvent;
-import cz.tacr.elza.domain.ParInstitution;
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.ParPartyGroup;
-import cz.tacr.elza.domain.ParPartyName;
-import cz.tacr.elza.domain.ParPerson;
-import cz.tacr.elza.domain.ParRelation;
-import cz.tacr.elza.domain.ParRelationClassType;
-import cz.tacr.elza.domain.ParRelationEntity;
-import cz.tacr.elza.domain.ParRelationRoleType;
-import cz.tacr.elza.domain.ParRelationType;
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.domain.RegRegisterType;
-import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.RulOutputType;
+import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.print.item.Item;
@@ -482,14 +459,14 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
     // TODO: record variants should be fetched
     @Override
-    public Record getRecord(RegRecord record) {
+    public Record getRecord(ApRecord record) {
         // id without fetch -> access type property
         Record ap = apIdMap.get(record.getRecordId());
         if (ap != null) {
             return ap;
         }
 
-        RecordType apType = getAPType(record.getRegisterTypeId());
+        RecordType apType = getAPType(record.getApTypeId());
         ap = Record.newInstance(record, apType);
 
         // add to lookup
@@ -506,8 +483,8 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
             return type;
         }
 
-        RegRegisterType regType = staticData.getRegisterTypeById(apTypeId);
-        type = RecordType.newInstance(null, regType);
+        ApType apType = staticData.getApTypeById(apTypeId);
+        type = RecordType.newInstance(null, apType);
 
         // add to lookup
         apTypeIdMap.put(apTypeId, type);

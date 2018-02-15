@@ -10,6 +10,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.Collections;
 import java.util.List;
 
+import cz.tacr.elza.controller.vo.ApScopeVO;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -17,7 +18,6 @@ import cz.tacr.elza.controller.ArrangementController.FaTreeParam;
 import cz.tacr.elza.controller.DEExportController.DEExportParamsVO;
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
-import cz.tacr.elza.controller.vo.RegScopeVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.dataexchange.output.DEExportParams.FundSections;
@@ -35,7 +35,7 @@ public class DElExportControllerTest extends AbstractControllerTest {
     @Test
     public void exportTest() throws IOException {
         // import počátečních dat
-        RegScopeVO scope = getScope();
+        ApScopeVO scope = getScope();
         importData(DEImportControllerTest.getResourceFile(ALL_IN_ONE_XML), scope);
 
         check();
@@ -56,7 +56,7 @@ public class DElExportControllerTest extends AbstractControllerTest {
     }
 
     /** Import dat z xml souboru. */
-    private void importData(final File importFile, final RegScopeVO scope) {
+    private void importData(final File importFile, final ApScopeVO scope) {
         importXmlFile(null, scope.getId(), importFile);
     }
 
@@ -104,9 +104,9 @@ public class DElExportControllerTest extends AbstractControllerTest {
         Assert.assertTrue(funds.size() == 0);
     }
 
-    private RegScopeVO getScope() {
-        List<RegScopeVO> scopes = getAllScopes();
-        RegScopeVO scope = scopes.iterator().next();
+    private ApScopeVO getScope() {
+        List<ApScopeVO> scopes = getAllScopes();
+        ApScopeVO scope = scopes.iterator().next();
         return scope;
     }
 }

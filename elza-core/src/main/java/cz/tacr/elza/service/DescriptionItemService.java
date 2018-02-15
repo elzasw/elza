@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.domain.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.NotImplementedException;
@@ -33,33 +34,7 @@ import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.core.data.CalendarType;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
-import cz.tacr.elza.domain.ArrCalendarType;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDataCoordinates;
-import cz.tacr.elza.domain.ArrDataDecimal;
-import cz.tacr.elza.domain.ArrDataInteger;
-import cz.tacr.elza.domain.ArrDataJsonTable;
-import cz.tacr.elza.domain.ArrDataNull;
-import cz.tacr.elza.domain.ArrDataPartyRef;
-import cz.tacr.elza.domain.ArrDataRecordRef;
-import cz.tacr.elza.domain.ArrDataString;
-import cz.tacr.elza.domain.ArrDataStructureRef;
-import cz.tacr.elza.domain.ArrDataText;
-import cz.tacr.elza.domain.ArrDataUnitdate;
-import cz.tacr.elza.domain.ArrDataUnitid;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrItem;
-import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrStructureData;
-import cz.tacr.elza.domain.ParUnitdate;
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.RulItemTypeExt;
-import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.ApRecord;
 import cz.tacr.elza.domain.convertor.CalendarConverter;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.domain.factory.DescItemFactory;
@@ -88,8 +63,8 @@ import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.repository.RegRecordRepository;
-import cz.tacr.elza.repository.RegisterTypeRepository;
+import cz.tacr.elza.repository.ApRecordRepository;
+import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventChangeDescItem;
 import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
@@ -113,7 +88,7 @@ public class DescriptionItemService {
     private DescItemRepository descItemRepository;
 
     @Autowired
-    private RegRecordRepository regRecordRepository;
+    private ApRecordRepository apRecordRepository;
 
     @Autowired
     private FundVersionRepository fundVersionRepository;
@@ -155,7 +130,7 @@ public class DescriptionItemService {
     private ItemSpecRegisterRepository itemSpecRegisterRepository;
 
     @Autowired
-    private RegisterTypeRepository registerTypeRepository;
+    private ApTypeRepository apTypeRepository;
 
     @Autowired
     private EventNotificationService eventNotificationService;
@@ -548,10 +523,10 @@ public class DescriptionItemService {
             }
 
             if (descItemType.getDataType().getCode().equals("RECORD_REF")) {
-                Set<Integer> registerTypeIds = itemSpecRegisterRepository.findIdsByItemSpecId(descItemSpec);
-                Set<Integer> registerTypeIdTree = registerTypeRepository.findSubtreeIds(registerTypeIds);
+                Set<Integer> apTypeIds = itemSpecRegisterRepository.findIdsByItemSpecId(descItemSpec);
+                Set<Integer> apTypeIdTree = apTypeRepository.findSubtreeIds(apTypeIds);
                 ArrDataRecordRef data = (ArrDataRecordRef) descItem.getData();
-                if (!registerTypeIdTree.contains(data.getRecord().getRegisterTypeId())) {
+                if (!apTypeIdTree.contains(data.getRecord().getApTypeId())) {
                     throw new BusinessException("Hodnota neodpovídá typu rejstříku podle specifikace", RegistryCode.FOREIGN_ENTITY_INVALID_SUBTYPE).level(Level.WARNING);
                 }
             }
@@ -1497,7 +1472,7 @@ public class DescriptionItemService {
                     break;
                 case "RECORD_REF":
                     ArrDataRecordRef itemRecordRef = new ArrDataRecordRef();
-                    RegRecord record = regRecordRepository.getOneCheckExist(Integer.valueOf(text));
+                    ApRecord record = apRecordRepository.getOneCheckExist(Integer.valueOf(text));
                     itemRecordRef.setRecord(record);
                     data = itemRecordRef;
                     break;

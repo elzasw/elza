@@ -2,7 +2,7 @@ import {WebApi} from 'actions/index.jsx';
 import {SimpleListActions} from 'shared/list'
 import * as types from 'actions/constants/ActionTypes.js';
 
-const AREA_REG_EXT_SYSTEM_LIST = 'regExtSystemList';
+const AREA_AP_EXT_SYSTEM_LIST = 'apExtSystemList';
 
 export function refExternalSystemsFetchIfNeeded() {
     return (dispatch, getState) => {
@@ -22,7 +22,7 @@ export function refExternalSystemsFetch() {
 }
 
 export function refExternalSystemListInvalidate() {
-    return SimpleListActions.invalidate(AREA_REG_EXT_SYSTEM_LIST, null);
+    return SimpleListActions.invalidate(AREA_AP_EXT_SYSTEM_LIST, null);
 }
 
 export function refExternalSystemsReceive(json) {

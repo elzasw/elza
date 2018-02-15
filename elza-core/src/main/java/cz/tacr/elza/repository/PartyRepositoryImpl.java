@@ -16,15 +16,12 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.transaction.Transactional;
 
+import cz.tacr.elza.domain.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Component;
 
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.ParPartyType;
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.domain.RegScope;
-import cz.tacr.elza.domain.RegVariantRecord;
+import cz.tacr.elza.domain.ApRecord;
 import cz.tacr.elza.domain.enumeration.StringLength;
 
 /**
@@ -41,7 +38,7 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
     @Override
     public List<ParParty> findPartyByTextAndType(final String searchRecord,
                                                  final Integer partyTypeId,
-                                                 final Set<Integer> registerTypeIds,
+                                                 final Set<Integer> apTypeIds,
                                                  final Integer firstResult,
                                                  final Integer maxResults,
                                                  final Set<Integer> scopeIds,
@@ -55,7 +52,7 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
         CriteriaQuery<ParParty> query = builder.createQuery(ParParty.class);
         Root<ParParty> party = query.from(ParParty.class);
 
-        Predicate condition = preparefindRegRecordByTextAndType(searchRecord, partyTypeId, registerTypeIds, party,
+        Predicate condition = preparefindApRecordByTextAndType(searchRecord, partyTypeId, apTypeIds, party,
                 builder, scopeIds, query, excludeInvalid);
 
         query.select(party);
@@ -77,7 +74,7 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
     @Override
     public long findPartyByTextAndTypeCount(final String searchRecord,
                                             final Integer partyTypeId,
-                                            final Set<Integer> registerTypeIds,
+                                            final Set<Integer> apTypeIds,
                                             final Set<Integer> scopeIds,
                                             final Boolean excludeInvalid) {
 
@@ -89,7 +86,7 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
         CriteriaQuery<Long> query = builder.createQuery(Long.class);
         Root<ParParty> party = query.from(ParParty.class);
 
-        Predicate condition = preparefindRegRecordByTextAndType(searchRecord, partyTypeId, registerTypeIds, party,
+        Predicate condition = preparefindApRecordByTextAndType(searchRecord, partyTypeId, apTypeIds, party,
                 builder, scopeIds, query, excludeInvalid);
 
         query.select(builder.countDistinct(party));
@@ -111,20 +108,20 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
      * @param excludeInvalid
      * @return výsledné podmínky pro dotaz, nebo null pokud není za co filtrovat
      */
-    private <T> Predicate preparefindRegRecordByTextAndType(final String searchRecord,
-                                                            final Integer partyTypeId,
-                                                            final Set<Integer> registerTypeIds,
-                                                            final Root<ParParty> party,
-                                                            final CriteriaBuilder builder,
-                                                            final Set<Integer> scopeIds,
-                                                            final CriteriaQuery<T> query,
-                                                            final Boolean excludeInvalid) {
+    private <T> Predicate preparefindApRecordByTextAndType(final String searchRecord,
+                                                           final Integer partyTypeId,
+                                                           final Set<Integer> apTypeIds,
+                                                           final Root<ParParty> party,
+                                                           final CriteriaBuilder builder,
+                                                           final Set<Integer> scopeIds,
+                                                           final CriteriaQuery<T> query,
+                                                           final Boolean excludeInvalid) {
 
         final String searchString = (searchRecord != null ? searchRecord.toLowerCase() : null);
 
         Join<Object, Object> record = party.join(ParParty.RECORD, JoinType.LEFT);
-        Join<Object, Object> variantRecord = record.join(RegRecord.VARIANT_RECORD_LIST, JoinType.LEFT);
-        Join<Object, Object> scope = record.join(RegRecord.SCOPE, JoinType.INNER);
+        Join<Object, Object> variantRecord = record.join(ApRecord.VARIANT_RECORD_LIST, JoinType.LEFT);
+        Join<Object, Object> scope = record.join(ApRecord.SCOPE, JoinType.INNER);
 
         Join<Object, Object> partyType = party.join(ParParty.PARTY_TYPE);
 
@@ -133,9 +130,9 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
         List<Predicate> condition = new ArrayList<>();
         if (StringUtils.isNotBlank(searchString)) {
             condition.add(builder.or(
-                    builder.like(builder.lower(record.get(RegRecord.RECORD)), searchValue),
-                    builder.like(builder.lower(builder.substring(record.get(RegRecord.CHARACTERISTICS), 1, StringLength.LENGTH_1000)), searchValue),
-                    builder.like(builder.lower(variantRecord.get(RegVariantRecord.RECORD)), searchValue)
+                    builder.like(builder.lower(record.get(ApRecord.RECORD)), searchValue),
+                    builder.like(builder.lower(builder.substring(record.get(ApRecord.CHARACTERISTICS), 1, StringLength.LENGTH_1000)), searchValue),
+                    builder.like(builder.lower(variantRecord.get(ApVariantRecord.RECORD)), searchValue)
                 )
             );
         }
@@ -145,13 +142,13 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
         }
 
         if (excludeInvalid != null && excludeInvalid) {
-            condition.add(builder.equal(record.get(RegRecord.INVALID), false));
+            condition.add(builder.equal(record.get(ApRecord.INVALID), false));
         }
 
-        condition.add(scope.get(RegScope.SCOPE_ID).in(scopeIds));
+        condition.add(scope.get(ApScope.SCOPE_ID).in(scopeIds));
 
-        if (CollectionUtils.isNotEmpty(registerTypeIds)) {
-            condition.add(record.get(RegRecord.REGISTER_TYPE).in(registerTypeIds));
+        if (CollectionUtils.isNotEmpty(apTypeIds)) {
+            condition.add(record.get(ApRecord.AP_TYPE).in(apTypeIds));
         }
 
         return builder.and(condition.toArray(new Predicate[condition.size()]));

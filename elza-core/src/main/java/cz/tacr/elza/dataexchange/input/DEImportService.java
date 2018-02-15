@@ -14,6 +14,7 @@ import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 import javax.xml.stream.XMLStreamException;
 
+import cz.tacr.elza.domain.*;
 import org.apache.commons.lang3.Validate;
 import org.hibernate.FlushMode;
 import org.hibernate.Session;
@@ -47,12 +48,8 @@ import cz.tacr.elza.dataexchange.input.sections.context.SectionStorageDispatcher
 import cz.tacr.elza.dataexchange.input.sections.context.SectionsContext;
 import cz.tacr.elza.dataexchange.input.sections.context.SectionsContext.ImportPosition;
 import cz.tacr.elza.dataexchange.input.storage.StorageManager;
-import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrChange.Type;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.domain.RegScope;
-import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.repository.FundVersionRepository;
@@ -63,9 +60,9 @@ import cz.tacr.elza.repository.PartyGroupIdentifierRepository;
 import cz.tacr.elza.repository.PartyNameComplementRepository;
 import cz.tacr.elza.repository.PartyNameRepository;
 import cz.tacr.elza.repository.PartyRepository;
-import cz.tacr.elza.repository.RegExternalSystemRepository;
-import cz.tacr.elza.repository.RegRecordRepository;
-import cz.tacr.elza.repository.RegVariantRecordRepository;
+import cz.tacr.elza.repository.ApExternalSystemRepository;
+import cz.tacr.elza.repository.ApRecordRepository;
+import cz.tacr.elza.repository.ApVariantRecordRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.UnitdateRepository;
 import cz.tacr.elza.service.ArrangementService;
@@ -100,9 +97,9 @@ public class DEImportService {
 
     @Autowired
     public DEImportService(EntityManager em,
-                           RegRecordRepository recordRepository,
+                           ApRecordRepository recordRepository,
                            ArrangementService arrangementService,
-                           RegVariantRecordRepository variantRecordRepository,
+                           ApVariantRecordRepository variantRecordRepository,
                            PartyRepository partyRepository,
                            PartyNameRepository nameRepository,
                            PartyNameComplementRepository nameComplementRepository,
@@ -112,7 +109,7 @@ public class DEImportService {
                            UserService userService,
                            StaticDataService staticDataService,
                            NodeCacheService nodeCacheService,
-                           RegExternalSystemRepository externalSystemRepository,
+                           ApExternalSystemRepository externalSystemRepository,
                            InstitutionTypeRepository institutionTypeRepository,
                            GroovyScriptService groovyScriptService,
                            ScopeRepository scopeRepository,
@@ -193,8 +190,8 @@ public class DEImportService {
     }
 
     private void checkScopePermissions(int importScopeId) {
-        if (!userService.hasPermission(Permission.ADMIN) && !userService.hasPermission(Permission.REG_SCOPE_WR, importScopeId)) {
-            throw Authorization.createAccessDeniedException(Permission.REG_SCOPE_WR);
+        if (!userService.hasPermission(Permission.ADMIN) && !userService.hasPermission(Permission.AP_SCOPE_WR, importScopeId)) {
+            throw Authorization.createAccessDeniedException(Permission.AP_SCOPE_WR);
         }
     }
 
@@ -225,7 +222,7 @@ public class DEImportService {
         StorageManager storageManager = new StorageManager(params.getMemoryScoreLimit(), session, initHelper);
 
         // find import scope
-        RegScope importScope = scopeRepository.findOne(params.getScopeId());
+        ApScope importScope = scopeRepository.findOne(params.getScopeId());
         if (importScope == null) {
             throw new SystemException("Import scope not found, id:" + params.getScopeId());
         }
@@ -250,7 +247,7 @@ public class DEImportService {
 
     private SectionsContext initSectionsContext(StorageManager storageManager,
                                                 DEImportParams params,
-                                                RegScope scope,
+                                                ApScope scope,
                                                 StaticDataProvider staticData) {
         ArrangementService arrangementService = initHelper.getArrangementService();
 

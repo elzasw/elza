@@ -2,9 +2,9 @@ package cz.tacr.elza.service.importnodes.vo;
 
 import java.util.List;
 
+import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrStructureData;
-import cz.tacr.elza.domain.RegScope;
 
 /**
  * Rozhraní zdroje pro import.
@@ -18,7 +18,7 @@ public interface ImportSource {
     /**
      * @return seznam použitých scope
      */
-	List<RegScope> getScopes();
+	List<ApScope> getScopes();
 
     /**
      * @return seznam použitých souborů

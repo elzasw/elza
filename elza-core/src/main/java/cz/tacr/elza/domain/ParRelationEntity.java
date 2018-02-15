@@ -41,9 +41,9 @@ public class ParRelationEntity {
     private ParRelation relation;
 
     @RestResource(exported = false)
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RegRecord.class)
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApRecord.class)
     @JoinColumn(name = "recordId", nullable = false)
-    private RegRecord record;
+    private ApRecord record;
 
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ParRelationRoleType.class)
@@ -74,11 +74,11 @@ public class ParRelationEntity {
         this.relation = relation;
     }
 
-    public RegRecord getRecord() {
+    public ApRecord getRecord() {
         return record;
     }
 
-    public void setRecord(final RegRecord record) {
+    public void setRecord(final ApRecord record) {
         this.record = record;
     }
 

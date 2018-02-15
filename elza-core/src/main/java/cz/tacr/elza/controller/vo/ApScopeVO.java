@@ -6,7 +6,7 @@ package cz.tacr.elza.controller.vo;
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 27.01.2016
  */
-public class RegScopeVO {
+public class ApScopeVO {
 
     private Integer id;
 

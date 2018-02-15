@@ -52,9 +52,9 @@ public class UsrPermissionView {
     /**
      * Scope rejstříků a osob.
      */
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RegScope.class)
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApScope.class)
     @JoinColumn(name = "scopeId")
-    private RegScope scope;
+    private ApScope scope;
 
     public Integer getId() {
         return id;
@@ -88,11 +88,11 @@ public class UsrPermissionView {
         this.fund = fund;
     }
 
-    public RegScope getScope() {
+    public ApScope getScope() {
         return scope;
     }
 
-    public void setScope(final RegScope scope) {
+    public void setScope(final ApScope scope) {
         this.scope = scope;
     }
 }

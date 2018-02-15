@@ -11,6 +11,8 @@ import java.util.Set;
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
+import cz.tacr.elza.controller.vo.*;
+import cz.tacr.elza.domain.*;
 import cz.tacr.elza.exception.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -24,34 +26,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
-import cz.tacr.elza.controller.vo.FilteredResultVO;
-import cz.tacr.elza.controller.vo.ParComplementTypeVO;
-import cz.tacr.elza.controller.vo.ParInstitutionVO;
-import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
-import cz.tacr.elza.controller.vo.ParPartyTypeVO;
-import cz.tacr.elza.controller.vo.ParPartyVO;
-import cz.tacr.elza.controller.vo.ParRelationRoleTypeVO;
-import cz.tacr.elza.controller.vo.ParRelationTypeVO;
-import cz.tacr.elza.controller.vo.ParRelationVO;
-import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
-import cz.tacr.elza.controller.vo.UIPartyGroupVO;
+import cz.tacr.elza.controller.vo.ApTypeVO;
 import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ParComplementType;
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.ParPartyNameFormType;
-import cz.tacr.elza.domain.ParPartyType;
-import cz.tacr.elza.domain.ParPartyTypeComplementType;
-import cz.tacr.elza.domain.ParPartyTypeRelation;
-import cz.tacr.elza.domain.ParRelation;
-import cz.tacr.elza.domain.ParRelationEntity;
-import cz.tacr.elza.domain.ParRelationRoleType;
-import cz.tacr.elza.domain.ParRelationType;
-import cz.tacr.elza.domain.ParRelationTypeRoleType;
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.domain.RegRegisterType;
-import cz.tacr.elza.domain.UIPartyGroup;
+import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.exception.codes.UserCode;
@@ -63,14 +40,14 @@ import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.PartyTypeComplementTypeRepository;
 import cz.tacr.elza.repository.PartyTypeRelationRepository;
 import cz.tacr.elza.repository.PartyTypeRepository;
-import cz.tacr.elza.repository.RegisterTypeRepository;
+import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.RelationRepository;
 import cz.tacr.elza.repository.RelationRoleTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRoleTypeRepository;
 import cz.tacr.elza.repository.UIPartyGroupRepository;
 import cz.tacr.elza.service.PartyService;
-import cz.tacr.elza.service.RegistryService;
+import cz.tacr.elza.service.ApService;
 import cz.tacr.elza.service.UserService;
 
 
@@ -113,7 +90,7 @@ public class PartyController {
     private ComplementTypeRepository complementTypeRepository;
 
     @Autowired
-    private RegisterTypeRepository registerTypeRepository;
+    private ApTypeRepository apTypeRepository;
 
     @Autowired
     private PartyNameFormTypeRepository partyNameFormTypeRepository;
@@ -143,7 +120,7 @@ public class PartyController {
     private UIPartyGroupRepository uiPartyGroupRepository;
 
     @Autowired
-    private RegistryService registryService;
+    private ApService apService;
 
     /**
      * Uložení nové osoby
@@ -437,13 +414,13 @@ public class PartyController {
 
 
         //načtení ParPartyTypeVO
-        for (RegRegisterType registerType : registerTypeRepository.findTypesForPartyTypes()) {
-            ParPartyType partyType = registerType.getPartyType();
+        for (ApType apType : apTypeRepository.findTypesForPartyTypes()) {
+            ParPartyType partyType = apType.getPartyType();
             ParPartyTypeVO partyTypeVO = factoryVo
                     .getOrCreateVo(partyType.getPartyTypeId(), partyType, partyTypeVoMap, ParPartyTypeVO.class);
 
-            RegRegisterTypeVO regRegisterTypeVO = factoryVo.createRegRegisterType(registerType);
-            partyTypeVO.addRegisterType(regRegisterTypeVO);
+            ApTypeVO apTypeVO = factoryVo.createApType(apType);
+            partyTypeVO.addApType(apTypeVO);
         }
 
         // načtení UIPartyGroup
@@ -470,10 +447,10 @@ public class PartyController {
 
         for (ParPartyTypeVO partyTypeVO : partyTypeVoMap.values()) {
             ParPartyType partyType = partyTypeRepository.findOne(partyTypeVO.getId());
-            List<RegRegisterType> partyRegisterTypes = registerTypeRepository
+            List<ApType> partyApTypes = apTypeRepository
                     .findByPartyTypeEnableAdding(partyType);
 
-            partyTypeVO.setRegisterTypes(factoryVo.createRegisterTypesTree(partyRegisterTypes, true, partyType));
+            partyTypeVO.setApTypes(factoryVo.createApTypesTree(partyApTypes, true, partyType));
 
             List<UIPartyGroupVO> uiGroups = new LinkedList<>();
             List<UIPartyGroupVO> commonUIGroups = partyTypeCodeToUIPartyGroupsVOMap.get(null);
@@ -534,8 +511,8 @@ public class PartyController {
 	@Transactional
     public RecordUsageVO findUsage(@PathVariable final Integer partyId) {
     	ParParty parParty = partyRepository.getOneCheckExist(partyId);
-    	RegRecord regRecord = parParty.getRecord();
-    	return registryService.findRecordUsage(regRecord, parParty);
+    	ApRecord apRecord = parParty.getRecord();
+    	return apService.findRecordUsage(apRecord, parParty);
     }
 
 
@@ -562,9 +539,9 @@ public class PartyController {
     @RequestMapping(value = "/{partyId}/valid", method = RequestMethod.POST)
     public void valid(@PathVariable final Integer partyId) {
         final ParParty party = partyService.getParty(partyId);
-        RegRecord record = party.getRecord();
+        ApRecord record = party.getRecord();
         record.setInvalid(false);
-        registryService.saveRecord(record, false);
+        apService.saveRecord(record, false);
 
     }
 }

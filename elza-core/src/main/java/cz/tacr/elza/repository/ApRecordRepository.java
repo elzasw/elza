@@ -4,15 +4,15 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import cz.tacr.elza.domain.ApExternalSystem;
+import cz.tacr.elza.domain.ApRecord;
+import cz.tacr.elza.domain.ApScope;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.RegExternalSystem;
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.domain.RegScope;
-import cz.tacr.elza.domain.projection.RegRecordInfo;
-import cz.tacr.elza.domain.projection.RegRecordInfoExternal;
+import cz.tacr.elza.domain.projection.ApRecordInfo;
+import cz.tacr.elza.domain.projection.ApRecordInfoExternal;
 
 
 /**
@@ -21,14 +21,14 @@ import cz.tacr.elza.domain.projection.RegRecordInfoExternal;
  * @author <a href="mailto:martin.kuzel@marbes.cz">Martin Kužel</a>
  */
 @Repository
-public interface RegRecordRepository extends ElzaJpaRepository<RegRecord, Integer>, RegRecordRepositoryCustom {
-    @Query("SELECT r FROM reg_record r WHERE r.externalId IN (?1) "
+public interface ApRecordRepository extends ElzaJpaRepository<ApRecord, Integer>, ApRecordRepositoryCustom {
+    @Query("SELECT r FROM ap_record r WHERE r.externalId IN (?1) "
             + "and r.externalSystem = ?2")
-    List<RegRecord> findRegRecordByExternalIdsAndExternalSystem(Set<String> set, RegExternalSystem externalSystem);
+    List<ApRecord> findApRecordByExternalIdsAndExternalSystem(Set<String> set, ApExternalSystem externalSystem);
 
-    @Query("SELECT r FROM reg_record r WHERE r.externalId = ?1 "
+    @Query("SELECT r FROM ap_record r WHERE r.externalId = ?1 "
             + "and r.externalSystem.code = ?2 and r.scope = ?3")
-    RegRecord findRegRecordByExternalIdAndExternalSystemCodeAndScope(String externalId, String externalSystemCode, RegScope scope);
+    ApRecord findApRecordByExternalIdAndExternalSystemCodeAndScope(String externalId, String externalSystemCode, ApScope scope);
 
 
     /**
@@ -37,8 +37,8 @@ public interface RegRecordRepository extends ElzaJpaRepository<RegRecord, Intege
      * @param party osoba
      * @return rejstříková hesla příbuzných osob
      */
-    @Query("SELECT rec FROM reg_record rec JOIN rec.relationEntities re JOIN re.relation r WHERE r.party = ?1")
-    List<RegRecord> findByPartyRelations(ParParty party);
+    @Query("SELECT rec FROM ap_record rec JOIN rec.relationEntities re JOIN re.relation r WHERE r.party = ?1")
+    List<ApRecord> findByPartyRelations(ParParty party);
 
 
     /**
@@ -48,7 +48,7 @@ public interface RegRecordRepository extends ElzaJpaRepository<RegRecord, Intege
      * @return seznam rejstříkových hesel pro osoby
      */
     @Query("SELECT p.record FROM par_party p WHERE p IN (?1)")
-    List<RegRecord> findByParties(Collection<ParParty> parties);
+    List<ApRecord> findByParties(Collection<ParParty> parties);
 
     /**
      * Najde hesla podle třídy rejstříku.
@@ -56,7 +56,7 @@ public interface RegRecordRepository extends ElzaJpaRepository<RegRecord, Intege
      * @param scope třída
      * @return nalezená hesla
      */
-    List<RegRecord> findByScope(RegScope scope);
+    List<ApRecord> findByScope(ApScope scope);
 
     /**
      * Najde heslo podle UUID.
@@ -64,19 +64,19 @@ public interface RegRecordRepository extends ElzaJpaRepository<RegRecord, Intege
      * @param uuid UUID
      * @return rejstříkové heslo
      */
-    RegRecord findRegRecordByUuid(String uuid);
+    ApRecord findApRecordByUuid(String uuid);
 
     /**
      * Searches records by uuid collection.
      *
      * @return Records projections.
      */
-    List<RegRecordInfo> findByUuidIn(Collection<String> uuids);
+    List<ApRecordInfo> findByUuidIn(Collection<String> uuids);
 
     /**
      * Searches records by external system and collection of external ids.
      *
      * @return Records projections.
      */
-    List<RegRecordInfoExternal> findByExternalSystemCodeAndExternalIdIn(String externalSystemCode, Collection<String> externalIds);
+    List<ApRecordInfoExternal> findByExternalSystemCodeAndExternalIdIn(String externalSystemCode, Collection<String> externalIds);
 }

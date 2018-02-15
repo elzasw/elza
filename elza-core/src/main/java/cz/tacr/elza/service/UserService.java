@@ -43,8 +43,8 @@ import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.core.security.Authorization;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.domain.RegScope;
+import cz.tacr.elza.domain.ApRecord;
+import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.UsrGroup;
 import cz.tacr.elza.domain.UsrGroupUser;
 import cz.tacr.elza.domain.UsrPermission;
@@ -371,7 +371,7 @@ public class UserService {
      */
     private void setScopeRelation(final UsrPermission permission, final Integer scopeId) {
         if (scopeId != null) {
-            RegScope scope = scopeRepository.findOne(scopeId);
+            ApScope scope = scopeRepository.findOne(scopeId);
             if (scope == null) {
                 throw new SystemException("Neplatný scope", BaseCode.ID_NOT_EXIST);
             }
@@ -1330,7 +1330,7 @@ public class UserService {
     }
 
     /**
-     * Vrátí id scope na které ma uživatel právo. Nebere v úvahu právo {@link UsrPermission.Permission#REG_SCOPE_RD_ALL}.
+     * Vrátí id scope na které ma uživatel právo. Nebere v úvahu právo {@link UsrPermission.Permission#AP_SCOPE_RD_ALL}.
      *
      * @return množina id scope na které ma uživatel právo
      */
@@ -1338,7 +1338,7 @@ public class UserService {
     public Set<Integer> getUserScopeIds() {
         return getUserPermission()
                 .stream()
-                .filter(p -> p.getPermission() == UsrPermission.Permission.REG_SCOPE_RD)
+                .filter(p -> p.getPermission() == UsrPermission.Permission.AP_SCOPE_RD)
                 .findFirst()
                 .map(p -> new HashSet<>(p.getScopeIds()))
                 .orElse(new HashSet<>());
@@ -1378,7 +1378,7 @@ public class UserService {
 			UsrUser user = userRepository.findOneWithDetail(userId);
 			Validate.notNull(user, "Failed to get user: {}", userId);
 
-			RegRecord record = user.getParty().getRecord();
+			ApRecord record = user.getParty().getRecord();
 			preferredName = record.getRecord();
 		}
 

@@ -33,7 +33,7 @@ public class UsrPermissionVO {
     private UsrUserVO userControl;
 
     /** Scope, ke kterému se vztahuje oprávnění. */
-    private RegScopeVO scope;
+    private ApScopeVO scope;
 
     /** Typ oprávnění. */
     public UsrPermission.Permission getPermission() {
@@ -52,11 +52,11 @@ public class UsrPermissionVO {
         this.fund = fund;
     }
 
-    public RegScopeVO getScope() {
+    public ApScopeVO getScope() {
         return scope;
     }
 
-    public void setScope(final RegScopeVO scope) {
+    public void setScope(final ApScopeVO scope) {
         this.scope = scope;
     }
 

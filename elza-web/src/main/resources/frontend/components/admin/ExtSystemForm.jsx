@@ -10,19 +10,19 @@ import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
 import {extSystemDetailFetchIfNeeded} from 'actions/admin/extSystem.jsx'
 import {routerNavigate} from 'actions/router.jsx'
 import {extSystemListFetchIfNeeded} from 'actions/admin/extSystem.jsx';
-import {REG_EXT_SYSTEM_TYPE} from 'constants.jsx';
+import {AP_EXT_SYSTEM_TYPE} from 'constants.jsx';
 import i18n from "../i18n";
 import AbstractReactComponent from "../AbstractReactComponent";
 import {FormInput} from "../shared/index";
 
 const EXT_SYSTEM_CLASS = {
-    RegExternalSystem: ".RegExternalSystemVO",
+    ApExternalSystem: ".RegExternalSystemVO",
     ArrDigitalRepository: ".ArrDigitalRepositoryVO",
     ArrDigitizationFrontdesk: ".ArrDigitizationFrontdeskVO"
 };
 
 const EXT_SYSTEM_CLASS_LABEL = {
-    [EXT_SYSTEM_CLASS.RegExternalSystem]: i18n("admin.extSystem.class.RegExternalSystemVO"),
+    [EXT_SYSTEM_CLASS.ApExternalSystem]: i18n("admin.extSystem.class.RegExternalSystemVO"),
     [EXT_SYSTEM_CLASS.ArrDigitalRepository]: i18n("admin.extSystem.class.ArrDigitalRepositoryVO"),
     [EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk]: i18n("admin.extSystem.class.ArrDigitizationFrontdeskVO"),
 };
@@ -38,7 +38,7 @@ const FIELDS = {
         'password',
         'elzaCode'
     ],
-    [EXT_SYSTEM_CLASS.RegExternalSystem]: [
+    [EXT_SYSTEM_CLASS.ApExternalSystem]: [
         'type',
     ],
     [EXT_SYSTEM_CLASS.ArrDigitalRepository]: [
@@ -56,7 +56,7 @@ const REQUIRED_FIELDS = {
         'code',
         'name',
     ],
-    [EXT_SYSTEM_CLASS.RegExternalSystem]: [
+    [EXT_SYSTEM_CLASS.ApExternalSystem]: [
         'type'
     ],
     [EXT_SYSTEM_CLASS.ArrDigitalRepository]: [
@@ -70,7 +70,7 @@ class ExtSystemForm extends AbstractReactComponent {
 
     static fields = [
         ...FIELDS.abstractExtSystem,
-        ...FIELDS[EXT_SYSTEM_CLASS.RegExternalSystem],
+        ...FIELDS[EXT_SYSTEM_CLASS.ApExternalSystem],
         ...FIELDS[EXT_SYSTEM_CLASS.ArrDigitalRepository],
         ...FIELDS[EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk]
     ];
@@ -89,8 +89,8 @@ class ExtSystemForm extends AbstractReactComponent {
 
         let requiredFields = [...REQUIRED_FIELDS.abstractExtSystem];
 
-        if(classJ == EXT_SYSTEM_CLASS.RegExternalSystem) {
-            requiredFields = requiredFields.concat(REQUIRED_FIELDS[EXT_SYSTEM_CLASS.RegExternalSystem])
+        if(classJ == EXT_SYSTEM_CLASS.ApExternalSystem) {
+            requiredFields = requiredFields.concat(REQUIRED_FIELDS[EXT_SYSTEM_CLASS.ApExternalSystem])
         }else if(classJ == EXT_SYSTEM_CLASS.ArrDigitalRepository) {
             requiredFields = requiredFields.concat(REQUIRED_FIELDS[EXT_SYSTEM_CLASS.ArrDigitalRepository])
         }else if(classJ == EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk) {
@@ -113,10 +113,10 @@ class ExtSystemForm extends AbstractReactComponent {
                     {Object.values(EXT_SYSTEM_CLASS).map((i, index) => <option key={index}
                                                                                value={i}>{EXT_SYSTEM_CLASS_LABEL[i]}</option>)}
                 </FormInput>
-                {classJ.value == EXT_SYSTEM_CLASS.RegExternalSystem && <div>
+                {classJ.value == EXT_SYSTEM_CLASS.ApExternalSystem && <div>
                     <FormInput componentClass="select" label={i18n('admin.extSystem.type')} {...type} disabled={id.value}>
                         <option key={null}/>
-                        <option value={REG_EXT_SYSTEM_TYPE.INTERPI}>{i18n('admin.extSystem.interpi')}</option>
+                        <option value={AP_EXT_SYSTEM_TYPE.INTERPI}>{i18n('admin.extSystem.interpi')}</option>
                     </FormInput>
                 </div>}
                 {classJ.value == EXT_SYSTEM_CLASS.ArrDigitalRepository && <div>

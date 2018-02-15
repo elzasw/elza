@@ -141,7 +141,7 @@ class RegistryDetail extends AbstractReactComponent {
                 <EditRegistryForm
                     key='editRegistryForm'
                     initData={data}
-                    parentRegisterTypeId={data.registerTypeId}
+                    parentApTypeId={data.apTypeId}
                     onSubmitForm={this.handleRecordUpdateCall}
                 />
             )
@@ -172,8 +172,8 @@ class RegistryDetail extends AbstractReactComponent {
         }
 
         // Pokud nemá oprávnění, zakážeme editaci
-        return userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {
-            type: perms.REG_SCOPE_WR,
+        return userDetail.hasOne(perms.AP_SCOPE_WR_ALL, {
+            type: perms.AP_SCOPE_WR,
             scopeId: data ? data.scopeId : null
         });
     }

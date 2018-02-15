@@ -130,7 +130,7 @@ export function registryAdd(parentId, versionId, callback, parentName = '', show
 
 function registryRecordCreate(parentId, callback, data, submitType) {
     return (dispatch, getState) => {
-        savingApiWrapper(dispatch, WebApi.createRecord(data.record, data.characteristics, data.registerTypeId, parentId, data.scopeId)).then(json => {
+        savingApiWrapper(dispatch, WebApi.createRecord(data.record, data.characteristics, data.apTypeId, parentId, data.scopeId)).then(json => {
             dispatch(modalDialogHide());
             callback && callback(json, submitType);
         });
@@ -366,11 +366,11 @@ export function registryCoordinatesChange(item) {
     }
 }
 
-export function registryCoordinatesUpload(file, regRecordId) {
+export function registryCoordinatesUpload(file, apRecordId) {
     return (dispatch) => {
         const formData = new FormData();
         formData.append('file', file);
-        formData.append('regRecordId', regRecordId);
+        formData.append('apRecordId', apRecordId);
         savingApiWrapper(dispatch, WebApi.regCoordinatesImport(formData)).then(() => {
             dispatch(addToastrSuccess(i18n('import.toast.success'), i18n('import.toast.successCoordinates')));
         }).catch(() => {

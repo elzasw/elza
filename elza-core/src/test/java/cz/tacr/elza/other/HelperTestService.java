@@ -62,9 +62,9 @@ import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.PartyTypeComplementTypeRepository;
 import cz.tacr.elza.repository.PartyTypeRelationRepository;
 import cz.tacr.elza.repository.PermissionRepository;
-import cz.tacr.elza.repository.RegRecordRepository;
-import cz.tacr.elza.repository.RegVariantRecordRepository;
-import cz.tacr.elza.repository.RegisterTypeRepository;
+import cz.tacr.elza.repository.ApRecordRepository;
+import cz.tacr.elza.repository.ApVariantRecordRepository;
+import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.RelationEntityRepository;
 import cz.tacr.elza.repository.RelationRepository;
 import cz.tacr.elza.repository.RelationRoleTypeRepository;
@@ -125,11 +125,11 @@ public class HelperTestService {
     @Autowired
     private OutputRepository outputRepository;
     @Autowired
-    private RegVariantRecordRepository variantRecordRepository;
+    private ApVariantRecordRepository variantRecordRepository;
     @Autowired
     private PartyNameComplementRepository partyNameComplementRepository;
     @Autowired
-    protected RegisterTypeRepository registerTypeRepository;
+    protected ApTypeRepository apTypeRepository;
     @Autowired
     protected PartyRepository partyRepository;
     @Autowired
@@ -159,7 +159,7 @@ public class HelperTestService {
     @Autowired
     protected PartyNameFormTypeRepository partyNameFormTypeRepository;
     @Autowired
-    protected RegRecordRepository recordRepository;
+    protected ApRecordRepository recordRepository;
     @Autowired
     protected PartyNameRepository partyNameRepository;
     @Autowired

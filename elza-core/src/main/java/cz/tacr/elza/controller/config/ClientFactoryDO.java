@@ -15,6 +15,8 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 
+import cz.tacr.elza.controller.vo.*;
+import cz.tacr.elza.domain.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -24,20 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import cz.tacr.elza.FilterTools;
-import cz.tacr.elza.controller.vo.ArrFileVO;
-import cz.tacr.elza.controller.vo.ArrFundVO;
-import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
-import cz.tacr.elza.controller.vo.ArrOutputFileVO;
-import cz.tacr.elza.controller.vo.DmsFileVO;
-import cz.tacr.elza.controller.vo.ParPartyNameVO;
-import cz.tacr.elza.controller.vo.ParPartyVO;
-import cz.tacr.elza.controller.vo.ParRelationEntityVO;
-import cz.tacr.elza.controller.vo.ParRelationVO;
-import cz.tacr.elza.controller.vo.RegRecordVO;
-import cz.tacr.elza.controller.vo.RegScopeVO;
-import cz.tacr.elza.controller.vo.RegVariantRecordVO;
-import cz.tacr.elza.controller.vo.UISettingsVO;
-import cz.tacr.elza.controller.vo.UsrPermissionVO;
+import cz.tacr.elza.controller.vo.ApScopeVO;
 import cz.tacr.elza.controller.vo.filter.Condition;
 import cz.tacr.elza.controller.vo.filter.Filter;
 import cz.tacr.elza.controller.vo.filter.Filters;
@@ -45,30 +34,7 @@ import cz.tacr.elza.controller.vo.filter.ValuesTypes;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.core.data.CalendarType;
-import cz.tacr.elza.domain.ArrCalendarType;
-import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDataUnitdate;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFile;
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrNodeRegister;
-import cz.tacr.elza.domain.ArrOutputFile;
-import cz.tacr.elza.domain.ArrOutputItem;
-import cz.tacr.elza.domain.ArrStructureItem;
-import cz.tacr.elza.domain.DmsFile;
-import cz.tacr.elza.domain.ParInstitution;
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.ParPartyName;
-import cz.tacr.elza.domain.ParRelation;
-import cz.tacr.elza.domain.ParRelationEntity;
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.domain.RegScope;
-import cz.tacr.elza.domain.RegVariantRecord;
-import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.UISettings;
-import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.ApRecord;
 import cz.tacr.elza.domain.convertor.CalendarConverter;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.exception.BusinessException;
@@ -105,7 +71,7 @@ import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
-import cz.tacr.elza.repository.RegRecordRepository;
+import cz.tacr.elza.repository.ApRecordRepository;
 import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MapperFactory;
 
@@ -133,7 +99,7 @@ public class ClientFactoryDO {
     private FundRepository fundRepository;
 
     @Autowired
-    private RegRecordRepository regRecordRepository;
+    private ApRecordRepository apRecordRepository;
 
     @Autowired
     private InstitutionRepository institutionRepository;
@@ -203,23 +169,23 @@ public class ClientFactoryDO {
     /**
      * Vytvoření rejstříkového hesla.
      *
-     * @param regRecordVO VO rejstříkové heslo
+     * @param apRecordVO VO rejstříkové heslo
      * @return DO rejstříkové heslo
      */
-    public RegRecord createRegRecord(final RegRecordVO regRecordVO) {
+    public ApRecord createApRecord(final ApRecordVO apRecordVO) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
-        return mapper.map(regRecordVO, RegRecord.class);
+        return mapper.map(apRecordVO, ApRecord.class);
     }
 
     /**
      * Vytvoření variantního rejstříkového hesla.
      *
-     * @param regVariantRecord VO variantní rejstříkové heslo
+     * @param apVariantRecord VO variantní rejstříkové heslo
      * @return DO variantní rejstříkové heslo
      */
-    public RegVariantRecord createRegVariantRecord(final RegVariantRecordVO regVariantRecord) {
+    public ApVariantRecord createApVariantRecord(final ApVariantRecordVO apVariantRecord) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
-        return mapper.map(regVariantRecord, RegVariantRecord.class);
+        return mapper.map(apVariantRecord, ApVariantRecord.class);
     }
 
     /**
@@ -363,10 +329,10 @@ public class ClientFactoryDO {
      * @param scopeVO třída rejstříku
      * @return třída rejstříku
      */
-    public RegScope createScope(final RegScopeVO scopeVO) {
+    public ApScope createScope(final ApScopeVO scopeVO) {
         Assert.notNull(scopeVO, "Scope musí být vyplněn");
         MapperFacade mapper = mapperFactory.getMapperFacade();
-        return mapper.map(scopeVO, RegScope.class);
+        return mapper.map(scopeVO, ApScope.class);
     }
 
 
@@ -376,14 +342,14 @@ public class ClientFactoryDO {
      * @param scopeVOs seznam VO rejstříků
      * @return seznam DO
      */
-    public List<RegScope> createScopeList(@Nullable final Collection<RegScopeVO> scopeVOs) {
+    public List<ApScope> createScopeList(@Nullable final Collection<ApScopeVO> scopeVOs) {
         if (scopeVOs == null) {
             return new ArrayList<>();
         }
 
-        List<RegScope> result = new ArrayList<>(scopeVOs.size());
+        List<ApScope> result = new ArrayList<>(scopeVOs.size());
 
-        for (RegScopeVO scopeVO : scopeVOs) {
+        for (ApScopeVO scopeVO : scopeVOs) {
             result.add(createScope(scopeVO));
         }
 
@@ -411,7 +377,7 @@ public class ClientFactoryDO {
         ArrNodeRegister nodeRegister = mapper.map(nodeRegisterVO, ArrNodeRegister.class);
 
         if (nodeRegisterVO.getValue() != null) {
-            nodeRegister.setRecord(regRecordRepository.findOne(nodeRegisterVO.getValue()));
+            nodeRegister.setRecord(apRecordRepository.findOne(nodeRegisterVO.getValue()));
         }
 
         return nodeRegister;

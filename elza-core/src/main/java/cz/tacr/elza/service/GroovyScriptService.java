@@ -1,7 +1,6 @@
 package cz.tacr.elza.service;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -24,7 +23,7 @@ import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ParComplementType;
 import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.RegRecord;
+import cz.tacr.elza.domain.ApRecord;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.interpi.service.InterpiFactory;
 import cz.tacr.elza.interpi.service.vo.ExternalRecordVO;
@@ -82,7 +81,7 @@ public class GroovyScriptService {
      * @param complementTypes available complement types for party type
      * @return vytvořené rejstříkové heslo s nastavenými variantními hesly
      */
-    public RegRecord getRecordFromGroovy(final ParParty party, final List<ParComplementType> complementTypes) {
+    public ApRecord getRecordFromGroovy(final ParParty party, final List<ParComplementType> complementTypes) {
         Map<Integer, ParComplementType> complementTypeMap = ElzaTools.createEntityMap(complementTypes,
                 ParComplementType::getComplementTypeId);
 
@@ -90,7 +89,7 @@ public class GroovyScriptService {
         input.put("PARTY", party);
         input.put("COMPLEMENT_TYPE_MAP", complementTypeMap);
 
-        return (RegRecord) createRecordScriptFile.evaluate(input);
+        return (ApRecord) createRecordScriptFile.evaluate(input);
     }
 
     /**

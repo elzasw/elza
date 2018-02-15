@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.controller.vo.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.csv.CSVRecord;
 import org.junit.Assert;
@@ -32,25 +33,7 @@ import org.springframework.http.HttpStatus;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
-import cz.tacr.elza.controller.vo.ArrFundVO;
-import cz.tacr.elza.controller.vo.ArrFundVersionVO;
-import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
-import cz.tacr.elza.controller.vo.ArrOutputDefinitionVO;
-import cz.tacr.elza.controller.vo.ArrOutputExtVO;
-import cz.tacr.elza.controller.vo.CopyNodesParams;
-import cz.tacr.elza.controller.vo.CopyNodesValidate;
-import cz.tacr.elza.controller.vo.CopyNodesValidateResult;
-import cz.tacr.elza.controller.vo.FilterNode;
-import cz.tacr.elza.controller.vo.FilterNodePosition;
-import cz.tacr.elza.controller.vo.NodeItemWithParent;
-import cz.tacr.elza.controller.vo.OutputSettingsVO;
-import cz.tacr.elza.controller.vo.RegRecordVO;
-import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
-import cz.tacr.elza.controller.vo.RegScopeVO;
-import cz.tacr.elza.controller.vo.RulOutputTypeVO;
-import cz.tacr.elza.controller.vo.TreeData;
-import cz.tacr.elza.controller.vo.TreeNodeClient;
+import cz.tacr.elza.controller.vo.ApRecordVO;
 import cz.tacr.elza.controller.vo.filter.Filters;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
@@ -883,17 +866,17 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         List<ArrNodeVO> nodes = convertTreeNodes(treeData.getNodes());
         ArrNodeVO rootNode = nodes.get(0);
 
-        List<RegRegisterTypeVO> types = getRecordTypes();
-        List<RegScopeVO> scopes = getAllScopes();
+        List<ApTypeVO> types = getRecordTypes();
+        List<ApScopeVO> scopes = getAllScopes();
         Integer scopeId = scopes.iterator().next().getId();
 
-        RegRecordVO record = new RegRecordVO();
+        ApRecordVO record = new ApRecordVO();
 
-        record.setRegisterTypeId(getNonHierarchicalRegRegisterType(types, false).getId());
+        record.setApTypeId(getNonHierarchicalApType(types, false).getId());
 
-        record.setCharacteristics("Ja jsem regRecordA");
+        record.setCharacteristics("Ja jsem apRecordA");
 
-        record.setRecord("RegRecordA");
+        record.setRecord("ApRecordA");
 
         record.setScopeId(scopeId);
 
@@ -929,16 +912,16 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         assertTrue(updatedLink.getId().equals(deletedLink.getId()));
     }
 
-    private RegRegisterTypeVO getNonHierarchicalRegRegisterType(final List<RegRegisterTypeVO> list, final boolean hasPartyType) {
-        for (RegRegisterTypeVO type : list) {
+    private ApTypeVO getNonHierarchicalApType(final List<ApTypeVO> list, final boolean hasPartyType) {
+        for (ApTypeVO type : list) {
             if (type.getAddRecord() && ((!hasPartyType && type.getPartyTypeId() == null) || (hasPartyType && type.getPartyTypeId() != null))) {
                 return type;
             }
         }
 
-        for (RegRegisterTypeVO type : list) {
+        for (ApTypeVO type : list) {
             if (type.getChildren() != null) {
-                RegRegisterTypeVO res = getNonHierarchicalRegRegisterType(type.getChildren(), hasPartyType);
+                ApTypeVO res = getNonHierarchicalApType(type.getChildren(), hasPartyType);
                 if (res != null) {
                     return res;
                 }

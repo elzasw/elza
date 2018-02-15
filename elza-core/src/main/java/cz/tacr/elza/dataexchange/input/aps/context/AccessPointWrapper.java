@@ -2,6 +2,7 @@ package cz.tacr.elza.dataexchange.input.aps.context;
 
 import java.time.LocalDateTime;
 
+import cz.tacr.elza.domain.ApRecord;
 import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
 
@@ -9,21 +10,20 @@ import cz.tacr.elza.dataexchange.input.DEImportException;
 import cz.tacr.elza.dataexchange.input.context.PersistMethod;
 import cz.tacr.elza.dataexchange.input.storage.EntityMetrics;
 import cz.tacr.elza.dataexchange.input.storage.EntityWrapper;
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.domain.projection.RegRecordInfo;
+import cz.tacr.elza.domain.projection.ApRecordInfo;
 
 /**
  * Access point (i.e. record) entity wrapper.
  */
 public class AccessPointWrapper implements EntityWrapper, EntityMetrics {
 
-    private final RegRecord entity;
+    private final ApRecord entity;
 
     private final AccessPointInfo apInfo;
 
     private PersistMethod persistMethod = PersistMethod.CREATE;
 
-    AccessPointWrapper(RegRecord entity, AccessPointInfo apInfo, AccessPointInfo parentAPInfo) {
+    AccessPointWrapper(ApRecord entity, AccessPointInfo apInfo, AccessPointInfo parentAPInfo) {
         this.entity = Validate.notNull(entity);
         this.apInfo = Validate.notNull(apInfo);
     }
@@ -34,7 +34,7 @@ public class AccessPointWrapper implements EntityWrapper, EntityMetrics {
      *
      * @throws DEImportException When scopes does not match.
      */
-    public void setPair(RegRecordInfo pair) {
+    public void setPair(ApRecordInfo pair) {
         if (!entity.getScopeId().equals(pair.getScopeId())) {
             throw new DEImportException("Import scope doesn't match with scope of paired record, import scopeId:"
                     + entity.getScopeId() + ", paired scopeId:" + pair.getScopeId());
@@ -61,7 +61,7 @@ public class AccessPointWrapper implements EntityWrapper, EntityMetrics {
     }
 
     @Override
-    public RegRecord getEntity() {
+    public ApRecord getEntity() {
         return entity;
     }
 

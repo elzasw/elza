@@ -24,6 +24,7 @@ import javax.persistence.Query;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
+import cz.tacr.elza.domain.*;
 import cz.tacr.elza.repository.StructureDataRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -50,26 +51,8 @@ import cz.tacr.elza.controller.vo.filter.SearchParam;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrFundRegisterScope;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrNodeConformity;
 import cz.tacr.elza.domain.ArrNodeConformity.State;
-import cz.tacr.elza.domain.ArrNodeConformityError;
-import cz.tacr.elza.domain.ArrNodeConformityMissing;
-import cz.tacr.elza.domain.ArrOutputDefinition;
-import cz.tacr.elza.domain.ParInstitution;
-import cz.tacr.elza.domain.RegScope;
-import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.RulRuleSet;
-import cz.tacr.elza.domain.UIVisiblePolicy;
-import cz.tacr.elza.domain.UsrPermission;
-import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.vo.NodeTypeOperation;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
@@ -189,7 +172,7 @@ public class ArrangementService {
     @Autowired
     private OutputItemRepository outputItemRepository;
     @Autowired
-    private RegistryService registryService;
+    private ApService apService;
 
 	@Autowired
 	DescriptionItemServiceInternal arrangementInternal;
@@ -313,7 +296,7 @@ public class ArrangementService {
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN, UsrPermission.Permission.FUND_VER_WR})
     public ArrFund updateFund(@AuthParam(type = AuthParam.Type.FUND) final ArrFund fund,
                               final RulRuleSet ruleSet,
-                              final List<RegScope> scopes) {
+                              final List<ApScope> scopes) {
         Assert.notNull(fund, "AS musí být vyplněn");
         Assert.notNull(ruleSet, "Pravidla musí být vyplněna");
 
@@ -326,7 +309,7 @@ public class ArrangementService {
 
         fundRepository.save(originalFund);
 
-        for (RegScope scope : scopes) {
+        for (ApScope scope : scopes) {
             if (scope.getScopeId() == null) {
                 scope.setCode(StringUtils.upperCase(Normalizer.normalize(StringUtils.replace(StringUtils.substring(scope.getName(), 0, 50).trim(), " ", "_"), Normalizer.Form.NFD)));
                 scopeRepository.save(scope);
@@ -342,7 +325,7 @@ public class ArrangementService {
             ruleService.conformityInfoAll(openVersion);
         }
 
-        synchRegScopes(originalFund, scopes);
+        synchApScopes(originalFund, scopes);
 
         eventNotificationService
                 .publishEvent(EventFactory.createIdEvent(EventType.FUND_UPDATE, originalFund.getFundId()));
@@ -353,15 +336,15 @@ public class ArrangementService {
     /**
      * Pokud se jedná o typ osoby group, dojde k synchronizaci identifikátorů osoby. CRUD.
      */
-    private void synchRegScopes(final ArrFund fund,
-                                final Collection<RegScope> newRegScopes) {
+    private void synchApScopes(final ArrFund fund,
+                               final Collection<ApScope> newApScopes) {
         Assert.notNull(fund, "AS musí být vyplněn");
 
 		Map<Integer, ArrFundRegisterScope> dbIdentifiersMap = ElzaTools
 				.createEntityMap(faRegisterRepository.findByFund(fund), i -> i.getScope().getScopeId());
         Set<ArrFundRegisterScope> removeScopes = new HashSet<>(dbIdentifiersMap.values());
 
-        for (RegScope newScope : newRegScopes) {
+        for (ApScope newScope : newApScopes) {
             ArrFundRegisterScope oldScope = dbIdentifiersMap.get(newScope.getScopeId());
 
             if (oldScope == null) {
@@ -398,7 +381,7 @@ public class ArrangementService {
 
         ArrFund fund = createFund(name, ruleSet, change, generateUuid(), internalCode, institution, dateRange);
 
-        List<RegScope> defaultScopes = registryService.findDefaultScopes();
+        List<ApScope> defaultScopes = apService.findDefaultScopes();
         if (!defaultScopes.isEmpty()) {
             addScopeToFund(fund, defaultScopes.get(0));
         }
@@ -1299,9 +1282,9 @@ public class ArrangementService {
         return versionValidationItems;
     }
 
-    @AuthMethod(permission = {UsrPermission.Permission.REG_SCOPE_WR_ALL, UsrPermission.Permission.REG_SCOPE_WR})
+    @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
     public ArrFundRegisterScope addScopeToFund(final ArrFund fund,
-                                               @AuthParam(type = AuthParam.Type.SCOPE) final RegScope scope) {
+                                               @AuthParam(type = AuthParam.Type.SCOPE) final ApScope scope) {
         Assert.notNull(fund, "AS musí být vyplněn");
         Assert.notNull(scope, "Scope musí být vyplněn");
 

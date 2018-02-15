@@ -12,6 +12,8 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.controller.vo.ApScopeVO;
+import cz.tacr.elza.domain.*;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.interpi.ws.wo.IdentifikatorSouvTyp;
@@ -34,15 +36,7 @@ import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.InterpiEntityMappingVO;
 import cz.tacr.elza.controller.vo.InterpiMappingVO;
 import cz.tacr.elza.controller.vo.InterpiRelationMappingVO;
-import cz.tacr.elza.controller.vo.RegScopeVO;
-import cz.tacr.elza.domain.ParInterpiMapping;
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.ParPartyType;
-import cz.tacr.elza.domain.ParRelationTypeRoleType;
-import cz.tacr.elza.domain.RegExternalSystem;
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.domain.RegRegisterType;
-import cz.tacr.elza.domain.RegScope;
+import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.ExternalCode;
 import cz.tacr.elza.interpi.service.InterpiSessionHolder.InterpiEntitySession;
@@ -54,8 +48,8 @@ import cz.tacr.elza.interpi.service.vo.MappingVO;
 import cz.tacr.elza.interpi.service.vo.PairedRecordVO;
 import cz.tacr.elza.interpi.ws.wo.EntitaTyp;
 import cz.tacr.elza.repository.InterpiMappingRepository;
-import cz.tacr.elza.repository.RegExternalSystemRepository;
-import cz.tacr.elza.repository.RegRecordRepository;
+import cz.tacr.elza.repository.ApExternalSystemRepository;
+import cz.tacr.elza.repository.ApRecordRepository;
 import cz.tacr.elza.repository.RelationRoleTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRoleTypeRepository;
@@ -92,13 +86,13 @@ public class InterpiService {
     private PartyService partyService;
 
     @Autowired
-    private RegExternalSystemRepository regExternalSystemRepository;
+    private ApExternalSystemRepository apExternalSystemRepository;
 
     @Autowired
     private ScopeRepository scopeRepository;
 
     @Autowired
-    private RegRecordRepository recordRepository;
+    private ApRecordRepository recordRepository;
 
     @Autowired
     private InterpiMappingRepository interpiMappingRepository;
@@ -132,10 +126,10 @@ public class InterpiService {
         Assert.notNull(systemId, "Identifikátor systému musí být vyplněn");
         String interpiRecordId = findIdCondition(conditions);
 
-        RegExternalSystem regExternalSystem = regExternalSystemRepository.findOne(systemId);
+        ApExternalSystem apExternalSystem = apExternalSystemRepository.findOne(systemId);
         List<EntitaTyp> records;
         if (StringUtils.isNotBlank(interpiRecordId)) {
-            EntitaTyp entitaTyp = getRecordById(interpiRecordId, regExternalSystem);
+            EntitaTyp entitaTyp = getRecordById(interpiRecordId, apExternalSystem);
 
             records = Collections.singletonList(entitaTyp);
         } else {
@@ -144,12 +138,12 @@ public class InterpiService {
                 return Collections.emptyList();
             }
 
-            records = interpiClient.findRecords(query, count, regExternalSystem);
+            records = interpiClient.findRecords(query, count, apExternalSystem);
         }
 
         Map<String, ExternalRecordVO> result = convertSearchResults(records, false);
         if (!result.isEmpty()) {
-            matchWithExistingRecords(regExternalSystem, result);
+            matchWithExistingRecords(apExternalSystem, result);
         }
 
         return new ArrayList<>(result.values());
@@ -199,11 +193,11 @@ public class InterpiService {
      *
      * @return požadovaný záznam
      */
-    private EntitaTyp getRecordById(final String interpiRecordId, final RegExternalSystem regExternalSystem) {
+    private EntitaTyp getRecordById(final String interpiRecordId, final ApExternalSystem apExternalSystem) {
         Assert.notNull(interpiRecordId, "Identifikátor systému interpi musí být vyplněn");
-        Assert.notNull(regExternalSystem, "Musí být vyplněn externí systém");
+        Assert.notNull(apExternalSystem, "Musí být vyplněn externí systém");
 
-        return interpiClient.findOneRecord(interpiRecordId, regExternalSystem);
+        return interpiClient.findOneRecord(interpiRecordId, apExternalSystem);
     }
 
     /**
@@ -220,22 +214,22 @@ public class InterpiService {
         Assert.notNull(systemId, "Identifikátor systému musí být vyplněn");
         Assert.notNull(scopeId, "Identifikátor scope musí být vyplněn");
 
-        RegExternalSystem regExternalSystem = regExternalSystemRepository.findOne(systemId);
-        EntitaTyp entitaTyp = interpiClient.findOneRecord(interpiRecordId, regExternalSystem);
+        ApExternalSystem apExternalSystem = apExternalSystemRepository.findOne(systemId);
+        EntitaTyp entitaTyp = interpiClient.findOneRecord(interpiRecordId, apExternalSystem);
         InterpiEntitySession interpiEntitySession = interpiSessionHolder.getInterpiEntitySession();
         interpiEntitySession.setEntitaTyp(entitaTyp);
 
-        RegScope regScope = scopeRepository.findOne(scopeId);
+        ApScope apScope = scopeRepository.findOne(scopeId);
         InterpiEntity interpiEntity = new InterpiEntity(entitaTyp);
         final ExternalRecordVO externalRecordVO = groovyScriptService.convertToExternalRecordVO(entitaTyp, false, interpiFactory);
 
-        RegRegisterType regRegisterType = interpiFactory.getRegisterType(interpiEntity);
-        ParPartyType partyType = regRegisterType.getPartyType();
+        ApType apType = interpiFactory.getApType(interpiEntity);
+        ParPartyType partyType = apType.getPartyType();
         if (partyType == null) {
             throw new BusinessException("Vztahy lze mapovat jen pro osoby.", BaseCode.PROPERTY_IS_INVALID).set("property", "partyType");
         }
 
-        List<InterpiRelationMappingVO> mappings = interpiFactory.getRelations(interpiEntity, regExternalSystem, regScope);
+        List<InterpiRelationMappingVO> mappings = interpiFactory.getRelations(interpiEntity, apExternalSystem, apScope);
 
         List<ParInterpiMapping> interpiMappings = interpiMappingRepository.findAll(); // načtení do hibernate cache
         for (InterpiRelationMappingVO relationMappingVO : mappings) {
@@ -282,23 +276,23 @@ public class InterpiService {
      *
      * @return nový/aktualizovaný rejstřík
      */
-    public RegRecord importRecord(final Integer recordId, final String interpiRecordId, final Integer scopeId, final Integer systemId, final boolean isOriginator,
-            final List<InterpiRelationMappingVO> mappings) {
+    public ApRecord importRecord(final Integer recordId, final String interpiRecordId, final Integer scopeId, final Integer systemId, final boolean isOriginator,
+                                 final List<InterpiRelationMappingVO> mappings) {
         Assert.notNull(interpiRecordId, "Identifikátor systému interpi musí být vyplněn");
         Assert.notNull(scopeId, "Identifikátor scope musí být vyplněn");
         Assert.notNull(systemId, "Identifikátor systému musí být vyplněn");
 
         logger.info("Import záznamu s identifikátorem " + interpiRecordId + " z interpi.");
 
-        RegExternalSystem regExternalSystem = regExternalSystemRepository.findOne(systemId);
-        RegScope regScope = scopeRepository.findOne(scopeId);
+        ApExternalSystem apExternalSystem = apExternalSystemRepository.findOne(systemId);
+        ApScope apScope = scopeRepository.findOne(scopeId);
 
-        RegRecord originalRecord = null;
+        ApRecord originalRecord = null;
         if (recordId == null) {
-            RegRecord regRecord = recordRepository.findRegRecordByExternalIdAndExternalSystemCodeAndScope(interpiRecordId,
-                    regExternalSystem.getCode(), regScope);
-            if (regRecord != null) {
-                throw new BusinessException("Záznam již existuje " + regRecord, ExternalCode.ALREADY_IMPORTED).set("id", interpiRecordId).set("scope", regScope.getName());
+            ApRecord apRecord = recordRepository.findApRecordByExternalIdAndExternalSystemCodeAndScope(interpiRecordId,
+                    apExternalSystem.getCode(), apScope);
+            if (apRecord != null) {
+                throw new BusinessException("Záznam již existuje " + apRecord, ExternalCode.ALREADY_IMPORTED).set("id", interpiRecordId).set("scope", apScope.getName());
             }
         } else {
             originalRecord = recordRepository.findOne(recordId);
@@ -307,16 +301,16 @@ public class InterpiService {
         InterpiEntitySession interpiEntitySession = interpiSessionHolder.getInterpiEntitySession();
         EntitaTyp entitaTyp = interpiEntitySession.getEntitaTyp();
         if (entitaTyp == null) {
-            entitaTyp = interpiClient.findOneRecord(interpiRecordId, regExternalSystem);
+            entitaTyp = interpiClient.findOneRecord(interpiRecordId, apExternalSystem);
         }
         InterpiEntity interpiEntity = new InterpiEntity(entitaTyp);
 
-        RegRecord result;
+        ApRecord result;
         if (interpiFactory.isParty(interpiEntity)) {
             List<MappingVO> updatedMappings = processMappings(mappings);
-            result = interpiFactory.importParty(interpiEntity, originalRecord, interpiRecordId, isOriginator, regScope, regExternalSystem, updatedMappings);
+            result = interpiFactory.importParty(interpiEntity, originalRecord, interpiRecordId, isOriginator, apScope, apExternalSystem, updatedMappings);
         } else {
-            result = interpiFactory.importRecord(entitaTyp, originalRecord, interpiRecordId, regScope, regExternalSystem);
+            result = interpiFactory.importRecord(entitaTyp, originalRecord, interpiRecordId, apScope, apExternalSystem);
         }
 
         if (interpiEntity.getHierarchickaStruktura().size() > 0) {
@@ -334,7 +328,7 @@ public class InterpiService {
                 throw new SystemException("Při importu hierarchického hesla nebyl nalezen interpi idetifikátor rodiče.");
             }
 
-            final RegRecord parentRecord = recordRepository.findRegRecordByExternalIdAndExternalSystemCodeAndScope(parentRecordExtId.getValue(), regExternalSystem.getCode(), regScope);
+            final ApRecord parentRecord = recordRepository.findApRecordByExternalIdAndExternalSystemCodeAndScope(parentRecordExtId.getValue(), apExternalSystem.getCode(), apScope);
 
             recordRepository.save(result);
         }
@@ -571,23 +565,23 @@ public class InterpiService {
     /**
      * Dohledání existujících rejstříkových hesel pro vyhledané záznamy.
      *
-     * @param regExternalSystem systém ze kterého jsou nalezená rejstříková hesla
+     * @param apExternalSystem systém ze kterého jsou nalezená rejstříková hesla
      * @param externalRecords nalezené záznamy pro které se mají najít existující hesla
      */
-    private void matchWithExistingRecords(final RegExternalSystem regExternalSystem, final Map<String, ExternalRecordVO> externalRecords) {
-        List<RegRecord> regRecords = recordRepository.findRegRecordByExternalIdsAndExternalSystem(externalRecords.keySet(), regExternalSystem);
+    private void matchWithExistingRecords(final ApExternalSystem apExternalSystem, final Map<String, ExternalRecordVO> externalRecords) {
+        List<ApRecord> apRecords = recordRepository.findApRecordByExternalIdsAndExternalSystem(externalRecords.keySet(), apExternalSystem);
 
-        Map<String, List<RegRecord>> externalIdToRegRecordsMap = regRecords.stream().collect(Collectors.groupingBy(RegRecord::getExternalId));
+        Map<String, List<ApRecord>> externalIdToApRecordsMap = apRecords.stream().collect(Collectors.groupingBy(ApRecord::getExternalId));
 
-        Map<Integer, RegScopeVO> convertedScopes = new HashMap<>();
+        Map<Integer, ApScopeVO> convertedScopes = new HashMap<>();
         for (String externalId : externalRecords.keySet()) {
-            List<RegRecord> sameRecords = externalIdToRegRecordsMap.get(externalId);
+            List<ApRecord> sameRecords = externalIdToApRecordsMap.get(externalId);
             if (sameRecords != null) {
-                for (RegRecord existingRecord : sameRecords) {
+                for (ApRecord existingRecord : sameRecords) {
                     ExternalRecordVO recordVO = externalRecords.get(externalId);
 
-                    RegScope regScope = existingRecord.getScope();
-                    RegScopeVO regScopeVO = factoryVO.getOrCreateVo(regScope.getScopeId(), regScope, convertedScopes, RegScopeVO.class);
+                    ApScope apScope = existingRecord.getScope();
+                    ApScopeVO apScopeVO = factoryVO.getOrCreateVo(apScope.getScopeId(), apScope, convertedScopes, ApScopeVO.class);
 
                     Integer recordId = existingRecord.getRecordId();
                     Integer partyId = null;
@@ -595,7 +589,7 @@ public class InterpiService {
                     if (existingParty != null) {
                         partyId = existingParty.getPartyId();
                     }
-                    PairedRecordVO pairedRecordVO = new PairedRecordVO(regScopeVO, recordId, partyId);
+                    PairedRecordVO pairedRecordVO = new PairedRecordVO(apScopeVO, recordId, partyId);
                     recordVO.addPairedRecord(pairedRecordVO);
                 }
             }

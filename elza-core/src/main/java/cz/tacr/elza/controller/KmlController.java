@@ -1,8 +1,6 @@
 package cz.tacr.elza.controller;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
@@ -11,9 +9,6 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
-import org.geotools.kml.KMLConfiguration;
-import org.geotools.xml.Parser;
-import org.opengis.feature.simple.SimpleFeature;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
@@ -25,9 +20,9 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.xml.sax.SAXException;
 
-import cz.tacr.elza.repository.RegRecordRepository;
+import cz.tacr.elza.repository.ApRecordRepository;
 import cz.tacr.elza.service.ArrIOService;
-import cz.tacr.elza.service.RegistryService;
+import cz.tacr.elza.service.ApService;
 
 /**
  * Controller pro import a export KML souborů
@@ -39,10 +34,10 @@ import cz.tacr.elza.service.RegistryService;
 public class KmlController {
 
     @Autowired
-    private RegRecordRepository regRecordRepository;
+    private ApRecordRepository apRecordRepository;
 
     @Autowired
-    private RegistryService registryService;
+    private ApService apService;
 
     @Autowired
     private ArrIOService arrIOService;
@@ -82,7 +77,7 @@ public class KmlController {
     @Transactional
     @RequestMapping(value = "/api/kml/import/regCoordinates", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public List<Integer> importRegCoordinates(
-            @RequestParam(value = "regRecordId") final Integer regRecordId,
+            @RequestParam(value = "apRecordId") final Integer apRecordId,
             @RequestParam(value = "file") final MultipartFile importFile) throws IOException, ParserConfigurationException, SAXException {
         throw new SystemException("import koordinat neni podporovan", BaseCode.SYSTEM_ERROR);
     }

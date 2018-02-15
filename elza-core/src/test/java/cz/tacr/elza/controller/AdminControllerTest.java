@@ -1,10 +1,10 @@
 package cz.tacr.elza.controller;
 
 import com.jayway.restassured.response.Response;
-import cz.tacr.elza.api.RegExternalSystemType;
+import cz.tacr.elza.api.ApExternalSystemType;
+import cz.tacr.elza.controller.vo.ApExternalSystemVO;
 import cz.tacr.elza.controller.vo.ArrDigitalRepositoryVO;
 import cz.tacr.elza.controller.vo.ArrDigitizationFrontdeskVO;
-import cz.tacr.elza.controller.vo.RegExternalSystemVO;
 import cz.tacr.elza.controller.vo.SysExternalSystemVO;
 import org.junit.Test;
 import org.springframework.util.Assert;
@@ -55,10 +55,10 @@ public class AdminControllerTest extends AbstractControllerTest {
         SysExternalSystemVO digitizationFrontdeskCreatedVO = createExternalSystem(digitizationFrontdeskVO);
         Assert.notNull(digitizationFrontdeskCreatedVO.getId());
 
-        RegExternalSystemVO externalSystemVO = new RegExternalSystemVO();
+        ApExternalSystemVO externalSystemVO = new ApExternalSystemVO();
         externalSystemVO.setCode("TST3");
         externalSystemVO.setName("Test 3");
-        externalSystemVO.setType(RegExternalSystemType.INTERPI);
+        externalSystemVO.setType(ApExternalSystemType.INTERPI);
 
         SysExternalSystemVO externalSystemCreatedVO = createExternalSystem(externalSystemVO);
         Assert.notNull(externalSystemCreatedVO.getId());

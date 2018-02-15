@@ -13,7 +13,7 @@ const initialState = {
     registryDetail: registryDetail(),
     preparedRequestList: SimpleListReducer(),   // seznam neodeslaných požadavků - sdíleno pro celou aplikaci
     requestInQueueList: SimpleListReducer(),   // seznam požadavků ve frontě
-    regExtSystemList: SimpleListReducer(),   // seznam externích systémů
+    apExtSystemList: SimpleListReducer(),   // seznam externích systémů
     extSystemDetail: DetailReducer(),
     extSystemList: SimpleListReducer(),   // seznam externích systémů
     mimeTypesList: SimpleListReducer(),   // seznam mime typů pro editaci systémů

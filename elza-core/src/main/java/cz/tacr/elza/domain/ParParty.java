@@ -26,7 +26,7 @@ import org.springframework.data.rest.core.annotation.RestResource;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import cz.tacr.elza.api.interfaces.IRegScope;
+import cz.tacr.elza.api.interfaces.IApScope;
 
 
 /**
@@ -39,7 +39,7 @@ import cz.tacr.elza.api.interfaces.IRegScope;
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ParParty extends AbstractVersionableEntity implements IRegScope {
+public class ParParty extends AbstractVersionableEntity implements IApScope {
 
     /* Konstanty pro vazby a fieldy. */
     public static final String ABSTRACT_PARTY_ID = "partyId";
@@ -57,10 +57,10 @@ public class ParParty extends AbstractVersionableEntity implements IRegScope {
     private Integer partyId;
 
     @RestResource(exported = false)
-	@OneToOne(fetch=FetchType.LAZY, targetEntity = RegRecord.class)
+	@OneToOne(fetch=FetchType.LAZY, targetEntity = ApRecord.class)
     @JoinColumn(name = "recordId", nullable = false)
     @JsonIgnore
-    private RegRecord record;
+    private ApRecord record;
 
     @RestResource(exported = false)
     @JsonIgnore
@@ -137,7 +137,7 @@ public class ParParty extends AbstractVersionableEntity implements IRegScope {
      * Rejstříkové heslo.
      * @return  objekt navázaného rejstříkového hesla
      */
-    public RegRecord getRecord() {
+    public ApRecord getRecord() {
         return record;
     }
 
@@ -145,7 +145,7 @@ public class ParParty extends AbstractVersionableEntity implements IRegScope {
      * Rejstříkové heslo.
      * @param record    objekt navázaného rejstříkového hesla
      */
-    public void setRecord(final RegRecord record) {
+    public void setRecord(final ApRecord record) {
         this.record = record;
         this.recordId = record != null ? record.getRecordId() : null;
     }
@@ -286,7 +286,7 @@ public class ParParty extends AbstractVersionableEntity implements IRegScope {
 
     @Override
     @JsonIgnore
-    public RegScope getRegScope() {
+    public ApScope getApScope() {
         return record.getScope();
     }
 }

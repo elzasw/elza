@@ -81,7 +81,7 @@ public class PartyControllerTest extends AbstractControllerTest {
         List<ParPartyTypeVO> partyTypes = getPartyTypes();
         List<ParPartyNameFormTypeVO> nameTypes = getPartyNameFormTypes();
 
-        RegScopeVO scope = faScopes().iterator().next();
+        ApScopeVO scope = faScopes().iterator().next();
 
         ParPartyTypeVO typeO1 = findPartyTypeByCode(partyTypes, PERSON_TYPE_CODE);
         ParPartyTypeVO typeK1 = findPartyTypeByCode(partyTypes, GROUP_PARTY_TYPE_CODE);
@@ -95,9 +95,9 @@ public class PartyControllerTest extends AbstractControllerTest {
 
         /* Vytvoření osoby **/
         ParPersonVO personO1 = new ParPersonVO();
-        RegRecordVO recordO1 = new RegRecordVO();
+        ApRecordVO recordO1 = new ApRecordVO();
 
-        recordO1.setRegisterTypeId(findRegisterTypeAddable(recordTypesForPartyType(typeO1.getId())).getId());
+        recordO1.setApTypeId(findApTypeAddable(recordTypesForPartyType(typeO1.getId())).getId());
         recordO1.setScopeId(scope.getId());
         personO1.setRecord(recordO1);
         personO1.setPartyType(typeO1);
@@ -119,9 +119,9 @@ public class PartyControllerTest extends AbstractControllerTest {
 
         /* Vytvoření korporace **/
         ParPartyGroupVO groupK1 = new ParPartyGroupVO();
-        RegRecordVO recordK1 = new RegRecordVO();
+        ApRecordVO recordK1 = new ApRecordVO();
 
-        recordK1.setRegisterTypeId(findRegisterTypeAddable(recordTypesForPartyType(typeK1.getId())).getId());
+        recordK1.setApTypeId(findApTypeAddable(recordTypesForPartyType(typeK1.getId())).getId());
         recordK1.setScopeId(scope.getId());
 
         groupK1.setRecord(recordK1);
@@ -143,9 +143,9 @@ public class PartyControllerTest extends AbstractControllerTest {
 
         /* Vytvoření rodu **/
         ParDynastyVO dynastyR1 = new ParDynastyVO();
-        RegRecordVO recordR1 = new RegRecordVO();
+        ApRecordVO recordR1 = new ApRecordVO();
 
-        recordR1.setRegisterTypeId(findRegisterTypeAddable(recordTypesForPartyType(typeR1.getId())).getId());
+        recordR1.setApTypeId(findApTypeAddable(recordTypesForPartyType(typeR1.getId())).getId());
         recordR1.setScopeId(scope.getId());
 
         dynastyR1.setRecord(recordR1);
@@ -165,9 +165,9 @@ public class PartyControllerTest extends AbstractControllerTest {
 
         /* vytvoření události **/
         ParEventVO eventU1 = new ParEventVO();
-        RegRecordVO recordU1 = new RegRecordVO();
+        ApRecordVO recordU1 = new ApRecordVO();
 
-        recordU1.setRegisterTypeId(findRegisterTypeAddable(recordTypesForPartyType(typeU1.getId())).getId());
+        recordU1.setApTypeId(findApTypeAddable(recordTypesForPartyType(typeU1.getId())).getId());
         recordU1.setScopeId(scope.getId());
 
         eventU1.setRecord(recordU1);
@@ -318,17 +318,17 @@ public class PartyControllerTest extends AbstractControllerTest {
         Assert.assertNotNull(spawnRelationType);
         ParRelationRoleTypeVO spawnRelationRoleType = findRelationRoleTypeByCode(spawnRelationType.getRelationRoleTypes(), "PLACE");
         Assert.assertNotNull(spawnRelationRoleType);
-        List<RegRecordVO> recordForRelation = findRecordForRelation(null, null, null, spawnRelationRoleType.getId(), personO1.getId());
+        List<ApRecordVO> recordForRelation = findRecordForRelation(null, null, null, spawnRelationRoleType.getId(), personO1.getId());
 
         Assert.assertTrue("Očekáváme 0 záznamů", recordForRelation.size() == 0);
 
         /* Přidání relací osoby **/
-        RegRecordVO record = new RegRecordVO();
+        ApRecordVO record = new ApRecordVO();
 
         record.setScopeId(scope.getId());
         record.setCharacteristics("Characteristic");
         record.setRecord("GEO1");
-        record.setRegisterTypeId(findRegisterTypeByCode(getRecordTypes(), "GEO_SPACE").getId());
+        record.setApTypeId(findApTypeByCode(getRecordTypes(), "GEO_SPACE").getId());
 
         record = createRecord(record);
 
@@ -413,7 +413,7 @@ public class PartyControllerTest extends AbstractControllerTest {
         return givePerson(faScopes().iterator().next(), baseName);
     }
 
-    private ParPersonVO givePerson(RegScopeVO scope, String baseName) {
+    private ParPersonVO givePerson(ApScopeVO scope, String baseName) {
         List<ParPartyTypeVO> partyTypes = getPartyTypes();
 
         ParPartyTypeVO typeO1 = findPartyTypeByCode(partyTypes, PERSON_TYPE_CODE);
@@ -425,9 +425,9 @@ public class PartyControllerTest extends AbstractControllerTest {
 
         /* Vytvoření osoby **/
         ParPersonVO personO1 = new ParPersonVO();
-        RegRecordVO recordO1 = new RegRecordVO();
+        ApRecordVO recordO1 = new ApRecordVO();
 
-        recordO1.setRegisterTypeId(findRegisterTypeAddable(recordTypesForPartyType(typeO1.getId())).getId());
+        recordO1.setApTypeId(findApTypeAddable(recordTypesForPartyType(typeO1.getId())).getId());
         recordO1.setScopeId(scope.getId());
         personO1.setRecord(recordO1);
         personO1.setPartyType(typeO1);
@@ -462,8 +462,8 @@ public class PartyControllerTest extends AbstractControllerTest {
         List<ArrNodeVO> nodes = convertTreeNodes(treeData.getNodes());
         ArrNodeVO rootNode = nodes.get(0);
 
-        List<RegRegisterTypeVO> types = getRecordTypes();
-        List<RegScopeVO> scopes = getAllScopes();
+        List<ApTypeVO> types = getRecordTypes();
+        List<ApScopeVO> scopes = getAllScopes();
         Integer scopeId = scopes.iterator().next().getId();
 
         final ParPersonVO personO1 = givePerson("O1");
@@ -536,16 +536,16 @@ public class PartyControllerTest extends AbstractControllerTest {
         return null;
     }
 
-    private RegRegisterTypeVO findRegisterTypeByCode(final List<RegRegisterTypeVO> list, final String code) {
-        for (RegRegisterTypeVO item : list) {
+    private ApTypeVO findApTypeByCode(final List<ApTypeVO> list, final String code) {
+        for (ApTypeVO item : list) {
             if (item.getCode().equals(code)) {
                 return item;
             }
         }
 
-        for (RegRegisterTypeVO type : list) {
+        for (ApTypeVO type : list) {
             if (type.getChildren() != null) {
-                RegRegisterTypeVO res = findRegisterTypeByCode(type.getChildren(), code);
+                ApTypeVO res = findApTypeByCode(type.getChildren(), code);
                 if (res != null) {
                     return res;
                 }
@@ -601,16 +601,16 @@ public class PartyControllerTest extends AbstractControllerTest {
         return null;
     }
 
-    private RegRegisterTypeVO findRegisterTypeAddable(final List<RegRegisterTypeVO> list) {
-        for (RegRegisterTypeVO type : list) {
+    private ApTypeVO findApTypeAddable(final List<ApTypeVO> list) {
+        for (ApTypeVO type : list) {
             if (type.getAddRecord()) {
                 return type;
             }
         }
 
-        for (RegRegisterTypeVO type : list) {
+        for (ApTypeVO type : list) {
             if (type.getChildren() != null) {
-                RegRegisterTypeVO res = findRegisterTypeAddable(type.getChildren());
+                ApTypeVO res = findApTypeAddable(type.getChildren());
                 if (res != null) {
                     return res;
                 }

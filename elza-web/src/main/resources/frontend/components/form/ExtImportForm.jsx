@@ -14,8 +14,8 @@ import {partyDetailFetchIfNeeded} from 'actions/party/party.jsx'
 import {registryDetailFetchIfNeeded} from 'actions/registry/registry.jsx'
 import {routerNavigate} from 'actions/router.jsx'
 import Scope from '../../components/shared/scope/Scope';
-import {regExtSystemListFetchIfNeeded} from 'actions/registry/regExtSystemList';
-import {REG_EXT_SYSTEM_TYPE} from 'constants.jsx';
+import {apExtSystemListFetchIfNeeded} from 'actions/registry/apExtSystemList';
+import {AP_EXT_SYSTEM_TYPE} from 'constants.jsx';
 import ExtMapperForm from "./ExtMapperForm";
 import AbstractReactComponent from "../AbstractReactComponent";
 import i18n from "../i18n";
@@ -53,7 +53,7 @@ class ExtImportSearch extends AbstractReactComponent {
             errors.systemId = i18n('global.validation.required');
         } else {
             const sys = objectById(extSystems, values.systemId);
-            if (sys.type !== REG_EXT_SYSTEM_TYPE.INTERPI) {
+            if (sys.type !== AP_EXT_SYSTEM_TYPE.INTERPI) {
                 errors.systemId = i18n('extImport.validation.notInterpi');
             }
         }
@@ -94,14 +94,14 @@ class ExtImportSearch extends AbstractReactComponent {
     };
 
     componentDidMount() {
-        this.props.dispatch(regExtSystemListFetchIfNeeded());
+        this.props.dispatch(apExtSystemListFetchIfNeeded());
         if (this.props.extSystems !== null && this.props.extSystems.length === 1) {
             this.props.fields.systemId.onChange(this.props.extSystems[0].id);
         }
     }
 
     componentWillReceiveProps(nextProps) {
-        this.props.dispatch(regExtSystemListFetchIfNeeded());
+        this.props.dispatch(apExtSystemListFetchIfNeeded());
         if (this.props.extSystems === null && nextProps.extSystems !== null && nextProps.extSystems.length === 1) {
             this.props.fields.systemId.onChange(nextProps.extSystems[0].id);
         }
@@ -144,7 +144,7 @@ class ExtImportSearch extends AbstractReactComponent {
                 {extSystems.map(i => <option key={i.id} value={i.id}>{i.name}</option>)}
             </FormInput>
             {system != null && system && <div>
-                {system.type === REG_EXT_SYSTEM_TYPE.INTERPI ? <div>
+                {system.type === AP_EXT_SYSTEM_TYPE.INTERPI ? <div>
                     <label>Hledané parametry</label>
                         {conditions.length > 0 && <div className="flex">
                             <ControlLabel className="flex-1">
@@ -170,7 +170,7 @@ const ExtImportSearchComponent = reduxForm({
     fields: ['systemId', 'conditions[].condition', 'conditions[].value', 'conditions[].attType'],
     form: 'extImportSearch'
 }, (state, props) => ({
-    extSystems: state.app.regExtSystemList.fetched ? state.app.regExtSystemList.rows : null,
+    extSystems: state.app.apExtSystemList.fetched ? state.app.apExtSystemList.rows : null,
     initialValues: {conditions:[{condition: CONDITION_TYPE.AND, value:props.firstValue || null, attType: ATTRIBUTE_TYPES[0].val}]}
 }))(ExtImportSearch);
 

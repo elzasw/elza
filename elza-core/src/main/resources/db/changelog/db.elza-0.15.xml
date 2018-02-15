@@ -436,4 +436,114 @@
         <dropForeignKeyConstraint baseTableName="reg_coordinates" constraintName="fk_regCoordinates_data"/>
         <dropTable tableName="reg_coordinates"/>
     </changeSet>
+
+    <changeSet id="20180206152200" author="fric">
+        <renameTable oldTableName="reg_register_type" newTableName="ap_type"/>
+        <renameTable oldTableName="reg_variant_record" newTableName="ap_variant_record"/>
+        <renameTable oldTableName="reg_record" newTableName="ap_record"/>
+        <renameTable oldTableName="reg_scope" newTableName="ap_scope"/>
+        <renameTable oldTableName="reg_external_system" newTableName="ap_external_system"/>
+    </changeSet>
+
+    <changeSet id="20180213105500" author="fric">
+        <renameColumn newColumnName="ap_type_id" oldColumnName="register_type_id" tableName="ap_type"/>
+        <renameColumn newColumnName="parent_ap_type_id" oldColumnName="parent_register_type_id" tableName="ap_type"/>
+        <renameColumn newColumnName="ap_type_id" oldColumnName="register_type_id" tableName="par_registry_role"/>
+        <renameColumn newColumnName="ap_type_id" oldColumnName="register_type_id" tableName="ap_record"/>
+        <renameColumn newColumnName="ap_type_id" oldColumnName="register_type_id" tableName="rul_item_spec_register"/>
+    </changeSet>
+
+    <changeSet id="20180213110800" author="fric">
+        <dropForeignKeyConstraint baseTableName="ap_record" constraintName="fk_record_regRegisterType"/>
+        <dropForeignKeyConstraint baseTableName="ap_record" constraintName="fk_reg_external_system"/>
+        <dropForeignKeyConstraint baseTableName="ap_type" constraintName="fk_reg_register_type_package"/>
+        <dropForeignKeyConstraint baseTableName="par_registry_role" constraintName="fk_register_type_id"/>
+        <dropForeignKeyConstraint baseTableName="ap_type" constraintName="fk_regRegisterType_parPartyType"/>
+        <dropForeignKeyConstraint baseTableName="ap_type" constraintName="fk_regRegisterType_regRegisterType"/>
+
+        <dropForeignKeyConstraint baseTableName="par_party" constraintName="fk_party_regRecord"/>
+        <dropForeignKeyConstraint baseTableName="ap_variant_record" constraintName="fk_variantRecord_regRecord"/>
+        <dropForeignKeyConstraint baseTableName="arr_data_record_ref" constraintName="fk_dataRecordRef_record"/>
+        <dropForeignKeyConstraint baseTableName="arr_node_register" constraintName="fk_nodeRegister_record"/>
+        <dropForeignKeyConstraint baseTableName="par_relation_entity" constraintName="fk_parRelationEntity_regRecord"/>
+
+        <dropForeignKeyConstraint baseTableName="rul_item_spec_register" constraintName="fk_rulDescItemSpecRegister_registerType"/>
+
+        <dropForeignKeyConstraint baseTableName="arr_fund_register_scope" constraintName="fk_faRegScope_scope"/>
+        <dropForeignKeyConstraint baseTableName="ap_record" constraintName="fk_record_scope"/>
+        <dropForeignKeyConstraint baseTableName="usr_permission" constraintName="fk_permission_scope"/>
+        <dropForeignKeyConstraint baseTableName="ap_external_system" constraintName="fk_sys_external_system"/>
+
+        <dropPrimaryKey tableName="ap_external_system"/>
+        <dropPrimaryKey tableName="ap_record"/>
+        <dropPrimaryKey tableName="ap_type"/>
+        <dropPrimaryKey tableName="ap_scope"/>
+        <dropPrimaryKey tableName="ap_variant_record"/>
+
+        <addPrimaryKey columnNames="variant_record_id" constraintName="pk_ap_variant_record" tableName="ap_variant_record"/>
+        <addPrimaryKey columnNames="scope_id" constraintName="pk_ap_scope" tableName="ap_scope"/>
+        <addPrimaryKey columnNames="ap_type_id" constraintName="pk_ap_type" tableName="ap_type"/>
+        <addPrimaryKey columnNames="record_id" constraintName="pk_ap_record" tableName="ap_record"/>
+        <addPrimaryKey columnNames="external_system_id" constraintName="pk_ap_external_system" tableName="ap_external_system"/>
+
+        <addForeignKeyConstraint baseColumnNames="external_system_id" baseTableName="ap_external_system"
+                                 constraintName="fk_sys_external_system" referencedColumnNames="external_system_id"
+                                 referencedTableName="sys_external_system"/>
+        <addForeignKeyConstraint baseColumnNames="ap_type_id" baseTableName="ap_record"
+                                 constraintName="fk_accessPoint_apType" referencedColumnNames="ap_type_id"
+                                 referencedTableName="ap_type"/>
+        <addForeignKeyConstraint baseColumnNames="external_system_id" baseTableName="ap_record"
+                                 constraintName="fk_ap_external_system" referencedColumnNames="external_system_id"
+                                 referencedTableName="ap_external_system"/>
+        <addForeignKeyConstraint baseColumnNames="package_id" baseTableName="ap_type"
+                                 constraintName="fk_ap_type_package" referencedColumnNames="package_id"
+                                 referencedTableName="rul_package"/>
+        <addForeignKeyConstraint baseColumnNames="ap_type_id" baseTableName="par_registry_role"
+                                 constraintName="fk_ap_type_id" referencedColumnNames="ap_type_id"
+                                 referencedTableName="ap_type"/>
+        <addForeignKeyConstraint baseColumnNames="party_type_id" baseTableName="ap_type"
+                                 constraintName="fk_apType_parPartyType" referencedColumnNames="party_type_id"
+                                 referencedTableName="par_party_type"/>
+        <addForeignKeyConstraint baseColumnNames="parent_ap_type_id" baseTableName="ap_type"
+                                 constraintName="fk_apType_apType"
+                                 referencedColumnNames="ap_type_id" referencedTableName="ap_type"/>
+        <addForeignKeyConstraint baseColumnNames="record_id" baseTableName="par_party"
+                                 constraintName="fk_party_apRecord" referencedColumnNames="record_id"
+                                 referencedTableName="ap_record"/>
+        <addForeignKeyConstraint baseColumnNames="record_id" baseTableName="ap_variant_record"
+                                 constraintName="fk_variantRecord_regRecord" referencedColumnNames="record_id"
+                                 referencedTableName="ap_record"/>
+        <addForeignKeyConstraint baseColumnNames="record_id" baseTableName="arr_data_record_ref"
+                                 constraintName="fk_dataRecordRef_record" referencedColumnNames="record_id"
+                                 referencedTableName="ap_record"/>
+        <addForeignKeyConstraint baseColumnNames="record_id" baseTableName="arr_node_register"
+                                 constraintName="fk_nodeRegister_record" referencedColumnNames="record_id"
+                                 referencedTableName="ap_record"/>
+        <addForeignKeyConstraint baseColumnNames="record_id" baseTableName="par_relation_entity"
+                                 constraintName="fk_parRelationEntity_regRecord" referencedColumnNames="record_id"
+                                 referencedTableName="ap_record"/>
+        <addForeignKeyConstraint baseColumnNames="ap_type_id" baseTableName="rul_item_spec_register"
+                                 constraintName="fk_rulDescItemSpecRegister_apType" referencedColumnNames="ap_type_id"
+                                 referencedTableName="ap_type"/>
+        <addForeignKeyConstraint baseColumnNames="scope_id" baseTableName="arr_fund_register_scope"
+                                 constraintName="fk_faApScope_scope" referencedColumnNames="scope_id"
+                                 referencedTableName="ap_scope"/>
+        <addForeignKeyConstraint baseColumnNames="scope_id" baseTableName="ap_record"
+                                 constraintName="fk_record_scope" referencedColumnNames="scope_id"
+                                 referencedTableName="ap_scope"/>
+        <addForeignKeyConstraint baseColumnNames="scope_id" baseTableName="usr_permission"
+                                 constraintName="fk_permission_scope" referencedColumnNames="scope_id"
+                                 referencedTableName="ap_scope"/>
+
+        <update tableName="db_hibernate_sequences">
+            <column name="sequence_name" value="ap_type|ap_type_id" />
+            <where>sequence_name = 'reg_register_type|register_type_id'</where>
+        </update>
+
+        <update tableName="db_hibernate_sequences">
+            <column name="sequence_name" value="ap_scope|scope_id" />
+            <where>sequence_name = 'reg_scope|scope_id'</where>
+        </update>
+    </changeSet>
+
 </databaseChangeLog>

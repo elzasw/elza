@@ -4,16 +4,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 import cz.tacr.elza.dataexchange.output.loaders.LoadDispatcher;
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.domain.RegVariantRecord;
+import cz.tacr.elza.domain.ApRecord;
+import cz.tacr.elza.domain.ApVariantRecord;
 
-public class VariantNameDispatcher implements LoadDispatcher<RegVariantRecord> {
+public class VariantNameDispatcher implements LoadDispatcher<ApVariantRecord> {
 
-    private final List<RegVariantRecord> variantNames = new ArrayList<>();
+    private final List<ApVariantRecord> variantNames = new ArrayList<>();
 
-    private final RegRecord ap;
+    private final ApRecord ap;
 
-    public VariantNameDispatcher(RegRecord ap) {
+    public VariantNameDispatcher(ApRecord ap) {
         this.ap = ap;
     }
 
@@ -22,7 +22,7 @@ public class VariantNameDispatcher implements LoadDispatcher<RegVariantRecord> {
     }
 
     @Override
-    public void onLoad(RegVariantRecord result) {
+    public void onLoad(ApVariantRecord result) {
         variantNames.add(result);
     }
 

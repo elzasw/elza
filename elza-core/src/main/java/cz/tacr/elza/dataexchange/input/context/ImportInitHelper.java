@@ -7,16 +7,16 @@ import cz.tacr.elza.repository.PartyGroupIdentifierRepository;
 import cz.tacr.elza.repository.PartyNameComplementRepository;
 import cz.tacr.elza.repository.PartyNameRepository;
 import cz.tacr.elza.repository.PartyRepository;
-import cz.tacr.elza.repository.RegExternalSystemRepository;
-import cz.tacr.elza.repository.RegRecordRepository;
-import cz.tacr.elza.repository.RegVariantRecordRepository;
+import cz.tacr.elza.repository.ApExternalSystemRepository;
+import cz.tacr.elza.repository.ApRecordRepository;
+import cz.tacr.elza.repository.ApVariantRecordRepository;
 import cz.tacr.elza.repository.UnitdateRepository;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.GroovyScriptService;
 
 public class ImportInitHelper {
 
-    private final RegExternalSystemRepository externalSystemRepository;
+    private final ApExternalSystemRepository externalSystemRepository;
 
     private final GroovyScriptService groovyScriptService;
 
@@ -28,9 +28,9 @@ public class ImportInitHelper {
 
     private final LevelRepository levelRepository;
 
-    private final RegRecordRepository recordRepository;
+    private final ApRecordRepository recordRepository;
 
-    private final RegVariantRecordRepository variantRecordRepository;
+    private final ApVariantRecordRepository variantRecordRepository;
 
     private final PartyRepository partyRepository;
 
@@ -42,14 +42,14 @@ public class ImportInitHelper {
 
     private final UnitdateRepository unitdateRepository;
 
-    public ImportInitHelper(RegExternalSystemRepository externalSystemRepository,
+    public ImportInitHelper(ApExternalSystemRepository externalSystemRepository,
                             GroovyScriptService groovyScriptService,
                             InstitutionRepository institutionRepository,
                             InstitutionTypeRepository institutionTypeRepository,
                             ArrangementService arrangementService,
                             LevelRepository levelRepository,
-                            RegRecordRepository recordRepository,
-                            RegVariantRecordRepository variantRecordRepository,
+                            ApRecordRepository recordRepository,
+                            ApVariantRecordRepository variantRecordRepository,
                             PartyRepository partyRepository,
                             PartyNameRepository nameRepository,
                             PartyNameComplementRepository nameComplementRepository,
@@ -70,7 +70,7 @@ public class ImportInitHelper {
         this.unitdateRepository = unitdateRepository;
     }
 
-    public RegExternalSystemRepository getExternalSystemRepository() {
+    public ApExternalSystemRepository getExternalSystemRepository() {
         return externalSystemRepository;
     }
 
@@ -94,11 +94,11 @@ public class ImportInitHelper {
         return levelRepository;
     }
 
-    public RegRecordRepository getRecordRepository() {
+    public ApRecordRepository getRecordRepository() {
         return recordRepository;
     }
 
-    public RegVariantRecordRepository getVariantRecordRepository() {
+    public ApVariantRecordRepository getVariantRecordRepository() {
         return variantRecordRepository;
     }
 

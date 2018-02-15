@@ -4,24 +4,17 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import cz.tacr.elza.domain.*;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.ApRecord;
 
 
 /**
  * Repository for Description items
- * 
+ *
  * Some methods are also fetching related entities like node and data. Please
  * consider which method is suitable for each use.
  */
@@ -62,7 +55,7 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
 	        + " WHERE i.nodeId IN (?1) AND i.deleteChange IS NULL";
 	/**
 	 * Read node and connected data
-	 * 
+	 *
 	 * @param nodeIds
 	 * @return
 	 */
@@ -75,7 +68,7 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
 
 	/**
 	 * Read single description item and connected data
-	 * 
+	 *
 	 * @param node
 	 * @param descItemTypeId
 	 * @return Return description item and fetched data
@@ -85,9 +78,9 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
 
 	/**
 	 * Return list of description items for node.
-	 * 
+	 *
 	 * Function fetch description items and data
-	 * 
+	 *
 	 * @param node
 	 *            Node for which data are fetched. Cannot be null.
 	 * @param change
@@ -103,7 +96,7 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
 
     /**
 	 * Najde otevřené atributy s daným nodem a type a načte je včetně hodnot
-	 * 
+	 *
 	 * @param node
 	 *            nod uzlu
 	 * @param descItemTypes
@@ -220,7 +213,7 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
     List<Object[]> findFundIdNodeIdDataIdByDataAndDeleteChangeIsNull(List<? extends ArrData> data);
 
     @Query("Select i from arr_desc_item i join arr_data_record_ref d on i.data = d WHERE d.record = :record AND i.deleteChange IS NULL")
-    List<ArrDescItem> findArrItemByRecord(@Param("record") final RegRecord record);
+    List<ArrDescItem> findArrItemByRecord(@Param("record") final ApRecord record);
 
     @Query("Select i from arr_desc_item i join arr_data_party_ref d on i.data = d WHERE d.party = :party AND i.deleteChange IS NULL")
     List<ArrDescItem> findArrItemByParty(@Param("party") final ParParty party);

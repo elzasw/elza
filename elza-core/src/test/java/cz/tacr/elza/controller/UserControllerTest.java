@@ -8,16 +8,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import cz.tacr.elza.controller.vo.*;
 import org.junit.Test;
 
-import cz.tacr.elza.controller.vo.ArrFundVO;
-import cz.tacr.elza.controller.vo.FilteredResultVO;
-import cz.tacr.elza.controller.vo.ParPartyVO;
-import cz.tacr.elza.controller.vo.RegScopeVO;
-import cz.tacr.elza.controller.vo.UserInfoVO;
-import cz.tacr.elza.controller.vo.UsrGroupVO;
-import cz.tacr.elza.controller.vo.UsrPermissionVO;
-import cz.tacr.elza.controller.vo.UsrUserVO;
+import cz.tacr.elza.controller.vo.ApScopeVO;
 import cz.tacr.elza.domain.UsrPermission;
 
 
@@ -130,10 +124,10 @@ public class UserControllerTest extends AbstractControllerTest {
         permissionVOs.add(permissionVO);
 
         permissionVO = new UsrPermissionVO();
-        RegScopeVO regScopeVO = new RegScopeVO();
-        regScopeVO.setId(1);
-        permissionVO.setScope(regScopeVO);
-        permissionVO.setPermission(UsrPermission.Permission.REG_SCOPE_RD);
+        ApScopeVO apScopeVO = new ApScopeVO();
+        apScopeVO.setId(1);
+        permissionVO.setScope(apScopeVO);
+        permissionVO.setPermission(UsrPermission.Permission.AP_SCOPE_RD);
         permissionVOs.add(permissionVO);
 
         // Přidání a odebrání oprávnění na uživatele

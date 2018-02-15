@@ -24,7 +24,7 @@ public class ArrFundVO extends ArrFundBaseVO {
 
     private List<ArrFundVersionVO> versions = new LinkedList<>();
 
-    private List<RegScopeVO> regScopes;
+    private List<ApScopeVO> apScopes;
 
     private List<ArrOutputDefinitionVO> validNamedOutputs;
 
@@ -46,12 +46,12 @@ public class ArrFundVO extends ArrFundBaseVO {
         this.versions = versions;
     }
 
-    public List<RegScopeVO> getRegScopes() {
-        return regScopes;
+    public List<ApScopeVO> getApScopes() {
+        return apScopes;
     }
 
-    public void setRegScopes(List<RegScopeVO> regScopes) {
-        this.regScopes = regScopes;
+    public void setApScopes(List<ApScopeVO> apScopes) {
+        this.apScopes = apScopes;
     }
 
     public String getInternalCode() {

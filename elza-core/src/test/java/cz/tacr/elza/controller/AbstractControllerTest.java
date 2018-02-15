@@ -11,7 +11,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,6 +19,7 @@ import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.controller.vo.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.junit.Assert;
@@ -43,51 +43,7 @@ import com.jayway.restassured.response.ResponseOptions;
 import com.jayway.restassured.specification.RequestSpecification;
 import cz.tacr.elza.AbstractTest;
 import cz.tacr.elza.controller.ArrangementController.FaFilteredFulltextParam;
-import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
-import cz.tacr.elza.controller.vo.ArrFundVO;
-import cz.tacr.elza.controller.vo.ArrFundVersionVO;
-import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
-import cz.tacr.elza.controller.vo.ArrOutputDefinitionVO;
-import cz.tacr.elza.controller.vo.ArrOutputExtVO;
-import cz.tacr.elza.controller.vo.ArrOutputVO;
-import cz.tacr.elza.controller.vo.ArrStructureDataVO;
-import cz.tacr.elza.controller.vo.CopyNodesParams;
-import cz.tacr.elza.controller.vo.CopyNodesValidate;
-import cz.tacr.elza.controller.vo.CopyNodesValidateResult;
-import cz.tacr.elza.controller.vo.CreateFundVO;
-import cz.tacr.elza.controller.vo.FilterNode;
-import cz.tacr.elza.controller.vo.FilterNodePosition;
-import cz.tacr.elza.controller.vo.FilteredResultVO;
-import cz.tacr.elza.controller.vo.FundListCountResult;
-import cz.tacr.elza.controller.vo.NodeItemWithParent;
-import cz.tacr.elza.controller.vo.OutputSettingsVO;
-import cz.tacr.elza.controller.vo.PackageVO;
-import cz.tacr.elza.controller.vo.ParInstitutionVO;
-import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
-import cz.tacr.elza.controller.vo.ParPartyTypeVO;
-import cz.tacr.elza.controller.vo.ParPartyVO;
-import cz.tacr.elza.controller.vo.ParRelationVO;
-import cz.tacr.elza.controller.vo.RegRecordVO;
-import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
-import cz.tacr.elza.controller.vo.RegScopeVO;
-import cz.tacr.elza.controller.vo.RegVariantRecordVO;
-import cz.tacr.elza.controller.vo.RulDataTypeVO;
-import cz.tacr.elza.controller.vo.RulDescItemSpecVO;
-import cz.tacr.elza.controller.vo.RulDescItemTypeVO;
-import cz.tacr.elza.controller.vo.RulOutputTypeVO;
-import cz.tacr.elza.controller.vo.RulPolicyTypeVO;
-import cz.tacr.elza.controller.vo.RulRuleSetVO;
-import cz.tacr.elza.controller.vo.RulStructureTypeVO;
-import cz.tacr.elza.controller.vo.RulTemplateVO;
-import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
-import cz.tacr.elza.controller.vo.SysExternalSystemVO;
-import cz.tacr.elza.controller.vo.TreeData;
-import cz.tacr.elza.controller.vo.TreeNodeClient;
-import cz.tacr.elza.controller.vo.UserInfoVO;
-import cz.tacr.elza.controller.vo.UsrGroupVO;
-import cz.tacr.elza.controller.vo.UsrPermissionVO;
-import cz.tacr.elza.controller.vo.UsrUserVO;
-import cz.tacr.elza.controller.vo.ValidationResult;
+import cz.tacr.elza.controller.vo.ApRecordVO;
 import cz.tacr.elza.controller.vo.filter.Filters;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
@@ -111,34 +67,6 @@ import cz.tacr.elza.domain.ArrStructureData;
 import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.vo.ChangesResult;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.BooleanUtils;
-import org.junit.Assert;
-import org.junit.Before;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-
-import javax.annotation.Nullable;
-import java.io.File;
-import java.io.InputStream;
-import java.math.BigDecimal;
-import java.net.URL;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
 
 import static com.jayway.restassured.RestAssured.given;
 
@@ -316,11 +244,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String DELETE_RECORD = REGISTRY_CONTROLLER_URL + "/{recordId}";
     protected static final String USAGES_RECORD = REGISTRY_CONTROLLER_URL + "/{recordId}/usage";
     protected static final String REPLACE_RECORD = REGISTRY_CONTROLLER_URL + "/{recordId}/replace";
-
-
-    protected static final String CREATE_REG_COORDINATES = REGISTRY_CONTROLLER_URL + "/regCoordinates/";
-    protected static final String UPDATE_REG_COORDINATES = REGISTRY_CONTROLLER_URL + "/regCoordinates/{coordinatesId}";
-    protected static final String DELETE_REG_COORDINATES = REGISTRY_CONTROLLER_URL + "/regCoordinates/{coordinatesId}";
 
     protected static final String CREATE_VARIANT_RECORD = REGISTRY_CONTROLLER_URL + "/variantRecord/";
     protected static final String UPDATE_VARIANT_RECORD = REGISTRY_CONTROLLER_URL + "/variantRecord/{variantRecordId}";
@@ -1202,7 +1125,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
             case "RECORD_REF": {
                 descItem = new ArrItemRecordRefVO();
-                ((ArrItemRecordRefVO) descItem).setValue(((RegRecordVO) value).getId());
+                ((ArrItemRecordRefVO) descItem).setValue(((ApRecordVO) value).getId());
                 break;
             }
 
@@ -1675,8 +1598,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param scope objekt třídy
      * @return nový objekt třídy
      */
-    protected RegScopeVO createScope(final RegScopeVO scope) {
-        return post(spec -> spec.body(scope), CREATE_SCOPE).getBody().as(RegScopeVO.class);
+    protected ApScopeVO createScope(final ApScopeVO scope) {
+        return post(spec -> spec.body(scope), CREATE_SCOPE).getBody().as(ApScopeVO.class);
     }
 
     /**
@@ -1685,8 +1608,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param scope objekt třídy
      * @return aktualizovaný objekt třídy
      */
-    protected RegScopeVO updateScope(final RegScopeVO scope) {
-        return put(spec -> spec.body(scope).pathParam("scopeId", scope.getId()), UPDATE_SCOPE).getBody().as(RegScopeVO.class);
+    protected ApScopeVO updateScope(final ApScopeVO scope) {
+        return put(spec -> spec.body(scope).pathParam("scopeId", scope.getId()), UPDATE_SCOPE).getBody().as(ApScopeVO.class);
     }
 
     /**
@@ -1711,8 +1634,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
     /**
      * Vrací všechny třídy rejstříků z databáze.
      */
-    protected List<RegScopeVO> getAllScopes() {
-        return Arrays.asList(get(ALL_SCOPES).getBody().as(RegScopeVO[].class));
+    protected List<ApScopeVO> getAllScopes() {
+        return Arrays.asList(get(ALL_SCOPES).getBody().as(ApScopeVO[].class));
     }
 
     /**
@@ -1720,8 +1643,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
      *
      * @return seznam typů rejstříku (typů hesel)
      */
-    protected List<RegRegisterTypeVO> getRecordTypes() {
-        return Arrays.asList(get(RECORD_TYPES).getBody().as(RegRegisterTypeVO[].class));
+    protected List<ApTypeVO> getRecordTypes() {
+        return Arrays.asList(get(RECORD_TYPES).getBody().as(ApTypeVO[].class));
     }
 
 
@@ -1730,8 +1653,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
      *
      * @param recordId id požadovaného hesla
      */
-    protected RegRecordVO getRecord(final int recordId) {
-        return get(spec -> spec.pathParam("recordId", recordId), GET_RECORD).getBody().as(RegRecordVO.class);
+    protected ApRecordVO getRecord(final int recordId) {
+        return get(spec -> spec.pathParam("recordId", recordId), GET_RECORD).getBody().as(ApRecordVO.class);
     }
 
     /**
@@ -1739,8 +1662,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
      *
      * @param record VO rejstříkové heslo
      */
-    protected RegRecordVO createRecord(final RegRecordVO record) {
-        return post(spec -> spec.body(record), CREATE_RECORD).getBody().as(RegRecordVO.class);
+    protected ApRecordVO createRecord(final ApRecordVO record) {
+        return post(spec -> spec.body(record), CREATE_RECORD).getBody().as(ApRecordVO.class);
     }
 
     /**
@@ -1748,8 +1671,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
      *
      * @param record VO rejstříkové heslo
      */
-    protected RegRecordVO updateRecord(final RegRecordVO record) {
-        return put(spec -> spec.pathParam("recordId", record.getId()).body(record), UPDATE_RECORD).getBody().as(RegRecordVO.class);
+    protected ApRecordVO updateRecord(final ApRecordVO record) {
+        return put(spec -> spec.pathParam("recordId", record.getId()).body(record), UPDATE_RECORD).getBody().as(ApRecordVO.class);
     }
 
     /**
@@ -1781,21 +1704,21 @@ public abstract class AbstractControllerTest extends AbstractTest {
     }
 
     /**
-     * Vyhledávání v RegRecord
+     * Vyhledávání v ApRecord
      *
      * @param search
      * @param from
      * @param count
-     * @param registerTypeId
+     * @param apTypeId
      * @param parentRecordId
      * @param versionId
      * @return List nalezených záznamů
      */
-    protected List<RegRecordVO> findRecord(final String search,
-                                           final Integer from, final Integer count,
-                                           final Integer registerTypeId,
-                                           final Integer parentRecordId,
-                                           final Integer versionId) {
+    protected List<ApRecordVO> findRecord(final String search,
+                                          final Integer from, final Integer count,
+                                          final Integer apTypeId,
+                                          final Integer parentRecordId,
+                                          final Integer versionId) {
         HashMap<String, Object> params = new HashMap<>();
 
         if (search != null) {
@@ -1807,8 +1730,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
         if (parentRecordId != null) {
             params.put("parentRecordId", parentRecordId);
         }
-        if (registerTypeId != null) {
-            params.put("registerTypeId", registerTypeId);
+        if (apTypeId != null) {
+            params.put("apTypeId", apTypeId);
         }
         params.put("from", from != null ? from : 0);
         params.put("count", count != null ? count : 20);
@@ -1824,8 +1747,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param recordVO VO objektu k vytvoření
      * @return VO
      */
-    protected RegVariantRecordVO createVariantRecord(final RegVariantRecordVO recordVO) {
-        return post(spec -> spec.body(recordVO), CREATE_VARIANT_RECORD).getBody().as(RegVariantRecordVO.class);
+    protected ApVariantRecordVO createVariantRecord(final ApVariantRecordVO recordVO) {
+        return post(spec -> spec.body(recordVO), CREATE_VARIANT_RECORD).getBody().as(ApVariantRecordVO.class);
     }
 
     /**
@@ -1834,8 +1757,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param recordVO VO objektu k vytvoření
      * @return VO
      */
-    protected RegVariantRecordVO updateVariantRecord(final RegVariantRecordVO recordVO) {
-        return put(spec -> spec.pathParam("variantRecordId", recordVO.getId()).body(recordVO), UPDATE_VARIANT_RECORD).getBody().as(RegVariantRecordVO.class);
+    protected ApVariantRecordVO updateVariantRecord(final ApVariantRecordVO recordVO) {
+        return put(spec -> spec.pathParam("variantRecordId", recordVO.getId()).body(recordVO), UPDATE_VARIANT_RECORD).getBody().as(ApVariantRecordVO.class);
     }
 
     /**
@@ -1846,16 +1769,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
      */
     protected Response deleteVariantRecord(final int id) {
         return delete(spec -> spec.pathParam("variantRecordId", id), DELETE_VARIANT_RECORD);
-    }
-
-    /**
-     * Smazání reg souřadnic
-     *
-     * @param id variantního hesla
-     * @return response
-     */
-    protected Response deleteRegCoordinates(final int id) {
-        return delete(spec -> spec.pathParam("coordinatesId", id), DELETE_REG_COORDINATES);
     }
 
     /**
@@ -1936,10 +1849,10 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param partyTypeId
      * @return typy rejstříků
      */
-    protected List<RegRegisterTypeVO> recordTypesForPartyType(final int partyTypeId) {
+    protected List<ApTypeVO> recordTypesForPartyType(final int partyTypeId) {
         return Arrays
                 .asList(get(spec -> spec.queryParam("partyTypeId", partyTypeId), RECORD_TYPES_FOR_PARTY_TYPE).getBody()
-                        .as(RegRegisterTypeVO[].class));
+                        .as(ApTypeVO[].class));
     }
 
     /**
@@ -1947,8 +1860,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
      *
      * @return list scope
      */
-    protected List<RegScopeVO> faScopes() {
-        return Arrays.asList(get(FA_SCOPES).getBody().as(RegScopeVO[].class));
+    protected List<ApScopeVO> faScopes() {
+        return Arrays.asList(get(FA_SCOPES).getBody().as(ApScopeVO[].class));
     }
 
 
@@ -2058,10 +1971,10 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param partyId    id osoby, ze které je načtena hledaná třída rejstříku
      * @return list rejstříkových hesel
      */
-    protected List<RegRecordVO> findRecordForRelation(final String search,
-                                                      final Integer from, final Integer count,
-                                                      final Integer roleTypeId,
-                                                      final Integer partyId) {
+    protected List<ApRecordVO> findRecordForRelation(final String search,
+                                                     final Integer from, final Integer count,
+                                                     final Integer roleTypeId,
+                                                     final Integer partyId) {
         HashMap<String, Object> params = new HashMap<>();
 
         if (search != null) {

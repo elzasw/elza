@@ -67,8 +67,8 @@ public class PartyLoader extends AbstractEntityLoader<Integer, ParParty> {
     }
 
     private void prepareCachedRelations(ParParty result) {
-        Integer regTypeId = result.getRecord().getRegisterTypeId();
-        ParPartyType partyType = staticData.getRegisterTypeById(regTypeId).getPartyType();
+        Integer apTypeId = result.getRecord().getApTypeId();
+        ParPartyType partyType = staticData.getApTypeById(apTypeId).getPartyType();
         Validate.notNull(partyType);
         result.setPartyType(partyType);
     }
