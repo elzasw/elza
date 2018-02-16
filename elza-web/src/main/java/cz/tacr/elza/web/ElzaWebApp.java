@@ -1,12 +1,15 @@
 package cz.tacr.elza.web;
 
 import cz.tacr.elza.ElzaCore;
+import org.h2.server.web.WebServlet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.servlet.MultipartConfigFactory;
+import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -43,12 +46,13 @@ public class ElzaWebApp {
         SpringApplication.run(ElzaWebApp.class, args);
     }
 
-    /*@Bean
+    @Bean
+    @ConditionalOnProperty(prefix = "spring.h2.console", name = "enabled", havingValue = "true")
     public ServletRegistrationBean h2servletRegistration() {
         ServletRegistrationBean registration = new ServletRegistrationBean(new WebServlet());
         registration.addUrlMappings("/console/*");
         return registration;
-    }*/
+    }
 
     @Bean
     public MultipartResolver multipartResolver() {
