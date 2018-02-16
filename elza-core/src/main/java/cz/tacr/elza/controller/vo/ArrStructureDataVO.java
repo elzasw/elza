@@ -1,6 +1,6 @@
 package cz.tacr.elza.controller.vo;
 
-import cz.tacr.elza.domain.ArrStructureData;
+import cz.tacr.elza.domain.ArrStructuredObject;
 
 import java.util.Objects;
 
@@ -13,7 +13,7 @@ public class ArrStructureDataVO {
 
     public Integer id;
     public String value;
-    public ArrStructureData.State state;
+    public ArrStructuredObject.State state;
     public Boolean assignable;
     public String errorDescription;
     public String typeCode;

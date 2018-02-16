@@ -16,7 +16,7 @@ public class StructuredObjectRefItemConvertor extends AbstractItemConvertor {
             return null;
         }
         ArrDataStructureRef data = (ArrDataStructureRef) item.getData();
-        Structured structObj = context.getStructured(data.getStructureData());
+        Structured structObj = context.getStructured(data.getStructuredObject());
 
         return new ItemStructuredRef(structObj);
     }

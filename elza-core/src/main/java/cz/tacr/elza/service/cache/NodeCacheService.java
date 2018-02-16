@@ -53,7 +53,7 @@ import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeRegister;
-import cz.tacr.elza.domain.ArrStructureData;
+import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ApRecord;
 import cz.tacr.elza.domain.RulItemSpec;
@@ -67,7 +67,7 @@ import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.ApRecordRepository;
-import cz.tacr.elza.repository.StructureDataRepository;
+import cz.tacr.elza.repository.StructuredObjectRepository;
 
 /**
  * Service for caching node related entities.
@@ -103,7 +103,7 @@ public class NodeCacheService {
     private DaoLinkRepository daoLinkRepository;
 
     @Autowired
-    private StructureDataRepository structureDataRepository;
+    private StructuredObjectRepository structureDataRepository;
 
     @Autowired
     private PartyRepository partyRepository;
@@ -499,7 +499,7 @@ public class NodeCacheService {
 					if (data != null) {
 						// restore dataType
 						if (data instanceof ArrDataStructureRef) {
-						    itemStructureDataMap.put(descItem, ((ArrDataStructureRef) data).getStructureDataId());
+						    itemStructureDataMap.put(descItem, ((ArrDataStructureRef) data).getStructuredObjectId());
 						} else if (data instanceof ArrDataPartyRef) {
 							itemPartiesMap.put(descItem, ((ArrDataPartyRef) data).getPartyId());
 						} else if (data instanceof ArrDataRecordRef) {
@@ -694,7 +694,7 @@ public class NodeCacheService {
     }
 
     /**
-     * Vyplnění návazných entity {@link ArrStructureData}.
+     * Vyplnění návazných entity {@link ArrStructuredObject}.
      *
      * @param itemStructureDataMap mapa entit k vyplnění
      */
@@ -702,15 +702,15 @@ public class NodeCacheService {
         if (itemStructureDataMap.size() == 0) {
             return;
         }
-        List<ArrStructureData> structureDataList = structureDataRepository.findAll(itemStructureDataMap.values());
-        Map<Integer, ArrStructureData> structureDataMapFound = new HashMap<>();
-        for (ArrStructureData structureData : structureDataList) {
-            structureDataMapFound.put(structureData.getStructureDataId(), structureData);
+        List<ArrStructuredObject> structureDataList = structureDataRepository.findAll(itemStructureDataMap.values());
+        Map<Integer, ArrStructuredObject> structureDataMapFound = new HashMap<>();
+        for (ArrStructuredObject structureData : structureDataList) {
+            structureDataMapFound.put(structureData.getStructuredObjectId(), structureData);
         }
 
         for (Map.Entry<ArrDescItem, Integer> entry : itemStructureDataMap.entrySet()) {
             ArrDescItem descItem = entry.getKey();
-            ((ArrDataStructureRef) descItem.getData()).setStructureData(structureDataMapFound.get(entry.getValue()));
+            ((ArrDataStructureRef) descItem.getData()).setStructuredObject(structureDataMapFound.get(entry.getValue()));
         }
     }
 

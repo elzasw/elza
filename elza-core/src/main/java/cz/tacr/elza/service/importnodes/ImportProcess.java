@@ -49,7 +49,7 @@ import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeRegister;
-import cz.tacr.elza.domain.ArrStructureData;
+import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.convertor.CalendarConverter;
@@ -68,7 +68,7 @@ import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.ApRecordRepository;
 import cz.tacr.elza.service.FundLevelService;
-import cz.tacr.elza.repository.StructureDataRepository;
+import cz.tacr.elza.repository.StructuredObjectRepository;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.DmsService;
 import cz.tacr.elza.service.IEventNotificationService;
@@ -152,7 +152,7 @@ public class ImportProcess {
     private FundFileRepository fundFileRepository;
 
     @Autowired
-    private StructureDataRepository structureDataRepository;
+    private StructuredObjectRepository structureDataRepository;
 
     @Autowired
     private PartyRepository partyRepository;
@@ -259,7 +259,7 @@ public class ImportProcess {
         logger.info("Zahájení importu do AS");
 
         Map<String, ArrFile> filesMapper = resolveFileConflict();
-		Map<Integer, ArrStructureData> structureDataMapper = resolveStructureDataConflict();
+		Map<Integer, ArrStructuredObject> structureDataMapper = resolveStructureDataConflict();
 
         Stack<DeepData> stack = new Stack<>();
         while (source.hasNext()) {
@@ -338,7 +338,7 @@ public class ImportProcess {
      * @param item          zdrojový item
      * @param descItem      vazební item   @return vytvořená data
      */
-	private ArrData createArrData(final Map<String, ArrFile> filesMapper, final Map<Integer, ArrStructureData> structureDataMapper,
+	private ArrData createArrData(final Map<String, ArrFile> filesMapper, final Map<Integer, ArrStructuredObject> structureDataMapper,
 	        final Item item, final ArrDescItem descItem) {
         ArrData data;
         if (item instanceof ItemInt) {
@@ -392,10 +392,10 @@ public class ImportProcess {
             ((ArrDataFileRef) data).setFile(fileNew);
         } else if (item instanceof ItemStructureRef) {
             data = new ArrDataStructureRef();
-            ArrStructureData structureData = structureDataRepository
+            ArrStructuredObject structureData = structureDataRepository
                     .findOne(((ItemStructureRef) item).getStructureDataId());
-            ArrStructureData structureDataNew = structureDataMapper.get(structureData.getStructureDataId());
-            ((ArrDataStructureRef) data).setStructureData(structureDataNew);
+            ArrStructuredObject structureDataNew = structureDataMapper.get(structureData.getStructuredObjectId());
+            ((ArrDataStructureRef) data).setStructuredObject(structureDataNew);
         } else if (item instanceof ItemPartyRef) {
             data = new ArrDataPartyRef();
             ((ArrDataPartyRef) data).setParty(partyRepository.getOne(((ItemPartyRef) item).getPartyId()));
@@ -545,20 +545,20 @@ public class ImportProcess {
      *
      * @return výsledná mapa pro provazování
      */
-	private Map<Integer, ArrStructureData> resolveStructureDataConflict() {
+	private Map<Integer, ArrStructuredObject> resolveStructureDataConflict() {
 		// get current packets
-		Map<String, ArrStructureData> fundPacketsMapName = structureDataRepository
+		Map<String, ArrStructuredObject> fundPacketsMapName = structureDataRepository
                 .findByFundAndDeleteChangeIsNull(targetFundVersion.getFund())
 		        .stream().collect(
 		                Collectors.toMap(structuredObject -> structuredObject.getValue(), Function.identity())
 		        );
 
 		// Map PacketId to ArrPacket
-		Map<Integer, ArrStructureData> result = new HashMap<>();
+		Map<Integer, ArrStructuredObject> result = new HashMap<>();
 
-        List<ArrStructureData> sourcePackets = source.getStructuredList();
-        for (ArrStructureData sourcePacket : sourcePackets) {
-            ArrStructureData structuredObject = null;
+        List<ArrStructuredObject> sourcePackets = source.getStructuredList();
+        for (ArrStructuredObject sourcePacket : sourcePackets) {
+            ArrStructuredObject structuredObject = null;
 			// switch
             switch (params.getStructuredConflictResolve()) {
 			case USE_TARGET:

@@ -15,14 +15,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import cz.tacr.elza.common.db.DatabaseType;
 import cz.tacr.elza.common.db.RecursiveQueryBuilder;
-import cz.tacr.elza.domain.ArrStructureData;
+import cz.tacr.elza.domain.ArrStructuredObject;
 
 /**
- * Rozšířené repository pro {@link StructureDataRepository}.
+ * Rozšířené repository pro {@link StructuredObjectRepository}.
  *
  * @since 10.11.2017
  */
-public class StructureDataRepositoryImpl implements StructureDataRepositoryCustom {
+public class StructuredObjectRepositoryImpl implements StructuredObjectRepositoryCustom {
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -30,17 +30,17 @@ public class StructureDataRepositoryImpl implements StructureDataRepositoryCusto
     @Autowired
     private LevelRepository levelRepository;
 
-    private TypedQuery buildStructureDataFindQuery(final boolean dataQuery, String search, int structureTypeId, int fundId, Boolean assignable, int firstResult, int maxResults) {
+    private TypedQuery buildStructureDataFindQuery(final boolean dataQuery, String search, int structuredTypeId, int fundId, Boolean assignable, int firstResult, int maxResults) {
 
         // Podmínky hledání
         StringBuilder conds = new StringBuilder();
         Map<String, Object> parameters = new HashMap<>();
 
         StringBuilder query = new StringBuilder();
-        query.append("FROM arr_structure_data sd");
+        query.append("FROM arr_structured_object sd");
 
-        query.append(" WHERE sd.structureTypeId = :structureTypeId AND sd.fundId = :fundId");
-        parameters.put("structureTypeId", structureTypeId);
+        query.append(" WHERE sd.structuredTypeId = :structuredTypeId AND sd.fundId = :fundId");
+        parameters.put("structuredTypeId", structuredTypeId);
         parameters.put("fundId", fundId);
 
         if (!StringUtils.isEmpty(search)) {
@@ -50,7 +50,7 @@ public class StructureDataRepositoryImpl implements StructureDataRepositoryCusto
 
         // bez tempových
         conds.append(" AND sd.state <> :state");
-        parameters.put("state", ArrStructureData.State.TEMP);
+        parameters.put("state", ArrStructuredObject.State.TEMP);
 
         // pouze nesmazané
         conds.append(" AND sd.deleteChange IS NULL");
@@ -68,7 +68,7 @@ public class StructureDataRepositoryImpl implements StructureDataRepositoryCusto
         TypedQuery q;
         if (dataQuery) {
             String dataQueryStr = "SELECT sd " + query.toString() + " ORDER BY sd.value";
-            q = entityManager.createQuery(dataQueryStr, ArrStructureData.class);
+            q = entityManager.createQuery(dataQueryStr, ArrStructuredObject.class);
         } else {
             String countQueryStr = "SELECT COUNT(sd) " + query.toString();
             q = entityManager.createQuery(countQueryStr, Number.class);
@@ -87,28 +87,28 @@ public class StructureDataRepositoryImpl implements StructureDataRepositoryCusto
     }
 
     @Override
-    public FilteredResult<ArrStructureData> findStructureData(final Integer structureTypeId, final int fundId,
-            final String search, final Boolean assignable,
-            final int firstResult, final int maxResults) {
-        TypedQuery data = buildStructureDataFindQuery(true, search, structureTypeId, fundId, assignable, firstResult, maxResults);
-        TypedQuery count = buildStructureDataFindQuery(false, search, structureTypeId, fundId, assignable, firstResult, maxResults);
+    public FilteredResult<ArrStructuredObject> findStructureData(final Integer structuredTypeId, final int fundId,
+                                                                 final String search, final Boolean assignable,
+                                                                 final int firstResult, final int maxResults) {
+        TypedQuery data = buildStructureDataFindQuery(true, search, structuredTypeId, fundId, assignable, firstResult, maxResults);
+        TypedQuery count = buildStructureDataFindQuery(false, search, structuredTypeId, fundId, assignable, firstResult, maxResults);
         return new FilteredResult<>(firstResult, maxResults,
                 ((Number) count.getSingleResult()).intValue(), data.getResultList());
     }
 
     @Override
-    public List<ArrStructureData> findStructureDataBySubtreeNodeIds(final Collection<Integer> nodeIds,
-            final boolean ignoreRootNodes) {
+    public List<ArrStructuredObject> findStructureDataBySubtreeNodeIds(final Collection<Integer> nodeIds,
+                                                                       final boolean ignoreRootNodes) {
         Validate.notEmpty(nodeIds);
 
-        RecursiveQueryBuilder<ArrStructureData> rqBuilder = DatabaseType.getCurrent()
-                .createRecursiveQueryBuilder(ArrStructureData.class);
+        RecursiveQueryBuilder<ArrStructuredObject> rqBuilder = DatabaseType.getCurrent()
+                .createRecursiveQueryBuilder(ArrStructuredObject.class);
 
-        rqBuilder.addSqlPart("SELECT p.* FROM arr_structure_data p WHERE p.structure_data_id IN (")
+        rqBuilder.addSqlPart("SELECT p.* FROM arr_structured_object p WHERE p.structured_object_id IN (")
 
-                .addSqlPart("SELECT dpr.structure_data_id FROM arr_data_structure_ref dpr ")
+                .addSqlPart("SELECT dpr.structured_object_id FROM arr_data_structure_ref dpr ")
                 .addSqlPart(
-                        "JOIN arr_structure_data ap ON ap.structure_data_id = dpr.structure_data_id WHERE dpr.data_id IN (")
+                        "JOIN arr_structured_object ap ON ap.structured_object_id = dpr.structured_object_id WHERE dpr.data_id IN (")
 
                 .addSqlPart("SELECT d.data_id FROM arr_item i JOIN arr_data d ON d.data_id = i.data_id ")
                 .addSqlPart("JOIN arr_desc_item di ON di.item_id = i.item_id ")

@@ -1,8 +1,15 @@
 package cz.tacr.elza.packageimport;
 
 import cz.tacr.elza.core.data.DataType;
-import cz.tacr.elza.domain.*;
 import cz.tacr.elza.domain.ApType;
+import cz.tacr.elza.domain.RulDataType;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemSpecRegister;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulPackage;
+import cz.tacr.elza.domain.RulPackageDependency;
+import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.RulStructuredType;
 import cz.tacr.elza.domain.table.ElzaColumn;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
@@ -15,13 +22,13 @@ import cz.tacr.elza.packageimport.xml.ItemSpecRegister;
 import cz.tacr.elza.packageimport.xml.ItemSpecs;
 import cz.tacr.elza.packageimport.xml.ItemType;
 import cz.tacr.elza.packageimport.xml.ItemTypes;
+import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.ItemSpecRegisterRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.PackageDependencyRepository;
 import cz.tacr.elza.repository.PackageRepository;
-import cz.tacr.elza.repository.ApTypeRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -171,7 +178,7 @@ public class ItemTypeUpdater {
      * @return return list of updated types
 	 */
 	public List<RulItemType> update(final List<RulDataType> rulDataTypes,
-                                    final List<RulStructureType> rulStructureTypes,
+                                    final List<RulStructuredType> rulStructureTypes,
                                     final RulPackage rulPackage,
                                     final ItemTypes itemTypes,
                                     final ItemSpecs itemSpecs,
@@ -267,7 +274,7 @@ public class ItemTypeUpdater {
 	 */
     private List<RulItemType> updateItemTypes(List<RulItemType> rulItemTypesOrig, List<ItemType> itemTypes,
                                               final RulRuleSet rulRuleSet,
-                                              final List<RulStructureType> rulStructureTypes) {
+                                              final List<RulStructuredType> rulStructureTypes) {
     	List<RulItemType> rulItemTypesUpdated = new ArrayList<>();
     	int lastUsedViewOrder = -1;
 		for (ItemType itemType : itemTypes) {
@@ -355,7 +362,7 @@ public class ItemTypeUpdater {
                                         final ItemType itemType,
                                         final RulItemType rulDescItemType,
                                         final List<RulDataType> rulDataTypes,
-                                        final List<RulStructureType> rulStructureTypes,
+                                        final List<RulStructuredType> rulStructureTypes,
                                         final RulRuleSet rulRuleSet) {
 
         rulDescItemType.setCode(itemType.getCode());
@@ -373,9 +380,9 @@ public class ItemTypeUpdater {
             throw new SystemException("Kód " + itemType.getDataType() + " neexistuje v RulDataType", BaseCode.ID_NOT_EXIST);
         }
 
-        RulStructureType rulStructureType = null;
+        RulStructuredType rulStructureType = null;
         if (DataType.STRUCTURED == DataType.fromCode(itemType.getDataType())) {
-            List<RulStructureType> findStructureTypes = rulStructureTypes.stream()
+            List<RulStructuredType> findStructureTypes = rulStructureTypes.stream()
                     .filter((r) -> r.getCode().equals(itemType.getStructureType()))
                     .collect(Collectors.toList());
             if (findStructureTypes.size() > 0) {
@@ -391,7 +398,7 @@ public class ItemTypeUpdater {
         rulDescItemType.setIsValueUnique(itemType.getIsValueUnique());
         rulDescItemType.setCanBeOrdered(itemType.getCanBeOrdered());
         rulDescItemType.setUseSpecification(itemType.getUseSpecification());
-        rulDescItemType.setStructureType(rulStructureType);
+        rulDescItemType.setStructuredType(rulStructureType);
 
         if (itemType.getColumnsDefinition() != null) {
             List<ElzaColumn> elzaColumns = new ArrayList<>(itemType.getColumnsDefinition().size());

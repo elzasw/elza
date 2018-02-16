@@ -34,7 +34,7 @@ import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ArrDataStructureRef;
 import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.ArrNodeRegister;
-import cz.tacr.elza.domain.ArrStructureData;
+import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.schema.v2.AccessPointRefs;
@@ -90,11 +90,11 @@ class XmlSectionOutputStream implements SectionOutputStream {
     }
 
     @Override
-    public void addStructuredObject(ArrStructureData structuredData) {
+    public void addStructuredObject(ArrStructuredObject structuredData) {
         Validate.isTrue(!processed);
 
         StructuredObject element = new StructuredObject();
-        element.setId(structuredData.getStructureDataId().toString());
+        element.setId(structuredData.getStructuredObjectId().toString());
         // TODO: nastaveni dalsich polozek
         /*element.setN(packet.getStorageNumber());
         element.setS(PacketStateConvertor.convert(packet.getState()));
@@ -256,7 +256,7 @@ class XmlSectionOutputStream implements SectionOutputStream {
                     DescriptionItemStructObjectRefImpl item = super.convert(data);
                     if (item != null) {
                         ArrDataStructureRef structObjRef = (ArrDataStructureRef) data;
-                        sectionContext.addStructeredObjectId(structObjRef.getStructureDataId());
+                        sectionContext.addStructeredObjectId(structObjRef.getStructuredObjectId());
                     }
                     return item;
                 }

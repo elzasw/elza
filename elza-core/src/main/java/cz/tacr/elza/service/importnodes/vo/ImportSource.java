@@ -4,7 +4,7 @@ import java.util.List;
 
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ArrFile;
-import cz.tacr.elza.domain.ArrStructureData;
+import cz.tacr.elza.domain.ArrStructuredObject;
 
 /**
  * Rozhraní zdroje pro import.
@@ -28,7 +28,7 @@ public interface ImportSource {
     /**
      * @return seznam použitých obalů
      */
-    List<ArrStructureData> getStructuredList();
+    List<ArrStructuredObject> getStructuredList();
 
     /**
      * @return má další uzel?

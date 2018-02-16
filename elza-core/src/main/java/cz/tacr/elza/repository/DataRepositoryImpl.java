@@ -1,11 +1,30 @@
 package cz.tacr.elza.repository;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
+import cz.tacr.elza.common.ObjectListIterator;
+import cz.tacr.elza.domain.ApRecord;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataCoordinates;
+import cz.tacr.elza.domain.ArrDataDecimal;
+import cz.tacr.elza.domain.ArrDataInteger;
+import cz.tacr.elza.domain.ArrDataPartyRef;
+import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrDataString;
+import cz.tacr.elza.domain.ArrDataStructureRef;
+import cz.tacr.elza.domain.ArrDataText;
+import cz.tacr.elza.domain.ArrDataUnitid;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrItem;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrStructuredObject;
+import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.exception.SystemException;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
@@ -21,16 +40,12 @@ import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.persistence.criteria.Selection;
-
-import cz.tacr.elza.domain.*;
-import cz.tacr.elza.exception.SystemException;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.NotImplementedException;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import cz.tacr.elza.common.ObjectListIterator;
-import cz.tacr.elza.domain.ApRecord;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 
 /**
@@ -449,12 +464,12 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
             return new AbstractDescItemDataTypeHelper() {
                 @Override
                 protected void init() {
-                    targetJoin = dataRoot.join(ArrDataStructureRef.STRUCTURE_DATA, JoinType.INNER);
+                    targetJoin = dataRoot.join(ArrDataStructureRef.STRUCTURED_OBJECT, JoinType.INNER);
                 }
 
                 @Override
                 public Path<String> getValueStringSelection(final CriteriaBuilder criteriaBuilder) {
-                    return targetJoin.get(ArrStructureData.VALUE);
+                    return targetJoin.get(ArrStructuredObject.VALUE);
                 }
             };
         } else {

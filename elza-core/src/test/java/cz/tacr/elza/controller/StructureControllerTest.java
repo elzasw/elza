@@ -11,16 +11,14 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemIntVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStringVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ItemGroupVO;
-import cz.tacr.elza.domain.ArrStructureData;
+import cz.tacr.elza.domain.ArrStructuredObject;
 import org.junit.Test;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static org.junit.Assert.*;
 
@@ -221,11 +219,11 @@ public class StructureControllerTest extends AbstractControllerTest {
         assertNotNull(structureData);
         assertNotNull(structureData.id);
         assertNotNull(structureData.assignable);
-        assertTrue(structureData.state == ArrStructureData.State.TEMP);
+        assertTrue(structureData.state == ArrStructuredObject.State.TEMP);
 
         ArrStructureDataVO structureDataConfirmed = confirmStructureData(fundVersion.getId(), structureData.id);
         assertTrue(Objects.equals(structureDataConfirmed.id, structureDataConfirmed.id));
-        assertTrue(structureDataConfirmed.state == ArrStructureData.State.ERROR);
+        assertTrue(structureDataConfirmed.state == ArrStructuredObject.State.ERROR);
         assertNotNull(structureDataConfirmed.value);
         assertNotNull(structureDataConfirmed.errorDescription);
 

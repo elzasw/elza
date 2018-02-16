@@ -1,9 +1,9 @@
-import cz.tacr.elza.domain.ArrStructureItem;
+import cz.tacr.elza.domain.ArrStructuredItem;
 import org.apache.commons.lang3.RandomUtils;
 
-List<ArrStructureItem> items = ITEMS;
+List<ArrStructuredItem> items = ITEMS;
 return toString(items);
 
-String toString(List<ArrStructureItem> items) {
+String toString(List<ArrStructuredItem> items) {
     return "DATA " + RandomUtils.nextInt();
 }

@@ -15,11 +15,11 @@ import org.springframework.util.Assert;
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrStructureData;
+import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.repository.FundFileRepository;
 import cz.tacr.elza.repository.ScopeRepository;
-import cz.tacr.elza.repository.StructureDataRepository;
+import cz.tacr.elza.repository.StructuredObjectRepository;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.importnodes.vo.ImportParams;
@@ -45,7 +45,7 @@ public class ImportNodesFromSource {
     private FundFileRepository fundFileRepository;
 
     @Autowired
-    private StructureDataRepository structureDataRepository;
+    private StructuredObjectRepository structureDataRepository;
 
     /**
      * Validace dat před samotným importem.
@@ -84,12 +84,12 @@ public class ImportNodesFromSource {
 		}
 
         // zjištění existujících obalů v cílovém archivním souboru
-        List<ArrStructureData> packetsFund = structureDataRepository
+        List<ArrStructuredObject> packetsFund = structureDataRepository
                 .findByFundAndDeleteChangeIsNull(targetFundVersion.getFund());
         // zjištění používaných obalů v podstromech vybraných JP
-        List<ArrStructureData> packets = source.getStructuredList();
-        for (ArrStructureData srcPacket : packets) {
-            for (ArrStructureData currPacket : packetsFund) {
+        List<ArrStructuredObject> packets = source.getStructuredList();
+        for (ArrStructuredObject srcPacket : packets) {
+            for (ArrStructuredObject currPacket : packetsFund) {
 
 				//TODO: compare packet id instead of objects
                 if (StringUtils.equalsIgnoreCase(srcPacket.getValue(), currPacket.getValue())) {

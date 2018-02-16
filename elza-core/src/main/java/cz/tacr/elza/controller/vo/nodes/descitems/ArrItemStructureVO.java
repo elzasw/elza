@@ -7,7 +7,7 @@ import cz.tacr.elza.controller.vo.ArrStructureDataVO;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataStructureRef;
-import cz.tacr.elza.domain.ArrStructureData;
+import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
 
@@ -52,11 +52,11 @@ public class ArrItemStructureVO extends ArrItemVO {
         }
 
         // get reference
-        ArrStructureData structObj = null;
+        ArrStructuredObject structObj = null;
         if (this.value != null) {
-            structObj = em.getReference(ArrStructureData.class, value);
+            structObj = em.getReference(ArrStructuredObject.class, value);
         }
-        data.setStructureData(structObj);
+        data.setStructuredObject(structObj);
 
         data.setDataType(DataType.STRUCTURED.getEntity());
         return data;

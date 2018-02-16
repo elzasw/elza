@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 
-import cz.tacr.elza.domain.ArrStructureData;
+import cz.tacr.elza.domain.ArrStructuredObject;
 
 /**
  * Výsledek validace.
@@ -76,7 +76,7 @@ public class ValidateResult {
 		scopeErrors.add(code);
 	}
 
-    public void addStructObjConflicts(ArrStructureData srcObj) {
+    public void addStructObjConflicts(ArrStructuredObject srcObj) {
         if (structuredConflicts == null) {
             structuredConflict = true;
             structuredConflicts = new ArrayList<>();

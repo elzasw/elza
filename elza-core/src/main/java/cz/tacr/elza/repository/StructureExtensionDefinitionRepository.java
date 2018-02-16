@@ -2,9 +2,9 @@ package cz.tacr.elza.repository;
 
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.RulPackage;
-import cz.tacr.elza.domain.RulStructureExtension;
+import cz.tacr.elza.domain.RulStructuredTypeExtension;
 import cz.tacr.elza.domain.RulStructureExtensionDefinition;
-import cz.tacr.elza.domain.RulStructureType;
+import cz.tacr.elza.domain.RulStructuredType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -21,18 +21,18 @@ import java.util.List;
 public interface StructureExtensionDefinitionRepository extends JpaRepository<RulStructureExtensionDefinition, Integer>, Packaging<RulStructureExtensionDefinition> {
 
 
-    List<RulStructureExtensionDefinition> findByRulPackageAndStructureExtensionIn(RulPackage rulPackage, List<RulStructureExtension> rulStructureExtensionList);
+    List<RulStructureExtensionDefinition> findByRulPackageAndStructuredTypeExtensionIn(RulPackage rulPackage, List<RulStructuredTypeExtension> rulStructureExtensionList);
 
     /**
      * Vyhledá aktivované definice rozšíření pro strukturovaný typ, def-type.
      *
-     * @param structureType strukturovaný typ
+     * @param structuredType strukturovaný typ
      * @param defType       typ definice
      * @param fund          archivní soubor
      * @return nalezené soubory
      */
-    @Query("SELECT sed FROM rul_structure_extension_definition sed JOIN sed.structureExtension se JOIN arr_fund_structure_extension fse ON se = fse.structureExtension WHERE se.structureType = :structureType AND sed.defType = :defType AND fse.deleteChange IS NULL AND fse.fund = :fund ORDER BY sed.priority")
-    List<RulStructureExtensionDefinition> findByStructureTypeAndDefTypeAndFundOrderByPriority(@Param("structureType") RulStructureType structureType,
+    @Query("SELECT sed FROM rul_structure_extension_definition sed JOIN sed.structuredTypeExtension se JOIN arr_fund_structure_extension fse ON se = fse.structuredTypeExtension WHERE se.structuredType = :structuredType AND sed.defType = :defType AND fse.deleteChange IS NULL AND fse.fund = :fund ORDER BY sed.priority")
+    List<RulStructureExtensionDefinition> findByStructureTypeAndDefTypeAndFundOrderByPriority(@Param("structuredType") RulStructuredType structuredType,
                                                                                               @Param("defType") RulStructureExtensionDefinition.DefType defType,
                                                                                               @Param("fund") ArrFund fund);
 }

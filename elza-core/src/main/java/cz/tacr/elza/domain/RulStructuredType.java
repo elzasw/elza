@@ -14,18 +14,18 @@ import javax.persistence.Table;
 
 
 /**
- * Obdobně jako u základních pravidel popisu, je možné zapnout rozšíření. Rozšíření je ale určené vždy jen pro jeden typ strukrurované hodnoty..
+ * Typ datového typu, který je vždy třeba určit, pokud je nějaký atribut popisu strukturovaný.
  *
- * @since 30.10.2017
+ * @since 27.10.2017
  */
-@Entity(name = "rul_structure_extension")
+@Entity(name = "rul_structured_type")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class RulStructureExtension {
+public class RulStructuredType {
 
     @Id
     @GeneratedValue
-    private Integer structureExtensionId;
+    private Integer structuredTypeId;
 
     @Column(length = StringLength.LENGTH_50, nullable = false, unique = true)
     private String code;
@@ -37,16 +37,16 @@ public class RulStructureExtension {
     @JoinColumn(name = "packageId", nullable = false)
     private RulPackage rulPackage;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulStructureType.class)
-    @JoinColumn(name = "structureTypeId", nullable = false)
-    private RulStructureType structureType;
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulRuleSet.class)
+    @JoinColumn(name = "ruleSetId", nullable = false)
+    private RulRuleSet ruleSet;
 
-    public Integer getStructureExtensionId() {
-        return structureExtensionId;
+    public Integer getStructuredTypeId() {
+        return structuredTypeId;
     }
 
-    public void setStructureExtensionId(final Integer structureExtensionId) {
-        this.structureExtensionId = structureExtensionId;
+    public void setStructuredTypeId(final Integer structuredTypeId) {
+        this.structuredTypeId = structuredTypeId;
     }
 
     public String getCode() {
@@ -73,11 +73,11 @@ public class RulStructureExtension {
         this.rulPackage = rulPackage;
     }
 
-    public RulStructureType getStructureType() {
-        return structureType;
+    public RulRuleSet getRuleSet() {
+        return ruleSet;
     }
 
-    public void setStructureType(final RulStructureType structureType) {
-        this.structureType = structureType;
+    public void setRuleSet(final RulRuleSet ruleSet) {
+        this.ruleSet = ruleSet;
     }
 }

@@ -12,11 +12,11 @@ import org.apache.commons.lang3.Validate;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulRuleSet;
-import cz.tacr.elza.domain.RulStructureType;
+import cz.tacr.elza.domain.RulStructuredType;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
-import cz.tacr.elza.repository.StructureTypeRepository;
+import cz.tacr.elza.repository.StructuredTypeRepository;
 
 /**
  * Manage information about all rule systems
@@ -80,8 +80,8 @@ public class RuleSystemProvider {
      */
     void init(RuleSetRepository ruleSetRepository,
               ItemTypeRepository itemTypeRepository,
-            ItemSpecRepository itemSpecRepository,
-            StructureTypeRepository structuredTypeRepository) {
+              ItemSpecRepository itemSpecRepository,
+              StructuredTypeRepository structuredTypeRepository) {
         List<RulRuleSet> ruleSets = ruleSetRepository.findAll();
 
         // prepare fields
@@ -109,10 +109,10 @@ public class RuleSystemProvider {
         rulesSystems = rulesSystemsImpl.stream().map(a -> a.sealUp()).collect(Collectors.toList());
     }
 
-    private void initStructuredTypes(StructureTypeRepository structuredTypeRepository) {
-        List<RulStructureType> structuredTypes = structuredTypeRepository.findAll();
+    private void initStructuredTypes(StructuredTypeRepository structuredTypeRepository) {
+        List<RulStructuredType> structuredTypes = structuredTypeRepository.findAll();
 
-        for (RulStructureType st : structuredTypes) {
+        for (RulStructuredType st : structuredTypes) {
             RuleSystemImpl ruleSetImpl = ruleSystemIdMap.get(st.getRuleSet().getRuleSetId());
             ruleSetImpl.addStructuredType(st);
 		}

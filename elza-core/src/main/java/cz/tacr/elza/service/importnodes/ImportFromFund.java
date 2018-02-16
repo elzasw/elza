@@ -34,14 +34,14 @@ import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrStructureData;
+import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.repository.FundFileRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.ScopeRepository;
-import cz.tacr.elza.repository.StructureDataRepository;
+import cz.tacr.elza.repository.StructuredObjectRepository;
 import cz.tacr.elza.service.cache.CachedNode;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.cache.RestoredNode;
@@ -82,7 +82,7 @@ public class ImportFromFund implements ImportSource {
     private FundFileRepository fundFileRepository;
 
     @Autowired
-    private StructureDataRepository structureDataRepository;
+    private StructuredObjectRepository structureDataRepository;
 
     @Autowired
     private LevelRepository levelRepository;
@@ -121,7 +121,7 @@ public class ImportFromFund implements ImportSource {
     }
 
     @Override
-    public List<ArrStructureData> getStructuredList() {
+    public List<ArrStructuredObject> getStructuredList() {
         return structureDataRepository.findStructureDataBySubtreeNodeIds(nodeIds, ignoreRootNodes);
     }
 
@@ -525,7 +525,7 @@ public class ImportFromFund implements ImportSource {
 
         public ItemStructureRefImpl(final ArrDescItem item, final ArrDataStructureRef itemData) {
             super(item);
-            structureDataId = itemData.getStructureDataId();
+            structureDataId = itemData.getStructuredObjectId();
         }
 
         @Override

@@ -63,7 +63,7 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitdateVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitidVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
-import cz.tacr.elza.domain.ArrStructureData;
+import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.vo.ChangesResult;
@@ -3082,7 +3082,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
     /**
      * Založení duplikátů strukturovaného datového typu a autoinkrementační.
-     * Předloha musí být ve stavu {@link ArrStructureData.State#TEMP}.
+     * Předloha musí být ve stavu {@link ArrStructuredObject.State#TEMP}.
      *
      * @param structureDataId identifikátor předlohy hodnoty strukturovaného datového typu
      * @param fundVersionId   identifikátor verze AS

@@ -11,7 +11,8 @@ import java.util.List;
 import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.domain.*;
 import cz.tacr.elza.service.attachment.AttachmentService;
-import cz.tacr.elza.repository.StructureDataRepository;
+import cz.tacr.elza.domain.RulStructuredType;
+import cz.tacr.elza.repository.StructuredObjectRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -85,7 +86,7 @@ public class ConfigMapperConfiguration {
     @Autowired
     private OutputResultRepository outputResultRepository;
     @Autowired
-    private StructureDataRepository structureDataRepository;
+    private StructuredObjectRepository structureDataRepository;
     @Autowired
     private CalendarTypeRepository calendarTypeRepository;
     @Autowired
@@ -230,8 +231,8 @@ public class ConfigMapperConfiguration {
                                         final ArrItemStructureVO temStructureVO,
                                         final MappingContext context) {
                         super.mapAtoB(itemStructureRef, temStructureVO, context);
-                        if (itemStructureRef.getStructureData() != null) {
-                            temStructureVO.setValue(itemStructureRef.getStructureDataId());
+                        if (itemStructureRef.getStructuredObject() != null) {
+                            temStructureVO.setValue(itemStructureRef.getStructuredObjectId());
                         }
                     }
 
@@ -240,7 +241,7 @@ public class ConfigMapperConfiguration {
                                         final ArrItemStructureRef itemStructureRef,
                                         final MappingContext context) {
                         super.mapBtoA(itemStructureVO, itemStructureRef, context);
-                        itemStructureRef.setStructureData(itemStructureVO.getValue() == null ? null : structureDataRepository.findOne(itemStructureVO.getValue()));
+                        itemStructureRef.setStructuredObject(itemStructureVO.getValue() == null ? null : structureDataRepository.findOne(itemStructureVO.getValue()));
                     }
                 }).byDefault().register();
         mapperFactory.classMap(ArrItemFileRef.class, ArrItemFileRefVO.class).customize(
@@ -817,9 +818,9 @@ public class ConfigMapperConfiguration {
                 .field("partyGroupId", "id")
                 .register();
 
-        mapperFactory.classMap(RulStructureType.class, RulStructureTypeVO.class)
+        mapperFactory.classMap(RulStructuredType.class, RulStructureTypeVO.class)
                 .byDefault()
-                .field("structureTypeId", "id")
+                .field("structuredTypeId", "id")
                 .register();
 
         mapperFactory.classMap(ArrDao.class, ArrDaoVO.class)
@@ -929,8 +930,8 @@ public class ConfigMapperConfiguration {
                                         final ArrItemStructureVO itemStructureVO,
                                         final MappingContext context) {
                         super.mapAtoB(itemStructureDataRef, itemStructureVO, context);
-                        if (itemStructureDataRef.getStructureData() != null) {
-                            itemStructureVO.setValue(itemStructureDataRef.getStructureDataId());
+                        if (itemStructureDataRef.getStructuredObject() != null) {
+                            itemStructureVO.setValue(itemStructureDataRef.getStructuredObjectId());
                         }
                     }
 
@@ -939,7 +940,7 @@ public class ConfigMapperConfiguration {
                                         final ArrDataStructureRef itemStructureRef,
                                         final MappingContext context) {
                         super.mapBtoA(itemStructureVO, itemStructureRef, context);
-                        itemStructureRef.setStructureData(itemStructureVO.getValue() == null ? null : structureDataRepository.findOne(itemStructureVO.getValue()));
+                        itemStructureRef.setStructuredObject(itemStructureVO.getValue() == null ? null : structureDataRepository.findOne(itemStructureVO.getValue()));
                     }
                 }).byDefault().register();
         mapperFactory.classMap(ArrDataFileRef.class, ArrItemFileRefVO.class).customize(

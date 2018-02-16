@@ -1,37 +1,46 @@
 package cz.tacr.elza.service;
 
+import cz.tacr.elza.core.data.RuleSystemItemType;
+import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.domain.ApRecord;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataFileRef;
+import cz.tacr.elza.domain.ArrDataJsonTable;
+import cz.tacr.elza.domain.ArrDataPartyRef;
+import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrDataStructureRef;
+import cz.tacr.elza.domain.ArrFile;
+import cz.tacr.elza.domain.ArrItem;
+import cz.tacr.elza.domain.ArrStructuredObject;
+import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.table.ElzaColumn;
+import cz.tacr.elza.domain.table.ElzaRow;
+import cz.tacr.elza.domain.table.ElzaTable;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.repository.ApRecordRepository;
+import cz.tacr.elza.repository.DataRepository;
+import cz.tacr.elza.repository.FundFileRepository;
+import cz.tacr.elza.repository.ItemRepository;
+import cz.tacr.elza.repository.PartyRepository;
+import cz.tacr.elza.repository.StructuredObjectRepository;
+import org.apache.commons.lang3.Validate;
+import org.hibernate.validator.constraints.NotEmpty;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import javax.persistence.EntityManager;
+import javax.transaction.Transactional;
+import javax.transaction.Transactional.TxType;
+import javax.validation.constraints.NotNull;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import javax.persistence.EntityManager;
-import javax.transaction.Transactional;
-import javax.transaction.Transactional.TxType;
-import javax.validation.constraints.NotNull;
-
-import cz.tacr.elza.domain.*;
-import org.apache.commons.lang3.Validate;
-import org.hibernate.validator.constraints.NotEmpty;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import cz.tacr.elza.core.data.RuleSystemItemType;
-import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.domain.ApRecord;
-import cz.tacr.elza.domain.table.ElzaColumn;
-import cz.tacr.elza.domain.table.ElzaRow;
-import cz.tacr.elza.domain.table.ElzaTable;
-import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.repository.DataRepository;
-import cz.tacr.elza.repository.FundFileRepository;
-import cz.tacr.elza.repository.ItemRepository;
-import cz.tacr.elza.repository.PartyRepository;
-import cz.tacr.elza.repository.ApRecordRepository;
-import cz.tacr.elza.repository.StructureDataRepository;
 
 /**
  * Serviska pro správu hodnot atributů.
@@ -49,7 +58,7 @@ public class ItemService {
     private PartyRepository partyRepository;
 
     @Autowired
-    private StructureDataRepository structureDataRepository;
+    private StructuredObjectRepository structureDataRepository;
 
     @Autowired
     private FundFileRepository fundFileRepository;
@@ -189,8 +198,8 @@ public class ItemService {
                     ParParty party = ((ArrDataPartyRef) data).getParty();
                     partyMap.put(party.getPartyId(), (ArrDataPartyRef) data);
                 } else if (data instanceof ArrDataStructureRef) {
-                    ArrStructureData structureData = ((ArrDataStructureRef) data).getStructureData();
-                    structureMap.put(structureData.getStructureDataId(), (ArrDataStructureRef) data);
+                    ArrStructuredObject structureData = ((ArrDataStructureRef) data).getStructuredObject();
+                    structureMap.put(structureData.getStructuredObjectId(), (ArrDataStructureRef) data);
                 } else if (data instanceof ArrDataFileRef) {
                     ArrFile file = ((ArrDataFileRef) data).getFile();
                     fileMap.put(file.getFileId(), (ArrDataFileRef) data);
@@ -202,9 +211,9 @@ public class ItemService {
         }
 
         Set<Integer> structureDataIds = structureMap.keySet();
-        List<ArrStructureData> structureDataEntities = structureDataRepository.findAll(structureDataIds);
-        for (ArrStructureData structureDataEntity : structureDataEntities) {
-            structureMap.get(structureDataEntity.getStructureDataId()).setStructureData(structureDataEntity);
+        List<ArrStructuredObject> structureDataEntities = structureDataRepository.findAll(structureDataIds);
+        for (ArrStructuredObject structureDataEntity : structureDataEntities) {
+            structureMap.get(structureDataEntity.getStructuredObjectId()).setStructuredObject(structureDataEntity);
         }
 
         Set<Integer> partyIds = partyMap.keySet();

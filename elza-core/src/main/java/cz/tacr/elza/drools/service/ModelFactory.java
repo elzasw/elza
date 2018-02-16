@@ -13,7 +13,7 @@ import cz.tacr.elza.domain.ArrDataStructureRef;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.domain.ArrStructureData;
+import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.drools.model.DescItem;
 import cz.tacr.elza.drools.model.Level;
@@ -79,7 +79,7 @@ public class ModelFactory {
 				ArrData data = descItem.getData();
 				if (data.getType() == DataType.STRUCTURED) {
 					ArrDataStructureRef structureRef = (ArrDataStructureRef) descItem.getData();
-                    ArrStructureData structureData = structureRef.getStructureData();
+                    ArrStructuredObject structureData = structureRef.getStructuredObject();
                     voDescItem.setStructured(createStructured(structureData));
 				} else if (data.getType() == DataType.INT) {
 					ArrDataInteger integer = (ArrDataInteger) descItem.getData();
@@ -96,7 +96,7 @@ public class ModelFactory {
      * @param structureData
      * @return
      */
-    static public Structured createStructured(final ArrStructureData structureData) {
+    static public Structured createStructured(final ArrStructuredObject structureData) {
         Structured result = new Structured();
         result.setValue(structureData.getValue());
         return result;

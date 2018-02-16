@@ -25,7 +25,7 @@ import cz.tacr.elza.domain.table.ElzaRow;
 import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.repository.StructureItemRepository;
+import cz.tacr.elza.repository.StructuredItemRepository;
 
 /**
  * Unit count action
@@ -57,13 +57,13 @@ public class UnitCountAction extends Action {
 	 */
 	private Map<String, Integer> resultMap = new TreeMap<>();
 
-    final StructureItemRepository structureItemRepository;
+    final StructuredItemRepository structureItemRepository;
 
 	final UnitCountConfig config;
 
     @Autowired
     UnitCountAction(final UnitCountConfig config,
-            final StructureItemRepository structureItemRepository) {
+            final StructuredItemRepository structureItemRepository) {
 		Validate.notNull(config);
         Validate.notNull(structureItemRepository);
 

@@ -16,15 +16,15 @@ import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataInteger;
 import cz.tacr.elza.domain.ArrDataStructureRef;
 import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrStructureItem;
+import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.repository.StructureItemRepository;
+import cz.tacr.elza.repository.StructuredItemRepository;
 
 public class UnitCounter {
 
     final UnitCounterConfig config;
 
-    final StructureItemRepository structureItemRepository;
+    final StructuredItemRepository structureItemRepository;
 
     WhenCondition when;
 
@@ -34,7 +34,7 @@ public class UnitCounter {
 
     /**
      * Type of item for packets.
-     * 
+     *
      * If null not applied
      */
     private RuleSystemItemType objectType;
@@ -55,7 +55,7 @@ public class UnitCounter {
     private Set<Integer> countedObjects = new HashSet<>();
 
     UnitCounter(UnitCounterConfig counterCfg,
-            final StructureItemRepository structureItemRepository,
+            final StructuredItemRepository structureItemRepository,
             RuleSystem ruleSystem) {
         this.config = counterCfg;
         this.structureItemRepository = structureItemRepository;
@@ -105,7 +105,7 @@ public class UnitCounter {
             Validate.notNull(objectItemType);
             Validate.notNull(objectItemType.getDataType() == DataType.ENUM);
 
-            // prepare packet type mapping            
+            // prepare packet type mapping
             Map<String, String> packetTypeMapping = config.getObjectItemMapping();
             packetTypeMapping.forEach((packetTypeCode, targetValue) -> {
                 RulItemSpec itemSpec = objectItemType.getItemSpecByCode(packetTypeCode);
@@ -170,14 +170,14 @@ public class UnitCounter {
                     continue;
                 }
 
-                // fetch valid items from packet				
-                Integer packetId = ((ArrDataStructureRef) item.getData()).getStructureDataId();
+                // fetch valid items from packet
+                Integer packetId = ((ArrDataStructureRef) item.getData()).getStructuredObjectId();
                 if (!countedObjects.contains(packetId)) {
                     // TODO: Do filtering in DB
-                    List<ArrStructureItem> structObjItems = this.structureItemRepository
-                            .findByStructureDataAndDeleteChangeIsNullFetchData(packetId);
+                    List<ArrStructuredItem> structObjItems = this.structureItemRepository
+                            .findByStructuredObjectAndDeleteChangeIsNullFetchData(packetId);
                     // filter only our item types
-                    for (ArrStructureItem structObjItem : structObjItems) {
+                    for (ArrStructuredItem structObjItem : structObjItems) {
                         if (structObjItem.getItemTypeId().equals(this.objectItemType.getItemTypeId())) {
                             // find mapping
                             String value = objectMapping.get(structObjItem.getItemSpecId());
