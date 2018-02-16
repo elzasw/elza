@@ -142,7 +142,7 @@ import cz.tacr.elza.domain.ArrOutputDefinition;
 import cz.tacr.elza.domain.ArrOutputFile;
 import cz.tacr.elza.domain.ArrRequest;
 import cz.tacr.elza.domain.ArrRequestQueueItem;
-import cz.tacr.elza.domain.ArrStructureData;
+import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.DmsFile;
 import cz.tacr.elza.domain.ParComplementType;
 import cz.tacr.elza.domain.ParInstitution;
@@ -168,7 +168,7 @@ import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.domain.RulPolicyType;
 import cz.tacr.elza.domain.RulRuleSet;
-import cz.tacr.elza.domain.RulStructureExtension;
+import cz.tacr.elza.domain.RulStructuredTypeExtension;
 import cz.tacr.elza.domain.RulTemplate;
 import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.UsrGroup;
@@ -2430,10 +2430,10 @@ public class ClientFactoryVO {
         return vo;
     }
 
-    public ArrStructureDataVO createStructureData(final ArrStructureData structureData) {
+    public ArrStructureDataVO createStructureData(final ArrStructuredObject structureData) {
         ArrStructureDataVO structureDataVO = new ArrStructureDataVO();
-        structureDataVO.id = structureData.getStructureDataId();
-        structureDataVO.typeCode = structureData.getStructureType().getCode();
+        structureDataVO.id = structureData.getStructuredObjectId();
+        structureDataVO.typeCode = structureData.getStructuredType().getCode();
         structureDataVO.value = structureData.getValue();
         structureDataVO.errorDescription = structureData.getErrorDescription();
         structureDataVO.assignable = structureData.getAssignable();
@@ -2441,15 +2441,15 @@ public class ClientFactoryVO {
         return structureDataVO;
     }
 
-    public List<ArrStructureDataVO> createStructureDataList(final List<ArrStructureData> structureDataList) {
+    public List<ArrStructureDataVO> createStructureDataList(final List<ArrStructuredObject> structureDataList) {
         if (structureDataList == null) {
             return null;
         }
         return structureDataList.stream().map(this::createStructureData).collect(Collectors.toList());
     }
 
-    public List<StructureExtensionFundVO> createStructureExtensionFund(final List<RulStructureExtension> allStructureExtensions,
-                                                                       final List<RulStructureExtension> structureExtensions) {
+    public List<StructureExtensionFundVO> createStructureExtensionFund(final List<RulStructuredTypeExtension> allStructureExtensions,
+                                                                       final List<RulStructuredTypeExtension> structureExtensions) {
         List<StructureExtensionFundVO> result = new ArrayList<>(allStructureExtensions.size());
         allStructureExtensions.forEach(se -> {
             StructureExtensionFundVO structureExtensionFund = createStructureExtensionFund(se);
@@ -2459,9 +2459,9 @@ public class ClientFactoryVO {
         return result;
     }
 
-    private StructureExtensionFundVO createStructureExtensionFund(final RulStructureExtension structureExtension) {
+    private StructureExtensionFundVO createStructureExtensionFund(final RulStructuredTypeExtension structureExtension) {
         StructureExtensionFundVO structureExtensionFundVO = new StructureExtensionFundVO();
-        structureExtensionFundVO.id = structureExtension.getStructureExtensionId();
+        structureExtensionFundVO.id = structureExtension.getStructuredTypeExtensionId();
         structureExtensionFundVO.code = structureExtension.getCode();
         structureExtensionFundVO.name = structureExtension.getName();
         structureExtensionFundVO.active = false;

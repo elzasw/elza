@@ -36,15 +36,15 @@ import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrStructureData;
-import cz.tacr.elza.domain.ArrStructureItem;
+import cz.tacr.elza.domain.ArrStructuredObject;
+import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.RulComponent;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.RulStructureDefinition;
 import cz.tacr.elza.domain.RulStructureExtensionDefinition;
-import cz.tacr.elza.domain.RulStructureType;
+import cz.tacr.elza.domain.RulStructuredType;
 import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
@@ -53,10 +53,10 @@ import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.SettingsRepository;
-import cz.tacr.elza.repository.StructureDataRepository;
+import cz.tacr.elza.repository.StructuredObjectRepository;
 import cz.tacr.elza.repository.StructureDefinitionRepository;
 import cz.tacr.elza.repository.StructureExtensionDefinitionRepository;
-import cz.tacr.elza.repository.StructureItemRepository;
+import cz.tacr.elza.repository.StructuredItemRepository;
 import cz.tacr.elza.service.event.CacheInvalidateEvent;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventStructureDataChange;
@@ -72,10 +72,10 @@ public class StructureDataService {
 
     private static final Logger logger = LoggerFactory.getLogger(StructureDataService.class);
 
-    private final StructureItemRepository structureItemRepository;
+    private final StructuredItemRepository structureItemRepository;
     private final StructureExtensionDefinitionRepository structureExtensionDefinitionRepository;
     private final StructureDefinitionRepository structureDefinitionRepository;
-    private final StructureDataRepository structureDataRepository;
+    private final StructuredObjectRepository structureDataRepository;
     private final FundVersionRepository fundVersionRepository;
     private final RuleService ruleService;
     private final ApplicationContext applicationContext;
@@ -97,10 +97,10 @@ public class StructureDataService {
     }
 
     @Autowired
-    public StructureDataService(final StructureItemRepository structureItemRepository,
+    public StructureDataService(final StructuredItemRepository structureItemRepository,
                                 final StructureExtensionDefinitionRepository structureExtensionDefinitionRepository,
                                 final StructureDefinitionRepository structureDefinitionRepository,
-                                final StructureDataRepository structureDataRepository,
+                                final StructuredObjectRepository structureDataRepository,
                                 final FundVersionRepository fundVersionRepository,
                                 final RuleService ruleService,
                                 final ApplicationContext applicationContext,
@@ -126,11 +126,11 @@ public class StructureDataService {
      *
      * @param structureData hodnota
      */
-    public void addToValidate(final ArrStructureData structureData) {
+    public void addToValidate(final ArrStructuredObject structureData) {
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
             @Override
             public void afterCommit() {
-                runValidator(Collections.singletonList(structureData.getStructureDataId()));
+                runValidator(Collections.singletonList(structureData.getStructuredObjectId()));
             }
         });
     }
@@ -140,12 +140,12 @@ public class StructureDataService {
      *
      * @param structureDataList seznam hodnot
      */
-    public void addToValidate(final List<ArrStructureData> structureDataList) {
+    public void addToValidate(final List<ArrStructuredObject> structureDataList) {
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
             @Override
             public void afterCommit() {
                 List<Integer> structureDataIds = structureDataList.stream()
-                        .map(ArrStructureData::getStructureDataId).collect(Collectors.toList());
+                        .map(ArrStructuredObject::getStructuredObjectId).collect(Collectors.toList());
                 runValidator(structureDataIds);
             }
         });
@@ -210,21 +210,21 @@ public class StructureDataService {
      */
     @Transactional
     public void validate(final Integer structureDataId) {
-        ArrStructureData structureData = structureDataRepository.findOne(structureDataId);
+        ArrStructuredObject structureData = structureDataRepository.findOne(structureDataId);
         if (structureData == null) {
             throw new ObjectNotFoundException("Nenalezena hodnota strukturovaného typu", BaseCode.ID_NOT_EXIST).setId(structureDataId);
         }
         validate(structureData);
-        if (structureData.getState() == ArrStructureData.State.TEMP) {
+        if (structureData.getState() == ArrStructuredObject.State.TEMP) {
             notificationService.publishEvent(new EventStructureDataChange(structureData.getFundId(),
-                    structureData.getStructureType().getCode(),
+                    structureData.getStructuredType().getCode(),
                     Collections.singletonList(structureDataId),
                     null,
                     null,
                     null));
         } else {
             notificationService.publishEvent(new EventStructureDataChange(structureData.getFundId(),
-                    structureData.getStructureType().getCode(),
+                    structureData.getStructuredType().getCode(),
                     null,
                     null,
                     Collections.singletonList(structureDataId),
@@ -239,38 +239,38 @@ public class StructureDataService {
      * @return zvalidovaná hodnota
      */
     @Transactional
-    public ArrStructureData validate(final ArrStructureData structureData) {
+    public ArrStructuredObject validate(final ArrStructuredObject structureData) {
         if (structureData.getDeleteChange() != null) {
             throw new BusinessException("Nelze validovat smazanou hodnotu", BaseCode.INVALID_STATE);
         }
-        List<ArrStructureData> validStructureDataList = structureDataRepository.findValidByStructureTypeAndFund(structureData.getStructureType(), structureData.getFund());
+        List<ArrStructuredObject> validStructureDataList = structureDataRepository.findValidByStructureTypeAndFund(structureData.getStructuredType(), structureData.getFund());
         validStructureDataList.remove(structureData);
 
         List<String> values = validStructureDataList.stream()
-                .map(ArrStructureData::getValue)
+                .map(ArrStructuredObject::getValue)
                 .map(String::toLowerCase)
                 .collect(Collectors.toList());
 
-        ArrStructureData.State state = ArrStructureData.State.OK;
+        ArrStructuredObject.State state = ArrStructuredObject.State.OK;
         ValidationErrorDescription validationErrorDescription = new ValidationErrorDescription();
 
-        List<ArrStructureItem> structureItems = structureItemRepository.findByStructureDataAndDeleteChangeIsNullFetchData(structureData);
+        List<ArrStructuredItem> structureItems = structureItemRepository.findByStructuredObjectAndDeleteChangeIsNullFetchData(structureData);
 
         validateStructureItems(validationErrorDescription, structureData, structureItems);
 
         String value = generateValue(structureData, structureItems);
         if (StringUtils.isEmpty(value)) {
-            state = ArrStructureData.State.ERROR;
+            state = ArrStructuredObject.State.ERROR;
             validationErrorDescription.setEmptyValue(true);
         }
 
         if (values.contains(value.toLowerCase())) {
-            state = ArrStructureData.State.ERROR;
+            state = ArrStructuredObject.State.ERROR;
             validationErrorDescription.setDuplicateValue(true);
         }
 
         // pokud se jedná o tempová data, stav se nenastavuje
-        state = structureData.getState() == ArrStructureData.State.TEMP ? ArrStructureData.State.TEMP : state;
+        state = structureData.getState() == ArrStructuredObject.State.TEMP ? ArrStructuredObject.State.TEMP : state;
 
         structureData.setValue(value);
         structureData.setState(state);
@@ -287,16 +287,16 @@ public class StructureDataService {
      * @param structureItems             validované položky
      */
     private void validateStructureItems(final ValidationErrorDescription validationErrorDescription,
-                                        final ArrStructureData structureData,
-                                        final List<ArrStructureItem> structureItems) {
+                                        final ArrStructuredObject structureData,
+                                        final List<ArrStructuredItem> structureItems) {
         ArrFundVersion fundVersion = fundVersionRepository.findByFundIdAndLockChangeIsNull(structureData.getFundId());
-        List<RulItemTypeExt> structureItemTypes = ruleService.getStructureItemTypesInternal(structureData.getStructureType(), fundVersion);
+        List<RulItemTypeExt> structureItemTypes = ruleService.getStructureItemTypesInternal(structureData.getStructuredType(), fundVersion);
         List<RulItemTypeExt> requiredItemTypes = structureItemTypes.stream().filter(itemType -> RulItemType.Type.REQUIRED == itemType.getType()).collect(Collectors.toList());
         List<RulItemTypeExt> impossibleItemTypes = structureItemTypes.stream().filter(itemType -> RulItemType.Type.IMPOSSIBLE == itemType.getType()).collect(Collectors.toList());
 
         for (RulItemTypeExt requiredItemType : requiredItemTypes) {
             boolean add = true;
-            for (ArrStructureItem structureItem : structureItems) {
+            for (ArrStructuredItem structureItem : structureItems) {
                 if (structureItem.getItemType().getCode().equals(requiredItemType.getCode())) {
                     add = false;
                     break;
@@ -309,7 +309,7 @@ public class StructureDataService {
 
         for (RulItemTypeExt impossibleItemType : impossibleItemTypes) {
             boolean add = false;
-            for (ArrStructureItem structureItem : structureItems) {
+            for (ArrStructuredItem structureItem : structureItems) {
                 if (structureItem.getItemType().getCode().equals(impossibleItemType.getCode())) {
                     add = true;
                     break;
@@ -327,9 +327,9 @@ public class StructureDataService {
      * @param structureData hodnota struktovaného datového typu
      * @return hodnota
      */
-    private String generateValue(final ArrStructureData structureData, final List<ArrStructureItem> structureItems) {
+    private String generateValue(final ArrStructuredObject structureData, final List<ArrStructuredItem> structureItems) {
 
-        RulStructureType structureType = structureData.getStructureType();
+        RulStructuredType structureType = structureData.getStructuredType();
         File groovyFile = findGroovyFile(structureType, structureData.getFund());
 
         GroovyScriptService.GroovyScriptFile groovyScriptFile;
@@ -382,7 +382,7 @@ public class StructureDataService {
      * @param fund          archivní soubor
      * @return nalezený groovy soubor
      */
-    private File findGroovyFile(final RulStructureType structureType, final ArrFund fund) {
+    private File findGroovyFile(final RulStructuredType structureType, final ArrFund fund) {
         List<RulStructureExtensionDefinition> structureExtensionDefinitions = structureExtensionDefinitionRepository
                 .findByStructureTypeAndDefTypeAndFundOrderByPriority(structureType, RulStructureExtensionDefinition.DefType.SERIALIZED_VALUE, fund);
         RulComponent component;
@@ -393,7 +393,7 @@ public class StructureDataService {
             rulPackage = structureExtensionDefinition.getRulPackage();
         } else {
             List<RulStructureDefinition> structureDefinitions = structureDefinitionRepository
-                    .findByStructureTypeAndDefTypeOrderByPriority(structureType, RulStructureDefinition.DefType.SERIALIZED_VALUE);
+                    .findByStructuredTypeAndDefTypeOrderByPriority(structureType, RulStructureDefinition.DefType.SERIALIZED_VALUE);
             if (structureDefinitions.size() > 0) {
                 RulStructureDefinition structureDefinition = structureDefinitions.get(structureDefinitions.size() - 1);
                 component = structureDefinition.getComponent();
@@ -413,7 +413,7 @@ public class StructureDataService {
      */
     public void removeTempStructureData() {
         List<ArrChange> changes = structureDataRepository.findTempChange();
-        structureItemRepository.deleteByStructureDataStateTemp();
+        structureItemRepository.deleteByStructuredObjectStateTemp();
         structureDataRepository.deleteByStateTemp();
         changeRepository.delete(changes);
     }

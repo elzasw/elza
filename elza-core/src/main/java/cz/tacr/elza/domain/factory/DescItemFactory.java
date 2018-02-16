@@ -355,14 +355,14 @@ public class DescItemFactory implements InitializingBean {
                     public void mapAtoB(final ArrItemStructureRef itemStructureRef,
                                         final ArrDataStructureRef dataStructureRef,
                                         final MappingContext context) {
-                        dataStructureRef.setStructureData(itemStructureRef.getStructureData());
+                        dataStructureRef.setStructuredObject(itemStructureRef.getStructuredObject());
                     }
 
                     @Override
                     public void mapBtoA(final ArrDataStructureRef dataStructureRef,
                                         final ArrItemStructureRef itemStructureRef,
                                         final MappingContext context) {
-                        itemStructureRef.setStructureData(dataStructureRef.getStructureData());
+                        itemStructureRef.setStructuredObject(dataStructureRef.getStructuredObject());
                     }
 
                 }).register();
@@ -374,7 +374,7 @@ public class DescItemFactory implements InitializingBean {
                                         final ArrDataStructureRef dataStructureRefNew,
                                         final MappingContext context) {
                         dataStructureRefNew.setDataType(dataStructureRef.getDataType());
-                        dataStructureRefNew.setStructureData(dataStructureRef.getStructureData());
+                        dataStructureRefNew.setStructuredObject(dataStructureRef.getStructuredObject());
                     }
                 }).register();
     }
@@ -817,7 +817,7 @@ public class DescItemFactory implements InitializingBean {
 
 	/**
 	 * Save data
-	 * 
+	 *
 	 * @param data
 	 *            Data to be saved. Data can be null
 	 * @return
@@ -846,7 +846,7 @@ public class DescItemFactory implements InitializingBean {
 
 	/**
 	 * Save data as new
-	 * 
+	 *
 	 * @param itemType
 	 * @param srcData
 	 *            source data object. Can be null

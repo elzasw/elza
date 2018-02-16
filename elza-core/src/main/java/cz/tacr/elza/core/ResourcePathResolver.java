@@ -53,7 +53,7 @@ public class ResourcePathResolver {
 
     /**
      * Return path to the Elza work directory
-     * 
+     *
      * @return Return path from configuration
      */
     public String getWorkDir() {
@@ -191,7 +191,7 @@ public class ResourcePathResolver {
     @Transactional(TxType.MANDATORY)
     public Path getDroolsFile(RulStructureDefinition structureDefinition) {
         Path droolsDir = getDroolsDir(structureDefinition.getRulPackage().getPackageId(),
-                structureDefinition.getStructureType().getRuleSet().getRuleSetId());
+                structureDefinition.getStructuredType().getRuleSet().getRuleSetId());
         String droolFile = structureDefinition.getComponent().getFilename();
 
         Path path = droolsDir.resolve(droolFile);
@@ -205,7 +205,7 @@ public class ResourcePathResolver {
     @Transactional(TxType.MANDATORY)
     public Path getDroolsFile(RulStructureExtensionDefinition structureExtensionDefinition) {
         Path droolsDir = getDroolsDir(structureExtensionDefinition.getRulPackage().getPackageId(),
-                structureExtensionDefinition.getStructureExtension().getStructureType().getRuleSet().getRuleSetId());
+                structureExtensionDefinition.getStructuredTypeExtension().getStructuredType().getRuleSet().getRuleSetId());
         String droolFile = structureExtensionDefinition.getComponent().getFilename();
 
         Path path = droolsDir.resolve(droolFile);

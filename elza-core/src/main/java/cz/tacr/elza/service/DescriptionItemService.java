@@ -53,7 +53,7 @@ import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrStructureData;
+import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.ParUnitdate;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RulItemSpec;
@@ -1073,7 +1073,7 @@ public class DescriptionItemService {
                 ArrDataRecordRef recordData = (ArrDataRecordRef) data;
                 value = new TitleValue(recordData.getRecord().getRecord());
             } else if (data.getDataType().getCode().equals("STRUCTURED")) {
-                ArrStructureData structureData = ((ArrDataStructureRef) data).getStructureData();
+                ArrStructuredObject structureData = ((ArrDataStructureRef) data).getStructuredObject();
                 value = new TitleValue(structureData.getValue());
             } else if (data.getDataType().getCode().equals("UNITDATE")) {
                 ArrDataUnitdate unitDate = (ArrDataUnitdate) data;
@@ -1165,7 +1165,7 @@ public class DescriptionItemService {
                 ArrDataRecordRef recordData = (ArrDataRecordRef) data;
                 value = new TitleValue(recordData.getRecord().getRecord());
             } else if (data.getDataType().getCode().equals("STRUCTURED")) {
-                ArrStructureData structureData = ((ArrDataStructureRef) data).getStructureData();
+                ArrStructuredObject structureData = ((ArrDataStructureRef) data).getStructuredObject();
                 value = new TitleValue(structureData.getValue());
             } else if (data.getDataType().getCode().equals("UNITDATE")) {
                 ArrDataUnitdate unitDate = (ArrDataUnitdate) data;

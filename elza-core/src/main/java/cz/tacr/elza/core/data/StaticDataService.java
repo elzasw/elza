@@ -28,7 +28,7 @@ import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRoleTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
-import cz.tacr.elza.repository.StructureTypeRepository;
+import cz.tacr.elza.repository.StructuredTypeRepository;
 
 /**
  * Service for static data
@@ -61,7 +61,7 @@ public class StaticDataService {
 
     final ItemSpecRepository itemSpecRepository;
 
-    final StructureTypeRepository structuredTypeRepository;
+    final StructuredTypeRepository structuredTypeRepository;
 
     final DataTypeRepository dataTypeRepository;
 
@@ -92,7 +92,7 @@ public class StaticDataService {
                              CalendarTypeRepository calendarTypeRepository,
                              PartyTypeRepository partyTypeRepository,
                              PackageRepository packageRepository,
-                             StructureTypeRepository structuredTypeRepository,
+                             StructuredTypeRepository structuredTypeRepository,
                              PartyNameFormTypeRepository partyNameFormTypeRepository,
                              ComplementTypeRepository complementTypeRepository,
                              PartyTypeComplementTypeRepository partyTypeComplementTypeRepository,
@@ -227,7 +227,7 @@ public class StaticDataService {
 
     /**
      * Create new provider and load all data from DB
-     * 
+     *
      * @return
      */
     public StaticDataProvider createProvider() {

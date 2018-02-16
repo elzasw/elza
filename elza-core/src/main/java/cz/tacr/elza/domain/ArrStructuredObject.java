@@ -28,18 +28,18 @@ import cz.tacr.elza.service.importnodes.vo.Structured;
  *
  * @since 27.10.2017
  */
-@Entity(name = "arr_structure_data")
+@Entity(name = "arr_structured_object")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ArrStructureData implements IArrFund, Structured {
+public class ArrStructuredObject implements IArrFund, Structured {
 
-    public final static String STRUCTURE_DATA_ID = "structureDataId";
+    public final static String STRUCTURED_OBJECT_ID = "structuredObjectId";
 
     public static String VALUE = "value";
 
     @Id
     @GeneratedValue
-    private Integer structureDataId;
+    private Integer structuredObjectId;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrChange.class)
     @JoinColumn(name = "createChangeId", nullable = false)
@@ -55,12 +55,12 @@ public class ArrStructureData implements IArrFund, Structured {
     @Column(name = "deleteChangeId", updatable = false, insertable = false)
     private Integer deleteChangeId;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulStructureType.class)
-    @JoinColumn(name = "structureTypeId", nullable = false)
-    private RulStructureType structureType;
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulStructuredType.class)
+    @JoinColumn(name = "structuredTypeId", nullable = false)
+    private RulStructuredType structuredType;
 
-    @Column(name = "structureTypeId", updatable = false, insertable = false)
-    private Integer structureTypeId;
+    @Column(name = "structuredTypeId", updatable = false, insertable = false)
+    private Integer structuredTypeId;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFund.class)
     @JoinColumn(name = "fundId", nullable = false)
@@ -87,30 +87,30 @@ public class ArrStructureData implements IArrFund, Structured {
     /**
      * @return identifikátor entity
      */
-    public Integer getStructureDataId() {
-        return structureDataId;
+    public Integer getStructuredObjectId() {
+        return structuredObjectId;
     }
 
     /**
-     * @param structureDataId identifikátor entity
+     * @param structuredObjectId identifikátor entity
      */
-    public void setStructureDataId(final Integer structureDataId) {
-        this.structureDataId = structureDataId;
+    public void setStructuredObjectId(final Integer structuredObjectId) {
+        this.structuredObjectId = structuredObjectId;
     }
 
     /**
      * @return typ datového typu
      */
-    public RulStructureType getStructureType() {
-        return structureType;
+    public RulStructuredType getStructuredType() {
+        return structuredType;
     }
 
     /**
-     * @param structureType typ datového typu
+     * @param structuredType typ datového typu
      */
-    public void setStructureType(final RulStructureType structureType) {
-        this.structureType = structureType;
-        this.structureTypeId = structureType == null ? null : structureType.getStructureTypeId();
+    public void setStructuredType(final RulStructuredType structuredType) {
+        this.structuredType = structuredType;
+        this.structuredTypeId = structuredType == null ? null : structuredType.getStructuredTypeId();
     }
 
     /**
@@ -122,7 +122,7 @@ public class ArrStructureData implements IArrFund, Structured {
 
     @Override
     public String getStructureTypeCode() {
-        return structureType == null ? null : structureType.getCode();
+        return structuredType == null ? null : structuredType.getCode();
     }
 
     /**
@@ -228,8 +228,8 @@ public class ArrStructureData implements IArrFund, Structured {
         return deleteChangeId;
     }
 
-    public Integer getStructureTypeId() {
-        return structureTypeId;
+    public Integer getStructuredTypeId() {
+        return structuredTypeId;
     }
 
     public Integer getFundId() {

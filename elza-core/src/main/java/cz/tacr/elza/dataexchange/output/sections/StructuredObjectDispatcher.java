@@ -6,9 +6,9 @@ import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.dataexchange.output.loaders.LoadDispatcher;
 import cz.tacr.elza.dataexchange.output.writer.SectionOutputStream;
 import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrStructureData;
+import cz.tacr.elza.domain.ArrStructuredObject;
 
-public class StructuredObjectDispatcher implements LoadDispatcher<ArrStructureData> {
+public class StructuredObjectDispatcher implements LoadDispatcher<ArrStructuredObject> {
 
     private final SectionOutputStream os;
 
@@ -16,7 +16,7 @@ public class StructuredObjectDispatcher implements LoadDispatcher<ArrStructureDa
 
     private final ArrFund fund;
 
-    private ArrStructureData structuredData;
+    private ArrStructuredObject structuredData;
 
     public StructuredObjectDispatcher(SectionOutputStream os, RuleSystem ruleSystem, ArrFund fund) {
         this.os = os;
@@ -29,7 +29,7 @@ public class StructuredObjectDispatcher implements LoadDispatcher<ArrStructureDa
     }
 
     @Override
-    public void onLoad(ArrStructureData result) {
+    public void onLoad(ArrStructuredObject result) {
         Validate.isTrue(structuredData == null);
         structuredData = result;
     }

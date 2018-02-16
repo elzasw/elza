@@ -16,15 +16,15 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 public class ArrDataStructureRef extends ArrData {
 
-    public static final String STRUCTURE_DATA = "structureData";
+    public static final String STRUCTURED_OBJECT = "structuredObject";
 
     @RestResource(exported = false)
-    @ManyToOne(fetch = FetchType.EAGER, targetEntity = ArrStructureData.class)
-    @JoinColumn(name = "structureDataId", nullable = false)
-    private ArrStructureData structureData;
+    @ManyToOne(fetch = FetchType.EAGER, targetEntity = ArrStructuredObject.class)
+    @JoinColumn(name = "structuredObjectId", nullable = false)
+    private ArrStructuredObject structuredObject;
 
-    @Column(name = "structureDataId", updatable = false, insertable = false)
-    private Integer structureDataId;
+    @Column(name = "structuredObjectId", updatable = false, insertable = false)
+    private Integer structuredObjectId;
 
     /**
      * Public empty constructor
@@ -35,9 +35,9 @@ public class ArrDataStructureRef extends ArrData {
 
     /**
      * Copy constructor
-     * 
+     *
      * Copy constuctor is used internally, see method makeCopy
-     * 
+     *
      * @param src
      */
     protected ArrDataStructureRef(ArrDataStructureRef src) {
@@ -46,26 +46,26 @@ public class ArrDataStructureRef extends ArrData {
     }
 
     private void copyValue(ArrDataStructureRef src) {
-        this.structureData = src.structureData;
-        this.structureDataId = src.structureDataId;
+        this.structuredObject = src.structuredObject;
+        this.structuredObjectId = src.structuredObjectId;
     }
 
-    public ArrStructureData getStructureData() {
-        return structureData;
+    public ArrStructuredObject getStructuredObject() {
+        return structuredObject;
     }
 
-    public void setStructureData(final ArrStructureData structureData) {
-        this.structureData = structureData;
-        this.structureDataId = structureData == null ? null : structureData.getStructureDataId();
+    public void setStructuredObject(final ArrStructuredObject structuredObject) {
+        this.structuredObject = structuredObject;
+        this.structuredObjectId = structuredObject == null ? null : structuredObject.getStructuredObjectId();
     }
 
-    public Integer getStructureDataId() {
-        return structureDataId;
+    public Integer getStructuredObjectId() {
+        return structuredObjectId;
     }
 
     @Override
     public String getFulltextValue() {
-        return structureData.getValue();
+        return structuredObject.getValue();
     }
 
     @Override

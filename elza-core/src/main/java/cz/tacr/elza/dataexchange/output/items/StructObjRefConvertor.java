@@ -14,7 +14,7 @@ public class StructObjRefConvertor implements ItemDataConvertor {
 
         ArrDataStructureRef structObjRef = (ArrDataStructureRef) data;
         DescriptionItemStructObjectRefImpl item = new DescriptionItemStructObjectRefImpl();
-        item.setSoid(structObjRef.getStructureDataId().toString());
+        item.setSoid(structObjRef.getStructuredObjectId().toString());
         return item;
     }
 }

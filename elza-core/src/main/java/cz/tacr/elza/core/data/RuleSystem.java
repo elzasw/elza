@@ -3,7 +3,7 @@ package cz.tacr.elza.core.data;
 import java.util.List;
 
 import cz.tacr.elza.domain.RulRuleSet;
-import cz.tacr.elza.domain.RulStructureType;
+import cz.tacr.elza.domain.RulStructuredType;
 
 public interface RuleSystem {
 
@@ -11,14 +11,14 @@ public interface RuleSystem {
 
     /**
      * Return collection of all structured types
-     * 
+     *
      * @return
      */
-    List<RulStructureType> getStructuredTypes();
+    List<RulStructuredType> getStructuredTypes();
 
-    RulStructureType getStructuredTypeById(Integer id);
+    RulStructuredType getStructuredTypeById(Integer id);
 
-    RulStructureType getStructuredTypeByCode(String code);
+    RulStructuredType getStructuredTypeByCode(String code);
 
     List<RuleSystemItemType> getItemTypes();
 
@@ -26,7 +26,7 @@ public interface RuleSystem {
 
     /**
      * Return description item by code
-     * 
+     *
      * @param code
      *            Item type code
      * @return Return description item. If item does not exist return null.

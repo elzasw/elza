@@ -70,7 +70,7 @@ import cz.tacr.elza.repository.RelationRepository;
 import cz.tacr.elza.repository.RelationRoleTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRoleTypeRepository;
-import cz.tacr.elza.repository.StructureDataRepository;
+import cz.tacr.elza.repository.StructuredObjectRepository;
 import cz.tacr.elza.repository.UserRepository;
 
 
@@ -179,7 +179,7 @@ public class HelperTestService {
     @Autowired
     private NodeExtensionRepository nodeExtensionRepository;
     @Autowired
-    private StructureDataRepository structureDataRepository;
+    private StructuredObjectRepository structureDataRepository;
     @Autowired
     private FundStructureExtensionRepository fundStructureExtensionRepository;
 

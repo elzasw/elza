@@ -1,7 +1,7 @@
 package cz.tacr.elza.print.item.convertors;
 
 import cz.tacr.elza.domain.ArrFile;
-import cz.tacr.elza.domain.ArrStructureData;
+import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.print.File;
@@ -23,5 +23,5 @@ public interface ItemConvertorContext {
 
     File getFile(ArrFile file);
 
-    Structured getStructured(ArrStructureData structureData);
+    Structured getStructured(ArrStructuredObject structureData);
 }

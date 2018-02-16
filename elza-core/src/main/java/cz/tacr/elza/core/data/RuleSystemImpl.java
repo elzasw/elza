@@ -8,19 +8,19 @@ import java.util.Map;
 import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.domain.RulRuleSet;
-import cz.tacr.elza.domain.RulStructureType;
+import cz.tacr.elza.domain.RulStructuredType;
 
 public class RuleSystemImpl implements RuleSystem {
 
     private final RulRuleSet ruleSet;
 
-    private List<RulStructureType> structuredTypes;
+    private List<RulStructuredType> structuredTypes;
 
     private List<RuleSystemItemType> itemTypes;
 
-    private Map<Integer, RulStructureType> structuredTypeIdMap;
+    private Map<Integer, RulStructuredType> structuredTypeIdMap;
 
-    private Map<String, RulStructureType> structuredTypeCodeMap;
+    private Map<String, RulStructuredType> structuredTypeCodeMap;
 
     private Map<Integer, RuleSystemItemType> itemTypeIdMap;
 
@@ -38,18 +38,18 @@ public class RuleSystemImpl implements RuleSystem {
     }
 
     @Override
-    public List<RulStructureType> getStructuredTypes() {
+    public List<RulStructuredType> getStructuredTypes() {
         return structuredTypes;
     }
 
     @Override
-    public RulStructureType getStructuredTypeById(Integer id) {
+    public RulStructuredType getStructuredTypeById(Integer id) {
         Validate.notNull(id);
         return structuredTypeIdMap.get(id);
     }
 
     @Override
-    public RulStructureType getStructuredTypeByCode(String code) {
+    public RulStructuredType getStructuredTypeByCode(String code) {
         Validate.notEmpty(code);
         return structuredTypeCodeMap.get(code);
     }
@@ -74,7 +74,7 @@ public class RuleSystemImpl implements RuleSystem {
 	/**
 	 * Add packet type
 	 **/
-    public void addStructuredType(RulStructureType st) {
+    public void addStructuredType(RulStructuredType st) {
         this.structuredTypes.add(st);
 	}
 
@@ -90,8 +90,8 @@ public class RuleSystemImpl implements RuleSystem {
 	public RuleSystemImpl sealUp() {
 		// update fields
         this.structuredTypeIdMap = StaticDataProvider.createLookup(structuredTypes,
-                RulStructureType::getStructureTypeId);
-        this.structuredTypeCodeMap = StaticDataProvider.createLookup(structuredTypes, RulStructureType::getCode);
+                RulStructuredType::getStructuredTypeId);
+        this.structuredTypeCodeMap = StaticDataProvider.createLookup(structuredTypes, RulStructuredType::getCode);
 
 		this.itemTypeIdMap = StaticDataProvider.createLookup(itemTypes, RuleSystemItemType::getItemTypeId);
 		this.itemTypeCodeMap = StaticDataProvider.createLookup(itemTypes, RuleSystemItemType::getCode);

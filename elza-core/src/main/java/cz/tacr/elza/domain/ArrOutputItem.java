@@ -46,12 +46,12 @@ public class ArrOutputItem extends ArrItem {
     }
 
     @Override
-    public ArrStructureData getStructureData() {
+    public ArrStructuredObject getStructuredObject() {
         return null; //throw new NotImplementedException();
     }
 
     @Override
-    public Integer getStructureDataId() {
+    public Integer getStructuredObjectId() {
         return null; //throw new NotImplementedException();
     }
 

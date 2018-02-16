@@ -28,7 +28,7 @@ import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ArrDataStructureRef;
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrItem;
-import cz.tacr.elza.domain.ArrStructureData;
+import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RulItemSpec;
@@ -42,7 +42,7 @@ import cz.tacr.elza.repository.FundFileRepository;
 import cz.tacr.elza.repository.ItemRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
-import cz.tacr.elza.repository.StructureDataRepository;
+import cz.tacr.elza.repository.StructuredObjectRepository;
 
 /**
  * Serviska pro správu hodnot atributů.
@@ -60,7 +60,7 @@ public class ItemService {
     private PartyRepository partyRepository;
 
     @Autowired
-    private StructureDataRepository structureDataRepository;
+    private StructuredObjectRepository structureDataRepository;
 
     @Autowired
     private FundFileRepository fundFileRepository;
@@ -200,8 +200,8 @@ public class ItemService {
                     ParParty party = ((ArrDataPartyRef) data).getParty();
                     partyMap.put(party.getPartyId(), (ArrDataPartyRef) data);
                 } else if (data instanceof ArrDataStructureRef) {
-                    ArrStructureData structureData = ((ArrDataStructureRef) data).getStructureData();
-                    structureMap.put(structureData.getStructureDataId(), (ArrDataStructureRef) data);
+                    ArrStructuredObject structureData = ((ArrDataStructureRef) data).getStructuredObject();
+                    structureMap.put(structureData.getStructuredObjectId(), (ArrDataStructureRef) data);
                 } else if (data instanceof ArrDataFileRef) {
                     ArrFile file = ((ArrDataFileRef) data).getFile();
                     fileMap.put(file.getFileId(), (ArrDataFileRef) data);
@@ -213,9 +213,9 @@ public class ItemService {
         }
 
         Set<Integer> structureDataIds = structureMap.keySet();
-        List<ArrStructureData> structureDataEntities = structureDataRepository.findAll(structureDataIds);
-        for (ArrStructureData structureDataEntity : structureDataEntities) {
-            structureMap.get(structureDataEntity.getStructureDataId()).setStructureData(structureDataEntity);
+        List<ArrStructuredObject> structureDataEntities = structureDataRepository.findAll(structureDataIds);
+        for (ArrStructuredObject structureDataEntity : structureDataEntities) {
+            structureMap.get(structureDataEntity.getStructuredObjectId()).setStructuredObject(structureDataEntity);
         }
 
         Set<Integer> partyIds = partyMap.keySet();

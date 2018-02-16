@@ -24,7 +24,7 @@ import javax.persistence.Query;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
-import cz.tacr.elza.repository.StructureDataRepository;
+import cz.tacr.elza.repository.StructuredObjectRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -181,7 +181,7 @@ public class ArrangementService {
     @Autowired
     private BulkActionNodeRepository faBulkActionNodeRepository;
     @Autowired
-    private StructureDataRepository structureDataRepository;
+    private StructuredObjectRepository structureDataRepository;
     @Autowired
     private FundRegisterScopeRepository faRegisterRepository;
     @Autowired

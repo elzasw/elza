@@ -16,7 +16,7 @@ import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.RulPackageDependency;
 import cz.tacr.elza.domain.RulStructureDefinition;
 import cz.tacr.elza.domain.RulStructureExtensionDefinition;
-import cz.tacr.elza.domain.RulStructureType;
+import cz.tacr.elza.domain.RulStructuredType;
 import cz.tacr.elza.packageimport.PackageUtils;
 import cz.tacr.elza.repository.PackageDependencyRepository;
 import cz.tacr.elza.repository.PackageRepository;
@@ -53,7 +53,7 @@ public class StructureItemTypesRules extends Rules {
      * @param structureType
      * @param rulDescItemTypeExtList seznam všech atributů
      */
-    public synchronized List<RulItemTypeExt> execute(final RulStructureType structureType,
+    public synchronized List<RulItemTypeExt> execute(final RulStructuredType structureType,
                                                      final List<RulItemTypeExt> rulDescItemTypeExtList,
                                                      final ArrFund fund) throws Exception {
 
@@ -61,7 +61,7 @@ public class StructureItemTypesRules extends Rules {
         facts.addAll(rulDescItemTypeExtList);
 
         List<RulStructureDefinition> rulStructureDefinitions = structureDefinitionRepository
-                .findByStructureTypeAndDefTypeOrderByPriority(structureType, RulStructureDefinition.DefType.ATTRIBUTE_TYPES);
+                .findByStructuredTypeAndDefTypeOrderByPriority(structureType, RulStructureDefinition.DefType.ATTRIBUTE_TYPES);
 
         for (RulStructureDefinition rulStructureDefinition : rulStructureDefinitions) {
             // TODO: Consider using structureType in getDroolsFile?
