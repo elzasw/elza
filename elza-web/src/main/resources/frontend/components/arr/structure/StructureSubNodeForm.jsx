@@ -36,6 +36,11 @@ class StructureSubNodeForm extends AbstractReactComponent {
         descItemTypes: PropTypes.object,
         subNodeForm: PropTypes.object,
         focus: PropTypes.object,
+        readMode: PropTypes.bool,
+    };
+
+    static defaultProps = {
+        readMode: false
     };
 
     initFocus = () => {
@@ -79,7 +84,7 @@ class StructureSubNodeForm extends AbstractReactComponent {
     };
 
     render() {
-        const {versionId, focus, fundId, rulDataTypes, calendarTypes, structureTypes, descItemTypes, subNodeForm} = this.props;
+        const {versionId, focus, fundId, rulDataTypes, calendarTypes, structureTypes, descItemTypes, subNodeForm, readMode} = this.props;
 
         if (!subNodeForm || !subNodeForm.fetched) {
             return <Loading />
@@ -87,7 +92,7 @@ class StructureSubNodeForm extends AbstractReactComponent {
 
         return (
             <div className="structure-item-form-container">
-                {this.descItemTypeItems().length > 0 && <NoFocusButton onClick={this.handleAddDescItemType}><Icon glyph="fa-plus-circle"/>{i18n('subNodeForm.section.item')}</NoFocusButton>}
+                {this.descItemTypeItems().length > 0 && !readMode && <NoFocusButton onClick={this.handleAddDescItemType}><Icon glyph="fa-plus-circle"/>{i18n('subNodeForm.section.item')}</NoFocusButton>}
                 <SubNodeForm
                     ref="subNodeForm"
                     typePrefix="structure"
@@ -111,7 +116,7 @@ class StructureSubNodeForm extends AbstractReactComponent {
                     onDescItemTypeCopy={() => {}}
                     formActions={structureFormActions}
                     showNodeAddons={false}
-                    readMode={false}
+                    readMode={readMode}
                     customActions={this.props.customActions}
                 />
             </div>

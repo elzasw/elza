@@ -773,7 +773,8 @@ class ArrPage extends ArrParentPage {
             node = activeFund.nodes.nodes[activeFund.nodes.activeIndex];
         }
 
-
+        const settings = getOneSettings(userDetail.settings, 'FUND_READ_MODE', 'FUND', activeFund.id);
+        const readMode = settings.value != 'false';
 
         const structureTabs = {};
         if (structureTypes && structureTypes.data) {
@@ -785,7 +786,7 @@ class ArrPage extends ArrParentPage {
                     key:tabKey,
                     name: i.name,
                     ref:tabKey,
-                    render: () => <ArrStructurePanel {...i} key={tabKey} ref={tabKey} fundId={activeFund.id} fundVersionId={activeFund.versionId} />,
+                    render: () => <ArrStructurePanel {...i} key={tabKey} ref={tabKey} readMode={readMode} fundId={activeFund.id} fundVersionId={activeFund.versionId} />,
                     focus: () => this.wrappedFocus(tabKey),
                 }
             });
