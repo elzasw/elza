@@ -9,8 +9,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 import javax.xml.parsers.ParserConfigurationException;
 
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.BaseCode;
 import org.geotools.kml.KMLConfiguration;
 import org.geotools.xml.Parser;
 import org.opengis.feature.simple.SimpleFeature;
@@ -29,6 +27,8 @@ import com.vividsolutions.jts.geom.Geometry;
 
 import cz.tacr.elza.domain.RegCoordinates;
 import cz.tacr.elza.domain.RegRecord;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.RegCoordinatesRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.service.ArrIOService;
@@ -101,7 +101,7 @@ public class KmlController {
 
         Parser parser = new Parser(new KMLConfiguration());
         SimpleFeature document = (SimpleFeature) parser.parse(importFile.getInputStream());
-        Collection<SimpleFeature> placemarks = arrIOService.getPlacemars(document);
+        Collection<SimpleFeature> placemarks = arrIOService.getPlacemarks(document);
         List<RegCoordinates> toCreate = new ArrayList<>();
         for (SimpleFeature placemark : placemarks) {
             Geometry geometry = (Geometry) placemark.getAttribute("Geometry");
@@ -138,7 +138,7 @@ public class KmlController {
         Assert.notNull(descItemObjectId, "Nebyl vyplněn jednoznačný identifikátor descItem");
         Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
 
-        arrIOService.coordinatesDescExport(response, descItemObjectId, fundVersionId);
+        arrIOService.coordinatesExport(response, descItemObjectId, fundVersionId);
     }
 
 
@@ -151,7 +151,7 @@ public class KmlController {
         Assert.notNull(descItemObjectId, "Nebyl vyplněn jednoznačný identifikátor descItem");
         Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
 
-        arrIOService.coordinatesOutputExport(response, descItemObjectId, fundVersionId);
+        arrIOService.coordinatesExport(response, descItemObjectId, fundVersionId);
     }
 
     @RequestMapping(value = "/api/kml/export/regCoordinates/{coordinatesId}",

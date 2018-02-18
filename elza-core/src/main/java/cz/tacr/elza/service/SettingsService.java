@@ -8,13 +8,13 @@ import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 
-import cz.tacr.elza.exception.ObjectNotFoundException;
-import cz.tacr.elza.exception.codes.BaseCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.SettingsRepository;
 
 /**
@@ -35,8 +35,8 @@ public class SettingsService {
      * @param user uživatel
      * @return seznam nastavení
      */
-    public List<UISettings> getSettings(@NotNull final UsrUser user) {
-        List<UISettings> settingsList = settingsRepository.findByUser(user);
+    public List<UISettings> getSettings(int userId) {
+        List<UISettings> settingsList = settingsRepository.findByUserId(userId);
         return settingsList;
     }
 

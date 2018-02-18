@@ -138,7 +138,7 @@ class Layout extends AbstractReactComponent {
                 <div onClick={() => { canStartGame && this.setState({showGame: true}) }} onMouseEnter={this.handleGameStartOver} onMouseLeave={this.handleGameStartLeave} className={"game-placeholder " + (canStartGame ? "canStart" : "")}>
                     &nbsp;
                 </div>
-                <Switch>
+                {this.props.login.logged && <Switch>
                     <Route path="/fund" component={FundPage} />
                     <Route path="/arr">
                         <Switch>
@@ -165,7 +165,7 @@ class Layout extends AbstractReactComponent {
                         </Switch>
                     </Route>
                     <Route component={HomePage} />
-                </Switch>
+                </Switch>}
                 <div style={{overflow:'hidden'}}>
                     <Toastr.Toastr />
                 </div>
@@ -181,10 +181,11 @@ class Layout extends AbstractReactComponent {
 }
 
 function mapStateToProps(state) {
-    const {contextMenu, modalDialog} = state
+    const {contextMenu, modalDialog, login} = state
     return {
         contextMenu,
-        modalDialog
+        modalDialog, 
+        login
     }
 }
 
