@@ -1176,7 +1176,7 @@ class StructureFormActions extends ItemFormActions {
     }
 
     // @Override
-    _callUpdateDescItem(versionId, parentVersionId, descItem) {
+    _callUpdateDescItem(versionId, parentVersionId, parentId, descItem) {
         return WebApi.updateStructureItem(versionId, descItem);
     }
 
