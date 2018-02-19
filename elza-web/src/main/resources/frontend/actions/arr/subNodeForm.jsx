@@ -272,7 +272,7 @@ class ItemFormActions {
             if (typeof loc.descItem.id !== 'undefined') {
                 this._callUpdateDescItem(versionId, parentVersionId, parentId, descItem)
                     .then(json => {
-                        if(this.area === "OUTPUT"){
+                        if(this.area === OutputFormActions.AREA || this.area === StructureFormActions.AREA){
                             dispatch(this._fundSubNodeFormDescItemResponse(versionId, routingKey, valueLocation, json, 'UPDATE'));
                         }
                         dispatch(this._fundSubNodeUpdate(versionId, refTables, json));

@@ -334,7 +334,7 @@ export default function subNodeForm(state = initialState, action = {}) {
                     if (action.descItemResult.item && action.descItemResult.item.calendarTypeId) {
                         loc.descItem.prevCalendarTypeId = action.descItemResult.item.calendarTypeId;
                     }
-                    loc.descItem.touched = false
+                    loc.descItem.touched = false;
                     break;
                 case 'CREATE':
                     loc.descItem.descItemObjectId = action.descItemResult.item.descItemObjectId;
@@ -349,9 +349,9 @@ export default function subNodeForm(state = initialState, action = {}) {
                     if (action.descItemResult.item.calendarTypeId) {
                         loc.descItem.prevCalendarTypeId = action.descItemResult.item.calendarTypeId;
                     }
+                    loc.descItem.touched = false;
                     // Aktualizace position - pokud by create byl na první hodnotě a za ní již nějaké uživatel uložil, musí se vše aktualizovat
                     loc.descItemType.descItems.forEach((descItem, index) => {descItem.position = index + 1});
-
                     break;
                 case 'DELETE_DESC_ITEM_TYPE':
                     // nic dalšího není potřeba, node se aktualizuje výše
@@ -496,7 +496,7 @@ export default function subNodeForm(state = initialState, action = {}) {
                 // not the right node
                 return state;
             }
-            
+
             var result = {
                 ...state,
                 isFetching: false,
