@@ -907,7 +907,7 @@ class ArrPage extends ArrParentPage {
     }
 
     renderCenterPanel(readMode, closed) {
-        const {focus, arrRegion, rulDataTypes, calendarTypes, descItemTypes, userDetail, fundId} = this.props;
+        const {focus, arrRegion, rulDataTypes, calendarTypes, descItemTypes, userDetail} = this.props;
         const showRegisterJp = arrRegion.showRegisterJp;
         const showDaosJp = arrRegion.showDaosJp;
         const activeFund = this.getActiveFund(this.props);
@@ -948,7 +948,7 @@ class ArrPage extends ArrParentPage {
                     rulDataTypes={rulDataTypes}
                     calendarTypes={calendarTypes}
                     descItemTypes={descItemTypes}
-                    fundId={fundId}
+                    fundId={activeFund.id}
                     showRegisterJp={showRegisterJp}
                     showDaosJp={showDaosJp}
                 />
