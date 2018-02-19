@@ -11,30 +11,30 @@ import java.util.Objects;
 @Deprecated
 public class ArrItemStructureRef extends ArrItemData {
 
-    private ArrStructureData structureData;
+    private ArrStructuredObject structuredObject;
 
-    private Integer structureDataId;
+    private Integer structuredObjectId;
 
-    public ArrStructureData getStructureData() {
-        return structureData;
+    public ArrStructuredObject getStructuredObject() {
+        return structuredObject;
     }
 
-    public void setStructureData(final ArrStructureData structureData) {
-        this.structureData = structureData;
-        this.structureDataId = structureData == null ? null : structureData.getStructureDataId();
+    public void setStructuredObject(final ArrStructuredObject structuredObject) {
+        this.structuredObject = structuredObject;
+        this.structuredObjectId = structuredObject == null ? null : structuredObject.getStructuredObjectId();
     }
 
-    public Integer getStructureDataId() {
-        return structureDataId;
+    public Integer getStructuredObjectId() {
+        return structuredObjectId;
     }
 
-    public void setStructureDataId(final Integer structureDataId) {
-        this.structureDataId = structureDataId;
+    public void setStructuredObjectId(final Integer structuredObjectId) {
+        this.structuredObjectId = structuredObjectId;
     }
 
     @Override
     public String toString() {
-        return (structureData != null ) ? structureData.getValue() : null;
+        return (structuredObject != null ) ? structuredObject.getValue() : null;
     }
 
     @Override
@@ -43,11 +43,11 @@ public class ArrItemStructureRef extends ArrItemData {
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         ArrItemStructureRef that = (ArrItemStructureRef) o;
-        return Objects.equals(structureData, that.structureData);
+        return Objects.equals(structuredObject, that.structuredObject);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), structureData);
+        return Objects.hash(super.hashCode(), structuredObject);
     }
 }

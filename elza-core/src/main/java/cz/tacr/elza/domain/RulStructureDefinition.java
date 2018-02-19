@@ -33,9 +33,9 @@ public class RulStructureDefinition {
     @JoinColumn(name = "packageId", nullable = false)
     private RulPackage rulPackage;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulStructureType.class)
-    @JoinColumn(name = "structureTypeId", nullable = false)
-    private RulStructureType structureType;
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulStructuredType.class)
+    @JoinColumn(name = "structuredTypeId", nullable = false)
+    private RulStructuredType structuredType;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulComponent.class)
     @JoinColumn(name = "componentId", nullable = false)
@@ -93,15 +93,15 @@ public class RulStructureDefinition {
     /**
      * @return typ datového typu
      */
-    public RulStructureType getStructureType() {
-        return structureType;
+    public RulStructuredType getStructuredType() {
+        return structuredType;
     }
 
     /**
-     * @param structureType typ datového typu
+     * @param structuredType typ datového typu
      */
-    public void setStructureType(final RulStructureType structureType) {
-        this.structureType = structureType;
+    public void setStructuredType(final RulStructuredType structuredType) {
+        this.structuredType = structuredType;
     }
 
     /**

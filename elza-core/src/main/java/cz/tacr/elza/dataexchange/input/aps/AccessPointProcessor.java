@@ -8,7 +8,6 @@ import cz.tacr.elza.dataexchange.common.GeometryConvertor;
 import cz.tacr.elza.dataexchange.input.DEImportException;
 import cz.tacr.elza.dataexchange.input.aps.context.AccessPointInfo;
 import cz.tacr.elza.dataexchange.input.context.ImportContext;
-import cz.tacr.elza.domain.RegCoordinates;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegVariantRecord;
 import cz.tacr.elza.schema.v2.AccessPoint;
@@ -47,7 +46,6 @@ public class AccessPointProcessor extends AccessPointEntryProcessor {
         RegRecord record = super.createAP(item);
         record.setRecord(accessPoint.getN());
         record.setCharacteristics(accessPoint.getChr());
-        record.setNote(accessPoint.getNote());
         return record;
     }
 
@@ -62,7 +60,6 @@ public class AccessPointProcessor extends AccessPointEntryProcessor {
     protected void processSubEntities(AccessPointInfo apInfo) {
         super.processSubEntities(apInfo);
         processVariantNames(apInfo);
-        processGeoLocations(apInfo);
     }
 
     private void processVariantNames(AccessPointInfo apInfo) {
@@ -74,23 +71,6 @@ public class AccessPointProcessor extends AccessPointEntryProcessor {
             RegVariantRecord variantRecord = new RegVariantRecord();
             variantRecord.setRecord(vn);
             context.addVariantName(variantRecord, apInfo);
-        }
-    }
-
-    private void processGeoLocations(AccessPointInfo apInfo) {
-        AccessPointGeoLocations geoLocations = accessPoint.getGlcs();
-        if (geoLocations == null) {
-            return;
-        }
-        for (AccessPointGeoLocation geoLocation : geoLocations.getGlc()) {
-            RegCoordinates coordinates = new RegCoordinates();
-            coordinates.setDescription(geoLocation.getNote());
-            try {
-                coordinates.setValue(GeometryConvertor.convert(geoLocation.getV()));
-            } catch (ParseException e) {
-                throw new DEImportException("Failed to convert geo location", e);
-            }
-            context.addGeoLocation(coordinates, apInfo);
         }
     }
 }

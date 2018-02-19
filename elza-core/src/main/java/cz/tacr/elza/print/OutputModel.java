@@ -36,7 +36,7 @@ import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNodeOutput;
 import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ArrOutputDefinition;
-import cz.tacr.elza.domain.ArrStructureData;
+import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.ParDynasty;
 import cz.tacr.elza.domain.ParEvent;
 import cz.tacr.elza.domain.ParInstitution;
@@ -509,13 +509,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         }
 
         RegRegisterType regType = staticData.getRegisterTypeById(apTypeId);
-        if (Boolean.TRUE.equals(regType.getHierarchical())) {
-            // recursively create parent types up to root or existing one
-            RecordType parentType = getAPType(regType.getParentRegisterTypeId());
-            type = RecordType.newInstance(parentType, regType);
-        } else {
-            type = RecordType.newInstance(null, regType);
-        }
+        type = RecordType.newInstance(null, regType);
 
         // add to lookup
         apTypeIdMap.put(apTypeId, type);
@@ -695,15 +689,15 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
     }
 
     @Override
-    public Structured getStructured(ArrStructureData structObj) {
+    public Structured getStructured(ArrStructuredObject structObj) {
         Validate.isTrue(HibernateUtils.isInitialized(structObj));
 
-        Structured result = structObjIdMap.get(structObj.getStructureDataId());
+        Structured result = structObjIdMap.get(structObj.getStructuredObjectId());
         if (result == null) {
             result = Structured.newInstance(structObj, ruleSystem, this);
 
             // add to lookup
-            structObjIdMap.put(structObj.getStructureDataId(), result);
+            structObjIdMap.put(structObj.getStructuredObjectId(), result);
         }
 
         return result;

@@ -26,11 +26,11 @@ class DataGridCol extends AbstractReactComponent {
         if (col._rowCheck) {    // speciální slupeček pro označování řádků
             let style = {};
             style.left = fixedLeft;
-
+            const val = rowIndex + 1 + startRowIndex;
             content = (
-                <div key="content" className='cell-container' style={style}>
-                    <div>
-                        <input type='checkbox' checked={checked} onChange={this.handleCheckboxChange} /> {rowIndex + 1 + startRowIndex}
+                <div key="content" className='cell-container rowCheck' style={style}>
+                    <div title={val}>
+                        <input type='checkbox' checked={checked} onChange={this.handleCheckboxChange} /> {val}
                     </div>
                 </div>
             )

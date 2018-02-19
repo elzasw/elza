@@ -33,9 +33,9 @@ public class ArrFundStructureExtension {
     @JoinColumn(name = "deleteChangeId")
     private ArrChange deleteChange;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulStructureExtension.class)
-    @JoinColumn(name = "structureExtensionId", nullable = false)
-    private RulStructureExtension structureExtension;
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulStructuredTypeExtension.class)
+    @JoinColumn(name = "structuredTypeExtensionId", nullable = false)
+    private RulStructuredTypeExtension structuredTypeExtension;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFund.class)
     @JoinColumn(name = "fundId", nullable = false)
@@ -58,15 +58,15 @@ public class ArrFundStructureExtension {
     /**
      * @return rozšížení struktuálního datového typu
      */
-    public RulStructureExtension getStructureExtension() {
-        return structureExtension;
+    public RulStructuredTypeExtension getStructuredTypeExtension() {
+        return structuredTypeExtension;
     }
 
     /**
-     * @param structureExtension rozšížení struktuálního datového typu
+     * @param structuredTypeExtension rozšížení struktuálního datového typu
      */
-    public void setStructureExtension(final RulStructureExtension structureExtension) {
-        this.structureExtension = structureExtension;
+    public void setStructuredTypeExtension(final RulStructuredTypeExtension structuredTypeExtension) {
+        this.structuredTypeExtension = structuredTypeExtension;
     }
 
     /**

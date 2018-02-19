@@ -421,4 +421,93 @@
                       newColumnName="depends_on_package_id"
                       tableName="rul_package_dependency"/>
     </changeSet>
+
+    <changeSet id="20180206092000" author="fric">
+        <dropColumn tableName="reg_register_type" columnName="hierarchical"/>
+        <dropForeignKeyConstraint baseTableName="reg_record" constraintName="fk_regRecord_regRecord"/>
+        <dropColumn tableName="reg_record" columnName="parent_record_id" />
+    </changeSet>
+
+    <changeSet id="20180206135000" author="fric">
+        <dropColumn tableName="reg_record" columnName="note" />
+    </changeSet>
+
+    <changeSet id="20180206142000" author="fric">
+        <dropForeignKeyConstraint baseTableName="reg_coordinates" constraintName="fk_regCoordinates_data"/>
+        <dropTable tableName="reg_coordinates"/>
+    </changeSet>
+
+    <changeSet id="20180216130000" author="slapa">
+        <renameColumn columnDataType="int"
+                      oldColumnName="structure_data_id"
+                      newColumnName="structured_object_id"
+                      tableName="arr_data_structure_ref"/>
+        <renameColumn columnDataType="int"
+                      oldColumnName="structure_extension_id"
+                      newColumnName="structured_type_extension_id"
+                      tableName="arr_fund_structure_extension"/>
+
+        <renameTable oldTableName="arr_structure_item" newTableName="arr_structured_item" />
+        <renameColumn columnDataType="int"
+                      oldColumnName="structure_data_id"
+                      newColumnName="structured_object_id"
+                      tableName="arr_structured_item"/>
+        <update tableName="db_hibernate_sequences">
+            <column name="sequence_name" value="arr_structured_item|structured_object_id" />
+            <where>sequence_name = 'arr_structure_item|structure_data_id'</where>
+        </update>
+
+        <renameTable oldTableName="arr_structure_data" newTableName="arr_structured_object" />
+        <renameColumn columnDataType="int"
+                      oldColumnName="structure_data_id"
+                      newColumnName="structured_object_id"
+                      tableName="arr_structured_object"/>
+        <renameColumn columnDataType="int"
+                      oldColumnName="structure_type_id"
+                      newColumnName="structured_type_id"
+                      tableName="arr_structured_object"/>
+        <update tableName="db_hibernate_sequences">
+            <column name="sequence_name" value="arr_structured_object|structured_object_id" />
+            <where>sequence_name = 'arr_structure_data|structure_data_id'</where>
+        </update>
+
+        <renameColumn columnDataType="int"
+                      oldColumnName="structure_type_id"
+                      newColumnName="structured_type_id"
+                      tableName="rul_item_type"/>
+        <renameColumn columnDataType="int"
+                      oldColumnName="structure_type_id"
+                      newColumnName="structured_type_id"
+                      tableName="rul_structure_definition"/>
+
+        <renameTable oldTableName="rul_structure_type" newTableName="rul_structured_type" />
+        <renameColumn columnDataType="int"
+                      oldColumnName="structure_type_id"
+                      newColumnName="structured_type_id"
+                      tableName="rul_structured_type"/>
+        <update tableName="db_hibernate_sequences">
+            <column name="sequence_name" value="rul_structured_type|structured_type_id" />
+            <where>sequence_name = 'rul_structure_type|structure_type_id'</where>
+        </update>
+
+        <renameTable oldTableName="rul_structure_extension" newTableName="rul_structured_type_extension" />
+        <renameColumn columnDataType="int"
+                      oldColumnName="structure_extension_id"
+                      newColumnName="structured_type_extension_id"
+                      tableName="rul_structured_type_extension"/>
+        <renameColumn columnDataType="int"
+                      oldColumnName="structure_type_id"
+                      newColumnName="structured_type_id"
+                      tableName="rul_structured_type_extension"/>
+        <update tableName="db_hibernate_sequences">
+            <column name="sequence_name" value="rul_structured_type_extension|structured_type_extension_id" />
+            <where>sequence_name = 'rul_structure_extension|structure_extension_id'</where>
+        </update>
+
+        <renameColumn columnDataType="int"
+                      oldColumnName="structure_extension_id"
+                      newColumnName="structured_type_extension_id"
+                      tableName="rul_structure_extension_definition"/>
+
+    </changeSet>
 </databaseChangeLog>

@@ -118,12 +118,12 @@ public class RulItemType {
     @JoinColumn(name = "packageId", nullable = false)
     private RulPackage rulPackage;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulStructureType.class)
-    @JoinColumn(name = "structureTypeId")
-    private RulStructureType structureType;
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulStructuredType.class)
+    @JoinColumn(name = "structuredTypeId")
+    private RulStructuredType structuredType;
 
     @Column(updatable = false, insertable = false)
-    private Integer structureTypeId;
+    private Integer structuredTypeId;
 
 	/**
 	 * Default constructor
@@ -158,8 +158,8 @@ public class RulItemType {
 		indefinable = src.indefinable;
 		ruleSet = src.ruleSet;
 		rulPackage = src.rulPackage;
-		structureType = src.structureType;
-		structureTypeId = src.structureTypeId;
+		structuredType = src.structuredType;
+		structuredTypeId = src.structuredTypeId;
 	}
 
 	public Integer getItemTypeId() {
@@ -398,23 +398,23 @@ public class RulItemType {
     /**
      * @return id strukturovaného typu
      */
-    public Integer getStructureTypeId() {
-        return structureTypeId;
+    public Integer getStructuredTypeId() {
+        return structuredTypeId;
     }
 
     /**
      * @return strukturovaný typ
      */
-    public RulStructureType getStructureType() {
-        return structureType;
+    public RulStructuredType getStructuredType() {
+        return structuredType;
     }
 
     /**
-     * @param structureType strukturovaný typ
+     * @param structuredType strukturovaný typ
      */
-    public void setStructureType(final RulStructureType structureType) {
-        this.structureType = structureType;
-        this.structureTypeId = structureType != null ? structureType.getStructureTypeId() : null;
+    public void setStructuredType(final RulStructuredType structuredType) {
+        this.structuredType = structuredType;
+        this.structuredTypeId = structuredType != null ? structuredType.getStructuredTypeId() : null;
     }
 
     /**

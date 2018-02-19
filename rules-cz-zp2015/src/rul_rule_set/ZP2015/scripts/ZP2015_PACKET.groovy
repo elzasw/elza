@@ -1,12 +1,12 @@
 import cz.tacr.elza.domain.ArrData
-import cz.tacr.elza.domain.ArrStructureItem
+import cz.tacr.elza.domain.ArrStructuredItem
 import org.apache.commons.lang3.StringUtils
 
-List<ArrStructureItem> items = ITEMS
+List<ArrStructuredItem> items = ITEMS
 int packetLeadingZeros = PACKET_LEADING_ZEROS
 return toString(items, packetLeadingZeros)
 
-static String toString(List<ArrStructureItem> items, int packetLeadingZeros) {
+static String toString(List<ArrStructuredItem> items, int packetLeadingZeros) {
     StringBuilder result = new StringBuilder()
     addNotEmpty(result, toStringValue(items, "ZP2015_PACKET_TYPE"), " ")
     addNotEmpty(result, toStringValue(items, "ZP2015_PACKET_PREFIX"))
@@ -39,8 +39,8 @@ static String addZerosBefore(String value, int totalLength) {
     }
 }
 
-static String toStringValue(List<ArrStructureItem> items, String itemTypeCode) {
-    for (ArrStructureItem item : items) {
+static String toStringValue(List<ArrStructuredItem> items, String itemTypeCode) {
+    for (ArrStructuredItem item : items) {
         if (item.getItemType().getCode().equalsIgnoreCase(itemTypeCode)) {
             ArrData data = item.getData();
             if(data==null) {

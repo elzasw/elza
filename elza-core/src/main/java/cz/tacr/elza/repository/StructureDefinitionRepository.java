@@ -2,7 +2,7 @@ package cz.tacr.elza.repository;
 
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.RulStructureDefinition;
-import cz.tacr.elza.domain.RulStructureType;
+import cz.tacr.elza.domain.RulStructuredType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -16,7 +16,7 @@ import java.util.List;
 @Repository
 public interface StructureDefinitionRepository extends JpaRepository<RulStructureDefinition, Integer>, Packaging<RulStructureDefinition> {
 
-    List<RulStructureDefinition> findByRulPackageAndStructureTypeIn(RulPackage rulPackage, List<RulStructureType> rulStructureTypes);
+    List<RulStructureDefinition> findByRulPackageAndStructuredTypeIn(RulPackage rulPackage, List<RulStructuredType> rulStructureTypes);
 
-    List<RulStructureDefinition> findByStructureTypeAndDefTypeOrderByPriority(RulStructureType structureType, RulStructureDefinition.DefType defType);
+    List<RulStructureDefinition> findByStructuredTypeAndDefTypeOrderByPriority(RulStructuredType structureType, RulStructureDefinition.DefType defType);
 }

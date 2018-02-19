@@ -82,9 +82,6 @@ public class AccessPointEntryProcessor implements ItemProcessor {
             if (partyRelated) {
                 throw new DEImportException("Party related AccessPointEntry cannot be hierarchical, apeId:" + item.getId());
             }
-            if (registerType.getHierarchical() == null || !registerType.getHierarchical()) {
-                throw new DEImportException("AccessPointEntry type is not hierarchical, apeId:" + item.getId());
-            }
             if (parentAPInfo == null) {
                 throw new DEImportException("AccessPointEntry parent not found, apeId:" + item.getId());
             }

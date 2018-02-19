@@ -14,7 +14,7 @@ import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrOutputDefinition;
 import cz.tacr.elza.domain.RulItemTypeExt;
-import cz.tacr.elza.domain.RulStructureType;
+import cz.tacr.elza.domain.RulStructuredType;
 import cz.tacr.elza.domain.vo.DataValidationResult;
 import cz.tacr.elza.domain.vo.NodeTypeOperation;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
@@ -94,7 +94,7 @@ public class RulesExecutor {
     }
 
 
-    public List<RulItemTypeExt> executeStructureItemTypesRules(final RulStructureType structureType,
+    public List<RulItemTypeExt> executeStructureItemTypesRules(final RulStructuredType structureType,
                                                                final List<RulItemTypeExt> rulDescItemTypeExtList,
                                                                final ArrFundVersion fundVersion) {
         try {

@@ -62,7 +62,6 @@ import cz.tacr.elza.repository.PartyGroupIdentifierRepository;
 import cz.tacr.elza.repository.PartyNameComplementRepository;
 import cz.tacr.elza.repository.PartyNameRepository;
 import cz.tacr.elza.repository.PartyRepository;
-import cz.tacr.elza.repository.RegCoordinatesRepository;
 import cz.tacr.elza.repository.RegExternalSystemRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RegVariantRecordRepository;
@@ -102,7 +101,6 @@ public class DEImportService {
     public DEImportService(EntityManager em,
                            RegRecordRepository recordRepository,
                            ArrangementService arrangementService,
-                           RegCoordinatesRepository coordinatesRepository,
                            RegVariantRecordRepository variantRecordRepository,
                            PartyRepository partyRepository,
                            PartyNameRepository nameRepository,
@@ -123,7 +121,7 @@ public class DEImportService {
                            ResourcePathResolver resourcePathResolver) {
 
         this.initHelper = new ImportInitHelper(externalSystemRepository, groovyScriptService, institutionRepository,
-                institutionTypeRepository, arrangementService, levelRepository, recordRepository, coordinatesRepository,
+                institutionTypeRepository, arrangementService, levelRepository, recordRepository,
                 variantRecordRepository, partyRepository, nameRepository, nameComplementRepository, groupIdentifierRepository,
                 unitdateRepository);
         this.em = em;

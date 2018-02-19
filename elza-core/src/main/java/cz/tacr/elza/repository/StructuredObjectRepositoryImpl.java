@@ -17,14 +17,14 @@ import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.common.db.DatabaseType;
 import cz.tacr.elza.common.db.RecursiveQueryBuilder;
-import cz.tacr.elza.domain.ArrStructureData;
+import cz.tacr.elza.domain.ArrStructuredObject;
 
 /**
- * Rozšířené repository pro {@link StructureDataRepository}.
+ * Rozšířené repository pro {@link StructuredObjectRepository}.
  *
  * @since 10.11.2017
  */
-public class StructureDataRepositoryImpl implements StructureDataRepositoryCustom {
+public class StructuredObjectRepositoryImpl implements StructuredObjectRepositoryCustom {
 
     @PersistenceContext
     private EntityManager em;
@@ -36,9 +36,9 @@ public class StructureDataRepositoryImpl implements StructureDataRepositoryCusto
                                                 Boolean assignable) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
 
-        Predicate typeEqual = cb.equal(path.get("structureTypeId"), structureTypeId);
+        Predicate typeEqual = cb.equal(path.get("structuredTypeId"), structuredTypeId);
         Predicate fundEqual = cb.equal(path.get("fundId"), fundId);
-        Predicate notTemp = cb.notEqual(path.get("state"), ArrStructureData.State.TEMP);
+        Predicate notTemp = cb.notEqual(path.get("state"), ArrStructuredObject.State.TEMP);
         Predicate notDeleted = cb.isNull(path.get("deleteChange"));
 
         Predicate cond = cb.and(typeEqual, fundEqual, notTemp, notDeleted);
@@ -97,32 +97,33 @@ public class StructureDataRepositoryImpl implements StructureDataRepositoryCusto
     }
 
     @Override
-    public FilteredResult<ArrStructureData> findStructureData(final Integer structureTypeId,
+    public FilteredResult<ArrStructuredObject> findStructureData(final Integer structuredTypeId,
                                                               final int fundId,
                                                               final String search,
                                                               final Boolean assignable,
                                                               final int firstResult,
                                                               final int maxResults) {
-        TypedQuery<Long> countQuery = createStructObjCountQuery(search, structureTypeId, fundId, assignable);
-        TypedQuery<ArrStructureData> objQuery = createStructObjSearchQuery(search, structureTypeId, fundId, assignable, firstResult,
+        TypedQuery<Long> countQuery = createStructObjCountQuery(search, structuredTypeId, fundId, assignable);
+        TypedQuery<ArrStructuredObject> objQuery = createStructObjSearchQuery(search, structuredTypeId, fundId, assignable, firstResult,
                 maxResults);
         int count = countQuery.getSingleResult().intValue();
-        List<ArrStructureData> objList = objQuery.getResultList();
+        List<ArrStructuredObject> objList = objQuery.getResultList();
         return new FilteredResult<>(firstResult, maxResults, count, objList);
     }
 
     @Override
-    public List<ArrStructureData> findStructureDataBySubtreeNodeIds(final Collection<Integer> nodeIds,
-                                                                    final boolean ignoreRootNodes) {
+    public List<ArrStructuredObject> findStructureDataBySubtreeNodeIds(final Collection<Integer> nodeIds,
+                                                                       final boolean ignoreRootNodes) {
         Validate.notEmpty(nodeIds);
 
-        RecursiveQueryBuilder<ArrStructureData> rqBuilder = DatabaseType.getCurrent()
-                .createRecursiveQueryBuilder(ArrStructureData.class);
+        RecursiveQueryBuilder<ArrStructuredObject> rqBuilder = DatabaseType.getCurrent()
+                .createRecursiveQueryBuilder(ArrStructuredObject.class);
 
-        rqBuilder.addSqlPart("SELECT p.* FROM arr_structure_data p WHERE p.structure_data_id IN (")
+        rqBuilder.addSqlPart("SELECT p.* FROM arr_structured_object p WHERE p.structured_object_id IN (")
 
-                .addSqlPart("SELECT dpr.structure_data_id FROM arr_data_structure_ref dpr ")
-                .addSqlPart("JOIN arr_structure_data ap ON ap.structure_data_id = dpr.structure_data_id WHERE dpr.data_id IN (")
+                .addSqlPart("SELECT dpr.structured_object_id FROM arr_data_structure_ref dpr ")
+                .addSqlPart(
+                        "JOIN arr_structured_object ap ON ap.structured_object_id = dpr.structured_object_id WHERE dpr.data_id IN (")
 
                 .addSqlPart("SELECT d.data_id FROM arr_item i JOIN arr_data d ON d.data_id = i.data_id ")
                 .addSqlPart("JOIN arr_desc_item di ON di.item_id = i.item_id ")

@@ -58,7 +58,7 @@ import cz.tacr.elza.domain.RulItemTypeAction;
 import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.domain.RulRuleSet;
-import cz.tacr.elza.domain.RulStructureType;
+import cz.tacr.elza.domain.RulStructuredType;
 import cz.tacr.elza.domain.RulTemplate;
 import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.UsrPermission;
@@ -898,7 +898,7 @@ public class RuleService {
      * @return seznam typu atributů
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
-    public List<RulItemTypeExt> getStructureItemTypes(final RulStructureType structureType,
+    public List<RulItemTypeExt> getStructureItemTypes(final RulStructuredType structureType,
                                                       @AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion) {
         List<RulItemTypeExt> rulDescItemTypeExtList = getRulesetDescriptionItemTypes(
                 structureType.getRuleSet().getRuleSetId());
@@ -912,7 +912,7 @@ public class RuleService {
      * @param fundVersion   verze AS
      * @return seznam typu atributů
      */
-    public List<RulItemTypeExt> getStructureItemTypesInternal(final RulStructureType structureType,
+    public List<RulItemTypeExt> getStructureItemTypesInternal(final RulStructuredType structureType,
                                                               final ArrFundVersion fundVersion) {
         return getStructureItemTypes(structureType, fundVersion);
     }

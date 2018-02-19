@@ -33,7 +33,6 @@ import cz.tacr.elza.controller.vo.ParPartyNameVO;
 import cz.tacr.elza.controller.vo.ParPartyVO;
 import cz.tacr.elza.controller.vo.ParRelationEntityVO;
 import cz.tacr.elza.controller.vo.ParRelationVO;
-import cz.tacr.elza.controller.vo.RegCoordinatesVO;
 import cz.tacr.elza.controller.vo.RegRecordVO;
 import cz.tacr.elza.controller.vo.RegScopeVO;
 import cz.tacr.elza.controller.vo.RegVariantRecordVO;
@@ -56,14 +55,13 @@ import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ArrOutputFile;
 import cz.tacr.elza.domain.ArrOutputItem;
-import cz.tacr.elza.domain.ArrStructureItem;
+import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.DmsFile;
 import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyName;
 import cz.tacr.elza.domain.ParRelation;
 import cz.tacr.elza.domain.ParRelationEntity;
-import cz.tacr.elza.domain.RegCoordinates;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegScope;
 import cz.tacr.elza.domain.RegVariantRecord;
@@ -255,9 +253,9 @@ public class ClientFactoryDO {
         return descItem;
     }
 
-    public ArrStructureItem createStructureItem(final ArrItemVO itemVO, final Integer itemTypeId) {
+    public ArrStructuredItem createStructureItem(final ArrItemVO itemVO, final Integer itemTypeId) {
         ArrData data = itemVO.createDataEntity(em);
-        ArrStructureItem structureItem = new ArrStructureItem();
+        ArrStructuredItem structureItem = new ArrStructuredItem();
         structureItem.setData(data);
 
         RulItemType descItemType = itemTypeRepository.findOne(itemTypeId);
@@ -277,9 +275,9 @@ public class ClientFactoryDO {
         return structureItem;
     }
 
-    public ArrStructureItem createStructureItem(final ArrItemVO descItemVO) {
+    public ArrStructuredItem createStructureItem(final ArrItemVO descItemVO) {
         ArrData data = descItemVO.createDataEntity(em);
-        ArrStructureItem structureItem = new ArrStructureItem();
+        ArrStructuredItem structureItem = new ArrStructuredItem();
         structureItem.setData(data);
         BeanUtils.copyProperties(descItemVO, structureItem);
         structureItem.setItemId(descItemVO.getId());
@@ -295,8 +293,8 @@ public class ClientFactoryDO {
         return structureItem;
     }
 
-    public List<ArrStructureItem> createStructureItem(final Map<Integer, List<ArrItemVO>> descItemVO) {
-        List<ArrStructureItem> result = new ArrayList<>();
+    public List<ArrStructuredItem> createStructureItem(final Map<Integer, List<ArrItemVO>> descItemVO) {
+        List<ArrStructuredItem> result = new ArrayList<>();
         for (Map.Entry<Integer, List<ArrItemVO>> entry : descItemVO.entrySet()) {
             result.addAll(entry.getValue().stream()
                     .map(si -> createStructureItem(si, entry.getKey()))
@@ -357,22 +355,6 @@ public class ClientFactoryDO {
         }
 
         return descItem;
-    }
-
-    /**
-     * Vytvoří souřadnice rejstříků
-     *
-     * @param coordinatesVO souřadnice VO
-     * @return souřadnice
-     */
-    public RegCoordinates createRegCoordinates(final RegCoordinatesVO coordinatesVO) {
-        Assert.notNull(coordinatesVO, "Koordináty musí být vyplněny");
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        RegRecord regRecord = regRecordRepository.findOne(coordinatesVO.getRegRecordId());
-        Assert.notNull(regRecord, "Rejstříkové heslo neexistuje (ID=" + coordinatesVO.getRegRecordId() + ")");
-        RegCoordinates coordinates = mapper.map(coordinatesVO, RegCoordinates.class);
-        coordinates.setRegRecord(regRecord);
-        return coordinates;
     }
 
     /**

@@ -184,7 +184,7 @@ public class ArrangementService {
     @Autowired
     private BulkActionNodeRepository faBulkActionNodeRepository;
     @Autowired
-    private StructureDataRepository structureDataRepository;
+    private StructuredObjectRepository structureDataRepository;
     @Autowired
     private StructureItemRepository structureItemRepository;
     @Autowired

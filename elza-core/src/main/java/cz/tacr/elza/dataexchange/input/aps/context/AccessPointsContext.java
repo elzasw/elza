@@ -12,7 +12,6 @@ import cz.tacr.elza.dataexchange.input.context.ImportPhase;
 import cz.tacr.elza.dataexchange.input.context.ImportPhaseChangeListener;
 import cz.tacr.elza.dataexchange.input.context.ObservableImport;
 import cz.tacr.elza.dataexchange.input.storage.StorageManager;
-import cz.tacr.elza.domain.RegCoordinates;
 import cz.tacr.elza.domain.RegExternalSystem;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegScope;
@@ -37,8 +36,6 @@ public class AccessPointsContext {
     private final List<AccessPointWrapper> accessPointQueue = new ArrayList<>();
 
     private final List<APVariantNameWrapper> variantNameQueue = new ArrayList<>();
-
-    private final List<APGeoLocationWrapper> geoLocationQueue = new ArrayList<>();
 
     public AccessPointsContext(StorageManager storageManager, int batchSize, RegScope importScope, ImportInitHelper initHelper) {
         this.storageManager = storageManager;
@@ -91,20 +88,12 @@ public class AccessPointsContext {
         }
     }
 
-    public void addGeoLocation(RegCoordinates geoLocation, AccessPointInfo apInfo) {
-        geoLocationQueue.add(new APGeoLocationWrapper(geoLocation, apInfo));
-        if (geoLocationQueue.size() >= batchSize) {
-            storeGeoLocations();
-        }
-    }
-
     /**
      * Store all queued entities.
      */
     public void storeAll() {
         storeAccessPoints();
         storeVariantNames();
-        storeGeoLocations();
     }
 
     public void storeAccessPoints() {
@@ -122,15 +111,6 @@ public class AccessPointsContext {
         storeAccessPoints();
         storageManager.saveAPVariantNames(variantNameQueue);
         variantNameQueue.clear();
-    }
-
-    private void storeGeoLocations() {
-        if (geoLocationQueue.isEmpty()) {
-            return;
-        }
-        storeAccessPoints();
-        storageManager.saveAPGeoLocations(geoLocationQueue);
-        geoLocationQueue.clear();
     }
 
     private static Map<String, RegExternalSystem> loadExternalSystemCodeMap(RegExternalSystemRepository externalSystemRepository) {

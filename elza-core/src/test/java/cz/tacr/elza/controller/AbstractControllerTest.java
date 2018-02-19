@@ -11,7 +11,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -68,7 +67,6 @@ import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
 import cz.tacr.elza.controller.vo.ParPartyTypeVO;
 import cz.tacr.elza.controller.vo.ParPartyVO;
 import cz.tacr.elza.controller.vo.ParRelationVO;
-import cz.tacr.elza.controller.vo.RegCoordinatesVO;
 import cz.tacr.elza.controller.vo.RegRecordVO;
 import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
 import cz.tacr.elza.controller.vo.RegScopeVO;
@@ -109,7 +107,7 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitdateVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitidVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
-import cz.tacr.elza.domain.ArrStructureData;
+import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.vo.ChangesResult;
@@ -1433,35 +1431,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
     }
 
     /**
-     * Nalezne hierarchický typ.
-     *
-     * @param list seznam typů
-     * @return nalezený typ
-     */
-    protected RegRegisterTypeVO getHierarchicalRegRegisterType(final List<RegRegisterTypeVO> list, List<RegRegisterTypeVO> exclude, final boolean hasPartyType) {
-        if (exclude == null) {
-            exclude = Collections.emptyList();
-        }
-        for (RegRegisterTypeVO type : list) {
-            if (type.getHierarchical() && type.getAddRecord() && !exclude.contains(type) && ((!hasPartyType && type.getPartyTypeId() == null) || (hasPartyType && type.getPartyTypeId() != null))) {
-                return type;
-            }
-        }
-
-        for (RegRegisterTypeVO type : list) {
-            if (type.getChildren() != null) {
-                RegRegisterTypeVO res = getHierarchicalRegRegisterType(type.getChildren(), exclude, hasPartyType);
-                if (res != null) {
-                    return res;
-                }
-            }
-        }
-        return null;
-    }
-
-
-
-    /**
      * Validuje verzi archivní pomůcky a vrátí list chyb.
      * Pokud je počet chyb 0 pak předpokládáme že stav AP = OK
      *
@@ -1853,27 +1822,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
      */
     protected Response deleteVariantRecord(final int id) {
         return delete(spec -> spec.pathParam("variantRecordId", id), DELETE_VARIANT_RECORD);
-    }
-
-
-    /**
-     * Vytvoření reg souřadnic
-     *
-     * @param coordinates VO objektu k vytvoření
-     * @return VO
-     */
-    protected RegCoordinatesVO createRegCoordinates(final RegCoordinatesVO coordinates) {
-        return post(spec -> spec.body(coordinates), CREATE_REG_COORDINATES).getBody().as(RegCoordinatesVO.class);
-    }
-
-    /**
-     * Úprava reg souřadnic
-     *
-     * @param coordinates VO objektu k vytvoření
-     * @return VO
-     */
-    protected RegCoordinatesVO updateRegCoordinates(final RegCoordinatesVO coordinates) {
-        return put(spec -> spec.pathParam("coordinatesId", coordinates.getId()).body(coordinates), UPDATE_REG_COORDINATES).getBody().as(RegCoordinatesVO.class);
     }
 
     /**
@@ -3197,7 +3145,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
     /**
      * Založení duplikátů strukturovaného datového typu a autoinkrementační.
-     * Předloha musí být ve stavu {@link ArrStructureData.State#TEMP}.
+     * Předloha musí být ve stavu {@link ArrStructuredObject.State#TEMP}.
      *
      * @param structureDataId identifikátor předlohy hodnoty strukturovaného datového typu
      * @param fundVersionId   identifikátor verze AS

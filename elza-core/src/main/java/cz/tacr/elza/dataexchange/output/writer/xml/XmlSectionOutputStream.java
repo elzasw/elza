@@ -272,7 +272,7 @@ class XmlSectionOutputStream implements SectionOutputStream {
                     DescriptionItemStructObjectRefImpl item = super.convert(data);
                     if (item != null) {
                         ArrDataStructureRef structObjRef = (ArrDataStructureRef) data;
-                        sectionContext.addStructObjectId(structObjRef.getStructureDataId());
+                        sectionContext.addStructObjectId(structObjRef.getStructuredObjectId());
                     }
                     return item;
                 }
