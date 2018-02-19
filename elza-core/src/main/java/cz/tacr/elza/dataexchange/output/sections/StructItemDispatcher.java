@@ -2,9 +2,9 @@ package cz.tacr.elza.dataexchange.output.sections;
 
 import cz.tacr.elza.dataexchange.output.loaders.LoadDispatcher;
 import cz.tacr.elza.dataexchange.output.loaders.NestedLoadDispatcher;
-import cz.tacr.elza.domain.ArrStructureItem;
+import cz.tacr.elza.domain.ArrStructuredItem;
 
-public class StructItemDispatcher extends NestedLoadDispatcher<ArrStructureItem> {
+public class StructItemDispatcher extends NestedLoadDispatcher<ArrStructuredItem> {
 
     private final StructObjectInfo structObjectInfo;
 
@@ -14,7 +14,7 @@ public class StructItemDispatcher extends NestedLoadDispatcher<ArrStructureItem>
     }
 
     @Override
-    public void onLoad(ArrStructureItem result) {
+    public void onLoad(ArrStructuredItem result) {
         structObjectInfo.addItem(result);
     }
 

@@ -63,7 +63,7 @@ import cz.tacr.elza.domain.ArrNodeConformity.State;
 import cz.tacr.elza.domain.ArrNodeConformityError;
 import cz.tacr.elza.domain.ArrNodeConformityMissing;
 import cz.tacr.elza.domain.ArrOutputDefinition;
-import cz.tacr.elza.domain.ArrStructureData;
+import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.RegScope;
 import cz.tacr.elza.domain.RulItemType;
@@ -117,8 +117,8 @@ import cz.tacr.elza.repository.OutputRepository;
 import cz.tacr.elza.repository.OutputResultRepository;
 import cz.tacr.elza.repository.RequestQueueItemRepository;
 import cz.tacr.elza.repository.ScopeRepository;
-import cz.tacr.elza.repository.StructureDataRepository;
-import cz.tacr.elza.repository.StructureItemRepository;
+import cz.tacr.elza.repository.StructuredObjectRepository;
+import cz.tacr.elza.repository.StructuredItemRepository;
 import cz.tacr.elza.repository.VisiblePolicyRepository;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.cache.NodeCacheService;
@@ -186,7 +186,7 @@ public class ArrangementService {
     @Autowired
     private StructuredObjectRepository structureDataRepository;
     @Autowired
-    private StructureItemRepository structureItemRepository;
+    private StructuredItemRepository structureItemRepository;
     @Autowired
     private FundRegisterScopeRepository faRegisterRepository;
     @Autowired
@@ -701,10 +701,10 @@ public class ArrangementService {
 
         dmsService.deleteFilesByFund(fund);
 
-        List<ArrStructureData> objList = structureDataRepository.findByFund(fund);
+        List<ArrStructuredObject> objList = structureDataRepository.findByFund(fund);
         objList.forEach(obj -> {
-            structureItemRepository.deleteByStructureData(obj);
-            dataRepository.deleteByStructureData(obj);
+            structureItemRepository.deleteByStructuredObject(obj);
+            dataRepository.deleteByStructuredObject(obj);
         });
         structureDataRepository.deleteInBatch(objList);
 

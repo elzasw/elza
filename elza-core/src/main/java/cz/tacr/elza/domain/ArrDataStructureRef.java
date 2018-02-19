@@ -76,7 +76,7 @@ public class ArrDataStructureRef extends ArrData {
     @Override
     protected boolean isEqualValueInternal(ArrData srcData) {
         ArrDataStructureRef data = (ArrDataStructureRef) srcData;
-        return (this.structureDataId.equals(data.structureDataId));
+        return (this.structuredObjectId.equals(data.structuredObjectId));
     }
 
     @Override

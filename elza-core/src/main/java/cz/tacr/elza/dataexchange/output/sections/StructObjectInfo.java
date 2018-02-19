@@ -7,7 +7,7 @@ import java.util.List;
 import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.domain.ArrItem;
-import cz.tacr.elza.domain.RulStructureType;
+import cz.tacr.elza.domain.RulStructuredType;
 
 public class StructObjectInfo {
 
@@ -15,9 +15,9 @@ public class StructObjectInfo {
 
     private final int id;
 
-    private final RulStructureType structType;
+    private final RulStructuredType structType;
 
-    StructObjectInfo(int id, RulStructureType structType) {
+    StructObjectInfo(int id, RulStructuredType structType) {
         this.id = id;
         this.structType = Validate.notNull(structType);
     }
@@ -26,7 +26,7 @@ public class StructObjectInfo {
         return id;
     }
 
-    public RulStructureType getStructType() {
+    public RulStructuredType getStructType() {
         return structType;
     }
 

@@ -6,17 +6,17 @@ import org.hibernate.Session;
 import cz.tacr.elza.dataexchange.input.context.EntityIdHolder;
 import cz.tacr.elza.dataexchange.input.context.PersistMethod;
 import cz.tacr.elza.dataexchange.input.storage.EntityWrapper;
-import cz.tacr.elza.domain.ArrStructureData;
+import cz.tacr.elza.domain.ArrStructuredObject;
 
 public class ArrStructObjectWrapper implements EntityWrapper {
 
-    private final EntityIdHolder<ArrStructureData> idHolder = new EntityIdHolder<>(ArrStructureData.class);
+    private final EntityIdHolder<ArrStructuredObject> idHolder = new EntityIdHolder<>(ArrStructuredObject.class);
 
-    private final ArrStructureData entity;
+    private final ArrStructuredObject entity;
 
     private final String importId;
 
-    ArrStructObjectWrapper(ArrStructureData entity, String importId) {
+    ArrStructObjectWrapper(ArrStructuredObject entity, String importId) {
         this.entity = Validate.notNull(entity);
         this.importId = Validate.notNull(importId);
     }
@@ -25,7 +25,7 @@ public class ArrStructObjectWrapper implements EntityWrapper {
         return importId;
     }
 
-    public EntityIdHolder<ArrStructureData> getIdHolder() {
+    public EntityIdHolder<ArrStructuredObject> getIdHolder() {
         return idHolder;
     }
 
@@ -35,7 +35,7 @@ public class ArrStructObjectWrapper implements EntityWrapper {
     }
 
     @Override
-    public ArrStructureData getEntity() {
+    public ArrStructuredObject getEntity() {
         return entity;
     }
 
@@ -46,6 +46,6 @@ public class ArrStructObjectWrapper implements EntityWrapper {
 
     @Override
     public void afterEntityPersist() {
-        idHolder.setEntityId(entity.getStructureDataId());
+        idHolder.setEntityId(entity.getStructuredObjectId());
     }
 }

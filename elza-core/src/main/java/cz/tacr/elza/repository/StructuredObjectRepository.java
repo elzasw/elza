@@ -52,8 +52,7 @@ public interface StructuredObjectRepository extends JpaRepository<ArrStructuredO
     @Query("SELECT sd.createChange FROM arr_structured_object sd WHERE sd.state = 'TEMP' AND sd = :structuredObject")
     ArrChange findTempChangeByStructuredObject(@Param("structuredObject") ArrStructuredObject structuredObject);
 
-    @Modifying
-    void deleteByFund(ArrFund fund);
-
     List<ArrStructuredObject> findByFundAndDeleteChangeIsNull(ArrFund fund);
+    
+    List<ArrStructuredObject> findByFund(ArrFund fund);
 }

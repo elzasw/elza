@@ -39,7 +39,7 @@ import cz.tacr.elza.domain.ArrDataStructureRef;
 import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.RulRuleSet;
-import cz.tacr.elza.domain.RulStructureType;
+import cz.tacr.elza.domain.RulStructuredType;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.schema.v2.AccessPointRefs;
 import cz.tacr.elza.schema.v2.DescriptionItem;
@@ -209,8 +209,8 @@ class XmlSectionOutputStream implements SectionOutputStream {
         serializeJaxbType(sw, XmlNameConsts.LEVEL, level);
     }
 
-    private void writeStructObject(StructuredObject structObj, RulStructureType structType) throws Exception {
-        XmlFragment structTypeFragment = structTypeIdFragmentMap.get(structType.getStructureTypeId());
+    private void writeStructObject(StructuredObject structObj, RulStructuredType structType) throws Exception {
+        XmlFragment structTypeFragment = structTypeIdFragmentMap.get(structType.getStructuredTypeId());
         if (structTypeFragment == null) {
             structTypeFragment = new XmlFragment(tempDirectory);
             XMLStreamWriter sw = structTypeFragment.openStreamWriter();
@@ -218,7 +218,7 @@ class XmlSectionOutputStream implements SectionOutputStream {
             sw.writeStartElement(XmlNameConsts.STRUCT_TYPE);
             sw.writeAttribute(XmlNameConsts.STRUCT_TYPE_CODE, structType.getCode());
             sw.writeStartElement(XmlNameConsts.STRUCT_OBJECTS);
-            structTypeIdFragmentMap.put(structType.getStructureTypeId(), structTypeFragment);
+            structTypeIdFragmentMap.put(structType.getStructuredTypeId(), structTypeFragment);
         }
 
         XMLStreamWriter sw = structTypeFragment.getStreamWriter();

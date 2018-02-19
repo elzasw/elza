@@ -7,8 +7,8 @@ import org.apache.commons.lang3.Validate;
 import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.dataexchange.output.loaders.AbstractEntityLoader;
 import cz.tacr.elza.dataexchange.output.loaders.LoadDispatcher;
-import cz.tacr.elza.domain.ArrStructureData;
-import cz.tacr.elza.domain.RulStructureType;
+import cz.tacr.elza.domain.ArrStructuredObject;
+import cz.tacr.elza.domain.RulStructuredType;
 
 public class StructObjectInfoLoader extends AbstractEntityLoader<StructObjectInfo> {
 
@@ -17,7 +17,7 @@ public class StructObjectInfoLoader extends AbstractEntityLoader<StructObjectInf
     private final RuleSystem ruleSystem;
 
     public StructObjectInfoLoader(EntityManager em, int batchSize, RuleSystem ruleSystem) {
-        super(ArrStructureData.class, ArrStructureData.STRUCTURE_DATA_ID, em, batchSize);
+        super(ArrStructuredObject.class, ArrStructuredObject.STRUCTURED_OBJECT_ID, em, batchSize);
         this.structItemLoader = new StructItemLoader(em, batchSize);
         this.ruleSystem = Validate.notNull(ruleSystem);
     }
@@ -30,10 +30,10 @@ public class StructObjectInfoLoader extends AbstractEntityLoader<StructObjectInf
 
     @Override
     protected StructObjectInfo createResult(Object entity) {
-        ArrStructureData structObj = (ArrStructureData) entity;
+        ArrStructuredObject structObj = (ArrStructuredObject) entity;
 
-        RulStructureType structType = ruleSystem.getStructuredTypeById(structObj.getStructureTypeId());
-        return new StructObjectInfo(structObj.getStructureDataId(), structType);
+        RulStructuredType structType = ruleSystem.getStructuredTypeById(structObj.getStructuredTypeId());
+        return new StructObjectInfo(structObj.getStructuredObjectId(), structType);
     }
 
     @Override

@@ -12,8 +12,8 @@ import cz.tacr.elza.dataexchange.input.storage.StorageManager;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrStructureData;
-import cz.tacr.elza.domain.RulStructureType;
+import cz.tacr.elza.domain.ArrStructuredObject;
+import cz.tacr.elza.domain.RulStructuredType;
 import cz.tacr.elza.service.ArrangementService;
 
 /**
@@ -35,7 +35,7 @@ public class ContextSection {
 
     private final ArrangementService arrangementService;
 
-    private RulStructureType processingStructType;
+    private RulStructuredType processingStructType;
 
     private SectionRootAdapter rootAdapter;
 
@@ -96,15 +96,15 @@ public class ContextSection {
     }
 
     public void setProcessingStructType(String structTypeCode) {
-        RulStructureType st = ruleSystem.getStructuredTypeByCode(structTypeCode);
+        RulStructuredType st = ruleSystem.getStructuredTypeByCode(structTypeCode);
         this.processingStructType = Validate.notNull(st);
     }
 
-    public ContextStructObject addStructObject(ArrStructureData structObject, String importId) {
+    public ContextStructObject addStructObject(ArrStructuredObject structObject, String importId) {
         Validate.notNull(processingStructType);
 
         // update structured type reference
-        structObject.setStructureType(processingStructType);
+        structObject.setStructuredType(processingStructType);
 
         ArrStructObjectWrapper wrapper = new ArrStructObjectWrapper(structObject, importId);
         ContextStructObject cso = new ContextStructObject(this, wrapper.getIdHolder(), structObjectStorageDispatcher);

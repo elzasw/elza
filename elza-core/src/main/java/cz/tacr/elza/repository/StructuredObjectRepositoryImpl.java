@@ -29,9 +29,9 @@ public class StructuredObjectRepositoryImpl implements StructuredObjectRepositor
     @PersistenceContext
     private EntityManager em;
 
-    private Predicate createStructObjSearchCond(Path<ArrStructureData> path,
+    private Predicate createStructObjSearchCond(Path<ArrStructuredObject> path,
                                                 String search,
-                                                int structureTypeId,
+                                                int structuredTypeId,
                                                 int fundId,
                                                 Boolean assignable) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
@@ -62,7 +62,7 @@ public class StructuredObjectRepositoryImpl implements StructuredObjectRepositor
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Long> cq = cb.createQuery(Long.class);
 
-        Root<ArrStructureData> root = cq.from(ArrStructureData.class);
+        Root<ArrStructuredObject> root = cq.from(ArrStructuredObject.class);
         Predicate cond = createStructObjSearchCond(root, search, structureTypeId, fundId, assignable);
 
         cq.select(cb.count(root));
@@ -71,7 +71,7 @@ public class StructuredObjectRepositoryImpl implements StructuredObjectRepositor
         return em.createQuery(cq);
     }
 
-    private TypedQuery<ArrStructureData> createStructObjSearchQuery(String search,
+    private TypedQuery<ArrStructuredObject> createStructObjSearchQuery(String search,
                                                                     int structureTypeId,
                                                                     int fundId,
                                                                     Boolean assignable,
@@ -81,15 +81,15 @@ public class StructuredObjectRepositoryImpl implements StructuredObjectRepositor
         Validate.isTrue(maxResults >= 0);
 
         CriteriaBuilder cb = em.getCriteriaBuilder();
-        CriteriaQuery<ArrStructureData> cq = cb.createQuery(ArrStructureData.class);
+        CriteriaQuery<ArrStructuredObject> cq = cb.createQuery(ArrStructuredObject.class);
 
-        Root<ArrStructureData> root = cq.from(ArrStructureData.class);
+        Root<ArrStructuredObject> root = cq.from(ArrStructuredObject.class);
         Predicate cond = createStructObjSearchCond(root, search, structureTypeId, fundId, assignable);
 
         cq.where(cond);
         cq.orderBy(cb.asc(root.get("value")));
 
-        TypedQuery<ArrStructureData> q = em.createQuery(cq);
+        TypedQuery<ArrStructuredObject> q = em.createQuery(cq);
         q.setFirstResult(firstResult);
         q.setMaxResults(maxResults);
 

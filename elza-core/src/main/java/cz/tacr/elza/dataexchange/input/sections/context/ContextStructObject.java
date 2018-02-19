@@ -8,8 +8,8 @@ import org.apache.commons.lang3.Validate;
 import cz.tacr.elza.dataexchange.input.context.EntityIdHolder;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataStructureRef;
-import cz.tacr.elza.domain.ArrStructureData;
-import cz.tacr.elza.domain.ArrStructureItem;
+import cz.tacr.elza.domain.ArrStructuredItem;
+import cz.tacr.elza.domain.ArrStructuredObject;
 
 public class ContextStructObject {
 
@@ -17,23 +17,23 @@ public class ContextStructObject {
 
     private final ContextSection section;
 
-    private final EntityIdHolder<ArrStructureData> idHolder;
+    private final EntityIdHolder<ArrStructuredObject> idHolder;
 
     private final StructObjectStorageDispatcher storageDispatcher;
 
     public ContextStructObject(ContextSection section,
-                               EntityIdHolder<ArrStructureData> idHolder,
+                               EntityIdHolder<ArrStructuredObject> idHolder,
                                StructObjectStorageDispatcher storageDispatcher) {
         this.section = Validate.notNull(section);
         this.idHolder = Validate.notNull(idHolder);
         this.storageDispatcher = storageDispatcher;
     }
 
-    public EntityIdHolder<ArrStructureData> getIdHolder() {
+    public EntityIdHolder<ArrStructuredObject> getIdHolder() {
         return idHolder;
     }
 
-    public void addStructItem(ArrStructureItem structItem, ArrData data) {
+    public void addStructItem(ArrStructuredItem structItem, ArrData data) {
         ArrStructItemWrapper structItemWrapper = createItemWrapper(structItem);
         if (data == null) {
             storageDispatcher.addStructItem(structItemWrapper);
@@ -45,7 +45,7 @@ public class ContextStructObject {
         }
     }
 
-    public void addStructItem(ArrStructureItem structItem, String refStructObjectImportId) {
+    public void addStructItem(ArrStructuredItem structItem, String refStructObjectImportId) {
         ArrStructItemWrapper structItemWrapper = createItemWrapper(structItem);
         // create data without reference
         ArrDataStructureRef data = new ArrDataStructureRef();
@@ -56,7 +56,7 @@ public class ContextStructObject {
         storageDispatcher.addDelayedStructItem(structItemWrapper, dataWrapper);
     }
 
-    private ArrStructItemWrapper createItemWrapper(ArrStructureItem structItem) {
+    private ArrStructItemWrapper createItemWrapper(ArrStructuredItem structItem) {
         Validate.isTrue(structItem.isUndefined());
         // set item position
         Integer count = structItemCount.compute(ItemKey.of(structItem), (k, v) -> v == null ? 1 : ++v);

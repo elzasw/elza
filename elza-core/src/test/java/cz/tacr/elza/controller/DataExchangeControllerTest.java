@@ -32,9 +32,9 @@ import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.dataexchange.output.DEExportParams.FundSections;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataInteger;
-import cz.tacr.elza.domain.ArrStructureItem;
+import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.repository.StructureItemRepository;
+import cz.tacr.elza.repository.StructuredItemRepository;
 
 /**
  * Test exportu archivního souboru.
@@ -51,7 +51,7 @@ public class DataExchangeControllerTest extends AbstractControllerTest {
     // final static String SUZAP_XML = "suzap-import.xml";
 
     @Autowired
-    private StructureItemRepository structItemRepository;
+    private StructuredItemRepository structItemRepository;
 
     @Autowired
     private StaticDataService staticDataService;
@@ -129,7 +129,7 @@ public class DataExchangeControllerTest extends AbstractControllerTest {
 
         // check structured object item count
         Integer structObjId = structObjResult.getRows().iterator().next().id;
-        List<ArrStructureItem> structItems = structItemRepository.findByStructureDataAndDeleteChangeIsNullFetchData(structObjId);
+        List<ArrStructuredItem> structItems = structItemRepository.findByStructuredObjectAndDeleteChangeIsNullFetchData(structObjId);
         Assert.assertTrue(structItems.size() == 2);
 
         // check structured object item data
@@ -139,7 +139,7 @@ public class DataExchangeControllerTest extends AbstractControllerTest {
         so1Item2Data.setDataType(DataType.INT.getEntity());
 
         int foundStructData = 0;
-        for (ArrStructureItem si : structItems) {
+        for (ArrStructuredItem si : structItems) {
             if (so1Item1Spec.getItemSpecId().equals(si.getItemSpecId())) {
                 foundStructData++;
                 continue;

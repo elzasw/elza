@@ -14,9 +14,9 @@ import cz.tacr.elza.dataexchange.input.reader.ItemProcessor;
 import cz.tacr.elza.dataexchange.input.sections.context.ContextSection;
 import cz.tacr.elza.dataexchange.input.sections.context.ContextStructObject;
 import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrStructureData;
-import cz.tacr.elza.domain.ArrStructureData.State;
-import cz.tacr.elza.domain.ArrStructureItem;
+import cz.tacr.elza.domain.ArrStructuredItem;
+import cz.tacr.elza.domain.ArrStructuredObject;
+import cz.tacr.elza.domain.ArrStructuredObject.State;
 import cz.tacr.elza.schema.v2.DescriptionItem;
 import cz.tacr.elza.schema.v2.DescriptionItemStructObjectRef;
 import cz.tacr.elza.schema.v2.StructuredObject;
@@ -48,7 +48,7 @@ public class StructObjectProcessor implements ItemProcessor {
     }
 
     private ContextStructObject processObject(StructuredObject item) {
-        ArrStructureData so = new ArrStructureData();
+    	ArrStructuredObject so = new ArrStructuredObject();
         so.setCreateChange(section.getCreateChange());
         so.setFund(section.getFund());
         so.setState(State.OK);
@@ -74,7 +74,7 @@ public class StructObjectProcessor implements ItemProcessor {
                 ContextStructObject refCso = section.getContextStructObject(refItem.getSoid());
                 if (refCso == null) {
                     // not yet processed (cannot call processData directly)
-                    ArrStructureItem structItem = createStructItem(rsit, descItem.getS());
+                    ArrStructuredItem structItem = createStructItem(rsit, descItem.getS());
                     cso.addStructItem(structItem, refItem.getSoid());
                     continue;
                 }
@@ -95,12 +95,12 @@ public class StructObjectProcessor implements ItemProcessor {
         }
 
         // add structured item
-        ArrStructureItem structItem = createStructItem(rsit, descItem.getS());
+        ArrStructuredItem structItem = createStructItem(rsit, descItem.getS());
         cso.addStructItem(structItem, data);
     }
 
-    private ArrStructureItem createStructItem(RuleSystemItemType rsit, String specCode) {
-        ArrStructureItem structItem = new ArrStructureItem();
+    private ArrStructuredItem createStructItem(RuleSystemItemType rsit, String specCode) {
+        ArrStructuredItem structItem = new ArrStructuredItem();
         structItem.setCreateChange(section.getCreateChange());
         structItem.setDescItemObjectId(section.generateDescItemObjectId());
         structItem.setItemType(rsit.getEntity());
