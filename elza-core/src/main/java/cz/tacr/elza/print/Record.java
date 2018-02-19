@@ -3,8 +3,8 @@ package cz.tacr.elza.print;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.domain.RegVariantRecord;
+import cz.tacr.elza.domain.ApRecord;
+import cz.tacr.elza.domain.ApVariantRecord;
 
 /**
  * One record from registry
@@ -24,17 +24,17 @@ public class Record {
     private final RecordType recordType;
 
     // can be proxy, initialized only when needed
-    private final List<RegVariantRecord> srcVariantRecords;
+    private final List<ApVariantRecord> srcVariantRecords;
 
     private List<String> variantRecords;
 
-    private Record(RegRecord regRecord, RecordType recordType) {
-        this.externalId = regRecord.getExternalId();
-        this.recordId = regRecord.getRecordId();
-        this.record = regRecord.getRecord();
-        this.characteristics = regRecord.getCharacteristics();
+    private Record(ApRecord apRecord, RecordType recordType) {
+        this.externalId = apRecord.getExternalId();
+        this.recordId = apRecord.getRecordId();
+        this.record = apRecord.getRecord();
+        this.characteristics = apRecord.getCharacteristics();
         this.recordType = recordType;
-        this.srcVariantRecords = regRecord.getVariantRecordList();
+        this.srcVariantRecords = apRecord.getVariantRecordList();
     }
 
     /**
@@ -70,7 +70,7 @@ public class Record {
     public List<String> getVariantRecords() {
         if (variantRecords == null) { // lazy initialization
             variantRecords = srcVariantRecords.stream()
-                    .map(RegVariantRecord::getRecord)
+                    .map(ApVariantRecord::getRecord)
                     .collect(Collectors.toList());
         }
         return variantRecords;
@@ -84,8 +84,8 @@ public class Record {
      * Return new instance of Record. Variant names are required (fetched from database if not
      * initialized).
      */
-    public static Record newInstance(RegRecord regRecord, RecordType recordType) {
-        Record record = new Record(regRecord, recordType);
+    public static Record newInstance(ApRecord apRecord, RecordType recordType) {
+        Record record = new Record(apRecord, recordType);
         return record;
     }
 

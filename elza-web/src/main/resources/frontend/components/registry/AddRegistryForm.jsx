@@ -27,8 +27,8 @@ class AddRegistryForm extends AbstractReactComponent {
             errors.scopeId = i18n('global.validation.required');
         }
 
-        if (!values.registerTypeId) {
-            errors.registerTypeId = i18n('global.validation.required');
+        if (!values.apTypeId) {
+            errors.apTypeId = i18n('global.validation.required');
         }
 
         return errors;
@@ -58,22 +58,22 @@ class AddRegistryForm extends AbstractReactComponent {
     }
 
     prepareState = (props) => {
-        const {fields: {registerTypeId}, parentRecordId, registryList:{filter:{registryTypeId}}, registryRegionRecordTypes} = props;
+        const {fields: {apTypeId}, parentRecordId, registryList:{filter:{registryTypeId}}, registryRegionRecordTypes} = props;
 
         // Pokud není nastaven typ rejstříku, pokusíme se ho nastavit
-        if (!registerTypeId || registerTypeId.value === "") {
+        if (!apTypeId || apTypeId.value === "") {
             // Pokud je předán parentRecordId, přednačte se do prvku výběr rejstříku a tento prvek se nastaví jako disabled
             if (parentRecordId !== null) {
                 if (!this.state.disabled) {
                     WebApi.getRegistry(parentRecordId).then(json => {
-                        this.props.load({registerTypeId: json.registerTypeId, scopeId: json.scopeId});
+                        this.props.load({apTypeId: json.apTypeId, scopeId: json.scopeId});
                     });
                     this.setState({disabled: true});
                 }
             } else {    //  pokud není předán parentRecordId, může se výběr rejstříku editovat
                 this.setState({disabled: false});
                 if (registryTypeId && this.isValueUseable(registryRegionRecordTypes.item, registryTypeId)){ // pokud o vybrání nějaké položky, která je uvedena v registryRegion.registryTypesId
-                    this.props.load({registerTypeId: registryTypeId});
+                    this.props.load({apTypeId: registryTypeId});
                 }
             }
         }
@@ -100,7 +100,7 @@ class AddRegistryForm extends AbstractReactComponent {
     }
 
     render() {
-        const {fields: {record, characteristics, registerTypeId, scopeId}, handleSubmit, onClose, versionId, refTables: {scopesData}, submitting, registryRegionRecordTypes, registryRegion} = this.props;
+        const {fields: {record, characteristics, apTypeId, scopeId}, handleSubmit, onClose, versionId, refTables: {scopesData}, submitting, registryRegionRecordTypes, registryRegion} = this.props;
 
         const okSubmitForm = submitReduxFormWithProp.bind(this, AddRegistryForm.validate, 'store');
         const okAndDetailSubmitForm = submitReduxFormWithProp.bind(this, AddRegistryForm.validate, 'storeAndViewDetail');
@@ -114,7 +114,7 @@ class AddRegistryForm extends AbstractReactComponent {
             }
         }
 
-        const value = getTreeItemById(registerTypeId ? registerTypeId.value : "", items);
+        const value = getTreeItemById(apTypeId ? apTypeId.value : "", items);
 
         return (
             <div key={this.props.key}>
@@ -127,10 +127,10 @@ class AddRegistryForm extends AbstractReactComponent {
                             tree
                             alwaysExpanded
                             allowSelectItem={(id, item) => item.addRecord}
-                            {...registerTypeId}
-                            {...decorateFormField(registerTypeId)}
-                            onChange={item => registerTypeId.onChange(item ? item.id : null)}
-                            onBlur={item => registerTypeId.onBlur(item ? item.id : null)}
+                            {...apTypeId}
+                            {...decorateFormField(apTypeId)}
+                            onChange={item => apTypeId.onChange(item ? item.id : null)}
+                            onBlur={item => apTypeId.onBlur(item ? item.id : null)}
                             value={value}
                             disabled={this.state.disabled}
                             />
@@ -149,7 +149,7 @@ class AddRegistryForm extends AbstractReactComponent {
 }
 export default reduxForm({
     form: 'addRegistryForm',
-    fields: ['record', 'characteristics', 'registerTypeId', 'scopeId'],
+    fields: ['record', 'characteristics', 'apTypeId', 'scopeId'],
 },state => ({
     initialValues: state.form.addRegistryForm.initialValues,
     refTables: state.refTables,

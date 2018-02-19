@@ -1,7 +1,7 @@
 package cz.tacr.elza.packageimport;
 
 import cz.tacr.elza.core.data.DataType;
-import cz.tacr.elza.domain.RegRegisterType;
+import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemSpecRegister;
@@ -22,13 +22,13 @@ import cz.tacr.elza.packageimport.xml.ItemSpecRegister;
 import cz.tacr.elza.packageimport.xml.ItemSpecs;
 import cz.tacr.elza.packageimport.xml.ItemType;
 import cz.tacr.elza.packageimport.xml.ItemTypes;
+import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.ItemSpecRegisterRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.PackageDependencyRepository;
 import cz.tacr.elza.repository.PackageRepository;
-import cz.tacr.elza.repository.RegisterTypeRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,7 +75,7 @@ public class ItemTypeUpdater {
     private ItemSpecRegisterRepository itemSpecRegisterRepository;
 
     @Autowired
-	private RegisterTypeRepository registerTypeRepository;
+	private ApTypeRepository apTypeRepository;
 
     @Autowired
     private PackageRepository packageRepository;
@@ -460,7 +460,7 @@ public class ItemTypeUpdater {
 
 
     /**
-     * Zpracování napojení specifikací na reg.
+     * Zpracování napojení specifikací na ap.
      *
      * @param itemSpecs    seznam importovaných specifikací
      * @param rulDescItemSpecs seznam specifikací atributů
@@ -468,7 +468,7 @@ public class ItemTypeUpdater {
     private void processDescItemSpecsRegister(final ItemSpecs itemSpecs,
                                               final List<RulItemSpec> rulDescItemSpecs) {
 
-        List<RegRegisterType> regRegisterTypes = registerTypeRepository.findAll();
+        List<ApType> apTypes = apTypeRepository.findAll();
 
         for (RulItemSpec rulDescItemSpec : rulDescItemSpecs) {
             List<ItemSpec> findItemsSpec = itemSpecs.getItemSpecs().stream().filter(
@@ -487,7 +487,7 @@ public class ItemTypeUpdater {
             if (!CollectionUtils.isEmpty(item.getItemSpecRegisters())) {
                 for (ItemSpecRegister itemSpecRegister : item.getItemSpecRegisters()) {
                     List<RulItemSpecRegister> findItems = rulItemSpecRegisters.stream()
-                            .filter((r) -> r.getRegisterType().getCode().equals(
+                            .filter((r) -> r.getApType().getCode().equals(
                                     itemSpecRegister.getRegisterType())).collect(Collectors.toList());
                     RulItemSpecRegister itemRegister;
                     if (findItems.size() > 0) {
@@ -496,7 +496,7 @@ public class ItemTypeUpdater {
                         itemRegister = new RulItemSpecRegister();
                     }
 
-                    convertRulDescItemSpecsRegister(rulDescItemSpec, itemRegister, regRegisterTypes,
+                    convertRulDescItemSpecsRegister(rulDescItemSpec, itemRegister, apTypes,
                             itemSpecRegister);
 
                     rulItemSpecRegistersNew.add(itemRegister);
@@ -515,34 +515,34 @@ public class ItemTypeUpdater {
 
 
     /**
-     * Převod VO na DAO napojení specifikací na reg.
+     * Převod VO na DAO napojení specifikací na ap.
      *
      * @param rulDescItemSpec         seznam specifikací
      * @param rulItemSpecRegister seznam DAO napojení
-     * @param regRegisterTypes        seznam typů reg.
+     * @param apTypes        seznam typů ap.
      * @param itemSpecRegister    seznam VO napojení
      */
     private void convertRulDescItemSpecsRegister(final RulItemSpec rulDescItemSpec,
                                                  final RulItemSpecRegister rulItemSpecRegister,
-                                                 final List<RegRegisterType> regRegisterTypes,
+                                                 final List<ApType> apTypes,
                                                  final ItemSpecRegister itemSpecRegister) {
 
         rulItemSpecRegister.setItemSpec(rulDescItemSpec);
 
-        List<RegRegisterType> findItems = regRegisterTypes.stream()
+        List<ApType> findItems = apTypes.stream()
                 .filter((r) -> r.getCode().equals(itemSpecRegister.getRegisterType()))
                 .collect(Collectors.toList());
 
-        RegRegisterType item;
+        ApType item;
 
         if (findItems.size() > 0) {
             item = findItems.get(0);
         } else {
             throw new SystemException(
-                    "Kód " + itemSpecRegister.getRegisterType() + " neexistuje v RegRegisterType", BaseCode.ID_NOT_EXIST);
+                    "Kód " + itemSpecRegister.getRegisterType() + " neexistuje v ApType", BaseCode.ID_NOT_EXIST);
         }
 
-        rulItemSpecRegister.setRegisterType(item);
+        rulItemSpecRegister.setApType(item);
 
     }
 

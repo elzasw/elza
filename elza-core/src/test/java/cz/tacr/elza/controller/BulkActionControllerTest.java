@@ -5,18 +5,14 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import cz.tacr.elza.controller.vo.*;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cz.tacr.elza.controller.vo.ArrFundVO;
-import cz.tacr.elza.controller.vo.BulkActionRunVO;
-import cz.tacr.elza.controller.vo.BulkActionVO;
-import cz.tacr.elza.controller.vo.RegScopeVO;
-import cz.tacr.elza.controller.vo.TreeData;
-import cz.tacr.elza.controller.vo.TreeNodeClient;
+import cz.tacr.elza.controller.vo.ApScopeVO;
 import cz.tacr.elza.domain.ArrBulkActionRun.State;
 
 
@@ -52,7 +48,7 @@ public class BulkActionControllerTest extends AbstractControllerTest {
 
     @After
     public void cleanUp() {
-        for (RegScopeVO scope : getAllScopes()) {
+        for (ApScopeVO scope : getAllScopes()) {
             if (scope.getName().equals(IMPORT_SCOPE)) {
                 deleteScope(scope.getId());
                 break;

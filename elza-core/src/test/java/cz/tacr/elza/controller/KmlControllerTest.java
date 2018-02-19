@@ -10,9 +10,9 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import cz.tacr.elza.controller.vo.ApRecordVO;
+import cz.tacr.elza.controller.vo.ApScopeVO;
 import cz.tacr.elza.controller.vo.ArrFundVO;
-import cz.tacr.elza.controller.vo.RegRecordVO;
-import cz.tacr.elza.controller.vo.RegScopeVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
@@ -21,6 +21,7 @@ import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 /**
  *
  */
+@Ignore
 public class KmlControllerTest extends AbstractControllerTest {
 
     protected final static String IMPORT_ARR_COORDINATES = KML_CONTROLLER_URL + "/import/descCoordinates";
@@ -41,7 +42,7 @@ public class KmlControllerTest extends AbstractControllerTest {
     public void cleanUp() {
     	helperTestService.deleteTables();
         List<String> toDelete = Arrays.asList(IMPORT_SCOPE_FA, IMPORT_SCOPE_RECORD);
-        for (RegScopeVO scope : getAllScopes()) {
+        for (ApScopeVO scope : getAllScopes()) {
             if (toDelete.contains(scope.getName())) {
                 deleteScope(scope.getId());
                 break;
@@ -53,7 +54,7 @@ public class KmlControllerTest extends AbstractControllerTest {
     @Test
     @Ignore
     public void arrImportExportTest() {
-        List<RegScopeVO> allScopes = getAllScopes();
+        List<ApScopeVO> allScopes = getAllScopes();
         importXmlFile(null, allScopes.get(0).getId(), getFile(ALL_IN_ONE_XML));
 
         List<ArrFundVO> funds = getFunds();
@@ -102,16 +103,16 @@ public class KmlControllerTest extends AbstractControllerTest {
     @Test
     @Ignore
     public void regImportExportTest() {
-        List<RegScopeVO> allScopes = getAllScopes();
+        List<ApScopeVO> allScopes = getAllScopes();
         importXmlFile(null, allScopes.get(0).getId(), getFile(ALL_IN_ONE_XML));
 
 
-        List<RegRecordVO> records = findRecord(null, 0, 10, null, null, null);
+        List<ApRecordVO> records = findRecord(null, 0, 10, null, null, null);
         Assert.assertTrue(!records.isEmpty());
-        RegRecordVO record = records.iterator().next();
+        ApRecordVO record = records.iterator().next();
 
         HashMap<String, Object> params = new HashMap<>();
-        params.put("regRecordId", record.getId());
+        params.put("apRecordId", record.getId());
         Integer[] ids = multipart(spec -> spec.multiPart("file", getFile(ALL)).params(params), IMPORT_REG_COORDINATES).getBody().as(Integer[].class);
         for (Integer id : ids) {
             get(spec -> spec.pathParam("regCoordinatesId", id), EXPORT_REG_COORDINATES);

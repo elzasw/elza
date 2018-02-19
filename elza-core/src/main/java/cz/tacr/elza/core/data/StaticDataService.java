@@ -24,7 +24,7 @@ import cz.tacr.elza.repository.PackageRepository;
 import cz.tacr.elza.repository.PartyNameFormTypeRepository;
 import cz.tacr.elza.repository.PartyTypeComplementTypeRepository;
 import cz.tacr.elza.repository.PartyTypeRepository;
-import cz.tacr.elza.repository.RegisterTypeRepository;
+import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRoleTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
@@ -77,7 +77,7 @@ public class StaticDataService {
 
     final PartyTypeComplementTypeRepository partyTypeComplementTypeRepository;
 
-    final RegisterTypeRepository registerTypeRepository;
+    final ApTypeRepository apTypeRepository;
 
     final RelationTypeRepository relationTypeRepository;
 
@@ -96,7 +96,7 @@ public class StaticDataService {
                              PartyNameFormTypeRepository partyNameFormTypeRepository,
                              ComplementTypeRepository complementTypeRepository,
                              PartyTypeComplementTypeRepository partyTypeComplementTypeRepository,
-                             RegisterTypeRepository registerTypeRepository,
+                             ApTypeRepository apTypeRepository,
                              RelationTypeRepository relationTypeRepository,
                              RelationTypeRoleTypeRepository relationTypeRoleTypeRepository) {
         this.em = em;
@@ -111,7 +111,7 @@ public class StaticDataService {
         this.partyNameFormTypeRepository = partyNameFormTypeRepository;
         this.complementTypeRepository = complementTypeRepository;
         this.partyTypeComplementTypeRepository = partyTypeComplementTypeRepository;
-        this.registerTypeRepository = registerTypeRepository;
+        this.apTypeRepository = apTypeRepository;
         this.relationTypeRepository = relationTypeRepository;
         this.relationTypeRoleTypeRepository = relationTypeRoleTypeRepository;
     }

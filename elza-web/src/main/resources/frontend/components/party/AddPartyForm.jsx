@@ -26,7 +26,7 @@ class AddPartyForm extends AbstractReactComponent {
 
     static fields = [
         'partyType', // skrýté pole updated při loadu
-        'record.registerTypeId',
+        'record.apTypeId',
         'record.scopeId',
         'prefferedName.nameFormType.id',
         'prefferedName.degreeBefore',
@@ -62,11 +62,11 @@ class AddPartyForm extends AbstractReactComponent {
             }
             errors.prefferedName.mainPart = i18n('global.validation.required');
         }
-        if (!values.record.registerTypeId) {
+        if (!values.record.apTypeId) {
             if (!errors.record) {
                 errors.record = {}
             }
-            errors.record.registerTypeId = i18n('global.validation.required');
+            errors.record.apTypeId = i18n('global.validation.required');
         }
 
         if (values.prefferedName.complements && values.prefferedName.complements.length > 0) {
@@ -197,7 +197,7 @@ class AddPartyForm extends AbstractReactComponent {
     loadData(props) {
         const {recordTypes, refTables: {partyNameFormTypes, scopesData:{scopes}, calendarTypes}, partyType} = props;
 
-        const registerTypeId = this.getPreselectRecordTypeId(recordTypes);
+        const apTypeId = this.getPreselectRecordTypeId(recordTypes);
         const filteredScopes = scopes.filter(i => i.versionId === null)[0].scopes;
         const scopeId = filteredScopes && filteredScopes[0] && filteredScopes[0].id ? filteredScopes[0].id : null;
         const complementsTypes = partyType.complementTypes;
@@ -208,7 +208,7 @@ class AddPartyForm extends AbstractReactComponent {
         this.props.load({
             partyType,
             record:{
-                registerTypeId,
+                apTypeId,
                 scopeId,
             },
             prefferedName:{
@@ -248,7 +248,7 @@ class AddPartyForm extends AbstractReactComponent {
         const {
             fields: {
                 record: {
-                    registerTypeId,
+                    apTypeId: apTypeId,
                     scopeId
                 },
                 prefferedName: {
@@ -279,7 +279,7 @@ class AddPartyForm extends AbstractReactComponent {
         }
 
         const treeItems = recordTypes.fetched ? recordTypes.item : [];
-        const value = registerTypeId.value === null ? null : getTreeItemById(registerTypeId.value, treeItems);
+        const value = apTypeId.value === null ? null : getTreeItemById(apTypeId.value, treeItems);
         const complementsList = complementsTypes && complementsTypes.map(i => <option value={i.complementTypeId} key={'index' + i.complementTypeId}>{i.name}</option>);
 
         return <Form onSubmit={handleSubmit(this.submitReduxForm)}>
@@ -288,17 +288,17 @@ class AddPartyForm extends AbstractReactComponent {
                     <div className="flex-2 col">
                         <Row>
                             <Col xs={12}>
-                                <FormGroup validationState={registerTypeId.touched && registerTypeId.error ? 'error' : null}>
+                                <FormGroup validationState={apTypeId.touched && apTypeId.error ? 'error' : null}>
                                     <Autocomplete
                                         label={i18n('party.recordType')}
                                         items={treeItems}
                                         tree
                                         alwaysExpanded
                                         allowSelectItem={(id, item) => item.addRecord}
-                                        {...registerTypeId}
+                                        {...apTypeId}
                                         value={value}
-                                        onChange={item => registerTypeId.onChange(item ? item.id : null)}
-                                        onBlur={item => registerTypeId.onBlur(item ? item.id : null)}
+                                        onChange={item => apTypeId.onChange(item ? item.id : null)}
+                                        onBlur={item => apTypeId.onBlur(item ? item.id : null)}
                                     />
                                 </FormGroup>
                                 <Scope versionId={versionId} label={i18n('party.recordScope')} {...scopeId} />

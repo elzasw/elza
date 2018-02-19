@@ -3,19 +3,19 @@ package cz.tacr.elza.domain.vo;
 import java.util.ArrayList;
 import java.util.List;
 
-import cz.tacr.elza.domain.RegRecord;
+import cz.tacr.elza.domain.ApRecord;
 
 /**
  * Zapouzdření kolekce vracených záznamů rejstříku a jejich celkového počtu za danou vyhledávací podmínku.
  *
  * @author <a href="mailto:martin.kuzel@marbes.cz">Martin Kužel</a>
  */
-public class RegRecordWithCount {
+public class ApRecordWithCount {
 
     /**
      * Seznam osob.
      */
-    private List<RegRecord> recordList = new ArrayList<>();
+    private List<ApRecord> recordList = new ArrayList<>();
 
     /**
      * Celkový počet dle užitého filtru. Nikoliv aktuální vracený.
@@ -26,7 +26,7 @@ public class RegRecordWithCount {
     /**
      * Default pro JSON operace.
      */
-    public RegRecordWithCount() {
+    public ApRecordWithCount() {
     }
 
     /**
@@ -35,7 +35,7 @@ public class RegRecordWithCount {
      * @param recordList    list záznamů
      * @param count         počet celkem za minulý dotaz
      */
-    public RegRecordWithCount(final List<RegRecord> recordList, final Long count) {
+    public ApRecordWithCount(final List<ApRecord> recordList, final Long count) {
         this.recordList = recordList;
         this.count = count;
     }
@@ -44,7 +44,7 @@ public class RegRecordWithCount {
      * List záznamů.
      * @param recordList list záznamů
      */
-    public void setRecordList(final List<RegRecord> recordList) {
+    public void setRecordList(final List<ApRecord> recordList) {
         this.recordList = recordList;
     }
 
@@ -52,7 +52,7 @@ public class RegRecordWithCount {
      * List záznamů.
      * @return  list záznamů
      */
-    public List<RegRecord> getRecordList() {
+    public List<ApRecord> getRecordList() {
         return recordList;
     }
 

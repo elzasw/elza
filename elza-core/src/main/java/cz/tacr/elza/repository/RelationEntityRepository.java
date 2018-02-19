@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParRelation;
 import cz.tacr.elza.domain.ParRelationEntity;
-import cz.tacr.elza.domain.RegRecord;
+import cz.tacr.elza.domain.ApRecord;
 
 
 /**
@@ -43,7 +43,7 @@ public interface RelationEntityRepository extends ElzaJpaRepository<ParRelationE
      * @return
      */
     @Query("SELECT re FROM par_relation_entity re JOIN FETCH re.relation r JOIN FETCH r.party p WHERE re.record = ?1")
-	List<ParRelationEntity> findByRecord(RegRecord record);
+	List<ParRelationEntity> findByRecord(ApRecord record);
 
     /**
      * Najde vazby které jsou vázané na předaný rejstřík
@@ -51,5 +51,5 @@ public interface RelationEntityRepository extends ElzaJpaRepository<ParRelationE
      * @return
      */
     @Query("SELECT re FROM par_relation_entity re JOIN FETCH re.relation r JOIN FETCH r.party p WHERE re.record = ?1 AND p.record.invalid = false")
-	List<ParRelationEntity> findActiveByRecord(RegRecord record);
+	List<ParRelationEntity> findActiveByRecord(ApRecord record);
 }

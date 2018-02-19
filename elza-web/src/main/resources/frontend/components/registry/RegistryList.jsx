@@ -154,7 +154,7 @@ class RegistryList extends AbstractReactComponent {
             typesToRoot: item.typesToRoot,
             text: null,
             registryParentId: item.id,
-            registryTypeId: item.registerTypeId
+            registryTypeId: item.apTypeId
         }));
     };
 
@@ -183,7 +183,7 @@ class RegistryList extends AbstractReactComponent {
 
     filterScopes(scopes) {
         const { userDetail } = this.props;
-        return scopes.filter((scope) => userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_WR,scopeId: scope.id}));
+        return scopes.filter((scope) => userDetail.hasOne(perms.AP_SCOPE_WR_ALL, {type: perms.AP_SCOPE_WR,scopeId: scope.id}));
     }
 
     getScopesWithAll(scopes) {
@@ -271,9 +271,9 @@ class RegistryList extends AbstractReactComponent {
 
         }
 
-        let regTypesWithAll = [...registryTypes];
-        regTypesWithAll.unshift({name:this.registryTypeDefaultValue});
-        
+        let apTypesWithAll = [...registryTypes];
+        apTypesWithAll.unshift({name:this.registryTypeDefaultValue});
+
         return <div className="registry-list">
             <div className="filter">
                 <Autocomplete
@@ -284,7 +284,7 @@ class RegistryList extends AbstractReactComponent {
                 />
                 <Autocomplete
                         inputProps={ {placeholder: !filter.registryTypeId ? this.registryTypeDefaultValue : ""} }
-                        items={regTypesWithAll}
+                        items={apTypesWithAll}
                         disabled={!registryTypes || registryList.filter.parents.length || registryList.filter.itemSpecId ? true : false}
                         tree
                         alwaysExpanded

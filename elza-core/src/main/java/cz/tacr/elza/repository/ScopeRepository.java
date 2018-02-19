@@ -4,21 +4,21 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import cz.tacr.elza.domain.ApScope;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.RegScope;
 
 
 /**
- * Repository pro {@link RegScope}.
+ * Repository pro {@link ApScope}.
  *
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 27.01.2016
  */
 @Repository
-public interface ScopeRepository extends ElzaJpaRepository<RegScope, Integer>, ScopeRepositoryCustom {
+public interface ScopeRepository extends ElzaJpaRepository<ApScope, Integer>, ScopeRepositoryCustom {
 
     /**
      * Najde třídy podle kódů.
@@ -26,8 +26,8 @@ public interface ScopeRepository extends ElzaJpaRepository<RegScope, Integer>, S
      * @param codes seznam kódů
      * @return seznam tříd
      */
-    @Query("SELECT s FROM reg_scope s WHERE s.code IN (?1)")
-    List<RegScope> findByCodes(Collection<String> codes);
+    @Query("SELECT s FROM ap_scope s WHERE s.code IN (?1)")
+    List<ApScope> findByCodes(Collection<String> codes);
 
 
     /**
@@ -62,8 +62,8 @@ public interface ScopeRepository extends ElzaJpaRepository<RegScope, Integer>, S
      *
      * @return seznam tříd
      */
-    @Query("SELECT s FROM reg_scope s ORDER BY s.code ASC")
-    List<RegScope> findAllOrderByCode();
+    @Query("SELECT s FROM ap_scope s ORDER BY s.code ASC")
+    List<ApScope> findAllOrderByCode();
 
     /**
      * Najde třídu podle kódu.
@@ -71,13 +71,13 @@ public interface ScopeRepository extends ElzaJpaRepository<RegScope, Integer>, S
      * @param code kód
      * @return třída
      */
-    RegScope findByCode(String string);
+    ApScope findByCode(String string);
 
     /**
      * Najde id všech tříd.
      *
      * @return id tříd
      */
-    @Query("SELECT s.scopeId FROM reg_scope s")
+    @Query("SELECT s.scopeId FROM ap_scope s")
     Set<Integer> findAllIds();
 }

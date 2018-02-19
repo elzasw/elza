@@ -26,7 +26,6 @@ import org.springframework.util.Assert;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
-
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.controller.ArrangementController;
 import cz.tacr.elza.controller.vo.TreeNode;
@@ -36,6 +35,7 @@ import cz.tacr.elza.core.data.RuleSystemItemType;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
+import cz.tacr.elza.domain.ApRecord;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
@@ -58,7 +58,6 @@ import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.ParUnitdate;
-import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.UsrPermission;
@@ -79,13 +78,14 @@ import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.repository.ApRecordRepository;
+import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventChangeDescItem;
 import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
@@ -109,7 +109,7 @@ public class DescriptionItemService {
     private DescItemRepository descItemRepository;
 
     @Autowired
-    private RegRecordRepository regRecordRepository;
+    private ApRecordRepository apRecordRepository;
 
     @Autowired
     private FundVersionRepository fundVersionRepository;
@@ -143,6 +143,9 @@ public class DescriptionItemService {
 
     @Autowired
     private EventNotificationService eventNotificationService;
+
+    @Autowired
+    private ApTypeRepository apTypeRepository;
 
     @Autowired
     ItemService itemService;
@@ -1454,7 +1457,7 @@ public class DescriptionItemService {
                     break;
                 case "RECORD_REF":
                     ArrDataRecordRef itemRecordRef = new ArrDataRecordRef();
-                    RegRecord record = regRecordRepository.getOneCheckExist(Integer.valueOf(text));
+                    ApRecord record = apRecordRepository.getOneCheckExist(Integer.valueOf(text));
                     itemRecordRef.setRecord(record);
                     data = itemRecordRef;
                     break;

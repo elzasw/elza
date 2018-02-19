@@ -11,7 +11,7 @@ import java.util.List;
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 21.12.2015
  */
-public class RegRecordVO extends AbstractRegRecord {
+public class ApRecordVO extends AbstractApRecord {
 
     /**
      * Id hesla.
@@ -20,7 +20,7 @@ public class RegRecordVO extends AbstractRegRecord {
     /**
      * Typ rejstříku.
      */
-    private Integer registerTypeId;
+    private Integer apTypeId;
 
     /**
      * Id osoby.
@@ -35,7 +35,7 @@ public class RegRecordVO extends AbstractRegRecord {
     /**
      * Externí zdroj hesel.
      */
-    private RegExternalSystemVO externalSystem;
+    private ApExternalSystemVO externalSystem;
 
     /**
      * Rejstříkové heslo.
@@ -63,7 +63,7 @@ public class RegRecordVO extends AbstractRegRecord {
     /**
      * Seznam variantních rejstříkových hesel.
      */
-    private List<RegVariantRecordVO> variantRecords = Collections.EMPTY_LIST;
+    private List<ApVariantRecordVO> variantRecords = Collections.EMPTY_LIST;
 
     /** Cesta od toho rejstříku až ke kořeni. První záznam je přímý nadřízený, poslední je kořen. */
     private List<RecordParent> parents;
@@ -92,19 +92,19 @@ public class RegRecordVO extends AbstractRegRecord {
         this.id = id;
     }
 
-    public Integer getRegisterTypeId() {
-        return registerTypeId;
+    public Integer getApTypeId() {
+        return apTypeId;
     }
 
-    public void setRegisterTypeId(final Integer registerTypeId) {
-        this.registerTypeId = registerTypeId;
+    public void setApTypeId(final Integer apTypeId) {
+        this.apTypeId = apTypeId;
     }
 
-    public RegExternalSystemVO getExternalSystem() {
+    public ApExternalSystemVO getExternalSystem() {
         return externalSystem;
     }
 
-    public void setExternalSystem(final RegExternalSystemVO externalSystem) {
+    public void setExternalSystem(final ApExternalSystemVO externalSystem) {
         this.externalSystem = externalSystem;
     }
 
@@ -164,11 +164,11 @@ public class RegRecordVO extends AbstractRegRecord {
         this.version = version;
     }
 
-    public List<RegVariantRecordVO> getVariantRecords() {
+    public List<ApVariantRecordVO> getVariantRecords() {
         return variantRecords;
     }
 
-    public void setVariantRecords(final List<RegVariantRecordVO> variantRecords) {
+    public void setVariantRecords(final List<ApVariantRecordVO> variantRecords) {
         this.variantRecords = variantRecords;
     }
 

@@ -25,8 +25,8 @@ function hasRight(right) {
                             return true
                         }
                         break
-                    case perms.REG_SCOPE_RD:
-                    case perms.REG_SCOPE_WR:
+                    case perms.AP_SCOPE_RD:
+                    case perms.AP_SCOPE_WR:
                         if (perm.scopeIdsMap[right.scopeId]) {
                             return true
                         }
@@ -153,9 +153,9 @@ function userDetailInt(state, action) {
 
             // action.userDetail.userPermissions = [
             //     {permission: 'FUND_ARR_ALL', fundIds: [], scopeIds: [1]},
-            //     {permission: 'REG_SCOPE_RD', fundIds: [], scopeIds: [1]},
+            //     {permission: 'AP_SCOPE_RD', fundIds: [], scopeIds: [1]},
             //     {permission: 'REG_SCOPE_WR_ALL1', fundIds: [], scopeIds: []},
-            //     {permission: 'REG_SCOPE_WR', fundIds: [], scopeIds: [2]},
+            //     {permission: 'AP_SCOPE_WR', fundIds: [], scopeIds: [2]},
             // ]
 
             if(action.userDetail){

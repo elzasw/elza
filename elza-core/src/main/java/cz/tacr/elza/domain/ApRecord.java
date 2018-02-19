@@ -26,7 +26,7 @@ import org.springframework.data.rest.core.annotation.RestResource;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import cz.tacr.elza.api.interfaces.IRegScope;
+import cz.tacr.elza.api.interfaces.IApScope;
 import cz.tacr.elza.domain.enumeration.StringLength;
 import cz.tacr.elza.domain.interfaces.Versionable;
 
@@ -37,11 +37,11 @@ import cz.tacr.elza.domain.interfaces.Versionable;
  * @author Martin Kužel [<a href="mailto:martin.kuzel@marbes.cz">martin.kuzel@marbes.cz</a>]
  * @since 21.8.2015
  */
-@Entity(name = "reg_record")
+@Entity(name = "ap_record")
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class RegRecord extends AbstractVersionableEntity implements Versionable, Serializable, IRegScope {
+public class ApRecord extends AbstractVersionableEntity implements Versionable, Serializable, IApScope {
 
     @Id
     @GeneratedValue
@@ -49,27 +49,27 @@ public class RegRecord extends AbstractVersionableEntity implements Versionable,
     private Integer recordId;
 
     @RestResource(exported = false)
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RegRegisterType.class)
-    @JoinColumn(name = "registerTypeId", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApType.class)
+    @JoinColumn(name = "apTypeId", nullable = false)
     @JsonIgnore
-    private RegRegisterType registerType;
+    private ApType apType;
 
     @Column(nullable = false, updatable = false, insertable = false)
-    private Integer registerTypeId;
+    private Integer apTypeId;
 
     @RestResource(exported = false)
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RegExternalSystem.class)
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApExternalSystem.class)
     @JoinColumn(name = "externalSystemId")
     @JsonIgnore
-    private RegExternalSystem externalSystem;
+    private ApExternalSystem externalSystem;
 
     @Column(updatable = false, insertable = false)
     private Integer externalSystemId;
 
     @RestResource(exported = false)
-    @OneToMany(mappedBy = "regRecord")
+    @OneToMany(mappedBy = "apRecord")
     @JsonIgnore
-    private List<RegVariantRecord> variantRecordList = new ArrayList<>(0);
+    private List<ApVariantRecord> variantRecordList = new ArrayList<>(0);
 
     @RestResource(exported = false)
     @OneToMany(mappedBy = "record", fetch = FetchType.LAZY)
@@ -88,10 +88,10 @@ public class RegRecord extends AbstractVersionableEntity implements Versionable,
     @JsonIgnore
     private String externalId;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RegScope.class)
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApScope.class)
     @JoinColumn(name = "scopeId", nullable = false)
     @JsonIgnore
-    private RegScope scope;
+    private ApScope scope;
 
     @Column(nullable = false, updatable = false, insertable = false)
     private Integer scopeId;
@@ -107,7 +107,7 @@ public class RegRecord extends AbstractVersionableEntity implements Versionable,
 
     /* Konstanty pro vazby a fieldy. */
     public static final String VARIANT_RECORD_LIST = "variantRecordList";
-    public static final String REGISTER_TYPE = "registerType";
+    public static final String AP_TYPE = "apType";
     public static final String RECORD = "record";
     public static final String CHARACTERISTICS = "characteristics";
     public static final String LOCAL = "local";
@@ -137,24 +137,24 @@ public class RegRecord extends AbstractVersionableEntity implements Versionable,
      * Typ rejstříku.
      * @return  typ rejstříku
      */
-    public RegRegisterType getRegisterType() {
-        return registerType;
+    public ApType getApType() {
+        return apType;
     }
 
     /**
      * Typ rejstříku.
-     * @param registerType typ rejstříku
+     * @param apType typ rejstříku
      */
-    public void setRegisterType(final RegRegisterType registerType) {
-        this.registerTypeId = registerType == null ? null : registerType.getRegisterTypeId();
-        this.registerType = registerType;
+    public void setApType(final ApType apType) {
+        this.apTypeId = apType == null ? null : apType.getApTypeId();
+        this.apType = apType;
     }
 
-    public RegExternalSystem getExternalSystem() {
+    public ApExternalSystem getExternalSystem() {
         return externalSystem;
     }
 
-    public void setExternalSystem(final RegExternalSystem externalSystem) {
+    public void setExternalSystem(final ApExternalSystem externalSystem) {
         this.externalSystem = externalSystem;
         this.externalSystemId = externalSystem != null ? externalSystem.getExternalSystemId() : null;
     }
@@ -217,7 +217,7 @@ public class RegRecord extends AbstractVersionableEntity implements Versionable,
      *
      * @param variantRecordList množina záznamů.
      */
-    public void setVariantRecordList(final List<RegVariantRecord> variantRecordList) {
+    public void setVariantRecordList(final List<ApVariantRecord> variantRecordList) {
         this.variantRecordList = variantRecordList;
     }
 
@@ -226,21 +226,21 @@ public class RegRecord extends AbstractVersionableEntity implements Versionable,
      *
      * @return množina, může být prázdná.
      */
-    public List<RegVariantRecord> getVariantRecordList() {
+    public List<ApVariantRecord> getVariantRecordList() {
         return variantRecordList;
     }
 
     /**
      * @return třída rejstříku
      */
-    public RegScope getScope() {
+    public ApScope getScope() {
         return scope;
     }
 
     /**
      * @param scope třída rejstříku
      */
-    public void setScope(final RegScope scope) {
+    public void setScope(final ApScope scope) {
         this.scope = scope;
         this.scopeId = scope != null ? scope.getScopeId() : null;
     }
@@ -250,7 +250,7 @@ public class RegRecord extends AbstractVersionableEntity implements Versionable,
     }
 
     @Override
-    public RegScope getRegScope() {
+    public ApScope getApScope() {
         return scope;
     }
 
@@ -292,24 +292,24 @@ public class RegRecord extends AbstractVersionableEntity implements Versionable,
 
     @Override
     public boolean equals(final Object obj) {
-        if (!(obj instanceof RegRecord)) {
+        if (!(obj instanceof ApRecord)) {
             return false;
         }
         if (this == obj) {
             return true;
         }
 
-        RegRecord other = (RegRecord) obj;
+        ApRecord other = (ApRecord) obj;
 
         return new EqualsBuilder().append(recordId, other.getRecordId()).isEquals();
     }
 
-    public Integer getRegisterTypeId() {
-        return registerTypeId;
+    public Integer getApTypeId() {
+        return apTypeId;
     }
 
-    public void setRegisterTypeId(final Integer registerTypeId) {
-        this.registerTypeId = registerTypeId;
+    public void setApTypeId(final Integer apTypeId) {
+        this.apTypeId = apTypeId;
     }
 
     @Override
@@ -319,6 +319,6 @@ public class RegRecord extends AbstractVersionableEntity implements Versionable,
 
     @Override
     public String toString() {
-        return "RegRecord pk=" + recordId;
+        return "ApRecord pk=" + recordId;
     }
 }

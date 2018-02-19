@@ -29,7 +29,7 @@ import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
-import cz.tacr.elza.repository.RegRecordRepository;
+import cz.tacr.elza.repository.ApRecordRepository;
 import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.cache.NodeCacheService;
 
@@ -52,7 +52,7 @@ public class DEExportService {
                            UserService userService,
                            LevelRepository levelRepository,
                            NodeCacheService nodeCacheService,
-                           RegRecordRepository recordRepository,
+                           ApRecordRepository recordRepository,
                            ResourcePathResolver resourcePathResolver) {
         this.initHelper = new ExportInitHelper(em, userService, levelRepository, nodeCacheService, recordRepository,
                 fundVersionRepository);

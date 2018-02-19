@@ -3,6 +3,7 @@ package cz.tacr.elza.controller;
 import java.util.HashMap;
 import java.util.List;
 
+import cz.tacr.elza.domain.ApType;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,14 +22,13 @@ import cz.tacr.elza.core.data.PartyType;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyType;
 import cz.tacr.elza.domain.ParRelationType;
-import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.PartyTypeRepository;
-import cz.tacr.elza.repository.RegisterTypeRepository;
+import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRepository;
 
 /**
@@ -44,7 +44,7 @@ public class ValidationVOService {
     @Autowired
     private PartyTypeRepository partyTypeRepository;
     @Autowired
-    private RegisterTypeRepository registerTypeRepository;
+    private ApTypeRepository apTypeRepository;
     @Autowired
     private PartyRepository partyRepository;
     @Autowired
@@ -87,8 +87,8 @@ public class ValidationVOService {
         // Definice TypeEnum na Class
         partyTypeToClass.forEach((type, clazz) -> partyCheckerHelper(partyVO, partyType, clazz, type));
 
-        List<RegRegisterType> regRegisterTypes = registerTypeRepository.findRegisterTypeByPartyType(partyType);
-        if (CollectionUtils.isEmpty(regRegisterTypes)) {
+        List<ApType> apTypes = apTypeRepository.findApTypeByPartyType(partyType);
+        if (CollectionUtils.isEmpty(apTypes)) {
             throw new ObjectNotFoundException("Nenalezen typ rejstříku příslušející typu osoby s kódem: " + partyType.getCode(), BaseCode.ID_NOT_EXIST);
         }
 
@@ -108,8 +108,8 @@ public class ValidationVOService {
             throw new IllegalArgumentException("Nelze měnit typ osoby.");
         }
 
-        List<RegRegisterType> regRegisterTypes = registerTypeRepository.findRegisterTypeByPartyType(partyType);
-        if (CollectionUtils.isEmpty(regRegisterTypes)) {
+        List<ApType> apTypes = apTypeRepository.findApTypeByPartyType(partyType);
+        if (CollectionUtils.isEmpty(apTypes)) {
             throw new ObjectNotFoundException("Nenalezen typ rejstříku příslušející typu osoby s kódem: " + partyType.getCode(), BaseCode.ID_NOT_EXIST);
         }
 

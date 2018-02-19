@@ -66,7 +66,7 @@ import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.PartyRepository;
-import cz.tacr.elza.repository.RegRecordRepository;
+import cz.tacr.elza.repository.ApRecordRepository;
 import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.repository.StructuredObjectRepository;
 import cz.tacr.elza.service.ArrangementService;
@@ -131,7 +131,7 @@ public class ImportProcess {
     private NodeCacheService nodeCacheService;
 
     @Autowired
-    private RegRecordRepository regRecordRepository;
+    private ApRecordRepository apRecordRepository;
 
     @Autowired
     private ItemTypeRepository itemTypeRepository;
@@ -401,7 +401,7 @@ public class ImportProcess {
             ((ArrDataPartyRef) data).setParty(partyRepository.getOne(((ItemPartyRef) item).getPartyId()));
         } else if (item instanceof ItemRecordRef) {
             data = new ArrDataRecordRef();
-            ((ArrDataRecordRef) data).setRecord(regRecordRepository.getOne(((ItemRecordRef) item).getRecordId()));
+            ((ArrDataRecordRef) data).setRecord(apRecordRepository.getOne(((ItemRecordRef) item).getRecordId()));
         } else {
             //descItem.setUndefined(true);
             data = null;
@@ -422,7 +422,7 @@ public class ImportProcess {
                 ArrNodeRegister nodeRegister = new ArrNodeRegister();
                 nodeRegister.setCreateChange(change);
                 nodeRegister.setNode(node);
-                nodeRegister.setRecord(regRecordRepository.getOne(register.getRecordId()));
+                nodeRegister.setRecord(apRecordRepository.getOne(register.getRecordId()));
                 nodeRegisters.add(nodeRegister);
             }
         }

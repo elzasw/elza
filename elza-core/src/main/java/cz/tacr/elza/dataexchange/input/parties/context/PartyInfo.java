@@ -9,7 +9,7 @@ import cz.tacr.elza.dataexchange.input.aps.context.AccessPointInfo;
 import cz.tacr.elza.dataexchange.input.context.EntityIdHolder;
 import cz.tacr.elza.dataexchange.input.context.PersistMethod;
 import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.RegRecord;
+import cz.tacr.elza.domain.ApRecord;
 
 public class PartyInfo extends EntityIdHolder<ParParty> {
 
@@ -59,11 +59,11 @@ public class PartyInfo extends EntityIdHolder<ParParty> {
         return apInfo.getEntityId();
     }
 
-    public RegRecord getAPReference(Session session) {
+    public ApRecord getAPReference(Session session) {
         return apInfo.getEntityReference(session);
     }
 
-    public RegRecord getUpdatableAPReference(Session session) {
+    public ApRecord getUpdatableAPReference(Session session) {
         return HibernateUtils.getEntityReference(apInfo.getEntityId(), apInfo.getEntityClass(), session, true);
     }
 

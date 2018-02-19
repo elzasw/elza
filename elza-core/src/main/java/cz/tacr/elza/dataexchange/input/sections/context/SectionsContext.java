@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import cz.tacr.elza.domain.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
@@ -17,12 +18,12 @@ import cz.tacr.elza.dataexchange.input.context.ImportInitHelper;
 import cz.tacr.elza.dataexchange.input.context.ObservableImport;
 import cz.tacr.elza.dataexchange.input.sections.SectionProcessedListener;
 import cz.tacr.elza.dataexchange.input.storage.StorageManager;
+import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ParInstitution;
-import cz.tacr.elza.domain.RegScope;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.schema.v2.FundInfo;
 import cz.tacr.elza.service.ArrangementService;
@@ -42,7 +43,7 @@ public class SectionsContext {
 
     private final ArrChange createChange;
 
-    private final RegScope importScope;
+    private final ApScope importScope;
 
     private final ImportPosition importPosition;
 
@@ -55,7 +56,7 @@ public class SectionsContext {
     public SectionsContext(StorageManager storageManager,
                            int batchSize,
                            ArrChange createChange,
-                           RegScope importScope,
+                           ApScope importScope,
                            ImportPosition importPosition,
                            StaticDataProvider staticData,
                            ImportInitHelper initHelper) {

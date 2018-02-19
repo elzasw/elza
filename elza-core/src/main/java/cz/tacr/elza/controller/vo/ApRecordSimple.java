@@ -6,12 +6,12 @@ package cz.tacr.elza.controller.vo;
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 02.02.2016
  */
-public class RegRecordSimple extends AbstractRegRecord {
+public class ApRecordSimple extends AbstractApRecord {
 
     private Integer id;
     private String record;
     private String characteristics;
-    private Integer registerTypeId;
+    private Integer apTypeId;
 
     public Integer getId() {
         return id;
@@ -37,11 +37,11 @@ public class RegRecordSimple extends AbstractRegRecord {
         this.characteristics = characteristics;
     }
 
-    public Integer getRegisterTypeId() {
-        return registerTypeId;
+    public Integer getApTypeId() {
+        return apTypeId;
     }
 
-    public void setRegisterTypeId(final Integer registerTypeId) {
-        this.registerTypeId = registerTypeId;
+    public void setApTypeId(final Integer apTypeId) {
+        this.apTypeId = apTypeId;
     }
 }

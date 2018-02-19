@@ -18,7 +18,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import cz.tacr.elza.api.interfaces.IArrFund;
-import cz.tacr.elza.api.interfaces.IRegScope;
+import cz.tacr.elza.api.interfaces.IApScope;
 import cz.tacr.elza.core.security.AuthParam.Type;
 import cz.tacr.elza.core.security.Authorization.MethodParamBasedAccess.PermissionResult;
 import cz.tacr.elza.domain.UsrGroup;
@@ -29,7 +29,7 @@ import cz.tacr.elza.exception.AccessDeniedException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.PartyRepository;
-import cz.tacr.elza.repository.RegRecordRepository;
+import cz.tacr.elza.repository.ApRecordRepository;
 import cz.tacr.elza.repository.UserRepository;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.UserService;
@@ -109,7 +109,7 @@ public class Authorization {
     private FundVersionRepository fundVersionRepository;
 
     @Autowired
-    private RegRecordRepository recordRepository;
+    private ApRecordRepository recordRepository;
 
     @Autowired
     private PartyRepository partyRepository;
@@ -314,22 +314,22 @@ public class Authorization {
 		case SCOPE:
 			if (value instanceof Integer) {
 				return (Integer) value;
-			} else if (value instanceof IRegScope) {
-				return ((IRegScope) value).getRegScope().getScopeId();
+			} else if (value instanceof IApScope) {
+				return ((IApScope) value).getApScope().getScopeId();
 			}
 			break;
 		case PARTY:
 			if (value instanceof Integer) {
-				return partyRepository.getOneCheckExist((Integer) value).getRegScope().getScopeId();
-			} else if (value instanceof IRegScope) {
-				return ((IRegScope) value).getRegScope().getScopeId();
+				return partyRepository.getOneCheckExist((Integer) value).getApScope().getScopeId();
+			} else if (value instanceof IApScope) {
+				return ((IApScope) value).getApScope().getScopeId();
 			}
 			break;
 		case REGISTRY:
 			if (value instanceof Integer) {
-				return recordRepository.getOneCheckExist((Integer) value).getRegScope().getScopeId();
-			} else if (value instanceof IRegScope) {
-				return ((IRegScope) value).getRegScope().getScopeId();
+				return recordRepository.getOneCheckExist((Integer) value).getApScope().getScopeId();
+			} else if (value instanceof IApScope) {
+				return ((IApScope) value).getApScope().getScopeId();
 			}
 			break;
 		}

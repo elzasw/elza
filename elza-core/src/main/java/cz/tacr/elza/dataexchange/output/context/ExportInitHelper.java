@@ -4,7 +4,7 @@ import javax.persistence.EntityManager;
 
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
-import cz.tacr.elza.repository.RegRecordRepository;
+import cz.tacr.elza.repository.ApRecordRepository;
 import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.cache.NodeCacheService;
 
@@ -18,7 +18,7 @@ public class ExportInitHelper {
 
     private final NodeCacheService nodeCacheService;
 
-    private final RegRecordRepository recordRepository;
+    private final ApRecordRepository recordRepository;
 
     private final FundVersionRepository fundVersionRepository;
 
@@ -26,7 +26,7 @@ public class ExportInitHelper {
                             UserService userService,
                             LevelRepository levelRepository,
                             NodeCacheService nodeCacheService,
-                            RegRecordRepository recordRepository,
+                            ApRecordRepository recordRepository,
                             FundVersionRepository fundVersionRepository) {
         this.em = em;
         this.userService = userService;
@@ -52,7 +52,7 @@ public class ExportInitHelper {
         return nodeCacheService;
     }
 
-    public RegRecordRepository getRecordRepository() {
+    public ApRecordRepository getRecordRepository() {
         return recordRepository;
     }
 

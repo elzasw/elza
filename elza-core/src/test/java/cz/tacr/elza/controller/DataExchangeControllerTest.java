@@ -22,7 +22,7 @@ import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
 import cz.tacr.elza.controller.vo.ArrStructureDataVO;
 import cz.tacr.elza.controller.vo.FilteredResultVO;
-import cz.tacr.elza.controller.vo.RegScopeVO;
+import cz.tacr.elza.controller.vo.ApScopeVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.core.data.DataType;
@@ -61,8 +61,8 @@ public class DataExchangeControllerTest extends AbstractControllerTest {
 
         // import initial data
         File file = getResourceFile(ALL_IN_ONE_XML);
-        List<RegScopeVO> scopes = getAllScopes();
-        RegScopeVO scope = scopes.iterator().next();
+        List<ApScopeVO> scopes = getAllScopes();
+        ApScopeVO scope = scopes.iterator().next();
         requestImport(file, scope);
 
         checkData();
@@ -82,7 +82,7 @@ public class DataExchangeControllerTest extends AbstractControllerTest {
         checkData();
     }
 
-    private void requestImport(final File importFile, final RegScopeVO scope) {
+    private void requestImport(final File importFile, final ApScopeVO scope) {
         importXmlFile(null, scope.getId(), importFile);
     }
 

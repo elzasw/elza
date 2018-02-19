@@ -11,15 +11,15 @@ import java.util.Objects;
 @Deprecated
 public class ArrItemRecordRef extends ArrItemData {
 
-    private RegRecord record;
+    private ApRecord record;
 
     private Integer recordId;
 
-    public RegRecord getRecord() {
+    public ApRecord getRecord() {
         return record;
     }
 
-    public void setRecord(final RegRecord record) {
+    public void setRecord(final ApRecord record) {
         this.record = record;
         this.recordId = record == null ? null : record.getRecordId();
     }

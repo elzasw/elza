@@ -6,13 +6,15 @@ package cz.tacr.elza.controller.vo;
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 27.01.2016
  */
-public class RegScopeVO {
+public class ApScopeVO {
 
     private Integer id;
 
     private String code;
 
     private String name;
+
+    private String language;
 
     public Integer getId() {
         return id;
@@ -36,5 +38,13 @@ public class RegScopeVO {
 
     public void setName(final String name) {
         this.name = name;
+    }
+
+    public String getLanguage() {
+        return language;
+    }
+
+    public void setLanguage(final String language) {
+        this.language = language;
     }
 }

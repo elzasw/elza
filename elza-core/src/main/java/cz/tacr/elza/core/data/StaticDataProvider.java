@@ -8,19 +8,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
+import cz.tacr.elza.domain.*;
 import org.apache.commons.lang3.Validate;
 
-import cz.tacr.elza.domain.ParComplementType;
-import cz.tacr.elza.domain.ParPartyNameFormType;
-import cz.tacr.elza.domain.ParRelationType;
-import cz.tacr.elza.domain.ParRelationTypeRoleType;
-import cz.tacr.elza.domain.RegRegisterType;
-import cz.tacr.elza.domain.RulPackage;
+import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.repository.ComplementTypeRepository;
 import cz.tacr.elza.repository.PackageRepository;
 import cz.tacr.elza.repository.PartyNameFormTypeRepository;
 import cz.tacr.elza.repository.PartyTypeComplementTypeRepository;
-import cz.tacr.elza.repository.RegisterTypeRepository;
+import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRoleTypeRepository;
 
@@ -34,7 +30,7 @@ public class StaticDataProvider {
 
     private List<ParComplementType> complementTypes;
 
-    private List<RegRegisterType> registerTypes;
+    private List<ApType> apTypes;
 
     private List<RelationType> relationTypes;
 
@@ -48,9 +44,9 @@ public class StaticDataProvider {
 
     private Map<String, PartyTypeComplementTypes> partyTypeComplementTypesCodeMap;
 
-    private Map<Integer, RegRegisterType> registerTypeIdMap;
+    private Map<Integer, ApType> apTypeIdMap;
 
-    private Map<String, RegRegisterType> registerTypeCodeMap;
+    private Map<String, ApType> apTypeCodeMap;
 
     private Map<Integer, RelationTypeImpl> relationTypeIdMap;
 
@@ -75,8 +71,8 @@ public class StaticDataProvider {
         return complementTypes;
     }
 
-    public List<RegRegisterType> getRegisterTypes() {
-        return registerTypes;
+    public List<ApType> getApTypes() {
+        return apTypes;
     }
 
     public List<RelationType> getRelationTypes() {
@@ -112,14 +108,14 @@ public class StaticDataProvider {
      * Returns fully initialized register type by id.
      * This object and all his referenced entities are detached.
      */
-    public RegRegisterType getRegisterTypeById(Integer id) {
+    public ApType getApTypeById(Integer id) {
         Validate.notNull(id);
-        return registerTypeIdMap.get(id);
+        return apTypeIdMap.get(id);
     }
 
-    public RegRegisterType getRegisterTypeByCode(String code) {
+    public ApType getApTypeByCode(String code) {
         Validate.notEmpty(code);
-        return registerTypeCodeMap.get(code);
+        return apTypeCodeMap.get(code);
     }
 
     public RelationType getRelationTypeById(Integer id) {
@@ -141,7 +137,7 @@ public class StaticDataProvider {
         initPackages(service.packageRepository);
         initPartyNameFormTypes(service.partyNameFormTypeRepository);
         initComplementTypes(service.complementTypeRepository, service.partyTypeComplementTypeRepository);
-        initRegisterTypes(service.registerTypeRepository);
+        initApTypes(service.apTypeRepository);
         initRelationTypes(service.relationTypeRepository, service.relationTypeRoleTypeRepository);
     }
 
@@ -190,16 +186,16 @@ public class StaticDataProvider {
         this.partyTypeComplementTypesCodeMap = partyTypeComplementTypesCodeMap;
     }
 
-    private void initRegisterTypes(RegisterTypeRepository registerTypeRepository) {
-        List<RegRegisterType> regTypes = registerTypeRepository.findAll();
+    private void initApTypes(ApTypeRepository apTypeRepository) {
+        List<ApType> apTypes = apTypeRepository.findAll();
 
-        Map<Integer, RegRegisterType> idMap = createLookup(regTypes, RegRegisterType::getRegisterTypeId);
+        Map<Integer, ApType> idMap = createLookup(apTypes, ApType::getApTypeId);
 
-        for (RegRegisterType rt : regTypes) {
+        for (ApType rt : apTypes) {
             // ensure reference equality (single transaction)
-            if (rt.getParentRegisterType() != null) {
+            if (rt.getParentApType() != null) {
                 checkPackageReference(rt.getRulPackage());
-                Validate.isTrue(rt.getParentRegisterType() == idMap.get(rt.getParentRegisterType().getRegisterTypeId()));
+                Validate.isTrue(rt.getParentApType() == idMap.get(rt.getParentApType().getApTypeId()));
             }
             // update reference to party type
             if (rt.getPartyType() != null) {
@@ -208,9 +204,9 @@ public class StaticDataProvider {
             }
         }
         // update fields
-        this.registerTypes = Collections.unmodifiableList(regTypes);
-        this.registerTypeIdMap = idMap;
-        this.registerTypeCodeMap = createLookup(regTypes, RegRegisterType::getCode);
+        this.apTypes = Collections.unmodifiableList(apTypes);
+        this.apTypeIdMap = idMap;
+        this.apTypeCodeMap = createLookup(apTypes, ApType::getCode);
     }
 
     private void initRelationTypes(RelationTypeRepository relationTypeRepository,

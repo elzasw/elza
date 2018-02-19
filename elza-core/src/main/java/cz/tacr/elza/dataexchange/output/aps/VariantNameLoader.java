@@ -3,11 +3,11 @@ package cz.tacr.elza.dataexchange.output.aps;
 import javax.persistence.EntityManager;
 
 import cz.tacr.elza.dataexchange.output.loaders.AbstractEntityLoader;
-import cz.tacr.elza.domain.RegVariantRecord;
+import cz.tacr.elza.domain.ApVariantRecord;
 
-public class VariantNameLoader extends AbstractEntityLoader<RegVariantRecord> {
+public class VariantNameLoader extends AbstractEntityLoader<ApVariantRecord> {
 
     public VariantNameLoader(EntityManager em, int batchSize) {
-        super(RegVariantRecord.class, RegVariantRecord.RECORD_FK, em, batchSize);
+        super(ApVariantRecord.class, ApVariantRecord.RECORD_FK, em, batchSize);
     }
 }

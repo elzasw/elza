@@ -14,18 +14,18 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import cz.tacr.elza.api.interfaces.IRegScope;
+import cz.tacr.elza.api.interfaces.IApScope;
 
 
 /**
  * Třída rejstříku.
  *
  */
-@Entity(name = "reg_scope")
+@Entity(name = "ap_scope")
 @Cache(region = "domain", usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = {"code"}))
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class RegScope implements IRegScope {
+public class ApScope implements IApScope {
 
     public static final String SCOPE_ID = "scopeId";
 
@@ -38,6 +38,9 @@ public class RegScope implements IRegScope {
 
     @Column(length = 250, nullable = false)
     private String name;
+
+    @Column(length = 3)
+    private String language;
 
     public Integer getScopeId() {
         return scopeId;
@@ -69,10 +72,24 @@ public class RegScope implements IRegScope {
     }
 
     /**
+     * @return @param language 3-místný kód jazyka, podle ISO 639-2.
+     */
+    public String getLanguage() {
+        return this.language;
+    }
+
+    /**
      * @param name Název třídy rejstříku.
      */
     public void setName(final String name) {
         this.name = name;
+    }
+
+    /**
+     * @param language 3-místný kód jazyka, podle ISO 639-2.
+     */
+    public void setLanguage(final String language) {
+        this.language = language;
     }
 
     @Override
@@ -85,10 +102,10 @@ public class RegScope implements IRegScope {
             return false;
         }
 
-        RegScope regScope = (RegScope) o;
+        ApScope apScope = (ApScope) o;
 
         return new EqualsBuilder()
-                .append(scopeId, regScope.getScopeId())
+                .append(scopeId, apScope.getScopeId())
                 .isEquals();
     }
 
@@ -101,7 +118,7 @@ public class RegScope implements IRegScope {
 
     @Override
     public String toString() {
-        return "RegScope{" +
+        return "ApScope{" +
                 "scopeId=" + scopeId +
                 ", code='" + code + '\'' +
                 ", name='" + name + '\'' +
@@ -109,7 +126,7 @@ public class RegScope implements IRegScope {
     }
 
     @Override
-    public RegScope getRegScope() {
+    public ApScope getApScope() {
         return this;
     }
 }

@@ -1,21 +1,14 @@
 package cz.tacr.elza.controller;
 
-import java.util.Collections;
 import java.util.List;
 
-import cz.tacr.elza.controller.vo.ArrFundVO;
-import cz.tacr.elza.controller.vo.ArrFundVersionVO;
-import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
-import cz.tacr.elza.controller.vo.TreeData;
+import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
 import org.junit.Assert;
 import org.junit.Test;
 
-import cz.tacr.elza.controller.vo.RegRecordVO;
-import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
-import cz.tacr.elza.controller.vo.RegScopeVO;
-import cz.tacr.elza.controller.vo.RegVariantRecordVO;
+import cz.tacr.elza.controller.vo.ApRecordVO;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -25,7 +18,7 @@ import static org.junit.Assert.assertTrue;
  * @author Petr Compel
  * @since 18.2.2016
  */
-public class RegistryControllerTest extends AbstractControllerTest {
+public class ApControllerTest extends AbstractControllerTest {
 
     @Test
     public void getRecordTypesTest() {
@@ -56,7 +49,7 @@ public class RegistryControllerTest extends AbstractControllerTest {
      */
     @Test
     public void createUpdateDeleteScopesTest() {
-        RegScopeVO scopeVO = new RegScopeVO();
+        ApScopeVO scopeVO = new ApScopeVO();
         scopeVO.setName("Testing");
         scopeVO.setCode("ABCD");
         scopeVO = createScopeTest(scopeVO);
@@ -70,7 +63,7 @@ public class RegistryControllerTest extends AbstractControllerTest {
      *
      * @param scopeVO objekt třídy
      */
-    private RegScopeVO createScopeTest(final RegScopeVO scopeVO) {
+    private ApScopeVO createScopeTest(final ApScopeVO scopeVO) {
         return createScope(scopeVO);
     }
 
@@ -79,7 +72,7 @@ public class RegistryControllerTest extends AbstractControllerTest {
      *
      * @param scope id třídy
      */
-    private RegScopeVO updateScopeTest(final RegScopeVO scope) {
+    private ApScopeVO updateScopeTest(final ApScopeVO scope) {
         return updateScope(scope);
     }
 
@@ -106,18 +99,18 @@ public class RegistryControllerTest extends AbstractControllerTest {
         List<ArrNodeVO> nodes = convertTreeNodes(treeData.getNodes());
         ArrNodeVO rootNode = nodes.get(0);
 
-        List<RegRegisterTypeVO> types = getRecordTypes();
-        List<RegScopeVO> scopes = getAllScopes();
+        List<ApTypeVO> types = getRecordTypes();
+        List<ApScopeVO> scopes = getAllScopes();
         Integer scopeId = scopes.iterator().next().getId();
 
         // Vytvoření replace
-        RegRecordVO replacedRecord = new RegRecordVO();
+        ApRecordVO replacedRecord = new ApRecordVO();
 
-        replacedRecord.setRegisterTypeId(getNonHierarchicalRegRegisterType(types, false).getId());
+        replacedRecord.setApTypeId(getNonHierarchicalApType(types, false).getId());
 
-        replacedRecord.setCharacteristics("Ja jsem regRecordA");
+        replacedRecord.setCharacteristics("Ja jsem apRecordA");
 
-        replacedRecord.setRecord("RegRecordA");
+        replacedRecord.setRecord("ApRecordA");
 
         replacedRecord.setScopeId(scopeId);
 
@@ -153,13 +146,13 @@ public class RegistryControllerTest extends AbstractControllerTest {
 
 
         // Vytvoření replacement
-        RegRecordVO replacementRecord = new RegRecordVO();
+        ApRecordVO replacementRecord = new ApRecordVO();
 
-        replacementRecord.setRegisterTypeId(getNonHierarchicalRegRegisterType(types, false).getId());
+        replacementRecord.setApTypeId(getNonHierarchicalApType(types, false).getId());
 
-        replacementRecord.setCharacteristics("Ja jsem regRecordB");
+        replacementRecord.setCharacteristics("Ja jsem apRecordB");
 
-        replacementRecord.setRecord("RegRecordB");
+        replacementRecord.setRecord("ApRecordB");
 
         replacementRecord.setScopeId(scopeId);
 
@@ -178,16 +171,16 @@ public class RegistryControllerTest extends AbstractControllerTest {
         Assert.assertTrue(usageAfterReplace.funds == null || usageAfterReplace.funds.isEmpty());
     }
 
-    private RegRegisterTypeVO getNonHierarchicalRegRegisterType(final List<RegRegisterTypeVO> list, final boolean hasPartyType) {
-        for (RegRegisterTypeVO type : list) {
+    private ApTypeVO getNonHierarchicalApType(final List<ApTypeVO> list, final boolean hasPartyType) {
+        for (ApTypeVO type : list) {
             if (type.getAddRecord() && ((!hasPartyType && type.getPartyTypeId() == null) || (hasPartyType && type.getPartyTypeId() != null))) {
                 return type;
             }
         }
 
-        for (RegRegisterTypeVO type : list) {
+        for (ApTypeVO type : list) {
             if (type.getChildren() != null) {
-                RegRegisterTypeVO res = getNonHierarchicalRegRegisterType(type.getChildren(), hasPartyType);
+                ApTypeVO res = getNonHierarchicalApType(type.getChildren(), hasPartyType);
                 if (res != null) {
                     return res;
                 }

@@ -56,7 +56,7 @@ export default function reducer(state = undefined, action = {}, config = undefin
             const data = {...state.data};
             data.variantRecords.push({
                 id: null,
-                regRecordId: data.id,
+                apRecordId: data.id,
                 version: 0,
                 record:"",
                 variantRecordInternalId:state.variantRecordInternalId
@@ -158,7 +158,7 @@ export default function reducer(state = undefined, action = {}, config = undefin
                 value: null,
                 error: {},
                 hasError: false,
-                regRecordId: data.id,
+                apRecordId: data.id,
                 coordinatesInternalId:state.coordinatesInternalId
             });
             return {

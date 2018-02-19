@@ -93,10 +93,9 @@ public class RecordWithLinks extends Record {
     }
 
     /**
-     * Return value of RegRecord
+     * Return value of ApRecord
      *
-     * @param regRecord
-     * @param output
+     * @param srcRecord
      * @return
      */
     public static RecordWithLinks newInstance(Record srcRecord) {

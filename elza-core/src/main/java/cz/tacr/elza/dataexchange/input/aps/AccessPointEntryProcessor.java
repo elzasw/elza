@@ -1,5 +1,8 @@
 package cz.tacr.elza.dataexchange.input.aps;
 
+import cz.tacr.elza.domain.ApExternalSystem;
+import cz.tacr.elza.domain.ApRecord;
+import cz.tacr.elza.domain.ApType;
 import org.apache.commons.lang3.StringUtils;
 
 import cz.tacr.elza.common.XmlUtils;
@@ -9,9 +12,6 @@ import cz.tacr.elza.dataexchange.input.aps.context.AccessPointInfo;
 import cz.tacr.elza.dataexchange.input.aps.context.AccessPointsContext;
 import cz.tacr.elza.dataexchange.input.context.ImportContext;
 import cz.tacr.elza.dataexchange.input.reader.ItemProcessor;
-import cz.tacr.elza.domain.RegExternalSystem;
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.schema.v2.AccessPointEntry;
 import cz.tacr.elza.schema.v2.ExternalId;
 
@@ -26,9 +26,9 @@ public class AccessPointEntryProcessor implements ItemProcessor {
 
     protected final boolean partyRelated;
 
-    private RegRegisterType registerType;
+    private ApType apType;
 
-    private RegExternalSystem externalSystem;
+    private ApExternalSystem externalSystem;
 
     private AccessPointInfo parentAPInfo;
 
@@ -43,13 +43,13 @@ public class AccessPointEntryProcessor implements ItemProcessor {
         AccessPointEntry entry = (AccessPointEntry) item;
         prepareCachedReferences(entry);
         validateAccessPointEntry(entry);
-        RegRecord ap = createAP(entry);
+        ApRecord ap = createAP(entry);
         AccessPointInfo apInfo = addAccessPoint(ap, entry.getId());
         processSubEntities(apInfo);
     }
 
     protected void prepareCachedReferences(AccessPointEntry item) {
-        registerType = staticData.getRegisterTypeByCode(item.getT());
+        apType = staticData.getApTypeByCode(item.getT());
         if (item.getEid() != null) {
             externalSystem = context.getExternalSystemByCode(item.getEid().getEsc());
         }
@@ -65,13 +65,13 @@ public class AccessPointEntryProcessor implements ItemProcessor {
         if (item.getT() == null) {
             throw new DEImportException("AccessPointEntry type is not set, apeId:" + item.getId());
         }
-        if (registerType == null) {
+        if (apType == null) {
             throw new DEImportException("AccessPointEntry has invalid type, apeId:" + item.getId());
         }
-        if (registerType.getAddRecord() == null || !registerType.getAddRecord()) {
+        if (apType.getAddRecord() == null || !apType.getAddRecord()) {
             throw new DEImportException("AccessPointEntry type is not addable, apeId:" + item.getId());
         }
-        if (partyRelated ? registerType.getPartyType() == null : registerType.getPartyType() != null) {
+        if (partyRelated ? apType.getPartyType() == null : apType.getPartyType() != null) {
             throw new DEImportException(
                     "Registry type with defined party type " + (partyRelated ? "must be used" : "can be used only")
                             + " for party related AccessPointEntry, apeId:" + item.getId());
@@ -85,7 +85,7 @@ public class AccessPointEntryProcessor implements ItemProcessor {
             if (parentAPInfo == null) {
                 throw new DEImportException("AccessPointEntry parent not found, apeId:" + item.getId());
             }
-            if (registerType != parentAPInfo.getRegisterType()) {
+            if (apType != parentAPInfo.getApType()) {
                 throw new DEImportException("AccessPointEntry parent type does not match, apeId:" + item.getId());
             }
         }
@@ -102,10 +102,10 @@ public class AccessPointEntryProcessor implements ItemProcessor {
         }
     }
 
-    protected RegRecord createAP(AccessPointEntry item) {
-        RegRecord entity = new RegRecord();
+    protected ApRecord createAP(AccessPointEntry item) {
+        ApRecord entity = new ApRecord();
         entity.setLastUpdate(XmlUtils.convertXmlDate(item.getUpd()));
-        entity.setRegisterType(registerType);
+        entity.setApType(apType);
         entity.setScope(context.getImportScope());
         entity.setUuid(StringUtils.trimToNull(item.getUuid()));
         entity.setRecord("{import_in_progress}");
@@ -116,7 +116,7 @@ public class AccessPointEntryProcessor implements ItemProcessor {
         return entity;
     }
 
-    protected AccessPointInfo addAccessPoint(RegRecord ap, String entryId) {
+    protected AccessPointInfo addAccessPoint(ApRecord ap, String entryId) {
         return context.addAccessPoint(ap, entryId, parentAPInfo);
     }
 

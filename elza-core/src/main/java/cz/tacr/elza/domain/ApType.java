@@ -26,19 +26,19 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  * @author Martin Kužel [<a href="mailto:martin.kuzel@marbes.cz">martin.kuzel@marbes.cz</a>]
  * @since 21.8.2015
  */
-@Entity(name = "reg_register_type")
+@Entity(name = "ap_type")
 @Table
 @Cache(region = "domain", usage = CacheConcurrencyStrategy.READ_WRITE)
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class RegRegisterType {
+public class ApType {
 
     /* Konstanty pro vazby a fieldy. */
-    public static final String ID = "registerTypeId";
+    public static final String ID = "apTypeId";
 
     @Id
     @GeneratedValue
-    private Integer registerTypeId;
+    private Integer apTypeId;
 
     @Column(length = 50, nullable = false, unique = true)
     private String code;
@@ -49,12 +49,12 @@ public class RegRegisterType {
     @Column(nullable = true)
     private Boolean addRecord;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RegRegisterType.class)
-    @JoinColumn(name = "parentRegisterTypeId", nullable = true)
-    private RegRegisterType parentRegisterType;
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApType.class)
+    @JoinColumn(name = "parentApTypeId", nullable = true)
+    private ApType parentApType;
 
     @Column(insertable = false, updatable = false)
-    private Integer parentRegisterTypeId;
+    private Integer parentApTypeId;
 
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ParPartyType.class)
@@ -69,16 +69,16 @@ public class RegRegisterType {
      * Vlastní ID.
      * @return  id
      */
-    public Integer getRegisterTypeId() {
-        return registerTypeId;
+    public Integer getApTypeId() {
+        return apTypeId;
     }
 
     /**
      * Vlastní ID.
-     * @param registerTypeId id
+     * @param apTypeId id
      */
-    public void setRegisterTypeId(final Integer registerTypeId) {
-        this.registerTypeId = registerTypeId;
+    public void setApTypeId(final Integer apTypeId) {
+        this.apTypeId = apTypeId;
     }
 
     /**
@@ -132,21 +132,21 @@ public class RegRegisterType {
     /**
      * Odkaz na sebe sama (hierarchie typů rejstříků).
      */
-    public RegRegisterType getParentRegisterType() {
-        return parentRegisterType;
+    public ApType getParentApType() {
+        return parentApType;
     }
 
     /**
      * Odkaz na sebe sama (hierarchie typů rejstříků).
      * @return Odkaz na sebe sama (hierarchie typů rejstříků).
      */
-    public void setParentRegisterType(final RegRegisterType parentRegisterType) {
-        this.parentRegisterType = parentRegisterType;
-        this.parentRegisterTypeId = parentRegisterType != null ? parentRegisterType.getRegisterTypeId() : null;
+    public void setParentApType(final ApType parentApType) {
+        this.parentApType = parentApType;
+        this.parentApTypeId = parentApType != null ? parentApType.getApTypeId() : null;
     }
 
-    public Integer getParentRegisterTypeId() {
-        return parentRegisterTypeId;
+    public Integer getParentApTypeId() {
+        return parentApTypeId;
     }
 
     /**
@@ -167,26 +167,26 @@ public class RegRegisterType {
 
     @Override
     public boolean equals(final Object obj) {
-        if (!(obj instanceof RegRegisterType)) {
+        if (!(obj instanceof ApType)) {
             return false;
         }
         if (this == obj) {
             return true;
         }
 
-        RegRegisterType other = (RegRegisterType) obj;
+        ApType other = (ApType) obj;
 
-        return new EqualsBuilder().append(registerTypeId, other.getRegisterTypeId()).isEquals();
+        return new EqualsBuilder().append(apTypeId, other.getApTypeId()).isEquals();
     }
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder().append(registerTypeId).toHashCode();
+        return new HashCodeBuilder().append(apTypeId).toHashCode();
     }
 
     @Override
     public String toString() {
-        return "RegRegisterType pk=" + registerTypeId;
+        return "ApType pk=" + apTypeId;
     }
 
     public RulPackage getRulPackage() {

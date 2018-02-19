@@ -1,25 +1,5 @@
 package cz.tacr.elza.print;
 
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.apache.commons.lang.NotImplementedException;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Validate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
-
 import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.PartyType;
 import cz.tacr.elza.core.data.RuleSystem;
@@ -29,6 +9,8 @@ import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.fund.FundTree;
 import cz.tacr.elza.core.fund.FundTreeProvider;
 import cz.tacr.elza.core.fund.TreeNode;
+import cz.tacr.elza.domain.ApRecord;
+import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrFund;
@@ -49,8 +31,6 @@ import cz.tacr.elza.domain.ParRelationClassType;
 import cz.tacr.elza.domain.ParRelationEntity;
 import cz.tacr.elza.domain.ParRelationRoleType;
 import cz.tacr.elza.domain.ParRelationType;
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulOutputType;
@@ -80,6 +60,25 @@ import cz.tacr.elza.service.cache.CachedNode;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.cache.RestoredNode;
 import cz.tacr.elza.service.output.OutputParams;
+import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
@@ -484,14 +483,14 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
     // TODO: record variants should be fetched
     @Override
-    public Record getRecord(RegRecord record) {
+    public Record getRecord(ApRecord record) {
         // id without fetch -> access type property
         Record ap = apIdMap.get(record.getRecordId());
         if (ap != null) {
             return ap;
         }
 
-        RecordType apType = getAPType(record.getRegisterTypeId());
+        RecordType apType = getAPType(record.getApTypeId());
         ap = Record.newInstance(record, apType);
 
         // add to lookup
@@ -508,8 +507,8 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
             return type;
         }
 
-        RegRegisterType regType = staticData.getRegisterTypeById(apTypeId);
-        type = RecordType.newInstance(null, regType);
+        ApType apType = staticData.getApTypeById(apTypeId);
+        type = RecordType.newInstance(null, apType);
 
         // add to lookup
         apTypeIdMap.put(apTypeId, type);

@@ -25,8 +25,8 @@ class EditRegistryForm extends AbstractReactComponent {
         }
 
 
-        if (!values.registerTypeId) {
-            errors.registerTypeId = i18n('global.validation.required');
+        if (!values.apTypeId) {
+            errors.apTypeId = i18n('global.validation.required');
         }
         return errors;
     };
@@ -47,12 +47,12 @@ class EditRegistryForm extends AbstractReactComponent {
     submitReduxForm = (values, dispatch) => submitForm(EditRegistryForm.validate,values,this.props,this.props.onSubmitForm,dispatch);
 
     render() {
-        const {fields: { record, characteristics, registerTypeId}, handleSubmit, onClose, initData, registryRegionRecordTypes, submitting} = this.props;
+        const {fields: { record, characteristics, apTypeId}, handleSubmit, onClose, initData, registryRegionRecordTypes, submitting} = this.props;
 
         const items = registryRegionRecordTypes.item != null ? registryRegionRecordTypes.item : [];
-        const registerTypesIdValue = initData.registerTypeId && !registerTypeId.value ? initData.registerTypeId : registerTypeId.value;
+        const apTypesIdValue = initData.apTypeId && !apTypeId.value ? initData.apTypeId : apTypeId.value;
 
-        const value = getTreeItemById(registerTypeId ? registerTypeId.value : "", items);
+        const value = getTreeItemById(apTypeId ? apTypeId.value : "", items);
 
         return <Form onSubmit={handleSubmit(this.submitReduxForm)}>
             <Modal.Body>
@@ -62,10 +62,10 @@ class EditRegistryForm extends AbstractReactComponent {
                     tree
                     alwaysExpanded
                     allowSelectItem={(id, item) => item.addRecord}
-                    {...registerTypeId}
-                    {...decorateFormField(registerTypeId)}
-                    onChange={item => registerTypeId.onChange(item ? item.id : null)}
-                    onBlur={item => registerTypeId.onBlur(item ? item.id : null)}
+                    {...apTypeId}
+                    {...decorateFormField(apTypeId)}
+                    onChange={item => apTypeId.onChange(item ? item.id : null)}
+                    onBlur={item => apTypeId.onBlur(item ? item.id : null)}
                     value={value}
                     disabled={false}
                 />
@@ -82,7 +82,7 @@ class EditRegistryForm extends AbstractReactComponent {
 
 export default reduxForm({
         form: 'editRegistryForm',
-        fields: ['record', 'characteristics', 'registerTypeId']
+        fields: ['record', 'characteristics', 'apTypeId']
     },state => ({
         initialValues: state.form.editRegistryForm.initialValues,
         refTables: state.refTables,

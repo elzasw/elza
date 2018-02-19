@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.domain.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
@@ -25,27 +26,7 @@ import cz.tacr.elza.api.enums.InterpiClass;
 import cz.tacr.elza.controller.vo.InterpiEntityMappingVO;
 import cz.tacr.elza.controller.vo.InterpiRelationMappingVO;
 import cz.tacr.elza.core.data.PartyType;
-import cz.tacr.elza.domain.ParComplementType;
-import cz.tacr.elza.domain.ParDynasty;
-import cz.tacr.elza.domain.ParEvent;
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.ParPartyGroup;
-import cz.tacr.elza.domain.ParPartyGroupIdentifier;
-import cz.tacr.elza.domain.ParPartyName;
-import cz.tacr.elza.domain.ParPartyNameComplement;
-import cz.tacr.elza.domain.ParPartyNameFormType;
-import cz.tacr.elza.domain.ParPartyType;
-import cz.tacr.elza.domain.ParPerson;
-import cz.tacr.elza.domain.ParRelation;
-import cz.tacr.elza.domain.ParRelationEntity;
-import cz.tacr.elza.domain.ParRelationRoleType;
-import cz.tacr.elza.domain.ParRelationType;
-import cz.tacr.elza.domain.ParUnitdate;
-import cz.tacr.elza.domain.RegExternalSystem;
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.domain.RegRegisterType;
-import cz.tacr.elza.domain.RegScope;
-import cz.tacr.elza.domain.RegVariantRecord;
+import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
@@ -85,12 +66,12 @@ import cz.tacr.elza.interpi.ws.wo.ZdrojTyp;
 import cz.tacr.elza.repository.ComplementTypeRepository;
 import cz.tacr.elza.repository.PartyNameFormTypeRepository;
 import cz.tacr.elza.repository.PartyTypeRepository;
-import cz.tacr.elza.repository.RegRecordRepository;
-import cz.tacr.elza.repository.RegVariantRecordRepository;
-import cz.tacr.elza.repository.RegisterTypeRepository;
+import cz.tacr.elza.repository.ApRecordRepository;
+import cz.tacr.elza.repository.ApVariantRecordRepository;
+import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.service.GroovyScriptService;
 import cz.tacr.elza.service.PartyService;
-import cz.tacr.elza.service.RegistryService;
+import cz.tacr.elza.service.ApService;
 
 /**
  * Třída pro konverzi objektů z a do INTERPI.
@@ -109,7 +90,7 @@ public class InterpiFactory {
     private PartyService partyService;
 
     @Autowired
-    private RegistryService registryService;
+    private ApService apService;
 
     @Autowired
     private InterpiClient client;
@@ -124,13 +105,13 @@ public class InterpiFactory {
     private ComplementTypeRepository complementTypeRepository;
 
     @Autowired
-    private RegisterTypeRepository registerTypeRepository;
+    private ApTypeRepository apTypeRepository;
 
     @Autowired
-    private RegRecordRepository recordRepository;
+    private ApRecordRepository recordRepository;
 
     @Autowired
-    private RegVariantRecordRepository variantRecordRepository;
+    private ApVariantRecordRepository variantRecordRepository;
 
     @Autowired
     private GroovyScriptService groovyScriptService;
@@ -141,31 +122,31 @@ public class InterpiFactory {
      * @param entitaTyp INTERPI objekt
      * @param originalRecord původní rejstřík, může být null
      * @param interpiRecordId id INTERPI
-     * @param regScope třída rejstříku
-     * @param regExternalSystem externí systém
+     * @param apScope třída rejstříku
+     * @param apExternalSystem externí systém
      *
      * @return uložené rejstříkové heslo
      */
-    public RegRecord importRecord(final EntitaTyp entitaTyp, final RegRecord originalRecord,
-            final String interpiRecordId,  final RegScope regScope, final RegExternalSystem regExternalSystem) {
-        RegRecord regRecord = createRecord(entitaTyp, interpiRecordId, regExternalSystem, regScope, true);
+    public ApRecord importRecord(final EntitaTyp entitaTyp, final ApRecord originalRecord,
+                                 final String interpiRecordId, final ApScope apScope, final ApExternalSystem apExternalSystem) {
+        ApRecord apRecord = createRecord(entitaTyp, interpiRecordId, apExternalSystem, apScope, true);
         if (originalRecord != null) {
-            regRecord.setRecordId(originalRecord.getRecordId());
-            regRecord.setVersion(originalRecord.getVersion());
-            regRecord.setUuid(originalRecord.getUuid());
+            apRecord.setRecordId(originalRecord.getRecordId());
+            apRecord.setVersion(originalRecord.getVersion());
+            apRecord.setUuid(originalRecord.getUuid());
 
             //smazání variantních hesel
-            List<RegVariantRecord> oldVariants = variantRecordRepository.findByRegRecordId(originalRecord.getRecordId());
+            List<ApVariantRecord> oldVariants = variantRecordRepository.findByApRecordId(originalRecord.getRecordId());
             variantRecordRepository.delete(oldVariants);
         }
 
-        List<RegVariantRecord> variantRecordList = regRecord.getVariantRecordList();
-        regRecord = registryService.saveRecord(regRecord, false);
-        for (RegVariantRecord variantRecord : variantRecordList) {
-            registryService.saveVariantRecord(variantRecord);
+        List<ApVariantRecord> variantRecordList = apRecord.getVariantRecordList();
+        apRecord = apService.saveRecord(apRecord, false);
+        for (ApVariantRecord variantRecord : variantRecordList) {
+            apService.saveVariantRecord(variantRecord);
         }
 
-        return regRecord;
+        return apRecord;
     }
 
     /**
@@ -174,21 +155,21 @@ public class InterpiFactory {
      * @param originalRecord původní rejstřík, může být null
      * @param interpiRecordId id INTERPI
      * @param isOriginator příznak zda je osoba původce
-     * @param regScope třída rejstříku
-     * @param regExternalSystem externí systém
+     * @param apScope třída rejstříku
+     * @param apExternalSystem externí systém
      *
      * @return uložené rejstříkové heslo osoby
      */
-    public RegRecord importParty(final InterpiEntity interpiEntity, final RegRecord originalRecord,
-            final String interpiRecordId, final boolean isOriginator, final RegScope regScope,
-            final RegExternalSystem regExternalSystem, final List<MappingVO> mappings) {
-        RegRecord regRecord = createPartyRecord(interpiEntity, interpiRecordId, regExternalSystem, regScope);
+    public ApRecord importParty(final InterpiEntity interpiEntity, final ApRecord originalRecord,
+                                final String interpiRecordId, final boolean isOriginator, final ApScope apScope,
+                                final ApExternalSystem apExternalSystem, final List<MappingVO> mappings) {
+        ApRecord apRecord = createPartyRecord(interpiEntity, interpiRecordId, apExternalSystem, apScope);
 
         Integer partyId = null;
         Integer partyVersion = null;
         if (originalRecord != null) {
-            regRecord.setRecordId(originalRecord.getRecordId());
-            regRecord.setVersion(originalRecord.getVersion());
+            apRecord.setRecordId(originalRecord.getRecordId());
+            apRecord.setVersion(originalRecord.getVersion());
 
             ParParty originalParty = partyService.findParPartyByRecord(originalRecord);
 
@@ -205,7 +186,7 @@ public class InterpiFactory {
             partyVersion = originalParty.getVersion();
         }
 
-        ParParty newParty = createParty(regRecord, interpiEntity, isOriginator, regExternalSystem, mappings);
+        ParParty newParty = createParty(apRecord, interpiEntity, isOriginator, apExternalSystem, mappings);
         newParty.setPartyId(partyId);
         newParty.setVersion(partyVersion);
 
@@ -284,35 +265,35 @@ public class InterpiFactory {
      *
      * @param entitaTyp záznam z INTERPI
      * @param interpiPartyId externí id osoby
-     * @param regExternalSystem systém ze kterého je osoba
-     * @param regScope třída rejstříků do které se importuje
+     * @param apExternalSystem systém ze kterého je osoba
+     * @param apScope třída rejstříků do které se importuje
      * @param generateVariantNames příznak zda se mají generovat variantní jména
      *
      * @return rejstříkové heslo
      */
-    private RegRecord createRecord(final EntitaTyp entitaTyp, final String interpiPartyId,
-            final RegExternalSystem regExternalSystem, final RegScope regScope, final boolean generateVariantNames) {
+    private ApRecord createRecord(final EntitaTyp entitaTyp, final String interpiPartyId,
+                                  final ApExternalSystem apExternalSystem, final ApScope apScope, final boolean generateVariantNames) {
         InterpiEntity interpiEntity = new InterpiEntity(entitaTyp);
-        RegRecord regRecord = createPartyRecord(interpiEntity, interpiPartyId, regExternalSystem, regScope);
+        ApRecord apRecord = createPartyRecord(interpiEntity, interpiPartyId, apExternalSystem, apScope);
 
         ExternalRecordVO recordVO = groovyScriptService.convertListToExternalRecordVO(Collections.singletonList(entitaTyp), generateVariantNames, this).
                 iterator().next();
 
         List<String> strucnaCharakteristika = interpiEntity.getPopisTyp().stream().filter(i -> PopisTypA.STRUČNÁ_CHARAKTERISTIKA.equals(i.getTyp())).map(PopisTyp::getTextPopisu).collect(Collectors.toList());
-        regRecord.setCharacteristics(String.join(", ", strucnaCharakteristika));
-        regRecord.setRecord(recordVO.getName());
+        apRecord.setCharacteristics(String.join(", ", strucnaCharakteristika));
+        apRecord.setRecord(recordVO.getName());
 
-        List<RegVariantRecord> regVariantRecords = new ArrayList<>(recordVO.getVariantNames().size());
+        List<ApVariantRecord> apVariantRecords = new ArrayList<>(recordVO.getVariantNames().size());
         for (String variantName : recordVO.getVariantNames()) {
-            RegVariantRecord regVariantRecord = new RegVariantRecord();
-            regVariantRecord.setRecord(variantName);
-            regVariantRecord.setRegRecord(regRecord);
+            ApVariantRecord apVariantRecord = new ApVariantRecord();
+            apVariantRecord.setRecord(variantName);
+            apVariantRecord.setApRecord(apRecord);
 
-            regVariantRecords.add(regVariantRecord);
+            apVariantRecords.add(apVariantRecord);
         }
-        regRecord.setVariantRecordList(regVariantRecords);
+        apRecord.setVariantRecordList(apVariantRecords);
 
-        return regRecord;
+        return apRecord;
     }
 
     /**
@@ -320,27 +301,27 @@ public class InterpiFactory {
      *
      * @param interpiEntity mapa hodnot z interpi
      * @param interpiPartyId extrní id osoby
-     * @param regExternalSystem systém ze kterého je osoba
-     * @param regScope třída rejstříků do které se importuje
+     * @param apExternalSystem systém ze kterého je osoba
+     * @param apScope třída rejstříků do které se importuje
      *
      * @return rejstříkové heslo
      */
-    private RegRecord createPartyRecord(final InterpiEntity interpiEntity,
-            final String interpiPartyId, final RegExternalSystem regExternalSystem, final RegScope regScope) {
-        RegRecord regRecord = new RegRecord();
+    private ApRecord createPartyRecord(final InterpiEntity interpiEntity,
+                                       final String interpiPartyId, final ApExternalSystem apExternalSystem, final ApScope apScope) {
+        ApRecord apRecord = new ApRecord();
 
-        regRecord.setExternalId(interpiPartyId);
-        regRecord.setExternalSystem(regExternalSystem);
+        apRecord.setExternalId(interpiPartyId);
+        apRecord.setExternalSystem(apExternalSystem);
 
-        RegRegisterType regRegisterType = getRegisterType(interpiEntity);
-        if (BooleanUtils.isFalse(regRegisterType.getAddRecord())) {
-            throw new IllegalStateException("Do typu rejstříku s kódem " + regRegisterType.getCode() + " nelze přidávat záznamy.");
+        ApType apType = getApType(interpiEntity);
+        if (BooleanUtils.isFalse(apType.getAddRecord())) {
+            throw new IllegalStateException("Do typu rejstříku s kódem " + apType.getCode() + " nelze přidávat záznamy.");
         }
-        regRecord.setRegisterType(regRegisterType);
+        apRecord.setApType(apType);
 
-        regRecord.setScope(regScope);
+        apRecord.setScope(apScope);
 
-        return regRecord;
+        return apRecord;
     }
 
     private String getSourceInformation(final InterpiEntity interpiEntity) {
@@ -367,7 +348,7 @@ public class InterpiFactory {
      *
      * @return typ rejstříku
      */
-    public RegRegisterType getRegisterType(final InterpiEntity interpiEntity) {
+    public ApType getApType(final InterpiEntity interpiEntity) {
         String registryTypeName;
         PodtridaTyp podTrida = interpiEntity.getPodTrida();
         if (podTrida == null) {
@@ -378,12 +359,12 @@ public class InterpiFactory {
         }
 
         String registryTypeCode = getRegistryTypeCode(registryTypeName);
-        RegRegisterType regRegisterType = registerTypeRepository.findRegisterTypeByCode(registryTypeCode);
-        if (regRegisterType == null) {
+        ApType apType = apTypeRepository.findApTypeByCode(registryTypeCode);
+        if (apType == null) {
             throw new ObjectNotFoundException("Typ jména " + registryTypeName + " neexistuje", RegistryCode.REGISTRY_TYPE_NOT_FOUND).set("name", registryTypeName);
         }
 
-        return regRegisterType;
+        return apType;
     }
 
     private String getRegistryTypeCode(final String registryTypeName) {
@@ -454,11 +435,11 @@ public class InterpiFactory {
      *
      * @param parParty osoba
      * @param interpiEntity informace z INTERPI
-     * @param regExternalSystem externí systém
+     * @param apExternalSystem externí systém
      * @param mappings mapování vztahů
      */
     private void fillParty(final ParParty parParty, final InterpiEntity interpiEntity,
-            final RegExternalSystem regExternalSystem, final List<MappingVO> mappings) {
+                           final ApExternalSystem apExternalSystem, final List<MappingVO> mappings) {
 //        parParty.setPartyCreators(null); // po dohodě s Honzou Vejskalem neimportovat, není jak
 
         List<ParPartyName> partyNames = new LinkedList<>();
@@ -484,12 +465,12 @@ public class InterpiFactory {
         fillAdditionalInfo(parParty, interpiEntity);
 
         if (parParty.isOriginator() && CollectionUtils.isNotEmpty(mappings)) {
-            fillRelations(parParty, interpiEntity, regExternalSystem, mappings);
+            fillRelations(parParty, interpiEntity, apExternalSystem, mappings);
         }
     }
 
     private void fillRelations(final ParParty parParty, final InterpiEntity interpiEntity,
-            final RegExternalSystem regExternalSystem, final List<MappingVO> mappings) {
+                               final ApExternalSystem apExternalSystem, final List<MappingVO> mappings) {
         List<UdalostTyp> pocatekExistence = interpiEntity.getPocatekExistence();
         List<UdalostTyp> konecExistence = interpiEntity.getKonecExistence();
         List<UdalostTyp> udalostList = interpiEntity.getUdalost();
@@ -498,27 +479,27 @@ public class InterpiFactory {
 
         List<ParRelation> relations = new LinkedList<>();
         List<ParRelation> createRelations = createRelations(pocatekExistence, parParty, InterpiClass.POCATEK_EXISTENCE,
-                regExternalSystem, mappings);
+                apExternalSystem, mappings);
         if (CollectionUtils.isNotEmpty(createRelations)) {
             relations.addAll(createRelations);
         }
         List<ParRelation> endRelations = createRelations(konecExistence, parParty, InterpiClass.KONEC_EXISTENCE,
-                regExternalSystem, mappings);
+                apExternalSystem, mappings);
         if (CollectionUtils.isNotEmpty(endRelations)) {
             relations.addAll(endRelations);
         }
         List<ParRelation> relRelations = createRelations(udalostList, parParty, InterpiClass.UDALOST,
-                regExternalSystem, mappings);
+                apExternalSystem, mappings);
         if (CollectionUtils.isNotEmpty(relRelations)) {
             relations.addAll(relRelations);
         }
         List<ParRelation> changeRelations = createRelations(zmenaList, parParty, InterpiClass.ZMENA,
-                regExternalSystem, mappings);
+                apExternalSystem, mappings);
         if (CollectionUtils.isNotEmpty(changeRelations)) {
             relations.addAll(changeRelations);
         }
         List<ParRelation> entityRelations = createEntityRelations(souvisejiciEntitaList, parParty, InterpiClass.SOUVISEJICI_ENTITA,
-                regExternalSystem, mappings);
+                apExternalSystem, mappings);
         if (CollectionUtils.isNotEmpty(entityRelations)) {
             relations.addAll(entityRelations);
         }
@@ -528,8 +509,8 @@ public class InterpiFactory {
     }
 
     private List<ParRelation> createEntityRelations(final List<SouvisejiciTyp> souvisejiciEntitaList,
-            final ParParty parParty, final InterpiClass interpiClass,
-            final RegExternalSystem regExternalSystem, final List<MappingVO> mappings) {
+                                                    final ParParty parParty, final InterpiClass interpiClass,
+                                                    final ApExternalSystem apExternalSystem, final List<MappingVO> mappings) {
         if (CollectionUtils.isEmpty(souvisejiciEntitaList)) {
             return Collections.emptyList();
         }
@@ -550,7 +531,7 @@ public class InterpiFactory {
                 relationsMap.put(entityRelation.getRelationType().getCode(), entityRelation);
             }
 
-            createParRelationEntity(parParty, regExternalSystem, entityRelation, souvisejiciTyp,
+            createParRelationEntity(parParty, apExternalSystem, entityRelation, souvisejiciTyp,
                     mappingVO.getParRelationRoleType());
         }
 
@@ -558,7 +539,7 @@ public class InterpiFactory {
     }
 
     private List<ParRelation> createRelations(final List<UdalostTyp> udalostList, final ParParty parParty, final InterpiClass interpiClass,
-            final RegExternalSystem regExternalSystem, final List<MappingVO> mappings) {
+                                              final ApExternalSystem apExternalSystem, final List<MappingVO> mappings) {
         List<ParRelation> relations = new LinkedList<>();
         if (CollectionUtils.isEmpty(udalostList)) {
             return relations;
@@ -596,7 +577,7 @@ public class InterpiFactory {
                         relations.add(parRelation);
                     }
 
-                    createParRelationEntity(parParty, regExternalSystem, parRelation, souvisejiciTyp, mappingVO.getParRelationRoleType());
+                    createParRelationEntity(parParty, apExternalSystem, parRelation, souvisejiciTyp, mappingVO.getParRelationRoleType());
                 }
             }
         }
@@ -644,13 +625,13 @@ public class InterpiFactory {
                 orElse(null);
     }
 
-    private void createParRelationEntity(final ParParty parParty, final RegExternalSystem regExternalSystem,
+    private void createParRelationEntity(final ParParty parParty, final ApExternalSystem apExternalSystem,
             final ParRelation parRelation, final SouvisejiciTyp souvisejiciTyp, final ParRelationRoleType parRelationRoleType) {
         ParRelationEntity parRelationEntity = new ParRelationEntity();
         parRelationEntity.setNote(souvisejiciTyp.getPoznamka());
         parRelationEntity.setRelation(parRelation);
 
-        RegRecord entityRecord = getRelationEntityRecord(parParty, regExternalSystem, souvisejiciTyp);
+        ApRecord entityRecord = getRelationEntityRecord(parParty, apExternalSystem, souvisejiciTyp);
         parRelationEntity.setRecord(entityRecord);
 
         parRelationEntity.setRoleType(parRelationRoleType);
@@ -662,27 +643,27 @@ public class InterpiFactory {
      * Získání rejstříkového hesla pro entitu ve vztahu.
      *
      * @param parParty osoba
-     * @param regExternalSystem externí systém
+     * @param apExternalSystem externí systém
      * @param souvisejiciTyp entita ve vztahu
      *
      * @return rejstříkové heslo entity
      */
-    private RegRecord getRelationEntityRecord(final ParParty parParty, final RegExternalSystem regExternalSystem,
-            final SouvisejiciTyp souvisejiciTyp) {
+    private ApRecord getRelationEntityRecord(final ParParty parParty, final ApExternalSystem apExternalSystem,
+                                             final SouvisejiciTyp souvisejiciTyp) {
         String interpiId = getInterpiSouvIdentifier(souvisejiciTyp.getIdentifikator());
-        RegRecord entityRecord = recordRepository.findRegRecordByExternalIdAndExternalSystemCodeAndScope(interpiId,
-                regExternalSystem.getCode(), parParty.getRecord().getScope());
+        ApRecord entityRecord = recordRepository.findApRecordByExternalIdAndExternalSystemCodeAndScope(interpiId,
+                apExternalSystem.getCode(), parParty.getRecord().getScope());
 
         if (entityRecord == null) { // pokud neexistiuje v db tak se importuje bez vztahů
             EntitaTyp entitaTyp = interpiSessionHolder.getInterpiEntitySession().getRelatedEntity(interpiId);
             if (entitaTyp == null) {
-                entitaTyp = client.findOneRecord(interpiId, regExternalSystem);
+                entitaTyp = client.findOneRecord(interpiId, apExternalSystem);
             }
             InterpiEntity interpiEntity = new InterpiEntity(entitaTyp);
             if (isParty(interpiEntity)) {
-                entityRecord = importParty(interpiEntity, null, interpiId, false, parParty.getRecord().getScope(), regExternalSystem, null);
+                entityRecord = importParty(interpiEntity, null, interpiId, false, parParty.getRecord().getScope(), apExternalSystem, null);
             } else {
-                entityRecord = importRecord(entitaTyp, null, interpiId, parParty.getRecord().getScope(), regExternalSystem);
+                entityRecord = importRecord(entitaTyp, null, interpiId, parParty.getRecord().getScope(), apExternalSystem);
             }
         }
         return entityRecord;
@@ -1027,15 +1008,15 @@ public class InterpiFactory {
     /**
      * Vytvoří osobu.
      *
-     * @param regRecord rejstříkové heslo osoby
+     * @param apRecord rejstříkové heslo osoby
      * @param isOriginator příznak původce
-     * @param regExternalSystem systém ze kterého je osoba
+     * @param apExternalSystem systém ze kterého je osoba
      * @param mappings mapování vztahů
      *
      * @return osoba
      */
-    private ParParty createParty(final RegRecord regRecord, final InterpiEntity interpiEntity,
-            final boolean isOriginator, final RegExternalSystem regExternalSystem, final List<MappingVO> mappings) {
+    private ParParty createParty(final ApRecord apRecord, final InterpiEntity interpiEntity,
+                                 final boolean isOriginator, final ApExternalSystem apExternalSystem, final List<MappingVO> mappings) {
         TridaTyp trida = interpiEntity.getTrida();
 
         ParParty parParty;
@@ -1062,10 +1043,10 @@ public class InterpiFactory {
         }
 
         parParty.setPartyType(parPartyType);
-        parParty.setRecord(regRecord);
+        parParty.setRecord(apRecord);
         parParty.setOriginator(isOriginator);
 
-        fillParty(parParty, interpiEntity, regExternalSystem, mappings);
+        fillParty(parParty, interpiEntity, apExternalSystem, mappings);
 
         return parParty;
     }
@@ -1073,12 +1054,12 @@ public class InterpiFactory {
     /**
      * Načtení vztahů entity.
      *
-     * @param regExternalSystem externí systém
-     * @param regScope třída
+     * @param apExternalSystem externí systém
+     * @param apScope třída
      *
      */
     public List<InterpiRelationMappingVO> getRelations(final InterpiEntity interpiEntity,
-            final RegExternalSystem regExternalSystem, final RegScope regScope) {
+                                                       final ApExternalSystem apExternalSystem, final ApScope apScope) {
         List<InterpiRelationMappingVO> mappings = new LinkedList<>();
 
         List<UdalostTyp> pocatekExistence = interpiEntity.getPocatekExistence();
@@ -1086,13 +1067,13 @@ public class InterpiFactory {
         List<UdalostTyp> udalostList = interpiEntity.getUdalost();
         List<UdalostTyp> zmenaList = interpiEntity.getZmena();
 
-        addRelationMappings(pocatekExistence, InterpiClass.POCATEK_EXISTENCE, mappings, regExternalSystem, regScope);
-        addRelationMappings(konecExistence, InterpiClass.KONEC_EXISTENCE, mappings, regExternalSystem, regScope);
-        addRelationMappings(udalostList, InterpiClass.UDALOST, mappings, regExternalSystem, regScope);
-        addRelationMappings(zmenaList, InterpiClass.ZMENA, mappings, regExternalSystem, regScope);
+        addRelationMappings(pocatekExistence, InterpiClass.POCATEK_EXISTENCE, mappings, apExternalSystem, apScope);
+        addRelationMappings(konecExistence, InterpiClass.KONEC_EXISTENCE, mappings, apExternalSystem, apScope);
+        addRelationMappings(udalostList, InterpiClass.UDALOST, mappings, apExternalSystem, apScope);
+        addRelationMappings(zmenaList, InterpiClass.ZMENA, mappings, apExternalSystem, apScope);
 
         List<SouvisejiciTyp> souvisejiciEntitaList = interpiEntity.getSouvisejiciEntita();
-        addEntityMappings(souvisejiciEntitaList, InterpiClass.SOUVISEJICI_ENTITA, mappings, regExternalSystem, regScope);
+        addEntityMappings(souvisejiciEntitaList, InterpiClass.SOUVISEJICI_ENTITA, mappings, apExternalSystem, apScope);
 
         return mappings;
     }
@@ -1103,11 +1084,11 @@ public class InterpiFactory {
      * @param souvisejiciEntitaList seznam entit
      * @param interpiClass třída vztahu
      * @param mappings kolekce do které se přidají vytvořená mapování
-     * @param regExternalSystem externí systém
-     * @param regScope třída
+     * @param apExternalSystem externí systém
+     * @param apScope třída
      */
     private void addEntityMappings(final List<SouvisejiciTyp> souvisejiciEntitaList, final InterpiClass interpiClass,
-            final List<InterpiRelationMappingVO> mappings, final RegExternalSystem regExternalSystem, final RegScope regScope) {
+                                   final List<InterpiRelationMappingVO> mappings, final ApExternalSystem apExternalSystem, final ApScope apScope) {
         if (CollectionUtils.isEmpty(souvisejiciEntitaList)) {
             return;
         }
@@ -1116,7 +1097,7 @@ public class InterpiFactory {
         mappings.add(relationMappingVO);
 
         for (SouvisejiciTyp souvisejiciTyp : souvisejiciEntitaList) {
-            InterpiEntityMappingVO entityMappingVO = createEntityMapping(souvisejiciTyp, regExternalSystem, regScope);
+            InterpiEntityMappingVO entityMappingVO = createEntityMapping(souvisejiciTyp, apExternalSystem, apScope);
 
             relationMappingVO.addEntityMapping(entityMappingVO);
         }
@@ -1128,11 +1109,11 @@ public class InterpiFactory {
      * @param udalostList seznam vztahů
      * @param interpiClass třída vztahu
      * @param mappings kolekce do které se přidají vytvořená mapování
-     * @param regExternalSystem externí systém
-     * @param regScope třída
+     * @param apExternalSystem externí systém
+     * @param apScope třída
      */
     private void addRelationMappings(final List<UdalostTyp> udalostList, final InterpiClass interpiClass,
-            final List<InterpiRelationMappingVO> mappings, final RegExternalSystem regExternalSystem, final RegScope regScope) {
+                                     final List<InterpiRelationMappingVO> mappings, final ApExternalSystem apExternalSystem, final ApScope apScope) {
         for (UdalostTyp udalostTyp : udalostList) {
             InterpiRelationMappingVO relationMappingVO = createRelationMapping(udalostTyp, interpiClass);
             mappings.add(relationMappingVO);
@@ -1140,7 +1121,7 @@ public class InterpiFactory {
             List<SouvisejiciTyp> souvisejiciEntitaList = udalostTyp.getSouvisejiciEntita();
             if (souvisejiciEntitaList != null) {
                 for (SouvisejiciTyp souvisejiciTyp : souvisejiciEntitaList) {
-                    InterpiEntityMappingVO entityMappingVO = createEntityMapping(souvisejiciTyp, regExternalSystem, regScope);
+                    InterpiEntityMappingVO entityMappingVO = createEntityMapping(souvisejiciTyp, apExternalSystem, apScope);
 
                     relationMappingVO.addEntityMapping(entityMappingVO);
                 }
@@ -1174,12 +1155,12 @@ public class InterpiFactory {
      * Vytvoří mapovací záznam pro entitu.
      *
      * @param souvisejiciTyp entita
-     * @param regExternalSystem externí systém
-     * @param regScope třída
+     * @param apExternalSystem externí systém
+     * @param apScope třída
      *
      * @return mapovací záznam
      */
-    private InterpiEntityMappingVO createEntityMapping(final SouvisejiciTyp souvisejiciTyp, final RegExternalSystem regExternalSystem, final RegScope regScope) {
+    private InterpiEntityMappingVO createEntityMapping(final SouvisejiciTyp souvisejiciTyp, final ApExternalSystem apExternalSystem, final ApScope apScope) {
         InterpiEntityMappingVO entityMappingVO = new InterpiEntityMappingVO();
 
         String interpiRole = getInterpiRoleType(souvisejiciTyp);
@@ -1196,13 +1177,13 @@ public class InterpiFactory {
         String interpiIdentifier = getInterpiSouvIdentifier(souvisejiciTyp.getIdentifikator());
         entityMappingVO.setInterpiId(interpiIdentifier);
 
-        String interpiEntityType = getInterpiEntityType(souvisejiciTyp, interpiIdentifier, regExternalSystem, regScope);
+        String interpiEntityType = getInterpiEntityType(souvisejiciTyp, interpiIdentifier, apExternalSystem, apScope);
         entityMappingVO.setInterpiEntityType(interpiEntityType);
 
         if (interpiEntityType != null) {
             String registryTypeCode = getRegistryTypeCode(interpiEntityType);
-            RegRegisterType regRegisterType = registerTypeRepository.findRegisterTypeByCode(registryTypeCode);
-            if (regRegisterType == null) {
+            ApType apType = apTypeRepository.findApTypeByCode(registryTypeCode);
+            if (apType == null) {
                 entityMappingVO.setNotExistingType(true);
             }
         }
@@ -1213,14 +1194,14 @@ public class InterpiFactory {
     }
 
     private String getInterpiEntityType(final SouvisejiciTyp souvisejiciTyp, final String interpiIdentifier,
-            final RegExternalSystem regExternalSystem, final RegScope regScope) {
+                                        final ApExternalSystem apExternalSystem, final ApScope apScope) {
         String interpiEntityType = null;
         if (StringUtils.isNotBlank(interpiIdentifier)) {
-            RegRecord regRecord = recordRepository.findRegRecordByExternalIdAndExternalSystemCodeAndScope(interpiIdentifier,
-                    regExternalSystem.getCode(), regScope);
-            if (regRecord == null) {
+            ApRecord apRecord = recordRepository.findApRecordByExternalIdAndExternalSystemCodeAndScope(interpiIdentifier,
+                    apExternalSystem.getCode(), apScope);
+            if (apRecord == null) {
                 // najít v interpi
-                EntitaTyp entitaTyp = client.findOneRecord(interpiIdentifier, regExternalSystem);
+                EntitaTyp entitaTyp = client.findOneRecord(interpiIdentifier, apExternalSystem);
                 interpiSessionHolder.getInterpiEntitySession().addRelatedEntity(interpiIdentifier, entitaTyp);
                 InterpiEntity interpiEntity = new InterpiEntity(entitaTyp);
                 PodtridaTyp podTrida = interpiEntity.getPodTrida();
@@ -1233,7 +1214,7 @@ public class InterpiFactory {
                     interpiEntityType = podTrida.value();
                 }
             } else {
-                interpiEntityType = regRecord.getRegisterType().getName();
+                interpiEntityType = apRecord.getApType().getName();
             }
         } else {
             TridaTyp trida = souvisejiciTyp.getTrida();

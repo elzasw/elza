@@ -8,10 +8,8 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
-import cz.tacr.elza.controller.vo.RulArrangementExtensionVO;
-import cz.tacr.elza.controller.vo.RulStructureTypeVO;
-import cz.tacr.elza.domain.ArrDataStructureRef;
-import cz.tacr.elza.domain.RulArrangementExtension;
+import cz.tacr.elza.controller.vo.*;
+import cz.tacr.elza.domain.*;
 import cz.tacr.elza.service.attachment.AttachmentService;
 import cz.tacr.elza.domain.RulStructuredType;
 import cz.tacr.elza.repository.StructuredObjectRepository;
@@ -27,67 +25,7 @@ import com.vividsolutions.jts.io.WKTReader;
 import com.vividsolutions.jts.io.WKTWriter;
 
 import cz.tacr.elza.bulkaction.BulkActionConfig;
-import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
-import cz.tacr.elza.controller.vo.ArrChangeVO;
-import cz.tacr.elza.controller.vo.ArrDaoFileGroupVO;
-import cz.tacr.elza.controller.vo.ArrDaoFileVO;
-import cz.tacr.elza.controller.vo.ArrDaoVO;
-import cz.tacr.elza.controller.vo.ArrDigitalRepositorySimpleVO;
-import cz.tacr.elza.controller.vo.ArrDigitalRepositoryVO;
-import cz.tacr.elza.controller.vo.ArrDigitizationFrontdeskSimpleVO;
-import cz.tacr.elza.controller.vo.ArrDigitizationFrontdeskVO;
-import cz.tacr.elza.controller.vo.ArrFileVO;
-import cz.tacr.elza.controller.vo.ArrFundBaseVO;
-import cz.tacr.elza.controller.vo.ArrFundVO;
-import cz.tacr.elza.controller.vo.ArrFundVersionVO;
-import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
-import cz.tacr.elza.controller.vo.ArrOutputDefinitionVO;
-import cz.tacr.elza.controller.vo.ArrOutputFileVO;
-import cz.tacr.elza.controller.vo.ArrOutputVO;
-import cz.tacr.elza.controller.vo.BulkActionRunVO;
-import cz.tacr.elza.controller.vo.BulkActionVO;
-import cz.tacr.elza.controller.vo.DmsFileVO;
-import cz.tacr.elza.controller.vo.NodeConformityErrorVO;
-import cz.tacr.elza.controller.vo.NodeConformityMissingVO;
-import cz.tacr.elza.controller.vo.NodeConformityVO;
-import cz.tacr.elza.controller.vo.ParComplementTypeVO;
-import cz.tacr.elza.controller.vo.ParDynastyVO;
-import cz.tacr.elza.controller.vo.ParEventVO;
-import cz.tacr.elza.controller.vo.ParInstitutionTypeVO;
-import cz.tacr.elza.controller.vo.ParInstitutionVO;
-import cz.tacr.elza.controller.vo.ParPartyGroupIdentifierVO;
-import cz.tacr.elza.controller.vo.ParPartyGroupVO;
-import cz.tacr.elza.controller.vo.ParPartyNameComplementVO;
-import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
-import cz.tacr.elza.controller.vo.ParPartyNameVO;
-import cz.tacr.elza.controller.vo.ParPartyTypeVO;
-import cz.tacr.elza.controller.vo.ParPartyVO;
-import cz.tacr.elza.controller.vo.ParPersonVO;
-import cz.tacr.elza.controller.vo.ParRelationClassTypeVO;
-import cz.tacr.elza.controller.vo.ParRelationEntityVO;
-import cz.tacr.elza.controller.vo.ParRelationRoleTypeVO;
-import cz.tacr.elza.controller.vo.ParRelationTypeVO;
-import cz.tacr.elza.controller.vo.ParRelationVO;
-import cz.tacr.elza.controller.vo.ParUnitdateVO;
-import cz.tacr.elza.controller.vo.RegExternalSystemSimpleVO;
-import cz.tacr.elza.controller.vo.RegExternalSystemVO;
-import cz.tacr.elza.controller.vo.RegRecordSimple;
-import cz.tacr.elza.controller.vo.RegRecordVO;
-import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
-import cz.tacr.elza.controller.vo.RegScopeVO;
-import cz.tacr.elza.controller.vo.RegVariantRecordVO;
-import cz.tacr.elza.controller.vo.RulDataTypeVO;
-import cz.tacr.elza.controller.vo.RulDescItemSpecVO;
-import cz.tacr.elza.controller.vo.RulOutputTypeVO;
-import cz.tacr.elza.controller.vo.RulPolicyTypeVO;
-import cz.tacr.elza.controller.vo.RulRuleSetVO;
-import cz.tacr.elza.controller.vo.RulTemplateVO;
-import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
-import cz.tacr.elza.controller.vo.UIPartyGroupVO;
-import cz.tacr.elza.controller.vo.UISettingsVO;
-import cz.tacr.elza.controller.vo.UsrGroupVO;
-import cz.tacr.elza.controller.vo.UsrPermissionVO;
-import cz.tacr.elza.controller.vo.UsrUserVO;
+import cz.tacr.elza.controller.vo.ApVariantRecordVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.DescItemSpecLiteVO;
 import cz.tacr.elza.controller.vo.nodes.ItemTypeDescItemsLiteVO;
@@ -110,92 +48,7 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemTextVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitdateVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitidVO;
 import cz.tacr.elza.core.data.CalendarType;
-import cz.tacr.elza.domain.ArrBulkActionRun;
-import cz.tacr.elza.domain.ArrCalendarType;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrDao;
-import cz.tacr.elza.domain.ArrDaoFile;
-import cz.tacr.elza.domain.ArrDaoFileGroup;
-import cz.tacr.elza.domain.ArrDataCoordinates;
-import cz.tacr.elza.domain.ArrDataDecimal;
-import cz.tacr.elza.domain.ArrDataFileRef;
-import cz.tacr.elza.domain.ArrDataInteger;
-import cz.tacr.elza.domain.ArrDataJsonTable;
-import cz.tacr.elza.domain.ArrDataNull;
-import cz.tacr.elza.domain.ArrDataPartyRef;
-import cz.tacr.elza.domain.ArrDataRecordRef;
-import cz.tacr.elza.domain.ArrDataString;
-import cz.tacr.elza.domain.ArrDataText;
-import cz.tacr.elza.domain.ArrDataUnitdate;
-import cz.tacr.elza.domain.ArrDataUnitid;
-import cz.tacr.elza.domain.ArrDigitalRepository;
-import cz.tacr.elza.domain.ArrDigitizationFrontdesk;
-import cz.tacr.elza.domain.ArrFile;
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrItemCoordinates;
-import cz.tacr.elza.domain.ArrItemDecimal;
-import cz.tacr.elza.domain.ArrItemEnum;
-import cz.tacr.elza.domain.ArrItemFileRef;
-import cz.tacr.elza.domain.ArrItemFormattedText;
-import cz.tacr.elza.domain.ArrItemInt;
-import cz.tacr.elza.domain.ArrItemJsonTable;
-import cz.tacr.elza.domain.ArrItemStructureRef;
-import cz.tacr.elza.domain.ArrItemPartyRef;
-import cz.tacr.elza.domain.ArrItemRecordRef;
-import cz.tacr.elza.domain.ArrItemString;
-import cz.tacr.elza.domain.ArrItemText;
-import cz.tacr.elza.domain.ArrItemUnitdate;
-import cz.tacr.elza.domain.ArrItemUnitid;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrNodeConformityError;
-import cz.tacr.elza.domain.ArrNodeConformityExt;
-import cz.tacr.elza.domain.ArrNodeConformityMissing;
-import cz.tacr.elza.domain.ArrNodeRegister;
-import cz.tacr.elza.domain.ArrOutput;
-import cz.tacr.elza.domain.ArrOutputDefinition;
-import cz.tacr.elza.domain.ArrOutputFile;
-import cz.tacr.elza.domain.ArrOutputResult;
-import cz.tacr.elza.domain.DmsFile;
-import cz.tacr.elza.domain.ParComplementType;
-import cz.tacr.elza.domain.ParCreator;
-import cz.tacr.elza.domain.ParDynasty;
-import cz.tacr.elza.domain.ParEvent;
-import cz.tacr.elza.domain.ParInstitution;
-import cz.tacr.elza.domain.ParInstitutionType;
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.ParPartyGroup;
-import cz.tacr.elza.domain.ParPartyGroupIdentifier;
-import cz.tacr.elza.domain.ParPartyName;
-import cz.tacr.elza.domain.ParPartyNameComplement;
-import cz.tacr.elza.domain.ParPartyNameFormType;
-import cz.tacr.elza.domain.ParPartyType;
-import cz.tacr.elza.domain.ParPerson;
-import cz.tacr.elza.domain.ParRelation;
-import cz.tacr.elza.domain.ParRelationClassType;
-import cz.tacr.elza.domain.ParRelationEntity;
-import cz.tacr.elza.domain.ParRelationRoleType;
-import cz.tacr.elza.domain.ParRelationType;
-import cz.tacr.elza.domain.ParUnitdate;
-import cz.tacr.elza.domain.RegExternalSystem;
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.domain.RegRegisterType;
-import cz.tacr.elza.domain.RegScope;
-import cz.tacr.elza.domain.RegVariantRecord;
-import cz.tacr.elza.domain.RulDataType;
-import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.RulItemSpecExt;
-import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.RulItemTypeExt;
-import cz.tacr.elza.domain.RulOutputType;
-import cz.tacr.elza.domain.RulPolicyType;
-import cz.tacr.elza.domain.RulRuleSet;
-import cz.tacr.elza.domain.RulTemplate;
-import cz.tacr.elza.domain.UIPartyGroup;
-import cz.tacr.elza.domain.UISettings;
-import cz.tacr.elza.domain.UsrGroup;
-import cz.tacr.elza.domain.UsrPermission;
-import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.convertor.CalendarConverter;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
@@ -205,7 +58,7 @@ import cz.tacr.elza.repository.FundFileRepository;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.OutputResultRepository;
 import cz.tacr.elza.repository.PartyRepository;
-import cz.tacr.elza.repository.RegRecordRepository;
+import cz.tacr.elza.repository.ApRecordRepository;
 import cz.tacr.elza.service.RuleService;
 import ma.glasnost.orika.CustomMapper;
 import ma.glasnost.orika.MapperFactory;
@@ -239,7 +92,7 @@ public class ConfigMapperConfiguration {
     @Autowired
     private PartyRepository partyRepository;
     @Autowired
-    private RegRecordRepository recordRepository;
+    private ApRecordRepository recordRepository;
     @Autowired
     private RuleService ruleService;
     @Autowired
@@ -537,8 +390,8 @@ public class ConfigMapperConfiguration {
         mapperFactory.classMap(ParInstitutionType.class, ParInstitutionTypeVO.class).byDefault()
                 .field("institutionTypeId", "id").register();
 
-        mapperFactory.classMap(RegRecord.class, RegRecord.class)
-                .exclude(RegRecord.RECORD_ID)
+        mapperFactory.classMap(ApRecord.class, ApRecord.class)
+                .exclude(ApRecord.RECORD_ID)
             .byDefault().register();
 
 
@@ -656,7 +509,7 @@ public class ConfigMapperConfiguration {
                         }
 
                         if (relationEntityVO.getRecord() != null) {
-                            RegRecord record = new RegRecord();
+                            ApRecord record = new ApRecord();
                             record.setRecordId(relationEntityVO.getRecord().getId());
                             parRelationEntity.setRecord(record);
                         }
@@ -692,80 +545,80 @@ public class ConfigMapperConfiguration {
                 }
             }).byDefault().register();
 
-        mapperFactory.classMap(RegRecord.class, RegRecordVO.class)
-                .exclude("registerType")
+        mapperFactory.classMap(ApRecord.class, ApRecordVO.class)
+                .exclude("apType")
                 .exclude("scope")
                 .exclude("variantRecordList")
                 .field("recordId", "id")
-                .customize(new CustomMapper<RegRecord, RegRecordVO>() {
+                .customize(new CustomMapper<ApRecord, ApRecordVO>() {
                     @Override
-                    public void mapAtoB(final RegRecord regRecord,
-                                        final RegRecordVO regRecordVO,
+                    public void mapAtoB(final ApRecord apRecord,
+                                        final ApRecordVO apRecordVO,
                                         final MappingContext context) {
-                        regRecordVO.setRegisterTypeId(regRecord.getRegisterType().getRegisterTypeId());
-                        regRecordVO.setAddRecord(regRecord.getRegisterType().getAddRecord());
-                        regRecordVO.setScopeId(regRecord.getScope().getScopeId());
-                        regRecordVO.setInvalid(regRecord.isInvalid());
+                        apRecordVO.setApTypeId(apRecord.getApType().getApTypeId());
+                        apRecordVO.setAddRecord(apRecord.getApType().getAddRecord());
+                        apRecordVO.setScopeId(apRecord.getScope().getScopeId());
+                        apRecordVO.setInvalid(apRecord.isInvalid());
                     }
 
                     @Override
-                    public void mapBtoA(final RegRecordVO regRecordVO,
-                                        final RegRecord regRecord,
+                    public void mapBtoA(final ApRecordVO apRecordVO,
+                                        final ApRecord apRecord,
                                         final MappingContext context) {
 
-                        if (regRecordVO.getRegisterTypeId() != null) {
-                            RegRegisterType regRegisterType = new RegRegisterType();
-                            regRegisterType.setRegisterTypeId(regRecordVO.getRegisterTypeId());
-                            regRecord.setRegisterType(regRegisterType);
+                        if (apRecordVO.getApTypeId() != null) {
+                            ApType apType = new ApType();
+                            apType.setApTypeId(apRecordVO.getApTypeId());
+                            apRecord.setApType(apType);
                         }
 
-                        if (regRecordVO.getScopeId() != null) {
-                            RegScope scope = new RegScope();
-                            scope.setScopeId(regRecordVO.getScopeId());
-                            regRecord.setScope(scope);
+                        if (apRecordVO.getScopeId() != null) {
+                            ApScope scope = new ApScope();
+                            scope.setScopeId(apRecordVO.getScopeId());
+                            apRecord.setScope(scope);
                         }
                     }
                 }).byDefault().register();
-        mapperFactory.classMap(RegRecord.class, RegRecordSimple.class).field("recordId", "id").byDefault().register();
+        mapperFactory.classMap(ApRecord.class, ApRecordSimple.class).field("recordId", "id").byDefault().register();
 
-        mapperFactory.classMap(RegExternalSystem.class, RegExternalSystemVO.class).field("externalSystemId", "id").byDefault().register();
+        mapperFactory.classMap(ApExternalSystem.class, ApExternalSystemVO.class).field("externalSystemId", "id").byDefault().register();
         mapperFactory.classMap(ArrDigitizationFrontdesk.class, ArrDigitizationFrontdeskVO.class).field("externalSystemId", "id").byDefault().register();
         mapperFactory.classMap(ArrDigitalRepository.class, ArrDigitalRepositoryVO.class).field("externalSystemId", "id").byDefault().register();
 
-        mapperFactory.classMap(RegExternalSystem.class, RegExternalSystemSimpleVO.class).field("externalSystemId", "id").byDefault().register();
+        mapperFactory.classMap(ApExternalSystem.class, ApExternalSystemSimpleVO.class).field("externalSystemId", "id").byDefault().register();
         mapperFactory.classMap(ArrDigitizationFrontdesk.class, ArrDigitizationFrontdeskSimpleVO.class).field("externalSystemId", "id").byDefault().register();
         mapperFactory.classMap(ArrDigitalRepository.class, ArrDigitalRepositorySimpleVO.class).field("externalSystemId", "id").byDefault().register();
 
 
-        mapperFactory.classMap(RegRegisterType.class, RegRegisterTypeVO.class).customize(
-                new CustomMapper<RegRegisterType, RegRegisterTypeVO>() {
+        mapperFactory.classMap(ApType.class, ApTypeVO.class).customize(
+                new CustomMapper<ApType, ApTypeVO>() {
                     @Override
-                    public void mapAtoB(final RegRegisterType regRegisterType,
-                                        final RegRegisterTypeVO regRegisterTypeVO,
+                    public void mapAtoB(final ApType apType,
+                                        final ApTypeVO apTypeVO,
                                         final MappingContext context) {
-                        RegRegisterType parentType = regRegisterType.getParentRegisterType();
+                        ApType parentType = apType.getParentApType();
                         if (parentType != null) {
-                            regRegisterTypeVO.setParentRegisterTypeId(parentType.getRegisterTypeId());
+                            apTypeVO.setParentApTypeId(parentType.getApTypeId());
                         }
 
-                        if (regRegisterType.getPartyType() != null) {
-                            regRegisterTypeVO.setPartyTypeId(regRegisterType.getPartyType().getPartyTypeId());
+                        if (apType.getPartyType() != null) {
+                            apTypeVO.setPartyTypeId(apType.getPartyType().getPartyTypeId());
                         }
                     }
 
                     @Override
-                    public void mapBtoA(final RegRegisterTypeVO registerTypeVO,
-                                        final RegRegisterType regRegisterType,
+                    public void mapBtoA(final ApTypeVO apTypeVO,
+                                        final ApType apType,
                                         final MappingContext context) {
-                        if (registerTypeVO.getPartyTypeId() != null) {
+                        if (apTypeVO.getPartyTypeId() != null) {
                             ParPartyType partyType = new ParPartyType();
-                            partyType.setPartyTypeId(registerTypeVO.getPartyTypeId());
-                            regRegisterType.setPartyType(partyType);
+                            partyType.setPartyTypeId(apTypeVO.getPartyTypeId());
+                            apType.setPartyType(partyType);
                         }
                     }
-                }).field("registerTypeId", "id").byDefault()
+                }).field("apTypeId", "id").byDefault()
                 .register();
-        mapperFactory.classMap(RegScope.class, RegScopeVO.class).field("scopeId", "id").byDefault().register();
+        mapperFactory.classMap(ApScope.class, ApScopeVO.class).field("scopeId", "id").byDefault().register();
         mapperFactory.classMap(RulDataType.class, RulDataTypeVO.class).byDefault().field("dataTypeId", "id").register();
 
 
@@ -890,26 +743,26 @@ public class ConfigMapperConfiguration {
         mapperFactory.classMap(ArrOutput.class, ArrOutputVO.class).byDefault().field("outputId", "id").register();
         mapperFactory.getConverterFactory().registerConverter(new PassThroughConverter(LocalDateTime.class));
 
-        mapperFactory.classMap(RegVariantRecord.class, RegVariantRecordVO.class)
+        mapperFactory.classMap(ApVariantRecord.class, ApVariantRecordVO.class)
                 .field("variantRecordId", "id")
                 .customize(
-                new CustomMapper<RegVariantRecord, RegVariantRecordVO>() {
+                new CustomMapper<ApVariantRecord, ApVariantRecordVO>() {
                     @Override
-                    public void mapAtoB(final RegVariantRecord regVariantRecord,
-                                        final RegVariantRecordVO regVariantRecordVO,
+                    public void mapAtoB(final ApVariantRecord apVariantRecord,
+                                        final ApVariantRecordVO apVariantRecordVO,
                                         final MappingContext context) {
-                        RegRecord regRecord = regVariantRecord.getRegRecord();
-                        regVariantRecordVO.setRegRecordId(regRecord.getRecordId());
+                        ApRecord apRecord = apVariantRecord.getApRecord();
+                        apVariantRecordVO.setApRecordId(apRecord.getRecordId());
                     }
 
                     @Override
-                    public void mapBtoA(final RegVariantRecordVO regVariantRecordVO,
-                                        final RegVariantRecord regVariantRecord,
+                    public void mapBtoA(final ApVariantRecordVO apVariantRecordVO,
+                                        final ApVariantRecord apVariantRecord,
                                         final MappingContext context) {
-                        if (regVariantRecordVO.getRegRecordId() != null) {
-                            RegRecord regRecord = new RegRecord();
-                            regRecord.setRecordId(regVariantRecordVO.getRegRecordId());
-                            regVariantRecord.setRegRecord(regRecord);
+                        if (apVariantRecordVO.getApRecordId() != null) {
+                            ApRecord apRecord = new ApRecord();
+                            apRecord.setRecordId(apVariantRecordVO.getApRecordId());
+                            apVariantRecord.setApRecord(apRecord);
                         }
                     }
                 }).byDefault().register();

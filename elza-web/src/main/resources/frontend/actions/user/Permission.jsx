@@ -3,10 +3,10 @@ export const FUND_RD = 'FUND_RD';
 export const FUND_RD_ALL = 'FUND_RD_ALL';
 export const FUND_ARR = 'FUND_ARR';
 export const FUND_ARR_ALL = 'FUND_ARR_ALL';
-export const REG_SCOPE_RD = 'REG_SCOPE_RD';
-export const REG_SCOPE_RD_ALL = 'REG_SCOPE_RD_ALL';
-export const REG_SCOPE_WR = 'REG_SCOPE_WR';
-export const REG_SCOPE_WR_ALL = 'REG_SCOPE_WR_ALL';
+export const AP_SCOPE_RD = 'AP_SCOPE_RD';
+export const AP_SCOPE_RD_ALL = 'AP_SCOPE_RD_ALL';
+export const AP_SCOPE_WR = 'AP_SCOPE_WR';
+export const AP_SCOPE_WR_ALL = 'AP_SCOPE_WR_ALL';
 export const FUND_OUTPUT_WR = 'FUND_OUTPUT_WR';
 export const FUND_OUTPUT_WR_ALL = 'FUND_OUTPUT_WR_ALL';
 export const FUND_VER_WR = 'FUND_VER_WR';
@@ -29,10 +29,10 @@ export const all = {
     FUND_RD_ALL: {  },
     FUND_ARR: { fund: true },
     FUND_ARR_ALL: {  },
-    REG_SCOPE_RD: { scope: true },
-    REG_SCOPE_RD_ALL: {  },
-    REG_SCOPE_WR: { scope: true },
-    REG_SCOPE_WR_ALL: {  },
+    AP_SCOPE_RD: { scope: true },
+    AP_SCOPE_RD_ALL: {  },
+    AP_SCOPE_WR: { scope: true },
+    AP_SCOPE_WR_ALL: {  },
     FUND_OUTPUT_WR: { fund: true },
     FUND_OUTPUT_WR_ALL: {  },
     FUND_VER_WR: { fund: true },

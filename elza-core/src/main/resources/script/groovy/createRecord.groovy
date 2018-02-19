@@ -21,7 +21,7 @@ return createRecord(party);
  * @param party data osoby
  * @return vytvořené rejstříkové heslo
  */
-RegRecord createRecord(ParParty party) {
+ApRecord createRecord(ParParty party) {
     Assert.notNull(party);
     checkParty(party);
 
@@ -37,15 +37,15 @@ RegRecord createRecord(ParParty party) {
     }
 
 
-    RegRecord record = new RegRecord();
-    record.setRegisterType(party.getRecord().getRegisterType());
+    ApRecord record = new ApRecord();
+    record.setApType(party.getRecord().getApType());
     record.setScope(party.getRecord().getScope());
     record.setRecord(generatePartyNameString(preferedName, party.getPartyType()));
     record.setCharacteristics(generateCharacteristics(party));
 
-    List<RegVariantRecord> variantRecords = new ArrayList<>(otherNames.size());
+    List<ApVariantRecord> variantRecords = new ArrayList<>(otherNames.size());
     otherNames.each {
-        RegVariantRecord variantRecord = createVariantRecord(it, party.getPartyType())
+        ApVariantRecord variantRecord = createVariantRecord(it, party.getPartyType())
         variantRecords.add(variantRecord);
     };
     record.setVariantRecordList(variantRecords);
@@ -127,8 +127,8 @@ List<ParPartyNameComplement> sortNameComplements(@Nullable final List<ParPartyNa
  * @param partyType typ osoby
  * @return variantní rejstříkové heslo
  */
-RegVariantRecord createVariantRecord(final ParPartyName partyName, final ParPartyType partyType) {
-    RegVariantRecord variantRecord = new RegVariantRecord();
+ApVariantRecord createVariantRecord(final ParPartyName partyName, final ParPartyType partyType) {
+    ApVariantRecord variantRecord = new ApVariantRecord();
     variantRecord.setRecord(generatePartyNameString(partyName, partyType));
     return variantRecord;
 }

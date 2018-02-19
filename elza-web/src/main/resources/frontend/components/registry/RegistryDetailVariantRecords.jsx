@@ -36,7 +36,7 @@ class RegistryDetailVariantRecords extends AbstractReactComponent {
 
     static PropTypes = {
         value: React.PropTypes.array.isRequired,
-        regRecordId: React.PropTypes.number.isRequired
+        apRecordId: React.PropTypes.number.isRequired
     };
 
     componentDidMount() {
@@ -76,8 +76,8 @@ class RegistryDetailVariantRecords extends AbstractReactComponent {
         if (!element.target.value) {
             return false;
         }
-        const {regRecordId} = this.props;
-        const data = {record: element.target.value, regRecordId};
+        const {apRecordId} = this.props;
+        const data = {record: element.target.value, apRecordId: apRecordId};
         this.dispatch(registryVariantCreate(data, item.variantRecordInternalId));
     };
 
@@ -85,11 +85,11 @@ class RegistryDetailVariantRecords extends AbstractReactComponent {
         if (!element.target.value) {
             return false;
         }
-        const {regRecordId} = this.props;
+        const {apRecordId} = this.props;
 
         this.dispatch(registryVariantUpdate({
             id: item.id,
-            regRecordId,
+            apRecordId: apRecordId,
             record: element.target.value,
             version: item.version
         }));

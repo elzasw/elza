@@ -1,29 +1,29 @@
 package cz.tacr.elza.dataexchange.input.aps.context;
 
+import cz.tacr.elza.domain.ApType;
 import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.dataexchange.input.context.EntityIdHolder;
 import cz.tacr.elza.dataexchange.input.context.PersistMethod;
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.domain.RegRegisterType;
+import cz.tacr.elza.domain.ApRecord;
 
 /**
  * Access point import info which primarily stores id and result of record pairing.
  */
-public class AccessPointInfo extends EntityIdHolder<RegRecord> {
+public class AccessPointInfo extends EntityIdHolder<ApRecord> {
 
     private final String entryId;
 
-    private final RegRegisterType registerType;
+    private final ApType apType;
 
     private PersistMethod persistMethod;
 
     private String name;
 
-    AccessPointInfo(String entryId, RegRegisterType registerType) {
-        super(RegRecord.class);
+    AccessPointInfo(String entryId, ApType apType) {
+        super(ApRecord.class);
         this.entryId = Validate.notNull(entryId);
-        this.registerType = Validate.notNull(registerType);
+        this.apType = Validate.notNull(apType);
     }
 
     @Override
@@ -35,8 +35,8 @@ public class AccessPointInfo extends EntityIdHolder<RegRecord> {
         return entryId;
     }
 
-    public RegRegisterType getRegisterType() {
-        return registerType;
+    public ApType getApType() {
+        return apType;
     }
 
     public String getName() {

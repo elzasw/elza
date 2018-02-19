@@ -7,7 +7,7 @@ import cz.tacr.elza.dataexchange.input.context.PersistMethod;
 import cz.tacr.elza.dataexchange.input.parties.context.PartyInfo;
 import cz.tacr.elza.dataexchange.input.storage.EntityMetrics;
 import cz.tacr.elza.dataexchange.input.storage.EntityWrapper;
-import cz.tacr.elza.domain.RegRecord;
+import cz.tacr.elza.domain.ApRecord;
 
 public class PartyAccessPointWrapper implements EntityWrapper, EntityMetrics {
 
@@ -17,7 +17,7 @@ public class PartyAccessPointWrapper implements EntityWrapper, EntityMetrics {
 
     private final String characteristics;
 
-    private RegRecord entity;
+    private ApRecord entity;
 
     PartyAccessPointWrapper(PartyInfo partyInfo, String name, String characteristics) {
         this.partyInfo = Validate.notNull(partyInfo);
@@ -31,7 +31,7 @@ public class PartyAccessPointWrapper implements EntityWrapper, EntityMetrics {
     }
 
     @Override
-    public RegRecord getEntity() {
+    public ApRecord getEntity() {
         return entity;
     }
 

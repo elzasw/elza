@@ -11,7 +11,7 @@ import javax.persistence.Table;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
-import cz.tacr.elza.api.RegExternalSystemType;
+import cz.tacr.elza.api.ApExternalSystemType;
 
 /**
  * Externí systémy pro rejstříky/osoby.
@@ -19,26 +19,26 @@ import cz.tacr.elza.api.RegExternalSystemType;
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 23. 11. 2016
  */
-@Entity(name = "reg_external_system")
+@Entity(name = "ap_external_system")
 @Cache(region = "domain", usage = CacheConcurrencyStrategy.READ_WRITE)
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @Table
-public class RegExternalSystem extends SysExternalSystem {
+public class ApExternalSystem extends SysExternalSystem {
 
     @Enumerated(EnumType.STRING)
     @Column
-    private RegExternalSystemType type;
+    private ApExternalSystemType type;
 
-    public RegExternalSystemType getType() {
+    public ApExternalSystemType getType() {
         return type;
     }
 
-    public void setType(final RegExternalSystemType type) {
+    public void setType(final ApExternalSystemType type) {
         this.type = type;
     }
 
     @Override
     public String toString() {
-        return "RegExternalSystem pk=" + getExternalSystemId();
+        return "ApExternalSystem pk=" + getExternalSystemId();
     }
 }

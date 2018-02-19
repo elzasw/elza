@@ -261,14 +261,14 @@ class PartyDetail extends AbstractReactComponent {
         this.dispatch(partyAdd(partyTypeId, -1, this.partyAdded.bind(this, field), false));
     };
 
-    registerTypesToMap = (registerTypes, map, parent) => {
-        if (registerTypes != null) {
-            registerTypes.forEach((item) => {
+    apTypesToMap = (apTypes, map, parent) => {
+        if (apTypes != null) {
+            apTypes.forEach((item) => {
                 map[item.id] = [...parent];
                 if (item.relationRoleTypIds != null) {
                     map[item.id] = [...map[item.id], ...item.relationRoleTypIds];
                 }
-                this.registerTypesToMap(item.children, map, map[item.id]);
+                this.apTypesToMap(item.children, map, map[item.id]);
             });
         }
     };
@@ -307,7 +307,7 @@ class PartyDetail extends AbstractReactComponent {
             var type = partyDetail.data.partyType.code;
             var icon = PartyListItem.partyIconByPartyTypeCode(type);
 
-            let canEdit = userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_WR, scopeId: party.record.scopeId});
+            let canEdit = userDetail.hasOne(perms.AP_SCOPE_WR_ALL, {type: perms.AP_SCOPE_WR, scopeId: party.record.scopeId});
 
             if (partyDetail.data.record.invalid) {
                 canEdit = false;
@@ -408,8 +408,8 @@ class PartyDetail extends AbstractReactComponent {
                                                 )
                                             ) {
                                                 let element = null;
-                                                let registerTypesMap = {};
-                                                this.registerTypesToMap(recordTypes.items, registerTypesMap, []);
+                                                let apTypesMap = {};
+                                                this.apTypesToMap(recordTypes.items, apTypesMap, []);
 
                                                 if (DEFINITION_TYPE === UI_PARTY_GROUP_DEFINITION_TYPE.TEXT) {
                                                     element = <FormInput {...inputProps} type="text" disabled={!canEdit} />
@@ -419,13 +419,13 @@ class PartyDetail extends AbstractReactComponent {
                                                 } else if (DEFINITION_TYPE === UI_PARTY_GROUP_DEFINITION_TYPE.RELATION) {
                                                     const type = objectById(partyType.relationTypes, item.definition, 'code');
                                                     if (type) {
-                                                        element = <PartyDetailRelations party={party} relationType={type} registerTypesMap={registerTypesMap} label={item.name} canEdit={canEdit} />
+                                                        element = <PartyDetailRelations party={party} relationType={type} apTypesMap={apTypesMap} label={item.name} canEdit={canEdit} />
                                                     } else {
                                                         element = i18n('party.detail.ui.unknownRelation')
                                                     }
                                                 } else if (DEFINITION_TYPE === UI_PARTY_GROUP_DEFINITION_TYPE.RELATION_CLASS) {
                                                     if (relationClassTypes[item.definition]) {
-                                                        element = <PartyDetailRelationClass party={party} partyType={partyType} registerTypesMap={registerTypesMap} relationClassType={relationClassTypes[item.definition]} label={item.name} canEdit={canEdit} />
+                                                        element = <PartyDetailRelationClass party={party} partyType={partyType} apTypesMap={apTypesMap} relationClassType={relationClassTypes[item.definition]} label={item.name} canEdit={canEdit} />
                                                     } else {
                                                         element = i18n('party.detail.ui.unknownRelation')
                                                     }

@@ -12,11 +12,11 @@ import cz.tacr.elza.dataexchange.input.context.ImportPhase;
 import cz.tacr.elza.dataexchange.input.context.ImportPhaseChangeListener;
 import cz.tacr.elza.dataexchange.input.context.ObservableImport;
 import cz.tacr.elza.dataexchange.input.storage.StorageManager;
-import cz.tacr.elza.domain.RegExternalSystem;
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.domain.RegScope;
-import cz.tacr.elza.domain.RegVariantRecord;
-import cz.tacr.elza.repository.RegExternalSystemRepository;
+import cz.tacr.elza.domain.ApExternalSystem;
+import cz.tacr.elza.domain.ApRecord;
+import cz.tacr.elza.domain.ApScope;
+import cz.tacr.elza.domain.ApVariantRecord;
+import cz.tacr.elza.repository.ApExternalSystemRepository;
 
 /**
  * Context for data exchange access points.
@@ -29,15 +29,15 @@ public class AccessPointsContext {
 
     private final int batchSize;
 
-    private final RegScope importScope;
+    private final ApScope importScope;
 
-    private final Map<String, RegExternalSystem> externalSystemCodeMap;
+    private final Map<String, ApExternalSystem> externalSystemCodeMap;
 
     private final List<AccessPointWrapper> accessPointQueue = new ArrayList<>();
 
     private final List<APVariantNameWrapper> variantNameQueue = new ArrayList<>();
 
-    public AccessPointsContext(StorageManager storageManager, int batchSize, RegScope importScope, ImportInitHelper initHelper) {
+    public AccessPointsContext(StorageManager storageManager, int batchSize, ApScope importScope, ImportInitHelper initHelper) {
         this.storageManager = storageManager;
         this.batchSize = batchSize;
         this.importScope = importScope;
@@ -48,11 +48,11 @@ public class AccessPointsContext {
         observableImport.registerPhaseChangeListener(new AccessPointsPhaseEndListener());
     }
 
-    public RegScope getImportScope() {
+    public ApScope getImportScope() {
         return importScope;
     }
 
-    public RegExternalSystem getExternalSystemByCode(String code) {
+    public ApExternalSystem getExternalSystemByCode(String code) {
         return externalSystemCodeMap.get(code);
     }
 
@@ -68,9 +68,9 @@ public class AccessPointsContext {
      * @param parentAPInfo Parent information
      * @return Return access point import info
      */
-    public AccessPointInfo addAccessPoint(RegRecord ap, String entryId, AccessPointInfo parentAPInfo) {
+    public AccessPointInfo addAccessPoint(ApRecord ap, String entryId, AccessPointInfo parentAPInfo) {
         // append access point info
-        AccessPointInfo info = new AccessPointInfo(entryId, ap.getRegisterType());
+        AccessPointInfo info = new AccessPointInfo(entryId, ap.getApType());
         if (apEntryIdMap.putIfAbsent(entryId, info) != null) {
             throw new DEImportException("Access point has duplicate id, apeId:" + entryId);
         }
@@ -81,7 +81,7 @@ public class AccessPointsContext {
         return info;
     }
 
-    public void addVariantName(RegVariantRecord variantName, AccessPointInfo apInfo) {
+    public void addVariantName(ApVariantRecord variantName, AccessPointInfo apInfo) {
         variantNameQueue.add(new APVariantNameWrapper(variantName, apInfo));
         if (variantNameQueue.size() >= batchSize) {
             storeVariantNames();
@@ -113,9 +113,9 @@ public class AccessPointsContext {
         variantNameQueue.clear();
     }
 
-    private static Map<String, RegExternalSystem> loadExternalSystemCodeMap(RegExternalSystemRepository externalSystemRepository) {
-        List<RegExternalSystem> externalSystems = externalSystemRepository.findAll();
-        Map<String, RegExternalSystem> externalSystemCodeMap = new HashMap<>(externalSystems.size());
+    private static Map<String, ApExternalSystem> loadExternalSystemCodeMap(ApExternalSystemRepository externalSystemRepository) {
+        List<ApExternalSystem> externalSystems = externalSystemRepository.findAll();
+        Map<String, ApExternalSystem> externalSystemCodeMap = new HashMap<>(externalSystems.size());
         externalSystems.forEach(es -> externalSystemCodeMap.put(es.getCode(), es));
         return externalSystemCodeMap;
     }

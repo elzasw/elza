@@ -32,7 +32,7 @@ class RegistryDetailCoordinates extends AbstractReactComponent {
 
     static PropTypes = {
         value: React.PropTypes.array.isRequired,
-        regRecordId: React.PropTypes.number.isRequired
+        apRecordId: React.PropTypes.number.isRequired
     };
 
     handleUploadButtonClick = () => {
@@ -45,9 +45,9 @@ class RegistryDetailCoordinates extends AbstractReactComponent {
         if (fileList.length != 1) {
             return;
         }
-        const {regRecordId} = this.props;
+        const {apRecordId: apRecordId} = this.props;
 
-        this.dispatch(registryCoordinatesUpload(fileList[0], regRecordId));
+        this.dispatch(registryCoordinatesUpload(fileList[0], apRecordId));
 
         ReactDOM.findDOMNode(this.refs.uploadInput.refs.input).value = null;
     };

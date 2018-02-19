@@ -30,7 +30,7 @@ class RegistryField extends AbstractReactComponent {
         itemSpecId: null,
         undefined: false,
         registryParent: null,
-        registerTypeId: null,
+        apTypeId: null,
         roleTypeId: null,
         partyId: null,
         versionId: null,
@@ -46,7 +46,7 @@ class RegistryField extends AbstractReactComponent {
         onDetail: React.PropTypes.func,
         onCreate: React.PropTypes.func.isRequired,
         registryParent: React.PropTypes.number,
-        registerTypeId: React.PropTypes.number,
+        apTypeId: React.PropTypes.number,
         itemSpecId: React.PropTypes.number,
         roleTypeId: React.PropTypes.number,
         partyId: React.PropTypes.number,
@@ -63,12 +63,12 @@ class RegistryField extends AbstractReactComponent {
     handleSearchChange = debounce((text) => {
         text = text == "" ? null : text;
         this.setState({searchText: text});
-        const {roleTypeId, partyId, registryParent, registerTypeId, versionId, itemSpecId} = this.props;
+        const {roleTypeId, partyId, registryParent, apTypeId, versionId, itemSpecId} = this.props;
         let promise = null;
         if (roleTypeId || partyId) {
             promise = WebApi.findRecordForRelation(text, roleTypeId, partyId, 0, AUTOCOMPLETE_REGISTRY_LIST_SIZE);
         } else {
-            promise = WebApi.findRegistry(text, registryParent, registerTypeId, versionId, itemSpecId, 0, AUTOCOMPLETE_REGISTRY_LIST_SIZE);
+            promise = WebApi.findRegistry(text, registryParent, apTypeId, versionId, itemSpecId, 0, AUTOCOMPLETE_REGISTRY_LIST_SIZE);
         }
         promise.then(json => {
             this.setState({
@@ -127,7 +127,7 @@ class RegistryField extends AbstractReactComponent {
         const {footerButtons, userDetail} = this.props;
         const {count, registryList} = this.state;
 
-        const buttons = footerButtons && userDetail.hasOne(perms.REG_SCOPE_WR_ALL, perms.REG_SCOPE_WR);
+        const buttons = footerButtons && userDetail.hasOne(perms.AP_SCOPE_WR_ALL, perms.AP_SCOPE_WR);
         const hasCount = count !== null && (count > AUTOCOMPLETE_REGISTRY_LIST_SIZE || count === 0);
 
         return hasCount || buttons ? <div>
@@ -158,7 +158,7 @@ class RegistryField extends AbstractReactComponent {
         // změna typu aby se objekt dal použít jako návazný
         const newobj = {
             ...obj,
-            '@class': 'cz.tacr.elza.controller.vo.RegRecordVO',
+            '@class': 'cz.tacr.elza.controller.vo.ApRecordVO',
         };
         call(newobj, id);
     };

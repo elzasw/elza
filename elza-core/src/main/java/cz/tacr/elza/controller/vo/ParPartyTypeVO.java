@@ -35,7 +35,7 @@ public class ParPartyTypeVO {
 
     private List<ParRelationTypeVO> relationTypes;
     private List<ParComplementTypeVO> complementTypes;
-    private List<RegRegisterTypeVO> registerTypes;
+    private List<ApTypeVO> apTypes;
     private List<UIPartyGroupVO> partyGroups;
 
     public Integer getId() {
@@ -86,12 +86,12 @@ public class ParPartyTypeVO {
         this.complementTypes = complementTypes;
     }
 
-    public List<RegRegisterTypeVO> getRegisterTypes() {
-        return registerTypes;
+    public List<ApTypeVO> getApTypes() {
+        return apTypes;
     }
 
-    public void setRegisterTypes(final List<RegRegisterTypeVO> registerTypes) {
-        this.registerTypes = registerTypes;
+    public void setApTypes(final List<ApTypeVO> apTypes) {
+        this.apTypes = apTypes;
     }
 
     public void addRelationType(final ParRelationTypeVO relationTypeVO) {
@@ -108,11 +108,11 @@ public class ParPartyTypeVO {
         complementTypes.add(complementTypeVO);
     }
 
-    public void addRegisterType(final RegRegisterTypeVO registerTypeVO){
-        if(registerTypes == null){
-            registerTypes = new LinkedList<>();
+    public void addApType(final ApTypeVO apTypeVO){
+        if(apTypes == null){
+            apTypes = new LinkedList<>();
         }
-        registerTypes.add(registerTypeVO);
+        apTypes.add(apTypeVO);
     }
 
     public List<UIPartyGroupVO> getPartyGroups() {

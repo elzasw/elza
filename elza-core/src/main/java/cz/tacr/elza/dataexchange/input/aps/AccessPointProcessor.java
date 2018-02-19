@@ -1,19 +1,14 @@
 package cz.tacr.elza.dataexchange.input.aps;
 
+import cz.tacr.elza.domain.ApRecord;
+import cz.tacr.elza.domain.ApVariantRecord;
 import org.apache.commons.lang3.StringUtils;
 
-import com.vividsolutions.jts.io.ParseException;
-
-import cz.tacr.elza.dataexchange.common.GeometryConvertor;
 import cz.tacr.elza.dataexchange.input.DEImportException;
 import cz.tacr.elza.dataexchange.input.aps.context.AccessPointInfo;
 import cz.tacr.elza.dataexchange.input.context.ImportContext;
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.domain.RegVariantRecord;
 import cz.tacr.elza.schema.v2.AccessPoint;
 import cz.tacr.elza.schema.v2.AccessPointEntry;
-import cz.tacr.elza.schema.v2.AccessPointGeoLocation;
-import cz.tacr.elza.schema.v2.AccessPointGeoLocations;
 import cz.tacr.elza.schema.v2.AccessPointVariantNames;
 
 /**
@@ -42,15 +37,15 @@ public class AccessPointProcessor extends AccessPointEntryProcessor {
     }
 
     @Override
-    protected RegRecord createAP(AccessPointEntry item) {
-        RegRecord record = super.createAP(item);
+    protected ApRecord createAP(AccessPointEntry item) {
+        ApRecord record = super.createAP(item);
         record.setRecord(accessPoint.getN());
         record.setCharacteristics(accessPoint.getChr());
         return record;
     }
 
     @Override
-    protected AccessPointInfo addAccessPoint(RegRecord ap, String entryId) {
+    protected AccessPointInfo addAccessPoint(ApRecord ap, String entryId) {
         AccessPointInfo info = super.addAccessPoint(ap, entryId);
         info.setName(accessPoint.getN());
         return info;
@@ -68,7 +63,7 @@ public class AccessPointProcessor extends AccessPointEntryProcessor {
             return;
         }
         for (String vn : variantNames.getVnm()) {
-            RegVariantRecord variantRecord = new RegVariantRecord();
+            ApVariantRecord variantRecord = new ApVariantRecord();
             variantRecord.setRecord(vn);
             context.addVariantName(variantRecord, apInfo);
         }

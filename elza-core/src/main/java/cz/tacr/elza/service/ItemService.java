@@ -1,25 +1,9 @@
 package cz.tacr.elza.service;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.persistence.EntityManager;
-import javax.transaction.Transactional;
-import javax.transaction.Transactional.TxType;
-import javax.validation.constraints.NotNull;
-
-import org.apache.commons.lang3.Validate;
-import org.hibernate.validator.constraints.NotEmpty;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.core.data.RuleSystemItemType;
+import cz.tacr.elza.domain.ApRecord;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataFileRef;
@@ -31,7 +15,6 @@ import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.table.ElzaColumn;
 import cz.tacr.elza.domain.table.ElzaRow;
@@ -42,14 +25,29 @@ import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.RegistryCode;
+import cz.tacr.elza.repository.ApRecordRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.FundFileRepository;
 import cz.tacr.elza.repository.ItemRepository;
 import cz.tacr.elza.repository.ItemSpecRegisterRepository;
 import cz.tacr.elza.repository.PartyRepository;
-import cz.tacr.elza.repository.RegRecordRepository;
-import cz.tacr.elza.repository.RegisterTypeRepository;
+import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
+import org.apache.commons.lang3.Validate;
+import org.hibernate.validator.constraints.NotEmpty;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import javax.persistence.EntityManager;
+import javax.transaction.Transactional;
+import javax.transaction.Transactional.TxType;
+import javax.validation.constraints.NotNull;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Serviska pro správu hodnot atributů.
@@ -73,13 +71,13 @@ public class ItemService {
     private FundFileRepository fundFileRepository;
 
     @Autowired
-    private RegRecordRepository recordRepository;
+    private ApRecordRepository recordRepository;
 
     @Autowired
     private ItemSpecRegisterRepository itemSpecRegisterRepository;
 
     @Autowired
-    private RegisterTypeRepository registerTypeRepository;
+    private ApTypeRepository registerTypeRepository;
 
     @Autowired
     private EntityManager em;
@@ -204,7 +202,7 @@ public class ItemService {
                     Set<Integer> registerTypeIds = itemSpecRegisterRepository.findIdsByItemSpecId(descItemSpec);
                     Set<Integer> registerTypeIdTree = registerTypeRepository.findSubtreeIds(registerTypeIds);
 
-                    if (!registerTypeIdTree.contains(dataRecordRef.getRecord().getRegisterTypeId())) {
+                    if (!registerTypeIdTree.contains(dataRecordRef.getRecord().getApTypeId())) {
                         throw new BusinessException("Hodnota neodpovídá typu rejstříku podle specifikace",
                                 RegistryCode.FOREIGN_ENTITY_INVALID_SUBTYPE).level(Level.WARNING);
                     }
@@ -246,7 +244,7 @@ public class ItemService {
                     ArrFile file = ((ArrDataFileRef) data).getFile();
                     fileMap.put(file.getFileId(), (ArrDataFileRef) data);
                 } else if (data instanceof ArrDataRecordRef) {
-                    RegRecord record = ((ArrDataRecordRef) data).getRecord();
+                    ApRecord record = ((ArrDataRecordRef) data).getRecord();
                     recordMap.put(record.getRecordId(), (ArrDataRecordRef) data);
                 }
             }
@@ -274,8 +272,8 @@ public class ItemService {
         }
 
         Set<Integer> recordIds = recordMap.keySet();
-        List<RegRecord> recordEntities = recordRepository.findAll(recordIds);
-        for (RegRecord recordEntity : recordEntities) {
+        List<ApRecord> recordEntities = recordRepository.findAll(recordIds);
+        for (ApRecord recordEntity : recordEntities) {
             recordMap.get(recordEntity.getRecordId()).setRecord(recordEntity);
         }
     }

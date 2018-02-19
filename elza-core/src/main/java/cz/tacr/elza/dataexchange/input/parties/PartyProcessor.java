@@ -102,7 +102,7 @@ public class PartyProcessor<P extends Party, E extends ParParty> implements Item
         if (StringUtils.isEmpty(item.getId())) {
             throw new DEImportException("Party id is empty");
         }
-        ParPartyType recordPartyType = apInfo.getRegisterType().getPartyType();
+        ParPartyType recordPartyType = apInfo.getApType().getPartyType();
         if (partyType.getEntity() != recordPartyType) {
             throw new DEImportException("Party type does not match with registry type, partyId:" + item.getId());
         }
@@ -118,7 +118,7 @@ public class PartyProcessor<P extends Party, E extends ParParty> implements Item
         party.setCharacteristics(item.getChr());
         party.setHistory(item.getHst());
         party.setOriginator(true);
-        party.setPartyType(apInfo.getRegisterType().getPartyType());
+        party.setPartyType(apInfo.getApType().getPartyType());
         party.setSourceInformation(item.getSrc());
         return party;
     }
