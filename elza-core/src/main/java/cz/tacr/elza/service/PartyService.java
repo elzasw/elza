@@ -27,6 +27,10 @@ import org.springframework.util.Assert;
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
+import cz.tacr.elza.domain.ApRecord;
+import cz.tacr.elza.domain.ApScope;
+import cz.tacr.elza.domain.ApType;
+import cz.tacr.elza.domain.ApVariantRecord;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDataPartyRef;
@@ -52,10 +56,6 @@ import cz.tacr.elza.domain.ParRelationEntity;
 import cz.tacr.elza.domain.ParRelationRoleType;
 import cz.tacr.elza.domain.ParRelationType;
 import cz.tacr.elza.domain.ParUnitdate;
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.domain.RegRegisterType;
-import cz.tacr.elza.domain.RegScope;
-import cz.tacr.elza.domain.RegVariantRecord;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrPermission.Permission;
@@ -65,6 +65,9 @@ import cz.tacr.elza.exception.Level;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.RegistryCode;
+import cz.tacr.elza.repository.ApRecordRepository;
+import cz.tacr.elza.repository.ApTypeRepository;
+import cz.tacr.elza.repository.ApVariantRecordRepository;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.ComplementTypeRepository;
 import cz.tacr.elza.repository.DataPartyRefRepository;
@@ -83,9 +86,6 @@ import cz.tacr.elza.repository.PartyNameRepository;
 import cz.tacr.elza.repository.PartyRelationRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.PartyTypeRepository;
-import cz.tacr.elza.repository.RegRecordRepository;
-import cz.tacr.elza.repository.RegVariantRecordRepository;
-import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.RelationEntityRepository;
 import cz.tacr.elza.repository.RelationRepository;
 import cz.tacr.elza.repository.RelationRoleTypeRepository;
@@ -1148,7 +1148,7 @@ public class PartyService {
      * @param replacedRecord
      * @param newRecord
      */
-    private void replaceRecordInRelations(RegRecord replacedRecord, RegRecord newRecord) {
+    private void replaceRecordInRelations(ApRecord replacedRecord, ApRecord newRecord) {
         UserDetail userDetail = userService.getLoggedUserDetail();
 
         final List<ParRelationEntity> byRecord = relationEntityRepository.findByRecord(replacedRecord);
@@ -1160,8 +1160,8 @@ public class PartyService {
             Integer scopeId = party.getRegScopeId();
             // check permissions for scope
             if (!accessibleScopes.contains(scopeId)) {
-                if (!userDetail.hasPermission(Permission.REG_SCOPE_WR_ALL)
-                        && !userDetail.hasPermission(Permission.REG_SCOPE_WR, scopeId)) {
+                if (!userDetail.hasPermission(Permission.AP_SCOPE_WR_ALL)
+                        && !userDetail.hasPermission(Permission.AP_SCOPE_WR, scopeId)) {
                     throw new SystemException("Uživatel nemá oprávnění na scope.", BaseCode.INSUFFICIENT_PERMISSIONS)
                             .set("scopeId", scopeId);
                 }

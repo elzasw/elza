@@ -23,6 +23,7 @@ import org.springframework.util.Assert;
 import com.vividsolutions.jts.geom.Geometry;
 
 import cz.tacr.elza.bulkaction.BulkActionConfig;
+import cz.tacr.elza.common.GeometryConvertor;
 import cz.tacr.elza.controller.vo.ApVariantRecordVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.DescItemSpecLiteVO;
