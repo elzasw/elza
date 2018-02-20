@@ -1,5 +1,20 @@
 package cz.tacr.elza.packageimport;
 
+import static cz.tacr.elza.packageimport.PackageService.ITEM_TYPE_XML;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Component;
+
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RulDataType;
@@ -431,7 +446,9 @@ public class ItemTypeUpdater {
         if (findItems.size() > 0) {
             item = findItems.get(0);
         } else {
-            throw new BusinessException("Typ s kódem " + itemSpec.getItemType() + " nenalezen", PackageCode.CODE_NOT_FOUND).set("code", itemSpec.getItemType() ).set("file", ITEM_TYPE_XML);
+            throw new BusinessException("Typ s kódem " + itemSpec.getItemType() + " nenalezen",
+                    PackageCode.CODE_NOT_FOUND)
+                            .set("code", itemSpec.getItemType()).set("file", ITEM_TYPE_XML);
         }
 
         if (CollectionUtils.isNotEmpty(itemSpec.getCategories())) {

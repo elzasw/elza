@@ -68,7 +68,7 @@ public class StructureItemTypesRules extends Rules {
             Path path = resourcePathResolver.getDroolsFile(rulStructureDefinition);
 
             StatelessKieSession session = createNewStatelessKieSession(path);
-            execute(session, facts);
+            session.execute(facts);
         }
 
         List<RulStructureExtensionDefinition> rulStructureExtensionDefinitions = structureExtensionDefinitionRepository
@@ -113,7 +113,7 @@ public class StructureItemTypesRules extends Rules {
             Path path = resourcePathResolver.getDroolsFile(rulStructureExtensionDefinition);
 
             StatelessKieSession session = createNewStatelessKieSession(path);
-            execute(session, facts);
+            session.execute(facts);
         }
 
         return rulDescItemTypeExtList;

@@ -52,12 +52,12 @@ import cz.tacr.elza.domain.ArrNodeConformityMissing;
 import cz.tacr.elza.domain.ArrNodeExtension;
 import cz.tacr.elza.domain.ArrOutputDefinition;
 import cz.tacr.elza.domain.RulArrangementExtension;
+import cz.tacr.elza.domain.RulComponent;
 import cz.tacr.elza.domain.RulExtensionRule;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulItemTypeAction;
 import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulOutputType;
-import cz.tacr.elza.domain.RulRule;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.RulStructuredType;
 import cz.tacr.elza.domain.RulTemplate;
@@ -623,8 +623,8 @@ public class RuleService {
         }
 
         // check if rule exists
-        RulRule rule = outputType.getRule();
-        if (rule != null) {
+        RulComponent component = outputType.getComponent();
+        if (component != null) {
             return rulesExecutor.executeOutputItemTypesRules(outputDefinition, rulDescItemTypeExtList);
         } else {
             // return item types without change if rules do not exists

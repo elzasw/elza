@@ -94,7 +94,7 @@ public class ValidationRules extends Rules {
 		for (RulExtensionRule rulExtensionRule : rulExtensionRules) {
             Path path = resourcePathResolver.getDroolFile(rulExtensionRule);
 			StatelessKieSession session = createNewStatelessKieSession(path);
-			execute(session, facts);
+            session.execute(facts);
 		}
 
 		List<DataValidationResult> results = validationResults.getResults();

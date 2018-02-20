@@ -74,7 +74,7 @@ public class DescItemTypesRules extends Rules {
         for (RulExtensionRule rulExtensionRule : rulExtensionRules) {
             Path path = resourcePathResolver.getDroolFile(rulExtensionRule);
             StatelessKieSession session = createNewStatelessKieSession(path);
-            execute(session, facts);
+            session.execute(facts);
         }
 
         return rulDescItemTypeExtList;

@@ -17,6 +17,7 @@ import org.kie.internal.builder.KnowledgeBuilderFactory;
 import org.kie.internal.io.ResourceFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.repository.ArrangementRuleRepository;
 
 

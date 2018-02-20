@@ -38,16 +38,13 @@ public class OutputItemTypesRules extends Rules {
         
         RulOutputType outputType = outputDefinition.getOutputType();
 
-        RulOutputType outputType = outputDefinition.getOutputType();
-
         LinkedList<Object> facts = new LinkedList<>();
         facts.addAll(rulDescItemTypeExtList);
         facts.add(outputDefinition);
         facts.add(outputType);
 
         Path path = resourcePathResolver.getDroolFile(outputType);
-        } else {
-            StatelessKieSession session = createNewStatelessKieSession(path);
+        StatelessKieSession session = createNewStatelessKieSession(path);
         session.execute(facts);
 
         return rulDescItemTypeExtList;
