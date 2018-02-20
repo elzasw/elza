@@ -72,7 +72,7 @@ public class ChangeImpactRules extends Rules {
             // přidání globálních proměnných
             session.setGlobal("results", relatedNodeDirections);
 
-            execute(session, facts);
+            session.execute(facts);
         }
         return relatedNodeDirections;
     }

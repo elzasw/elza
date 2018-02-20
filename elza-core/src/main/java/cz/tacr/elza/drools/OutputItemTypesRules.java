@@ -5,14 +5,13 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.kie.api.runtime.StatelessKieSession;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.domain.ArrOutputDefinition;
 import cz.tacr.elza.domain.RulItemTypeExt;
+import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.domain.RulRule;
 
 
@@ -24,8 +23,6 @@ import cz.tacr.elza.domain.RulRule;
  */
 @Component
 public class OutputItemTypesRules extends Rules {
-
-    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Autowired
     private ResourcePathResolver resourcePathResolver;
@@ -39,26 +36,22 @@ public class OutputItemTypesRules extends Rules {
                                                      final List<RulItemTypeExt> rulDescItemTypeExtList)
             throws Exception
     {
+        
+        RulOutputType outputType = outputDefinition.getOutputType();
 
         LinkedList<Object> facts = new LinkedList<>();
         facts.addAll(rulDescItemTypeExtList);
         facts.add(outputDefinition);
-        facts.add(outputDefinition.getOutputType());
+        facts.add(outputType);
 
-        RulRule rule = outputDefinition.getOutputType().getRule();
-
-        if (rule == null) {
-            logger.warn("Při vykonávání OutputItemTypesRules.execute() nebyly nalezeny pravidla pro typ výstupu '"
-                    + outputDefinition.getOutputType().getCode() + "'");
-        } else {
-            if (!rule.getRuleType().equals(RulRule.RuleType.OUTPUT_ATTRIBUTE_TYPES)) {
-                throw new IllegalStateException("Neplatný typ pravidel pro výstup: " + rule.getRuleType().name());
-            }
-
-            Path path = resourcePathResolver.getDroolFile(rule);
-            StatelessKieSession session = createNewStatelessKieSession(path);
-            execute(session, facts);
+        RulRule rule = outputType.getRule();
+        if (!rule.getRuleType().equals(RulRule.RuleType.OUTPUT_ATTRIBUTE_TYPES)) {
+            throw new IllegalStateException("Neplatný typ pravidel pro výstup: " + rule.getRuleType().name());
         }
+
+        Path path = resourcePathResolver.getDroolFile(rule);
+        StatelessKieSession session = createNewStatelessKieSession(path);
+        session.execute(facts);
 
         return rulDescItemTypeExtList;
     }
