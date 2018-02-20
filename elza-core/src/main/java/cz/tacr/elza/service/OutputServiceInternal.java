@@ -394,7 +394,7 @@ public class OutputServiceInternal {
         }
 
         RuleSystem ruleSystem = this.staticDataService.getData().getRuleSystems()
-                .getByRuleSetId(fundVersion.getFundId());
+                .getByRuleSetId(fundVersion.getRuleSetId());
         itemService.checkValidTypeAndSpec(ruleSystem, outputItem);
 
         int maxPosition = outputItemRepository.findMaxItemPosition(outputItem.getItemType(), outputItem.getOutputDefinition());

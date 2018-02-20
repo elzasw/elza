@@ -3,7 +3,8 @@ package cz.tacr.elza.domain;
 import java.util.Objects;
 
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.io.WKTWriter;
+
+import cz.tacr.elza.common.GeometryConvertor;
 
 /**
  * Implementace třídy {@link cz.tacr.elza.api.ArrItemCoordinates}
@@ -26,14 +27,21 @@ public class ArrItemCoordinates extends ArrItemData {
 
     @Override
     public String toString() {
-        return new WKTWriter().writeFormatted(value);
+        String str = GeometryConvertor.convert(value);
+        return str;
     }
 
     @Override
     public boolean equals(final Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
         ArrItemCoordinates that = (ArrItemCoordinates) o;
         return Objects.equals(value, that.value);
     }

@@ -289,4 +289,14 @@ public class ParParty extends AbstractVersionableEntity implements IApScope {
     public ApScope getApScope() {
         return record.getScope();
     }
+
+    /**
+     * Return scope id from corresponding record
+     * 
+     * @return
+     */
+    @JsonIgnore
+    public Integer getRegScopeId() {
+        return record.getScopeId();
+    }
 }

@@ -33,11 +33,6 @@ import cz.tacr.elza.service.ApService;
 @RestController
 public class KmlController {
 
-    @Autowired
-    private ApRecordRepository apRecordRepository;
-
-    @Autowired
-    private ApService apService;
 
     @Autowired
     private ArrIOService arrIOService;
@@ -92,7 +87,7 @@ public class KmlController {
         Assert.notNull(descItemObjectId, "Nebyl vyplněn jednoznačný identifikátor descItem");
         Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
 
-        arrIOService.coordinatesDescExport(response, descItemObjectId, fundVersionId);
+        arrIOService.coordinatesExport(response, descItemObjectId, fundVersionId);
     }
 
 
@@ -105,7 +100,7 @@ public class KmlController {
         Assert.notNull(descItemObjectId, "Nebyl vyplněn jednoznačný identifikátor descItem");
         Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
 
-        arrIOService.coordinatesOutputExport(response, descItemObjectId, fundVersionId);
+        arrIOService.coordinatesExport(response, descItemObjectId, fundVersionId);
     }
 
     @RequestMapping(value = "/api/kml/export/regCoordinates/{coordinatesId}",

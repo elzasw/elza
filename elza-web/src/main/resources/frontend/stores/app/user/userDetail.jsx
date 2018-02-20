@@ -137,6 +137,11 @@ export default function userDetail(state = initialState, action = {}) {
 
 function userDetailInt(state, action) {
     switch (action.type) {
+        case types.STORE_STATE_DATA_INIT:
+            return {
+                ...state,
+                ...action.storageData.userDetail
+            }
         case types.USER_DETAIL_CLEAR:
             return {...initialState}
         case types.USER_DETAIL_REQUEST: {
