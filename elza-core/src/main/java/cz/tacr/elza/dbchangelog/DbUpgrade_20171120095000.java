@@ -77,7 +77,7 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
                 }
 
                 for (ArrPacket packet : packets) {
-                    if (packet.getState() != ArrPacket.State.CANCELED) {
+                    //if (packet.getState() != ArrPacket.State.CANCELED) {
                         Integer fundId = packet.getFundId();
                         Integer ruleSetId = fundIdRuleSetIdMap.get(fundId);
                         StructureTypePack structureTypePack = structureTypePacks.get(ruleSetId);
@@ -89,7 +89,7 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
                         createAndInsertStructureItems(structureData, packet, structureTypePack);
 
                         packetIdStructureDataMap.put(packet.getPacketId(), structureData);
-                    }
+                    //}
                 }
 
                 List<ArrDataPacketRef> packetRefs = findAllDataPacketRef();
