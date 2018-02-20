@@ -57,6 +57,7 @@ class DescItemCoordinates extends AbstractReactComponent {
 
     render() {
         const {descItem, locked, repeatable, onUpload, readMode, cal} = this.props;
+        const {type, data} = this.state;
         let value = cal && descItem.value == null ? i18n("subNodeForm.descItemType.calculable") : descItem.value;
 
         if (readMode) {
@@ -66,19 +67,19 @@ class DescItemCoordinates extends AbstractReactComponent {
         return (
             <div className="desc-item-value-coordinates">
                 <div className='desc-item-value'  key='cords'>
-                    <Button bsStyle="default" disabled>{wktType(this.state.type)}</Button>
+                    <Button bsStyle="default" disabled>{wktType(type)}</Button>
                     {
-                        this.state.type == "POINT" ?
+                        type == "POINT" ?
                             <ItemTooltipWrapper tooltipTitle="dataType.coordinates.format">
                                 <input
                                     {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked)}
                                     ref='focusEl'
                                     disabled={locked || descItem.undefined}
                                     onChange={this.handleChangeData}
-                                    value={descItem.undefined ? i18n('subNodeForm.descItemType.notIdentified') : value}
+                                    value={descItem.undefined ? i18n('subNodeForm.descItemType.notIdentified') : data}
                                 />
                             </ItemTooltipWrapper>
-                            : <span className="textvalue">{i18n('subNodeForm.countOfCoordinates', this.state.data)}</span>
+                            : <span className="textvalue">{data}</span>
                     }
                     { !descItem.undefined && descItem.descItemObjectId && <div className='desc-item-coordinates-action' key='download-action'><NoFocusButton onClick={this.props.onDownload}>
                             <Icon glyph="fa-download"/>

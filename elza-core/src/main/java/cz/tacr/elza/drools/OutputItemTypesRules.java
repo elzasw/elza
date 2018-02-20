@@ -5,8 +5,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.kie.api.runtime.StatelessKieSession;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -25,8 +23,6 @@ import cz.tacr.elza.domain.RulOutputType;
 @Component
 public class OutputItemTypesRules extends Rules {
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
-
     @Autowired
     private ResourcePathResolver resourcePathResolver;
 
@@ -39,6 +35,8 @@ public class OutputItemTypesRules extends Rules {
                                                      final List<RulItemTypeExt> rulDescItemTypeExtList)
             throws Exception
     {
+        
+        RulOutputType outputType = outputDefinition.getOutputType();
 
         RulOutputType outputType = outputDefinition.getOutputType();
 
@@ -48,14 +46,9 @@ public class OutputItemTypesRules extends Rules {
         facts.add(outputType);
 
         Path path = resourcePathResolver.getDroolFile(outputType);
-
-        if (path == null) {
-            logger.warn("Při vykonávání OutputItemTypesRules.execute() nebyly nalezeny pravidla pro typ výstupu '"
-                    + outputType.getCode() + "'");
         } else {
             StatelessKieSession session = createNewStatelessKieSession(path);
-            execute(session, facts);
-        }
+        session.execute(facts);
 
         return rulDescItemTypeExtList;
     }

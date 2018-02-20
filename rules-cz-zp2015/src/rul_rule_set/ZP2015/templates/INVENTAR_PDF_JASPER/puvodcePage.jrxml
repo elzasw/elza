@@ -19,7 +19,7 @@
 	</subDataset>
 	<subDataset name="RelationTo" uuid="9835813e-0034-49fc-8272-9aa2927bb305">
 		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="New Data Adapter "/>
-		<field name="relationToType" class="cz.tacr.elza.print.party.RelationToType"/>
+		<field name="roleType" class="cz.tacr.elza.print.party.RelationToType"/>
 		<field name="record" class="cz.tacr.elza.print.Record"/>
 		<field name="note" class="java.lang.String"/>
 	</subDataset>
@@ -188,7 +188,7 @@
 							<textElement markup="html">
 								<font pdfEncoding="Cp1250"/>
 							</textElement>
-							<textFieldExpression><![CDATA["<b>"+StringUtils.capitalize($F{relationToType}.getName())+": </b>"+$F{record}.getRecord()]]></textFieldExpression>
+							<textFieldExpression><![CDATA["<b>"+StringUtils.capitalize($F{roleType}.getName())+": </b>"+$F{record}.getRecord()]]></textFieldExpression>
 						</textField>
 					</jr:listContents>
 				</jr:list>
@@ -239,7 +239,7 @@
 							<textElement markup="html">
 								<font pdfEncoding="Cp1250"/>
 							</textElement>
-							<textFieldExpression><![CDATA["<b>"+StringUtils.capitalize($F{relationToType}.getName())+": </b>"+$F{record}.getRecord()]]></textFieldExpression>
+							<textFieldExpression><![CDATA["<b>"+StringUtils.capitalize($F{roleType}.getName())+": </b>"+$F{record}.getRecord()]]></textFieldExpression>
 						</textField>
 					</jr:listContents>
 				</jr:list>
@@ -291,7 +291,7 @@
 													<textElement>
 														<font pdfEncoding="Cp1250"/>
 													</textElement>
-													<textFieldExpression><![CDATA[StringUtils.capitalize($F{relationToType}.getName())+": "+$F{record}.getRecord()+(StringUtils.isNotBlank($F{note})?(" ("+$F{note}+")"):"")]]></textFieldExpression>
+													<textFieldExpression><![CDATA[StringUtils.capitalize($F{roleType}.getName())+": "+$F{record}.getRecord()+(StringUtils.isNotBlank($F{note})?(" ("+$F{note}+")"):"")]]></textFieldExpression>
 												</textField>
 											</jr:listContents>
 										</jr:list>

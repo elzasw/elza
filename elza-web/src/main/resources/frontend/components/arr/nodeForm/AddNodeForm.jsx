@@ -304,68 +304,7 @@ class AddNodeForm extends AbstractReactComponent {
         } = this.props;
         const { scenarios, loading, submitting } = this.state;
         const notRoot = !isFundRootId(parentNode.id);
-
-        var scnRadios = [];
-        if (!loading) {
-            var i = 0;
-            if (scenarios) {
-                for (i; i < scenarios.length; i++) {
-                    scnRadios.push(
-                        <Radio
-                            key={'scns-' + i}
-                            defaultChecked={i === 0}
-                            autoFocus={i === 0}
-                            name="scns"
-                            onChange={this.handleScenarioChange}
-                            value={scenarios[i].name}
-                        >
-                            {scenarios[i].name}
-                        </Radio>
-                    );
-                }
-            }
-
-            let strictMode = false;
-            const fund =
-                arrRegion.activeIndex != null
-                    ? arrRegion.funds[arrRegion.activeIndex]
-                    : null;
-            if (fund) {
-                strictMode = fund.activeVersion.strictMode;
-
-                let userStrictMode = getOneSettings(
-                    userDetail.settings,
-                    'FUND_STRICT_MODE',
-                    'FUND',
-                    fund.id
-                );
-                if (userStrictMode && userStrictMode.value !== null) {
-                    strictMode = userStrictMode.value === 'true';
-                }
-            }
-
-            if (!strictMode || i === 0) {
-                scnRadios.push(
-                    <Radio
-                        key={'scns-' + i}
-                        defaultChecked={i === 0}
-                        autoFocus={i === 0}
-                        name="scns"
-                        onChange={this.handleScenarioChange}
-                        value={''}
-                    >
-                        {i18n('subNodeForm.add.noScenario')}
-                    </Radio>
-                );
-            }
-        } else {
-            scnRadios.push(
-                <div>
-                    {i18n('arr.fund.addNode.noDirection')}
-                </div>
-            );
-        }
-
+         
         // Položky v select na směr
         const allowedDirectionsMap = getSetFromIdsList(allowedDirections);
         const directions = {
@@ -440,7 +379,7 @@ class AddNodeForm extends AbstractReactComponent {
                         </Row>
                     </FormGroup>
                     {this.state.selectedType === 'NEW'
-                        ? this.renderCreateNew(loading, scnRadios)
+                        ? this.renderCreateNew()
                         : this.renderCreateExisting()}
                 </Modal.Body>
                 <Modal.Footer>
@@ -484,7 +423,73 @@ class AddNodeForm extends AbstractReactComponent {
         );
     }
 
-    renderCreateNew(loading, scnRadios) {
+    renderCreateNew() {
+        const {arrRegion, userDetail} = this.props;
+        const {scenarios, loading, selectedScenario} = this.state;
+
+        var scnRadios = [];
+        if (!loading) {
+            var i = 0;
+            if (scenarios) {
+                for (i; i < scenarios.length; i++) {
+                    scnRadios.push(
+                        <Radio
+                            key={'scns-' + i}
+                            defaultChecked={i === 0}
+                            autoFocus={i === 0}
+                            name="scns"
+                            onChange={this.handleScenarioChange}
+                            value={scenarios[i].name}
+                            checked={selectedScenario === scenarios[i].name}
+                        >
+                            {scenarios[i].name}
+                        </Radio>
+                    );
+                }
+            }
+
+            let strictMode = false;
+            const fund =
+                arrRegion.activeIndex != null
+                    ? arrRegion.funds[arrRegion.activeIndex]
+                    : null;
+            if (fund) {
+                strictMode = fund.activeVersion.strictMode;
+
+                let userStrictMode = getOneSettings(
+                    userDetail.settings,
+                    'FUND_STRICT_MODE',
+                    'FUND',
+                    fund.id
+                );
+                if (userStrictMode && userStrictMode.value !== null) {
+                    strictMode = userStrictMode.value === 'true';
+                }
+            }
+
+            if (!strictMode || i === 0) {
+                scnRadios.push(
+                    <Radio
+                        key={'scns-' + i}
+                        defaultChecked={i === 0}
+                        autoFocus={i === 0}
+                        name="scns"
+                        onChange={this.handleScenarioChange}
+                        value={''}
+                        checked={selectedScenario === ''}
+                    >
+                        {i18n('subNodeForm.add.noScenario')}
+                    </Radio>
+                );
+            }
+        } else {
+            scnRadios.push(
+                <div>
+                    {i18n('arr.fund.addNode.noDirection')}
+                </div>
+            );
+        }
+
         return (
             <div>
                 <FormGroup>

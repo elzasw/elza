@@ -1,11 +1,10 @@
 package cz.tacr.elza.bulkaction.generator.multiple;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -32,7 +31,7 @@ public class CopyAction extends Action {
     /**
      * Vstupní atributy
      */
-	private Map<Integer, RuleSystemItemType> inputItemTypes = new HashMap<>();
+	private RuleSystemItemType inputItemType;
 
     /**
      * Výstupní atribut
@@ -55,22 +54,21 @@ public class CopyAction extends Action {
 	public void init(ArrBulkActionRun bulkActionRun) {
 		RuleSystem ruleSystem = getRuleSystem(bulkActionRun);
 
-		String outputType = config.getOutputType();
-		outputItemType = ruleSystem.getItemTypeByCode(outputType);
+        inputItemType = ruleSystem.getItemTypeByCode(config.getInputType());
+        Validate.notNull(inputItemType);
 
-		for (String inputTypeCode : config.getInputTypes()) {
-			RuleSystemItemType inputType = ruleSystem.getItemTypeByCode(inputTypeCode);
+        String outputType = config.getOutputType();
+        if (StringUtils.isEmpty(outputType)) {
+            outputItemType = inputItemType;
+            return;
+        }
 
-			// check if input and output have same data type
-			if (outputItemType.getDataType() != inputType.getDataType()) {
-				throw new BusinessException(
-				        "Item " + inputTypeCode + " and " + outputType + " have different data type",
-				        BaseCode.PROPERTY_HAS_INVALID_TYPE);
-			}
-
-			inputItemTypes.put(inputType.getItemTypeId(), inputType);
-
-		}
+        outputItemType = ruleSystem.getItemTypeByCode(outputType);
+        // check if input and output have same data type
+        if (inputItemType.getDataType() != outputItemType.getDataType()) {
+            throw new BusinessException("Item " + config.getInputType() + " and " + outputType + " have different data type",
+                    BaseCode.PROPERTY_HAS_INVALID_TYPE);
+        }
     }
 
 	/**
@@ -83,14 +81,14 @@ public class CopyAction extends Action {
         for (ArrDescItem dataItem : dataItems) {
 
             if(!Objects.equals(item.getItemSpecId(),  dataItem.getItemSpecId())) {
-                break;
+                continue;
             }
             ArrData cmpData = dataItem.getData();
             ArrData data = item.getData();
             // data are not null -> we can compare them
             if(data.isEqualValue(cmpData)) {
                 return true;
-            }            
+            }
         }
         return false;
     }
@@ -100,9 +98,8 @@ public class CopyAction extends Action {
 		List<ArrDescItem> items = level.getDescItems();
 
         for (ArrDescItem item : items) {
-			// check if item is in inputItemTypes set
-			RuleSystemItemType itemType = inputItemTypes.get(item.getItemTypeId());
-			if (itemType == null) {
+			// check if item has same itemType
+			if (!inputItemType.getItemTypeId().equals(item.getItemTypeId())) {
 				continue;
 			}
 			// skip undefined items

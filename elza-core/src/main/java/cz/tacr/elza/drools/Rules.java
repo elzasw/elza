@@ -6,10 +6,8 @@ import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
 import java.util.AbstractMap;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import cz.tacr.elza.exception.SystemException;
 import org.kie.api.io.ResourceType;
 import org.kie.api.runtime.StatelessKieSession;
 import org.kie.internal.KnowledgeBase;
@@ -90,17 +88,6 @@ public abstract class Rules {
         }
 
         return entry.getValue().newStatelessKieSession();
-    }
-
-    /**
-     * Provede vyvolání scriptu.
-     *  @param session session
-     * @param objects vstupní data
-     */
-    protected final synchronized void execute(final StatelessKieSession session,
-                                              final List objects)
-            throws Exception {
-        session.execute(objects);
     }
 
 }

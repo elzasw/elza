@@ -547,6 +547,7 @@ public class PartyControllerTest extends AbstractControllerTest {
 
         response = usageParty(personO1.getId());
         Assert.assertTrue(response.funds == null || response.funds.isEmpty());
+        Assert.assertTrue(response.parties == null || response.parties.isEmpty());
     }
 
 

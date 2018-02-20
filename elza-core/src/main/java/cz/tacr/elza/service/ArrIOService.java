@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 import javax.servlet.ServletOutputStream;
@@ -28,11 +27,11 @@ import org.geotools.kml.KMLConfiguration;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.geotools.xml.Encoder;
 import org.geotools.xml.Parser;
+import org.hibernate.Hibernate;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
 import org.springframework.web.multipart.MultipartFile;
 import org.xml.sax.SAXException;
 
@@ -60,6 +59,7 @@ import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.ExternalCode;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
+import cz.tacr.elza.repository.ItemRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.OutputItemRepository;
 
@@ -82,9 +82,6 @@ public class ArrIOService {
     private ItemTypeRepository itemTypeRepository;
 
     @Autowired
-    private RuleService ruleService;
-
-    @Autowired
     private DescItemRepository descItemRepository;
 
     @Autowired
@@ -95,6 +92,9 @@ public class ArrIOService {
 
     @Autowired
     private ItemService itemService;
+
+    @Autowired
+    private ItemRepository itemRepository;
 
     /**
      * CSV konfigurace pro CZ Excel.
@@ -272,7 +272,7 @@ public class ArrIOService {
 
         Parser parser = new Parser(new KMLConfiguration());
         SimpleFeature document = (SimpleFeature) parser.parse(importFile.getInputStream());
-        Collection<SimpleFeature> placemarks = getPlacemars(document);
+        Collection<SimpleFeature> placemarks = getPlacemarks(document);
 
         List<T> toCreate = new ArrayList<>();
         for (SimpleFeature placemark : placemarks) {
@@ -321,7 +321,7 @@ public class ArrIOService {
         return ids;
     }
 
-    public Collection<SimpleFeature> getPlacemars(final SimpleFeature document) throws IllegalArgumentException {
+    public Collection<SimpleFeature> getPlacemarks(final SimpleFeature document) throws IllegalArgumentException {
         Collection<SimpleFeature> placemarks;
         Collection<SimpleFeature> features;
         try {
@@ -337,68 +337,36 @@ public class ArrIOService {
         return placemarks;
     }
 
-    public void coordinatesDescExport(final HttpServletResponse response,
-                                      final Integer descItemObjectId,
-                                      final Integer fundVersionId) throws IOException {
-        coordinatesOutputExport(response, descItemObjectId, fundVersionId, ArrDescItem.class);
-    }
-
-    public <T extends ArrItem> void coordinatesOutputExport(final HttpServletResponse response, final Integer descItemObjectId, final Integer fundVersionId, final Class<T> clazz) throws IOException {
-
-        BiFunction<Integer, ArrChange, List<ArrOutputItem>> find1Output = outputItemRepository::findByDescItemObjectIdAndBetweenVersionChangeId;
-        BiFunction<Integer, ArrChange, List<ArrOutputItem>> find2Output = outputItemRepository::findByDescItemObjectIdAndLockChangeId;
-        BiFunction<Integer, ArrChange, List<ArrDescItem>> find1Desc = descItemRepository::findByDescItemObjectIdAndBetweenVersionChangeId;
-        BiFunction<Integer, ArrChange, List<ArrDescItem>> find2Desc = descItemRepository::findByDescItemObjectIdAndLockChangeId;
+    public void coordinatesExport(final HttpServletResponse response, final Integer descItemObjectId, final Integer fundVersionId) throws IOException {
 
         ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
-        ArrChange change = fundVersion.getLockChange();
-        List<T> items;
+        ArrChange lockChange = fundVersion.getLockChange();
 
-        if (clazz.isAssignableFrom(ArrOutputItem.class)) {
-            if (change == null) {
-                change = fundVersion.getCreateChange();
-                items = (List<T>) find1Output.apply(descItemObjectId, change);
-            } else {
-                items = (List<T>) find2Output.apply(descItemObjectId, change);
-            }
-        } else if (clazz.isAssignableFrom(ArrDescItem.class)) {
-            if (change == null) {
-                change = fundVersion.getCreateChange();
-                items = (List<T>) find1Desc.apply(descItemObjectId, change);
-            } else {
-                items = (List<T>) find2Desc.apply(descItemObjectId, change);
-            }
+        ArrItem item;
+        if (lockChange == null) {
+            item = itemRepository.findByItemObjectIdAndDeleteChangeIsNullFetchData(descItemObjectId);
         } else {
-            throw new IllegalStateException("Nedefinovaná třída pro import: " + clazz.getSimpleName());
+            item = itemRepository.findByItemObjectIdAndChangeFetchData(descItemObjectId, lockChange);
         }
 
-        if (items.size() < 1) {
-            throw new SystemException("Neexistují data pro verzi:" + fundVersionId, BaseCode.DB_INTEGRITY_PROBLEM);
+        if (item == null || item.isUndefined()) {
+            throw new SystemException(
+                    "Coordinates data not found, fundVersionId:" + fundVersionId + ", itemObjectId:" + descItemObjectId,
+                    BaseCode.DB_INTEGRITY_PROBLEM);
         }
 
-        T one = items.get(items.size() - 1);
+        ArrData data = item.getData();
+        Class<?> cls = Hibernate.getClass(data);
 
-        Assert.notNull(one, "Musí být vyplněno");
-
-        //one = itemService.loadData(one);
-
-        ArrData item = one.getData();
-
-        if (!(item instanceof ArrDataCoordinates)) {
+        if (!ArrDataCoordinates.class.isAssignableFrom(cls)) {
             throw new SystemException("Pouze typ COORDINATES může být importován pomocí KML.", BaseCode.PROPERTY_HAS_INVALID_TYPE)
-                    .set("property", "descItemObjectId")
-                    .set("expected", "COORDINATES")
-                    .set("actual", item.getClass().getSimpleName());
+                .set("property", "descItemObjectId")
+                .set("expected", "COORDINATES")
+                .set("actual", item.getClass().getSimpleName());
         }
-        ArrDataCoordinates cords = (ArrDataCoordinates) item;
 
-        toKml(response, cords.getValue());
+        toKml(response, ((ArrDataCoordinates) data).getValue());
     }
-
-    public void coordinatesOutputExport(final HttpServletResponse response, final Integer descItemObjectId, final Integer fundVersionId) throws IOException {
-        coordinatesOutputExport(response, descItemObjectId, fundVersionId, ArrOutputItem.class);
-    }
-
 
     public void toKml(final HttpServletResponse response, final Geometry geometry) throws IOException {
         response.setHeader("Content-Disposition", "attachment;filename=export.kml");

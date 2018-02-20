@@ -2,9 +2,7 @@ package cz.tacr.elza.dataexchange.input.aps;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.vividsolutions.jts.io.ParseException;
-
-import cz.tacr.elza.dataexchange.common.GeometryConvertor;
+import cz.tacr.elza.common.GeometryConvertor;
 import cz.tacr.elza.dataexchange.input.DEImportException;
 import cz.tacr.elza.dataexchange.input.aps.context.AccessPointInfo;
 import cz.tacr.elza.dataexchange.input.context.ImportContext;

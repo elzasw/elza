@@ -23,9 +23,8 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.io.ParseException;
-import com.vividsolutions.jts.io.WKTReader;
 
+import cz.tacr.elza.common.GeometryConvertor;
 import cz.tacr.elza.core.data.CalendarType;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
@@ -67,10 +66,10 @@ import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
-import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.repository.StructuredObjectRepository;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.DmsService;
+import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.IEventNotificationService;
 import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.service.RuleService;
@@ -384,7 +383,8 @@ public class ImportProcess {
             ((ArrDataJsonTable) data).setValue(((ItemJsonTable) item).getValue());
         } else if (item instanceof ItemCoordinates) {
             data = new ArrDataCoordinates();
-            ((ArrDataCoordinates) data).setValue(parseGeometry(((ItemCoordinates) item).getGeometry()));
+            Geometry geo = GeometryConvertor.convert(((ItemCoordinates) item).getGeometry());
+            ((ArrDataCoordinates) data).setValue(geo);
         } else if (item instanceof ItemFileRef) {
             data = new ArrDataFileRef();
             ArrFile file = fundFileRepository.findOne(((ItemFileRef) item).getFileId());
@@ -702,20 +702,6 @@ public class ImportProcess {
             dataList = new ArrayList<>();
             needFlush = false;
             logger.debug("Import: uložení dat do DB: konec");
-        }
-    }
-
-    /**
-     * Parsování geometry objektu.
-     *
-     * @param geometry vstupní data
-     * @return převedené geometry
-     */
-    private Geometry parseGeometry(final String geometry) {
-        try {
-            return new WKTReader().read(geometry);
-        } catch (ParseException e) {
-            throw new SystemException("Problém s převodem geometry", e);
         }
     }
 

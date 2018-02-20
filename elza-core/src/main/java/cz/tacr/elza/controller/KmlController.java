@@ -9,8 +9,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 import javax.xml.parsers.ParserConfigurationException;
 
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.BaseCode;
 import org.geotools.kml.KMLConfiguration;
 import org.geotools.xml.Parser;
 import org.opengis.feature.simple.SimpleFeature;
@@ -97,7 +95,7 @@ public class KmlController {
         Assert.notNull(descItemObjectId, "Nebyl vyplněn jednoznačný identifikátor descItem");
         Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
 
-        arrIOService.coordinatesDescExport(response, descItemObjectId, fundVersionId);
+        arrIOService.coordinatesExport(response, descItemObjectId, fundVersionId);
     }
 
 
@@ -110,7 +108,7 @@ public class KmlController {
         Assert.notNull(descItemObjectId, "Nebyl vyplněn jednoznačný identifikátor descItem");
         Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
 
-        arrIOService.coordinatesOutputExport(response, descItemObjectId, fundVersionId);
+        arrIOService.coordinatesExport(response, descItemObjectId, fundVersionId);
     }
 
     @RequestMapping(value = "/api/kml/export/regCoordinates/{coordinatesId}",
