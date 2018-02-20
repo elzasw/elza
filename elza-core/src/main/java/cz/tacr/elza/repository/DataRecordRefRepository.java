@@ -2,7 +2,6 @@ package cz.tacr.elza.repository;
 
 import java.util.List;
 
-import cz.tacr.elza.domain.ArrItem;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
