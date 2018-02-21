@@ -46,8 +46,8 @@ public interface OutputItemRepository extends JpaRepository<ArrOutputItem, Integ
 	@Query("SELECT i FROM arr_output_item i LEFT JOIN FETCH i.data WHERE i.deleteChange IS NULL AND i.descItemObjectId = :itemObjectId")
     List<ArrOutputItem> findOpenOutputItems(@Param("itemObjectId") Integer descItemObjectId);
 
-    @Query("SELECT i FROM arr_output_item i WHERE i.deleteChange IS NULL AND i.itemType = :itemType AND i.outputDefinition = :outputDefinition")
-    List<ArrOutputItem> findOpenOutputItems(@Param("itemType") RulItemType itemType,
+    @Query("SELECT i FROM arr_output_item i WHERE i.deleteChange IS NULL AND i.itemTypeId = :itemTypeId AND i.outputDefinition = :outputDefinition")
+    List<ArrOutputItem> findOpenOutputItems(@Param("itemTypeId") Integer itemTypeId,
                                             @Param("outputDefinition") ArrOutputDefinition outputDefinition);
 
     /**
@@ -58,12 +58,6 @@ public interface OutputItemRepository extends JpaRepository<ArrOutputItem, Integ
     @Query("SELECT COALESCE(MAX(i.position), 0) FROM arr_output_item i WHERE i.deleteChange IS NULL AND i.itemType = :itemType AND i.outputDefinition = :outputDefinition")
     int findMaxItemPosition(@Param("itemType") RulItemType itemType,
                             @Param("outputDefinition") ArrOutputDefinition outputDefinition);
-
-    @Query("SELECT i FROM arr_output_item i WHERE i.descItemObjectId = ?1 AND i.createChange >= ?2 AND (i.deleteChange >= ?2 OR i.deleteChange IS NULL)")
-    List<ArrOutputItem> findByDescItemObjectIdAndBetweenVersionChangeId(Integer descItemObjectId, ArrChange change);
-
-    @Query("SELECT i FROM arr_output_item i WHERE i.descItemObjectId = ?1 AND i.createChange < ?2 AND (i.deleteChange > ?2 OR i.deleteChange IS NULL)")
-    List<ArrOutputItem> findByDescItemObjectIdAndLockChangeId(Integer descItemObjectId, ArrChange change);
 
     /**
      * Vyhledá všechny otevřené (nesmazené) hodnoty atributů podle typu a uzlu mezi pozicemi. (pro vícehodnotový atribut)

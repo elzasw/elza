@@ -420,8 +420,10 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         for (ArrNodeOutput outputNode : outputNodes) {
             TreeNode treeNode = fundTree.getNode(outputNode.getNodeId());
 
+            // convert output node to NodeId with all parents up to root
             NodeId nodeId = createNodeIdWithParents(treeNode, nodeIdMap);
 
+            // convert node tree of each output node child to NodeIds
             treeNode.getChildren().forEach(child -> initNodeIdSubtree(child, nodeId, nodeIdMap));
         }
 

@@ -1,17 +1,19 @@
 package cz.tacr.elza.repository;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Path;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.Validate;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import cz.tacr.elza.common.db.DatabaseType;
 import cz.tacr.elza.common.db.RecursiveQueryBuilder;
@@ -25,75 +27,88 @@ import cz.tacr.elza.domain.ArrStructuredObject;
 public class StructuredObjectRepositoryImpl implements StructuredObjectRepositoryCustom {
 
     @PersistenceContext
-    private EntityManager entityManager;
+    private EntityManager em;
 
-    @Autowired
-    private LevelRepository levelRepository;
+    private Predicate createStructObjSearchCond(Path<ArrStructuredObject> path,
+                                                String search,
+                                                int structuredTypeId,
+                                                int fundId,
+                                                Boolean assignable) {
+        CriteriaBuilder cb = em.getCriteriaBuilder();
 
-    private TypedQuery buildStructureDataFindQuery(final boolean dataQuery, String search, int structuredTypeId, int fundId, Boolean assignable, int firstResult, int maxResults) {
+        Predicate typeEqual = cb.equal(path.get("structuredTypeId"), structuredTypeId);
+        Predicate fundEqual = cb.equal(path.get("fundId"), fundId);
+        Predicate notTemp = cb.notEqual(path.get("state"), ArrStructuredObject.State.TEMP);
+        Predicate notDeleted = cb.isNull(path.get("deleteChange"));
 
-        // Podmínky hledání
-        StringBuilder conds = new StringBuilder();
-        Map<String, Object> parameters = new HashMap<>();
+        Predicate cond = cb.and(typeEqual, fundEqual, notTemp, notDeleted);
 
-        StringBuilder query = new StringBuilder();
-        query.append("FROM arr_structured_object sd");
-
-        query.append(" WHERE sd.structuredTypeId = :structuredTypeId AND sd.fundId = :fundId");
-        parameters.put("structuredTypeId", structuredTypeId);
-        parameters.put("fundId", fundId);
-
-        if (!StringUtils.isEmpty(search)) {
-            conds.append(" AND LOWER(sd.value) LIKE :search");
-            parameters.put("search", "%" + search.toLowerCase() + "%");
+        if (StringUtils.isNotEmpty(search)) {
+            String searchExp = '%' + search.toLowerCase() + '%';
+            Predicate searchLike = cb.like(cb.lower(path.get("value")), searchExp);
+            cond = cb.and(cond, searchLike);
         }
-
-        // bez tempových
-        conds.append(" AND sd.state <> :state");
-        parameters.put("state", ArrStructuredObject.State.TEMP);
-
-        // pouze nesmazané
-        conds.append(" AND sd.deleteChange IS NULL");
 
         if (assignable != null) {
-            conds.append(" AND sd.assignable = :assignable");
-            parameters.put("assignable", assignable);
+            Predicate assignableEqual = cb.equal(path.get("assignable"), assignable);
+            cond = cb.and(cond, assignableEqual);
         }
 
-        // Připojení podmínek ke query
-        if (conds.length() > 0) {
-            query.append(conds.toString());
-        }
+        return cond;
+    }
 
-        TypedQuery q;
-        if (dataQuery) {
-            String dataQueryStr = "SELECT sd " + query.toString() + " ORDER BY sd.value";
-            q = entityManager.createQuery(dataQueryStr, ArrStructuredObject.class);
-        } else {
-            String countQueryStr = "SELECT COUNT(sd) " + query.toString();
-            q = entityManager.createQuery(countQueryStr, Number.class);
-        }
+    private TypedQuery<Long> createStructObjCountQuery(String search, int structureTypeId, int fundId, Boolean assignable) {
 
-        parameters.forEach(q::setParameter);
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<Long> cq = cb.createQuery(Long.class);
 
-        if (dataQuery) {
-            q.setFirstResult(firstResult);
-            if (maxResults >= 0) {
-                q.setMaxResults(maxResults);
-            }
-        }
+        Root<ArrStructuredObject> root = cq.from(ArrStructuredObject.class);
+        Predicate cond = createStructObjSearchCond(root, search, structureTypeId, fundId, assignable);
+
+        cq.select(cb.count(root));
+        cq.where(cond);
+
+        return em.createQuery(cq);
+    }
+
+    private TypedQuery<ArrStructuredObject> createStructObjSearchQuery(String search,
+                                                                    int structureTypeId,
+                                                                    int fundId,
+                                                                    Boolean assignable,
+                                                                    int firstResult,
+                                                                    int maxResults) {
+        Validate.isTrue(firstResult >= 0);
+        Validate.isTrue(maxResults >= 0);
+
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<ArrStructuredObject> cq = cb.createQuery(ArrStructuredObject.class);
+
+        Root<ArrStructuredObject> root = cq.from(ArrStructuredObject.class);
+        Predicate cond = createStructObjSearchCond(root, search, structureTypeId, fundId, assignable);
+
+        cq.where(cond);
+        cq.orderBy(cb.asc(root.get("value")));
+
+        TypedQuery<ArrStructuredObject> q = em.createQuery(cq);
+        q.setFirstResult(firstResult);
+        q.setMaxResults(maxResults);
 
         return q;
     }
 
     @Override
-    public FilteredResult<ArrStructuredObject> findStructureData(final Integer structuredTypeId, final int fundId,
-                                                                 final String search, final Boolean assignable,
-                                                                 final int firstResult, final int maxResults) {
-        TypedQuery data = buildStructureDataFindQuery(true, search, structuredTypeId, fundId, assignable, firstResult, maxResults);
-        TypedQuery count = buildStructureDataFindQuery(false, search, structuredTypeId, fundId, assignable, firstResult, maxResults);
-        return new FilteredResult<>(firstResult, maxResults,
-                ((Number) count.getSingleResult()).intValue(), data.getResultList());
+    public FilteredResult<ArrStructuredObject> findStructureData(final Integer structuredTypeId,
+                                                              final int fundId,
+                                                              final String search,
+                                                              final Boolean assignable,
+                                                              final int firstResult,
+                                                              final int maxResults) {
+        TypedQuery<Long> countQuery = createStructObjCountQuery(search, structuredTypeId, fundId, assignable);
+        TypedQuery<ArrStructuredObject> objQuery = createStructObjSearchQuery(search, structuredTypeId, fundId, assignable, firstResult,
+                maxResults);
+        int count = countQuery.getSingleResult().intValue();
+        List<ArrStructuredObject> objList = objQuery.getResultList();
+        return new FilteredResult<>(firstResult, maxResults, count, objList);
     }
 
     @Override
@@ -116,8 +131,7 @@ public class StructuredObjectRepositoryImpl implements StructuredObjectRepositor
 
                 .addSqlPart(
                         "WITH RECURSIVE treeData(level_id, create_change_id, delete_change_id, node_id, node_id_parent, position) AS ")
-                .addSqlPart("(SELECT t.* FROM arr_level t WHERE t.node_id IN (:nodeIds) ")
-                .addSqlPart("UNION ALL ")
+                .addSqlPart("(SELECT t.* FROM arr_level t WHERE t.node_id IN (:nodeIds) ").addSqlPart("UNION ALL ")
                 .addSqlPart("SELECT t.* FROM arr_level t JOIN treeData td ON td.node_id = t.node_id_parent) ")
 
                 .addSqlPart("SELECT DISTINCT n.node_id FROM treeData t JOIN arr_node n ON n.node_id = t.node_id ")
@@ -128,10 +142,9 @@ public class StructuredObjectRepositoryImpl implements StructuredObjectRepositor
 
         rqBuilder.addSqlPart(")))");
 
-        rqBuilder.prepareQuery(entityManager);
+        rqBuilder.prepareQuery(em);
         rqBuilder.setParameter("nodeIds", nodeIds);
         return rqBuilder.getQuery().getResultList();
 
     }
-
 }

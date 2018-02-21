@@ -4,15 +4,38 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import cz.tacr.elza.controller.vo.*;
+import org.junit.Assert;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
+import cz.tacr.elza.controller.vo.ArrFundVO;
+import cz.tacr.elza.controller.vo.ArrFundVersionVO;
+import cz.tacr.elza.controller.vo.ParComplementTypeVO;
+import cz.tacr.elza.controller.vo.ParDynastyVO;
+import cz.tacr.elza.controller.vo.ParEventVO;
+import cz.tacr.elza.controller.vo.ParPartyGroupIdentifierVO;
+import cz.tacr.elza.controller.vo.ParPartyGroupVO;
+import cz.tacr.elza.controller.vo.ParPartyNameComplementVO;
+import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
+import cz.tacr.elza.controller.vo.ParPartyNameVO;
+import cz.tacr.elza.controller.vo.ParPartyTypeVO;
+import cz.tacr.elza.controller.vo.ParPartyVO;
+import cz.tacr.elza.controller.vo.ParPersonVO;
+import cz.tacr.elza.controller.vo.ParRelationEntityVO;
+import cz.tacr.elza.controller.vo.ParRelationRoleTypeVO;
+import cz.tacr.elza.controller.vo.ParRelationTypeVO;
+import cz.tacr.elza.controller.vo.ParRelationVO;
+import cz.tacr.elza.controller.vo.ParUnitdateVO;
+import cz.tacr.elza.controller.vo.RegRecordVO;
+import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
+import cz.tacr.elza.controller.vo.RegScopeVO;
+import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
 import cz.tacr.elza.repository.PartyRepository;
-import org.junit.Assert;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 
 /**
@@ -469,7 +492,7 @@ public class PartyControllerTest extends AbstractControllerTest {
         final ParPersonVO personO1 = givePerson("O1");
 
         //Arr connection
-        final RulDescItemTypeExtVO type = findDescItemTypeByCode("ZP2015_ORIGINATOR");
+        final RulDescItemTypeExtVO type = findDescItemTypeByCode("SRD_ORIGINATOR");
         final ArrItemVO descItem = buildDescItem(type.getCode(), null, personO1, null, null);
         createDescItem(descItem, fundVersion, rootNode, type);
 
@@ -524,6 +547,7 @@ public class PartyControllerTest extends AbstractControllerTest {
 
         response = usageParty(personO1.getId());
         Assert.assertTrue(response.funds == null || response.funds.isEmpty());
+        Assert.assertTrue(response.parties == null || response.parties.isEmpty());
     }
 
 

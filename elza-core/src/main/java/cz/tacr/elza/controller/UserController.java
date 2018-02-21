@@ -71,7 +71,14 @@ public class UserController {
 	 */
     @RequestMapping(value = "/detail", method = RequestMethod.GET)
     public UserInfoVO getUserDetail() {
-		return userService.getLoggeUserInfo();
+        UserInfoVO userInfo = userService.getLoggeUserInfo();
+        // init user settings for other than default user
+        if (userInfo.getId() != null) {
+            List<UISettings> settingsList = settingsService.getSettings(userInfo.getId());
+            List<UISettingsVO> settingsVOList = factoryVO.createSettingsList(settingsList);
+            userInfo.setSettings(settingsVOList);
+        }
+        return userInfo;
     }
 
     /**
@@ -267,17 +274,10 @@ public class UserController {
     @RequestMapping(value = "/withFundCreate", method = RequestMethod.GET)
 	@Transactional
     public FilteredResultVO<UsrUserVO> findUserWithFundCreate(@Nullable @RequestParam(value = "search", required = false) final String search,
-                                                @RequestParam("active") final Boolean active,
-                                                @RequestParam("disabled") final Boolean disabled,
                                                 @RequestParam("from") final Integer from,
-                                                @RequestParam("count") final Integer count,
-                                                @RequestParam(value = "excludedGroupId", required = false) final Integer excludedGroupId
+                                                @RequestParam("count") final Integer count
     ) {
-        if (!active && !disabled) {
-            throw new IllegalArgumentException("Musí být uveden alespoň jeden z parametrů: active, disabled.");
-        }
-
-        FilteredResult<UsrUser> users = userService.findUserWithFundCreate(search, active, disabled, from, count, excludedGroupId);
+        FilteredResult<UsrUser> users = userService.findUserWithFundCreate(search, from, count);
         List<UsrUserVO> resultVo = factoryVO.createUserList(users.getList(), false);
         return new FilteredResultVO<>(resultVo, users.getTotalCount());
     }
@@ -303,9 +303,9 @@ public class UserController {
     /**
 	 * Načte seznam uživatelů, kteří mají explicitně (přímo na nich) nastavené
 	 * nějaké oprávnění pro daný AS.
-	 * 
+	 *
 	 * Method will return only users which might be administered by logged user.
-	 * 
+	 *
 	 * @param fundId
 	 *            id of fund
 	 * @return seznam

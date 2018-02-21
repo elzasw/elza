@@ -14,10 +14,9 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
+import javax.transaction.Transactional;
+import javax.transaction.Transactional.TxType;
 
-import cz.tacr.elza.domain.*;
-import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.repository.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,10 +27,73 @@ import org.springframework.util.Assert;
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
+import cz.tacr.elza.domain.ArrCalendarType;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDataPartyRef;
+import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrItem;
+import cz.tacr.elza.domain.ArrNodeRegister;
+import cz.tacr.elza.domain.ParComplementType;
+import cz.tacr.elza.domain.ParCreator;
+import cz.tacr.elza.domain.ParInstitution;
+import cz.tacr.elza.domain.ParInstitutionType;
+import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.ParPartyGroup;
+import cz.tacr.elza.domain.ParPartyGroupIdentifier;
+import cz.tacr.elza.domain.ParPartyName;
+import cz.tacr.elza.domain.ParPartyNameComplement;
+import cz.tacr.elza.domain.ParPartyNameFormType;
+import cz.tacr.elza.domain.ParPartyType;
+import cz.tacr.elza.domain.ParRelation;
+import cz.tacr.elza.domain.ParRelationEntity;
+import cz.tacr.elza.domain.ParRelationRoleType;
+import cz.tacr.elza.domain.ParRelationType;
+import cz.tacr.elza.domain.ParUnitdate;
+import cz.tacr.elza.domain.RegRecord;
+import cz.tacr.elza.domain.RegRegisterType;
+import cz.tacr.elza.domain.RegScope;
+import cz.tacr.elza.domain.RegVariantRecord;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.UsrPermission.Permission;
+import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.Level;
 import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.RegistryCode;
+import cz.tacr.elza.repository.CalendarTypeRepository;
+import cz.tacr.elza.repository.ComplementTypeRepository;
+import cz.tacr.elza.repository.DataPartyRefRepository;
+import cz.tacr.elza.repository.DataRecordRefRepository;
+import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.InstitutionRepository;
+import cz.tacr.elza.repository.ItemSpecRegisterRepository;
+import cz.tacr.elza.repository.ItemSpecRepository;
+import cz.tacr.elza.repository.NodeRegisterRepository;
+import cz.tacr.elza.repository.PartyCreatorRepository;
+import cz.tacr.elza.repository.PartyGroupIdentifierRepository;
+import cz.tacr.elza.repository.PartyGroupRepository;
+import cz.tacr.elza.repository.PartyNameComplementRepository;
+import cz.tacr.elza.repository.PartyNameFormTypeRepository;
+import cz.tacr.elza.repository.PartyNameRepository;
+import cz.tacr.elza.repository.PartyRelationRepository;
+import cz.tacr.elza.repository.PartyRepository;
+import cz.tacr.elza.repository.PartyTypeRepository;
+import cz.tacr.elza.repository.RegRecordRepository;
+import cz.tacr.elza.repository.RegVariantRecordRepository;
+import cz.tacr.elza.repository.RegisterTypeRepository;
+import cz.tacr.elza.repository.RelationEntityRepository;
+import cz.tacr.elza.repository.RelationRepository;
+import cz.tacr.elza.repository.RelationRoleTypeRepository;
+import cz.tacr.elza.repository.RelationTypeRepository;
+import cz.tacr.elza.repository.ScopeRepository;
+import cz.tacr.elza.repository.UnitdateRepository;
+import cz.tacr.elza.repository.UserRepository;
+import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.ActionEvent;
@@ -1019,6 +1081,7 @@ public class PartyService {
      * @param replaced
      * @param replacement
      */
+    @Transactional(value = TxType.MANDATORY)
     public void replace(final ParParty replaced, final ParParty replacement) {
 
         // Arr
@@ -1075,5 +1138,44 @@ public class PartyService {
 
         // Registry replace
         registryService.replace(replaced.getRecord(), replacement.getRecord());
+
+        // we have to replace relations
+        replaceRecordInRelations(replaced.getRecord(), replacement.getRecord());
+    }
+
+    /**
+     * Replace record in relations
+     * @param replacedRecord
+     * @param newRecord
+     */
+    private void replaceRecordInRelations(RegRecord replacedRecord, RegRecord newRecord) {
+        UserDetail userDetail = userService.getLoggedUserDetail();
+
+        final List<ParRelationEntity> byRecord = relationEntityRepository.findByRecord(replacedRecord);
+        HashMap<Integer, ParParty> modifiedParties = new HashMap<>();
+        // set of scopes accessible by user
+        Set<Integer> accessibleScopes = new HashSet<>();
+        byRecord.forEach(re -> {
+            ParParty party = re.getRelation().getParty();
+            Integer scopeId = party.getRegScopeId();
+            // check permissions for scope
+            if (!accessibleScopes.contains(scopeId)) {
+                if (!userDetail.hasPermission(Permission.REG_SCOPE_WR_ALL)
+                        && !userDetail.hasPermission(Permission.REG_SCOPE_WR, scopeId)) {
+                    throw new SystemException("Uživatel nemá oprávnění na scope.", BaseCode.INSUFFICIENT_PERMISSIONS)
+                            .set("scopeId", scopeId);
+                }
+                accessibleScopes.add(scopeId);
+            }
+
+            // update record
+            re.setRecord(newRecord);
+            relationEntityRepository.save(re);
+
+            modifiedParties.putIfAbsent(party.getPartyId(), party);
+        });
+        
+        // synchronize modified parties
+        modifiedParties.forEach((id, party) -> this.synchRecord(party));
     }
 }

@@ -8,7 +8,7 @@ import cz.tacr.elza.dataexchange.output.loaders.AbstractEntityLoader;
 import cz.tacr.elza.dataexchange.output.loaders.LoadDispatcher;
 import cz.tacr.elza.domain.ParPartyName;
 
-public class NameLoader extends AbstractEntityLoader<Integer, ParPartyName> {
+public class NameLoader extends AbstractEntityLoader<ParPartyName> {
 
     private final NameComplementLoader complementLoader;
 
@@ -27,7 +27,7 @@ public class NameLoader extends AbstractEntityLoader<Integer, ParPartyName> {
     }
 
     @Override
-    protected void onRequestLoad(ParPartyName result, LoadDispatcher<ParPartyName> dispatcher) {
+    protected void onBatchEntryLoad(LoadDispatcher<ParPartyName> dispatcher, ParPartyName result) {
         NameComplementDispatcher complementDispatcher = new NameComplementDispatcher(result, dispatcher);
         complementLoader.addRequest(result.getPartyNameId(), complementDispatcher);
 

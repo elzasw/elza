@@ -1,5 +1,15 @@
 package cz.tacr.elza.controller;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Ignore;
+import org.junit.Test;
+
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.RegRecordVO;
 import cz.tacr.elza.controller.vo.RegScopeVO;
@@ -7,19 +17,9 @@ import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-
 
 /**
- * 
+ *
  */
 public class KmlControllerTest extends AbstractControllerTest {
 
@@ -80,7 +80,7 @@ public class KmlControllerTest extends AbstractControllerTest {
         List<RulDescItemTypeExtVO> descItemTypes = getDescItemTypes();
         RulDescItemTypeExtVO cordType = null;
         for (RulDescItemTypeExtVO type : descItemTypes) {
-            if (type.getCode().equals("ZP2015_POSITION")) {
+            if (type.getCode().equals("SRD_POSITION")) {
                 cordType = type;
                 break;
             }

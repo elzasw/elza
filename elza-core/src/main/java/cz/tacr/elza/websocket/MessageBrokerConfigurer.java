@@ -3,6 +3,7 @@ package cz.tacr.elza.websocket;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.messaging.simp.SimpMessageType;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
@@ -58,7 +59,10 @@ public class MessageBrokerConfigurer extends AbstractSecurityWebSocketMessageBro
 
     @Override
     protected void configureInbound(final MessageSecurityMetadataSourceRegistry messages) {
-        messages.simpDestMatchers("/app/**").authenticated();
+          messages
+               .nullDestMatcher().authenticated()
+               .simpTypeMatchers(SimpMessageType.MESSAGE, SimpMessageType.SUBSCRIBE).authenticated()
+               .anyMessage().denyAll();
     }
 
     @Override

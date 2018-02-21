@@ -341,8 +341,8 @@
                 <targetPath>${project.basedir}/target/test-classes/package-cz-base</targetPath>
             </testResource>
             <testResource>
-                <directory>${project.basedir}/../rules-cz-zp2015/src</directory>
-                <targetPath>${project.basedir}/target/test-classes/rules-cz-zp2015</targetPath>
+                <directory>${project.basedir}/../rules-simple-dev/src</directory>
+                <targetPath>${project.basedir}/target/test-classes/rules-simple-dev</targetPath>
             </testResource>
         </testResources>
         <plugins>

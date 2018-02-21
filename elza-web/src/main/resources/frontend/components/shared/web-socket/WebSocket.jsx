@@ -8,9 +8,8 @@ import AbstractReactComponent from "../../AbstractReactComponent";
 import i18n from "../../i18n";
 
 class WebSocket extends AbstractReactComponent {
-
     render() {
-        const {webSocket} = this.props;
+        const {webSocket, login} = this.props;
         const {loading} = this.props.webSocket;
 
         let content;
@@ -25,7 +24,7 @@ class WebSocket extends AbstractReactComponent {
                 content = <div className="dialog">
                     <div className="title">{i18n('global.websocket.disconnectedOnError.title')}</div>
                     <br/>
-                    <Button onClick={() => { window.ws.stompConnect() }}>{i18n("global.websocket.disconnectedOnError.action.refresh")}</Button>
+                    <Button onClick={() => { window.ws.connect() }}>{i18n("global.websocket.disconnectedOnError.action.refresh")}</Button>
                 </div>
             } else {
                 content = <div className="dialog">
@@ -35,16 +34,21 @@ class WebSocket extends AbstractReactComponent {
             }
         }
 
-        const dialog = !this.props.webSocket.connected ? <div className="disconnect">{content}</div> : null;
+        const showWebsocketMessage = !webSocket.connected && login.logged;
 
-        return <div className="web-socket">{dialog}</div>
+        return <div className="web-socket">
+            {showWebsocketMessage && <div className="disconnect">
+                {content}
+            </div>}
+        </div>
     }
 }
 
 function mapStateToProps(state) {
-    const {webSocket} = state
+    const {webSocket, login} = state
     return {
-        webSocket
+        webSocket,
+        login
     }
 }
 

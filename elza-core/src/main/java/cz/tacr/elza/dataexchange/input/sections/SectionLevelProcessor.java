@@ -11,7 +11,7 @@ import cz.tacr.elza.dataexchange.common.items.ImportableItem.ImportableItemData;
 import cz.tacr.elza.dataexchange.input.DEImportException;
 import cz.tacr.elza.dataexchange.input.aps.context.AccessPointInfo;
 import cz.tacr.elza.dataexchange.input.context.ImportContext;
-import cz.tacr.elza.dataexchange.input.processor.ItemProcessor;
+import cz.tacr.elza.dataexchange.input.reader.ItemProcessor;
 import cz.tacr.elza.dataexchange.input.sections.context.ContextNode;
 import cz.tacr.elza.dataexchange.input.sections.context.ContextSection;
 import cz.tacr.elza.domain.ArrData;
@@ -26,7 +26,7 @@ import cz.tacr.elza.schema.v2.Level;
 
 /**
  * Process item(level) for given section
- * 
+ *
  */
 public class SectionLevelProcessor implements ItemProcessor {
 
@@ -134,7 +134,7 @@ public class SectionLevelProcessor implements ItemProcessor {
     }
 
     private ArrDescItem createDescItem(ContextSection section,
-                                       RuleSystemItemType itemType,
+                                       RuleSystemItemType rsit,
                                        String specCode,
                                        ArrDescItemIndexData indexData) {
         ArrDescItem descItem = new ArrDescItem(indexData);
@@ -142,19 +142,24 @@ public class SectionLevelProcessor implements ItemProcessor {
         // set common properties
         descItem.setCreateChange(section.getCreateChange());
         descItem.setDescItemObjectId(section.generateDescItemObjectId());
-        descItem.setItemType(itemType.getEntity());
+        descItem.setItemType(rsit.getEntity());
+        descItem.setItemSpec(resolveItemSpec(rsit, specCode));
 
-        // resolve item spec
-        String typeCode = itemType.getCode();
+        return descItem;
+    }
+
+    public static RulItemSpec resolveItemSpec(RuleSystemItemType rsit, String specCode) {
         boolean specCodeExists = StringUtils.isNotEmpty(specCode);
-        if (itemType.hasSpecifications()) {
+        String typeCode = rsit.getCode();
+
+        if (rsit.hasSpecifications()) {
             if (specCodeExists) {
-                RulItemSpec itemSpec = itemType.getItemSpecByCode(specCode);
+                RulItemSpec itemSpec = rsit.getItemSpecByCode(specCode);
                 if (itemSpec == null) {
                     throw new DEImportException(
                             "Description item specification not found, typeCode:" + typeCode + ", specCode:" + specCode);
                 }
-                descItem.setItemSpec(itemSpec);
+                return itemSpec;
             } else {
                 throw new DEImportException(
                         "Description item specification missing, typeCode:" + typeCode + ", specCode:" + specCode);
@@ -163,8 +168,7 @@ public class SectionLevelProcessor implements ItemProcessor {
             throw new DEImportException(
                     "Specification for description item not expected, typeCode:" + typeCode + ", specCode:" + specCode);
         }
-
-        return descItem;
+        return null;
     }
 
 	/**

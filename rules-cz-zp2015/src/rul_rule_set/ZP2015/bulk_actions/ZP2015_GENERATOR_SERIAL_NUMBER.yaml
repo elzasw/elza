@@ -1,8 +1,3 @@
 !SerialNumberGenerator
 name: Generátor pořadového čísla
 itemType: ZP2015_SERIAL_NUMBER
-#
-# It is possible to limit generation of serial number by some value
-#
-# stop_when_type: ZP2015_LEVEL_TYPE
-# stop_on_value: ZP2015_LEVEL_ITEM

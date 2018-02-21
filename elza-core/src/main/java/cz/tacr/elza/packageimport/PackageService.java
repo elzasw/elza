@@ -3140,7 +3140,7 @@ public class PackageService {
         ZipOutputStream zos = null;
 
         try {
-            file = File.createTempFile(code + "-", "-package.zip");
+            file = File.createTempFile("ElzaPackage-" + code + "-", "-package.zip");
             fos = new FileOutputStream(file);
             zos = new ZipOutputStream(fos);
 

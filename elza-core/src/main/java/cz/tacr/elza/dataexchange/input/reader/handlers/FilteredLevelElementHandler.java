@@ -5,13 +5,13 @@ import java.util.HashMap;
 import javax.xml.bind.JAXBElement;
 
 import cz.tacr.elza.dataexchange.input.context.ImportContext;
-import cz.tacr.elza.dataexchange.input.processor.ItemProcessor;
-import cz.tacr.elza.dataexchange.input.processor.ItemProcessorFactory;
+import cz.tacr.elza.dataexchange.input.reader.ItemProcessor;
+import cz.tacr.elza.dataexchange.input.sections.SectionLevelProcessor;
 import cz.tacr.elza.schema.v2.Level;
 
 /**
  * Filtered handler will filter out root nodes
- * 
+ *
  *
  */
 public class FilteredLevelElementHandler extends SectionLevelElementHandler {
@@ -25,7 +25,7 @@ public class FilteredLevelElementHandler extends SectionLevelElementHandler {
 	@Override
 	protected void handleJaxbElement(JAXBElement<Level> element) {
 		Level level = element.getValue();
-		
+
 		// check if root item
 		String pid = level.getPid();
 		if (pid == null) {
@@ -39,7 +39,7 @@ public class FilteredLevelElementHandler extends SectionLevelElementHandler {
 			level.setPid(pid);
 		}
 
-		ItemProcessor processor = ItemProcessorFactory.createSectionLevelProcessor(context);
+		ItemProcessor processor = new SectionLevelProcessor(context);
 		processor.process(level);
 	}
 }

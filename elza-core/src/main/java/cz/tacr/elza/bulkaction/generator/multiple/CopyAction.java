@@ -1,11 +1,10 @@
 package cz.tacr.elza.bulkaction.generator.multiple;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -16,8 +15,8 @@ import cz.tacr.elza.bulkaction.generator.result.CopyActionResult;
 import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.core.data.RuleSystemItemType;
 import cz.tacr.elza.domain.ArrBulkActionRun;
+import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
 
@@ -32,7 +31,7 @@ public class CopyAction extends Action {
     /**
      * Vstupní atributy
      */
-	private Map<Integer, RuleSystemItemType> inputItemTypes = new HashMap<>();
+	private RuleSystemItemType inputItemType;
 
     /**
      * Výstupní atribut
@@ -55,52 +54,52 @@ public class CopyAction extends Action {
 	public void init(ArrBulkActionRun bulkActionRun) {
 		RuleSystem ruleSystem = getRuleSystem(bulkActionRun);
 
-		String outputType = config.getOutputType();
-		outputItemType = ruleSystem.getItemTypeByCode(outputType);
+        inputItemType = ruleSystem.getItemTypeByCode(config.getInputType());
+        Validate.notNull(inputItemType);
 
-		for (String inputTypeCode : config.getInputTypes()) {
-			RuleSystemItemType inputType = ruleSystem.getItemTypeByCode(inputTypeCode);
+        String outputType = config.getOutputType();
+        if (StringUtils.isEmpty(outputType)) {
+            outputItemType = inputItemType;
+            return;
+        }
 
-			// check if input and output have same data type
-			if (outputItemType.getDataType() != inputType.getDataType()) {
-				throw new BusinessException(
-				        "Item " + inputTypeCode + " and " + outputType + " have different data type",
-				        BaseCode.PROPERTY_HAS_INVALID_TYPE);
-			}
-
-			inputItemTypes.put(inputType.getItemTypeId(), inputType);
-
-		}
+        outputItemType = ruleSystem.getItemTypeByCode(outputType);
+        // check if input and output have same data type
+        if (inputItemType.getDataType() != outputItemType.getDataType()) {
+            throw new BusinessException("Item " + config.getInputType() + " and " + outputType + " have different data type",
+                    BaseCode.PROPERTY_HAS_INVALID_TYPE);
+        }
     }
 
 	/**
-	 * Check if specification is used in output
+	 * Check if item is used in output
 	 *
 	 * @param itemSpecId
 	 * @return
 	 */
-	private boolean isSpecificationUsed(Integer itemSpecId) {
-		for (ArrDescItem dataItem : dataItems) {
-			RulItemSpec spec = dataItem.getItemSpec();
-			Integer currSpecd = null;
-			if (spec != null) {
-				currSpecd = spec.getItemSpecId();
-			}
-			if (Objects.equals(itemSpecId, currSpecd)) {
-				return true;
-			}
-		}
-		return false;
-	}
+    private boolean isInResult(ArrDescItem item) {
+        for (ArrDescItem dataItem : dataItems) {
+
+            if(!Objects.equals(item.getItemSpecId(),  dataItem.getItemSpecId())) {
+                continue;
+            }
+            ArrData cmpData = dataItem.getData();
+            ArrData data = item.getData();
+            // data are not null -> we can compare them
+            if(data.isEqualValue(cmpData)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
 	@Override
 	public void apply(LevelWithItems level, TypeLevel typeLevel) {
 		List<ArrDescItem> items = level.getDescItems();
 
         for (ArrDescItem item : items) {
-			// check if item is in inputItemTypes set
-			RuleSystemItemType itemType = inputItemTypes.get(item.getItemTypeId());
-			if (itemType == null) {
+			// check if item has same itemType
+			if (!inputItemType.getItemTypeId().equals(item.getItemTypeId())) {
 				continue;
 			}
 			// skip undefined items
@@ -109,8 +108,7 @@ public class CopyAction extends Action {
 			}
 			// check if exists
 			if (config.isDistinct()) {
-				Integer itemSpecId = item.getItemSpecId();
-				if (isSpecificationUsed(itemSpecId)) {
+				if (isInResult(item)) {
 					continue;
 				}
 			}

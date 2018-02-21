@@ -1,12 +1,13 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.UISettings;
-import cz.tacr.elza.domain.UsrUser;
+import java.util.Collection;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.Collection;
-import java.util.List;
+import cz.tacr.elza.domain.UISettings;
+import cz.tacr.elza.domain.UsrUser;
 
 /**
  * Repozitory pro {@link UISettings}
@@ -18,6 +19,8 @@ import java.util.List;
 public interface SettingsRepository extends JpaRepository<UISettings, Integer>, Packaging<UISettings> {
 
     List<UISettings> findByUser(UsrUser user);
+
+    List<UISettings> findByUserId(int userId);
 
     List<UISettings> findByUserAndSettingsType(UsrUser user,
                                                Collection<UISettings.SettingsType> settingsTypes);

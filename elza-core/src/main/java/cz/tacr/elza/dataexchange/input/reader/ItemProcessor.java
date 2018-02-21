@@ -1,4 +1,4 @@
-package cz.tacr.elza.dataexchange.input.processor;
+package cz.tacr.elza.dataexchange.input.reader;
 
 /**
  * Processor for data exchange item. Implementations are not thread safe and new

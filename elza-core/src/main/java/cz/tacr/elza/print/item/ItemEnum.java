@@ -8,11 +8,6 @@ public class ItemEnum extends AbstractItem {
     }
 
     @Override
-    public boolean isValueSerializable() {
-        return false;
-    }
-
-    @Override
     protected ItemSpec getValue() {
         return null;
     }

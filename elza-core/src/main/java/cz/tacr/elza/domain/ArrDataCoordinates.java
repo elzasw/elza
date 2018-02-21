@@ -5,8 +5,13 @@ import javax.persistence.Entity;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.io.WKTWriter;
+
+import cz.tacr.elza.common.GeometryConvertor;
+import cz.tacr.elza.common.GeometryConvertor.GeometryJsonDeserializer;
+import cz.tacr.elza.common.GeometryConvertor.GeometryJsonSerializer;
 
 
 /**
@@ -18,6 +23,8 @@ import com.vividsolutions.jts.io.WKTWriter;
 public class ArrDataCoordinates extends ArrData {
 
     @Column(nullable = false, columnDefinition = "geometry")
+    @JsonDeserialize(using = GeometryJsonDeserializer.class)
+    @JsonSerialize(using = GeometryJsonSerializer.class)
     private Geometry value;
 
 	public ArrDataCoordinates() {
@@ -43,7 +50,8 @@ public class ArrDataCoordinates extends ArrData {
 
     @Override
     public String getFulltextValue() {
-        return new WKTWriter().writeFormatted(value);
+        String str = GeometryConvertor.convert(value);
+        return str;
     }
 
 	@Override
@@ -51,6 +59,12 @@ public class ArrDataCoordinates extends ArrData {
 		ArrDataCoordinates copy = new ArrDataCoordinates(this);
 		return copy;
 	}
+
+    @Override
+    protected boolean isEqualValueInternal(ArrData srcData) {
+        ArrDataCoordinates src = (ArrDataCoordinates)srcData;
+        return value.equals(src.value);
+    }
 
     @Override
     public void mergeInternal(final ArrData srcData) {

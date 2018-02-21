@@ -19,6 +19,8 @@ import cz.tacr.elza.domain.ArrOutputDefinition;
 import cz.tacr.elza.domain.ArrOutputDefinition.OutputState;
 import cz.tacr.elza.domain.ArrOutputItem;
 import cz.tacr.elza.domain.RulTemplate.Engine;
+import cz.tacr.elza.exception.ExceptionResponse;
+import cz.tacr.elza.exception.ExceptionResponseBuilder;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.service.ArrangementService;
@@ -141,27 +143,15 @@ public class OutputGeneratorWorker implements Runnable {
      * Handle exception raised during output processing. Must be called in transaction.
      */
     private void handleException(Throwable t) {
-        logger.error("Failed to generate output, outputDefinitionId:" + outputDefinitionId, t);
+        ExceptionResponseBuilder builder = ExceptionResponseBuilder.createFrom(t);
+        builder.logError(logger);
+
         ArrOutputDefinition definition = em.find(ArrOutputDefinition.class, outputDefinitionId);
         if (definition != null) {
-            definition.setError(getCauseMessages(t, 1000));
+            ExceptionResponse er = builder.build();
+            definition.setError(er.toJson());
             definition.setState(OutputState.OPEN); // saved by commit
-        } else {
-            logger.error("Output generator worker failed, outputDefinitionId:" + outputDefinitionId, t);
         }
         outputServiceInternal.publishOutputFailed(definition, fundVersionId);
-    }
-
-    private static String getCauseMessages(Throwable t, int charLimit) {
-        final StringBuilder sb = new StringBuilder(charLimit);
-        while (t != null && sb.length() < charLimit) {
-            sb.append(t.getLocalizedMessage()).append("\n");
-            t = t.getCause();
-        }
-        if (sb.length() > charLimit) {
-            sb.setLength(charLimit - 3);
-            sb.append("...");
-        }
-        return sb.toString();
     }
 }

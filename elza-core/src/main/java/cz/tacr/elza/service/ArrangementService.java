@@ -24,7 +24,6 @@ import javax.persistence.Query;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
-import cz.tacr.elza.repository.StructuredObjectRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -50,6 +49,7 @@ import cz.tacr.elza.controller.vo.filter.SearchParam;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
+import cz.tacr.elza.core.security.AuthParam.Type;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDescItem;
@@ -63,6 +63,7 @@ import cz.tacr.elza.domain.ArrNodeConformity.State;
 import cz.tacr.elza.domain.ArrNodeConformityError;
 import cz.tacr.elza.domain.ArrNodeConformityMissing;
 import cz.tacr.elza.domain.ArrOutputDefinition;
+import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.RegScope;
 import cz.tacr.elza.domain.RulItemType;
@@ -116,6 +117,8 @@ import cz.tacr.elza.repository.OutputRepository;
 import cz.tacr.elza.repository.OutputResultRepository;
 import cz.tacr.elza.repository.RequestQueueItemRepository;
 import cz.tacr.elza.repository.ScopeRepository;
+import cz.tacr.elza.repository.StructuredObjectRepository;
+import cz.tacr.elza.repository.StructuredItemRepository;
 import cz.tacr.elza.repository.VisiblePolicyRepository;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.cache.NodeCacheService;
@@ -182,6 +185,8 @@ public class ArrangementService {
     private BulkActionNodeRepository faBulkActionNodeRepository;
     @Autowired
     private StructuredObjectRepository structureDataRepository;
+    @Autowired
+    private StructuredItemRepository structureItemRepository;
     @Autowired
     private FundRegisterScopeRepository faRegisterRepository;
     @Autowired
@@ -444,7 +449,7 @@ public class ArrangementService {
 
     @AuthMethod(permission = { UsrPermission.Permission.FUND_VER_WR, UsrPermission.Permission.FUND_ADMIN })
     public ArrFundVersion createVersion(final ArrChange createChange,
-                                         final ArrFund fund,
+                                         @AuthParam(type = Type.FUND) final ArrFund fund,
                                          final RulRuleSet ruleSet,
                                          final ArrNode rootNode,
                                          final String dateRange) {
@@ -696,7 +701,12 @@ public class ArrangementService {
 
         dmsService.deleteFilesByFund(fund);
 
-        structureDataRepository.deleteByFund(fund);
+        List<ArrStructuredObject> objList = structureDataRepository.findByFund(fund);
+        objList.forEach(obj -> {
+            structureItemRepository.deleteByStructuredObject(obj);
+            dataRepository.deleteByStructuredObject(obj);
+        });
+        structureDataRepository.deleteInBatch(objList);
 
         faRegisterRepository.findByFund(fund).forEach(
                 faScope -> faRegisterRepository.delete(faScope)
@@ -716,7 +726,6 @@ public class ArrangementService {
         Query deleteNotUseChangesQuery = revertingChangesService.createDeleteNotUseChangesQuery();
         deleteNotUseChangesQuery.executeUpdate();
     }
-
 
     /**
      * Uzavře otevřenou verzi archivní pomůcky a otevře novou verzi.
@@ -975,8 +984,6 @@ public class ArrangementService {
 
         final List<ArrDescItem> newDescItems = descriptionItemService
                     .copyDescItemWithDataToNode(level.getNode(), siblingDescItems, change, version);
-        // update cache
-        arrangementCacheService.createDescItems(level.getNodeId(), newDescItems);
 
         descItemRepository.flush();
 

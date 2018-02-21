@@ -8,7 +8,7 @@ import cz.tacr.elza.dataexchange.input.DEImportException;
 import cz.tacr.elza.dataexchange.input.aps.context.AccessPointInfo;
 import cz.tacr.elza.dataexchange.input.aps.context.AccessPointsContext;
 import cz.tacr.elza.dataexchange.input.context.ImportContext;
-import cz.tacr.elza.dataexchange.input.processor.ItemProcessor;
+import cz.tacr.elza.dataexchange.input.reader.ItemProcessor;
 import cz.tacr.elza.domain.RegExternalSystem;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;

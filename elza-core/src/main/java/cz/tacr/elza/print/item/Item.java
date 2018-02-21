@@ -32,9 +32,4 @@ public interface Item extends Comparable<Item> {
      * @return Never null, for non-serializable item should be returned empty string.
      */
     String getSerializedValue();
-
-    /**
-     * @return Returns false for items without value e.g. enum.
-     */
-    boolean isValueSerializable();
 }

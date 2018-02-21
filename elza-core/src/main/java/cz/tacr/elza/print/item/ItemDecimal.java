@@ -20,11 +20,6 @@ public class ItemDecimal extends AbstractItem {
     }
 
     @Override
-    public boolean isValueSerializable() {
-        return true;
-    }
-
-    @Override
     protected BigDecimal getValue() {
         return value;
     }

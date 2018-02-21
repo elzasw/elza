@@ -13,7 +13,7 @@ import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyGroup;
 import cz.tacr.elza.domain.ParPartyType;
 
-public class PartyLoader extends AbstractEntityLoader<Integer, ParParty> {
+public class PartyLoader extends AbstractEntityLoader<ParParty> {
 
     private final UnitdateLoader unitdateLoader;
 
@@ -32,6 +32,11 @@ public class PartyLoader extends AbstractEntityLoader<Integer, ParParty> {
     }
 
     @Override
+    protected void setEntityFetch(FetchParent<?, ?> baseEntity) {
+        baseEntity.fetch(ParParty.RECORD);
+    }
+
+    @Override
     public void flush() {
         super.flush();
         nameLoader.flush();
@@ -41,7 +46,7 @@ public class PartyLoader extends AbstractEntityLoader<Integer, ParParty> {
     }
 
     @Override
-    protected void onRequestLoad(ParParty result, LoadDispatcher<ParParty> dispatcher) {
+    protected void onBatchEntryLoad(LoadDispatcher<ParParty> dispatcher, ParParty result) {
         prepareCachedRelations(result);
 
         NameDispatcher nameDispatcher = new NameDispatcher(result, dispatcher);
@@ -51,11 +56,6 @@ public class PartyLoader extends AbstractEntityLoader<Integer, ParParty> {
             PartyGroupIdentifierDispatcher idDispatcher = new PartyGroupIdentifierDispatcher((ParPartyGroup) result, dispatcher);
             groupIndentifierLoader.addRequest(result.getPartyId(), idDispatcher);
         }
-    }
-
-    @Override
-    protected void addFetches(FetchParent<?, ParParty> parent) {
-        parent.fetch(ParParty.RECORD);
     }
 
     public static PartyLoader createPartyIdLoader(EntityManager em, int batchSize, StaticDataProvider staticData) {

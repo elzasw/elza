@@ -938,7 +938,7 @@ This is ID of the created party</xs:documentation>
 		</xs:sequence>
 		<xs:attribute name="id" use="required" type="e:Id">
 			<xs:annotation>
-				<xs:documentation>Packet ID, used for referencing packet inside XML</xs:documentation>
+				<xs:documentation>Structured Object ID, used for referencing structured object inside XML</xs:documentation>
 			</xs:annotation>
 		</xs:attribute>
 	</xs:complexType>
@@ -961,9 +961,9 @@ This is ID of the created party</xs:documentation>
 		<xs:sequence>
 			<xs:element name="sos" type="e:StructuredObjects" minOccurs="1" maxOccurs="1"/>
 		</xs:sequence>
-		<xs:attribute name="c" use="optional" type="xs:string">
+		<xs:attribute name="c" use="required" type="xs:string">
 			<xs:annotation>
-				<xs:documentation>code of structured type</xs:documentation>
+				<xs:documentation>code of structured type (required)</xs:documentation>
 			</xs:annotation>
 		</xs:attribute>
 	</xs:complexType>

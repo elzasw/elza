@@ -446,7 +446,7 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
                 count++;
             }
         }
-        if (count == 0) {
+        if (!excludeRoot && count == 0) {
             throw new IllegalArgumentException("Root node not found, nodeId:" + nodeId);
         }
         return count;

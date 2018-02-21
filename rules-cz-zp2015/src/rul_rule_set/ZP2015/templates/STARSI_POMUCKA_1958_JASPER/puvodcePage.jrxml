@@ -19,7 +19,7 @@
 	</subDataset>
 	<subDataset name="RelationTo" uuid="9835813e-0034-49fc-8272-9aa2927bb305">
 		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="New Data Adapter "/>
-		<field name="relationToType" class="cz.tacr.elza.print.party.RelationToType"/>
+		<field name="roleType" class="cz.tacr.elza.print.party.RelationToType"/>
 		<field name="record" class="cz.tacr.elza.print.Record"/>
 		<field name="note" class="java.lang.String"/>
 	</subDataset>
@@ -29,14 +29,12 @@
 		<field name="relations" class="java.util.List"/>
 	</subDataset>
 	<subDataset name="Relation" uuid="dc256e9d-57d0-4014-87fe-bdd4e6d4e507">
-		<field name="relType" class="cz.tacr.elza.print.party.RelationType"/>
+		<field name="type" class="cz.tacr.elza.print.party.RelationType"/>
 		<field name="relationsTo" class="java.util.List"/>
 		<field name="note" class="java.lang.String"/>
 		<field name="source" class="java.lang.String"/>
-		<field name="textFrom" class="java.lang.String"/>
-		<field name="textTo" class="java.lang.String"/>
-		<field name="dateNoteFrom" class="java.lang.String"/>
-		<field name="dateNoteTo" class="java.lang.String"/>
+		<field name="from" class="cz.tacr.elza.print.party.PartyUnitDate"/>
+		<field name="to" class="cz.tacr.elza.print.party.PartyUnitDate"/>
 	</subDataset>
 	<parameter name="fund" class="cz.tacr.elza.print.Fund"/>
 	<parameter name="output" class="cz.tacr.elza.print.Output"/>
@@ -149,12 +147,12 @@
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="Text" positionType="Float" x="0" y="5" width="455" height="20" isRemoveLineWhenBlank="true" uuid="a9337d06-7bac-4e48-8dfb-6f5681f18833">
-					<printWhenExpression><![CDATA[$F{creation}!=null]]></printWhenExpression>
+					<printWhenExpression><![CDATA[$F{creation}!=null&&$F{creation}.getFrom()!=null]]></printWhenExpression>
 				</reportElement>
 				<textElement markup="html">
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA["<b>Datum vzniku: </b>"+$F{creation}.getTextFrom()+" "+($F{creation}.getDateNoteFrom()!=null?($F{creation}.getDateNoteFrom()):"")]]></textFieldExpression>
+				<textFieldExpression><![CDATA["<b>Datum vzniku: </b>"+$F{creation}.getFrom().getValueText()+(StringUtils.isNotBlank($F{creation}.getFrom().getNote())?" "+$F{creation}.getFrom().getNote():"")]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="Text" positionType="Float" x="0" y="25" width="455" height="20" isRemoveLineWhenBlank="true" uuid="066f0355-bd2b-4328-ac97-52ec55458007">
@@ -190,7 +188,7 @@
 							<textElement markup="html">
 								<font pdfEncoding="Cp1250"/>
 							</textElement>
-							<textFieldExpression><![CDATA["<b>"+StringUtils.capitalize($F{relationToType}.getName())+": </b>"+$F{record}.getRecord()]]></textFieldExpression>
+							<textFieldExpression><![CDATA["<b>"+StringUtils.capitalize($F{roleType}.getName())+": </b>"+$F{record}.getRecord()]]></textFieldExpression>
 						</textField>
 					</jr:listContents>
 				</jr:list>
@@ -200,12 +198,12 @@
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="Text" positionType="Float" x="0" y="5" width="455" height="20" isRemoveLineWhenBlank="true" uuid="233e5526-90b2-45ad-bbb4-0ae773480df5">
-					<printWhenExpression><![CDATA[$F{destruction}!=null]]></printWhenExpression>
+					<printWhenExpression><![CDATA[$F{destruction}!=null&&$F{destruction}.getFrom()!=null]]></printWhenExpression>
 				</reportElement>
 				<textElement markup="html">
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA["<b>Datum zániku: </b>"+$F{destruction}.getTextFrom()+" "+($F{destruction}.getDateNoteFrom()!=null?($F{destruction}.getDateNoteFrom()):"")]]></textFieldExpression>
+				<textFieldExpression><![CDATA["<b>Datum zániku: </b>"+$F{destruction}.getFrom().getValueText()+(StringUtils.isNotBlank($F{destruction}.getFrom().getNote())?" "+$F{destruction}.getFrom().getNote():"")]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="Text" positionType="Float" x="0" y="25" width="455" height="20" isRemoveLineWhenBlank="true" uuid="6a019459-1eba-43cc-b95b-8f42c185f959">
@@ -241,7 +239,7 @@
 							<textElement markup="html">
 								<font pdfEncoding="Cp1250"/>
 							</textElement>
-							<textFieldExpression><![CDATA["<b>"+StringUtils.capitalize($F{relationToType}.getName())+": </b>"+$F{record}.getRecord()]]></textFieldExpression>
+							<textFieldExpression><![CDATA["<b>"+StringUtils.capitalize($F{roleType}.getName())+": </b>"+$F{record}.getRecord()]]></textFieldExpression>
 						</textField>
 					</jr:listContents>
 				</jr:list>
@@ -293,7 +291,7 @@
 													<textElement>
 														<font pdfEncoding="Cp1250"/>
 													</textElement>
-													<textFieldExpression><![CDATA[StringUtils.capitalize($F{relationToType}.getName())+": "+$F{record}.getRecord()+(StringUtils.isNotBlank($F{note})?(" ("+$F{note}+")"):"")]]></textFieldExpression>
+													<textFieldExpression><![CDATA[StringUtils.capitalize($F{roleType}.getName())+": "+$F{record}.getRecord()+(StringUtils.isNotBlank($F{note})?(" ("+$F{note}+")"):"")]]></textFieldExpression>
 												</textField>
 											</jr:listContents>
 										</jr:list>
@@ -302,12 +300,12 @@
 										<reportElement style="Text" positionType="Float" x="0" y="19" width="455" height="19" isRemoveLineWhenBlank="true" uuid="273bbf27-f6de-4340-8c4d-3c58c3979665">
 											<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 											<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
-											<printWhenExpression><![CDATA[StringUtils.isNotBlank($F{textFrom})||StringUtils.isNotBlank($F{textTo})]]></printWhenExpression>
+											<printWhenExpression><![CDATA[$F{from}!=null||$F{to}!=null]]></printWhenExpression>
 										</reportElement>
 										<textElement>
 											<font pdfEncoding="Cp1250"/>
 										</textElement>
-										<textFieldExpression><![CDATA["Datace: "+(StringUtils.isNotBlank($F{textFrom})?$F{textFrom}:"")+(StringUtils.isNotBlank($F{dateNoteFrom})?(" "+$F{dateNoteFrom}):"")+(StringUtils.isNotBlank($F{textTo})?(" - "+$F{textTo}):"")+(StringUtils.isNotBlank($F{dateNoteTo})?(" "+$F{dateNoteTo}):"")]]></textFieldExpression>
+										<textFieldExpression><![CDATA["Datace: "+($F{from}!=null?$F{from}.getValueText()+(StringUtils.isNotBlank($F{from}.getNote())?" "+$F{from}.getNote():""):"")+($F{to}!=null?" - "+$F{to}.getValueText()+(StringUtils.isNotBlank($F{to}.getNote())?" "+$F{to}.getNote():""):"")]]></textFieldExpression>
 									</textField>
 									<textField isStretchWithOverflow="true">
 										<reportElement style="Text" positionType="Float" x="0" y="38" width="455" height="19" isRemoveLineWhenBlank="true" uuid="8668414c-ae5c-4d76-a275-ba8aae90ab10">

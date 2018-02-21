@@ -2,7 +2,10 @@ package cz.tacr.elza.dataexchange.output.writer.xml;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
@@ -24,6 +27,7 @@ import cz.tacr.elza.dataexchange.output.items.PartyRefConvertor;
 import cz.tacr.elza.dataexchange.output.items.StructObjRefConvertor;
 import cz.tacr.elza.dataexchange.output.sections.ExportLevelInfo;
 import cz.tacr.elza.dataexchange.output.sections.SectionContext;
+import cz.tacr.elza.dataexchange.output.sections.StructObjectInfo;
 import cz.tacr.elza.dataexchange.output.writer.SectionOutputStream;
 import cz.tacr.elza.dataexchange.output.writer.xml.nodes.FileNode;
 import cz.tacr.elza.dataexchange.output.writer.xml.nodes.InternalNode;
@@ -34,8 +38,8 @@ import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ArrDataStructureRef;
 import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.ArrNodeRegister;
-import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.RulStructuredType;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.schema.v2.AccessPointRefs;
 import cz.tacr.elza.schema.v2.DescriptionItem;
@@ -50,13 +54,15 @@ class XmlSectionOutputStream implements SectionOutputStream {
 
     private final JAXBContext jaxbContext = XmlUtils.createJAXBContext(Level.class, StructuredObject.class);
 
+    private final Map<Integer, XmlFragment> structTypeIdFragmentMap = new HashMap<>();
+
     private final InternalNode parentNode;
 
     private final XmlFragment levelsFragment;
 
-    private final XmlFragment packetsFragment;
-
     private final SectionContext sectionContext;
+
+    private final Path tempDirectory;
 
     private boolean processed;
 
@@ -64,7 +70,7 @@ class XmlSectionOutputStream implements SectionOutputStream {
         this.parentNode = parentNode;
         this.sectionContext = sectionContext;
         this.levelsFragment = new XmlFragment(tempDirectory);
-        this.packetsFragment = new XmlFragment(tempDirectory);
+        this.tempDirectory = tempDirectory;
     }
 
     @Override
@@ -77,10 +83,10 @@ class XmlSectionOutputStream implements SectionOutputStream {
         if (levelInfo.getParentNodeId() != null) {
             level.setPid(levelInfo.getParentNodeId().toString());
         }
-        // write node APs references
-        writeNodeAPs(level, levelInfo.getNodeAPs());
-        // write desc items references
-        writeItems(level, levelInfo.getItems());
+        // convert node APs references
+        convertNodeAPs(levelInfo.getNodeAPs(), level);
+        // convert desc items references
+        convertItems(levelInfo.getItems(), level.getDeOrDiOrDd());
 
         try {
             writeLevel(level);
@@ -90,19 +96,17 @@ class XmlSectionOutputStream implements SectionOutputStream {
     }
 
     @Override
-    public void addStructuredObject(ArrStructuredObject structuredData) {
+    public void addStructObject(StructObjectInfo structObjInfo) {
         Validate.isTrue(!processed);
 
-        StructuredObject element = new StructuredObject();
-        element.setId(structuredData.getStructuredObjectId().toString());
-        // TODO: nastaveni dalsich polozek
-        /*element.setN(packet.getStorageNumber());
-        element.setS(PacketStateConvertor.convert(packet.getState()));
-        if (packet.getPacketType() != null) {
-            element.setT(packet.getPacketType().getCode());
-        }*/
+        StructuredObject structObj = new StructuredObject();
+        structObj.setId(Integer.toString(structObjInfo.getId()));
+
+        // convert desc items references
+        convertItems(structObjInfo.getItems(), structObj.getDeOrDiOrDd());
+
         try {
-            writeStructuredObject(element);
+            writeStructObject(structObj, structObjInfo.getStructType());
         } catch (Exception e) {
             throw new SystemException(e);
         }
@@ -114,7 +118,9 @@ class XmlSectionOutputStream implements SectionOutputStream {
 
         try {
             levelsFragment.close();
-            packetsFragment.close();
+            for (XmlFragment stFragment : structTypeIdFragmentMap.values()) {
+                stFragment.close();
+            }
         } catch (XMLStreamException | IOException e) {
             throw new SystemException(e);
         }
@@ -131,13 +137,15 @@ class XmlSectionOutputStream implements SectionOutputStream {
         }
         try {
             levelsFragment.delete();
-            packetsFragment.delete();
+            for (XmlFragment stFragment : structTypeIdFragmentMap.values()) {
+                stFragment.delete();
+            }
         } catch (IOException e) {
             throw new SystemException(e);
         }
     }
 
-    private void writeNodeAPs(Level level, List<ArrNodeRegister> nodeAPs) {
+    private void convertNodeAPs(Collection<ArrNodeRegister> nodeAPs, Level level) {
         if (nodeAPs == null || nodeAPs.isEmpty()) {
             return;
         }
@@ -150,36 +158,40 @@ class XmlSectionOutputStream implements SectionOutputStream {
         }
     }
 
-    private void writeItems(Level level, List<ArrItem> items) {
+    private void convertItems(Collection<? extends ArrItem> items, List<DescriptionItem> outList) {
         if (items == null || items.isEmpty()) {
             return;
         }
-        ItemConvertor convertor = new ItemConvertor(sectionContext.getRuleSystem(),
-                new ContextAwareItemDataConvertorFactory());
-        List<DescriptionItem> elements = level.getDeOrDiOrDd();
+        ItemConvertor convertor = new ItemConvertor(sectionContext.getRuleSystem(), new ContextAwareItemDataConvertorFactory());
         for (ArrItem item : items) {
             DescriptionItem element = convertor.convert(item);
-            elements.add(element);
+            outList.add(element);
         }
     }
 
     private InternalNode getSectionNode() {
-        InternalNode sectionNode = new InternalNode(XmlElementName.SECTIONS);
+        InternalNode sectionNode = new InternalNode(XmlNameConsts.SECTIONS);
         RulRuleSet ruleSet = sectionContext.getRuleSystem().getRuleSet();
-        sectionNode.addAttribute(XmlElementName.RULE_SET_CODE, ruleSet.getCode());
+        sectionNode.addAttribute(XmlNameConsts.RULE_SET_CODE, ruleSet.getCode());
 
         FundInfo fundInfo = new FundInfo();
         fundInfo.setIc(sectionContext.getInstitutionCode());
         fundInfo.setN(sectionContext.getFundName());
         fundInfo.setC(sectionContext.getFundInternalCode());
         fundInfo.setTr(sectionContext.getTimeRange());
-        JAXBElement<?> fiElement = XmlUtils.wrapElement(XmlElementName.FUND_INFO, fundInfo);
+        JAXBElement<?> fiElement = XmlUtils.wrapElement(XmlNameConsts.FUND_INFO, fundInfo);
         sectionNode.addNode(new JaxbNode(fiElement));
 
-        if (packetsFragment.isExist()) {
-            FileNode packetsNode = new FileNode(packetsFragment.getPath());
-            sectionNode.addNode(packetsNode);
+        // create xml node for structured types
+        if (!structTypeIdFragmentMap.isEmpty()) {
+            InternalNode stsNode = new InternalNode(XmlNameConsts.STRUCT_TYPES);
+            structTypeIdFragmentMap.values().forEach(stFragment -> {
+                FileNode stNode = new FileNode(stFragment.getPath());
+                stsNode.addNode(stNode);
+            });
+            sectionNode.addNode(stsNode);
         }
+        // create xml node for levels
         if (levelsFragment.isExist()) {
             FileNode levelsNode = new FileNode(levelsFragment.getPath());
             sectionNode.addNode(levelsNode);
@@ -191,22 +203,26 @@ class XmlSectionOutputStream implements SectionOutputStream {
         if (!levelsFragment.isOpen()) {
             XMLStreamWriter sw = levelsFragment.openStreamWriter();
             sw.writeStartDocument();
-            sw.writeStartElement(XmlElementName.LEVELS);
+            sw.writeStartElement(XmlNameConsts.LEVELS);
         }
         XMLStreamWriter sw = levelsFragment.getStreamWriter();
-        serializeJaxbType(sw, XmlElementName.LEVEL, level);
+        serializeJaxbType(sw, XmlNameConsts.LEVEL, level);
     }
 
-    private void writeStructuredObject(StructuredObject stuctObj) throws Exception {
-        /*
-        if (!packetsFragment.isOpen()) {
-            XMLStreamWriter sw = packetsFragment.openStreamWriter();
+    private void writeStructObject(StructuredObject structObj, RulStructuredType structType) throws Exception {
+        XmlFragment structTypeFragment = structTypeIdFragmentMap.get(structType.getStructuredTypeId());
+        if (structTypeFragment == null) {
+            structTypeFragment = new XmlFragment(tempDirectory);
+            XMLStreamWriter sw = structTypeFragment.openStreamWriter();
             sw.writeStartDocument();
-            sw.writeStartElement(XmlElementName.);
+            sw.writeStartElement(XmlNameConsts.STRUCT_TYPE);
+            sw.writeAttribute(XmlNameConsts.STRUCT_TYPE_CODE, structType.getCode());
+            sw.writeStartElement(XmlNameConsts.STRUCT_OBJECTS);
+            structTypeIdFragmentMap.put(structType.getStructuredTypeId(), structTypeFragment);
         }
-        XMLStreamWriter sw = packetsFragment.getStreamWriter();
-        serializeJaxbType(sw, XmlElementName.PACKET, packet);
-        */
+
+        XMLStreamWriter sw = structTypeFragment.getStreamWriter();
+        serializeJaxbType(sw, XmlNameConsts.STRUCT_OBJECT, structObj);
     }
 
     private void serializeJaxbType(XMLStreamWriter streamWriter, String localName, Object value) throws JAXBException {
@@ -249,14 +265,14 @@ class XmlSectionOutputStream implements SectionOutputStream {
         }
 
         @Override
-        public StructObjRefConvertor createPacketRefConvertor() {
+        public StructObjRefConvertor createStructObjectRefConvertor() {
             return new StructObjRefConvertor() {
                 @Override
                 public DescriptionItemStructObjectRefImpl convert(ArrData data) {
                     DescriptionItemStructObjectRefImpl item = super.convert(data);
                     if (item != null) {
                         ArrDataStructureRef structObjRef = (ArrDataStructureRef) data;
-                        sectionContext.addStructeredObjectId(structObjRef.getStructuredObjectId());
+                        sectionContext.addStructObjectId(structObjRef.getStructuredObjectId());
                     }
                     return item;
                 }

@@ -74,7 +74,7 @@ function resolveException(status, statusText, data) {
             unauthorized: true,
             data: data
         };
-    } else { // ostatni
+    } else if (data){ // other errors containing data
         result = {
             createToaster: true,
             type: data.type,
@@ -82,9 +82,13 @@ function resolveException(status, statusText, data) {
             level: data.level,
             properties: data.properties,
             message: data.message,
-            devMessage: data.devMessage,
+            stackTrace: data.stackTrace,
             status: status,
             statusText: statusText
+        };
+    } else { // other unknown errors
+        result = {
+            type: 'unknown',
         };
     }
 

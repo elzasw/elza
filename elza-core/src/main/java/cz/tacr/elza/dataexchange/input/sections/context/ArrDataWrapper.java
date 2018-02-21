@@ -10,9 +10,9 @@ import cz.tacr.elza.domain.ArrData;
 
 public class ArrDataWrapper implements EntityWrapper {
 
-    private final EntityIdHolder<ArrData> idHolder = new EntityIdHolder<>(ArrData.class);
+    protected final EntityIdHolder<ArrData> idHolder = new EntityIdHolder<>(ArrData.class);
 
-    private final ArrData entity;
+    protected final ArrData entity;
 
     ArrDataWrapper(ArrData entity) {
         this.entity = Validate.notNull(entity);

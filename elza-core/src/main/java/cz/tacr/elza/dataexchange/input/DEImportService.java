@@ -43,7 +43,6 @@ import cz.tacr.elza.dataexchange.input.reader.handlers.InstitutionElementHandler
 import cz.tacr.elza.dataexchange.input.reader.handlers.PartyGroupElementHandler;
 import cz.tacr.elza.dataexchange.input.reader.handlers.PersonElementHandler;
 import cz.tacr.elza.dataexchange.input.reader.handlers.SectionElementHandler;
-import cz.tacr.elza.dataexchange.input.sections.context.SectionStorageDispatcher;
 import cz.tacr.elza.dataexchange.input.sections.context.SectionsContext;
 import cz.tacr.elza.dataexchange.input.sections.context.SectionsContext.ImportPosition;
 import cz.tacr.elza.dataexchange.input.storage.StorageManager;
@@ -193,9 +192,13 @@ public class DEImportService {
     }
 
     private void checkScopePermissions(int importScopeId) {
-        if (!userService.hasPermission(Permission.ADMIN) && !userService.hasPermission(Permission.REG_SCOPE_WR, importScopeId)) {
-            throw Authorization.createAccessDeniedException(Permission.REG_SCOPE_WR);
+        if (userService.hasPermission(Permission.ADMIN)) {
+            return;
         }
+        if (userService.hasPermission(Permission.REG_SCOPE_WR, importScopeId)) {
+            return;
+        }
+        throw Authorization.createAccessDeniedException(Permission.REG_SCOPE_WR);
     }
 
 	/**
@@ -250,15 +253,12 @@ public class DEImportService {
 
     private SectionsContext initSectionsContext(StorageManager storageManager,
                                                 DEImportParams params,
-                                                RegScope scope,
+                                                RegScope importScope,
                                                 StaticDataProvider staticData) {
         ArrangementService arrangementService = initHelper.getArrangementService();
 
         // create global import change
         ArrChange createChange = arrangementService.createChange(Type.IMPORT);
-
-        // init storage dispatcher
-        SectionStorageDispatcher storageDispatcher = new SectionStorageDispatcher(storageManager, params.getBatchSize());
 
         // prepare import position
         ImportPositionParams posParams = params.getPositionParams();
@@ -276,7 +276,7 @@ public class DEImportService {
             pos = new ImportPosition(fundVersion, parentLevel, targetLevel, posParams.getDirection());
         }
 
-        return new SectionsContext(storageDispatcher, createChange, scope, pos, staticData, initHelper);
+        return new SectionsContext(storageManager, params.getBatchSize(), createChange, importScope, pos, staticData, initHelper);
     }
 
 	private static XmlElementReader prepareReader(InputStream is, ImportContext context, boolean ignoreRootNodes) {

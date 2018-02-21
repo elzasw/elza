@@ -13,8 +13,9 @@ import cz.tacr.elza.dataexchange.input.reader.XmlElementReader;
 
 public class SectionElementHandler extends ContextAwareElementHandler {
 
-	final XmlElementReader reader;
-	final boolean ignoreRootNodes;
+	private final XmlElementReader reader;
+
+	private final boolean ignoreRootNodes;
 
 	public SectionElementHandler(ImportContext context, XmlElementReader reader, boolean ignoreRootNodes) {
         super(context, ImportPhase.SECTIONS);
@@ -42,7 +43,8 @@ public class SectionElementHandler extends ContextAwareElementHandler {
 	 */
 	private void installSectionHandlers() {
 		reader.addElementHandler("/edx/fs/s/fi", new FundInfoElementHandler(context));
-        //reader.addElementHandler("/edx/fs/s/pcks/pck", new SectionPacketElementHandler(context));
+		reader.addElementHandler("/edx/fs/s/sts/st", new StructTypeElementHandler(context));
+		reader.addElementHandler("/edx/fs/s/sts/st/sos/so", new StructObjectElementHandler(context));
 
 		SectionLevelElementHandler levelHandler;
 		if (ignoreRootNodes) {
@@ -61,7 +63,8 @@ public class SectionElementHandler extends ContextAwareElementHandler {
 
 	private void uninstallSectionHandlers() {
 		reader.removeElementHandler("/edx/fs/s/lvls/lvl");
-        //reader.removeElementHandler("/edx/fs/s/pcks/pck");
+		reader.removeElementHandler("/edx/fs/s/sts/st");
+        reader.removeElementHandler("/edx/fs/s/sts/st/sos/so");
 		reader.removeElementHandler("/edx/fs/s/fi");
 	}
 }

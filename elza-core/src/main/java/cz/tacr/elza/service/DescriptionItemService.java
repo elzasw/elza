@@ -16,10 +16,10 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.BooleanUtils;
-import org.apache.commons.lang.NotImplementedException;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.Validate;
+import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.NotImplementedException;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -31,6 +31,9 @@ import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.controller.ArrangementController;
 import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.core.data.CalendarType;
+import cz.tacr.elza.core.data.RuleSystem;
+import cz.tacr.elza.core.data.RuleSystemItemType;
+import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.domain.ArrCalendarType;
@@ -58,7 +61,6 @@ import cz.tacr.elza.domain.ParUnitdate;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.convertor.CalendarConverter;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
@@ -73,23 +75,17 @@ import cz.tacr.elza.domain.vo.UnitdateTitleValue;
 import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.drools.RulesExecutor;
 import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.Level;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
-import cz.tacr.elza.repository.ItemSpecRegisterRepository;
-import cz.tacr.elza.repository.ItemSpecRepository;
-import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
-import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventChangeDescItem;
 import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
@@ -128,12 +124,6 @@ public class DescriptionItemService {
     private DescItemFactory descItemFactory;
 
     @Autowired
-    private ItemSpecRepository itemSpecRepository;
-
-    @Autowired
-    private ItemTypeRepository itemTypeRepository;
-
-    @Autowired
     private LevelRepository levelRepository;
 
     @Autowired
@@ -152,13 +142,13 @@ public class DescriptionItemService {
     private CalendarTypeRepository calendarTypeRepository;
 
     @Autowired
-    private ItemSpecRegisterRepository itemSpecRegisterRepository;
-
-    @Autowired
-    private RegisterTypeRepository registerTypeRepository;
-
-    @Autowired
     private EventNotificationService eventNotificationService;
+
+    @Autowired
+    ItemService itemService;
+
+    @Autowired
+    StaticDataService staticDataService;
 
     /**
      * Kontrola otevřené verze.
@@ -248,10 +238,11 @@ public class DescriptionItemService {
                                                 final Integer descItemTypeId) {
 
         ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
-        RulItemType descItemType = itemTypeRepository.findOne(descItemTypeId);
+        Validate.notNull(fundVersion, "Verze archivní pomůcky neexistuje");
 
-        Assert.notNull(fundVersion, "Verze archivní pomůcky neexistuje");
-        Assert.notNull(descItemType, "Typ hodnoty atributu neexistuje");
+        RuleSystem ruleSystem = staticDataService.getData().getRuleSystems().getByRuleSetId(fundVersion.getRuleSetId());
+        RuleSystemItemType descItemType = ruleSystem.getItemTypeById(descItemTypeId);
+        Validate.notNull(descItemType, "Typ hodnoty atributu neexistuje");
 
         ArrNode node = nodeRepository.findOne(nodeId);
         ArrChange change = arrangementService.createChange(ArrChange.Type.DELETE_DESC_ITEM, node);
@@ -260,7 +251,7 @@ public class DescriptionItemService {
         // uložení uzlu (kontrola optimistických zámků)
         saveNode(node, change);
 
-        List<ArrDescItem> descItems = descItemRepository.findOpenDescItems(descItemType, node);
+        List<ArrDescItem> descItems = descItemRepository.findOpenDescItems(descItemType.getEntity(), node);
 
         if (descItems.size() == 0) {
             throw new SystemException("Nebyla nalezena žádná hodnota atributu ke smazání");
@@ -301,15 +292,16 @@ public class DescriptionItemService {
                                                               final Integer descItemTypeId) {
 
         ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
-        RulItemType descItemType = itemTypeRepository.findOne(descItemTypeId);
+        Validate.notNull(fundVersion, "Verze archivní pomůcky neexistuje");
 
-        Assert.notNull(fundVersion, "Verze archivní pomůcky neexistuje");
-        Assert.notNull(descItemType, "Typ hodnoty atributu neexistuje");
+        RuleSystem ruleSystem = staticDataService.getData().getRuleSystems().getByRuleSetId(fundVersion.getRuleSetId());
+        RuleSystemItemType descItemType = ruleSystem.getItemTypeById(descItemTypeId);
+        Validate.notNull(descItemType, "Typ hodnoty atributu neexistuje");
 
         ArrNode node = nodeRepository.findOne(nodeId);
         ArrChange change = arrangementService.createChange(ArrChange.Type.DELETE_DESC_ITEM, node);
 
-        List<ArrDescItem> descItems = descItemRepository.findOpenDescItems(descItemType, node);
+        List<ArrDescItem> descItems = descItemRepository.findOpenDescItems(descItemType.getEntity(), node);
 
         if (descItems.size() == 0) {
             throw new SystemException("Nebyla nalezena žádná hodnota atributu ke smazání");
@@ -482,17 +474,19 @@ public class DescriptionItemService {
      * @return vytvořená hodnota atributu
      */
     public ArrDescItem createDescriptionItemWithData(final ArrDescItem descItem,
-                                                     final ArrFundVersion version,
+                                                     final ArrFundVersion fundVersion,
                                                      final ArrChange change) {
         Assert.notNull(descItem, "Hodnota atributu musí být vyplněna");
-        Assert.notNull(version, "Verze AS musí být vyplněna");
+        Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
         Assert.notNull(change, "Změna musí být vyplněna");
 
-        // pro vytváření musí být verze otevřená
-        checkFundVersionLock(version);
 
+        // pro vytváření musí být verze otevřená
+        checkFundVersionLock(fundVersion);
+
+        RuleSystem ruleSystem = staticDataService.getData().getRuleSystems().getByRuleSetId(fundVersion.getRuleSetId());
         // kontrola validity typu a specifikace
-        checkValidTypeAndSpec(descItem);
+        itemService.checkValidTypeAndSpec(ruleSystem, descItem);
 
         int maxPosition = getMaxPosition(descItem);
 
@@ -531,44 +525,6 @@ public class DescriptionItemService {
         return descItem;
     }
 
-    /**
-     * Kontrola typu a specifikace.
-     *
-     * @param descItem hodnota atributu
-     */
-    private void checkValidTypeAndSpec(final ArrDescItem descItem) {
-        RulItemType descItemType = descItem.getItemType();
-        RulItemSpec descItemSpec = descItem.getItemSpec();
-
-        Assert.notNull(descItemType, "Hodnota atributu musí mít vyplněný typ");
-
-        if (descItemType.getUseSpecification()) {
-            if (descItemSpec == null) {
-                throw new BusinessException("Pro typ atributu je nutné specifikaci vyplnit", ArrangementCode.ITEM_SPEC_NOT_FOUND).level(Level.WARNING);
-            }
-
-            if (descItemType.getDataType().getCode().equals("RECORD_REF")) {
-                Set<Integer> registerTypeIds = itemSpecRegisterRepository.findIdsByItemSpecId(descItemSpec);
-                Set<Integer> registerTypeIdTree = registerTypeRepository.findSubtreeIds(registerTypeIds);
-                ArrDataRecordRef data = (ArrDataRecordRef) descItem.getData();
-                if (!registerTypeIdTree.contains(data.getRecord().getRegisterTypeId())) {
-                    throw new BusinessException("Hodnota neodpovídá typu rejstříku podle specifikace", RegistryCode.FOREIGN_ENTITY_INVALID_SUBTYPE).level(Level.WARNING);
-                }
-            }
-
-        } else {
-            if (descItemSpec != null) {
-                throw new BusinessException("Pro typ atributu nesmí být specifikace vyplněná", ArrangementCode.ITEM_SPEC_FOUND).level(Level.WARNING);
-            }
-        }
-
-        if (descItemSpec != null) {
-            List<RulItemSpec> descItemSpecs = itemSpecRepository.findByItemType(descItemType);
-            if (!descItemSpecs.contains(descItemSpec)) {
-                throw new SystemException("Specifikace neodpovídá typu hodnoty atributu");
-            }
-        }
-    }
 
     /**
      * Smaže hodnotu atributu.
@@ -677,7 +633,9 @@ public class DescriptionItemService {
     }
 
     /**
-     * Vytvoří kopii seznamu atributů. Kopírovaný atribut patří zvolenému uzlu.
+     * Vytvoří kopii prvků popisu. Kopírovaný atribut patří zvolenému uzlu.
+     * 
+     * Method will also update nodeCache.
      *  @param node            uzel, který dostane kopírované atributy
      * @param sourceDescItems zdrojové atributy ke zkopírování
      * @param createChange    čas vytvoření nové kopie
@@ -707,9 +665,6 @@ public class DescriptionItemService {
             descItemNew.setDescItemObjectId(arrangementService.getNextDescItemObjectId());
 
             descItemRepository.save(descItemNew);
-
-            // sockety
-            //publishChangeDescItem(version, descItemNew);
 
             result.add(descItemNew);
         }
@@ -960,21 +915,23 @@ public class DescriptionItemService {
 	 * @param data
 	 * @return
 	 */
-	private ArrDescItem updateValue(final ArrFundVersion version, ArrDescItem descItemDB, RulItemSpec itemSpec,
+    private ArrDescItem updateValue(final ArrFundVersion fundVersion, ArrDescItem descItemDB, RulItemSpec itemSpec,
 	        ArrData data) {
+
+        RuleSystem ruleSystem = staticDataService.getData().getRuleSystems().getByRuleSetId(fundVersion.getRuleSetId());
 
 		// set data and specification
 		descItemDB.setData(data);
 		descItemDB.setItemSpec(itemSpec);
 		ArrDescItem result = descItemRepository.save(descItemDB);
 
-		checkValidTypeAndSpec(result);
+        itemService.checkValidTypeAndSpec(ruleSystem, result);
 
 		// update value in node cache
 		arrangementCacheService.changeDescItem(result.getNodeId(), result, false);
 
 		// sockety
-		publishChangeDescItem(version, result);
+        publishChangeDescItem(fundVersion, result);
 
 		return result;
 	}
@@ -1787,30 +1744,24 @@ public class DescriptionItemService {
                                                 final Integer fundVersionId,
                                                 final Integer descItemSpecId,
                                                 final Integer descItemObjectId) {
-        ArrNode node = nodeRepository.findOne(nodeId);
-        if (node == null) {
-            throw new ObjectNotFoundException("Nebyla nalezena JP s ID=" + nodeId, ArrangementCode.NODE_NOT_FOUND).set("id", nodeId);
-        }
-
         ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
         if (fundVersion == null) {
             throw new ObjectNotFoundException("Nebyla nalezena verze AS s ID=" + fundVersionId, ArrangementCode.FUND_VERSION_NOT_FOUND).set("id", fundVersionId);
         }
 
-        List<RulItemTypeExt> descriptionItemTypes = ruleService.getDescriptionItemTypes(fundVersion, node);
-        RulItemType descItemType = descriptionItemTypes.stream().filter(rulItemTypeExt -> rulItemTypeExt.getItemTypeId().equals(descItemTypeId)).findFirst().orElse(null);
-        if (descItemType == null) {
-            throw new ObjectNotFoundException("Nebyla nalezen typ atributu s ID=" + nodeId, ArrangementCode.ITEM_TYPE_NOT_FOUND).set("id", descItemTypeId);
+        ArrNode node = nodeRepository.findOne(nodeId);
+        if (node == null) {
+            throw new ObjectNotFoundException("Nebyla nalezena JP s ID=" + nodeId, ArrangementCode.NODE_NOT_FOUND)
+                    .set("id", nodeId);
         }
 
-        if (!descItemType.getIndefinable()) {
-            throw new BusinessException("Položku není možné nastavit jako '" + ArrangementService.UNDEFINED + "'", ArrangementCode.CANT_SET_INDEFINABLE)
-            	.set("descItem", descItemType.getCode());
-        }
+        RuleSystem ruleSystem = staticDataService.getData().getRuleSystems().getByRuleSetId(fundVersion.getRuleSetId());
+        RuleSystemItemType descItemType = ruleSystem.getItemTypeById(descItemTypeId);
+        Validate.notNull(descItemType, "Typ hodnoty atributu neexistuje");
 
         RulItemSpec descItemSpec = null;
         if (descItemSpecId != null) {
-            descItemSpec = itemSpecRepository.findOne(descItemSpecId);
+            descItemSpec = descItemType.getItemSpecById(descItemSpecId);
             if (descItemSpec == null) {
                 throw new ObjectNotFoundException("Nebyla nalezena specifikace atributu s ID=" + descItemSpecId, ArrangementCode.ITEM_SPEC_NOT_FOUND).set("id", descItemSpecId);
             }
@@ -1837,7 +1788,7 @@ public class DescriptionItemService {
         ArrDescItem descItem = new ArrDescItem();
 
         descItem.setNode(node);
-        descItem.setItemType(descItemType);
+        descItem.setItemType(descItemType.getEntity());
         descItem.setItemSpec(descItemSpec);
         descItem.setCreateChange(change);
         descItem.setDeleteChange(null);

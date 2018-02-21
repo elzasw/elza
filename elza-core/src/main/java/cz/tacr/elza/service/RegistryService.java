@@ -828,7 +828,7 @@ public class RegistryService {
 
 				Set<Integer> dataIds;
 				if (nodeIdToDataIdsMap.containsKey(nodeId)) {
-					dataIds = nodeIdToDataIdsMap.get(fundId);
+                    dataIds = nodeIdToDataIdsMap.get(nodeId);
 				} else {
 					dataIds = new HashSet<>();
 					nodeIdToDataIdsMap.put(nodeId, dataIds);

@@ -52,6 +52,12 @@ public class ArrDataString extends ArrData {
 	}
 
     @Override
+    protected boolean isEqualValueInternal(ArrData srcData) {
+        ArrDataString src = (ArrDataString)srcData;
+        return value.equals(src.value);
+    }
+
+    @Override
     public void mergeInternal(final ArrData srcData) {
         ArrDataString src = (ArrDataString) srcData;
         copyValue(src);

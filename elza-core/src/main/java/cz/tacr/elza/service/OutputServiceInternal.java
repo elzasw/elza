@@ -24,6 +24,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 
 import cz.tacr.elza.common.TaskExecutor;
 import cz.tacr.elza.core.ResourcePathResolver;
+import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.Authorization;
 import cz.tacr.elza.domain.ArrBulkActionRun;
@@ -361,8 +362,7 @@ public class OutputServiceInternal {
         return connector;
     }
 
-    @Transactional
-    public Set<Integer> getIgnoredItemTypeIds(ArrOutputDefinition outputDefinition) {
+    protected Set<Integer> getIgnoredItemTypeIds(ArrOutputDefinition outputDefinition) {
         Set<Integer> ignoredItemTypeIds = new HashSet<>();
 
         // add all manually calculating items from settings
@@ -393,7 +393,9 @@ public class OutputServiceInternal {
                     ArrangementCode.VERSION_ALREADY_CLOSED);
         }
 
-        itemService.checkValidTypeAndSpec(outputItem);
+        RuleSystem ruleSystem = this.staticDataService.getData().getRuleSystems()
+                .getByRuleSetId(fundVersion.getRuleSetId());
+        itemService.checkValidTypeAndSpec(ruleSystem, outputItem);
 
         int maxPosition = outputItemRepository.findMaxItemPosition(outputItem.getItemType(), outputItem.getOutputDefinition());
 
@@ -423,10 +425,10 @@ public class OutputServiceInternal {
     @Transactional(TxType.MANDATORY)
     public int deleteOutputItemsByType(ArrFundVersion fundVersion,
                                        ArrOutputDefinition outputDefinition,
-                                       RulItemType itemType,
+                                       Integer itemTypeId,
                                        ArrChange deleteChange) {
         Validate.notNull(outputDefinition);
-        Validate.notNull(itemType);
+        Validate.notNull(itemTypeId);
         Validate.notNull(deleteChange);
 
         if (fundVersion.getLockChange() != null) {
@@ -434,7 +436,7 @@ public class OutputServiceInternal {
                     ArrangementCode.VERSION_ALREADY_CLOSED);
         }
 
-        List<ArrOutputItem> outputItems = outputItemRepository.findOpenOutputItems(itemType, outputDefinition);
+        List<ArrOutputItem> outputItems = outputItemRepository.findOpenOutputItems(itemTypeId, outputDefinition);
 
         for (ArrOutputItem item : outputItems) {
             item.setDeleteChange(deleteChange); // saved by commit

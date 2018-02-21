@@ -96,6 +96,9 @@ public class ValidationVOService {
     }
 
 
+    // TODO: tuto metodu bude vhodne asi dale prozkoumat
+    // hlavne ve vztahu k metodam, ktere ji vyuzivaji a zda by
+    // rovnou nemela vracet party apod.
     public void checkPartyUpdate(final ParPartyVO partyVO) {
         ParPartyType partyType = partyTypeRepository.getOneCheckExist(partyVO.getPartyType().getId());
 
@@ -106,6 +109,10 @@ public class ValidationVOService {
         ParParty parParty = partyRepository.getOneCheckExist(partyVO.getId());
         if (!parParty.getPartyType().getPartyTypeId().equals(partyVO.getPartyType().getId())) {
             throw new IllegalArgumentException("Nelze měnit typ osoby.");
+        }
+
+        if (parParty.getRecord().isInvalid()) {
+            throw new IllegalStateException("Zneplatněné osodby není možno upravovat");
         }
 
         List<RegRegisterType> regRegisterTypes = registerTypeRepository.findRegisterTypeByPartyType(partyType);

@@ -1,19 +1,12 @@
 package cz.tacr.elza.controller;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 import javax.xml.parsers.ParserConfigurationException;
 
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.BaseCode;
-import org.geotools.kml.KMLConfiguration;
-import org.geotools.xml.Parser;
-import org.opengis.feature.simple.SimpleFeature;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
@@ -25,9 +18,9 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.xml.sax.SAXException;
 
-import cz.tacr.elza.repository.RegRecordRepository;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.service.ArrIOService;
-import cz.tacr.elza.service.RegistryService;
 
 /**
  * Controller pro import a export KML souborů
@@ -38,11 +31,6 @@ import cz.tacr.elza.service.RegistryService;
 @RestController
 public class KmlController {
 
-    @Autowired
-    private RegRecordRepository regRecordRepository;
-
-    @Autowired
-    private RegistryService registryService;
 
     @Autowired
     private ArrIOService arrIOService;
@@ -97,7 +85,7 @@ public class KmlController {
         Assert.notNull(descItemObjectId, "Nebyl vyplněn jednoznačný identifikátor descItem");
         Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
 
-        arrIOService.coordinatesDescExport(response, descItemObjectId, fundVersionId);
+        arrIOService.coordinatesExport(response, descItemObjectId, fundVersionId);
     }
 
 
@@ -110,7 +98,7 @@ public class KmlController {
         Assert.notNull(descItemObjectId, "Nebyl vyplněn jednoznačný identifikátor descItem");
         Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
 
-        arrIOService.coordinatesOutputExport(response, descItemObjectId, fundVersionId);
+        arrIOService.coordinatesExport(response, descItemObjectId, fundVersionId);
     }
 
     @RequestMapping(value = "/api/kml/export/regCoordinates/{coordinatesId}",

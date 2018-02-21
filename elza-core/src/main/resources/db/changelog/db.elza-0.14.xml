@@ -194,5 +194,10 @@
             join rul_data_type dt on dt.data_type_id = d.data_type_id
             where dt.code = 'TEXT')</sql>
     </changeSet>
+	
+	<changeSet id="201801180001" author="jtodt">
+		<modifyDataType tableName="arr_output_definition" columnName="error" newDataType="text"/>
+		<dropColumn tableName="arr_bulk_action_run" columnName="output_definition_id"/>
+	</changeSet>
 
 </databaseChangeLog>

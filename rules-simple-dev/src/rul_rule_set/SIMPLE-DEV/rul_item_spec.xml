@@ -2151,4 +2151,14 @@
         <description>Starší pomůcka</description>
         <shortcut>Starší pomůcka</shortcut>
     </item-spec>
+	<item-spec code="SRD_PACKET_TYPE_BOX" item-type="SRD_PACKET_TYPE">
+        <name>Karton</name>
+        <description>Karton</description>
+        <shortcut></shortcut>
+    </item-spec>
+    <item-spec code="SRD_PACKET_TYPE_FASCICLE" item-type="SRD_PACKET_TYPE">
+        <name>Fascikl</name>
+        <description>Fascikl</description>
+        <shortcut></shortcut>
+    </item-spec>
 </item-specs>

@@ -47,18 +47,18 @@ public class AuthorizationRequest {
 	 * Check if user has specific access rights for the fund
 	 *
 	 */
-	static class AuthCheckFundVersion extends AuthCheck {
+	static class AuthCheckFundId extends AuthCheck {
 
-		ArrFundVersion fundVersion;
+		Integer fundId;
 
-		AuthCheckFundVersion(Permission perm, ArrFundVersion fundVersion) {
+		AuthCheckFundId(Permission perm, Integer fundId) {
 			super(perm);
-			this.fundVersion = fundVersion;
+			this.fundId = fundId;
 		}
 
 		public boolean matches(Collection<UserPermission> perms) {
 			for (UserPermission up : perms) {
-				if (up.hasPermission(perm, fundVersion)) {
+				if (up.hasFundPermission(perm, fundId)) {
 					return true;
 				}
 			}
@@ -74,17 +74,41 @@ public class AuthorizationRequest {
 
 	public AuthorizationRequest or(Permission perm) {
 		// only some permission type checks are supported
-		Validate.isTrue(perm == Permission.ADMIN || perm == Permission.FUND_ARR_ALL);
+		Validate.isTrue(perm == Permission.ADMIN || perm == Permission.FUND_ARR_ALL 
+		        || perm == Permission.FUND_ADMIN
+				|| perm == Permission.FUND_BA_ALL || perm == Permission.FUND_CL_VER_WR_ALL
+				|| perm == Permission.FUND_EXPORT_ALL || perm == Permission.FUND_OUTPUT_WR_ALL
+				|| perm == Permission.FUND_RD_ALL
+				|| perm == Permission.USR_PERM);
 
 		checkList.add(new AuthCheck(perm));
 		return this;
 	}
 
 	public AuthorizationRequest or(Permission perm, ArrFundVersion fundVersion) {
+		return or(perm, fundVersion.getFundId());
+	}
+	
+	/**
+	 * Generic check
+	 * @param perm
+	 * @param entityId
+	 * @return
+	 */
+	public AuthorizationRequest or(Permission perm, Integer entityId) {
 		// only some permission type checks are supported
-		Validate.isTrue(perm == Permission.FUND_ARR);
-
-		checkList.add(new AuthCheckFundVersion(perm, fundVersion));
+		switch(perm) {
+		case FUND_ARR:
+		case FUND_BA:
+		case FUND_CL_VER_WR:
+		case FUND_EXPORT:
+		case FUND_VER_WR:
+		case FUND_RD:		
+			checkList.add(new AuthCheckFundId(perm, entityId));
+			break;
+		default:
+			throw new IllegalStateException("Unsupported permission check, permission = "+perm);
+		}
 		return this;
 	}
 

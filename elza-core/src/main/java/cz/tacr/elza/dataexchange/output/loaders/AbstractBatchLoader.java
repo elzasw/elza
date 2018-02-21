@@ -20,7 +20,6 @@ public abstract class AbstractBatchLoader<REQ, RES> implements Loader<REQ, RES> 
         this.batch = new ArrayList<>(this.batchSize);
     }
 
-
     @Override
     public void addRequest(REQ request, LoadDispatcher<RES> dispatcher) {
         dispatcher.onLoadBegin();
@@ -42,23 +41,31 @@ public abstract class AbstractBatchLoader<REQ, RES> implements Loader<REQ, RES> 
         processBatch(batch);
 
         for (BatchEntry be : batch) {
-            be.onLoadEnd();
+            be.onProcessed();
         }
 
         batch.clear();
     }
 
     /**
-     * Called during flush only when entries are not empty.
+     * Process all batch entries and sets results through {@link BatchEntry#addResult(Object)}.
      *
      * @param entries not-empty
      */
     protected abstract void processBatch(ArrayList<BatchEntry> entries);
 
-    protected void onRequestLoad(RES result, LoadDispatcher<RES> dispatcher) {
+    /**
+     * Called when result loaded. One request can have multiple results.
+     * @param request
+     *
+     * @param request not-null
+     * @param dispatcher not-null
+     * @param result not-null
+     */
+    protected void onBatchEntryLoad(LoadDispatcher<RES> dispatcher, RES result) {
     }
 
-    public class BatchEntry {
+    protected class BatchEntry {
 
         private final REQ request;
 
@@ -77,10 +84,10 @@ public abstract class AbstractBatchLoader<REQ, RES> implements Loader<REQ, RES> 
             Validate.notNull(result);
 
             dispatcher.onLoad(result);
-            onRequestLoad(result, dispatcher);
+            onBatchEntryLoad(dispatcher, result);
         }
 
-        private void onLoadEnd() {
+        private void onProcessed() {
             dispatcher.onLoadEnd();
         }
     }

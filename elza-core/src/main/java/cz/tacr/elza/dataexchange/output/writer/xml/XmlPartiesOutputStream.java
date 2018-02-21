@@ -116,11 +116,11 @@ public class XmlPartiesOutputStream implements PartiesOutputStream {
         if (!fragment.isOpen()) {
             XMLStreamWriter sw = fragment.openStreamWriter();
             sw.writeStartDocument();
-            sw.writeStartElement(XmlElementName.PARTIES);
+            sw.writeStartElement(XmlNameConsts.PARTIES);
         }
 
         XMLStreamWriter sw = fragment.getStreamWriter();
-        String partyName = XmlElementName.getPartyName(party);
+        String partyName = XmlNameConsts.getPartyName(party);
         JAXBElement<?> jaxbElement = XmlUtils.wrapElement(partyName, party);
         Marshaller marshaller = jaxbContext.createMarshaller();
         marshaller.setProperty(Marshaller.JAXB_FRAGMENT, Boolean.TRUE);

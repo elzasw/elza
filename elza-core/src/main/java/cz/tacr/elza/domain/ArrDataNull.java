@@ -32,6 +32,10 @@ public class ArrDataNull extends ArrData {
 	}
 
     @Override
+    protected boolean isEqualValueInternal(ArrData srcData) {
+        return true;
+    }
+    @Override
     public void mergeInternal(final ArrData srcData) {
         ArrDataNull src = (ArrDataNull)srcData;
     }

@@ -40,6 +40,7 @@ import com.jayway.restassured.response.Response;
 import com.jayway.restassured.response.ResponseBody;
 import com.jayway.restassured.response.ResponseOptions;
 import com.jayway.restassured.specification.RequestSpecification;
+
 import cz.tacr.elza.AbstractTest;
 import cz.tacr.elza.controller.ArrangementController.FaFilteredFulltextParam;
 import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
@@ -97,10 +98,10 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemEnumVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemFormattedTextVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemIntVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemJsonTableVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStructureVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemPartyRefVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemRecordRefVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStringVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStructureVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemTextVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitdateVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitidVO;
@@ -110,8 +111,6 @@ import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.vo.ChangesResult;
-
-import static com.jayway.restassured.RestAssured.given;
 
 
 public abstract class AbstractControllerTest extends AbstractTest {
@@ -360,6 +359,12 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
     private static Map<String, String> cookies = null;
 
+    public static File getResourceFile(String resourcePath) {
+        URL url = Thread.currentThread().getContextClassLoader().getResource(resourcePath);
+        Assert.assertNotNull(url);
+        return new File(url.getPath());
+    }
+
     @Override
     @Before
     public void setUp() throws Exception {
@@ -368,7 +373,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
         RestAssured.baseURI = RestAssured.DEFAULT_URI;  // nastavi default URI pro REST-assured. Nejcasteni localhost
         login();
         if (loadInstitutions) {
-            importXmlFile(null, 1, DEImportControllerTest.getResourceFile(XML_INSTITUTION));
+            importXmlFile(null, 1, getResourceFile(XML_INSTITUTION));
         }
     }
 

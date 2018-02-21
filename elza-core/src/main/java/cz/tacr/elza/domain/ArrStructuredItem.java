@@ -20,13 +20,15 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @Table
 @JsonIgnoreProperties(value = {"hibernateLazyInitializer", "handler"})
 public class ArrStructuredItem extends ArrItem {
+	
+	public static final String STRUCT_OBJ_FK = "structuredObjectId";
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrStructuredObject.class)
-    @JoinColumn(name = "structuredObjectId", nullable = false)
+    @JoinColumn(name = STRUCT_OBJ_FK, nullable = false)
     @JsonIgnore
     private ArrStructuredObject structuredObject;
 
-    @Column(name = "structuredObjectId", updatable = false, insertable = false)
+    @Column(name = STRUCT_OBJ_FK, updatable = false, insertable = false)
     private Integer structuredObjectId;
 
     public ArrStructuredItem() {

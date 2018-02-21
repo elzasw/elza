@@ -17,11 +17,11 @@ class ExceptionDetail extends AbstractReactComponent {
                                                 style={{height: '5em'}}
                                                 readOnly
                                                 value={data.message}/>}
-                    {data.devMessage && <FormInput label={i18n("global.exception.detail.stack")}
+                    {data.stackTrace && <FormInput label={i18n("global.exception.detail.stack")}
                                                    componentClass="textarea"
                                                    style={{height: '25em'}}
                                                    readOnly
-                                                   value={data.devMessage}/>}
+                                                   value={data.stackTrace}/>}
                     {data.properties && <FormInput label={i18n("global.exception.detail.properties")}
                                                    componentClass="textarea"
                                                    style={{height: '10em'}}

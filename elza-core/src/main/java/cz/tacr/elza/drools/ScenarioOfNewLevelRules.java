@@ -54,7 +54,7 @@ public class ScenarioOfNewLevelRules extends Rules {
 
             StatelessKieSession session = createNewStatelessKieSession(path);
             session.setGlobal("results", newLevelApproaches);
-            execute(session, levels);
+            session.execute(levels);
         }
 
         List<RulExtensionRule> rulExtensionRules = ruleService.findExtensionRuleByNode(level.getNode(), RulExtensionRule.RuleType.NEW_LEVEL);
@@ -63,7 +63,7 @@ public class ScenarioOfNewLevelRules extends Rules {
 
             StatelessKieSession session = createNewStatelessKieSession(path);
             session.setGlobal("results", newLevelApproaches);
-            execute(session, levels);
+            session.execute(levels);
         }
 
         List<ScenarioOfNewLevel> scenarioOfNewLevelList = new LinkedList<>();

@@ -22,7 +22,7 @@ public class InstitutionsContext {
 
     private final int batchSize;
 
-    private final InstitutionImportManager institutionsImportManager;
+    private final InstitutionUpdateProcessor mergeProcessor;
 
     private final Map<String, ParInstitutionType> institutionTypeCodeMap;
 
@@ -33,12 +33,12 @@ public class InstitutionsContext {
                                ImportInitHelper initHelper) {
         this.storageManager = storageManager;
         this.batchSize = batchSize;
-        this.institutionsImportManager = new InstitutionImportManager(batchSize, initHelper.getInstitutionRepository());
+        this.mergeProcessor = new InstitutionUpdateProcessor(batchSize, initHelper.getInstitutionRepository());
         this.institutionTypeCodeMap = loadInstitutionTypeCodeMap(initHelper.getInstitutionTypeRepository());
     }
 
     public void init(ObservableImport observableImport) {
-        observableImport.registerPhaseChangeListener(institutionsImportManager);
+        observableImport.registerPhaseChangeListener(mergeProcessor);
         observableImport.registerPhaseChangeListener(new InstitutionsPhaseEndListener());
     }
 
@@ -47,7 +47,7 @@ public class InstitutionsContext {
     }
 
     public void addInstitution(ParInstitution entity, PartyInfo partyInfo) {
-        InstitutionWrapper wrapper = institutionsImportManager.createWrapper(entity, partyInfo);
+        InstitutionWrapper wrapper = mergeProcessor.createWrapper(entity, partyInfo);
         institutionQueue.add(wrapper);
         if (institutionQueue.size() >= batchSize) {
             storeInstitutions();

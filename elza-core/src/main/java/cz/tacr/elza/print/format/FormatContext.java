@@ -9,6 +9,28 @@ import org.apache.commons.lang3.StringUtils;
  * Context of active formatting
  */
 public class FormatContext {
+    
+    /**
+     * Helper class to store block on stack
+     */
+    static class Block {
+        StringBuilder resultBuffer;
+        String pendingSeparator;
+        
+        public Block(StringBuilder resultBuffer, String pendingSeparator) {
+            this.resultBuffer = resultBuffer;
+            this.pendingSeparator = pendingSeparator;
+        }
+
+        public StringBuilder getResultBuffer() {
+            return resultBuffer;
+        }
+
+        public String getPendingSeparator() {
+            return pendingSeparator;
+        }
+        
+    }
 
     /**
      * Active separator
@@ -19,11 +41,21 @@ public class FormatContext {
      * Active separator for specifications
      */
     private String specificationSeparator = " ";
+    
+    /**
+     * Flag if begin block separator should be use always
+     */
+    private boolean useBeginBlockSeparatorAlways = true;
 
     /**
      * Begin block separator
      */
     private String beginBlockSeparator = "\n";
+
+    /**
+     * Flag if end block separator should be use always
+     */
+    private boolean useEndBlockSeparatorAlways = true;
 
     /**
      * End block separator
@@ -32,13 +64,24 @@ public class FormatContext {
 
     /**
      * Buffer with result
+     * 
+     * Use appendResult to append data to the buffer.
+     * Do not append data directly!
      */
     private StringBuilder resultBuffer = new StringBuilder();
+    
+    /**
+     * Conditional separator
+     * 
+     * This pending separator will be added to the resultBuffer if some 
+     * other text will be added also.
+     */
+    private String pendingSeparator;
 
     /**
      * Stack of opened blocks
      */
-    private List<StringBuilder> blockStack = new LinkedList<>();
+    private List<Block> blockStack = new LinkedList<>();
 
     private String titleSeparator;
 
@@ -70,21 +113,24 @@ public class FormatContext {
         return beginBlockSeparator;
     }
 
-    public void setBeginBlockSeparator(String beginBlockSeparator) {
+    public void setBeginBlockSeparator(String beginBlockSeparator, boolean useBeginSeparatorAlways) {
         this.beginBlockSeparator = beginBlockSeparator;
+        this.useBeginBlockSeparatorAlways = useBeginSeparatorAlways;
     }
 
     public String getEndBlockSeparator() {
         return endBlockSeparator;
     }
 
-    public void setEndBlockSeparator(String endBlockSeparator) {
+    public void setEndBlockSeparator(String endBlockSeparator, boolean useEndSeparatorAlways) {
         this.endBlockSeparator = endBlockSeparator;
+        this.useEndBlockSeparatorAlways = useEndSeparatorAlways;
     }
 
     /**
      * Return formatted result
      *
+     * Method is called after all formatting actions are finished
      * @return
      */
     public String getResult() {
@@ -104,11 +150,9 @@ public class FormatContext {
             return;
         }
 
-        if (resultBuffer.length() > 0) {
-            resultBuffer.append(itemSeparator);
-        }
-
-        resultBuffer.append(value);
+        appendResult(value);
+        
+        this.pendingSeparator = itemSeparator;
     }
 
     /**
@@ -117,44 +161,78 @@ public class FormatContext {
      * @param value
      */
     public void appendSpecWithValue(String spec, String value) {
-        if (resultBuffer.length() > 0) {
-            resultBuffer.append(itemSeparator);
-        }
-        resultBuffer.append(spec);
+        appendResult(spec);
         if (StringUtils.isNoneBlank(value)) {
-            resultBuffer.append(specificationSeparator);
-            resultBuffer.append(value);
+            appendResult(specificationSeparator);
+            appendResult(value);
         }
+        
+        this.pendingSeparator = itemSeparator;
     }
 
     /**
      * Begin new block
      */
     public void beginBlock() {
-        blockStack.add(resultBuffer);
+        Block block = new Block(resultBuffer, pendingSeparator);
+        blockStack.add(block);
+        
+        // prepare data for inner block
         resultBuffer = new StringBuilder();
+        pendingSeparator = null;
     }
 
     /**
      * End current block
      */
     public void endBlock() {
-        // Get from stack
-        StringBuilder sb = blockStack.remove(0);
+        // get result of the block
+        String appendText = resultBuffer.toString();
+        
+        // Restore from stack
+        Block restoredBlock = blockStack.remove(0); 
+        resultBuffer = restoredBlock.getResultBuffer();
+        pendingSeparator = restoredBlock.getPendingSeparator(); 
 
-        if (resultBuffer.length() > 0) {
+        if (appendText.length() > 0) {
             // begin block
             if (beginBlockSeparator != null) {
-                sb.append(beginBlockSeparator);
+                // append begin block if required or some text is already in builder
+                if(useBeginBlockSeparatorAlways || resultBuffer.length()>0)
+                {
+                    appendResult(beginBlockSeparator);
+                }
             }
 
-            sb.append(resultBuffer.toString());
+            appendResult(appendText);
 
             // end block
             if (endBlockSeparator != null) {
-                sb.append(endBlockSeparator);
+                if(useEndBlockSeparatorAlways) {
+                    appendResult(endBlockSeparator);
+                } else {                    
+                    this.pendingSeparator = endBlockSeparator;
+                }
             }
+        }        
+    }
+
+    /**
+     * Append text to the result
+     * 
+     * Other functions should not directly manipulate with resultBuffer
+     * @param result
+     */
+    private void appendResult(String result) {
+        if(StringUtils.isNotEmpty(result)) {
+            // append pending separator
+            if(pendingSeparator!=null) {
+                resultBuffer.append(pendingSeparator);
+                pendingSeparator = null;
+            }
+            
+            // append result
+            resultBuffer.append(result);
         }
-        resultBuffer = sb;
     }
 }

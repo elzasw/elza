@@ -15,15 +15,15 @@ import cz.tacr.elza.dataexchange.input.storage.StorageManager;
 /**
  * Stores import objects as batch per level depth.
  */
-public class SectionStorageDispatcher {
+public class NodeStorageDispatcher {
 
-    private List<SectionBatch> batchDepthStack = new ArrayList<>();
+    private List<NodeDepthBatch> depthStack = new ArrayList<>();
 
     private final StorageManager storageManager;
 
     private final int batchSize;
 
-    public SectionStorageDispatcher(StorageManager storageManager, int batchSize) {
+    public NodeStorageDispatcher(StorageManager storageManager, int batchSize) {
         this.storageManager = storageManager;
         this.batchSize = batchSize;
     }
@@ -37,71 +37,71 @@ public class SectionStorageDispatcher {
     }
 
     public int getDepth() {
-        return batchDepthStack.size() - 1;
+        return depthStack.size() - 1;
     }
 
     /**
      * Dispatch all entity types.
      */
     public void dispatchAll() {
-        dispatch(getDepth(), SectionBatch::storeAll);
+        dispatch(getDepth(), NodeDepthBatch::storeAll);
     }
 
     public void addNode(ArrNodeWrapper node, int depth) {
-        SectionBatch batch = getBatch(depth);
+        NodeDepthBatch batch = getBatch(depth);
         if (batch.addNode(node)) {
             batch.storeNodes();
         }
     }
 
     public void addNodeRegister(ArrNodeRegisterWrapper nodeRegister, int depth) {
-        SectionBatch batch = getBatch(depth);
+        NodeDepthBatch batch = getBatch(depth);
         if (batch.addNodeRegister(nodeRegister)) {
             batch.storeNodeRegistry();
         }
     }
 
     public void addLevel(ArrLevelWrapper level, int depth) {
-        SectionBatch batch = getBatch(depth);
+        NodeDepthBatch batch = getBatch(depth);
         if (batch.addLevel(level)) {
-            dispatch(depth, SectionBatch::storeNodes);
+            dispatch(depth, NodeDepthBatch::storeNodes);
             batch.storeLevels();
         }
     }
 
     public void addDescItem(ArrDescItemWrapper descItem, int depth) {
-        SectionBatch batch = getBatch(depth);
+        NodeDepthBatch batch = getBatch(depth);
         if (batch.addDescItem(descItem)) {
             batch.storeDescItems();
         }
     }
 
     public void addData(ArrDataWrapper data, int depth) {
-        SectionBatch batch = getBatch(depth);
+        NodeDepthBatch batch = getBatch(depth);
         if (batch.addData(data)) {
             batch.storeData(data.getEntity().getType());
         }
     }
 
-    private void dispatch(int depthLimit, Consumer<SectionBatch> storeAction) {
+    private void dispatch(int depthLimit, Consumer<NodeDepthBatch> storeAction) {
         for (int i = 0; i <= depthLimit; i++) {
-            SectionBatch batch = batchDepthStack.get(i);
+            NodeDepthBatch batch = depthStack.get(i);
             storeAction.accept(batch);
         }
     }
 
-    private SectionBatch getBatch(int depth) {
+    private NodeDepthBatch getBatch(int depth) {
         int currDepth = getDepth();
         if (currDepth < depth) {
             Validate.isTrue(currDepth + 1 == depth);
-            SectionBatch batch = new SectionBatch(storageManager, batchSize);
-            batchDepthStack.add(batch);
+            NodeDepthBatch batch = new NodeDepthBatch(storageManager, batchSize);
+            depthStack.add(batch);
             return batch;
         }
-        return batchDepthStack.get(depth);
+        return depthStack.get(depth);
     }
 
-    private static class SectionBatch {
+    private static class NodeDepthBatch {
 
         private final StorageManager storageManager;
 
@@ -117,7 +117,7 @@ public class SectionStorageDispatcher {
 
         private final MultiValuedMap<DataType, ArrDataWrapper> dataTypeMap;
 
-        public SectionBatch(StorageManager storageManager, int batchSize) {
+        public NodeDepthBatch(StorageManager storageManager, int batchSize) {
             this.storageManager = storageManager;
             this.batchSize = batchSize;
 
@@ -219,10 +219,11 @@ public class SectionStorageDispatcher {
 
         public void storeData(DataType dataType) {
             Collection<ArrDataWrapper> group = dataTypeMap.get(dataType);
-            if (group.size() > 0) {
-                storageManager.saveSectionData(group);
-                group.clear();
+            if (group.isEmpty()) {
+                return;
             }
+            storageManager.saveData(group);
+            group.clear();
         }
 
         public void storeData() {

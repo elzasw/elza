@@ -37,7 +37,7 @@ class FundForm extends AbstractReactComponent {
             errors.institutionId = i18n('global.validation.required');
         }
 
-        if (!admin && (!values.fundAdmins || values.fundAdmins.length === 0)) {
+        if (props.create && !admin && (!values.fundAdmins || values.fundAdmins.length === 0)) {
             errors.fundAdmins = i18n('global.validation.required');
         }
 
@@ -177,8 +177,8 @@ class FundForm extends AbstractReactComponent {
                     renderTagItem={renderUserOrGroupLabel}
                     fieldComponent={UserAndGroupField}
                     fieldComponentProps={{
-                        findUserApi: admin ? WebApi.findUser : WebApi.findUserWithFundCreate,
-                        findGroupApi: admin ? WebApi.findGroup : WebApi.findGroupWithFundCreate
+                        findUserApi: WebApi.findUserWithFundCreate,
+                        findGroupApi: WebApi.findGroupWithFundCreate
                     }}
                 />}
             </Modal.Body>

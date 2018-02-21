@@ -4,15 +4,15 @@ import java.util.Objects;
 
 import org.apache.commons.lang3.Validate;
 
-import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrItem;
 
-final class DescItemKey {
+final class ItemKey {
 
 	private final String typeCode;
 
 	private final String specCode;
 
-	public DescItemKey(String typeCode, String specCode) {
+	public ItemKey(String typeCode, String specCode) {
 		this.typeCode = Validate.notNull(typeCode);
 		this.specCode = specCode;
 	}
@@ -23,8 +23,8 @@ final class DescItemKey {
 			if (obj == this) {
 				return true;
 			}
-			if (obj.getClass() == DescItemKey.class) {
-				DescItemKey o = (DescItemKey) obj;
+			if (obj.getClass() == ItemKey.class) {
+				ItemKey o = (ItemKey) obj;
 				return typeCode.equals(o.typeCode) && Objects.equals(specCode, o.specCode);
 			}
 		}
@@ -36,12 +36,12 @@ final class DescItemKey {
 		return Objects.hash(typeCode, specCode);
 	}
 
-	public static DescItemKey of(ArrDescItem descItem) {
+	public static ItemKey of(ArrItem descItem) {
 		String typeCode = descItem.getItemType().getCode();
 		String specCode = null;
 		if (descItem.getItemSpec() != null) {
 			specCode = Validate.notNull(descItem.getItemSpec().getCode());
 		}
-		return new DescItemKey(typeCode, specCode);
+		return new ItemKey(typeCode, specCode);
 	}
 }

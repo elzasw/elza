@@ -273,7 +273,7 @@ function mergeDescItems(state, resultDescItemType, prevType, newType) {
             // Nakopírování nově přijatých hodnot, případně ponechání stejných (na základě descItemObjectId a prev value == value ze serveru, které již uživatel upravil a nejsou odeslané)
             newType.descItems.forEach(descItem => {
                 var prevDescItem = prevDescItemMap[descItem.descItemObjectId];
-                if (prevDescItem && (prevDescItemHasSamePrevValue(prevDescItem, descItem) && prevDescItem.touched || !descItem.value)) {   // původní hodnota přijatá ze serveru má stejné hodnoty jako jsou nyní v nově přijatých datech na serveru a uživatel nám aktuální data upravil
+                if (prevDescItem && (prevDescItemHasSamePrevValue(prevDescItem, descItem) && prevDescItem.touched || (!descItem.value && !descItem.undefined))) {   // původní hodnota přijatá ze serveru má stejné hodnoty jako jsou nyní v nově přijatých datech na serveru a uživatel nám aktuální data upravil
                     var item = prevDescItem;
                     if(state.updatedItem && (state.updatedItem.descItemObjectId === descItem.descItemObjectId)){
                         item.value = state.updatedItem.value;
@@ -433,6 +433,9 @@ export function mergeAfterUpdate(state, data, refTables) {
 
     flatLocalForm.update(flatForm);
 
+    // Update info about descItemTypes
+    state.infoTypesMap = flatLocalForm.types;
+    // Update form with new data
     state.formData = restoreFormDataStructure(flatLocalForm);
 
     return state;
@@ -603,7 +606,7 @@ class FlatFormData{
     _updateDescItems(newItems){
         this._mergeDescItems(newItems);
         this._deleteUnusedItems();
-        this._addForcedItems();
+        this._generateNewItems();
     }
     /**
      * Merges given items into instance's descItems.
@@ -635,18 +638,16 @@ class FlatFormData{
      * Deletes unused items (items that are empty, not required or recommended, and not added by user).
      */
     _deleteUnusedItems(){
-        let types = this.types;
         let items = this.descItems;
         let newIds = [...items.ids];
 
         for(let i = 0; i < items.ids.length; i++){
             let itemId = items.ids[i];
             let item = items[itemId];
-            let type = types[item.itemType];
-            let forceVisible =  type.type === availability.REQUIRED || type.type === availability.RECOMMENDED;
-            let isEmpty = !item.value && !item.descItemSpecId;
+            let isEmpty = item.value === null || item.descItemSpecId === null;
+            const isFromDb = item.descItemObjectId >= 0;
 
-            if(isEmpty && !item.addedByUser && !forceVisible){
+            if(isEmpty && !item.addedByUser && !isFromDb){
                 delete items[itemId];
                 newIds.splice(newIds.indexOf(itemId),1);
             }
@@ -655,9 +656,9 @@ class FlatFormData{
         this.descItems = items;
     }
     /**
-     * Adds required or recommended items, if they don't exist.
+     * Generates new object with desc items. Adds REQUIRED and RECOMMENDED item types and specifications.
      */
-    _addForcedItems(){
+    _generateNewItems(){
         let types = this.types;
         let items = this.descItems;
         let specs = this.specs;
@@ -665,6 +666,7 @@ class FlatFormData{
         let itemSpecsMap = this._getForcedSpecsByType(specs);
         let refTypesMap = getMapFromList(this.refTables.descItemTypes.items);
         let refDataTypesMap = getMapFromList(this.refTables.rulDataTypes.items);
+        let newItems = {ids:[]};
 
         for(let t = 0; t < types.ids.length; t++){
             let typeId = types.ids[t];
@@ -677,53 +679,49 @@ class FlatFormData{
                 refType.dataType = refDataTypesMap[refType.dataTypeId];
                 let forcedTypeSpecs = itemSpecsMap[typeId] && itemSpecsMap[typeId].specs;
                 let newItem;
-                let newItems = [];
+                let nextEmptyItemIdBase = "item_";
+                let nextEmptyItemId = nextEmptyItemIdBase + this._emptyItemCounter;
 
                 if (forcedTypeSpecs){
+                    //Add forced specifications
                     let unusedForcedSpecs = this._getUnusedSpecIds(forcedTypeSpecs, typeItems);
                     let lastPosition = typeItems ? typeItems.length : 0;
-
+                    
                     for(let s = 0; s < unusedForcedSpecs.length; s++){
+                        nextEmptyItemId = nextEmptyItemIdBase + this._emptyItemCounter;
                         newItem = createDescItem(type, refType, false);
                         newItem.descItemSpecId = unusedForcedSpecs[s];
                         newItem.itemType = typeId;
                         newItem.position = lastPosition + 1;
                         lastPosition++;
 
-                        newItems.push(newItem);
+                        newItems[nextEmptyItemId] = newItem;
+                        newItems.ids.push(nextEmptyItemId);
+                        this._emptyItemCounter++;
                     }
-                }
-                if(!typeItems && newItems.length <= 0){
+                } else if(!typeItems){
+                    //Add forced itemTypes
                     newItem = createDescItem(type, refType, false);
                     newItem.position = 1;
                     newItem.itemType = typeId;
 
-                    newItems.push(newItem);
-                }
+                    newItems[nextEmptyItemId] = newItem;
+                    newItems.ids.push(nextEmptyItemId);
+                    this._emptyItemCounter++;
+                } else if (typeItems){
+                    //Add existing items
+                    for(let i = 0; i < typeItems.length; i++){
+                        const itemId = typeItems[i];
+                        const item = items[itemId];
 
-                this._addItemsFromArray(newItems);
+                        newItems[itemId] = item;
+                        newItems.ids.push(itemId);
+                    }
+                } 
             }
         }
-    }
-    /**
-     * Adds items from array to instance's descItems
-     *
-     * @param Array newItems
-     */
-    _addItemsFromArray(newItems){
-        let items = this.descItems;
-        let nextEmptyItemId;
-        for(let i = 0; i < newItems.length; i++){
-            do {
-                nextEmptyItemId = "item_" + this._emptyItemCounter;
-                this._emptyItemCounter++;
-
-            } while(items[nextEmptyItemId]);
-
-            items[nextEmptyItemId] = newItems[i];
-            items.ids.push(nextEmptyItemId);
-        }
-        this.descItems = items;
+        
+        this.descItems = newItems;
     }
     /**
      * Returns specs from given array, that are not used in descItems
@@ -799,20 +797,15 @@ class FlatFormData{
             let group = groups[g];
 
             if(group.descItemTypes && group.descItemTypes.length > 0){
-                flatDescItemTypes = this._getTypesMap(group.descItemTypes, group);
+                this._getTypesMap(group.descItemTypes, group);
             }
 
             if(group.types && group.types.length > 0){
-                flatTypes = this._getTypesMap(group.types, group);
+                this._getTypesMap(group.types, group);
             }
 
             this.groups[group.code] = group;
             this.groups.ids.push(group.code);
-        }
-        if(flatTypes && flatTypes.descItems && flatTypes.descItems.ids.length > 0){
-            newDescItems = flatTypes.descItems;
-        } else if(flatDescItemTypes && flatDescItemTypes.descItems && flatDescItemTypes.descItems.ids.lenght > 0){
-            newDescItems = flatDescItemTypes.descItems;
         }
     }
 

@@ -11,9 +11,7 @@ public enum Level {
 
     WARNING("warning"),
 
-    INFO("info"),
-
-    SUCCESS("success");
+    INFO("info");
 
     private String level;
 

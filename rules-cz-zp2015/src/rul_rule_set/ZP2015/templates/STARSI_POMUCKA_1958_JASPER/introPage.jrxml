@@ -9,6 +9,11 @@
 	<style name="Heading 3" style="Text" hTextAlign="Left" vTextAlign="Middle" fontSize="10" isBold="true" isItalic="false"/>
 	<parameter name="fund" class="cz.tacr.elza.print.Fund"/>
 	<parameter name="output" class="cz.tacr.elza.print.Output"/>
+	<parameter name="arrangerFormatter" class="cz.tacr.elza.print.format.Formatter">
+		<defaultValueExpression><![CDATA[new cz.tacr.elza.print.format.Formatter()
+	.setItemSeparator(", ")
+	.addValue("ZP2015_ARRANGER")]]></defaultValueExpression>
+	</parameter>
 	<detail>
 		<band height="28">
 			<textField bookmarkLevel="1">
@@ -274,13 +279,13 @@
 			<textField isStretchWithOverflow="true">
 				<reportElement style="Text" positionType="Float" x="0" y="0" width="455" height="24" isRemoveLineWhenBlank="true" uuid="ecbcefb2-2271-4220-8bb4-8bd79f371862">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-					<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_ARRANGER" ))]]></printWhenExpression>
+					<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{arrangerFormatter}.format($P{output}))]]></printWhenExpression>
 				</reportElement>
 				<box bottomPadding="7"/>
 				<textElement markup="html">
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA["<b>Zpracovatel jednotky popisu: </b>"+$P{output}.getSingleItemValue( "ZP2015_ARRANGER" )]]></textFieldExpression>
+				<textFieldExpression><![CDATA["<b>Zpracovatel jednotky popisu: </b>"+$P{arrangerFormatter}.format($P{output})]]></textFieldExpression>
 			</textField>
 		</band>
 		<band height="24">
