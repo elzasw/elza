@@ -1,43 +1,15 @@
 package cz.tacr.elza.service;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.InvalidPropertiesFormatException;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.stream.Collectors;
-
-import javax.transaction.Transactional;
-
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.BooleanUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.support.TransactionSynchronizationAdapter;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.eventbus.Subscribe;
-
 import cz.tacr.elza.EventBusListener;
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.ArrStructuredItem;
+import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.RulComponent;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulItemTypeExt;
@@ -53,13 +25,38 @@ import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.SettingsRepository;
-import cz.tacr.elza.repository.StructuredObjectRepository;
 import cz.tacr.elza.repository.StructureDefinitionRepository;
 import cz.tacr.elza.repository.StructureExtensionDefinitionRepository;
 import cz.tacr.elza.repository.StructuredItemRepository;
+import cz.tacr.elza.repository.StructuredObjectRepository;
 import cz.tacr.elza.service.event.CacheInvalidateEvent;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventStructureDataChange;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+
+import javax.transaction.Transactional;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.InvalidPropertiesFormatException;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.stream.Collectors;
 
 /**
  * Servisní třída pro aktualizaci hodnot strukturovaných dat.
@@ -193,7 +190,7 @@ public class StructureDataService {
         while (hasNext) {
             final Integer structureDataId = queueStructureDataIds.poll();
             try {
-                applicationContext.getBean(StructureDataService.class).validate(structureDataId);
+                applicationContext.getBean(StructureDataService.class).saveStructureData(structureDataId);
             } catch (Exception e) {
                 logger.error("Nastala chyba při validaci hodnoty strukturovaného typu -> structureDataId=" + structureDataId, e);
             }
@@ -209,12 +206,12 @@ public class StructureDataService {
      * @param structureDataId identifikátor hodnoty strukt. datového typu
      */
     @Transactional
-    public void validate(final Integer structureDataId) {
+    public void saveStructureData(final Integer structureDataId) {
         ArrStructuredObject structureData = structureDataRepository.findOne(structureDataId);
         if (structureData == null) {
             throw new ObjectNotFoundException("Nenalezena hodnota strukturovaného typu", BaseCode.ID_NOT_EXIST).setId(structureDataId);
         }
-        validate(structureData);
+        saveStructureData(structureData);
         if (structureData.getState() == ArrStructuredObject.State.TEMP) {
             notificationService.publishEvent(new EventStructureDataChange(structureData.getFundId(),
                     structureData.getStructuredType().getCode(),
@@ -233,13 +230,17 @@ public class StructureDataService {
     }
 
     /**
-     * Validace hodnoty strukturovaného datového typu.
+     * Uložení hodnoty strukturovaného datového typu.
+     * <ul>
+     * <li>vygenerování textové hodnoty
+     * <li>kontrola duplicity
+     * <li>validace položek hodnoty
      *
      * @param structureData hodnota struktovaného datového typu
-     * @return zvalidovaná hodnota
+     * @return uložená hodnota
      */
     @Transactional
-    public ArrStructuredObject validate(final ArrStructuredObject structureData) {
+    public ArrStructuredObject saveStructureData(final ArrStructuredObject structureData) {
         if (structureData.getDeleteChange() != null) {
             throw new BusinessException("Nelze validovat smazanou hodnotu", BaseCode.INVALID_STATE);
         }
