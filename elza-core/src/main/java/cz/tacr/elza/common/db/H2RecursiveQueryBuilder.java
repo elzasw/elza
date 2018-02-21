@@ -217,6 +217,9 @@ public class H2RecursiveQueryBuilder<T> implements RecursiveQueryBuilder<T> {
             if (javaType == double.class || javaType == Double.class) {
                 return value.toString();
             }
+            if (javaType == java.sql.Timestamp.class) {
+                return '\'' + value.toString() + '\'';
+            }
             if (javaType == String.class) {
                 return '\'' + value.toString() + '\'';
             }
@@ -224,13 +227,15 @@ public class H2RecursiveQueryBuilder<T> implements RecursiveQueryBuilder<T> {
                 return '\'' + ((Enum<?>) value).name() + '\'';
             }
 
+            // try to convert entity
             try {
                 return session.getIdentifier(value).toString();
             } catch (TransientObjectException e) {
                 // not entity
             }
 
-            throw new IllegalArgumentException("Uknown SQL parameter value:" + value);
+            throw new IllegalArgumentException(
+                    "Uknown SQL parameter, class: " + javaType.getName() + ", value:" + value);
         }
     }
 }

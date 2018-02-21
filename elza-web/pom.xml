@@ -175,6 +175,7 @@
                             <executable>npm</executable>
                             <arguments>
                                 <argument>install</argument>
+                                <argument>--no-save</argument>
                             </arguments>
                             <workingDirectory>src/main/resources/frontend</workingDirectory>
                         </configuration>
