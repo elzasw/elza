@@ -87,14 +87,14 @@ public class ValidationRules extends Rules {
 			Path path = resourcePathResolver.getDroolFile(rulPackageRule);
 			StatelessKieSession session = createNewStatelessKieSession(path);
 			session.setGlobal("results", validationResults);
-			execute(session, facts);
+            session.execute(facts);
 		}
 
 		List<RulExtensionRule> rulExtensionRules = ruleService.findExtensionRuleByNode(level.getNode(), RulExtensionRule.RuleType.CONFORMITY_INFO);
 		for (RulExtensionRule rulExtensionRule : rulExtensionRules) {
             Path path = resourcePathResolver.getDroolFile(rulExtensionRule);
 			StatelessKieSession session = createNewStatelessKieSession(path);
-			execute(session, facts);
+            session.execute(facts);
 		}
 
 		List<DataValidationResult> results = validationResults.getResults();

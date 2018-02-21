@@ -34,6 +34,9 @@ public class UISettings {
     @JoinColumn(name = "userId", nullable = true)
     private UsrUser user;
 
+    @Column(insertable = false, updatable = false, nullable = true)
+    private Integer userId;
+
     @Enumerated(EnumType.STRING)
     @Column(length = 20, nullable = false)
     private SettingsType settingsType;
@@ -69,6 +72,11 @@ public class UISettings {
 
     public void setUser(final UsrUser user) {
         this.user = user;
+        this.userId = user != null ? user.getUserId() : null;
+    }
+
+    public Integer getUserId() {
+        return userId;
     }
 
     public SettingsType getSettingsType() {

@@ -61,21 +61,20 @@ public class DescItemTypesRules extends Rules {
 
     	final RulRuleSet rulRuleSet = version.getRuleSet();
 
-        ;
         List<RulArrangementRule> rulArrangementRules = arrangementRuleRepository.findByRuleSetAndRuleTypeOrderByPriorityAsc(
                 rulRuleSet, RulArrangementRule.RuleType.ATTRIBUTE_TYPES);
 
         for (RulArrangementRule rulArrangementRule : rulArrangementRules) {
             Path path = resourcePathResolver.getDroolFile(rulArrangementRule);
             StatelessKieSession session = createNewStatelessKieSession(path);
-            execute(session, facts);
+            session.execute(facts);
         }
 
         List<RulExtensionRule> rulExtensionRules = ruleService.findExtensionRuleByNode(level.getNode(), RulExtensionRule.RuleType.ATTRIBUTE_TYPES);
         for (RulExtensionRule rulExtensionRule : rulExtensionRules) {
             Path path = resourcePathResolver.getDroolFile(rulExtensionRule);
             StatelessKieSession session = createNewStatelessKieSession(path);
-            execute(session, facts);
+            session.execute(facts);
         }
 
         return rulDescItemTypeExtList;

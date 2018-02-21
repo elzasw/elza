@@ -59,12 +59,6 @@ public interface OutputItemRepository extends JpaRepository<ArrOutputItem, Integ
     int findMaxItemPosition(@Param("itemType") RulItemType itemType,
                             @Param("outputDefinition") ArrOutputDefinition outputDefinition);
 
-    @Query("SELECT i FROM arr_output_item i WHERE i.descItemObjectId = ?1 AND i.createChange >= ?2 AND (i.deleteChange >= ?2 OR i.deleteChange IS NULL)")
-    List<ArrOutputItem> findByDescItemObjectIdAndBetweenVersionChangeId(Integer descItemObjectId, ArrChange change);
-
-    @Query("SELECT i FROM arr_output_item i WHERE i.descItemObjectId = ?1 AND i.createChange < ?2 AND (i.deleteChange > ?2 OR i.deleteChange IS NULL)")
-    List<ArrOutputItem> findByDescItemObjectIdAndLockChangeId(Integer descItemObjectId, ArrChange change);
-
     /**
      * Vyhledá všechny otevřené (nesmazené) hodnoty atributů podle typu a uzlu mezi pozicemi. (pro vícehodnotový atribut)
      *

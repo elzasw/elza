@@ -75,38 +75,44 @@ class FundOutputFunctions extends AbstractReactComponent {
         this.refs.listBox.focus()
     };
 
-    renderListItem = (item) => {
-        const {outputState, readMode} = this.props;
-        const config = this.getConfigByCode(item.code);
-        const name = config ? <span title={item.name} className='name'>{config.name}</span> : '';
+    getActionState = (item) => {
         const state = actionStateTranslation(item.state);
-        let buttons = null;
+        let stateString = i18n('arr.output.functions.notStarted');
+        const actionDate = item.dateFinished || item.dateStarted || item.datePlanned;
+        const formattedDate = dateTimeToString(new Date(actionDate));
+
+        if(state !== null){
+            stateString = state + " (" + formattedDate + ")";
+        }
+
+        return stateString;
+    }
+
+    getItemActions = (item) => {
+        const {outputState, readMode} = this.props;
+        let actions = [];
+
         if (!readMode && outputState !== OutputState.FINISHED && outputState !== OutputState.OUTDATED) {
-            if (state == null || ACTION_NOT_RUNNING_STATE.indexOf(item.state) !== -1) {
-                buttons = <Icon glyph="fa-play" onClick={() => this.handleActionRun(item.code)}/>;
+            if (!item.state || ACTION_NOT_RUNNING_STATE.indexOf(item.state) !== -1) {
+                actions.push(<Icon glyph="fa-play" onClick={() => this.handleActionRun(item.code)}/>);
             } else if (ACTION_RUNNING_STATE.indexOf(item.state) !== -1) {
-                buttons = <Icon glyph="fa-stop" onClick={() => this.handleActionInterrupt(item.id)}/>
+                actions.push(<Icon glyph="fa-stop" onClick={() => this.handleActionInterrupt(item.id)}/>);
             }
         }
+        return actions;
+    }
 
-        let dateToState = "";
-
-        if (item.dateFinished != null) {
-            dateToState = " (" + dateTimeToString(new Date(item.dateFinished)) + ")";
-        } else if (item.dateStarted != null) {
-            dateToState = " (" + dateTimeToString(new Date(item.dateStarted)) + ")";
-        } else if (item.datePlanned != null) {
-            dateToState = " (" + dateTimeToString(new Date(item.datePlanned)) + ")";
-        }
+    renderListItem = (item) => {
+        const config = this.getConfigByCode(item.code);
+        const name = config ? config.name : '';
+        const actionState = this.getActionState(item);
 
         return <div className='item' key={item.id}>
-            <div>
-                <div>{name}</div>
-                <div>
-                    {i18n('arr.output.functions.state', state == null ? i18n('arr.output.functions.notStarted') : state + dateToState)}
-                </div>
+            <div className="details">
+                <div className="name" title={name}>{name}</div>
+                <div className="info" title={actionState}>{actionState}</div>
             </div>
-            <div>{buttons}</div>
+            <div className="actions">{this.getItemActions(item)}</div>
         </div>
     };
 

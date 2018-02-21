@@ -17,6 +17,7 @@ import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.RulAction;
 import cz.tacr.elza.domain.RulArrangementRule;
+import cz.tacr.elza.domain.RulComponent;
 import cz.tacr.elza.domain.RulExtensionRule;
 import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.domain.RulPackage;
@@ -173,12 +174,18 @@ public class ResourcePathResolver {
 
 
     /**
-     * @return Path to drool file (may not exist).
+     * @return Path to drool file (may not exist). Return null if component does
+     *         not exists
      */
     @Transactional(TxType.MANDATORY)
     public Path getDroolFile(RulOutputType outputType) {
+        RulComponent component = outputType.getComponent();
+        if (component == null) {
+            return null;
+        }
+
         Path droolsDir = getDroolsDir(outputType.getPackage().getPackageId(), outputType.getRuleSetId());
-        String droolFile = outputType.getComponent().getFilename();
+        String droolFile = component.getFilename();
 
         Path path = droolsDir.resolve(droolFile);
 

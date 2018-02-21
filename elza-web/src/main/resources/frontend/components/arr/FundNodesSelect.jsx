@@ -37,78 +37,64 @@ class FundNodesSelect extends AbstractReactComponent {
     static defaultProps = {
         multipleSelection: true,
         multipleSelectionOneLevel: false,
+        selectedId: null
     };
 
     state = {
-        nodes: {}
+        nodes: {},
     };
 
     componentDidMount() {
-        const {multipleSelection, multipleSelectionOneLevel, selectedId, fund} = this.props;
-        const fundTreeNodes = fund.fundTreeNodes;
-        const versionId = fund.versionId;
+        const {multipleSelection, multipleSelectionOneLevel, selectedId, fund:{fundTreeNodes, versionId}, onChange} = this.props;
 
-        this.props.dispatch(fundTreeConfigure(types.FUND_TREE_AREA_NODES, versionId, multipleSelection, multipleSelectionOneLevel));
-
-        if (!multipleSelection && typeof selectedId !== "undefined") {
-            this.props.dispatch(fundTreeSelectNode(types.FUND_TREE_AREA_NODES, versionId, selectedId, false, false));
-        }
-
-        this.requestFundTreeData(versionId, multipleSelection, fundTreeNodes.expandedIds);
-
-        // Zavolání onChange metody
-        this.handleChange(this.props);
+        this.props.dispatch(fundTreeConfigure(types.FUND_TREE_AREA_NODES, versionId, multipleSelection, multipleSelectionOneLevel));         
+        this.props.dispatch(fundTreeSelectNode(types.FUND_TREE_AREA_NODES, versionId, selectedId, false, false));
     }
 
     componentWillReceiveProps(nextProps){
-        const {fund, multipleSelection} = nextProps;
-        const fundTreeNodes = fund.fundTreeNodes;
-        const versionId = fund.versionId;
-        this.requestFundTreeData(versionId, multipleSelection, fundTreeNodes.expandedIds).then((fundTree) => {
-            const nodesMap = getMapFromList(fundTree.nodes);
-            const node = nodesMap[fundTreeNodes.selectedId];
-            this.props.onChange([fundTree.selectedId],[node])
-        });
+        const {fund:{fundTreeNodes, versionId}, multipleSelection, onChange} = nextProps;
 
-        // Zavolání onChange metody
-        let selectionChanged = false;
-        const prevFund = this.props.fund;
-        const prevFundTreeNodes = prevFund.fundTreeNodes;
-        if (multipleSelection) {
-            selectionChanged = fundTreeNodes.selectedIds !== prevFundTreeNodes.selectedIds;
-        } else {
-            selectionChanged = fundTreeNodes.selectedId !== prevFundTreeNodes.selectedId;
-        }
-        selectionChanged && this.handleChange(nextProps);
+        const selectionChanged = this.checkSelectionChanged(this.props.fund.fundTreeNodes, fundTreeNodes, multipleSelection);
+        selectionChanged && this.handleChange(versionId, fundTreeNodes.expandedIds, multipleSelection, onChange);
     };
 
-    handleChange = (props) => {
-        const {multipleSelection, onChange, fund} = props;
-
-        if (!onChange) {
-            return;
-        }
-
-        const fundTreeNodes = fund.fundTreeNodes;
-
-        if (multipleSelection) {
-            const nodesMap = getMapFromList(fundTreeNodes.nodes);
-            const nodes = Object.keys(fundTreeNodes.selectedIds).map(id => nodesMap[id]);
-
-            onChange(Object.keys(fundTreeNodes.selectedIds), nodes);
+    checkSelectionChanged(prevFundTreeNodes, fundTreeNodes, multipleSelection){
+        if(multipleSelection){
+            // convert simple objects to string for easier comparison
+            const selectedIds = JSON.stringify(fundTreeNodes.selectedIds);
+            const prevSelectedIds = JSON.stringify(prevFundTreeNodes.selectedIds);
+            return selectedIds != prevSelectedIds;
         } else {
-            const nodesMap = getMapFromList(fundTreeNodes.nodes);
-            const node = nodesMap[fundTreeNodes.selectedId];
-
-            if (fundTreeNodes.selectedId != null) {
-                onChange([fundTreeNodes.selectedId], [node]);
-            } else {
-                onChange([], []);
-            }
+            return fundTreeNodes.selectedId !== prevFundTreeNodes.selectedId;
         }
     }
 
-    requestFundTreeData = (versionId, multipleSelection, expandedIds) => {
+    handleChange = (versionId, expandedIds, multipleSelection, onChange) => {
+        this.requestFundTreeData(versionId, expandedIds).then((fundTree) => {
+            if (!onChange) {
+                return;
+            }
+            // Zavolání onChange metody
+            if (multipleSelection) {
+                const nodesMap = getMapFromList(fundTree.nodes);
+                const selectedIds = fundTree.selectedIds ? Object.keys(fundTree.selectedIds) : [];
+                const nodes = selectedIds.map(id => nodesMap[id]);
+
+                onChange(selectedIds, nodes);
+            } else {
+                const nodesMap = getMapFromList(fundTree.nodes);
+                const node = nodesMap[fundTree.selectedId];
+
+                if (fundTree.selectedId != null) {
+                    onChange([fundTree.selectedId], [node]);
+                } else {
+                    onChange([], []);
+                }
+            }
+        });
+    }
+
+    requestFundTreeData = (versionId, expandedIds) => {
         return this.dispatch(fundTreeFetchIfNeeded(types.FUND_TREE_AREA_NODES, versionId, expandedIds));
     };
 
@@ -151,25 +137,24 @@ class FundNodesSelect extends AbstractReactComponent {
         this.dispatch(fundTreeCollapse(types.FUND_TREE_AREA_NODES,fund.versionId, fund))
     };
 
-    render() {
-        const {fund, multipleSelection, onClose} = this.props;
-        const fundTreeNodes = fund.fundTreeNodes;
-        const versionId = fund.versionId;
-
-        let someSelected;
-        if (multipleSelection) {
-            someSelected = Object.keys(fundTreeNodes.selectedIds).length > 0;
+    handleNodeExpandCollapse = (node, expand) => {
+        const {fund:{versionId}} = this.props;
+        if(expand){
+            this.dispatch(fundTreeNodeExpand(types.FUND_TREE_AREA_NODES, node))
         } else {
-            someSelected = fundTreeNodes.selectedId !== null;
+            this.dispatch(fundTreeNodeCollapse(types.FUND_TREE_AREA_NODES, versionId, node))
         }
+    }
 
+    render() {
+        const {fund:{fundTreeNodes}} = this.props;
         return (
             <div className="add-nodes-form-container">
                 <FundTreeLazy
                     ref='tree'
                     {...fundTreeNodes}
                     cutLongLabels={true}
-                    onOpenCloseNode={(node, expand) => {expand ? this.dispatch(fundTreeNodeExpand(types.FUND_TREE_AREA_NODES, node)) : this.dispatch(fundTreeNodeCollapse(types.FUND_TREE_AREA_NODES, versionId, node))}}
+                    onOpenCloseNode={this.handleNodeExpandCollapse}
                     onNodeClick={this.handleNodeClick}
                     onFulltextChange={this.handleFulltextChange}
                     onFulltextSearch={this.handleFulltextSearch}

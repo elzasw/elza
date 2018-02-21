@@ -176,15 +176,18 @@ public class Validator {
         //rozdělení hodnot podle typu
         Map<Integer, List<ArrDescItem>> descItemsInTypeMap = new HashMap<>();
 
-        for (ArrDescItem descItem : descItems) {
-            if (!extNodeTypes.containsKey(descItem.getItemType().getItemTypeId())) {
-                validationResults.createError(descItem, "Prvek " + descItem.getItemType().getName()
+        if (descItems != null) {
+            for (ArrDescItem descItem : descItems) {
+                if (!extNodeTypes.containsKey(descItem.getItemType().getItemTypeId())) {
+                    validationResults.createError(descItem, "Prvek " + descItem.getItemType().getName()
                                 + " není možný u této jednotky popisu.", extNodeTypes.get(descItem.getItemType().getItemTypeId()).getPolicyTypeCode());
-                continue;
-            }
+                    continue;
+                }
 
-            List<ArrDescItem> itemsInType = descItemsInTypeMap.computeIfAbsent(descItem.getItemType().getItemTypeId(), k -> new LinkedList<>());
-            itemsInType.add(descItem);
+                List<ArrDescItem> itemsInType = descItemsInTypeMap
+                        .computeIfAbsent(descItem.getItemType().getItemTypeId(), k -> new LinkedList<>());
+                itemsInType.add(descItem);
+            }
         }
 
         // Set of required but non existing types

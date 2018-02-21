@@ -37,7 +37,7 @@ class FundForm extends AbstractReactComponent {
             errors.institutionId = i18n('global.validation.required');
         }
 
-        if (!admin && (!values.fundAdmins || values.fundAdmins.length === 0)) {
+        if (props.create && !admin && (!values.fundAdmins || values.fundAdmins.length === 0)) {
             errors.fundAdmins = i18n('global.validation.required');
         }
 

@@ -22,11 +22,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.util.Assert;
 
-import com.vividsolutions.jts.io.ParseException;
-import com.vividsolutions.jts.io.WKTReader;
-import com.vividsolutions.jts.io.WKTWriter;
+import com.vividsolutions.jts.geom.Geometry;
 
 import cz.tacr.elza.bulkaction.BulkActionConfig;
+import cz.tacr.elza.common.GeometryConvertor;
 import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
 import cz.tacr.elza.controller.vo.ArrChangeVO;
 import cz.tacr.elza.controller.vo.ArrDaoFileGroupVO;
@@ -320,27 +319,19 @@ public class ConfigMapperConfiguration {
             public void mapAtoB(final ArrItemCoordinates coordinates,
                                 final ArrItemCoordinatesVO coordinatesVO,
                                 final MappingContext context) {
-                if (coordinates.getValue() != null) {
-                    String type = coordinates.getValue().getGeometryType().toUpperCase();
-                    if (type.equals("POINT")) {
-                        coordinatesVO.setValue(new WKTWriter().writeFormatted(coordinates.getValue()));
-                    } else {
-                        coordinatesVO.setValue(type + "( " + coordinates.getValue().getCoordinates().length + " )");
+                Geometry geo = coordinates.getValue();
+                String value = GeometryConvertor.convert(geo);
+                coordinatesVO.setValue(value);
                     }
-                }
-            }
 
             @Override
             public void mapBtoA(final ArrItemCoordinatesVO coordinatesVO,
                                 final ArrItemCoordinates coordinates,
                                 final MappingContext context) {
-                WKTReader reader = new WKTReader();
-                try {
-                    coordinates.setValue(reader.read(coordinatesVO.getValue()));
-                } catch (ParseException e) {
-                    e.printStackTrace();
+                String str = coordinatesVO.getValue();
+                Geometry value = GeometryConvertor.convert(str);
+                coordinates.setValue(value);
                 }
-            }
          }).exclude("value").byDefault().register();
          mapperFactory.classMap(ArrItemEnum.class, ArrItemEnumVO.class).byDefault().register();
          mapperFactory.classMap(ArrItemFormattedText.class, ArrItemFormattedTextVO.class).byDefault().register();
@@ -996,27 +987,19 @@ public class ConfigMapperConfiguration {
                     public void mapAtoB(final ArrDataCoordinates coordinates,
                                         final ArrItemCoordinatesVO coordinatesVO,
                                         final MappingContext context) {
-                        if (coordinates.getValue() != null) {
-                            String type = coordinates.getValue().getGeometryType().toUpperCase();
-                            if (type.equals("POINT")) {
-                                coordinatesVO.setValue(new WKTWriter().writeFormatted(coordinates.getValue()));
-                            } else {
-                                coordinatesVO.setValue(type + "( " + coordinates.getValue().getCoordinates().length + " )");
+                        Geometry geo = coordinates.getValue();
+                        String value = GeometryConvertor.convert(geo);
+                        coordinatesVO.setValue(value);
                             }
-                        }
-                    }
 
                     @Override
                     public void mapBtoA(final ArrItemCoordinatesVO coordinatesVO,
                                         final ArrDataCoordinates coordinates,
                                         final MappingContext context) {
-                        WKTReader reader = new WKTReader();
-                        try {
-                            coordinates.setValue(reader.read(coordinatesVO.getValue()));
-                        } catch (ParseException e) {
-                            e.printStackTrace();
+                        String str = coordinatesVO.getValue();
+                        Geometry value = GeometryConvertor.convert(str);
+                        coordinates.setValue(value);
                         }
-                    }
                 }).exclude("value").byDefault().register();
         mapperFactory.classMap(ArrDataNull.class, ArrItemEnumVO.class).byDefault().register();
         mapperFactory.classMap(ArrDataInteger.class, ArrItemIntVO.class).byDefault().register();
