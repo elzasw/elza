@@ -631,6 +631,7 @@ public class ConfigMapperConfiguration {
         mapperFactory.classMap(RulItemTypeExt.class, RulDescItemTypeExtVO.class).byDefault()
                 .field("itemTypeId", "id")
                 .field("rulItemSpecList", "descItemSpecs")
+                .field("structuredTypeId", "structureTypeId")
                 .register();
         mapperFactory.classMap(RulItemTypeExt.class, ItemTypeLiteVO.class).byDefault()
                 .field("itemTypeId", "id")
@@ -942,7 +943,9 @@ public class ConfigMapperConfiguration {
                         super.mapBtoA(itemStructureVO, itemStructureRef, context);
                         itemStructureRef.setStructuredObject(itemStructureVO.getValue() == null ? null : structureDataRepository.findOne(itemStructureVO.getValue()));
                     }
-                }).byDefault().register();
+                })
+                .field("structuredObject", "structureData")
+                .byDefault().register();
         mapperFactory.classMap(ArrDataFileRef.class, ArrItemFileRefVO.class).customize(
                 new CustomMapper<ArrDataFileRef, ArrItemFileRefVO>() {
                     @Override
