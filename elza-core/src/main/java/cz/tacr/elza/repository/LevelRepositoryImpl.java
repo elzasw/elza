@@ -349,14 +349,16 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
     public List<Integer> findNewerNodeIdsInSubtree(final int nodeId, final Timestamp lastUpdate) {
         RecursiveQueryBuilder<Integer> rqBuilder = DatabaseType.getCurrent().createRecursiveQueryBuilder(Integer.class);
 
-        rqBuilder.addSqlPart("WITH RECURSIVE treeData AS (")
+        rqBuilder.addSqlPart("WITH RECURSIVE treeData(node_id, node_id_parent) AS (")
 
-        .addSqlPart("SELECT t.* FROM arr_level t WHERE t.node_id = :nodeId ")
-        .addSqlPart("UNION ALL ")
-        .addSqlPart("SELECT t.* FROM arr_level t JOIN treeData td ON td.node_id = t.node_id_parent) ")
-
-        .addSqlPart("SELECT DISTINCT n.node_id FROM treeData t JOIN arr_node n ON n.node_id = t.node_id ")
-        .addSqlPart("WHERE t.delete_change_id IS NULL AND n.last_update > :lastUpdate");
+                .addSqlPart(
+                        "SELECT t.node_id, t.node_id_parent FROM arr_level t WHERE t.node_id = :nodeId AND t.delete_change_id IS NULL ")
+                .addSqlPart("UNION ALL ")
+                .addSqlPart(
+                        "SELECT t.node_id, t.node_id_parent FROM arr_level t JOIN treeData td ON td.node_id = t.node_id_parent AND t.delete_change_id IS NULL ")
+                .addSqlPart(") ")
+                .addSqlPart("SELECT DISTINCT n.node_id FROM treeData t JOIN arr_node n ON n.node_id = t.node_id ")
+                .addSqlPart("WHERE n.last_update > :lastUpdate");
 
         rqBuilder.prepareQuery(entityManager);
         rqBuilder.setParameter("nodeId", nodeId);
@@ -368,13 +370,14 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
     public List<Integer> findNewerNodeIdsInParents(final int nodeId, final Timestamp lastUpdate) {
         RecursiveQueryBuilder<Integer> rqBuilder = DatabaseType.getCurrent().createRecursiveQueryBuilder(Integer.class);
 
-        rqBuilder.addSqlPart("WITH RECURSIVE treeData AS (")
-        .addSqlPart("SELECT t.* FROM arr_level t WHERE t.node_id = :nodeId ")
-        .addSqlPart("UNION ALL ")
-        .addSqlPart("SELECT t.* FROM arr_level t JOIN treeData td ON td.node_id_parent = t.node_id) ")
-
-        .addSqlPart("SELECT DISTINCT n.node_id FROM treeData t JOIN arr_node n ON n.node_id = t.node_id ")
-        .addSqlPart("WHERE t.delete_change_id IS NULL AND n.last_update > :lastUpdate");
+        rqBuilder.addSqlPart("WITH RECURSIVE treeData(node_id, node_id_parent) AS (").addSqlPart(
+                "SELECT t.node_id, t.node_id_parent  FROM arr_level t WHERE t.node_id = :nodeId AND t.delete_change_id IS NULL ")
+                .addSqlPart("UNION ALL ")
+                .addSqlPart(
+                        "SELECT t.node_id, t.node_id_parent FROM arr_level t JOIN treeData td ON td.node_id_parent = t.node_id AND t.delete_change_id IS NULL ")
+                .addSqlPart(") ")
+                .addSqlPart("SELECT DISTINCT n.node_id FROM treeData t JOIN arr_node n ON n.node_id = t.node_id ")
+                .addSqlPart("WHERE n.last_update > :lastUpdate");
 
         rqBuilder.prepareQuery(entityManager);
         rqBuilder.setParameter("nodeId", nodeId);
