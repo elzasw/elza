@@ -18,6 +18,7 @@ import {contextMenuShow, contextMenuHide} from "../../actions/global/contextMenu
 import StructureExtensionsForm from "./structure/StructureExtensionsForm";
 import PropTypes from 'prop-types';
 import UpdateMultipleSub from "./structure/UpdateMultipleSub";
+import {addToastrWarning} from "../shared/toastr/ToastrActions";
 
 class ArrStructurePanel extends AbstractReactComponent {
 
@@ -122,21 +123,24 @@ class ArrStructurePanel extends AbstractReactComponent {
     };
 
     handleUpdate = (structureData) => {
-        const {fundVersionId, fundId, name, code} = this.props;
+        const {fundVersionId, fundId, name, code, readMode} = this.props;
 
         let structureDataIds = this.getActiveSelection(structureData);
         if ((!structureDataIds || structureDataIds.length === 0) && structureData && structureData.id) {
             structureDataIds = [structureData.id];
         }
 
+        const title = i18n(readMode ? "arr.structure.modal.show.title" : "arr.structure.modal.update.title", name);
+
         if (structureDataIds.length === 1) {
-            this.props.dispatch(modalDialogShow(this, i18n("arr.structure.modal.update.title", name), <UpdateStructureDataForm
+            this.props.dispatch(modalDialogShow(this, title, <UpdateStructureDataForm
                 fundId={fundId}
+                readMode={readMode}
                 fundVersionId={fundVersionId}
                 id={structureDataIds[0]}
             />));
-        } else if (structureDataIds.length > 1) {
-            this.props.dispatch(modalDialogShow(this, i18n("arr.structure.modal.update.title", name), <UpdateMultipleSub
+        } else if (structureDataIds.length > 1 && !readMode) {
+            this.props.dispatch(modalDialogShow(this, title, <UpdateMultipleSub
                 onSubmit={(data) => WebApi.updateStructureDataBatch(fundVersionId, code, data)}
                 onSubmitSuccess={() => {
                     this.props.dispatch(modalDialogHide());
@@ -151,6 +155,8 @@ class ArrStructurePanel extends AbstractReactComponent {
                 }}
                 id={structureDataIds[0]}
             />));
+        } else if (readMode) {
+            this.props.dispatch(addToastrWarning(i18n("arr.structure.modal.noshow")));
         }
     };
 
@@ -186,17 +192,26 @@ class ArrStructurePanel extends AbstractReactComponent {
      * @param e {Object} event
      */
     handleContextMenu = (node, e) => {
+        const {readMode} = this.props;
         e.preventDefault();
         e.stopPropagation();
 
+        const menuParts = [];
+
+        if (readMode) {
+            menuParts.push(<MenuItem key="show" onClick={this.handleUpdate.bind(this, node)}>{i18n("arr.structure.item.contextMenu.show")}</MenuItem>);
+        } else {
+            menuParts.push(<MenuItem key="changeToOpen" onClick={this.handleSetAssignable.bind(this, node, true)}>{i18n("arr.structure.item.contextMenu.changeToOpen")}</MenuItem>);
+            menuParts.push(<MenuItem key="changeToClosed" onClick={this.handleSetAssignable.bind(this, node, true)}>{i18n("arr.structure.item.contextMenu.changeToClosed")}</MenuItem>);
+            menuParts.push(<MenuItem key="d1" divider />);
+            menuParts.push(<MenuItem key="update" onClick={this.handleUpdate.bind(this, node)}>{i18n("arr.structure.item.contextMenu.update")}</MenuItem>);
+            menuParts.push(<MenuItem key="d2" divider />);
+            menuParts.push(<MenuItem key="delete" onClick={this.handleDelete.bind(this, node)}>{i18n("arr.structure.item.contextMenu.delete")}</MenuItem>);
+        }
+
         const menu = (
             <ul className="dropdown-menu">
-                <MenuItem onClick={this.handleSetAssignable.bind(this, node, true)}>{i18n("arr.structure.item.contextMenu.changeToOpen")}</MenuItem>
-                <MenuItem onClick={this.handleSetAssignable.bind(this, node, true)}>{i18n("arr.structure.item.contextMenu.changeToClosed")}</MenuItem>
-                <MenuItem divider />
-                <MenuItem onClick={this.handleUpdate.bind(this, node)}>{i18n("arr.structure.item.contextMenu.update")}</MenuItem>
-                <MenuItem divider />
-                <MenuItem onClick={this.handleDelete.bind(this, node)}>{i18n("arr.structure.item.contextMenu.delete")}</MenuItem>
+                {menuParts}
             </ul>
         );
 
@@ -205,13 +220,14 @@ class ArrStructurePanel extends AbstractReactComponent {
 
     render() {
         const {rows, filter, fetched} = this.props.store;
+        const {readMode} = this.props;
         const {activeIndexes} = this.state;
         if (!fetched) {
             return <Loading />
         }
 
         return <div className={"arr-structure-panel"}>
-            <div className="actions">
+            {!readMode && <div className="actions">
                 <DropdownButton bsStyle="default" title={<Icon glyph="fa-plus-circle" />} noCaret id="arr-structure-panel-add">
                     <MenuItem eventKey="1" onClick={this.handleCreate}>{i18n("arr.structure.addOne")}</MenuItem>
                     <MenuItem eventKey="2" onClick={this.handleCreateMulti}>{i18n("arr.structure.addMany")}</MenuItem>
@@ -222,7 +238,7 @@ class ArrStructurePanel extends AbstractReactComponent {
                 <Button bsStyle="default" onClick={this.handleExtensionsSettings} className={"pull-right"}>
                     <Icon glyph="fa-cogs" />
                 </Button>
-            </div>
+            </div>}
             <div className="filter flex">
                 <div>
                     <FormControl componentClass={"select"} name={"assignable"} onChange={({target: {value}}) => this.filter({assignable:value})} value={filter.assignable}>
