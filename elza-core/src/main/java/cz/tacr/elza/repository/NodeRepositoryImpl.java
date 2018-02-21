@@ -173,7 +173,8 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
     @Override
 	public ScrollableResults findUncachedNodes() {
 
-		String hql = "SELECT n.nodeId FROM arr_node n WHERE n.nodeId NOT IN (SELECT cn.nodeId FROM arr_cached_node cn)";
+        // přepsáno z NOT IN z důvodu optimalizace na LEFT JOIN
+		String hql = "SELECT n.nodeId FROM arr_node n LEFT JOIN arr_cached_node cn ON cn.nodeId = n.nodeId WHERE cn IS NULL";
 
 		// get Hibernate session
 		Session session = entityManager.unwrap(Session.class);
