@@ -119,17 +119,6 @@ public class DmsController {
         create(object, (fileVO) -> factoryDO.createArrOutputFile((ArrOutputFileVO) fileVO));
     }
 
-    @RequestMapping(value = "/api/xxx", method = RequestMethod.GET)
-    public void xxx() {
-        DmsFile file = dmsService.getFile(25);
-
-        try (InputStream is = attachmentService.generate(file, "application/pdf").getInputStream()) {
-            IOUtils.toString(is);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
     /**
      * Aktualizuje vo objekt z předaných informací o souboru.
      * @param objVO vo pro aktualizaci - do něj se zapisuje

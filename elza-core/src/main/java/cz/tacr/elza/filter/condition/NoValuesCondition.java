@@ -29,8 +29,13 @@ public class NoValuesCondition implements HibernateDescItemCondition {
         }
 
         sb.append("and n.node_id not in (") // které nemají hodnotu
-            .append("select di2.node_id from arr_desc_item di2 join arr_item it2 on di2.item_id = it2.item_id where it2.item_type_id = :descItemTypeId") // daného typu
-            .append(")");
+            .append("select di2.node_id from arr_desc_item di2 join arr_item it2 on di2.item_id = it2.item_id where it2.item_type_id = :descItemTypeId"); // daného typu
+        if (lockChangeId == null) {
+            sb.append(" and it2.delete_change_id is null "); // v otevřené verzi
+        } else {
+            sb.append(" and it2.create_change_id < :lockChangeId and (it2.delete_change_id is null or it2.delete_change_id > :lockChangeId) "); // v uzavřené verzi
+        }
+        sb.append(")");
 
         Query query = entityManager.createNativeQuery(sb.toString());
         if (lockChangeId != null) {
