@@ -906,9 +906,7 @@ public class RuleService {
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public List<RulItemTypeExt> getStructureItemTypes(final RulStructuredType structureType,
                                                       @AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion) {
-        List<RulItemTypeExt> rulDescItemTypeExtList = getRulesetDescriptionItemTypes(
-                structureType.getRuleSet().getRuleSetId());
-        return rulesExecutor.executeStructureItemTypesRules(structureType, rulDescItemTypeExtList, fundVersion);
+        return getStructureItemTypesInternal(structureType, fundVersion);
     }
 
     /**
@@ -920,6 +918,8 @@ public class RuleService {
      */
     public List<RulItemTypeExt> getStructureItemTypesInternal(final RulStructuredType structureType,
                                                               final ArrFundVersion fundVersion) {
-        return getStructureItemTypes(structureType, fundVersion);
+        List<RulItemTypeExt> rulDescItemTypeExtList = getRulesetDescriptionItemTypes(
+                structureType.getRuleSet().getRuleSetId());
+        return rulesExecutor.executeStructureItemTypesRules(structureType, rulDescItemTypeExtList, fundVersion);
     }
 }

@@ -1853,7 +1853,9 @@ public class ArrangementController {
         ArrFundVersion version = fundVersionRepository.getOneCheckExist(fundVersionId);
         RulItemType descItemType = itemTypeRepository.findOne(itemTypeId);
 
-        return filterTreeService.findUniqueSpecIds(version, descItemType);
+        List<Integer> specIds = filterTreeService.findUniqueSpecIds(version, descItemType);
+        specIds.add(null); // pro "Prázdné" položky
+        return specIds;
     }
 
     /**

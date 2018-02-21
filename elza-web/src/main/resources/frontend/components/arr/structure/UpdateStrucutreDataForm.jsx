@@ -14,6 +14,7 @@ class UpdateStructureDataForm extends AbstractReactComponent {
         fundVersionId: PropTypes.number.isRequired,
         fundId: PropTypes.number.isRequired,
         id: PropTypes.number.isRequired,
+        readMode: PropTypes.bool.isRequired,
     };
 
     componentWillMount() {
@@ -27,11 +28,11 @@ class UpdateStructureDataForm extends AbstractReactComponent {
     }
 
     render() {
-        const {onClose, fundVersionId, fundId, structureNodeForm} = this.props;
+        const {onClose, fundVersionId, fundId, structureNodeForm, readMode} = this.props;
 
         return <div>
             <Modal.Body>
-                {structureNodeForm.fetched ? <StructureSubNodeForm versionId={fundVersionId} fundId={fundId} selectedSubNodeId={structureNodeForm.id} /> : <Loading />}
+                {structureNodeForm.fetched ? <StructureSubNodeForm versionId={fundVersionId} readMode={readMode} fundId={fundId} selectedSubNodeId={structureNodeForm.id} /> : <Loading />}
             </Modal.Body>
             <Modal.Footer>
                 <Button bsStyle="link" onClick={onClose}>{i18n('global.action.close')}</Button>
