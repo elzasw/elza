@@ -313,7 +313,7 @@ public class ArrBulkActionRun {
         try {
             return objectMapper.readValue(this.result, new TypeReference<Result>(){});
         } catch (IOException e) {
-            throw new IllegalArgumentException("Problém při generování JSON", e);
+            throw new IllegalArgumentException("Error while reading JSON, value: " + result, e);
         }
     }
 
@@ -324,7 +324,7 @@ public class ArrBulkActionRun {
         try {
             this.result = objectMapper.writeValueAsString(result);
         } catch (JsonProcessingException e) {
-            throw new IllegalArgumentException("Problém při parsování JSON", e);
+            throw new IllegalArgumentException("Error while writing JSON", e);
         }
     }
 
