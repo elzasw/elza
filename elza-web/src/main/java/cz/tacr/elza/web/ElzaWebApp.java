@@ -1,6 +1,9 @@
 package cz.tacr.elza.web;
 
-import cz.tacr.elza.ElzaCore;
+import java.util.Locale;
+
+import javax.servlet.MultipartConfigElement;
+
 import org.h2.server.web.WebServlet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,8 +24,7 @@ import org.springframework.web.multipart.support.StandardServletMultipartResolve
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.i18n.SessionLocaleResolver;
 
-import javax.servlet.MultipartConfigElement;
-import java.util.Locale;
+import cz.tacr.elza.ElzaCore;
 
 /**
  * @author by Pavel Stánek, pavel.stanek@marbes.cz.
@@ -47,7 +49,7 @@ public class ElzaWebApp {
     }
 
     @Bean
-    @ConditionalOnProperty(prefix = "spring.h2.console", name = "enabled", havingValue = "true")
+    @ConditionalOnProperty(prefix = "elza.debug.h2", name = "console", havingValue = "true")
     public ServletRegistrationBean h2servletRegistration() {
         ServletRegistrationBean registration = new ServletRegistrationBean(new WebServlet());
         registration.addUrlMappings("/console/*");
