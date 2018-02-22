@@ -29,13 +29,8 @@ public class TempDirectory {
         return path;
     }
 
-    public void deleteOnExit() {
-        DeleteOnExitHook.add(path.toString());
-    }
-
     public void delete() {
         delete(path.toString());
-        DeleteOnExitHook.delete(path.toString());
     }
 
     public static void delete(String pathStr) {
