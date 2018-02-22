@@ -280,9 +280,6 @@ public class AttachmentService {
                 throw new IOException("Generování nevytvořilo výstupní soubor " + outputFile.getAbsolutePath());
             }
 
-            // Chceme smazat při ukončení JVM
-            tempDir.deleteOnExit();
-
             final InputStream is = new FileInputStream(outputFile) {
                 @Override
                 public void close() throws IOException {

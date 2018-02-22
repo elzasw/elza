@@ -334,7 +334,7 @@ public class StructureService {
         createStructureItem.setItemSpec(structureItem.getItemSpec());
 
         ArrStructuredItem save = structureItemRepository.save(createStructureItem);
-        structureDataService.validate(save.getStructuredObject());
+        structureDataService.saveStructureData(save.getStructuredObject());
 
         notificationService.publishEvent(new EventStructureDataChange(fundVersion.getFundId(),
                 structureData.getStructuredType().getCode(),
@@ -494,7 +494,7 @@ public class StructureService {
         }
 
         ArrStructuredItem save = structureItemRepository.save(updateStructureItem);
-        structureDataService.validate(save.getStructuredObject());
+        structureDataService.saveStructureData(save.getStructuredObject());
 
         notificationService.publishEvent(new EventStructureDataChange(fundVersion.getFundId(),
                 structureData.getStructuredType().getCode(),
@@ -544,7 +544,7 @@ public class StructureService {
         structureItemDB.setDeleteChange(change);
 
         ArrStructuredItem save = structureItemRepository.save(structureItemDB);
-        structureDataService.validate(save.getStructuredObject());
+        structureDataService.saveStructureData(save.getStructuredObject());
 
         notificationService.publishEvent(new EventStructureDataChange(fundVersion.getFundId(),
                 structureData.getStructuredType().getCode(),
@@ -720,7 +720,7 @@ public class StructureService {
                 Collections.singletonList(structureData.getStructuredObjectId()),
                 null));
 
-        return structureDataService.validate(structureData);
+        return structureDataService.saveStructureData(structureData);
     }
 
     /**
@@ -754,7 +754,7 @@ public class StructureService {
             throw new BusinessException("Strukturovaná data nemají dočasný stav", BaseCode.INVALID_STATE);
         }
         structureData.setState(ArrStructuredObject.State.OK);
-        ArrStructuredObject confirmStructureData = structureDataService.validate(structureData);
+        ArrStructuredObject confirmStructureData = structureDataService.saveStructureData(structureData);
         if (event) {
             notificationService.publishEvent(new EventStructureDataChange(fund.getFundId(),
                     structureData.getStructuredType().getCode(),
