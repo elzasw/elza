@@ -26,6 +26,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import cz.tacr.elza.bulkaction.BulkActionService;
 import cz.tacr.elza.bulkaction.generator.result.ActionResult;
+import cz.tacr.elza.bulkaction.generator.result.Result;
 import cz.tacr.elza.controller.vo.OutputSettingsVO;
 import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.core.data.RuleSystemItemType;
@@ -726,12 +727,15 @@ public class OutputService {
             for (RulActionRecommended actionRecommended : actionRecommendeds) {
                 // process only recommended actions
                 if (actionRecommended.getAction().equals(action)) {
+                    Result resultObj = bulkActionRun.getResult();
+                    if (resultObj != null && resultObj.getResults() != null) {
                     // process all results
-                    for (ActionResult result : bulkActionRun.getResult().getResults()) {
+                        for (ActionResult result : resultObj.getResults()) {
                         result.createOutputItems(connector);
                     }
                 }
             }
+        }
         }
 
         return connector.getModifiedItemTypeIds().size() > 0;

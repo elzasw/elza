@@ -284,7 +284,12 @@ public class UsrPermission {
          * administrátor - všechna oprávnění
          * - má uživatel system
          */
-        ADMIN,
+        ADMIN {
+            @Override
+            public boolean isEqualOrHigher(Permission permission) {
+                return true;
+            }
+        },
 
         /**
          * čtení vybraného AS
@@ -296,7 +301,15 @@ public class UsrPermission {
          * čtení všech AS
          * - má náhled na všechny AS ve všech verzích včeně OUPUT bez aktivních operací
          */
-        FUND_RD_ALL,
+        FUND_RD_ALL {
+            @Override
+            public boolean isEqualOrHigher(Permission permission) {
+                if (permission == FUND_RD_ALL || permission == FUND_RD) {
+                    return true;
+                }
+                return false;
+            }
+        },
 
         /**
          * pořádání vybrané AS (pořádání je myšleno pořádání již vytvořeného AS, tvorba/úprava JP, tvorba úvodu, práce
@@ -315,7 +328,15 @@ public class UsrPermission {
          * pořádání všech AS
          * - obdobně jako výše, ale pro všechny AS
          */
-        FUND_ARR_ALL,
+        FUND_ARR_ALL {
+            @Override
+            public boolean isEqualOrHigher(Permission permission) {
+                if (permission == FUND_ARR_ALL || permission == FUND_ARR) {
+                    return true;
+                }
+                return false;
+            }
+        },
 
         /**
          * čtení vybraného scope rejstříku (Pro přístup k rejstříkům a k osobám je řešen společným oprávněním.)
@@ -328,7 +349,15 @@ public class UsrPermission {
          * čtení všech scope rejstříků
          * - obdobně jako výše jen pro všechna rejstříková hesla
          */
-        REG_SCOPE_RD_ALL,
+        REG_SCOPE_RD_ALL {
+            @Override
+            public boolean isEqualOrHigher(Permission permission) {
+                if (permission == REG_SCOPE_RD_ALL || permission == REG_SCOPE_RD) {
+                    return true;
+                }
+                return false;
+            }
+        },
 
         /**
          * zápis/úprava vybraného scope rejstříku
@@ -340,7 +369,15 @@ public class UsrPermission {
          * zápis/úprava všech scope rejstříků
          * - obdboně jako výše pro všechna rejstříková hesla
          */
-        REG_SCOPE_WR_ALL,
+        REG_SCOPE_WR_ALL {
+            @Override
+            public boolean isEqualOrHigher(Permission permission) {
+                if (permission == REG_SCOPE_WR_ALL || permission == REG_SCOPE_WR) {
+                    return true;
+                }
+                return false;
+            }
+        },
 
         /**
          * tvorba výstupů vybraného AS (AP, ad-hoc tisky)
@@ -354,7 +391,15 @@ public class UsrPermission {
          * tvorba výstupů všech AS
          * - obdobně jako výše ale pro všechny AS
          */
-        FUND_OUTPUT_WR_ALL,
+        FUND_OUTPUT_WR_ALL {
+            @Override
+            public boolean isEqualOrHigher(Permission permission) {
+                if (permission == FUND_OUTPUT_WR_ALL || permission == FUND_OUTPUT_WR) {
+                    return true;
+                }
+                return false;
+            }
+        },
 
         /**
          * konfigurace AS
@@ -368,7 +413,15 @@ public class UsrPermission {
          * - všechna práva na všechny AS včetně rejstříků, OUTPUT apodobně (vyjma uživatelů a případného dalšího systémového
          *   nastavení)
          */
-        FUND_ADMIN,
+        FUND_ADMIN {
+            @Override
+            public boolean isEqualOrHigher(Permission permission) {
+                if (permission == FUND_ADMIN || permission == FUND_CREATE || permission == FUND_VER_WR) {
+                    return true;
+                }
+                return false;
+            }
+        },
 
         /**
          * Právo zakládání nového AS.
@@ -385,7 +438,15 @@ public class UsrPermission {
          * export všech AS
          * - obdobně jako výše ale pro všechny AS
          */
-        FUND_EXPORT_ALL,
+        FUND_EXPORT_ALL {
+            @Override
+            public boolean isEqualOrHigher(Permission permission) {
+                if (permission == FUND_EXPORT_ALL || permission == FUND_EXPORT) {
+                    return true;
+                }
+                return false;
+            }
+        },
 
         /**
          * správa oprávnění a uživatelů
@@ -403,7 +464,15 @@ public class UsrPermission {
          * spouštění hromadných akcí všech AS
          * - obdobně jako výše ale pro všechny AS
          */
-        FUND_BA_ALL,
+        FUND_BA_ALL {
+            @Override
+            public boolean isEqualOrHigher(Permission permission) {
+                if (permission == FUND_BA_ALL || permission == FUND_BA) {
+                    return true;
+                }
+                return false;
+            }
+        },
 
         /**
          * drobné úpravy uzavřených vybraných AS
@@ -415,7 +484,15 @@ public class UsrPermission {
          * drobné úpravy uzavřených všech AS
          * - zatím neřešíme
          */
-        FUND_CL_VER_WR_ALL,
+        FUND_CL_VER_WR_ALL {
+            @Override
+            public boolean isEqualOrHigher(Permission permission) {
+                if (permission == FUND_CL_VER_WR || permission == FUND_CL_VER_WR_ALL) {
+                    return true;
+                }
+                return false;
+            }
+        },
 
         /**
          * Ukládání mapování typů vztahů a entit mezi INTERPI a ELZA.
@@ -467,6 +544,22 @@ public class UsrPermission {
          */
         public static Set<Permission> getFundAllPerms() {
             return fundAllPerms;
+        }
+
+        /**
+         * Check if this permission is equal or higher then given permission
+         * 
+         * @param permission
+         *            Permission to be checked
+         * @return Return true if this permission is same or higher then given
+         *         permission
+         */
+        public boolean isEqualOrHigher(Permission permission)
+        {
+            if(this==permission) { 
+                return true; 
+            } // if permission is global
+            return false;
         }
     }
 }
