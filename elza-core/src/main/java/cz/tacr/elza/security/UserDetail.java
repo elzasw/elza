@@ -169,34 +169,9 @@ public class UserDetail {
         
         for (UserPermission currPerm: userPermission) {
             // check if same type
-            if (currPerm.getPermission().equals(permission)) {
-                switch (permission.getType()) {
-                case ALL:
-                    return true;
-                case FUND:
-                    if (currPerm.getFundIds().contains(usrPermission.getFundId())) {
-                        return true;
-                    }
-                    break;
-                case USER:
-                    if (currPerm.getControlUserIds().contains(usrPermission.getUserControlId())) {
-                        return true;
-                    }
-                    break;
-                case GROUP:
-                    if (currPerm.getControlGroupIds().contains(usrPermission.getGroupControlId())) {
-                        return true;
-                    }
-                    break;
-                case SCOPE:
-                    if (currPerm.getScopeIds().contains(usrPermission.getScopeId())) {
-                        return true;
-                    }
-                    break;
-                default:
-                    throw new UnsupportedOperationException("Neimplementovaný typ oprvánění: " + permission.getType());
-                }
-            }            
+            if (currPerm.hasPermission(usrPermission)) {
+                return true;
+            }
         }
         return false;
     }

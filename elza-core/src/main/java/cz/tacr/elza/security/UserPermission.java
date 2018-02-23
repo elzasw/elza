@@ -165,4 +165,45 @@ public class UserPermission {
 		}
 		return false;
 	}
+
+    /**
+     * Check if this permission grants given permission
+     * 
+     * @param usrPermission
+     * @return
+     */
+    public boolean hasPermission(UsrPermission usrPermission) {
+        if (!permission.isEqualOrHigher(usrPermission.getPermission())) {
+            return false;
+        }
+        // .getPermission().equals(permission)) {
+        PermissionType permType = permission.getType();
+        switch (permType) {
+        case ALL:
+            return true;
+        case FUND:
+            if (fundIds.contains(usrPermission.getFundId())) {
+                return true;
+            }
+            break;
+        case USER:
+            if (controlUserIds.contains(usrPermission.getUserControlId())) {
+                return true;
+            }
+            break;
+        case GROUP:
+            if (controlGroupIds.contains(usrPermission.getGroupControlId())) {
+                return true;
+            }
+            break;
+        case SCOPE:
+            if (scopeIds.contains(usrPermission.getScopeId())) {
+                return true;
+            }
+            break;
+        default:
+            throw new UnsupportedOperationException("Neimplementovaný typ oprvánění: " + permission.getType());
+        }
+        return false;
+    }
 }
