@@ -1,5 +1,5 @@
 !MultiAction
-name: Agregace úvodu inventáře a katalogu
+name: Agregace úvodu
 
 actions:
     - !DateRange
