@@ -176,7 +176,7 @@ public class UserPermission {
         if (!permission.isEqualOrHigher(usrPermission.getPermission())) {
             return false;
         }
-        // .getPermission().equals(permission)) {
+
         PermissionType permType = permission.getType();
         switch (permType) {
         case ALL:
