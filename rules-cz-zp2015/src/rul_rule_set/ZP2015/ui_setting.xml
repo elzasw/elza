@@ -67,6 +67,7 @@
                 <type code="ZP2015_STORAGE_ID" width="1"/>
                 <type code="ZP2015_EXTRA_UNITS" width="1"/>
                 <type code="ZP2015_UNIT_EXT_TYPE" width="1"/>
+                <type code="ZP2015_CONNECTED_RECORD" width="2"/>                
             </group>
             <group code="03_GROUP2">
                 <name>Identifikátory jednotky popisu</name>
@@ -75,6 +76,7 @@
                 <type code="ZP2015_OTHER_ID" width="2"/>
                 <type code="ZP2015_INV_CISLO" width="2"/>
                 <type code="ZP2015_ITEM_ORDER" width="1"/>
+                <type code="ZP2015_INVALID_RECORD" width="2"/>
             </group>
             <group code="04_GROUP3">
                 <name>Hlavní popis jednotky</name>

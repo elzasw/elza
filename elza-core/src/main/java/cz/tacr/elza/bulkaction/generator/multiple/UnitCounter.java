@@ -23,6 +23,8 @@ public class UnitCounter {
 
 	final UnitCounterConfig config;
 
+    WhenCondition excludeWhen;
+
 	WhenCondition when;
 
 	RuleSystemItemType itemType;
@@ -51,6 +53,12 @@ public class UnitCounter {
 	}
 
 	private void init(RuleSystem ruleSystem) {
+        // initialize exclude configuration
+        WhenConditionConfig excludeWhenConfig = config.getExcludeWhen();
+        if (excludeWhenConfig != null) {
+            excludeWhen = new WhenCondition(excludeWhenConfig, ruleSystem);
+        }
+
 		WhenConditionConfig whenConfig = config.getWhen();
 		if (whenConfig != null) {
 			when = new WhenCondition(whenConfig, ruleSystem);
@@ -98,6 +106,15 @@ public class UnitCounter {
 	}
 
 	public void apply(LevelWithItems level, UnitCountAction unitCountAction) {
+        // check exclude condition
+        if (excludeWhen != null) {
+            if (excludeWhen.isTrue(level)) {
+                // set as skip
+                unitCountAction.setSkipSubtree(level);
+                return;
+            }
+        }
+
 		// check when condition
 		if (when != null) {
 			if (!when.isTrue(level)) {
