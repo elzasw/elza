@@ -31,6 +31,14 @@ public interface RegRecordRepository extends ElzaJpaRepository<RegRecord, Intege
     List<RegRecord> findByParentRecord(RegRecord parentRecord);
 
     /**
+     * Najde počet potomků rejstříkového hesla.
+     *
+     * @param parentRecord rodič
+     * @return počet potomků
+     */
+    long countByParentRecord(RegRecord parentRecord);
+
+    /**
      * Najde potomky rejstříkových hesel.
      *
      * @param parentRecords rodiče

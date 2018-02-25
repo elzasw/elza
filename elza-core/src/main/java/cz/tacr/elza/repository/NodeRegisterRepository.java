@@ -47,6 +47,14 @@ public interface NodeRegisterRepository extends JpaRepository<ArrNodeRegister, I
     @Query("SELECT nr FROM arr_node_register nr WHERE nr.record = ?1")
     List<ArrNodeRegister> findByRecordId(RegRecord record);
 
+    /**
+     * Počet vazeb uzlu na heslo.
+     * @param record    heslo
+     * @return          počet vazeb
+     */
+    @Query("SELECT COUNT(nr) FROM arr_node_register nr WHERE nr.record = ?1")
+    long countByRecordId(RegRecord record);
+
     List<ArrNodeRegister> findByNode(ArrNode node);
 
     @Query("SELECT record FROM arr_node_register nr WHERE nr.node = ?1")
@@ -61,4 +69,12 @@ public interface NodeRegisterRepository extends JpaRepository<ArrNodeRegister, I
      */
     @Query("SELECT nr FROM arr_node_register nr JOIN FETCH nr.record WHERE nr.deleteChange IS NULL AND nr.record = ?1")
     List<ArrNodeRegister> findByRecordAndDeleteChangeIsNull(RegRecord record);
+
+    /**
+     * Hledá počet v otevřené verzi pomocí rejstříku
+     * @param record rejstřík
+     * @return počet Node registrů v otevřené verzi
+     */
+    @Query("SELECT COUNT(nr) FROM arr_node_register nr WHERE nr.deleteChange IS NULL AND nr.record = ?1")
+    long countByRecordAndDeleteChangeIsNull(RegRecord record);
 }

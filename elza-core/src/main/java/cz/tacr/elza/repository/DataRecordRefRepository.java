@@ -21,4 +21,11 @@ public interface DataRecordRefRepository extends JpaRepository<ArrDataRecordRef,
      * @return  množina odkazujících dat, může být prázdná
      */
     List<ArrDataRecordRef> findByRecord(RegRecord record);
+
+    /**
+     * Počet vazeb na rejstříkové heslo.
+     * @param record rejstřík
+     * @return počet odkazujících dat
+     */
+    long countAllByRecord(RegRecord record);
 }
