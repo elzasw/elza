@@ -132,6 +132,10 @@
                 <type code="ZP2015_STORAGE_COND" width="2"/>
                 <!-- ZP5.2.4 Rozměry, hmotnost, velikost, množství -->
                 <type code="ZP2015_SIZE" width="1"/>
+                <type code="ZP2015_SIZE_WIDTH" width="1"/>
+                <type code="ZP2015_SIZE_HEIGHT" width="1"/>
+                <type code="ZP2015_SIZE_DEPTH" width="1"/>
+                <type code="ZP2015_SIZE_UNITS" width="1"/>
                 <!-- ZP5.2.5 Měřítko -->
                 <type code="ZP2015_SCALE" width="1"/>
                 <!-- 5.2.6 Souřadnice - tvar a souřadnice -->

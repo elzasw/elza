@@ -2697,4 +2697,11 @@
         <view-order>1</view-order>
     </item-spec>
     
+    <!-- Rozměry - jednotky  -->    
+    <item-spec code="ZP2015_SIZE_MM" item-type="ZP2015_SIZE_UNITS">
+        <name>mm</name>
+        <description>mm</description>
+        <shortcut>mm</shortcut>
+        <view-order>1</view-order>
+    </item-spec>
 </item-specs>
