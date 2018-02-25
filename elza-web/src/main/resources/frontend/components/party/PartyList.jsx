@@ -12,6 +12,7 @@ import PartyListItem from "./PartyListItem";
 import Autocomplete from "../shared/autocomplete/Autocomplete";
 import ListPager from "../shared/listPager/ListPager";
 import * as perms from "../../actions/user/Permission";
+import {requestScopesIfNeeded} from "../../actions/refTables/scopesData";
 
 /**
  * Komponenta list osob
@@ -41,6 +42,8 @@ class PartyList extends AbstractReactComponent {
 
     fetchIfNeeded = () => {
         this.dispatch(partyListFetchIfNeeded(null));
+        this.props.dispatch(requestScopesIfNeeded());
+
     };
 
     trySetFocus = (props = this.props) => {
@@ -102,8 +105,7 @@ class PartyList extends AbstractReactComponent {
 
     filterScopes(scopes) {
         const { userDetail } = this.props;
-        console.log(scopes);
-        return scopes.filter((scope) => userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_WR,scopeId: scope.id}));
+        return scopes.filter((scope) => userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_RD,scopeId: scope.id}));
     }
 
     getScopesWithAll(scopes) {

@@ -18,6 +18,7 @@ import './RegistryList.less';
 import RegistryListItem from "./RegistryListItem";
 import ListPager from "../shared/listPager/ListPager";
 import * as perms from "../../actions/user/Permission";
+import {requestScopesIfNeeded} from "../../actions/refTables/scopesData";
 
 class RegistryList extends AbstractReactComponent {
 
@@ -46,6 +47,7 @@ class RegistryList extends AbstractReactComponent {
         const {maxSize} = props;
         this.dispatch(refRecordTypesFetchIfNeeded());
         this.dispatch(registryListFetchIfNeeded(0, maxSize));
+        this.dispatch(requestScopesIfNeeded());
     };
 
     trySetFocus = (props = this.props) => {
@@ -182,7 +184,7 @@ class RegistryList extends AbstractReactComponent {
 
     filterScopes(scopes) {
         const { userDetail } = this.props;
-        return scopes.filter((scope) => userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_WR,scopeId: scope.id}));
+        return scopes.filter((scope) => userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_RD,scopeId: scope.id}));
     }
 
     getScopesWithAll(scopes) {
