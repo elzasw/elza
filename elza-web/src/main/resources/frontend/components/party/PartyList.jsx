@@ -68,15 +68,15 @@ class PartyList extends AbstractReactComponent {
 
     handleFilterType = (e) => {
         const val = e.target.value;
-        this.dispatch(partyListFilter({...this.props.partyList.filter, type: val == -1 ? null : val}));
+        this.dispatch(partyListFilter({...this.props.partyList.filter, from: 0, type: val == -1 ? null : val}));
     };
 
     handleFilterText = (filterText) => {
-        this.dispatch(partyListFilter({...this.props.partyList.filter, text: !filterText || filterText.length === 0 ? null : filterText}));
+        this.dispatch(partyListFilter({...this.props.partyList.filter, from: 0, text: !filterText || filterText.length === 0 ? null : filterText}));
     };
 
     handleFilterTextClear = () => {
-        this.dispatch(partyListFilter({...this.props.partyList.filter, text: null}));
+        this.dispatch(partyListFilter({...this.props.partyList.filter, from: 0, text: null}));
     };
 
     handlePartyDetail = (item) => {
@@ -84,7 +84,7 @@ class PartyList extends AbstractReactComponent {
     };
 
     handleFilterPartyScope = (item) => {
-        this.dispatch(partyListFilter({...this.props.partyList.filter, scopeId: item ? item.id : null}));
+        this.dispatch(partyListFilter({...this.props.partyList.filter, from: 0, scopeId: item ? item.id : null}));
     };
 
     handleFilterPrev = () => {

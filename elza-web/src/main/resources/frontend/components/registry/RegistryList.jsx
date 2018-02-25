@@ -72,19 +72,19 @@ class RegistryList extends AbstractReactComponent {
 
     handleFilterType = (e) => {
         const val = e.target.value;
-        this.dispatch(registryListFilter({...this.props.registryList.filter, type: val == -1 ? null : val}));
+        this.dispatch(registryListFilter({...this.props.registryList.filter, from: 0, type: val == -1 ? null : val}));
     };
 
     handleFilterText = (filterText) => {
-        this.dispatch(registryListFilter({...this.props.registryList.filter, text: filterText && filterText.length === 0 ? null : filterText}));
+        this.dispatch(registryListFilter({...this.props.registryList.filter, from: 0, text: filterText && filterText.length === 0 ? null : filterText}));
     };
 
     handleFilterRegistryType = (item) => {
-        this.dispatch(registryListFilter({...this.props.registryList.filter, registryTypeId: item ? item.id : null}));
+        this.dispatch(registryListFilter({...this.props.registryList.filter, from: 0, registryTypeId: item ? item.id : null}));
     };
 
     handleFilterRegistryScope = (item) => {
-        this.dispatch(registryListFilter({...this.props.registryList.filter, scopeId: item ? item.id : null}));
+        this.dispatch(registryListFilter({...this.props.registryList.filter, from: 0, scopeId: item ? item.id : null}));
     };
 
     handleFilterPrev = () => {
@@ -108,7 +108,7 @@ class RegistryList extends AbstractReactComponent {
     }
 
     handleFilterTextClear = () => {
-        this.dispatch(registryListFilter({...this.props.registryList.filter, text: null}));
+        this.dispatch(registryListFilter({...this.props.registryList.filter, from: 0, text: null}));
     };
 
     handleRegistryDetail = (item) => {
