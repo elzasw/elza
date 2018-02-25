@@ -67,7 +67,6 @@ import {
     DAO,
     DAO_LINK,
     createDigitizationName,
-    getDescItemsAddTree,
     getOneSettings
 } from 'components/arr/ArrUtils.jsx';
 import ArrParentPage from "./ArrParentPage.jsx";
