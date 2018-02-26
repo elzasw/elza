@@ -50,7 +50,9 @@ when
         "ZP2015_UNIT_SOURCE", "ZP2015_FUTURE_UNITS", "ZP2015_UNIT_ACCESS", "ZP2015_UNIT_INFO_RIGHTS",
         "ZP2015_UNIT_COPY_RIGHTS", "ZP2015_UNIT_CURRENT_STATUS", "ZP2015_COPY_SOURCE",
         "ZP2015_RELATED_UNITS", "ZP2015_EXISTING_COPY", "ZP2015_INTERNAL_NOTE", "ZP2015_NOTE",
-        "ZP2015_ARRANGE_RULES", "ZP2015_STORAGE_COND", "ZP2015_SIZE", "ZP2015_SCALE",
+        "ZP2015_ARRANGE_RULES", "ZP2015_STORAGE_COND", "ZP2015_SIZE",
+        "ZP2015_SIZE_WIDTH", "ZP2015_SIZE_HEIGHT", "ZP2015_SIZE_DEPTH", "ZP2015_SIZE_UNITS", 
+        "ZP2015_SCALE",
         "ZP2015_ORIENTATION", "ZP2015_ITEM_MAT", "ZP2015_PART", "ZP2015_EDITION",
         "ZP2015_EXERQUE", "ZP2015_PAINTING_CHAR", "ZP2015_CORROBORATION", "ZP2015_IMPRINT_COUNT",
         "ZP2015_IMPRINT_ORDER", "ZP2015_LEGEND", "ZP2015_MOVIE_LENGTH", "ZP2015_RECORD_LENGTH",
@@ -927,6 +929,59 @@ when $activeLevel: ActiveLevel( )
     $itemType : RulItemTypeExt(code in ("ZP2015_UNIT_DATE"))
 then
     $itemType.setIndefinable(true);
+end
+
+rule "Zneplatněný záznam možný pro složky a jednotlivosti"
+no-loop
+when $activeLevel: ActiveLevel( )
+    $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_OTHER")) from $activeLevel.descItems
+    $itemType: RulItemTypeExt( code in (
+        // Zneplatněný záznam
+        "ZP2015_INVALID_RECORD"
+        ) )
+then
+    $itemType.setType(RulItemType.Type.POSSIBLE);
+end
+
+rule "Zneplatněný záznam možný pro složky a jednotlivosti - specifikace"
+no-loop
+salience -100
+when $activeLevel: ActiveLevel( )
+    $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_OTHER")) from $activeLevel.descItems
+    $itemType: RulItemTypeExt( code in (
+        // Zneplatněný záznam
+        "ZP2015_INVALID_RECORD"
+        ) )
+    $itemSpec: RulItemSpecExt( ) from $itemType.rulItemSpecList
+then
+    $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+end
+
+rule "Související záznam s jinou EJ"
+no-loop
+when $activeLevel: ActiveLevel( )
+    DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_OTHER")) from $activeLevel.descItems
+    $itemType: RulItemTypeExt( code in (
+        // Související záznam
+        "ZP2015_CONNECTED_RECORD"
+        ) )
+then
+    $itemType.setType(RulItemType.Type.POSSIBLE);
+end
+
+rule "Související záznam s jinou EJ - specifikace"
+no-loop
+when $activeLevel: ActiveLevel( )
+    DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_OTHER")) from $activeLevel.descItems
+    $itemType: RulItemTypeExt( code in (
+        // Související záznam
+        "ZP2015_CONNECTED_RECORD"
+        ) )
+    $itemSpec: RulItemSpecExt( ) from $itemType.rulItemSpecList
+then
+    $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
 end
 
 //----------------------------------------------

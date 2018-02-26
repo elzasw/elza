@@ -23,6 +23,7 @@ import org.springframework.util.Assert;
 
 import cz.tacr.elza.bulkaction.BulkActionService;
 import cz.tacr.elza.bulkaction.generator.result.ActionResult;
+import cz.tacr.elza.bulkaction.generator.result.Result;
 import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.core.data.RuleSystemItemType;
 import cz.tacr.elza.core.data.StaticDataService;
@@ -722,9 +723,12 @@ public class OutputService {
             for (RulActionRecommended actionRecommended : actionRecommendeds) {
                 // process only recommended actions
                 if (actionRecommended.getAction().equals(action)) {
-                    // process all results
-                    for (ActionResult result : bulkActionRun.getResult().getResults()) {
-                        result.createOutputItems(connector);
+                    Result resultObj = bulkActionRun.getResult();
+                    if (resultObj != null && resultObj.getResults() != null) {
+                        // process all results
+                        for (ActionResult result : resultObj.getResults()) {
+                            result.createOutputItems(connector);
+                        }
                     }
                 }
             }

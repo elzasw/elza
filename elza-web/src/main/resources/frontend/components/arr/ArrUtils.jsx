@@ -23,19 +23,25 @@ export function getDescItemsAddTree(descItemGroups, infoTypesMapInput, refTypesM
     descItemGroups.forEach(group => {
         group.descItemTypes.forEach(descItemType => {
             delete infoTypesMap[descItemType.id];
-        })
-    })
+        });
+    });
 
     // Sestavení seznamu včetně skupin
     var descItemTypes = [];
     infoGroups.forEach(infoGroup => {
         const itemTypes = [];
         infoGroup.types.forEach(infoType => {
-            if (infoTypesMap[infoType.id]) {    // ještě ji na formuláři nemáme
-                itemTypes.push({
-                    ...refTypesMapInput[infoType.id],
-                    ...infoType,
-                });
+            const itemType = infoTypesMap[infoType.id];
+            if (itemType) {    // ještě ji na formuláři nemáme
+                // v nestriktním modu přidáváme všechny jinak jen možné
+                if (!strictMode || itemType.type !== 'IMPOSSIBLE') {
+                    itemTypes.push({
+                        // nový item type na základě původního z refTables
+                        ...refTypesMapInput[infoType.id],
+                        // obohacení o aktualizované stavy ze serveru
+                        ...itemType
+                    });
+                }
             }
         });
 
@@ -49,29 +55,7 @@ export function getDescItemsAddTree(descItemGroups, infoTypesMapInput, refTypesM
         }
     });
 
-    let descItemTypesFiltered;
-
-    if (strictMode) {
-        descItemTypesFiltered = [];
-        descItemTypes.forEach((group, gIndex) => {
-            let children = [];
-            if (group.children) {
-                group.children.forEach((item, iIndex) => {
-                    if (item.type !== 'IMPOSSIBLE') {
-                        children.push(descItemTypes[gIndex].children[iIndex]);
-                    }
-                });
-            }
-            if (children.length > 0) {
-                group.children = children;
-                descItemTypesFiltered.push(group);
-            }
-        });
-    } else {
-        descItemTypesFiltered = descItemTypes;
-    }
-
-    return descItemTypesFiltered;
+    return descItemTypes;
 }
 
 export function getFundFromFundAndVersion(fund, version) {
