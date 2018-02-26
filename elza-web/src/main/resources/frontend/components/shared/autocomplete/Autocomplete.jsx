@@ -1209,6 +1209,7 @@ export default class Autocomplete extends AbstractReactComponent {
                                 {...this.props.inputProps}
                                 label={this.props.label}
                                 disabled={this.props.disabled}
+                                autocomplete="off"
                                 role='combobox'
                                 aria-autocomplete="both"
                                 ref="input"

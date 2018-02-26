@@ -1,4 +1,4 @@
-package cz.tacr.elza.utils;
+package cz.tacr.elza.common;
 
 import org.springframework.core.io.InputStreamResource;
 

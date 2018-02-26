@@ -1846,14 +1846,15 @@ public class ArrangementController {
      *
      * @return seznam unikátních hodnot
      */
-    @RequestMapping(value = "/findUniqueSpecIds/{fundVersionId}", method = RequestMethod.GET)
+    @RequestMapping(value = "/findUniqueSpecIds/{fundVersionId}", method = RequestMethod.POST)
     public List<Integer> findUniqueSpecIds(@PathVariable("fundVersionId") final Integer fundVersionId,
-                                           @RequestParam("itemTypeId") final Integer itemTypeId) {
+                                           @RequestParam("itemTypeId") final Integer itemTypeId,
+                                           @RequestBody final Filters filters) {
 
         ArrFundVersion version = fundVersionRepository.getOneCheckExist(fundVersionId);
         RulItemType descItemType = itemTypeRepository.findOne(itemTypeId);
-
-        List<Integer> specIds = filterTreeService.findUniqueSpecIds(version, descItemType);
+        List<DescItemTypeFilter> descItemFilters = factoryDO.createFilters(filters);
+        List<Integer> specIds = filterTreeService.findUniqueSpecIds(version, descItemType, descItemFilters, filters.getNodeId());
         specIds.add(null); // pro "Prázdné" položky
         return specIds;
     }
