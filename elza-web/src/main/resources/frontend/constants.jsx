@@ -1,4 +1,4 @@
-export const DEFAULT_LIST_SIZE = 200;
+export const DEFAULT_LIST_SIZE = 5;
 export const AP_EXT_SYSTEM_TYPE = {
     INTERPI: 'INTERPI'
 };

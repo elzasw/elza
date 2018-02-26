@@ -90,7 +90,9 @@ class RegistryPage extends AbstractReactComponent {
 
     initData = (props = this.props) => {
         this.dispatch(refRecordTypesFetchIfNeeded());
-        this.dispatch(apExtSystemListFetchIfNeeded());
+        if (props.userDetail.hasOne(perms.AP_SCOPE_WR_ALL)) {
+            this.dispatch(apExtSystemListFetchIfNeeded());
+        }
 
         this.trySetFocus(props)
     };
