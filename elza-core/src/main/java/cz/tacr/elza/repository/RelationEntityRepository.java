@@ -51,7 +51,7 @@ public interface RelationEntityRepository extends ElzaJpaRepository<ParRelationE
      * @param record rejstřík
      * @return počet vazeb
      */
-    long countAllByRecord(RegRecord record);
+    long countAllByRecord(ApRecord record);
 
     /**
      * Najde vazby které aktivní a jsou vázané na předaný rejstřík

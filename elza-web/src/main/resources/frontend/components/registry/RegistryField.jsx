@@ -173,7 +173,7 @@ class RegistryField extends AbstractReactComponent {
 
         let actions = [];
         if (detail) {
-            // if (value && userDetail.hasOne(perms.REG_SCOPE_RD_ALL, {type: perms.REG_SCOPE_RD, scopeId: value.scopeId})) {
+            // if (value && userDetail.hasOne(perms.AP_SCOPE_RD_ALL, {type: perms.AP_SCOPE_RD, scopeId: value.scopeId})) {
                 actions.push(<div onClick={this.handleDetail.bind(this, value ? value.id : null)} className={'btn btn-default detail'}><Icon glyph={'fa-th-list'}/></div>);
             // }
         }

@@ -159,7 +159,7 @@ function userDetailInt(state, action) {
             // action.userDetail.userPermissions = [
             //     {permission: 'FUND_ARR_ALL', fundIds: [], scopeIds: [1]},
             //     {permission: 'AP_SCOPE_RD', fundIds: [], scopeIds: [1]},
-            //     {permission: 'REG_SCOPE_WR_ALL1', fundIds: [], scopeIds: []},
+            //     {permission: 'AP_SCOPE_WR_ALL1', fundIds: [], scopeIds: []},
             //     {permission: 'AP_SCOPE_WR', fundIds: [], scopeIds: [2]},
             // ]
 
@@ -171,7 +171,7 @@ function userDetailInt(state, action) {
                     perm.scopeIdsMap = getSetFromIdsList(perm.scopeIds)
                 })
             }
-            
+
 
             return {
                 ...state,

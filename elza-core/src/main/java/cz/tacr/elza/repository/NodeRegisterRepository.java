@@ -53,7 +53,7 @@ public interface NodeRegisterRepository extends JpaRepository<ArrNodeRegister, I
      * @return          počet vazeb
      */
     @Query("SELECT COUNT(nr) FROM arr_node_register nr WHERE nr.record = ?1")
-    long countByRecordId(RegRecord record);
+    long countByRecordId(ApRecord record);
 
     List<ArrNodeRegister> findByNode(ArrNode node);
 
