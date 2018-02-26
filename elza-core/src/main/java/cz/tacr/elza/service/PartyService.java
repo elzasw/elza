@@ -755,7 +755,7 @@ public class PartyService {
                     .set("partyIds", relationEntities.stream().map(ParRelationEntity::getRelation).map(ParRelation::getParty).map(ParParty::getPartyId).collect(Collectors.toList()));
         }
 
-        return registryService.canBeDeleted(party.getRecord()) &&
+        return registryService.canBeDeleted(party.getRecord(), false) &&
                 CollectionUtils.isEmpty(dataPartyRefRepository.findByParty(party));
     }
 
