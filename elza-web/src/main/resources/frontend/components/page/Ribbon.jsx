@@ -80,7 +80,8 @@ class Ribbon extends AbstractReactComponent {
         // Aktomatické sekce podle vybrané oblasti
         if (this.props.admin) {
             const isSuperuser = userDetail.hasOne(perms.ADMIN);
-            const administersUser = userDetail.hasOne(perms.USER_CONTROL_ENTITITY, perms.USR_PERM);
+            // Users can be administered if controlls some group or user
+            const administersUser = userDetail.hasOne(perms.GROUP_CONTROL_ENTITITY, perms.USR_PERM) || userDetail.hasOne(perms.USER_CONTROL_ENTITITY, perms.USR_PERM);
             const administersGroup = userDetail.hasOne(perms.GROUP_CONTROL_ENTITITY, perms.USR_PERM);
 
             section = (

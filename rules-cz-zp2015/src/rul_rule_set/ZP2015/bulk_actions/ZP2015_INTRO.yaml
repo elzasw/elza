@@ -1,5 +1,5 @@
 !MultiAction
-name: Agregace úvodu inventáře a katalogu
+name: Agregace úvodu
 
 actions:
     - !DateRange
@@ -92,7 +92,10 @@ actions:
         outputColumnUnitCount: COUNT
         aggegators:
            # Extra EJ - kdekoliv
-           - when:
+           - excludeWhen:
+               # Nesmí být nastaven jako připojený záznam
+               itemType: ZP2015_CONNECTED_RECORD
+             when:
                # Je nastaven typ i pocet
                itemType: ZP2015_EXTRA_UNITS
              itemType: ZP2015_EXTRA_UNITS
@@ -135,7 +138,10 @@ actions:
                ZP2015_EXTRA_UNITS_PNP: pnp
                ZP2015_EXTRA_UNITS_PFP: pfp
                ZP2015_EXTRA_UNITS_JIN: jin
-           - when:
+           - excludeWhen:
+               # Nesmí být nastaven jako připojený záznam
+               itemType: ZP2015_CONNECTED_RECORD
+             when:
                someOf:
                  # Složka s počtem EJ
                  - all:
@@ -198,7 +204,10 @@ actions:
                ZP2015_UNIT_TYPE_PFP: pfp
                ZP2015_UNIT_TYPE_JIN: jin
            # Složka s hromadinou
-           - when:
+           - excludeWhen:
+               # Nesmí být nastaven jako připojený záznam
+               itemType: ZP2015_CONNECTED_RECORD
+             when:
                itemType: ZP2015_FOLDER_TYPE
                itemSpec: ZP2015_FOLDER_UNITS
              stopProcessing: true
