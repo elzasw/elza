@@ -2677,5 +2677,41 @@
         <description>Provizorní inventární seznam</description>
         <shortcut>Provizorní inv. seznam</shortcut>
         <view-order>4</view-order>
-    </item-spec>        
+    </item-spec>
+    
+    <!-- Zneplatněný záznam -->
+    <item-spec code="ZP2015_INV_NOT_FOUND" item-type="ZP2015_INVALID_RECORD">
+        <name>Nedohledáno</name>
+        <description>Položka nebyla ve fodnu nalezena</description>
+        <shortcut>Nedohledáno</shortcut>
+        <view-order>1</view-order>
+    </item-spec>
+    <item-spec code="ZP2015_INV_DESTROYED" item-type="ZP2015_INVALID_RECORD">
+        <name>Zničeno</name>
+        <description>Položka byla zničena</description>
+        <shortcut>Zničeno</shortcut>
+        <view-order>2</view-order>
+    </item-spec>
+    <item-spec code="ZP2015_INV_MOVED" item-type="ZP2015_INVALID_RECORD">
+        <name>Delimitováno</name>
+        <description>Položka byla delimitována</description>
+        <shortcut>Delimitováno</shortcut>
+        <view-order>3</view-order>
+    </item-spec>
+    
+    <!-- Souvislost s jinou EJ -->
+    <item-spec code="ZP2015_CR_PREV_RECORD" item-type="ZP2015_CONNECTED_RECORD">
+        <name>Součást předchozí EJ</name>
+        <description>Souvislost s předchozí EJ</description>
+        <shortcut>Předchozí</shortcut>
+        <view-order>1</view-order>
+    </item-spec>
+    
+    <!-- Rozměry - jednotky  -->    
+    <item-spec code="ZP2015_SIZE_MM" item-type="ZP2015_SIZE_UNITS">
+        <name>mm</name>
+        <description>mm</description>
+        <shortcut>mm</shortcut>
+        <view-order>1</view-order>
+    </item-spec>
 </item-specs>

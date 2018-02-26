@@ -3,6 +3,11 @@ package cz.tacr.elza.bulkaction.generator.multiple;
 import java.util.Map;
 
 public class UnitCounterConfig {
+    /**
+     * Exclude condition
+     */
+    WhenConditionConfig excludeWhen;
+
 	WhenConditionConfig when;
 
 	boolean stopProcessing;
@@ -53,6 +58,14 @@ public class UnitCounterConfig {
     public void setObjectItemMapping(Map<String, String> objectMapping) {
         this.objectItemMapping = objectMapping;
 	}
+
+    public WhenConditionConfig getExcludeWhen() {
+        return excludeWhen;
+    }
+
+    public void setExcludeWhen(WhenConditionConfig excludeWhen) {
+        this.excludeWhen = excludeWhen;
+    }
 
     public String getObjectItemType() {
         return objectItemType;

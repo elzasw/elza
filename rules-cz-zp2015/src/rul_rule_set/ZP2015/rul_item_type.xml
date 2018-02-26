@@ -665,4 +665,60 @@
         <can-be-ordered>true</can-be-ordered>
         <use-specification>true</use-specification>
     </item-type>
+    <!--
+      Zneplatněný záznam - použije se u starší pomůcky
+      Hodnoty: Nedohledáno, Zničeno, Delimitováno  
+      -->
+    <item-type code="ZP2015_INVALID_RECORD" data-type="ENUM">
+        <name>Zneplatněný záznam</name>
+        <shortcut>Zneplatnění</shortcut>
+        <description>Zneplatněný záznam (obvykle u starší pomůcky)</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>true</can-be-ordered>
+        <use-specification>true</use-specification>
+    </item-type>
+    <!-- Prvek je určen k zajištění správného počítání EJ u starších pomůcek. 
+         U těchto pomůcek mohlo docházet k situacím, kdy jedna EJ byla popsána 
+         pomocí několika spolu souvisejícími za sebou uvedenými jendotkami popisu. -->
+    <item-type code="ZP2015_CONNECTED_RECORD" data-type="ENUM">
+        <name>Souvislost s jinou EJ</name>
+        <shortcut>Související EJ</shortcut>
+        <description>Souvislost s jinou EJ</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>true</can-be-ordered>
+        <use-specification>true</use-specification>
+    </item-type>
+    <!-- Rozměry -->
+    <item-type code="ZP2015_SIZE_WIDTH" data-type="DECIMAL">
+        <name>Šířka</name>
+        <shortcut>Šířka</shortcut>
+        <description>Šířka</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>true</can-be-ordered>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="ZP2015_SIZE_HEIGHT" data-type="DECIMAL">
+        <name>Výška</name>
+        <shortcut>Výška</shortcut>
+        <description>Výška</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>true</can-be-ordered>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="ZP2015_SIZE_DEPTH" data-type="DECIMAL">
+        <name>Hloubka</name>
+        <shortcut>Hloubka</shortcut>
+        <description>Hloubka</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>true</can-be-ordered>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="ZP2015_SIZE_UNITS" data-type="ENUM">
+        <name>Jednotka</name>
+        <shortcut>Jednotka</shortcut>
+        <description>Jednotka</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>true</can-be-ordered>
+        <use-specification>true</use-specification>
+    </item-type>
 </item-types>
