@@ -820,8 +820,8 @@ export class WebApiCls {
         return AjaxUtils.ajaxPut(WebApiCls.arrangementUrl + '/filterUniqueValues/' + versionId, {descItemTypeId, fulltext, max}, descItemSpecIds)
     }
 
-    findUniqueSpecIds(fundVersionId, itemTypeId) {
-        return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/findUniqueSpecIds/' + fundVersionId, {itemTypeId})
+    findUniqueSpecIds(fundVersionId, itemTypeId, filters) {
+        return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/findUniqueSpecIds/' + fundVersionId, {itemTypeId}, filters)
     }
 
     getVisiblePolicy(nodeId, fundVersionId) {
@@ -1326,7 +1326,7 @@ export class WebApiOverride extends WebApiCls{
         });
     }
     /**
-     * Repeats all postponed requests 
+     * Repeats all postponed requests
      */
     onLogin() {
         if(this.callbacks && this.callbacks.length > 0){

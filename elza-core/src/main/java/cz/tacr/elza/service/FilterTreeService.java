@@ -87,6 +87,21 @@ public class FilterTreeService {
      * @return počet všech záznamů splňujících filtry
      */
     public int filterData(final ArrFundVersion version, final  List<DescItemTypeFilter> descItemFilters, final Integer parentNodeId) {
+        LinkedHashSet<Integer> versionIdsTable = findNodeIdsByFilter(version, descItemFilters, parentNodeId);
+        FilterTreeSession session = storeFilteredTreeIntersection(version.getFundVersionId(), versionIdsTable,
+                versionIdsTable);
+        return session.getFilteredIds(version.getFundVersionId()).size();
+    }
+
+    /**
+     * Vyhledání ident. JP podle zadaných filtrů.
+     *
+     * @param version         verze AS, kterou prohledáváme
+     * @param descItemFilters filtry, podle kterých omezujeme výsledky
+     * @param parentNodeId    ident. JP, pro omezení podstromu
+     * @return nalezené ident. JP
+     */
+    private LinkedHashSet<Integer> findNodeIdsByFilter(final ArrFundVersion version, final List<DescItemTypeFilter> descItemFilters, final Integer parentNodeId) {
         Map<Integer, TreeNode> versionTreeCache = levelTreeCacheService.getVersionTreeCache(version);
         TreeNode parentNode;
         if (parentNodeId == null) {
@@ -109,10 +124,7 @@ public class FilterTreeService {
                 }
             }
         }
-
-        FilterTreeSession session = storeFilteredTreeIntersection(version.getFundVersionId(), versionIdsTable,
-                versionIdsTable);
-        return session.getFilteredIds(version.getFundVersionId()).size();
+        return versionIdsTable;
     }
 
 
@@ -232,17 +244,22 @@ public class FilterTreeService {
     /**
      * Získání unikátních specifikací atributů podle typu.
      *
-     * @param fundVersion verze stromu
-     * @param itemType    typ atributu
+     * @param fundVersion     verze stromu
+     * @param itemType        typ atributu
+     * @param descItemFilters filtry, podle kterých omezujeme výsledky
+     * @param nodeId          ident. JP, pro omezení podstromu
      * @return seznam hodnot
      */
     public List<Integer> findUniqueSpecIds(final ArrFundVersion fundVersion,
-                                          final RulItemType itemType) {
-
+                                           final RulItemType itemType,
+                                           final List<DescItemTypeFilter> descItemFilters,
+                                           final Integer nodeId) {
         Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
         Assert.notNull(itemType, "Typ atributu musí být vyplněn");
 
-        return dataRepository.findUniqueSpecIdsInVersion(fundVersion, itemType);
+        LinkedHashSet<Integer> nodeIdsByFilter = findNodeIdsByFilter(fundVersion, descItemFilters, nodeId);
+
+        return dataRepository.findUniqueSpecIdsInVersion(fundVersion, itemType, new ArrayList<>(nodeIdsByFilter));
     }
 
     /**

@@ -2,6 +2,7 @@ package cz.tacr.elza.repository;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -22,6 +23,8 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.persistence.criteria.Selection;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import cz.tacr.elza.domain.ArrDataStructureRef;
 import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.ArrStructuredObject;
@@ -243,42 +246,48 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
 
     @Override
     public List<Integer> findUniqueSpecIdsInVersion(final ArrFundVersion version,
-                                                    final RulItemType itemType) {
-        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-        CriteriaQuery<RulItemSpec> query = builder.createQuery(RulItemSpec.class);
+                                                    final RulItemType itemType,
+                                                    final List<Integer> nodeIds) {
+        Set<Integer> result = new HashSet<>();
+        for (List<Integer> partOfNodeIds : Lists.partition(nodeIds, 1000)) {
+            CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+            CriteriaQuery<RulItemSpec> query = builder.createQuery(RulItemSpec.class);
 
-        Root<ArrDescItem> descItem = query.from(ArrDescItem.class);
+            Root<ArrDescItem> descItem = query.from(ArrDescItem.class);
 
-        Predicate versionPredicate;
-        if (version.getLockChange() == null) {
-            versionPredicate = builder.isNull(descItem.get(ArrDescItem.DELETE_CHANGE_ID));
-        } else {
-            Integer lockChangeId = version.getLockChange().getChangeId();
+            Predicate versionPredicate;
+            if (version.getLockChange() == null) {
+                versionPredicate = builder.isNull(descItem.get(ArrDescItem.DELETE_CHANGE_ID));
+            } else {
+                Integer lockChangeId = version.getLockChange().getChangeId();
 
-            Predicate createPred = builder.lt(descItem.get(ArrDescItem.CREATE_CHANGE_ID), lockChangeId);
-            Predicate deletePred = builder.or(
-                    builder.isNull(descItem.get(ArrDescItem.DELETE_CHANGE_ID)),
-                    builder.gt(descItem.get(ArrDescItem.DELETE_CHANGE_ID), lockChangeId)
-            );
+                Predicate createPred = builder.lt(descItem.get(ArrDescItem.CREATE_CHANGE_ID), lockChangeId);
+                Predicate deletePred = builder.or(
+                        builder.isNull(descItem.get(ArrDescItem.DELETE_CHANGE_ID)),
+                        builder.gt(descItem.get(ArrDescItem.DELETE_CHANGE_ID), lockChangeId)
+                );
 
-            versionPredicate = builder.and(createPred, deletePred);
+                versionPredicate = builder.and(createPred, deletePred);
+            }
+
+            //seznam AND podmínek
+            List<Predicate> andPredicates = new LinkedList<>();
+            andPredicates.add(builder.equal(descItem.get(ArrDescItem.NODE).get(ArrNode.FUND), version.getFund()));
+            andPredicates.add(descItem.get(ArrDescItem.NODE_ID).in(partOfNodeIds));
+            andPredicates.add(versionPredicate);
+            andPredicates.add(builder.equal(descItem.get(ArrDescItem.ITEM_TYPE), itemType));
+
+            query.select(descItem.get(ArrItem.ITEM_SPEC));
+            query.where(andPredicates.toArray(new Predicate[andPredicates.size()]));
+
+            //query.orderBy(builder.asc(substringValue));
+            query.distinct(true);
+
+            List<RulItemSpec> resultList = entityManager.createQuery(query).getResultList();
+
+            result.addAll(resultList.stream().map(RulItemSpec::getItemSpecId).collect(Collectors.toList()));
         }
-
-        //seznam AND podmínek
-        List<Predicate> andPredicates = new LinkedList<>();
-        andPredicates.add(builder.equal(descItem.get(ArrDescItem.NODE).get(ArrNode.FUND), version.getFund()));
-        andPredicates.add(versionPredicate);
-        andPredicates.add(builder.equal(descItem.get(ArrDescItem.ITEM_TYPE), itemType));
-
-        query.select(descItem.get(ArrItem.ITEM_SPEC));
-        query.where(andPredicates.toArray(new Predicate[andPredicates.size()]));
-
-        //query.orderBy(builder.asc(substringValue));
-        query.distinct(true);
-
-        List<RulItemSpec> resultList = entityManager.createQuery(query).getResultList();
-
-        return resultList.stream().map(RulItemSpec::getItemSpecId).collect(Collectors.toList());
+        return new ArrayList<>(result);
     }
 
     /**

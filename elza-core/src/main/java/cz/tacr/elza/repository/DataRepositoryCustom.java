@@ -72,9 +72,11 @@ public interface DataRepositoryCustom {
      * @param version       id verze stromu
      * @param descItemType  typ atributu
      *
+     * @param nodeIds       seznam ident. JP pro omezení specifikací
      * @return seznam unikátních hodnot
      */
     List<Integer> findUniqueSpecIdsInVersion(ArrFundVersion version,
-                                             RulItemType descItemType);
+                                             RulItemType descItemType,
+                                             List<Integer> nodeIds);
 
 }
