@@ -185,32 +185,38 @@ public class RegistryService {
      * Kontrola, jestli je používáno rejstříkové heslo v navázaných tabulkách.
      *
      * @param record rejstříkové heslo
-     * @throws IllegalStateException napojení na jinou tabulku
+     * @param checkUsage kontrolovat použití
+     *
+     * @throws BusinessException napojení na jinou tabulku
      */
-    private void checkRecordUsage(final RegRecord record) {
-        ParParty parParty = partyService.findParPartyByRecord(record);
-        if (parParty != null) {
-            throw new BusinessException("Existuje vazba z osoby, nelze smazat.", RegistryCode.EXIST_FOREIGN_PARTY);
+    public boolean canBeDeleted(final RegRecord record, final boolean checkUsage) {
+        long countDataRecordRef = dataRecordRefRepository.countAllByRecord(record);
+        if (checkUsage) {
+            ParParty parParty = partyService.findParPartyByRecord(record);
+            if (parParty != null) {
+                throw new BusinessException("Existuje vazba z osoby, nelze smazat.", RegistryCode.EXIST_FOREIGN_PARTY);
+            }
+
+            if (countDataRecordRef > 0) {
+                throw new BusinessException("Nalezeno použití hesla v tabulce ArrDataRecordRef.", RegistryCode.EXIST_FOREIGN_DATA).set("table", "ArrDataRecordRef");
+            }
+
+            long countNodeRegister = nodeRegisterRepository.countByRecordAndDeleteChangeIsNull(record);
+            if (countNodeRegister > 0) {
+                throw new BusinessException("Nalezeno použití hesla v tabulce ArrNodeRegister.", RegistryCode.EXIST_FOREIGN_DATA).set("table", "ArrNodeRegister");
+            }
+
+            // vztah osoby par_relation_entity
+            List<ParRelationEntity> relationEntities = relationEntityRepository.findActiveByRecord(record);
+            if (CollectionUtils.isNotEmpty(relationEntities)) {
+                throw new BusinessException("Nelze smazat/zneplatnit rejstříkové heslo na kterou mají vazbu jiné aktivní osoby v relacích.", RegistryCode.EXIST_FOREIGN_DATA)
+                        .set("recordId", record.getRecordId())
+                        .set("relationEntities", relationEntities.stream().map(ParRelationEntity::getRelationEntityId).collect(Collectors.toList()))
+                        .set("partyIds", relationEntities.stream().map(ParRelationEntity::getRelation).map(ParRelation::getParty).map(ParParty::getPartyId).collect(Collectors.toList()));
+            }
         }
 
-        List<ArrDataRecordRef> dataRecordRefList = dataRecordRefRepository.findByRecord(record);
-        if (CollectionUtils.isNotEmpty(dataRecordRefList)) {
-            throw new BusinessException("Nalezeno použití hesla v tabulce ArrDataRecordRef.", RegistryCode.EXIST_FOREIGN_DATA).set("table", "ArrDataRecordRef");
-        }
-
-        List<ArrNodeRegister> nodeRegisterList = nodeRegisterRepository.findByRecordId(record);
-        if (CollectionUtils.isNotEmpty(nodeRegisterList)) {
-            throw new BusinessException("Nalezeno použití hesla v tabulce ArrNodeRegister.", RegistryCode.EXIST_FOREIGN_DATA).set("table", "ArrNodeRegister");
-        }
-
-        // vztah osoby par_relation_entity
-        List<ParRelationEntity> relationEntities = relationEntityRepository.findActiveByRecord(record);
-        if (CollectionUtils.isNotEmpty(relationEntities)) {
-            throw new BusinessException("Nelze smazat/zneplatnit rejstříkové heslo na kterou mají vazbu jiné aktivní osoby v relacích.", RegistryCode.EXIST_FOREIGN_DATA)
-                    .set("recordId", record.getRecordId())
-                    .set("relationEntities", relationEntities.stream().map(ParRelationEntity::getRelationEntityId).collect(Collectors.toList()))
-                    .set("partyIds", relationEntities.stream().map(ParRelationEntity::getRelation).map(ParRelation::getParty).map(ParParty::getPartyId).collect(Collectors.toList()));
-        }
+        return countDataRecordRef == 0 && nodeRegisterRepository.countByRecordId(record) == 0 && relationEntityRepository.countAllByRecord(record) == 0;
 
     }
 
@@ -262,11 +268,7 @@ public class RegistryService {
      */
     @AuthMethod(permission = {UsrPermission.Permission.REG_SCOPE_WR_ALL, UsrPermission.Permission.REG_SCOPE_WR})
     public void deleteRecord(@AuthParam(type = AuthParam.Type.SCOPE) final RegRecord record, final boolean checkUsage) {
-        if (checkUsage) {
-            checkRecordUsage(record);
-        }
-
-        if (canBeDeleted(record)) {
+        if (canBeDeleted(record, checkUsage)) {
             eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.RECORD_DELETE, record.getRecordId()));
 
             variantRecordRepository.delete(variantRecordRepository.findByRegRecordId(record.getRecordId()));
@@ -1044,11 +1046,5 @@ public class RegistryService {
             }
             self.updateRegisterLink(fundVersions.get(fundId).getFundVersionId(), i.getNodeId(), arrNodeRegister);
         });
-                }
-
-    public boolean canBeDeleted(RegRecord record) {
-        return CollectionUtils.isEmpty(dataRecordRefRepository.findByRecord(record)) &&
-                CollectionUtils.isEmpty(nodeRegisterRepository.findByRecordId(record)) &&
-                CollectionUtils.isEmpty(relationEntityRepository.findByRecord(record));
     }
 }

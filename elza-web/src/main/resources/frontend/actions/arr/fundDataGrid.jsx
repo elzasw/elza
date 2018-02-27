@@ -335,40 +335,45 @@ export function fundDataGridFilter(versionId, filter) {
     return _fundDataGridFilter(versionId, filter, true)
 }
 
+export function createFilterStructure(filter) {
+    const callFilter = {columnFilters: {filters: {}}}
+
+    // Ladění objektu filtru pro server
+    Object.keys(filter).forEach(key => {
+        if (key === COL_REFERENCE_MARK) {
+            callFilter.nodeId = filter[COL_REFERENCE_MARK].nodeId;
+        } else {
+            callFilter.columnFilters.filters[key] = {...filter[key]};
+            const filterData = callFilter.columnFilters.filters[key];
+
+            // Typy selected a unselected na velká písmena
+            if (typeof filterData.specsType !== 'undefined' && filterData.specsType !== null) {
+                filterData.specsType = filterData.specsType.toUpperCase()
+            }
+            if (typeof filterData.valuesType !== 'undefined' && filterData.valuesType !== null) {
+                filterData.valuesType = filterData.valuesType.toUpperCase()
+            }
+
+            // Hodnoty null na reálné null
+            if (filterData.values) {
+                filterData.values = filterData.values.map(v => {
+                    return v === FILTER_NULL_VALUE ? null : v
+                })
+            }
+            if (filterData.specs) {
+                filterData.specs = filterData.specs.map(v => {
+                    return v === FILTER_NULL_VALUE ? null : Number(v)
+                })
+            }
+        }
+    });
+    return callFilter;
+}
+
 function _fundDataGridFilter(versionId, filter, resetViewState = true) {
     return (dispatch, getState) => {
         dispatch(_filterRequest(versionId))
-        const callFilter = { columnFilters: { filters: {} } }
-
-        // Ladění objektu filtru pro server
-        Object.keys(filter).forEach(key => {
-            if (key === COL_REFERENCE_MARK) {
-                callFilter.nodeId = filter[COL_REFERENCE_MARK].nodeId;
-            } else {
-                callFilter.columnFilters.filters[key] = {...filter[key]};
-                const filterData = callFilter.columnFilters.filters[key];
-
-                // Typy selected a unselected na velká písmena
-                if (typeof filterData.specsType !== 'undefined' && filterData.specsType !== null) {
-                    filterData.specsType = filterData.specsType.toUpperCase()
-                }
-                if (typeof filterData.valuesType !== 'undefined' && filterData.valuesType !== null) {
-                    filterData.valuesType = filterData.valuesType.toUpperCase()
-                }
-
-                // Hodnoty null na reálné null
-                if (filterData.values) {
-                    filterData.values = filterData.values.map(v => {
-                        return v === FILTER_NULL_VALUE ? null : v
-                    })
-                }
-                if (filterData.specs) {
-                    filterData.specs = filterData.specs.map(v => {
-                        return v === FILTER_NULL_VALUE ? null : v
-                    })
-                }
-            }
-        });
+        const callFilter = createFilterStructure(filter);
 
         WebApi.filterNodes(versionId, callFilter)
             .then(json => {
