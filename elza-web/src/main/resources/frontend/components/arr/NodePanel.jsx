@@ -122,13 +122,16 @@ class NodePanel extends AbstractReactComponent {
     }
 
     componentDidMount() {
-        this.requestData(this.props.versionId, this.props.node, this.props.showRegisterJp, this.props.showDaosJp);
+        const settings = this.getSettingsFromProps();
+
+        this.requestData(this.props.versionId, this.props.node, this.props.showRegisterJp, this.props.showDaosJp, settings);
         this.ensureItemVisible();
         this.trySetFocus(this.props);
     }
 
     componentWillReceiveProps(nextProps) {
-        this.requestData(nextProps.versionId, nextProps.node, nextProps.showRegisterJp, nextProps.showDaosJp);
+        const settings = this.getSettingsFromProps(nextProps);
+        this.requestData(nextProps.versionId, nextProps.node, nextProps.showRegisterJp, nextProps.showDaosJp, settings);
 
         var newState = {
             focusItemIndex: this.getFocusItemIndex(nextProps, this.state.focusItemIndex)
@@ -149,6 +152,36 @@ class NodePanel extends AbstractReactComponent {
 
         this.trySetFocus(nextProps)
     }
+    /**
+     * Returns fund settings object built from userDetail in props
+     */
+    getSettingsFromProps(props=this.props){
+        const {userDetail, fundId, closed} = props;
+
+        // center panel settings
+        var settings = getOneSettings(userDetail.settings, 'FUND_CENTER_PANEL', 'FUND', fundId);
+        var settingsValues = settings.value ? JSON.parse(settings.value) : null;
+
+        var showParents = settingsValues && settingsValues['parents'];
+        var showChildren = settingsValues && settingsValues['children'];
+
+        // read mode settings
+        settings = getOneSettings(userDetail.settings, 'FUND_READ_MODE', 'FUND', fundId);
+        settingsValues = settings.value != 'false';
+
+        let readMode = closed || settingsValues;
+
+        // sets read mode when user does not have permissions to arrange fund
+        if (!userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId})) {
+            readMode = true;
+        }
+
+        return {
+            showParents,
+            showChildren,
+            readMode
+        };
+    }
 
     trySetFocus(props) {
         var {focus, node} = props
@@ -159,8 +192,10 @@ class NodePanel extends AbstractReactComponent {
                    ReactDOM.findDOMNode(this.refs.content).focus()
                    focusWasSet()
                 })
-            } else if (isFocusExactFor(focus, 'arr', 2)) {   // jen pokud není třeba focus na něco nižšího, např. prvek formuláře atp
-                // Voláne jen pokud formulář úspěšně focus nenastavil - např. pokud jsou všechna pole formuláře zamčena
+            } 
+            // Jen pokud není třeba focus na něco nižšího, např. prvek formuláře atp
+            // Voláno jen pokud formulář úspěšně focus nenastavil - např. pokud jsou všechna pole formuláře zamčena
+            else if (isFocusExactFor(focus, 'arr', 2)) {
                 this.setState({}, () => {
                     ReactDOM.findDOMNode(this.refs.content).focus()
                     focusWasSet()
@@ -385,11 +420,11 @@ return true
      * @param showRegisterJp {bool} zobrazení rejstřílů vázené k jednotce popisu
      * @param showDaosJp {bool} zobrazení digitálních entit vázené k jednotce popisu
      */
-    requestData(versionId, node, showRegisterJp, showDaosJp) {
+    requestData(versionId, node, showRegisterJp, showDaosJp, settings) {
         if (node.selectedSubNodeId != null) {
             this.dispatch(descItemTypesFetchIfNeeded());
             this.dispatch(nodeFormActions.fundSubNodeFormFetchIfNeeded(versionId, node.routingKey));
-            this.dispatch(fundSubNodeInfoFetchIfNeeded(versionId, node.selectedSubNodeId, node.routingKey));
+            settings.showChildren && this.dispatch(fundSubNodeInfoFetchIfNeeded(versionId, node.selectedSubNodeId, node.routingKey));
             this.dispatch(refRulDataTypesFetchIfNeeded());
 
             showRegisterJp && this.dispatch(fundSubNodeRegisterFetchIfNeeded(versionId, node.selectedSubNodeId, node.routingKey));
@@ -397,7 +432,7 @@ return true
 
         }
         this.dispatch(visiblePolicyTypesFetchIfNeeded());
-        this.dispatch(fundNodeInfoFetchIfNeeded(versionId, node.id, node.routingKey));
+        this.dispatch(fundNodeInfoFetchIfNeeded(versionId, node.id, node.routingKey, settings.showParents));
         this.dispatch(calendarTypesFetchIfNeeded());
     }
 
@@ -432,7 +467,8 @@ return true
      * @param parents {Array} seznam node pro vyrenderování
      * @return {Object} view
      */
-    renderParents(parents) {
+    renderParents() {
+        const parents = this.getParentNodes().reverse();
         return this.renderRow(parents, 'parents', 'parents', this.handleParentNodeClick);
     }
 
@@ -441,8 +477,18 @@ return true
      * @param children {Array} seznam node pro vyrenderování
      * @return {Object} view
      */
-    renderChildren(children) {
-        return this.renderRow(children, 'children', 'children', this.handleChildNodeClick);
+    renderChildren() {
+        const {node} = this.props;
+        let nodes = this.getChildNodes();
+        let children;
+        if (node.subNodeInfo.fetched || node.selectedSubNodeId == null) {
+            children = this.renderRow(nodes, 'children', 'children', this.handleChildNodeClick);
+        } else {
+            children = <div key='children' className='children'>
+                <HorizontalLoader text={i18n('global.data.loading.node.children')} />
+            </div>;
+        }
+        return children;
     }
 
     /**
@@ -735,32 +781,8 @@ return true
                 packetTypes, packets, fundId, userDetail,
                 showRegisterJp, showDaosJp, fund, closed, descItemTypes} = this.props;
 
-
-
-        var settings = getOneSettings(userDetail.settings, 'FUND_CENTER_PANEL', 'FUND', fundId);
-        var settingsValues = settings.value ? JSON.parse(settings.value) : null;
-
-        var showParents = settingsValues == null || settingsValues['parents'] == null || settingsValues['parents'];
-        var showChildren = settingsValues == null || settingsValues['children'] == null || settingsValues['children'];
-
-        settings = getOneSettings(userDetail.settings, 'FUND_READ_MODE', 'FUND', fundId);
-        settingsValues = settings.value != 'false';
-
-        let readMode = closed || settingsValues;
-        if (!userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId})) {
-            readMode = true;
-        }
-
-        var parents = showParents ? this.renderParents(this.getParentNodes().reverse()) : null;
-        var children;
-        if (showChildren) {
-            if (node.subNodeInfo.fetched || node.selectedSubNodeId == null) {
-                children = this.renderChildren(this.getChildNodes());
-            } else {
-                children = <div key='children' className='children'><HorizontalLoader text={i18n('global.data.loading.node.children')} /></div>
-            }
-        }
-
+        const settings = this.getSettingsFromProps();
+        const readMode = settings.readMode;
         var siblings = this.getSiblingNodes().map(s => <span key={s.id}> {s.id}</span>);
 
         var form;
@@ -838,9 +860,9 @@ return true
         return (
             <Shortcuts name='NodePanel' key={'node-panel'} className={cls} handler={this.handleShortcuts} tabIndex={0} global stopPropagation={false}>
                 <div key='main' className='main'>
-                    {parents}
+                    {settings.showParents && this.renderParents()}
                     {this.renderAccordion(form, record, daos, readMode)}
-                    {children}
+                    {settings.showChildren &&  this.renderChildren()}
                 </div>
             </Shortcuts>
         );

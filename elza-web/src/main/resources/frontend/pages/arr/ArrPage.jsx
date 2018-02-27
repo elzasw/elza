@@ -53,6 +53,7 @@ import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx'
 import {fundNodesPolicyFetchIfNeeded} from 'actions/arr/fundNodesPolicy.jsx'
 import {fundActionFormChange, fundActionFormShow} from 'actions/arr/fundAction.jsx'
 import {fundSelectSubNode} from 'actions/arr/node.jsx';
+import {fundNodeInfoInvalidate} from 'actions/arr/nodeInfo.jsx';
 import {createFundRoot} from 'components/arr/ArrUtils.jsx'
 import ArrHistoryForm from 'components/arr/ArrHistoryForm.jsx'
 import {setVisiblePolicyRequest} from 'actions/arr/visiblePolicy.jsx'
@@ -318,11 +319,11 @@ class ArrPage extends ArrParentPage {
                     {
                         name: i18n('arr.fund.settings.panel.center.parents'),
                         key: 'parents',
-                        checked: dataCenter && dataCenter.parents !== undefined ? dataCenter.parents : true},
+                        checked: dataCenter && dataCenter.parents},
                     {
                         name: i18n('arr.fund.settings.panel.center.children'),
                         key: 'children',
-                        checked: dataCenter && dataCenter.children !== undefined ? dataCenter.children : true},
+                        checked: dataCenter && dataCenter.children},
                     {
                         name: i18n('arr.fund.settings.panel.rightPanel'),
                         key: 'rightPanel',
@@ -347,27 +348,36 @@ class ArrPage extends ArrParentPage {
     handleChangeFundSettingsSubmit(data) {
         const {userDetail} = this.props;
         var activeInfo = this.getActiveInfo();
+        const fundVersionId = activeInfo.activeFund.versionId;
+        const node = activeInfo.activeNode;
         let fundId = activeInfo.activeFund.id;
 
         var settings = userDetail.settings;
 
+        // right panel settings
         var rightPanelItem = getOneSettings(settings, 'FUND_RIGHT_PANEL', 'FUND', fundId);
         var value = {};
         data.rightPanel.tabs.map((item) => {value[item.key] = item.checked;});
         rightPanelItem.value = JSON.stringify(value);
         settings = setSettings(settings, rightPanelItem.id, rightPanelItem);
 
+        // center panel settings
         var centerPanelItem = getOneSettings(settings, 'FUND_CENTER_PANEL', 'FUND', fundId);
         var value = {};
         data.centerPanel.panels.map((item) => {value[item.key] = item.checked;});
         centerPanelItem.value = JSON.stringify(value);
         settings = setSettings(settings, centerPanelItem.id, centerPanelItem);
 
+        // strict mode settings
         let strictMode = getOneSettings(settings, 'FUND_STRICT_MODE', 'FUND', fundId);
         strictMode.value = data.strictMode.value === "" ? null : data.strictMode.value;
         settings = setSettings(settings, strictMode.id, strictMode);
 
-        return this.dispatch(userDetailsSaveSettings(settings));
+        return this.dispatch(userDetailsSaveSettings(settings)).then((response)=>{
+            // invalidates node info after the settings have been saved,
+            // to load new node info data (mainly for reloading node parents).
+            this.dispatch(fundNodeInfoInvalidate(fundVersionId, node.id, node.routingKey));
+        });
     }
 
     /**

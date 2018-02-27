@@ -12,6 +12,7 @@ export function isNodeInfoAction(action) {
     switch (action.type) {
         case types.FUND_NODE_INFO_REQUEST:
         case types.FUND_NODE_INFO_RECEIVE:
+        case types.FUND_NODE_INFO_INVALIDATE:
             return true
         default:
             return false
@@ -36,14 +37,14 @@ function getNode(state, versionId, routingKey) {
 /**
  * Vyžádání dat - aby byla ve store k dispozici.
  */
-export function fundNodeInfoFetchIfNeeded(versionId, nodeId, routingKey) {
+export function fundNodeInfoFetchIfNeeded(versionId, nodeId, routingKey, showParents) {
     return (dispatch, getState) => {
         var state = getState();
         var node = getNode(state, versionId, routingKey);
         //console.log("FETCH_NODE",node);
         if (node != null && (!node.nodeInfoFetched || node.nodeInfoDirty ) && !node.isNodeInfoFetching) {
             //console.log("FETCHING_NODE_INFO");
-            return dispatch(fundNodeInfoFetch(versionId, nodeId, routingKey));
+            return dispatch(fundNodeInfoFetch(versionId, nodeId, routingKey, showParents));
         }
     }
 }
@@ -51,24 +52,32 @@ export function fundNodeInfoFetchIfNeeded(versionId, nodeId, routingKey) {
 /**
  * Nové načtení dat.
  */
-export function fundNodeInfoFetch(versionId, nodeId, routingKey) {
+export function fundNodeInfoFetch(versionId, nodeId, routingKey, showParents) {
     return dispatch => {
-        dispatch(fundNodeInfoRequest(versionId, nodeId, routingKey))
+        dispatch(fundNodeInfoRequest(versionId, nodeId, routingKey));
 
-        var isRoot = isFundRootId(nodeId);
+        const isRoot = isFundRootId(nodeId);
+        let getFundTree;
 
-        var getFundTree, getNodeParents;
         if (isRoot) {
-            getNodeParents = new Promise(function (resolve, reject) {
-                resolve([]);
-            })
+            // sends nodeId as null, because root doesn't have valid id
             getFundTree = WebApi.getFundTree(versionId, null)
                 .then(json => {
-                    return {nodes: [json.nodes[0]]}
-                })
+                    return {nodes: [json.nodes[0]]};
+                });
         } else {
-            getNodeParents = WebApi.getNodeParents(versionId, nodeId);
             getFundTree = WebApi.getFundTree(versionId, nodeId);
+        }
+
+        let getNodeParents;
+
+        if (showParents && !isRoot) {
+            getNodeParents = WebApi.getNodeParents(versionId, nodeId);
+        } else {
+            getNodeParents = new Promise(function (resolve, reject) {
+                // empty response when parents are not needed
+                resolve([]); 
+            });
         }
 
         return barrier(
@@ -79,10 +88,10 @@ export function fundNodeInfoFetch(versionId, nodeId, routingKey) {
             return {
                 childNodes: data[0].data.nodes,
                 parentNodes: data[1].data
-            }
+            };
         })
         .then(json => dispatch(fundNodeInfoReceive(versionId, nodeId, routingKey, json)));
-    }
+    };
 }
 
 /**
@@ -110,5 +119,16 @@ export function fundNodeInfoRequest(versionId, nodeId, routingKey) {
         nodeId,
         routingKey,
         type: types.FUND_NODE_INFO_REQUEST
+    }
+}
+/**
+ * Marks node info as invalid to force new data request.
+ */
+export function fundNodeInfoInvalidate(versionId, nodeId, routingKey) {
+    return {
+        versionId,
+        nodeId,
+        routingKey,
+        type: types.FUND_NODE_INFO_INVALIDATE
     }
 }
