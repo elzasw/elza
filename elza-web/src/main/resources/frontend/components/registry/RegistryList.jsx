@@ -81,7 +81,7 @@ class RegistryList extends AbstractReactComponent {
 
     handleFilterRegistryType = (item) => {
         this.dispatch(registryListFilter({
-            ..this.props.registryList.filter, 
+            ...this.props.registryList.filter, 
             from: 0, 
             itemSpecId:null, 
             registryTypeId: item ? item.id : null
