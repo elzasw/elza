@@ -790,7 +790,7 @@ class ItemFormActions {
      * @param {int} versionId verze AS
      * @param {int} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
      */
-    fundSubNodeFormFetchIfNeeded(versionId, routingKey) {
+    fundSubNodeFormFetchIfNeeded(versionId, routingKey, needClean) {
         return (dispatch, getState) => {
             const state = getState();
 
@@ -802,9 +802,9 @@ class ItemFormActions {
             ) {
                 const subNodeForm = this._getItemFormStore(state, versionId, routingKey);
                 const parentObjStore = this._getParentObjStore(state, versionId, routingKey);
-                if ((!subNodeForm.fetched || subNodeForm.dirty || subNodeForm.needClean) && !subNodeForm.isFetching) {
+                if ((!subNodeForm.fetched || subNodeForm.dirty || subNodeForm.needClean || needClean) && !subNodeForm.isFetching) {
                     const parentObjIdInfo = this._getParentObjIdInfo(parentObjStore, routingKey);
-                    dispatch(this._fundSubNodeFormFetch(versionId, parentObjIdInfo.parentId, routingKey, subNodeForm.needClean));
+                    dispatch(this._fundSubNodeFormFetch(versionId, parentObjIdInfo.parentId, routingKey, subNodeForm.needClean || needClean));
                 }
             }
         }
