@@ -1,33 +1,6 @@
 package cz.tacr.elza.service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.persistence.EntityManager;
-import javax.transaction.Transactional;
-
-import org.apache.commons.collections4.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-
 import com.google.common.collect.Lists;
-
 import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
 import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.controller.factory.ExtendedObjectsFactory;
@@ -51,6 +24,7 @@ import cz.tacr.elza.domain.ArrNodeConformityExt;
 import cz.tacr.elza.domain.ArrNodeConformityMissing;
 import cz.tacr.elza.domain.ArrNodeExtension;
 import cz.tacr.elza.domain.ArrOutputDefinition;
+import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.RulArrangementExtension;
 import cz.tacr.elza.domain.RulComponent;
 import cz.tacr.elza.domain.RulExtensionRule;
@@ -91,6 +65,30 @@ import cz.tacr.elza.repository.TemplateRepository;
 import cz.tacr.elza.service.eventnotification.events.EventNodeIdVersionInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.validation.ArrDescItemsPostValidator;
+import org.apache.commons.collections4.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
+import javax.persistence.EntityManager;
+import javax.transaction.Transactional;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 
 /**
@@ -899,27 +897,31 @@ public class RuleService {
     /**
      * Získání seznamu typů atributů podle strukt. typu a verze AS.
      *
-     * @param structureType strukturovaný typ
-     * @param fundVersion   verze AS
+     * @param structureType  strukturovaný typ
+     * @param fundVersion    verze AS
+     * @param structureItems seznam položek strukturovaného datového typu
      * @return seznam typu atributů
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public List<RulItemTypeExt> getStructureItemTypes(final RulStructuredType structureType,
-                                                      @AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion) {
-        return getStructureItemTypesInternal(structureType, fundVersion);
+                                                      @AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
+                                                      final List<ArrStructuredItem> structureItems) {
+        return getStructureItemTypesInternal(structureType, fundVersion, structureItems);
     }
 
     /**
      * Získání seznamu typů atributů podle strukt. typu a verze AS - internal.
      *
-     * @param structureType strukturovaný typ
-     * @param fundVersion   verze AS
+     * @param structureType  strukturovaný typ
+     * @param fundVersion    verze AS
+     * @param structureItems seznam položek strukturovaného datového typu
      * @return seznam typu atributů
      */
     public List<RulItemTypeExt> getStructureItemTypesInternal(final RulStructuredType structureType,
-                                                              final ArrFundVersion fundVersion) {
+                                                              final ArrFundVersion fundVersion,
+                                                              final List<ArrStructuredItem> structureItems) {
         List<RulItemTypeExt> rulDescItemTypeExtList = getRulesetDescriptionItemTypes(
                 structureType.getRuleSet().getRuleSetId());
-        return rulesExecutor.executeStructureItemTypesRules(structureType, rulDescItemTypeExtList, fundVersion);
+        return rulesExecutor.executeStructureItemTypesRules(structureType, rulDescItemTypeExtList, fundVersion, structureItems);
     }
 }

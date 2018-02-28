@@ -350,8 +350,8 @@ public class StructureController {
 
         validateRuleSet(fundVersion, structureData.getStructuredType());
 
-        List<RulItemTypeExt> structureItemTypes = ruleService.getStructureItemTypes(structureData.getStructuredType(), fundVersion);
         List<ArrStructuredItem> structureItems = structureService.findStructureItems(structureData);
+        List<RulItemTypeExt> structureItemTypes = ruleService.getStructureItemTypes(structureData.getStructuredType(), fundVersion, structureItems);
 
         Integer fundId = fundVersion.getFund().getFundId();
         String ruleCode = fundVersion.getRuleSet().getCode();

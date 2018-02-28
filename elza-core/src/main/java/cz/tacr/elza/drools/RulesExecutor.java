@@ -4,6 +4,7 @@ import java.nio.file.NoSuchFileException;
 import java.util.List;
 import java.util.Set;
 
+import cz.tacr.elza.domain.ArrStructuredItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -93,12 +94,21 @@ public class RulesExecutor {
         }
     }
 
-
+    /**
+     * Spustí pravidla pro strukturovaný datový typ.
+     *
+     * @param structureType          typ
+     * @param rulDescItemTypeExtList seznam všech atributů
+     * @param fundVersion            verze AS
+     * @param structureItems         seznam položek strukturovaného datového typu
+     * @return seznam typů atributů odpovídající pravidlům
+     */
     public List<RulItemTypeExt> executeStructureItemTypesRules(final RulStructuredType structureType,
                                                                final List<RulItemTypeExt> rulDescItemTypeExtList,
-                                                               final ArrFundVersion fundVersion) {
+                                                               final ArrFundVersion fundVersion,
+                                                               final List<ArrStructuredItem> structureItems) {
         try {
-            return structureItemTypesRules.execute(structureType, rulDescItemTypeExtList, fundVersion.getFund());
+            return structureItemTypesRules.execute(structureType, rulDescItemTypeExtList, fundVersion.getFund(), structureItems);
         } catch (NoSuchFileException e) {
             logger.warn("Neexistuje soubor pro spuštění scriptu." + e.getMessage(), e);
             return rulDescItemTypeExtList;

@@ -439,8 +439,17 @@ export function structureChange(data) {
         const store = getState();
         const list = storeFromArea(store, 'arrStructure');
         if (list && list.parent && list.parent.fundVersionId) {
-            if (store.arrRegion.funds.filter(i => i.id == data.fundId && i.versionId == list.parent.fundVersionId).length > 0) {
-                dispatch(structureTypeInvalidate())
+            let funds = store.arrRegion.funds.filter(i => i.id == data.fundId && i.versionId == list.parent.fundVersionId);
+            if (funds.length > 0) {
+                dispatch(structureTypeInvalidate());
+                for (let fund of funds) {
+                    dispatch({
+                        type: types.CHANGE_STRUCTURE,
+                        fundId: data.fundId,
+                        versionId: fund.versionId,
+                        structureIds: data.updateIds
+                    })
+                }
             }
         }
     }

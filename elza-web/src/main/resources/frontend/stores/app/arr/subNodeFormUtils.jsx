@@ -342,7 +342,7 @@ function mergeDescItems(state, resultDescItemType, prevType, newType) {
     return false;
 }
 /**
- * Prepares flat form data. 
+ * Prepares flat form data.
  * Replacing availability ids with strings.
  * Inserting DescItemSpecsMap into types
  *
@@ -417,7 +417,7 @@ export function mergeAfterUpdate(state, data, refTables) {
     let changedItem = data.item;
     let flatForm = new FlatFormData(refTables);
     let flatLocalForm = new FlatFormData(refTables);
-    
+
     // Initization of the flat forms
     flatForm.flattenInit(data);
     flatLocalForm.flattenInit(state.formData);
@@ -426,9 +426,9 @@ export function mergeAfterUpdate(state, data, refTables) {
     flatForm = prepareFlatData(flatForm);
     flatLocalForm = prepareFlatData(flatLocalForm);
 
-    // Inserting item type from local descItems, 
+    // Inserting item type from local descItems,
     // because it is not defined on the item received from server
-    changedItem = insertItemType(changedItem, flatLocalForm.descItems); 
+    changedItem = insertItemType(changedItem, flatLocalForm.descItems);
     addChangedItemIfExists(flatForm, changedItem);
 
     flatLocalForm.update(flatForm);
@@ -464,8 +464,8 @@ function insertDescItemSpecsMap(types, specs){
 /**
  * Recreate the original deep formData structure from flat data
  *
- * @param FlatFormData data 
- * 
+ * @param FlatFormData data
+ *
  * @return Object
  * */
 function restoreFormDataStructure(data){
@@ -587,7 +587,7 @@ class FlatFormData{
         this._flattenFormData(data);
     }
     /**
-     * Updates current form data with given form data 
+     * Updates current form data with given form data
      *
      * @param Object newData
      */
@@ -634,7 +634,7 @@ class FlatFormData{
         }
         this.descItems = items;
     }
-    /** 
+    /**
      * Deletes unused items (items that are empty, not required or recommended, and not added by user).
      */
     _deleteUnusedItems(){
@@ -686,7 +686,7 @@ class FlatFormData{
                     //Add forced specifications
                     let unusedForcedSpecs = this._getUnusedSpecIds(forcedTypeSpecs, typeItems);
                     let lastPosition = typeItems ? typeItems.length : 0;
-                    
+
                     for(let s = 0; s < unusedForcedSpecs.length; s++){
                         nextEmptyItemId = nextEmptyItemIdBase + this._emptyItemCounter;
                         newItem = createDescItem(type, refType, false);
@@ -717,10 +717,10 @@ class FlatFormData{
                         newItems[itemId] = item;
                         newItems.ids.push(itemId);
                     }
-                } 
+                }
             }
         }
-        
+
         this.descItems = newItems;
     }
     /**
@@ -939,7 +939,7 @@ function merge(state) {
 
 
 // refTypesMap - mapa id info typu na typ, je doplněné o dataType objekt - obecný číselník
-export function updateFormData(state, data, refTypesMap, updatedItem) {
+export function updateFormData(state, data, refTypesMap, updatedItem, dirty) {
     // Přechozí a nová verze node
     var currentNodeVersionId = state.data ? state.data.parent.version : -1;
     var newNodeVersionId = data.parent.version;
@@ -947,7 +947,7 @@ export function updateFormData(state, data, refTypesMap, updatedItem) {
     // # Vytvoření formuláře se všemi povinnými a doporučenými položkami, které jsou doplněné reálnými daty ze serveru
     // # Případně promítnutí merge.
     // ##
-    if (currentNodeVersionId <= newNodeVersionId) { // rovno musí být, protože i když mám danou verzi, nemusím mít nově přidané povinné položky (nastává i v případě umělého klientského zvednutí nodeVersionId po zápisové operaci) na základě aktuálně upravené mnou
+    if (currentNodeVersionId <= newNodeVersionId || dirty) { // rovno musí být, protože i když mám danou verzi, nemusím mít nově přidané povinné položky (nastává i v případě umělého klientského zvednutí nodeVersionId po zápisové operaci) na základě aktuálně upravené mnou
         // Data přijatá ze serveru
         state.data = data
 
