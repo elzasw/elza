@@ -22,6 +22,15 @@ export default function structureNodeForm(state = initialState, action = {}) {
     }
 
     switch (action.type) {
+        case types.CHANGE_STRUCTURE:
+            if (action.structureIds && action.structureIds.indexOf(state.id) >= 0) {
+                return {
+                    ...state,
+                    subNodeForm: subNodeForm(state.subNodeForm, action),
+                }
+            } else {
+                return state;
+            }
         case types.STRUCTURE_NODE_FORM_SELECT_ID:
             return {
                 ...state,

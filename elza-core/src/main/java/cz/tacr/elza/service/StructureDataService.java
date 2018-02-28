@@ -291,7 +291,7 @@ public class StructureDataService {
                                         final ArrStructuredObject structureData,
                                         final List<ArrStructuredItem> structureItems) {
         ArrFundVersion fundVersion = fundVersionRepository.findByFundIdAndLockChangeIsNull(structureData.getFundId());
-        List<RulItemTypeExt> structureItemTypes = ruleService.getStructureItemTypesInternal(structureData.getStructuredType(), fundVersion);
+        List<RulItemTypeExt> structureItemTypes = ruleService.getStructureItemTypesInternal(structureData.getStructuredType(), fundVersion, structureItems);
         List<RulItemTypeExt> requiredItemTypes = structureItemTypes.stream().filter(itemType -> RulItemType.Type.REQUIRED == itemType.getType()).collect(Collectors.toList());
         List<RulItemTypeExt> impossibleItemTypes = structureItemTypes.stream().filter(itemType -> RulItemType.Type.IMPOSSIBLE == itemType.getType()).collect(Collectors.toList());
 

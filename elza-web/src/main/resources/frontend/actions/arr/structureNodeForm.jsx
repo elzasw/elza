@@ -5,6 +5,7 @@ import {indexById} from 'stores/app/utils.jsx';
 
 export function isStructureNodeForm(action) {
     switch (action.type) {
+        case types.CHANGE_STRUCTURE:
         case types.STRUCTURE_NODE_FORM_REQUEST:
         case types.STRUCTURE_NODE_FORM_RECEIVE:
         case types.STRUCTURE_NODE_FORM_SELECT_ID:
