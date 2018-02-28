@@ -15,8 +15,10 @@ import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -37,6 +39,7 @@ import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureCallback;
 
 import cz.tacr.elza.bulkaction.generator.result.ActionResult;
+import cz.tacr.elza.bulkaction.generator.result.Result;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.domain.ArrBulkActionNode;
@@ -63,7 +66,6 @@ import cz.tacr.elza.repository.BulkActionRunRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.service.ArrangementService;
-import cz.tacr.elza.service.FundLevelServiceInternal;
 import cz.tacr.elza.service.IEventNotificationService;
 import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.service.OutputItemConnector;
@@ -85,7 +87,10 @@ public class BulkActionService implements ListenableFutureCallback<BulkActionWor
      */
     public static final int MAX_BULK_ACTIONS_LIST = 100;
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final static Logger logger = LoggerFactory.getLogger(BulkActionService.class);
+
+    @Autowired
+    BeanFactory beanFactory;
 
     @Autowired
     @Qualifier("threadPoolTaskExecutorBA")
@@ -127,9 +132,6 @@ public class BulkActionService implements ListenableFutureCallback<BulkActionWor
     @Autowired
     @Qualifier("transactionManager")
     private PlatformTransactionManager txManager;
-
-    @Autowired
-    private FundLevelServiceInternal fundLevelServiceInternal;
 
     /**
      * Seznam běžících úloh instancí hromadných akcí.
@@ -249,37 +251,52 @@ public class BulkActionService implements ListenableFutureCallback<BulkActionWor
      * Spuštění instance hromadné akce.
      *
      * @param bulkActionRun objekt hromadné akce
-     * @return objekt hromadné akce
      */
-    private ArrBulkActionRun run(final ArrBulkActionRun bulkActionRun) {
-		BulkActionWorker bulkActionWorker = new BulkActionWorker(bulkActionRun, this, txManager);
-		bulkActionWorker.init();
+    private void run(final ArrBulkActionRun bulkActionRun) {
+        List<Integer> nodeIds;
+        BulkAction bulkAction;
+        // initialization of worker may fail
+        try {
+            nodeIds = getBulkActionNodeIds(bulkActionRun);
+            // create bulk action object
+            BulkActionService self = beanFactory.getBean(BulkActionService.class);
+            bulkAction = self.getBulkAction(bulkActionRun.getBulkActionCode());
+
+        } catch (Exception e) {
+            logger.info("Failed to run action, bulkActionRunId = " + bulkActionRun.getBulkActionRunId(), e);
+            // on error -> action have to be marked as failed
+            bulkActionRun.setState(State.ERROR);
+            bulkActionRun.setError(e.getLocalizedMessage());
+            storeBulkActionRun(bulkActionRun);
+            eventPublishBulkAction(bulkActionRun);
+            return;
+        }
+		
+        BulkActionWorker bulkActionWorker = new BulkActionWorker(bulkAction, bulkActionRun, nodeIds, this, txManager);
         runningWorkers.put(bulkActionRun.getFundVersionId(), bulkActionWorker);
 
         // změna stavu výstupů na počítání
         outputServiceInternal.changeOutputsStateByNodes(bulkActionRun.getFundVersion(),
-                bulkActionRun.getArrBulkActionNodes().stream()
-                        .map(ArrBulkActionNode::getNodeId)
-                        .collect(Collectors.toList()),
+                nodeIds,
                 OutputState.COMPUTING,
                 OutputState.OPEN);
 
-		bulkActionWorker.setStateAndPublish(State.PLANNED);
-		logger.info("Hromadná akce naplánována ke spuštění: " + bulkActionWorker);
-		BulkActionService actionService = this;
+        bulkActionWorker.setStateAndPublish(State.PLANNED);
+        logger.info("Hromadná akce naplánována ke spuštění: " + bulkActionWorker);
+		    
+        BulkActionService actionService = this;
 
-		// worker can be starter only after commit
-		// TODO: handle correctly when commit fails -> bulkActionWorker should be removed from runningWorkers
-		TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
-			@Override
-			public void afterCommit() {
-				ListenableFuture<BulkActionWorker> future = taskExecutor.submitListenable(bulkActionWorker);
-				future.addCallback(actionService);
-			}
-		});
-		eventPublishBulkAction(bulkActionWorker.getBulkActionRun());
-
-        return bulkActionWorker.getBulkActionRun();
+        // worker can be starter only after commit
+        // TODO: handle correctly when commit fails -> bulkActionWorker should be
+        // removed from runningWorkers
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+                @Override
+                public void afterCommit() {
+                    ListenableFuture<BulkActionWorker> future = taskExecutor.submitListenable(bulkActionWorker);
+                    future.addCallback(actionService);
+                }
+            });
+        eventPublishBulkAction(bulkActionRun);
     }
 
     /**
@@ -441,8 +458,10 @@ public class BulkActionService implements ListenableFutureCallback<BulkActionWor
     public BulkAction getBulkAction(final String code) {
 		// get configuration object
 		BulkActionConfig bac = bulkActionConfigManager.get(code);
+
+        Validate.notNull(bac, "Failed to find action, code: %s", code);
+
 		return bac.createBulkAction();
-		//return bulkActionFactory.getByCode(code);
     }
 
     /**
@@ -452,7 +471,9 @@ public class BulkActionService implements ListenableFutureCallback<BulkActionWor
      * @return the node ids
      */
     public List<Integer> getBulkActionNodeIds(final ArrBulkActionRun bulkActionRun) {
-        return levelTreeCacheService.sortNodesByTreePosition(new HashSet<>(bulkActionNodeRepository.findNodeIdsByBulkActionRun(bulkActionRun)), bulkActionRun.getFundVersion());
+        List<Integer> nodeIds = bulkActionNodeRepository.findNodeIdsByBulkActionRun(bulkActionRun);
+
+        return levelTreeCacheService.sortNodesByTreePosition(new HashSet<>(nodeIds), bulkActionRun.getFundVersion());
     }
 
 
@@ -555,8 +576,11 @@ public class BulkActionService implements ListenableFutureCallback<BulkActionWor
             connector.setChangeSupplier(changeSupplier);
 
             // update definition by each result
-            for (ActionResult result : bulkActionRun.getResult().getResults()) {
-                result.createOutputItems(connector);
+            Result actionResult = bulkActionRun.getResult();
+            if (actionResult != null) {
+                for (ActionResult result : actionResult.getResults()) {
+                    result.createOutputItems(connector);
+                }
             }
 
             // update to open state
