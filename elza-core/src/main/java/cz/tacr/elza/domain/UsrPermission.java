@@ -378,7 +378,6 @@ public class UsrPermission {
                 return false;
             }
         },
-        AP_SCOPE_WR_ALL,
 
         /**
          * tvorba výstupů vybraného AS (AP, ad-hoc tisky)
@@ -549,7 +548,7 @@ public class UsrPermission {
 
         /**
          * Check if this permission is equal or higher then given permission
-         * 
+         *
          * @param permission
          *            Permission to be checked
          * @return Return true if this permission is same or higher then given
@@ -557,8 +556,8 @@ public class UsrPermission {
          */
         public boolean isEqualOrHigher(Permission permission)
         {
-            if(this==permission) { 
-                return true; 
+            if(this==permission) {
+                return true;
             } // if permission is global
             return false;
     }
