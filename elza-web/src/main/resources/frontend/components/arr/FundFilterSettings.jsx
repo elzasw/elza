@@ -25,6 +25,7 @@ import {COL_REFERENCE_MARK} from "./FundDataGridConst";
 import FundNodesSelect from "./FundNodesSelect";
 import SimpleCheckListBox from "./SimpleCheckListBox";
 import FundFilterCondition from "./FundFilterCondition";
+import {createFilterStructure} from 'actions/arr/fundDataGrid.jsx'
 
 var _ffs_validateTimer
 var _ffs_prevReject = null
@@ -210,7 +211,7 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
         const {versionId, refType, dataType} = this.props
 
         this.setState({isFetchingSpecIds: true});
-        WebApi.findUniqueSpecIds(versionId, refType.id).then(specIds => {
+        WebApi.findUniqueSpecIds(versionId, refType.id, createFilterStructure(this.props.filters)).then(specIds => {
             let specItems = [];
 
             if (specIds.indexOf(null) >= 0) {

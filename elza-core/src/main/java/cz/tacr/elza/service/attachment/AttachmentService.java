@@ -1,12 +1,12 @@
 package cz.tacr.elza.service.attachment;
 
+import cz.tacr.elza.common.NamedInputStreamResource;
 import cz.tacr.elza.domain.DmsFile;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.security.ApplicationSecurity;
 import cz.tacr.elza.service.DmsService;
 import cz.tacr.elza.service.ProcessService;
-import cz.tacr.elza.utils.NamedInputStreamResource;
 import cz.tacr.elza.utils.TempDirectory;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -25,9 +25,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Servisní třída pro práci s přílohami.
@@ -63,7 +61,8 @@ public class AttachmentService {
 
     /**
      * Test, zda jde předný soubor vygenerovat do požadovaného typu výstupu.
-     * @param dmsFile dms file
+     *
+     * @param dmsFile        dms file
      * @param outputMimeType požadovaný výstup
      * @return true, poukd lze
      */
@@ -178,7 +177,8 @@ public class AttachmentService {
 
     /**
      * Formátování řetězce s podporou použití proměnných jako ja např. název input souboru apod.
-     * @param text text
+     *
+     * @param text       text
      * @param formatMeta metadata
      * @return výstupní text
      */
@@ -233,34 +233,9 @@ public class AttachmentService {
             File inputFile = new File(workingDir, inputFileFilename);
             FormatMeta formatMeta = new FormatMeta(inputFileName, inputFileExtension, inputFileFilename, inputFile.getAbsolutePath());
 
-            final String outputFileName;
-            final String outputFileExtension;
-            final String outputFileFilename;
-            if (StringUtils.isNotEmpty(generator.getOutputFileName())) {
-                String value = formatString(generator.getOutputFileName(), formatMeta);
-                int n = value.lastIndexOf('.');
-                if (n > 0) {
-                    String name = value.substring(0, n);
-                    String extension = value.substring(n + 1);
-                    outputFileName = name;
-                    outputFileExtension = extension;
-                    outputFileFilename = outputFileName + "." + outputFileExtension;
-                } else {
-                    outputFileName = value;
-                    outputFileExtension = "";
-                    outputFileFilename = outputFileName;
-                }
-            } else {
-                outputFileName = "output";
-                outputFileExtension = "dat";
-                outputFileFilename = outputFileName + "." + outputFileExtension;
-            }
-            File outputFile = new File(workingDir, outputFileFilename);
-            formatMeta.setOutputFileName(outputFileName);
-            formatMeta.setOutputFileExtension(outputFileExtension);
-            formatMeta.setOutputFileFilename(outputFileFilename);
-            formatMeta.setOutputFileFullPath(outputFile.getAbsolutePath());
-
+            OutputFileData outputFileData = createOutputFileData(generator.getOutputFileName(), formatMeta);
+            File outputFile = new File(workingDir, outputFileData.getOutputFileFilename());
+            fillFormatMeta(formatMeta, outputFileData.getOutputFileName(), outputFileData.getOutputFileExtension(), outputFileData.getOutputFileFilename(), outputFile.getAbsolutePath());
 
             // Připravení vstupního souboru pro generování
             try (InputStream is = dmsService.downloadFile(dmsFile); OutputStream os = new FileOutputStream(inputFile)) {
@@ -289,8 +264,7 @@ public class AttachmentService {
                 }
             };
 
-            String extension = getExtension(outputMimeType);
-            return new NamedInputStreamResource(extension != null ? inputFileName + "." + extension : inputFileName, is);
+            return new NamedInputStreamResource(outputFile.getName(), is);
         } catch (Exception ex) {
             tempDir.delete();
             throw new BusinessException("Chyba generování výstupního souboru", ex, BaseCode.INVALID_STATE);
@@ -298,19 +272,75 @@ public class AttachmentService {
     }
 
     /**
-     * Mapa mime type na příponu souboru.
+     * Vytvoření dat pro výstupní soubor.
+     *
+     * @param outputFileName název výstupu
+     * @param formatMeta     metadata pro parametrizované formátování command
+     * @return data výstupního souboru
      */
-    static Map<String, String> mimeExtMap = new HashMap<>();
-    static {
-        mimeExtMap.put("application/pdf", "pdf");
+    private OutputFileData createOutputFileData(final String outputFileName, final FormatMeta formatMeta) {
+        final OutputFileData outputFileData;
+        if (StringUtils.isNotEmpty(outputFileName)) {
+            String value = formatString(outputFileName, formatMeta);
+            int n = value.lastIndexOf('.');
+            if (n > 0) {
+                String name = value.substring(0, n);
+                String extension = value.substring(n + 1);
+                outputFileData = new OutputFileData(name, extension, name + "." + extension);
+            } else {
+                outputFileData = new OutputFileData(value, "", value);
+            }
+        } else {
+            outputFileData = new OutputFileData("output", "dat", "output.dat");
+        }
+        return outputFileData;
     }
 
     /**
-     * Načtení přípony podle mime type.
-     * @param mimeType mime type
-     * @return přípona nebo null
+     * Doplnění struktury {@link FormatMeta} o data o výstupním souboru.
+     *
+     * @param formatMeta          metadata pro parametrizované formátování command
+     * @param outputFileName      název výstupu
+     * @param outputFileExtension přípona výstupu
+     * @param outputFileFilename  název souboru výstupu
+     * @param outputFileFullPath  absolutní cesta k výstupnímu souboru
      */
-    private @Nullable String getExtension(final String mimeType) {
-        return mimeExtMap.get(mimeType);
+    private void fillFormatMeta(final FormatMeta formatMeta,
+                                final String outputFileName,
+                                final String outputFileExtension,
+                                final String outputFileFilename,
+                                final String outputFileFullPath) {
+        formatMeta.setOutputFileFullPath(outputFileFullPath);
+        formatMeta.setOutputFileName(outputFileName);
+        formatMeta.setOutputFileExtension(outputFileExtension);
+        formatMeta.setOutputFileFilename(outputFileFilename);
+    }
+
+    /**
+     * Pomocná třída pro data výstupního souboru.
+     */
+    private static class OutputFileData {
+
+        private final String outputFileName;
+        private final String outputFileExtension;
+        private final String outputFileFilename;
+
+        public OutputFileData(final String outputFileName, final String outputFileExtension, final String outputFileFilename) {
+            this.outputFileName = outputFileName;
+            this.outputFileExtension = outputFileExtension;
+            this.outputFileFilename = outputFileFilename;
+        }
+
+        public String getOutputFileName() {
+            return outputFileName;
+        }
+
+        public String getOutputFileExtension() {
+            return outputFileExtension;
+        }
+
+        public String getOutputFileFilename() {
+            return outputFileFilename;
+        }
     }
 }

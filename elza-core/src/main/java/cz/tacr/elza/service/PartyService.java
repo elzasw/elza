@@ -755,7 +755,7 @@ public class PartyService {
                     .set("partyIds", relationEntities.stream().map(ParRelationEntity::getRelation).map(ParRelation::getParty).map(ParParty::getPartyId).collect(Collectors.toList()));
         }
 
-        return apService.canBeDeleted(party.getRecord()) &&
+        return apService.canBeDeleted(party.getRecord(), false) &&
                 CollectionUtils.isEmpty(dataPartyRefRepository.findByParty(party));
     }
 
@@ -1174,7 +1174,7 @@ public class PartyService {
 
             modifiedParties.putIfAbsent(party.getPartyId(), party);
         });
-        
+
         // synchronize modified parties
         modifiedParties.forEach((id, party) -> this.synchRecord(party));
     }

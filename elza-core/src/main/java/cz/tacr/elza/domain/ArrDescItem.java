@@ -53,6 +53,7 @@ public class ArrDescItem extends ArrItem {
 	// Constants for fulltext indexing
 	public static final String FUND_ID = "fundId";
     public static final String NODE = "node";
+    public static final String NODE_ID = "nodeId";
     public static final String CREATE_CHANGE_ID = "createChangeId";
     public static final String DELETE_CHANGE_ID = "deleteChangeId";
 	public static final String DESC_ITEM_TYPE_ID = "descItemTypeId";

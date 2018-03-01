@@ -19,6 +19,7 @@ import RegistryListItem from "./RegistryListItem";
 import ListPager from "../shared/listPager/ListPager";
 import * as perms from "../../actions/user/Permission";
 import {FOCUS_KEYS} from "../../constants";
+import {requestScopesIfNeeded} from "../../actions/refTables/scopesData";
 
 class RegistryList extends AbstractReactComponent {
 
@@ -47,6 +48,7 @@ class RegistryList extends AbstractReactComponent {
         const {maxSize} = props;
         this.dispatch(refRecordTypesFetchIfNeeded());
         this.dispatch(registryListFetchIfNeeded(0, maxSize));
+        this.dispatch(requestScopesIfNeeded());
     };
 
     trySetFocus = (props = this.props) => {
@@ -71,19 +73,19 @@ class RegistryList extends AbstractReactComponent {
 
     handleFilterType = (e) => {
         const val = e.target.value;
-        this.dispatch(registryListFilter({...this.props.registryList.filter, type: val == -1 ? null : val}));
+        this.dispatch(registryListFilter({...this.props.registryList.filter, from: 0, type: val == -1 ? null : val}));
     };
 
     handleFilterText = (filterText) => {
-        this.dispatch(registryListFilter({...this.props.registryList.filter, text: filterText && filterText.length === 0 ? null : filterText}));
+        this.dispatch(registryListFilter({...this.props.registryList.filter, from: 0, text: filterText && filterText.length === 0 ? null : filterText}));
     };
 
     handleFilterRegistryType = (item) => {
-        this.dispatch(registryListFilter({...this.props.registryList.filter, itemSpecId:null, registryTypeId: item ? item.id : null}));
+        this.dispatch(registryListFilter({...this.props.registryList.filter, itemSpecId:null, from: 0, registryTypeId: item ? item.id : null}));
     };
 
     handleFilterRegistryScope = (item) => {
-        this.dispatch(registryListFilter({...this.props.registryList.filter, scopeId: item ? item.id : null}));
+        this.dispatch(registryListFilter({...this.props.registryList.filter, from: 0, scopeId: item ? item.id : null}));
     };
 
     handleFilterPrev = () => {
@@ -107,7 +109,7 @@ class RegistryList extends AbstractReactComponent {
     }
 
     handleFilterTextClear = () => {
-        this.dispatch(registryListFilter({...this.props.registryList.filter, text: null}));
+        this.dispatch(registryListFilter({...this.props.registryList.filter, from: 0, text: null}));
     };
 
     handleRegistryDetail = (item) => {
@@ -183,7 +185,7 @@ class RegistryList extends AbstractReactComponent {
 
     filterScopes(scopes) {
         const { userDetail } = this.props;
-        return scopes.filter((scope) => userDetail.hasOne(perms.AP_SCOPE_WR_ALL, {type: perms.AP_SCOPE_WR,scopeId: scope.id}));
+        return scopes.filter((scope) => userDetail.hasOne(perms.AP_SCOPE_WR_ALL, {type: perms.AP_SCOPE_RD,scopeId: scope.id}));
     }
 
     getScopesWithAll(scopes) {

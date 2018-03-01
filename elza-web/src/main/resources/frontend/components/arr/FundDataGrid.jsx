@@ -459,6 +459,9 @@ class FundDataGrid extends AbstractReactComponent {
     handleFilterSettings(refType, dataType) {
         const {versionId, calendarTypes, fundDataGrid} = this.props
 
+        const otherFilters = {...fundDataGrid.filter};
+        delete otherFilters[refType.id];
+
         this.dispatch(modalDialogShow(this, i18n('arr.fund.filterSettings.title', refType.shortcut),
             <FundFilterSettings
                 versionId={versionId}
@@ -466,6 +469,7 @@ class FundDataGrid extends AbstractReactComponent {
                 dataType={dataType}
                 calendarTypes={calendarTypes}
                 filter={fundDataGrid.filter[refType.id]}
+                filters={otherFilters}
                 onSubmitForm={this.handleChangeFilter.bind(this, versionId, refType)}
             />, 'fund-filter-settings-dialog'
         ));

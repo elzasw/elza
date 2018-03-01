@@ -2,6 +2,7 @@ package cz.tacr.elza.drools.service;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -13,11 +14,13 @@ import cz.tacr.elza.domain.ArrDataStructureRef;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.drools.model.DescItem;
 import cz.tacr.elza.drools.model.Level;
 import cz.tacr.elza.drools.model.Structured;
+import cz.tacr.elza.drools.model.StrucutedItem;
 
 /**
  * Factory method for the base Drools model objects.
@@ -114,4 +117,44 @@ public class ModelFactory {
 		}
 
 	}
+
+    /**
+     * Vytvoření položek strukturovaného datového typu.
+     *
+     * @param structuredItems položky pro konverzi
+     * @return vytvořené položky
+     */
+    public static List<StrucutedItem> createStructuredItems(@Nullable final List<ArrStructuredItem> structuredItems) {
+	    if (structuredItems == null) {
+            return Collections.emptyList();
+        }
+
+        List<StrucutedItem> result = new ArrayList<>(structuredItems.size());
+        for (ArrStructuredItem structuredItem : structuredItems) {
+            result.add(createStructuredItem(structuredItem));
+        }
+        return result;
+    }
+
+    /**
+     * Vytvoření položky strukturovaného datového typu.
+     *
+     * @param structuredItem položka pro konverzi
+     * @return vytvořená položka
+     */
+	public static StrucutedItem createStructuredItem(final ArrStructuredItem structuredItem) {
+	    StrucutedItem result = new StrucutedItem();
+        result.setType(structuredItem.getItemType().getCode());
+        result.setSpecCode(structuredItem.getItemSpec() == null ? null : structuredItem.getItemSpec().getCode());
+        result.setDataType(structuredItem.getItemType().getDataType().getCode());
+        if (!structuredItem.isUndefined()) {
+            ArrData data = structuredItem.getData();
+            if (data.getType() == DataType.INT) {
+                ArrDataInteger integer = (ArrDataInteger) data;
+                result.setInteger(integer.getValue());
+            }
+        }
+	    return result;
+    }
+
 }
