@@ -15,15 +15,10 @@ import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Scope;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
@@ -79,7 +74,6 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
  *
  */
 @Service
-@Configuration
 public class BulkActionService implements ListenableFutureCallback<BulkActionWorker> {
 
     /**
@@ -88,9 +82,6 @@ public class BulkActionService implements ListenableFutureCallback<BulkActionWor
     public static final int MAX_BULK_ACTIONS_LIST = 100;
 
     private final static Logger logger = LoggerFactory.getLogger(BulkActionService.class);
-
-    @Autowired
-    BeanFactory beanFactory;
 
     @Autowired
     @Qualifier("threadPoolTaskExecutorBA")
@@ -259,8 +250,7 @@ public class BulkActionService implements ListenableFutureCallback<BulkActionWor
         try {
             nodeIds = getBulkActionNodeIds(bulkActionRun);
             // create bulk action object
-            BulkActionService self = beanFactory.getBean(BulkActionService.class);
-            bulkAction = self.getBulkAction(bulkActionRun.getBulkActionCode());
+            bulkAction = bulkActionConfigManager.getBulkAction(bulkActionRun.getBulkActionCode());
 
         } catch (Exception e) {
             logger.info("Failed to run action, bulkActionRunId = " + bulkActionRun.getBulkActionRunId(), e);
@@ -445,23 +435,6 @@ public class BulkActionService implements ListenableFutureCallback<BulkActionWor
     @AuthMethod(permission = {UsrPermission.Permission.FUND_BA_ALL, UsrPermission.Permission.FUND_BA})
     private void checkAuthBA(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion) {
         // pomocná metoda na ověření
-    }
-
-    /**
-     * Gets bulk action.
-     *
-     * @param code the code
-     * @return the bulk action
-     */
-	@Bean
-	@Scope("prototype")
-    public BulkAction getBulkAction(final String code) {
-		// get configuration object
-		BulkActionConfig bac = bulkActionConfigManager.get(code);
-
-        Validate.notNull(bac, "Failed to find action, code: %s", code);
-
-		return bac.createBulkAction();
     }
 
     /**
