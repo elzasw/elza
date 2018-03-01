@@ -47,12 +47,16 @@ class PartyPage extends AbstractReactComponent {
 
     componentDidMount() {
         this.dispatch(refPartyTypesFetchIfNeeded());         // načtení osob pro autory osoby
-        this.props.dispatch(regExtSystemListFetchIfNeeded());
+        if (this.props.userDetail.hasOne(perms.REG_SCOPE_WR_ALL)) {
+            this.props.dispatch(regExtSystemListFetchIfNeeded());
+        }
     }
 
     componentWillReceiveProps(nextProps) {
         this.dispatch(refPartyTypesFetchIfNeeded());         // načtení osob pro autory osoby
-        this.props.dispatch(regExtSystemListFetchIfNeeded());
+        if (nextProps.userDetail.hasOne(perms.REG_SCOPE_WR_ALL)) {
+            this.props.dispatch(regExtSystemListFetchIfNeeded());
+        }
     }
 
     handleShortcuts = (action) => {

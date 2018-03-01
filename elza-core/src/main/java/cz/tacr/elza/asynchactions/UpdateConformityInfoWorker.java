@@ -110,9 +110,13 @@ public class UpdateConformityInfoWorker implements Runnable {
     }
 
     private void processNode(ArrNode node, ArrFundVersion version) {
+        Integer nodeId = node.getNodeId();
+
         ArrLevel level = levelRepository.findByNode(node, version.getLockChange());
 
-        Integer nodeId = node.getNodeId();
+        Validate.notNull(level, "Cannot find Level for node (nodeId=%s) for version(fundVersionId=%s)", nodeId,
+                version.getFundVersionId());
+
         logger.debug("Aktualizace stavu " + nodeId + " ve verzi " + fundVersionId);
 
         try {

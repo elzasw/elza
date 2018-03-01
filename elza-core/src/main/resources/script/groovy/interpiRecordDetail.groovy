@@ -9,7 +9,6 @@ import cz.tacr.elza.interpi.ws.wo.PopisTyp;
 import cz.tacr.elza.interpi.ws.wo.TitulTyp;
 import cz.tacr.elza.interpi.ws.wo.TitulTypA;
 import cz.tacr.elza.interpi.ws.wo.VedlejsiCastTyp;
-import cz.tacr.elza.utils.XmlUtils;
 import cz.tacr.elza.interpi.service.vo.InterpiEntity;
 
 InterpiEntity interpiEntity = new InterpiEntity(ENTITY);

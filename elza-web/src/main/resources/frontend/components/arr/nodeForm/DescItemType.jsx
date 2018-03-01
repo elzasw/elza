@@ -47,6 +47,7 @@ class DescItemType extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
+        this.containers = {};
         this.bindMethods(
             'focus',
             'getShowDeleteDescItem',
@@ -296,6 +297,9 @@ class DescItemType extends AbstractReactComponent {
      */
     handleBlur(descItemIndex) {
         this.props.onBlur(descItemIndex);
+        const itemElement = this.containers[descItemIndex];
+        // returns back the "draggable" attribute
+        itemElement.setAttribute("draggable", true);
     }
 
     /**
@@ -304,6 +308,11 @@ class DescItemType extends AbstractReactComponent {
      */
     handleFocus(descItemIndex) {
         this.props.onFocus(descItemIndex);
+        const itemElement = this.containers[descItemIndex];
+        // removes attribute "draggable" due to a bug in Mozilla Firefox,
+        // see https://bugzilla.mozilla.org/show_bug.cgi?id=1189486
+        // or https://bugzilla.mozilla.org/show_bug.cgi?id=800050
+        itemElement.removeAttribute("draggable");
     }
 
     cancelDragging(e) {
@@ -652,7 +661,7 @@ class DescItemType extends AbstractReactComponent {
         //{actions.length > 0 && <div key="actions" className='desc-item-action-container'>{actions.map(i => <span>{i}<Icon glyph="fa-save" /></span>)}</div>}
         return (
             <Shortcuts key={key} name='DescItem' handler={this.handleDescItemShortcuts.bind(this, descItemIndex)} alwaysFireHandler global>
-                <div key="container" className={cls} {...dragProps}>
+                <div key="container" className={cls} {...dragProps} ref={(ref)=>{this.containers[descItemIndex] = ref;}}>
                     {!readMode && infoType.rep == 1 &&
                     <div className='dragger'><Icon className="up" glyph="fa-angle-up"/><Icon className="down"
                                                                                              glyph="fa-angle-down"/>&nbsp;

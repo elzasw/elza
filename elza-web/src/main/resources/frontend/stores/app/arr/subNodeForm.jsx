@@ -169,7 +169,8 @@ export default function subNodeForm(state = initialState, action = {}) {
         case types.FUND_SUB_NODE_FORM_VALUE_CHANGE:
         case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_PARTY:
         case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_RECORD:
-            var refType = state.refTypesMap[loc.descItemType.id]
+            var refType = state.refTypesMap[loc.descItemType.id];
+            let touched = false;
             switch (refType.dataType.code) {
                 case 'PARTY_REF':
                     loc.descItem.value = action.value.id;
@@ -190,6 +191,9 @@ export default function subNodeForm(state = initialState, action = {}) {
                     break;
                 case 'UNITDATE':
                     loc.descItem.value = action.value.value;
+                    // check if calendar type changed
+                    touched = loc.descItem.calendarTypeId !== action.value.calendarTypeId;
+                    // replace with calendar type from action
                     loc.descItem.calendarTypeId = action.value.calendarTypeId;
 
                     // Časovač na serverovou validaci
@@ -203,13 +207,8 @@ export default function subNodeForm(state = initialState, action = {}) {
                     loc.descItem.value = action.value;
                     break;
             }
-
-            if (valuesEquals(loc.descItem.value, loc.descItem.prevValue)) {
-                loc.descItem.touched = false;
-            } else {
-                loc.descItem.touched = true;
-            }
-
+            // touched if new value is not equal with previous value, or something else changed
+            loc.descItem.touched = !valuesEquals(loc.descItem.value, loc.descItem.prevValue) || touched;
             loc.descItem.error = validate(loc.descItem, refType);
 
             state.formData = {...state.formData};

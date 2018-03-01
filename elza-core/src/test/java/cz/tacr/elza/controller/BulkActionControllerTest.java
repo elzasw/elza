@@ -66,8 +66,8 @@ public class BulkActionControllerTest extends AbstractControllerTest {
         List<BulkActionVO> bulkActionVOs = Arrays.asList(get(spec -> spec.pathParam("versionId", fundVersionId), BULK_ACTIONS).getBody().as(BulkActionVO[].class));
 
 		// number of default bulk actions
-		// Currently 8 for ZP2015
-		Assert.assertEquals(8, bulkActionVOs.size());
+        // Currently 7 for ZP2015
+        Assert.assertEquals(7, bulkActionVOs.size());
 
         Boolean unit = false, serial = false, fa = false;
 

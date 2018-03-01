@@ -12,6 +12,7 @@ import PartyListItem from "./PartyListItem";
 import Autocomplete from "../shared/autocomplete/Autocomplete";
 import ListPager from "../shared/listPager/ListPager";
 import * as perms from "../../actions/user/Permission";
+import {requestScopesIfNeeded} from "../../actions/refTables/scopesData";
 
 /**
  * Komponenta list osob
@@ -41,6 +42,8 @@ class PartyList extends AbstractReactComponent {
 
     fetchIfNeeded = () => {
         this.dispatch(partyListFetchIfNeeded(null));
+        this.props.dispatch(requestScopesIfNeeded());
+
     };
 
     trySetFocus = (props = this.props) => {
@@ -65,15 +68,15 @@ class PartyList extends AbstractReactComponent {
 
     handleFilterType = (e) => {
         const val = e.target.value;
-        this.dispatch(partyListFilter({...this.props.partyList.filter, type: val == -1 ? null : val}));
+        this.dispatch(partyListFilter({...this.props.partyList.filter, from: 0, type: val == -1 ? null : val}));
     };
 
     handleFilterText = (filterText) => {
-        this.dispatch(partyListFilter({...this.props.partyList.filter, text: !filterText || filterText.length === 0 ? null : filterText}));
+        this.dispatch(partyListFilter({...this.props.partyList.filter, from: 0, text: !filterText || filterText.length === 0 ? null : filterText}));
     };
 
     handleFilterTextClear = () => {
-        this.dispatch(partyListFilter({...this.props.partyList.filter, text: null}));
+        this.dispatch(partyListFilter({...this.props.partyList.filter, from: 0, text: null}));
     };
 
     handlePartyDetail = (item) => {
@@ -81,7 +84,7 @@ class PartyList extends AbstractReactComponent {
     };
 
     handleFilterPartyScope = (item) => {
-        this.dispatch(partyListFilter({...this.props.partyList.filter, scopeId: item ? item.id : null}));
+        this.dispatch(partyListFilter({...this.props.partyList.filter, from: 0, scopeId: item ? item.id : null}));
     };
 
     handleFilterPrev = () => {
@@ -102,8 +105,7 @@ class PartyList extends AbstractReactComponent {
 
     filterScopes(scopes) {
         const { userDetail } = this.props;
-        console.log(scopes);
-        return scopes.filter((scope) => userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_WR,scopeId: scope.id}));
+        return scopes.filter((scope) => userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_RD,scopeId: scope.id}));
     }
 
     getScopesWithAll(scopes) {
