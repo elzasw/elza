@@ -46,18 +46,17 @@ public class BulkActionWorker implements Callable<BulkActionWorker> {
      */
     private List<Integer> inputNodeIds;
 
-	public BulkActionWorker(ArrBulkActionRun bulkActionRun, BulkActionService bulkActionService, PlatformTransactionManager transactionManager) {
+    public BulkActionWorker(final BulkAction bulkAction, final ArrBulkActionRun bulkActionRun,
+            final List<Integer> inputNodeIds, final BulkActionService bulkActionService,
+            final PlatformTransactionManager transactionManager) {
+        this.bulkAction = bulkAction;
         this.bulkActionRun = Validate.notNull(bulkActionRun);
 		this.bulkActionService = bulkActionService;
 		this.transactionManager = transactionManager;
-	}
+        this.inputNodeIds = inputNodeIds;
 
-	public void init() {
-        versionId = bulkActionRun.getFundVersionId();
-        inputNodeIds = bulkActionService.getBulkActionNodeIds(bulkActionRun);
-		// create bulk action object
-		bulkAction = bulkActionService.getBulkAction(bulkActionRun.getBulkActionCode());
-    }
+        this.versionId = bulkActionRun.getFundVersionId();
+	}
 
     /**
      * Vrací stav hromadné akce.

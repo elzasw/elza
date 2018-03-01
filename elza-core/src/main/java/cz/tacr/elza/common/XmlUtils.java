@@ -1,8 +1,10 @@
 package cz.tacr.elza.common;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
+import java.io.StringWriter;
 import java.net.URL;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -14,6 +16,7 @@ import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeConstants;
@@ -22,7 +25,12 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stax.StAXSource;
+import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
@@ -186,6 +194,65 @@ public class XmlUtils {
             return DatatypeFactory.newInstance();
         } catch (DatatypeConfigurationException e) {
             throw new SystemException(e);
+        }
+    }
+
+    /**
+     * Převede data z objektu do xml.
+     *
+     * @param data
+     *            data
+     *
+     * @return pole bytů
+     */
+    public static <T, C> byte[] marshallData(final T data, final Class<C> cls) {
+        Validate.notNull(data);
+
+        try {
+            Marshaller marshaller = createMarshaller(cls);
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            marshaller.marshal(data, outputStream);
+
+            return outputStream.toByteArray();
+        } catch (JAXBException e) {
+            throw new SystemException(e);
+        }
+    }
+
+    /**
+     * Vytvoří marshaller pro data.
+     *
+     * @return marshaller pro data
+     */
+    private static <C> Marshaller createMarshaller(final Class<C> cls) throws JAXBException {
+        JAXBContext jaxbContext = JAXBContext.newInstance(cls);
+        Marshaller marshaller = jaxbContext.createMarshaller();
+
+        return marshaller;
+    }
+
+    /**
+     * Naformátuje předané xml.
+     *
+     * @param inputStream
+     *            xml
+     *
+     * @return naformátované xml
+     */
+    public static String formatXml(final InputStream inputStream) {
+        try {
+            Transformer transformer = TransformerFactory.newInstance().newTransformer();
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+            StreamResult result = new StreamResult(new StringWriter());
+
+            StreamSource ss = new StreamSource(inputStream);
+
+            transformer.transform(ss, result);
+            return result.getWriter().toString();
+        } catch (TransformerException e) {
+            throw new SystemException("Chyba při formátování xml.", e);
         }
     }
 }

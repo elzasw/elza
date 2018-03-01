@@ -382,6 +382,13 @@ export function node(state = nodeInitialState, action) {
             }
 
             return result;
+        case types.FUND_NODE_INFO_INVALIDATE:
+            let result = {
+                ...state,
+                nodeInfoDirty: true
+            };
+            return result;
+
         case types.FUND_FUND_SELECT_SUBNODE:
             if (state.selectedSubNodeId === action.subNodeId) {
                 return state;

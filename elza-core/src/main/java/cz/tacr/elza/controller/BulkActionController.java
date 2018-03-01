@@ -127,7 +127,9 @@ public class BulkActionController {
         Assert.notEmpty(nodeIds, "Pro sputění hromadné akce je vyžadován alespon 1 uzel");
         UserDetail userDetail = userService.getLoggedUserDetail();
         Integer userId = userDetail != null ? userDetail.getId() : null;
-        return factoryVo.createBulkActionRun(bulkActionService.queue(userId, code, fundVersionId, nodeIds));
+
+        ArrBulkActionRun actionRun = bulkActionService.queue(userId, code, fundVersionId, nodeIds);
+        return factoryVo.createBulkActionRun(actionRun);
     }
 
     /**

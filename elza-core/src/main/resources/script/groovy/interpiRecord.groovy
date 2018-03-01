@@ -9,7 +9,7 @@ import cz.tacr.elza.interpi.ws.wo.PopisTyp
 import cz.tacr.elza.interpi.ws.wo.TitulTyp;
 import cz.tacr.elza.interpi.ws.wo.TitulTypA
 import cz.tacr.elza.interpi.ws.wo.VedlejsiCastTyp
-import cz.tacr.elza.utils.XmlUtils;
+import cz.tacr.elza.common.XmlUtils;
 import cz.tacr.elza.interpi.service.vo.InterpiEntity;
 
 List<ExternalRecordVO> records = new LinkedList<>();
@@ -48,27 +48,6 @@ return records;
 
 String createSimpleDetail(EntitaTyp entitaTyp) {
     byte[] marshallData = XmlUtils.marshallData(entitaTyp, EntitaTyp.class);
-
-    return XmlUtils.formatXml(new ByteArrayInputStream(marshallData));
-}
-
-String createDetail(InterpiEntity ent) {
-
-    StringBuilder detail = new StringBuilder();
-    detail.append("id: ").append(FACTORY.getInterpiRecordId(interpiEntity)).append("\n")
-    detail.append("název: ").append(generatePartyNameString(ent)).append("\n");
-    detail.append("popis: ");
-    Iterator<PopisTyp> iterator = interpiEntity.getPopisTyp().iterator();
-    if (iterator.hasNext()) {
-        List<String> details = new ArrayList<>();
-        while(iterator.hasNext()) {
-            PopisTyp popis = iterator.next();
-            details.add(popis.getTextPopisu());
-        }
-        detail.append(details.join("; "));
-    }
-
-
 
     return XmlUtils.formatXml(new ByteArrayInputStream(marshallData));
 }
