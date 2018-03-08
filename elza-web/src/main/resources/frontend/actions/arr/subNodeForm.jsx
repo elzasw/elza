@@ -402,10 +402,13 @@ class ItemFormActions {
             var subNodeForm = this._getItemFormStore(state, versionId, routingKey);
             var loc = subNodeForm.getLoc(subNodeForm, valueLocation);
 
-            WebApi.validateUnitdate(loc.descItem.value)
-                .then(json => {
-                    dispatch(this._fundSubNodeFormValueValidateResult(versionId, routingKey, valueLocation, json));
-                })
+            // only when loc exists
+            if(loc){
+                WebApi.validateUnitdate(loc.descItem.value)
+                    .then(json => {
+                        dispatch(this._fundSubNodeFormValueValidateResult(versionId, routingKey, valueLocation, json));
+                    })
+            }
         }
     }
 

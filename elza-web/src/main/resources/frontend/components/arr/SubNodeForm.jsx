@@ -637,14 +637,18 @@ class SubNodeForm extends AbstractReactComponent {
      * @param descItemIndex {Integer} index honodty atributu v seznamu
      * @param value {Object} nová hodnota atributu
      */
-    handleChange(descItemGroupIndex, descItemTypeIndex, descItemIndex, value) {
+    handleChange(descItemGroupIndex, descItemTypeIndex, descItemIndex, value, error) {
         var valueLocation = {
             descItemGroupIndex,
             descItemTypeIndex,
             descItemIndex
-        }
+        };
 
+        // Updates the value in form data.
         this.dispatch(this.props.formActions.fundSubNodeFormValueChange(this.props.versionId, this.props.routingKey, valueLocation, value, false));
+        // Updates the error value in descItem.
+        // Only when error exists
+        error && this.dispatch(this.props.formActions._fundSubNodeFormValueValidateResult(this.props.versionId, this.props.routingKey, valueLocation, error));
     }
 
     /**

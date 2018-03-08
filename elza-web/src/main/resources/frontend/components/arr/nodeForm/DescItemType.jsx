@@ -28,6 +28,9 @@ import DescItemTypeSpec from "./DescItemTypeSpec";
 import {PropTypes} from 'prop-types';
 import defaultKeymap from './DescItemTypeKeymap.jsx';
 import './AbstractDescItem.less'
+import {validate, convertValue} from "stores/app/arr/subNodeForm.jsx";
+import {valuesEquals} from 'components/Utils.jsx'
+import {WebApi} from 'actions/index.jsx';
 
 const placeholder = document.createElement("div");
 placeholder.className = "placeholder";
@@ -48,6 +51,9 @@ class DescItemType extends AbstractReactComponent {
         super(props);
 
         this.containers = {};
+        this.state = {
+            descItemType: {...props.descItemType}
+        };
         this.bindMethods(
             'focus',
             'getShowDeleteDescItem',
@@ -81,6 +87,9 @@ class DescItemType extends AbstractReactComponent {
     }
 
     componentWillReceiveProps(nextProps) {
+        this.setState({
+            descItemType: {...nextProps.descItemType}
+        });
     }
 
     shouldComponentUpdate(nextProps, nextState) {
@@ -185,8 +194,34 @@ class DescItemType extends AbstractReactComponent {
                 onFocus={this.handleFocus.bind(this, descItemIndex)}
                 strictMode={strictMode}
                 />
-        )
+        );
     }
+
+    /*
+     * Unitdate server validation
+     */
+    validateUnitdate = (value, descItemIndex)=>{
+        return ()=>{
+            WebApi.validateUnitdate(value).then((result)=>{
+                const {refType} = this.props;
+                let newDescItemType = this.state.descItemType;
+                const newDescItem = {...newDescItemType.descItems[descItemIndex]};
+
+                // validation with added error from server
+                let valueServerError;
+                if (!result.valid) {
+                    valueServerError = result.message;
+                }
+                newDescItem.error = validate(newDescItem, refType, valueServerError);
+
+                newDescItemType.descItems[descItemIndex] = newDescItem;
+                this.setState({
+                    descItemType: newDescItemType,
+                    error: result //unitdate validation expects different format
+                });
+            });
+        };
+    };
 
     /**
      * Změna hodnoty atributu.
@@ -194,7 +229,41 @@ class DescItemType extends AbstractReactComponent {
      * @param value {Object} nová hodnota atibutu
      */
     handleChange(descItemIndex, value) {
-        this.props.onChange(descItemIndex, value);
+        //this.props.onChange(descItemIndex, value);
+        // Switched to local value change. Value update in "handleBlur"
+
+        const {rulDataType, refType} = this.props;
+        let newDescItemType = this.state.descItemType;
+
+        // Convert value to a value compatible with specified data type
+        const descItem = {...newDescItemType.descItems[descItemIndex]};
+        const convertedValue = convertValue(value, descItem, rulDataType.code);
+        const touched = convertedValue.touched || !valuesEquals(convertedValue.value, descItem.prevValue);
+        const newDescItem = {
+            ...descItem,
+            ...convertedValue,
+            touched
+        };
+        // Unitdate server validation
+        if(rulDataType.code === "UNITDATE"){
+            // debouncing validation request
+            if (newDescItem.validateTimer) {
+                clearTimeout(descItem.validateTimer);
+            }
+            newDescItem.validateTimer = setTimeout(this.validateUnitdate(newDescItem.value, descItemIndex), 250);
+        }
+        // newDescItem validation
+        const error = validate(newDescItem, refType);
+        newDescItem.error = error;
+
+        // Replace the original descItem
+        newDescItemType.descItems[descItemIndex] = newDescItem;
+
+        this.setState({
+            descItemType: newDescItemType,
+            value,
+            error
+        });
     }
 
     /**
@@ -296,7 +365,20 @@ class DescItemType extends AbstractReactComponent {
      * @param descItemIndex {number} index hodnoty atributu v seznamu
      */
     handleBlur(descItemIndex) {
-        this.props.onBlur(descItemIndex);
+        const {onBlur, onChange} = this.props;
+        const {value, error} = this.state;
+
+        // Calls the onChange in handleBlur to prevent too frequent re-renders
+        value && onChange(descItemIndex, value, error);
+
+        onBlur(descItemIndex);
+
+        // resets the modified value and error
+        this.setState({
+            value:null,
+            error:null
+        });
+
         const itemElement = this.containers[descItemIndex];
         // returns back the "draggable" attribute
         itemElement.setAttribute("draggable", true);
@@ -730,7 +812,8 @@ class DescItemType extends AbstractReactComponent {
     }
 
     getShowDeleteDescItemType() {
-        const {fundId, userDetail, refType, infoType, descItemType, closed, readMode} = this.props;
+        const {fundId, userDetail, refType, infoType, closed, readMode} = this.props;
+        const {descItemType} = this.state;
 
         // Pokud nemá právo na pořádání, nelze provádět akci
         if (!userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId})) {
@@ -769,9 +852,10 @@ class DescItemType extends AbstractReactComponent {
     renderLabel() {
         const {
             fundId, showNodeAddons, userDetail, descItemCopyFromPrevEnabled, singleDescItemTypeEdit,
-            copy, locked, descItemType, infoType, refType, conformityInfo, closed, readMode, notIdentified,
+            copy, locked, infoType, refType, conformityInfo, closed, readMode, notIdentified,
             rulDataType, onDescItemNotIdentified
         } = this.props;
+        const {descItemType} = this.state;
 
         const actions = [];
 
@@ -934,8 +1018,9 @@ class DescItemType extends AbstractReactComponent {
     }
 
     render() {
-        const {fundId, userDetail, onDescItemRemove, onDescItemAdd, descItemType, rulDataType, infoType,
+        const {fundId, userDetail, onDescItemRemove, onDescItemAdd, rulDataType, infoType,
             locked, conformityInfo, closed, readMode, onDescItemNotIdentified} = this.props;
+        const {descItemType} = this.state;
 
         const label = this.renderLabel();
         const showDeleteDescItemType = this.getShowDeleteDescItemType();
