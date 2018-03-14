@@ -1,25 +1,13 @@
 package cz.tacr.elza.service;
 
-import java.util.Collections;
-import java.util.List;
-
-import javax.transaction.Transactional;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
-import org.springframework.stereotype.Service;
-
 import cz.tacr.elza.controller.ArrangementController.DescFormDataNewVO;
 import cz.tacr.elza.controller.ArrangementController.DescItemResult;
 import cz.tacr.elza.controller.arrangement.UpdateItemResult;
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
-import cz.tacr.elza.controller.vo.TreeNodeClient;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.controller.vo.nodes.ItemTypeLiteVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ItemGroupVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ItemTypeGroupVO;
 import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
@@ -40,6 +28,13 @@ import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.cache.RestoredNode;
 import cz.tacr.elza.websocket.service.WebScoketStompService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
+import org.springframework.stereotype.Service;
+
+import javax.transaction.Transactional;
+import java.util.List;
 
 /**
  * Service to handle form related requests
@@ -151,10 +146,9 @@ public class ArrangementFormService {
 		String ruleCode = version.getRuleSet().getCode();
 
 		ArrNodeVO nodeVO = ArrNodeVO.valueOf(node);
-		List<ItemGroupVO> descItemGroupsVO = factoryVo.createItemGroupsNew(ruleCode, fundId, descItems);
-		List<ItemTypeGroupVO> descItemTypeGroupsVO = factoryVo
-		        .createItemTypeGroupsNew(ruleCode, fundId, itemTypes);
-		return new DescFormDataNewVO(nodeVO, descItemGroupsVO, descItemTypeGroupsVO);
+		List<ArrItemVO> descItemsVOs = factoryVo.createItems(descItems);
+		List<ItemTypeLiteVO> itemTypeLites = factoryVo.createItemTypes(ruleCode, fundId, itemTypes);
+		return new DescFormDataNewVO(nodeVO, descItemsVOs, itemTypeLites);
 	}
 
 	@Transactional
@@ -207,17 +201,12 @@ public class ArrangementFormService {
 		StaticDataProvider dataProvider = this.staticData.getData();
 		RuleSystem rs = dataProvider.getRuleSystems().getByRuleSetId(fundVersion.getRuleSet().getRuleSetId());
 		//
-		List<ItemTypeGroupVO> descItemTypeGroupsVO = factoryVo
-		        .createItemTypeGroupsNew(rs.getRuleSet().getCode(), fundVersion.getFundId(), itemTypes);
+		List<ItemTypeLiteVO> itemTypesVO = factoryVo
+		        .createItemTypes(rs.getRuleSet().getCode(), fundVersion.getFundId(), itemTypes);
 
-		ArrItemVO descItemVo = factoryVo.createDescItem(descItemUpdated);
-
-		// TODO: use better functions, we just need a descriptions
-		List<TreeNodeClient> tncList = levelTreeCache.getNodesByIds(Collections.singleton(descItemUpdated.getNodeId()),
-		        fundVersion.getFundVersionId());
-		TreeNodeClient tnc = tncList.get(0);
-
-		UpdateItemResult updateResult = new UpdateItemResult(descItemUpdated, descItemVo, descItemTypeGroupsVO, tnc);
+		ArrItemVO descItemVo = factoryVo.createItem(descItemUpdated);
+		LevelTreeCacheService.Node node = levelTreeCache.getSimpleNode(descItemUpdated.getNodeId(), fundVersion);
+		UpdateItemResult updateResult = new UpdateItemResult(descItemUpdated, descItemVo, itemTypesVO, node);
 
 		// Odeslání dat zpět
 		wsStompService.sendReceiptAfterCommit(updateResult, requestHeaders);
@@ -233,7 +222,7 @@ public class ArrangementFormService {
 		        .updateDescriptionItem(descItem, nodeVersion, fundVersionId, createNewVersion);
 
 		DescItemResult descItemResult = new DescItemResult();
-		descItemResult.setItem(factoryVo.createDescItem(descItemUpdated));
+		descItemResult.setItem(factoryVo.createItem(descItemUpdated));
 		descItemResult.setParent(ArrNodeVO.valueOf(descItemUpdated.getNode()));
 
 		return descItemResult;

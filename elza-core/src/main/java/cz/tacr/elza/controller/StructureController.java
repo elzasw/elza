@@ -5,15 +5,14 @@ import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.ArrStructureDataVO;
 import cz.tacr.elza.controller.vo.FilteredResultVO;
 import cz.tacr.elza.controller.vo.RulStructureTypeVO;
+import cz.tacr.elza.controller.vo.nodes.ItemTypeLiteVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ItemGroupVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ItemTypeGroupVO;
 import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.ArrStructuredItem;
+import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.RulItemTypeExt;
-import cz.tacr.elza.domain.RulStructuredTypeExtension;
 import cz.tacr.elza.domain.RulStructuredType;
+import cz.tacr.elza.domain.RulStructuredTypeExtension;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
@@ -256,7 +255,7 @@ public class StructureController {
         ArrStructuredItem structureItem = factoryDO.createStructureItem(itemVO, itemTypeId);
         ArrStructuredItem createStructureItem = structureService.createStructureItem(structureItem, structureDataId, fundVersionId);
         StructureItemResult result = new StructureItemResult();
-        result.setItem(factoryVO.createDescItem(createStructureItem));
+        result.setItem(factoryVO.createItem(createStructureItem));
         result.setParent(factoryVO.createStructureData(createStructureItem.getStructuredObject()));
         return result;
     }
@@ -277,7 +276,7 @@ public class StructureController {
         ArrStructuredItem structureItem = factoryDO.createStructureItem(itemVO);
         ArrStructuredItem updateStructureItem = structureService.updateStructureItem(structureItem, fundVersionId, createNewVersion);
         StructureItemResult result = new StructureItemResult();
-        result.setItem(factoryVO.createDescItem(updateStructureItem));
+        result.setItem(factoryVO.createItem(updateStructureItem));
         result.setParent(factoryVO.createStructureData(updateStructureItem.getStructuredObject()));
         return result;
     }
@@ -296,7 +295,7 @@ public class StructureController {
         ArrStructuredItem structureItem = factoryDO.createStructureItem(itemVO);
         ArrStructuredItem deleteStructureItem = structureService.deleteStructureItem(structureItem, fundVersionId);
         StructureItemResult result = new StructureItemResult();
-        result.setItem(factoryVO.createDescItem(deleteStructureItem));
+        result.setItem(factoryVO.createItem(deleteStructureItem));
         result.setParent(factoryVO.createStructureData(deleteStructureItem.getStructuredObject()));
         return result;
     }
@@ -357,9 +356,9 @@ public class StructureController {
         String ruleCode = fundVersion.getRuleSet().getCode();
 
         ArrStructureDataVO structureDataVO = factoryVO.createStructureData(structureData);
-        List<ItemGroupVO> itemGroupsVO = factoryVO.createItemGroupsNew(ruleCode, fundId, structureItems);
-        List<ItemTypeGroupVO> itemTypeGroupsVO = factoryVO.createItemTypeGroupsNew(ruleCode, fundId, structureItemTypes);
-        return new StructureDataFormDataVO(structureDataVO, itemGroupsVO, itemTypeGroupsVO);
+        List<ArrItemVO> descItems = factoryVO.createItems(structureItems);
+        List<ItemTypeLiteVO> itemTypeLites = factoryVO.createItemTypes(ruleCode, fundId, structureItemTypes);
+        return new StructureDataFormDataVO(structureDataVO, descItems, itemTypeLites);
     }
 
     /**
@@ -416,8 +415,8 @@ public class StructureController {
         public StructureDataFormDataVO() {
         }
 
-        public StructureDataFormDataVO(final ArrStructureDataVO parent, final List<ItemGroupVO> groups, final List<ItemTypeGroupVO> typeGroups) {
-            super(parent, groups, typeGroups);
+        public StructureDataFormDataVO(final ArrStructureDataVO parent, final List<ArrItemVO> descItems, final List<ItemTypeLiteVO> itemTypeLites) {
+            super(parent, descItems, itemTypeLites);
             this.parent = parent;
         }
 

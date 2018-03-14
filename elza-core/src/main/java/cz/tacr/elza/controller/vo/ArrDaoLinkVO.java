@@ -8,7 +8,7 @@ package cz.tacr.elza.controller.vo;
  */
 public class ArrDaoLinkVO {
     private Integer id;
-    private TreeNodeClient treeNodeClient;
+    private TreeNodeVO treeNodeClient;
 
     public Integer getId() {
         return id;
@@ -18,11 +18,11 @@ public class ArrDaoLinkVO {
         this.id = id;
     }
 
-    public TreeNodeClient getTreeNodeClient() {
+    public TreeNodeVO getTreeNodeClient() {
         return treeNodeClient;
     }
 
-    public void setTreeNodeClient(TreeNodeClient treeNodeClient) {
+    public void setTreeNodeClient(TreeNodeVO treeNodeClient) {
         this.treeNodeClient = treeNodeClient;
     }
 }

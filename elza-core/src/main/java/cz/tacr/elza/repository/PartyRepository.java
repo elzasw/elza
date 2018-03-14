@@ -1,13 +1,13 @@
 package cz.tacr.elza.repository;
 
+import cz.tacr.elza.domain.ApRecord;
+import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.projection.ParPartyInfo;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
 import java.util.Collection;
 import java.util.List;
-
-import org.springframework.data.jpa.repository.Query;
-
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.ApRecord;
-import cz.tacr.elza.domain.projection.ParPartyInfo;
 
 
 /**
@@ -54,4 +54,16 @@ public interface PartyRepository extends ElzaJpaRepository<ParParty, Integer>, P
     List<ParParty> findCreatorsByParty(ParParty party);
 
     List<ParPartyInfo> findInfoByRecordRecordIdIn(Collection<Integer> recordIds);
+
+    @Query("SELECT ap FROM par_party ap " +
+            "LEFT JOIN FETCH ap.preferredName pn " +
+            "JOIN FETCH pn.nameFormType nft " +
+            "LEFT JOIN FETCH pn.validFrom vf " +
+            "LEFT JOIN FETCH vf.calendarType vfct " +
+            "LEFT JOIN FETCH pn.validTo vt " +
+            "LEFT JOIN FETCH vt.calendarType vtct " +
+            "JOIN FETCH ap.partyType pt " +
+            "JOIN FETCH ap.record rec " +
+            "WHERE ap.partyId IN :ids")
+    List<ParParty> findAllFetch(@Param("ids") Iterable<Integer> ids);
 }

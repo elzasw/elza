@@ -1,9 +1,15 @@
 import * as types from 'actions/constants/ActionTypes.js';
 import {i18n} from 'components/shared';
-import {indexById} from 'stores/app/utils.jsx'
-import {createDescItemFromDb, getItemType, updateFormData, createDescItem, consolidateDescItems, mergeAfterUpdate} from './subNodeFormUtils.jsx'
-import {validateInt, validateDouble, validateCoordinatePoint} from 'components/validate.jsx'
-import {getMapFromList} from 'stores/app/utils.jsx'
+import {getMapFromList, indexById} from 'stores/app/utils.jsx'
+import {
+    consolidateDescItems,
+    createDescItem,
+    createDescItemFromDb,
+    getItemType,
+    mergeAfterUpdate,
+    updateFormData
+} from './subNodeFormUtils.jsx'
+import {validateCoordinatePoint, validateDouble, validateInt} from 'components/validate.jsx'
 import {valuesEquals} from 'components/Utils.jsx'
 
 function getLoc(state, valueLocation) {
@@ -487,7 +493,7 @@ export default function subNodeForm(state = initialState, action = {}) {
                 result.data = null;
                 result.formData = null;
             }
-            updateFormData(result, action.data, refTypesMap, null, state.dirty);
+            updateFormData(result, action.data, refTypesMap, action.groups, null, state.dirty);
             return result;
         case types.FUND_SUBNODE_UPDATE:
             var {node, parent} = action.data;

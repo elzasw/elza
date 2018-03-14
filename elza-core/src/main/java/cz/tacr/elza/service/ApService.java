@@ -1,10 +1,33 @@
 package cz.tacr.elza.service;
 
-import cz.tacr.elza.controller.vo.TreeNodeClient;
-import cz.tacr.elza.controller.vo.usage.*;
+import cz.tacr.elza.controller.vo.TreeNodeVO;
+import cz.tacr.elza.controller.vo.usage.FundVO;
+import cz.tacr.elza.controller.vo.usage.NodeVO;
+import cz.tacr.elza.controller.vo.usage.OccurrenceType;
+import cz.tacr.elza.controller.vo.usage.OccurrenceVO;
+import cz.tacr.elza.controller.vo.usage.PartyVO;
+import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
-import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.ApExternalSystem;
+import cz.tacr.elza.domain.ApRecord;
+import cz.tacr.elza.domain.ApScope;
+import cz.tacr.elza.domain.ApType;
+import cz.tacr.elza.domain.ApVariantRecord;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrNodeRegister;
+import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.ParRelation;
+import cz.tacr.elza.domain.ParRelationEntity;
+import cz.tacr.elza.domain.UISettings;
+import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ExceptionUtils;
 import cz.tacr.elza.exception.ObjectNotFoundException;
@@ -13,7 +36,22 @@ import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.packageimport.PackageService;
 import cz.tacr.elza.packageimport.xml.SettingRecord;
-import cz.tacr.elza.repository.*;
+import cz.tacr.elza.repository.ApExternalSystemRepository;
+import cz.tacr.elza.repository.ApRecordRepository;
+import cz.tacr.elza.repository.ApTypeRepository;
+import cz.tacr.elza.repository.ApVariantRecordRepository;
+import cz.tacr.elza.repository.DataPartyRefRepository;
+import cz.tacr.elza.repository.DataRecordRefRepository;
+import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.FundRegisterScopeRepository;
+import cz.tacr.elza.repository.FundVersionRepository;
+import cz.tacr.elza.repository.ItemTypeRepository;
+import cz.tacr.elza.repository.NodeRegisterRepository;
+import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.repository.PartyCreatorRepository;
+import cz.tacr.elza.repository.RelationEntityRepository;
+import cz.tacr.elza.repository.ScopeRepository;
+import cz.tacr.elza.repository.SettingsRepository;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventNodeIdVersionInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
@@ -26,7 +64,17 @@ import org.springframework.util.Assert;
 
 import javax.annotation.Nullable;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -865,7 +913,7 @@ public class ApService {
 		Set<Integer> nodeIds = fundIdToNodeIdsMap.get(fundVersion.getFundId());
 		List<Integer> nodeIdsSubList = getNodeIdsSublist(nodeIds);
 
-		Collection<TreeNodeClient> treeNodes = levelTreeCacheService.getFaTreeNodes(fundVersion.getFundVersionId(), nodeIdsSubList);
+		Collection<TreeNodeVO> treeNodes = levelTreeCacheService.getFaTreeNodes(fundVersion.getFundVersionId(), nodeIdsSubList);
 
 		List<NodeVO> nodes = treeNodes.stream()
 			.map(n ->  createNodeVO(nodeIdToNodeRegisters, dataIdToArrDataMap, nodeIdToDataIdsMap, n))
@@ -887,7 +935,7 @@ public class ApService {
 	 */
 	private NodeVO createNodeVO(final Map<Integer, List<ArrNodeRegister>> nodeIdToNodeRegisters,
 			final Map<Integer, ? extends ArrData> dataIdToArrDataMap, final Map<Integer, Set<Integer>> nodeIdToDataIdsMap,
-			final TreeNodeClient node) {
+			final TreeNodeVO node) {
 		List<OccurrenceVO> occurrences = new LinkedList<>();
 		if (nodeIdToNodeRegisters.containsKey(node.getId())) {
 			occurrences.addAll(createOccurrenceVOFromNodeRegisters(nodeIdToNodeRegisters.get(node.getId())));

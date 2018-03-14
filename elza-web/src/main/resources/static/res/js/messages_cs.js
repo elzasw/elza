@@ -7,6 +7,7 @@ var messages = {
     "global.data.loading.form": "Načítání formuláře JP",
     "global.data.loading.node": "Načítání seznamu JP",
     "global.data.loading.node.children": "Načítání seznamu potomků JP",
+    "global.data.loading.node.parents": "Načítání seznamu předků JP",
 
     "global.title.yes": "Ano",
     "global.title.no": "Ne",

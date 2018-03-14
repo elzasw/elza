@@ -1,7 +1,15 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {TooltipTrigger, Autocomplete, Utils, Icon, i18n, AbstractReactComponent, NoFocusButton, FormInput} from 'components/shared';
-import {Tooltip, OverlayTrigger} from 'react-bootstrap';
+import {
+    AbstractReactComponent,
+    Autocomplete,
+    FormInput,
+    i18n,
+    Icon,
+    NoFocusButton,
+    TooltipTrigger,
+    Utils
+} from 'components/shared';
 import {addToastrDanger} from 'components/shared/toastr/ToastrActions.jsx'
 import {connect} from 'react-redux'
 import DescItemString from './DescItemString.jsx'
@@ -19,11 +27,10 @@ import DescItemJsonTable from './DescItemJsonTable.jsx'
 import {propsEquals} from 'components/Utils.jsx'
 import {nodeFormActions} from 'actions/arr/subNodeForm.jsx'
 import {hasDescItemTypeValue} from 'components/arr/ArrUtils.jsx'
-import {indexById} from 'stores/app/utils.jsx'
+import {getSetFromIdsList, indexById} from 'stores/app/utils.jsx'
 import classNames from 'classnames';
 import * as perms from 'actions/user/Permission.jsx';
 import {Shortcuts} from 'react-shortcuts';
-import {getSetFromIdsList} from "stores/app/utils.jsx";
 import DescItemTypeSpec from "./DescItemTypeSpec";
 import {PropTypes} from 'prop-types';
 import defaultKeymap from './DescItemTypeKeymap.jsx';
@@ -1010,7 +1017,7 @@ DescItemType.propTypes = {
     onDetailParty: React.PropTypes.func.isRequired,
     onCreateRecord: React.PropTypes.func.isRequired,
     onDetailRecord: React.PropTypes.func.isRequired,
-    onCreatePacket: React.PropTypes.func.isRequired,
+    onCreatePacket: React.PropTypes.func/*.isRequired*/,
     onCreateFile: React.PropTypes.func.isRequired,
     onFundFiles: React.PropTypes.func.isRequired,
     onDescItemTypeRemove: React.PropTypes.func.isRequired,
@@ -1026,7 +1033,7 @@ DescItemType.propTypes = {
     calendarTypes: React.PropTypes.object.isRequired,
     structureTypes: React.PropTypes.object.isRequired,
     locked: React.PropTypes.bool.isRequired,
-    hideDelete: React.PropTypes.bool.isRequired,
+    hideDelete: React.PropTypes.bool/*.isRequired*/,
     readMode: React.PropTypes.bool.isRequired,
     notIdentified: React.PropTypes.bool.isRequired,
     onDescItemNotIdentified: React.PropTypes.func.isRequired,

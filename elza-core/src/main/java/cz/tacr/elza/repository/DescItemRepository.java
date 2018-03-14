@@ -1,15 +1,21 @@
 package cz.tacr.elza.repository;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-
-import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.ApRecord;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemType;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import cz.tacr.elza.domain.ApRecord;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -79,7 +85,7 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
 	/**
 	 * Return list of description items for node.
 	 *
-	 * Function fetch description items and data
+	 * Function fetch description items, data and item type
 	 *
 	 * @param node
 	 *            Node for which data are fetched. Cannot be null.
@@ -87,7 +93,7 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
 	 *            Change to use for fetching data. Cannot be null.
 	 * @return
 	 */
-	@Query("SELECT i FROM arr_desc_item i LEFT JOIN FETCH i.data WHERE i.node = ?1 AND i.createChange < ?2 AND (i.deleteChange > ?2 OR i.deleteChange IS NULL)")
+	@Query("SELECT i FROM arr_desc_item i JOIN FETCH i.itemType t LEFT JOIN FETCH i.data WHERE i.node = ?1 AND i.createChange < ?2 AND (i.deleteChange > ?2 OR i.deleteChange IS NULL)")
 	List<ArrDescItem> findByNodeAndChange(ArrNode node, ArrChange change);
 
     @Query("SELECT i FROM arr_desc_item i JOIN i.itemType t WHERE i.node = ?1 AND t.itemTypeId = ?2 AND i.createChange < ?3 AND (i.deleteChange > ?3 OR i.deleteChange IS NULL)")

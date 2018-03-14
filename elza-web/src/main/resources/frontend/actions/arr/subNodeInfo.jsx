@@ -3,7 +3,7 @@
  */
 
 import {WebApi} from 'actions/index.jsx';
-import {indexById, findByRoutingKeyInGlobalState} from 'stores/app/utils.jsx'
+import {findByRoutingKeyInGlobalState, indexById} from 'stores/app/utils.jsx'
 
 import * as types from 'actions/constants/ActionTypes.js';
 
@@ -59,10 +59,15 @@ export function fundSubNodeInfoFetchIfNeeded(versionId, nodeId, routingKey) {
  * @param {int} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
  */
 export function fundSubNodeInfoFetch(versionId, nodeId, routingKey) {
-    return dispatch => {
-        dispatch(fundSubNodeInfoRequest(versionId, nodeId, routingKey))
-        return WebApi.getFundTree(versionId, nodeId)
-            .then(json => dispatch(fundSubNodeInfoReceive(versionId, nodeId, routingKey, json)))
+    return (dispatch, getState) => {
+        const r = findByRoutingKeyInGlobalState(state, versionId, routingKey);
+        let node;
+        if (r != null) {
+            node = r.node;
+        }
+        dispatch(fundSubNodeInfoRequest(versionId, nodeId, routingKey));
+        return WebApi.getNodeData(versionId, nodeId, false, false, true, null, null, node ? null : node.filterText)
+            .then(json => dispatch(fundSubNodeInfoReceive(versionId, nodeId, routingKey, {nodes: json.children})))
     };
 }
 

@@ -1,9 +1,9 @@
 package cz.tacr.elza.controller.vo;
 
+import cz.tacr.elza.domain.ArrBulkActionRun.State;
+
 import java.util.Date;
 import java.util.List;
-
-import cz.tacr.elza.domain.ArrBulkActionRun.State;
 
 /**
  * Stav hromadných akcí
@@ -19,7 +19,7 @@ public class BulkActionRunVO {
 
     private State state;
 
-    private List<TreeNodeClient> nodes;
+    private List<TreeNodeVO> nodes;
 
     private Date datePlanned;
 
@@ -53,11 +53,11 @@ public class BulkActionRunVO {
         this.state = state;
     }
 
-    public List<TreeNodeClient> getNodes() {
+    public List<TreeNodeVO> getNodes() {
         return nodes;
     }
 
-    public void setNodes(final List<TreeNodeClient> nodes) {
+    public void setNodes(final List<TreeNodeVO> nodes) {
         this.nodes = nodes;
     }
 

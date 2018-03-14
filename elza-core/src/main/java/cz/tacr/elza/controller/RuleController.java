@@ -1,33 +1,11 @@
 package cz.tacr.elza.controller;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import javax.servlet.http.HttpServletResponse;
-import javax.transaction.Transactional;
-
-import org.apache.tomcat.util.http.fileupload.IOUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
-
+import cz.tacr.elza.config.ConfigRules;
+import cz.tacr.elza.config.rules.GroupConfiguration;
+import cz.tacr.elza.config.rules.TypeInfo;
+import cz.tacr.elza.config.rules.ViewConfiguration;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
+import cz.tacr.elza.controller.vo.GroupVO;
 import cz.tacr.elza.controller.vo.PackageDependencyVO;
 import cz.tacr.elza.controller.vo.PackageVO;
 import cz.tacr.elza.controller.vo.RulArrangementExtensionVO;
@@ -35,7 +13,13 @@ import cz.tacr.elza.controller.vo.RulDataTypeVO;
 import cz.tacr.elza.controller.vo.RulPolicyTypeVO;
 import cz.tacr.elza.controller.vo.RulRuleSetVO;
 import cz.tacr.elza.controller.vo.RulTemplateVO;
+import cz.tacr.elza.controller.vo.TypeInfoVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
+import cz.tacr.elza.core.data.RuleSystem;
+import cz.tacr.elza.core.data.RuleSystemItemType;
+import cz.tacr.elza.core.data.RuleSystemProvider;
+import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulArrangementExtension;
@@ -53,6 +37,31 @@ import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.service.PolicyService;
 import cz.tacr.elza.service.RuleService;
+import org.apache.tomcat.util.http.fileupload.IOUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
+import javax.servlet.http.HttpServletResponse;
+import javax.transaction.Transactional;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 
 /**
@@ -88,6 +97,12 @@ public class RuleController {
 
     @Autowired
     private NodeRepository nodeRepository;
+
+    @Autowired
+    private ConfigRules elzaRules;
+
+    @Autowired
+    private StaticDataService staticDataService;
 
     @RequestMapping(value = "/getRuleSets", method = RequestMethod.GET)
     public List<RulRuleSetVO> getRuleSets() {
@@ -183,6 +198,52 @@ public class RuleController {
 
         List<RulPolicyType> policyTypes = policyService.getPolicyTypes(fundVersion);
         return factoryVo.createPolicyTypes(policyTypes);
+    }
+
+    /**
+     * Získání skupin pro AS.
+     *
+     * @param fundVersionId identifikátor verze AS
+     * @return seznam skupin
+     */
+    @RequestMapping(value = "/groups/{fundVersionId}", method = RequestMethod.GET)
+    public List<GroupVO> getGroups(@PathVariable(value = "fundVersionId") final Integer fundVersionId) {
+        ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
+        Integer fundId = fundVersion.getFundId();
+
+        String ruleCode = fundVersion.getRuleSet().getCode();
+        ViewConfiguration viewConfig = elzaRules.getViewConfiguration(ruleCode, fundId);
+
+        List<GroupVO> result = new ArrayList<>();
+        StaticDataProvider sdp = staticDataService.getData();
+        RuleSystemProvider rsp = sdp.getRuleSystems();
+        RuleSystem rs = rsp.getByRuleSetCode(ruleCode);
+
+        List<RuleSystemItemType> ruleSystemItemTypes = new ArrayList<>(rs.getItemTypes());
+        for (GroupConfiguration configuration : viewConfig.getGroups()) {
+            GroupVO group = new GroupVO(configuration.getCode(), configuration.getName());
+            List<TypeInfoVO> typeInfos = new ArrayList<>(configuration.getTypes().size());
+            for (TypeInfo typeInfo : configuration.getTypes()) {
+                String code = typeInfo.getCode();
+                RuleSystemItemType itemType = rs.getItemTypeByCode(code);
+                ruleSystemItemTypes.remove(itemType);
+                typeInfos.add(new TypeInfoVO(itemType.getItemTypeId(), typeInfo.getWidth()));
+            }
+            group.setItemTypes(typeInfos);
+            result.add(group);
+        }
+
+        GroupVO defaultGroup = new GroupVO("DEFAULT", "Bez skupiny");
+        List<TypeInfoVO> typeInfos = new ArrayList<>();
+        for (RuleSystemItemType ruleSystemItemType : ruleSystemItemTypes) {
+            String code = ruleSystemItemType.getCode();
+            RuleSystemItemType itemType = rs.getItemTypeByCode(code);
+            typeInfos.add(new TypeInfoVO(itemType.getItemTypeId(), 1));
+        }
+        defaultGroup.setItemTypes(typeInfos);
+        result.add(defaultGroup);
+
+        return result;
     }
 
     /**

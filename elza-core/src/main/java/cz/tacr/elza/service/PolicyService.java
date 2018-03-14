@@ -11,6 +11,8 @@ import cz.tacr.elza.domain.RulPolicyType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.UIVisiblePolicy;
 import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.PolicyTypeRepository;
 import cz.tacr.elza.repository.VisiblePolicyRepository;
@@ -23,6 +25,7 @@ import org.springframework.util.Assert;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -139,12 +142,16 @@ public class PolicyService {
         Map<Integer, Map<Integer, Boolean>> parentPolicyIds = new HashMap<>();
 
         Map<Integer, Map<RulPolicyType, Boolean>> result = new HashMap<>();
+
+        Map<Integer, List<UIVisiblePolicy>> visiblePoliciesByNodes = visiblePolicyRepository.findByNodeIds(nodeIds, policyTypes).stream().collect(Collectors.groupingBy(vp -> vp.getNode().getNodeId()));
+        Map<Integer, TreeNode> versionTreeCache = levelTreeCacheService.getVersionTreeCache(fundVersion);
+
         for (Integer nodeId : nodeIds) {
             Map<Integer, Boolean> parentPolicy = null;
 
             // chci zohlednit i zděděné oprávnění od předů
             if (includeParents) {
-                List<Integer> parentNodeIds = levelTreeCacheService.getParentNodeIds(nodeId, fundVersion);
+                List<Integer> parentNodeIds = getParentNodeIds(versionTreeCache, nodeId);
 
                 // existují předci?
                 if (parentNodeIds.size() > 0) {
@@ -167,9 +174,9 @@ public class PolicyService {
             }
 
             // načtu pro aktuální uzel
-            List<UIVisiblePolicy> visiblePolicies = visiblePolicyRepository.findByNodeIds(Arrays.asList(nodeId), policyTypes);
+            List<UIVisiblePolicy> visiblePolicies = visiblePoliciesByNodes.get(nodeId) == null ? Collections.emptyList() : visiblePoliciesByNodes.get(nodeId);
             Map<Integer, Boolean> policyTypeIdsVisible = new HashMap<>();
-            fillVisiblePolicyMap(Arrays.asList(nodeId), visiblePolicies, policyTypeIdsVisible);
+            fillVisiblePolicyMap(Collections.singletonList(nodeId), visiblePolicies, policyTypeIdsVisible);
 
             // pokud existují práva od předka
             if (parentPolicy != null) {
@@ -200,6 +207,32 @@ public class PolicyService {
         }
 
         return result;
+    }
+
+    /**
+     * Najde v cache seznam id rodičů daného uzlu. Seřazeno od prvního id rodiče po kořen stromu.
+     *
+     * @param nodeId        id nodu pod kterým se má hledat
+     * @return  seznam identifikátorů uzlů
+     */
+    public List<Integer> getParentNodeIds(final Map<Integer, TreeNode> treeMap, final Integer nodeId) {
+        Assert.notNull(nodeId, "Identifikátor JP musí být vyplněn");
+
+        TreeNode node = treeMap.get(nodeId);
+        if (node == null) {
+            throw new SystemException("Nebyl nalezen node s id " + nodeId, ArrangementCode.NODE_NOT_FOUND).set("id", nodeId);
+        }
+
+        LinkedList<Integer> parents = new LinkedList<>();
+
+        // procházím prvky přes rodiče až ke kořeni
+        TreeNode parent = node.getParent();
+        while (parent != null) {
+            parents.addFirst(parent.getId());
+            parent = parent.getParent();
+        }
+
+        return parents;
     }
 
     /**

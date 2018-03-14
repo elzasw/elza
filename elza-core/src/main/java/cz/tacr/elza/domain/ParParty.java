@@ -1,6 +1,12 @@
 package cz.tacr.elza.domain;
 
-import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import cz.tacr.elza.api.interfaces.IApScope;
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.hibernate.annotations.Type;
+import org.springframework.data.rest.core.annotation.RestResource;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;
@@ -17,16 +23,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
-
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.hibernate.annotations.Type;
-import org.springframework.data.rest.core.annotation.RestResource;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
-import cz.tacr.elza.api.interfaces.IApScope;
+import java.util.List;
 
 
 /**
@@ -292,7 +289,7 @@ public class ParParty extends AbstractVersionableEntity implements IApScope {
 
     /**
      * Return scope id from corresponding record
-     * 
+     *
      * @return
      */
     @JsonIgnore

@@ -53,7 +53,7 @@ import cz.tacr.elza.controller.vo.RulRuleSetVO;
 import cz.tacr.elza.controller.vo.RulTemplateVO;
 import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
 import cz.tacr.elza.controller.vo.TreeItemSpecsItem;
-import cz.tacr.elza.controller.vo.TreeNodeClient;
+import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.controller.vo.UISettingsVO;
 import cz.tacr.elza.controller.vo.UsrGroupVO;
 import cz.tacr.elza.controller.vo.UsrPermissionVO;
@@ -98,7 +98,6 @@ import cz.tacr.elza.domain.ArrDaoRequest;
 import cz.tacr.elza.domain.ArrDaoRequestDao;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataText;
-import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrDigitizationRequest;
 import cz.tacr.elza.domain.ArrDigitizationRequestNode;
@@ -1060,7 +1059,7 @@ public class ClientFactoryVO {
      * @param item hodnota atributu
      * @return VO hodnota atributu
      */
-    public <T extends ArrItem> ArrItemVO createDescItem(final T item) {
+    public <T extends ArrItem> ArrItemVO createItem(final T item) {
         Assert.notNull(item, "Hodnota musí být vyplněna");
         MapperFacade mapper = mapperFactory.getMapperFacade();
 
@@ -1110,19 +1109,24 @@ public class ClientFactoryVO {
 
         Integer specId = (item.getItemSpec() == null) ? null : item.getItemSpec().getItemSpecId();
         itemVO.setDescItemSpecId(specId);
+        itemVO.setItemTypeId(item.getItemTypeId());
+
         return itemVO;
     }
 
     /**
      * Vytvoří seznam atributů.
      *
-     * @param descItems seznam DO atributů
+     * @param items seznam DO atributů
      * @return seznam VO atributů
      */
-    public List<ArrItemVO> createDescItems(final List<ArrDescItem> descItems) {
-        List<ArrItemVO> result = new ArrayList<>(descItems.size());
-        for (ArrDescItem descItem : descItems) {
-            result.add(createDescItem(descItem));
+    public <T extends ArrItem> List<ArrItemVO> createItems(final List<T> items) {
+        if (items == null) {
+            return null;
+        }
+        List<ArrItemVO> result = new ArrayList<>(items.size());
+        for (T item : items) {
+            result.add(createItem(item));
         }
         return result;
     }
@@ -1138,14 +1142,8 @@ public class ClientFactoryVO {
 		if (items != null) {
         // vytvoření VO hodnot atributů
 			for (T item : items) {
-				List<ArrItemVO> itemList = itemByType.get(item.getItemType());
-
-				if (itemList == null) {
-					itemList = new ArrayList<>();
-                itemByType.put(item.getItemType(), itemList);
-				}
-
-				itemList.add(createDescItem(item));
+                List<ArrItemVO> itemList = itemByType.computeIfAbsent(item.getItemType(), k -> new ArrayList<>());
+                itemList.add(createItem(item));
 			}
         }
 
@@ -1253,12 +1251,14 @@ public class ClientFactoryVO {
     }
 
     /**
-     * Vytvoření seznamu rozšířených typů hodnot atributů se specifikacemi ve skupinách.
+     * Vytvoření seznamu rozšířených typů, ignoruje nemožné typy.
      *
+     * @param fundId    identifikátor AS
+     * @param ruleCode  kód pravidel
      * @param itemTypes seznam typů hodnot atributů
      * @return seznam skupin s typy hodnot atributů
      */
-    public List<ItemTypeGroupVO> createItemTypeGroupsNew(final String ruleCode, final Integer fundId, final List<RulItemTypeExt> itemTypes) {
+    public List<ItemTypeLiteVO> createItemTypes(final String ruleCode, final Integer fundId, final List<RulItemTypeExt> itemTypes) {
 
         List<ItemTypeLiteVO> itemTypeExtList = createList(itemTypes, ItemTypeLiteVO.class, this::createItemTypeLite);
 
@@ -1288,22 +1288,18 @@ public class ClientFactoryVO {
         // Prepare list of groups
         ViewConfiguration viewConfig = elzaRules.getViewConfiguration(ruleCode, fundId);
         Map<GroupConfiguration, ItemTypeGroupVO> itemTypeGroupVOMap = new HashMap<>();
-        List<ItemTypeGroupVO> result = new ArrayList<>();
+
         // prepare empty groups
-        if(viewConfig!=null)
-        {
-        	for(GroupConfiguration groupConfig: viewConfig.getGroups())
-        	{
-        		ItemTypeGroupVO groupVo = new ItemTypeGroupVO(groupConfig.getCode(), groupConfig.getName());
-        		groupVo.setTypes(new ArrayList<>()); // should be removed after moving logic into ItemTypeGroupVO
-        		result.add(groupVo);
-        		itemTypeGroupVOMap.put(groupConfig, groupVo);
-        	}
+        if (viewConfig != null) {
+            for (GroupConfiguration groupConfig : viewConfig.getGroups()) {
+                ItemTypeGroupVO groupVo = new ItemTypeGroupVO(groupConfig.getCode(), groupConfig.getName());
+                groupVo.setTypes(new ArrayList<>()); // should be removed after moving logic into ItemTypeGroupVO
+                itemTypeGroupVOMap.put(groupConfig, groupVo);
+            }
         }
         // prepare default group for all other items
         ItemTypeGroupVO defaultGroupVo = new ItemTypeGroupVO(elzaRules.getDefaultGroupConfigurationCode(), null);
         defaultGroupVo.setTypes(new ArrayList<>()); // should be removed after moving logic into ItemTypeGroupVO
-        result.add(defaultGroupVo);
 
         for (ItemTypeLiteVO itemTypeVO : itemTypeExtList) {
 
@@ -1316,26 +1312,28 @@ public class ClientFactoryVO {
 
             String itemTypeCode = codeToId.get(itemTypeVO.getId());
             GroupConfiguration groupConfig = null;
-            if(viewConfig!=null) {
-            	groupConfig = viewConfig.getGroupForType(itemTypeCode);
+            if (viewConfig != null) {
+                groupConfig = viewConfig.getGroupForType(itemTypeCode);
             }
-            if(groupConfig!=null) {
-            	itemTypeGroupVO = itemTypeGroupVOMap.get(groupConfig);
-            	// get type info
-            	typeInfo = groupConfig.getTypeInfo(itemTypeCode);
+            if (groupConfig != null) {
+                itemTypeGroupVO = itemTypeGroupVOMap.get(groupConfig);
+                // get type info
+                typeInfo = groupConfig.getTypeInfo(itemTypeCode);
             } else {
-            	itemTypeGroupVO = defaultGroupVo;
+                itemTypeGroupVO = defaultGroupVo;
             }
 
             // set width from type info
-            itemTypeVO.setWidth(typeInfo!=null?typeInfo.getWidth():1);
+            itemTypeVO.setWidth(typeInfo != null ? typeInfo.getWidth() : 1);
 
             List<ItemTypeLiteVO> itemTypeList = itemTypeGroupVO.getTypes();
             itemTypeList.add(itemTypeVO);
         }
 
         // remove empty groups and return result
-        return result.stream().filter(g -> g.getTypes().size()>0 ).collect(Collectors.toList());
+        return itemTypeExtList.stream()
+                .filter(s -> s.getType() > 0) // ignorují se nemožné
+                .collect(Collectors.toList());
     }
 
     private ItemTypeLiteVO createItemTypeLite(final RulItemTypeExt itemTypeExt) {
@@ -1936,7 +1934,7 @@ public class ClientFactoryVO {
         }
 
         Map<ArrDigitizationRequest, Integer> countNodesRequestMap = Collections.emptyMap();
-        Map<ArrDigitizationRequest, List<TreeNodeClient>> nodesRequestMap = new HashMap<>();
+        Map<ArrDigitizationRequest, List<TreeNodeVO>> nodesRequestMap = new HashMap<>();
 
         if (requestForNodes.size() > 0) {
             if (detail) {
@@ -1957,7 +1955,7 @@ public class ClientFactoryVO {
             }
         }
 
-        Map<String, TreeNodeClient> codeTreeNodeClientMap = Collections.emptyMap();
+        Map<String, TreeNodeVO> codeTreeNodeClientMap = Collections.emptyMap();
         if (requestForDaoLinks.size() > 0) {
             if (detail) {
                 codeTreeNodeClientMap = fillDaoLinkDetailParams(fundVersion, requestForDaoLinks);
@@ -1984,7 +1982,7 @@ public class ClientFactoryVO {
         prepareRequest(requestForNodes, requestForDaos, requestForDaoLinks, request);
 
         Map<ArrDigitizationRequest, Integer> countNodesRequestMap = Collections.emptyMap();
-        Map<ArrDigitizationRequest, List<TreeNodeClient>> nodesRequestMap = new HashMap<>();
+        Map<ArrDigitizationRequest, List<TreeNodeVO>> nodesRequestMap = new HashMap<>();
 
         if (requestForNodes.size() > 0) {
             if (detail) {
@@ -2005,7 +2003,7 @@ public class ClientFactoryVO {
             }
         }
 
-        Map<String, TreeNodeClient> codeTreeNodeClientMap = Collections.emptyMap();
+        Map<String, TreeNodeVO> codeTreeNodeClientMap = Collections.emptyMap();
         if (requestForDaoLinks.size() > 0) {
             if (detail) {
                 codeTreeNodeClientMap = fillDaoLinkDetailParams(fundVersion, requestForDaoLinks);
@@ -2019,8 +2017,8 @@ public class ClientFactoryVO {
         return requestVO;
     }
 
-    private Map<String, TreeNodeClient> fillDaoLinkDetailParams(final ArrFundVersion fundVersion, final Set<ArrDaoLinkRequest> requestForDaoLinks) {
-        Map<String, TreeNodeClient> result = new HashMap<>();
+    private Map<String, TreeNodeVO> fillDaoLinkDetailParams(final ArrFundVersion fundVersion, final Set<ArrDaoLinkRequest> requestForDaoLinks) {
+        Map<String, TreeNodeVO> result = new HashMap<>();
 
         Set<String> didCodes = new HashSet<>();
         for (ArrDaoLinkRequest requestForDaoLink : requestForDaoLinks) {
@@ -2032,7 +2030,7 @@ public class ClientFactoryVO {
         for (ArrNode node : nodes) {
             nodeIds.add(node.getNodeId());
         }
-        Map<Integer, TreeNodeClient> treeNodeClientMap = levelTreeCacheService.getNodesByIds(nodeIds, fundVersion.getFundVersionId()).stream().collect(Collectors.toMap(TreeNodeClient::getId, Function.identity()));
+        Map<Integer, TreeNodeVO> treeNodeClientMap = levelTreeCacheService.getNodesByIds(nodeIds, fundVersion.getFundVersionId()).stream().collect(Collectors.toMap(TreeNodeVO::getId, Function.identity()));
 
         for (ArrNode node : nodes) {
             result.put(node.getUuid(), treeNodeClientMap.get(node.getNodeId()));
@@ -2075,7 +2073,7 @@ public class ClientFactoryVO {
         return countDaosRequestMap;
     }
 
-    private Map<ArrDigitizationRequest, Integer> fillDigitizationDetailParams(final ArrFundVersion fundVersion, final Set<ArrDigitizationRequest> requestForNodes, final Map<ArrDigitizationRequest, List<TreeNodeClient>> nodesRequestMap) {
+    private Map<ArrDigitizationRequest, Integer> fillDigitizationDetailParams(final ArrFundVersion fundVersion, final Set<ArrDigitizationRequest> requestForNodes, final Map<ArrDigitizationRequest, List<TreeNodeVO>> nodesRequestMap) {
         Map<ArrDigitizationRequest, Integer> countNodesRequestMap;
         countNodesRequestMap = new HashMap<>();
         List<ArrDigitizationRequestNode> digitizationRequestNodes = digitizationRequestNodeRepository.findByDigitizationRequest(requestForNodes);
@@ -2085,20 +2083,20 @@ public class ClientFactoryVO {
             nodeIds.add(digitizationRequestNode.getNode().getNodeId());
         }
 
-        Map<Integer, TreeNodeClient> treeNodeClientMap = levelTreeCacheService.getNodesByIds(nodeIds, fundVersion.getFundVersionId()).stream().collect(Collectors.toMap(TreeNodeClient::getId, Function.identity()));
+        Map<Integer, TreeNodeVO> treeNodeClientMap = levelTreeCacheService.getNodesByIds(nodeIds, fundVersion.getFundVersionId()).stream().collect(Collectors.toMap(TreeNodeVO::getId, Function.identity()));
 
         for (ArrDigitizationRequestNode digitizationRequestNode : digitizationRequestNodes) {
             ArrNode node = digitizationRequestNode.getNode();
             nodeIds.add(node.getNodeId());
-            List<TreeNodeClient> treeNodeClients = nodesRequestMap.get(digitizationRequestNode.getDigitizationRequest());
+            List<TreeNodeVO> treeNodeClients = nodesRequestMap.get(digitizationRequestNode.getDigitizationRequest());
             if (treeNodeClients == null) {
                 treeNodeClients = new ArrayList<>();
                 nodesRequestMap.put(digitizationRequestNode.getDigitizationRequest(), treeNodeClients);
             }
 
-            TreeNodeClient treeNodeClient = treeNodeClientMap.get(node.getNodeId());
+            TreeNodeVO treeNodeClient = treeNodeClientMap.get(node.getNodeId());
             if (treeNodeClient == null) {
-                treeNodeClient = new TreeNodeClient();
+                treeNodeClient = new TreeNodeVO();
                 treeNodeClient.setId(node.getNodeId());
                 treeNodeClient.setName(node.getUuid());
                 treeNodeClient.setReferenceMark(new String[0]);
@@ -2108,7 +2106,7 @@ public class ClientFactoryVO {
             treeNodeClients.add(treeNodeClient);
         }
 
-        for (Map.Entry<ArrDigitizationRequest, List<TreeNodeClient>> entry : nodesRequestMap.entrySet()) {
+        for (Map.Entry<ArrDigitizationRequest, List<TreeNodeVO>> entry : nodesRequestMap.entrySet()) {
             countNodesRequestMap.put(entry.getKey(), entry.getValue().size());
         }
         return countNodesRequestMap;
@@ -2134,10 +2132,10 @@ public class ClientFactoryVO {
     }
 
     private ArrRequestVO createRequestVO(final Map<ArrDigitizationRequest, Integer> countNodesRequestMap,
-                                         final Map<ArrDigitizationRequest, List<TreeNodeClient>> nodesRequestMap,
+                                         final Map<ArrDigitizationRequest, List<TreeNodeVO>> nodesRequestMap,
                                          final Map<ArrDaoRequest, Integer> countDaosRequestMap,
                                          final Map<ArrDaoRequest, List<ArrDao>> daosRequestMap,
-                                         final Map<String, TreeNodeClient> codeTreeNodeClientMap,
+                                         final Map<String, TreeNodeVO> codeTreeNodeClientMap,
                                          final ArrRequest request,
                                          final boolean detail,
                                          final ArrFundVersion fundVersion) {
@@ -2197,7 +2195,7 @@ public class ClientFactoryVO {
                                        final ArrDaoLinkRequestVO requestVO,
                                        final boolean detail,
                                        final ArrFundVersion fundVersion,
-                                       final Map<String, TreeNodeClient> codeTreeNodeClientMap) {
+                                       final Map<String, TreeNodeVO> codeTreeNodeClientMap) {
         requestVO.setDidCode(request.getDidCode());
         requestVO.setDigitalRepositoryId(request.getDigitalRepository().getExternalSystemId());
         requestVO.setType(request.getType());
@@ -2223,7 +2221,7 @@ public class ClientFactoryVO {
     private void convertDigitizationRequest(final ArrDigitizationRequest request,
                                             final ArrDigitizationRequestVO requestVO,
                                             final Integer nodeCount,
-                                            final List<TreeNodeClient> treeNodeClients) {
+                                            final List<TreeNodeVO> treeNodeClients) {
         requestVO.setDescription(request.getDescription());
         requestVO.setNodesCount(nodeCount);
         requestVO.setDigitizationFrontdeskId(request.getDigitizationFrontdesk().getExternalSystemId());
@@ -2365,7 +2363,7 @@ public class ClientFactoryVO {
 
             ArrDaoLinkVO daoLinkVo = new ArrDaoLinkVO();
             daoLinkVo.setId(daoLink.getDaoLinkId());
-            final List<TreeNodeClient> nodesByIds = levelTreeCacheService.getNodesByIds(Collections.singletonList(daoLink.getNode().getNodeId()), version.getFundVersionId());
+            final List<TreeNodeVO> nodesByIds = levelTreeCacheService.getNodesByIds(Collections.singletonList(daoLink.getNode().getNodeId()), version.getFundVersionId());
             daoLinkVo.setTreeNodeClient(nodesByIds.iterator().next());
 
             vo.setDaoLink(daoLinkVo);

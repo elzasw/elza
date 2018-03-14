@@ -1,38 +1,12 @@
 package cz.tacr.elza.service.cache;
 
-import java.io.IOException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.transaction.Transactional;
-import javax.transaction.Transactional.TxType;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.Validate;
-import org.castor.core.util.Assert;
-import org.hibernate.ScrollableResults;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.introspect.AnnotatedMethod;
 import com.fasterxml.jackson.databind.introspect.VisibilityChecker;
 import com.google.common.collect.Lists;
-
+import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.CalendarType;
 import cz.tacr.elza.core.data.DataType;
@@ -40,6 +14,7 @@ import cz.tacr.elza.core.data.RuleSystemItemType;
 import cz.tacr.elza.core.data.RuleSystemProvider;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.domain.ApRecord;
 import cz.tacr.elza.domain.ArrCachedNode;
 import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDaoLink;
@@ -55,9 +30,11 @@ import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.ApRecord;
+import cz.tacr.elza.domain.ParPartyName;
+import cz.tacr.elza.domain.ParPartyNameComplement;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.repository.ApRecordRepository;
 import cz.tacr.elza.repository.CachedNodeRepository;
 import cz.tacr.elza.repository.DaoLinkRepository;
 import cz.tacr.elza.repository.DaoRepository;
@@ -65,9 +42,36 @@ import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.FundFileRepository;
 import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.repository.PartyNameComplementRepository;
+import cz.tacr.elza.repository.PartyNameRepository;
 import cz.tacr.elza.repository.PartyRepository;
-import cz.tacr.elza.repository.ApRecordRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.Validate;
+import org.castor.core.util.Assert;
+import org.hibernate.ScrollableResults;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.transaction.Transactional;
+import javax.transaction.Transactional.TxType;
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.stream.Collectors;
 
 /**
  * Service for caching node related entities.
@@ -128,6 +132,12 @@ public class NodeCacheService {
 
     @Autowired
 	private StaticDataService staticDataService;
+
+    @Autowired
+    private PartyNameComplementRepository partyNameComplementRepository;
+
+    @Autowired
+    private PartyNameRepository partyNameRepository;
 
     public NodeCacheService() {
         mapper = new ObjectMapper();
@@ -681,10 +691,52 @@ public class NodeCacheService {
         if (itemPartiesMap.size() == 0) {
             return;
         }
-        List<ParParty> parties = partyRepository.findAll(itemPartiesMap.values());
+        ObjectListIterator<Integer> iterator = new ObjectListIterator<>(itemPartiesMap.values());
         Map<Integer, ParParty> partiesMapFound = new HashMap<>();
-        for (ParParty party : parties) {
-            partiesMapFound.put(party.getPartyId(), party);
+        List<ParPartyName> partyNames = new ArrayList<>();
+        while (iterator.hasNext()) {
+            List<Integer> next = iterator.next();
+            List<ParParty> parties = partyRepository.findAllFetch(next);
+            partyNames.addAll(partyNameRepository.findByPartyIds(next));
+            for (ParParty party : parties) {
+                partiesMapFound.put(party.getPartyId(), party);
+            }
+        }
+
+        Map<Integer, List<ParPartyName>> partyNamesMap = partyNames.stream().collect(Collectors.groupingBy(s -> s.getParty().getPartyId()));
+
+        Set<Integer> preferredNameIds = new HashSet<>();
+        for (ParParty party : partiesMapFound.values()) {
+            CollectionUtils.addIgnoreNull(preferredNameIds, party.getPreferredNameId());
+        }
+
+        iterator = new ObjectListIterator<>(preferredNameIds);
+        Map<Integer, List<ParPartyNameComplement>> preferredNameIdComplementsMap = new HashMap<>();
+        while (iterator.hasNext()) {
+            List<ParPartyNameComplement> partyNameComplements = partyNameComplementRepository.findByPartyNameIds(iterator.next());
+            Map<Integer, List<ParPartyNameComplement>> map = partyNameComplements.stream().collect(Collectors.groupingBy(s -> s.getPartyName().getPartyNameId()));
+            map.forEach((k, v) -> preferredNameIdComplementsMap.merge(k, v, (v1, v2) -> {
+                Set<ParPartyNameComplement> set = new TreeSet<>(v1);
+                set.addAll(v2);
+                return new ArrayList<>(set);
+            }));
+        }
+
+        for (ParParty party : partiesMapFound.values()) {
+            if (party.getPreferredNameId() != null) {
+                List<ParPartyNameComplement> partyNameComplements = preferredNameIdComplementsMap.get(party.getPreferredNameId());
+                if (partyNameComplements != null) {
+                    party.getPreferredName().setPartyNameComplements(partyNameComplements);
+                } else {
+                    party.getPreferredName().setPartyNameComplements(Collections.emptyList());
+                }
+            }
+            List<ParPartyName> parPartyNames = partyNamesMap.get(party.getPartyId());
+            if (parPartyNames != null) {
+                party.setPartyNames(parPartyNames);
+            } else {
+                party.setPartyNames(Collections.emptyList());
+            }
         }
 
         for (Map.Entry<ArrDescItem, Integer> entry : itemPartiesMap.entrySet()) {

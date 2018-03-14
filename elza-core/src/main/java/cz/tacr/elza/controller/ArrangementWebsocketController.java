@@ -1,13 +1,20 @@
 package cz.tacr.elza.controller;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-
-import javax.transaction.Transactional;
-
+import cz.tacr.elza.controller.config.ClientFactoryDO;
+import cz.tacr.elza.controller.vo.TreeNodeVO;
+import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.repository.FundVersionRepository;
+import cz.tacr.elza.repository.ItemTypeRepository;
+import cz.tacr.elza.service.ArrangementFormService;
+import cz.tacr.elza.service.FundLevelService;
+import cz.tacr.elza.service.LevelTreeCacheService;
+import cz.tacr.elza.websocket.WebSocketAwareController;
+import cz.tacr.elza.websocket.service.WebScoketStompService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang3.Validate;
@@ -23,21 +30,12 @@ import org.springframework.security.core.context.SecurityContextImpl;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.Assert;
 
-import cz.tacr.elza.controller.config.ClientFactoryDO;
-import cz.tacr.elza.controller.vo.TreeNodeClient;
-import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.repository.FundVersionRepository;
-import cz.tacr.elza.repository.ItemTypeRepository;
-import cz.tacr.elza.service.FundLevelService;
-import cz.tacr.elza.service.ArrangementFormService;
-import cz.tacr.elza.service.LevelTreeCacheService;
-import cz.tacr.elza.websocket.WebSocketAwareController;
-import cz.tacr.elza.websocket.service.WebScoketStompService;
+import javax.transaction.Transactional;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Kontroler pro zpracování websocket požadavků pro některé kritické modifikace v pořádíní.
@@ -118,7 +116,7 @@ public class ArrangementWebsocketController {
                 addLevelParam.getDirection(), addLevelParam.getScenarioName(),
                 descItemCopyTypes);
 
-        Collection<TreeNodeClient> nodeClients = levelTreeCacheService
+        Collection<TreeNodeVO> nodeClients = levelTreeCacheService
                 .getNodesByIds(Collections.singletonList(newLevel.getNodeParent().getNodeId()), version.getFundVersionId());
         Assert.notEmpty(nodeClients, "Kolekce JP nesmí být prázdná");
         final ArrangementController.NodeWithParent result = new ArrangementController.NodeWithParent(ArrNodeVO.valueOf(newLevel.getNode()), nodeClients.iterator().next());
@@ -147,7 +145,7 @@ public class ArrangementWebsocketController {
 
         ArrLevel deleteLevel = moveLevelService.deleteLevel(version, deleteNode, deleteParent);
 
-        Collection<TreeNodeClient> nodeClients = levelTreeCacheService
+        Collection<TreeNodeVO> nodeClients = levelTreeCacheService
                 .getNodesByIds(Arrays.asList(deleteLevel.getNodeParent().getNodeId()),
                         version.getFundVersionId());
         Assert.notEmpty(nodeClients, "Kolekce JP nesmí být prázdná");

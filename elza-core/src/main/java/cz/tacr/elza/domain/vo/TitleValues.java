@@ -11,7 +11,7 @@ import java.util.TreeSet;
  */
 public class TitleValues {
 
-    private static final Comparator<TitleValue> TITLE_VALUE_COMPARATOR = (o1, o2) -> o1.getPosition().compareTo(o2.getPosition());
+    private static final Comparator<TitleValue> TITLE_VALUE_COMPARATOR = Comparator.comparing(TitleValue::getPosition);
 
 
     private TreeSet<TitleValue> values = new TreeSet<>(TITLE_VALUE_COMPARATOR);

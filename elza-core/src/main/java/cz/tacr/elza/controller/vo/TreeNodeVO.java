@@ -1,9 +1,8 @@
 package cz.tacr.elza.controller.vo;
 
-import java.util.List;
-import java.util.Objects;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import java.util.Objects;
 
 
 /**
@@ -12,7 +11,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 12.01.2016
  */
-public class TreeNodeClient {
+public class TreeNodeVO {
 
     /**
      * Nodeid uzlu.
@@ -29,11 +28,9 @@ public class TreeNodeClient {
      */
     private String name;
 
-    private String accordionLeft;
-
-    private String accordionRight;
-
-    /** Ikonka. */
+    /**
+     * Ikonka.
+     */
     private String icon;
 
     /**
@@ -54,25 +51,15 @@ public class TreeNodeClient {
      */
     private Integer version;
 
-    /**
-     * Informace o stavu JP.
-     */
-    private NodeConformityVO nodeConformity;
-
-    /**
-     * Seznam otevřených požadavků na digitalizaci.
-     */
-    private List<ArrDigitizationRequestVO> digitizationRequests;
-
-    public TreeNodeClient() {
+    public TreeNodeVO() {
     }
 
-    public TreeNodeClient(final Integer id,
-                          final Integer depth,
-                          final String name,
-                          final boolean hasChildren,
-                          final Integer[] referenceMarkInt,
-                          final Integer version) {
+    public TreeNodeVO(final Integer id,
+                      final Integer depth,
+                      final String name,
+                      final boolean hasChildren,
+                      final Integer[] referenceMarkInt,
+                      final Integer version) {
         this.id = id;
         this.depth = depth;
         this.name = name;
@@ -138,38 +125,6 @@ public class TreeNodeClient {
         this.version = version;
     }
 
-    public NodeConformityVO getNodeConformity() {
-        return nodeConformity;
-    }
-
-    public void setNodeConformity(final NodeConformityVO nodeConformity) {
-        this.nodeConformity = nodeConformity;
-    }
-
-    public List<ArrDigitizationRequestVO> getDigitizationRequests() {
-        return digitizationRequests;
-    }
-
-    public void setDigitizationRequests(final List<ArrDigitizationRequestVO> digitizationRequests) {
-        this.digitizationRequests = digitizationRequests;
-    }
-
-    public String getAccordionLeft() {
-        return accordionLeft;
-    }
-
-    public void setAccordionLeft(final String accordionLeft) {
-        this.accordionLeft = accordionLeft;
-    }
-
-    public String getAccordionRight() {
-        return accordionRight;
-    }
-
-    public void setAccordionRight(final String accordionRight) {
-        this.accordionRight = accordionRight;
-    }
-
     public String getIcon() {
         return icon;
     }
@@ -178,19 +133,19 @@ public class TreeNodeClient {
         this.icon = icon;
     }
 
-	@Override
-	public int hashCode() {
-		return Objects.hash(id, version);
-	}
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
 
-	@Override
-	public boolean equals(final Object o) {
+    @Override
+    public boolean equals(final Object o) {
         if (this == o) return true;
 
         if (o == null || getClass() != o.getClass()) return false;
 
-        TreeNodeClient that = (TreeNodeClient) o;
+        TreeNodeVO that = (TreeNodeVO) o;
         return Objects.equals(id, that.id) &&
                 Objects.equals(version, that.version);
-	}
+    }
 }

@@ -1,9 +1,9 @@
 package cz.tacr.elza.controller.vo;
 
+import cz.tacr.elza.domain.ArrOutputDefinition.OutputState;
+
 import java.util.Date;
 import java.util.List;
-
-import cz.tacr.elza.domain.ArrOutputDefinition.OutputState;
 
 /**
  * VO Výstup z archivního souboru.
@@ -32,7 +32,7 @@ public class ArrOutputDefinitionVO {
 
     private List<ArrOutputVO> outputs;
 
-    private List<TreeNodeClient> nodes;
+    private List<TreeNodeVO> nodes;
 
     private Integer outputTypeId;
 
@@ -110,11 +110,11 @@ public class ArrOutputDefinitionVO {
         this.outputs = outputs;
     }
 
-    public List<TreeNodeClient> getNodes() {
+    public List<TreeNodeVO> getNodes() {
         return nodes;
     }
 
-    public void setNodes(final List<TreeNodeClient> nodes) {
+    public void setNodes(final List<TreeNodeVO> nodes) {
         this.nodes = nodes;
     }
 

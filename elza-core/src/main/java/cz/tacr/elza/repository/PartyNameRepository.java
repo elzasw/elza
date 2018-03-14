@@ -1,14 +1,14 @@
 package cz.tacr.elza.repository;
 
-import java.util.Collection;
-import java.util.List;
-
+import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.ParPartyName;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.ParPartyName;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Repository pro abstraktní osoby.
@@ -43,4 +43,7 @@ public interface PartyNameRepository extends JpaRepository<ParPartyName, Integer
     @Modifying
     @Query(value = "DELETE FROM par_party_name_complement WHERE party_name_id IN (?1)", nativeQuery = true)
     int deleteComplementReferencesByPartyNameIdIn(Collection<Integer> partyNameIds);
+
+    @Query("SELECT pn FROM par_party_name pn WHERE pn.party.partyId IN :partyIds")
+    List<ParPartyName> findByPartyIds(@Param("partyIds") Iterable<Integer> partyIds);
 }

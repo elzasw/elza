@@ -1,37 +1,5 @@
 package cz.tacr.elza.controller;
 
-import static com.jayway.restassured.RestAssured.given;
-
-import java.io.File;
-import java.io.InputStream;
-import java.math.BigDecimal;
-import java.net.URL;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
-
-import javax.annotation.Nullable;
-
-import cz.tacr.elza.controller.vo.*;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.BooleanUtils;
-import org.junit.Assert;
-import org.junit.Before;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.config.EncoderConfig;
 import com.jayway.restassured.config.RestAssuredConfig;
@@ -41,12 +9,57 @@ import com.jayway.restassured.response.Response;
 import com.jayway.restassured.response.ResponseBody;
 import com.jayway.restassured.response.ResponseOptions;
 import com.jayway.restassured.specification.RequestSpecification;
-
 import cz.tacr.elza.AbstractTest;
 import cz.tacr.elza.controller.ArrangementController.FaFilteredFulltextParam;
 import cz.tacr.elza.controller.vo.ApRecordVO;
+import cz.tacr.elza.controller.vo.ApScopeVO;
+import cz.tacr.elza.controller.vo.ApTypeVO;
+import cz.tacr.elza.controller.vo.ApVariantRecordVO;
+import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
+import cz.tacr.elza.controller.vo.ArrFundVO;
+import cz.tacr.elza.controller.vo.ArrFundVersionVO;
+import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
+import cz.tacr.elza.controller.vo.ArrOutputDefinitionVO;
+import cz.tacr.elza.controller.vo.ArrOutputExtVO;
+import cz.tacr.elza.controller.vo.ArrOutputVO;
+import cz.tacr.elza.controller.vo.ArrStructureDataVO;
+import cz.tacr.elza.controller.vo.CopyNodesParams;
+import cz.tacr.elza.controller.vo.CopyNodesValidate;
+import cz.tacr.elza.controller.vo.CopyNodesValidateResult;
+import cz.tacr.elza.controller.vo.CreateFundVO;
+import cz.tacr.elza.controller.vo.FilterNode;
+import cz.tacr.elza.controller.vo.FilterNodePosition;
+import cz.tacr.elza.controller.vo.FilteredResultVO;
+import cz.tacr.elza.controller.vo.FundListCountResult;
+import cz.tacr.elza.controller.vo.NodeItemWithParent;
+import cz.tacr.elza.controller.vo.OutputSettingsVO;
+import cz.tacr.elza.controller.vo.PackageVO;
+import cz.tacr.elza.controller.vo.ParInstitutionVO;
+import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
+import cz.tacr.elza.controller.vo.ParPartyTypeVO;
+import cz.tacr.elza.controller.vo.ParPartyVO;
+import cz.tacr.elza.controller.vo.ParRelationVO;
+import cz.tacr.elza.controller.vo.RulDataTypeVO;
+import cz.tacr.elza.controller.vo.RulDescItemSpecVO;
+import cz.tacr.elza.controller.vo.RulDescItemTypeVO;
+import cz.tacr.elza.controller.vo.RulOutputTypeVO;
+import cz.tacr.elza.controller.vo.RulPolicyTypeVO;
+import cz.tacr.elza.controller.vo.RulRuleSetVO;
+import cz.tacr.elza.controller.vo.RulStructureTypeVO;
+import cz.tacr.elza.controller.vo.RulTemplateVO;
+import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
+import cz.tacr.elza.controller.vo.SysExternalSystemVO;
+import cz.tacr.elza.controller.vo.TreeData;
+import cz.tacr.elza.controller.vo.TreeNodeVO;
+import cz.tacr.elza.controller.vo.UserInfoVO;
+import cz.tacr.elza.controller.vo.UsrGroupVO;
+import cz.tacr.elza.controller.vo.UsrPermissionVO;
+import cz.tacr.elza.controller.vo.UsrUserVO;
+import cz.tacr.elza.controller.vo.ValidationResult;
 import cz.tacr.elza.controller.vo.filter.Filters;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.controller.vo.nodes.NodeData;
+import cz.tacr.elza.controller.vo.nodes.NodeDataParam;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemCoordinatesVO;
@@ -68,6 +81,35 @@ import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.vo.ChangesResult;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.BooleanUtils;
+import org.junit.Assert;
+import org.junit.Before;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+
+import javax.annotation.Nullable;
+import java.io.File;
+import java.io.InputStream;
+import java.math.BigDecimal;
+import java.net.URL;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+
+import static com.jayway.restassured.RestAssured.given;
 
 
 public abstract class AbstractControllerTest extends AbstractTest {
@@ -171,7 +213,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String VALIDATE_VERSION = ARRANGEMENT_CONTROLLER_URL + "/validateVersion/{versionId}/{showAll}";
     protected static final String VALIDATE_VERSION_COUNT = ARRANGEMENT_CONTROLLER_URL + "/validateVersionCount/{versionId}";
     protected static final String FA_TREE_NODES = ARRANGEMENT_CONTROLLER_URL + "/fundTree/nodes";
-    protected static final String NODE_PARENTS = ARRANGEMENT_CONTROLLER_URL + "/nodeParents";
+    protected static final String NODE_DATA = ARRANGEMENT_CONTROLLER_URL + "/nodeData";
     protected static final String NODE_FORM_DATA = ARRANGEMENT_CONTROLLER_URL + "/nodes/{nodeId}/{versionId}/form";
     protected static final String OUTPUT_FORM_DATA = ARRANGEMENT_CONTROLLER_URL + "/output/{outputDefinitionId}/{versionId}/form";
     protected static final String NODE_FORMS_DATA = ARRANGEMENT_CONTROLLER_URL + "/nodes/{versionId}/forms";
@@ -1273,9 +1315,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param treeNodeClients seznam uzlů stromu
      * @return převedený seznam uzlů stromu
      */
-    protected List<ArrNodeVO> convertTreeNodes(final Collection<TreeNodeClient> treeNodeClients) {
+    protected List<ArrNodeVO> convertTreeNodes(final Collection<TreeNodeVO> treeNodeClients) {
         List<ArrNodeVO> nodes = new ArrayList<>(treeNodeClients.size());
-        for (TreeNodeClient treeNodeClient : treeNodeClients) {
+        for (TreeNodeVO treeNodeClient : treeNodeClients) {
             nodes.add(convertTreeNode(treeNodeClient));
         }
         return nodes;
@@ -1287,7 +1329,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param treeNodeClient uzel stromu
      * @return převedený uzel stromu
      */
-    protected ArrNodeVO convertTreeNode(final TreeNodeClient treeNodeClient) {
+    protected ArrNodeVO convertTreeNode(final TreeNodeVO treeNodeClient) {
         ArrNodeVO rootNode = new ArrNodeVO();
         BeanUtils.copyProperties(treeNodeClient, rootNode);
         return rootNode;
@@ -1412,23 +1454,19 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param input vstupní data pro načtení
      * @return data stromu
      */
-    protected List<TreeNodeClient> getFundTreeNodes(final ArrangementController.FaTreeNodesParam input) {
+    protected List<TreeNodeVO> getFundTreeNodes(final ArrangementController.FaTreeNodesParam input) {
         return Arrays.asList(post(spec -> spec
-                .body(input), FA_TREE_NODES).getBody().as(TreeNodeClient[].class));
+                .body(input), FA_TREE_NODES).getBody().as(TreeNodeVO[].class));
     }
 
     /**
-     * Načte seznam rodičů daného uzlu. Seřazeno od prvního rodiče po kořen stromu.
+     * Získání dat pro JP.
      *
-     * @param nodeId    nodeid uzlu
-     * @param versionId id verze stromu
-     * @return seznam rodičů
+     * @param param parametry dat, které chceme získat (formálář, sourozence, potomky, předky, ...)
+     * @return požadovaná data
      */
-    protected List<TreeNodeClient> getNodeParents(final Integer nodeId,
-                                               final Integer versionId) {
-        return Arrays.asList(get(spec -> spec
-                .queryParameter("nodeId", nodeId)
-                .queryParameter("versionId", versionId), NODE_PARENTS).getBody().as(TreeNodeClient[].class));
+    public NodeData getNodeData(final NodeDataParam param) {
+        return post(spec -> spec.body(param), NODE_DATA).getBody().as(NodeData.class);
     }
 
     /**
@@ -1498,8 +1536,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param idsParam seznam id
      * @return seznam vo uzlů s danými id
      */
-    protected List<TreeNodeClient> getNodes(final ArrangementController.IdsParam idsParam) {
-        return Arrays.asList(post(spec -> spec.body(idsParam), NODES).getBody().as(TreeNodeClient[].class));
+    protected List<TreeNodeVO> getNodes(final ArrangementController.IdsParam idsParam) {
+        return Arrays.asList(post(spec -> spec.body(idsParam), NODES).getBody().as(TreeNodeVO[].class));
     }
 
     /**

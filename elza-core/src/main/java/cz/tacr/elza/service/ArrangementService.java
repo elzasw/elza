@@ -1,37 +1,5 @@
 package cz.tacr.elza.service;
 
-import java.text.Normalizer;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
-import javax.persistence.LockModeType;
-import javax.persistence.Query;
-import javax.transaction.Transactional;
-import javax.transaction.Transactional.TxType;
-
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-
 import com.google.common.collect.Iterables;
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
@@ -43,7 +11,7 @@ import cz.tacr.elza.controller.ArrangementController.TreeNodeFulltext;
 import cz.tacr.elza.controller.ArrangementController.VersionValidationItem;
 import cz.tacr.elza.controller.vo.NodeItemWithParent;
 import cz.tacr.elza.controller.vo.TreeNode;
-import cz.tacr.elza.controller.vo.TreeNodeClient;
+import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.controller.vo.filter.SearchParam;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.core.security.AuthMethod;
@@ -1279,7 +1247,7 @@ public class ArrangementService {
         Assert.notNull(nodeIds, "Musí být vyplněno");
         Assert.notNull(version, "Verze AS musí být vyplněna");
 
-        Map<Integer, TreeNodeClient> parentIdTreeNodeClientMap = levelTreeCacheService.findParentsWithTitles(nodeIds, version);
+        Map<Integer, TreeNodeVO> parentIdTreeNodeClientMap = levelTreeCacheService.findParentsWithTitles(nodeIds, version);
 
         List<Integer> sortedNodeIds = levelTreeCacheService.sortNodesByTreePosition(nodeIds, version);
 
@@ -1319,7 +1287,7 @@ public class ArrangementService {
             validations.put(conformity.getNode().getNodeId(), description);
         }
 
-        Map<Integer, TreeNodeClient> parentIdTreeNodeClientMap = levelTreeCacheService.findParentsWithTitles(validations.keySet(), version);
+        Map<Integer, TreeNodeVO> parentIdTreeNodeClientMap = levelTreeCacheService.findParentsWithTitles(validations.keySet(), version);
 
         List<VersionValidationItem> versionValidationItems = new ArrayList<>(validations.size());
         for (Integer nodeId : validations.keySet()) {

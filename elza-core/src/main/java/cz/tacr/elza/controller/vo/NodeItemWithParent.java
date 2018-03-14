@@ -21,7 +21,7 @@ public class NodeItemWithParent {
     /**
      * rodič uzlu
      */
-    private TreeNodeClient parentNode;
+    private TreeNodeVO parentNode;
 
     public Integer getId() {
         return id;
@@ -39,11 +39,11 @@ public class NodeItemWithParent {
         this.name = name;
     }
 
-    public TreeNodeClient getParentNode() {
+    public TreeNodeVO getParentNode() {
         return parentNode;
     }
 
-    public void setParentNode(final TreeNodeClient parentNode) {
+    public void setParentNode(final TreeNodeVO parentNode) {
         this.parentNode = parentNode;
     }
 }

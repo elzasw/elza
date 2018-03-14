@@ -4,42 +4,53 @@
 
 import scrollIntoView from "dom-scroll-into-view";
 import classNames from "classnames";
-// Konstance kolik se má maximálně zobrazit v seznamu parents a children záznamů
-const PARENT_CHILD_MAX_LENGTH = 250
-
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {TooltipTrigger, Icon, ListBox, AbstractReactComponent, i18n, HorizontalLoader, Loading,  Accordion} from 'components/shared';
+import {
+    AbstractReactComponent,
+    Accordion,
+    HorizontalLoader,
+    i18n,
+    Icon,
+    ListBox,
+    Loading,
+    TooltipTrigger,
+    Utils
+} from 'components/shared';
 import SubNodeDao from './SubNodeDao'
 import SubNodeRegister from './SubNodeRegister'
 import NodeActionsBar from './NodeActionsBar'
 import NodeSubNodeForm from './NodeSubNodeForm'
-import {Button, Tooltip, OverlayTrigger} from 'react-bootstrap';
+import {Button} from 'react-bootstrap';
 import {addNodeFormArr} from 'actions/arr/addNodeForm.jsx';
 import {nodeFormActions} from 'actions/arr/subNodeForm.jsx'
 import {fundSubNodeRegisterFetchIfNeeded} from 'actions/arr/subNodeRegister.jsx'
 import {fundSubNodeDaosFetchIfNeeded} from 'actions/arr/subNodeDaos.jsx'
 import {fundSubNodeInfoFetchIfNeeded} from 'actions/arr/subNodeInfo.jsx'
 import {fundNodeInfoFetchIfNeeded} from 'actions/arr/nodeInfo.jsx'
-import {fundSelectSubNode} from 'actions/arr/node.jsx';
-import {fundNodeSubNodeFulltextSearch, fundSubNodesNext, fundSubNodesPrev, fundSubNodesNextPage, fundSubNodesPrevPage} from 'actions/arr/node.jsx'
+import {
+    fundNodeSubNodeFulltextSearch,
+    fundSelectSubNode,
+    fundSubNodesNext,
+    fundSubNodesNextPage,
+    fundSubNodesPrev,
+    fundSubNodesPrevPage
+} from 'actions/arr/node.jsx';
 import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes.jsx'
 import {indexById} from 'stores/app/utils.jsx'
-import {createDigitizationName, getDescItemsAddTree, createFundRoot, isFundRootId} from './ArrUtils.jsx'
+import {createDigitizationName, createFundRoot, getDescItemsAddTree} from './ArrUtils.jsx'
 import {propsEquals} from 'components/Utils.jsx'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
-import {createReferenceMarkString, getGlyph} from 'components/arr/ArrUtils.jsx'
+import {createReferenceMarkString, getGlyph, getOneSettings} from 'components/arr/ArrUtils.jsx'
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx'
-import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
-import {getOneSettings} from 'components/arr/ArrUtils.jsx';
-import {Utils} from 'components/shared';
+import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog.jsx'
 import ArrRequestForm from "./ArrRequestForm";
 import {WebApi} from 'actions/index.jsx';
 import {Shortcuts} from 'react-shortcuts';
-import {setFocus, canSetFocus, focusWasSet, isFocusFor, isFocusExactFor} from 'actions/global/focus.jsx'
+import {canSetFocus, focusWasSet, isFocusExactFor, isFocusFor, setFocus} from 'actions/global/focus.jsx'
 import AddDescItemTypeForm from './nodeForm/AddDescItemTypeForm.jsx'
-import {setVisiblePolicyRequest, setVisiblePolicyReceive} from 'actions/arr/visiblePolicy.jsx'
+import {setVisiblePolicyReceive, setVisiblePolicyRequest} from 'actions/arr/visiblePolicy.jsx'
 import {visiblePolicyTypesFetchIfNeeded} from 'actions/refTables/visiblePolicyTypes.jsx'
 import * as perms from 'actions/user/Permission.jsx';
 import {PropTypes} from 'prop-types';
@@ -48,6 +59,8 @@ import defaultKeymap from './NodePanelKeymap.jsx'
 import './NodePanel.less';
 import NodeSettingsForm from "./NodeSettingsForm";
 import {FOCUS_KEYS} from "../../constants";
+// Konstance kolik se má maximálně zobrazit v seznamu parents a children záznamů
+const PARENT_CHILD_MAX_LENGTH = 250
 
 class NodePanel extends AbstractReactComponent {
     static contextTypes = { shortcuts: PropTypes.object };
@@ -112,6 +125,7 @@ class NodePanel extends AbstractReactComponent {
             this.setState({focusItemIndex: index}, () => {this.ensureItemVisibleNoForm(index)})
         }
     }
+
     getFocusItemIndex(props, prevFocusItemIndex) {
         const {node} = props
 
@@ -193,7 +207,7 @@ class NodePanel extends AbstractReactComponent {
                    ReactDOM.findDOMNode(this.refs.content).focus()
                    focusWasSet()
                 })
-            } 
+            }
             // Jen pokud není třeba focus na něco nižšího, např. prvek formuláře atp
             // Voláno jen pokud formulář úspěšně focus nenastavil - např. pokud jsou všechna pole formuláře zamčena
             else if (isFocusExactFor(focus, FOCUS_KEYS.ARR, 2)) {
@@ -434,8 +448,7 @@ return true
     requestData(versionId, node, showRegisterJp, showDaosJp, settings) {
         if (node.selectedSubNodeId != null) {
             this.dispatch(descItemTypesFetchIfNeeded());
-            this.dispatch(nodeFormActions.fundSubNodeFormFetchIfNeeded(versionId, node.routingKey));
-            settings.showChildren && this.dispatch(fundSubNodeInfoFetchIfNeeded(versionId, node.selectedSubNodeId, node.routingKey));
+            this.dispatch(nodeFormActions.fundSubNodeFormFetchIfNeeded(versionId, node.routingKey, node.dirty, settings.showChildren, settings.showParents));
             this.dispatch(refRulDataTypesFetchIfNeeded());
 
             showRegisterJp && this.dispatch(fundSubNodeRegisterFetchIfNeeded(versionId, node.selectedSubNodeId, node.routingKey));
@@ -443,7 +456,6 @@ return true
 
         }
         this.dispatch(visiblePolicyTypesFetchIfNeeded());
-        this.dispatch(fundNodeInfoFetchIfNeeded(versionId, node.id, node.routingKey, settings.showParents));
         this.dispatch(calendarTypesFetchIfNeeded());
     }
 
@@ -560,10 +572,10 @@ return true
      */
     getParentNodes() {
         const {node} = this.props;
-        if (isFundRootId(node.id)) {
+        if (node) {
             return [...node.parentNodes];
         } else {
-            return [node, ...node.parentNodes];
+            return [];
         }
     }
 
@@ -572,7 +584,7 @@ return true
      * @return {Array} seznam NODE
      */
     getChildNodes() {
-        return [...this.props.node.subNodeInfo.childNodes];
+        return this.props.node.subNodeInfo.childNodes ? [...this.props.node.subNodeInfo.childNodes] : [];
     }
 
     /**
@@ -580,7 +592,7 @@ return true
      * @return {Array} seznam NODE
      */
     getSiblingNodes() {
-        return [...this.props.node.childNodes];
+        return this.props.node.childNodes ? [...this.props.node.childNodes] : [];
     }
 
     /**
@@ -696,7 +708,11 @@ return true
         var rows = [];
 
         if (!node.nodeInfoFetched) {
-            rows.push(<HorizontalLoader key="loading" text={i18n('global.data.loading.node')}/>);
+            if (!node.selectedSubNodeId) {
+                console.warn("Není vybraná JP!", node);
+            } else {
+                rows.push(<HorizontalLoader key="loading" text={i18n('global.data.loading.node')}/>);
+            }
         } else{
             if (node.viewStartIndex > 0) {
                 rows.push(
@@ -705,8 +721,8 @@ return true
                     </Button>
                 )
             }
-            for (let a=node.viewStartIndex; (a<node.viewStartIndex + node.pageSize) && (a < node.childNodes.length); a++) {
-                var item = node.childNodes[a];
+            for (let a = 0; a < node.childNodes.length; a++) {
+                const item = node.childNodes[a];
 
                 const state = this.renderState(item);
                 const accordionLeft = item.accordionLeft ? item.accordionLeft : i18n('accordion.title.left.name.undefined', item.id)
@@ -766,7 +782,7 @@ return true
                 }
             }
 
-            if (node.childNodes.length > node.pageSize && node.viewStartIndex + node.pageSize/2 < node.childNodes.length && node.childNodes.length - node.viewStartIndex > node.pageSize) {
+            if (node.nodeCount > node.pageSize && node.viewStartIndex + node.pageSize/2 < node.nodeCount && node.nodeCount - node.viewStartIndex > node.pageSize) {
                 rows.push(
                     <Button key="next" onClick={()=>this.dispatch(fundSubNodesNext(versionId, node.id, node.routingKey))}><Icon glyph="fa-chevron-right" />{i18n('arr.fund.next')}</Button>
                 )

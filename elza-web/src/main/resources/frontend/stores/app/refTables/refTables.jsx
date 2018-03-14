@@ -14,6 +14,8 @@ import outputTypes from './outputTypes.jsx';
 import templates from './templates.jsx';
 import externalSystems from './externalSystems.jsx';
 import structureTypes from "./structureTypes";
+import DetailReducer from "../../../shared/detail/DetailReducer";
+import processAreaStores from "../../../shared/utils/processAreaStores";
 
 const initialState = {
     ruleSet: ruleSet(),
@@ -30,9 +32,15 @@ const initialState = {
     outputTypes: outputTypes(),
     templates: templates(),
     externalSystems: externalSystems(),
+    groups: DetailReducer(),
 };
 
 export default function refTables(state = initialState, action = {}) {
+    if (action.area && typeof action.area  === "string" && action.area.indexOf("refTables.") === 0) {
+        let useArea = action.area.substring("refTables.".length);
+        const actionNew = {...action, area: useArea};
+        return processAreaStores(state, actionNew);
+    }
     switch (action.type) {
         case types.REF_TEMPLATES_REQUEST:
         case types.REF_TEMPLATES_RECEIVE:{

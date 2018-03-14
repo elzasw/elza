@@ -7,17 +7,19 @@
  */
 
 import React from 'react';
-import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {WebApi} from 'actions/index.jsx';
-import {isFundRootId} from './ArrUtils.jsx';
 import {getOneSettings} from 'components/arr/ArrUtils.jsx';
-import {fundNodeSubNodeFulltextSearch, fundSubNodesNextPage, fundSubNodesPrevPage} from 'actions/arr/node.jsx';
-import {Icon, AbstractReactComponent, i18n, Loading, Search} from 'components/shared';
+import {
+    fundNodeSubNodeFulltextSearch,
+    fundSelectSubNode,
+    fundSubNodesNextPage,
+    fundSubNodesPrevPage
+} from 'actions/arr/node.jsx';
+import {AbstractReactComponent, i18n, Icon, Loading, Search} from 'components/shared';
 import AddNodeCross from './AddNodeCross'
 import GoToPositionForm from './GoToPositionForm'
-import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx';
-import {fundSelectSubNode} from 'actions/arr/node.jsx';
+import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog.jsx';
 
 import './NodeActionsBar.less';
 
@@ -35,10 +37,9 @@ class NodeActionsBar extends AbstractReactComponent {
     handleFindPositionSubmit(form) {
         const {node, versionId} = this.props;
 
-        var index = form.position - 1;
-        var subNodeId = node.childNodes[index].id;
+        const index = form.position - 1;
 
-        this.dispatch(fundSelectSubNode(versionId, subNodeId, node));
+        this.dispatch(fundSelectSubNode(versionId, null, node, false, null, false, index));
     }
 
     /**
@@ -48,9 +49,9 @@ class NodeActionsBar extends AbstractReactComponent {
         const {node} = this.props;
 
         if(!this.isFilterUsed()){ // Pokud je aktivní filtr je goto zakázáno
-            var count = 0;
-            if (node.childNodes) {
-                count = node.childNodes.length;
+            let count = 0;
+            if (node.nodeCount) {
+                count = node.nodeCount;
             }
             this.dispatch(modalDialogShow(this, i18n('arr.fund.subNodes.findPosition'),
                     <GoToPositionForm onSubmitForm={this.handleFindPositionSubmit} maxPosition={count} />
@@ -72,6 +73,10 @@ class NodeActionsBar extends AbstractReactComponent {
       var selectedSubNodeNumber = selectedSubNodeIndex + 1; // pořadí vybraného záznamu v akordeonu
       var gotoTitle = this.isFilterUsed() ? i18n('arr.fund.subNodes.findPosition.filterActive') : i18n('arr.fund.subNodes.findPosition')
 
+      let text = node.nodeCount;
+      if (node.selectedSubNodeId && node.nodeIndex !== null) {
+          text = (node.nodeIndex + 1) + " / " + text;
+      }
 
       return(
         <div key='actions' className='node-actions-bar'>
@@ -92,7 +97,7 @@ class NodeActionsBar extends AbstractReactComponent {
                     </div>
                     <div className="right-side">
                         <div>
-                        {selectedSubNodeNumber} / {node.childNodes.length}
+                            {text}
                         </div>
                         <div
                           className='btn btn-default'
@@ -112,7 +117,7 @@ class NodeActionsBar extends AbstractReactComponent {
                         </div>
                         <div
                           className='btn btn-default'
-                          disabled={node.viewStartIndex + node.pageSize >= node.childNodes.length}
+                          disabled={node.viewStartIndex + node.pageSize >= node.nodeCount}
                           onClick={()=>this.dispatch(fundSubNodesNextPage(versionId, node.id, node.routingKey))}
                           title={i18n('arr.fund.subNodes.nextPage',node.pageSize)}
                         >

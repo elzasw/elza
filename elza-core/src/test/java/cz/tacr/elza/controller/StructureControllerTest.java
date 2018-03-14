@@ -1,9 +1,16 @@
 package cz.tacr.elza.controller;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import cz.tacr.elza.controller.vo.ArrFundVO;
+import cz.tacr.elza.controller.vo.ArrFundVersionVO;
+import cz.tacr.elza.controller.vo.ArrStructureDataVO;
+import cz.tacr.elza.controller.vo.FilteredResultVO;
+import cz.tacr.elza.controller.vo.RulStructureTypeVO;
+import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemIntVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStringVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
+import cz.tacr.elza.domain.ArrStructuredObject;
+import org.junit.Test;
 
 import java.util.Collections;
 import java.util.List;
@@ -11,20 +18,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import org.junit.Test;
-
-import cz.tacr.elza.controller.vo.ArrFundVO;
-import cz.tacr.elza.controller.vo.ArrFundVersionVO;
-import cz.tacr.elza.controller.vo.ArrStructureDataVO;
-import cz.tacr.elza.controller.vo.FilteredResultVO;
-import cz.tacr.elza.controller.vo.RulStructureTypeVO;
-import cz.tacr.elza.controller.vo.nodes.ItemTypeDescItemsLiteVO;
-import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemIntVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStringVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ItemGroupVO;
-import cz.tacr.elza.domain.ArrStructuredObject;
+import static org.junit.Assert.*;
 
 
 /**
@@ -79,16 +73,11 @@ public class StructureControllerTest extends AbstractControllerTest {
 
         StructureController.StructureDataFormDataVO structureDataForm = getFormStructureItems(fundVersion.getId(), structureData.id);
 
-        ItemGroupVO group = structureDataForm.getGroups().get(0);
-        List<ItemTypeDescItemsLiteVO> itemTypes = group.getTypes();
-        Map<Integer, List<ArrItemVO>> items = itemTypes.stream()
-                .peek(it -> {
-                    if (it.getId().equals(typeNumber.getId())) {
-                        it.getDescItems().forEach(i -> ((ArrItemIntVO) i).setValue(BATCH_COUNT + 1));
-                    }
-                })
-                .filter(it -> !it.getId().equals(typePostfix.getId()))
-                .collect(Collectors.toMap(ItemTypeDescItemsLiteVO::getId, ItemTypeDescItemsLiteVO::getDescItems));
+        Map<Integer, List<ArrItemVO>> items = structureDataForm.getDescItems().stream().peek(it -> {
+            if (it.getItemTypeId().equals(typeNumber.getId())) {
+                ((ArrItemIntVO) it).setValue(BATCH_COUNT + 1);
+            }
+        }).collect(Collectors.groupingBy(ArrItemVO::getItemTypeId));
 
         StructureController.StructureDataBatchUpdate data = new StructureController.StructureDataBatchUpdate();
         data.setStructureDataIds(structureDataResult.getRows().stream().map(sd -> sd.id).collect(Collectors.toList()));
@@ -134,10 +123,7 @@ public class StructureControllerTest extends AbstractControllerTest {
 
         StructureController.StructureDataFormDataVO formStructureItems = getFormStructureItems(fundVersion.getId(), structureData.id);
 
-        List<ItemGroupVO> groups = formStructureItems.getGroups();
-        assertEquals(groups.size(), 1);
-        ItemGroupVO itemGroup = groups.get(0);
-        assertEquals(itemGroup.getTypes().size(), 4);
+        assertEquals(5, formStructureItems.getItemTypes().size());
 
         StructureController.StructureItemResult deleteStructureItem = deleteStructureItem(itemIntNumber2, fundVersion.getId());
         assertNotNull(deleteStructureItem);
@@ -147,10 +133,7 @@ public class StructureControllerTest extends AbstractControllerTest {
         deleteStructureItemsByType(fundVersion.getId(), structureData.id, typePostfix.getId());
         deleteStructureItemsByType(fundVersion.getId(), structureData.id, typePacketType.getId());
 
-        formStructureItems = getFormStructureItems(fundVersion.getId(), structureData.id);
-
-        groups = formStructureItems.getGroups();
-        assertEquals(groups.size(), 0);
+        getFormStructureItems(fundVersion.getId(), structureData.id);
 
     }
 

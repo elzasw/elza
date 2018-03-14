@@ -1,15 +1,15 @@
 package cz.tacr.elza.repository;
 
-import java.util.Collection;
-import java.util.List;
-
+import cz.tacr.elza.domain.ParPartyName;
+import cz.tacr.elza.domain.ParPartyNameComplement;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import cz.tacr.elza.domain.ParPartyName;
-import cz.tacr.elza.domain.ParPartyNameComplement;
+import java.util.Collection;
+import java.util.List;
 
 
 /**
@@ -40,4 +40,7 @@ public interface PartyNameComplementRepository extends JpaRepository<ParPartyNam
 
     @Modifying
 	int deleteByPartyNameIn(Collection<ParPartyName> partyNames);
+
+    @Query("SELECT pnc FROM par_party_name_complement pnc JOIN FETCH pnc.complementType ct WHERE pnc.partyName.partyNameId IN :partyNameIds")
+    List<ParPartyNameComplement> findByPartyNameIds(@Param("partyNameIds") Iterable<Integer> partyNameIds);
 }

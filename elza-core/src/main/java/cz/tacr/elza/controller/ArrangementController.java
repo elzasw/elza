@@ -1,46 +1,7 @@
 package cz.tacr.elza.controller;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-import javax.servlet.http.HttpServletResponse;
-import javax.transaction.Transactional;
-
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.BooleanUtils;
-import org.apache.commons.lang3.Validate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.MediaType;
-import org.springframework.util.Assert;
-import org.springframework.util.ObjectUtils;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
-
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonProcessingException;
-
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
@@ -64,14 +25,15 @@ import cz.tacr.elza.controller.vo.OutputSettingsVO;
 import cz.tacr.elza.controller.vo.RulOutputTypeVO;
 import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
 import cz.tacr.elza.controller.vo.TreeData;
-import cz.tacr.elza.controller.vo.TreeNodeClient;
+import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.controller.vo.filter.Filters;
 import cz.tacr.elza.controller.vo.filter.SearchParam;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.controller.vo.nodes.ItemTypeLiteVO;
+import cz.tacr.elza.controller.vo.nodes.NodeData;
+import cz.tacr.elza.controller.vo.nodes.NodeDataParam;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeDescItemsVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ItemGroupVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ItemTypeGroupVO;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDao;
@@ -124,6 +86,7 @@ import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.OutputItemRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.security.UserDetail;
+import cz.tacr.elza.service.ApService;
 import cz.tacr.elza.service.ArrIOService;
 import cz.tacr.elza.service.ArrangementFormService;
 import cz.tacr.elza.service.ArrangementService;
@@ -135,7 +98,6 @@ import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.service.OutputService;
 import cz.tacr.elza.service.PolicyService;
-import cz.tacr.elza.service.ApService;
 import cz.tacr.elza.service.RequestQueueService;
 import cz.tacr.elza.service.RequestService;
 import cz.tacr.elza.service.RevertingChangesService;
@@ -149,6 +111,42 @@ import cz.tacr.elza.service.importnodes.vo.ImportParams;
 import cz.tacr.elza.service.importnodes.vo.ValidateResult;
 import cz.tacr.elza.service.output.OutputRequestStatus;
 import cz.tacr.elza.service.vo.ChangesResult;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.MediaType;
+import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
+import javax.annotation.Nullable;
+import javax.servlet.http.HttpServletResponse;
+import javax.transaction.Transactional;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 
 /**
@@ -600,7 +598,7 @@ public class ArrangementController {
         is.close();
 
         DescItemResult descItemResult = new DescItemResult();
-        descItemResult.setItem(factoryVo.createDescItem(descItemCreated));
+        descItemResult.setItem(factoryVo.createItem(descItemCreated));
         descItemResult.setParent(ArrNodeVO.valueOf(descItemCreated.getNode()));
         return descItemResult;
     }
@@ -633,7 +631,7 @@ public class ArrangementController {
         is.close();
 
         OutputItemResult outputItemResult = new OutputItemResult();
-        outputItemResult.setItem(factoryVo.createDescItem(outputItemCreated));
+        outputItemResult.setItem(factoryVo.createItem(outputItemCreated));
         outputItemResult.setParent(factoryVo.createArrOutputDefinition(outputItemCreated.getOutputDefinition()));
         return outputItemResult;
     }
@@ -689,7 +687,7 @@ public class ArrangementController {
                 .setNotIdentifiedDescItem(descItemTypeId, nodeId, nodeVersion, fundVersionId, descItemSpecId, descItemObjectId);
 
         DescItemResult descItemResult = new DescItemResult();
-        descItemResult.setItem(factoryVo.createDescItem(descItemUpdated));
+        descItemResult.setItem(factoryVo.createItem(descItemUpdated));
         descItemResult.setParent(ArrNodeVO.valueOf(descItemUpdated.getNode()));
 
         return descItemResult;
@@ -750,7 +748,7 @@ public class ArrangementController {
         ArrOutputItem outputItemUpdated = outputService
                 .setNotIdentifiedDescItem(outputItemTypeId, outputDefinitionId, outputDefinitionVersion, fundVersionId, outputItemSpecId, outputItemObjectId);
         OutputItemResult outputItemResult = new OutputItemResult();
-        outputItemResult.setItem(factoryVo.createDescItem(outputItemUpdated));
+        outputItemResult.setItem(factoryVo.createItem(outputItemUpdated));
         outputItemResult.setParent(factoryVo.createOutputDefinition(outputItemUpdated.getOutputDefinition()));
         return outputItemResult;
     }
@@ -818,7 +816,7 @@ public class ArrangementController {
                 fundVersionId);
 
         DescItemResult descItemResult = new DescItemResult();
-        descItemResult.setItem(factoryVo.createDescItem(descItemCreated));
+        descItemResult.setItem(factoryVo.createItem(descItemCreated));
         descItemResult.setParent(ArrNodeVO.valueOf(descItemCreated.getNode()));
 
         return descItemResult;
@@ -939,7 +937,7 @@ public class ArrangementController {
                 outputDefinitionVersion, fundVersionId);
 
         OutputItemResult outputItemResult = new OutputItemResult();
-        outputItemResult.setItem(factoryVo.createDescItem(outputItemCreated));
+        outputItemResult.setItem(factoryVo.createItem(outputItemCreated));
         outputItemResult.setParent(factoryVo.createArrOutputDefinition(outputItemCreated.getOutputDefinition()));
 
         return outputItemResult;
@@ -964,7 +962,7 @@ public class ArrangementController {
         ArrOutputItem outputItemUpdated = outputService.updateOutputItem(outputItem, outputDefinitionVersion, fundVersionId);
 
         OutputItemResult outputItemResult = new OutputItemResult();
-        outputItemResult.setItem(factoryVo.createDescItem(outputItemUpdated));
+        outputItemResult.setItem(factoryVo.createItem(outputItemUpdated));
         outputItemResult.setParent(factoryVo.createOutputDefinition(outputItemUpdated.getOutputDefinition()));
 
         return outputItemResult;
@@ -1025,9 +1023,9 @@ public class ArrangementController {
         String ruleCode = version.getRuleSet().getCode();
 
         ArrOutputDefinitionVO outputDefinitionVO = factoryVo.createArrOutputDefinition(outputDefinition);
-        List<ItemGroupVO> itemGroupsVO = factoryVo.createItemGroupsNew(ruleCode, fundId, outputItems);
-        List<ItemTypeGroupVO> itemTypeGroupsVO = factoryVo.createItemTypeGroupsNew(ruleCode, fundId, itemTypes);
-        return new OutputFormDataNewVO(outputDefinitionVO, itemGroupsVO, itemTypeGroupsVO,
+        List<ArrItemVO> descItems = factoryVo.createItems(outputItems);
+        List<ItemTypeLiteVO> itemTypeLites = factoryVo.createItemTypes(ruleCode, fundId, itemTypes);
+        return new OutputFormDataNewVO(outputDefinitionVO, descItems, itemTypeLites,
                 hiddenItemTypes.stream().map(RulItemTypeExt::getItemTypeId).collect(Collectors.toList()));
     }
 
@@ -1150,6 +1148,18 @@ public class ArrangementController {
     }
 
     /**
+     * Získání dat pro JP.
+     *
+     * @param param parametry dat, které chceme získat (formálář, sourozence, potomky, předky, ...)
+     * @return požadovaná data
+     */
+    @RequestMapping(value = "/nodeData", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Transactional
+    public NodeData getNodeData(final @RequestBody NodeDataParam param) {
+        return levelTreeCacheService.getNodeData(param);
+    }
+
+    /**
      * Provede načtení požadovaných uzlů ze stromu.
      *
      * @param input vstupní data pro načtení
@@ -1157,29 +1167,12 @@ public class ArrangementController {
      */
     @RequestMapping(value = "/fundTree/nodes", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public Collection<TreeNodeClient> getFundTreeNodes(final @RequestBody FaTreeNodesParam input) {
+    public Collection<TreeNodeVO> getFundTreeNodes(final @RequestBody FaTreeNodesParam input) {
         Assert.notNull(input, "Vstupní data musí být vyplněny");
         Assert.notNull(input.getVersionId(), "Nebyl vyplněn identifikátor verze AS");
         Assert.notNull(input.getNodeIds(), "Nebyly vyplně¨ny identifikátoy JP");
 
         return levelTreeCacheService.getFaTreeNodes(input.getVersionId(), input.getNodeIds());
-    }
-
-    /**
-     * Načte seznam rodičů daného uzlu. Seřazeno od prvního rodiče po kořen stromu.
-     *
-     * @param nodeId    nodeid uzlu
-     * @param versionId id verze stromu
-     * @return seznam rodičů
-     */
-    @RequestMapping(value = "/nodeParents", method = RequestMethod.GET,
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    public Collection<TreeNodeClient> getNodeParents(@RequestParam(value = "nodeId") final Integer nodeId,
-                                               @RequestParam(value = "versionId") final Integer versionId) {
-        Assert.notNull(nodeId, "Identifikátor JP musí být vyplněn");
-        Assert.notNull(versionId, "Nebyl vyplněn identifikátor verze AS");
-
-        return levelTreeCacheService.getNodeParents(nodeId, versionId);
     }
 
     /**
@@ -1481,7 +1474,7 @@ public class ArrangementController {
     @RequestMapping(value = "/nodes", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
 	@Transactional
-    public List<TreeNodeClient> getNodes(@RequestBody final IdsParam idsParam) {
+    public List<TreeNodeVO> getNodes(@RequestBody final IdsParam idsParam) {
         Assert.notNull(idsParam.getVersionId(), "Nebyla zadána verze stromu.");
 
         List<Integer> nodeIds = idsParam.getIds();
@@ -1523,7 +1516,7 @@ public class ArrangementController {
                 addLevelParam.getDirection(), addLevelParam.getScenarioName(),
                 descItemCopyTypes);
 
-        Collection<TreeNodeClient> nodeClients = levelTreeCacheService
+        Collection<TreeNodeVO> nodeClients = levelTreeCacheService
                 .getNodesByIds(Arrays.asList(newLevel.getNodeParent().getNodeId()), version.getFundVersionId());
         Assert.notEmpty(nodeClients, "Kolekce JP nesmí být prázdná");
         return new NodeWithParent(ArrNodeVO.valueOf(newLevel.getNode()), nodeClients.iterator().next());
@@ -1548,7 +1541,7 @@ public class ArrangementController {
 
         ArrLevel deleteLevel = moveLevelService.deleteLevel(version, deleteNode, deleteParent);
 
-        Collection<TreeNodeClient> nodeClients = levelTreeCacheService
+        Collection<TreeNodeVO> nodeClients = levelTreeCacheService
                 .getNodesByIds(Arrays.asList(deleteLevel.getNodeParent().getNodeId()),
                         version.getFundVersionId());
         Assert.notEmpty(nodeClients, "Kolekce JP nesmí být prázdná");
@@ -1580,7 +1573,7 @@ public class ArrangementController {
         List<ArrDescItem> newDescItems = arrangementService.copyOlderSiblingAttribute(version, descItemType, level, change);
 
         RulDescItemTypeDescItemsVO descItemTypeVO = factoryVo.createDescItemTypeVO(descItemType);
-        descItemTypeVO.setDescItems(factoryVo.createDescItems(newDescItems));
+        descItemTypeVO.setDescItems(factoryVo.createItems(newDescItems));
 
         ArrNodeVO resultNode = ArrNodeVO.valueOf(level.getNode());
 
@@ -2520,7 +2513,7 @@ public class ArrangementController {
 
         private String description;
 
-        private TreeNodeClient parent;
+        private TreeNodeVO parent;
 
         public int getNodeId() {
             return nodeId;
@@ -2538,11 +2531,11 @@ public class ArrangementController {
             this.description = description;
         }
 
-        public TreeNodeClient getParent() {
+        public TreeNodeVO getParent() {
             return parent;
         }
 
-        public void setParent(final TreeNodeClient parent) {
+        public void setParent(final TreeNodeVO parent) {
             this.parent = parent;
         }
     }
@@ -2625,44 +2618,49 @@ public class ArrangementController {
         private T parent;
 
         /**
-         * Seznam skupin
+         * seznam hodnot atributu
          */
-        private List<ItemGroupVO> groups;
+        private List<ArrItemVO> descItems;
 
         /**
-         * Seznam skupin typů hodnot archivní pomůcky
+         * typy atributů
          */
-        private List<ItemTypeGroupVO> typeGroups;
-
-        public abstract T getParent();
-
-        public abstract void setParent(T parent);
+        private List<ItemTypeLiteVO> itemTypes;
 
         public FormDataNewVO() {
 
         }
 
-        public FormDataNewVO(final T parent, final List<ItemGroupVO> groups,
-                             final List<ItemTypeGroupVO> typeGroups) {
+        public FormDataNewVO(final T parent,
+                             final List<ArrItemVO> descItems,
+                             final List<ItemTypeLiteVO> itemTypes) {
             this.parent = parent;
-            this.groups = groups;
-            this.typeGroups = typeGroups;
+            this.descItems = descItems;
+            this.itemTypes = itemTypes;
         }
 
-        public List<ItemGroupVO> getGroups() {
-            return groups;
+        public List<ArrItemVO> getDescItems() {
+            return descItems;
         }
 
-        public void setGroups(final List<ItemGroupVO> groups) {
-            this.groups = groups;
+        public void setDescItems(final List<ArrItemVO> descItems) {
+            this.descItems = descItems;
         }
 
-        public List<ItemTypeGroupVO> getTypeGroups() {
-            return typeGroups;
+        public List<ItemTypeLiteVO> getItemTypes() {
+            return itemTypes;
         }
 
-        public void setTypeGroups(final List<ItemTypeGroupVO> typeGroups) {
-            this.typeGroups = typeGroups;
+        public void setItemTypes(final List<ItemTypeLiteVO> itemTypes) {
+            this.itemTypes = itemTypes;
+        }
+
+        public T getParent() {
+            return parent;
+        }
+
+        public void setParent(final T parent) {
+            this.parent = parent;
         }
     }
 
@@ -2672,8 +2670,10 @@ public class ArrangementController {
         public DescFormDataNewVO() {
         }
 
-        public DescFormDataNewVO(final ArrNodeVO parent, final List<ItemGroupVO> groups, final List<ItemTypeGroupVO> typeGroups) {
-            super(parent, groups, typeGroups);
+        public DescFormDataNewVO(final ArrNodeVO parent,
+                                 final List<ArrItemVO> descItems,
+                                 final List<ItemTypeLiteVO> itemTypes) {
+            super(parent, descItems, itemTypes);
             this.parent = parent;
         }
 
@@ -2697,10 +2697,10 @@ public class ArrangementController {
         }
 
         public OutputFormDataNewVO(final ArrOutputDefinitionVO parent,
-                                   final List<ItemGroupVO> groups,
-                                   final List<ItemTypeGroupVO> typeGroups,
+                                   final List<ArrItemVO> descItems,
+                                   final List<ItemTypeLiteVO> itemTypes,
                                    final List<Integer> unusedItemTypeIds) {
-            super(parent, groups, typeGroups);
+            super(parent, descItems, itemTypes);
             this.unusedItemTypeIds = unusedItemTypeIds;
             this.parent = parent;
         }
@@ -3115,7 +3115,7 @@ public class ArrangementController {
         private Integer nodeId;
 
         /** Rodič nalezeného nodu. */
-        private TreeNodeClient parent;
+        private TreeNodeVO parent;
 
         public Integer getNodeId() {
             return nodeId;
@@ -3125,11 +3125,11 @@ public class ArrangementController {
             this.nodeId = nodeId;
         }
 
-        public TreeNodeClient getParent() {
+        public TreeNodeVO getParent() {
             return parent;
         }
 
-        public void setParent(final TreeNodeClient parent) {
+        public void setParent(final TreeNodeVO parent) {
             this.parent = parent;
         }
     }
@@ -3238,7 +3238,7 @@ public class ArrangementController {
         /**
          * Rodič jednotky popisu.
          */
-        private TreeNodeClient parentNode;
+        private TreeNodeVO parentNode;
 
         public ArrNodeVO getNode() {
             return node;
@@ -3248,18 +3248,18 @@ public class ArrangementController {
             this.node = node;
         }
 
-        public TreeNodeClient getParentNode() {
+        public TreeNodeVO getParentNode() {
             return parentNode;
         }
 
-        public void setParentNode(final TreeNodeClient parentNode) {
+        public void setParentNode(final TreeNodeVO parentNode) {
             this.parentNode = parentNode;
         }
 
         public NodeWithParent() {
         }
 
-        public NodeWithParent(final ArrNodeVO node, final TreeNodeClient parentNode) {
+        public NodeWithParent(final ArrNodeVO node, final TreeNodeVO parentNode) {
             this.node = node;
             this.parentNode = parentNode;
         }

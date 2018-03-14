@@ -1,21 +1,20 @@
 package cz.tacr.elza.controller;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-
+import cz.tacr.elza.controller.vo.ApRecordVO;
+import cz.tacr.elza.controller.vo.ApScopeVO;
+import cz.tacr.elza.controller.vo.ArrFundVO;
+import cz.tacr.elza.controller.vo.TreeData;
+import cz.tacr.elza.controller.vo.TreeNodeVO;
+import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import cz.tacr.elza.controller.vo.ApRecordVO;
-import cz.tacr.elza.controller.vo.ApScopeVO;
-import cz.tacr.elza.controller.vo.ArrFundVO;
-import cz.tacr.elza.controller.vo.TreeData;
-import cz.tacr.elza.controller.vo.TreeNodeClient;
-import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 
 
 /**
@@ -72,9 +71,9 @@ public class KmlControllerTest extends AbstractControllerTest {
         ArrangementController.IdsParam idsParam = new ArrangementController.IdsParam();
         idsParam.setVersionId(versionId);
         idsParam.setIds(Collections.singletonList(faTree.getNodes().iterator().next().getId()));
-        List<TreeNodeClient> nodes = getNodes(idsParam);
+        List<TreeNodeVO> nodes = getNodes(idsParam);
 
-        TreeNodeClient treeNodeClient = nodes.get(0);
+        TreeNodeVO treeNodeClient = nodes.get(0);
         HashMap<String, Object> params = new HashMap<>();
         params.put("fundVersionId", versionId);
 

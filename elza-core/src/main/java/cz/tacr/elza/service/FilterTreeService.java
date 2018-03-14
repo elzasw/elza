@@ -6,7 +6,7 @@ import cz.tacr.elza.controller.ArrangementController;
 import cz.tacr.elza.controller.vo.FilterNode;
 import cz.tacr.elza.controller.vo.FilterNodePosition;
 import cz.tacr.elza.controller.vo.TreeNode;
-import cz.tacr.elza.controller.vo.TreeNodeClient;
+import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.controller.vo.filter.SearchParam;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.domain.ArrData;
@@ -291,14 +291,14 @@ public class FilterTreeService {
         Map<Integer, ArrNode> filterIdsMap = ElzaTools
                 .createEntityMap(nodeRepository.findAll(filteredIds), ArrNode::getNodeId);
 
-        Map<Integer, TreeNodeClient> parentIdsMap = ElzaTools.createEntityMap(
+        Map<Integer, TreeNodeVO> parentIdsMap = ElzaTools.createEntityMap(
                 levelTreeCacheService.getNodesByIds(parentIds, version.getFundVersionId()),
-                TreeNodeClient::getId
+                TreeNodeVO::getId
         );
 
-        Map<Integer, TreeNodeClient> idsMap = ElzaTools.createEntityMap(
+        Map<Integer, TreeNodeVO> idsMap = ElzaTools.createEntityMap(
                 levelTreeCacheService.getNodesByIds(filteredIds, version.getFundVersionId()),
-                TreeNodeClient::getId
+                TreeNodeVO::getId
         );
 
         for (Integer filteredId : filteredIds) {
@@ -326,11 +326,11 @@ public class FilterTreeService {
             //najdeme objekt uzlu a jeho rodiče, abychom získali jejich verzi
             TreeNode treeNode = versionCache.get(filteredId);
             TreeNode treeParentNode = treeNode.getParent();
-            TreeNodeClient treeNodeClient = idsMap.get(filteredId);
+            TreeNodeVO treeNodeClient = idsMap.get(filteredId);
 
             ArrNode arrNode = filterIdsMap.get(treeNode.getId());
             ArrNodeVO arrNodeVo = ArrNodeVO.valueOf(arrNode);
-            TreeNodeClient arrParentNodeVo = null;
+            TreeNodeVO arrParentNodeVo = null;
             if(treeParentNode != null)  {
                 arrParentNodeVo = parentIdsMap.get(treeParentNode.getId());
             }

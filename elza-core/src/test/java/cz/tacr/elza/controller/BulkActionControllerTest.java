@@ -1,19 +1,22 @@
 package cz.tacr.elza.controller;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-
-import cz.tacr.elza.controller.vo.*;
+import cz.tacr.elza.controller.vo.ApScopeVO;
+import cz.tacr.elza.controller.vo.ArrFundVO;
+import cz.tacr.elza.controller.vo.BulkActionRunVO;
+import cz.tacr.elza.controller.vo.BulkActionVO;
+import cz.tacr.elza.controller.vo.TreeData;
+import cz.tacr.elza.controller.vo.TreeNodeVO;
+import cz.tacr.elza.domain.ArrBulkActionRun.State;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cz.tacr.elza.controller.vo.ApScopeVO;
-import cz.tacr.elza.domain.ArrBulkActionRun.State;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 
 /**
@@ -109,10 +112,10 @@ public class BulkActionControllerTest extends AbstractControllerTest {
         ArrangementController.FaTreeParam faTreeParam = new ArrangementController.FaTreeParam();
         faTreeParam.setVersionId(fundVersionId);
         TreeData fundTree = getFundTree(faTreeParam);
-        Collection<TreeNodeClient> nodes = fundTree.getNodes();
+        Collection<TreeNodeVO> nodes = fundTree.getNodes();
         Assert.assertNotNull(nodes);
         Assert.assertFalse(nodes.isEmpty());
-        TreeNodeClient next = nodes.iterator().next();
+        TreeNodeVO next = nodes.iterator().next();
 
         post((spec) -> spec.pathParameter("versionId", fundVersionId).pathParam("code", BULK_ACTION_SERIAL_NUMBER_GENERATOR).body(Collections.singletonList(next.getId())), BULK_ACTION_QUEUE);
 

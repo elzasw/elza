@@ -4,11 +4,12 @@
 
 import {WebApi} from 'actions/index.jsx';
 import * as types from 'actions/constants/ActionTypes.js';
-import {indexById, findByRoutingKeyInGlobalState} from 'stores/app/utils.jsx'
+import {findByRoutingKeyInGlobalState, indexById} from 'stores/app/utils.jsx'
 import {createFundRoot, isFundRootId} from 'components/arr/ArrUtils.jsx'
 import {savingApiWrapper} from 'actions/global/status.jsx';
 import {fundExtendedView} from "./fundExtended";
 import {developerNodeScenariosDirty} from 'actions/global/developer.jsx';
+import {fundNodeInfoReceive} from "./nodeInfo";
 
 export function isNodeAction(action) {
     switch (action.type) {
@@ -32,7 +33,7 @@ export function isNodeAction(action) {
  * @param {Object} subNodeParentNode nadřazený JP pro vybíranou JP, předáváno kvůli případnému otevření nové záložky, pokud neexistuje
  * @param {boolean} openNewTab má se otevřít nová záložka? Pokud je false, bude použita existující  aktuálně vybraná, pokud žádná neexistuje, bude nová vytvořena
  */
-export function fundSelectSubNodeInt(versionId, subNodeId, subNodeParentNode, openNewTab=false, newFilterCurrentIndex = null, ensureItemVisible=false) {
+export function fundSelectSubNodeInt(versionId, subNodeId, subNodeParentNode, openNewTab=false, newFilterCurrentIndex = null, ensureItemVisible=false, subNodeIndex) {
     return {
         type: types.FUND_FUND_SELECT_SUBNODE,
         area: types.FUND_TREE_AREA_MAIN,
@@ -41,7 +42,8 @@ export function fundSelectSubNodeInt(versionId, subNodeId, subNodeParentNode, op
         subNodeParentNode,
         openNewTab,
         newFilterCurrentIndex,
-        ensureItemVisible
+        ensureItemVisible,
+        subNodeIndex
     }
 }
 
@@ -54,12 +56,35 @@ export function fundSelectSubNodeInt(versionId, subNodeId, subNodeParentNode, op
  * @param {boolean} openNewTab pokud je true, je vždy vytvářena nová záložka. pokud je false, je nová záložka vytvářena pouze pokud žádná není
  * @param {int} newFilterCurrentIndex nový index ve výsledcích hledání ve stromu, pokud daná akce je vyvolána akcí skuku na jinou vyhledanou položku vy výsledcích hledání ve stromu
  * @param {boolean} ensureItemVisible true, pokud má být daná položka vidět - má se odscrolovat
+ * @param subNodeIndex
  */
-export function fundSelectSubNode(versionId, subNodeId, subNodeParentNode, openNewTab=false, newFilterCurrentIndex = null, ensureItemVisible=false) {
+export function fundSelectSubNode(versionId, subNodeId, subNodeParentNode, openNewTab=false, newFilterCurrentIndex = null, ensureItemVisible=false, subNodeIndex = null) {
     return (dispatch, getState) => {
         dispatch(fundExtendedView(false));
-        dispatch(fundSelectSubNodeInt(versionId, subNodeId, subNodeParentNode, openNewTab, newFilterCurrentIndex, ensureItemVisible));
+
         let state = getState();
+        const nodes = state.arrRegion.funds[state.arrRegion.activeIndex].fundTree.nodes;
+        if (!subNodeId && subNodeIndex !== null) {
+            const index = indexById(nodes, subNodeParentNode.id) + subNodeIndex + 1;
+            subNodeId = nodes[index].id;
+        }
+        const index = indexById(nodes, subNodeId);
+        subNodeIndex = index;
+        if (index) {
+            const node = nodes[index];
+            for (let i = index; i >= 0; i--) {
+                const n = nodes[i];
+                if (n.depth === node.depth) {
+                    subNodeIndex--;
+                } else {
+                    if (n.depth < node.depth) {
+                        break;
+                    }
+                }
+            }
+            subNodeIndex = index - subNodeIndex - 1;
+        }
+        dispatch(fundSelectSubNodeInt(versionId, subNodeId, subNodeParentNode, openNewTab, newFilterCurrentIndex, ensureItemVisible, subNodeIndex));
         dispatch(developerNodeScenariosDirty(subNodeId, subNodeParentNode.routingKey, state.arrRegion.funds[state.arrRegion.activeIndex].versionId));
     }
 }
@@ -158,9 +183,9 @@ export function fundNodeSubNodeFulltextResult(versionId, nodeId, routingKey, nod
  */
 export function fundNodeSubNodeFulltextSearch(filterText) {
     return (dispatch, getState) => {
-        var state = getState();
-        var activeFund = state.arrRegion.funds[state.arrRegion.activeIndex];
-        var activeNode = activeFund.nodes.nodes[activeFund.nodes.activeIndex];
+        const state = getState();
+        const activeFund = state.arrRegion.funds[state.arrRegion.activeIndex];
+        const activeNode = activeFund.nodes.nodes[activeFund.nodes.activeIndex];
 
         dispatch({
             type: types.FUND_FUND_SUBNODES_FULLTEXT_SEARCH,
@@ -168,31 +193,37 @@ export function fundNodeSubNodeFulltextSearch(filterText) {
             nodeId: activeNode.id,
             routingKey: activeNode.routingKey,
             filterText
-        })
-        if (filterText !== '') {
+        });
 
-            let nodeId;
-            if (activeNode.id != null && (typeof activeNode.id === 'string' || activeNode.id instanceof String)) {
-                nodeId = null;
-            } else {
-                nodeId = activeNode.id;
-            }
-
-            WebApi.findInFundTree(activeFund.versionId, nodeId, filterText, 'ONE_LEVEL')
-                .then(json => {
-                    dispatch(fundNodeSubNodeFulltextResult(activeFund.versionId, activeNode.id, activeNode.routingKey, json));
-                    if (json.length > 0) {
-                        var subNodeParentNode = json[0].parent
-                        if (subNodeParentNode == null) {
-                            subNodeParentNode = createFundRoot(activeFund);
-                        }
-
-                        dispatch(fundSelectSubNode(activeFund.versionId, json[0].nodeId, subNodeParentNode, false, null, true));
-                    }
-                })
+        let nodeId;
+        if (activeNode.id != null && (typeof activeNode.id === 'string' || activeNode.id instanceof String)) {
+            nodeId = null;
         } else {
-            dispatch(fundNodeSubNodeFulltextResult(activeFund.versionId, activeNode.id, activeNode.routingKey, []));
+            nodeId = activeNode.id;
         }
+
+
+        // activeFund.versionId, nodeId, false, false, false, 0, activeNode.pageSize, filterText !== '' ? filterText : null, true)
+        const nodeParam = {parentNodeId: nodeId, nodeIndex: 0};
+        const resultParam = {
+            formData: true,
+            parents: false,
+            children: false,
+            siblingsFrom: 0,
+            siblingsMaxCount: activeNode.pageSize,
+            siblingsFilter: filterText !== '' ? filterText : null
+        };
+        return WebApi.getNodeData(activeFund.versionId, nodeParam, resultParam).then((json) => {
+            dispatch(fundNodeInfoReceive(activeFund.versionId, nodeId, activeNode.routingKey, {
+                childNodes: json.siblings ? json.siblings : null,
+                nodeCount: json.nodeCount,
+                nodeIndex: json.nodeIndex,
+            }, true));
+            if (json.siblings && json.siblings.length > 0) {
+                const node = json.siblings[0];
+                dispatch(fundSelectSubNode(activeFund.versionId, node.id, activeNode));
+            }
+        });
     }
 }
 
@@ -332,17 +363,55 @@ function fundNodeChangeDelete(versionId, node, parentNode) {
 }
 
 /**
+ * Načtení stránky akordeonu.
+ *
+ * @param getState   stav
+ * @param versionId  verze AS
+ * @param routingKey routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
+ * @param dispatch   dispatch
+ * @param fceIndex   funkce pro výpočet indexu pro načtení
+ */
+const fundNodeSelect = function (getState, versionId, routingKey, dispatch, fceIndex) {
+    const r = findByRoutingKeyInGlobalState(getState(), versionId, routingKey);
+    if (r) {
+        const node = r.node;
+        let nodeId = node.selectedSubNodeId;
+        if (!node.selectedSubNodeId && node.childNodes.length > 0) {
+            nodeId = node.childNodes[0].id;
+        }
+
+        if (nodeId) {
+            let index = fceIndex(node.viewStartIndex, node.pageSize / 2);
+            index = index < 0 ? 0 : index;
+            const nodeParam = {nodeId};
+            const resultParam = {siblingsFrom: index, siblingsMaxCount: node.pageSize, siblingsFilter: node.filterText};
+            WebApi.getNodeData(versionId, nodeParam, resultParam).then((json) => {
+                dispatch(fundNodeInfoReceive(versionId, nodeId, routingKey, {
+                    childNodes: json.siblings ? json.siblings : null,
+                    nodeCount: json.nodeCount,
+                    nodeIndex: json.nodeIndex,
+                }, true));
+            });
+        }
+    }
+};
+
+/**
  * Stránkování v Accordion - další část.
  * {int} versionId verze AS
  * {int} nodeId id node dané záložky NODE
  * {string} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
  */
 export function fundSubNodesNext(versionId, nodeId, routingKey) {
-    return {
-        type: types.FUND_FUND_SUBNODES_NEXT,
-        versionId,
-        nodeId,
-        routingKey,
+    return (dispatch, getState) => {
+        fundNodeSelect(getState, versionId, routingKey, dispatch, (a, b) => a + b);
+
+        dispatch({
+            type: types.FUND_FUND_SUBNODES_NEXT,
+            versionId,
+            nodeId,
+            routingKey,
+        });
     }
 }
 
@@ -353,11 +422,15 @@ export function fundSubNodesNext(versionId, nodeId, routingKey) {
  * {string} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
  */
 export function fundSubNodesPrev(versionId, nodeId, routingKey) {
-    return {
-        type: types.FUND_FUND_SUBNODES_PREV,
-        versionId,
-        nodeId,
-        routingKey,
+    return (dispatch, getState) => {
+        fundNodeSelect(getState, versionId, routingKey, dispatch, (a, b) => a - b);
+
+        dispatch({
+            type: types.FUND_FUND_SUBNODES_PREV,
+            versionId,
+            nodeId,
+            routingKey,
+        });
     }
 }
 
@@ -369,23 +442,37 @@ export function fundSubNodesPrev(versionId, nodeId, routingKey) {
  */
 export function fundSubNodesNextPage(versionId, nodeId, routingKey) {
     return (dispatch, getState) => {
-        const r = findByRoutingKeyInGlobalState(getState(), versionId, routingKey)
+        const state = getState();
+        const r = findByRoutingKeyInGlobalState(state, versionId, routingKey);
         if (r) {
-            let activeFund = r.fund
-            let node = r.node
-            let viewIndex = node.viewStartIndex;
-            let index = indexById(node.childNodes, node.selectedSubNodeId);
+            const node = r.node;
+
+            const nodes = state.arrRegion.funds[state.arrRegion.activeIndex].fundTree.nodes;
+            const x = indexById(nodes, node.selectedSubNodeId);
+            const xn = nodes[x];
+            let subNodeIndex = x;
+            for (let i = x; i >= 0; i--) {
+                const n = nodes[i];
+                if (n.depth === xn.depth) {
+                    subNodeIndex--;
+                } else {
+                    if (n.depth < xn.depth) {
+                        break;
+                    }
+                }
+            }
+
+            const index = x - subNodeIndex;
             dispatch(_fundSubNodesNextPage(versionId, nodeId, routingKey));
 
             if (index != null) {
-                const rnew = findByRoutingKeyInGlobalState(getState(), versionId, routingKey)
-                let newActiveFund = rnew.fund
-                let newNode = rnew.node
-                let newViewIndex = newNode.viewStartIndex;
-                let newIndex = newViewIndex - viewIndex + index;
-                let count = newNode.childNodes.length;
-                let subNodeId = newIndex < count ? newNode.childNodes[newIndex].id : newNode.childNodes[count - 1].id;
-                let subNodeParentNode = newNode;
+                const rnew = findByRoutingKeyInGlobalState(getState(), versionId, routingKey);
+                const newActiveFund = rnew.fund;
+                const newNode = rnew.node;
+                const newIndex = index + node.pageSize;
+                const count = newNode.nodeCount;
+                const subNodeId = newIndex < count ? nodes[subNodeIndex + newIndex].id : newNode.childNodes[newNode.childNodes.length - 1].id;
+                const subNodeParentNode = newNode;
                 dispatch(fundSelectSubNode(newActiveFund.versionId, subNodeId, subNodeParentNode, false, null, true));
             }
         }
@@ -415,21 +502,35 @@ export function _fundSubNodesNextPage(versionId, nodeId, routingKey) {
  */
 export function fundSubNodesPrevPage(versionId, nodeId, routingKey) {
     return (dispatch, getState) => {
-        const r = findByRoutingKeyInGlobalState(getState(), versionId, routingKey)
-        let activeFund = r.fund
-        let node = r.node
-        let viewIndex = node.viewStartIndex;
-        let index = indexById(node.childNodes, node.selectedSubNodeId);
+        const r = findByRoutingKeyInGlobalState(getState(), versionId, routingKey);
+        const node = r.node;
+        let index = node.nodeIndex;
         dispatch(_fundSubNodesPrevPage(versionId, nodeId, routingKey));
 
+        const state = getState();
+
+        const nodes = state.arrRegion.funds[state.arrRegion.activeIndex].fundTree.nodes;
+        const x = indexById(nodes, node.selectedSubNodeId);
+        const xn = nodes[x];
+        let subNodeIndex = x + 1;
+        for (let i = x; i >= 0; i--) {
+            const n = nodes[i];
+            if (n.depth === xn.depth) {
+                subNodeIndex--;
+            } else {
+                if (n.depth < xn.depth) {
+                    break;
+                }
+            }
+        }
+
         if (index != null) {
-            const rnew = findByRoutingKeyInGlobalState(getState(), versionId, routingKey)
-            let newActiveFund = rnew.fund
-            let newNode = rnew.node
-            let newViewIndex = newNode.viewStartIndex;
-            let newIndex = newViewIndex - viewIndex + index;
-            let subNodeId = newIndex < 0 ? newNode.childNodes[0].id : newNode.childNodes[newIndex].id;
-            let subNodeParentNode = newNode;
+            const rnew = findByRoutingKeyInGlobalState(state, versionId, routingKey);
+            const newActiveFund = rnew.fund;
+            const newNode = rnew.node;
+            const newIndex = index - node.pageSize;
+            const subNodeId = newIndex < 0 ? nodes[subNodeIndex].id : nodes[subNodeIndex + newIndex].id;
+            const subNodeParentNode = newNode;
             dispatch(fundSelectSubNode(newActiveFund.versionId, subNodeId, subNodeParentNode, false, null, true));
         }
     }

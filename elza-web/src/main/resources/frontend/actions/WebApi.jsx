@@ -543,6 +543,10 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.ruleUrl + '/descItemTypes')
     }
 
+    getGroups(fundVersionId) {
+        return AjaxUtils.ajaxGet(WebApiCls.ruleUrl + '/groups/' + fundVersionId);
+    }
+
     getCalendarTypes(versionId, nodeId) {
         return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/calendarTypes');
     }
@@ -572,10 +576,6 @@ export class WebApiCls {
             }
         };
         return getData(data, 1);
-    }
-
-    getNodeParents(versionId, nodeId) {
-        return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/nodeParents', {versionId, nodeId});
     }
 
     getRequestsInQueue() {
@@ -658,6 +658,22 @@ export class WebApiCls {
             }
         }
         return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/fundTree', null, data);
+    }
+
+    getNodeData(fundVersionId, nodeParam, resultParam = {}) {
+        const data = {
+            fundVersionId: fundVersionId,
+            nodeId: nodeParam.nodeId,
+            nodeIndex: nodeParam.nodeIndex,
+            parentNodeId: nodeParam.parentNodeId,
+            formData: resultParam.formData,
+            siblingsFrom: resultParam.siblingsFrom,
+            siblingsMaxCount: resultParam.siblingsMaxCount,
+            siblingsFilter: resultParam.siblingsFilter,
+            parents: resultParam.parents,
+            children: resultParam.children,
+        };
+        return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/nodeData', null, data);
     }
 
     getFundTreeNodes(versionId, nodeIds) {
