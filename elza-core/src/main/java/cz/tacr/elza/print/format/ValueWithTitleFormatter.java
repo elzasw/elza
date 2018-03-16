@@ -2,7 +2,7 @@ package cz.tacr.elza.print.format;
 
 import java.util.List;
 
-import org.springframework.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import cz.tacr.elza.print.item.Item;
 import cz.tacr.elza.print.item.ItemSpec;
@@ -16,6 +16,8 @@ public class ValueWithTitleFormatter implements FormatAction {
      * Code of item type to be formatted
      */
     private final String itemType;
+    
+    private final Formatter formatter;
 
     /**
      * Flag to write title in lower case
@@ -23,9 +25,14 @@ public class ValueWithTitleFormatter implements FormatAction {
     private boolean titleLowerCase = true;
 
     public ValueWithTitleFormatter(String itemType) {
-        this.itemType = itemType;
+        this(itemType, null);
     }
-
+    
+    public ValueWithTitleFormatter(String itemType, Formatter formatter) {
+        this.itemType = itemType;
+        this.formatter = formatter;
+    }
+    
     public boolean isTitleLowerCase() {
         return titleLowerCase;
     }
@@ -39,7 +46,11 @@ public class ValueWithTitleFormatter implements FormatAction {
         boolean firstItem = true;
         for (Item item : items) {
             if (item.getType().getCode().equals(itemType)) {
-                if (formatItem(firstItem, ctx, item)) {
+            	String postfix = null;
+            	if(formatter != null) {
+            		 postfix = formatter.format(items);
+            	}
+                if (formatItem(firstItem, ctx, item, postfix)) {
                     firstItem = false;
                 }
             }
@@ -53,11 +64,14 @@ public class ValueWithTitleFormatter implements FormatAction {
      * @param item
      * @return Return true if item was added
      */
-    private boolean formatItem(final boolean firstItem, FormatContext ctx, Item item) {
+    private boolean formatItem(final boolean firstItem, FormatContext ctx, Item item, String postfix) {
         String value = item.getSerializedValue();
+        
+        if (StringUtils.isNotBlank(postfix)) {
+        	value = new StringBuilder().append(value).append(postfix).toString();
+        }
 
         // Append title
-        String oldItemSeparator = null;
         if (firstItem) {
             // get name
             String name = item.getType().getShortcut();
@@ -69,7 +83,7 @@ public class ValueWithTitleFormatter implements FormatAction {
                 name = name.toLowerCase();
             }
             
-            oldItemSeparator = ctx.getItemSeparator();
+            String oldItemSeparator = ctx.getItemSeparator();
             ctx.setItemSeparator(ctx.getTitleSeparator());
             ctx.appendValue(name);
             ctx.setItemSeparator(oldItemSeparator);

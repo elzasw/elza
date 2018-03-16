@@ -41,7 +41,7 @@ public class FormatContext {
     /**
      * Active separator for specifications
      */
-    private String specificationSeparator = " ";
+    private String specificationPostfix = " ";
     
     
     private String specificationPrefix = "";
@@ -107,7 +107,7 @@ public class FormatContext {
 	}
     
     public void setSpecificationSeparator(String specSeparator) {
-        this.specificationSeparator = specSeparator;
+        this.specificationPostfix = specSeparator;
     }
     
 	public void setSpecificationAfterValue(boolean afterValue) {
@@ -176,25 +176,41 @@ public class FormatContext {
     public void appendSpecWithValue(String spec, String value) {
     	boolean hasPrefix = StringUtils.isNotBlank(specificationPrefix);
     	boolean hasValue = StringUtils.isNotBlank(value);
-    	boolean hasPostfix = StringUtils.isNotBlank(specificationSeparator);
+    	boolean hasPostfix = StringUtils.isNotBlank(specificationPostfix);
     	
-    	if (specificationAfterValue && hasValue) {
-            appendResult(value);
-    	}
-    	
-		if(hasPrefix) {
-			appendResult(specificationPrefix);
-		}
-		
-		appendResult(spec);
-		
-		// appends postfix only when there is a value following after the specification or when prefix exists
-		if(hasPostfix && (hasPrefix || hasValue && !specificationAfterValue)) {
-			appendResult(specificationSeparator);
-		}
-		
-        if (!specificationAfterValue && hasValue) {
-            appendResult(value);
+    	if (specificationAfterValue) {
+    		if(hasValue) {
+    			appendResult(value);
+    		}
+    		
+            if(hasPrefix) {
+				appendResult(specificationPrefix);
+			}
+			
+			appendResult(spec);
+			
+			if(hasPostfix) {
+				appendResult(specificationPostfix);
+			}
+    	}		
+    	else{
+        	if(hasPrefix) {
+				appendResult(specificationPrefix);
+			}
+			
+			appendResult(spec);
+			
+			if(hasPostfix) {
+				// Append postfix when prefix or value exist
+				// This condition allows to print:  spec: val | spec | (spec)
+				if(hasPrefix || hasValue) {
+					appendResult(specificationPostfix);
+				}
+			}
+			
+            if(hasValue) {
+    			appendResult(value);
+    		}
     	}   
         
         this.pendingSeparator = itemSeparator;
