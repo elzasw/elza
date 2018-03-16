@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+import org.eclipse.jetty.util.StringUtil;
 
 /**
  * Context of active formatting
@@ -41,6 +42,14 @@ public class FormatContext {
      * Active separator for specifications
      */
     private String specificationSeparator = " ";
+    
+    
+    private String specificationPrefix = "";
+    
+    /**
+     * Defines whether the specification is placed before or after the value
+     */
+    private boolean specificationAfterValue = false;
     
     /**
      * Flag if begin block separator should be use always
@@ -93,14 +102,18 @@ public class FormatContext {
         this.itemSeparator = separator;
     }
 
+    public void setSpecificationPrefix(String prefix) {
+    	this.specificationPrefix = prefix;
+	}
+    
     public void setSpecificationSeparator(String specSeparator) {
         this.specificationSeparator = specSeparator;
     }
-
-    public String getSpecificationSeparator() {
-        return specificationSeparator;
-    }
-
+    
+	public void setSpecificationAfterValue(boolean afterValue) {
+		this.specificationAfterValue = afterValue;
+	}
+    
     public void setTitleSeparator(String titleSeparator) {
         this.titleSeparator = titleSeparator;
     }
@@ -156,16 +169,33 @@ public class FormatContext {
     }
 
     /**
-     * Append specificationa and value to result
+     * Append specification and value to result
      *
      * @param value
      */
     public void appendSpecWithValue(String spec, String value) {
-        appendResult(spec);
-        if (StringUtils.isNoneBlank(value)) {
-            appendResult(specificationSeparator);
+    	boolean hasPrefix = StringUtils.isNotBlank(specificationPrefix);
+    	boolean hasValue = StringUtils.isNotBlank(value);
+    	boolean hasPostfix = StringUtils.isNotBlank(specificationSeparator);
+    	
+    	if (specificationAfterValue && hasValue) {
             appendResult(value);
-        }
+    	}
+    	
+		if(hasPrefix) {
+			appendResult(specificationPrefix);
+		}
+		
+		appendResult(spec);
+		
+		// appends postfix only when there is a value following after the specification or when prefix exists
+		if(hasPostfix && (hasPrefix || hasValue && !specificationAfterValue)) {
+			appendResult(specificationSeparator);
+		}
+		
+        if (!specificationAfterValue && hasValue) {
+            appendResult(value);
+    	}   
         
         this.pendingSeparator = itemSeparator;
     }

@@ -540,6 +540,14 @@
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
+    <item-type code="ZP2015_FINDING_AID_DATE" data-type="STRING">
+        <name>Stav archivní pomůckou zpřístupněných archiválií ke dni</name>
+        <shortcut>Datum AP</shortcut>
+        <description>Stav archivní pomůckou zpřístupněných archiválií ke dni (uvádí se v tiráži)</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>true</can-be-ordered>
+        <use-specification>false</use-specification>
+    </item-type>
     <item-type code="ZP2015_UNITS_AMOUNT" data-type="STRING">
         <name>Rozsah archivní pomůckou zpřístupněných archiválií</name>
         <shortcut>Rozsah archiválií</shortcut>
@@ -548,10 +556,18 @@
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
-    <item-type code="ZP2015_FINDING_AID_DATE" data-type="STRING">
-        <name>Stav archivní pomůckou zpřístupněných archiválií ke dni</name>
-        <shortcut>Datum AP</shortcut>
-        <description>Stav archivní pomůckou zpřístupněných archiválií ke dni (uvádí se v tiráži)</description>
+    <item-type code="ZP2015_RELEASE_DATE_PLACE" data-type="STRING">
+        <name>Datum a místo vydání</name>
+        <shortcut>Datum a místo vydání</shortcut>>
+        <description>Datum a místo vydání uvedené na titulní straně archivní pomůcky</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>true</can-be-ordered>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="ZP2015_FINDING_AID_APPROVED_BY" data-type="STRING">
+        <name>Archivní pomůcku schválil</name>
+        <shortcut>Schválil</shortcut>
+        <description>Archivní pomůcku schválil(uvádí se v tiráži)</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
@@ -568,14 +584,6 @@
         <name>Archivní pomůcku sestavil</name>
         <shortcut>Sestavil</shortcut>
         <description>Archivní pomůcku sestavil (uvádí se v tiráži)</description>
-        <is-value-unique>false</is-value-unique>
-        <can-be-ordered>true</can-be-ordered>
-        <use-specification>false</use-specification>
-    </item-type>
-    <item-type code="ZP2015_FINDING_AID_APPROVED_BY" data-type="STRING">
-        <name>Archivní pomůcku schválil</name>
-        <shortcut>Schválil</shortcut>
-        <description>Archivní pomůcku schválil(uvádí se v tiráži)</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
@@ -648,6 +656,7 @@
         <can-be-ordered>true</can-be-ordered>
         <use-specification>true</use-specification>
     </item-type>
+    
     <!-- Rozměry -->
     <item-type code="ZP2015_SIZE_WIDTH" data-type="DECIMAL">
         <name>Šířka</name>

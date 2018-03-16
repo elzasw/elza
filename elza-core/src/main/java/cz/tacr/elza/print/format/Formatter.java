@@ -106,6 +106,10 @@ public class Formatter {
 		return addAction(new SetSpecificationSeparator(specSeparator));
 	}
 	
+	public Formatter setSpecFormat(String prefix, String postfix, boolean afterValue) {
+		return addAction(new SetSpecificationFormat(prefix, postfix, afterValue));
+	}
+	
 	/**
 	 * Set separator between title and following value
 	 * @param titleSeparator

@@ -68,9 +68,11 @@ public class ValueWithTitleFormatter implements FormatAction {
             if (titleLowerCase) {
                 name = name.toLowerCase();
             }
-            ctx.appendValue(name);
+            
             oldItemSeparator = ctx.getItemSeparator();
             ctx.setItemSeparator(ctx.getTitleSeparator());
+            ctx.appendValue(name);
+            ctx.setItemSeparator(oldItemSeparator);
         }
 
         // Append value
@@ -91,9 +93,7 @@ public class ValueWithTitleFormatter implements FormatAction {
             // write value without specification
             ctx.appendValue(value);
         }
-        if (firstItem) {
-            ctx.setItemSeparator(oldItemSeparator);
-        }
+        
         return true;
     }
 }
