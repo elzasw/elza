@@ -14,6 +14,8 @@ public abstract class BaseActionConfig implements BulkActionConfig {
 
 	protected String codeTypeBulkAction;
 
+	protected boolean fastAction = false;
+
 	public String getName() {
 		return name;
 	}
@@ -49,6 +51,14 @@ public abstract class BaseActionConfig implements BulkActionConfig {
 
 	public void setCode(String code) {
 		this.code = code;
+	}
+
+	public boolean isFastAction() {
+		return fastAction;
+	}
+
+	public void setFastAction(boolean fastAction) {
+		this.fastAction = fastAction;
 	}
 
 	@Override

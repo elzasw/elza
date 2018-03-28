@@ -29,4 +29,6 @@ public interface ItemSpecRepository extends ElzaJpaRepository<RulItemSpec, Integ
     @Query("SELECT s FROM rul_item_spec s JOIN FETCH s.itemType t WHERE s.rulPackage = :package AND t.ruleSet = :ruleSet")
     List<RulItemSpec> findByRulPackageAndRuleSet(@Param("package") RulPackage rulPackage,
                                                  @Param("ruleSet") RulRuleSet ruleSet);
+
+    RulItemSpec findOneByCode(String code);
 }

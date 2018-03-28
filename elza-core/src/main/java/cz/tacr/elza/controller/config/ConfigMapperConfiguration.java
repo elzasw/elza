@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import cz.tacr.elza.bulkaction.generator.PersistentSortRunConfig;
 import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.domain.*;
 import cz.tacr.elza.service.attachment.AttachmentService;
@@ -1019,6 +1020,10 @@ public class ConfigMapperConfiguration {
         mapperFactory.classMap(ArrDataText.class, ArrItemTextVO.class).byDefault().register();
         mapperFactory.classMap(ArrDataText.class, ArrItemFormattedTextVO.class).byDefault().register();
 
+        mapperFactory.classMap(PersistentSortRunConfig.class, PersistentSortConfigVO.class).
+                byDefault().
+                exclude("nodeIds").
+                register();
     }
 
     /**

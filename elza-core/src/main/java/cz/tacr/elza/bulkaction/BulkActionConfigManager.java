@@ -12,6 +12,7 @@ import java.util.Map;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
+import cz.tacr.elza.bulkaction.generator.PersistentSortConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,9 +61,9 @@ public class BulkActionConfigManager {
 
     /**
      * Načtení hromadných akcí z adresáře.
-     * 
+     *
      * Function can is used also to reload configuration.
-     * 
+     *
      * @param resourcePathResolver
      */
     @Transactional(TxType.MANDATORY)
@@ -113,7 +114,7 @@ public class BulkActionConfigManager {
 
     /**
      * Load configuration of single action
-     * 
+     *
      * @param action
      * @param configFile
      * @param yamlLoader
@@ -135,7 +136,7 @@ public class BulkActionConfigManager {
 
     /**
      * Create yaml loader
-     * 
+     *
      * @return
      */
     private static Yaml prepareYamlLoader() {
@@ -153,6 +154,7 @@ public class BulkActionConfigManager {
         yamlCtor.addTypeDescription(new TypeDescription(NodeCountConfig.class, "!NodeCount"));
         yamlCtor.addTypeDescription(new TypeDescription(UnitCountConfig.class, "!UnitCount"));
         yamlCtor.addTypeDescription(new TypeDescription(MoveDescItemConfig.class, "!MoveDescItem"));
+        yamlCtor.addTypeDescription(new TypeDescription(PersistentSortConfig.class, "!PersistentSort"));
 
         return new Yaml(yamlCtor);
     }

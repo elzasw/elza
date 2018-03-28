@@ -29,6 +29,8 @@ public class BulkActionRunVO {
 
     private String error;
 
+    private String config;
+
     public Integer getId() {
         return id;
     }
@@ -91,5 +93,13 @@ public class BulkActionRunVO {
 
     public void setError(final String error) {
         this.error = error;
+    }
+
+    public String getConfig() {
+        return config;
+    }
+
+    public void setConfig(String config) {
+        this.config = config;
     }
 }

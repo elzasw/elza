@@ -14,6 +14,8 @@ import java.util.stream.Collectors;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
@@ -88,6 +90,8 @@ public class BulkActionService implements ListenableFutureCallback<BulkActionWor
     public static final int MAX_BULK_ACTIONS_LIST = 100;
 
     private final static Logger logger = LoggerFactory.getLogger(BulkActionService.class);
+
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     @Autowired
     BeanFactory beanFactory;
@@ -185,7 +189,7 @@ public class BulkActionService implements ListenableFutureCallback<BulkActionWor
      */
     public ArrBulkActionRun queue(final Integer userId, final String bulkActionCode, final Integer fundVersionId) {
         ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
-        return queue(userId, bulkActionCode, fundVersionId, Collections.singletonList(version.getRootNode().getNodeId()));
+        return queue(userId, bulkActionCode, fundVersionId, Collections.singletonList(version.getRootNode().getNodeId()), null);
     }
 
     /**
@@ -195,13 +199,15 @@ public class BulkActionService implements ListenableFutureCallback<BulkActionWor
      * @param bulkActionCode Kod hromadné akce
      * @param fundVersionId  identifikátor verze archivní pomůcky
      * @param inputNodeIds   seznam vstupních uzlů (podstromů AS)
+     * @param runConfig      dodatečné nastavení běhu hromadné akce
      * @return objekt hromadné akce
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_BA_ALL, UsrPermission.Permission.FUND_BA})
     public ArrBulkActionRun queue(final Integer userId,
                                   final String bulkActionCode,
                                   @AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId,
-                                  final List<Integer> inputNodeIds) {
+                                  final List<Integer> inputNodeIds,
+                                  final Object runConfig) {
         Assert.notNull(bulkActionCode, "Musí být vyplněn kód hromadné akce");
         Assert.isTrue(StringUtils.isNotBlank(bulkActionCode), "Musí být vyplněn kód hromadné akce");
         Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
@@ -227,6 +233,14 @@ public class BulkActionService implements ListenableFutureCallback<BulkActionWor
         arrFundVersion.setFundVersionId(fundVersionId);
         bulkActionRun.setFundVersion(arrFundVersion);
         bulkActionRun.setDatePlanned(new Date());
+
+        if (runConfig != null) {
+            try {
+                bulkActionRun.setConfig(objectMapper.writeValueAsString(runConfig));
+            } catch (JsonProcessingException e) {
+                throw new SystemException("Problém při převodu na JSON", e, BaseCode.JSON_PARSE);
+            }
+        }
         storeBulkActionRun(bulkActionRun);
 
         List<ArrBulkActionNode> bulkActionNodes = new ArrayList<>(inputNodeIds.size());
@@ -271,7 +285,7 @@ public class BulkActionService implements ListenableFutureCallback<BulkActionWor
             eventPublishBulkAction(bulkActionRun);
             return;
         }
-		
+
         BulkActionWorker bulkActionWorker = new BulkActionWorker(bulkAction, bulkActionRun, nodeIds, this, txManager);
         runningWorkers.put(bulkActionRun.getFundVersionId(), bulkActionWorker);
 
@@ -283,7 +297,7 @@ public class BulkActionService implements ListenableFutureCallback<BulkActionWor
 
         bulkActionWorker.setStateAndPublish(State.PLANNED);
         logger.info("Hromadná akce naplánována ke spuštění: " + bulkActionWorker);
-		    
+
         BulkActionService actionService = this;
 
         // worker can be starter only after commit

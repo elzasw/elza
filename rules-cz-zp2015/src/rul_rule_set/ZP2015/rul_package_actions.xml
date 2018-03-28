@@ -41,7 +41,7 @@
             <action-item-type item-type="ZP2015_ORIGINATOR" />
             <action-item-type item-type="ZP2015_LANGUAGE" />
             <action-item-type item-type="ZP2015_UNIT_COUNT_SUM" />
-            <action-item-type item-type="ZP2015_UNIT_COUNT_TABLE" />            
+            <action-item-type item-type="ZP2015_UNIT_COUNT_TABLE" />
         </action-item-types>
         <action-recommendeds>
             <action-recommended output-type="STARSI_POMUCKA_1958" />
@@ -52,4 +52,5 @@
     <!-- Generator testovacich dat -->
     <package-action filename="ZP2015_TEST_DATA_GENERATOR.yaml">
     </package-action>
+    <package-action filename="PERSISTENTNI_RAZENI.yaml" />
 </package-actions>

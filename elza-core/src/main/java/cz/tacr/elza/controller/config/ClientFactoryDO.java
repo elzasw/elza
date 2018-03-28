@@ -1,6 +1,7 @@
 package cz.tacr.elza.controller.config;
 
 import cz.tacr.elza.FilterTools;
+import cz.tacr.elza.bulkaction.generator.PersistentSortRunConfig;
 import cz.tacr.elza.controller.vo.ApRecordVO;
 import cz.tacr.elza.controller.vo.ApScopeVO;
 import cz.tacr.elza.controller.vo.ApVariantRecordVO;
@@ -13,6 +14,7 @@ import cz.tacr.elza.controller.vo.ParPartyNameVO;
 import cz.tacr.elza.controller.vo.ParPartyVO;
 import cz.tacr.elza.controller.vo.ParRelationEntityVO;
 import cz.tacr.elza.controller.vo.ParRelationVO;
+import cz.tacr.elza.controller.vo.PersistentSortConfigVO;
 import cz.tacr.elza.controller.vo.UISettingsVO;
 import cz.tacr.elza.controller.vo.UsrPermissionVO;
 import cz.tacr.elza.controller.vo.filter.Condition;
@@ -937,5 +939,11 @@ public class ClientFactoryDO {
     public List<UISettings> createSettingsList(final List<UISettingsVO> settings) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         return mapper.mapAsList(settings, UISettings.class);
+    }
+
+    public PersistentSortRunConfig createPersistentSortRunConfig(final PersistentSortConfigVO configVO) {
+        Assert.notNull(configVO, "Nastavení musí být vyplněno");
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        return mapper.map(configVO, PersistentSortRunConfig.class);
     }
 }

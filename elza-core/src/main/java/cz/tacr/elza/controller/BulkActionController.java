@@ -9,6 +9,9 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
+import cz.tacr.elza.bulkaction.generator.PersistentSortRunConfig;
+import cz.tacr.elza.controller.config.ClientFactoryDO;
+import cz.tacr.elza.controller.vo.PersistentSortConfigVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
@@ -59,6 +62,9 @@ public class BulkActionController {
 
     @Autowired
     private ClientFactoryVO factoryVo;
+
+    @Autowired
+    private ClientFactoryDO factoryDo;
 
     @RequestMapping(
             value = "/{versionId}",
@@ -124,11 +130,33 @@ public class BulkActionController {
                     final @RequestBody List<Integer> nodeIds) {
         Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
         Assert.notNull(code, "Kód musí být vyplněn");
-        Assert.notEmpty(nodeIds, "Pro sputění hromadné akce je vyžadován alespon 1 uzel");
+        Assert.notEmpty(nodeIds, "Pro sputění hromadné akce je vyžadován alespoň 1 uzel");
         UserDetail userDetail = userService.getLoggedUserDetail();
         Integer userId = userDetail != null ? userDetail.getId() : null;
 
-        ArrBulkActionRun actionRun = bulkActionService.queue(userId, code, fundVersionId, nodeIds);
+        ArrBulkActionRun actionRun = bulkActionService.queue(userId, code, fundVersionId, nodeIds, null);
+        return factoryVo.createBulkActionRun(actionRun);
+    }
+
+    @RequestMapping(value = "/queue/persistentSort/{versionId}/{code}",
+            method = RequestMethod.POST,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+	@Transactional
+	public BulkActionRunVO queuePersistentSortByIds(final @PathVariable("versionId") Integer fundVersionId,
+	        final @PathVariable("code") String code,
+            final @RequestBody PersistentSortConfigVO configVO) {
+        Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
+        Assert.notNull(code, "Kód musí být vyplněn");
+        Assert.notNull(configVO, "Nastavení musí být vyplněno");
+        Assert.notEmpty(configVO.getNodeIds(), "Pro sputění hromadné akce je vyžadován alespoň 1 uzel");
+
+        UserDetail userDetail = userService.getLoggedUserDetail();
+        Integer userId = userDetail != null ? userDetail.getId() : null;
+
+        PersistentSortRunConfig persistentSortRunConfig = factoryDo.createPersistentSortRunConfig(configVO);
+        ArrBulkActionRun actionRun = bulkActionService.queue(userId, code, fundVersionId, configVO.getNodeIds(),
+                persistentSortRunConfig);
         return factoryVo.createBulkActionRun(actionRun);
     }
 

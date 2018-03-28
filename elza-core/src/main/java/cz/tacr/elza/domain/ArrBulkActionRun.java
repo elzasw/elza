@@ -92,6 +92,11 @@ public class ArrBulkActionRun {
     @Column
     private String result;
 
+    @Lob
+    @Type(type = "org.hibernate.type.TextType")
+    @Column
+    private String config;
+
     /**
      * Vrací identifikátor záznamu.
      *
@@ -326,6 +331,14 @@ public class ArrBulkActionRun {
         } catch (JsonProcessingException e) {
             throw new IllegalArgumentException("Error while writing JSON", e);
         }
+    }
+
+    public String getConfig() {
+        return config;
+    }
+
+    public void setConfig(String config) {
+        this.config = config;
     }
 
     /**
