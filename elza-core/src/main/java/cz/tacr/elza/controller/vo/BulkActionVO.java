@@ -14,6 +14,8 @@ public class BulkActionVO {
 
     private String description;
 
+    private boolean fastAction;
+
     public String getCode() {
         return code;
     }
@@ -36,5 +38,13 @@ public class BulkActionVO {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public boolean isFastAction() {
+        return fastAction;
+    }
+
+    public void setFastAction(boolean fastAction) {
+        this.fastAction = fastAction;
     }
 }

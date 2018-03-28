@@ -92,7 +92,7 @@ public class PersistentSortBulkAction extends BulkAction {
         itemType = itemTypeRepository.findOneByCode(runConfig.getItemTypeCode());
         if (itemType == null) {
             throw new SystemException(
-                    "Hromadná akce " + getName() + " je nakonfigurována pro neexistující datový typ:",
+                    "Hromadná akce " + getName() + " je nakonfigurována pro neexistující typ atributu:",
                     BaseCode.SYSTEM_ERROR).set("itemTypeCode", runConfig.getItemTypeCode());
         }
 
@@ -104,8 +104,13 @@ public class PersistentSortBulkAction extends BulkAction {
                     BaseCode.SYSTEM_ERROR).set("dataTypeCode", dataTypeCode);
         }
 
+        if (itemType.getUseSpecification()) {
+            if (StringUtils.isBlank(runConfig.getItemSpecCode())) {
+                throw new SystemException(
+                        "Hromadná akce " + getName() + " musí mít nastavenu specifikaci pro typ atributu:",
+                        BaseCode.SYSTEM_ERROR).set("itemTypeCode", runConfig.getItemTypeCode());
+            }
 
-        if (StringUtils.isNotBlank(runConfig.getItemSpecCode())) {
             itemSpec = itemSpecRepository.findOneByCode(runConfig.getItemSpecCode());
             if (itemSpec == null) {
                 throw new SystemException(
@@ -133,6 +138,9 @@ public class PersistentSortBulkAction extends BulkAction {
 
     private void sort(ArrLevel parent, ArrChange change) {
         List<ArrLevel> children = levelRepository.findByParentNodeAndDeleteChangeIsNullOrderByPositionAsc(parent.getNode());
+        if (children.isEmpty()) {
+            return;
+        }
 
         List<ArrNode> nodes = new ArrayList<>(children.size());
         for (ArrLevel level : children) {

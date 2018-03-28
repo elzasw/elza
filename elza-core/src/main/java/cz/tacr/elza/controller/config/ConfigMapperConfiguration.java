@@ -308,6 +308,7 @@ public class ConfigMapperConfiguration {
                                         final MappingContext context) {
 				        bulkActionVO.setName(bulkActionConfig.getName());
 				        bulkActionVO.setDescription(bulkActionConfig.getDescription());
+                        bulkActionVO.setFastAction(bulkActionConfig.isFastAction());
                     }
                 }
         ).byDefault().register();

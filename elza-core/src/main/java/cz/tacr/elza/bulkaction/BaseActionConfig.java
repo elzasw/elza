@@ -53,6 +53,7 @@ public abstract class BaseActionConfig implements BulkActionConfig {
 		this.code = code;
 	}
 
+	@Override
 	public boolean isFastAction() {
 		return fastAction;
 	}

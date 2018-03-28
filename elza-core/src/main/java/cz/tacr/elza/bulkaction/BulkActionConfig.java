@@ -17,5 +17,7 @@ public abstract interface BulkActionConfig {
 
 	public String getDescription();
 
+	boolean isFastAction();
+
 	abstract public BulkAction createBulkAction();
 }
