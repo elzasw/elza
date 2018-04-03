@@ -344,6 +344,10 @@ export class WebApiCls {
         return AjaxUtils.ajaxPost(WebApiCls.actionUrl + '/queue/' + versionId + '/' + code, null, nodeIds);
     }
 
+    queuePersistentSortByIds(versionId, code, nodeIds, config) {
+        return AjaxUtils.ajaxPost(WebApiCls.actionUrl + '/queue/persistentSort/' + versionId + '/' + code, null, {nodeIds, ...config});
+    }
+
     versionValidate(versionId, showAll = false) {
         return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/validateVersion/' + versionId + '/' + showAll, null)
     }

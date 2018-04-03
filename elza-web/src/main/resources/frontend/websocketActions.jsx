@@ -5,7 +5,7 @@ import {webSocketConnect, webSocketDisconnect} from 'actions/global/webSocket.js
 import * as arrRequestActions from 'actions/arr/arrRequestActions';
 import * as daoActions from 'actions/arr/daoActions';
 import {store} from 'stores/index.jsx';
-import {addToastrDanger} from 'components/shared/toastr/ToastrActions.jsx';
+import {addToastrDanger, addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx';
 import {i18n} from "components/shared";
 import {checkUserLogged} from "actions/global/login.jsx";
 
@@ -54,6 +54,8 @@ import Stomp from 'stompjs';
 import URLParse from "url-parse";
 
 import {reloadUserDetail} from 'actions/user/userDetail';
+import {fundTreeFetch} from "./actions/arr/fundTree";
+import * as types from "./actions/constants/ActionTypes";
 
 const url = new URLParse(serverContextPath + '/stomp');
 
@@ -212,6 +214,7 @@ let eventMap = {
     'OUTPUT_ITEM_CHANGE': outputItemChange,
     'FILES_CHANGE': filesChangeEvent,
     'BULK_ACTION_STATE_CHANGE': fundActionActionChange,
+    'PERSISTENT_SORT_RESULT': persistentSortResult,
     'DELETE_LEVEL': deleteLevelChange,
     'ADD_LEVEL_AFTER': addLevelAfterChange,
     'ADD_LEVEL_BEFORE': addLevelBeforeChange,
@@ -438,6 +441,22 @@ function deleteLevelChange(value) {
  */
 function fundActionActionChange(value) {
     store.dispatch(changeFundAction(value.versionId, value.entityId));
+}
+
+function persistentSortResult(value) {
+    if (value.state === "FINISHED") {
+        let state = store.getState();
+        const fund = state.arrRegion.activeIndex != null ? state.arrRegion.funds[state.arrRegion.activeIndex] : null;
+
+        if (fund) {
+            store.dispatch(fundTreeFetch(types.FUND_TREE_AREA_MAIN, fund.versionId, null, fund.fundTree.expandedIds));
+        }
+        store.dispatch(addToastrSuccess(i18n("arr.functions.persistentSort.sortSuccess")));
+    } else if (value.state === "INTERRUPTED") {
+        store.dispatch(addToastrDanger(i18n("arr.functions.persistentSort.sortInterrupted")));
+    } else {
+        store.dispatch(addToastrDanger(i18n("arr.functions.persistentSort.sortFailed")));
+    }
 }
 
 function partyUpdate(value){

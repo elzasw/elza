@@ -16,6 +16,7 @@ import javax.transaction.Transactional.TxType;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import cz.tacr.elza.service.eventnotification.events.EventPersistentSortResult;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
@@ -88,6 +89,8 @@ public class BulkActionService implements ListenableFutureCallback<BulkActionWor
      * Počet hromadných akcí v listu MAX_BULK_ACTIONS_LIST.
      */
     public static final int MAX_BULK_ACTIONS_LIST = 100;
+
+    public static final String PERSISTENT_SORT_CODE = "PERZISTENTNI_RAZENI";
 
     private final static Logger logger = LoggerFactory.getLogger(BulkActionService.class);
 
@@ -416,6 +419,16 @@ public class BulkActionService implements ListenableFutureCallback<BulkActionWor
      */
     @Transactional(TxType.MANDATORY)
     public void eventPublishBulkAction(final ArrBulkActionRun bulkActionRun) {
+
+        //speciální chování akce PERZISTENTNI_RAZENI pro refresh stromu po seřazení
+        if (bulkActionRun.getState() == State.FINISHED
+                || bulkActionRun.getState() == State.ERROR
+                || bulkActionRun.getState() == State.INTERRUPTED
+                && bulkActionRun.getBulkActionCode()
+                .equals(PERSISTENT_SORT_CODE)) {
+            eventNotificationService.publishEvent(new EventPersistentSortResult(EventType.PERSISTENT_SORT_RESULT, bulkActionRun.getState()));
+        }
+
         eventNotificationService.publishEvent(
                 EventFactory.createIdInVersionEvent(
                         EventType.BULK_ACTION_STATE_CHANGE,

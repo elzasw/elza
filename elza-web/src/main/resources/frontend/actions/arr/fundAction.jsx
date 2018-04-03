@@ -192,7 +192,7 @@ export function fundActionFormChange(versionId, data) {
     };
 }
 
-export function fundActionFormSubmit(versionId) {
+export function fundActionFormSubmit(versionId, code, config) {
     return (dispatch, getState) => {
         const {arrRegion: {funds}} = getState();
         const index = indexById(funds, versionId, 'versionId');
@@ -200,7 +200,11 @@ export function fundActionFormSubmit(versionId) {
             const {fundAction : {form, isFormVisible}, versionId} = funds[index];
             if (isFormVisible) {
                 const nodeIds = form.nodes.map(node => node.id);
-                WebApi.queueBulkActionWithIds(versionId, form.code, nodeIds);
+                if (code === "PERZISTENTNI_RAZENI") {
+                    WebApi.queuePersistentSortByIds(versionId, form.code, nodeIds, config);
+                } else {
+                    WebApi.queueBulkActionWithIds(versionId, form.code, nodeIds);
+                }
                 dispatch({
                     type: types.FUND_ACTION_FORM_SUBMIT,
                     versionId

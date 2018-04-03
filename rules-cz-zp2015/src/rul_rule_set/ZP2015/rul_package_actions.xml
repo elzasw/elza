@@ -52,5 +52,5 @@
     <!-- Generator testovacich dat -->
     <package-action filename="ZP2015_TEST_DATA_GENERATOR.yaml">
     </package-action>
-    <package-action filename="PERSISTENTNI_RAZENI.yaml" />
+    <package-action filename="PERZISTENTNI_RAZENI.yaml" />
 </package-actions>

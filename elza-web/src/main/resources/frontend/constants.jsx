@@ -47,3 +47,6 @@ export const FOCUS_KEYS = {
     FUND_REQUEST: 'fund-request',
     ADMIN_EXT_SYSTEM: 'admin-extSystem',
 };
+
+//konkrétrní kód akce pro perzistentní řazení v balíčku ZP2015
+export const PERSISTENT_SORT_CODE = "PERZISTENTNI_RAZENI";
