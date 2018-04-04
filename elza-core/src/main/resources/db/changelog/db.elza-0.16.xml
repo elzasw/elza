@@ -202,7 +202,7 @@
         </insert>
     </changeSet>
 
-    <changeSet id="66" author="vanek">
+    <changeSet id="20180404152900" author="vanek">
         <addColumn tableName="arr_bulk_action_run">
             <column name="config" type="${type.text}"/>
         </addColumn>
