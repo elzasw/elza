@@ -214,7 +214,7 @@ let eventMap = {
     'OUTPUT_ITEM_CHANGE': outputItemChange,
     'FILES_CHANGE': filesChangeEvent,
     'BULK_ACTION_STATE_CHANGE': fundActionActionChange,
-    'PERSISTENT_SORT_RESULT': persistentSortResult,
+    'PERSISTENT_SORT': persistentSortResult,
     'DELETE_LEVEL': deleteLevelChange,
     'ADD_LEVEL_AFTER': addLevelAfterChange,
     'ADD_LEVEL_BEFORE': addLevelBeforeChange,

@@ -16,7 +16,7 @@ import javax.transaction.Transactional.TxType;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import cz.tacr.elza.service.eventnotification.events.EventPersistentSortResult;
+import cz.tacr.elza.service.eventnotification.events.EventPersistentSort;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
@@ -426,7 +426,9 @@ public class BulkActionService implements ListenableFutureCallback<BulkActionWor
                 || bulkActionRun.getState() == State.INTERRUPTED
                 && bulkActionRun.getBulkActionCode()
                 .equals(PERSISTENT_SORT_CODE)) {
-            eventNotificationService.publishEvent(new EventPersistentSortResult(EventType.PERSISTENT_SORT_RESULT, bulkActionRun.getState()));
+            eventNotificationService.publishEvent(new EventPersistentSort(EventType.PERSISTENT_SORT,
+                    bulkActionRun.getFundVersionId(),
+                    bulkActionRun.getState()));
         }
 
         eventNotificationService.publishEvent(

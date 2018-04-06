@@ -18,6 +18,7 @@ import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.controller.vo.nodes.NodeData;
 import cz.tacr.elza.controller.vo.nodes.NodeDataParam;
+import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrDigitizationRequest;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -40,6 +41,7 @@ import cz.tacr.elza.service.eventnotification.events.AbstractEventSimple;
 import cz.tacr.elza.service.eventnotification.events.EventAddNode;
 import cz.tacr.elza.service.eventnotification.events.EventDeleteNode;
 import cz.tacr.elza.service.eventnotification.events.EventNodeMove;
+import cz.tacr.elza.service.eventnotification.events.EventPersistentSort;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.eventnotification.events.EventVersion;
 import org.apache.commons.collections4.CollectionUtils;
@@ -595,6 +597,17 @@ public class LevelTreeCacheService {
         versionCache.remove(fundVersion.getFundVersionId());
     }
 
+    /**
+     * Invalidace verze AS v cache.
+     *
+     * @param fundVersion verze archivního souboru
+     */
+    synchronized public void refreshFundVersion(final ArrFundVersion fundVersion) {
+        Assert.notNull(fundVersion, "Verze AS není vyplněna");
+        invalidateFundVersion(fundVersion);
+        getVersionTreeCache(fundVersion);
+    }
+
     @Subscribe
     public void onDataUpdate(final EventChangeMessage changeMessage) {
 
@@ -629,6 +642,12 @@ public class LevelTreeCacheService {
                     case DELETE_LEVEL:
                         EventDeleteNode eventIdInVersion = (EventDeleteNode) event;
                         actionDeleteLevel(eventIdInVersion.getNodeId(), version);
+                        break;
+                    case PERSISTENT_SORT:
+                        EventPersistentSort eventPersistentSort = (EventPersistentSort) event;
+                        if (eventPersistentSort.getState() == ArrBulkActionRun.State.FINISHED) {
+                            refreshFundVersion(version);
+                        }
                         break;
                 }
 

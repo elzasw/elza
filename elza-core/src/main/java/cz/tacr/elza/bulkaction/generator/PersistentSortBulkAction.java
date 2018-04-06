@@ -154,7 +154,7 @@ public class PersistentSortBulkAction extends BulkAction {
 
         Comparator<ArrLevel> comparator = new PersistentSortComparator(nodesValues);
 
-        if (!runConfig.isAsc()) {
+        if (runConfig.isAsc()) {
             comparator = comparator.reversed();
         }
         children.sort(comparator);

@@ -93,7 +93,7 @@ public enum EventType {
 
     BULK_ACTION_STATE_CHANGE(EventStringInVersion.class),
 
-    PERSISTENT_SORT_RESULT(EventPersistentSortResult.class);
+    PERSISTENT_SORT(EventPersistentSort.class);
 
     private Class<? extends AbstractEventSimple> eventClass;
 
