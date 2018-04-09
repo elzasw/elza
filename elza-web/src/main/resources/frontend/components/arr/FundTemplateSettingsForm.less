@@ -1,0 +1,45 @@
+.templates-form {
+    .btn-action {
+        background: transparent;
+        border-color: transparent;
+        &:hover {
+            background-color: #c0c0c0;
+        }
+    }
+    .form-error {
+        text-align: center;
+        padding-top: 5px;
+        color: red;
+        font-size: 14px;
+        font-weight: bold;
+    }
+    .panel-group {
+        margin-bottom: -1px;
+    }
+    .template-items {
+        max-height: 650px;
+        overflow: auto;
+    }
+    input {
+        font-size: 14px;
+    }
+    .item-type {
+        font-weight: bold;
+        &::after {
+            content: ": ";
+        }
+    }
+    .item-noenum {
+        font-style: italic;
+        &::after {
+            content: " - ";
+        }
+    }
+    .item-undefined {
+        font-style: italic;
+        font-weight: bold;
+    }
+    .panel-heading {
+        cursor: pointer;
+    }
+}

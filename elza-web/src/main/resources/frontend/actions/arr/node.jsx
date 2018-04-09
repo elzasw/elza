@@ -268,7 +268,7 @@ export function increaseMultipleNodesVersions(versionId,nodeArray){
  * @param {string} scenarioName název scénáře, který má být použit
  * @param {func} callback, který je volán po úspěšném založení, předpis: function (versionId, node, parentNode), node je nově založený node a parentNode je jeho aktualizovaný nadřazený node
  */
-export function addNode(indexNode, parentNode, versionId, direction, descItemCopyTypes = null, scenarioName = null, afterCreateCallback = null) {
+export function addNode(indexNode, parentNode, versionId, direction, descItemCopyTypes = null, scenarioName = null, createItems = null, afterCreateCallback = null) {
     return (dispatch) => {
         parentNode = {
             id: parentNode.id,
@@ -285,7 +285,7 @@ export function addNode(indexNode, parentNode, versionId, direction, descItemCop
         dispatch(increaseNodeVersion(versionId, parentNode.id, parentNode.version));
 
         // Reálné provedení operace
-        return savingApiWrapper(dispatch, WebApi.addNode(indexNode, parentNode, versionId, direction, descItemCopyTypes, scenarioName)).then((json) => {
+        return savingApiWrapper(dispatch, WebApi.addNode(indexNode, parentNode, versionId, direction, descItemCopyTypes, scenarioName, createItems)).then((json) => {
             dispatch(fundNodeChangeAdd(versionId, json.node, indexNode, json.parentNode, direction));
             afterCreateCallback && afterCreateCallback(versionId, json.node, json.parentNode);
         });

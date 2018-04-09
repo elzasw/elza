@@ -36,6 +36,7 @@ var messages = {
     "global.action.replace": "Nahradit",
     "global.action.add": "Přidat",
     "global.action.choose": "Vybrat",
+    "global.action.use": "Použít",
     "global.action.remove": "Odebrat",
     "global.action.cancel": "Storno",
     "global.action.close": "Zavřít",
@@ -211,6 +212,7 @@ var messages = {
     "search.extended.form.unitdate.calendar.JULIAN": "J",
 
     "global.validation.required": "Pole je povinné",
+    "global.validation.exists": "Již existuje",
     "global.validation.datation.invalid": "Vstupní řetězec není validní.",
     "global.validation.datation.invalidFormat": "Neplatný formát {0}",
     "global.validation.datation.invalidInterval": "Neplatný interval ISO datumů: od > do",
@@ -267,6 +269,7 @@ var messages = {
     "ribbon.action.arr.show-register-jp": "Rejstříky k JP",
     "ribbon.action.arr.show-daos": "Digitální entity k JP",
     "ribbon.action.arr.fund.settings.ui": "Nastavení zobrazení",
+    "ribbon.action.arr.fund.settings.template": "Správa šablon",
     "ribbon.action.registry": "Rejstříková hesla",
     "ribbon.action.party": "Osoby",
     "ribbon.action.admin": "Administrace",
@@ -449,6 +452,11 @@ var messages = {
     "arr.fund.files.action.add.fromFile": "Ze souboru",
     "arr.fund.files.action.add.editable": "Ručně psaný text",
     "arr.fund.files.action.delete": "Odebrat přílohu",
+
+    "arr.fund.template.title": "Správa šablon",
+    "arr.fund.template.empty": "Nejsou definovány žádné šablony",
+    "arr.fund.template.undefined": "Nezjištěno",
+    "arr.fund.template.error.duplicate": "Název šablony je duplicitní: {0}",
 
     "arr.fund.settings.title": "Nastavení zobrazení archivního fondu",
     "arr.fund.settings.rules": "Ostatní",
@@ -776,6 +784,7 @@ var messages = {
     "subNodeForm.descItem.coordinates.action.add": "Nahrát souřadnice",
 
     "subNodeForm.add.noScenario": "Bez scénáře",
+    "subNodeForm.add.fromTemplate": "Ze šablony",
     "subNodeForm.addNodeBefore": "JP před",
     "subNodeForm.addSubNode": "JP pod",
     "subNodeForm.deleteNode": "Smazat JP",
@@ -799,6 +808,8 @@ var messages = {
 
     "subNodeForm.section.jp" : "Záznam:",
     "subNodeForm.section.item" : "Prvek popisu",
+    "subNodeForm.section.createTemplate" : "Vytvořit šablonu",
+    "subNodeForm.section.useTemplate" : "Použít šablonu",
 
     "subNodeRegister.title": "Rejstříková hesla",
     "subNodeRegister.title.add": "Přidání hesla",
@@ -973,6 +984,15 @@ var messages = {
 
     "arr.fund.title.added": "AS byl vytvořen",
     "arr.fund.title.approved": "AS byl uzavřen",
+
+    "arr.fund.addTemplate.new": "Nová",
+    "arr.fund.addTemplate.create": "Vytvoření šablony",
+    "arr.fund.addTemplate.exists": "Nahradit existující",
+    "arr.fund.addTemplate.name": "Název",
+    "arr.fund.addTemplate.withValues": "Uložit s vyplněnými hodnotami",
+    "arr.fund.useTemplate.title": "Použít šablonu",
+    "arr.fund.useTemplate.name": "Název",
+    "arr.fund.useTemplate.replaceValues": "Nahradit vyplněné hodnoty",
 
     "admin.extSystem.class": "Třída",
     "admin.extSystem.name": "Název",

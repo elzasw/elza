@@ -904,7 +904,7 @@ function merge(state) {
     const dataMap = createDataMap(state.formData);
 
     let descItemsByType = {};
-    state.data.descItems.forEach(item => {
+    state.data.descItems && state.data.descItems.forEach(item => {
 
         let items = descItemsByType[item.itemTypeId];
         if (!items) {

@@ -121,6 +121,9 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
 	@Query("SELECT i FROM arr_desc_item i LEFT JOIN FETCH i.data WHERE i.deleteChange IS NULL AND i.descItemObjectId = ?1")
     List<ArrDescItem> findOpenDescItems(Integer descItemObjectId);
 
+    @Query("SELECT i FROM arr_desc_item i LEFT JOIN FETCH i.data WHERE i.deleteChange IS NULL AND i.descItemObjectId IN :descItemObjectIds")
+    List<ArrDescItem> findOpenDescItems(@Param("descItemObjectIds") Collection<Integer> descItemObjectIds);
+
     /**
      * Vyhledá otevřenou (nesmazenou) hodnotu atributů podle objectId.
      *

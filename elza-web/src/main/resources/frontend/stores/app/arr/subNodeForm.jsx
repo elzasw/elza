@@ -367,6 +367,83 @@ export default function subNodeForm(state = initialState, action = {}) {
 
             newState.formData = {...state.formData};
             return {...state};
+
+        case types.FUND_SUB_NODE_FORM_TEMPLATE_USE: {
+            console.warn("FUND_SUB_NODE_FORM_TEMPLATE_USE", action, state);
+
+            const groups = action.groups;
+            const template = action.template;
+            const formData = template.formData;
+            const replaceValues = template.replaceValues;
+
+            Object.keys(formData).map(itemTypeId => {
+                let existsItemType = false;
+                const items = formData[itemTypeId];
+                console.warn(itemTypeId, items);
+                const groupCode = groups.reverse[itemTypeId];
+                const group = groups[groupCode];
+
+                const addItemType = state.infoTypesMap[itemTypeId];
+
+                // Dohledání skupiny, pokud existuje
+                const grpIndex = indexById(state.formData.descItemGroups, groupCode, 'code');
+
+                let itemsMerge = [];
+                let descItemGroup;
+                if (grpIndex !== null) {
+                    descItemGroup = state.formData.descItemGroups[grpIndex];
+
+                    const index = indexById(descItemGroup.descItemTypes, itemTypeId);
+
+                    if (index !== null) {
+                        existsItemType = true;
+                        const itemType = descItemGroup.descItemTypes[index];
+                        itemsMerge = itemType.descItems;
+                        if (itemType.rep) {
+                            items.forEach((item => {
+                                const {value, ...newItem} = item; // odebrání hodnoty
+                                itemsMerge.push(newItem);
+                            }));
+                        }
+                    }
+
+                } else {   // skupina není, je nutné ji nejdříve přidat a následně seřadit skupiny podle pořadí
+                    descItemGroup = {code: group.code, name: group.name, descItemTypes: []};
+
+                    items.forEach((item => {
+                        const {value, ...newItem} = item; // odebrání hodnoty
+                        itemsMerge.push(newItem);
+                    }));
+
+                    state.formData.descItemGroups.push(descItemGroup);
+
+                    // Seřazení
+                    state.formData.descItemGroups.sort((a, b) => state.infoGroupsMap[a.code].position - state.infoGroupsMap[b.code].position);
+                }
+
+                // Přidání prvku do skupiny a seřazení prvků podle position
+                const itemType = {...addItemType, descItems: itemsMerge};
+                if (!existsItemType) {
+                    descItemGroup.descItemTypes.push(itemType);
+                }
+                // Musíme ponechat prázdnou hodnotu
+                const refType = state.refTypesMap[itemType.id];
+                const infoType = state.infoTypesMap[itemType.id];
+
+                // Upravení a opravení seznamu hodnot, případně přidání prázdných
+                consolidateDescItems(itemType, infoType, refType, true);
+
+                descItemGroup.descItemTypes.sort((a, b) => {
+                    return state.refTypesMap[a.id].viewOrder - state.refTypesMap[b.id].viewOrder
+                    //return a.viewOrder - b.viewOrder
+                });
+
+            });
+
+            state.formData = {...state.formData};
+            return {...state};
+        }
+
         case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_ADD:
             // Dohledání skupiny a desc item type
             var addGroup, addItemType;

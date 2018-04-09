@@ -11,6 +11,7 @@ import com.jayway.restassured.response.ResponseOptions;
 import com.jayway.restassured.specification.RequestSpecification;
 import cz.tacr.elza.AbstractTest;
 import cz.tacr.elza.controller.ArrangementController.FaFilteredFulltextParam;
+import cz.tacr.elza.controller.vo.AddLevelParam;
 import cz.tacr.elza.controller.vo.ApRecordVO;
 import cz.tacr.elza.controller.vo.ApScopeVO;
 import cz.tacr.elza.controller.vo.ApTypeVO;
@@ -645,7 +646,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param addLevelParam parametry pro vytvoření nového uzlu
      * @return nový uzel
      */
-    protected ArrangementController.NodeWithParent addLevel(final ArrangementController.AddLevelParam addLevelParam) {
+    protected ArrangementController.NodeWithParent addLevel(final AddLevelParam addLevelParam) {
         Response response = put(spec -> spec.body(addLevelParam), ADD_LEVEL);
         return response.getBody().as(ArrangementController.NodeWithParent.class);
     }
@@ -675,7 +676,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
                                                             final ArrNodeVO staticNode,
                                                             final ArrNodeVO parentStaticNode,
                                                             final String scenarioName) {
-        ArrangementController.AddLevelParam addLevelParam = new ArrangementController.AddLevelParam();
+        AddLevelParam addLevelParam = new AddLevelParam();
         addLevelParam.setVersionId(fundVersion.getId());
         addLevelParam.setDirection(direction);
         addLevelParam.setStaticNode(staticNode);

@@ -64,6 +64,7 @@ class ItemFormActions {
                 case types.FUND_SUB_NODE_FORM_VALUE_DELETE:
                 case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_DELETE:
                 case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_ADD:
+                case types.FUND_SUB_NODE_FORM_TEMPLATE_USE:
                 case types.FUND_SUB_NODE_FORM_VALUE_RESPONSE:
                 case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_COPY_FROM_PREV_RESPONSE:
                 case types.FUND_SUB_NODE_FORM_OUTPUT_CALC_SWITCH:
@@ -661,6 +662,21 @@ class ItemFormActions {
             //const state = getState();
             //const subNodeForm = this._getItemFormStore(state, versionId, routingKey);
             dispatch(setFocus(FOCUS_KEYS.ARR, 2, 'subNodeForm', {descItemTypeId: descItemTypeId, descItemObjectId: null}))
+        }
+    }
+
+    fundSubNodeFormTemplateUse(versionId, routingKey, template, replaceValues) {
+        return (dispatch, getState) => {
+            const state = getState();
+            dispatch({
+                type: types.FUND_SUB_NODE_FORM_TEMPLATE_USE,
+                area: this.area,
+                versionId,
+                routingKey,
+                template,
+                replaceValues,
+                groups: state.refTables.groups.data
+            });
         }
     }
 

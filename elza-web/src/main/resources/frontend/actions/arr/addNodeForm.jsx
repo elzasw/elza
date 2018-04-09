@@ -7,7 +7,7 @@
 
 import React from 'react';
 import {addNode, fundSelectSubNode} from 'actions/arr/node.jsx';
-import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
+import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog.jsx'
 import {i18n} from 'components/shared';
 import AddNodeForm from "../../components/arr/nodeForm/AddNodeForm";
 import CopyConflictForm from "../../components/arr/nodeForm/CopyConflictForm";
@@ -15,6 +15,7 @@ import CopyConflictForm from "../../components/arr/nodeForm/CopyConflictForm";
 import {importForm} from 'actions/global/global.jsx';
 import {WebApi} from "../WebApi"
 import {globalFundTreeInvalidate} from "./globalFundTree";
+
 /**
  * Vyvolá dialog pro přidání uzlu. Toto vyvolání dialogu slouží pro volání POUZE z pořádání! Po úspěšném volání je vybrán v pořádání přidaný node.
  * @param {Object} direction počáteční směr vytváření, který má být přednastaven v dialogu
@@ -48,7 +49,7 @@ export function addNodeForm(direction, node, parentNode, versionId, afterCreateC
         const onSubmit = (data, type, cb) => {
             switch (type) {
                 case "NEW": {
-                    dispatch(addNode(data.indexNode, data.parentNode, data.versionId, data.direction, data.descItemCopyTypes, data.scenarioName, afterCreateCallback));
+                    dispatch(addNode(data.indexNode, data.parentNode, data.versionId, data.direction, data.descItemCopyTypes, data.scenarioName, data.createItems, afterCreateCallback));
                     dispatch(modalDialogHide());
                     break;
                 }

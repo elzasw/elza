@@ -1,8 +1,6 @@
 package cz.tacr.elza.domain;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -13,8 +11,9 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Uživatelské nastavení.
@@ -164,6 +163,11 @@ public class UISettings {
          * nastavení strictního módu pro uživatele (přepíše nastavení pravidel)
          */
         FUND_STRICT_MODE(true, EntityType.FUND),
+
+        /**
+         * uživatelské šablony JP
+         */
+        FUND_TEMPLATES(true, EntityType.FUND),
 
         /**
          * oblíbené specifikace u typu atributu

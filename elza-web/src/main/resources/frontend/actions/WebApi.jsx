@@ -193,6 +193,33 @@ export class WebApiCls {
         // return AjaxUtils.ajaxPut(WebApi.arrangementUrl + '/descItems/' + versionId + '/' + nodeVersionId + '/update/true', null,  descItem);
     }
 
+    updateDescItems(fundVersionId, nodeId, nodeVersionId, createDescItem = [], updateDescItem = [], deleteDescItem = []) {
+        const changeItems = [];
+
+        createDescItem.forEach(item => {
+            changeItems.push({
+                updateOp: "CREATE",
+                item: item
+            });
+        });
+
+        updateDescItem.forEach(item => {
+            changeItems.push({
+                updateOp: "UPDATE",
+                item: item
+            });
+        });
+
+        deleteDescItem.forEach(item => {
+            changeItems.push({
+                updateOp: "DELETE",
+                item: item
+            });
+        });
+
+        return callWS('/arrangement/descItems/' + fundVersionId + '/' + nodeId + '/' + nodeVersionId + '/update/bulk', changeItems, true);
+    }
+
     setNotIdentifiedDescItem(versionId, nodeId, parentNodeVersion, descItemTypeId, descItemSpecId, descItemObjectId) {
         // return callWS('/arrangement/descItems/' + versionId + '/' + nodeId + '/' + parentNodeVersion + '/notUndefined/set?descItemTypeId=' + descItemTypeId + '&descItemSpecId=' + descItemSpecId + '&descItemObjectId=' + descItemObjectId, null);
 
@@ -249,14 +276,15 @@ export class WebApiCls {
         return AjaxUtils.ajaxPut(WebApiCls.arrangementUrl + '/output/' + outputId + "/settings", null, {...outputSettings});
     }
 
-    addNode(node, parentNode, versionId, direction, descItemCopyTypes, scenarioName) {
+    addNode(node, parentNode, versionId, direction, descItemCopyTypes, scenarioName, createItems) {
         const data = {
             versionId,
             direction,
             staticNodeParent: parentNode,
             staticNode: node,
             descItemCopyTypes,
-            scenarioName
+            scenarioName,
+            createItems
         };
 
         return callWS('/arrangement/levels/add', data);

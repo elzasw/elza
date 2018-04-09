@@ -1,29 +1,5 @@
 package cz.tacr.elza.service;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.BooleanUtils;
-import org.apache.commons.lang3.NotImplementedException;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Validate;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import cz.tacr.elza.ElzaTools;
@@ -90,6 +66,28 @@ import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventChangeDescItem;
 import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.NotImplementedException;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
+import javax.annotation.Nullable;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 
 /**
@@ -171,7 +169,7 @@ public class DescriptionItemService {
      * @param change
      * @return uložený uzel
      */
-    private ArrNode saveNode(final ArrNode node, final ArrChange change) {
+    public ArrNode saveNode(final ArrNode node, final ArrChange change) {
         node.setLastUpdate(change.getChangeDate());
         nodeRepository.save(node);
         nodeRepository.flush();
@@ -395,7 +393,7 @@ public class DescriptionItemService {
         node.setVersion(nodeVersion);
         saveNode(node, change);
 
-        return createDescriptionItems(descItems, node, version, change);
+        return createDescriptionItemsWithValidate(descItems, node, version, change);
     }
 
     /**
@@ -440,6 +438,28 @@ public class DescriptionItemService {
      * @param version   verze stromu
      * @return vytvořená hodnota atributu
      */
+    public List<ArrDescItem> createDescriptionItemsWithValidate(final List<ArrDescItem> descItems,
+                                                                final ArrNode node,
+                                                                final ArrFundVersion version,
+                                                                @Nullable final ArrChange createChange) {
+
+        List<ArrDescItem> createdItems = createDescriptionItems(descItems, node, version, createChange);
+
+        // validace uzlu
+        ruleService.conformityInfo(version.getFundVersionId(), Collections.singletonList(node.getNodeId()),
+                NodeTypeOperation.SAVE_DESC_ITEM, createdItems, null, null);
+
+        return createdItems;
+    }
+
+    /**
+     * Vytvoření hodnoty atributu. Při ukládání nedojde ke zvýšení verze uzlu.
+     *
+     * @param descItems hodnota atributu
+     * @param node      uzel, kterému přidáme hodnotu
+     * @param version   verze stromu
+     * @return vytvořená hodnota atributu
+     */
     public List<ArrDescItem> createDescriptionItems(final List<ArrDescItem> descItems,
                                                     final ArrNode node,
                                                     final ArrFundVersion version,
@@ -461,10 +481,6 @@ public class DescriptionItemService {
             publishChangeDescItem(version, created);
         }
 
-        // validace uzlu
-        ruleService.conformityInfo(version.getFundVersionId(), Collections.singletonList(node.getNodeId()),
-                NodeTypeOperation.SAVE_DESC_ITEM, createdItems, null, null);
-
         return createdItems;
     }
 
@@ -472,7 +488,7 @@ public class DescriptionItemService {
      * Vytvoření hodnoty atributu s daty.
      *
      * @param descItem hodnota atributu
-     * @param version  verze archivní pomůcky
+     * @param fundVersion  verze archivní pomůcky
      * @param change   změna operace
      * @return vytvořená hodnota atributu
      */
@@ -498,6 +514,7 @@ public class DescriptionItemService {
         }
 
         // načtení hodnot, které je potřeba přesunout níž
+        //descItemRepository.flush();
         List<ArrDescItem> descItems = descItemRepository.findOpenDescItemsAfterPosition(
                 descItem.getItemType(),
                 descItem.getNode(),
@@ -571,6 +588,46 @@ public class DescriptionItemService {
     }
 
     /**
+     * Odstraní požadované hodnoty atributů.
+     *
+     * @param descItemsToDelete hodnoty atributů k ostranění
+     * @param node
+     * @param fundVersion       verze AS
+     * @param change            změna
+     * @return smazané hodnoty atributů
+     */
+    public List<ArrDescItem> deleteDescriptionItems(final List<ArrDescItem> descItemsToDelete,
+                                                    final ArrNode node,
+                                                    final ArrFundVersion fundVersion,
+                                                    final ArrChange change) {
+        Validate.notEmpty(descItemsToDelete);
+        Validate.notNull(fundVersion);
+        Validate.notNull(change);
+
+        List<Integer> itemObjectIds = descItemsToDelete.stream().map(ArrDescItem::getDescItemObjectId).collect(Collectors.toList());
+        List<ArrDescItem> deleteDescItems = descItemRepository.findOpenDescItems(itemObjectIds);
+
+        List<ArrDescItem> results = new ArrayList<>();
+        for (ArrDescItem deleteDescItem : deleteDescItems) {
+            List<ArrDescItem> descItems = descItemRepository.findOpenDescItemsAfterPosition(
+                    deleteDescItem.getItemType(),
+                    deleteDescItem.getNode(),
+                    deleteDescItem.getPosition());
+
+            //copyDescItemsWithData(change, descItems, -1, fundVersion);
+
+            deleteDescItem.setDeleteChange(change);
+
+            results.add(descItemRepository.save(deleteDescItem));
+            descItemRepository.flush();
+        }
+
+        arrangementCacheService.deleteDescItems(node.getNodeId(), itemObjectIds);
+
+        return results;
+    }
+
+    /**
 	 * Provede posun (a odverzování) hodnot atributů jednoho uzlu s daty o
 	 * požadovaný počet.
 	 *
@@ -637,7 +694,7 @@ public class DescriptionItemService {
 
     /**
      * Vytvoří kopii prvků popisu. Kopírovaný atribut patří zvolenému uzlu.
-     * 
+     *
      * Method will also update nodeCache.
      *  @param node            uzel, který dostane kopírované atributy
      * @param sourceDescItems zdrojové atributy ke zkopírování
@@ -859,6 +916,25 @@ public class DescriptionItemService {
                 NodeTypeOperation.SAVE_DESC_ITEM, null, Arrays.asList(descItemUpdated), null);
 
         return descItemUpdated;
+    }
+
+    /**
+     * Hromadná úprava hodnot atributů.
+     *
+     * @param updateDescItems hodnoty atributů k úpravě
+     * @param fundVersion     verze AS
+     * @param change          změna
+     * @return upravěné hodnoty
+     */
+    public List<ArrDescItem> updateDescriptionItems(final List<ArrDescItem> updateDescItems,
+                                                    final ArrFundVersion fundVersion,
+                                                    final ArrChange change) {
+        List<ArrDescItem> results = new ArrayList<>();
+        for (ArrDescItem updateDescItem : updateDescItems) {
+            results.add(updateValueAsNewVersion(fundVersion, change, updateDescItem));
+        }
+        descItemRepository.flush();
+        return results;
     }
 
     /**

@@ -8,59 +8,60 @@ import './ArrPage.less';
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {indexById} from 'stores/app/utils.jsx'
+import {getMapFromList, indexById} from 'stores/app/utils.jsx'
 import {connect} from 'react-redux'
 import {
-    RibbonGroup,
     AbstractReactComponent,
-    ListBox2,
+    i18n,
+    Icon,
     LazyListBox,
+    ListBox2,
     Loading,
+    RibbonGroup,
     StoreHorizontalLoader,
     Tabs,
-    Icon,
-    i18n,
     Utils
 } from 'components/shared';
 
 import ArrParentPage from "./ArrParentPage.jsx";
 
 import {
-    Ribbon,
     ArrFundPanel,
-    FundSettingsForm,
-    NodeTabs,
-    VisiblePolicyForm,
-    FundPackets,
     FundFiles,
-    FundTreeMain
+    FundPackets,
+    FundSettingsForm,
+    FundTreeMain,
+    NodeTabs,
+    Ribbon,
+    VisiblePolicyForm
 } from 'components/index.jsx';
 import {Button} from 'react-bootstrap';
 import {WebApi} from 'actions/index.jsx';
-import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
-import {showRegisterJp, showDaosJp, fundsFetchIfNeeded} from 'actions/arr/fund.jsx'
+import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog.jsx'
+import {fundsFetchIfNeeded, showDaosJp, showRegisterJp} from 'actions/arr/fund.jsx'
 import {fundExtendedView} from 'actions/arr/fundExtended.jsx'
-import {versionValidate, versionValidationErrorNext, versionValidationErrorPrevious} from 'actions/arr/versionValidation.jsx'
+import {
+    versionValidate,
+    versionValidationErrorNext,
+    versionValidationErrorPrevious
+} from 'actions/arr/versionValidation.jsx'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
 import {developerNodeScenariosRequest} from 'actions/global/developer.jsx'
-import {isFundRootId, getSettings, setSettings, getOneSettings} from 'components/arr/ArrUtils.jsx';
-import {setFocus} from 'actions/global/focus.jsx'
+import {createFundRoot, getOneSettings, getSettings, isFundRootId, setSettings} from 'components/arr/ArrUtils.jsx';
+import {canSetFocus, focusWasSet, isFocusFor, setFocus} from 'actions/global/focus.jsx'
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx'
 import {fundNodesPolicyFetchIfNeeded} from 'actions/arr/fundNodesPolicy.jsx'
 import {fundActionFormChange, fundActionFormShow} from 'actions/arr/fundAction.jsx'
 import {fundSelectSubNode} from 'actions/arr/node.jsx';
 import {fundNodeInfoInvalidate} from 'actions/arr/nodeInfo.jsx';
-import {createFundRoot} from 'components/arr/ArrUtils.jsx'
 import ArrHistoryForm from 'components/arr/ArrHistoryForm.jsx'
 import {setVisiblePolicyRequest} from 'actions/arr/visiblePolicy.jsx'
 import {routerNavigate} from 'actions/router.jsx'
 import {fundTreeFetchIfNeeded} from 'actions/arr/fundTree.jsx'
 import {Shortcuts} from 'react-shortcuts';
-import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import * as perms from 'actions/user/Permission.jsx';
 import {selectTab} from 'actions/global/tab.jsx'
 import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx'
-import {getMapFromList} from 'stores/app/utils.jsx'
 import {PropTypes} from 'prop-types';
 import defaultKeymap from './ArrPageKeymap.jsx';
 import NodeSettingsForm from "../../components/arr/NodeSettingsForm";
@@ -68,6 +69,7 @@ import {FOCUS_KEYS} from "../../constants";
 import ArrStructurePanel from "../../components/arr/ArrStructurePanel";
 import {structureTypesFetchIfNeeded} from "../../actions/refTables/structureTypes";
 import objectById from "../../shared/utils/objectById";
+import FundTemplateSettingsForm from "../../components/arr/FundTemplateSettingsForm";
 
 const keyModifier = Utils.getKeyModifier();
 
@@ -344,6 +346,30 @@ class ArrPage extends ArrParentPage {
         this.props.dispatch(modalDialogShow(this, i18n('arr.fund.settings.title'), form));
     }
 
+    handleChangeFundTemplateSettings = () => {
+        const {userDetail} = this.props;
+        const activeInfo = this.getActiveInfo();
+
+        let fundId = activeInfo.activeFund.id;
+        let settings = userDetail.settings;
+        const fundTemplates = getOneSettings(settings, 'FUND_TEMPLATES', 'FUND', fundId);
+        const data = fundTemplates.value ? JSON.parse(fundTemplates.value) : [];
+        const init = {
+            templates: data
+        };
+        const form = <FundTemplateSettingsForm initialValues={init} onSubmitForm={(formData) => {
+            formData.templates.sort((a, b) => {
+                return a.name.localeCompare(b.name);
+            });
+            fundTemplates.value = JSON.stringify(formData.templates);
+            settings = setSettings(settings, fundTemplates.id, fundTemplates);
+            return this.props.dispatch(userDetailsSaveSettings(settings)).then(() => {
+                this.props.dispatch(modalDialogHide());
+            });
+        }} />;
+        this.props.dispatch(modalDialogShow(this, i18n('arr.fund.template.title'), form));
+    };
+
     handleChangeFundSettingsSubmit(data) {
         const {userDetail} = this.props;
         const activeInfo = this.getActiveInfo();
@@ -436,6 +462,12 @@ class ArrPage extends ArrParentPage {
                 <Button key="fund-settings" onClick={this.handleChangeFundSettings.bind(this)}>
                     <Icon glyph="fa-wrench"/>
                     <span className="btnText">{i18n('ribbon.action.arr.fund.settings.ui')}</span>
+                </Button>);
+
+            altActions.push(
+                <Button key="fund-templates" onClick={this.handleChangeFundTemplateSettings}>
+                    <Icon glyph="fa-wrench"/>
+                    <span className="btnText">{i18n('ribbon.action.arr.fund.settings.template')}</span>
                 </Button>);
 
             // Zobrazení historie změn

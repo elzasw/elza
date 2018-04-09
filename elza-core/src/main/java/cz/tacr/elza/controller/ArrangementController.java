@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
+import cz.tacr.elza.controller.vo.AddLevelParam;
 import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
 import cz.tacr.elza.controller.vo.ArrDaoPackageVO;
 import cz.tacr.elza.controller.vo.ArrDaoVO;
@@ -129,7 +130,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 import java.io.IOException;
@@ -1516,6 +1516,10 @@ public class ArrangementController {
                 addLevelParam.getDirection(), addLevelParam.getScenarioName(),
                 descItemCopyTypes);
 
+        if (CollectionUtils.isNotEmpty(addLevelParam.getCreateItems())) {
+            formService.updateDescItems(version.getFundVersionId(), newLevel.getNodeId(), newLevel.getNode().getVersion(), addLevelParam.getCreateItems(), Collections.emptyList(), Collections.emptyList(), null);
+        }
+
         Collection<TreeNodeVO> nodeClients = levelTreeCacheService
                 .getNodesByIds(Arrays.asList(newLevel.getNodeParent().getNodeId()), version.getFundVersionId());
         Assert.notEmpty(nodeClients, "Kolekce JP nesmí být prázdná");
@@ -2892,51 +2896,6 @@ public class ArrangementController {
 
         public void setTransportNodeParent(final ArrNodeVO transportNodeParent) {
             this.transportNodeParent = transportNodeParent;
-        }
-    }
-
-    /**
-     * Vstupní parametry pro přidání uzlu.
-     */
-    public static class AddLevelParam extends NodeParam{
-        /**
-         * Směr přidávání uzlu (před, za, pod)
-         */
-        private FundLevelService.AddLevelDirection direction;
-        /**
-         * Název scénáře, ze kterého se mají převzít výchozí hodnoty atributů.
-         */
-        @Nullable
-        private String scenarioName;
-
-        /**
-         * Seznam id typů atributů, které budou zkopírovány z uzlu přímo nadřazeným nad přidaným uzlem (jeho mladší sourozenec).
-         */
-        @Nullable
-        private Set<Integer> descItemCopyTypes;
-
-        public FundLevelService.AddLevelDirection getDirection() {
-            return direction;
-        }
-
-        public void setDirection(final FundLevelService.AddLevelDirection direction) {
-            this.direction = direction;
-        }
-
-        public String getScenarioName() {
-            return scenarioName;
-        }
-
-        public void setScenarioName(final String scenarioName) {
-            this.scenarioName = scenarioName;
-        }
-
-        public Set<Integer> getDescItemCopyTypes() {
-            return descItemCopyTypes;
-        }
-
-        public void setDescItemCopyTypes(final Set<Integer> descItemCopyTypes) {
-            this.descItemCopyTypes = descItemCopyTypes;
         }
     }
 

@@ -9,6 +9,7 @@ import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.ItemTypeLiteVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.core.data.RuleSystem;
+import cz.tacr.elza.core.data.RuleSystemProvider;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.AuthMethod;
@@ -19,8 +20,10 @@ import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.vo.NodeTypeOperation;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.FundVersionRepository;
@@ -28,13 +31,18 @@ import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.cache.RestoredNode;
 import cz.tacr.elza.websocket.service.WebScoketStompService;
+import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import javax.transaction.Transactional;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Service to handle form related requests
@@ -68,18 +76,20 @@ public class ArrangementFormService {
 
 	private final NodeCacheService nodeCache;
 
+	private final ArrangementService arrangementService;
+
 	public ArrangementFormService(StaticDataService staticData,
-	        DescriptionItemServiceInternal arrangementInternal,
-	        DescriptionItemService descriptionItemService,
-	        LevelTreeCacheService levelTreeCache,
-	        UserService userService,
-	        RuleService ruleService,
-	        WebScoketStompService wsStompService,
-	        ClientFactoryVO factoryVo,
-	        ClientFactoryDO factoryDo,
-	        NodeCacheService nodeCache,
-	        FundVersionRepository fundVersionRepository,
-	        NodeRepository nodeRepository) {
+								  DescriptionItemServiceInternal arrangementInternal,
+								  DescriptionItemService descriptionItemService,
+								  LevelTreeCacheService levelTreeCache,
+								  UserService userService,
+								  RuleService ruleService,
+								  WebScoketStompService wsStompService,
+								  ClientFactoryVO factoryVo,
+								  ClientFactoryDO factoryDo,
+								  NodeCacheService nodeCache,
+								  FundVersionRepository fundVersionRepository,
+								  NodeRepository nodeRepository, final ArrangementService arrangementService) {
 		this.staticData = staticData;
 		this.arrangementInternal = arrangementInternal;
 		this.descriptionItemService = descriptionItemService;
@@ -91,6 +101,7 @@ public class ArrangementFormService {
 		this.factoryVo = factoryVo;
 		this.nodeCache = nodeCache;
 		this.wsStompService = wsStompService;
+		this.arrangementService = arrangementService;
 	}
 
 	@Transactional
@@ -162,6 +173,116 @@ public class ArrangementFormService {
 			        ArrangementCode.FUND_VERSION_NOT_FOUND).set("id", fundVersionId);
 		}
 		updateDescItem(version, nodeVersion, descItemVO, createVersion, requestHeaders);
+	}
+
+	/**
+	 * Hromadná úprava hodnot JP.
+	 *
+	 * @param fundVersionId  identifikátor verze AS
+	 * @param nodeId         identifikátor JP
+	 * @param nodeVersion    verze JP
+	 * @param createItemVOs  seznam hodnot k vytvoření
+	 * @param updateItemVOs  seznam hodnot k úpravě
+	 * @param deleteItemVOs  seznam hodnot k odstarnění
+	 * @param requestHeaders reqh
+	 */
+	@Transactional
+	@AuthMethod(permission = { UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR })
+	public void updateDescItems(@AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId,
+								final Integer nodeId,
+								final Integer nodeVersion,
+								final List<ArrItemVO> createItemVOs,
+								final List<ArrItemVO> updateItemVOs,
+								final List<ArrItemVO> deleteItemVOs,
+								@Nullable final StompHeaderAccessor requestHeaders) {
+		ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
+		if (fundVersion == null) {
+			throw new ObjectNotFoundException("Nebyla nalezena verze AS s ID=" + fundVersionId,
+					ArrangementCode.FUND_VERSION_NOT_FOUND).set("id", fundVersionId);
+		}
+		ArrNode node = nodeRepository.findOne(nodeId);
+		if (node == null) {
+			throw new ObjectNotFoundException("Nebyla nalezena JP s ID=" + nodeId,
+					ArrangementCode.NODE_NOT_FOUND).set("id", nodeId);
+		}
+		StaticDataProvider dataProvider = this.staticData.getData();
+		final RuleSystemProvider ruleSystems = dataProvider.getRuleSystems();
+		List<ArrDescItem> createItems = createItemVOs.stream().map(itemVO -> convertDescItem(ruleSystems, itemVO)).collect(Collectors.toList());
+		List<ArrDescItem> updateItems = updateItemVOs.stream().map(itemVO -> convertDescItem(ruleSystems, itemVO)).collect(Collectors.toList());
+		List<ArrDescItem> deleteItems = deleteItemVOs.stream().map(itemVO -> convertDescItem(ruleSystems, itemVO)).collect(Collectors.toList());
+
+		List<ArrDescItem> arrDescItems = updateDescItems(fundVersion, node, nodeVersion, createItems, updateItems, deleteItems);
+
+		if (requestHeaders != null) {
+			List<UpdateItemResult> results = new ArrayList<>();
+
+			// prepare form data
+			List<RulItemTypeExt> itemTypes = ruleService.getDescriptionItemTypes(fundVersion, node);
+
+			RuleSystem rs = dataProvider.getRuleSystems().getByRuleSetId(fundVersion.getRuleSet().getRuleSetId());
+			//
+			List<ItemTypeLiteVO> itemTypesVO = factoryVo
+					.createItemTypes(rs.getRuleSet().getCode(), fundVersion.getFundId(), itemTypes);
+
+			LevelTreeCacheService.Node simpleNode = levelTreeCache.getSimpleNode(nodeId, fundVersion);
+			for (ArrDescItem descItem : arrDescItems) {
+				ArrItemVO descItemVo = factoryVo.createItem(descItem);
+				results.add(new UpdateItemResult(descItem, descItemVo, itemTypesVO, simpleNode));
+			}
+
+			// Odeslání dat zpět
+			wsStompService.sendReceiptAfterCommit(results, requestHeaders);
+		}
+	}
+
+	private ArrDescItem convertDescItem(final RuleSystemProvider ruleSystems, final ArrItemVO itemVO) {
+		ArrDescItem descItem = factoryDo.createDescItem(itemVO);
+		descItem.setItemType(ruleSystems.getItemType(itemVO.getItemTypeId()).getEntity());
+		return descItem;
+	}
+
+	private List<ArrDescItem> updateDescItems(final ArrFundVersion fundVersion,
+											  final ArrNode node,
+											  final Integer nodeVersion,
+											  final List<ArrDescItem> createItems,
+											  final List<ArrDescItem> updateItems,
+											  final List<ArrDescItem> deleteItems) {
+
+		ArrChange change = arrangementService.createChange(ArrChange.Type.BATCH_CHANGE_DESC_ITEM, node);
+
+		if (!node.getFundId().equals(fundVersion.getFundId())) {
+			throw new SystemException("Nesedí verze JP s AS", ArrangementCode.INVALID_VERSION);
+		}
+
+		// uložení uzlu (kontrola optimistických zámků)
+		node.setVersion(nodeVersion);
+		descriptionItemService.saveNode(node, change);
+
+		List<ArrDescItem> result = new ArrayList<>();
+		List<ArrDescItem> createdItems = null;
+		List<ArrDescItem> updatedItems = null;
+		List<ArrDescItem> deletedItems = null;
+
+		if (CollectionUtils.isNotEmpty(deleteItems)) {
+			deletedItems = descriptionItemService.deleteDescriptionItems(deleteItems, node, fundVersion, change);
+			result.addAll(deletedItems);
+		}
+
+		if (CollectionUtils.isNotEmpty(updateItems)) {
+			updatedItems = descriptionItemService.updateDescriptionItems(updateItems, fundVersion, change);
+			result.addAll(updatedItems);
+		}
+
+		if (CollectionUtils.isNotEmpty(createItems)) {
+			createdItems = descriptionItemService.createDescriptionItems(createItems, node, fundVersion, change);
+			result.addAll(createdItems);
+		}
+
+		// validace uzlu
+		ruleService.conformityInfo(fundVersion.getFundVersionId(), Collections.singletonList(node.getNodeId()),
+				NodeTypeOperation.SAVE_DESC_ITEM, createdItems, updatedItems, deletedItems);
+
+		return result;
 	}
 
 	/**
