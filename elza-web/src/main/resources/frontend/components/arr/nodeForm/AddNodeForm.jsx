@@ -168,7 +168,7 @@ class AddNodeForm extends AbstractReactComponent {
     };
 
     notEmpty = (value) => {
-        return value !== null && value !== "";
+        return value != null && value !== "";
     };
 
     /**
@@ -224,7 +224,7 @@ class AddNodeForm extends AbstractReactComponent {
                             Object.keys(formData).map(itemTypeId => {
                                 const items = formData[itemTypeId];
                                 items.forEach(item => {
-                                    if (this.notEmpty(item.value) || item['@class'] !== '.ArrItemEnumVO' && this.notEmpty(item.descItemSpecId)) {
+                                    if (this.notEmpty(item.value) || (item['@class'] === '.ArrItemEnumVO' && this.notEmpty(item.descItemSpecId))) {
                                         const newItem = {
                                             ...item,
                                             itemTypeId: itemTypeId
