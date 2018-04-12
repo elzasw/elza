@@ -112,6 +112,7 @@ import cz.tacr.elza.service.importnodes.vo.ImportParams;
 import cz.tacr.elza.service.importnodes.vo.ValidateResult;
 import cz.tacr.elza.service.output.OutputRequestStatus;
 import cz.tacr.elza.service.vo.ChangesResult;
+import cz.tacr.elza.service.vo.UpdateDescItemsParam;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.Validate;
@@ -1517,7 +1518,12 @@ public class ArrangementController {
                 descItemCopyTypes);
 
         if (CollectionUtils.isNotEmpty(addLevelParam.getCreateItems())) {
-            formService.updateDescItems(version.getFundVersionId(), newLevel.getNodeId(), newLevel.getNode().getVersion(), addLevelParam.getCreateItems(), Collections.emptyList(), Collections.emptyList(), null);
+            UpdateDescItemsParam params = new UpdateDescItemsParam(newLevel.getNodeId(),
+                    newLevel.getNode().getVersion(),
+                    addLevelParam.getCreateItems(),
+                    Collections.emptyList(),
+                    Collections.emptyList());
+            formService.updateDescItems(version.getFundVersionId(), params, null);
         }
 
         Collection<TreeNodeVO> nodeClients = levelTreeCacheService
