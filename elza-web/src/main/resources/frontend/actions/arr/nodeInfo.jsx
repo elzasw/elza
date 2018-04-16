@@ -39,8 +39,8 @@ function getNode(state, versionId, routingKey) {
  */
 export function fundNodeInfoFetchIfNeeded(versionId, nodeId, routingKey, showParents) {
     return (dispatch, getState) => {
-        var state = getState();
-        var node = getNode(state, versionId, routingKey);
+        const state = getState();
+        const node = getNode(state, versionId, routingKey);
         //console.log("FETCH_NODE",node);
         if (node != null && (!node.nodeInfoFetched || node.nodeInfoDirty ) && !node.isNodeInfoFetching) {
             //console.log("FETCHING_NODE_INFO");

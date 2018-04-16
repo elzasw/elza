@@ -56,6 +56,8 @@ import URLParse from "url-parse";
 import {reloadUserDetail} from 'actions/user/userDetail';
 import {fundTreeFetch} from "./actions/arr/fundTree";
 import * as types from "./actions/constants/ActionTypes";
+import {fundNodeSubNodeFulltextSearch, nodesReceive, nodesRequest} from "./actions/arr/node";
+import {WebApi} from "./actions";
 
 const url = new URLParse(serverContextPath + '/stomp');
 
@@ -450,6 +452,8 @@ function persistentSortResult(value) {
 
         if (fund) {
             store.dispatch(fundTreeFetch(types.FUND_TREE_AREA_MAIN, fund.versionId, null, fund.fundTree.expandedIds));
+            //Přenačtení nodeForm
+            store.dispatch(fundNodeSubNodeFulltextSearch(undefined));
         }
         store.dispatch(addToastrSuccess(i18n("arr.functions.persistentSort.sortSuccess")));
     } else if (value.state === "INTERRUPTED") {
