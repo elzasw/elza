@@ -69,13 +69,7 @@ import cz.tacr.elza.repository.LevelRepositoryCustom;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.service.event.CacheInvalidateEvent;
 import cz.tacr.elza.service.eventnotification.EventChangeMessage;
-import cz.tacr.elza.service.eventnotification.events.AbstractEventSimple;
-import cz.tacr.elza.service.eventnotification.events.EventAddNode;
-import cz.tacr.elza.service.eventnotification.events.EventDeleteNode;
-import cz.tacr.elza.service.eventnotification.events.EventNodeMove;
-import cz.tacr.elza.service.eventnotification.events.EventPersistentSort;
-import cz.tacr.elza.service.eventnotification.events.EventType;
-import cz.tacr.elza.service.eventnotification.events.EventVersion;
+import cz.tacr.elza.service.eventnotification.events.*;
 
 
 /**
@@ -646,10 +640,12 @@ public class LevelTreeCacheService {
                         EventDeleteNode eventIdInVersion = (EventDeleteNode) event;
                         actionDeleteLevel(eventIdInVersion.getNodeId(), version);
                         break;
-                    case PERSISTENT_SORT:
-                        EventPersistentSort eventPersistentSort = (EventPersistentSort) event;
-                        if (eventPersistentSort.getState() == ArrBulkActionRun.State.FINISHED) {
-                            refreshFundVersion(version);
+                    case BULK_ACTION_STATE_CHANGE:
+                        EventIdInVersion bulkActionStateChangeEvent = (EventIdInVersion) event;
+                        if (bulkActionStateChangeEvent.getState().equals(ArrBulkActionRun.State.FINISHED.toString())) {
+                            if (bulkActionStateChangeEvent.getCode().equals("PERZISTENTNI_RAZENI")) {
+                                refreshFundVersion(version);
+                            }
                         }
                         break;
                 }
