@@ -1,9 +1,9 @@
 package cz.tacr.elza.controller.vo;
 
-import cz.tacr.elza.domain.ArrBulkActionRun.State;
-
 import java.util.Date;
 import java.util.List;
+
+import cz.tacr.elza.domain.ArrBulkActionRun.State;
 
 /**
  * Stav hromadných akcí
