@@ -92,8 +92,8 @@ import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventFund;
 import cz.tacr.elza.service.eventnotification.events.EventType;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -105,7 +105,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
 import javax.persistence.Query;
 import javax.transaction.Transactional;
-import javax.transaction.Transactional.TxType;
 import java.text.Normalizer;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -191,7 +190,7 @@ public class ArrangementService {
     @Autowired
     private OutputItemRepository outputItemRepository;
     @Autowired
-    private ApService apService;
+    private AccessPointService accessPointService;
 
 	@Autowired
 	DescriptionItemServiceInternal arrangementInternal;
@@ -400,7 +399,7 @@ public class ArrangementService {
 
         ArrFund fund = createFund(name, ruleSet, change, generateUuid(), internalCode, institution, dateRange);
 
-        List<ApScope> defaultScopes = apService.findDefaultScopes();
+        List<ApScope> defaultScopes = accessPointService.findDefaultScopes();
         if (!defaultScopes.isEmpty()) {
             addScopeToFund(fund, defaultScopes.get(0));
         }
@@ -1159,7 +1158,7 @@ public class ArrangementService {
     /**
      * Finds level for fund version by node. Node will be locked during transaction.
      */
-    @Transactional(TxType.REQUIRED)
+    @Transactional(Transactional.TxType.REQUIRED)
     public ArrLevel lockLevel(ArrNodeVO nodeVO, ArrFundVersion fundVersion) {
         Integer nodeId = nodeVO.getId();
         Assert.notNull(nodeId, "Node id must be set");

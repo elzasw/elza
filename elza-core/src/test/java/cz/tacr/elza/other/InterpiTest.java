@@ -12,7 +12,7 @@ import javax.transaction.Transactional;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 
-import cz.tacr.elza.controller.vo.ApRecordVO;
+import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -35,12 +35,11 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.Assert;
 
 import cz.tacr.elza.ElzaCoreTest;
-import cz.tacr.elza.api.ApExternalSystemType;
+import cz.tacr.elza.api.ApExternalSystem;
 import cz.tacr.elza.common.XmlUtils;
 import cz.tacr.elza.common.security.NoCheckTrustManager;
 import cz.tacr.elza.controller.AbstractControllerTest;
 import cz.tacr.elza.controller.vo.RecordImportVO;
-import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.interpi.service.InterpiService;
 import cz.tacr.elza.interpi.service.pqf.AttributeType;
@@ -103,11 +102,11 @@ public class InterpiTest extends AbstractControllerTest {
     @Transactional
     public void setUp() throws Exception {
         super.setUp();
-        ApExternalSystem externalSystem = new ApExternalSystem();
+        cz.tacr.elza.domain.ApExternalSystem externalSystem = new cz.tacr.elza.domain.ApExternalSystem();
         externalSystem.setCode("INTERPI");
         externalSystem.setName("INTERPI");
         externalSystem.setPassword(password);
-        externalSystem.setType(ApExternalSystemType.INTERPI);
+        externalSystem.setType(ApExternalSystem.INTERPI);
         externalSystem.setUrl(url);
         externalSystem.setUsername(username);
 
@@ -124,11 +123,11 @@ public class InterpiTest extends AbstractControllerTest {
         importVO.setSystemId(systemId);
         importVO.setOriginator(true);
 
-        ApRecordVO apRecord = post(spec -> spec.body(importVO), "/api/registry/interpi/import").as(ApRecordVO.class);
-        ApRecordVO record = getRecord(apRecord.getId());
+        ApAccessPointVO apRecord = post(spec -> spec.body(importVO), "/api/registry/interpi/import").as(ApAccessPointVO.class);
+        ApAccessPointVO record = getRecord(apRecord.getId());
         Assert.isTrue(apRecord.getRecord().equals(record.getRecord()));
 
-        ApRecordVO apRecordUpdate = put(spec -> spec.pathParam("recordId", record.getId()).body(importVO), "/api/registry/interpi/import/{recordId}").as(ApRecordVO.class);
+        ApAccessPointVO apRecordUpdate = put(spec -> spec.pathParam("recordId", record.getId()).body(importVO), "/api/registry/interpi/import/{recordId}").as(ApAccessPointVO.class);
         Assert.isTrue(apRecordUpdate.getId().equals(record.getId()));
     }
 

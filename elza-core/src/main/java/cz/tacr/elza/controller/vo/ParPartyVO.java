@@ -55,7 +55,7 @@ public class ParPartyVO {
     /**
      * Rejstříkové heslo.
      */
-    private ApRecordVO record;
+    private ApAccessPointVO record;
 
     /**
      * Charakteristika.
@@ -140,11 +140,11 @@ public class ParPartyVO {
         this.version = version;
     }
 
-    public ApRecordVO getRecord() {
+    public ApAccessPointVO getRecord() {
         return record;
     }
 
-    public void setRecord(final ApRecordVO record) {
+    public void setRecord(final ApAccessPointVO record) {
         this.record = record;
     }
 

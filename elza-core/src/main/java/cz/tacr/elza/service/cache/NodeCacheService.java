@@ -14,7 +14,7 @@ import cz.tacr.elza.core.data.RuleSystemItemType;
 import cz.tacr.elza.core.data.RuleSystemProvider;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.domain.ApRecord;
+import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ArrCachedNode;
 import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDaoLink;
@@ -34,7 +34,7 @@ import cz.tacr.elza.domain.ParPartyName;
 import cz.tacr.elza.domain.ParPartyNameComplement;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.repository.ApRecordRepository;
+import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.CachedNodeRepository;
 import cz.tacr.elza.repository.DaoLinkRepository;
 import cz.tacr.elza.repository.DaoRepository;
@@ -113,7 +113,7 @@ public class NodeCacheService {
     private PartyRepository partyRepository;
 
     @Autowired
-    private ApRecordRepository apRecordRepository;
+    private ApAccessPointRepository apAccessPointRepository;
 
     @Autowired
     private FundFileRepository fundFileRepository;
@@ -598,7 +598,7 @@ public class NodeCacheService {
 	}
 
     /**
-     * Vyplnění návazných entity {@link ApRecord}.
+     * Vyplnění návazných entity {@link ApAccessPoint}.
      *
      * @param nodeRegistersMap mapa entit k vyplnění
      */
@@ -606,10 +606,10 @@ public class NodeCacheService {
         if (nodeRegistersMap.size() == 0) {
             return;
         }
-        List<ApRecord> records = apRecordRepository.findAll(nodeRegistersMap.values());
-        Map<Integer, ApRecord> recordsMapFound = new HashMap<>();
-        for (ApRecord record : records) {
-            recordsMapFound.put(record.getRecordId(), record);
+        List<ApAccessPoint> records = apAccessPointRepository.findAll(nodeRegistersMap.values());
+        Map<Integer, ApAccessPoint> recordsMapFound = new HashMap<>();
+        for (ApAccessPoint record : records) {
+            recordsMapFound.put(record.getAccessPointId(), record);
         }
 
         for (Map.Entry<ArrNodeRegister, Integer> entry : nodeRegistersMap.entrySet()) {
@@ -662,7 +662,7 @@ public class NodeCacheService {
 
 
     /**
-     * Vyplnění návazných entity {@link ApRecord}.
+     * Vyplnění návazných entity {@link ApAccessPoint}.
      *
      * @param itemRecordsMap mapa entit k vyplnění
      */
@@ -670,10 +670,10 @@ public class NodeCacheService {
         if (itemRecordsMap.size() == 0) {
             return;
         }
-        List<ApRecord> records = apRecordRepository.findAll(itemRecordsMap.values());
-        Map<Integer, ApRecord> recordsMapFound = new HashMap<>();
-        for (ApRecord record : records) {
-            recordsMapFound.put(record.getRecordId(), record);
+        List<ApAccessPoint> records = apAccessPointRepository.findAll(itemRecordsMap.values());
+        Map<Integer, ApAccessPoint> recordsMapFound = new HashMap<>();
+        for (ApAccessPoint record : records) {
+            recordsMapFound.put(record.getAccessPointId(), record);
         }
 
         for (Map.Entry<ArrDescItem, Integer> entry : itemRecordsMap.entrySet()) {
@@ -810,7 +810,7 @@ public class NodeCacheService {
     /**
 	 * Deserializace objektu.
 	 *
-	 * @param cachedNode.getData()
+	 * @param cachedNode
 	 *            serializovaný objekt
 	 * @return sestavený objekt
 	 */
@@ -881,7 +881,7 @@ public class NodeCacheService {
 	/**
 	 * Založení nových záznamů v cache pro JP.
 	 *
-	 * @param cachedNodes
+	 * @param nodes
 	 *            seznam zakládaných objektů
 	 */
 	private void createEmptyNodes(final Collection<ArrNode> nodes) {

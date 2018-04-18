@@ -34,7 +34,8 @@ public class ArrItemPartyRef extends ArrItemData {
 
     @Override
     public String toString() {
-        return (party != null && party.getRecord() != null) ? party.getRecord().getRecord() : null;
+        // getRecord nahrazeno za toString aby slo prelozit
+        return (party != null && party.getRecord() != null) ? party.getRecord().toString() : null;
     }
 
     @Override

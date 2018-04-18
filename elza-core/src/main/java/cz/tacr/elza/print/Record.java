@@ -3,8 +3,9 @@ package cz.tacr.elza.print;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import cz.tacr.elza.domain.ApRecord;
-import cz.tacr.elza.domain.ApVariantRecord;
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApName;
+import cz.tacr.elza.service.vo.ApAccessPointData;
 
 /**
  * One record from registry
@@ -24,23 +25,23 @@ public class Record {
     private final RecordType recordType;
 
     // can be proxy, initialized only when needed
-    private final List<ApVariantRecord> srcVariantRecords;
+    private final List<ApName> srcNames;
 
     private List<String> variantRecords;
 
-    private Record(ApRecord apRecord, RecordType recordType) {
-        this.externalId = apRecord.getExternalId();
-        this.recordId = apRecord.getRecordId();
-        this.record = apRecord.getRecord();
-        this.characteristics = apRecord.getCharacteristics();
+    private Record(ApAccessPointData apRecord, RecordType recordType) {
+        this.externalId = apRecord.getExternalId().getValue();
+        this.recordId = apRecord.getAccessPointId();
+        this.record = apRecord.getPreferredName().getName();
+        this.characteristics = apRecord.getDescription().getDescription();
         this.recordType = recordType;
-        this.srcVariantRecords = apRecord.getVariantRecordList();
+        this.srcNames = apRecord.getVariantRecordList();
     }
 
     /**
      * Copy constructor
      *
-     * @param record
+     * @param srcRecord
      */
     protected Record(Record srcRecord) {
         this.recordId = srcRecord.recordId;
@@ -48,7 +49,7 @@ public class Record {
         this.characteristics = srcRecord.characteristics;
         this.recordType = srcRecord.recordType;
         this.externalId = srcRecord.externalId;
-        this.srcVariantRecords = srcRecord.srcVariantRecords;
+        this.srcNames = srcRecord.srcNames;
     }
 
     public int getRecordId() {
@@ -69,8 +70,8 @@ public class Record {
 
     public List<String> getVariantRecords() {
         if (variantRecords == null) { // lazy initialization
-            variantRecords = srcVariantRecords.stream()
-                    .map(ApVariantRecord::getRecord)
+            variantRecords = srcNames.stream()
+                    .map(ApName::getName)
                     .collect(Collectors.toList());
         }
         return variantRecords;
@@ -84,8 +85,9 @@ public class Record {
      * Return new instance of Record. Variant names are required (fetched from database if not
      * initialized).
      */
-    public static Record newInstance(ApRecord apRecord, RecordType recordType) {
-        Record record = new Record(apRecord, recordType);
+    public static Record newInstance(ApAccessPoint apRecord, RecordType recordType) {
+        ApAccessPointData apData = new ApAccessPointData(apRecord);
+        Record record = new Record(apData, recordType);
         return record;
     }
 

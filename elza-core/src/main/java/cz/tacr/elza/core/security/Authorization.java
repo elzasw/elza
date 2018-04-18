@@ -5,6 +5,7 @@ import java.lang.reflect.Parameter;
 import java.util.Arrays;
 import java.util.List;
 
+import cz.tacr.elza.repository.ApAccessPointRepository;
 import org.apache.commons.collections.CollectionUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -29,7 +30,6 @@ import cz.tacr.elza.exception.AccessDeniedException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.PartyRepository;
-import cz.tacr.elza.repository.ApRecordRepository;
 import cz.tacr.elza.repository.UserRepository;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.UserService;
@@ -79,7 +79,7 @@ public class Authorization {
 	 *
 	 */
 	interface MethodParamBasedAccess {
-		
+
 		enum PermissionResult {
 			/**
 			 * Used when permission cannot be checked with this parameter
@@ -109,7 +109,7 @@ public class Authorization {
     private FundVersionRepository fundVersionRepository;
 
     @Autowired
-    private ApRecordRepository recordRepository;
+    private ApAccessPointRepository accessPointRepository;
 
     @Autowired
     private PartyRepository partyRepository;
@@ -169,10 +169,10 @@ public class Authorization {
      */
     private boolean hasPermission(MethodInfo methodInfo, MethodParamBasedAccess methodChecker) {
         Parameter[] params = methodInfo.getParameters();
-       
+
         // number of applied parameters
         int appliedParams = 0;
-        
+
         // permssions for fund
         for (int i = 0; i < params.length; i++) {
             Parameter parameter = params[i];
@@ -192,7 +192,7 @@ public class Authorization {
                 }
             }
         }
-        
+
         // check if permissions where checked with at least one parameter
         if(appliedParams==0) {
         	throw new SystemException("Failed to check permissions, incorrect configuration, method: "
@@ -327,7 +327,7 @@ public class Authorization {
 			break;
 		case REGISTRY:
 			if (value instanceof Integer) {
-				return recordRepository.getOneCheckExist((Integer) value).getApScope().getScopeId();
+				return accessPointRepository.getOneCheckExist((Integer) value).getApScope().getScopeId();
 			} else if (value instanceof IApScope) {
 				return ((IApScope) value).getApScope().getScopeId();
 			}

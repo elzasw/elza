@@ -60,7 +60,7 @@ public abstract class Party {
     }
 
     /**
-     * @return obsah položky record.getRecord()
+     * @return obsah položky record.getAccessPoint()
      */
     public String getName() {
         return record.getRecord();

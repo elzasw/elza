@@ -202,9 +202,245 @@
         </insert>
     </changeSet>
 
+    <changeSet id="20180301140500" author="fric">
+        <renameTable oldTableName="ap_language" newTableName="sys_language"/>
+    </changeSet>
+
     <changeSet id="20180404152900" author="vanek">
         <addColumn tableName="arr_bulk_action_run">
             <column name="config" type="${type.text}"/>
         </addColumn>
     </changeSet>
+    <changeSet id="20180226123500" author="fric">
+        <createTable tableName="ap_access_point">
+            <column name="access_point_id" type="int">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="uuid" type="char(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="scope_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="ap_type_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="invalid" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint
+                constraintName="fk_ap_scope" baseTableName="ap_access_point" baseColumnNames="scope_id"
+                referencedTableName="ap_scope" referencedColumnNames="scope_id" onDelete="NO ACTION"/>
+
+        <addForeignKeyConstraint
+                constraintName="fk_access_point_apType" baseTableName="ap_access_point" baseColumnNames="ap_type_id"
+                referencedTableName="ap_type" referencedColumnNames="ap_type_id" onDelete="NO ACTION"/>
+
+        <insert tableName="db_hibernate_sequences">
+            <column name="sequence_name" value="ap_access_point|access_point_id"/>
+            <column name="next_val" value="1"/>
+        </insert>
+
+        <createTable tableName="ap_description">
+            <column name="description_id" type="int">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="description" type="text"/>
+            <column name="access_point_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint
+                constraintName="fk_access_point_description" baseTableName="ap_description"
+                baseColumnNames="access_point_id" referencedTableName="ap_access_point"
+                referencedColumnNames="access_point_id" onDelete="NO ACTION"/>
+
+        <insert tableName="db_hibernate_sequences">
+            <column name="sequence_name" value="ap_description|description_id"/>
+            <column name="next_val" value="1"/>
+        </insert>
+
+        <createTable tableName="ap_name">
+            <column name="name_id" type="int">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="nvarchar(1000)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="complement" type="nvarchar(1000)" />
+            <column name="language" type="char(3)" />
+            <column name="preferred_name" type="boolean">
+                <constraints nullable="false"/>
+            </column>
+            <column name="access_point_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name_type_id" type="int">
+                <constraints nullable="true"/>
+            </column>
+        </createTable>
+
+        <insert tableName="db_hibernate_sequences">
+            <column name="sequence_name" value="ap_name|name_id"/>
+            <column name="next_val" value="1"/>
+        </insert>
+
+        <createTable tableName="ap_name_type">
+            <column name="name_type_id" type="int">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="code" type="nvarchar(50)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="name" type="nvarchar(250)" />
+        </createTable>
+
+        <addForeignKeyConstraint
+                constraintName="fk_access_point_name" baseTableName="ap_name"
+                baseColumnNames="access_point_id" referencedTableName="ap_access_point"
+                referencedColumnNames="access_point_id" onDelete="NO ACTION"/>
+
+        <addForeignKeyConstraint
+                constraintName="fk_name_name_type" baseTableName="ap_name"
+                baseColumnNames="name_type_id" referencedTableName="ap_name_type"
+                referencedColumnNames="name_type_id" onDelete="NO ACTION"/>
+
+
+        <insert tableName="db_hibernate_sequences">
+            <column name="sequence_name" value="ap_name_type|name_type_id"/>
+            <column name="next_val" value="1"/>
+        </insert>
+
+    </changeSet>
+
+    <changeSet id="20180228103700" author="fric">
+        <!--migrace ap_record-->
+        <sql>INSERT INTO ap_access_point (access_point_id, uuid, scope_id, ap_type_id, invalid)
+            SELECT record_id, uuid, scope_id, ap_type_id, invalid
+            FROM ap_record
+        </sql>
+
+        <sql>INSERT INTO ap_description (description_id, description, access_point_id)
+            SELECT record_id, characteristics, record_id
+            FROM ap_record
+        </sql>
+
+        <sql>INSERT INTO ap_name (name_id, name, complement, language, preferred_name, access_point_id, name_type_id)
+            SELECT record_id, record, NULL, NULL, TRUE, record_id, NULL
+            FROM ap_record
+        </sql>
+
+        <sql>INSERT INTO
+            ap_name (name_id, name, complement, language, preferred_name, access_point_id, name_type_id)
+            SELECT (SELECT MAX( name_id) from ap_name) + variant_record_id, record, NULL, NULL, FALSE, record_id, NULL
+            FROM ap_variant_record
+        </sql>
+
+        <sql>INSERT INTO ap_name_type (name_type_id, code, name)
+            SELECT name_form_type_id, code, name
+            FROM par_party_name_form_type
+        </sql>
+
+        <sql>
+            update db_hibernate_sequences set next_val = (select coalesce(max(access_point_id),0)+1 from ap_access_point) where sequence_name = 'ap_access_point|access_point_id';
+            update db_hibernate_sequences set next_val = (select coalesce(max(description_id),0)+1 from ap_description) where sequence_name = 'ap_description|description_id';
+            update db_hibernate_sequences set next_val = (select coalesce(max(name_id),0)+1 from ap_name) where sequence_name = 'ap_name|name_id';
+            update db_hibernate_sequences set next_val = (select coalesce(max(name_type_id),0)+1 from ap_name_type) where sequence_name = 'ap_name_type|name_type_id';
+        </sql>
+
+        <addForeignKeyConstraint
+                constraintName="fk_party_access_point"
+                referencedTableName="ap_access_point" referencedColumnNames="access_point_id"
+                baseTableName="par_party" baseColumnNames="record_id"
+                onDelete="NO ACTION"/>
+
+        <addForeignKeyConstraint
+                constraintName="fk_parRelationEntity_access_point"
+                referencedTableName="ap_access_point" referencedColumnNames="access_point_id"
+                baseTableName="par_relation_entity" baseColumnNames="record_id"
+                onDelete="NO ACTION"/>
+
+        <addForeignKeyConstraint
+                constraintName="fk_nodeRegister_access_point"
+                referencedTableName="ap_access_point" referencedColumnNames="access_point_id"
+                baseTableName="arr_node_register" baseColumnNames="record_id"
+                onDelete="NO ACTION"/>
+
+        <addForeignKeyConstraint
+                constraintName="fk_dataRecordRef_access_point"
+                referencedTableName="ap_access_point" referencedColumnNames="access_point_id"
+                baseTableName="arr_data_record_ref" baseColumnNames="record_id"
+                onDelete="NO ACTION"/>
+    </changeSet>
+
+    <changeSet id="20180226153500" author="fric">
+        <createTable tableName="ap_external_id_type">
+            <column name="external_id_type" type="int">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="code" type="nvarchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="nvarchar(50)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="ap_external_id">
+            <column name="external_id" type="int">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="value" type="nvarchar(50)" />
+            <column name="external_id_type_id" type="int">
+                <constraints nullable="true" foreignKeyName="fk_external_id_type" references="ap_external_id_type(external_id_type)"/>
+            </column>
+            <column name="access_point_id" type="int">
+                <constraints nullable="false" foreignKeyName="fk_external_id_access_point_id" references="ap_access_point(access_point_id)"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="20180301113700" author="fric">
+        <createTable tableName="ap_change">
+            <column name="change_id" type="int">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="change_date" type="timestamp"/>
+            <column name="user_id" type="int"/>
+            <column name="type" type="char(25)"/>
+            <column name="external_system_id" type="int">
+                <constraints nullable="true" foreignKeyName="fk_ap_change_external_system" references="ap_external_system(external_system_id)"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="20180315114500" author="fric">
+        <addColumn tableName="ap_external_id">
+            <column name="create_change_id" type="int">
+                <constraints nullable="false" foreignKeyName="fk_external_id_create_change" references="ap_change(change_id)"/>
+            </column>
+            <column name="delete_change_id" type="int">
+                <constraints nullable="true" foreignKeyName="fk_external_id_delete_change" references="ap_change(change_id)"/>
+            </column>
+        </addColumn>
+        <addColumn tableName="ap_description">
+            <column name="create_change_id" type="int">
+                <constraints nullable="false" foreignKeyName="fk_description_create_change" references="ap_change(change_id)"/>
+            </column>
+            <column name="delete_change_id" type="int">
+                <constraints nullable="true" foreignKeyName="fk_description_delete_change" references="ap_change(change_id)"/>
+            </column>
+        </addColumn>
+        <addColumn tableName="ap_name">
+            <column name="create_change_id" type="int">
+                <constraints nullable="false" foreignKeyName="fk_name_create_change" references="ap_change(change_id)"/>
+            </column>
+            <column name="delete_change_id" type="int">
+                <constraints nullable="true" foreignKeyName="fk_name_delete_change" references="ap_change(change_id)"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

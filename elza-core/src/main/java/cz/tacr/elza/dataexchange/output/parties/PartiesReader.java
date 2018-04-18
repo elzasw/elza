@@ -1,18 +1,19 @@
 package cz.tacr.elza.dataexchange.output.parties;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import javax.persistence.EntityManager;
-
-import org.apache.commons.collections4.SetUtils;
-import org.apache.commons.lang3.Validate;
-
 import cz.tacr.elza.dataexchange.output.context.ExportContext;
 import cz.tacr.elza.dataexchange.output.context.ExportInitHelper;
 import cz.tacr.elza.dataexchange.output.context.ExportReader;
 import cz.tacr.elza.dataexchange.output.writer.PartiesOutputStream;
 import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.service.AccessPointDataService;
+import cz.tacr.elza.service.vo.ApAccessPointData;
+import org.apache.commons.collections4.SetUtils;
+import org.apache.commons.lang3.Validate;
+
+import javax.persistence.EntityManager;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 public class PartiesReader implements ExportReader {
 
@@ -20,9 +21,12 @@ public class PartiesReader implements ExportReader {
 
     private final EntityManager em;
 
+    private final AccessPointDataService accessPointDataService;
+
     public PartiesReader(ExportContext context, ExportInitHelper initHelper) {
         this.context = context;
         this.em = initHelper.getEntityManager();
+        this.accessPointDataService = initHelper.getAccessPointDataService();
     }
 
     @Override
@@ -51,8 +55,9 @@ public class PartiesReader implements ExportReader {
                 @Override
                 protected void onCompleted() {
                     ParParty party = Validate.notNull(getParty());
-                    exportedAPIds.add(party.getRecord().getRecordId());
-                    os.addParty(party);
+                    exportedAPIds.add(party.getRecord().getAccessPointId());
+                    ApAccessPointData apData = accessPointDataService.findAccessPointData(party.getRecord());
+                    os.addParty(party, apData);
                 }
             };
             loader.addRequest(partyId, dispatcher);
@@ -65,12 +70,14 @@ public class PartiesReader implements ExportReader {
     private void readAPIds(PartiesOutputStream os, Set<Integer> exportedAPIds) {
         Set<Integer> apIds = SetUtils.difference(context.getPartyAPIds(), exportedAPIds);
 
+        Map<Integer, ApAccessPointData> pointDataMap = accessPointDataService.mapAccessPointDataById(apIds);
+
         PartyLoader loader = PartyLoader.createAPIdLoader(em, context.getBatchSize(), context.getStaticData());
         for (Integer apId : apIds) {
             PartyDispatcher dispatcher = new PartyDispatcher() {
                 @Override
                 protected void onCompleted() {
-                    os.addParty(Validate.notNull(getParty()));
+                    os.addParty(Validate.notNull(getParty()), pointDataMap.get(getParty().getRecord().getAccessPointId()));
                 }
             };
             loader.addRequest(apId, dispatcher);

@@ -54,10 +54,10 @@ public class ParParty extends AbstractVersionableEntity implements IApScope {
     private Integer partyId;
 
     @RestResource(exported = false)
-	@OneToOne(fetch=FetchType.LAZY, targetEntity = ApRecord.class)
+	@OneToOne(fetch=FetchType.LAZY, targetEntity = ApAccessPoint.class)
     @JoinColumn(name = "recordId", nullable = false)
     @JsonIgnore
-    private ApRecord record;
+    private ApAccessPoint record;
 
     @RestResource(exported = false)
     @JsonIgnore
@@ -134,7 +134,7 @@ public class ParParty extends AbstractVersionableEntity implements IApScope {
      * Rejstříkové heslo.
      * @return  objekt navázaného rejstříkového hesla
      */
-    public ApRecord getRecord() {
+    public ApAccessPoint getRecord() {
         return record;
     }
 
@@ -142,9 +142,9 @@ public class ParParty extends AbstractVersionableEntity implements IApScope {
      * Rejstříkové heslo.
      * @param record    objekt navázaného rejstříkového hesla
      */
-    public void setRecord(final ApRecord record) {
+    public void setRecord(final ApAccessPoint record) {
         this.record = record;
-        this.recordId = record != null ? record.getRecordId() : null;
+        this.recordId = record != null ? record.getAccessPointId() : null;
     }
 
     public Integer getRecordId() {

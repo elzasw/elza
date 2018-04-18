@@ -9,11 +9,14 @@ import cz.tacr.elza.controller.vo.usage.PartyVO;
 import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApChange;
+import cz.tacr.elza.domain.ApDescription;
+import cz.tacr.elza.domain.ApExternalId;
 import cz.tacr.elza.domain.ApExternalSystem;
-import cz.tacr.elza.domain.ApRecord;
+import cz.tacr.elza.domain.ApName;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApType;
-import cz.tacr.elza.domain.ApVariantRecord;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataRecordRef;
@@ -36,10 +39,13 @@ import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.packageimport.PackageService;
 import cz.tacr.elza.packageimport.xml.SettingRecord;
+import cz.tacr.elza.repository.ApAccessPointRepository;
+import cz.tacr.elza.repository.ApChangeRepository;
+import cz.tacr.elza.repository.ApDescriptionRepository;
+import cz.tacr.elza.repository.ApExternalIdRepository;
 import cz.tacr.elza.repository.ApExternalSystemRepository;
-import cz.tacr.elza.repository.ApRecordRepository;
+import cz.tacr.elza.repository.ApNameRepository;
 import cz.tacr.elza.repository.ApTypeRepository;
-import cz.tacr.elza.repository.ApVariantRecordRepository;
 import cz.tacr.elza.repository.DataPartyRefRepository;
 import cz.tacr.elza.repository.DataRecordRefRepository;
 import cz.tacr.elza.repository.DescItemRepository;
@@ -52,9 +58,11 @@ import cz.tacr.elza.repository.PartyCreatorRepository;
 import cz.tacr.elza.repository.RelationEntityRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.SettingsRepository;
+import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventNodeIdVersionInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
+import cz.tacr.elza.service.vo.ApAccessPointData;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,6 +71,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import javax.annotation.Nullable;
+import javax.persistence.EntityManager;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -86,13 +96,13 @@ import java.util.stream.Collectors;
  * @since 21.12.2015
  */
 @Service
-public class ApService {
+public class AccessPointService {
 
     @Autowired
-    private ApRecordRepository apRecordRepository;
+    private ApAccessPointRepository apAccessPointRepository;
 
     @Autowired
-    private ApVariantRecordRepository variantRecordRepository;
+    private ApNameRepository apNameRepository;
 
     @Autowired
     private ApTypeRepository apTypeRepository;
@@ -162,6 +172,22 @@ public class ApService {
 
     @Autowired
     private ItemTypeRepository itemTypeRepository;
+
+    @Autowired
+    private AccessPointDataService accessPointDataService;
+
+    @Autowired
+    private EntityManager em;
+
+    @Autowired
+    private ApChangeRepository apChangeRepository;
+
+    @Autowired
+    private ApDescriptionRepository apDescriptionRepository;
+
+    @Autowired
+    private ApExternalIdRepository apExternalIdRepository;
+
     /**
      * Kody tříd rejstříků nastavené v konfiguraci elzy.
      */
@@ -175,56 +201,43 @@ public class ApService {
      * @param apTypeIds typ záznamu
      * @param firstResult     index prvního záznamu, začíná od 0
      * @param maxResults      počet výsledků k vrácení
-     * @param parentRecordId  id rodičovského rejstříku
      * @param fund            AP, ze které se použijí třídy rejstříků
      * @param scopeId         id scope, pokud je vyplněno hledají se rejstříky pouze s tímto scope
      * @return vybrané záznamy dle popisu seřazené za record, nbeo prázdná množina
      */
-    public List<ApRecord> findApRecordByTextAndType(@Nullable final String searchRecord,
-                                                    @Nullable final Collection<Integer> apTypeIds,
-                                                    final Integer firstResult,
-                                                    final Integer maxResults,
-                                                    final Integer parentRecordId,
-                                                    @Nullable final ArrFund fund,
-                                                    @Nullable final Integer scopeId,
-                                                    @Nullable final Boolean excludeInvalid) {
+    public List<ApAccessPoint> findApAccessPointByTextAndType(@Nullable final String searchRecord,
+                                                              @Nullable final Collection<Integer> apTypeIds,
+                                                              final Integer firstResult,
+                                                              final Integer maxResults,
+                                                              @Nullable final ArrFund fund,
+                                                              @Nullable final Integer scopeId,
+                                                              @Nullable final Boolean excludeInvalid) {
 
         Set<Integer> scopeIdsForSearch = getScopeIdsForSearch(fund, scopeId);
 
-        ApRecord parentRecord = null;
-        if (parentRecordId != null) {
-            parentRecord = apRecordRepository.getOneCheckExist(parentRecordId);
-        }
-
-        return apRecordRepository.findApRecordByTextAndType(searchRecord, apTypeIds, firstResult,
-                maxResults, parentRecord, scopeIdsForSearch, excludeInvalid);
+        return apAccessPointRepository.findApAccessPointByTextAndType(searchRecord, apTypeIds, firstResult,
+                maxResults, scopeIdsForSearch, excludeInvalid);
     }
 
 
     /**
-     * Celkový počet záznamů v DB pro funkci {@link #findApRecordByTextAndType(String, Collection, Integer, Integer, Integer, ArrFund, Integer, Boolean)}
+     * Celkový počet záznamů v DB pro funkci {@link #findApAccessPointByTextAndType(String, Collection, Integer, Integer, ArrFund, Integer, Boolean)}
      *
      * @param searchRecord    hledaný řetězec, může být null
      * @param apTypeIds typ záznamu
-     * @param parentRecordId  id rodičovského rejstříku
      * @param fund   AP, ze které se použijí třídy rejstříků
      * @param scopeId scope, pokud je vyplněno hledají se rejstříky pouze s tímto scope
      * @return celkový počet záznamů, který je v db za dané parametry
      */
-    public long findApRecordByTextAndTypeCount(@Nullable final String searchRecord,
-                                               @Nullable final Collection<Integer> apTypeIds,
-                                               final Integer parentRecordId, @Nullable final ArrFund fund,
-                                               final Integer scopeId,
-                                               final Boolean excludeInvalid) {
+    public long findApAccessPointByTextAndTypeCount(@Nullable final String searchRecord,
+                                                    @Nullable final Collection<Integer> apTypeIds,
+                                                    @Nullable final ArrFund fund,
+                                                    final Integer scopeId,
+                                                    final Boolean excludeInvalid) {
 
         Set<Integer> scopeIdsForSearch = getScopeIdsForSearch(fund, scopeId);
 
-        ApRecord parentRecord = null;
-        if (parentRecordId != null) {
-            parentRecord = apRecordRepository.getOneCheckExist(parentRecordId);
-        }
-
-        return apRecordRepository.findApRecordByTextAndTypeCount(searchRecord, apTypeIds, parentRecord,
+        return apAccessPointRepository.findApAccessPointByTextAndTypeCount(searchRecord, apTypeIds,
                 scopeIdsForSearch, excludeInvalid);
     }
 
@@ -236,10 +249,10 @@ public class ApService {
      *
      * @throws BusinessException napojení na jinou tabulku
      */
-    public boolean canBeDeleted(final ApRecord record, final boolean checkUsage) {
+    public boolean canBeDeleted(final ApAccessPoint record, final boolean checkUsage) {
         long countDataRecordRef = dataRecordRefRepository.countAllByRecord(record);
         if (checkUsage) {
-            ParParty parParty = partyService.findParPartyByRecord(record);
+            ParParty parParty = partyService.findParPartyByAccessPoint(record);
             if (parParty != null) {
                 throw new BusinessException("Existuje vazba z osoby, nelze smazat.", RegistryCode.EXIST_FOREIGN_PARTY);
             }
@@ -257,29 +270,30 @@ public class ApService {
             List<ParRelationEntity> relationEntities = relationEntityRepository.findActiveByRecord(record);
             if (CollectionUtils.isNotEmpty(relationEntities)) {
                 throw new BusinessException("Nelze smazat/zneplatnit rejstříkové heslo na kterou mají vazbu jiné aktivní osoby v relacích.", RegistryCode.EXIST_FOREIGN_DATA)
-                        .set("recordId", record.getRecordId())
+                        .set("recordId", record.getAccessPointId())
                         .set("relationEntities", relationEntities.stream().map(ParRelationEntity::getRelationEntityId).collect(Collectors.toList()))
                         .set("partyIds", relationEntities.stream().map(ParRelationEntity::getRelation).map(ParRelation::getParty).map(ParParty::getPartyId).collect(Collectors.toList()));
             }
         }
 
-        return countDataRecordRef == 0 && nodeRegisterRepository.countByRecordId(record) == 0 && relationEntityRepository.countAllByRecord(record) == 0;
+        return countDataRecordRef == 0 && nodeRegisterRepository.countByRecordId(record) == 0 && relationEntityRepository.countAllByAccessPoint(record) == 0;
 
     }
 
     /**
      * Uložení či update záznamu.
      *
-     * @param record    naplněný objekt, bez vazeb
+     * @param accessPointData    naplněný objekt, bez vazeb
      * @param partySave true - jedná se o ukládání přes ukládání osoby, false -> editace z klienta
      * @return výsledný objekt
      */
     @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
-    public ApRecord saveRecord(@AuthParam(type = AuthParam.Type.SCOPE) final ApRecord record,
-                               final boolean partySave) {
+    public ApAccessPoint saveAccessPoint(@AuthParam(type = AuthParam.Type.SCOPE) final ApAccessPointData accessPointData,
+                                         final boolean partySave) {
+        ApAccessPoint record = accessPointData.getAccessPoint();
         Assert.notNull(record, "Rejstříkové heslo musí být vyplněno");
 
-        checkRecordSave(record, partySave);
+        checkRecordSave(accessPointData, partySave);
 
         ApType apType = apTypeRepository.findOne(record.getApType().getApTypeId());
         record.setApType(apType);
@@ -287,42 +301,117 @@ public class ApService {
         ApScope scope = scopeRepository.findOne(record.getScope().getScopeId());
         record.setScope(scope);
 
-        ApExternalSystem externalSystem = record.getExternalSystem();
+
+        ApExternalSystem externalSystem = accessPointData.getExternalSystem();
         if (externalSystem != null) {
             Integer externalSystemId = externalSystem.getExternalSystemId();
             Assert.notNull(externalSystemId, "ApExternalSystem nemá vyplněné ID.");
             externalSystem = apExternalSystemRepository.findOne(externalSystemId);
             Assert.notNull(externalSystem, "ApExternalSystem nebylo nalezeno podle id " + externalSystemId);
-            record.setExternalSystem(externalSystem);
+            accessPointData.setExternalSystem(externalSystem);
         }
 
         if (record.getUuid() == null) {
             record.setUuid(UUID.randomUUID().toString());
         }
 
-        record.setLastUpdate(LocalDateTime.now());
+        ApAccessPoint result = apAccessPointRepository.save(record);
+        saveAccessPointDataVersion(accessPointData, result);
 
-        ApRecord result = apRecordRepository.save(record);
-        EventType type = record.getRecordId() == null ? EventType.RECORD_CREATE : EventType.RECORD_UPDATE;
-        eventNotificationService.publishEvent(EventFactory.createIdEvent(type, result.getRecordId()));
+        EventType type = record.getAccessPointId() == null ? EventType.RECORD_CREATE : EventType.RECORD_UPDATE;
+        eventNotificationService.publishEvent(EventFactory.createIdEvent(type, result.getAccessPointId()));
 
         return result;
     }
 
     /**
+     * Uloží nové verze všech navázaných entit pro daný přístupový bod.
+     *
+     * @param accessPointData wrapper který obsahuje návazné entity
+     * @param result pristupovy bod, na ktery se navazou navazne entity
+     * @return nová verze wrapperu, která obsahuje všechny nové uložené verze navázaných entit
+     */
+    private ApAccessPointData saveAccessPointDataVersion(ApAccessPointData accessPointData, ApAccessPoint result) {
+        // ap_description
+        // ap_name
+        // ap_external_id
+        ApChange apChange;
+        if (accessPointData.getAccessPointId() == null) {
+            apChange = createChange(ApChange.Type.ACCESS_POINT_CREATE);
+        } else {
+            apChange = createChange(ApChange.Type.ACCESS_POINT_UPDATE);
+        }
+        // version description
+        ApDescription description = apDescriptionRepository.findApDescriptionByAccessPoint(result);
+        if (description != null) {
+            description.setDeleteChange(apChange);
+            apDescriptionRepository.save(description);
+        }
+        ApDescription descriptionCopy = new ApDescription(accessPointData.getDescription());
+        descriptionCopy.setDescriptionId(null);
+        descriptionCopy.setDeleteChange(null);
+        descriptionCopy.setCreateChange(apChange);
+        descriptionCopy.setAccessPoint(result);
+        ApDescription savedDescription = apDescriptionRepository.save(descriptionCopy);
+
+        // version name
+        ApName name = apNameRepository.findPreferredNameByAccessPoint(result);
+        if (name != null) {
+            name.setDeleteChange(apChange);
+            apNameRepository.save(name);
+        }
+        ApName nameCopy = new ApName(accessPointData.getPreferredName());
+        nameCopy.setNameId(null);
+        nameCopy.setDeleteChange(null);
+        nameCopy.setCreateChange(apChange);
+        nameCopy.setAccessPoint(result);
+        ApName savedName = apNameRepository.save(nameCopy);
+
+        ApExternalId externalId = apExternalIdRepository.findApExternalIdByAccessPoint(result);
+        if (externalId != null) {
+            externalId.setDeleteChange(apChange);
+            externalId.setValue(null); // the external ID is not carried over between versions
+            externalId.setAccessPoint(result);
+            apExternalIdRepository.save(externalId);
+        }
+
+        accessPointData.setCharacteristics(savedDescription);
+        accessPointData.setPreferredName(savedName);
+
+        return accessPointData;
+    }
+
+    /**
      * Smaže rej. heslo a jeho variantní hesla. Předpokládá, že již proběhlo ověření, že je možné ho smazat (vazby atd...).
-     * @param record heslo
+     * @param accessPoint heslo
      */
     @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
-    public void deleteRecord(@AuthParam(type = AuthParam.Type.SCOPE) final ApRecord record, final boolean checkUsage) {
-        if (canBeDeleted(record, checkUsage)) {
-            eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.RECORD_DELETE, record.getRecordId()));
+    public void deleteAccessPoint(@AuthParam(type = AuthParam.Type.SCOPE) final ApAccessPoint accessPoint, final boolean checkUsage) {
+        if (canBeDeleted(accessPoint, checkUsage)) {
+            eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.RECORD_DELETE, accessPoint.getAccessPointId()));
 
-            variantRecordRepository.delete(variantRecordRepository.findByApRecordId(record.getRecordId()));
-            apRecordRepository.delete(record);
+            ApChange change = createChange(ApChange.Type.ACCESS_POINT_DELETE);
+            List<ApName> names = apNameRepository.findVariantNamesByAccessPointId(accessPoint);
+            names.forEach(name -> name.setDeleteChange(change));
+            apNameRepository.save(names);
+
+            ApDescription apDescription = apDescriptionRepository.findApDescriptionByAccessPoint(accessPoint);
+            apDescription.setDeleteChange(change);
+            apDescriptionRepository.save(apDescription);
+
+            ApExternalId apExternalId = apExternalIdRepository.findApExternalIdByAccessPoint(accessPoint);
+            apExternalId.setDeleteChange(change);
+            apExternalIdRepository.save(apExternalId);
+
+            //TODO [fric] je tohle spravny postup? Nemuzu primo smazat zaznam v AP
+
+            ApAccessPoint apAccessPoint = apAccessPointRepository.getOne(accessPoint.getAccessPointId());
+            apAccessPoint.setInvalid(true);
+            apAccessPointRepository.save(accessPoint);
         } else {
-            record.setInvalid(true);
-            saveRecord(record, false);
+            ApAccessPointData accessPointData = accessPointDataService.findAccessPointData(accessPoint);
+            accessPoint.setInvalid(true);
+            saveAccessPoint(accessPointData, false);
         }
     }
 
@@ -330,13 +419,15 @@ public class ApService {
     /**
      * Validace uložení záznamu.
      *
-     * @param record    heslo
+     * @param apData    heslo
      * @param partySave true - jedná se o ukládání přes ukládání osoby, false -> editace z klienta
      */
-    private void checkRecordSave(final ApRecord record, final boolean partySave) {
-        Assert.notNull(record, "Rejstříkové heslo musí být vyplněno");
+    private void checkRecordSave(final ApAccessPointData apData, final boolean partySave) {
+        Assert.notNull(apData.getAccessPoint(), "Rejstříkové heslo musí být vyplněno");
 
-        Assert.notNull(record.getRecord(), "Není vyplněné Record.");
+        Assert.notNull(apData.getPreferredName(), "Není vyplněné Record.");
+
+        ApAccessPoint record = apData.getAccessPoint();
 
         ApType apType = record.getApType();
         Assert.notNull(apType, "Není vyplněné ApType.");
@@ -349,7 +440,7 @@ public class ApService {
                 throw new BusinessException("Typ hesla musí mít vazbu na typ osoby", RegistryCode.REGISTRY_HAS_NOT_TYPE_PARTY);
             }
         } else {
-            if (record.getRecordId() == null && apType.getPartyType() != null) {
+            if (record.getAccessPointId() == null && apType.getPartyType() != null) {
                 throw new BusinessException("Nelze vytvořit rejstříkové heslo, které je navázané na typ osoby",
                         RegistryCode.CANT_CREATE_WITH_TYPE_PARTY);
             }
@@ -360,18 +451,19 @@ public class ApService {
         ApScope scope = scopeRepository.findOne(record.getScope().getScopeId());
         Assert.notNull(scope, "Nebyla nalezena třída rejstříku s id " + record.getScope().getScopeId());
 
-        if (record.getRecordId() == null) {
+        if (record.getAccessPointId() == null) {
             if (!apType.getAddRecord()) {
                 throw new BusinessException(
                         "Nelze přidávat heslo do typu, který nemá přidávání hesel povolené.", RegistryCode.REGISTRY_TYPE_DISABLE);
             }
         } else {
-            ApRecord dbRecord = apRecordRepository.findOne(record.getRecordId());
+            ApAccessPoint dbRecord = apAccessPointRepository.findOne(record.getAccessPointId());
+            ApAccessPointData dbApData = accessPointDataService.findAccessPointData(dbRecord);
             if (!record.getScope().getScopeId().equals(dbRecord.getScope().getScopeId())) {
                 throw new BusinessException("Nelze změnit třídu rejstříku.", RegistryCode.SCOPE_CANT_CHANGE);
             }
 
-            ParParty party = partyService.findParPartyByRecord(dbRecord);
+            ParParty party = partyService.findParPartyByAccessPoint(dbRecord);
             if (party == null) {
                 ExceptionUtils.nullElseBusiness(apType.getPartyType(),
                         "Nelze nastavit typ hesla, které je navázané na typ osoby.", RegistryCode.CANT_CHANGE_WITH_TYPE_PARTY);
@@ -382,16 +474,16 @@ public class ApService {
 
                 //pokud editujeme heslo přes insert/update, a ne přes ukládání osoby
                 if (!partySave) {
-                    ExceptionUtils.equalsElseBusiness(record.getRecord(), dbRecord.getRecord(),
+                    ExceptionUtils.equalsElseBusiness(apData.getPreferredName(), dbApData.getPreferredName(),
                             "Nelze editovat hodnotu rejstříkového hesla napojeného na osobu.",
                             RegistryCode.CANT_CHANGE_VALUE_WITH_PARTY);
-                    ExceptionUtils.equalsElseBusiness(record.getCharacteristics(), dbRecord.getCharacteristics(),
+                    ExceptionUtils.equalsElseBusiness(apData.getDescription(), dbApData.getDescription(),
                             "Nelze editovat charakteristiku rejstříkového hesla napojeného na osobu.",
                             RegistryCode.CANT_CHANGE_CHAR_WITH_PARTY);
-                    ExceptionUtils.equalsElseBusiness(record.getExternalId(), dbRecord.getExternalId(),
+                    ExceptionUtils.equalsElseBusiness(apData.getExternalId(), dbApData.getExternalId(),
                             "Nelze editovat externí id rejstříkového hesla napojeného na osobu.",
                             RegistryCode.CANT_CHANGE_EXID_WITH_PARTY);
-                    ExceptionUtils.equalsElseBusiness(record.getExternalSystem(), dbRecord.getExternalSystem(),
+                    ExceptionUtils.equalsElseBusiness(apData.getExternalSystem(), dbApData.getExternalSystem(),
                             "Nelze editovat externí systém rejstříkového hesla, které je napojené na osobu.",
                             RegistryCode.CANT_CHANGE_EXSYS_WITH_PARTY);
                 }
@@ -405,23 +497,24 @@ public class ApService {
     /**
      * Uložení či update variantního záznamu.
      *
-     * @param variantRecord variantní záznam, bez vazeb
+     * @param variantName variantní záznam, bez vazeb
      * @return výslendný objekt uložený do db
      */
     @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
-    public ApVariantRecord saveVariantRecord(@AuthParam(type = AuthParam.Type.SCOPE) final ApVariantRecord variantRecord) {
-        Assert.notNull(variantRecord, "Heslo musí být vyplněno");
+    public ApName saveVariantName(@AuthParam(type = AuthParam.Type.SCOPE) final ApName variantName, @NotNull ApChange createChange) {
+        Assert.notNull(variantName, "Heslo musí být vyplněno");
+        Assert.notNull(createChange, "Create change musí být vyplněno");
 
-        ApRecord apRecord = variantRecord.getApRecord();
-        Assert.notNull(apRecord, "ApRecord musí být vyplněno.");
-        Integer recordId = apRecord.getRecordId();
-        Assert.notNull(recordId, "ApRecord nemá vyplněno ID.");
+        ApAccessPoint accessPoint = variantName.getAccessPoint();
+        Assert.notNull(accessPoint, "ApAccessPoint musí být vyplněno.");
+        Integer recordId = accessPoint.getAccessPointId();
+        Assert.notNull(recordId, "ApAccessPoint nemá vyplněno ID.");
 
-        apRecord = apRecordRepository.findOne(recordId);
-        Assert.notNull(apRecord, "ApRecord nebylo nalezeno podle id " + recordId);
-        variantRecord.setApRecord(apRecord);
-
-        ApVariantRecord saved = variantRecordRepository.save(variantRecord);
+        accessPoint = apAccessPointRepository.findOne(recordId);
+        Assert.notNull(accessPoint, "ApAccessPoint nebylo nalezeno podle id " + recordId);
+        variantName.setAccessPoint(accessPoint);
+        variantName.setCreateChange(createChange);
+        ApName saved = apNameRepository.save(variantName);
         eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.RECORD_UPDATE, recordId));
 
         return saved;
@@ -457,7 +550,7 @@ public class ApService {
         Assert.notNull(scope, "Scope musí být vyplněn");
         Assert.notNull(scope.getScopeId(), "Identifikátor scope musí být vyplněn");
 
-        List<ApRecord> scopeRecords = apRecordRepository.findByScope(scope);
+        List<ApAccessPoint> scopeRecords = apAccessPointRepository.findByScope(scope);
         ExceptionUtils.isEmptyElseBusiness(scopeRecords, "Nelze smazat třídu rejstříku, která je nastavena na rejstříku.", RegistryCode.USING_SCOPE_CANT_DELETE);
 
         fundRegisterScopeRepository.delete(fundRegisterScopeRepository.findByScope(scope));
@@ -724,34 +817,37 @@ public class ApService {
     }
 
     @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_RD_ALL, UsrPermission.Permission.AP_SCOPE_RD})
-    public ApRecord getRecord(@AuthParam(type = AuthParam.Type.REGISTRY) final Integer recordId) {
+    public ApAccessPoint getAccessPoint(@AuthParam(type = AuthParam.Type.REGISTRY) final Integer recordId) {
         Assert.notNull(recordId, "Identifikátor rejstříkového hesla musí být vyplněn");
-        return apRecordRepository.findOne(recordId);
+        return apAccessPointRepository.findOne(recordId);
     }
 
     /**
      * Získání variant record
      * včetně oprávnění
      *
-     * @param variantRecordId variant record id
+     * @param variantNameId variant record id
      * @return variant record
      */
-    public ApVariantRecord getVariantRecord(final Integer variantRecordId) {
-        ApVariantRecord variantRecord = variantRecordRepository.getOneCheckExist(variantRecordId);
-        beanFactory.getBean(ApService.class).getRecord(variantRecord.getApRecord().getRecordId());
-        return variantRecord;
+    public ApName getVariantName(final Integer variantNameId) {
+        ApName variantName = apNameRepository.getOneCheckExist(variantNameId);
+        beanFactory.getBean(AccessPointService.class).getAccessPoint(variantName.getAccessPoint().getAccessPointId());
+        return variantName;
     }
 
 
     /**
      * Smazání variant record
      *
-     * @param variantRecord variant record ke smazání
+     * @param variantName variant record ke smazání
      * @param record record z důvodu oprávnění
      */
     @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
-    public void deleteVariantRecord(final ApVariantRecord variantRecord, @AuthParam(type = AuthParam.Type.REGISTRY) final ApRecord record) {
-        variantRecordRepository.delete(variantRecord);
+    public void deleteVariantName(final ApName variantName, @AuthParam(type = AuthParam.Type.REGISTRY) final ApAccessPoint record) {
+        ApChange change = createChange(ApChange.Type.VARIANT_NAME_DELETE);
+        ApName apName = apNameRepository.getOneCheckExist(variantName.getNameId());
+        apName.setDeleteChange(change);
+        apNameRepository.save(apName);
     }
 
     /**
@@ -762,7 +858,7 @@ public class ApService {
      *
      * @return použití rejstříku/osoby
      */
-	public RecordUsageVO findRecordUsage(final ApRecord record, @Nullable final ParParty party) {
+	public RecordUsageVO findRecordUsage(final ApAccessPoint record, @Nullable final ParParty party) {
 		List<FundVO> usedFunds = findUsedFunds(record, party); // výskyt v archivních souborech
 		List<PartyVO> usedParties = findUsedParties(record, party); // výskyt v uzlech
 
@@ -777,15 +873,16 @@ public class ApService {
      *
      * @return použití rejstříku/osoby
 	 */
-	private List<PartyVO> findUsedParties(final ApRecord record, final ParParty party) {
+	private List<PartyVO> findUsedParties(final ApAccessPoint record, final ParParty party) {
 		List<PartyVO> usedParties = new LinkedList<>();
 
 		// hledání podle vztahů
-		final Map<Integer, PartyVO> partyVOMap = relationEntityRepository.findByRecord(record).stream().map(rel -> {
+		final Map<Integer, PartyVO> partyVOMap = relationEntityRepository.findByAccessPoint(record).stream().map(rel -> {
 			ParParty partyRel = rel.getRelation().getParty();
 			PartyVO partyVO = new PartyVO();
 			partyVO.setId(partyRel.getPartyId());
-			partyVO.setName(partyRel.getRecord().getRecord());
+            ApAccessPointData apData = accessPointDataService.findAccessPointData(partyRel.getRecord());
+            partyVO.setName(apData.getPreferredName().getName());
 
 			OccurrenceVO occurrenceVO = new OccurrenceVO(rel.getRelationEntityId(), OccurrenceType.PAR_RELATION_ENTITY);
 			List<OccurrenceVO> occurrences = new LinkedList<>();
@@ -804,7 +901,8 @@ public class ApService {
 				} else {
 					partyVO = new PartyVO(); // nový výskyt
 					partyVO.setId(creator.getPartyId());
-					partyVO.setName(creator.getRecord().getRecord());
+                    ApAccessPointData apData = accessPointDataService.findAccessPointData(creator.getRecord());
+                    partyVO.setName(apData.getPreferredName().getName());
 
 					List<OccurrenceVO> occurrences = new LinkedList<>();
 					partyVO.setOccurrences(occurrences);
@@ -829,7 +927,7 @@ public class ApService {
      *
      * @return použití rejstříku/osoby
 	 */
-	private List<FundVO> findUsedFunds(final ApRecord record, final ParParty party) {
+	private List<FundVO> findUsedFunds(final ApAccessPoint record, final ParParty party) {
 		List<ArrData> dataList = new LinkedList<>(dataRecordRefRepository.findByRecord(record));
 		if (party != null) {
 			dataList.addAll(dataPartyRefRepository.findByParty(party));
@@ -1005,7 +1103,7 @@ public class ApService {
      * @param replaced
      * @param replacement
      */
-    public void replace(final ApRecord replaced, final ApRecord replacement) {
+    public void replace(final ApAccessPoint replaced, final ApAccessPoint replacement) {
 
         final List<ArrDescItem> arrItems = descItemRepository.findArrItemByRecord(replaced);
         List<ArrNodeRegister> nodeRegisters = nodeRegisterRepository.findByRecordAndDeleteChangeIsNull(replaced);
@@ -1070,7 +1168,7 @@ public class ApService {
         });
 
 
-        final ApService self = applicationContext.getBean(ApService.class);
+        final AccessPointService self = applicationContext.getBean(AccessPointService.class);
         nodeRegisters.forEach(i -> {
             final ArrNodeRegister arrNodeRegister = new ArrNodeRegister();
             arrNodeRegister.setRecord(replacement);
@@ -1095,9 +1193,30 @@ public class ApService {
         });
     }
 
-    public boolean canBeDeleted(ApRecord record) {
+    public boolean canBeDeleted(ApAccessPoint record) {
         return CollectionUtils.isEmpty(dataRecordRefRepository.findByRecord(record)) &&
                 CollectionUtils.isEmpty(nodeRegisterRepository.findByRecordId(record)) &&
-                CollectionUtils.isEmpty(relationEntityRepository.findByRecord(record));
+                CollectionUtils.isEmpty(relationEntityRepository.findByAccessPoint(record));
+    }
+
+
+    public ApChange createChange(@Nullable final ApChange.Type type) {
+        return createChange(type, null);
+    }
+
+    public ApChange createChange(@Nullable final ApChange.Type type, @Nullable ApExternalSystem externalSystem) {
+        ApChange change = new ApChange();
+        UserDetail userDetail = userService.getLoggedUserDetail();
+        change.setChangeDate(LocalDateTime.now());
+
+        if (userDetail != null && userDetail.getId() != null) {
+            UsrUser user = em.getReference(UsrUser.class, userDetail.getId());
+            change.setUser(user);
+        }
+
+        change.setType(type);
+        change.setExternalSystem(externalSystem);
+
+        return apChangeRepository.save(change);
     }
 }

@@ -9,7 +9,7 @@ import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.fund.FundTree;
 import cz.tacr.elza.core.fund.FundTreeProvider;
 import cz.tacr.elza.core.fund.TreeNode;
-import cz.tacr.elza.domain.ApRecord;
+import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFile;
@@ -483,9 +483,9 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
     // TODO: record variants should be fetched
     @Override
-    public Record getRecord(ApRecord record) {
+    public Record getRecord(ApAccessPoint record) {
         // id without fetch -> access type property
-        Record ap = apIdMap.get(record.getRecordId());
+        Record ap = apIdMap.get(record.getAccessPointId());
         if (ap != null) {
             return ap;
         }
@@ -494,7 +494,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         ap = Record.newInstance(record, apType);
 
         // add to lookup
-        apIdMap.put(record.getRecordId(), ap);
+        apIdMap.put(record.getAccessPointId(), ap);
 
         return ap;
     }
@@ -568,7 +568,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         for (ParRelationEntity entity : entities) {
             // create relation to
             RelationToType roleType = getRelationRoleType(entity.getRoleTypeId(), staticRelationType);
-            Record entityAP = getRecord(entity.getRecord());
+            Record entityAP = getRecord(entity.getAccessPoint());
             RelationTo relationTo = new RelationTo(entity, roleType, entityAP);
             relationsTo.add(relationTo);
         }

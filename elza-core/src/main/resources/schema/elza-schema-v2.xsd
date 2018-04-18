@@ -5,9 +5,9 @@
 			<xs:documentation>Root element for elza data exchange format</xs:documentation>
 		</xs:annotation>
 	</xs:element>
-	<xs:simpleType name="AccessPointName">
+	<xs:simpleType name="AccessPointNameType">
 		<xs:annotation>
-			<xs:documentation>Variant name of record</xs:documentation>
+			<xs:documentation>Type of name</xs:documentation>
 		</xs:annotation>
 		<xs:restriction base="xs:string"/>
 	</xs:simpleType>
@@ -55,14 +55,11 @@
 					<xs:documentation>Note for record</xs:documentation>
 				</xs:annotation>
 			</xs:element>
-			<xs:element name="vnms" type="e:AccessPointVariantNames" minOccurs="0" maxOccurs="1">
+			<xs:element name="nms" type="e:AccessPointtNames" minOccurs="1" maxOccurs="1">
 				<xs:annotation>
-					<xs:documentation>Variant names of record</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-			<xs:element name="glcs" type="e:AccessPointGeoLocations" minOccurs="0" maxOccurs="1">
-				<xs:annotation>
-					<xs:documentation>List of coordinates</xs:documentation>
+					<xs:documentation>Names of accesspoint
+
+						At least one name have to be defined.</xs:documentation>
 				</xs:annotation>
 			</xs:element>
 			<xs:element name="ape" type="e:AccessPointEntry" minOccurs="1" maxOccurs="1">
@@ -77,22 +74,19 @@
 			<xs:documentation>Registry item / one record</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
-			<xs:element name="eid" type="e:ExternalId" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="eid" type="e:ExternalId" minOccurs="0" maxOccurs="unbounded"/>
 		</xs:sequence>
 		<xs:attribute name="id" use="required" type="e:Id"/>
-		<xs:attribute name="pid" use="optional" type="e:Id">
+		<xs:attribute name="rid" use="optional" type="xs:string">
 			<xs:annotation>
-				<xs:documentation>Parent ID, used for hierarchical records</xs:documentation>
+				<xs:documentation>Revision ID.
+
+					Revision ID can be UUID or any another ID (e.g. timestamp, id, ...). Revision ID are not used for ordering</xs:documentation>
 			</xs:annotation>
 		</xs:attribute>
 		<xs:attribute name="t" use="required" type="e:AccessPointType">
 			<xs:annotation>
 				<xs:documentation>Type of access point</xs:documentation>
-			</xs:annotation>
-		</xs:attribute>
-		<xs:attribute name="upd" use="optional" type="xs:dateTime">
-			<xs:annotation>
-				<xs:documentation>Time of last update</xs:documentation>
 			</xs:annotation>
 		</xs:attribute>
 		<xs:attribute name="uuid" use="optional" type="e:Uuid">
@@ -101,30 +95,31 @@
 			</xs:annotation>
 		</xs:attribute>
 	</xs:complexType>
-	<xs:complexType name="AccessPointGeoLocation">
+	<xs:complexType name="AccessPointName">
 		<xs:annotation>
-			<xs:documentation>Coordinates for access point</xs:documentation>
+			<xs:documentation>Variant name of record</xs:documentation>
 		</xs:annotation>
-		<xs:sequence>
-			<xs:element name="note" type="xs:string" minOccurs="0" maxOccurs="1">
-				<xs:annotation>
-					<xs:documentation>Note for coordinates</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-			<xs:element name="v" type="xs:string" minOccurs="1" maxOccurs="1">
-				<xs:annotation>
-					<xs:documentation>Serialized form of coordinates</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-		</xs:sequence>
-	</xs:complexType>
-	<xs:complexType name="AccessPointGeoLocations">
-		<xs:annotation>
-			<xs:documentation>List of coordinates connected to access point</xs:documentation>
-		</xs:annotation>
-		<xs:sequence>
-			<xs:element name="glc" type="e:AccessPointGeoLocation" minOccurs="0" maxOccurs="unbounded"/>
-		</xs:sequence>
+		<xs:sequence/>
+		<xs:attribute name="l" use="optional" type="xs:string">
+			<xs:annotation>
+				<xs:documentation>Language of name (ISO code, 3letters)</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="n" use="required" type="xs:string">
+			<xs:annotation>
+				<xs:documentation>Name of access point</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="t" use="optional" type="e:AccessPointNameType">
+			<xs:annotation>
+				<xs:documentation>Type of name</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="cpl" use="optional" type="xs:string">
+			<xs:annotation>
+				<xs:documentation>Complement</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
 	</xs:complexType>
 	<xs:complexType name="AccessPointRefs">
 		<xs:annotation>
@@ -146,14 +141,14 @@
 			<xs:element name="ap" type="e:AccessPoint" minOccurs="0" maxOccurs="unbounded"/>
 		</xs:sequence>
 	</xs:complexType>
-	<xs:complexType name="AccessPointVariantNames">
+	<xs:complexType name="AccessPointtNames">
 		<xs:annotation>
 			<xs:documentation>List of variant record names</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
-			<xs:element name="vnm" type="e:AccessPointName" minOccurs="0" maxOccurs="unbounded">
+			<xs:element name="nm" type="e:AccessPointName" minOccurs="1" maxOccurs="unbounded">
 				<xs:annotation>
-					<xs:documentation>Variant name</xs:documentation>
+					<xs:documentation>Names of access point. First name is prefered one.</xs:documentation>
 				</xs:annotation>
 			</xs:element>
 		</xs:sequence>
@@ -199,7 +194,7 @@
 				<xs:attribute name="v" use="required" type="xs:decimal">
 					<xs:annotation>
 						<xs:documentation>Value
-Type: decimal</xs:documentation>
+							Type: decimal</xs:documentation>
 					</xs:annotation>
 				</xs:attribute>
 			</xs:extension>
@@ -225,7 +220,7 @@ Type: decimal</xs:documentation>
 				<xs:attribute name="v" use="required" type="xs:integer">
 					<xs:annotation>
 						<xs:documentation>Value
-Type: Integer</xs:documentation>
+							Type: Integer</xs:documentation>
 					</xs:annotation>
 				</xs:attribute>
 			</xs:extension>
@@ -250,12 +245,12 @@ Type: Integer</xs:documentation>
 		<xs:annotation>
 			<xs:documentation>Description item for single String value. This is most generic description item. It can be used to store values of other types.
 
-Item is used to represent at least:
-Coordinates serialized in string
-Simple string value
-Text  / LongText with unlimited length
-Formatted text
-Item ID</xs:documentation>
+				Item is used to represent at least:
+				Coordinates serialized in string
+				Simple string value
+				Text  / LongText with unlimited length
+				Formatted text
+				Item ID</xs:documentation>
 		</xs:annotation>
 		<xs:complexContent>
 			<xs:extension base="e:DescriptionItem">
@@ -609,8 +604,11 @@ Item ID</xs:documentation>
 				</xs:annotation>
 			</xs:element>
 			<xs:element name="ape" type="e:AccessPointEntry" minOccurs="1" maxOccurs="1"/>
-			<xs:element name="name" type="e:PartyName" minOccurs="1" maxOccurs="1"/>
-			<xs:element name="vnms" type="e:PartyNames" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="nms" type="e:PartyNames" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Party names. At least one name have to exists.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
 		</xs:sequence>
 		<xs:attribute name="id" use="required" type="e:Id">
 			<xs:annotation>
@@ -626,13 +624,13 @@ Item ID</xs:documentation>
 		<xs:attribute name="cid" use="optional" type="e:Id">
 			<xs:annotation>
 				<xs:documentation>ID of the creator.
-This is person who created description.</xs:documentation>
+					This is person who created description.</xs:documentation>
 			</xs:annotation>
 		</xs:attribute>
 		<xs:attribute name="paid" use="optional" type="e:Id">
 			<xs:annotation>
 				<xs:documentation>Party ID.
-This is ID of the created party</xs:documentation>
+					This is ID of the created party</xs:documentation>
 			</xs:annotation>
 		</xs:attribute>
 	</xs:complexType>
@@ -778,8 +776,11 @@ This is ID of the created party</xs:documentation>
 		</xs:attribute>
 	</xs:complexType>
 	<xs:complexType name="PartyNames">
+		<xs:annotation>
+			<xs:documentation>Collection of party names. First name is prefered name.</xs:documentation>
+		</xs:annotation>
 		<xs:sequence>
-			<xs:element name="vnm" type="e:PartyName" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="nm" type="e:PartyName" minOccurs="1" maxOccurs="unbounded"/>
 		</xs:sequence>
 	</xs:complexType>
 	<xs:complexType name="PartyRelation">
@@ -975,14 +976,14 @@ This is ID of the created party</xs:documentation>
 	<xs:complexType name="TimeInterval">
 		<xs:annotation>
 			<xs:documentation>Complex date.
-Allows to represent single time point and also interval</xs:documentation>
+				Allows to represent single time point and also interval</xs:documentation>
 		</xs:annotation>
 		<xs:sequence/>
 		<xs:attribute name="ct" use="optional" type="xs:string">
 			<xs:annotation>
-				<xs:documentation>Calendar type. If calendar type is not present then Gregorian calendar is used. Typical values are: 
-G - Gregorian calendar
-J - Julian calendar</xs:documentation>
+				<xs:documentation>Calendar type. If calendar type is not present then Gregorian calendar is used. Typical values are:
+					G - Gregorian calendar
+					J - Julian calendar</xs:documentation>
 			</xs:annotation>
 		</xs:attribute>
 		<xs:attribute name="f" use="required" type="xs:string">
@@ -1014,8 +1015,8 @@ J - Julian calendar</xs:documentation>
 	<xs:complexType name="TimeIntervalExt">
 		<xs:annotation>
 			<xs:documentation>Extended complex date with:
-	- text form of date
-	- note</xs:documentation>
+				- text form of date
+				- note</xs:documentation>
 		</xs:annotation>
 		<xs:complexContent>
 			<xs:extension base="e:TimeInterval">

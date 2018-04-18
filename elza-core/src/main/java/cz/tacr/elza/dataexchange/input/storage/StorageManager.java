@@ -38,7 +38,7 @@ public class StorageManager implements StorageListener {
 
     private final Session session;
 
-    private final ApRecordStorage recordStorage;
+    private final ApAccessPointStorage recordStorage;
 
     private final ParPartyStorage partyStorage;
 
@@ -47,7 +47,7 @@ public class StorageManager implements StorageListener {
     public StorageManager(long memoryScoreLimit, Session session, ImportInitHelper initHelper) {
         this.memoryScoreLimit = memoryScoreLimit;
         this.session = session;
-        this.recordStorage = new ApRecordStorage(this, LocalDateTime.now(), session, initHelper);
+        this.recordStorage = new ApAccessPointStorage(this, LocalDateTime.now(), session, initHelper);
         this.partyStorage = new ParPartyStorage(this, session, initHelper);
     }
 

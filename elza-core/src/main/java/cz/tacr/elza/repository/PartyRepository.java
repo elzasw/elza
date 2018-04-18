@@ -1,6 +1,6 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.ApRecord;
+import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.projection.ParPartyInfo;
 import org.springframework.data.jpa.repository.Query;
@@ -21,27 +21,27 @@ public interface PartyRepository extends ElzaJpaRepository<ParParty, Integer>, P
      * @param recordId id záznamu rejtříku
      * @return záznamy patřící danému záznamu v rejstříku
      */
-    @Query("SELECT ap FROM par_party ap JOIN ap.record r WHERE r.recordId = ?1")
+    @Query("SELECT ap FROM par_party ap JOIN ap.record r WHERE r.accessPointId = ?1")
     List<ParParty> findParPartyByRecordId(Integer recordId);
 
 
     /**
      * Najde seznam osob podle rejstříkových hesel.
      *
-     * @param recordIds seznam rejstříkových hesel
+     * @param records seznam rejstříkových hesel
      * @return seznam osob s danými hesly
      */
-    @Query("SELECT ap FROM par_party ap WHERE ap.record IN (?1)")
-    List<ParParty> findParPartyByRecords(Collection<ApRecord> records);
+    @Query("SELECT party FROM par_party party WHERE party.record IN (?1)")
+    List<ParParty> findParPartyByRecords(Collection<ApAccessPoint> records);
 
     /**
      * Najde seznam osob podle rejstříkových hesel.
      *
-     * @param recordIds seznam rejstříkových hesel
+     * @param records seznam rejstříkových hesel
      * @return seznam osob s danými hesly
      */
-    @Query("SELECT ap.partyId, r.recordId FROM par_party ap JOIN ap.record r WHERE r IN (?1)")
-    List<Object[]> findRecordIdAndPartyIdByRecords(Collection<ApRecord> records);
+    @Query("SELECT party.partyId, r.accessPointId FROM par_party party JOIN party.record r WHERE r IN (?1)")
+    List<Object[]> findRecordIdAndPartyIdByRecords(Collection<ApAccessPoint> records);
 
 
     /**
@@ -53,7 +53,7 @@ public interface PartyRepository extends ElzaJpaRepository<ParParty, Integer>, P
     @Query("SELECT c.creatorParty FROM par_creator c WHERE c.party = ?1 ORDER BY c.creatorId")
     List<ParParty> findCreatorsByParty(ParParty party);
 
-    List<ParPartyInfo> findInfoByRecordRecordIdIn(Collection<Integer> recordIds);
+    List<ParPartyInfo> findInfoByRecordAccessPointIdIn(Collection<Integer> recordIds);
 
     @Query("SELECT ap FROM par_party ap " +
             "LEFT JOIN FETCH ap.preferredName pn " +

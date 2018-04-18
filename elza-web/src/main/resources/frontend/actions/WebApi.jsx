@@ -396,7 +396,7 @@ export class WebApiCls {
     /// Registry
     createRecord(record, characteristics, apTypeId, parentId, scopeId) {
         return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/', null, {
-            '@class': 'cz.tacr.elza.controller.vo.ApRecordVO',
+            '@class': 'cz.tacr.elza.controller.vo.ApAccessPointVO',
             record,
             characteristics,
             local: false,

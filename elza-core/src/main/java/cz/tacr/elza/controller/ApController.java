@@ -1,20 +1,51 @@
 package cz.tacr.elza.controller;
 
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-import javax.transaction.Transactional;
-
-import cz.tacr.elza.controller.vo.*;
-import cz.tacr.elza.domain.*;
+import cz.tacr.elza.controller.config.ClientFactoryDO;
+import cz.tacr.elza.controller.config.ClientFactoryVO;
+import cz.tacr.elza.controller.vo.ApAccessPointVO;
+import cz.tacr.elza.controller.vo.ApExternalSystemSimpleVO;
+import cz.tacr.elza.controller.vo.ApRecordSimple;
+import cz.tacr.elza.controller.vo.ApScopeVO;
+import cz.tacr.elza.controller.vo.ApTypeVO;
+import cz.tacr.elza.controller.vo.ApVariantRecordVO;
+import cz.tacr.elza.controller.vo.FilteredResultVO;
+import cz.tacr.elza.controller.vo.InterpiMappingVO;
+import cz.tacr.elza.controller.vo.InterpiSearchVO;
+import cz.tacr.elza.controller.vo.RecordImportVO;
+import cz.tacr.elza.controller.vo.RelationSearchVO;
+import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApChange;
+import cz.tacr.elza.domain.ApExternalSystem;
+import cz.tacr.elza.domain.ApName;
+import cz.tacr.elza.domain.ApScope;
+import cz.tacr.elza.domain.ApType;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.ParPartyType;
+import cz.tacr.elza.domain.ParRelationRoleType;
+import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.interpi.service.InterpiService;
+import cz.tacr.elza.interpi.service.vo.ExternalRecordVO;
+import cz.tacr.elza.repository.ApAccessPointRepository;
+import cz.tacr.elza.repository.ApNameRepository;
+import cz.tacr.elza.repository.ApTypeRepository;
+import cz.tacr.elza.repository.FundVersionRepository;
+import cz.tacr.elza.repository.ItemSpecRegisterRepository;
+import cz.tacr.elza.repository.ItemSpecRepository;
+import cz.tacr.elza.repository.PartyRepository;
+import cz.tacr.elza.repository.PartyTypeRepository;
+import cz.tacr.elza.repository.RelationRoleTypeRepository;
+import cz.tacr.elza.repository.ScopeRepository;
+import cz.tacr.elza.service.AccessPointDataService;
+import cz.tacr.elza.service.AccessPointService;
+import cz.tacr.elza.service.ExternalSystemService;
+import cz.tacr.elza.service.PartyService;
+import cz.tacr.elza.service.vo.ApAccessPointData;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,28 +59,16 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import cz.tacr.elza.controller.config.ClientFactoryDO;
-import cz.tacr.elza.controller.config.ClientFactoryVO;
-import cz.tacr.elza.controller.vo.ApRecordVO;
-import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
-import cz.tacr.elza.domain.ApType;
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.interpi.service.InterpiService;
-import cz.tacr.elza.interpi.service.vo.ExternalRecordVO;
-import cz.tacr.elza.repository.FundVersionRepository;
-import cz.tacr.elza.repository.ItemSpecRegisterRepository;
-import cz.tacr.elza.repository.ItemSpecRepository;
-import cz.tacr.elza.repository.PartyRepository;
-import cz.tacr.elza.repository.PartyTypeRepository;
-import cz.tacr.elza.repository.ApRecordRepository;
-import cz.tacr.elza.repository.ApVariantRecordRepository;
-import cz.tacr.elza.repository.ApTypeRepository;
-import cz.tacr.elza.repository.RelationRoleTypeRepository;
-import cz.tacr.elza.repository.ScopeRepository;
-import cz.tacr.elza.service.ExternalSystemService;
-import cz.tacr.elza.service.PartyService;
-import cz.tacr.elza.service.ApService;
+import javax.annotation.Nullable;
+import javax.transaction.Transactional;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 
 /**
@@ -66,13 +85,16 @@ public class ApController {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Autowired
-    private ApRecordRepository apRecordRepository;
+    private ApAccessPointRepository accessPointRepository;
+
+    @Autowired
+    private ApNameRepository nameRepository;
 
     @Autowired
     private ApTypeRepository apTypeRepository;
 
     @Autowired
-    private ApService apService;
+    private AccessPointService accessPointService;
 
     @Autowired
     private ExternalSystemService externalSystemService;
@@ -85,9 +107,6 @@ public class ApController {
 
     @Autowired
     private ClientFactoryDO factoryDO;
-
-    @Autowired
-    private ApVariantRecordRepository variantRecordRepository;
 
     @Autowired
     private FundVersionRepository fundVersionRepository;
@@ -113,6 +132,9 @@ public class ApController {
     @Autowired
     private InterpiService interpiService;
 
+    @Autowired
+    private AccessPointDataService accessPointDataService;
+
     /**
      * Nalezne takové záznamy rejstříku, které mají daný typ a jejich textová pole (heslo, popis, poznámka),
      * nebo pole variantního záznamu obsahují hledaný řetězec. V případě, že hledaný řetězec je null, nevyhodnocuje se.
@@ -121,7 +143,6 @@ public class ApController {
      * @param from              index prvního záznamu, začíná od 0
      * @param count             počet výsledků k vrácení
      * @param apTypeId   IDčka typu záznamu, může být null
-     * @param parentRecordId    id rodiče, pokud je null načtou se všechny záznamy, jinak potomci daného rejstříku
      * @param versionId   id verze, podle které se budou filtrovat třídy rejstříků, null - výchozí třídy
      * @param itemSpecId   id specifikace
      * @param scopeId           id scope, pokud je vyplněn vrací se jen rejstříky s tímto scope
@@ -129,11 +150,10 @@ public class ApController {
      */
 	@Transactional
     @RequestMapping(value = "/", method = RequestMethod.GET)
-    public FilteredResultVO<ApRecord> findRecord(@RequestParam(required = false) @Nullable final String search,
+    public FilteredResultVO<ApAccessPoint> findRecord(@RequestParam(required = false) @Nullable final String search,
                                                  @RequestParam final Integer from,
                                                  @RequestParam final Integer count,
                                                  @RequestParam(required = false) @Nullable final Integer apTypeId,
-                                                 @RequestParam(required = false) @Nullable final Integer parentRecordId,
                                                  @RequestParam(required = false) @Nullable final Integer versionId,
                                                  @RequestParam(required = false) @Nullable final Integer itemSpecId,
                                                  @RequestParam(required = false) @Nullable final Integer scopeId,
@@ -163,22 +183,17 @@ public class ApController {
             fund = version.getFund();
         }
 
-        if(parentRecordId != null) {
-            apRecordRepository.getOneCheckExist(parentRecordId);
-        }
+        final long foundRecordsCount = accessPointService.findApAccessPointByTextAndTypeCount(search, apTypeIdTree, fund, scopeId, excludeInvalid);
 
-        final long foundRecordsCount = apService.findApRecordByTextAndTypeCount(search, apTypeIdTree,
-                parentRecordId, fund, scopeId, excludeInvalid);
-
-        List<ApRecord> foundRecords = apService.findApRecordByTextAndType(search, apTypeIdTree, from,
-                count, parentRecordId, fund, scopeId, excludeInvalid);
+        List<ApAccessPoint> foundRecords = accessPointService.findApAccessPointByTextAndType(search, apTypeIdTree, from,
+                count, fund, scopeId, excludeInvalid);
 
 
         Map<Integer, Integer> recordIdPartyIdMap = partyService.findParPartyIdsByRecords(foundRecords);
 
-        List<ApRecordVO> foundRecordVOList = factoryVo.createApRecords(foundRecords, recordIdPartyIdMap, true);
+        List<ApAccessPointVO> foundRecordVOList = factoryVo.createApAccessPoints(foundRecords, recordIdPartyIdMap);
 
-        for (ApRecordVO apRecordVO : foundRecordVOList) {
+        for (ApAccessPointVO apRecordVO : foundRecordVOList) {
             factoryVo.fillApTypeNamesToParents(apRecordVO);
         }
 
@@ -190,10 +205,10 @@ public class ApController {
 //            parentVO.setChilds(childrenVO);
 //            for (ApRecord child : children) {
 //                Integer partyId = recordIdPartyIdMap.get(child.getId());
-//                ApRecordVO apRecordVO = factoryVo.createApRecord(child, partyId, true);
+//                ApRecordVO apRecordVO = factoryVo.createApAccessPoint(child, partyId, true);
 //                childrenVO.add(apRecordVO);
 //
-//                List<ApRecord> childChildren = apRecordRepository.findByParentRecord(child);
+//                List<ApRecord> childChildren = accessPointRepository.findByParentRecord(child);
 //                apRecordVO.setHasChildren(childChildren.isEmpty() ? false : true);
 //            }
 //            parentVO.setHasChildren(!childrenVO.isEmpty());
@@ -216,7 +231,7 @@ public class ApController {
      */
 	@Transactional
     @RequestMapping(value = "/findRecordForRelation", method = RequestMethod.GET)
-    public FilteredResultVO<ApRecord> findRecordForRelation(@RequestParam(required = false) @Nullable final String search,
+    public FilteredResultVO<ApAccessPoint> findRecordForRelation(@RequestParam(required = false) @Nullable final String search,
                                                             @RequestParam final Integer from,
                                                             @RequestParam final Integer count,
                                                             @RequestParam final Integer roleTypeId,
@@ -234,11 +249,11 @@ public class ApController {
         Set<Integer> scopeIds = new HashSet<>();
         scopeIds.add(party.getRecord().getScope().getScopeId());
 
-        final long foundRecordsCount = apRecordRepository.findApRecordByTextAndTypeCount(search, apTypeIds,
-                null, scopeIds, true);
+        final long foundRecordsCount = accessPointRepository.findApAccessPointByTextAndTypeCount(search, apTypeIds,
+                scopeIds, true);
 
-        final List<ApRecord> foundRecords = apRecordRepository.findApRecordByTextAndType(search, apTypeIds,
-                from, count, null, scopeIds, true);
+        final List<ApAccessPoint> foundRecords = accessPointRepository.findApAccessPointByTextAndType(search, apTypeIds,
+                from, count, scopeIds, true);
 
         List<ApRecordSimple> foundRecordsVO = factoryVo.createApRecordsSimple(foundRecords);
         return new FilteredResultVO(foundRecordsVO, foundRecordsCount);
@@ -252,14 +267,14 @@ public class ApController {
      */
     @Transactional
     @RequestMapping(value = "/", method = RequestMethod.POST)
-    public ApRecordVO createRecord(@RequestBody final ApRecordVO record) {
+    public ApAccessPointVO createRecord(@RequestBody final ApAccessPointVO record) {
         Assert.isNull(record.getId(), "Při vytváření záznamu nesmí být vyplněno ID (recordId).");
 
-        ApRecord recordDO = factoryDO.createApRecord(record);
-        ApRecord newRecordDO = apService.saveRecord(recordDO, false);
+        ApAccessPointData accessPointDO = factoryDO.createApAccessPoint(record);
+        ApAccessPoint newAccessPointDO = accessPointService.saveAccessPoint(accessPointDO, false);
 
-        ParParty recordParty = partyService.findParPartyByRecord(newRecordDO);
-        return factoryVo.createApRecord(newRecordDO, recordParty == null ? null : recordParty.getPartyId(), false);
+        ParParty recordParty = partyService.findParPartyByAccessPoint(newAccessPointDO);
+        return factoryVo.createApRecord(newAccessPointDO, recordParty == null ? null : recordParty.getPartyId());
     }
 
 	@Transactional
@@ -283,23 +298,23 @@ public class ApController {
      */
 	@Transactional
     @RequestMapping(value = "/{recordId}", method = RequestMethod.GET)
-    public ApRecordVO getRecord(@PathVariable final Integer recordId) {
+    public ApAccessPointVO getRecord(@PathVariable final Integer recordId) {
         Assert.notNull(recordId, "Identifikátor rejstříkového hesla musí být vyplněn");
 
-        ApRecord record = apService.getRecord(recordId);
+        ApAccessPoint record = accessPointService.getAccessPoint(recordId);
 
         //seznam nalezeného záznamu spolu s dětmi
-        List<ApRecord> records = new LinkedList<>();
+        List<ApAccessPoint> records = new LinkedList<>();
         records.add(record);
 
         //seznam pouze dětí
         Map<Integer, Integer> recordIdPartyIdMap = partyService.findParPartyIdsByRecords(records);
 
         Integer partyId = recordIdPartyIdMap.get(recordId);
-        ApRecordVO result = factoryVo.createApRecord(record, partyId, true);
+        ApAccessPointVO result = factoryVo.createApRecord(record, partyId);
         factoryVo.fillApTypeNamesToParents(result);
 
-        result.setVariantRecords(factoryVo.createApVariantRecords(variantRecordRepository.findByApRecordId(recordId)));
+        result.setVariantRecords(factoryVo.createApVariantRecords(nameRepository.findVariantNamesByAccessPointId(record)));
 
         return result;
     }
@@ -313,7 +328,7 @@ public class ApController {
      */
     @Transactional
     @RequestMapping(value = "/{recordId}", method = RequestMethod.PUT)
-    public ApRecordVO updateRecord(@PathVariable final Integer recordId, @RequestBody final ApRecordVO record) {
+    public ApAccessPointVO updateRecord(@PathVariable final Integer recordId, @RequestBody final ApAccessPointVO record) {
         Assert.notNull(recordId, "Identifikátor rejstříkového hesla musí být vyplněn");
         Assert.notNull(record, "Rejstříkové heslo musí být vyplněno");
 
@@ -321,11 +336,11 @@ public class ApController {
                 recordId.equals(record.getId()),
                 "V url požadavku je odkazováno na jiné ID (" + recordId + ") než ve VO (" + record.getId() + ")."
         );
-        ApRecord recordTest = apRecordRepository.findOne(record.getId());
+        ApAccessPoint recordTest = accessPointRepository.findOne(record.getId());
         Assert.notNull(recordTest, "Nebyl nalezen záznam pro update s id " + record.getId());
 
-        ApRecord recordDO = factoryDO.createApRecord(record);
-        apService.saveRecord(recordDO, false);
+        ApAccessPointData recordDO = factoryDO.createApAccessPoint(record);
+        accessPointService.saveAccessPoint(recordDO, false);
         return getRecord(record.getId());
     }
 
@@ -338,9 +353,9 @@ public class ApController {
     @RequestMapping(value = "/{recordId}", method = RequestMethod.DELETE)
     public void deleteRecord(@PathVariable final Integer recordId) {
         Assert.notNull(recordId, "Identifikátor rejstříkového hesla musí být vyplněn");
-        ApRecord record = apService.getRecord(recordId);
+        ApAccessPoint record = accessPointService.getAccessPoint(recordId);
 
-        apService.deleteRecord(record, true);
+        accessPointService.deleteAccessPoint(record, true);
     }
 
     /**
@@ -389,38 +404,39 @@ public class ApController {
     @Transactional
     @RequestMapping(value = "/variantRecord", method = RequestMethod.POST)
     public ApVariantRecordVO createVariantRecord(@RequestBody final ApVariantRecordVO variantRecord) {
-        Assert.isNull(variantRecord.getId(), "Při vytváření záznamu nesmí být vyplněno ID (variantRecordId).");
+        Assert.isNull(variantRecord.getId(), "Při vytváření záznamu nesmí být vyplněno ID (variantNameId).");
 
-        ApVariantRecord variantRecordDO = factoryDO.createApVariantRecord(variantRecord);
-
-        ApVariantRecord newVariantRecord = apService.saveVariantRecord(variantRecordDO);
-
+        ApName variantRecordDO = factoryDO.createApName(variantRecord);
+        ApChange change = accessPointService.createChange(ApChange.Type.VARIANT_NAME_CREATE);
+        ApName newVariantRecord = accessPointService.saveVariantName(variantRecordDO, change);
+        //TODO [fric] upravit mapper
         return factoryVo.createApVariantRecord(newVariantRecord);
     }
 
     /**
      * Aktualizace variantního rejstříkového hesla.
      *
-     * @param variantRecordId ID rejstříkové hesla
+     * @param variantNameId ID rejstříkové hesla
      * @param variantRecord VO rejstříkové heslo
      * @return aktualizovaný záznam
      */
     @Transactional
-    @RequestMapping(value = "/variantRecord/{variantRecordId}", method = RequestMethod.PUT)
-    public ApVariantRecordVO updateVariantRecord(@PathVariable final Integer variantRecordId, @RequestBody final ApVariantRecordVO variantRecord) {
-        Assert.notNull(variantRecordId, "Identifikátor hesla musí být vyplněn");
+    @RequestMapping(value = "/variantRecord/{variantNameId}", method = RequestMethod.PUT)
+    public ApVariantRecordVO updateVariantName(@PathVariable final Integer variantNameId, @RequestBody final ApVariantRecordVO variantRecord) {
+        Assert.notNull(variantNameId, "Identifikátor hesla musí být vyplněn");
         Assert.notNull(variantRecord, "Heslo musí být vyplněno");
 
         Assert.isTrue(
-                variantRecordId.equals(variantRecord.getId()),
-                "V url požadavku je odkazováno na jiné ID (" + variantRecordId + ") než ve VO (" + variantRecord.getId() + ")."
+                variantNameId.equals(variantRecord.getId()),
+                "V url požadavku je odkazováno na jiné ID (" + variantNameId + ") než ve VO (" + variantRecord.getId() + ")."
         );
-
-        ApVariantRecord variantRecordTest = variantRecordRepository.findOne(variantRecord.getId());
+//TODO [fric] pridat apChange
+        ApName variantRecordTest = nameRepository.findOne(variantRecord.getId());
         Assert.notNull(variantRecordTest, "Nebyl nalezen záznam pro update s id " + variantRecord.getId());
-        ApVariantRecord variantRecordDO = factoryDO.createApVariantRecord(variantRecord);
-        ApVariantRecord updatedVarRec = apService.saveVariantRecord(variantRecordDO);
-        apRecordRepository.flush();
+        ApName variantRecordDO = factoryDO.createApName(variantRecord);
+        ApChange change = accessPointService.createChange(ApChange.Type.VARIANT_NAME_UPDATE);
+        ApName updatedVarRec = accessPointService.saveVariantName(variantRecordDO, change);
+        accessPointRepository.flush();
         return factoryVo.createApVariantRecord(updatedVarRec);
     }
 
@@ -430,12 +446,12 @@ public class ApController {
      * @param variantRecordId id variantního rejstříkového hesla
      */
     @Transactional
-    @RequestMapping(value = "/variantRecord/{variantRecordId}", method = RequestMethod.DELETE)
-    public void deleteVariantRecord(@PathVariable final Integer variantRecordId) {
+    @RequestMapping(value = "/variantRecord/{variantNameId}", method = RequestMethod.DELETE)
+    public void deleteVariantName(@PathVariable final Integer variantRecordId) {
         Assert.notNull(variantRecordId, "Identifikátor hesla musí být vyplněn");
-
-        ApVariantRecord variantRecord = apService.getVariantRecord(variantRecordId);
-        apService.deleteVariantRecord(variantRecord, variantRecord.getApRecord());
+//TODO [fric] pridat apChange
+        ApName variantRecord = accessPointService.getVariantName(variantRecordId);
+        accessPointService.deleteVariantName(variantRecord, variantRecord.getAccessPoint());
     }
 
     /**
@@ -466,7 +482,7 @@ public class ApController {
             fund = version.getFund();
         }
 
-        Set<Integer> scopeIdsByFund = apService.getScopeIdsForSearch(fund, null);
+        Set<Integer> scopeIdsByFund = accessPointService.getScopeIdsForSearch(fund, null);
         if (CollectionUtils.isEmpty(scopeIdsByFund)) {
             return Collections.emptyList();
         } else {
@@ -490,7 +506,7 @@ public class ApController {
 
         ApScope apScope = factoryDO.createScope(scopeVO);
 
-        return factoryVo.createScope(apService.saveScope(apScope));
+        return factoryVo.createScope(accessPointService.saveScope(apScope));
     }
 
     /**
@@ -512,7 +528,7 @@ public class ApController {
         );
 
         ApScope apScope = factoryDO.createScope(scopeVO);
-        return factoryVo.createScope(apService.saveScope(apScope));
+        return factoryVo.createScope(accessPointService.saveScope(apScope));
     }
 
     /**
@@ -524,7 +540,7 @@ public class ApController {
     @RequestMapping(value = "/scopes/{scopeId}", method = RequestMethod.DELETE)
     public void deleteScope(@PathVariable final Integer scopeId) {
         ApScope scope = scopeRepository.findOne(scopeId);
-        apService.deleteScope(scope);
+        accessPointService.deleteScope(scope);
     }
 
     /**
@@ -546,7 +562,7 @@ public class ApController {
      */
     @RequestMapping(value = "/interpi/import/{recordId}", method = RequestMethod.PUT)
     @Transactional
-    public ApRecordVO updateRecord(@PathVariable final Integer recordId, @RequestBody final RecordImportVO recordImportVO) {
+    public ApAccessPointVO updateRecord(@PathVariable final Integer recordId, @RequestBody final RecordImportVO recordImportVO) {
         Assert.notNull(recordId, "Identifikátor rejstříkového hesla musí být vyplněn");
         Assert.notNull(recordImportVO, "Struktura importu hesla musí být vyplněna");
         Assert.notNull(recordImportVO.getInterpiRecordId(), "Identifikátor interpi musí být vyplněn");
@@ -565,16 +581,16 @@ public class ApController {
      */
     @Transactional
     @RequestMapping(value = "/interpi/import", method = RequestMethod.POST)
-    public ApRecordVO importRecord(@RequestBody final RecordImportVO recordImportVO) {
+    public ApAccessPointVO importRecord(@RequestBody final RecordImportVO recordImportVO) {
         Assert.notNull(recordImportVO, "Struktura importu hesla musí být vyplněna");
         Assert.notNull(recordImportVO.getInterpiRecordId(), "Identifikátor interpi musí být vyplněn");
         Assert.notNull(recordImportVO.getScopeId(), "Identifikátor scope musí být vyplněn");
         Assert.notNull(recordImportVO.getSystemId(), "Identifikátor systému musí být vyplněn");
 
-        ApRecord apRecord = interpiService.importRecord(null, recordImportVO.getInterpiRecordId(), recordImportVO.getScopeId(),
+        ApAccessPoint apRecord = interpiService.importRecord(null, recordImportVO.getInterpiRecordId(), recordImportVO.getScopeId(),
                 recordImportVO.getSystemId(), recordImportVO.getOriginator(), recordImportVO.getMappings());
 
-        return getRecord(apRecord.getRecordId());
+        return getRecord(apRecord.getAccessPointId());
     }
 
     /**
@@ -628,9 +644,9 @@ public class ApController {
     @RequestMapping(value = "/{recordId}/usage", method = RequestMethod.GET)
     @Transactional
     public RecordUsageVO findUsage(@PathVariable final Integer recordId) {
-    	ApRecord apRecord = apRecordRepository.getOneCheckExist(recordId);
-    	ParParty parParty = partyService.findParPartyByRecord(apRecord);
-    	return apService.findRecordUsage(apRecord, parParty);
+    	ApAccessPoint apAccessPoint = accessPointRepository.getOneCheckExist(recordId);
+    	ParParty parParty = partyService.findParPartyByAccessPoint(apAccessPoint);
+    	return accessPointService.findRecordUsage(apAccessPoint, parParty);
     }
 
     /**
@@ -642,19 +658,19 @@ public class ApController {
     @Transactional
     @RequestMapping(value = "/{recordId}/replace", method = RequestMethod.POST)
     public void replace(@PathVariable final Integer recordId, @RequestBody final Integer replacedId) {
-        final ApRecord replaced = apService.getRecord(recordId);
-        final ApRecord replacement = apService.getRecord(replacedId);
+        final ApAccessPoint replaced = accessPointService.getAccessPoint(recordId);
+        final ApAccessPoint replacement = accessPointService.getAccessPoint(replacedId);
 
-        final ParParty replacedParty = partyService.findParPartyByRecord(replaced);
+        final ParParty replacedParty = partyService.findParPartyByAccessPoint(replaced);
 
         if (replacedParty != null) {
-            final ParParty replacementParty = partyService.findParPartyByRecord(replacement);
+            final ParParty replacementParty = partyService.findParPartyByAccessPoint(replacement);
             if (replacementParty == null) {
                 throw new BusinessException("Osobu lze nahradit pouze osobou.", BaseCode.INVALID_STATE);
             }
             partyService.replace(replacedParty, replacementParty);
         } else {
-            apService.replace(replaced, replacement);
+            accessPointService.replace(replaced, replacement);
         }
     }
 
@@ -665,8 +681,8 @@ public class ApController {
     @Transactional
     @RequestMapping(value = "/{recordId}/valid", method = RequestMethod.POST)
     public void valid(@PathVariable final Integer recordId) {
-        final ApRecord record = apService.getRecord(recordId);
-        record.setInvalid(false);
-        apService.saveRecord(record, false);
+        ApAccessPointData accessPointData = accessPointDataService.findAccessPointData(recordId);
+        accessPointData.getAccessPoint().setInvalid(false);
+        accessPointService.saveAccessPoint(accessPointData, false);
     }
 }

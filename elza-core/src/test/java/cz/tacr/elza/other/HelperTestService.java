@@ -13,6 +13,8 @@ import java.util.zip.ZipOutputStream;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
+import cz.tacr.elza.repository.ApAccessPointRepository;
+import cz.tacr.elza.repository.ApNameRepository;
 import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,8 +64,6 @@ import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.PartyTypeComplementTypeRepository;
 import cz.tacr.elza.repository.PartyTypeRelationRepository;
 import cz.tacr.elza.repository.PermissionRepository;
-import cz.tacr.elza.repository.ApRecordRepository;
-import cz.tacr.elza.repository.ApVariantRecordRepository;
 import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.RelationEntityRepository;
 import cz.tacr.elza.repository.RelationRepository;
@@ -125,7 +125,7 @@ public class HelperTestService {
     @Autowired
     private OutputRepository outputRepository;
     @Autowired
-    private ApVariantRecordRepository variantRecordRepository;
+    private ApNameRepository apNameRepository;
     @Autowired
     private PartyNameComplementRepository partyNameComplementRepository;
     @Autowired
@@ -159,7 +159,7 @@ public class HelperTestService {
     @Autowired
     protected PartyNameFormTypeRepository partyNameFormTypeRepository;
     @Autowired
-    protected ApRecordRepository recordRepository;
+    protected ApAccessPointRepository recordRepository;
     @Autowired
     protected PartyNameRepository partyNameRepository;
     @Autowired
@@ -237,7 +237,7 @@ public class HelperTestService {
         partyGroupIdentifierRepository.deleteAll();
         partyCreatorRepository.deleteAll();
         partyNameRepository.deleteAll();
-        variantRecordRepository.deleteAll();
+        apNameRepository.deleteAll();
         nodeRegisterRepository.deleteAll();
         fundVersionRepository.deleteAll();
         fundRegisterScopeRepository.deleteAll();

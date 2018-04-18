@@ -12,7 +12,7 @@ import com.jayway.restassured.specification.RequestSpecification;
 import cz.tacr.elza.AbstractTest;
 import cz.tacr.elza.controller.ArrangementController.FaFilteredFulltextParam;
 import cz.tacr.elza.controller.vo.AddLevelParam;
-import cz.tacr.elza.controller.vo.ApRecordVO;
+import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.controller.vo.ApScopeVO;
 import cz.tacr.elza.controller.vo.ApTypeVO;
 import cz.tacr.elza.controller.vo.ApVariantRecordVO;
@@ -1173,7 +1173,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
             case "RECORD_REF": {
                 descItem = new ArrItemRecordRefVO();
-                ((ArrItemRecordRefVO) descItem).setValue(((ApRecordVO) value).getId());
+                ((ArrItemRecordRefVO) descItem).setValue(((ApAccessPointVO) value).getId());
                 break;
             }
 
@@ -1598,7 +1598,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @return List scénářů
      */
     protected List<ScenarioOfNewLevelVO> getDescriptionItemTypesForNewLevel(final Boolean withGroups,
-                                                                         final ArrangementController.DescriptionItemParam param) {
+                                                                            final ArrangementController.DescriptionItemParam param) {
         return Arrays.asList(post(spec -> spec
                 .queryParameter("withGroups", withGroups)
                 .body(param), SCENARIOS).getBody().as(ScenarioOfNewLevelVO[].class));
@@ -1697,8 +1697,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
      *
      * @param recordId id požadovaného hesla
      */
-    protected ApRecordVO getRecord(final int recordId) {
-        return get(spec -> spec.pathParam("recordId", recordId), GET_RECORD).getBody().as(ApRecordVO.class);
+    protected ApAccessPointVO getRecord(final int recordId) {
+        return get(spec -> spec.pathParam("recordId", recordId), GET_RECORD).getBody().as(ApAccessPointVO.class);
     }
 
     /**
@@ -1706,8 +1706,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
      *
      * @param record VO rejstříkové heslo
      */
-    protected ApRecordVO createRecord(final ApRecordVO record) {
-        return post(spec -> spec.body(record), CREATE_RECORD).getBody().as(ApRecordVO.class);
+    protected ApAccessPointVO createRecord(final ApAccessPointVO record) {
+        return post(spec -> spec.body(record), CREATE_RECORD).getBody().as(ApAccessPointVO.class);
     }
 
     /**
@@ -1715,8 +1715,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
      *
      * @param record VO rejstříkové heslo
      */
-    protected ApRecordVO updateRecord(final ApRecordVO record) {
-        return put(spec -> spec.pathParam("recordId", record.getId()).body(record), UPDATE_RECORD).getBody().as(ApRecordVO.class);
+    protected ApAccessPointVO updateRecord(final ApAccessPointVO record) {
+        return put(spec -> spec.pathParam("recordId", record.getId()).body(record), UPDATE_RECORD).getBody().as(ApAccessPointVO.class);
     }
 
     /**
@@ -1758,7 +1758,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param versionId
      * @return List nalezených záznamů
      */
-    protected List<ApRecordVO> findRecord(final String search,
+    protected List<ApAccessPointVO> findRecord(final String search,
                                           final Integer from, final Integer count,
                                           final Integer apTypeId,
                                           final Integer parentRecordId,
@@ -2015,7 +2015,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param partyId    id osoby, ze které je načtena hledaná třída rejstříku
      * @return list rejstříkových hesel
      */
-    protected List<ApRecordVO> findRecordForRelation(final String search,
+    protected List<ApAccessPointVO> findRecordForRelation(final String search,
                                                      final Integer from, final Integer count,
                                                      final Integer roleTypeId,
                                                      final Integer partyId) {

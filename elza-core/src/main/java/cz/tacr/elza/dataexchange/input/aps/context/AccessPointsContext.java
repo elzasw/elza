@@ -12,11 +12,12 @@ import cz.tacr.elza.dataexchange.input.context.ImportPhase;
 import cz.tacr.elza.dataexchange.input.context.ImportPhaseChangeListener;
 import cz.tacr.elza.dataexchange.input.context.ObservableImport;
 import cz.tacr.elza.dataexchange.input.storage.StorageManager;
+import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApExternalSystem;
-import cz.tacr.elza.domain.ApRecord;
+import cz.tacr.elza.domain.ApName;
 import cz.tacr.elza.domain.ApScope;
-import cz.tacr.elza.domain.ApVariantRecord;
 import cz.tacr.elza.repository.ApExternalSystemRepository;
+import cz.tacr.elza.service.vo.ApAccessPointData;
 
 /**
  * Context for data exchange access points.
@@ -65,23 +66,22 @@ public class AccessPointsContext {
      *
      * @param ap access point to be saved
      * @param entryId import id of the access point
-     * @param parentAPInfo Parent information
      * @return Return access point import info
      */
-    public AccessPointInfo addAccessPoint(ApRecord ap, String entryId, AccessPointInfo parentAPInfo) {
+    public AccessPointInfo addAccessPoint(ApAccessPointData ap, String entryId) {
         // append access point info
-        AccessPointInfo info = new AccessPointInfo(entryId, ap.getApType());
+        AccessPointInfo info = new AccessPointInfo(entryId, ap.getAccessPoint().getApType());
         if (apEntryIdMap.putIfAbsent(entryId, info) != null) {
             throw new DEImportException("Access point has duplicate id, apeId:" + entryId);
         }
-        accessPointQueue.add(new AccessPointWrapper(ap, info, parentAPInfo));
+        accessPointQueue.add(new AccessPointWrapper(ap, info));
         if (accessPointQueue.size() >= batchSize) {
             storeAccessPoints();
         }
         return info;
     }
 
-    public void addVariantName(ApVariantRecord variantName, AccessPointInfo apInfo) {
+    public void addVariantName(ApName variantName, AccessPointInfo apInfo) {
         variantNameQueue.add(new APVariantNameWrapper(variantName, apInfo));
         if (variantNameQueue.size() >= batchSize) {
             storeVariantNames();

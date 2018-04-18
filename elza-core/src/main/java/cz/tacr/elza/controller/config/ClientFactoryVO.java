@@ -8,8 +8,8 @@ import cz.tacr.elza.config.rules.GroupConfiguration;
 import cz.tacr.elza.config.rules.TypeInfo;
 import cz.tacr.elza.config.rules.ViewConfiguration;
 import cz.tacr.elza.controller.StructureExtensionFundVO;
+import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.controller.vo.ApRecordSimple;
-import cz.tacr.elza.controller.vo.ApRecordVO;
 import cz.tacr.elza.controller.vo.ApScopeVO;
 import cz.tacr.elza.controller.vo.ApTypeVO;
 import cz.tacr.elza.controller.vo.ApVariantRecordVO;
@@ -80,10 +80,10 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitidVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ItemGroupVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ItemTypeGroupVO;
-import cz.tacr.elza.domain.ApRecord;
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApName;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApType;
-import cz.tacr.elza.domain.ApVariantRecord;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
@@ -149,7 +149,7 @@ import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.packageimport.ItemTypeUpdater;
 import cz.tacr.elza.packageimport.PackageService;
 import cz.tacr.elza.packageimport.xml.SettingFavoriteItemSpecs;
-import cz.tacr.elza.repository.ApRecordRepository;
+import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.BulkActionNodeRepository;
 import cz.tacr.elza.repository.ComplementTypeRepository;
@@ -174,10 +174,12 @@ import cz.tacr.elza.repository.RelationRepository;
 import cz.tacr.elza.repository.RequestQueueItemRepository;
 import cz.tacr.elza.repository.UnitdateRepository;
 import cz.tacr.elza.repository.UserRepository;
+import cz.tacr.elza.service.AccessPointDataService;
 import cz.tacr.elza.service.DaoService;
 import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.service.OutputServiceInternal;
 import cz.tacr.elza.service.SettingsService;
+import cz.tacr.elza.service.vo.ApAccessPointData;
 import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MapperFactory;
 import ma.glasnost.orika.MappingContext;
@@ -240,7 +242,7 @@ public class ClientFactoryVO {
     private RelationEntityRepository relationEntityRepository;
 
     @Autowired
-    private ApRecordRepository recordRepository;
+    private ApAccessPointRepository apAccessPointRepository;
 
     @Autowired
     private PermissionRepository permissionRepository;
@@ -317,6 +319,8 @@ public class ClientFactoryVO {
     @Autowired
     private NodeRepository nodeRepository;
 
+    @Autowired
+    private AccessPointDataService accessPointDataService;
 
     /**
      * Vytvoření nastavení.
@@ -469,7 +473,7 @@ public class ClientFactoryVO {
         //načtení dat do session
         unitdateRepository.findForFromPartyNameByParties(parties);
         unitdateRepository.findForToPartyNameByParties(parties);
-        recordRepository.findByParties(parties);
+        apAccessPointRepository.findByParties(parties);
 
         List<ParPartyName> allPartyNames = partyNameRepository.findByPartyIn(parties);
         Map<Integer, List<ParPartyName>> partyNameMap = ElzaTools
@@ -548,7 +552,7 @@ public class ClientFactoryVO {
         }
 
         //načtení objektů aprecord do session
-        recordRepository.findByPartyRelations(party);
+        apAccessPointRepository.findByPartyRelations(party);
         List<ParRelationEntity> partyRelations = relationEntityRepository.findByParty(party);
         List<ParRelationEntityVO> partyRelationsVo = createList(partyRelations, ParRelationEntityVO.class, null);
 
@@ -583,16 +587,14 @@ public class ClientFactoryVO {
      *
      * @param records            seznam rejstříkových hesel
      * @param recordIdPartyIdMap mapa id rejstříkových hesel na osobu
-     * @param fillParents        příznak zda se mají načíst rodiče rejstříku
      * @return seznam rejstříkových hesel
      */
-    public List<ApRecordVO> createApRecords(final List<ApRecord> records,
-                                            final Map<Integer, Integer> recordIdPartyIdMap,
-                                            final boolean fillParents) {
-        List<ApRecordVO> result = new ArrayList<>(records.size());
-        for (final ApRecord record : records) {
-            Integer partyId = recordIdPartyIdMap.get(record.getRecordId());
-            result.add(createApRecord(record, partyId, fillParents));
+    public List<ApAccessPointVO> createApAccessPoints(final List<ApAccessPoint> records,
+                                                 final Map<Integer, Integer> recordIdPartyIdMap) {
+        List<ApAccessPointVO> result = new ArrayList<>(records.size());
+        for (final ApAccessPoint ap : records) {
+            Integer partyId = recordIdPartyIdMap.get(ap.getAccessPointId());
+            result.add(createApRecord(ap, partyId));
         }
 
         return result;
@@ -601,14 +603,14 @@ public class ClientFactoryVO {
     /**
      * Vytvoří rejstříkové heslo.
      *
-     * @param apRecord   rejstříkové heslo
+     * @param apAccessPoint   rejstříkové heslo
      * @param partyId     id osoby
-     * @param fillParents příznak zda se mají načíst rodiče rejstříku
      * @return rejstříkové heslo
      */
-    public ApRecordVO createApRecord(final ApRecord apRecord, @Nullable final Integer partyId, final boolean fillParents) {
+    public ApAccessPointVO createApRecord(final ApAccessPoint apAccessPoint, @Nullable final Integer partyId) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
-        ApRecordVO result = mapper.map(apRecord, ApRecordVO.class);
+        ApAccessPointData accessPointData = accessPointDataService.findAccessPointData(apAccessPoint);
+        ApAccessPointVO result = mapper.map(accessPointData, ApAccessPointVO.class);
         result.setPartyId(partyId);
         return result;
     }
@@ -617,18 +619,18 @@ public class ClientFactoryVO {
      * Pro heslo vytvoří seznam typů až po kořen typů nebo po typ v seznamu.
      *  @param record        heslo
      */
-    public void fillApTypeNamesToParents(final ApRecordVO record) {
+    public void fillApTypeNamesToParents(final ApAccessPointVO record) {
 
-        List<ApRecordVO.RecordParent> parentTypeNames = new ArrayList<>();
+        List<ApAccessPointVO.RecordParent> parentTypeNames = new ArrayList<>();
 
         ApType recordType = apTypeRepository.findOne(record.getApTypeId());
-        parentTypeNames.add(new ApRecordVO.RecordParent(recordType.getApTypeId(), recordType.getName()));
+        parentTypeNames.add(new ApAccessPointVO.RecordParent(recordType.getApTypeId(), recordType.getName()));
         record.setTypesToRoot(parentTypeNames);
 
 
         ApType parentType = recordType.getParentApType();
         while (parentType != null) {
-            parentTypeNames.add(new ApRecordVO.RecordParent(parentType.getApTypeId(), parentType.getName()));
+            parentTypeNames.add(new ApAccessPointVO.RecordParent(parentType.getApTypeId(), parentType.getName()));
             parentType = parentType.getParentApType();
         }
 
@@ -640,12 +642,12 @@ public class ClientFactoryVO {
      * @param records seznam rej. hesel
      * @return seznam jednoduchých rejs. hesel
      */
-    public List<ApRecordSimple> createApRecordsSimple(final Collection<ApRecord> records) {
+    public List<ApRecordSimple> createApRecordsSimple(final Collection<ApAccessPoint> records) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         List<ApRecordSimple> result = new ArrayList<>(records.size());
 
-        for (ApRecord record : records) {
-            result.add(mapper.map(record, ApRecordSimple.class));
+        for (ApAccessPoint accessPoint : records) {
+            result.add(mapper.map(accessPoint, ApRecordSimple.class));
         }
 
         return result;
@@ -654,27 +656,27 @@ public class ClientFactoryVO {
     /**
      * Vytvoření variantního rejstříkového hesla.
      *
-     * @param apVariantRecord variantní rejstříkové heslo
+     * @param apVariantName variantní rejstříkové heslo
      * @return VO variantní rejstříkové heslo
      */
-    public ApVariantRecordVO createApVariantRecord(final ApVariantRecord apVariantRecord) {
+    public ApVariantRecordVO createApVariantRecord(final ApName apVariantName) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
-        return mapper.map(apVariantRecord, ApVariantRecordVO.class);
+        return mapper.map(apVariantName, ApVariantRecordVO.class);
     }
 
     /**
      * Vytvoření seznamu variantních rejstříkových hesel.
      *
-     * @param variantRecords seznam variantních rejstříkových hesel
+     * @param variantNames seznam variantních rejstříkových hesel
      * @return seznam VO variantních hesel
      */
-    public List<ApVariantRecordVO> createApVariantRecords(@Nullable final List<ApVariantRecord> variantRecords) {
-        if (variantRecords == null) {
+    public List<ApVariantRecordVO> createApVariantRecords(@Nullable final List<ApName> variantNames) {
+        if (variantNames == null) {
             return null;
         }
 
-        List<ApVariantRecordVO> result = new ArrayList<>(variantRecords.size());
-        variantRecords.forEach((variantRecord) ->
+        List<ApVariantRecordVO> result = new ArrayList<>(variantNames.size());
+        variantNames.forEach((variantRecord) ->
                         result.add(createApVariantRecord(variantRecord))
         );
 
@@ -1572,7 +1574,7 @@ public class ClientFactoryVO {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         ArrNodeRegisterVO nodeRegisterVO = mapper.map(nodeRegister, ArrNodeRegisterVO.class);
         nodeRegisterVO.setNodeId(nodeRegister.getNode().getNodeId());
-        nodeRegisterVO.setValue(nodeRegister.getRecord().getRecordId());
+        nodeRegisterVO.setValue(nodeRegister.getRecord().getAccessPointId());
         return nodeRegisterVO;
     }
 
@@ -1642,7 +1644,9 @@ public class ClientFactoryVO {
         Assert.notNull(institution, "Instituce musí být vyplněny");
         MapperFacade mapper = mapperFactory.getMapperFacade();
         ParInstitutionVO institutionVO = mapper.map(institution, ParInstitutionVO.class);
-        institutionVO.setName(institution.getParty().getRecord().getRecord());
+
+        ApAccessPointData apData = accessPointDataService.findAccessPointData(institution.getParty().getRecord());
+        institutionVO.setName(apData.getPreferredName().getName());
         institutionVO.setPartyId(institution.getParty().getPartyId());
         return institutionVO;
     }

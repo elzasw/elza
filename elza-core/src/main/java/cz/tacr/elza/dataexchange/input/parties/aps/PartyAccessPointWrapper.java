@@ -1,5 +1,6 @@
 package cz.tacr.elza.dataexchange.input.parties.aps;
 
+import cz.tacr.elza.domain.ApAccessPoint;
 import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
 
@@ -7,7 +8,6 @@ import cz.tacr.elza.dataexchange.input.context.PersistMethod;
 import cz.tacr.elza.dataexchange.input.parties.context.PartyInfo;
 import cz.tacr.elza.dataexchange.input.storage.EntityMetrics;
 import cz.tacr.elza.dataexchange.input.storage.EntityWrapper;
-import cz.tacr.elza.domain.ApRecord;
 
 public class PartyAccessPointWrapper implements EntityWrapper, EntityMetrics {
 
@@ -17,7 +17,7 @@ public class PartyAccessPointWrapper implements EntityWrapper, EntityMetrics {
 
     private final String characteristics;
 
-    private ApRecord entity;
+    private ApAccessPoint entity;
 
     PartyAccessPointWrapper(PartyInfo partyInfo, String name, String characteristics) {
         this.partyInfo = Validate.notNull(partyInfo);
@@ -31,7 +31,7 @@ public class PartyAccessPointWrapper implements EntityWrapper, EntityMetrics {
     }
 
     @Override
-    public ApRecord getEntity() {
+    public ApAccessPoint getEntity() {
         return entity;
     }
 
@@ -45,7 +45,8 @@ public class PartyAccessPointWrapper implements EntityWrapper, EntityMetrics {
         Validate.isTrue(entity == null);
 
         entity = partyInfo.getUpdatableAPReference(session);
-        entity.setRecord(name);
-        entity.setCharacteristics(characteristics);
+        //TODO [fric] namigrovat do novych wrapperu az budou hotove
+//        entity.setRecord(name);
+//        entity.setCharacteristics(characteristics);
     }
 }

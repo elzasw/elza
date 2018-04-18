@@ -1,8 +1,8 @@
 package cz.tacr.elza.controller.config;
 
 import cz.tacr.elza.FilterTools;
+import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.bulkaction.generator.PersistentSortRunConfig;
-import cz.tacr.elza.controller.vo.ApRecordVO;
 import cz.tacr.elza.controller.vo.ApScopeVO;
 import cz.tacr.elza.controller.vo.ApVariantRecordVO;
 import cz.tacr.elza.controller.vo.ArrFileVO;
@@ -24,9 +24,8 @@ import cz.tacr.elza.controller.vo.filter.ValuesTypes;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.core.data.CalendarType;
-import cz.tacr.elza.domain.ApRecord;
+import cz.tacr.elza.domain.ApName;
 import cz.tacr.elza.domain.ApScope;
-import cz.tacr.elza.domain.ApVariantRecord;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataUnitdate;
@@ -79,12 +78,13 @@ import cz.tacr.elza.filter.condition.SubsetDescItemCondition;
 import cz.tacr.elza.filter.condition.UndefinedDescItemCondition;
 import cz.tacr.elza.filter.condition.UnselectedSpecificationsDescItemEnumCondition;
 import cz.tacr.elza.filter.condition.UnselectedValuesDescItemEnumCondition;
-import cz.tacr.elza.repository.ApRecordRepository;
+import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
+import cz.tacr.elza.service.vo.ApAccessPointData;
 import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MapperFactory;
 import org.apache.commons.collections4.CollectionUtils;
@@ -132,7 +132,7 @@ public class ClientFactoryDO {
     private FundRepository fundRepository;
 
     @Autowired
-    private ApRecordRepository apRecordRepository;
+    private ApAccessPointRepository apAccessPointRepository;
 
     @Autowired
     private InstitutionRepository institutionRepository;
@@ -205,9 +205,9 @@ public class ClientFactoryDO {
      * @param apRecordVO VO rejstříkové heslo
      * @return DO rejstříkové heslo
      */
-    public ApRecord createApRecord(final ApRecordVO apRecordVO) {
+    public ApAccessPointData createApAccessPoint(final ApAccessPointVO apRecordVO) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
-        return mapper.map(apRecordVO, ApRecord.class);
+        return mapper.map(apRecordVO, ApAccessPointData.class);
     }
 
     /**
@@ -216,9 +216,9 @@ public class ClientFactoryDO {
      * @param apVariantRecord VO variantní rejstříkové heslo
      * @return DO variantní rejstříkové heslo
      */
-    public ApVariantRecord createApVariantRecord(final ApVariantRecordVO apVariantRecord) {
+    public ApName createApName(final ApVariantRecordVO apVariantRecord) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
-        return mapper.map(apVariantRecord, ApVariantRecord.class);
+        return mapper.map(apVariantRecord, ApName.class);
     }
 
     /**
@@ -410,7 +410,7 @@ public class ClientFactoryDO {
         ArrNodeRegister nodeRegister = mapper.map(nodeRegisterVO, ArrNodeRegister.class);
 
         if (nodeRegisterVO.getValue() != null) {
-            nodeRegister.setRecord(apRecordRepository.findOne(nodeRegisterVO.getValue()));
+            nodeRegister.setRecord(apAccessPointRepository.findOne(nodeRegisterVO.getValue()));
         }
 
         return nodeRegister;

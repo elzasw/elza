@@ -21,7 +21,6 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Component;
 
-import cz.tacr.elza.domain.ApRecord;
 import cz.tacr.elza.domain.enumeration.StringLength;
 
 /**
@@ -120,9 +119,9 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
         final String searchString = (searchRecord != null ? searchRecord.toLowerCase() : null);
 
         Join<Object, Object> record = party.join(ParParty.RECORD, JoinType.LEFT);
-        Join<Object, Object> variantRecord = record.join(ApRecord.VARIANT_RECORD_LIST, JoinType.LEFT);
-        Join<Object, Object> scope = record.join(ApRecord.SCOPE, JoinType.INNER);
-
+        Join<ApAccessPoint, ApName> variantRecord = record.join(ApAccessPoint.NAME_LIST, JoinType.LEFT);
+        Join<Object, Object> scope = record.join(ApAccessPoint.SCOPE, JoinType.INNER);
+        Join<ApAccessPoint, ApDescription> descriptionJoin = record.join(ApAccessPoint.DESCRIPTION_LIST);
         Join<Object, Object> partyType = party.join(ParParty.PARTY_TYPE);
 
         String searchValue = "%" + searchString + "%";
@@ -130,9 +129,8 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
         List<Predicate> condition = new ArrayList<>();
         if (StringUtils.isNotBlank(searchString)) {
             condition.add(builder.or(
-                    builder.like(builder.lower(record.get(ApRecord.RECORD)), searchValue),
-                    builder.like(builder.lower(builder.substring(record.get(ApRecord.CHARACTERISTICS), 1, StringLength.LENGTH_1000)), searchValue),
-                    builder.like(builder.lower(variantRecord.get(ApVariantRecord.RECORD)), searchValue)
+                    builder.like(builder.lower(builder.substring(descriptionJoin.get(ApDescription.DESCRIPTION), 1, StringLength.LENGTH_1000)), searchValue),
+                    builder.like(builder.lower(variantRecord.get(ApName.NAME)), searchValue)
                 )
             );
         }
@@ -142,13 +140,13 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
         }
 
         if (excludeInvalid != null && excludeInvalid) {
-            condition.add(builder.equal(record.get(ApRecord.INVALID), false));
+            condition.add(builder.equal(record.get(ApAccessPoint.INVALID), false));
         }
 
         condition.add(scope.get(ApScope.SCOPE_ID).in(scopeIds));
 
         if (CollectionUtils.isNotEmpty(apTypeIds)) {
-            condition.add(record.get(ApRecord.AP_TYPE).in(apTypeIds));
+            condition.add(record.get(ApAccessPoint.AP_TYPE).in(apTypeIds));
         }
 
         return builder.and(condition.toArray(new Predicate[condition.size()]));

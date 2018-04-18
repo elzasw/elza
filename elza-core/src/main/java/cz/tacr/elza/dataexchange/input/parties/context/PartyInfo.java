@@ -1,5 +1,6 @@
 package cz.tacr.elza.dataexchange.input.parties.context;
 
+import cz.tacr.elza.domain.ApAccessPoint;
 import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
 
@@ -9,7 +10,6 @@ import cz.tacr.elza.dataexchange.input.aps.context.AccessPointInfo;
 import cz.tacr.elza.dataexchange.input.context.EntityIdHolder;
 import cz.tacr.elza.dataexchange.input.context.PersistMethod;
 import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.ApRecord;
 
 public class PartyInfo extends EntityIdHolder<ParParty> {
 
@@ -59,11 +59,11 @@ public class PartyInfo extends EntityIdHolder<ParParty> {
         return apInfo.getEntityId();
     }
 
-    public ApRecord getAPReference(Session session) {
+    public ApAccessPoint getAPReference(Session session) {
         return apInfo.getEntityReference(session);
     }
 
-    public ApRecord getUpdatableAPReference(Session session) {
+    public ApAccessPoint getUpdatableAPReference(Session session) {
         return HibernateUtils.getEntityReference(apInfo.getEntityId(), apInfo.getEntityClass(), session, true);
     }
 

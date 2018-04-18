@@ -9,6 +9,8 @@ import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
+import cz.tacr.elza.domain.ArrDataPartyRef;
+import cz.tacr.elza.domain.ArrDataRecordRef;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -91,6 +93,10 @@ public class StartupService implements SmartLifecycle {
 
         startInTransaction();
         running = true;
+
+        //TODO [fric] doplnit vhodny fulltext provider
+        ArrDataRecordRef.setFullTextProvider(null);
+        ArrDataPartyRef.setFullTextProvider(null);
 
         logger.info("Elza startup finished");
     }

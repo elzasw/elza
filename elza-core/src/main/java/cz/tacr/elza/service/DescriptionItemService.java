@@ -11,7 +11,7 @@ import cz.tacr.elza.core.data.RuleSystemItemType;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
-import cz.tacr.elza.domain.ApRecord;
+import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
@@ -54,7 +54,7 @@ import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.repository.ApRecordRepository;
+import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.DataRepository;
@@ -66,6 +66,7 @@ import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventChangeDescItem;
 import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
+import cz.tacr.elza.service.vo.ApAccessPointData;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.NotImplementedException;
@@ -107,7 +108,7 @@ public class DescriptionItemService {
     private DescItemRepository descItemRepository;
 
     @Autowired
-    private ApRecordRepository apRecordRepository;
+    private ApAccessPointRepository apAccessPointRepository;
 
     @Autowired
     private FundVersionRepository fundVersionRepository;
@@ -150,6 +151,9 @@ public class DescriptionItemService {
 
     @Autowired
     StaticDataService staticDataService;
+
+    @Autowired
+    private AccessPointDataService accessPointDataService;
 
     /**
      * Kontrola otevřené verze.
@@ -1104,10 +1108,12 @@ public class DescriptionItemService {
                 value = new TitleValue(descItem.getItemSpec().getName());
             } else if (data.getDataType().getCode().equals("PARTY_REF")) {
                 ArrDataPartyRef partyData = (ArrDataPartyRef) data;
-                value = new TitleValue(partyData.getParty().getRecord().getRecord());
+                ApAccessPointData ap = accessPointDataService.findAccessPointData(partyData.getParty().getRecord());
+                value = new TitleValue(ap.getPreferredName().getName());
             } else if (data.getDataType().getCode().equals("RECORD_REF")) {
                 ArrDataRecordRef recordData = (ArrDataRecordRef) data;
-                value = new TitleValue(recordData.getRecord().getRecord());
+                ApAccessPointData ap = accessPointDataService.findAccessPointData(recordData.getRecord());
+                value = new TitleValue(ap.getPreferredName().getName());
             } else if (data.getDataType().getCode().equals("STRUCTURED")) {
                 ArrStructuredObject structureData = ((ArrDataStructureRef) data).getStructuredObject();
                 value = new TitleValue(structureData.getValue());
@@ -1196,10 +1202,12 @@ public class DescriptionItemService {
                 value = new TitleValue(descItem.getItemSpec().getName());
             } else if (data.getDataType().getCode().equals("PARTY_REF")) {
                 ArrDataPartyRef partyData = (ArrDataPartyRef) data;
-                value = new TitleValue(partyData.getParty().getRecord().getRecord());
+                ApAccessPointData ap = accessPointDataService.findAccessPointData(partyData.getParty().getRecord());
+                value = new TitleValue(ap.getPreferredName().getName());
             } else if (data.getDataType().getCode().equals("RECORD_REF")) {
                 ArrDataRecordRef recordData = (ArrDataRecordRef) data;
-                value = new TitleValue(recordData.getRecord().getRecord());
+                ApAccessPointData ap = accessPointDataService.findAccessPointData(recordData.getRecord());
+                value = new TitleValue(ap.getPreferredName().getName());
             } else if (data.getDataType().getCode().equals("STRUCTURED")) {
                 ArrStructuredObject structureData = ((ArrDataStructureRef) data).getStructuredObject();
                 value = new TitleValue(structureData.getValue());
@@ -1260,7 +1268,7 @@ public class DescriptionItemService {
 
         List<ArrDataPartyRef> partyData = dataPartyRefRepository.findByDataIdsAndVersionFetchPartyRecord(partyRefDataIds, descItemTypes, changeId);
         for (ArrDataPartyRef data : partyData) {
-            TitleValue value = new TitleValue(data.getParty().getRecord().getRecord());
+            TitleValue value = new TitleValue(data.getParty().getAccessPoint().getAccessPoint());
             String iconValue = getIconValue(data);
             String code = data.getItem().getItemType().getCode();
             String specCode = data.getItem().getItemSpec() == null ? null : data.getItem().getItemSpec()
@@ -1273,7 +1281,7 @@ public class DescriptionItemService {
 
         List<ArrDataRecordRef> recordData = dataRecordRefRepository.findByDataIdsAndVersionFetchRecord(recordRefDataIds, descItemTypes, changeId);
         for (ArrDataRecordRef data : recordData) {
-            TitleValue value = new TitleValue(data.getRecord().getRecord());
+            TitleValue value = new TitleValue(data.getAccessPoint().getAccessPoint());
             String iconValue = getIconValue(data);
             String code = data.getItem().getItemType().getCode();
             String specCode = data.getItem().getItemSpec() == null ? null : data.getItem().getItemSpec()
@@ -1533,7 +1541,7 @@ public class DescriptionItemService {
                     break;
                 case "RECORD_REF":
                     ArrDataRecordRef itemRecordRef = new ArrDataRecordRef();
-                    ApRecord record = apRecordRepository.getOneCheckExist(Integer.valueOf(text));
+                    ApAccessPoint record = apAccessPointRepository.getOneCheckExist(Integer.valueOf(text));
                     itemRecordRef.setRecord(record);
                     data = itemRecordRef;
                     break;

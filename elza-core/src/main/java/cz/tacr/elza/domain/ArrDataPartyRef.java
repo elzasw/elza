@@ -33,6 +33,8 @@ public class ArrDataPartyRef extends ArrData {
     @Column
     private Integer position;
 
+    private static AccessPointFullTextProvider fullTextProvider;
+
 	public ArrDataPartyRef() {
 
 	}
@@ -71,7 +73,7 @@ public class ArrDataPartyRef extends ArrData {
 
     @Override
     public String getFulltextValue() {
-        return party.getRecord().getRecord();
+        return fullTextProvider.getFullText(party.getRecord());
     }
 
 	@Override
@@ -89,5 +91,9 @@ public class ArrDataPartyRef extends ArrData {
     public void mergeInternal(final ArrData srcData) {
         ArrDataPartyRef src = (ArrDataPartyRef) srcData;
         copyValue(src);
+    }
+
+    public static void setFullTextProvider(AccessPointFullTextProvider fullTextProvider) {
+        ArrDataPartyRef.fullTextProvider = fullTextProvider;
     }
 }

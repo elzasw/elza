@@ -1,11 +1,13 @@
 package cz.tacr.elza.dataexchange.input.aps;
 
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApExternalId;
 import cz.tacr.elza.domain.ApExternalSystem;
-import cz.tacr.elza.domain.ApRecord;
+import cz.tacr.elza.domain.ApName;
 import cz.tacr.elza.domain.ApType;
+import cz.tacr.elza.service.vo.ApAccessPointData;
 import org.apache.commons.lang3.StringUtils;
 
-import cz.tacr.elza.common.XmlUtils;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.dataexchange.input.DEImportException;
 import cz.tacr.elza.dataexchange.input.aps.context.AccessPointInfo;
@@ -30,8 +32,6 @@ public class AccessPointEntryProcessor implements ItemProcessor {
 
     private ApExternalSystem externalSystem;
 
-    private AccessPointInfo parentAPInfo;
-
     public AccessPointEntryProcessor(ImportContext context, boolean partyRelated) {
         this.context = context.getAccessPoints();
         this.staticData = context.getStaticData();
@@ -43,7 +43,7 @@ public class AccessPointEntryProcessor implements ItemProcessor {
         AccessPointEntry entry = (AccessPointEntry) item;
         prepareCachedReferences(entry);
         validateAccessPointEntry(entry);
-        ApRecord ap = createAP(entry);
+        ApAccessPointData ap = createAP(entry);
         AccessPointInfo apInfo = addAccessPoint(ap, entry.getId());
         processSubEntities(apInfo);
     }
@@ -51,10 +51,8 @@ public class AccessPointEntryProcessor implements ItemProcessor {
     protected void prepareCachedReferences(AccessPointEntry item) {
         apType = staticData.getApTypeByCode(item.getT());
         if (item.getEid() != null) {
-            externalSystem = context.getExternalSystemByCode(item.getEid().getEsc());
-        }
-        if (StringUtils.isNotEmpty(item.getPid())) {
-            parentAPInfo = context.getAccessPointInfo(item.getPid());
+            //TODO [fric] muzu brat prvni polozku?
+            externalSystem = context.getExternalSystemByCode(item.getEid().get(0).getEsc());
         }
     }
 
@@ -77,21 +75,9 @@ public class AccessPointEntryProcessor implements ItemProcessor {
                             + " for party related AccessPointEntry, apeId:" + item.getId());
         }
 
-        // validate AP parent
-        if (StringUtils.isNotEmpty(item.getPid())) {
-            if (partyRelated) {
-                throw new DEImportException("Party related AccessPointEntry cannot be hierarchical, apeId:" + item.getId());
-            }
-            if (parentAPInfo == null) {
-                throw new DEImportException("AccessPointEntry parent not found, apeId:" + item.getId());
-            }
-            if (apType != parentAPInfo.getApType()) {
-                throw new DEImportException("AccessPointEntry parent type does not match, apeId:" + item.getId());
-            }
-        }
-
         // validate external system
-        ExternalId eid = item.getEid();
+        //TODO [fric] muzu brat prvni polozku?
+        ExternalId eid = item.getEid().get(0);
         if (eid != null) {
             if (StringUtils.isEmpty(eid.getId())) {
                 throw new DEImportException("AccessPointEntry external id is not valid, apeId:" + item.getId());
@@ -102,22 +88,29 @@ public class AccessPointEntryProcessor implements ItemProcessor {
         }
     }
 
-    protected ApRecord createAP(AccessPointEntry item) {
-        ApRecord entity = new ApRecord();
-        entity.setLastUpdate(XmlUtils.convertXmlDate(item.getUpd()));
+    protected ApAccessPointData createAP(AccessPointEntry item) {
+        ApAccessPoint entity = new ApAccessPoint();
+        ApAccessPointData pointData = new ApAccessPointData(entity);
+        //TODO [fric] co s datumem aktualizace
+//        entity.setLastUpdate(XmlUtils.convertXmlDate(item.getUpd()));
         entity.setApType(apType);
         entity.setScope(context.getImportScope());
         entity.setUuid(StringUtils.trimToNull(item.getUuid()));
-        entity.setRecord("{import_in_progress}");
+        ApName apName = new ApName();
+        apName.setName("{import_in_progress}");
+        pointData.setPreferredName(apName);
         if (externalSystem != null) {
-            entity.setExternalId(item.getEid().getId());
-            entity.setExternalSystem(externalSystem);
+            //TODO [fric] muzu brat prvni polozku?
+            ApExternalId apExternalId = new ApExternalId();
+            apExternalId.setValue(item.getEid().get(0).getId());
+            pointData.setExternalId(apExternalId);
+            pointData.setExternalSystem(externalSystem);
         }
-        return entity;
+        return pointData;
     }
 
-    protected AccessPointInfo addAccessPoint(ApRecord ap, String entryId) {
-        return context.addAccessPoint(ap, entryId, parentAPInfo);
+    protected AccessPointInfo addAccessPoint(ApAccessPointData ap, String entryId) {
+        return context.addAccessPoint(ap, entryId);
     }
 
     protected void processSubEntities(AccessPointInfo apInfo) {

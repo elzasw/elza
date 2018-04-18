@@ -1,6 +1,6 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.ApRecord;
+import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDescItem;
@@ -216,7 +216,7 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
     List<Object[]> findFundIdNodeIdDataIdByDataAndDeleteChangeIsNull(List<? extends ArrData> data);
 
     @Query("Select i from arr_desc_item i join arr_data_record_ref d on i.data = d WHERE d.record = :record AND i.deleteChange IS NULL")
-    List<ArrDescItem> findArrItemByRecord(@Param("record") final ApRecord record);
+    List<ArrDescItem> findArrItemByRecord(@Param("record") final ApAccessPoint record);
 
     @Query("Select i from arr_desc_item i join arr_data_party_ref d on i.data = d WHERE d.party = :party AND i.deleteChange IS NULL")
     List<ArrDescItem> findArrItemByParty(@Param("party") final ParParty party);

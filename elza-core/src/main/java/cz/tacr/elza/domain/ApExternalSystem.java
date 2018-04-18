@@ -11,8 +11,6 @@ import javax.persistence.Table;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
-import cz.tacr.elza.api.ApExternalSystemType;
-
 /**
  * Externí systémy pro rejstříky/osoby.
  *
@@ -27,13 +25,13 @@ public class ApExternalSystem extends SysExternalSystem {
 
     @Enumerated(EnumType.STRING)
     @Column
-    private ApExternalSystemType type;
+    private cz.tacr.elza.api.ApExternalSystem type;
 
-    public ApExternalSystemType getType() {
+    public cz.tacr.elza.api.ApExternalSystem getType() {
         return type;
     }
 
-    public void setType(final ApExternalSystemType type) {
+    public void setType(final cz.tacr.elza.api.ApExternalSystem type) {
         this.type = type;
     }
 

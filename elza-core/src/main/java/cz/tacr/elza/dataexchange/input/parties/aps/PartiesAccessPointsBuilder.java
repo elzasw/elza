@@ -1,20 +1,23 @@
 package cz.tacr.elza.dataexchange.input.parties.aps;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-import cz.tacr.elza.domain.ApRecord;
+import cz.tacr.elza.core.data.PartyTypeComplementTypes;
+import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.dataexchange.input.parties.context.PartyInfo;
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.service.AccessPointDataService;
+import cz.tacr.elza.service.GroovyScriptService;
+import cz.tacr.elza.service.vo.ApAccessPointData;
 import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cz.tacr.elza.core.data.PartyTypeComplementTypes;
-import cz.tacr.elza.core.data.StaticDataProvider;
-import cz.tacr.elza.dataexchange.input.parties.context.PartyInfo;
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.service.GroovyScriptService;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Builds party access points and updates current access points entry.
@@ -29,22 +32,29 @@ public class PartiesAccessPointsBuilder {
 
     private final Session session;
 
-    public PartiesAccessPointsBuilder(StaticDataProvider staticData, GroovyScriptService groovyScriptService, Session session) {
+    private final AccessPointDataService accessPointDataService;
+
+    public PartiesAccessPointsBuilder(StaticDataProvider staticData, GroovyScriptService groovyScriptService, Session session, AccessPointDataService accessPointDataService) {
         this.staticData = staticData;
         this.groovyScriptService = groovyScriptService;
         this.session = session;
+        this.accessPointDataService = accessPointDataService;
     }
 
     public List<PartyAccessPointWrapper> build(Collection<PartyInfo> partiesInfo) {
         LOG.info("Starting party AP builder.");
 
         List<PartyAccessPointWrapper> results = new ArrayList<>(partiesInfo.size());
+
+        List<Integer> apIds = partiesInfo.stream().map(PartyInfo::getAPId).collect(Collectors.toList());
+        Map<Integer, ApAccessPointData> pointDataMap = accessPointDataService.mapAccessPointDataById(apIds);
+
         for (PartyInfo info : partiesInfo) {
             if (info.isIgnored()) {
                 continue;
             }
-            ApRecord partyRecord = createPartyRecord(info);
-            PartyAccessPointWrapper wrapper = createPartyAccessPoint(info, partyRecord);
+            ApAccessPoint partyRecord = createPartyRecord(info);
+            PartyAccessPointWrapper wrapper = createPartyAccessPoint(info, partyRecord, pointDataMap);
             results.add(wrapper);
         }
 
@@ -52,7 +62,7 @@ public class PartiesAccessPointsBuilder {
         return results;
     }
 
-    private ApRecord createPartyRecord(PartyInfo info) {
+    private ApAccessPoint createPartyRecord(PartyInfo info) {
         // supported complement types
         String partyTypeCode = info.getPartyType().getCode();
         PartyTypeComplementTypes partyTypes = staticData.getComplementTypesByPartyTypeCode(partyTypeCode);
@@ -61,11 +71,12 @@ public class PartiesAccessPointsBuilder {
         return groovyScriptService.getRecordFromGroovy(party, partyTypes.getComplementTypes());
     }
 
-    private PartyAccessPointWrapper createPartyAccessPoint(PartyInfo partyInfo, ApRecord ap) {
-        String name = Validate.notEmpty(ap.getRecord());
+    private PartyAccessPointWrapper createPartyAccessPoint(PartyInfo partyInfo, ApAccessPoint ap, Map<Integer, ApAccessPointData> pointDataMap) {
+        ApAccessPointData pointData = pointDataMap.get(ap.getAccessPointId());
+        String name = Validate.notEmpty(pointData.getPreferredName().getName());
         // update fulltext index
         partyInfo.setAPName(name);
         // create party access point
-        return new PartyAccessPointWrapper(partyInfo, name, ap.getCharacteristics());
+        return new PartyAccessPointWrapper(partyInfo, name, pointData.getDescription().getDescription());
     }
 }

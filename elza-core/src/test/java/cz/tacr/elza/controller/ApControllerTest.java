@@ -2,13 +2,17 @@ package cz.tacr.elza.controller;
 
 import java.util.List;
 
-import cz.tacr.elza.controller.vo.*;
+import cz.tacr.elza.controller.vo.ApAccessPointVO;
+import cz.tacr.elza.controller.vo.ApScopeVO;
+import cz.tacr.elza.controller.vo.ApTypeVO;
+import cz.tacr.elza.controller.vo.ArrFundVO;
+import cz.tacr.elza.controller.vo.ArrFundVersionVO;
+import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
+import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
 import org.junit.Assert;
 import org.junit.Test;
-
-import cz.tacr.elza.controller.vo.ApRecordVO;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -104,7 +108,7 @@ public class ApControllerTest extends AbstractControllerTest {
         Integer scopeId = scopes.iterator().next().getId();
 
         // Vytvoření replace
-        ApRecordVO replacedRecord = new ApRecordVO();
+        ApAccessPointVO replacedRecord = new ApAccessPointVO();
 
         replacedRecord.setApTypeId(getNonHierarchicalApType(types, false).getId());
 
@@ -146,7 +150,7 @@ public class ApControllerTest extends AbstractControllerTest {
 
 
         // Vytvoření replacement
-        ApRecordVO replacementRecord = new ApRecordVO();
+        ApAccessPointVO replacementRecord = new ApAccessPointVO();
 
         replacementRecord.setApTypeId(getNonHierarchicalApType(types, false).getId());
 

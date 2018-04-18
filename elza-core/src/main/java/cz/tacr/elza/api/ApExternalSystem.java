@@ -6,7 +6,7 @@ package cz.tacr.elza.api;
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 23. 11. 2016
  */
-public enum ApExternalSystemType {
+public enum ApExternalSystem {
 
     INTERPI;
 }

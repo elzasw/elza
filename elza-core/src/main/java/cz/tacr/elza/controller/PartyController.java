@@ -13,7 +13,8 @@ import javax.transaction.Transactional;
 
 import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.domain.*;
-import cz.tacr.elza.exception.*;
+import cz.tacr.elza.service.AccessPointDataService;
+import cz.tacr.elza.service.vo.ApAccessPointData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
@@ -51,7 +52,7 @@ import cz.tacr.elza.repository.RelationTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRoleTypeRepository;
 import cz.tacr.elza.repository.UIPartyGroupRepository;
 import cz.tacr.elza.service.PartyService;
-import cz.tacr.elza.service.ApService;
+import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.UserService;
 
 
@@ -124,7 +125,10 @@ public class PartyController {
     private UIPartyGroupRepository uiPartyGroupRepository;
 
     @Autowired
-    private ApService apService;
+    private AccessPointService accessPointService;
+
+    @Autowired
+    private AccessPointDataService accessPointDataService;
 
     /**
      * Uložení nové osoby
@@ -511,8 +515,8 @@ public class PartyController {
 	@Transactional
     public RecordUsageVO findUsage(@PathVariable final Integer partyId) {
     	ParParty parParty = partyRepository.getOneCheckExist(partyId);
-    	ApRecord apRecord = parParty.getRecord();
-    	return apService.findRecordUsage(apRecord, parParty);
+    	ApAccessPoint accessPoint = parParty.getRecord();
+    	return accessPointService.findRecordUsage(accessPoint, parParty);
     }
 
 
@@ -539,9 +543,10 @@ public class PartyController {
     @RequestMapping(value = "/{partyId}/valid", method = RequestMethod.POST)
     public void valid(@PathVariable final Integer partyId) {
         final ParParty party = partyService.getParty(partyId);
-        ApRecord record = party.getRecord();
+        ApAccessPoint record = party.getRecord();
         record.setInvalid(false);
-        apService.saveRecord(record, false);
-
+        ApAccessPointData accessPointData = accessPointDataService.findAccessPointData(record);
+        record.setInvalid(true);
+        accessPointService.saveAccessPoint(accessPointData, false);
     }
 }

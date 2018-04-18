@@ -16,7 +16,7 @@ public class ApVariantRecordVO {
     /**
      * Id rejstříkového hesla.
      */
-    private Integer apRecordId;
+    private Integer regRecordId;
 
     /**
      * Hodnota.
@@ -36,12 +36,12 @@ public class ApVariantRecordVO {
         this.id = id;
     }
 
-    public Integer getApRecordId() {
-        return apRecordId;
+    public Integer getRegRecordId() {
+        return regRecordId;
     }
 
-    public void setApRecordId(final Integer apRecordId) {
-        this.apRecordId = apRecordId;
+    public void setRegRecordId(final Integer apRecordId) {
+        this.regRecordId = apRecordId;
     }
 
     public String getRecord() {

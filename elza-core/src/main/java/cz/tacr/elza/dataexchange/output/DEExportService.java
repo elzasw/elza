@@ -11,6 +11,8 @@ import java.util.stream.Collectors;
 import javax.persistence.EntityManager;
 import javax.xml.stream.XMLStreamException;
 
+import cz.tacr.elza.repository.ApAccessPointRepository;
+import cz.tacr.elza.service.AccessPointDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -29,7 +31,6 @@ import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
-import cz.tacr.elza.repository.ApRecordRepository;
 import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.cache.NodeCacheService;
 
@@ -52,10 +53,11 @@ public class DEExportService {
                            UserService userService,
                            LevelRepository levelRepository,
                            NodeCacheService nodeCacheService,
-                           ApRecordRepository recordRepository,
-                           ResourcePathResolver resourcePathResolver) {
-        this.initHelper = new ExportInitHelper(em, userService, levelRepository, nodeCacheService, recordRepository,
-                fundVersionRepository);
+                           ApAccessPointRepository accessPointRepository,
+                           ResourcePathResolver resourcePathResolver,
+                           AccessPointDataService accessPointDataService) {
+        this.initHelper = new ExportInitHelper(em, userService, levelRepository, nodeCacheService, accessPointRepository,
+                fundVersionRepository, accessPointDataService);
         this.staticDataService = staticDataService;
         this.resourcePathResolver = resourcePathResolver;
     }

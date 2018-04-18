@@ -4,16 +4,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 import cz.tacr.elza.dataexchange.output.loaders.LoadDispatcher;
-import cz.tacr.elza.domain.ApRecord;
-import cz.tacr.elza.domain.ApVariantRecord;
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApName;
 
-public class VariantNameDispatcher implements LoadDispatcher<ApVariantRecord> {
+public class VariantNameDispatcher implements LoadDispatcher<ApName> {
 
-    private final List<ApVariantRecord> variantNames = new ArrayList<>();
+    private final List<ApName> variantNames = new ArrayList<>();
 
-    private final ApRecord ap;
+    private final ApAccessPoint ap;
 
-    public VariantNameDispatcher(ApRecord ap) {
+    public VariantNameDispatcher(ApAccessPoint ap) {
         this.ap = ap;
     }
 
@@ -22,16 +22,17 @@ public class VariantNameDispatcher implements LoadDispatcher<ApVariantRecord> {
     }
 
     @Override
-    public void onLoad(ApVariantRecord result) {
+    public void onLoad(ApName result) {
+        result.setPreferredName(false);
         variantNames.add(result);
     }
 
     @Override
     public void onLoadEnd() {
         if (variantNames.isEmpty()) {
-            ap.setVariantRecordList(null);
+            ap.setNameList(null);
         } else {
-            ap.setVariantRecordList(variantNames);
+            ap.setNameList(variantNames);
         }
     }
 }

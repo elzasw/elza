@@ -13,7 +13,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 
 /**
- * Hodnota atributu archivního popisu typu ApRecord.
+ * Hodnota atributu archivního popisu typu ApAccessPoint.
  */
 @Entity(name = "arr_data_record_ref")
 @Table
@@ -23,12 +23,14 @@ public class ArrDataRecordRef extends ArrData {
     public static final String RECORD = "record";
 
     @RestResource(exported = false)
-	@ManyToOne(fetch = FetchType.LAZY, targetEntity = ApRecord.class)
+	@ManyToOne(fetch = FetchType.LAZY, targetEntity = ApAccessPoint.class)
     @JoinColumn(name = "recordId", nullable = false)
-    private ApRecord record;
+    private ApAccessPoint record;
 
     @Column(name = "recordId", updatable = false, insertable = false)
     private Integer recordId;
+
+    private static AccessPointFullTextProvider fullTextProvider;
 
 	public ArrDataRecordRef() {
 
@@ -44,13 +46,13 @@ public class ArrDataRecordRef extends ArrData {
         this.recordId = src.recordId;
     }
 
-    public ApRecord getRecord() {
+    public ApAccessPoint getRecord() {
         return record;
     }
 
-    public void setRecord(final ApRecord record) {
+    public void setRecord(final ApAccessPoint record) {
         this.record = record;
-        this.recordId = record == null ? null : record.getRecordId();
+        this.recordId = record == null ? null : record.getAccessPointId();
     }
 
     public Integer getRecordId() {
@@ -59,7 +61,7 @@ public class ArrDataRecordRef extends ArrData {
 
     @Override
     public String getFulltextValue() {
-        return record.getRecord();
+        return fullTextProvider.getFullText(record);
     }
 
 	@Override
@@ -77,5 +79,9 @@ public class ArrDataRecordRef extends ArrData {
     public void mergeInternal(final ArrData srcData) {
         ArrDataRecordRef src = (ArrDataRecordRef) srcData;
         this.copyValue(src);
+    }
+
+    public static void setFullTextProvider(AccessPointFullTextProvider fullTextProvider) {
+        ArrDataRecordRef.fullTextProvider = fullTextProvider;
     }
 }

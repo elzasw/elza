@@ -2,7 +2,7 @@ package cz.tacr.elza.repository;
 
 import com.google.common.collect.Lists;
 import cz.tacr.elza.common.ObjectListIterator;
-import cz.tacr.elza.domain.ApRecord;
+import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataCoordinates;
 import cz.tacr.elza.domain.ArrDataDecimal;
@@ -447,13 +447,13 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
                 @Override
                 protected void init() {
                     Join<ArrDataPartyRef, ParParty> party = dataRoot.join(ArrDataPartyRef.PARTY, JoinType.INNER);
-                    Join<ParParty, ApRecord> record = party.join(ParParty.RECORD, JoinType.INNER);
+                    Join<ParParty, ApAccessPoint> record = party.join(ParParty.RECORD, JoinType.INNER);
                     targetJoin = record;
                 }
 
                 @Override
                 public Path<String> getValueStringSelection(final CriteriaBuilder criteriaBuilder) {
-                    return targetJoin.get(ApRecord.RECORD);
+                    return targetJoin.get(ParParty.RECORD);
                 }
             };
         } else if (dataClassType.equals(ArrDataRecordRef.class)) {
@@ -465,7 +465,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
 
                 @Override
                 public Path<String> getValueStringSelection(final CriteriaBuilder criteriaBuilder) {
-                    return targetJoin.get(ApRecord.RECORD);
+                    return targetJoin.get(ArrDataRecordRef.RECORD);
                 }
             };
         } else if (dataClassType.equals(ArrDataStructureRef.class)) {

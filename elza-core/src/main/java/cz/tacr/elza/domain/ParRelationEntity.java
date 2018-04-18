@@ -41,9 +41,9 @@ public class ParRelationEntity {
     private ParRelation relation;
 
     @RestResource(exported = false)
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApRecord.class)
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApAccessPoint.class)
     @JoinColumn(name = "recordId", nullable = false)
-    private ApRecord record;
+    private ApAccessPoint accessPoint;
 
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ParRelationRoleType.class)
@@ -74,12 +74,12 @@ public class ParRelationEntity {
         this.relation = relation;
     }
 
-    public ApRecord getRecord() {
-        return record;
+    public ApAccessPoint getAccessPoint() {
+        return accessPoint;
     }
 
-    public void setRecord(final ApRecord record) {
-        this.record = record;
+    public void setAccessPoint(ApAccessPoint accessPoint) {
+        this.accessPoint = accessPoint;
     }
 
     public ParRelationRoleType getRoleType() {

@@ -1,13 +1,10 @@
 package cz.tacr.elza.domain.projection;
 
-import java.time.LocalDateTime;
-
 import org.springframework.beans.factory.annotation.Value;
 
-/**
- * Created by todtj on 30.05.2017.
- */
-public interface ApRecordInfo {
+import java.time.LocalDateTime;
+
+public interface ApAccessPointInfo {
 
     int getRecordId();
 
