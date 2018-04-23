@@ -650,9 +650,9 @@
     </item-type>
     <!-- Rozměry -->
     <item-type code="ZP2015_SIZE_WIDTH" data-type="DECIMAL">
-        <name>Šířka</name>
-        <shortcut>Šířka</shortcut>
-        <description>Šířka</description>
+        <name>Šířka / Průměr</name>
+        <shortcut>Šířka / Průměr</shortcut>
+        <description>ZP5.2.4 Šířka / Průměr</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
@@ -660,7 +660,7 @@
     <item-type code="ZP2015_SIZE_HEIGHT" data-type="DECIMAL">
         <name>Výška</name>
         <shortcut>Výška</shortcut>
-        <description>Výška</description>
+        <description>ZP5.2.4 Výška</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
@@ -668,17 +668,71 @@
     <item-type code="ZP2015_SIZE_DEPTH" data-type="DECIMAL">
         <name>Hloubka</name>
         <shortcut>Hloubka</shortcut>
-        <description>Hloubka</description>
+        <description>ZP5.2.4  Hloubka</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
     <item-type code="ZP2015_SIZE_UNITS" data-type="ENUM">
-        <name>Jednotka</name>
+        <name>Jednotka pro rozměry</name>
         <shortcut>Jednotka</shortcut>
-        <description>Jednotka</description>
+        <description>ZP5.2.4 Jednotka pro rozměry</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>true</use-specification>
+    </item-type>
+    
+    <!-- Hmotnost -->
+    <item-type code="ZP2015_WEIGHT" data-type="DECIMAL">
+        <name>Hmotnost</name>
+        <shortcut>Hmotnost</shortcut>
+        <description>ZP5.2.4 Hmotnost</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>true</can-be-ordered>
+        <use-specification>true</use-specification>
+    </item-type>
+
+    <!-- Množství -->
+    <item-type code="ZP2015_AMOUNT" data-type="DECIMAL">
+        <name>Množství</name>
+        <shortcut>Množství</shortcut>
+        <description>ZP5.2.4 Množství (velikost dat, kusy)</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>true</can-be-ordered>
+        <use-specification>true</use-specification>
+    </item-type>
+
+	<!-- Technika, adjustace, nosič a látka záznamu - strukturovaný popis -->
+    <item-type code="ZP2015_ITEM_MAT_TECHNIKA" data-type="TEXT">
+        <name>Technika záznamu</name>
+        <shortcut>Techn. záznamu</shortcut>
+        <description>ZP5.2.8 Technika záznamu</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>false</can-be-ordered>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="ZP2015_ITEM_MAT_ADJUSTACE" data-type="TEXT">
+        <name>Adjustace nosiče záznamu</name>
+        <shortcut>Adjustace</shortcut>
+        <description>ZP5.2.8 Adjustace nosiče záznamu</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>false</can-be-ordered>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="ZP2015_ITEM_MAT_NOSIC" data-type="TEXT">
+        <name>Nosič záznamu</name>
+        <shortcut>Nosič</shortcut>
+        <description>ZP5.2.8 Nosič záznamu</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>false</can-be-ordered>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="ZP2015_ITEM_MAT_LATKA_ZAZNAMU" data-type="TEXT">
+        <name>Látka záznamu</name>
+        <shortcut>Látka záznamu</shortcut>
+        <description>ZP5.2.8 Látka záznamu</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>false</can-be-ordered>
+        <use-specification>false</use-specification>
     </item-type>
 </item-types>
