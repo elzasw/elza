@@ -378,7 +378,6 @@ public class UsrPermission {
                 return false;
             }
         },
-        AP_SCOPE_WR_ALL,
 
         /**
          * tvorba výstupů vybraného AS (AP, ad-hoc tisky)
