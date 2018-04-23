@@ -229,7 +229,7 @@ var messages = {
     "ribbon.action.arr.movements": "Přesuny",
     "ribbon.action.arr.output.add": "Nový výstup",
     "ribbon.action.arr.output.generate": "Generovat výstup",
-    "ribbon.action.arr.output.generate.detectChange": "Byl detekovány změny v Pořádání",
+    "ribbon.action.arr.output.generate.detectChange": "Byly zjištěny změny v archivním popisu. Některé hodnoty spočtené funkcemi nemusí být aktuální",
     "ribbon.action.arr.output.generate.recommendedAction": "Nebyly spuštěny všechny doporučené akce",
     "ribbon.action.arr.output.generate.continue": "{0}, chcete i přesto pokračovat?",
     "ribbon.action.arr.output.edit": "Upravit výstup",

@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+import org.eclipse.jetty.util.StringUtil;
 
 /**
  * Context of active formatting
@@ -40,7 +41,15 @@ public class FormatContext {
     /**
      * Active separator for specifications
      */
-    private String specificationSeparator = " ";
+    private String specificationPostfix = " ";
+    
+    
+    private String specificationPrefix = "";
+    
+    /**
+     * Defines whether the specification is placed before or after the value
+     */
+    private boolean specificationAfterValue = false;
     
     /**
      * Flag if begin block separator should be use always
@@ -93,14 +102,18 @@ public class FormatContext {
         this.itemSeparator = separator;
     }
 
+    public void setSpecificationPrefix(String prefix) {
+    	this.specificationPrefix = prefix;
+	}
+    
     public void setSpecificationSeparator(String specSeparator) {
-        this.specificationSeparator = specSeparator;
+        this.specificationPostfix = specSeparator;
     }
-
-    public String getSpecificationSeparator() {
-        return specificationSeparator;
-    }
-
+    
+	public void setSpecificationAfterValue(boolean afterValue) {
+		this.specificationAfterValue = afterValue;
+	}
+    
     public void setTitleSeparator(String titleSeparator) {
         this.titleSeparator = titleSeparator;
     }
@@ -156,16 +169,49 @@ public class FormatContext {
     }
 
     /**
-     * Append specificationa and value to result
+     * Append specification and value to result
      *
      * @param value
      */
     public void appendSpecWithValue(String spec, String value) {
-        appendResult(spec);
-        if (StringUtils.isNoneBlank(value)) {
-            appendResult(specificationSeparator);
-            appendResult(value);
-        }
+    	boolean hasPrefix = StringUtils.isNotBlank(specificationPrefix);
+    	boolean hasValue = StringUtils.isNotBlank(value);
+    	boolean hasPostfix = StringUtils.isNotBlank(specificationPostfix);
+    	
+    	if (specificationAfterValue) {
+    		if(hasValue) {
+    			appendResult(value);
+    		}
+    		
+            if(hasPrefix) {
+				appendResult(specificationPrefix);
+			}
+			
+			appendResult(spec);
+			
+			if(hasPostfix) {
+				appendResult(specificationPostfix);
+			}
+    	}		
+    	else{
+        	if(hasPrefix) {
+				appendResult(specificationPrefix);
+			}
+			
+			appendResult(spec);
+			
+			if(hasPostfix) {
+				// Append postfix when prefix or value exist
+				// This condition allows to print:  spec: val | spec | (spec)
+				if(hasPrefix || hasValue) {
+					appendResult(specificationPostfix);
+				}
+			}
+			
+            if(hasValue) {
+    			appendResult(value);
+    		}
+    	}   
         
         this.pendingSeparator = itemSeparator;
     }
