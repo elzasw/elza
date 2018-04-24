@@ -100,13 +100,13 @@
 				<textFieldExpression><![CDATA["Zpracoval: "+$P{output}.getSingleItemValue( "ZP2015_ARRANGER_TEXT" )]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement x="0" y="668" width="455" height="14" isRemoveLineWhenBlank="true" uuid="af89dff7-c912-4296-ae4b-aba8f44b7ffc">
+				<reportElement mode="Transparent" x="0" y="668" width="455" height="14" backcolor="#FF0400" uuid="af89dff7-c912-4296-ae4b-aba8f44b7ffc">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement>
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{output}.getSingleItemValue( "ZP2015_FINDING_AID_DATE" )]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{output}.getSingleItemValue( "ZP2015_RELEASE_DATE_PLACE")]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement positionType="Float" x="0" y="109" width="455" height="14" uuid="34b6d38e-4f0b-4051-86f0-b5e6a4648f36">
