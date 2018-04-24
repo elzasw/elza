@@ -75,7 +75,16 @@ public class Formatter {
 	public Formatter addValueWithTitle(String itemType) {
 		return addAction(new ValueWithTitleFormatter(itemType));
 	}
-
+	
+	/**
+	 * Add specification and value for given type with additional format
+	 * @param itemType
+	 * @return
+	 */
+	public Formatter addValueWithTitle(String itemType, Formatter formatter) {
+		return addAction(new ValueWithTitleFormatter(itemType, formatter));
+	}
+	
 	/**
 	 * Add specification and value for given types
 	 * @param itemTypes
@@ -104,6 +113,10 @@ public class Formatter {
 	 */
 	public Formatter setSpecSeparator(String specSeparator) {
 		return addAction(new SetSpecificationSeparator(specSeparator));
+	}
+	
+	public Formatter setSpecFormat(String prefix, String postfix, boolean afterValue) {
+		return addAction(new SetSpecificationFormat(prefix, postfix, afterValue));
 	}
 	
 	/**

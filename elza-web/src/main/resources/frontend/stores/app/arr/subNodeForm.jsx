@@ -7,6 +7,11 @@ import {getMapFromList} from 'stores/app/utils.jsx'
 import {valuesEquals} from 'components/Utils.jsx'
 
 function getLoc(state, valueLocation) {
+    const formData = state.formData;
+    if(!formData){
+        console.warn("formData do not exist");
+        return null;
+    }
     var descItemGroup = state.formData.descItemGroups[valueLocation.descItemGroupIndex];
     var descItemType = descItemGroup.descItemTypes[valueLocation.descItemTypeIndex];
     var descItem;
@@ -38,7 +43,7 @@ const initialState = {
     getLoc: getLoc
 }
 
-function validate(descItem, refType, valueServerError) {
+export function validate(descItem, refType, valueServerError) {
     var error = {};
 
     // Specifikace
@@ -117,6 +122,58 @@ function validate(descItem, refType, valueServerError) {
     return error;
 }
 
+/*
+* Converts the value to specified type through the dataTypeMap
+*/
+export function convertValue(value, descItem, type) {
+    //  Data type to value conversion functions map
+    const dataTypeMap = {
+        PARTY_REF: (value)=>{
+            return {
+                value: value.id,
+                party: value
+            };
+        },
+        FILE_REF: (value)=>{
+            return {
+                value: value.id,
+                file: value,
+                ["@class"]: ".ArrFileVO"
+            };
+        },
+        PACKET_REF: (value)=>{
+            return {
+                value: value.id,
+                packet: value
+            };
+        },
+        RECORD_REF: (value)=>{
+            return {
+                value: value.id,
+                record: value
+            };
+        },
+        UNITDATE: (value, descItem)=>{
+            // change touched attribute when calendarTypeId changed
+            const touched = descItem.calendarTypeId !== value.calendarTypeId;
+            return {
+                value: value.value,
+                touched,
+                calendarTypeId: value.calendarTypeId
+            };
+        },
+        DEFAULT: (value)=>{
+            return {value};
+        }
+    };
+    const convertFunction = dataTypeMap[type];
+    if(convertFunction){
+        return convertFunction(value, descItem);
+    } else {
+        return dataTypeMap["DEFAULT"](value);
+    }
+}
+
 export default function subNodeForm(state = initialState, action = {}) {
     // Načtení umístění, pokud bylo v akci předáno
     let loc
@@ -170,45 +227,24 @@ export default function subNodeForm(state = initialState, action = {}) {
         case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_PARTY:
         case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_RECORD:
             var refType = state.refTypesMap[loc.descItemType.id];
-            let touched = false;
-            switch (refType.dataType.code) {
-                case 'PARTY_REF':
-                    loc.descItem.value = action.value.id;
-                    loc.descItem.party = action.value;
-                    break;
-                case 'FILE_REF':
-                    loc.descItem.value = action.value.id;
-                    loc.descItem.file = action.value;
-                    loc.descItem.file['@class'] = '.ArrFileVO';
-                    break;
-                case 'PACKET_REF':
-                    loc.descItem.value = action.value.id;
-                    loc.descItem.packet = action.value;
-                    break;
-                case 'RECORD_REF':
-                    loc.descItem.value = action.value.id;
-                    loc.descItem.record = action.value;
-                    break;
-                case 'UNITDATE':
-                    loc.descItem.value = action.value.value;
-                    // check if calendar type changed
-                    touched = loc.descItem.calendarTypeId !== action.value.calendarTypeId;
-                    // replace with calendar type from action
-                    loc.descItem.calendarTypeId = action.value.calendarTypeId;
-
-                    // Časovač na serverovou validaci
-                    if (loc.descItem.validateTimer) {
-                        clearTimeout(loc.descItem.validateTimer);
-                    }
-                    var fc = () => action.dispatch(action.formActions.fundSubNodeFormValueValidate(action.versionId, action.routingKey, action.valueLocation));
-                    loc.descItem.validateTimer = setTimeout(fc, 250);
-                    break;
-                default:
-                    loc.descItem.value = action.value;
-                    break;
+            const convertedValue = convertValue(action.value, loc.descItem, refType.dataType.code);
+            // touched if new value is not equal with previous value, or something else changed during conversion
+            const touched = convertedValue.touched || !valuesEquals(loc.descItem.value, loc.descItem.prevValue);
+            loc.descItem = {
+                ...loc.descItem,
+                ...convertedValue,
+                touched
+            };
+            // Unitdate server validation
+            if(refType.dataType.code === "UNITDATE"){
+                if (loc.descItem.validateTimer) {
+                    clearTimeout(loc.descItem.validateTimer);
+                }
+                var fc = () => action.dispatch(
+                    action.formActions.fundSubNodeFormValueValidate(action.versionId, action.routingKey, action.valueLocation)
+                );
+                loc.descItem.validateTimer = setTimeout(fc, 250);
             }
-            // touched if new value is not equal with previous value, or something else changed
-            loc.descItem.touched = !valuesEquals(loc.descItem.value, loc.descItem.prevValue) || touched;
             loc.descItem.error = validate(loc.descItem, refType);
 
             state.formData = {...state.formData};
