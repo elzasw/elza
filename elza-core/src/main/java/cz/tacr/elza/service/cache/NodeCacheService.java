@@ -57,7 +57,9 @@ import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.repository.CachedNodeRepository;
 import cz.tacr.elza.repository.DaoLinkRepository;
 import cz.tacr.elza.repository.DaoRepository;
@@ -447,6 +449,10 @@ public class NodeCacheService {
 	private RestoredNode getNodeInternal(final Integer nodeId) {
         Assert.notNull(nodeId, "Identifikátor JP musí být vyplněn");
 		ArrCachedNode cachedNode = cachedNodeRepository.findByNodeId(nodeId);
+        if (cachedNode == null) {
+            throw new ObjectNotFoundException("Node not found in cache", ArrangementCode.NODE_NOT_FOUND)
+                    .set("id", nodeId);
+        }
 		RestoredNode result = deserialize(cachedNode);
         reloadCachedNodes(Collections.singletonList(result));
         return result;
