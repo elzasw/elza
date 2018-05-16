@@ -1,0 +1,100 @@
+package ZP2015_StructuredSize;
+
+import cz.tacr.elza.domain.RulItemTypeExt;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemSpecExt;
+import cz.tacr.elza.drools.model.AvailableDescItems;
+import cz.tacr.elza.drools.model.ActiveLevel;
+import cz.tacr.elza.drools.model.Level;
+import cz.tacr.elza.drools.model.DescItem;
+
+
+// Orig. prvek: "ZP2015_SIZE"
+// Detailní prvky popisu: 
+//  "ZP2015_SIZE_WIDTH", "ZP2015_SIZE_HEIGHT", "ZP2015_SIZE_DEPTH",
+//  "ZP2015_SIZE_UNITS", "ZP2015_WEIGHT", "ZP2015_AMOUNT"
+
+// Pravidla:
+// Možný původní prvek -> možné podrobné prvky
+// Možný (doporučený, povinný) původní prvek -> možné specifikace pro nové prvky
+// Doporučený původní prvek 
+//     -> doporučené podrobné prvky
+// Povinný původní prvek a prázdný a i nové prázdné 
+//    -> povinné podrobné prvky
+// Povinný původní prvek a prázdný a alespoň jeden nový neprázdný
+//     -> doporučené podrobné prvky
+//     -> původní možný 
+
+rule "mozny ZP2015_SIZE"
+no-loop
+when
+  RulItemTypeExt(code == "ZP2015_SIZE" && type==RulItemType.Type.POSSIBLE)
+  $itemType : RulItemTypeExt(code in ("ZP2015_SIZE_WIDTH", "ZP2015_SIZE_HEIGHT", "ZP2015_SIZE_DEPTH",
+              "ZP2015_SIZE_UNITS", "ZP2015_WEIGHT", "ZP2015_AMOUNT") 
+              )
+then
+  $itemType.setType(RulItemType.Type.POSSIBLE);
+end
+
+rule "mozne specifikace"
+no-loop
+when
+  RulItemTypeExt(code == "ZP2015_SIZE" && type in (RulItemType.Type.POSSIBLE, RulItemType.Type.RECOMMENDED, RulItemType.Type.REQUIRED))
+  $itemType : RulItemTypeExt(code in ("ZP2015_SIZE_UNITS", "ZP2015_WEIGHT", "ZP2015_AMOUNT") )
+  $itemSpec : RulItemSpecExt( ) from $itemType.rulItemSpecList
+then
+  $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+end
+
+rule "doporuceny ZP2015_SIZE"
+no-loop
+when
+  $itemTypeOld : RulItemTypeExt(code == "ZP2015_SIZE" && type==RulItemType.Type.RECOMMENDED)
+  $itemType : RulItemTypeExt(code in ("ZP2015_SIZE_WIDTH", "ZP2015_SIZE_HEIGHT", "ZP2015_SIZE_DEPTH",
+                                      "ZP2015_SIZE_UNITS", "ZP2015_WEIGHT", "ZP2015_AMOUNT") 
+              )
+then
+  $itemType.setType(RulItemType.Type.RECOMMENDED);
+end
+
+rule "povinny ZP2015_SIZE a neni vyplnen"
+no-loop
+when
+  $itemTypeOld : RulItemTypeExt(code == "ZP2015_SIZE" && type==RulItemType.Type.REQUIRED)
+  $itemType: RulItemTypeExt(code in ("ZP2015_SIZE_WIDTH", "ZP2015_SIZE_HEIGHT", "ZP2015_SIZE_DEPTH",
+                                      "ZP2015_SIZE_UNITS", "ZP2015_WEIGHT", "ZP2015_AMOUNT") )
+  $activeLevel: ActiveLevel( )
+  not (DescItem(type in ("ZP2015_SIZE", "ZP2015_SIZE_WIDTH", "ZP2015_SIZE_HEIGHT", "ZP2015_SIZE_DEPTH",
+                                      "ZP2015_SIZE_UNITS", "ZP2015_WEIGHT", "ZP2015_AMOUNT")                                      
+                                      ) from $activeLevel.descItems
+                                      )
+then
+  $itemType.setType(RulItemType.Type.REQUIRED);
+end
+
+rule "povinny ZP2015_SIZE a neco vyplneno"
+no-loop
+when
+  $itemTypeOld : RulItemTypeExt(code == "ZP2015_SIZE" && type==RulItemType.Type.REQUIRED)
+  $itemType: RulItemTypeExt(code in ("ZP2015_SIZE_WIDTH", "ZP2015_SIZE_HEIGHT", "ZP2015_SIZE_DEPTH",
+                                      "ZP2015_SIZE_UNITS", "ZP2015_WEIGHT", "ZP2015_AMOUNT") )
+  $activeLevel: ActiveLevel( )
+  exists (DescItem(type in ("ZP2015_SIZE", "ZP2015_SIZE_WIDTH", "ZP2015_SIZE_HEIGHT", "ZP2015_SIZE_DEPTH",
+                                      "ZP2015_SIZE_UNITS", "ZP2015_WEIGHT", "ZP2015_AMOUNT")                                      
+                                      ) from $activeLevel.descItems
+                                      )
+then
+  $itemType.setType(RulItemType.Type.RECOMMENDED);
+end
+
+rule "snizeni povinnosti pro ZP2015_SIZE"
+no-loop
+salience -100
+when
+  $itemTypeOld : RulItemTypeExt(code == "ZP2015_SIZE" 
+                                && type in (RulItemType.Type.RECOMMENDED, RulItemType.Type.REQUIRED)
+                                )            
+then
+  $itemTypeOld.setType(RulItemType.Type.POSSIBLE);
+end

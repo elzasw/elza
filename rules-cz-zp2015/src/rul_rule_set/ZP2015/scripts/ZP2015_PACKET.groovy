@@ -7,8 +7,7 @@ int packetLeadingZeros = PACKET_LEADING_ZEROS
 return toString(items, packetLeadingZeros)
 
 static String toString(List<ArrStructuredItem> items, int packetLeadingZeros) {
-    StringBuilder result = new StringBuilder()
-    addNotEmpty(result, toStringValue(items, "ZP2015_PACKET_TYPE"), " ")
+    StringBuilder result = new StringBuilder()    
     addNotEmpty(result, toStringValue(items, "ZP2015_PACKET_PREFIX"))
     addNotEmpty(result, addZerosBefore(toStringValue(items, "ZP2015_PACKET_NUMBER"), packetLeadingZeros))
     addNotEmpty(result, toStringValue(items, "ZP2015_PACKET_POSTFIX"))
