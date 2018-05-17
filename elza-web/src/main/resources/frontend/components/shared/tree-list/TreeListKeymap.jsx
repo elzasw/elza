@@ -1,7 +1,5 @@
 var defaultKeymap = {
-    Autocomplete: {
-        "OPEN_MENU": "alt+down",
-        "CLOSE_MENU": ["escape","alt+up"],
+    List: {
         "MOVE_UP": "up",
         "MOVE_DOWN": "down",
         "MOVE_TO_PARENT_OR_CLOSE": "left",

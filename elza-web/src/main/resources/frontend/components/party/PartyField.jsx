@@ -74,16 +74,22 @@ class PartyField extends AbstractReactComponent {
         this.props.onCreate(partyTypeId);
     };
 
-    renderParty = (item, isHighlighted, isSelected) => {
+    renderParty = (props) => {
         const {refTables:{partyTypes:{relationTypesForClass}}} = this.props;
+        const {item, highlighted, selected, ...otherProps} = props;
 
         return <TooltipTrigger
             content={item.characteristics}
             holdOnHover
             placement="horizontal"
             className="tooltip-container"
+            {...otherProps}
         >
-            <PartyListItem {...item} className={classNames('item', {focus: isHighlighted, active: isSelected})} relationTypesForClass={relationTypesForClass} />
+            <PartyListItem
+                {...item}
+                className={classNames('item', {focus: highlighted, active: selected})}
+                relationTypesForClass={relationTypesForClass}
+            />
         </TooltipTrigger>
     };
 
@@ -153,7 +159,7 @@ class PartyField extends AbstractReactComponent {
     };
 
     render() {
-        const {userDetail, value, detail, footer, undefined, ...otherProps} = this.props;
+        const {value, footer, detail, undefined, ...otherProps} = this.props;
 
         let footerRender;
         if (footer) {
@@ -163,8 +169,14 @@ class PartyField extends AbstractReactComponent {
         const actions = [];
         if (detail) {
             // if (userDetail.hasOne(perms.REG_SCOPE_RD_ALL, {type: perms.REG_SCOPE_RD, scopeId: value.record.scopeId})) {
-                actions.push(<div onClick={this.handleDetail.bind(this, value ? value.id : null)}
-                                  className={'btn btn-default detail'}><Icon glyph={'fa-user'}/></div>);
+            actions.push(
+                <div 
+                    onClick={this.handleDetail.bind(this, value ? value.id : null)}
+                    className={'btn btn-default detail'}
+                >
+                    <Icon glyph={'fa-user'}/>
+                </div>
+            );
             // }
         }
 
@@ -175,19 +187,19 @@ class PartyField extends AbstractReactComponent {
 
         return <Autocomplete
             ref='autocomplete'
-            className="autocomplete-party"
             customFilter
+            className="autocomplete-party"
             footer={footerRender}
-            value={value}
             items={this.state.partyList}
             getItemId={(item) => item ? item.id : null}
             getItemName={(item) => item && item.record ? item.record.record : tmpVal}
             onSearchChange={this.handleSearchChange}
             renderItem={this.renderParty}
             actions={[actions]}
-            {...otherProps}
-            onBlur={this.handleBlur}
             onChange={this.handleChange}
+            onBlur={this.handleBlur}
+            value={value}
+            {...otherProps}
         />
     }
 }

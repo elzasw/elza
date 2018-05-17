@@ -1,10 +1,18 @@
 import React from "react";
 
-export function renderUserOrGroupItem(item, isHighlighted = false, isSelected = false) {
-    if (item.user) {
-        return renderUserItem(item.user, isHighlighted, isSelected);
-    } else {
-        return renderGroupItem(item.group, isHighlighted, isSelected);
+export function renderUserOrGroupItem(props) {
+    const {item, ...otherProps} = props;
+
+    console.log(props);
+
+    if(item){
+        if (item.user) {
+            props.item = {item, ...item.user}
+            return renderUserItem(props);
+        } else if (item.group){
+            props.item = {item, ...item.group}
+            return renderGroupItem(props);
+        }
     }
 }
 /**
@@ -37,39 +45,51 @@ export function renderUserOrGroupLabel(item) {
     }
 }
 
-export function renderItem(id, itemStr, isHighlighted = false, isSelected = false) {
-    let cls = 'item';
-    if (isHighlighted) {
-        cls += ' focus'
+export class EntityItem extends React.PureComponent{
+    render(){
+        const {item, getName, highlighted, selected, ...otherProps} = this.props;
+        let cls = 'item';
+        if (highlighted) {
+            cls += ' focus'
+            console.log("highlighted");
+        }
+        if (selected) {
+            cls += ' active'
+            console.log("selected");
+        }
+
+        let name = "unknown";
+
+        if(getName){
+            name = getName(item);
+        } else if(item && item.name){
+            name = item.name;
+        }
+
+        return (
+            <div
+               {...otherProps}
+               className={cls}
+               >{name}</div>
+        )
     }
-    if (isSelected) {
-        cls += ' active'
-    }
+}  
 
-    return (
-        <div
-            className={cls}
-            key={id}
-        >{itemStr}</div>
-    )
+export function renderUserItem(props) {
+    return <EntityItem 
+        {...props}
+        getName={(item)=>{/*console.log("get username",item);*/ return getUsername(item);}}
+    />;
 }
 
-export function renderUserItem(user, isHighlighted = false, isSelected = false) {
-    const itemStr = getUsername(user);
-    return renderItem(user.id, itemStr, isHighlighted, isSelected);
+export function renderGroupItem(props) {
+    return <EntityItem {...props}/>;
 }
 
-export function renderGroupItem(group, isHighlighted = false, isSelected = false) {
-    const itemStr = group.name;
-    return renderItem(group.id, itemStr, isHighlighted, isSelected);
+export function renderFundItem(props) {
+    return <EntityItem {...props}/>;
 }
 
-export function renderFundItem(fund, isHighlighted = false, isSelected = false) {
-    const itemStr = fund.name;
-    return renderItem(fund.id, itemStr, isHighlighted, isSelected);
-}
-
-export function renderScopeItem(scope, isHighlighted = false, isSelected = false) {
-    const itemStr = scope.name;
-    return renderItem(scope.id, itemStr, isHighlighted, isSelected);
+export function renderScopeItem(props) {
+    return <EntityItem {...props}/>;
 }

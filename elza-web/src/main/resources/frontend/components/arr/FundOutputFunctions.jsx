@@ -102,7 +102,8 @@ class FundOutputFunctions extends AbstractReactComponent {
         return actions;
     }
 
-    renderListItem = (item) => {
+    renderListItem = (props) => {
+        const {item} = props;
         const config = this.getConfigByCode(item.code);
         const name = config ? config.name : '';
         const actionState = this.getActionState(item);

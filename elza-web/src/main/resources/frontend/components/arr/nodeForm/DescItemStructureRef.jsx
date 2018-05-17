@@ -50,21 +50,24 @@ class DescItemStructureRef extends AbstractReactComponent {
      * @param active isSelected
      * @returns Element
      */
-    renderItem = (item, focus, active)  => {
-        return <div className={classNames('item', {focus, active})} key={item.id}>
+    renderItem = (props)  => {
+        const {item, highlighted, selected, ...otherProps} = props;
+        //console.log("item:", item, "highlighted", highlighted);
+        return <div {...otherProps} className={classNames('item', {focus: highlighted, active: selected})} key={item.id} >
             {item.value}
         </div>
     };
 
     render() {
         const {descItem, onChange, onBlur, locked, singleDescItemTypeEdit, readMode, cal} = this.props;
-        const structureData = descItem.structureData ? descItem.structureData : null;
+        const structureData = descItem.structureData;
         if (readMode || descItem.undefined) {
             const calValue = cal && structureData === null ? i18n("subNodeForm.descItemType.calculable") : "";
             return (
                 <DescItemLabel value={structureData ? structureData.value : calValue} cal={cal} notIdentified={descItem.undefined} />
             )
         }
+        console.log(structureData);
 
         return (
             <div className='desc-item-value desc-item-value-parts'>

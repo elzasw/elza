@@ -38,6 +38,7 @@ class AddDescItemTypeForm extends AbstractReactComponent {
             const children = [];
             node.children.forEach(item => {
                 if (item.type === AddDescItemTypeForm.ITEM_TYPE_POSSIBLE) {
+                    item.className = "type-"+item.type.toLowerCase();
                     children.push(item);
                 }
             });
@@ -60,6 +61,8 @@ class AddDescItemTypeForm extends AbstractReactComponent {
     render() {
         const {fields: {descItemTypeId}, handleSubmit, onClose, descItemTypes,submitting} = this.props;
         const {possibleItemTypes} = this.state;
+
+        console.log(descItemTypes);
 
         return <Form onSubmit={handleSubmit(this.submitReduxForm)}>
                 <Modal.Body>
@@ -88,7 +91,7 @@ class AddDescItemTypeForm extends AbstractReactComponent {
                             {...decorateFormField(descItemTypeId)}
                             items={descItemTypes}
                             getItemRenderClass={item => item.groupItem ? null : ' type-' + item.type.toLowerCase()}
-                            allowSelectItem={(id, item) => !item.groupItem}
+                            allowSelectItem={(item) => !item.groupItem}
                             onBlurValidation={false}
                         />
                     </div>

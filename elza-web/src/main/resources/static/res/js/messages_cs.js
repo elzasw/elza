@@ -52,6 +52,8 @@ var messages = {
     "download.error.title": "Chyba stahování",
     "download.error.timeout": "Vypršel časový limit na obsluhu požadavku",
 
+    "autocomplete.list.allItems": "Všechny položky",
+    "autocomplete.list.favoriteItems": "Oblíbené",
 
     "dataType.coordinates.format": "Zadávejte ve tvaru \"15.5154,49.535\"",
     "dataType.decimal.format": null,

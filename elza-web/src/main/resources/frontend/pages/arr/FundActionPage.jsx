@@ -309,7 +309,8 @@ class FundActionPage extends ArrParentPage {
         }
     }
 
-    renderRowItem(item) {
+    renderRowItem(props) {
+        const {item} = props;
         const icon = FundActionPage.getStateIcon(item.state);
         const config = this.getConfigByCode(item.code);
         const name = config ? <span title={item.name} className='name'>{config.name}</span> : '';

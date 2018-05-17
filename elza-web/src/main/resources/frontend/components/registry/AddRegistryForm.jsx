@@ -126,7 +126,7 @@ class AddRegistryForm extends AbstractReactComponent {
                             items={items}
                             tree
                             alwaysExpanded
-                            allowSelectItem={(id, item) => item.addRecord}
+                            allowSelectItem={(item) => item.addRecord}
                             {...registerTypeId}
                             {...decorateFormField(registerTypeId)}
                             onChange={item => registerTypeId.onChange(item ? item.id : null)}

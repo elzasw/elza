@@ -121,7 +121,13 @@ class PartyList extends AbstractReactComponent {
         return scopeId && scopes && scopes.length > 0 && scopes[0].scopes.find(scope => (scope.id === scopeId)).name;
     }
 
-    renderListItem = (item) => <PartyListItem {...item} onClick={this.handlePartyDetail.bind(this, item)} relationTypesForClass={this.props.relationTypesForClass} />;
+    renderListItem = (props) => {
+        const {item} = props;
+        return <PartyListItem 
+            {...item} 
+            onClick={this.handlePartyDetail.bind(this, item)} 
+            relationTypesForClass={this.props.relationTypesForClass} />
+    };
 
     render() {
         const {partyDetail, partyList, partyTypes, maxSize, scopes} = this.props;

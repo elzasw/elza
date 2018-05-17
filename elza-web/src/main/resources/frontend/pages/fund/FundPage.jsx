@@ -255,7 +255,8 @@ class FundPage extends AbstractReactComponent {
         this.dispatch(selectFundTab(fundObj));
     }
 
-    renderListItem(item) {
+    renderListItem(props) {
+        const {item} = props;
         return (
             [
                 <div className='item-row'>

@@ -86,7 +86,7 @@ class DescItemTypeSpec extends AbstractReactComponent {
                             ...infoSpec,
                             className: 'spec-' + infoSpec.type.toLowerCase()
                         };
-                        favoriteItems.push(value);
+                        favoriteItems.push(specId);
                     }
                 }
             });
@@ -211,13 +211,13 @@ class DescItemTypeSpec extends AbstractReactComponent {
         if (refType.itemSpecsTree && refType.itemSpecsTree.length > 0) {    // tree
             autocompleteAdditionalProps = {
                 tree: true,
-                allowSelectItem: (id, item) => !item.node && !item.label,
-                allowFocusItem: (id, item) => !item.group && !item.label,
+                allowSelectItem: (item) => !item.node && !item.label,
+                allowFocusItem: (item) => !item.group && !item.label,
             }
         } else {    // list
             autocompleteAdditionalProps = {
-                allowSelectItem: (id, item) => !item.group && !item.label,
-                allowFocusItem: (id, item) => !item.group && !item.label,
+                allowSelectItem: (item) => !item.group && !item.label,
+                allowFocusItem: (item) => !item.group && !item.label,
             };
         }
 

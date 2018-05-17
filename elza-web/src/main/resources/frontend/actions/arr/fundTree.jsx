@@ -456,7 +456,7 @@ export function fundTreeFetchIfNeeded(area, sourceVersionId, expandedIds, select
             return dispatch(fundTreeFetch(area, versionId, null, expandedIds, includeIds));
         }
 
-        return Promise.resolve(getFundTree(activeFund, area));
+        return Promise.resolve(fundTree);
     }
 }
 
@@ -474,6 +474,7 @@ export function fundTreeFetch(area, versionId, nodeId, expandedIds, includeIds=[
         return WebApi.getFundTree(versionId, nodeId, expandedIds, includeIds)
             .then(json => {
                 dispatch(fundTreeReceive(area, versionId, nodeId, expandedIds, includeIds, json))
+                console.log("fundTree",json);
                 return json;
             });
     }
