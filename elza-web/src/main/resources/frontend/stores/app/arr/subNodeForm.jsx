@@ -144,7 +144,7 @@ export function convertValue(value, descItem, type) {
         STRUCTURED: (value)=>{
             return {
                 value: value.id,
-                packet: value
+                structureData: value
             };
         },
         RECORD_REF: (value)=>{
