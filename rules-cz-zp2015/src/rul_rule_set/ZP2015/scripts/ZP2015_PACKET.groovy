@@ -1,5 +1,6 @@
 import cz.tacr.elza.domain.ArrData
 import cz.tacr.elza.domain.ArrStructuredItem
+import cz.tacr.elza.domain.RulItemSpec
 import org.apache.commons.lang3.StringUtils
 
 List<ArrStructuredItem> items = ITEMS
@@ -7,11 +8,12 @@ int packetLeadingZeros = PACKET_LEADING_ZEROS
 return toString(items, packetLeadingZeros)
 
 static String toString(List<ArrStructuredItem> items, int packetLeadingZeros) {
-    StringBuilder result = new StringBuilder()    
-    addNotEmpty(result, toStringValue(items, "ZP2015_PACKET_PREFIX"))
+    StringBuilder result = new StringBuilder();
+    appendValue(result, items, "ZP2015_PACKET_FIXED_PREFIX");
+    appendValue(result, items, "ZP2015_PACKET_PREFIX");
     addNotEmpty(result, addZerosBefore(toStringValue(items, "ZP2015_PACKET_NUMBER"), packetLeadingZeros))
-    addNotEmpty(result, toStringValue(items, "ZP2015_PACKET_POSTFIX"))
-    return result.toString().trim()
+    appendValue(result, items, "ZP2015_PACKET_POSTFIX");
+    return result.toString().trim();
 }
 
 static void addNotEmpty(StringBuilder result, String value) {
@@ -39,14 +41,23 @@ static String addZerosBefore(String value, int totalLength) {
 }
 
 static String toStringValue(List<ArrStructuredItem> items, String itemTypeCode) {
+    StringBuilder result = new StringBuilder()    
+    appendValue(result, items, itemTypeCode);
+    return result.toString();
+}
+
+static void appendValue(StringBuilder result, List<ArrStructuredItem> items, String itemTypeCode)
+{
     for (ArrStructuredItem item : items) {
         if (item.getItemType().getCode().equalsIgnoreCase(itemTypeCode)) {
-            ArrData data = item.getData();
-            if(data==null) {
-                return null;
+            RulItemSpec spec = item.getItemSpec();
+            if(spec!=null) {
+                result.append(spec.getShortcut());
             }
-            return data.getFulltextValue();
+            ArrData data = item.getData();
+            if(data!=null) {
+                result.append(data.getFulltextValue());
+            }
         }
     }
-    return null;
 }

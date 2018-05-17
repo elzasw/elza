@@ -615,15 +615,23 @@
     
     <!-- Prvky popisu pro uložení -->
     <item-type code="ZP2015_PACKET_TYPE" data-type="ENUM">
-        <name>Typ uložení</name>
-        <shortcut>Typ uložení</shortcut>
-        <description>Typ uložení</description>
+        <name>Způsob uložení</name>
+        <shortcut>Způsob</shortcut>
+        <description>Způsob uložení</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>false</can-be-ordered>
+        <use-specification>true</use-specification>
+    </item-type>
+    <item-type code="ZP2015_PACKET_FIXED_PREFIX" data-type="ENUM">
+        <name>Pevný prefix uložení</name>
+        <shortcut>Prefix</shortcut>
+        <description>Pevný  Prefix pro ukládací číslo</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>true</use-specification>
     </item-type>
     <item-type code="ZP2015_PACKET_PREFIX" data-type="STRING">
-        <name>Prefix ukl. č.</name>
+        <name>Prefix uložení</name>
         <shortcut>Prefix</shortcut>
         <description>Prefix pro ukládací číslo</description>
         <is-value-unique>false</is-value-unique>
@@ -639,7 +647,7 @@
         <use-specification>false</use-specification>
     </item-type>
     <item-type code="ZP2015_PACKET_POSTFIX" data-type="STRING">
-        <name>Postfix ukl. č.</name>
+        <name>Postfix uložení</name>
         <shortcut>Postfix</shortcut>
         <description>Postfix pro ukládací číslo</description>
         <is-value-unique>false</is-value-unique>

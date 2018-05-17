@@ -15,8 +15,7 @@ import cz.tacr.elza.domain.RulItemType;
 rule "Možné prvky popisu"
 no-loop
 when
-    $itemType : RulItemTypeExt(code in ("ZP2015_PACKET_TYPE", "ZP2015_PACKET_PREFIX", "ZP2015_PACKET_NUMBER",
-                                        "ZP2015_PACKET_POSTFIX"))
+    $itemType : RulItemTypeExt(code in ("ZP2015_PACKET_PREFIX", "ZP2015_PACKET_POSTFIX"))
 then
     $itemType.setType(RulItemType.Type.POSSIBLE);
 end
@@ -32,10 +31,19 @@ then
     $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
 end
 
+rule "Možné typy prefixů"
+no-loop
+when
+    $itemType : RulItemTypeExt(code == "ZP2015_PACKET_FIXED_PREFIX")
+    $itemSpec : RulItemSpecExt() from $itemType.rulItemSpecList
+then
+    $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+end
+
 rule "Doporučené"
 no-loop
 when
-    $itemType : RulItemTypeExt(code in ("ZP2015_PACKET_TYPE"))
+    $itemType : RulItemTypeExt(code in ("ZP2015_PACKET_TYPE", "ZP2015_PACKET_NUMBER"))
 then
     $itemType.setType(RulItemType.Type.RECOMMENDED);
 end
