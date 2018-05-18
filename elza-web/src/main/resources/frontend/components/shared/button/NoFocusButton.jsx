@@ -3,10 +3,13 @@ import AbstractReactComponent from "../../AbstractReactComponent";
 
 class NoFocusButton extends AbstractReactComponent {
     render() {
-        const {className, onClick, disabled, ...otherProps} = this.props;
+        const {className, onClick, disabled, active, ...otherProps} = this.props;
         let cls = 'btn btn-default';
         if (disabled) {
             cls += ' disabled';
+        }
+        if (active) {
+            cls += ' active';
         }
         if (className) {
             cls += ' ' + className;

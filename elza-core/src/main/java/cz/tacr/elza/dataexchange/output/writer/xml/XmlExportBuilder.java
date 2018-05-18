@@ -38,7 +38,7 @@ public class XmlExportBuilder implements ExportBuilder {
     public SectionOutputStream openSectionOutputStream(SectionContext sectionContext) {
         InternalNode fsNode = (InternalNode) rootNode.getNode(ChildNodeType.SECTIONS);
         if (fsNode == null) {
-            fsNode = new InternalNode(XmlElementName.SECTION);
+            fsNode = new InternalNode(XmlNameConsts.SECTION);
             rootNode.setNode(ChildNodeType.SECTIONS, fsNode);
         }
         return new XmlSectionOutputStream(fsNode, tempDirectory, sectionContext);

@@ -26,8 +26,12 @@ public class ArrDataString extends ArrData {
 
 	protected ArrDataString(ArrDataString src) {
 		super(src);
-		this.value = src.value;
+        copyValue(src);
 	}
+
+    private void copyValue(ArrDataString src) {
+        this.value = src.value;
+    }
 
     public String getValue() {
         return value;
@@ -51,5 +55,11 @@ public class ArrDataString extends ArrData {
     protected boolean isEqualValueInternal(ArrData srcData) {
         ArrDataString src = (ArrDataString)srcData;
         return value.equals(src.value);
+    }
+
+    @Override
+    public void mergeInternal(final ArrData srcData) {
+        ArrDataString src = (ArrDataString) srcData;
+        copyValue(src);
     }
 }

@@ -42,6 +42,7 @@ public abstract class ArrItem implements NodeCacheSerializable {
     public static final String DATA = "data";
     public static final String ITEM_SPEC = "itemSpec";
     public static final String ITEM_TYPE = "itemType";
+    public static final String POSITION = "position";
 
     @Id
     @GeneratedValue
@@ -89,6 +90,9 @@ public abstract class ArrItem implements NodeCacheSerializable {
 	@ManyToOne(fetch=FetchType.LAZY, targetEntity = ArrData.class)
     @JoinColumn(name = "dataId")
 	protected ArrData data;
+
+    @Column(name = "dataId", nullable = false, updatable = false, insertable = false)
+    private Integer dataId;
 
 	/**
 	 * Default constructor
@@ -258,6 +262,10 @@ public abstract class ArrItem implements NodeCacheSerializable {
     public abstract ArrNode getNode();
 
     public abstract ArrOutputDefinition getOutputDefinition();
+
+    public abstract ArrStructuredObject getStructuredObject();
+
+    public abstract Integer getStructuredObjectId();
 
     public void setCreateChangeId(final Integer createChangeId) {
         this.createChangeId = createChangeId;

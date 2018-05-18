@@ -7,20 +7,21 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.kie.api.runtime.StatelessKieSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
 
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.RulRule;
+import cz.tacr.elza.domain.RulArrangementRule;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.vo.NodeTypeOperation;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
 import cz.tacr.elza.drools.model.DescItem;
 import cz.tacr.elza.drools.model.DescItemChange;
 import cz.tacr.elza.drools.service.ScriptModelFactory;
+import cz.tacr.elza.service.RuleService;
 
 
 /**
@@ -39,6 +40,8 @@ public class ChangeImpactRules extends Rules {
     @Autowired
     private ResourcePathResolver resourcePathResolver;
 
+    @Autowired
+    private RuleService ruleService;
 
     /**
      * Spuštění zpracování pravidel.
@@ -61,11 +64,11 @@ public class ChangeImpactRules extends Rules {
 
         Set<RelatedNodeDirection> relatedNodeDirections = new HashSet<>();
 
-        List<RulRule> rulPackageRules = packageRulesRepository.findByRuleSetAndRuleTypeOrderByPriorityAsc(
-                rulRuleSet, RulRule.RuleType.CONFORMITY_IMPACT);
+        List<RulArrangementRule> rulArrangementRules = arrangementRuleRepository.findByRuleSetAndRuleTypeOrderByPriorityAsc(
+                rulRuleSet, RulArrangementRule.RuleType.CONFORMITY_IMPACT);
 
-        for (RulRule rulPackageRule : rulPackageRules) {
-            Path path = resourcePathResolver.getDroolFile(rulPackageRule);
+        for (RulArrangementRule rulArrangementRule : rulArrangementRules) {
+            Path path = resourcePathResolver.getDroolFile(rulArrangementRule);
 
             StatelessKieSession session = createNewStatelessKieSession(path);
 
@@ -74,6 +77,20 @@ public class ChangeImpactRules extends Rules {
 
             session.execute(facts);
         }
+
+        // TODO ELZA-1558: jak?
+        /*List<RulExtensionRule> rulExtensionRules = ruleService.findExtensionRuleByNode(level.getNode(), RulExtensionRule.RuleType.CONFORMITY_INFO);
+        for (RulExtensionRule rulExtensionRule : rulExtensionRules) {
+            path = Paths.get(rulesExecutor.getDroolsDir(rulExtensionRule.getPackage().getCode(), rulExtensionRule.getArrangementExtension().getRuleSet().getCode()) + File.separator + rulExtensionRule.getComponent().getFilename());
+
+            StatelessKieSession session = createNewStatelessKieSession(path);
+
+            // přidání globálních proměnných
+            session.setGlobal("results", relatedNodeDirections);
+
+            execute(session, facts);
+        }*/
+
         return relatedNodeDirections;
     }
 

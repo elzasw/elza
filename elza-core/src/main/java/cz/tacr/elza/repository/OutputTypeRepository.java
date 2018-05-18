@@ -22,7 +22,7 @@ public interface OutputTypeRepository extends ElzaJpaRepository<RulOutputType, I
 
     void deleteByRulPackage(RulPackage rulPackage);
 
-    RulOutputType findByCode(String packetTypeCode);
+    RulOutputType findByCode(String outputTypeCode);
 
     RulOutputType findOneByCode(String outputType);
 }

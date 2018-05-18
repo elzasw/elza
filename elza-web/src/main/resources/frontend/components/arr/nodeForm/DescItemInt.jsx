@@ -4,35 +4,31 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
+import {connect} from 'react-redux';
 import {AbstractReactComponent, i18n} from 'components/shared';
-import {connect} from 'react-redux'
+import {Checkbox} from 'react-bootstrap'
 import {normalizeInt} from 'components/validate.jsx'
 import {decorateValue} from './DescItemUtils.jsx'
 import DescItemLabel from './DescItemLabel.jsx'
 import ItemTooltipWrapper from "./ItemTooltipWrapper.jsx";
 
-var DescItemInt = class DescItemInt extends AbstractReactComponent {
-    constructor(props) {
-        super(props);
+class DescItemInt extends AbstractReactComponent {
 
-        this.bindMethods('handleChange', 'focus');
-    }
-
-    focus() {
+    focus = () => {
         this.refs.focusEl.focus()
-    }
+    };
 
-    handleChange(e) {
-        var newValue = normalizeInt(e.target.value);
+    handleChange = (e) => {
+        const newValue = normalizeInt(e.target.value);
 
         if (newValue != this.props.descItem.value) {
             this.props.onChange(newValue);
         }
-    }
+    };
 
     render() {
         const {descItem, locked, readMode, cal} = this.props;
-        let value = cal && descItem.value == null ? i18n("subNodeForm.descItemType.calculable") : descItem.value;
+        const value = cal && descItem.value == null ? i18n("subNodeForm.descItemType.calculable") : descItem.value;
 
         if (readMode) {
             return (
@@ -62,4 +58,4 @@ var DescItemInt = class DescItemInt extends AbstractReactComponent {
     }
 }
 
-export default connect(null, null, null, { withRef: true })(DescItemInt);
+export default connect(null, null, null, {withRef: true})(DescItemInt);

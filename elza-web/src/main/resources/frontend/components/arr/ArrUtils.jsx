@@ -435,14 +435,14 @@ export function hasDescItemTypeValue(dataType) {
         case 'DECIMAL':
         case 'PARTY_REF':
         case 'RECORD_REF':
-        case 'PACKET_REF':
+        case 'STRUCTURED':
         case 'JSON_TABLE':
         case 'FORMATTED_TEXT':
         case 'UNITDATE':
         case 'UNITID':
-            return true
+            return true;
         case 'ENUM':
-            return false
+            return false;
         default:
             console.error("Unsupported data type", dataType);
             return false;

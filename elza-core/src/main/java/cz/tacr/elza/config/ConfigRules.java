@@ -11,6 +11,7 @@ import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.packageimport.PackageService;
 import cz.tacr.elza.packageimport.xml.SettingTypeGroups;
+import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.repository.SettingsRepository;
 import cz.tacr.elza.service.event.CacheInvalidateEvent;
@@ -43,7 +44,7 @@ public class ConfigRules {
     private SettingsRepository settingsRepository;
 
     @Autowired
-    private PackageService packageService;
+    private ItemTypeRepository itemTypeRepository;
 
     @Autowired
     private RuleSetRepository ruleSetRepository;
@@ -71,7 +72,7 @@ public class ConfigRules {
         if (uiSettingsList!=null) {
             uiSettingsList.forEach(uiSettings -> {
                 RulRuleSet ruleSet = ruleSetRepository.findOne(uiSettings.getEntityId());
-                SettingTypeGroups ruleSettings = (SettingTypeGroups) packageService.convertSetting(uiSettings, ruleSet);
+                SettingTypeGroups ruleSettings = (SettingTypeGroups) PackageService.convertSetting(uiSettings, itemTypeRepository);
                 RuleConfiguration ruleConfig = new RuleConfiguration(ruleSettings);
                 ruleConfigs.put(ruleSet.getCode(), ruleConfig);
             });

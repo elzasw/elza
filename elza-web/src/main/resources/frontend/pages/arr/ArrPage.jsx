@@ -2,14 +2,14 @@
  * Stránka archivních pomůcek.
  */
 
-require('./ArrPage.less');
+import {setVisiblePolicyReceive} from "../../actions/arr/visiblePolicy";
+
+import './ArrPage.less';
 
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {indexById} from 'stores/app/utils.jsx'
 import {connect} from 'react-redux'
-import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
-import {Link, IndexLink} from 'react-router';
 import {
     RibbonGroup,
     AbstractReactComponent,
@@ -22,7 +22,6 @@ import {
     i18n,
     Utils
 } from 'components/shared';
-import * as types from 'actions/constants/ActionTypes.js';
 
 import ArrParentPage from "./ArrParentPage.jsx";
 
@@ -36,16 +35,13 @@ import {
     FundFiles,
     FundTreeMain
 } from 'components/index.jsx';
-import {ButtonGroup, Button, DropdownButton, MenuItem, Collapse} from 'react-bootstrap';
-import PageLayout from "../shared/layout/PageLayout";
+import {Button} from 'react-bootstrap';
 import {WebApi} from 'actions/index.jsx';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {showRegisterJp, showDaosJp, fundsFetchIfNeeded} from 'actions/arr/fund.jsx'
 import {fundExtendedView} from 'actions/arr/fundExtended.jsx'
 import {versionValidate, versionValidationErrorNext, versionValidationErrorPrevious} from 'actions/arr/versionValidation.jsx'
-import {packetsFetchIfNeeded} from 'actions/arr/packets.jsx'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
-import {packetTypesFetchIfNeeded} from 'actions/refTables/packetTypes.jsx'
 import {developerNodeScenariosRequest} from 'actions/global/developer.jsx'
 import {isFundRootId, getSettings, setSettings, getOneSettings} from 'components/arr/ArrUtils.jsx';
 import {setFocus} from 'actions/global/focus.jsx'
@@ -67,10 +63,18 @@ import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx'
 import {getMapFromList} from 'stores/app/utils.jsx'
 import {PropTypes} from 'prop-types';
 import defaultKeymap from './ArrPageKeymap.jsx';
+import NodeSettingsForm from "../../components/arr/NodeSettingsForm";
+import {FOCUS_KEYS} from "../../constants";
+import ArrStructurePanel from "../../components/arr/ArrStructurePanel";
+import {structureTypesFetchIfNeeded} from "../../actions/refTables/structureTypes";
+import objectById from "../../shared/utils/objectById";
 
-var keyModifier = Utils.getKeyModifier()
+const keyModifier = Utils.getKeyModifier();
 
 class ArrPage extends ArrParentPage {
+
+    static TAB_KEY = 'arr-as';
+
     static contextTypes = { shortcuts: PropTypes.object };
     static childContextTypes = { shortcuts: PropTypes.object.isRequired };
     getChildContext() {
@@ -83,7 +87,6 @@ class ArrPage extends ArrParentPage {
         rulDataTypes: React.PropTypes.object.isRequired,
         calendarTypes: React.PropTypes.object.isRequired,
         descItemTypes: React.PropTypes.object.isRequired,
-        packetTypes: React.PropTypes.object.isRequired,
         focus: React.PropTypes.object.isRequired,
         userDetail: React.PropTypes.object.isRequired,
         ruleSet: React.PropTypes.object.isRequired,
@@ -92,7 +95,7 @@ class ArrPage extends ArrParentPage {
     state = {
         developerExpandedSpecsIds: {},
         fundNodesError: null,
-        tabs: null
+        tabs: null,
     };
 
     constructor(props) {
@@ -101,14 +104,14 @@ class ArrPage extends ArrParentPage {
             'handleSelectVisiblePoliciesNode', 'handleShowVisiblePolicies',
             'handleShortcuts', 'renderFundErrors', 'renderFundVisiblePolicies', 'handleSetVisiblePolicy',
             'renderPanel', 'renderDeveloperDescItems', 'handleShowHideSpecs', 'handleTabSelect', 'handleSelectErrorNode',
-            'renderFundPackets', 'handleErrorPrevious', 'handleErrorNext', 'trySetFocus', 'handleOpenFundActionForm',
+            'handleErrorPrevious', 'handleErrorNext', 'trySetFocus', 'handleOpenFundActionForm',
             'handleChangeFundSettingsSubmit',
             "handleSetExtendedView"
         );
     }
     componentDidMount() {
         super.componentDidMount();
-        this.trySetFocus(this.props)
+        this.trySetFocus(this.props);
     }
     componentWillMount(){
         this.registerTabs(this.props);
@@ -118,15 +121,15 @@ class ArrPage extends ArrParentPage {
 
     componentWillReceiveProps(nextProps) {
         super.componentWillReceiveProps(nextProps);
-        const {tab} = this.props;
-        let selected = tab.values['arr-as'];
-        var activeFund = this.getActiveFund(nextProps);
+        const {selectedTabKey} = this.props;
+        const activeFund = this.getActiveFund(nextProps);
         if (activeFund !== null) {
-            if (selected === 'visiblePolicies') {
-                this.dispatch(fundNodesPolicyFetchIfNeeded(activeFund.versionId));
+            this.props.dispatch(structureTypesFetchIfNeeded(activeFund.versionId));
+            if (selectedTabKey === 'visiblePolicies') {
+                this.props.dispatch(fundNodesPolicyFetchIfNeeded(activeFund.versionId));
             }
             if (nextProps.developer.enabled) {
-                var node;
+                let node;
                 if (activeFund.nodes && activeFund.nodes.activeIndex !== null) {
                     node = activeFund.nodes.nodes[activeFund.nodes.activeIndex]
                 }
@@ -137,7 +140,7 @@ class ArrPage extends ArrParentPage {
                     node.subNodeForm.data !== null && !node.developerScenarios.isFetching &&
                     node.developerScenarios.isDirty
                 ) {
-                    this.dispatch(developerNodeScenariosRequest({
+                    this.props.dispatch(developerNodeScenariosRequest({
                         id: node.selectedSubNodeId,
                         key: node.routingKey,
                         version: node.subNodeForm.data.parent.version
@@ -152,9 +155,9 @@ class ArrPage extends ArrParentPage {
                 }
             }
             if(activeFund.nodes.activeIndex === null && activeFund.fundTree.nodes[0]){
-                var node = activeFund.fundTree.nodes[0];
-                var parentNode = createFundRoot(activeFund);
-                this.dispatch(fundSelectSubNode(activeFund.versionId, node.id, parentNode, false, null, true));
+                const node = activeFund.fundTree.nodes[0];
+                const parentNode = createFundRoot(activeFund);
+                this.props.dispatch(fundSelectSubNode(activeFund.versionId, node.id, parentNode, false, null, true));
             }
         } else {
             this.setState({fundNodesError: null});
@@ -170,7 +173,7 @@ class ArrPage extends ArrParentPage {
                 }
             })
         }
-    }
+    };
     refFocus = (ref) => {
         if(this.refs[ref]){
              this.setState({}, () => {
@@ -178,12 +181,12 @@ class ArrPage extends ArrParentPage {
                 focusWasSet();
             })
         }
-    }
+    };
     trySetFocus(props) {
-        var {focus, tab} = props
+        const {focus, selectedTabKey} = props;
         if (this.state.tabs !== null && canSetFocus()) {
-            if (isFocusFor(focus, 'arr', 3)) {
-                let selectedTab = this.state.tabs[tab.values['arr-as']];
+            if (isFocusFor(focus, FOCUS_KEYS.ARR, 3)) {
+                let selectedTab = this.state.tabs[selectedTabKey];
                 if(!selectedTab.focus && !selectedTab.ref){ //Pokud tab nemá zadánu funkci pro focus ani ref
                     focusWasSet();
                 } else if (!selectedTab.focus){ //Pokud tab nemá zadánu funkci pro focus
@@ -195,26 +198,22 @@ class ArrPage extends ArrParentPage {
         }
     }
 
-    requestValidationData(isDirty, isFetching, versionId) {
-        isDirty && !isFetching && this.dispatch(versionValidate(versionId, false))
-    }
-
     handleShortcuts(action, e) {
         console.log("#handleShortcuts ArrPage", '[' + action + ']', this);
         e.preventDefault();
         switch (action) {
             case 'registerJp':
-                this.handleRegisterJp()
-                break
+                this.handleRegisterJp();
+                break;
             case 'area1':
-                this.dispatch(setFocus('arr', 1))
-                break
+                this.props.dispatch(setFocus(FOCUS_KEYS.ARR, 1));
+                break;
             case 'area2':
-                this.dispatch(setFocus('arr', 2))
-                break
+                this.props.dispatch(setFocus(FOCUS_KEYS.ARR, 2));
+                break;
             case 'area3':
-                this.dispatch(setFocus('arr', 3))
-                break
+                this.props.dispatch(setFocus(FOCUS_KEYS.ARR, 3));
+                break;
             default:
                 super.handleShortcuts(action, e);
         }
@@ -224,19 +223,18 @@ class ArrPage extends ArrParentPage {
      * Načtení informačního objektu o aktuálním zobrazení sekce archvní pomůcky.
      * @return {Object} informace o aktuálním zobrazení sekce archvní pomůcky
      */
-    getActiveInfo(from = this.props.arrRegion) {
-        var arrRegion = from;
-        var activeFund = null;
-        var activeNode = null;
-        var activeSubNode = null;
+    getActiveInfo(arrRegion = this.props.arrRegion) {
+        let activeFund = null;
+        let activeNode = null;
+        let activeSubNode = null;
         if (arrRegion.activeIndex != null) {
             activeFund = arrRegion.funds[arrRegion.activeIndex];
             if (activeFund.nodes.activeIndex != null) {
                 activeNode = activeFund.nodes.nodes[activeFund.nodes.activeIndex];
                 if (activeNode.selectedSubNodeId != null) {
-                    var i = indexById(activeNode.childNodes, activeNode.selectedSubNodeId);
-                    if (i != null) {
-                        activeSubNode = activeNode.childNodes[i];
+                    const index = indexById(activeNode.childNodes, activeNode.selectedSubNodeId);
+                    if (index !== null) {
+                        activeSubNode = activeNode.childNodes[index];
                     }
                 }
             }
@@ -252,20 +250,20 @@ class ArrPage extends ArrParentPage {
      * Zobrazení skrytí digitálních entit.
      */
     handleToggleDaos = () => {
-        this.dispatch(showDaosJp(!this.props.arrRegion.showDaosJp));
-    }
+        this.props.dispatch(showDaosJp(!this.props.arrRegion.showDaosJp));
+    };
 
     /**
      * Zobrazení / skrytí záznamů u JP o rejstřících.
      */
     handleRegisterJp() {
-        this.dispatch(showRegisterJp(!this.props.arrRegion.showRegisterJp));
+        this.props.dispatch(showRegisterJp(!this.props.arrRegion.showRegisterJp));
     }
 
     handleOpenFundActionForm(versionId, subNode) {
-        this.dispatch(fundActionFormChange(versionId, {nodes: [subNode]}));
-        this.dispatch(fundActionFormShow(versionId));
-        this.dispatch(routerNavigate('/arr/actions'));
+        this.props.dispatch(fundActionFormChange(versionId, {nodes: [subNode]}));
+        this.props.dispatch(fundActionFormShow(versionId));
+        this.props.dispatch(routerNavigate('/arr/actions'));
     }
     /**
      *   getTabs
@@ -274,43 +272,44 @@ class ArrPage extends ArrParentPage {
      *   @param tabs {Object} - Objekt obsahující vlastnosti záložek
      *   @param settingsValues {Object} - objekt s nastavením
      *   @param selectedTab {String} - id/key záložky
-     *   @param ignoreSettings {Bool} - určuje, zda se bere v potaz nastavení. Při použití false vypíše všechny možné hodnoty splňující podmínku záložky.(určeno pro změnu nastavení)
+     *   @param ignoreSettings {Boolean} - určuje, zda se bere v potaz nastavení. Při použití false vypíše všechny možné hodnoty splňující podmínku záložky.(určeno pro změnu nastavení)
      */
-    getTabs = (tabs,settingsValues,selectedTab = null,ignoreSettings = false) => {
-        var items = [];
-        for(var tab in tabs){
-            var tabCondition = typeof tabs[tab].condition === "undefined" || tabs[tab].condition; //Pokud podmínka není definována nebo je splněna
-            var tabSettings = ignoreSettings || settingsValues === null || settingsValues[tabs[tab].id]; //Pokud se má nastavení ignorovat, neexistuje nebo je záložka zapnuta
-            var showTabCondition = typeof tabs[tab].showCondition === "undefined" || tabs[tab].showCondition || ignoreSettings; //Pokud podmínka pro zobrazení není definována, je splněna, nebo se má ignorovat nastavení
+    getTabs = (tabs, settingsValues, selectedTab = null, ignoreSettings = false) => {
+        const items = [];
+        for(let tab in tabs){
+            const tabCondition = typeof tabs[tab].condition === "undefined" || tabs[tab].condition; //Pokud podmínka není definována nebo je splněna
+            const tabSettings = ignoreSettings || settingsValues === null || settingsValues[tabs[tab].id]; //Pokud se má nastavení ignorovat, neexistuje nebo je záložka zapnuta
+            const showTabCondition = typeof tabs[tab].showCondition === "undefined" || tabs[tab].showCondition || ignoreSettings; //Pokud podmínka pro zobrazení není definována, je splněna, nebo se má ignorovat nastavení
 
-            if(tabSettings && tabCondition){
-                if(showTabCondition){
-                        var checked = settingsValues && settingsValues[tab] !== undefined ? settingsValues[tab] : true;
-                        tabs[tab].checked = checked;
+            if (tabSettings && tabCondition) {
+                if (showTabCondition) {
+                        tabs[tab].checked = settingsValues && settingsValues[tab] !== undefined ? settingsValues[tab] : true;
                         items.push(tabs[tab]);
                         selectedTab = this.selectIfNull(selectedTab, tabs[tab].id);
                 }
             }
         }
         return {items: items,selectedTab: selectedTab};
-    }
+    };
+
     handleChangeFundSettings() {
         const {userDetail} = this.props;
-        var activeInfo = this.getActiveInfo();
+        const activeInfo = this.getActiveInfo();
 
         let fundId = activeInfo.activeFund.id;
 
-        var settings = getOneSettings(userDetail.settings, 'FUND_RIGHT_PANEL', 'FUND', fundId);
-        var dataRight = settings.value ? JSON.parse(settings.value) : null;
-        var settings = getOneSettings(userDetail.settings, 'FUND_CENTER_PANEL', 'FUND', fundId);
-        var dataCenter = settings.value ? JSON.parse(settings.value) : null;
+        let settings = getOneSettings(userDetail.settings, 'FUND_RIGHT_PANEL', 'FUND', fundId);
+        const dataRight = settings.value ? JSON.parse(settings.value) : null;
 
-        var settings = getOneSettings(userDetail.settings, 'FUND_STRICT_MODE', 'FUND', fundId);
-        var dataStrictMode = settings.value ? settings.value === 'true' : null;
+        settings = getOneSettings(userDetail.settings, 'FUND_CENTER_PANEL', 'FUND', fundId);
+        const dataCenter = settings.value ? JSON.parse(settings.value) : null;
 
-        var tabsArray = this.getTabs(this.state.tabs,dataRight,null,true).items;
+        settings = getOneSettings(userDetail.settings, 'FUND_STRICT_MODE', 'FUND', fundId);
+        const dataStrictMode = settings.value ? settings.value === 'true' : null;
 
-        var init = {
+        const tabsArray = this.getTabs(this.state.tabs, dataRight, null, true).items;
+
+        const init = {
             rightPanel: {
                 tabs: tabsArray
             },
@@ -341,30 +340,30 @@ class ArrPage extends ArrParentPage {
                     value: dataStrictMode},
         };
 
-        var form = <FundSettingsForm initialValues={init} onSubmitForm={this.handleChangeFundSettingsSubmit} />;
-        this.dispatch(modalDialogShow(this, i18n('arr.fund.settings.title'), form));
+        const form = <FundSettingsForm initialValues={init} onSubmitForm={this.handleChangeFundSettingsSubmit} />;
+        this.props.dispatch(modalDialogShow(this, i18n('arr.fund.settings.title'), form));
     }
 
     handleChangeFundSettingsSubmit(data) {
         const {userDetail} = this.props;
-        var activeInfo = this.getActiveInfo();
+        const activeInfo = this.getActiveInfo();
         const fundVersionId = activeInfo.activeFund.versionId;
         const node = activeInfo.activeNode;
         let fundId = activeInfo.activeFund.id;
 
-        var settings = userDetail.settings;
+        let settings = userDetail.settings;
 
         // right panel settings
-        var rightPanelItem = getOneSettings(settings, 'FUND_RIGHT_PANEL', 'FUND', fundId);
-        var value = {};
-        data.rightPanel.tabs.map((item) => {value[item.key] = item.checked;});
+        const rightPanelItem = getOneSettings(settings, 'FUND_RIGHT_PANEL', 'FUND', fundId);
+        let value = {};
+        data.rightPanel.tabs.forEach(item => {value[item.key] = item.checked;});
         rightPanelItem.value = JSON.stringify(value);
         settings = setSettings(settings, rightPanelItem.id, rightPanelItem);
 
         // center panel settings
-        var centerPanelItem = getOneSettings(settings, 'FUND_CENTER_PANEL', 'FUND', fundId);
-        var value = {};
-        data.centerPanel.panels.map((item) => {value[item.key] = item.checked;});
+        const centerPanelItem = getOneSettings(settings, 'FUND_CENTER_PANEL', 'FUND', fundId);
+        value = {};
+        data.centerPanel.panels.forEach(item => {value[item.key] = item.checked;});
         centerPanelItem.value = JSON.stringify(value);
         settings = setSettings(settings, centerPanelItem.id, centerPanelItem);
 
@@ -373,7 +372,7 @@ class ArrPage extends ArrParentPage {
         strictMode.value = data.strictMode.value === "" ? null : data.strictMode.value;
         settings = setSettings(settings, strictMode.id, strictMode);
 
-        return this.dispatch(userDetailsSaveSettings(settings)).then((response)=>{
+        return this.props.dispatch(userDetailsSaveSettings(settings)).then((response)=>{
             // invalidates node info after the settings have been saved,
             // to load new node info data (mainly for reloading node parents).
             this.dispatch(fundNodeInfoInvalidate(fundVersionId, node.id, node.routingKey));
@@ -383,24 +382,25 @@ class ArrPage extends ArrParentPage {
     /**
      * Zobrazení formuláře historie.
      * @param versionId verze AS
+     * @param locked
      */
     handleShowFundHistory = (versionId, locked) => {
         const form = <ArrHistoryForm
             versionId={versionId}
             locked={locked}
             onDeleteChanges={this.handleDeleteChanges}
-        />
-        this.dispatch(modalDialogShow(this, i18n('arr.history.title'), form, "dialog-lg"));
-    }
+        />;
+        this.props.dispatch(modalDialogShow(this, i18n('arr.history.title'), form, "dialog-lg"));
+    };
 
     handleDeleteChanges = (nodeId, fromChangeId, toChangeId) => {
         const activeFund = this.getActiveFund(this.props);
         const versionId = activeFund.versionId;
         WebApi.revertChanges(versionId, nodeId, fromChangeId, toChangeId)
             .then(() => {
-                this.dispatch(modalDialogHide());
+                this.props.dispatch(modalDialogHide());
             });
-    }
+    };
 
     /**
      * Sestavení Ribbonu.
@@ -409,28 +409,28 @@ class ArrPage extends ArrParentPage {
     buildRibbon(readMode, closed) {
         const {arrRegion, userDetail} = this.props;
 
-        var activeInfo = this.getActiveInfo();
+        const activeInfo = this.getActiveInfo();
 
-        var altActions = [];
+        const altActions = [];
 
-        var itemActions = [];
+        const itemActions = [];
 
         altActions.push(
             <Button active={this.props.arrRegion.showRegisterJp} onClick={this.handleRegisterJp} key="toggle-record-jp">
                 <Icon glyph="fa-th-list"/>
                 <span className="btnText">{i18n('ribbon.action.arr.show-register-jp')}</span>
             </Button>
-        )
+        );
         altActions.push(
             <Button active={this.props.arrRegion.showDaosJp} onClick={this.handleToggleDaos} key="toggle-daos-jp">
                 <Icon glyph="fa-th-list"/>
                 <span className="btnText">{i18n('ribbon.action.arr.show-daos')}</span>
             </Button>
-        )
+        );
 
-        var indexFund = arrRegion.activeIndex;
+        const indexFund = arrRegion.activeIndex;
         if (indexFund !== null) {
-            var activeFund = arrRegion.funds[indexFund];
+            const activeFund = arrRegion.funds[indexFund];
 
             altActions.push(
                 <Button key="fund-settings" onClick={this.handleChangeFundSettings.bind(this)}>
@@ -450,10 +450,9 @@ class ArrPage extends ArrParentPage {
                 )
             }
 
-            var nodeIndex = activeFund.nodes.activeIndex;
+            const nodeIndex = activeFund.nodes.activeIndex;
             if (nodeIndex !== null) {
-                var activeNode = activeFund.nodes.nodes[nodeIndex];
-                const activeNodeObj = getMapFromList(activeNode.childNodes)[activeNode.selectedSubNodeId];
+                const activeNode = activeFund.nodes.nodes[nodeIndex];
 
                 if (activeNode.selectedSubNodeId !== null) {
                     itemActions.push(
@@ -477,12 +476,12 @@ class ArrPage extends ArrParentPage {
                 }
             }
         }
-        var altSection;
+        let altSection;
         if (altActions.length > 0) {
             altSection = <RibbonGroup key="alt" className="small">{altActions}</RibbonGroup>
         }
 
-        var itemSection;
+        let itemSection;
         if (itemActions.length > 0) {
             itemSection = <RibbonGroup key="item" className="small">{itemActions}</RibbonGroup>
         }
@@ -493,26 +492,26 @@ class ArrPage extends ArrParentPage {
     }
 
     handleErrorNext(versionId, nodeId) {
-        this.dispatch(versionValidationErrorNext(versionId, nodeId));
+        this.props.dispatch(versionValidationErrorNext(versionId, nodeId));
     }
 
     handleErrorPrevious(versionId, nodeId) {
-        this.dispatch(versionValidationErrorPrevious(versionId, nodeId));
+        this.props.dispatch(versionValidationErrorPrevious(versionId, nodeId));
     }
 
     handleShowHideSpecs(descItemTypeId) {
         if (this.state.developerExpandedSpecsIds[descItemTypeId]) {
-            delete this.state.developerExpandedSpecsIds[descItemTypeId]
+            delete this.state.developerExpandedSpecsIds[descItemTypeId];
             this.setState({developerExpandedSpecsIds: this.state.developerExpandedSpecsIds})
         } else {
-            this.state.developerExpandedSpecsIds[descItemTypeId] = true
+            this.state.developerExpandedSpecsIds[descItemTypeId] = true;
             this.setState({developerExpandedSpecsIds: this.state.developerExpandedSpecsIds})
         }
     }
 
     renderFundErrors(activeFund) {
-        var activeNode = null;
-        if (activeFund.nodes.activeIndex != null) {
+        let activeNode = null;
+        if (activeFund.nodes.activeIndex !== null) {
             activeNode = activeFund.nodes.nodes[activeFund.nodes.activeIndex];
         }
 
@@ -523,7 +522,7 @@ class ArrPage extends ArrParentPage {
                     getItems={(fromIndex, toIndex) => {
                                 return WebApi.getValidationItems(activeFund.versionId, fromIndex, toIndex)
                             }}
-                    renderItemContent={(item) => item !== null ? <div>{item.name}</div> : '...'}
+                    renderItemContent={(props) => props.item !== null ? <div>{props.item.name}</div> : '...'}
                     selectedItem={activeNode ? activeNode.selectedSubNodeId : null}
                     itemHeight={25} // nutne dat stejne cislo i do css jako .pokusny-listbox-container .listbox-item { height: 24px; }
                     onSelect={this.handleSelectErrorNode.bind(this, activeFund)}
@@ -533,46 +532,59 @@ class ArrPage extends ArrParentPage {
     }
 
     handleSelectErrorNode(activeFund, node) {
-        if (node.parentNode == null) {
+        if (node.parentNode === null) {
             node.parentNode = createFundRoot(activeFund);
         }
-        this.dispatch(fundSelectSubNode(activeFund.versionId, node.id, node.parentNode));
+        this.props.dispatch(fundSelectSubNode(activeFund.versionId, node.id, node.parentNode));
     }
 
     handleSelectVisiblePoliciesNode(activeFund, node) {
         if (node.parentNode == null) {
             node.parentNode = createFundRoot(activeFund);
         }
-        this.dispatch(fundSelectSubNode(activeFund.versionId, node.id, node.parentNode));
+        this.props.dispatch(fundSelectSubNode(activeFund.versionId, node.id, node.parentNode));
     }
 
     handleShowVisiblePolicies(activeFund) {
-        var node;
+        let node;
         if (activeFund.nodes && activeFund.nodes.activeIndex !== null) {
             node = activeFund.nodes.nodes[activeFund.nodes.activeIndex]
         }
         if (!node) {
             return;
         }
-        var form = <VisiblePolicyForm nodeId={node.selectedSubNodeId} fundVersionId={activeFund.versionId} onSubmitForm={this.handleSetVisiblePolicy.bind(this, node, activeFund.versionId)} />;
-        this.dispatch(modalDialogShow(this, i18n('visiblePolicy.form.title'), form));
+        const form = <NodeSettingsForm nodeId={node.selectedSubNodeId} fundVersionId={activeFund.versionId}
+                                 onSubmitForm={this.handleSetVisiblePolicy}
+                                 onSubmitSuccess={() => this.props.dispatch(modalDialogHide())}
+        />;
+        this.props.dispatch(modalDialogShow(this, i18n('visiblePolicy.form.title'), form));
     }
 
-    handleSetVisiblePolicy(node, versionId, data) {
-        var mapIds = {};
-        data.records.forEach((val, index) => {
-            mapIds[parseInt(val.id)] = val.checked;
+    handleSetVisiblePolicy(data) {
+        const {node, versionId, dispatch} = this.props;
+        const mapIds = {};
+        const {records, rules, nodeExtensions, ...others} = data;
+        if (rules !== NodeSettingsForm.VIEW_POLICY_STATE.PARENT) {
+            records.forEach((val, index) => {
+                mapIds[parseInt(val.id)] = val.checked;
+            });
+        }
+
+        const nodeExtensionsIds = Object.values(nodeExtensions).filter(i => i.checked).map(i => i.id);
+
+
+        return WebApi.setVisiblePolicy(node.selectedSubNodeId, versionId, mapIds, false, nodeExtensionsIds).then(() => {
+            dispatch(setVisiblePolicyReceive(node.selectedSubNodeId, versionId));
         });
-        return this.dispatch(setVisiblePolicyRequest(node.selectedSubNodeId, versionId, mapIds));
     }
 
     renderFundVisiblePolicies(activeFund) {
-        var nodesPolicy = activeFund.fundNodesPolicy;
+        const nodesPolicy = activeFund.fundNodesPolicy;
 
         if (!nodesPolicy.fetched) {
             return <Loading />
         }
-        var activeNode = null;
+        let activeNode = null;
         if (activeFund.nodes.activeIndex != null) {
             activeNode = activeFund.nodes.nodes[activeFund.nodes.activeIndex];
         }
@@ -587,7 +599,7 @@ class ArrPage extends ArrParentPage {
                     ref="fundVisiblePolicies"
                     items={nodesPolicy.items}
                     selectedItem={activeNode !== null ? activeNode.selectedSubNodeId : null}
-                    renderItemContent={(node, isActive) => <div>{node.name}</div>}
+                    renderItemContent={(props) => <div>{props.node.name}</div>}
                     onSelect={this.handleSelectVisiblePoliciesNode.bind(this, activeFund)}
                     /*onDoubleClick={this.handleShowVisiblePolicies.bind(this, activeFund)}*/
                 />
@@ -596,24 +608,23 @@ class ArrPage extends ArrParentPage {
     }
 
     renderDeveloperDescItems(activeFund, node) {
-        var rows = []
-        if(!node){
+        const rows = [];
+        if (!node) {
             return <div className='developer-panel'>
                 Je potřeba vybrat jednotku popisu.
             </div>
-        }
-        else if(node.subNodeForm.fetched) {
+        } else if(node.subNodeForm.fetched) {
             node.subNodeForm.infoGroups.forEach(group => {
-                var types = []
+                const types = [];
                 group.types.forEach(type => {
-                    var infoType = node.subNodeForm.infoTypesMap[type.id]
-                    var refType = node.subNodeForm.refTypesMap[type.id]
+                    const infoType = node.subNodeForm.infoTypesMap[type.id];
+                    const refType = node.subNodeForm.refTypesMap[type.id];
 
-                    var specs;
+                    let specs;
                     if (refType.useSpecification && this.state.developerExpandedSpecsIds[refType.id]) {
                         if (refType.descItemSpecs.length > 0) {
                             specs = refType.descItemSpecs.map(spec => {
-                                var infoSpec = infoType.specs[indexById(infoType.specs, spec.id)]
+                                const infoSpec = infoType.specs[indexById(infoType.specs, spec.id)];
 
                                 return (
                                     <div key={'spec' + spec.id} className={'desc-item-spec ' +  infoSpec.type}>
@@ -650,7 +661,7 @@ class ArrPage extends ArrParentPage {
                             {specs}
                         </div>
                     )
-                })
+                });
 
                 rows.push(
                     <div key={'group' + group.code}>
@@ -667,7 +678,7 @@ class ArrPage extends ArrParentPage {
     }
 
     renderDeveloperScenarios(activeFund, node) {
-        if(!node){
+        if (!node) {
             return <div className='developer-panel'>
                 Je potřeba vybrat jednotku popisu.
             </div>
@@ -678,8 +689,8 @@ class ArrPage extends ArrParentPage {
 
         let isRootNode = isFundRootId(node.id);
 
-        var rows = [];
-        for (var key in node.developerScenarios.data) {
+        const rows = [];
+        for (let key in node.developerScenarios.data) {
             if (!node.developerScenarios.data.hasOwnProperty(key)
                 || (isRootNode && (key === 'after' || key === 'before'))) {
                 continue;
@@ -734,9 +745,7 @@ class ArrPage extends ArrParentPage {
     }
 
     handleTabSelect(item) {
-        const {arrRegion, tab} = this.props;
-
-        this.dispatch(selectTab('arr-as', item.id));
+        this.props.dispatch(selectTab(ArrPage.TAB_KEY, item.id));
         if (item.update) {  //Pokud má záložka definovánu funkci update(), pak se tato funkce zavolá.
             item.update();
         }
@@ -755,24 +764,8 @@ class ArrPage extends ArrParentPage {
         } else{
             return selectedTab;
         }
-    }
-    /**
-    *   checkTabEnabled
-    *   Zjišťuje, zda je vybraná záložka povolená. Pokud ano, vrátí jí zpátky, pokud ne, vrátí null.
-    *
-    *   @param selectedTab {String} - id/key záložky
-    *   @param settingsValues {Object}- hodnoty nastavení
-    */
-    checkTabEnabled = (selectedTab, settingsValues) => {
-        if(selectedTab){
-            if(settingsValues){
-                if(!settingsValues[selectedTab]){
-                    return null;
-                }
-            }
-        }
-        return selectedTab;
-    }
+    };
+
     /**
     *   registerTabs
     *   Funkce pro definici záložek pravého panelu. Záložky se uloží do state.
@@ -780,14 +773,33 @@ class ArrPage extends ArrParentPage {
     *   @param props {Object}
     */
     registerTabs = (props) => {
-        const {developer, arrRegion, userDetail} = props;
-        var activeFund = arrRegion.activeIndex != null ? arrRegion.funds[arrRegion.activeIndex] : null;
-        var node;
+        const {developer, arrRegion, userDetail, structureTypes} = props;
+        const activeFund = arrRegion.activeIndex != null ? arrRegion.funds[arrRegion.activeIndex] : null;
+        let node;
         if (!activeFund) {
             return;
         }
         if (activeFund.nodes && activeFund.nodes.activeIndex !== null) {
             node = activeFund.nodes.nodes[activeFund.nodes.activeIndex];
+        }
+
+        const settings = getOneSettings(userDetail.settings, 'FUND_READ_MODE', 'FUND', activeFund.id);
+        const readMode = settings.value != 'false';
+
+        const structureTabs = {};
+        if (structureTypes && structureTypes.data) {
+            const STRUCTURE_TAB_PREFIX_KEY = "structure-tab-";
+            structureTypes.data.forEach(i => {
+                const tabKey = STRUCTURE_TAB_PREFIX_KEY + i.id + "-" + i.code;
+                structureTabs[tabKey] = {
+                    id:tabKey,
+                    key:tabKey,
+                    name: i.name,
+                    ref:tabKey,
+                    render: () => <ArrStructurePanel {...i} key={tabKey} ref={tabKey} readMode={readMode} fundId={activeFund.id} fundVersionId={activeFund.versionId} />,
+                    focus: () => this.wrappedFocus(tabKey),
+                }
+            });
         }
         /**
          *  Vlastnosti objektu záložky
@@ -802,17 +814,8 @@ class ArrPage extends ArrParentPage {
          *  @prop condition {Bool} podmínka, která určuje jestli se záložka vykreslí
          *
          */
-        var tabs = {
-                    "packets":{
-                        id: "packets",
-                        key: "packets",
-                        name: i18n('arr.panel.title.packets'),
-                        ref: "fundPackets",
-                        render:() => this.renderFundPackets(activeFund),
-                        focus: () => this.wrappedFocus("fundPackets"),
-                        condition: userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId: activeFund.id}),
-                        permissionRestrictions: []
-                    },
+        const tabs = {
+                    ...structureTabs,
                     "files":{
                         id: "files" ,
                         key: "files" ,
@@ -835,7 +838,7 @@ class ArrPage extends ArrParentPage {
                         ref: "fundVisiblePolicies",
                         name: i18n('arr.panel.title.visiblePolicies'),
                         render:() => this.renderFundVisiblePolicies(activeFund),
-                        update:() => this.dispatch(fundNodesPolicyFetchIfNeeded(activeFund.versionId))
+                        update:() => this.props.dispatch(fundNodesPolicyFetchIfNeeded(activeFund.versionId))
                     },
                     "descItems":{
                         id: "descItems" ,
@@ -843,7 +846,7 @@ class ArrPage extends ArrParentPage {
                         name: i18n('developer.title.descItems'),
                         render:() => this.renderDeveloperDescItems(activeFund, node),
                         condition: developer.enabled,
-                        showCondition: node ? true : false
+                        showCondition: !!node
                     },
                     "scenarios":{
                         id: "scenarios" ,
@@ -851,38 +854,42 @@ class ArrPage extends ArrParentPage {
                         name: i18n('developer.title.scenarios'),
                         render:() => this.renderDeveloperScenarios(activeFund, node),
                         condition: developer.enabled,
-                        showCondition: node ? true : false
+                        showCondition: !!node
                     }
         };
-        this.setState({tabs:tabs});
-    }
+        this.setState({tabs});
+    };
 
 
     renderPanel() {
-        const {arrRegion, userDetail, tab} = this.props;
+        const {arrRegion, userDetail, selectedTabKey} = this.props;
 
-        var activeFund = arrRegion.activeIndex != null ? arrRegion.funds[arrRegion.activeIndex] : null;
+        const activeFund = arrRegion.activeIndex != null ? arrRegion.funds[arrRegion.activeIndex] : null;
 
-        var settings = getOneSettings(userDetail.settings, 'FUND_RIGHT_PANEL', 'FUND', activeFund.id);
-        var centerSettings = getOneSettings(userDetail.settings, 'FUND_CENTER_PANEL', 'FUND', activeFund.id);
-        var settingsValues = settings.value ? JSON.parse(settings.value) : null;
-        var centerSettingsValues = centerSettings.value ? JSON.parse(centerSettings.value) : null;
-        var selectedTab =  this.checkTabEnabled(tab.values['arr-as'], settingsValues);
+        const settings = getOneSettings(userDetail.settings, 'FUND_RIGHT_PANEL', 'FUND', activeFund.id);
+        const centerSettings = getOneSettings(userDetail.settings, 'FUND_CENTER_PANEL', 'FUND', activeFund.id);
+        const settingsValues = settings.value ? JSON.parse(settings.value) : null;
+        const centerSettingsValues = centerSettings.value ? JSON.parse(centerSettings.value) : null;
 
-        var tabsObject = this.state.tabs;
-        var tabs = this.getTabs(tabsObject,settingsValues,selectedTab);
-        var tabsItems = tabs.items;
+        let selectedTab = selectedTabKey;
+        // Zjišťuje, zda je vybraná záložka povolená. Pokud ano, vrátí jí zpátky, pokud ne, vrátí null.
+        if (selectedTab && settingsValues && !settingsValues[selectedTab]) {
+            selectedTab = null;
+        }
+        // Získání tabů a aktivního tabu... --- mělo by být řešeno přes componentDidMount a dispatch do store - ale není
+        const tabs = this.getTabs(this.state.tabs, settingsValues, selectedTab);
+        // takže získáme nový selected tab key aby nám to fungovalo
         selectedTab = tabs.selectedTab;
 
         if(!selectedTab || (centerSettingsValues && centerSettingsValues.rightPanel === false)){ //pokud neexistuje žádná vybratelná záložka nebo je vypnutý pravý panel
             return false;
         }
 
-        var tabContent = tabsObject[selectedTab].render();
+        const tabContent = this.state.tabs[selectedTab] && this.state.tabs[selectedTab].render();
 
         return (
             <Tabs.Container>
-                <Tabs.Tabs items={tabsItems}
+                <Tabs.Tabs items={tabs.items}
                            activeItem={{id: selectedTab}}
                            onSelect={this.handleTabSelect}
                 />
@@ -890,20 +897,6 @@ class ArrPage extends ArrParentPage {
                     {tabContent}
                 </Tabs.Content>
             </Tabs.Container>
-        )
-    }
-
-    renderFundPackets() {
-        const {arrRegion, packetTypes} = this.props;
-        const activeFund = arrRegion.activeIndex !== null ? arrRegion.funds[arrRegion.activeIndex] : null;
-        return (
-            <FundPackets
-                ref="fundPackets"
-                versionId={activeFund.versionId}
-                fundId={activeFund.id}
-                packetTypes={packetTypes}
-                {...activeFund.fundPackets}
-            />
         )
     }
 
@@ -920,11 +913,11 @@ class ArrPage extends ArrParentPage {
     }
 
     handleSetExtendedView(showExtendedView) {
-        this.dispatch(fundExtendedView(showExtendedView));
+        this.props.dispatch(fundExtendedView(showExtendedView));
     }
 
     renderCenterPanel(readMode, closed) {
-        const {focus, arrRegion, rulDataTypes, calendarTypes, descItemTypes, packetTypes, userDetail} = this.props;
+        const {focus, arrRegion, rulDataTypes, calendarTypes, descItemTypes, userDetail} = this.props;
         const showRegisterJp = arrRegion.showRegisterJp;
         const showDaosJp = arrRegion.showDaosJp;
         const activeFund = this.getActiveFund(this.props);
@@ -955,12 +948,6 @@ class ArrPage extends ArrParentPage {
                 </div>
             );
         } else {    // standardní zobrazení pořádání - záložky node
-            var packets = [];
-            var fundId = activeFund.id;
-            if (fundId && arrRegion.packets[fundId]) {
-                packets = arrRegion.packets[fundId].items;
-            }
-
             return (
                 <NodeTabs
                     versionId={activeFund.versionId}
@@ -971,9 +958,7 @@ class ArrPage extends ArrParentPage {
                     rulDataTypes={rulDataTypes}
                     calendarTypes={calendarTypes}
                     descItemTypes={descItemTypes}
-                    packetTypes={packetTypes}
-                    packets={packets}
-                    fundId={fundId}
+                    fundId={activeFund.id}
                     showRegisterJp={showRegisterJp}
                     showDaosJp={showDaosJp}
                 />
@@ -984,8 +969,8 @@ class ArrPage extends ArrParentPage {
     renderLeftPanel(readMode, closed) {
         const {focus, arrRegion, userDetail} = this.props;
         const activeFund = this.getActiveFund(this.props);
-        var centerSettings = getOneSettings(userDetail.settings, 'FUND_CENTER_PANEL', 'FUND', activeFund.id);
-        var centerSettingsValues = centerSettings.value ? JSON.parse(centerSettings.value) : null;
+        const centerSettings = getOneSettings(userDetail.settings, 'FUND_CENTER_PANEL', 'FUND', activeFund.id);
+        const centerSettingsValues = centerSettings.value ? JSON.parse(centerSettings.value) : null;
         let colorCoded = !(centerSettingsValues && centerSettingsValues.treeColorCoding === false);
 
         if (arrRegion.extendedView) {   // extended view - jiné větší zobrazení stromu, ale renderuje se v center panelu, tento bude prázdný
@@ -1017,8 +1002,15 @@ class ArrPage extends ArrParentPage {
 }
 
 function mapStateToProps(state) {
-    const {splitter, arrRegion, refTables, form, focus, developer, userDetail, tab} = state
+    const {splitter, arrRegion, refTables, focus, developer, userDetail, tab} = state;
+    let structureTypes = null;
+    if (arrRegion.activeIndex !== null) {
+        const fund = arrRegion.funds[arrRegion.activeIndex];
+        structureTypes = objectById(refTables.structureTypes.data, fund.versionId, "versionId");
+    }
+
     return {
+        structureTypes,
         splitter,
         arrRegion,
         focus,
@@ -1027,9 +1019,8 @@ function mapStateToProps(state) {
         rulDataTypes: refTables.rulDataTypes,
         calendarTypes: refTables.calendarTypes,
         descItemTypes: refTables.descItemTypes,
-        packetTypes: refTables.packetTypes,
         ruleSet: refTables.ruleSet,
-        tab,
+        selectedTabKey: tab.values[ArrPage.TAB_KEY],
     }
 }
 

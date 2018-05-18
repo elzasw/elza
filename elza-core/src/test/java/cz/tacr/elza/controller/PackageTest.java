@@ -34,7 +34,7 @@ public class PackageTest extends AbstractControllerTest {
         List<PackageVO> packages = getPackages();
         PackageVO packageItem = null;
         for (PackageVO item : packages) {
-            if (item.getCode().equals("ZP2015")) {
+            if (item.getCode().equals("SIMPLE-DEV")) {
                 packageItem = item;
                 break;
             }
@@ -47,7 +47,7 @@ public class PackageTest extends AbstractControllerTest {
     }
 
     private void importPackage() throws Exception {
-        File file = HelperTestService.buildPackageFileZip("rules-cz-zp2015");
+        File file = HelperTestService.buildPackageFileZip("rules-simple-dev");
         multipart(spec -> spec.multiPart("file", file), IMPORT_PACKAGE);
         file.delete();
     }

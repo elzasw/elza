@@ -20,8 +20,9 @@ import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.RulArrangementRule;
+import cz.tacr.elza.domain.RulExtensionRule;
 import cz.tacr.elza.domain.RulPolicyType;
-import cz.tacr.elza.domain.RulRule;
 import cz.tacr.elza.domain.vo.DataValidationResult;
 import cz.tacr.elza.domain.vo.DataValidationResults;
 import cz.tacr.elza.drools.model.ActiveLevel;
@@ -31,6 +32,7 @@ import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.PolicyTypeRepository;
+import cz.tacr.elza.service.RuleService;
 
 /**
  * Zpracování pravidel pro validaci parametrů uzlu.
@@ -54,6 +56,8 @@ public class ValidationRules extends Rules {
 
 	@Autowired
 	private StaticDataService staticDataService;
+	@Autowired
+	private RuleService ruleService;
 
 	private static final Logger logger = LoggerFactory.getLogger(ValidationRules.class);
 
@@ -76,13 +80,20 @@ public class ValidationRules extends Rules {
 
 		DataValidationResults validationResults = new DataValidationResults();
 
-		List<RulRule> rulPackageRules = packageRulesRepository
-				.findByRuleSetAndRuleTypeOrderByPriorityAsc(version.getRuleSet(), RulRule.RuleType.CONFORMITY_INFO);
+		List<RulArrangementRule> rulPackageRules = arrangementRuleRepository
+				.findByRuleSetAndRuleTypeOrderByPriorityAsc(version.getRuleSet(), RulArrangementRule.RuleType.CONFORMITY_INFO);
 
-		for (RulRule rulPackageRule : rulPackageRules) {
+        for (RulArrangementRule rulPackageRule : rulPackageRules) {
 			Path path = resourcePathResolver.getDroolFile(rulPackageRule);
 			StatelessKieSession session = createNewStatelessKieSession(path);
 			session.setGlobal("results", validationResults);
+            session.execute(facts);
+		}
+
+		List<RulExtensionRule> rulExtensionRules = ruleService.findExtensionRuleByNode(level.getNode(), RulExtensionRule.RuleType.CONFORMITY_INFO);
+		for (RulExtensionRule rulExtensionRule : rulExtensionRules) {
+            Path path = resourcePathResolver.getDroolFile(rulExtensionRule);
+			StatelessKieSession session = createNewStatelessKieSession(path);
             session.execute(facts);
 		}
 
@@ -115,8 +126,8 @@ public class ValidationRules extends Rules {
 			RulPolicyType rulPolicyType = policyTypesMap.get(validationResult.getPolicyTypeCode());
 
 			if (rulPolicyType == null) {
-				logger.warn("Kód '" + validationResult.getPolicyTypeCode()
-				        + "' neexistuje. Je nutné upravit drools pravidla");
+                logger.error("Kód '" + validationResult.getPolicyTypeCode()
+                        + "' neexistuje. Je nutné upravit drools pravidla. Message: " + validationResult.getMessage());
 				iterator.remove();
 				continue;
 			}

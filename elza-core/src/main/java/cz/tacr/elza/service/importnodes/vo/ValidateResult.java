@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 
-import cz.tacr.elza.domain.ArrPacket;
+import cz.tacr.elza.domain.ArrStructuredObject;
 
 /**
  * Výsledek validace.
@@ -34,14 +34,14 @@ public class ValidateResult {
     private Collection<String> fileConflicts;
 
     /**
-	 * Konflikt obalů.
+     * Konflikt strukt. hodnot.
 	 */
-	private boolean packetConflict;
+    private boolean structuredConflict;
 
 	/**
-	 * Seznam konfliktů v obalech.
+     * Seznam konfliktů v strukt. hodnotách.
 	 */
-    private Collection<String> packetConflicts;
+    private Collection<String> structuredConflicts;
 
 	public boolean isScopeError() {
 		return scopeError;
@@ -51,8 +51,8 @@ public class ValidateResult {
 		return fileConflict;
 	}
 
-	public boolean isPacketConflict() {
-		return packetConflict;
+    public boolean isStructuredConflict() {
+        return structuredConflict;
 	}
 
 	public Collection<String> getScopeErrors() {
@@ -63,8 +63,8 @@ public class ValidateResult {
         return fileConflicts;
     }
 
-    public Collection<String> getPacketConflicts() {
-        return packetConflicts;
+    public Collection<String> getStructuredConflicts() {
+        return structuredConflicts;
     }
 
 
@@ -76,12 +76,12 @@ public class ValidateResult {
 		scopeErrors.add(code);
 	}
 
-	public void addPacketConflicts(ArrPacket srcPacket) {
-		if (packetConflicts == null) {
-			packetConflict = true;
-			packetConflicts = new ArrayList<>();
+    public void addStructObjConflicts(ArrStructuredObject srcObj) {
+        if (structuredConflicts == null) {
+            structuredConflict = true;
+            structuredConflicts = new ArrayList<>();
 		}
-		packetConflicts.add(srcPacket.getStorageNumber());
+        structuredConflicts.add(srcObj.getValue());
 	}
 
 	public void addFileConflict(String name) {

@@ -402,7 +402,7 @@ public class UsrPermission {
         },
 
         /**
-         * verzování a editace vybrané AS
+         * konfigurace AS
          * - verzování a změna pravidel vpřiřazeného AS + přiřazení scope rejstříku + změna pravidel
          * - nemůže mazat AS
          */

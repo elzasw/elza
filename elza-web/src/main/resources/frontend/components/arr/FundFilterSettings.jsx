@@ -25,6 +25,7 @@ import {COL_REFERENCE_MARK} from "./FundDataGridConst";
 import FundNodesSelect from "./FundNodesSelect";
 import SimpleCheckListBox from "./SimpleCheckListBox";
 import FundFilterCondition from "./FundFilterCondition";
+import {createFilterStructure} from 'actions/arr/fundDataGrid.jsx'
 
 var _ffs_validateTimer
 var _ffs_prevReject = null
@@ -192,7 +193,7 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
     componentDidMount() {
         const {dataType, refType} = this.props;
         if (refType.id !== COL_REFERENCE_MARK) {
-            if (refType.useSpecification || dataType && dataType.code === 'PACKET_REF') {  // má specifikace, nebo u obalů budeme místo specifikací zobrazovat výběr typů obsalů
+            if (refType.useSpecification) {  // má specifikace, nebo u obalů budeme místo specifikací zobrazovat výběr typů obsalů
                 this.callFilterUniqueSpecs();   // v metodě se dále volá value search - až po načtení specifikací
             } else {
                 this.callValueSearch('');   // zde musíme volat value search ručně, protože se nenačítají specifikace
@@ -207,10 +208,10 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
     }
 
     callFilterUniqueSpecs = () => {
-        const {versionId, refType, packetTypes, dataType} = this.props
+        const {versionId, refType, dataType} = this.props
 
         this.setState({isFetchingSpecIds: true});
-        WebApi.findUniqueSpecIds(versionId, refType.id).then(specIds => {
+        WebApi.findUniqueSpecIds(versionId, refType.id, createFilterStructure(this.props.filters)).then(specIds => {
             let specItems = [];
 
             if (specIds.indexOf(null) >= 0) {
@@ -220,19 +221,12 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
                 });
             }
 
-            if (dataType.code === 'PACKET_REF') {
-                packetTypes.items.forEach((type) => {
-                    if (specIds.indexOf(type.id) >= 0) {
-                        specItems.push(type);
-                    }
-                });
-            } else {
-                refType.descItemSpecs.forEach((spec) => {
-                    if (specIds.indexOf(spec.id) >= 0) {
-                        specItems.push(spec);
-                    }
-                });
-            }
+            refType.descItemSpecs.forEach((spec) => {
+                if (specIds.indexOf(spec.id) >= 0) {
+                    specItems.push(spec);
+                }
+            });
+
 
             this.setState({specItems, isFetchingSpecIds: false}, () => this.callValueSearch(''));
         });
@@ -247,7 +241,7 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
         }
 
         var specIds = []
-        if (refType.useSpecification || dataType.code === 'PACKET_REF') {
+        if (refType.useSpecification) {
             specIds = this.refs.specsListBox.getSpecsIds()
 
             if (specIds.length === 0) { // pokud nemá nic vybráno, nevrátily by se žádné položky a není třeba volat server
@@ -352,7 +346,7 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
             case 'INT':
             case 'DECIMAL':
             case 'PARTY_REF':
-            case 'PACKET_REF':
+            case 'STRUCTURED':
             case 'JSON_TABLE':
             case 'ENUM':
             case 'RECORD_REF':
@@ -522,7 +516,6 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
                     {values: 2, code: 'NEAR', name: i18n('arr.fund.filterSettings.condition.coordinates.near')},
                 ]
                 break
-            case 'PACKET_REF':
             case 'JSON_TABLE':
             case 'ENUM':
                 break
@@ -590,7 +583,7 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
             conditionType: conditionSelectedCode,
         };
 
-        if (refType.useSpecification || dataType.code === 'PACKET_REF') {
+        if (refType.useSpecification) {
             data.specs = selectedSpecItems
             data.specsType = selectedSpecItemsType
         }
@@ -614,7 +607,7 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
 
         if (data.valuesType === 'selected' || data.values.length > 0) {      // je zadáno filtrování podle hodnoty
             outData = data
-        } else if ((refType.useSpecification || dataType.code === 'PACKET_REF') && (data.specsType === 'selected' || data.specs.length > 0)) {     // je zadáno filtrování podle specifikace
+        } else if ((refType.useSpecification) && (data.specsType === 'selected' || data.specs.length > 0)) {     // je zadáno filtrování podle specifikace
             outData = data
         } else if (data.conditionType !== 'NONE') { // je zadáno filtrování podle podmínky
             outData = data
@@ -642,18 +635,6 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
                     ref='specsListBox'
                     items={specItems}
                     label={i18n('arr.fund.filterSettings.filterBySpecification.title')}
-                    value={{type: selectedSpecItemsType, ids: selectedSpecItems}}
-                    onChange={this.handleSpecItemsChange}
-                >
-                    {isFetchingSpecIds && <HorizontalLoader hover showText={false}/>}
-                </SimpleCheckListBox>
-            )
-        } else if (dataType.code === 'PACKET_REF') { // u obalů budeme místo specifikací zobrazovat výběr typů obsalů
-            specContent = (
-                <SimpleCheckListBox
-                    ref='specsListBox'
-                    items={specItems}
-                    label={i18n('arr.fund.filterSettings.filterByPacketType.title')}
                     value={{type: selectedSpecItemsType, ids: selectedSpecItems}}
                     onChange={this.handleSpecItemsChange}
                 >

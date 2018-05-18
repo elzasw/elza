@@ -85,6 +85,7 @@ class UserDetail extends AbstractReactComponent {
 
     handleRemoveGroup = (group, index) => {
         const {userDetail} = this.props;
+        console.log("remove group", group);
         this.dispatch(leaveGroup(userDetail.id, group.id));
     };
 

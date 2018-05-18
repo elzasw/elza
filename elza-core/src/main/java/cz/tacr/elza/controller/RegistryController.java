@@ -34,7 +34,6 @@ import cz.tacr.elza.controller.vo.FilteredResultVO;
 import cz.tacr.elza.controller.vo.InterpiMappingVO;
 import cz.tacr.elza.controller.vo.InterpiSearchVO;
 import cz.tacr.elza.controller.vo.RecordImportVO;
-import cz.tacr.elza.controller.vo.RegCoordinatesVO;
 import cz.tacr.elza.controller.vo.RegExternalSystemSimpleVO;
 import cz.tacr.elza.controller.vo.RegRecordSimple;
 import cz.tacr.elza.controller.vo.RegRecordVO;
@@ -48,7 +47,6 @@ import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyType;
 import cz.tacr.elza.domain.ParRelationRoleType;
-import cz.tacr.elza.domain.RegCoordinates;
 import cz.tacr.elza.domain.RegExternalSystem;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
@@ -64,7 +62,6 @@ import cz.tacr.elza.repository.ItemSpecRegisterRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.PartyTypeRepository;
-import cz.tacr.elza.repository.RegCoordinatesRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RegVariantRecordRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
@@ -111,9 +108,6 @@ public class RegistryController {
 
     @Autowired
     private RegVariantRecordRepository variantRecordRepository;
-
-    @Autowired
-    private RegCoordinatesRepository regCoordinatesRepository;
 
     @Autowired
     private FundVersionRepository fundVersionRepository;
@@ -204,22 +198,9 @@ public class RegistryController {
 
         List<RegRecordVO> foundRecordVOList = factoryVo.createRegRecords(foundRecords, recordIdPartyIdMap, true);
 
-        Map<Integer, RegRecordVO> parentRecordVOMap = new HashMap<>();
-        Map<RegRecord, List<RegRecord>> parentChildrenMap = registryService.findChildren(foundRecords);
-
         for (RegRecordVO regRecordVO : foundRecordVOList) {
-            parentRecordVOMap.put(regRecordVO.getId(), regRecordVO);
             factoryVo.fillRegisterTypeNamesToParents(regRecordVO);
         }
-
-
-
-        // děti
-        foundRecords.forEach(record -> {
-            List<RegRecord> children = parentChildrenMap.get(record);
-            parentRecordVOMap.get(record.getRecordId()).setHasChildren(children != null && !children.isEmpty());
-        });
-
 
 //        for (RegRecord record : parentChildrenMap.keySet()) {
 //            List<RegRecord> children = parentChildrenMap.get(record);
@@ -332,20 +313,13 @@ public class RegistryController {
         records.add(record);
 
         //seznam pouze dětí
-        List<RegRecord> childs = regRecordRepository.findByParentRecord(record);
-        records.addAll(childs);
-
-
         Map<Integer, Integer> recordIdPartyIdMap = partyService.findParPartyIdsByRecords(records);
 
         Integer partyId = recordIdPartyIdMap.get(recordId);
         RegRecordVO result = factoryVo.createRegRecord(record, partyId, true);
         factoryVo.fillRegisterTypeNamesToParents(result);
-        result.setChilds(factoryVo.createRegRecords(childs, recordIdPartyIdMap, false));
 
         result.setVariantRecords(factoryVo.createRegVariantRecords(variantRecordRepository.findByRegRecordId(recordId)));
-
-        result.setCoordinates(factoryVo.createRegCoordinates(regCoordinatesRepository.findByRegRecordId(recordId)));
 
         return result;
     }
@@ -572,66 +546,6 @@ public class RegistryController {
         RegScope scope = scopeRepository.findOne(scopeId);
         registryService.deleteScope(scope);
     }
-
-    /**
-     * Vytvoří nové souřadnice k rejsříkovému heslu
-     */
-    @Transactional
-    @RequestMapping(value = "/regCoordinates", method = RequestMethod.POST)
-    public RegCoordinatesVO createRegCoordinates(@RequestBody final RegCoordinatesVO coordinatesVO) {
-        Assert.isNull(coordinatesVO.getId(),
-                "Při vytváření záznamu nesmí být vyplněno ID (coordinatesId).");
-        Assert.isTrue(StringUtils.isNotEmpty(coordinatesVO.getValue()), "Nutno vyplnit hodnotu!");
-        RegCoordinates coordinates = factoryDO.createRegCoordinates(coordinatesVO);
-        coordinates = registryService.saveRegCoordinates(coordinates);
-        return factoryVo.createRegCoordinates(coordinates);
-    }
-
-    /**
-     * Aktualizace souřadnic rejstříkového hesla.
-     *
-     * @param coordinatesVO VO souřadnice hesla
-     * @return aktualizovaný záznam
-     */
-    @Transactional
-    @RequestMapping(value = "/regCoordinates/{coordinatesId}", method = RequestMethod.PUT)
-    public RegCoordinatesVO updateRegCoordinates(@PathVariable final Integer coordinatesId, @RequestBody final RegCoordinatesVO coordinatesVO) {
-        Assert.notNull(coordinatesId, "Identifikátor koordinátu musí být vyplněn");
-        Assert.notNull(coordinatesVO, "Koordináty musí být vyplněny");
-
-        Assert.isTrue(
-                coordinatesId.equals(coordinatesVO.getId()),
-                "V url požadavku je odkazováno na jiné ID (" + coordinatesId + ") než ve VO (" + coordinatesVO.getId() + ")."
-        );
-
-        RegCoordinates coordinates = regCoordinatesRepository.findOne(coordinatesVO.getId());
-        Assert.notNull(coordinates, "Nebyl nalezen záznam pro update s id " + coordinatesVO.getId());
-        Assert.isTrue(StringUtils.isNotEmpty(coordinatesVO.getValue()), "Nutno vyplnit hodnotu!");
-        RegCoordinates coordinatesDO = factoryDO.createRegCoordinates(coordinatesVO);
-
-        if (!"Point".equals(coordinates.getValue().getGeometryType())) {
-            coordinatesDO.setValue(coordinates.getValue());
-        }
-
-        coordinates = registryService.saveRegCoordinates(coordinatesDO);
-        regRecordRepository.flush();
-        return factoryVo.createRegCoordinates(coordinates);
-    }
-
-    /**
-     * Smazání souřadnic rejstříkového hesla.
-     *
-     * @param coordinatesId id souřadnic rejstříkového hesla
-     */
-    @Transactional
-    @RequestMapping(value = "/regCoordinates/{coordinatesId}", method = RequestMethod.DELETE)
-    public void deleteRegCoordinates(@PathVariable final Integer coordinatesId) {
-        Assert.notNull(coordinatesId, "Identifikátor koordinátu musí být vyplněn");
-        RegCoordinates regCoordinate = registryService.getRegCoordinate(coordinatesId);
-
-        registryService.deleteRegCoordinate(regCoordinate, regCoordinate.getRegRecord());
-    }
-
 
     /**
      * Vyhledá všechny externí systémy.

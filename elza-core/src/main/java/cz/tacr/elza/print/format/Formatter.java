@@ -5,22 +5,22 @@ import java.util.List;
 
 import cz.tacr.elza.print.Node;
 import cz.tacr.elza.print.Output;
-import cz.tacr.elza.print.Packet;
+import cz.tacr.elza.print.Structured;
 import cz.tacr.elza.print.item.Item;
 
 /**
  * Format node as string
- * 
+ *
  * Class allows to customize formatter object.
  *
  */
 public class Formatter {
-	
+
 	/**
 	 * List of formatting actions
 	 */
 	List<FormatAction> actions = new ArrayList<>();
-	
+
 	/**
 	 * Add formatting action
 	 * @param action
@@ -31,9 +31,9 @@ public class Formatter {
 		actions.add(action);
 		return this;
 	}
-	
+
 	/**
-	 * Add value without any other info 
+	 * Add value without any other info
 	 * @param itemType Item type
 	 * @return
 	 */
@@ -41,10 +41,10 @@ public class Formatter {
 	{
 		return addAction(new ValueFormatter(itemType));
 	}
-	
+
 	/**
 	 * Add value of multiple types without any other info
-	 * @param itemType Item types
+	 * @param itemTypes Item types
 	 * @return
 	 */
 	public Formatter addValue(String itemTypes[])
@@ -55,18 +55,7 @@ public class Formatter {
 		}
 		return this;
 	}
-	
-	/**
-	 * Add packet value
-	 * @param itemType Item type
-	 * @param formatType Packet format
-	 * @return
-	 */
-	public Formatter addPacketValue(String itemType, Packet.FormatType formatType)
-	{
-		return addAction(new PacketFormatter(itemType, formatType));
-	}
-	
+
 	/**
 	 * Add specification and value for given type
 	 * @param itemType
@@ -95,9 +84,9 @@ public class Formatter {
 		{
 			addAction(new ValueWithTitleFormatter(itemType));
 		}
-		return this;		
+		return this;
 	}
-	
+
 	public Formatter beginBlock(){
 		return addAction(new BeginBlockFormatter());
 	}
@@ -105,7 +94,7 @@ public class Formatter {
 	public Formatter endBlock(){
 		return addAction(new EndBlockFormatter());
 	}
-	
+
 	/**
 	 * Set separator for specification
 	 * @param specSeparator Separator for specification
@@ -114,7 +103,7 @@ public class Formatter {
 	public Formatter setSpecSeparator(String specSeparator) {
 		return addAction(new SetSpecificationSeparator(specSeparator));
 	}
-	
+
 	public Formatter setSpecFormat(String prefix, String postfix, boolean afterValue) {
 		return addAction(new SetSpecificationFormat(prefix, postfix, afterValue));
 	}
@@ -127,7 +116,7 @@ public class Formatter {
 	public Formatter setTitleSeparator(String titleSeparator) {
 		return addAction(new SetTitleSeparator(titleSeparator));
 	}
-	
+
 	/**
 	 * Set separator between two items
 	 * @param itemSeparator
@@ -136,18 +125,19 @@ public class Formatter {
 	public Formatter setItemSeparator(String itemSeparator) {
 		return addAction(new SetItemSeparator(itemSeparator));
 	}
-	
+
 	/**
 	 * Set separator for new block
 	 * 
 	 * Separator is added only if block is not last or first
-	 * @param itemSeparator
+	 * @param beginBlockSeparator
+	 * @param endBlockSeparator
 	 * @return
 	 */
 	public Formatter setBlockSeparators(String beginBlockSeparator, String endBlockSeparator) {
 	    return setBlockSeparators(beginBlockSeparator, endBlockSeparator, false, false);
 	}
-	
+
 	/**
 	 * Set separator for new block
 	 * 
@@ -188,7 +178,7 @@ public class Formatter {
 	public String format(Node node)
 	{
 		List<Item> items = node.getItems();
-		
+
 		return format(items);
 	}
 	
@@ -221,4 +211,5 @@ public class Formatter {
 
 		return ctx.getResult();
 	}
+
 }

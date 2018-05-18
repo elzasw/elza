@@ -25,7 +25,7 @@ public class CopyNodesParams extends CopyNodesValidate {
 
     private ConflictResolve filesConflictResolve;
 
-    private ConflictResolve packetsConflictResolve;
+    private ConflictResolve structuredsConflictResolve;
 
     public ArrNodeVO getTargetStaticNode() {
         return targetStaticNode;
@@ -51,12 +51,12 @@ public class CopyNodesParams extends CopyNodesValidate {
         this.filesConflictResolve = filesConflictResolve;
     }
 
-    public ConflictResolve getPacketsConflictResolve() {
-        return packetsConflictResolve;
+    public ConflictResolve getStructuredsConflictResolve() {
+        return structuredsConflictResolve;
     }
 
-    public void setPacketsConflictResolve(final ConflictResolve packetsConflictResolve) {
-        this.packetsConflictResolve = packetsConflictResolve;
+    public void setStructuredsConflictResolve(final ConflictResolve structuredsConflictResolve) {
+        this.structuredsConflictResolve = structuredsConflictResolve;
     }
 
     public FundLevelService.AddLevelDirection getSelectedDirection() {

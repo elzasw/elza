@@ -152,7 +152,7 @@ public class DescItemRepositoryImpl implements DescItemRepositoryCustom {
     @Override
     public List<ArrDescItem> findDescItemsByNodeIds(final Set<Integer> nodeIds, final Set<RulItemType> itemTypes, final Integer changeId) {
         String hql = "SELECT di FROM arr_item di JOIN FETCH di.node n JOIN FETCH di.itemType dit LEFT JOIN FETCH di.itemSpec dis " +
-                "LEFT JOIN FETCH di.data d LEFT JOIN FETCH d.record drr LEFT JOIN FETCH d.party dpr LEFT JOIN FETCH d.packet dpcr  WHERE ";
+                "LEFT JOIN FETCH di.data d LEFT JOIN FETCH d.record drr LEFT JOIN FETCH d.party dpr WHERE ";
         if (changeId == null) {
             hql += "di.deleteChange IS NULL ";
         } else {
@@ -200,7 +200,9 @@ public class DescItemRepositoryImpl implements DescItemRepositoryCustom {
 
         String searchText = "%" + text + "%";
 
-        String hql = "SELECT di FROM arr_item di JOIN FETCH di.data d WHERE (di.data IN (SELECT ds FROM arr_data_string ds WHERE ds.value like :text) OR di.data IN (SELECT ds FROM arr_data_text ds WHERE ds.value like :text)) "
+        String hql = "SELECT di FROM arr_item di JOIN FETCH di.data d WHERE (di.data IN (SELECT ds FROM arr_data_string ds WHERE ds.value like :text)" +
+                " OR di.data IN (SELECT ds FROM arr_data_text ds WHERE ds.value like :text)" +
+                " OR di.data IN (SELECT ds FROM arr_data_unitid ds WHERE ds.value like :text))"
                 + " AND di.itemType = :itemType";
 
         if(itemType.getUseSpecification()){

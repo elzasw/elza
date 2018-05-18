@@ -21,7 +21,7 @@ public enum DataType {
     PARTY_REF,
     RECORD_REF,
     DECIMAL(38),
-    PACKET_REF,
+    STRUCTURED,
     ENUM,
     FILE_REF,
     JSON_TABLE(Integer.MAX_VALUE);

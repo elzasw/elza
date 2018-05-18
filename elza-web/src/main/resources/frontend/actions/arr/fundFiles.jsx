@@ -79,11 +79,13 @@ export function fundFilesCreate(fundId, data, callback = null) {
                 formData.append(key, data[key]);
             }
         }
-        formData.append("file", data.file[0]);
+        if (data.file && data.file.length > 0) {
+            formData.append("file", data.file[0]);
+        }
         formData.append("fundId", fundId);
         formData.append("@class", ".ArrFileVO");
 
-        return savingApiWrapper(dispatch, WebApi.createFundFile(formData)
+        return savingApiWrapper(dispatch, WebApi.createFundFileRaw(formData)
             .then((json) => {
                 return callback && callback(json);
         }))
@@ -95,11 +97,35 @@ export function fundFilesReplace(fileId, file) {
 
         const formData = new FormData();
 
-        formData.append("file", file);
+        if (file) {
+            formData.append("file", file);
+        }
         formData.append("id", fileId);
         formData.append("@class", ".ArrFileVO");
 
-        savingApiWrapper(dispatch, WebApi.updateFundFile(fileId, formData))
+        savingApiWrapper(dispatch, WebApi.updateFundFileRaw(fileId, formData))
+    }
+}
+
+export function fundFilesUpdate(fundId, fileId, data, callback = null) {
+    return (dispatch, getState) => {
+        const formData = new FormData();
+
+        for (const key in data) {
+            if (data.hasOwnProperty(key)) {
+                formData.append(key, data[key]);
+            }
+        }
+        if (data.file && data.file.length > 0) {
+            formData.append("file", data.file[0]);
+        }
+        formData.append("id", fileId);
+        formData.append("fundId", fundId);
+        formData.append("@class", ".ArrFileVO");
+
+        savingApiWrapper(dispatch, WebApi.updateFundFileRaw(fileId, formData).then((json) => {
+            return callback && callback(json);
+        }));
     }
 }
 

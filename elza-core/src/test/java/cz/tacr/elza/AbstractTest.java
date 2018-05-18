@@ -52,7 +52,8 @@ public abstract class AbstractTest {
         Assert.assertTrue(startupService.isRunning());
 
     	helperTestService.loadPackage("CZ_BASE", "package-cz-base");
-    	helperTestService.loadPackage("ZP2015", "rules-cz-zp2015");
+    	// helperTestService.loadPackage("ZP2015", "rules-cz-zp2015");
+    	helperTestService.loadPackage("SIMPLE-DEV", "rules-simple-dev");
 
         helperTestService.deleteTables();
     }

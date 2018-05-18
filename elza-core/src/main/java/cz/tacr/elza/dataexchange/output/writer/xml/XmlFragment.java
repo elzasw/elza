@@ -89,7 +89,8 @@ public class XmlFragment implements AutoCloseable {
         if (isExist()) {
             streamWriter = null; // w/o close, we don't need to write open elements
             closeOutputStream();
-            Files.deleteIfExists(file);
+            Files.delete(file);
+            file = null;
         }
     }
 

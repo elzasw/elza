@@ -63,6 +63,7 @@ import cz.tacr.elza.domain.ArrNodeConformity.State;
 import cz.tacr.elza.domain.ArrNodeConformityError;
 import cz.tacr.elza.domain.ArrNodeConformityMissing;
 import cz.tacr.elza.domain.ArrOutputDefinition;
+import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.RegScope;
 import cz.tacr.elza.domain.RulItemType;
@@ -114,9 +115,10 @@ import cz.tacr.elza.repository.OutputFileRepository;
 import cz.tacr.elza.repository.OutputItemRepository;
 import cz.tacr.elza.repository.OutputRepository;
 import cz.tacr.elza.repository.OutputResultRepository;
-import cz.tacr.elza.repository.PacketRepository;
 import cz.tacr.elza.repository.RequestQueueItemRepository;
 import cz.tacr.elza.repository.ScopeRepository;
+import cz.tacr.elza.repository.StructuredObjectRepository;
+import cz.tacr.elza.repository.StructuredItemRepository;
 import cz.tacr.elza.repository.VisiblePolicyRepository;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.cache.NodeCacheService;
@@ -182,7 +184,9 @@ public class ArrangementService {
     @Autowired
     private BulkActionNodeRepository faBulkActionNodeRepository;
     @Autowired
-    private PacketRepository packetRepository;
+    private StructuredObjectRepository structureDataRepository;
+    @Autowired
+    private StructuredItemRepository structureItemRepository;
     @Autowired
     private FundRegisterScopeRepository faRegisterRepository;
     @Autowired
@@ -697,7 +701,12 @@ public class ArrangementService {
 
         dmsService.deleteFilesByFund(fund);
 
-        packetRepository.findByFund(fund).forEach(packet -> packetRepository.delete(packet));
+        List<ArrStructuredObject> objList = structureDataRepository.findByFund(fund);
+        objList.forEach(obj -> {
+            structureItemRepository.deleteByStructuredObject(obj);
+            dataRepository.deleteByStructuredObject(obj);
+        });
+        structureDataRepository.deleteInBatch(objList);
 
         faRegisterRepository.findByFund(fund).forEach(
                 faScope -> faRegisterRepository.delete(faScope)
@@ -717,7 +726,6 @@ public class ArrangementService {
         Query deleteNotUseChangesQuery = revertingChangesService.createDeleteNotUseChangesQuery();
         deleteNotUseChangesQuery.executeUpdate();
     }
-
 
     /**
      * Uzavře otevřenou verzi archivní pomůcky a otevře novou verzi.
@@ -1066,6 +1074,10 @@ public class ArrangementService {
         versionNodeIds.retainAll(nodeIds);
 
         return versionNodeIds;
+    }
+
+    public ArrFundVersion getFundVersionById(final Integer fundVersionId) {
+        return fundVersionRepository.getOneCheckExist(fundVersionId);
     }
 
     /**

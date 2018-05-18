@@ -43,6 +43,7 @@ import {modalDialogShow} from "../actions/global/modalDialog";
 import i18n from "../components/i18n";
 import RegistryUsageForm from "../components/form/RegistryUsageForm";
 import PartyUsageForm from "../components/form/PartyUsageForm";
+import {FOCUS_KEYS} from "../constants";
 
 
 let _gameRunner = null;
@@ -72,19 +73,19 @@ class Layout extends AbstractReactComponent {
         switch (action) {
             case 'home':
                 this.dispatch(routerNavigate('/'));
-                this.dispatch(setFocus('home', 1, 'list'));
+                this.dispatch(setFocus(FOCUS_KEYS.HOME, 1, 'list'));
                 break;
             case 'arr':
                 this.dispatch(routerNavigate('/arr'));
-                this.dispatch(setFocus('arr', 1, 'tree'));
+                this.dispatch(setFocus(FOCUS_KEYS.ARR, 1, 'tree'));
                 break;
             case 'party':
                 this.dispatch(routerNavigate('/party'));
-                this.dispatch(setFocus('party', 1, 'tree'));
+                this.dispatch(setFocus(FOCUS_KEYS.PARTY, 1, 'tree'));
                 break;
             case 'registry':
                 this.dispatch(routerNavigate('/registry'));
-                this.dispatch(setFocus('registry', 1, 'list'));
+                this.dispatch(setFocus(FOCUS_KEYS.REGISTRY, 1, 'list'));
                 break;
             case 'admin':
                 this.dispatch(routerNavigate('/admin'));

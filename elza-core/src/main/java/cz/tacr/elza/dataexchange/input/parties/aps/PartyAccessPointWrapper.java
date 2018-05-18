@@ -17,15 +17,12 @@ public class PartyAccessPointWrapper implements EntityWrapper, EntityMetrics {
 
     private final String characteristics;
 
-    private final String note;
-
     private RegRecord entity;
 
-    PartyAccessPointWrapper(PartyInfo partyInfo, String name, String characteristics, String note) {
+    PartyAccessPointWrapper(PartyInfo partyInfo, String name, String characteristics) {
         this.partyInfo = Validate.notNull(partyInfo);
         this.name = Validate.notNull(name);
         this.characteristics = characteristics;
-        this.note = note;
     }
 
     @Override
@@ -50,6 +47,5 @@ public class PartyAccessPointWrapper implements EntityWrapper, EntityMetrics {
         entity = partyInfo.getUpdatableAPReference(session);
         entity.setRecord(name);
         entity.setCharacteristics(characteristics);
-        entity.setNote(note);
     }
 }

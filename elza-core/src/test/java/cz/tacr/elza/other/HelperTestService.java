@@ -33,6 +33,7 @@ import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.ExternalSystemRepository;
 import cz.tacr.elza.repository.FundRegisterScopeRepository;
 import cz.tacr.elza.repository.FundRepository;
+import cz.tacr.elza.repository.FundStructureExtensionRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.GroupRepository;
 import cz.tacr.elza.repository.GroupUserRepository;
@@ -46,12 +47,12 @@ import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeConformityErrorRepository;
 import cz.tacr.elza.repository.NodeConformityMissingRepository;
 import cz.tacr.elza.repository.NodeConformityRepository;
+import cz.tacr.elza.repository.NodeExtensionRepository;
 import cz.tacr.elza.repository.NodeOutputRepository;
 import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.OutputDefinitionRepository;
 import cz.tacr.elza.repository.OutputRepository;
-import cz.tacr.elza.repository.PacketRepository;
 import cz.tacr.elza.repository.PartyCreatorRepository;
 import cz.tacr.elza.repository.PartyGroupIdentifierRepository;
 import cz.tacr.elza.repository.PartyNameComplementRepository;
@@ -61,7 +62,6 @@ import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.PartyTypeComplementTypeRepository;
 import cz.tacr.elza.repository.PartyTypeRelationRepository;
 import cz.tacr.elza.repository.PermissionRepository;
-import cz.tacr.elza.repository.RegCoordinatesRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RegVariantRecordRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
@@ -70,6 +70,7 @@ import cz.tacr.elza.repository.RelationRepository;
 import cz.tacr.elza.repository.RelationRoleTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRoleTypeRepository;
+import cz.tacr.elza.repository.StructuredObjectRepository;
 import cz.tacr.elza.repository.UserRepository;
 
 
@@ -158,13 +159,9 @@ public class HelperTestService {
     @Autowired
     protected PartyNameFormTypeRepository partyNameFormTypeRepository;
     @Autowired
-    protected RegCoordinatesRepository regCoordinatesRepository;
-    @Autowired
     protected RegRecordRepository recordRepository;
     @Autowired
     protected PartyNameRepository partyNameRepository;
-    @Autowired
-    private PacketRepository packetRepository;
     @Autowired
     private BulkActionRunRepository faBulkActionRepository;
     @Autowired
@@ -179,6 +176,12 @@ public class HelperTestService {
     protected ExternalSystemRepository externalSystemRepository;
     @Autowired
     private NodeOutputRepository nodeOutputRepository;
+    @Autowired
+    private NodeExtensionRepository nodeExtensionRepository;
+    @Autowired
+    private StructuredObjectRepository structureDataRepository;
+    @Autowired
+    private FundStructureExtensionRepository fundStructureExtensionRepository;
 
     @Autowired
     private PackageService packageService;
@@ -223,9 +226,10 @@ public class HelperTestService {
         descItemRepository.deleteAll();
         itemRepository.deleteAll();
         dataRepository.deleteAll();
+        structureDataRepository.deleteAll();
+        fundStructureExtensionRepository.deleteAll();
         bulkActionNodeRepository.deleteAll();
         faBulkActionRepository.deleteAll();
-        packetRepository.deleteAll();
         partyNameComplementRepository.deleteAll();
         partyRepository.unsetAllPreferredName();
         relationEntityRepository.deleteAll();
@@ -235,7 +239,6 @@ public class HelperTestService {
         partyNameRepository.deleteAll();
         variantRecordRepository.deleteAll();
         nodeRegisterRepository.deleteAll();
-        regCoordinatesRepository.deleteAll();
         fundVersionRepository.deleteAll();
         fundRegisterScopeRepository.deleteAll();
         levelRepository.deleteAll();
@@ -243,6 +246,7 @@ public class HelperTestService {
         outputRepository.deleteAll();
         outputDefinitionRepository.deleteAll();
         itemSpecRegisterRepository.deleteAll();
+        nodeExtensionRepository.deleteAll();
         changeRepository.deleteAll();
         nodeRepository.deleteAll();
         fundRepository.deleteAll();
@@ -257,6 +261,10 @@ public class HelperTestService {
 	public FundRepository getFundRepository() {
 		return fundRepository;
 	}
+
+    public OutputDefinitionRepository getOutputDefinitionRepository() {
+        return outputDefinitionRepository;
+    }
 
     // Each package have to be loaded in separate transaction
     // this allows to commit package and reload static data

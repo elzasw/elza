@@ -13,7 +13,7 @@ const initialState = {
 }
 
 export default function fundOutputDetail(state = initialState, action = {}) {
-    if (outputFormActions.isSubNodeFormAction(action, "OUTPUT")) {
+    if (outputFormActions.isSubNodeFormAction(action)) {
         var result = {
             ...state,
             subNodeForm: subNodeForm(state.subNodeForm, action),

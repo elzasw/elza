@@ -8,7 +8,7 @@ import cz.tacr.elza.dataexchange.output.loaders.AbstractEntityLoader;
 import cz.tacr.elza.dataexchange.output.loaders.LoadDispatcher;
 import cz.tacr.elza.domain.ParPartyGroupIdentifier;
 
-public class PartyGroupIndentifierLoader extends AbstractEntityLoader<Integer, ParPartyGroupIdentifier> {
+public class PartyGroupIndentifierLoader extends AbstractEntityLoader<ParPartyGroupIdentifier> {
 
     private final UnitdateLoader unitdateLoader;
 
@@ -18,7 +18,7 @@ public class PartyGroupIndentifierLoader extends AbstractEntityLoader<Integer, P
     }
 
     @Override
-    protected void onRequestLoad(ParPartyGroupIdentifier result, LoadDispatcher<ParPartyGroupIdentifier> dispatcher) {
+    protected void onBatchEntryLoad(LoadDispatcher<ParPartyGroupIdentifier> dispatcher, ParPartyGroupIdentifier result) {
         if (result.getFromUnitdateId() != null) {
             UnitdateDispatcher unitdateDispatcher = new UnitdateDispatcher(dispatcher) {
                 @Override

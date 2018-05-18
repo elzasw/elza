@@ -12,6 +12,7 @@ import PartyListItem from "./PartyListItem";
 import Autocomplete from "../shared/autocomplete/Autocomplete";
 import ListPager from "../shared/listPager/ListPager";
 import * as perms from "../../actions/user/Permission";
+import {FOCUS_KEYS} from "../../constants";
 import {requestScopesIfNeeded} from "../../actions/refTables/scopesData";
 
 /**
@@ -57,7 +58,7 @@ class PartyList extends AbstractReactComponent {
                         focusWasSet()
                     })
                 }
-            } else if (isFocusFor(focus, 'party', 1) || isFocusFor(focus, 'party', 1, 'list')) {
+            } else if (isFocusFor(focus, FOCUS_KEYS.PARTY, 1) || isFocusFor(focus, FOCUS_KEYS.PARTY, 1, 'list')) {
                 this.setState({}, () => {
                     this.refs.partyList.focus();
                     focusWasSet()
@@ -120,7 +121,13 @@ class PartyList extends AbstractReactComponent {
         return scopeId && scopes && scopes.length > 0 && scopes[0].scopes.find(scope => (scope.id === scopeId)).name;
     }
 
-    renderListItem = (item) => <PartyListItem {...item} onClick={this.handlePartyDetail.bind(this, item)} relationTypesForClass={this.props.relationTypesForClass} />;
+    renderListItem = (props) => {
+        const {item} = props;
+        return <PartyListItem 
+            {...item} 
+            onClick={this.handlePartyDetail.bind(this, item)} 
+            relationTypesForClass={this.props.relationTypesForClass} />
+    };
 
     render() {
         const {partyDetail, partyList, partyTypes, maxSize, scopes} = this.props;

@@ -3,13 +3,17 @@ import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {AbstractReactComponent, Icon, i18n, FileListBox, StoreHorizontalLoader, FormInput} from 'components/shared';
 import AddFileForm from './AddFileForm'
-import {Button} from 'react-bootstrap'
-import {fetchFundFilesIfNeeded, fundFilesFilterByText, fundFilesCreate, fundFilesDelete, fundFilesReplace} from 'actions/arr/fundFiles.jsx'
+import {Button, MenuItem} from 'react-bootstrap'
+import {fetchFundFilesIfNeeded, fundFilesFilterByText, fundFilesCreate, fundFilesEditEditable, fundFilesDelete, fundFilesReplace, fundFilesUpdate} from 'actions/arr/fundFiles.jsx'
 import {modalDialogShow,modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {UrlFactory} from 'actions/index.jsx';
 
 import './FundFiles.less'
 import {downloadFile} from "../../actions/global/download";
+import FixedDropDownButton from "../shared/fixed-dropdown-button/FixedDropDownButton";
+import EditableFileForm from "./EditableFileForm";
+import {WebApi} from "../../actions/WebApi";
+import {showAsyncWaiting} from "../../actions/global/modalDialog";
 
 let _ReplaceId = null;
 
@@ -49,18 +53,48 @@ class FundFiles extends AbstractReactComponent {
         this.dispatch(fundFilesFilterByText(versionId, text));
     };
 
+    handleEdit = (id) => {
+        const {fundId} = this.props;
+        this.props.dispatch(showAsyncWaiting(null, null, WebApi.getEditableFundFile(fundId, id), dmsFile => {
+            const form = <EditableFileForm initialValues={dmsFile} onSubmitForm={data => this.handleEditEditableSubmit(id, data)} />;
+            this.props.dispatch(modalDialogShow(this, i18n('dms.file.title.editable.edit'), form));
+        }));
+    };
+
+    handleDownloadByMimeType = (id, outputMimeType) => {
+        const {fundId} = this.props;
+        // window.open(`/api/dms/fund/${fundId}/${id}/generated?mimeType=${outputMimeType}`);
+        this.dispatch(downloadFile("arr-generated-file-" + id, `/api/dms/fund/${fundId}/${id}/generated?mimeType=${outputMimeType}`));
+    };
+
     handleDelete = (id) => {
         const {fundId, versionId} = this.props;
         this.dispatch(fundFilesDelete(versionId, fundId, id));
     };
 
-    handleCreate = () => {
-        this.dispatch(modalDialogShow(this, i18n('dms.file.title.add'), <AddFileForm onSubmitForm={this.handleCreateSubmit} />));
+    handleCreateFromFile = () => {
+        this.dispatch(modalDialogShow(this, i18n('dms.file.title.file.add'), <AddFileForm onSubmitForm={this.handleCreateFromFileSubmit} />));
     };
 
-    handleCreateSubmit = (data) => {
+    handleCreateEditable = () => {
+        this.dispatch(modalDialogShow(this, i18n('dms.file.title.editable.add'), <EditableFileForm create onSubmitForm={this.handleCreateEditableSubmit} />));
+    };
+
+    handleCreateFromFileSubmit = (data) => {
         const {fundId} = this.props;
-        return this.dispatch(fundFilesCreate(fundId, data))
+        return this.dispatch(fundFilesCreate(fundId, data));
+    };
+
+    handleCreateEditableSubmit = (data) => {
+        const {fundId} = this.props;
+        return this.dispatch(fundFilesCreate(fundId, data));
+    };
+
+    handleEditEditableSubmit = (id, data) => {
+        const {fundId} = this.props;
+        return this.dispatch(fundFilesUpdate(fundId, id, data, () => {
+            this.dispatch(modalDialogHide());
+        }));
     };
 
     handleDownload = (id) => {
@@ -102,7 +136,10 @@ class FundFiles extends AbstractReactComponent {
 
             {fundFiles.fetched && <div className="actions-container">
                 <div className="actions">
-                    <Button onClick={this.handleCreate} eventKey='add'><Icon glyph='fa-plus' /> {i18n('arr.fund.files.action.add')}</Button>
+                    <FixedDropDownButton id='dropdown-add-file' noCaret title={<div><Icon glyph='fa-plus' /> {i18n('arr.fund.files.action.add')}</div>}>
+                        <MenuItem onClick={this.handleCreateFromFile}>{i18n("arr.fund.files.action.add.fromFile")}</MenuItem>
+                        <MenuItem onClick={this.handleCreateEditable}>{i18n("arr.fund.files.action.add.editable")}</MenuItem>
+                    </FixedDropDownButton>
                 </div>
             </div>}
             <FormInput className="hidden" type="file" ref='uploadInput' onChange={this.handleReplaceSubmit} />
@@ -116,6 +153,10 @@ class FundFiles extends AbstractReactComponent {
                 onDownload={this.handleDownload}
                 onReplace={this.handleReplace}
                 onDelete={this.handleDelete}
+                onEdit={this.handleEdit}
+                supportEdit={(id, item) => item.editable}
+                onDownloadPdf={(id) => this.handleDownloadByMimeType(id, "application/pdf")}
+                supportDownloadPdf={(id, item) => item.generatePdf}
             />}
         </div>
     }

@@ -47,9 +47,6 @@ public class RegRegisterType {
     private String name;
 
     @Column(nullable = true)
-    private Boolean hierarchical;
-
-    @Column(nullable = true)
     private Boolean addRecord;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RegRegisterType.class)
@@ -117,22 +114,6 @@ public class RegRegisterType {
     }
 
     /**
-     * Příznak, zda rejstříková hesla tohoto typu rejstříku tvoří hierarchii.
-     * @param hierarchical
-     */
-    public Boolean getHierarchical() {
-        return hierarchical;
-    }
-
-    /**
-     * Příznak, zda rejstříková hesla tohoto typu rejstříku tvoří hierarchii.
-     * @return Příznak, zda rejstříková hesla tohoto typu rejstříku tvoří hierarchii.
-     */
-    public void setHierarchical(final Boolean hierarchical) {
-            this.hierarchical = hierarchical;
-    }
-
-    /**
      * Příznak, zda může daný typ rejstříku obsahovat hesla nebo se jedná jen o "nadtyp".
      * @return Příznak, zda může daný typ rejstříku obsahovat hesla nebo se jedná jen o "nadtyp".
      */
@@ -150,7 +131,6 @@ public class RegRegisterType {
 
     /**
      * Odkaz na sebe sama (hierarchie typů rejstříků).
-     * @param parentRegisterType
      */
     public RegRegisterType getParentRegisterType() {
         return parentRegisterType;

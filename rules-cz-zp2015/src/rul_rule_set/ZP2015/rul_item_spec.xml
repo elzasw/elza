@@ -2642,6 +2642,21 @@
         <description>Datace pořízení filmového / zvukového záznamu</description>
         <shortcut></shortcut>
     </item-spec>
+    <item-spec code="ZP2015_PACKET_TYPE_SAMOST" item-type="ZP2015_PACKET_TYPE">
+        <name>Samostatně</name>
+        <description>Samostatně</description>
+        <shortcut>sam</shortcut>
+    </item-spec>
+    <item-spec code="ZP2015_PACKET_TYPE_KAR" item-type="ZP2015_PACKET_TYPE">
+        <name>Karton</name>
+        <description>Karton</description>
+        <shortcut>kar</shortcut>
+    </item-spec>
+    <item-spec code="ZP2015_PACKET_TYPE_FAS" item-type="ZP2015_PACKET_TYPE">
+        <name>Fascikl</name>
+        <description>Fascikl</description>
+        <shortcut>fas</shortcut>
+    </item-spec>
     
     <!-- typ vystpupu -->
     <item-spec code="ZP2015_OUTPUT_MAN" item-type="ZP2015_OUTPUT_TYPE">

@@ -24,12 +24,12 @@ import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataFileRef;
 import cz.tacr.elza.domain.ArrDataJsonTable;
-import cz.tacr.elza.domain.ArrDataPacketRef;
 import cz.tacr.elza.domain.ArrDataPartyRef;
 import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrDataStructureRef;
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrItem;
-import cz.tacr.elza.domain.ArrPacket;
+import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RulItemSpec;
@@ -46,10 +46,10 @@ import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.FundFileRepository;
 import cz.tacr.elza.repository.ItemRepository;
 import cz.tacr.elza.repository.ItemSpecRegisterRepository;
-import cz.tacr.elza.repository.PacketRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
+import cz.tacr.elza.repository.StructuredObjectRepository;
 
 /**
  * Serviska pro správu hodnot atributů.
@@ -67,7 +67,7 @@ public class ItemService {
     private PartyRepository partyRepository;
 
     @Autowired
-    private PacketRepository packetRepository;
+    private StructuredObjectRepository structureDataRepository;
 
     @Autowired
     private FundFileRepository fundFileRepository;
@@ -136,13 +136,13 @@ public class ItemService {
         if (data != null) {
             if (data instanceof ArrDataJsonTable) {
                 checkJsonTableData(((ArrDataJsonTable) data).getValue(), item.getItemType().getColumnsDefinition());
-            }
+        }
 
             ArrData dataNew = ArrData.makeCopyWithoutId(data);
             dataRepository.save(dataNew);
 
             item.setData(dataNew);
-        }
+    }
         return itemRepository.save(item);
     }
 
@@ -167,7 +167,7 @@ public class ItemService {
         em.persist(newItem);
 
         return newItem;
-    }
+        }
 
     /**
      * Kontrola typu a specifikace.
@@ -228,7 +228,7 @@ public class ItemService {
 
         // mapy pro naplnění ID entit
         Map<Integer, ArrDataPartyRef> partyMap = new HashMap<>();
-        Map<Integer, ArrDataPacketRef> packetMap = new HashMap<>();
+        Map<Integer, ArrDataStructureRef> structureMap = new HashMap<>();
         Map<Integer, ArrDataFileRef> fileMap = new HashMap<>();
         Map<Integer, ArrDataRecordRef> recordMap = new HashMap<>();
 
@@ -239,9 +239,9 @@ public class ItemService {
                 if (data instanceof ArrDataPartyRef) {
                     ParParty party = ((ArrDataPartyRef) data).getParty();
                     partyMap.put(party.getPartyId(), (ArrDataPartyRef) data);
-                } else if (data instanceof ArrDataPacketRef) {
-                    ArrPacket packet = ((ArrDataPacketRef) data).getPacket();
-                    packetMap.put(packet.getPacketId(), (ArrDataPacketRef) data);
+                } else if (data instanceof ArrDataStructureRef) {
+                    ArrStructuredObject structureData = ((ArrDataStructureRef) data).getStructuredObject();
+                    structureMap.put(structureData.getStructuredObjectId(), (ArrDataStructureRef) data);
                 } else if (data instanceof ArrDataFileRef) {
                     ArrFile file = ((ArrDataFileRef) data).getFile();
                     fileMap.put(file.getFileId(), (ArrDataFileRef) data);
@@ -252,10 +252,10 @@ public class ItemService {
             }
         }
 
-        Set<Integer> packetIds = packetMap.keySet();
-        List<ArrPacket> packetEntities = packetRepository.findAll(packetIds);
-        for (ArrPacket packetEntity : packetEntities) {
-            packetMap.get(packetEntity.getPacketId()).setPacket(packetEntity);
+        Set<Integer> structureDataIds = structureMap.keySet();
+        List<ArrStructuredObject> structureDataEntities = structureDataRepository.findAll(structureDataIds);
+        for (ArrStructuredObject structureDataEntity : structureDataEntities) {
+            structureMap.get(structureDataEntity.getStructuredObjectId()).setStructuredObject(structureDataEntity);
         }
 
         Set<Integer> partyIds = partyMap.keySet();

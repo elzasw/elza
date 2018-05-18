@@ -132,7 +132,6 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
             condition =  builder.or(
                     builder.like(builder.lower(record.get(RegRecord.RECORD)), searchValue),
                     builder.like(builder.lower(builder.substring(record.get(RegRecord.CHARACTERISTICS), 1, StringLength.LENGTH_1000)), searchValue),
-                    builder.like(builder.lower(builder.substring(record.get(RegRecord.NOTE), 1, StringLength.LENGTH_1000)), searchValue),
                     builder.like(builder.lower(variantRecord.get(RegVariantRecord.RECORD)), searchValue)
             );
         }
@@ -146,10 +145,6 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
 
         if (condition != null) {
             conditions.add(condition);
-        }
-
-        if (parentRecord != null) {
-            conditions.add(builder.equal(record.get(RegRecord.PARENT_RECORD), parentRecord));
         }
 
         if (excludeInvalid != null && excludeInvalid) {

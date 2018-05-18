@@ -2,10 +2,10 @@ package cz.tacr.elza.dataexchange.input.reader.handlers;
 
 import javax.xml.bind.JAXBElement;
 
+import cz.tacr.elza.dataexchange.input.aps.AccessPointProcessor;
 import cz.tacr.elza.dataexchange.input.context.ImportContext;
 import cz.tacr.elza.dataexchange.input.context.ImportPhase;
-import cz.tacr.elza.dataexchange.input.processor.ItemProcessor;
-import cz.tacr.elza.dataexchange.input.processor.ItemProcessorFactory;
+import cz.tacr.elza.dataexchange.input.reader.ItemProcessor;
 import cz.tacr.elza.schema.v2.AccessPoint;
 
 /**
@@ -24,7 +24,7 @@ public class AccessPointElementHandler extends JaxbElementHandler<AccessPoint> {
 
     @Override
     protected void handleJaxbElement(JAXBElement<AccessPoint> element) {
-        ItemProcessor processor = ItemProcessorFactory.createAccessPointProcessor(context);
+        ItemProcessor processor = new AccessPointProcessor(context);
         processor.process(element.getValue());
     }
 }

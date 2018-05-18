@@ -44,6 +44,7 @@ import EditRegistryForm from "./EditRegistryForm";
 import RegistryDetailVariantRecords from "./RegistryDetailVariantRecords";
 import RegistryDetailCoordinates from "./RegistryDetailCoordinates";
 import {requestScopesIfNeeded} from "../../actions/refTables/scopesData";
+import {FOCUS_KEYS} from "../../constants";
 
 
 class RegistryDetail extends AbstractReactComponent {
@@ -56,7 +57,7 @@ class RegistryDetail extends AbstractReactComponent {
         return { shortcuts: this.shortcutManager };
     }
 
-    state = {note:null}
+    state = {}
 
     componentDidMount() {
         this.trySetFocus();
@@ -73,9 +74,7 @@ class RegistryDetail extends AbstractReactComponent {
         const {registryDetail:{id, fetched, data}} = nextProps;
         if ((id !== this.props.registryDetail.id && fetched) || (!this.props.registryDetail.fetched && fetched)) {
             if (data) {
-                this.setState({note: data.note});
-            } else {
-                this.setState({note: null});
+                this.setState({});
             }
         }
     }
@@ -98,7 +97,7 @@ class RegistryDetail extends AbstractReactComponent {
     trySetFocus = (props = this.props) => {
         const {focus} = props;
         if (canSetFocus()) {
-            if (isFocusFor(focus, 'registry', 2)) {
+            if (isFocusFor(focus, FOCUS_KEYS.REGISTRY, 2)) {
                 this.setState({}, () => {
                     if (this.refs.registryTitle) {
                         this.refs.registryTitle.focus();
@@ -142,7 +141,6 @@ class RegistryDetail extends AbstractReactComponent {
                 <EditRegistryForm
                     key='editRegistryForm'
                     initData={data}
-                    parentRecordId={data.parentRecordId}
                     parentRegisterTypeId={data.registerTypeId}
                     onSubmitForm={this.handleRecordUpdateCall}
                 />
@@ -160,7 +158,7 @@ class RegistryDetail extends AbstractReactComponent {
             ...value
         }, () => {
             // Nastavení focus
-            this.dispatch(setFocus('registry', 2))
+            this.dispatch(setFocus(FOCUS_KEYS.REGISTRY, 2))
         }));
 
     };
@@ -179,22 +177,6 @@ class RegistryDetail extends AbstractReactComponent {
             scopeId: data ? data.scopeId : null
         });
     }
-
-    handleNoteBlur = (event, element) => {
-        if (event.target.value !== this.props.registryDetail.data.note) {
-            this.dispatch(registryUpdate({
-                ...this.props.registryDetail.data,
-                note: event.target.value
-            }));
-        }
-    };
-
-    handleNoteChange = (e) => {
-        this.setState({
-            note: e.target.value
-        });
-    };
-
     getRecordId = (data) => {
         if(data.externalId) {
             if(data.externalSystem && data.externalSystem.name){
@@ -205,25 +187,6 @@ class RegistryDetail extends AbstractReactComponent {
         } else  {
             return data.id;
         }
-    }
-    getHierarchy = (data) => {
-        const hierarchy = [];
-        data.typesToRoot.slice().reverse().map((val) => {
-            hierarchy.push(val.name);
-        });
-        data.parents.slice().reverse().map((val) => {
-            hierarchy.push(val.name);
-        });
-        return hierarchy;
-    }
-
-    createHierarchyElement = (hierarchy,delimiter = ">") => {
-        var hierarchyElement = [];
-        for(var i = 0; i < hierarchy.length; i++){
-            if(i > 0){hierarchyElement.push(<span key="hierarchy-delimiter" className="hierarchy-delimiter">{delimiter}</span>);}
-            hierarchyElement.push(<span key={i + "hierarchy-level"} className="hierarchy-level">{hierarchy[i].toUpperCase()}</span>);
-        }
-        return hierarchyElement;
     }
 
     getScopeLabel = (scopeId, scopes) => {
@@ -236,7 +199,7 @@ class RegistryDetail extends AbstractReactComponent {
 
         let icon = 'fa-folder';
 
-        if (registryDetail.data && registryDetail.data.hierarchical === false) {
+        if (registryDetail.data) {
             icon = 'fa-file-o';
         }
 
@@ -252,11 +215,6 @@ class RegistryDetail extends AbstractReactComponent {
         }
 
         const disableEdit = !this.canEdit();
-
-
-        var hierarchy = this.getHierarchy(data);
-        var delimiter = <Icon glyph="fa-angle-right"/>;
-        var hierarchyElement = this.createHierarchyElement(hierarchy,delimiter);
 
         let headerCls = "registry-header";
         if (data.invalid) {
@@ -291,7 +249,6 @@ class RegistryDetail extends AbstractReactComponent {
                         </div>
                     </div>
                     <div className="registry-type">
-                        {hierarchyElement}
                         {data.scopeId && <span className="scope-label">
                             {scopes && this.getScopeLabel(data.scopeId, scopes)}
                         </span>}
@@ -307,17 +264,6 @@ class RegistryDetail extends AbstractReactComponent {
                             <div className='line variant-name'>
                                 <label>{i18n('registry.detail.variantRegistry')}</label>
                                 <RegistryDetailVariantRecords value={data.variantRecords ? data.variantRecords : []} regRecordId={data.id} disabled={disableEdit} />
-                            </div>
-                            <div className='line'>
-                                <div className='reg-coordinates-labels'>
-                                    <label>{i18n('registry.detail.coordinates')}</label>
-                                    <label>{i18n('registry.coordinates.description')}</label>
-                                </div>
-                                <RegistryDetailCoordinates value={data.coordinates ? data.coordinates : []} regRecordId={data.id} disabled={disableEdit} />
-                            </div>
-                            <div className='line note'>
-                                <label>{i18n('registry.detail.note')}</label>
-                                <FormInput disabled={disableEdit} onChange={this.handleNoteChange} onBlur={this.handleNoteBlur} componentClass='textarea' value={this.state.note} />
                             </div>
                         </div>
                     </div>

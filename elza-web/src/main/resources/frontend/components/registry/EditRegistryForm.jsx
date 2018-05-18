@@ -47,7 +47,7 @@ class EditRegistryForm extends AbstractReactComponent {
     submitReduxForm = (values, dispatch) => submitForm(EditRegistryForm.validate,values,this.props,this.props.onSubmitForm,dispatch);
 
     render() {
-        const {fields: { record, characteristics, registerTypeId}, handleSubmit, onClose, initData, registryRegionRecordTypes, parentRecordId, submitting} = this.props;
+        const {fields: { record, characteristics, registerTypeId}, handleSubmit, onClose, initData, registryRegionRecordTypes, submitting} = this.props;
 
         const items = registryRegionRecordTypes.item != null ? registryRegionRecordTypes.item : [];
         const registerTypesIdValue = initData.registerTypeId && !registerTypeId.value ? initData.registerTypeId : registerTypeId.value;
@@ -61,13 +61,13 @@ class EditRegistryForm extends AbstractReactComponent {
                     items = {items}
                     tree
                     alwaysExpanded
-                    allowSelectItem={(id, item) => item.addRecord}
+                    allowSelectItem={(item) => item.addRecord}
                     {...registerTypeId}
                     {...decorateFormField(registerTypeId)}
                     onChange={item => registerTypeId.onChange(item ? item.id : null)}
                     onBlur={item => registerTypeId.onBlur(item ? item.id : null)}
                     value={value}
-                    disabled={parentRecordId != null}
+                    disabled={false}
                 />
                 <FormInput type="text" label={i18n('registry.name')} {...record} {...decorateFormField(record)}/>
                 <FormInput componentClass="textarea" label={i18n('registry.characteristics')} {...characteristics} {...decorateFormField(characteristics)}/>

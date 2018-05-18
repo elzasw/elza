@@ -25,10 +25,6 @@ public class RegRegisterTypeVO {
      */
     private String name;
     /**
-     * Příznak, zda rejstříková hesla tohoto typu rejstříku tvoří hierarchii.
-     */
-    private Boolean hierarchical;
-    /**
      * Příznak, zda může daný typ rejstříku obsahovat hesla nebo se jedná jen o "nadtyp".
      */
     private Boolean addRecord;
@@ -74,14 +70,6 @@ public class RegRegisterTypeVO {
 
     public void setName(final String name) {
         this.name = name;
-    }
-
-    public Boolean getHierarchical() {
-        return hierarchical;
-    }
-
-    public void setHierarchical(final Boolean hierarchical) {
-        this.hierarchical = hierarchical;
     }
 
     public Boolean getAddRecord() {

@@ -70,7 +70,7 @@ function changeSearchedIndex(state, newIndex) {
 }
 
 export default function fundDataGrid(state = initialState, action = {}) {
-    if (nodeFormActions.isSubNodeFormAction(action, "NODE")) {
+    if (nodeFormActions.isSubNodeFormAction(action)) {
         var result = {
             ...state,
             subNodeForm: subNodeForm(state.subNodeForm, action),

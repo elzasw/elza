@@ -21,7 +21,7 @@ import cz.tacr.elza.dataexchange.input.parties.context.PartiesContext;
 import cz.tacr.elza.dataexchange.input.parties.context.PartyInfo;
 import cz.tacr.elza.dataexchange.input.parties.context.PartyNameWrapper;
 import cz.tacr.elza.dataexchange.input.parties.context.PartyRelatedIdHolder;
-import cz.tacr.elza.dataexchange.input.processor.ItemProcessor;
+import cz.tacr.elza.dataexchange.input.reader.ItemProcessor;
 import cz.tacr.elza.domain.ParComplementType;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyName;

@@ -21,9 +21,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import cz.tacr.elza.bulkaction.BulkActionService;
 import cz.tacr.elza.bulkaction.generator.result.ActionResult;
 import cz.tacr.elza.bulkaction.generator.result.Result;
+import cz.tacr.elza.controller.vo.OutputSettingsVO;
 import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.core.data.RuleSystemItemType;
 import cz.tacr.elza.core.data.StaticDataService;
@@ -143,7 +147,7 @@ public class OutputService {
 
     public OutputRequestStatus addRequest(int outputDefinitionId, ArrFundVersion fundVersion, boolean checkBulkActions) {
         return outputServiceInternal.addRequest(outputDefinitionId, fundVersion, checkBulkActions);
-    }
+        }
 
     /**
      * Smazat pojmenovaný výstup.
@@ -486,12 +490,12 @@ public class OutputService {
         List<ArrNodeOutput> removedNodes = new ArrayList<>();
         for (ArrNodeOutput nodeOutput : outputNodes) {
             if (nodeIds.contains(nodeOutput.getNodeId())) {
-                nodeOutput.setDeleteChange(change);
+                    nodeOutput.setDeleteChange(change);
                 removedNodes.add(nodeOutput);
             } else {
                 remainingNodeIds.add(nodeOutput.getNodeId());
+                }
             }
-        }
 
         if (nodeIds.size() != removedNodes.size()) {
             throw new BusinessException("Byl předán seznam s neplatným identifikátorem uzlu: " + nodeIds, ArrangementCode.NODE_NOT_FOUND).set("id", nodeIds);
@@ -630,8 +634,8 @@ public class OutputService {
             if (currNodeIds.contains(nodeIdAdd)) {
                 throw new BusinessException("Nelze přidat již přidaný uzel. (ID=" + nodeIdAdd + ")",
                         ArrangementCode.ALREADY_ADDED);
+                }
             }
-        }
 
         List<ArrNode> nodes = nodeRepository.findAll(connectNodeIds);
 
@@ -695,10 +699,10 @@ public class OutputService {
 
         if (nodeIds.size() == 0) {
             return false;
-        }
+            }
         
         return storeResults(fundVersion, change, nodeIds, outputDefinition, null);
-    }
+        }
         
     private boolean storeResults(final ArrFundVersion fundVersion,
                                  final ArrChange change,
@@ -725,13 +729,13 @@ public class OutputService {
                 if (actionRecommended.getAction().equals(action)) {
                     Result resultObj = bulkActionRun.getResult();
                     if (resultObj != null && resultObj.getResults() != null) {
-                        // process all results
+                    // process all results
                         for (ActionResult result : resultObj.getResults()) {
-                            result.createOutputItems(connector);
-                        }
+                        result.createOutputItems(connector);
                     }
                 }
             }
+        }
         }
 
         return connector.getModifiedItemTypeIds().size() > 0;
@@ -992,7 +996,7 @@ public class OutputService {
                     outputItem.getPosition());
             for (ArrOutputItem item : outputItems) {
                 itemService.copyItem(item, change, item.getPosition() - 1);
-            }
+        }
         }
 
         outputItem.setDeleteChange(change);
@@ -1044,13 +1048,13 @@ public class OutputService {
 
         checkCalculatingAttribute(outputDefinition, outputItemDB.getItemType());
 
-        outputDefinition.setVersion(outputDefinitionVersion);
+            outputDefinition.setVersion(outputDefinitionVersion);
 
-        // uložení uzlu (kontrola optimistických zámků)
-        saveOutputDefinition(outputDefinition);
+            // uložení uzlu (kontrola optimistických zámků)
+            saveOutputDefinition(outputDefinition);
 
-        // vytvoření změny
-        change = arrangementService.createChange(null);
+            // vytvoření změny
+            change = arrangementService.createChange(null);
 
         ArrOutputItem outputItemUpdated = updateOutputItem(outputItem, outputItemDB, fundVersion, change);
 
@@ -1077,54 +1081,54 @@ public class OutputService {
             throw new BusinessException("Nelze aktualizovat prvek popisu pro výstup v uzavřené verzi.", ArrangementCode.VERSION_ALREADY_CLOSED);
         }
 
-		Integer positionOrig = outputItemDB.getPosition();
-        Integer positionNew = outputItem.getPosition();
+			Integer positionOrig = outputItemDB.getPosition();
+            Integer positionNew = outputItem.getPosition();
 
-        // změnila pozice, budou se provádět posuny
-        if (positionOrig != positionNew) {
+            // změnila pozice, budou se provádět posuny
+            if (positionOrig != positionNew) {
 
 			int maxPosition = outputItemRepository.findMaxItemPosition(outputItemDB.getItemType(), outputItemDB.getOutputDefinition());
 
-            if (outputItem.getPosition() == null || (outputItem.getPosition() > maxPosition)) {
-                outputItem.setPosition(maxPosition + 1);
-            }
+                if (outputItem.getPosition() == null || (outputItem.getPosition() > maxPosition)) {
+                    outputItem.setPosition(maxPosition + 1);
+                }
 
-            List<ArrOutputItem> outputItemsMove;
-            Integer diff;
+                List<ArrOutputItem> outputItemsMove;
+                Integer diff;
 
-            if (positionNew < positionOrig) {
-                diff = 1;
-				outputItemsMove = findOutputItemsBetweenPosition(outputItemDB, positionNew, positionOrig - 1);
-            } else {
-                diff = -1;
-				outputItemsMove = findOutputItemsBetweenPosition(outputItemDB, positionOrig + 1, positionNew);
-            }
+                if (positionNew < positionOrig) {
+                    diff = 1;
+					outputItemsMove = findOutputItemsBetweenPosition(outputItemDB, positionNew, positionOrig - 1);
+                } else {
+                    diff = -1;
+					outputItemsMove = findOutputItemsBetweenPosition(outputItemDB, positionOrig + 1, positionNew);
+                }
 
             for (ArrOutputItem item : outputItemsMove) {
                 itemService.copyItem(item, change, item.getPosition() + diff);
             }
         }
 
-        try {
-			ArrOutputItem descItemNew = new ArrOutputItem(outputItemDB);
+            try {
+				ArrOutputItem descItemNew = new ArrOutputItem(outputItemDB);
 
-			outputItemDB.setDeleteChange(change);
+				outputItemDB.setDeleteChange(change);
 			itemService.save(outputItemDB);
 
-            descItemNew.setItemId(null);
-            descItemNew.setCreateChange(change);
-            descItemNew.setPosition(positionNew);
-            descItemNew.setData(outputItem.getData());
+                descItemNew.setItemId(null);
+                descItemNew.setCreateChange(change);
+                descItemNew.setPosition(positionNew);
+                descItemNew.setData(outputItem.getData());
 
             ArrOutputItem outputItemUpdated = itemService.save(descItemNew);
 
             outputServiceInternal.publishOutputItemChanged(outputItemUpdated, version.getFundVersionId());
             return outputItemUpdated;
 
-        } catch (Exception e) {
-            throw new SystemException(e);
+            } catch (Exception e) {
+                throw new SystemException(e);
+            }
         }
-    }
 
     /**
      * Vyhledá všechny hodnoty atributu mezi pozicemi.
@@ -1494,5 +1498,13 @@ public class OutputService {
         // sockety
         outputServiceInternal.publishOutputItemChanged(outputItemCreated, fundVersion.getFundVersionId());
         return outputItemCreated;
+    }
+
+    public void setOutputSettings(OutputSettingsVO outputConfig, Integer outputId) throws JsonProcessingException {
+        ArrOutputDefinition outputDefinition = outputDefinitionRepository.findByOutputId(outputId);
+        ObjectMapper mapper = new ObjectMapper();
+        String s = mapper.writeValueAsString(outputConfig);
+        outputDefinition.setOutputSettings(s);
+        outputDefinitionRepository.save(outputDefinition);
     }
 }

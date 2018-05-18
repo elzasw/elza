@@ -2,9 +2,16 @@ package cz.tacr.elza.controller;
 
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import cz.tacr.elza.domain.RulArrangementExtension;
+import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.repository.ArrangementExtensionRepository;
+import cz.tacr.elza.repository.NodeExtensionRepository;
+import cz.tacr.elza.repository.PackageRepository;
+import cz.tacr.elza.repository.RuleSetRepository;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -14,12 +21,21 @@ import cz.tacr.elza.controller.vo.RulPolicyTypeVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import org.springframework.beans.factory.annotation.Autowired;
 
 
 /**
  * Test for rule controller
  */
 public class RuleControllerTest extends AbstractControllerTest {
+
+    @Autowired
+    private ArrangementExtensionRepository arrExtsRepo;
+
+    @Autowired
+    private RuleSetRepository ruleSetRepository;
+    @Autowired
+    private NodeExtensionRepository nodeExtensionRepository;
 
     @Test
     public void getDataTypesTest() {
@@ -66,9 +82,9 @@ public class RuleControllerTest extends AbstractControllerTest {
         Assert.assertNotNull(policyTypes);
 
         // check that all are visible by default
-        RuleController.VisiblePolicyTypes visiblePolicy = getVisiblePolicy(rootNode.getId(), fundVersion.getId(), false);
+        RuleController.VisiblePolicyTypes visiblePolicy = getVisiblePolicy(rootNode.getId(), fundVersion.getId());
         Assert.assertNotNull(visiblePolicy);
-        Map<Integer, Boolean> policyTypeIdsMap = visiblePolicy.getPolicyTypeIdsMap();
+        Map<Integer, Boolean> policyTypeIdsMap = visiblePolicy.getNodePolicyTypeIdsMap();
         Assert.assertNotNull(policyTypeIdsMap);
         Assert.assertTrue(policyTypeIdsMap.size() == 4);
 
@@ -83,11 +99,12 @@ public class RuleControllerTest extends AbstractControllerTest {
         policyTypes.stream().forEach(item -> policyTypeIdsMapSet.put(item.getId(), false));
         params.setIncludeSubtree(false);
         params.setPolicyTypeIdsMap(policyTypeIdsMapSet);
+        params.setNodeExtensions(new HashSet<>());
         setVisiblePolicy(rootNode.getId(), fundVersion.getId(), params);
 
-        visiblePolicy = getVisiblePolicy(rootNode.getId(), fundVersion.getId(), false);
+        visiblePolicy = getVisiblePolicy(rootNode.getId(), fundVersion.getId());
         Assert.assertNotNull(visiblePolicy);
-        policyTypeIdsMap = visiblePolicy.getPolicyTypeIdsMap();
+        policyTypeIdsMap = visiblePolicy.getNodePolicyTypeIdsMap();
         Assert.assertNotNull(policyTypeIdsMap);
         Assert.assertTrue(policyTypeIdsMap.size() == 4);
 
@@ -103,11 +120,12 @@ public class RuleControllerTest extends AbstractControllerTest {
         Map<Integer, Boolean> policyTypeIdsMapDelete = new HashMap<>();
         params.setIncludeSubtree(false);
         params.setPolicyTypeIdsMap(policyTypeIdsMapDelete);
+        params.setNodeExtensions(new HashSet<>());
         setVisiblePolicy(rootNode.getId(), fundVersion.getId(), params);
 
-        visiblePolicy = getVisiblePolicy(rootNode.getId(), fundVersion.getId(), false);
+        visiblePolicy = getVisiblePolicy(rootNode.getId(), fundVersion.getId());
         Assert.assertNotNull(visiblePolicy);
-        policyTypeIdsMap = visiblePolicy.getPolicyTypeIdsMap();
+        policyTypeIdsMap = visiblePolicy.getNodePolicyTypeIdsMap();
         Assert.assertNotNull(policyTypeIdsMap);
         Assert.assertTrue(policyTypeIdsMap.size() == 4);
 
@@ -117,6 +135,61 @@ public class RuleControllerTest extends AbstractControllerTest {
             Assert.assertNotNull(state);
             Assert.assertTrue(state);
         }
+
+        final RulArrangementExtension ext1 = getExtension("01", fundVersion);
+        final RulArrangementExtension ext2 = getExtension("02", fundVersion);
+
+        // NodeExtensions
+        // TODO odstranit po funkčním balíčku s rozšířeními
+        params = new RuleController.VisiblePolicyParams();
+        params.setIncludeSubtree(false);
+        params.setPolicyTypeIdsMap(policyTypeIdsMapDelete);
+        final HashSet<Integer> ids = new HashSet<>(2);
+        ids.add(ext1.getArrangementExtensionId());
+        ids.add(ext2.getArrangementExtensionId());
+        params.setNodeExtensions(ids);
+        setVisiblePolicy(rootNode.getId(), fundVersion.getId(), params);
+
+        visiblePolicy = getVisiblePolicy(rootNode.getId(), fundVersion.getId());
+        Assert.assertTrue(visiblePolicy.getNodeExtensions().size() == 2);
+
+
+        params = new RuleController.VisiblePolicyParams();
+        params.setIncludeSubtree(false);
+        params.setPolicyTypeIdsMap(policyTypeIdsMapDelete);
+        ids.remove(ext1.getArrangementExtensionId());
+        params.setNodeExtensions(ids);
+        setVisiblePolicy(rootNode.getId(), fundVersion.getId(), params);
+
+        visiblePolicy = getVisiblePolicy(rootNode.getId(), fundVersion.getId());
+        Assert.assertTrue(visiblePolicy.getNodeExtensions().size() == 1);
+        Assert.assertTrue(visiblePolicy.getNodeExtensions().get(0).getId().equals(ext2.getArrangementExtensionId()));
+
+        params = new RuleController.VisiblePolicyParams();
+        params.setIncludeSubtree(false);
+        params.setPolicyTypeIdsMap(policyTypeIdsMapDelete);
+        params.setNodeExtensions(new HashSet<>());
+        setVisiblePolicy(rootNode.getId(), fundVersion.getId(), params);
+
+        visiblePolicy = getVisiblePolicy(rootNode.getId(), fundVersion.getId());
+        Assert.assertTrue(visiblePolicy.getNodeExtensions().size() == 0);
+
+        Assert.assertTrue(nodeExtensionRepository.count() == 2);
+        nodeExtensionRepository.deleteAll();
+        arrExtsRepo.delete(ext1);
+        arrExtsRepo.delete(ext2);
+        // TODO END
     }
 
+
+    // TODO odstranit po funkčním balíčku s rozšířeními
+    private RulArrangementExtension getExtension(String baseName, ArrFundVersionVO fundVersion) {
+        final RulArrangementExtension extension = new RulArrangementExtension();
+        extension.setCode(baseName);
+        extension.setName(baseName);
+        final RulRuleSet ruleSet = ruleSetRepository.findOne(fundVersion.getRuleSetId());
+        extension.setRulPackage(ruleSet.getPackage());
+        extension.setRuleSet(ruleSet);
+        return arrExtsRepo.save(extension);
+    }
 }

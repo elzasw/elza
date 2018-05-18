@@ -492,7 +492,7 @@ public class PartyControllerTest extends AbstractControllerTest {
         final ParPersonVO personO1 = givePerson("O1");
 
         //Arr connection
-        final RulDescItemTypeExtVO type = findDescItemTypeByCode("ZP2015_ORIGINATOR");
+        final RulDescItemTypeExtVO type = findDescItemTypeByCode("SRD_ORIGINATOR");
         final ArrItemVO descItem = buildDescItem(type.getCode(), null, personO1, null, null);
         createDescItem(descItem, fundVersion, rootNode, type);
 

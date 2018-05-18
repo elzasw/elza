@@ -8,6 +8,13 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import cz.tacr.elza.controller.vo.RulArrangementExtensionVO;
+import cz.tacr.elza.controller.vo.RulStructureTypeVO;
+import cz.tacr.elza.domain.ArrDataStructureRef;
+import cz.tacr.elza.domain.RulArrangementExtension;
+import cz.tacr.elza.service.attachment.AttachmentService;
+import cz.tacr.elza.domain.RulStructuredType;
+import cz.tacr.elza.repository.StructuredObjectRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,7 +43,6 @@ import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
 import cz.tacr.elza.controller.vo.ArrOutputDefinitionVO;
 import cz.tacr.elza.controller.vo.ArrOutputFileVO;
 import cz.tacr.elza.controller.vo.ArrOutputVO;
-import cz.tacr.elza.controller.vo.ArrPacketVO;
 import cz.tacr.elza.controller.vo.BulkActionRunVO;
 import cz.tacr.elza.controller.vo.BulkActionVO;
 import cz.tacr.elza.controller.vo.DmsFileVO;
@@ -62,7 +68,6 @@ import cz.tacr.elza.controller.vo.ParRelationRoleTypeVO;
 import cz.tacr.elza.controller.vo.ParRelationTypeVO;
 import cz.tacr.elza.controller.vo.ParRelationVO;
 import cz.tacr.elza.controller.vo.ParUnitdateVO;
-import cz.tacr.elza.controller.vo.RegCoordinatesVO;
 import cz.tacr.elza.controller.vo.RegExternalSystemSimpleVO;
 import cz.tacr.elza.controller.vo.RegExternalSystemVO;
 import cz.tacr.elza.controller.vo.RegRecordSimple;
@@ -73,7 +78,6 @@ import cz.tacr.elza.controller.vo.RegVariantRecordVO;
 import cz.tacr.elza.controller.vo.RulDataTypeVO;
 import cz.tacr.elza.controller.vo.RulDescItemSpecVO;
 import cz.tacr.elza.controller.vo.RulOutputTypeVO;
-import cz.tacr.elza.controller.vo.RulPacketTypeVO;
 import cz.tacr.elza.controller.vo.RulPolicyTypeVO;
 import cz.tacr.elza.controller.vo.RulRuleSetVO;
 import cz.tacr.elza.controller.vo.RulTemplateVO;
@@ -97,7 +101,7 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemFileRefVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemFormattedTextVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemIntVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemJsonTableVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemPacketVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStructureVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemPartyRefVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemRecordRefVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStringVO;
@@ -117,7 +121,6 @@ import cz.tacr.elza.domain.ArrDataFileRef;
 import cz.tacr.elza.domain.ArrDataInteger;
 import cz.tacr.elza.domain.ArrDataJsonTable;
 import cz.tacr.elza.domain.ArrDataNull;
-import cz.tacr.elza.domain.ArrDataPacketRef;
 import cz.tacr.elza.domain.ArrDataPartyRef;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ArrDataString;
@@ -136,7 +139,7 @@ import cz.tacr.elza.domain.ArrItemFileRef;
 import cz.tacr.elza.domain.ArrItemFormattedText;
 import cz.tacr.elza.domain.ArrItemInt;
 import cz.tacr.elza.domain.ArrItemJsonTable;
-import cz.tacr.elza.domain.ArrItemPacketRef;
+import cz.tacr.elza.domain.ArrItemStructureRef;
 import cz.tacr.elza.domain.ArrItemPartyRef;
 import cz.tacr.elza.domain.ArrItemRecordRef;
 import cz.tacr.elza.domain.ArrItemString;
@@ -152,7 +155,6 @@ import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutputDefinition;
 import cz.tacr.elza.domain.ArrOutputFile;
 import cz.tacr.elza.domain.ArrOutputResult;
-import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.DmsFile;
 import cz.tacr.elza.domain.ParComplementType;
 import cz.tacr.elza.domain.ParCreator;
@@ -174,7 +176,6 @@ import cz.tacr.elza.domain.ParRelationEntity;
 import cz.tacr.elza.domain.ParRelationRoleType;
 import cz.tacr.elza.domain.ParRelationType;
 import cz.tacr.elza.domain.ParUnitdate;
-import cz.tacr.elza.domain.RegCoordinates;
 import cz.tacr.elza.domain.RegExternalSystem;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
@@ -186,7 +187,6 @@ import cz.tacr.elza.domain.RulItemSpecExt;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulOutputType;
-import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.RulPolicyType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.RulTemplate;
@@ -203,7 +203,6 @@ import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.FundFileRepository;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.OutputResultRepository;
-import cz.tacr.elza.repository.PacketRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.service.RuleService;
@@ -233,7 +232,7 @@ public class ConfigMapperConfiguration {
     @Autowired
     private OutputResultRepository outputResultRepository;
     @Autowired
-    private PacketRepository packetRepository;
+    private StructuredObjectRepository structureDataRepository;
     @Autowired
     private CalendarTypeRepository calendarTypeRepository;
     @Autowired
@@ -242,6 +241,8 @@ public class ConfigMapperConfiguration {
     private RegRecordRepository recordRepository;
     @Autowired
     private RuleService ruleService;
+    @Autowired
+    private AttachmentService attachmentService;
 
     /**
      * @return Tovární třída.
@@ -321,7 +322,7 @@ public class ConfigMapperConfiguration {
                 Geometry geo = coordinates.getValue();
                 String value = GeometryConvertor.convert(geo);
                 coordinatesVO.setValue(value);
-            }
+                    }
 
             @Override
             public void mapBtoA(final ArrItemCoordinatesVO coordinatesVO,
@@ -330,7 +331,7 @@ public class ConfigMapperConfiguration {
                 String str = coordinatesVO.getValue();
                 Geometry value = GeometryConvertor.convert(str);
                 coordinates.setValue(value);
-            }
+                }
          }).exclude("value").byDefault().register();
          mapperFactory.classMap(ArrItemEnum.class, ArrItemEnumVO.class).byDefault().register();
          mapperFactory.classMap(ArrItemFormattedText.class, ArrItemFormattedTextVO.class).byDefault().register();
@@ -361,24 +362,24 @@ public class ConfigMapperConfiguration {
                     }
                 }).byDefault().register();
 
-        mapperFactory.classMap(ArrItemPacketRef.class, ArrItemPacketVO.class).customize(
-                new CustomMapper<ArrItemPacketRef, ArrItemPacketVO>() {
+        mapperFactory.classMap(ArrItemStructureRef.class, ArrItemStructureVO.class).customize(
+                new CustomMapper<ArrItemStructureRef, ArrItemStructureVO>() {
                     @Override
-                    public void mapAtoB(final ArrItemPacketRef descItemPacketRef,
-                                        final ArrItemPacketVO descItemPacketVO,
+                    public void mapAtoB(final ArrItemStructureRef itemStructureRef,
+                                        final ArrItemStructureVO temStructureVO,
                                         final MappingContext context) {
-                        super.mapAtoB(descItemPacketRef, descItemPacketVO, context);
-                        if (descItemPacketRef.getPacket() != null) {
-                            descItemPacketVO.setValue(descItemPacketRef.getPacket().getPacketId());
+                        super.mapAtoB(itemStructureRef, temStructureVO, context);
+                        if (itemStructureRef.getStructuredObject() != null) {
+                            temStructureVO.setValue(itemStructureRef.getStructuredObjectId());
                         }
                     }
 
                     @Override
-                    public void mapBtoA(final ArrItemPacketVO descItemPacketVO,
-                                        final ArrItemPacketRef descItemPacketRef,
+                    public void mapBtoA(final ArrItemStructureVO itemStructureVO,
+                                        final ArrItemStructureRef itemStructureRef,
                                         final MappingContext context) {
-                        super.mapBtoA(descItemPacketVO, descItemPacketRef, context);
-                        descItemPacketRef.setPacket(descItemPacketVO.getValue() == null ? null : packetRepository.findOne(descItemPacketVO.getValue()));
+                        super.mapBtoA(itemStructureVO, itemStructureRef, context);
+                        itemStructureRef.setStructuredObject(itemStructureVO.getValue() == null ? null : structureDataRepository.findOne(itemStructureVO.getValue()));
                     }
                 }).byDefault().register();
         mapperFactory.classMap(ArrItemFileRef.class, ArrItemFileRefVO.class).customize(
@@ -444,31 +445,6 @@ public class ConfigMapperConfiguration {
 
         mapperFactory.classMap(ArrNode.class, ArrNodeVO.class).byDefault().field("nodeId", "id").register();
 
-        mapperFactory.classMap(ArrPacket.class, ArrPacketVO.class).customize(
-                new CustomMapper<ArrPacket, ArrPacketVO>() {
-                    @Override
-                    public void mapAtoB(final ArrPacket packet,
-                                        final ArrPacketVO packetVO,
-                                        final MappingContext context) {
-                        packetVO.setId(packet.getPacketId());
-                        packetVO.setState(packet.getState());
-                        if (packet.getPacketType() != null) {
-                            packetVO.setPacketTypeId(packet.getPacketType().getPacketTypeId());
-                        }
-                        packetVO.setStorageNumber(packet.getStorageNumber());
-                    }
-
-                    @Override
-                    public void mapBtoA(final ArrPacketVO packetVO,
-                                        final ArrPacket packet,
-                                        final MappingContext context) {
-                        packet.setPacketId(packetVO.getId());
-                        packet.setState(packetVO.getState());
-                        packet.setStorageNumber(packetVO.getStorageNumber());
-                    }
-                }
-        ).byDefault().register();
-
         mapperFactory.classMap(ArrChange.class, ArrChangeVO.class).byDefault().field("changeId", "id").register();
         mapperFactory.classMap(BulkActionConfig.class, BulkActionVO.class).customize(
                 new CustomMapper<BulkActionConfig, BulkActionVO>() {
@@ -485,7 +461,10 @@ public class ConfigMapperConfiguration {
         mapperFactory.classMap(ArrFile.class, ArrFileVO.class).field("fileId", "id").exclude("file").byDefault().customize(new CustomMapper<ArrFile, ArrFileVO>() {
             @Override
             public void mapAtoB(final ArrFile arrFile, final ArrFileVO arrFileVO, final MappingContext mappingContext) {
+
                 arrFileVO.setFundId(arrFile.getFund().getFundId());
+                arrFileVO.setEditable(attachmentService.isEditable(arrFile.getMimeType()));
+                arrFileVO.setGeneratePdf(attachmentService.supportGenerateTo(arrFile, "application/pdf"));
             }
 
             @Override
@@ -551,7 +530,6 @@ public class ConfigMapperConfiguration {
 
         mapperFactory.classMap(RegRecord.class, RegRecord.class)
                 .exclude(RegRecord.RECORD_ID)
-                .exclude(RegRecord.PARENT_RECORD)
             .byDefault().register();
 
 
@@ -715,14 +693,8 @@ public class ConfigMapperConfiguration {
                     public void mapAtoB(final RegRecord regRecord,
                                         final RegRecordVO regRecordVO,
                                         final MappingContext context) {
-                        RegRecord parentRecord = regRecord.getParentRecord();
-                        if (parentRecord != null) {
-                            regRecordVO.setParentRecordId(parentRecord.getRecordId());
-                        }
-
                         regRecordVO.setRegisterTypeId(regRecord.getRegisterType().getRegisterTypeId());
                         regRecordVO.setAddRecord(regRecord.getRegisterType().getAddRecord());
-                        regRecordVO.setHierarchical(regRecord.getRegisterType().getHierarchical());
                         regRecordVO.setScopeId(regRecord.getScope().getScopeId());
                         regRecordVO.setInvalid(regRecord.isInvalid());
                     }
@@ -731,11 +703,6 @@ public class ConfigMapperConfiguration {
                     public void mapBtoA(final RegRecordVO regRecordVO,
                                         final RegRecord regRecord,
                                         final MappingContext context) {
-                        if (regRecordVO.getParentRecordId() != null) {
-                            RegRecord parent = new RegRecord();
-                            parent.setRecordId(regRecordVO.getParentRecordId());
-                            regRecord.setParentRecord(parent);
-                        }
 
                         if (regRecordVO.getRegisterTypeId() != null) {
                             RegRegisterType regRegisterType = new RegRegisterType();
@@ -802,6 +769,7 @@ public class ConfigMapperConfiguration {
         mapperFactory.classMap(RulItemTypeExt.class, RulDescItemTypeExtVO.class).byDefault()
                 .field("itemTypeId", "id")
                 .field("rulItemSpecList", "descItemSpecs")
+                .field("structuredTypeId", "structureTypeId")
                 .register();
         mapperFactory.classMap(RulItemTypeExt.class, ItemTypeLiteVO.class).byDefault()
                 .field("itemTypeId", "id")
@@ -835,17 +803,6 @@ public class ConfigMapperConfiguration {
                 })
                 .register();
 
-        mapperFactory.classMap(RulPacketType.class, RulPacketTypeVO.class).byDefault()
-                .field("packetTypeId", "id")
-                .customize(new CustomMapper<RulPacketType, RulPacketTypeVO>() {
-                    @Override
-                    public void mapAtoB(final RulPacketType rulPacketType, final RulPacketTypeVO rulPacketTypeVO, final MappingContext context) {
-                        super.mapAtoB(rulPacketType, rulPacketTypeVO, context);
-                        rulPacketTypeVO.setPackageId(rulPacketType.getPackage().getPackageId());
-                        rulPacketTypeVO.setRuleSetId(rulPacketType.getRuleSet().getRuleSetId());
-                    }
-                })
-                .register();
         mapperFactory.classMap(RulOutputType.class, RulOutputTypeVO.class).byDefault().field("outputTypeId", "id").register();
 
         mapperFactory.classMap(RulRuleSet.class, RulRuleSetVO.class)
@@ -873,6 +830,7 @@ public class ConfigMapperConfiguration {
                 .register();
 
         mapperFactory.classMap(RulPolicyType.class, RulPolicyTypeVO.class).byDefault().field("policyTypeId", "id").register();
+        mapperFactory.classMap(RulArrangementExtension.class, RulArrangementExtensionVO.class).byDefault().field("arrangementExtensionId", "id").register();
 
         mapperFactory.classMap(ScenarioOfNewLevel.class, ScenarioOfNewLevelVO.class).byDefault().register();
 
@@ -948,29 +906,6 @@ public class ConfigMapperConfiguration {
                     }
                 }).byDefault().register();
 
-        mapperFactory.classMap(RegCoordinates.class, RegCoordinatesVO.class)
-                .field("coordinatesId", "id")
-                .customize(
-                new CustomMapper<RegCoordinates, RegCoordinatesVO>() {
-                    @Override
-                    public void mapAtoB(final RegCoordinates coordinates,
-                                        final RegCoordinatesVO coordinatesVO,
-                                        final MappingContext context) {
-                        Geometry geo = coordinates.getValue();
-                        String value = GeometryConvertor.convert(geo);
-                        coordinatesVO.setValue(value);
-                    }
-
-                    @Override
-                    public void mapBtoA(final RegCoordinatesVO coordinatesVO,
-                                        final RegCoordinates coordinates,
-                                        final MappingContext context) {
-                        String str = coordinatesVO.getValue();
-                        Geometry value = GeometryConvertor.convert(str);
-                        coordinates.setValue(value);
-                    }
-                }).exclude("value").byDefault().register();
-
         mapperFactory.classMap(UsrUser.class, UsrUserVO.class)
                 .byDefault()
                 .field("userId", "id")
@@ -1022,6 +957,11 @@ public class ConfigMapperConfiguration {
                 .field("partyGroupId", "id")
                 .register();
 
+        mapperFactory.classMap(RulStructuredType.class, RulStructureTypeVO.class)
+                .byDefault()
+                .field("structuredTypeId", "id")
+                .register();
+
         mapperFactory.classMap(ArrDao.class, ArrDaoVO.class)
                 .field("daoId", "id")
                 .byDefault()
@@ -1050,7 +990,7 @@ public class ConfigMapperConfiguration {
                         Geometry geo = coordinates.getValue();
                         String value = GeometryConvertor.convert(geo);
                         coordinatesVO.setValue(value);
-                    }
+                            }
 
                     @Override
                     public void mapBtoA(final ArrItemCoordinatesVO coordinatesVO,
@@ -1059,7 +999,7 @@ public class ConfigMapperConfiguration {
                         String str = coordinatesVO.getValue();
                         Geometry value = GeometryConvertor.convert(str);
                         coordinates.setValue(value);
-                    }
+                        }
                 }).exclude("value").byDefault().register();
         mapperFactory.classMap(ArrDataNull.class, ArrItemEnumVO.class).byDefault().register();
         mapperFactory.classMap(ArrDataInteger.class, ArrItemIntVO.class).byDefault().register();
@@ -1114,26 +1054,28 @@ public class ConfigMapperConfiguration {
                     }
                 }).byDefault().register();
 
-        mapperFactory.classMap(ArrDataPacketRef.class, ArrItemPacketVO.class).customize(
-                new CustomMapper<ArrDataPacketRef, ArrItemPacketVO>() {
+        mapperFactory.classMap(ArrDataStructureRef.class, ArrItemStructureVO.class).customize(
+                new CustomMapper<ArrDataStructureRef, ArrItemStructureVO>() {
                     @Override
-                    public void mapAtoB(final ArrDataPacketRef descItemPacketRef,
-                                        final ArrItemPacketVO descItemPacketVO,
+                    public void mapAtoB(final ArrDataStructureRef itemStructureDataRef,
+                                        final ArrItemStructureVO itemStructureVO,
                                         final MappingContext context) {
-                        super.mapAtoB(descItemPacketRef, descItemPacketVO, context);
-                        if (descItemPacketRef.getPacket() != null) {
-                            descItemPacketVO.setValue(descItemPacketRef.getPacket().getPacketId());
+                        super.mapAtoB(itemStructureDataRef, itemStructureVO, context);
+                        if (itemStructureDataRef.getStructuredObject() != null) {
+                            itemStructureVO.setValue(itemStructureDataRef.getStructuredObjectId());
                         }
                     }
 
                     @Override
-                    public void mapBtoA(final ArrItemPacketVO descItemPacketVO,
-                                        final ArrDataPacketRef descItemPacketRef,
+                    public void mapBtoA(final ArrItemStructureVO itemStructureVO,
+                                        final ArrDataStructureRef itemStructureRef,
                                         final MappingContext context) {
-                        super.mapBtoA(descItemPacketVO, descItemPacketRef, context);
-                        descItemPacketRef.setPacket(descItemPacketVO.getValue() == null ? null : packetRepository.findOne(descItemPacketVO.getValue()));
+                        super.mapBtoA(itemStructureVO, itemStructureRef, context);
+                        itemStructureRef.setStructuredObject(itemStructureVO.getValue() == null ? null : structureDataRepository.findOne(itemStructureVO.getValue()));
                     }
-                }).byDefault().register();
+                })
+                .field("structuredObject", "structureData")
+                .byDefault().register();
         mapperFactory.classMap(ArrDataFileRef.class, ArrItemFileRefVO.class).customize(
                 new CustomMapper<ArrDataFileRef, ArrItemFileRefVO>() {
                     @Override

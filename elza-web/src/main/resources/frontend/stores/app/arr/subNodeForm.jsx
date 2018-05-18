@@ -61,8 +61,8 @@ export function validate(descItem, refType, valueServerError) {
                 error.value = i18n('subNodeForm.validate.value.notEmpty');
             }
             break;
-        case 'PACKET_REF':
-            if (!descItem.value || descItem.value.length === 0) {
+        case 'STRUCTURED':
+            if (!descItem.value || typeof descItem.value !== 'number') {
                 error.value = i18n('subNodeForm.validate.value.notEmpty');
             }
             break;
@@ -141,10 +141,10 @@ export function convertValue(value, descItem, type) {
                 ["@class"]: ".ArrFileVO"
             };
         },
-        PACKET_REF: (value)=>{
+        STRUCTURED: (value)=>{
             return {
                 value: value.id,
-                packet: value
+                structureData: value
             };
         },
         RECORD_REF: (value)=>{
@@ -237,13 +237,13 @@ export default function subNodeForm(state = initialState, action = {}) {
             };
             // Unitdate server validation
             if(refType.dataType.code === "UNITDATE"){
-                if (loc.descItem.validateTimer) {
-                    clearTimeout(loc.descItem.validateTimer);
-                }
+                    if (loc.descItem.validateTimer) {
+                        clearTimeout(loc.descItem.validateTimer);
+                    }
                 var fc = () => action.dispatch(
                     action.formActions.fundSubNodeFormValueValidate(action.versionId, action.routingKey, action.valueLocation)
                 );
-                loc.descItem.validateTimer = setTimeout(fc, 250);
+                    loc.descItem.validateTimer = setTimeout(fc, 250);
             }
             loc.descItem.error = validate(loc.descItem, refType);
 
@@ -294,6 +294,7 @@ export default function subNodeForm(state = initialState, action = {}) {
         case types.OUTPUT_CHANGES_DETAIL:
         case types.OUTPUT_CHANGES:
         case types.CHANGE_OUTPUTS:
+        case types.CHANGE_STRUCTURE:
         case types.FUND_INVALID:
             return {...state, dirty: true}
         case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_COPY_FROM_PREV_RESPONSE:
@@ -369,7 +370,7 @@ export default function subNodeForm(state = initialState, action = {}) {
                     if (action.descItemResult.item && action.descItemResult.item.calendarTypeId) {
                         loc.descItem.prevCalendarTypeId = action.descItemResult.item.calendarTypeId;
                     }
-                    loc.descItem.touched = false
+                    loc.descItem.touched = false;
                     break;
                 case 'CREATE':
                     loc.descItem.descItemObjectId = action.descItemResult.item.descItemObjectId;
@@ -384,9 +385,9 @@ export default function subNodeForm(state = initialState, action = {}) {
                     if (action.descItemResult.item.calendarTypeId) {
                         loc.descItem.prevCalendarTypeId = action.descItemResult.item.calendarTypeId;
                     }
+                    loc.descItem.touched = false;
                     // Aktualizace position - pokud by create byl na první hodnotě a za ní již nějaké uživatel uložil, musí se vše aktualizovat
                     loc.descItemType.descItems.forEach((descItem, index) => {descItem.position = index + 1});
-
                     break;
                 case 'DELETE_DESC_ITEM_TYPE':
                     // nic dalšího není potřeba, node se aktualizuje výše
@@ -521,7 +522,7 @@ export default function subNodeForm(state = initialState, action = {}) {
                 result.data = null;
                 result.formData = null;
             }
-            updateFormData(result, action.data, refTypesMap);
+            updateFormData(result, action.data, refTypesMap, null, state.dirty);
             return result;
         case types.FUND_SUBNODE_UPDATE:
             var {node, parent} = action.data;
@@ -531,7 +532,7 @@ export default function subNodeForm(state = initialState, action = {}) {
                 // not the right node
                 return state;
             }
-            
+
             var result = {
                 ...state,
                 isFetching: false,

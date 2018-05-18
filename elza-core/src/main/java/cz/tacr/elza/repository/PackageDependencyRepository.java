@@ -18,28 +18,28 @@ public interface PackageDependencyRepository extends JpaRepository<RulPackageDep
     /**
      * Vyhledá současné vazby podle zdrojového balíčku.
      *
-     * @param sourcePackage zdrojový balíček
+     * @param rulPackage zdrojový balíček
      */
-    List<RulPackageDependency> findBySourcePackage(RulPackage sourcePackage);
+    List<RulPackageDependency> findByRulPackage(RulPackage rulPackage);
 
     /**
      * Odstraní současné vazby podle zdrojového balíčku.
      *
-     * @param sourcePackage zdrojový balíček
+     * @param rulPackage zdrojový balíček
      */
-    void deleteBySourcePackage(RulPackage sourcePackage);
+    void deleteByRulPackage(RulPackage rulPackage);
 
     /**
      * Odstraní současné vazby podle cílového balíčku.
      *
-     * @param targetPackage cílový balíček
+     * @param dependsOnPackage cílový balíček
      */
-    void deleteByTargetPackage(RulPackage targetPackage);
+    void deleteByDependsOnPackage(RulPackage dependsOnPackage);
 
     /**
      * Vyhledá závislé balíčky.
      *
-     * @param targetPackage závislý balíček
+     * @param dependsOnPackage závislý balíček
      */
-    List<RulPackageDependency> findByTargetPackage(RulPackage targetPackage);
+    List<RulPackageDependency> findByDependsOnPackage(RulPackage dependsOnPackage);
 }

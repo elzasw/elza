@@ -25,7 +25,6 @@ import tab from './app/global/tab.jsx';
 import adminRegion from './app/admin/adminRegion.jsx';
 import fundForm from './app/arr/form/fundForm.jsx';
 import inlineForm from './app/form/inlineForm.jsx';
-import addPacketForm from './app/arr/form/addPacketForm.jsx';
 import searchForm from './app/arr/form/searchForm.jsx';
 import stateRegion from './app/state/stateRegion.jsx';
 import userDetail from './app/user/userDetail.jsx';
@@ -80,7 +79,6 @@ const rootReducer = combineReducers({
         partyDetail: inlineForm,
         partyForm: inlineForm,
         permissionsEditForm: inlineForm,
-        addPacketForm: addPacketForm,
         addPartyForm: addPartyForm,
         partyNameForm: partyNameForm,
         relationForm: relationForm,
@@ -89,10 +87,11 @@ const rootReducer = combineReducers({
         searchForm,
         addUserForm,
     }).normalize({
-        addPacketForm: {
-            'start': normalizeInt,
-            'size': normalizePacketSize,
-            'count': normalizeInt,
+        templateSettingsForm: {
+            'evenPageOffsetX': normalizeInt,
+            'evenPageOffsetY': normalizeInt,
+            'oddPageOffsetX': normalizeInt,
+            'oddPageOffsetY': normalizeInt,
         }
     })
 });

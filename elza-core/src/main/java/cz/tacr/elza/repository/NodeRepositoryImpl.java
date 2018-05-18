@@ -173,7 +173,8 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
     @Override
 	public ScrollableResults findUncachedNodes() {
 
-		String hql = "SELECT n.nodeId FROM arr_node n WHERE n.nodeId NOT IN (SELECT cn.nodeId FROM arr_cached_node cn)";
+        // přepsáno z NOT IN z důvodu optimalizace na LEFT JOIN
+		String hql = "SELECT n.nodeId FROM arr_node n LEFT JOIN arr_cached_node cn ON cn.nodeId = n.nodeId WHERE cn IS NULL";
 
 		// get Hibernate session
 		Session session = entityManager.unwrap(Session.class);
@@ -379,7 +380,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
      */
     @Override
     public List<ArrNode> findByNodeConformityIsNull() {
-        String hql = "SELECT n FROM arr_node n WHERE n.nodeId NOT IN (SELECT nc.node.nodeId FROM arr_node_conformity nc) AND n.nodeId IN (SELECT l.node.nodeId FROM arr_level l WHERE l.deleteChange IS NULL)";
+        String hql = "SELECT n FROM arr_node n JOIN arr_level l ON l.node = n LEFT JOIN arr_node_conformity nc ON nc.node = n WHERE l.deleteChange IS NULL AND nc IS NULL";
 
         javax.persistence.Query query = entityManager.createQuery(hql);
 

@@ -11,12 +11,14 @@ import org.springframework.stereotype.Component;
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.domain.RulRule;
+import cz.tacr.elza.domain.RulArrangementRule;
+import cz.tacr.elza.domain.RulExtensionRule;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.drools.model.Level;
 import cz.tacr.elza.drools.model.NewLevelApproach;
 import cz.tacr.elza.drools.model.NewLevelApproaches;
 import cz.tacr.elza.drools.service.ScriptModelFactory;
+import cz.tacr.elza.service.RuleService;
 
 
 /**
@@ -32,6 +34,9 @@ public class ScenarioOfNewLevelRules extends Rules {
     @Autowired
     private ResourcePathResolver resourcePathResolver;
 
+    @Autowired
+    private RuleService ruleService;
+
     public synchronized List<ScenarioOfNewLevel> execute(final ArrLevel level,
                                                          final DirectionLevel directionLevel,
                                                          final ArrFundVersion version)
@@ -41,11 +46,20 @@ public class ScenarioOfNewLevelRules extends Rules {
 
         List<Level> levels = scriptModelFactory.createFactsForNewLevel(level, directionLevel, version);
 
-        List<RulRule> rulPackageRules = packageRulesRepository.findByRuleSetAndRuleTypeOrderByPriorityAsc(
-                version.getRuleSet(), RulRule.RuleType.NEW_LEVEL);
+        List<RulArrangementRule> rulArrangementRules = arrangementRuleRepository.findByRuleSetAndRuleTypeOrderByPriorityAsc(
+                version.getRuleSet(), RulArrangementRule.RuleType.NEW_LEVEL);
 
-        for (RulRule rulPackageRule : rulPackageRules) {
-            Path path = resourcePathResolver.getDroolFile(rulPackageRule);
+        for (RulArrangementRule rulArrangementRule : rulArrangementRules) {
+            Path path = resourcePathResolver.getDroolFile(rulArrangementRule);
+
+            StatelessKieSession session = createNewStatelessKieSession(path);
+            session.setGlobal("results", newLevelApproaches);
+            session.execute(levels);
+        }
+
+        List<RulExtensionRule> rulExtensionRules = ruleService.findExtensionRuleByNode(level.getNode(), RulExtensionRule.RuleType.NEW_LEVEL);
+        for (RulExtensionRule rulExtensionRule : rulExtensionRules) {
+            Path path = resourcePathResolver.getDroolFile(rulExtensionRule);
 
             StatelessKieSession session = createNewStatelessKieSession(path);
             session.setGlobal("results", newLevelApproaches);

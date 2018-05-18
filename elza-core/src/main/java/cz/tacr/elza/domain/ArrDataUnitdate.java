@@ -61,16 +61,20 @@ public class ArrDataUnitdate extends ArrData implements IUnitdate {
 	protected ArrDataUnitdate(ArrDataUnitdate src) {
 		super(src);
 
-		this.calendarType = src.calendarType;
-		this.calendarTypeId = src.calendarTypeId;
-		this.format = src.format;
-		this.normalizedFrom = src.normalizedFrom;
-		this.normalizedTo = src.normalizedTo;
-		this.valueFrom = src.valueFrom;
-		this.valueFromEstimated = src.valueFromEstimated;
-		this.valueTo = src.valueTo;
-		this.valueToEstimated = src.valueToEstimated;
-	}
+        copyValue(src);
+    }
+
+    private void copyValue(ArrDataUnitdate src) {
+        this.calendarType = src.calendarType;
+        this.calendarTypeId = src.calendarTypeId;
+        this.format = src.format;
+        this.normalizedFrom = src.normalizedFrom;
+        this.normalizedTo = src.normalizedTo;
+        this.valueFrom = src.valueFrom;
+        this.valueFromEstimated = src.valueFromEstimated;
+        this.valueTo = src.valueTo;
+        this.valueToEstimated = src.valueToEstimated;
+    }
 
     @Override
     public String getValueFrom() {
@@ -201,5 +205,11 @@ public class ArrDataUnitdate extends ArrData implements IUnitdate {
 	        return false;
 	    }
         return true;
+    }
+
+    @Override
+    public void mergeInternal(final ArrData srcData) {
+        ArrDataUnitdate src = (ArrDataUnitdate) srcData;
+        copyValue(src);
     }
 }

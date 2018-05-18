@@ -22,6 +22,7 @@ import './PartyPage.less';
 import {regExtSystemListFetchIfNeeded} from 'actions/registry/regExtSystemList';
 import PageLayout from "../shared/layout/PageLayout";
 import {PropTypes} from 'prop-types';
+import {FOCUS_KEYS} from "../../constants";
 
 /**
  * PARTY PAGE
@@ -66,13 +67,13 @@ class PartyPage extends AbstractReactComponent {
                 this.refs.addParty.setOpen(true);
                 break;
             case 'area1':
-                this.dispatch(setFocus('party', 1));
+                this.props.dispatch(setFocus(FOCUS_KEYS.PARTY, 1));
                 break;
             case 'area2':
-                this.dispatch(setFocus('party', 2));
-                break
+                this.props.dispatch(setFocus(FOCUS_KEYS.PARTY, 2));
+                break;
             case 'area3':
-                this.dispatch(setFocus('party', 3));
+                this.props.dispatch(setFocus(FOCUS_KEYS.PARTY, 3));
                 break;
         }
     };

@@ -51,8 +51,33 @@ mvn exec:exec -Pfrontend-dev
 Po sestavení dojde ke spuštění embedded aplikačního serveru Tomcat.
 Uživatelské rozhraní najdete na adrese http://localhost:8080 - není možné přistupovat z jiného počítače (sestavte a zprovozněte war v Tomcat).
 
-#### Debug nástroje - redux-tools
-V projektu elza-web v adresáři ```src/main/resources/frontend``` pokud vytvoříme soubor ```.dev``` a spustíme server frontendu, tak po stisku ctrl+h se zobrazí logovací nástroje redux storu.
+#### Nastavení dev serveru klienta
+V projektu elza-web v adresáři `src/main/resources/frontend` pokud vytvoříme soubor `.dev` máme možnost v něm konfigurovat dev server klienta.
+Výchozí konfig
+```
+{
+  "hot": false,
+  "circularDependencyCheck": true,
+  "sourceMap": "eval-source-map",
+  "happyPack": false,
+  "devTools": false,
+  "port": 8090
+}
+``` 
+`hot` - react-hot-loader.
+
+`circularDependencyCheck` - kontrola cyklických závislostí v klientském kódu
+
+`sourceMap` - nastavení druhu použité source-map
+
+`happyPack` - povolení babel-loaderu ve více vláknech
+
+`port` - změna portu
+
+`devTools`- Debug nástroje devtools viz. `Debug nástroje - redux-tools` 
+
+##### Debug nástroje - redux-tools
+V případě nastavení v souboru `.dev` a spustíme server frontendu, tak po stisku ctrl+h se zobrazí logovací nástroje redux storu.
 Pomocí stisku ctrl+q se mění umístění panelu nástrojů.
 
 
@@ -76,6 +101,9 @@ Pro spuštění serveru pro frontend spusťte příkaz (v modulu elza-web):
 mvn exec:exec -Pfrontend-dev
 ```
 Uživatelské rozhranní najdete na adrese http://localhost:8080.
+
+Nastavení spuštění serveru pro IntelliJ Idea (označené hodnoty nutno explicitně nastavit):
+![IntelliJ Idea](idea.png)
 
 ### Sestavení instalátoru aplikace
 * Stáhněte aplikaci Inno Setup z odkazu http://www.jrsoftware.org/download.php/is-unicode.exe a nainstalujte (všechny volby ponechte výchozí). Aplikace se nainstaluje do umístění c:\Program Files (x86)\Inno Setup 5\.

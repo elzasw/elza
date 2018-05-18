@@ -168,4 +168,13 @@ public enum ArrangementCode implements ErrorCode {
      */
     ADMIN_GROUP_MISSING_FUND_CREATE_PERM,
 
+    /**
+     * Neplatné pravidla.
+     */
+    INVALID_RULE,
+
+    /**
+     * Nelze smazat položku, protože existují navázané entity.
+     */
+    STRUCTURE_DATA_DELETE_ERROR,
 }

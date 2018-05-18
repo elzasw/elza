@@ -20,7 +20,6 @@ import cz.tacr.elza.domain.RegExternalSystem;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.projection.RegRecordInfo;
 import cz.tacr.elza.domain.projection.RegRecordInfoExternal;
-import cz.tacr.elza.repository.RegCoordinatesRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RegVariantRecordRepository;
 import cz.tacr.elza.service.ArrangementService;
@@ -34,8 +33,6 @@ class RegRecordStorage extends EntityStorage<AccessPointWrapper> {
 
     private final ArrangementService arrangementService;
 
-    private final RegCoordinatesRepository coordinatesRepository;
-
     private final RegVariantRecordRepository variantRecordRepository;
 
     private final LocalDateTime updateDateTime;
@@ -48,7 +45,6 @@ class RegRecordStorage extends EntityStorage<AccessPointWrapper> {
         this.updateDateTime = updateDateTime;
         this.recordRepository = initHelper.getRecordRepository();
         this.arrangementService = initHelper.getArrangementService();
-        this.coordinatesRepository = initHelper.getCoordinatesRepository();
         this.variantRecordRepository = initHelper.getVariantRecordRepository();
     }
 
@@ -82,7 +78,6 @@ class RegRecordStorage extends EntityStorage<AccessPointWrapper> {
             records.add(record);
         }
         variantRecordRepository.deleteByRegRecordIn(records);
-        coordinatesRepository.deleteByRegRecordIn(records);
     }
 
     /**

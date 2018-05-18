@@ -2,23 +2,26 @@ package cz.tacr.elza.drools.service;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataInteger;
-import cz.tacr.elza.domain.ArrDataPacketRef;
+import cz.tacr.elza.domain.ArrDataStructureRef;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.domain.ArrPacket;
-import cz.tacr.elza.domain.RulPacketType;
+import cz.tacr.elza.domain.ArrStructuredItem;
+import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.drools.model.DescItem;
 import cz.tacr.elza.drools.model.Level;
-import cz.tacr.elza.drools.model.Packet;
+import cz.tacr.elza.drools.model.Structured;
+import cz.tacr.elza.drools.model.StrucutedItem;
 
 /**
  * Factory method for the base Drools model objects.
@@ -78,12 +81,12 @@ public class ModelFactory {
 
             if (!voDescItem.isUndefined()) {
 				ArrData data = descItem.getData();
-				if (data.getType() == DataType.PACKET_REF) {
-					ArrDataPacketRef packetRef = (ArrDataPacketRef) descItem.getData();
-                    ArrPacket packet = packetRef.getPacket();
-                    voDescItem.setPacket(createPacket(packet));
+				if (data.getType() == DataType.STRUCTURED) {
+                    ArrDataStructureRef structureRef = HibernateUtils.unproxy(data);
+                    ArrStructuredObject structureData = structureRef.getStructuredObject();
+                    voDescItem.setStructured(createStructured(structureData));
 				} else if (data.getType() == DataType.INT) {
-					ArrDataInteger integer = (ArrDataInteger) descItem.getData();
+                    ArrDataInteger integer = HibernateUtils.unproxy(data);
                     voDescItem.setInteger(integer.getValue());
                 }
             }
@@ -94,23 +97,12 @@ public class ModelFactory {
 
     /**
      * Create packet for Drools from corresponding object
-     * @param packet
+     * @param structureData
      * @return
      */
-    static public Packet createPacket(final ArrPacket packet) {
-
-        Packet result = new Packet();
-        result.setStorageNumber(packet.getStorageNumber());
-        result.setState(packet.getState());
-
-        if (packet.getPacketType() != null) {
-            RulPacketType packetType = packet.getPacketType();
-            Packet.VOPacketType voPacketType = new Packet.VOPacketType();
-            voPacketType.setCode(packetType.getCode());
-            voPacketType.setName(packetType.getName());
-            voPacketType.setShortcut(packetType.getShortcut());
-            result.setPacketType(voPacketType);
-        }
+    static public Structured createStructured(final ArrStructuredObject structureData) {
+        Structured result = new Structured();
+        result.setValue(structureData.getValue());
         return result;
     }
 
@@ -126,4 +118,44 @@ public class ModelFactory {
 		}
 
 	}
+
+    /**
+     * Vytvoření položek strukturovaného datového typu.
+     *
+     * @param structuredItems položky pro konverzi
+     * @return vytvořené položky
+     */
+    public static List<StrucutedItem> createStructuredItems(@Nullable final List<ArrStructuredItem> structuredItems) {
+	    if (structuredItems == null) {
+            return Collections.emptyList();
+        }
+
+        List<StrucutedItem> result = new ArrayList<>(structuredItems.size());
+        for (ArrStructuredItem structuredItem : structuredItems) {
+            result.add(createStructuredItem(structuredItem));
+        }
+        return result;
+    }
+
+    /**
+     * Vytvoření položky strukturovaného datového typu.
+     *
+     * @param structuredItem položka pro konverzi
+     * @return vytvořená položka
+     */
+	public static StrucutedItem createStructuredItem(final ArrStructuredItem structuredItem) {
+	    StrucutedItem result = new StrucutedItem();
+        result.setType(structuredItem.getItemType().getCode());
+        result.setSpecCode(structuredItem.getItemSpec() == null ? null : structuredItem.getItemSpec().getCode());
+        result.setDataType(structuredItem.getItemType().getDataType().getCode());
+        if (!structuredItem.isUndefined()) {
+            ArrData data = structuredItem.getData();
+            if (data.getType() == DataType.INT) {
+                ArrDataInteger integer = HibernateUtils.unproxy(data);
+                result.setInteger(integer.getValue());
+            }
+        }
+	    return result;
+    }
+
 }

@@ -15,19 +15,22 @@ import cz.tacr.elza.domain.ArrNodeRegister;
 
 public class ContextNode {
 
-    private final Map<DescItemKey, Integer> descItemCount = new HashMap<>();
+    private final Map<ItemKey, Integer> descItemCount = new HashMap<>();
 
     private final ContextSection section;
 
-    private final EntityIdHolder<ArrNode> nodeIdHolder;
+    private final EntityIdHolder<ArrNode> idHolder;
+
+    private final NodeStorageDispatcher storageDispatcher;
 
     private final int depth;
 
     private int levelPosition;
 
-    ContextNode(ContextSection section, EntityIdHolder<ArrNode> nodeIdHolder, int depth) {
+    ContextNode(ContextSection section, EntityIdHolder<ArrNode> nodeIdHolder, NodeStorageDispatcher storageDispatcher, int depth) {
         this.section = Validate.notNull(section);
-        this.nodeIdHolder = Validate.notNull(nodeIdHolder);
+        this.idHolder = Validate.notNull(nodeIdHolder);
+        this.storageDispatcher = Validate.notNull(storageDispatcher);
         this.depth = depth;
     }
 
@@ -42,8 +45,8 @@ public class ContextNode {
     }
 
     public void addNodeRegister(ArrNodeRegister nodeRegister) {
-        ArrNodeRegisterWrapper wrapper = new ArrNodeRegisterWrapper(nodeRegister, nodeIdHolder);
-        section.addNodeRegister(wrapper, depth);
+        ArrNodeRegisterWrapper wrapper = new ArrNodeRegisterWrapper(nodeRegister, idHolder);
+        storageDispatcher.addNodeRegister(wrapper, depth);
     }
 
     /**
@@ -55,22 +58,22 @@ public class ContextNode {
     public void addDescItem(ArrDescItem descItem, ArrData data) {
         Validate.isTrue(descItem.isUndefined());
         // set item position
-        Integer count = descItemCount.compute(DescItemKey.of(descItem), (k, v) -> v == null ? 1 : ++v);
+        Integer count = descItemCount.compute(ItemKey.of(descItem), (k, v) -> v == null ? 1 : ++v);
         descItem.setPosition(count);
-        // store desc item & data
-        ArrDescItemWrapper descItemWrapper = new ArrDescItemWrapper(descItem, nodeIdHolder);
+        // store item & data
+        ArrDescItemWrapper descItemWrapper = new ArrDescItemWrapper(descItem, idHolder);
         if (data != null) {
             Validate.isTrue(data.getDataType() == descItem.getItemType().getDataType());
             ArrDataWrapper dataWrapper = new ArrDataWrapper(data);
             descItemWrapper.setDataIdHolder(dataWrapper.getIdHolder());
-            section.addData(dataWrapper, depth);
+            storageDispatcher.addData(dataWrapper, depth);
         }
-        section.addDescItem(descItemWrapper, depth);
+        storageDispatcher.addDescItem(descItemWrapper, depth);
     }
 
     private ArrLevelWrapper createChildLevelWrapper(EntityIdHolder<ArrNode> childNodeIdHolder) {
         levelPosition++;
-        return createLevelWrapper(childNodeIdHolder, nodeIdHolder, levelPosition, section.getCreateChange());
+        return createLevelWrapper(childNodeIdHolder, idHolder, levelPosition, section.getCreateChange());
     }
 
     public static ArrLevelWrapper createLevelWrapper(EntityIdHolder<ArrNode> nodeIdHolder,

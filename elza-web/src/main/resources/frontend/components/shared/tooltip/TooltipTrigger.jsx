@@ -256,7 +256,7 @@ class TooltipTrigger extends AbstractReactComponent {
 
         return (
             <span
-                className={className}
+               className={"tooltip-trigger "+ (className ? className : "")}
                 ref="ttTarget"
                 onFocus={() => this.handleFocus(true)}
                 onBlur={() => this.handleFocus(false)}

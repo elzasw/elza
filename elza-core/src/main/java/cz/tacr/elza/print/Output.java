@@ -1,5 +1,9 @@
 package cz.tacr.elza.print;
 
+import cz.tacr.elza.print.item.Item;
+import cz.tacr.elza.print.party.Party;
+
+import javax.validation.constraints.NotNull;
 import java.util.Collection;
 import java.util.List;
 
@@ -39,7 +43,7 @@ public interface Output {
      */
 	List<Item> getItems(final Collection<String> codes);
 
-    /**
+	/**
      * Vstupem je seznam kódu typů atributů a vrací se seznam všech hodnot atributů výstupu kromě hodnot typů uvedených ve vstupu metody;
      * řazeno dle rul_desc_item.view_order + arr_item.position.
      *
@@ -77,6 +81,11 @@ public interface Output {
      * @return instance iterátoru, který prochází jednotky popisu do hloubky
      */
     NodeIterator createFlatNodeIterator();
+
+    /**
+     * @return kolekci s počtem prvků odpovídajícím počtu stran příloh, používá se jako DS v Jasperu pro placeholder stránky
+     */
+    List<JRAttPagePlaceHolder> getAttPagePlaceHolders();
 
     /**
      * vstupem je kód typu rejstříku a vrací se seznam rejstříkových hesel řazených podle názvu (record).

@@ -39,10 +39,6 @@ public class ItemDataConvertorFactory {
         return new PartyRefConvertor();
     }
 
-    public PacketRefConvertor createPacketRefConvertor() {
-        return new PacketRefConvertor();
-    }
-
     public GeoLocationConvertor createGeLocationConvertor() {
         return new GeoLocationConvertor();
     }
@@ -53,6 +49,10 @@ public class ItemDataConvertorFactory {
 
     private JsonTableConvertor createJsonTableConvertor() {
         return new JsonTableConvertor();
+    }
+
+    public StructObjRefConvertor createStructObjectRefConvertor() {
+        return new StructObjRefConvertor();
     }
 
     public final Map<DataType, ItemDataConvertor> createAll() {
@@ -68,7 +68,7 @@ public class ItemDataConvertorFactory {
         map.put(DataType.UNITDATE, createUnitDateValueConvertor());
         map.put(DataType.RECORD_REF, createAPRefConvertor());
         map.put(DataType.PARTY_REF, createPartyRefConvertor());
-        map.put(DataType.PACKET_REF, createPacketRefConvertor());
+        map.put(DataType.STRUCTURED, createStructObjectRefConvertor());
         map.put(DataType.JSON_TABLE, createJsonTableConvertor());
         return map;
     }

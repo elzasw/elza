@@ -1,6 +1,7 @@
 package cz.tacr.elza.service;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -183,6 +184,10 @@ public class GroovyScriptService {
                 FileUtils.copyInputStreamToFile(resource.getInputStream(), scriptFile);
                 scriptFile.setLastModified(resourceLM);
             }
+            return new GroovyScriptFile(scriptFile);
+        }
+
+        public static GroovyScriptFile createFromFile(File scriptFile) throws IOException {
             return new GroovyScriptFile(scriptFile);
         }
     }

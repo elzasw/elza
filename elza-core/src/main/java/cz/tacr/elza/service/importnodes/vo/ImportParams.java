@@ -9,6 +9,6 @@ public interface ImportParams {
 
     ConflictResolve getFileConflictResolve();
 
-    ConflictResolve getPacketConflictResolve();
+    ConflictResolve getStructuredConflictResolve();
 
 }

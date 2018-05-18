@@ -36,9 +36,13 @@ public class ArrDataRecordRef extends ArrData {
 
 	protected ArrDataRecordRef(ArrDataRecordRef src) {
 		super(src);
-		this.record = src.record;
-		this.recordId = src.recordId;
+        copyValue(src);
 	}
+
+    private void copyValue(ArrDataRecordRef src) {
+        this.record = src.record;
+        this.recordId = src.recordId;
+    }
 
     public RegRecord getRecord() {
         return record;
@@ -67,5 +71,11 @@ public class ArrDataRecordRef extends ArrData {
     protected boolean isEqualValueInternal(ArrData srcData) {
         ArrDataRecordRef src = (ArrDataRecordRef)srcData;
         return recordId.equals(src.recordId);
+    }
+
+    @Override
+    public void mergeInternal(final ArrData srcData) {
+        ArrDataRecordRef src = (ArrDataRecordRef) srcData;
+        this.copyValue(src);
     }
 }

@@ -44,10 +44,10 @@ import cz.tacr.elza.domain.ArrDataDecimal;
 import cz.tacr.elza.domain.ArrDataInteger;
 import cz.tacr.elza.domain.ArrDataJsonTable;
 import cz.tacr.elza.domain.ArrDataNull;
-import cz.tacr.elza.domain.ArrDataPacketRef;
 import cz.tacr.elza.domain.ArrDataPartyRef;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ArrDataString;
+import cz.tacr.elza.domain.ArrDataStructureRef;
 import cz.tacr.elza.domain.ArrDataText;
 import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDataUnitid;
@@ -56,12 +56,11 @@ import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrPacket;
+import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.ParUnitdate;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.convertor.CalendarConverter;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
@@ -637,7 +636,7 @@ public class DescriptionItemService {
      * Vytvoří kopii prvků popisu. Kopírovaný atribut patří zvolenému uzlu.
      * 
      * Method will also update nodeCache.
-     * @param node            uzel, který dostane kopírované atributy
+     *  @param node            uzel, který dostane kopírované atributy
      * @param sourceDescItems zdrojové atributy ke zkopírování
      * @param createChange    čas vytvoření nové kopie
      */
@@ -1030,14 +1029,9 @@ public class DescriptionItemService {
             } else if (data.getDataType().getCode().equals("RECORD_REF")) {
                 ArrDataRecordRef recordData = (ArrDataRecordRef) data;
                 value = new TitleValue(recordData.getRecord().getRecord());
-            } else if (data.getDataType().getCode().equals("PACKET_REF")) {
-                ArrPacket packet = ((ArrDataPacketRef) data).getPacket();
-                RulPacketType packetType = packet.getPacketType();
-                if (packetType == null) {
-                    value = new TitleValue(packet.getStorageNumber());
-                } else {
-                    value = new TitleValue(packetType.getName() + ": " + packet.getStorageNumber());
-                }
+            } else if (data.getDataType().getCode().equals("STRUCTURED")) {
+                ArrStructuredObject structureData = ((ArrDataStructureRef) data).getStructuredObject();
+                value = new TitleValue(structureData.getValue());
             } else if (data.getDataType().getCode().equals("UNITDATE")) {
                 ArrDataUnitdate unitDate = (ArrDataUnitdate) data;
 
@@ -1127,14 +1121,9 @@ public class DescriptionItemService {
             } else if (data.getDataType().getCode().equals("RECORD_REF")) {
                 ArrDataRecordRef recordData = (ArrDataRecordRef) data;
                 value = new TitleValue(recordData.getRecord().getRecord());
-            } else if (data.getDataType().getCode().equals("PACKET_REF")) {
-                ArrPacket packet = ((ArrDataPacketRef) data).getPacket();
-                RulPacketType packetType = packet.getPacketType();
-                if (packetType == null) {
-                    value = new TitleValue(packet.getStorageNumber());
-                } else {
-                    value = new TitleValue(packetType.getName() + ": " + packet.getStorageNumber());
-                }
+            } else if (data.getDataType().getCode().equals("STRUCTURED")) {
+                ArrStructuredObject structureData = ((ArrDataStructureRef) data).getStructuredObject();
+                value = new TitleValue(structureData.getValue());
             } else if (data.getDataType().getCode().equals("UNITDATE")) {
                 ArrDataUnitdate unitDate = (ArrDataUnitdate) data;
 
@@ -1349,8 +1338,8 @@ public class DescriptionItemService {
                 return ArrDataRecordRef.class;
             case "DECIMAL":
                 return ArrDataDecimal.class;
-            case "PACKET_REF":
-                return ArrDataPacketRef.class;
+            case "STRUCTURED":
+                return ArrDataStructureRef.class;
             case "ENUM":
                 return ArrDataNull.class;
             default:
@@ -1453,6 +1442,11 @@ public class DescriptionItemService {
                     ArrDataInteger itemInteger = new ArrDataInteger();
                     itemInteger.setValue(Integer.valueOf(text));
                     data = itemInteger;
+                    break;
+                case "UNITID":
+                    ArrDataUnitid itemUnitid = new ArrDataUnitid();
+                    itemUnitid.setValue(text);
+                    data = itemUnitid;
                     break;
                 case "UNITDATE":
                     ArrDataUnitdate itemUnitdate = createArrDataUnitdate(text);
@@ -1633,7 +1627,10 @@ public class DescriptionItemService {
 		} else if (dataNew instanceof ArrDataText) {
 			ArrDataText dt = (ArrDataText) dataNew;
 			dt.setValue(getReplacedDataValue(dt.getValue(), searchString, replaceString));
-		} else {
+		} else if (dataNew instanceof ArrDataUnitid) {
+            ArrDataUnitid dt = (ArrDataUnitid) dataNew;
+            dt.setValue(getReplacedDataValue(dt.getValue(), searchString, replaceString));
+        } else {
 			throw new IllegalStateException(
 			        "Zatím není implementováno pro kod " + descItem.getItemType().getCode());
 		}

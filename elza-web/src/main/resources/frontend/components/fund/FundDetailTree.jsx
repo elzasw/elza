@@ -19,6 +19,7 @@ import {getFundFromFundAndVersion} from 'components/arr/ArrUtils.jsx'
 import {selectFundTab} from 'actions/arr/fund.jsx'
 import {routerNavigate} from 'actions/router.jsx'
 import FundTreeLazy from "../arr/FundTreeLazy";
+import {FOCUS_KEYS} from "../../constants";
 
 class FundDetailTree extends AbstractReactComponent {
     constructor(props) {
@@ -54,7 +55,7 @@ class FundDetailTree extends AbstractReactComponent {
                     })
                 }
 
-            } else if (isFocusFor(focus, 'arr', 1, 'tree') || isFocusFor(focus, 'arr', 1)) {
+            } else if (isFocusFor(focus, FOCUS_KEYS.ARR, 1, 'tree') || isFocusFor(focus, FOCUS_KEYS.ARR, 1)) {
                 this.setState({}, () => {
                     this.refs.tree.getWrappedInstance().focus()
                     focusWasSet()

@@ -46,7 +46,7 @@ import cz.tacr.elza.repository.ActionRepository;
 @Configuration
 public class BulkActionConfigManager {
 
-    private static final Logger logger = LoggerFactory.getLogger(BulkActionConfigManager.class);
+	private static final Logger logger = LoggerFactory.getLogger(BulkActionConfigManager.class);
 
     private final ActionRepository actionRepository;
 
@@ -86,11 +86,11 @@ public class BulkActionConfigManager {
 
             BaseActionConfig config = loadActionConfig(actionCode, configFile, yamlLoader);
             configs.put(config.getCode(), config);
-        }
+            }
 
         // publish configs
         this.bulkActionConfigMap = configs;
-    }
+			}
 
     @Transactional(TxType.MANDATORY)
     public void load() {
@@ -150,7 +150,7 @@ public class BulkActionConfigManager {
             logger.error("Failed to initialize action, consider updating package with action, actionCode=" + actionCode, e);
             // on failure - log problem and create empty action
             config = new BrokenActionConfig(e);
-        }
+    }
 
         config.setCode(actionCode);
         return config;

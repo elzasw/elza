@@ -32,10 +32,6 @@ import cz.tacr.elza.service.UserService;
  * future.</i>
  */
 public class AccessPointsReader implements ExportReader {
-
-    // TODO: delete after removal of hierarchy
-    private final ListValuedMap<Integer, RegRecord> childQueue = new ArrayListValuedHashMap<>();
-
     private final Set<Integer> exportedAPIds = new HashSet<>();
 
     private final Set<Integer> authorizedScopeIds = new HashSet<>();
@@ -71,10 +67,8 @@ public class AccessPointsReader implements ExportReader {
             for (List<Integer> apIds : Iterables.partition(context.getAPIds(), context.getBatchSize())) {
                 readAccessPoints(apIds, os);
             }
-            Validate.isTrue(childQueue.isEmpty());
             os.processed();
         } finally {
-            childQueue.clear();
             exportedAPIds.clear();
             authorizedScopeIds.clear();
             os.close();
@@ -101,16 +95,11 @@ public class AccessPointsReader implements ExportReader {
                 }
             }
             // increment root count
-            if (ap.getParentRecordId() == null) {
-                rootCount++;
-            }
+            rootCount++;
 
             boolean process = readAP(ap);
             if (process) {
                 addAccessPoint(ap, batch, os);
-                childQueue.remove(ap.getRecordId()).forEach(child -> {
-                    addAccessPoint(child, batch, os);
-                });
             }
         }
 
@@ -143,12 +132,6 @@ public class AccessPointsReader implements ExportReader {
             return false;
         }
 
-        // check exported parent
-        Integer parentAPId = ap.getParentRecordId();
-        if (parentAPId != null && !exportedAPIds.contains(parentAPId)) {
-            childQueue.put(parentAPId, ap);
-            return false;
-        }
         return true;
     }
 

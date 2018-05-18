@@ -23,10 +23,6 @@ public class RegRecordVO extends AbstractRegRecord {
     private Integer registerTypeId;
 
     /**
-     * Id nadřazeného hesla.
-     */
-    private Integer parentRecordId;
-    /**
      * Id osoby.
      */
     private Integer partyId;
@@ -65,19 +61,9 @@ public class RegRecordVO extends AbstractRegRecord {
     private Integer version;
 
     /**
-     * Seznam potomků.
-     */
-    private List<RegRecordVO> childs;
-
-    /**
      * Seznam variantních rejstříkových hesel.
      */
     private List<RegVariantRecordVO> variantRecords = Collections.EMPTY_LIST;
-
-    /**
-     * Seznam souřadnic
-     */
-    private List<RegCoordinatesVO> coordinates = Collections.EMPTY_LIST;
 
     /** Cesta od toho rejstříku až ke kořeni. První záznam je přímý nadřízený, poslední je kořen. */
     private List<RecordParent> parents;
@@ -91,10 +77,6 @@ public class RegRecordVO extends AbstractRegRecord {
      * Lze přidat podřízený záznam.
      */
     private boolean addRecord;
-
-    private boolean hierarchical;
-
-    private boolean hasChildren;
 
     private String uuid;
 
@@ -116,14 +98,6 @@ public class RegRecordVO extends AbstractRegRecord {
 
     public void setRegisterTypeId(final Integer registerTypeId) {
         this.registerTypeId = registerTypeId;
-    }
-
-    public Integer getParentRecordId() {
-        return parentRecordId;
-    }
-
-    public void setParentRecordId(final Integer parentRecordId) {
-        this.parentRecordId = parentRecordId;
     }
 
     public RegExternalSystemVO getExternalSystem() {
@@ -182,14 +156,6 @@ public class RegRecordVO extends AbstractRegRecord {
         this.scopeId = scopeId;
     }
 
-    public List<RegRecordVO> getChilds() {
-        return childs;
-    }
-
-    public void setChilds(final List<RegRecordVO> childs) {
-        this.childs = childs;
-    }
-
     public Integer getVersion() {
         return version;
     }
@@ -206,36 +172,12 @@ public class RegRecordVO extends AbstractRegRecord {
         this.variantRecords = variantRecords;
     }
 
-    public List<RegCoordinatesVO> getCoordinates() {
-        return coordinates;
-    }
-
-    public void setCoordinates(final List<RegCoordinatesVO> coordinates) {
-        this.coordinates = coordinates;
-    }
-
     public boolean isAddRecord() {
         return addRecord;
     }
 
     public void setAddRecord(final boolean addRecord) {
         this.addRecord = addRecord;
-    }
-
-    public boolean isHierarchical() {
-        return hierarchical;
-    }
-
-    public void setHierarchical(final boolean hierarchical) {
-        this.hierarchical = hierarchical;
-    }
-
-    public boolean isHasChildren() {
-        return hasChildren;
-    }
-
-    public void setHasChildren(final boolean hasChildren) {
-        this.hasChildren = hasChildren;
     }
 
     public List<RecordParent> getParents() {

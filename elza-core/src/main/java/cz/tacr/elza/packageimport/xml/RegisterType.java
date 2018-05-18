@@ -29,9 +29,6 @@ public class RegisterType {
     @XmlElement(name = "name", required = true)
     private String name;
 
-    @XmlElement(name = "hierarchical")
-    private Boolean hierarchical;
-
     @XmlElement(name = "add-record")
     private Boolean addRecord;
 
@@ -65,14 +62,6 @@ public class RegisterType {
 
     public void setName(final String name) {
         this.name = name;
-    }
-
-    public Boolean getHierarchical() {
-        return hierarchical;
-    }
-
-    public void setHierarchical(final Boolean hierarchical) {
-        this.hierarchical = hierarchical;
     }
 
     public Boolean getAddRecord() {

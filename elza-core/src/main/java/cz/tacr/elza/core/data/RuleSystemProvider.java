@@ -11,12 +11,12 @@ import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.RulStructuredType;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
-import cz.tacr.elza.repository.PacketTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
+import cz.tacr.elza.repository.StructuredTypeRepository;
 
 /**
  * Manage information about all rule systems
@@ -79,9 +79,9 @@ public class RuleSystemProvider {
      * Init all values. Method must be called inside transaction and synchronized.
      */
     void init(RuleSetRepository ruleSetRepository,
-              PacketTypeRepository packetTypeRepository,
               ItemTypeRepository itemTypeRepository,
-              ItemSpecRepository itemSpecRepository) {
+              ItemSpecRepository itemSpecRepository,
+              StructuredTypeRepository structuredTypeRepository) {
         List<RulRuleSet> ruleSets = ruleSetRepository.findAll();
 
         // prepare fields
@@ -99,8 +99,8 @@ public class RuleSystemProvider {
             ruleSystemCodeMap.put(rs.getCode(), ruleSystem);
         }
 
-        // prepare packet types
-        initPacketTypes(packetTypeRepository);
+		// prepare structured types
+        initStructuredTypes(structuredTypeRepository);
 
         // prepare item types
         initItemTypes(itemTypeRepository, itemSpecRepository);
@@ -109,14 +109,14 @@ public class RuleSystemProvider {
         rulesSystems = rulesSystemsImpl.stream().map(a -> a.sealUp()).collect(Collectors.toList());
     }
 
-    private void initPacketTypes(PacketTypeRepository packetTypeRepository) {
-        List<RulPacketType> packetTypes = packetTypeRepository.findAll();
+    private void initStructuredTypes(StructuredTypeRepository structuredTypeRepository) {
+        List<RulStructuredType> structuredTypes = structuredTypeRepository.findAll();
 
-        for (RulPacketType pt : packetTypes) {
-            RuleSystemImpl ruleSystemImpl = ruleSystemIdMap.get(pt.getRuleSet().getRuleSetId());
-            ruleSystemImpl.addPacketType(pt);
-        }
-    }
+        for (RulStructuredType st : structuredTypes) {
+            RuleSystemImpl ruleSetImpl = ruleSystemIdMap.get(st.getRuleSet().getRuleSetId());
+            ruleSetImpl.addStructuredType(st);
+		}
+	}
 
     /**
      * Initialize all item types

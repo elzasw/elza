@@ -46,7 +46,7 @@ var DescItemPacketRef = class DescItemPacketRef extends AbstractReactComponent {
 
     handleSearchChange(text) {
         const {fundId} = this.props;
-        WebApi.getPackets(fundId, text, 200)
+        WebApi.getPackets(fundId, text, 1000)
             .then(json => {
                 this.setState({
                     packets: json
@@ -58,19 +58,27 @@ var DescItemPacketRef = class DescItemPacketRef extends AbstractReactComponent {
         this.refs.focusEl.focus();
     }
 
-    renderPacket(item, isHighlighted, isSelected) {
+    renderPacket(props) {
+        const {item, highlighted, selected, ...otherProps} = props;
+        const {descItem} = this.props;
+        let name = this.formatPacketName(item);
+
+        if(descItem.undefined){
+            name = i18n('subNodeForm.descItemType.notIdentified');
+        }
         var cls = 'item';
-        if (isHighlighted) {
+
+        if (highlighted) {
             cls += ' focus';
         }
-        if (isSelected) {
+        if (selected) {
             cls += ' active'
         }
 
                 // {false && this.packetName(item)}
         return (
-            <div className={cls} key={item.id}>
-                {this.formatPacketName(item)}
+            <div {...otherProps} className={cls}>
+                {name}
             </div>
         )
     }
@@ -177,7 +185,7 @@ var DescItemPacketRef = class DescItemPacketRef extends AbstractReactComponent {
                         items={this.state.packets}
                         onSearchChange={this.handleSearchChange}
                         onChange={onChange}
-                        renderItem={descItem.undefined ? {name: i18n('subNodeForm.descItemType.notIdentified')} : this.renderPacket}
+                        renderItem={this.renderPacket}
                         getItemName={(item) => this.getPacketName(item)}
                         footer={footer}
                     />

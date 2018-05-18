@@ -7,20 +7,20 @@ import java.util.Map;
 
 import org.apache.commons.lang3.Validate;
 
-import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.RulStructuredType;
 
 public class RuleSystemImpl implements RuleSystem {
 
     private final RulRuleSet ruleSet;
 
-    private List<RulPacketType> packetTypes;
+    private List<RulStructuredType> structuredTypes;
 
     private List<RuleSystemItemType> itemTypes;
 
-    private Map<Integer, RulPacketType> packetTypeIdMap;
+    private Map<Integer, RulStructuredType> structuredTypeIdMap;
 
-    private Map<String, RulPacketType> packetTypeCodeMap;
+    private Map<String, RulStructuredType> structuredTypeCodeMap;
 
     private Map<Integer, RuleSystemItemType> itemTypeIdMap;
 
@@ -28,7 +28,7 @@ public class RuleSystemImpl implements RuleSystem {
 
     public RuleSystemImpl(RulRuleSet ruleSet) {
         this.ruleSet = Validate.notNull(ruleSet);
-        this.packetTypes = new ArrayList<>();
+        this.structuredTypes = new ArrayList<>();
         this.itemTypes = new ArrayList<>();
     }
 
@@ -38,20 +38,20 @@ public class RuleSystemImpl implements RuleSystem {
     }
 
     @Override
-    public List<RulPacketType> getPacketTypes() {
-        return packetTypes;
+    public List<RulStructuredType> getStructuredTypes() {
+        return structuredTypes;
     }
 
     @Override
-    public RulPacketType getPacketTypeById(Integer id) {
+    public RulStructuredType getStructuredTypeById(Integer id) {
         Validate.notNull(id);
-        return packetTypeIdMap.get(id);
+        return structuredTypeIdMap.get(id);
     }
 
     @Override
-    public RulPacketType getPacketTypeByCode(String code) {
+    public RulStructuredType getStructuredTypeByCode(String code) {
         Validate.notEmpty(code);
-        return packetTypeCodeMap.get(code);
+        return structuredTypeCodeMap.get(code);
     }
 
     @Override
@@ -74,8 +74,8 @@ public class RuleSystemImpl implements RuleSystem {
 	/**
 	 * Add packet type
 	 **/
-	public void addPacketType(RulPacketType pt) {
-		this.packetTypes.add(pt);
+    public void addStructuredType(RulStructuredType st) {
+        this.structuredTypes.add(st);
 	}
 
 	/**
@@ -89,14 +89,15 @@ public class RuleSystemImpl implements RuleSystem {
 
 	public RuleSystemImpl sealUp() {
 		// update fields
-		this.packetTypeIdMap = StaticDataProvider.createLookup(packetTypes, RulPacketType::getPacketTypeId);
-		this.packetTypeCodeMap = StaticDataProvider.createLookup(packetTypes, RulPacketType::getCode);
+        this.structuredTypeIdMap = StaticDataProvider.createLookup(structuredTypes,
+                RulStructuredType::getStructuredTypeId);
+        this.structuredTypeCodeMap = StaticDataProvider.createLookup(structuredTypes, RulStructuredType::getCode);
 
 		this.itemTypeIdMap = StaticDataProvider.createLookup(itemTypes, RuleSystemItemType::getItemTypeId);
 		this.itemTypeCodeMap = StaticDataProvider.createLookup(itemTypes, RuleSystemItemType::getCode);
 
 		// switch to unmodifiable collections
-		packetTypes = Collections.unmodifiableList(packetTypes);
+        structuredTypes = Collections.unmodifiableList(structuredTypes);
 		itemTypes = Collections.unmodifiableList(itemTypes);
 		return this;
 	}

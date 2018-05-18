@@ -4,8 +4,8 @@ import javax.xml.bind.JAXBElement;
 
 import cz.tacr.elza.dataexchange.input.context.ImportContext;
 import cz.tacr.elza.dataexchange.input.context.ImportPhase;
-import cz.tacr.elza.dataexchange.input.processor.ItemProcessor;
-import cz.tacr.elza.dataexchange.input.processor.ItemProcessorFactory;
+import cz.tacr.elza.dataexchange.input.institutions.InstitutionProcessor;
+import cz.tacr.elza.dataexchange.input.reader.ItemProcessor;
 import cz.tacr.elza.schema.v2.Institution;
 
 public class InstitutionElementHandler extends JaxbElementHandler<Institution> {
@@ -21,7 +21,7 @@ public class InstitutionElementHandler extends JaxbElementHandler<Institution> {
 
     @Override
     protected void handleJaxbElement(JAXBElement<Institution> element) {
-        ItemProcessor processor = ItemProcessorFactory.createInstitutionProcessor(context);
+        ItemProcessor processor = new InstitutionProcessor(context);
         processor.process(element.getValue());
     }
 }

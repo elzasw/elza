@@ -1,5 +1,3 @@
-code_type_bulk_action: GENERATOR_SERIAL_NUMBER
-serial_id_code: SRD_SERIAL_NUMBER
+!SerialNumberGenerator
 name: Generátor pořadového čísla
-stop_when_type: SRD_LEVEL_TYPE
-stop_on_value: SRD_LEVEL_ITEM
+itemType: SRD_SERIAL_NUMBER

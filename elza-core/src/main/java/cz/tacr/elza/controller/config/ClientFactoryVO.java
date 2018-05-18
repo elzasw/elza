@@ -38,6 +38,7 @@ import cz.tacr.elza.config.ConfigView;
 import cz.tacr.elza.config.rules.GroupConfiguration;
 import cz.tacr.elza.config.rules.TypeInfo;
 import cz.tacr.elza.config.rules.ViewConfiguration;
+import cz.tacr.elza.controller.StructureExtensionFundVO;
 import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
 import cz.tacr.elza.controller.vo.ArrDaoFileGroupVO;
 import cz.tacr.elza.controller.vo.ArrDaoFileVO;
@@ -55,9 +56,9 @@ import cz.tacr.elza.controller.vo.ArrOutputDefinitionVO;
 import cz.tacr.elza.controller.vo.ArrOutputExtVO;
 import cz.tacr.elza.controller.vo.ArrOutputFileVO;
 import cz.tacr.elza.controller.vo.ArrOutputVO;
-import cz.tacr.elza.controller.vo.ArrPacketVO;
 import cz.tacr.elza.controller.vo.ArrRequestQueueItemVO;
 import cz.tacr.elza.controller.vo.ArrRequestVO;
+import cz.tacr.elza.controller.vo.ArrStructureDataVO;
 import cz.tacr.elza.controller.vo.BulkActionRunVO;
 import cz.tacr.elza.controller.vo.BulkActionVO;
 import cz.tacr.elza.controller.vo.DmsFileVO;
@@ -70,7 +71,6 @@ import cz.tacr.elza.controller.vo.ParPartyVO;
 import cz.tacr.elza.controller.vo.ParRelationEntityVO;
 import cz.tacr.elza.controller.vo.ParRelationTypeVO;
 import cz.tacr.elza.controller.vo.ParRelationVO;
-import cz.tacr.elza.controller.vo.RegCoordinatesVO;
 import cz.tacr.elza.controller.vo.RegRecordSimple;
 import cz.tacr.elza.controller.vo.RegRecordVO;
 import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
@@ -79,7 +79,6 @@ import cz.tacr.elza.controller.vo.RegVariantRecordVO;
 import cz.tacr.elza.controller.vo.RulDataTypeVO;
 import cz.tacr.elza.controller.vo.RulDescItemSpecVO;
 import cz.tacr.elza.controller.vo.RulOutputTypeVO;
-import cz.tacr.elza.controller.vo.RulPacketTypeVO;
 import cz.tacr.elza.controller.vo.RulPolicyTypeVO;
 import cz.tacr.elza.controller.vo.RulRuleSetVO;
 import cz.tacr.elza.controller.vo.RulTemplateVO;
@@ -105,6 +104,7 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemJsonTableVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemPartyRefVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemRecordRefVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStringVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStructureVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemTextVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitdateVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitidVO;
@@ -140,9 +140,9 @@ import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutputDefinition;
 import cz.tacr.elza.domain.ArrOutputFile;
-import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.ArrRequest;
 import cz.tacr.elza.domain.ArrRequestQueueItem;
+import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.DmsFile;
 import cz.tacr.elza.domain.ParComplementType;
 import cz.tacr.elza.domain.ParInstitution;
@@ -156,7 +156,6 @@ import cz.tacr.elza.domain.ParRegistryRole;
 import cz.tacr.elza.domain.ParRelation;
 import cz.tacr.elza.domain.ParRelationEntity;
 import cz.tacr.elza.domain.ParRelationType;
-import cz.tacr.elza.domain.RegCoordinates;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RegScope;
@@ -167,9 +166,9 @@ import cz.tacr.elza.domain.RulItemSpecExt;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulOutputType;
-import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.RulPolicyType;
 import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.RulStructuredTypeExtension;
 import cz.tacr.elza.domain.RulTemplate;
 import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.UsrGroup;
@@ -193,6 +192,7 @@ import cz.tacr.elza.repository.DigitizationRequestNodeRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.GroupRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
+import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.OutputDefinitionRepository;
 import cz.tacr.elza.repository.PartyNameRepository;
@@ -309,10 +309,10 @@ public class ClientFactoryVO {
     private DaoFileGroupRepository daoFileGroupRepository;
 
     @Autowired
-    private PackageService packageServise;
+    private ItemSpecRepository itemSpecRepository;
 
     @Autowired
-    private ItemSpecRepository itemSpecRepository;
+    private ItemTypeRepository itemTypeRepository;
 
     @Autowired
     private ConfigView configView;
@@ -613,17 +613,6 @@ public class ClientFactoryVO {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         RegRecordVO result = mapper.map(regRecord, RegRecordVO.class);
         result.setPartyId(partyId);
-
-        if (fillParents) {
-            List<RegRecordVO.RecordParent> parents = new LinkedList<>();
-            RegRecord parentRecord = regRecord.getParentRecord();
-            while (parentRecord != null ) {
-                parents.add(new RegRecordVO.RecordParent(parentRecord.getRecordId(), parentRecord.getRecord()));
-                parentRecord = parentRecord.getParentRecord();
-            }
-            result.setParents(parents);
-        }
-
         return result;
     }
 
@@ -677,17 +666,6 @@ public class ClientFactoryVO {
     }
 
     /**
-     * Vytvoření souřadnice rejsříkového hesla
-     *
-     * @param regCoordinates souřadnice rejsříkového hesla
-     * @return VO souřadnice rejstříkového hesla
-     */
-    public RegCoordinatesVO createRegCoordinates(final RegCoordinates regCoordinates) {
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        return mapper.map(regCoordinates, RegCoordinatesVO.class);
-    }
-
-    /**
      * Vytvoření seznamu variantních rejstříkových hesel.
      *
      * @param variantRecords seznam variantních rejstříkových hesel
@@ -701,25 +679,6 @@ public class ClientFactoryVO {
         List<RegVariantRecordVO> result = new ArrayList<>(variantRecords.size());
         variantRecords.forEach((variantRecord) ->
                         result.add(createRegVariantRecord(variantRecord))
-        );
-
-        return result;
-    }
-
-    /**
-     * Vytvoření seznamu souřadnic rejstříkových hesel
-     *
-     * @param coordinatesList seznam souřadnic rejstříkových hesel
-     * @return seznam VO seznam souřadnic
-     */
-    public List<RegCoordinatesVO> createRegCoordinates(@Nullable final List<RegCoordinates> coordinatesList) {
-        if (coordinatesList == null) {
-            return null;
-        }
-
-        List<RegCoordinatesVO> result = new ArrayList<>(coordinatesList.size());
-        coordinatesList.forEach((coordinates) ->
-                result.add(createRegCoordinates(coordinates))
         );
 
         return result;
@@ -913,7 +872,6 @@ public class ClientFactoryVO {
      * @param processedItemsMap mapa vytvořených objektů
      * @param classType         typ VO objektu
      * @param <VO>              typ VO objektu
-     * @param <VOTYPE>          třída VO objektu
      * @return nalezený nebo vytvořený VO
      */
     public <VO> VO getOrCreateVo(final Integer id,
@@ -1140,7 +1098,7 @@ public class ClientFactoryVO {
                 case "PARTY_REF": itemVO = new ArrItemPartyRefVO(); break;
                 case "RECORD_REF": itemVO = new ArrItemRecordRefVO(); break;
                 case "DECIMAL": itemVO = new ArrItemDecimalVO(); break;
-                case "PACKET_REF": itemVO = new ArrItemPartyRefVO(); break;
+                case "STRUCTURED": itemVO = new ArrItemStructureVO(); break;
                 case "ENUM": itemVO = new ArrItemEnumVO(); break;
                 case "FILE_REF": itemVO = new ArrItemFileRefVO(); break;
                 case "JSON_TABLE": itemVO = new ArrItemJsonTableVO(); break;
@@ -1317,7 +1275,7 @@ public class ClientFactoryVO {
         // naplnění mapy podle oblíbených z nastavení
         Map<Integer, List<Integer>> typeSpecsMap = new HashMap<>();
         for (UISettings favoritesItemType : favoritesItemTypes) {
-            SettingFavoriteItemSpecs setting = (SettingFavoriteItemSpecs) packageServise.convertSetting(favoritesItemType, null);
+            SettingFavoriteItemSpecs setting = (SettingFavoriteItemSpecs) PackageService.convertSetting(favoritesItemType, itemTypeRepository);
             if (CollectionUtils.isNotEmpty(setting.getFavoriteItems())) {
                 List<RulItemSpec> itemSpecs = itemSpecRepository.findOneByCodes(setting.getFavoriteItems().stream()
                         .map(SettingFavoriteItemSpecs.FavoriteItem::getValue).collect(Collectors.toList()));
@@ -1543,39 +1501,6 @@ public class ClientFactoryVO {
             result.add(ArrNodeVO.valueOf(node));
         }
         return result;
-    }
-
-    /**
-     * Vytvoření seznamu typů obalů, které jsou k dispozici.
-     *
-     * @param packetTypes seznam DO typů obalů
-     * @return seznam VO typů obalů
-     */
-    public List<RulPacketTypeVO> createPacketTypeList(final List<RulPacketType> packetTypes) {
-        return createList(packetTypes, RulPacketTypeVO.class, null);
-    }
-
-    /**
-     * Vytvoření seznamu obalů.
-     *
-     * @param packets seznam DO obalů
-     * @return seznam VO obalů
-     */
-    public List<ArrPacketVO> createPacketList(final List<ArrPacket> packets) {
-        return createList(packets, ArrPacketVO.class, null);
-    }
-
-    /**
-     * Vytvoření obalu.
-     *
-     * @param packet DO obalu
-     * @return VO obalu
-     */
-    public ArrPacketVO createPacket(final ArrPacket packet) {
-        Assert.notNull(packet, "Obal musí být vyplněn");
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        ArrPacketVO packetVO = mapper.map(packet, ArrPacketVO.class);
-        return packetVO;
     }
 
     /**
@@ -1815,6 +1740,7 @@ public class ClientFactoryVO {
         List<ArrNodeOutput> nodes = outputServiceInternal.getOutputNodes(output.getOutputDefinition(), fundVersion.getLockChange());
         List<Integer> nodeIds = nodes.stream().map(ArrNodeOutput::getNodeId).collect(Collectors.toList());
         outputExt.getOutputDefinition().setNodes(levelTreeCacheService.getNodesByIds(nodeIds, fundVersion.getFundVersionId()));
+
         return outputExt;
     }
 
@@ -2507,5 +2433,43 @@ public class ClientFactoryVO {
 
         vo.setDaoCount(daoCount);
         return vo;
+    }
+
+    public ArrStructureDataVO createStructureData(final ArrStructuredObject structureData) {
+        ArrStructureDataVO structureDataVO = new ArrStructureDataVO();
+        structureDataVO.id = structureData.getStructuredObjectId();
+        structureDataVO.typeCode = structureData.getStructuredType().getCode();
+        structureDataVO.value = structureData.getValue();
+        structureDataVO.errorDescription = structureData.getErrorDescription();
+        structureDataVO.assignable = structureData.getAssignable();
+        structureDataVO.state = structureData.getState();
+        return structureDataVO;
+    }
+
+    public List<ArrStructureDataVO> createStructureDataList(final List<ArrStructuredObject> structureDataList) {
+        if (structureDataList == null) {
+            return null;
+        }
+        return structureDataList.stream().map(this::createStructureData).collect(Collectors.toList());
+    }
+
+    public List<StructureExtensionFundVO> createStructureExtensionFund(final List<RulStructuredTypeExtension> allStructureExtensions,
+                                                                       final List<RulStructuredTypeExtension> structureExtensions) {
+        List<StructureExtensionFundVO> result = new ArrayList<>(allStructureExtensions.size());
+        allStructureExtensions.forEach(se -> {
+            StructureExtensionFundVO structureExtensionFund = createStructureExtensionFund(se);
+            structureExtensionFund.active = structureExtensions.contains(se);
+            result.add(structureExtensionFund);
+        });
+        return result;
+    }
+
+    private StructureExtensionFundVO createStructureExtensionFund(final RulStructuredTypeExtension structureExtension) {
+        StructureExtensionFundVO structureExtensionFundVO = new StructureExtensionFundVO();
+        structureExtensionFundVO.id = structureExtension.getStructuredTypeExtensionId();
+        structureExtensionFundVO.code = structureExtension.getCode();
+        structureExtensionFundVO.name = structureExtension.getName();
+        structureExtensionFundVO.active = false;
+        return structureExtensionFundVO;
     }
 }

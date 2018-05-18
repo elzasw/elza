@@ -47,7 +47,8 @@ import {
     deleteRequest,
     changeRequestItemQueue,
     createRequestItemQueue,
-    nodesDelete
+    nodesDelete,
+    structureChange
 } from 'actions/global/change.jsx';
 
 import Stomp from 'stompjs';
@@ -123,30 +124,30 @@ class websocket{
         store.dispatch(webSocketConnect());
         console.info('Websocket connected');
         this.stompClient.subscribe('/topic/api/changes', this.onMessage);
-    }
+        }
 
     onError = (error) => {
         const {body, headers, command} = error;
 
         store.dispatch(checkUserLogged((logged)=>{
             if(logged){
-                if (command === "ERROR" && headers) {
-                    // Error message received from server
-                    
-                    this.disconnect(true);
+        if (command === "ERROR" && headers) {
+            // Error message received from server
+            
+            this.disconnect(true);
                     let message = headers.message || "";
 
                     if(body){
-                        const bodyObj = JSON.parse(body);
+            const bodyObj = JSON.parse(body);
                         message = bodyObj.message;
                     } 
 
                     store.dispatch(addToastrDanger(i18n('global.error.ws'), message));
                 } else {
-                    // Unknown error -> probably lost connection -> try to reconnect
-                    this.disconnect();
-                    console.info('Websocket lost connection. Reconnecting...');
-                    setTimeout(this.connect, 5000);
+            // Unknown error -> probably lost connection -> try to reconnect
+            this.disconnect();
+            console.info('Websocket lost connection. Reconnecting...');
+            setTimeout(this.connect, 5000);
                 }
             }
         }));
@@ -159,9 +160,9 @@ class websocket{
 
         if(this.eventMap[eventType]){
             this.eventMap[eventType](body);
-        } else {
+    } else {
             console.warn("Unknown event type '" + eventType + "'", body);
-        }
+    }
     }
 
     onReceipt = (frame) => {
@@ -172,12 +173,12 @@ class websocket{
         let request = receiptId && this.pendingRequests[receiptId];
 
         if(request){
-            const bodyObj = JSON.parse(body);
+        const bodyObj = JSON.parse(body);
             if(bodyObj && !bodyObj.errorMessage){
                 request.onSuccess(bodyObj);
-            } else {
+    } else {
                 request.onError(bodyObj);
-            }
+    }
             delete this.pendingRequests[receiptId];
         } else {
             console.warn("Unknown request - id:",receiptId);
@@ -211,7 +212,6 @@ let eventMap = {
     'EXTERNAL_SYSTEM_DELETE': extSystemDelete,
     'NODES_CHANGE': nodesChange,
     'OUTPUT_ITEM_CHANGE': outputItemChange,
-    'PACKETS_CHANGE': packetsChangeEvent,
     'FILES_CHANGE': filesChangeEvent,
     'BULK_ACTION_STATE_CHANGE': fundActionActionChange,
     'DELETE_LEVEL': deleteLevelChange,
@@ -243,7 +243,9 @@ let eventMap = {
     'REQUEST_ITEM_QUEUE_CREATE': createRequestItemQueueChange,
     'REQUEST_ITEM_QUEUE_DELETE': createRequestItemQueueChange,
     'REQUEST_ITEM_QUEUE_CHANGE': changeRequestItemQueueChange,
-    'DELETE_NODES': deleteNodes
+    'DELETE_NODES': deleteNodes,
+    'FUND_EXTENSION_CHANGE': fundExtensionChange,
+    'STRUCTURE_DATA_CHANGE': structureDataChange
 }
 
 if (!window.ws) {
@@ -291,6 +293,13 @@ function deleteNodes(value) {
     store.dispatch(nodesDelete(value.versionId, value.entityIds))
 }
 
+function fundExtensionChange(value) {
+    store.dispatch(changeNodes(value.versionId, [value.nodeId]))
+}
+
+function structureDataChange(value) {
+    store.dispatch(structureChange(value));
+}
 function approveVersionChange(value) {
     store.dispatch(changeApproveVersion(value.fundId, value.versionId));
 }
@@ -408,12 +417,6 @@ function institutionChange() {
     store.dispatch(changeInstitution());
 }
 
-/**
- * Změna obalů.
- */
-function packetsChangeEvent(value) {
-    store.dispatch(changePackets(value.ids[0]));
-}
 
 function filesChangeEvent(value) {
     store.dispatch(changeFiles(value.versionId, value.entityId));
@@ -421,7 +424,7 @@ function filesChangeEvent(value) {
 
 function nodesChange(value) {
     shouldSkipNodeEvent(value.entityIds,()=>{
-        store.dispatch(changeNodes(value.versionId, value.entityIds));
+    store.dispatch(changeNodes(value.versionId, value.entityIds));
     });
 }
 function outputItemChange(value) {

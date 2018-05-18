@@ -1,6 +1,7 @@
 import * as types from 'actions/constants/ActionTypes.js';
 import {routerNavigate} from 'actions/router.jsx'
 import {setFocus} from 'actions/global/focus.jsx'
+import {FOCUS_KEYS} from "../../constants";
 
 export function storeRestoreFromStorage() {
     return (dispatch, getState) => {
@@ -60,7 +61,7 @@ export function storeLoadData(type, data, switchView = true) {
                 if (switchView) {
                     if (data.partyDetail) {
                         dispatch(routerNavigate('/party'));
-                        dispatch(setFocus('party', 1, 'list'))
+                        dispatch(setFocus(FOCUS_KEYS.PARTY, 1, 'list'))
                     }
                 }
                 break;
@@ -68,7 +69,7 @@ export function storeLoadData(type, data, switchView = true) {
                 dispatch(storeLoad({store:'app', ...data}));
                 if (switchView) {
                     dispatch(routerNavigate('/registry'));
-                    dispatch(setFocus('registry', 1, 'list'))
+                    dispatch(setFocus(FOCUS_KEYS.REGISTRY, 1, 'list'))
                 }
                 break;
             case 'ARR_REGION':
@@ -93,7 +94,7 @@ export function storeLoadData(type, data, switchView = true) {
                 dispatch(storeLoad({arrRegionFund: data}));
                 if (switchView) {
                     dispatch(routerNavigate('/arr'));
-                    dispatch(setFocus('arr', 1, 'tree'))
+                    dispatch(setFocus(FOCUS_KEYS.ARR, 1, 'tree'))
                 }
                 break;
         }

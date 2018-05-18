@@ -335,9 +335,7 @@ public class InterpiService {
             }
 
             final RegRecord parentRecord = recordRepository.findRegRecordByExternalIdAndExternalSystemCodeAndScope(parentRecordExtId.getValue(), regExternalSystem.getCode(), regScope);
-            final RegRecord importParentRecord = importRecord(parentRecord != null ? parentRecord.getRecordId() : null, parentRecordExtId.getValue(), scopeId, systemId, isOriginator, mappings);
 
-            result.setParentRecord(importParentRecord);
             recordRepository.save(result);
         }
 

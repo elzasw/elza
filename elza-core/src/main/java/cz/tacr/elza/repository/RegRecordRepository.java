@@ -22,34 +22,6 @@ import cz.tacr.elza.domain.projection.RegRecordInfoExternal;
  */
 @Repository
 public interface RegRecordRepository extends ElzaJpaRepository<RegRecord, Integer>, RegRecordRepositoryCustom {
-
-    /**
-     * Najde potomky rejstříkového hesla.
-     *
-     * @param parentRecord rodič
-     * @return seznam potomků
-     */
-    List<RegRecord> findByParentRecord(RegRecord parentRecord);
-
-    /**
-     * Najde počet potomků rejstříkového hesla.
-     *
-     * @param parentRecord rodič
-     * @return počet potomků
-     */
-    long countByParentRecord(RegRecord parentRecord);
-
-    /**
-     * Najde potomky rejstříkových hesel.
-     *
-     * @param parentRecords rodiče
-     *
-     * @return seznam potomků
-     */
-    @Query("SELECT r FROM reg_record r WHERE parentRecord IN (?1)")
-    List<RegRecord> findByParentRecords(List<RegRecord> parentRecords);
-
-
     @Query("SELECT r FROM reg_record r WHERE r.externalId IN (?1) "
             + "and r.externalSystem = ?2")
     List<RegRecord> findRegRecordByExternalIdsAndExternalSystem(Set<String> set, RegExternalSystem externalSystem);

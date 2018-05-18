@@ -29,20 +29,6 @@
 		</xs:annotation>
 		<xs:restriction base="xs:string"/>
 	</xs:simpleType>
-	<xs:simpleType name="PacketState">
-		<xs:annotation>
-			<xs:documentation>Packet state
-Allowed states are:
-C - closed
-D - cancelled / deleted
-O - opened</xs:documentation>
-		</xs:annotation>
-		<xs:restriction base="xs:string">
-			<xs:enumeration value="C"/>
-			<xs:enumeration value="D"/>
-			<xs:enumeration value="O"/>
-		</xs:restriction>
-	</xs:simpleType>
 	<xs:simpleType name="Uuid">
 		<xs:annotation>
 			<xs:documentation>UUID</xs:documentation>
@@ -245,21 +231,6 @@ Type: Integer</xs:documentation>
 			</xs:extension>
 		</xs:complexContent>
 	</xs:complexType>
-	<xs:complexType name="DescriptionItemPacketRef">
-		<xs:annotation>
-			<xs:documentation>Description item to reference packet</xs:documentation>
-		</xs:annotation>
-		<xs:complexContent>
-			<xs:extension base="e:DescriptionItem">
-				<xs:sequence/>
-				<xs:attribute name="pcid" use="required" type="e:Id">
-					<xs:annotation>
-						<xs:documentation>ID of the packet, this ID is valid only in XML</xs:documentation>
-					</xs:annotation>
-				</xs:attribute>
-			</xs:extension>
-		</xs:complexContent>
-	</xs:complexType>
 	<xs:complexType name="DescriptionItemPartyRef">
 		<xs:annotation>
 			<xs:documentation>Party reference</xs:documentation>
@@ -295,6 +266,21 @@ Item ID</xs:documentation>
 						</xs:annotation>
 					</xs:element>
 				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="DescriptionItemStructObjectRef">
+		<xs:annotation>
+			<xs:documentation>Description item to reference structured object</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="e:DescriptionItem">
+				<xs:sequence/>
+				<xs:attribute name="soid" use="required" type="e:Id">
+					<xs:annotation>
+						<xs:documentation>ID of the structured object, this ID is valid only in XML</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
 			</xs:extension>
 		</xs:complexContent>
 	</xs:complexType>
@@ -471,7 +457,7 @@ Item ID</xs:documentation>
 				<xs:element name="di" type="e:DescriptionItemInteger" minOccurs="1" maxOccurs="1"/>
 				<xs:element name="dd" type="e:DescriptionItemDecimal" minOccurs="1" maxOccurs="1"/>
 				<xs:element name="ds" type="e:DescriptionItemString" minOccurs="1" maxOccurs="1"/>
-				<xs:element name="dc" type="e:DescriptionItemPacketRef" minOccurs="1" maxOccurs="1">
+				<xs:element name="do" type="e:DescriptionItemStructObjectRef" minOccurs="1" maxOccurs="1">
 					<xs:annotation>
 						<xs:documentation>Description item for packet</xs:documentation>
 					</xs:annotation>
@@ -581,45 +567,6 @@ Item ID</xs:documentation>
 			<xs:element name="nc" type="e:NameComplement" minOccurs="0" maxOccurs="unbounded">
 				<xs:annotation>
 					<xs:documentation>Name complement</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-		</xs:sequence>
-	</xs:complexType>
-	<xs:complexType name="Packet">
-		<xs:annotation>
-			<xs:documentation>Packet</xs:documentation>
-		</xs:annotation>
-		<xs:sequence>
-			<xs:element name="s" type="e:PacketState" minOccurs="0" maxOccurs="1">
-				<xs:annotation>
-					<xs:documentation>State of the packet. If state is not specified state is "opened".</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-		</xs:sequence>
-		<xs:attribute name="id" use="required" type="e:Id">
-			<xs:annotation>
-				<xs:documentation>Packet ID, used for referencing packet inside XML</xs:documentation>
-			</xs:annotation>
-		</xs:attribute>
-		<xs:attribute name="n" use="required" type="xs:string">
-			<xs:annotation>
-				<xs:documentation>Packet name / ID inside applicatio</xs:documentation>
-			</xs:annotation>
-		</xs:attribute>
-		<xs:attribute name="t" use="optional" type="xs:string">
-			<xs:annotation>
-				<xs:documentation>Packet type, code of packet type</xs:documentation>
-			</xs:annotation>
-		</xs:attribute>
-	</xs:complexType>
-	<xs:complexType name="Packets">
-		<xs:annotation>
-			<xs:documentation>Packet list</xs:documentation>
-		</xs:annotation>
-		<xs:sequence>
-			<xs:element name="pck" type="e:Packet" minOccurs="0" maxOccurs="unbounded">
-				<xs:annotation>
-					<xs:documentation>Packet</xs:documentation>
 				</xs:annotation>
 			</xs:element>
 		</xs:sequence>
@@ -928,9 +875,9 @@ This is ID of the created party</xs:documentation>
 					<xs:documentation>basic fund information</xs:documentation>
 				</xs:annotation>
 			</xs:element>
-			<xs:element name="pcks" type="e:Packets" minOccurs="0" maxOccurs="1">
+			<xs:element name="sts" type="e:StructuredTypes" minOccurs="0" maxOccurs="1">
 				<xs:annotation>
-					<xs:documentation>List of packets</xs:documentation>
+					<xs:documentation>Structured types used in a section</xs:documentation>
 				</xs:annotation>
 			</xs:element>
 			<xs:element name="lvls" type="e:Levels" minOccurs="1" maxOccurs="1">
@@ -951,6 +898,78 @@ This is ID of the created party</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
 			<xs:element name="s" type="e:Section" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="StructuredObject">
+		<xs:annotation>
+			<xs:documentation>Structured object (instance of StructuredType)</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:choice minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Description item</xs:documentation>
+				</xs:annotation>
+				<xs:element name="de" type="e:DescriptionItemEnum" minOccurs="1" maxOccurs="1"/>
+				<xs:element name="di" type="e:DescriptionItemInteger" minOccurs="1" maxOccurs="1"/>
+				<xs:element name="dd" type="e:DescriptionItemDecimal" minOccurs="1" maxOccurs="1"/>
+				<xs:element name="ds" type="e:DescriptionItemString" minOccurs="1" maxOccurs="1"/>
+				<xs:element name="do" type="e:DescriptionItemStructObjectRef" minOccurs="1" maxOccurs="1">
+					<xs:annotation>
+						<xs:documentation>Description item for packet</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="dp" type="e:DescriptionItemPartyRef" minOccurs="1" maxOccurs="1">
+					<xs:annotation>
+						<xs:documentation>Party reference</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="da" type="e:DescriptionItemAPRef" minOccurs="1" maxOccurs="1">
+					<xs:annotation>
+						<xs:documentation>Access point entry reference</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="dt" type="e:DescriptionItemUnitDate" minOccurs="1" maxOccurs="1">
+					<xs:annotation>
+						<xs:documentation>Description item date</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="du" type="e:DescriptionItemUndefined" minOccurs="1" maxOccurs="1"/>
+			</xs:choice>
+		</xs:sequence>
+		<xs:attribute name="id" use="required" type="e:Id">
+			<xs:annotation>
+				<xs:documentation>Structured Object ID, used for referencing structured object inside XML</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="StructuredObjects">
+		<xs:annotation>
+			<xs:documentation>Collection of structured objects</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="so" type="e:StructuredObject" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Structured Object</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="StructuredType">
+		<xs:annotation>
+			<xs:documentation>Structured type in context of fund section</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="sos" type="e:StructuredObjects" minOccurs="1" maxOccurs="1"/>
+		</xs:sequence>
+		<xs:attribute name="c" use="required" type="xs:string">
+			<xs:annotation>
+				<xs:documentation>code of structured type (required)</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="StructuredTypes">
+		<xs:sequence>
+			<xs:element name="st" type="e:StructuredType" minOccurs="0" maxOccurs="unbounded"/>
 		</xs:sequence>
 	</xs:complexType>
 	<xs:complexType name="TimeInterval">

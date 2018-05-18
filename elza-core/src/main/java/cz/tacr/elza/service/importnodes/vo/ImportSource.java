@@ -3,7 +3,7 @@ package cz.tacr.elza.service.importnodes.vo;
 import java.util.List;
 
 import cz.tacr.elza.domain.ArrFile;
-import cz.tacr.elza.domain.ArrPacket;
+import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.RegScope;
 
 /**
@@ -28,7 +28,7 @@ public interface ImportSource {
     /**
      * @return seznam použitých obalů
      */
-	List<ArrPacket> getPackets();
+    List<ArrStructuredObject> getStructuredList();
 
     /**
      * @return má další uzel?

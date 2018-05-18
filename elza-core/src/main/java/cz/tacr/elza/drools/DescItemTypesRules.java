@@ -11,12 +11,14 @@ import org.springframework.stereotype.Component;
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.RulArrangementRule;
+import cz.tacr.elza.domain.RulExtensionRule;
 import cz.tacr.elza.domain.RulItemTypeExt;
-import cz.tacr.elza.domain.RulRule;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.drools.model.ActiveLevel;
 import cz.tacr.elza.drools.service.ModelFactory;
 import cz.tacr.elza.drools.service.ScriptModelFactory;
+import cz.tacr.elza.service.RuleService;
 
 
 /**
@@ -34,6 +36,8 @@ public class DescItemTypesRules extends Rules {
 
     @Autowired
     private ResourcePathResolver resourcePathResolver;
+    @Autowired
+    private RuleService ruleService;
 
     /**
      * Spuštění zpracování pravidel.
@@ -57,17 +61,21 @@ public class DescItemTypesRules extends Rules {
 
     	final RulRuleSet rulRuleSet = version.getRuleSet();
 
-        List<RulRule> rulPackageRules = packageRulesRepository.findByRuleSetAndRuleTypeOrderByPriorityAsc(
-                rulRuleSet, RulRule.RuleType.ATTRIBUTE_TYPES);
+        List<RulArrangementRule> rulArrangementRules = arrangementRuleRepository.findByRuleSetAndRuleTypeOrderByPriorityAsc(
+                rulRuleSet, RulArrangementRule.RuleType.ATTRIBUTE_TYPES);
 
-        for (RulRule rulPackageRule : rulPackageRules) {
-            Path path = resourcePathResolver.getDroolFile(rulPackageRule);
+        for (RulArrangementRule rulArrangementRule : rulArrangementRules) {
+            Path path = resourcePathResolver.getDroolFile(rulArrangementRule);
             StatelessKieSession session = createNewStatelessKieSession(path);
-            //session.setGlobal("results", results);
             session.execute(facts);
         }
 
-        //results.finalize();
+        List<RulExtensionRule> rulExtensionRules = ruleService.findExtensionRuleByNode(level.getNode(), RulExtensionRule.RuleType.ATTRIBUTE_TYPES);
+        for (RulExtensionRule rulExtensionRule : rulExtensionRules) {
+            Path path = resourcePathResolver.getDroolFile(rulExtensionRule);
+            StatelessKieSession session = createNewStatelessKieSession(path);
+            session.execute(facts);
+        }
 
         return rulDescItemTypeExtList;
     }

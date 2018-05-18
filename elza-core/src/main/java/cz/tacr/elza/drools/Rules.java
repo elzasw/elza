@@ -18,7 +18,7 @@ import org.kie.internal.io.ResourceFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.repository.RuleRepository;
+import cz.tacr.elza.repository.ArrangementRuleRepository;
 
 
 /**
@@ -35,7 +35,7 @@ public abstract class Rules {
     private Map<Path, Map.Entry<FileTime, KnowledgeBase>> rulesByPathMap = new HashMap<>();
 
     @Autowired
-    protected RuleRepository packageRulesRepository;
+    protected ArrangementRuleRepository arrangementRuleRepository;
 
 
     /**

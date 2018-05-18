@@ -9,12 +9,13 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
+import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulItemSpec;
@@ -23,6 +24,7 @@ import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.RulPackageDependency;
 import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.RulStructuredType;
 import cz.tacr.elza.domain.table.ElzaColumn;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
@@ -176,7 +178,9 @@ public class ItemTypeUpdater {
 	 * @param rulRuleSet
      * @return return list of updated types
 	 */
-	public List<RulItemType> update(final List<RulDataType> rulDataTypes, final RulPackage rulPackage,
+	public List<RulItemType> update(final List<RulDataType> rulDataTypes,
+                                    final List<RulStructuredType> rulStructureTypes,
+                                    final RulPackage rulPackage,
                                     final ItemTypes itemTypes,
                                     final ItemSpecs itemSpecs,
                                     final RulRuleSet rulRuleSet) {
@@ -190,7 +194,7 @@ public class ItemTypeUpdater {
             // prepare list of updated/new items
             List<ItemType> itemTypesList = itemTypes.getItemTypes();
             if (!CollectionUtils.isEmpty(itemTypesList)) {
-                rulItemTypesUpdated = updateItemTypes(rulItemTypesOrig, itemTypesList, rulRuleSet);
+                rulItemTypesUpdated = updateItemTypes(rulItemTypesOrig, itemTypesList, rulRuleSet, rulStructureTypes);
                 // try to save updated items
                 rulItemTypesUpdated = itemTypeRepository.save(rulItemTypesUpdated);
             }
@@ -258,7 +262,7 @@ public class ItemTypeUpdater {
         List<RulPackage> packages = packageRepository.findAll();
         PackageUtils.Graph<RulPackage> g = new PackageUtils.Graph<>(packages.size());
         List<RulPackageDependency> dependencies = packageDependencyRepository.findAll();
-        dependencies.forEach(d -> g.addEdge(d.getSourcePackage(), d.getTargetPackage()));
+        dependencies.forEach(d -> g.addEdge(d.getRulPackage(), d.getDependsOnPackage()));
         return g.topologicalSort();
     }
 
@@ -270,7 +274,8 @@ public class ItemTypeUpdater {
      * @return Return new list of active item types
 	 */
     private List<RulItemType> updateItemTypes(List<RulItemType> rulItemTypesOrig, List<ItemType> itemTypes,
-                                              final RulRuleSet rulRuleSet) {
+                                              final RulRuleSet rulRuleSet,
+                                              final List<RulStructuredType> rulStructureTypes) {
     	List<RulItemType> rulItemTypesUpdated = new ArrayList<>();
     	int lastUsedViewOrder = -1;
 		for (ItemType itemType : itemTypes) {
@@ -310,7 +315,7 @@ public class ItemTypeUpdater {
 				lastUsedViewOrder = getNextViewOrderPos();
 			}
 
-			convertRulDescItemType(rulPackage, itemType, dbItemType, rulDataTypes, rulRuleSet);
+			convertRulDescItemType(rulPackage, itemType, dbItemType, rulDataTypes, rulStructureTypes, rulRuleSet);
 
 			// update view order
 			dbItemType.setViewOrder(lastUsedViewOrder);
@@ -358,6 +363,7 @@ public class ItemTypeUpdater {
                                         final ItemType itemType,
                                         final RulItemType rulDescItemType,
                                         final List<RulDataType> rulDataTypes,
+                                        final List<RulStructuredType> rulStructureTypes,
                                         final RulRuleSet rulRuleSet) {
 
         rulDescItemType.setCode(itemType.getCode());
@@ -375,12 +381,25 @@ public class ItemTypeUpdater {
             throw new SystemException("Kód " + itemType.getDataType() + " neexistuje v RulDataType", BaseCode.ID_NOT_EXIST);
         }
 
+        RulStructuredType rulStructureType = null;
+        if (DataType.STRUCTURED == DataType.fromCode(itemType.getDataType())) {
+            List<RulStructuredType> findStructureTypes = rulStructureTypes.stream()
+                    .filter((r) -> r.getCode().equals(itemType.getStructureType()))
+                    .collect(Collectors.toList());
+            if (findStructureTypes.size() > 0) {
+                rulStructureType = findStructureTypes.get(0);
+            } else {
+                throw new SystemException("Kód " + itemType.getStructureType() + " neexistuje v RulStructureType", BaseCode.ID_NOT_EXIST);
+            }
+        }
+
         rulDescItemType.setDataType(item);
         rulDescItemType.setShortcut(itemType.getShortcut());
         rulDescItemType.setDescription(itemType.getDescription());
         rulDescItemType.setIsValueUnique(itemType.getIsValueUnique());
         rulDescItemType.setCanBeOrdered(itemType.getCanBeOrdered());
         rulDescItemType.setUseSpecification(itemType.getUseSpecification());
+        rulDescItemType.setStructuredType(rulStructureType);
 
         if (itemType.getColumnsDefinition() != null) {
             List<ElzaColumn> elzaColumns = new ArrayList<>(itemType.getColumnsDefinition().size());
@@ -427,7 +446,9 @@ public class ItemTypeUpdater {
         if (findItems.size() > 0) {
             item = findItems.get(0);
         } else {
-            throw new BusinessException("Typ s kódem " + itemSpec.getItemType() + " nenalezen", PackageCode.CODE_NOT_FOUND).set("code", itemSpec.getItemType() ).set("file", ITEM_TYPE_XML);
+            throw new BusinessException("Typ s kódem " + itemSpec.getItemType() + " nenalezen",
+                    PackageCode.CODE_NOT_FOUND)
+                            .set("code", itemSpec.getItemType()).set("file", ITEM_TYPE_XML);
         }
 
         if (CollectionUtils.isNotEmpty(itemSpec.getCategories())) {

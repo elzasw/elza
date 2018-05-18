@@ -8,12 +8,13 @@
   .el-0, .el-max, .el-full {
     width: 100%;
   }
-  .el-loop (@i) when (@i > 0) {
-    .el-@{i} {
-      width: @node-form-item-type-element-width * @i;
-    }
-    .el-loop(@i - 1);
-  }
 
   .el-loop (10);
+
+  .el-loop (@n, @i:1) when (@i <= @n) {
+    .el-@{i} {
+      width: (@node-form-item-type-element-width * @i);
+    }
+    .el-loop(@n, (@i + 1));
+  }
 }

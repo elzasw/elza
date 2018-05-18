@@ -81,6 +81,9 @@ public class StartupService implements SmartLifecycle {
         this.em = em;
     }
 
+    @Autowired
+    private StructureDataService structureDataService;
+
     @Override
     @Transactional(value = TxType.REQUIRES_NEW)
     public void start() {
@@ -128,10 +131,18 @@ public class StartupService implements SmartLifecycle {
         staticDataService.init();
         outputServiceInternal.init();
         clearBulkActions();
+        clearTempStructureData();
         bulkActionConfigManager.load();
         syncNodeCacheService();
         startNodeValidation();
         runQueuedRequests();
+    }
+
+    /**
+     * Provede vymazání nepoužitých dočasných hodnot strukt. typu.
+     */
+    private void clearTempStructureData() {
+        structureDataService.removeTempStructureData();
     }
 
     /**

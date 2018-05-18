@@ -18,6 +18,7 @@ import './RegistryList.less';
 import RegistryListItem from "./RegistryListItem";
 import ListPager from "../shared/listPager/ListPager";
 import * as perms from "../../actions/user/Permission";
+import {FOCUS_KEYS} from "../../constants";
 import {requestScopesIfNeeded} from "../../actions/refTables/scopesData";
 
 class RegistryList extends AbstractReactComponent {
@@ -61,7 +62,7 @@ class RegistryList extends AbstractReactComponent {
                         focusWasSet()
                     })
                 }
-            } else if (isFocusFor(focus, 'registry', 1) || isFocusFor(focus, 'registry', 1, 'list')) {
+            } else if (isFocusFor(focus, FOCUS_KEYS.REGISTRY, 1) || isFocusFor(focus, FOCUS_KEYS.REGISTRY, 1, 'list')) {
                 this.setState({}, () => {
                     this.refs.registryList.focus();
                     focusWasSet()
@@ -164,9 +165,13 @@ class RegistryList extends AbstractReactComponent {
         }));
     };
 
-    renderListItem = (item) => <RegistryListItem {...item}
-                                                 onClick={this.handleRegistryDetail.bind(this, item)}
-                                                 onDoubleClick={this.handleRegistrySetParent.bind(this,item)} />
+    renderListItem = (props) => {
+        const {item} = props;
+        return <RegistryListItem 
+            {...item}
+            onClick={this.handleRegistryDetail.bind(this, item)}
+            onDoubleClick={this.handleRegistrySetParent.bind(this,item)} />
+    }
 
     /**
      * Vrátí pole akcí pro registry type filtr
@@ -279,7 +284,7 @@ class RegistryList extends AbstractReactComponent {
 
         let regTypesWithAll = [...registryTypes];
         regTypesWithAll.unshift({name:this.registryTypeDefaultValue});
-        
+
         return <div className="registry-list">
             <div className="filter">
                 <Autocomplete
@@ -294,7 +299,7 @@ class RegistryList extends AbstractReactComponent {
                         disabled={!registryTypes || registryList.filter.parents.length || registryList.filter.itemSpecId ? true : false}
                         tree
                         alwaysExpanded
-                        allowSelectItem={(id, item) => true}
+                        allowSelectItem={(item) => true}
                         value={!filter.registryTypeId ? this.registryTypeDefaultValue : getTreeItemById(filter.registryTypeId, registryTypes)}
                         onChange={this.handleFilterRegistryType}
                         actions={this.getRegistryTypeActions()}

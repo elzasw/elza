@@ -52,7 +52,6 @@ public class XmlAccessPointOutputStream implements AccessPointsOutputStream {
         element.setApe(createEntry(accessPoint));
         element.setChr(accessPoint.getCharacteristics());
         element.setN(accessPoint.getRecord());
-        element.setNote(accessPoint.getNote());
         element.setVnms(createVariantNames(accessPoint));
 
         try {
@@ -95,10 +94,10 @@ public class XmlAccessPointOutputStream implements AccessPointsOutputStream {
         if (!fragment.isOpen()) {
             XMLStreamWriter sw = fragment.openStreamWriter();
             sw.writeStartDocument();
-            sw.writeStartElement(XmlElementName.ACCESS_POINTS);
+            sw.writeStartElement(XmlNameConsts.ACCESS_POINTS);
         }
         XMLStreamWriter sw = fragment.getStreamWriter();
-        JAXBElement<?> jaxbElement = XmlUtils.wrapElement(XmlElementName.PARTY, ap);
+        JAXBElement<?> jaxbElement = XmlUtils.wrapElement(XmlNameConsts.PARTY, ap);
         Marshaller marshaller = jaxbContext.createMarshaller();
         marshaller.setProperty(Marshaller.JAXB_FRAGMENT, Boolean.TRUE);
         marshaller.marshal(jaxbElement, sw);
@@ -106,9 +105,9 @@ public class XmlAccessPointOutputStream implements AccessPointsOutputStream {
 
 	/**
 	 * Create new access point for XML
-	 * 
+	 *
 	 * This is factory method
-	 * 
+	 *
 	 * @param ap
 	 *            Record
 	 * @return
@@ -119,10 +118,6 @@ public class XmlAccessPointOutputStream implements AccessPointsOutputStream {
         entry.setT(ap.getRegisterType().getCode());
         entry.setUpd(XmlUtils.convertDate(ap.getLastUpdate()));
         entry.setUuid(ap.getUuid());
-
-        if (ap.getParentRecordId() != null) {
-            entry.setPid(ap.getParentRecordId().toString());
-        }
 
 		// prepare external id
 		if (StringUtils.isNotBlank(ap.getExternalId())) {
@@ -137,7 +132,7 @@ public class XmlAccessPointOutputStream implements AccessPointsOutputStream {
 
 	/**
 	 * Create collection of variant names
-	 * 
+	 *
 	 * @param ap
 	 *            record
 	 * @return Return null if variant names does not exists.

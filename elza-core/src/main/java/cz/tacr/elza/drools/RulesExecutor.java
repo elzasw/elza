@@ -4,6 +4,7 @@ import java.nio.file.NoSuchFileException;
 import java.util.List;
 import java.util.Set;
 
+import cz.tacr.elza.domain.ArrStructuredItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,7 @@ import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrOutputDefinition;
 import cz.tacr.elza.domain.RulItemTypeExt;
+import cz.tacr.elza.domain.RulStructuredType;
 import cz.tacr.elza.domain.vo.DataValidationResult;
 import cz.tacr.elza.domain.vo.NodeTypeOperation;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
@@ -39,6 +41,9 @@ public class RulesExecutor {
     private DescItemTypesRules descItemTypesRules;
 
     @Autowired
+    private StructureItemTypesRules structureItemTypesRules;
+
+    @Autowired
     private OutputItemTypesRules outputItemTypesRules;
 
     @Autowired
@@ -46,12 +51,6 @@ public class RulesExecutor {
 
     @Autowired
     private ScenarioOfNewLevelRules scenarioOfNewLevelRules;
-
-    /**
-     * Přípona souborů pravidel
-     */
-    public static final String FILE_EXTENSION = ".drl";
-
 
     /**
      * Spustí pravidla nad typy atributů a jejich specifikacema.
@@ -90,6 +89,29 @@ public class RulesExecutor {
         } catch (NoSuchFileException e) {
             logger.warn("Neexistuje soubor pro spuštění scriptu." + e.getMessage(), e);
 			throw new SystemException(e);
+        } catch (Exception e) {
+            throw new SystemException(e);
+        }
+    }
+
+    /**
+     * Spustí pravidla pro strukturovaný datový typ.
+     *
+     * @param structureType          typ
+     * @param rulDescItemTypeExtList seznam všech atributů
+     * @param fundVersion            verze AS
+     * @param structureItems         seznam položek strukturovaného datového typu
+     * @return seznam typů atributů odpovídající pravidlům
+     */
+    public List<RulItemTypeExt> executeStructureItemTypesRules(final RulStructuredType structureType,
+                                                               final List<RulItemTypeExt> rulDescItemTypeExtList,
+                                                               final ArrFundVersion fundVersion,
+                                                               final List<ArrStructuredItem> structureItems) {
+        try {
+            return structureItemTypesRules.execute(structureType, rulDescItemTypeExtList, fundVersion.getFund(), structureItems);
+        } catch (NoSuchFileException e) {
+            logger.warn("Neexistuje soubor pro spuštění scriptu." + e.getMessage(), e);
+            return rulDescItemTypeExtList;
         } catch (Exception e) {
             throw new SystemException(e);
         }

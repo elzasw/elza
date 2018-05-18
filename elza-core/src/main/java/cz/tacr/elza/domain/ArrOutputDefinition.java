@@ -68,6 +68,9 @@ public class ArrOutputDefinition extends AbstractVersionableEntity {
     @Column(nullable = false)
     private Boolean deleted;
 
+    @Column(nullable = true)
+    private String outputSettings;
+
     @OneToMany(mappedBy = "outputDefinition", fetch = FetchType.LAZY)
     private List<ArrOutput> outputs;
 
@@ -270,6 +273,20 @@ public class ArrOutputDefinition extends AbstractVersionableEntity {
      */
     public void setError(final String error) {
         this.error = error;
+    }
+
+    /**
+     * @return nastavení šablony
+     */
+    public String getOutputSettings() {
+        return outputSettings;
+    }
+
+    /**
+     * @param outputSettings nastaví konfiguraci šablony
+     */
+    public void setOutputSettings(String outputSettings) {
+        this.outputSettings = outputSettings;
     }
 
     /**

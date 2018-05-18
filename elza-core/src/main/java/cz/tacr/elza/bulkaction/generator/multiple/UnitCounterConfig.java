@@ -25,10 +25,15 @@ public class UnitCounterConfig {
 
 	String objectType;
 
-	/**
-	 * Packet type mapping
-	 */
-	Map<String, String> objectMapping;
+    /**
+     * Type of the item stored in the object
+     */
+    String objectItemType;
+
+    /**
+     * Packet type mapping
+     */
+    Map<String, String> objectItemMapping;
 
 	public String getItemCount() {
 		return itemCount;
@@ -46,13 +51,13 @@ public class UnitCounterConfig {
 		this.objectType = objectType;
 	}
 
-	public Map<String, String> getObjectMapping() {
-		return objectMapping;
+    public Map<String, String> getObjectItemMapping() {
+        return objectItemMapping;
 	}
 
-	public void setObjectMapping(Map<String, String> objectMapping) {
-		this.objectMapping = objectMapping;
-    }
+    public void setObjectItemMapping(Map<String, String> objectMapping) {
+        this.objectItemMapping = objectMapping;
+	}
 
     public WhenConditionConfig getExcludeWhen() {
         return excludeWhen;
@@ -60,6 +65,14 @@ public class UnitCounterConfig {
 
     public void setExcludeWhen(WhenConditionConfig excludeWhen) {
         this.excludeWhen = excludeWhen;
+    }
+
+    public String getObjectItemType() {
+        return objectItemType;
+    }
+
+    public void setObjectItemType(String objectItemType) {
+        this.objectItemType = objectItemType;
     }
 
     public WhenConditionConfig getWhen() {

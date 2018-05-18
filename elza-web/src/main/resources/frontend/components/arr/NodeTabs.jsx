@@ -15,6 +15,7 @@ import {propsEquals} from 'components/Utils.jsx'
 import {createReferenceMarkString, getGlyph} from 'components/arr/ArrUtils.jsx'
 import {setFocus, canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import NodePanel from "./NodePanel";
+import {FOCUS_KEYS} from "../../constants";
 
 class NodeTabs extends AbstractReactComponent {
     constructor(props) {
@@ -37,7 +38,7 @@ class NodeTabs extends AbstractReactComponent {
         var {focus} = props
 
         if (canSetFocus()) {
-            if (isFocusFor(focus, 'arr', 2, 'tabs')) {
+            if (isFocusFor(focus, FOCUS_KEYS.ARR, 2, 'tabs')) {
                 this.setState({}, () => {
                    ReactDOM.findDOMNode(this.refs.tabs).focus()
                    focusWasSet()
@@ -52,7 +53,7 @@ return true
             return true;
         }
         var eqProps = ['versionId', 'fund', 'nodes', 'activeIndex', 'fundId', 'descItemTypes',
-            'rulDataTypes', 'calendarTypes', 'packetTypes', 'packets', 'showRegisterJp', 'showDaosJp', 'closed']
+            'rulDataTypes', 'calendarTypes', 'showRegisterJp', 'showDaosJp', 'closed']
         return !propsEquals(this.props, nextProps, eqProps);
     }
 
@@ -61,12 +62,12 @@ return true
 
         this.dispatch(fundSelectNodeTab(versionId, item.id, item.key, item.index))
         // this.dispatch(fundSelectNodeTab(item.index))
-        this.dispatch(setFocus('arr', 2, 'tabs'))
+        this.dispatch(setFocus(FOCUS_KEYS.ARR, 2, 'tabs'))
     }
 
     render() {
         const {fund, nodes, activeIndex, versionId, rulDataTypes, showRegisterJp, showDaosJp,
-                calendarTypes, descItemTypes, packetTypes, packets, fundId, closed} = this.props;
+                calendarTypes, descItemTypes, fundId, closed} = this.props;
 
         if (nodes.length == 0) {
             return <div></div>
@@ -101,10 +102,9 @@ return true
                                               rulDataTypes={rulDataTypes}
                                               calendarTypes={calendarTypes}
                                               descItemTypes={descItemTypes}
-                                              packetTypes={packetTypes}
                                               showRegisterJp={showRegisterJp}
                                               showDaosJp={showDaosJp}
-                                              packets={packets} />}
+                    />}
                 </Tabs.Content>
             </Tabs.Container>
         );
@@ -120,8 +120,6 @@ NodeTabs.propTypes = {
     rulDataTypes: React.PropTypes.object.isRequired,
     calendarTypes: React.PropTypes.object.isRequired,
     descItemTypes: React.PropTypes.object.isRequired,
-    packetTypes: React.PropTypes.object.isRequired,
-    packets: React.PropTypes.array.isRequired,
     showRegisterJp: React.PropTypes.bool.isRequired,
     showDaosJp: React.PropTypes.bool.isRequired,
     closed: React.PropTypes.bool.isRequired,

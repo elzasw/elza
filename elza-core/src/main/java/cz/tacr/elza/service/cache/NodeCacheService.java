@@ -45,19 +45,23 @@ import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataFileRef;
-import cz.tacr.elza.domain.ArrDataPacketRef;
 import cz.tacr.elza.domain.ArrDataPartyRef;
 import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrDataStructureRef;
 import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeRegister;
-import cz.tacr.elza.domain.ArrPacket;
+import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.CachedNodeRepository;
 import cz.tacr.elza.repository.DaoLinkRepository;
 import cz.tacr.elza.repository.DaoRepository;
@@ -65,9 +69,9 @@ import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.FundFileRepository;
 import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.repository.PacketRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
+import cz.tacr.elza.repository.StructuredObjectRepository;
 
 /**
  * Service for caching node related entities.
@@ -103,7 +107,7 @@ public class NodeCacheService {
     private DaoLinkRepository daoLinkRepository;
 
     @Autowired
-    private PacketRepository packetRepository;
+    private StructuredObjectRepository structureDataRepository;
 
     @Autowired
     private PartyRepository partyRepository;
@@ -447,6 +451,10 @@ public class NodeCacheService {
 	private RestoredNode getNodeInternal(final Integer nodeId) {
         Assert.notNull(nodeId, "Identifikátor JP musí být vyplněn");
 		ArrCachedNode cachedNode = cachedNodeRepository.findByNodeId(nodeId);
+        if (cachedNode == null) {
+            throw new ObjectNotFoundException("Node not found in cache", ArrangementCode.NODE_NOT_FOUND)
+                    .set("id", nodeId);
+        }
 		RestoredNode result = deserialize(cachedNode);
         reloadCachedNodes(Collections.singletonList(result));
         return result;
@@ -479,7 +487,7 @@ public class NodeCacheService {
 		StaticDataProvider sdp = staticDataService.getData();
 		RuleSystemProvider rsp = sdp.getRuleSystems();
 
-        Map<ArrDescItem, Integer> itemPacketsMap = new HashMap<>();
+        Map<ArrDescItem, Integer> itemStructureDataMap = new HashMap<>();
         Map<ArrDescItem, Integer> itemPartiesMap = new HashMap<>();
         Map<ArrDescItem, Integer> itemRecordsMap = new HashMap<>();
         Map<ArrDescItem, Integer> itemFilesMap = new HashMap<>();
@@ -498,8 +506,8 @@ public class NodeCacheService {
 					ArrData data = descItem.getData();
 					if (data != null) {
 						// restore dataType
-						if (data instanceof ArrDataPacketRef) {
-							itemPacketsMap.put(descItem, ((ArrDataPacketRef) data).getPacketId());
+						if (data instanceof ArrDataStructureRef) {
+						    itemStructureDataMap.put(descItem, ((ArrDataStructureRef) data).getStructuredObjectId());
 						} else if (data instanceof ArrDataPartyRef) {
 							itemPartiesMap.put(descItem, ((ArrDataPartyRef) data).getPartyId());
 						} else if (data instanceof ArrDataRecordRef) {
@@ -509,7 +517,7 @@ public class NodeCacheService {
 						} else if (data instanceof ArrDataUnitdate) {
 							loadUnitdate((ArrDataUnitdate) data);
 						}
-					}
+                    }
                 }
             }
 			if (CollectionUtils.isNotEmpty(restoredNode.getDaoLinks())) {
@@ -524,7 +532,7 @@ public class NodeCacheService {
             }
         }
 
-		fillArrPackets(itemPacketsMap);
+        fillArrStructureData(itemStructureDataMap);
         fillParParties(itemPartiesMap);
         fillRegRecords(itemRecordsMap);
         fillArrFiles(itemFilesMap);
@@ -569,7 +577,16 @@ public class NodeCacheService {
 	private void loadDataType(ArrData data, RuleSystemItemType itemType) {
 		DataType dataType = itemType.getDataType();
 		// check that item type match
-		Validate.isTrue(dataType.getId() == data.getDataTypeId());
+        if (dataType.getId() != data.getDataTypeId()) {
+            throw new BusinessException(
+                    "Data inconsistency, dataId = " + data.getDataId(),
+                    BaseCode.DB_INTEGRITY_PROBLEM)
+                            .set("dataId", data.getDataId())
+                            .set("dataTypeId", data.getDataTypeId())
+                            .set("itemTypeId", itemType.getItemTypeId())
+                            .set("itemTypeCode", itemType.getCode())
+                            .set("itemTypeDataTypeId", dataType.getId());
+        }
 
 		data.setDataType(dataType.getEntity());
 	}
@@ -694,23 +711,23 @@ public class NodeCacheService {
     }
 
     /**
-     * Vyplnění návazných entity {@link ArrPacket}.
+     * Vyplnění návazných entity {@link ArrStructuredObject}.
      *
-     * @param itemPacketsMap mapa entit k vyplnění
+     * @param itemStructureDataMap mapa entit k vyplnění
      */
-    private void fillArrPackets(final Map<ArrDescItem, Integer> itemPacketsMap) {
-        if (itemPacketsMap.size() == 0) {
+    private void fillArrStructureData(final Map<ArrDescItem, Integer> itemStructureDataMap) {
+        if (itemStructureDataMap.size() == 0) {
             return;
         }
-        List<ArrPacket> packets = packetRepository.findAll(itemPacketsMap.values());
-        Map<Integer, ArrPacket> packetsMapFound = new HashMap<>();
-        for (ArrPacket packet : packets) {
-            packetsMapFound.put(packet.getPacketId(), packet);
+        List<ArrStructuredObject> structureDataList = structureDataRepository.findAll(itemStructureDataMap.values());
+        Map<Integer, ArrStructuredObject> structureDataMapFound = new HashMap<>();
+        for (ArrStructuredObject structureData : structureDataList) {
+            structureDataMapFound.put(structureData.getStructuredObjectId(), structureData);
         }
 
-        for (Map.Entry<ArrDescItem, Integer> entry : itemPacketsMap.entrySet()) {
+        for (Map.Entry<ArrDescItem, Integer> entry : itemStructureDataMap.entrySet()) {
             ArrDescItem descItem = entry.getKey();
-            ((ArrDataPacketRef) descItem.getData()).setPacket(packetsMapFound.get(entry.getValue()));
+            ((ArrDataStructureRef) descItem.getData()).setStructuredObject(structureDataMapFound.get(entry.getValue()));
         }
     }
 

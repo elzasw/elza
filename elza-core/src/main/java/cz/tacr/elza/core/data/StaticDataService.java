@@ -21,7 +21,6 @@ import cz.tacr.elza.repository.DataTypeRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.PackageRepository;
-import cz.tacr.elza.repository.PacketTypeRepository;
 import cz.tacr.elza.repository.PartyNameFormTypeRepository;
 import cz.tacr.elza.repository.PartyTypeComplementTypeRepository;
 import cz.tacr.elza.repository.PartyTypeRepository;
@@ -29,6 +28,7 @@ import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRoleTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
+import cz.tacr.elza.repository.StructuredTypeRepository;
 
 /**
  * Service for static data
@@ -57,11 +57,11 @@ public class StaticDataService {
 
     final RuleSetRepository ruleSetRepository;
 
-    final PacketTypeRepository packetTypeRepository;
-
     final ItemTypeRepository itemTypeRepository;
 
     final ItemSpecRepository itemSpecRepository;
+
+    final StructuredTypeRepository structuredTypeRepository;
 
     final DataTypeRepository dataTypeRepository;
 
@@ -86,13 +86,13 @@ public class StaticDataService {
     @Autowired
     public StaticDataService(EntityManager em,
                              RuleSetRepository ruleSetRepository,
-                             PacketTypeRepository packetTypeRepository,
                              ItemTypeRepository itemTypeRepository,
                              ItemSpecRepository itemSpecRepository,
                              DataTypeRepository dataTypeRepository,
                              CalendarTypeRepository calendarTypeRepository,
                              PartyTypeRepository partyTypeRepository,
                              PackageRepository packageRepository,
+                             StructuredTypeRepository structuredTypeRepository,
                              PartyNameFormTypeRepository partyNameFormTypeRepository,
                              ComplementTypeRepository complementTypeRepository,
                              PartyTypeComplementTypeRepository partyTypeComplementTypeRepository,
@@ -101,13 +101,13 @@ public class StaticDataService {
                              RelationTypeRoleTypeRepository relationTypeRoleTypeRepository) {
         this.em = em;
         this.ruleSetRepository = ruleSetRepository;
-        this.packetTypeRepository = packetTypeRepository;
         this.itemTypeRepository = itemTypeRepository;
         this.itemSpecRepository = itemSpecRepository;
         this.dataTypeRepository = dataTypeRepository;
         this.calendarTypeRepository = calendarTypeRepository;
         this.partyTypeRepository = partyTypeRepository;
         this.packageRepository = packageRepository;
+        this.structuredTypeRepository = structuredTypeRepository;
         this.partyNameFormTypeRepository = partyNameFormTypeRepository;
         this.complementTypeRepository = complementTypeRepository;
         this.partyTypeComplementTypeRepository = partyTypeComplementTypeRepository;
@@ -179,7 +179,7 @@ public class StaticDataService {
         Validate.notNull(provider);
 
         threadSpecificProvider.set(provider);
-    }
+        }
 
     void beforeTransactionCommit(Transaction tx) {
         //checkActiveTransaction(tx);
@@ -227,7 +227,7 @@ public class StaticDataService {
 
     /**
      * Create new provider and load all data from DB
-     * 
+     *
      * @return
      */
     public StaticDataProvider createProvider() {

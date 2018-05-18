@@ -23,10 +23,10 @@ import cz.tacr.elza.domain.ArrDataFileRef;
 import cz.tacr.elza.domain.ArrDataInteger;
 import cz.tacr.elza.domain.ArrDataJsonTable;
 import cz.tacr.elza.domain.ArrDataNull;
-import cz.tacr.elza.domain.ArrDataPacketRef;
 import cz.tacr.elza.domain.ArrDataPartyRef;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ArrDataString;
+import cz.tacr.elza.domain.ArrDataStructureRef;
 import cz.tacr.elza.domain.ArrDataText;
 import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDataUnitid;
@@ -34,15 +34,14 @@ import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrPacket;
+import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.RegScope;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.repository.FundFileRepository;
 import cz.tacr.elza.repository.LevelRepository;
-import cz.tacr.elza.repository.PacketRepository;
 import cz.tacr.elza.repository.ScopeRepository;
-import cz.tacr.elza.service.DmsService;
+import cz.tacr.elza.repository.StructuredObjectRepository;
 import cz.tacr.elza.service.cache.CachedNode;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.cache.RestoredNode;
@@ -59,10 +58,10 @@ import cz.tacr.elza.service.importnodes.vo.descitems.ItemFileRef;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemFormattedText;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemInt;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemJsonTable;
-import cz.tacr.elza.service.importnodes.vo.descitems.ItemPacketRef;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemPartyRef;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemRecordRef;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemString;
+import cz.tacr.elza.service.importnodes.vo.descitems.ItemStructureRef;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemText;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemUnitdate;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemUnitid;
@@ -83,16 +82,13 @@ public class ImportFromFund implements ImportSource {
     private FundFileRepository fundFileRepository;
 
     @Autowired
-    private PacketRepository packetRepository;
+    private StructuredObjectRepository structureDataRepository;
 
     @Autowired
     private LevelRepository levelRepository;
 
     @Autowired
     private NodeCacheService nodeCacheService;
-
-    @Autowired
-    private DmsService dmsService;
 
     private Set<Integer> nodeIds;
     private Iterator<Integer> nodeIdsIterator;
@@ -125,8 +121,8 @@ public class ImportFromFund implements ImportSource {
     }
 
     @Override
-	public List<ArrPacket> getPackets() {
-        return packetRepository.findPacketsBySubtreeNodeIds(nodeIds, ignoreRootNodes);
+    public List<ArrStructuredObject> getStructuredList() {
+        return structureDataRepository.findStructureDataBySubtreeNodeIds(nodeIds, ignoreRootNodes);
     }
 
     @Override
@@ -201,7 +197,7 @@ public class ImportFromFund implements ImportSource {
 		 */
 		private void readNext() {
 			levelsSubtree = levelRepository.findLevelsSubtree(nodeId, offset, MAX, ignoreRootNodes);
-			// shift offset 
+			// shift offset
 			offset += levelsSubtree.size();
 			// read nodes from cache
 			List<Integer> nodeIds = levelsSubtree.stream().map(ArrLevel::getNodeId).collect(Collectors.toList());
@@ -346,8 +342,8 @@ public class ImportFromFund implements ImportSource {
             result = new ItemPartyRefImpl(item, (ArrDataPartyRef) itemData);
         } else if (itemData instanceof ArrDataRecordRef) {
             result = new ItemRecordRefImpl(item, (ArrDataRecordRef) itemData);
-        } else if (itemData instanceof ArrDataPacketRef) {
-            result = new ItemPacketRefImpl(item, (ArrDataPacketRef) itemData);
+        } else if (itemData instanceof ArrDataStructureRef) {
+            result = new ItemStructureRefImpl(item, (ArrDataStructureRef) itemData);
         } else if (itemData instanceof ArrDataCoordinates) {
             result = new ItemCoordinatesRefImpl(item, (ArrDataCoordinates) itemData);
         } else {
@@ -523,18 +519,18 @@ public class ImportFromFund implements ImportSource {
         }
     }
 
-    private class ItemPacketRefImpl extends ItemImpl implements ItemPacketRef {
+    private class ItemStructureRefImpl extends ItemImpl implements ItemStructureRef {
 
-        private final Integer packetId;
+        private final Integer structureDataId;
 
-        public ItemPacketRefImpl(final ArrDescItem item, final ArrDataPacketRef itemData) {
+        public ItemStructureRefImpl(final ArrDescItem item, final ArrDataStructureRef itemData) {
             super(item);
-            packetId = itemData.getPacketId();
+            structureDataId = itemData.getStructuredObjectId();
         }
 
         @Override
-        public Integer getPacketId() {
-            return packetId;
+        public Integer getStructureDataId() {
+            return structureDataId;
         }
     }
 

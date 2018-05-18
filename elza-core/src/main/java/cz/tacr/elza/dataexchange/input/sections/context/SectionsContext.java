@@ -16,6 +16,7 @@ import cz.tacr.elza.dataexchange.input.DEImportParams.ImportDirection;
 import cz.tacr.elza.dataexchange.input.context.ImportInitHelper;
 import cz.tacr.elza.dataexchange.input.context.ObservableImport;
 import cz.tacr.elza.dataexchange.input.sections.SectionProcessedListener;
+import cz.tacr.elza.dataexchange.input.storage.StorageManager;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -35,9 +36,9 @@ public class SectionsContext {
 
     private final List<SectionProcessedListener> sectionProcessedListeners = new LinkedList<>();
 
-    private final List<ArrPacketWrapper> packetQueue = new ArrayList<>();
+    private final StorageManager storageManager;
 
-    private final SectionStorageDispatcher storageDispatcher;
+    private final int batchSize;
 
     private final ArrChange createChange;
 
@@ -47,27 +48,23 @@ public class SectionsContext {
 
     private final StaticDataProvider staticData;
 
-    private final ArrangementService arrangementService;
-
-    private final InstitutionRepository institutionRepository;
-
     private final ImportInitHelper initHelper;
 
     private ContextSection currentSection;
 
-    public SectionsContext(SectionStorageDispatcher storageDispatcher,
+    public SectionsContext(StorageManager storageManager,
+                           int batchSize,
                            ArrChange createChange,
                            RegScope importScope,
                            ImportPosition importPosition,
                            StaticDataProvider staticData,
                            ImportInitHelper initHelper) {
-        this.storageDispatcher = storageDispatcher;
+        this.storageManager = storageManager;
+        this.batchSize = batchSize;
         this.createChange = createChange;
         this.importScope = importScope;
         this.importPosition = importPosition;
         this.staticData = staticData;
-        this.arrangementService = initHelper.getArrangementService();
-        this.institutionRepository = initHelper.getInstitutionRepository();
         this.initHelper = initHelper;
     }
 
@@ -85,9 +82,9 @@ public class SectionsContext {
 
 	/**
 	 * Prepare context for new section.
-	 * 
+	 *
 	 * Method endSection have to be called when section is finished.
-	 * 
+	 *
 	 * @param ruleSetCode
 	 *            Rules for section
 	 */
@@ -103,8 +100,8 @@ public class SectionsContext {
             throw new DEImportException("Rule set not found, code:" + ruleSetCode);
         }
 
-        // create section
-        ContextSection section = new ContextSection(this, createChange, ruleSystem, arrangementService);
+        // create current section
+        ContextSection section = new ContextSection(storageManager, batchSize, createChange, ruleSystem, initHelper);
 
         // set subsection root adapter when present
         if (importPosition != null) {
@@ -140,8 +137,7 @@ public class SectionsContext {
     public void endSection() {
         Validate.notNull(currentSection);
 
-        // store all changes
-        storeAll();
+        currentSection.storeNodes();
 
         // notify listeners
         List<SectionProcessedListener> listeners = new ArrayList<>(sectionProcessedListeners);
@@ -152,62 +148,23 @@ public class SectionsContext {
         currentSection = null;
     }
 
-    /* section context methods */
-
-    void addPacket(ArrPacketWrapper packet) {
-        packetQueue.add(packet);
-        if (packetQueue.size() >= storageDispatcher.getBatchSize()) {
-            storePackets();
-        }
-    }
-
-    void storePackets() {
-        if (packetQueue.isEmpty()) {
-            return;
-        }
-        storageDispatcher.getStorageManager().saveSectionPackets(packetQueue);
-        packetQueue.clear();
-    }
-
-    void addNode(ArrNodeWrapper node, int depth) {
-        storageDispatcher.addNode(node, depth);
-    }
-
-    void addLevel(ArrLevelWrapper level, int depth) {
-        storageDispatcher.addLevel(level, depth);
-    }
-
-    void addDescItem(ArrDescItemWrapper descItem, int depth) {
-        storageDispatcher.addDescItem(descItem, depth);
-    }
-
-    void addData(ArrDataWrapper data, int depth) {
-        storageDispatcher.addData(data, depth);
-    }
-
-    void addNodeRegister(ArrNodeRegisterWrapper nodeRegister, int depth) {
-        storageDispatcher.addNodeRegister(nodeRegister, depth);
-    }
-
     /* internal methods */
 
-    private void storeAll() {
-        storePackets();
-        storageDispatcher.dispatchAll();
-    }
-
     private FundRootAdapter createFundRootAdapter(FundInfo fundInfo, RuleSystem ruleSystem, ArrChange createChange) {
+        InstitutionRepository instRepo = initHelper.getInstitutionRepository();
+        ArrangementService arrService = initHelper.getArrangementService();
+
         if (StringUtils.isBlank(fundInfo.getN())) {
             throw new DEImportException("Fund name must be set");
         }
-        ParInstitution institution = institutionRepository.findByInternalCode(fundInfo.getIc());
+        ParInstitution institution = instRepo.findByInternalCode(fundInfo.getIc());
         if (institution == null) {
             throw new DEImportException("Institution not found, internal code:" + fundInfo.getIc());
         }
-        ArrFund fund = arrangementService.createFund(fundInfo.getN(), fundInfo.getC(), institution);
-        arrangementService.addScopeToFund(fund, importScope);
+        ArrFund fund = arrService.createFund(fundInfo.getN(), fundInfo.getC(), institution);
+        arrService.addScopeToFund(fund, importScope);
 
-        return new FundRootAdapter(fund, ruleSystem, createChange, fundInfo.getTr(), arrangementService);
+        return new FundRootAdapter(fund, ruleSystem, createChange, fundInfo.getTr(), arrService);
     }
 
     public static class ImportPosition {

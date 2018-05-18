@@ -15,7 +15,7 @@ export default function modalDialog(state = initialState, action) {
                         component: action.component,
                         content: action.content,
                         dialogClassName: action.dialogClassName,
-                        onClose: action.onClose,
+                        onClose: action.onClose
                     }
                 ]
             };

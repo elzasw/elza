@@ -70,13 +70,16 @@ function resolveBase(data) {
  */
 function resolveArrangement(data) {
     switch (data.code) {
-        case 'PACKET_DELETE_ERROR': {
-            return createToaster(i18n('exception.arr.PACKET_DELETE_ERROR'), data, (p) => {
-                if (p.packets) {
-                    return <LongText text={i18n('exception.arr.PACKET_DELETE_ERROR.detail', p.packets.map((item)=>item).join(", "))}/>
+        /*
+       Legacy code - jen pro ukázku jak to udělat
+        case 'X_DELETE_ERROR': {
+            return createToaster(i18n('exception.arr.X_DELETE_ERROR'), data, (p) => {
+                if (p.x) {
+                    return <LongText text={i18n('exception.arr.X_DELETE_ERROR.detail', p.x.map((item)=>item).join(", "))}/>
                 }
             });
         }
+        */
     }
 }
 

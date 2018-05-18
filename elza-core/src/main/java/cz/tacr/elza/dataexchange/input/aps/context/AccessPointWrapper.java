@@ -21,14 +21,11 @@ public class AccessPointWrapper implements EntityWrapper, EntityMetrics {
 
     private final AccessPointInfo apInfo;
 
-    private final AccessPointInfo parentAPInfo;
-
     private PersistMethod persistMethod = PersistMethod.CREATE;
 
     AccessPointWrapper(RegRecord entity, AccessPointInfo apInfo, AccessPointInfo parentAPInfo) {
         this.entity = Validate.notNull(entity);
         this.apInfo = Validate.notNull(apInfo);
-        this.parentAPInfo = parentAPInfo;
     }
 
     /**
@@ -74,12 +71,7 @@ public class AccessPointWrapper implements EntityWrapper, EntityMetrics {
     }
 
     @Override
-    public void beforeEntityPersist(Session session) {
-        Validate.isTrue(entity.getParentRecord() == null);
-        if (parentAPInfo != null) {
-            entity.setParentRecord(parentAPInfo.getEntityReference(session));
-        }
-    }
+    public void beforeEntityPersist(Session session) {}
 
     @Override
     public void afterEntityPersist() {

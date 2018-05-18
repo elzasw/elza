@@ -12,7 +12,6 @@ import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, i18n} from 'components/shared';
 import NodeSubNodeForm from './NodeSubNodeForm'
 import {Modal, Button, Input} from 'react-bootstrap';
-import {packetsFetchIfNeeded} from 'actions/arr/packets.jsx'
 import {indexById} from 'stores/app/utils.jsx'
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx'
 import {nodeFormActions} from 'actions/arr/subNodeForm.jsx'
@@ -151,14 +150,14 @@ class FundDataGridCellForm extends AbstractReactComponent {
 
     getFundDataGrid(props) {
         const {versionId, funds} = props
-        const activeFund = funds[indexById(funds, versionId, "versionId")]
+        const activeFund = funds[indexById(funds, versionId, "versionId")];
         const fundDataGrid = activeFund.fundDataGrid
         return fundDataGrid
     }
 
     isLoading(props, fundDataGrid) {
-        const {refTables, packets} = props
-        const {rulDataTypes, calendarTypes, packetTypes, descItemTypes} = refTables
+        const {refTables} = props;
+        const {rulDataTypes, calendarTypes, descItemTypes} = refTables;
 
         if (fundDataGrid.subNodeForm.fetched && calendarTypes.fetched && descItemTypes.fetched) {
             return false
@@ -169,15 +168,11 @@ class FundDataGridCellForm extends AbstractReactComponent {
 
     render() {
         const {fundDataGrid} = this.state
-        const {versionId, fundId, closed, className, style, refTables, packets, onClose} = this.props
-        const {rulDataTypes, calendarTypes, packetTypes, descItemTypes} = refTables
+        const {versionId, fundId, closed, className, style, refTables, onClose} = this.props
+        const {rulDataTypes, calendarTypes, descItemTypes} = refTables
 
         var form
         if (!this.isLoading(this.props, fundDataGrid)) {
-            var fundPackets = []
-            if (packets[fundId]) {
-                fundPackets = packets[fundId].items
-            }
 
             const conformityInfo = {
                 errors: {},
@@ -197,10 +192,8 @@ class FundDataGridCellForm extends AbstractReactComponent {
                     descItemTypeInfos={fundDataGrid.subNodeForm.descItemTypeInfos}
                     rulDataTypes={rulDataTypes}
                     calendarTypes={calendarTypes}
-                    packetTypes={packetTypes}
                     descItemTypes={descItemTypes}
                     conformityInfo={conformityInfo}
-                    packets={fundPackets}
                     parentNode={{}}
                     onVisiblePolicy={()=>{}}
                     fundId={fundId}
@@ -230,7 +223,6 @@ function mapStateToProps(state) {
     return {
         funds: arrRegion.funds,
         refTables,
-        packets: arrRegion.packets,
     }
 }
 

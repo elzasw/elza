@@ -17,24 +17,24 @@ import cz.tacr.elza.service.cache.NodeCacheService;
 
 public class SectionContext {
 
-    private final Set<Integer> processedPacketIds = new HashSet<>();
+    private final Set<Integer> processedStructObjectIds = new HashSet<>();
 
     private final Set<Integer> processedNodeIds = new HashSet<>();
 
+    private final ExportContext context;
+
+    private final RuleSystem ruleSystem;
+
     private final LevelInfoLoader levelInfoLoader;
 
-    private final PacketLoader packetLoader;
+    private final StructObjectInfoLoader structObjLoader;
 
     private final ArrFundVersion fundVersion;
-
-    private final ExportContext context;
 
     /**
      * If true then processedNodeIds is used as filter for overlap nodes.
      */
     private final boolean multipleSections;
-
-    private final RuleSystem ruleSystem;
 
     private final ExportLevelInfoListener levelInfoListener;
 
@@ -48,18 +48,22 @@ public class SectionContext {
                    ExportLevelInfoListener levelInfoListener,
                    NodeCacheService nodeCacheService,
                    EntityManager em) {
-        this.levelInfoLoader = new LevelInfoLoader(context.getBatchSize(), nodeCacheService);
-        this.packetLoader = new PacketLoader(em, context.getBatchSize());
-        this.fundVersion = Validate.notNull(fundVersion);
         this.context = Validate.notNull(context);
-        this.multipleSections = multipleSections;
         this.ruleSystem = context.getStaticData().getRuleSystems().getByRuleSetId(fundVersion.getRuleSetId());
+        this.levelInfoLoader = new LevelInfoLoader(context.getBatchSize(), nodeCacheService);
+        this.structObjLoader = new StructObjectInfoLoader(em, context.getBatchSize(), ruleSystem);
+        this.fundVersion = Validate.notNull(fundVersion);
+        this.multipleSections = multipleSections;
         this.levelInfoListener = levelInfoListener;
         this.em = em;
     }
 
     public ExportContext getContext() {
         return context;
+    }
+
+    public RuleSystem getRuleSystem() {
+        return ruleSystem;
     }
 
     public String getInstitutionCode() {
@@ -78,19 +82,15 @@ public class SectionContext {
         return fundVersion.getDateRange();
     }
 
-    public RuleSystem getRuleSystem() {
-        return ruleSystem;
-    }
+    public void addStructObjectId(Integer structObjId) {
+        Validate.notNull(structObjId);
 
-    public void addPacketId(Integer packetId) {
-        Validate.notNull(packetId);
-
-        if (!processedPacketIds.add(packetId)) {
-            return; // packet already processed
+        if (!processedStructObjectIds.add(structObjId)) {
+            return; // object already processed
         }
 
-        PacketDispatcher packetDispatcher = new PacketDispatcher(getOutputStream(), ruleSystem, fundVersion.getFund());
-        packetLoader.addRequest(packetId, packetDispatcher);
+        StructObjectInfoDispatcher structObjDispatcher = new StructObjectInfoDispatcher(getOutputStream());
+        structObjLoader.addRequest(structObjId, structObjDispatcher);
     }
 
     /* internal methods */
@@ -113,7 +113,7 @@ public class SectionContext {
      */
     void processed() {
         levelInfoLoader.flush();
-        packetLoader.flush();
+        structObjLoader.flush();
         if (outputStream != null) {
             outputStream.processed();
         }

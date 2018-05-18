@@ -32,7 +32,7 @@ class RegistryListItem extends AbstractReactComponent {
     }
 
     render() {
-        const {className, parents, typesToRoot, isActive, hierarchical, id, record, registryParentId, registryTypesId, externalId, externalSystem, invalid, ...otherProps} = this.props;
+        const {className, parents, typesToRoot, isActive, id, record, registryParentId, registryTypesId, externalId, externalSystem, invalid, ...otherProps} = this.props;
 
         const parentsShown = [];
         const parentsTypeShown = [];
@@ -55,14 +55,8 @@ class RegistryListItem extends AbstractReactComponent {
         }
 
         //let doubleClick = this.handleDoubleClick.bind(this, item);
-        let iconName = 'fa-folder';
-        let clsItem = 'registry-list-icon-record';
-
-        if (hierarchical === false) {
-            iconName = 'fa-file-o';
-            clsItem = 'registry-list-icon-list';
-            //doubleClick = false;
-        }
+        const iconName = 'fa-file-o';
+        const clsItem = 'registry-list-icon-list';
 
         const doubleClick = false;
 

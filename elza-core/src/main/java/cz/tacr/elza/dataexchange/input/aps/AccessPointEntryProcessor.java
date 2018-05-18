@@ -8,7 +8,7 @@ import cz.tacr.elza.dataexchange.input.DEImportException;
 import cz.tacr.elza.dataexchange.input.aps.context.AccessPointInfo;
 import cz.tacr.elza.dataexchange.input.aps.context.AccessPointsContext;
 import cz.tacr.elza.dataexchange.input.context.ImportContext;
-import cz.tacr.elza.dataexchange.input.processor.ItemProcessor;
+import cz.tacr.elza.dataexchange.input.reader.ItemProcessor;
 import cz.tacr.elza.domain.RegExternalSystem;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
@@ -81,9 +81,6 @@ public class AccessPointEntryProcessor implements ItemProcessor {
         if (StringUtils.isNotEmpty(item.getPid())) {
             if (partyRelated) {
                 throw new DEImportException("Party related AccessPointEntry cannot be hierarchical, apeId:" + item.getId());
-            }
-            if (registerType.getHierarchical() == null || !registerType.getHierarchical()) {
-                throw new DEImportException("AccessPointEntry type is not hierarchical, apeId:" + item.getId());
             }
             if (parentAPInfo == null) {
                 throw new DEImportException("AccessPointEntry parent not found, apeId:" + item.getId());

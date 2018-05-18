@@ -1,0 +1,31 @@
+package cz.tacr.elza.packageimport.xml;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlType;
+import java.util.List;
+
+
+/**
+ * VO StructureExtensions.
+ *
+ * @since 01.11.2017
+ */
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlRootElement(name = "structure-extensions")
+@XmlType(name = "structure-extensions")
+public class StructureExtensions {
+
+    @XmlElement(name = "structure-extension", required = true)
+    private List<StructureExtension> structureExtensions;
+
+    public List<StructureExtension> getStructureExtensions() {
+        return structureExtensions;
+    }
+
+    public void setStructureExtensions(final List<StructureExtension> structureExtensions) {
+        this.structureExtensions = structureExtensions;
+    }
+}
