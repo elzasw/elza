@@ -30,23 +30,23 @@
                 border: none;
                 padding: 0;
                 height: 100%;
+                width: 1.8em;
                 line-height: 16px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
+                background-color: transparent;
 
+                &:hover{
+                    background-color:@node-form-actions-hover;
+                }
+                
                 &.disabled {
                     background: transparent;
                 }
 
                 &.detail {
                     right: 19px;
-                }
-
-                .icon {
-                    height: 16px;
-                    line-height: 16px;
-                    width: 16px;
                 }
             }
         }
