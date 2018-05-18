@@ -12,7 +12,8 @@
         padding: 0;
 
         .input{
-            flex: 1;
+            flex-grow: 1;
+            flex-shrink: 1;
             height: 100%;
             width: 100%;
             border-width: 0;
@@ -23,8 +24,9 @@
             }
         }
         .actions{
-            flex: 0;
             display:flex;
+            flex-grow: 0;
+            flex-shrink: 0;
 
             .btn {
                 border: none;
