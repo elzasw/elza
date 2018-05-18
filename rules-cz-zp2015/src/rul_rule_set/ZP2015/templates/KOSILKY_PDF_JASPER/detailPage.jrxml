@@ -8,7 +8,7 @@
 		<defaultValueExpression><![CDATA[new cz.tacr.elza.print.format.Formatter()
 	.setItemSeparator(", ")
 	.setSpecSeparator(" ")
-	.addPacketValue("ZP2015_STORAGE_ID", cz.tacr.elza.print.Packet.FormatType.NUMBER_WITH_TYPE)
+	.addPacketValue("ZP2015_STORAGE_ID", cz.tacr.elza.print.Structured.FormatType.NUMBER_WITH_TYPE)
 ]]></defaultValueExpression>
 	</parameter>
 	<queryString>

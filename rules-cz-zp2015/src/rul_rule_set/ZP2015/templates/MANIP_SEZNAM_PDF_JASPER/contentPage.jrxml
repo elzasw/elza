@@ -129,7 +129,7 @@ $F{node}.getItemsWithSpec("ZP2015_LEVEL_TYPE","ZP2015_LEVEL_ROOT").size() > 0]]>
 		<queryString>
 			<![CDATA[]]>
 		</queryString>
-		<field name="packet" class="cz.tacr.elza.print.Packet">
+		<field name="packet" class="cz.tacr.elza.print.Structured">
 			<fieldDescription><![CDATA[packet]]></fieldDescription>
 		</field>
 	</subDataset>
