@@ -11,33 +11,17 @@ static String toString(List<ArrStructuredItem> items, int packetLeadingZeros) {
     StringBuilder result = new StringBuilder();
     appendValue(result, items, "ZP2015_PACKET_FIXED_PREFIX");
     appendValue(result, items, "ZP2015_PACKET_PREFIX");
-    addNotEmpty(result, addZerosBefore(toStringValue(items, "ZP2015_PACKET_NUMBER"), packetLeadingZeros))
+    String number = toStringValue(items, "ZP2015_PACKET_NUMBER");
+    if(StringUtils.isNotBlank(number)) {
+        // append zeroes
+        int addZeros = packetLeadingZeros - number.length();
+        if (addZeros > 0) {
+            result.append(StringUtils.repeat("0", addZeros));
+        }
+        result.append(number);
+    }    
     appendValue(result, items, "ZP2015_PACKET_POSTFIX");
     return result.toString().trim();
-}
-
-static void addNotEmpty(StringBuilder result, String value) {
-    if (StringUtils.isNotBlank(value)) {
-        result.append(value);
-    }
-}
-
-static void addNotEmpty(StringBuilder result, String value, String valuePostfix) {
-    if (StringUtils.isNotBlank(value)) {
-        result.append(value).append(valuePostfix);
-    }
-}
-
-static String addZerosBefore(String value, int totalLength) {
-    if (value == null) {
-        return null;
-    }
-    int addZeros = totalLength - value.length();
-    if (addZeros > 0) {
-        return StringUtils.repeat("0", addZeros) + value;
-    } else {
-        return value;
-    }
 }
 
 static String toStringValue(List<ArrStructuredItem> items, String itemTypeCode) {

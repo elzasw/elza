@@ -1,14 +1,5 @@
 package cz.tacr.elza.dbchangelog;
 
-import liquibase.change.custom.CustomTaskChange;
-import liquibase.database.Database;
-import liquibase.database.jvm.JdbcConnection;
-import liquibase.exception.CustomChangeException;
-import liquibase.exception.DatabaseException;
-import liquibase.exception.SetupException;
-import liquibase.exception.ValidationErrors;
-import liquibase.resource.ResourceAccessor;
-
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -21,12 +12,27 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import liquibase.change.custom.CustomTaskChange;
+import liquibase.database.Database;
+import liquibase.database.jvm.JdbcConnection;
+import liquibase.exception.CustomChangeException;
+import liquibase.exception.DatabaseException;
+import liquibase.exception.SetupException;
+import liquibase.exception.ValidationErrors;
+import liquibase.resource.ResourceAccessor;
+
 /**
  * Migrace arr_packet & arr_data_packet_ref.
  *
  * @since 20.11.2017
  */
 public class DbUpgrade_20171120095000 implements CustomTaskChange {
+
+    private static final int OLD_DATA_TYPE = 11;
+    private static final int NEW_DATA_TYPE = 15;
+
+    private static final int DATA_TYPE_STRING = 2;
+    private static final int DATA_TYPE_ENUM = 12;
 
     private List<RulRuleSet> ruleSets;
     private JdbcConnection dc;
@@ -60,62 +66,74 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
 
     @Override
     public void execute(final Database db) throws CustomChangeException {
-        String name = db.getDatabaseProductName();
+        //String name = db.getDatabaseProductName();
         dc = (JdbcConnection) db.getConnection();
         try {
 
             List<ArrPacket> packets = findAllPackets();
             if (packets.size() > 0) {
-                ruleSets = findAllRuleSets();
-                fundIdRuleSetIdMap = createFundIdRuleSetIdMap();
-                hibernateSequences = findAllHibernateSequences().stream().collect(Collectors.toMap(DbSequence::getTable, Function.identity()));
-                descItemObjectId = getNextDescItemObjectId();
-                change = createChange();
-                for (RulRuleSet ruleSet : ruleSets) {
-                    StructureTypePack structureTypePack = createStructureTypePack(ruleSet);
-                    structureTypePacks.put(ruleSet.getRuleSetId(), structureTypePack);
-                }
-
-                for (ArrPacket packet : packets) {
-                    //if (packet.getState() != ArrPacket.State.CANCELED) {
-                        Integer fundId = packet.getFundId();
-                        Integer ruleSetId = fundIdRuleSetIdMap.get(fundId);
-                        StructureTypePack structureTypePack = structureTypePacks.get(ruleSetId);
-
-                        boolean assignable = packet.getState() == ArrPacket.State.OPEN;
-                        ArrStructureData structureData = createStructureData(change, structureTypePack.getStructureType().getStructureTypeId(), fundId, assignable, ArrStructureData.State.ERROR);
-                        insertStructureData(structureData);
-
-                        createAndInsertStructureItems(structureData, packet, structureTypePack);
-
-                        packetIdStructureDataMap.put(packet.getPacketId(), structureData);
-                    //}
-                }
-
-                List<ArrDataPacketRef> packetRefs = findAllDataPacketRef();
-
-                for (ArrDataPacketRef packetRef : packetRefs) {
-                    deleteDataPacketRef(packetRef);
-                    ArrStructureData structureData = packetIdStructureDataMap.get(packetRef.getPacketId());
-                    createDataStructureRef(packetRef.getDataId(), structureData.getStructureDataId());
-                }
-                dataChangeDataType(11, 15);
-
-                List<ArrItem> items = findItemByDataTypeId(11);
-                for (ArrItem item : items) {
-                    StructureTypePack structureTypePack = structureTypePacks.get(item.getRuleSetId());
-                    item.setDataTypeId(structureTypePack.getItemTypePacketType().getDataTypeId());
-                    item.setItemTypeId(structureTypePack.getItemTypePacketType().getItemTypeId());
-                }
-                updateItems(items);
-
-                saveHibernateSequences();
+                migratePackets(packets);
 
             }
         } catch (DatabaseException | SQLException e) {
             throw new CustomChangeException(
                     "Chyba při vykonávání sql příkazu " + e.getLocalizedMessage(), e);
         }
+    }
+
+    private void migratePackets(List<ArrPacket> packets) throws DatabaseException, SQLException {
+        // Prepare data
+        ruleSets = findAllRuleSets();
+        fundIdRuleSetIdMap = createFundIdRuleSetIdMap();
+        hibernateSequences = findAllHibernateSequences().stream()
+                .collect(Collectors.toMap(DbSequence::getTable, Function.identity()));
+        descItemObjectId = getNextDescItemObjectId();
+        change = createChange();
+
+        // create new types
+        for (RulRuleSet ruleSet : ruleSets) {
+            StructureTypePack structureTypePack = createStructureTypePack(ruleSet);
+            structureTypePacks.put(ruleSet.getRuleSetId(), structureTypePack);
+        }
+
+        // create structured types
+        for (ArrPacket packet : packets) {
+            Integer fundId = packet.getFundId();
+            Integer ruleSetId = fundIdRuleSetIdMap.get(fundId);
+            StructureTypePack structureTypePack = structureTypePacks.get(ruleSetId);
+
+            boolean assignable = packet.getState() == ArrPacket.State.OPEN;
+            ArrStructureData structureData = createStructureData(change,
+                    structureTypePack.getStructureType().getStructureTypeId(), fundId, assignable,
+                    ArrStructureData.State.ERROR);
+            insertStructureData(structureData);
+
+            createAndInsertStructureItems(structureData, packet, structureTypePack);
+
+            packetIdStructureDataMap.put(packet.getPacketId(), structureData);
+        }
+
+        // update references to new structured types
+        List<ArrDataPacketRef> packetRefs = findAllDataPacketRef();
+        for (ArrDataPacketRef packetRef : packetRefs) {
+            deleteDataPacketRef(packetRef);
+            ArrStructureData structureData = packetIdStructureDataMap.get(packetRef.getPacketId());
+            createDataStructureRef(packetRef.getDataId(), structureData.getStructureDataId());
+        }
+
+        // update data type in arr_data
+        dataChangeDataType(OLD_DATA_TYPE, NEW_DATA_TYPE);
+
+        // update item.item_type_id
+        List<ArrItem> items = findItemByDataTypeId(OLD_DATA_TYPE);
+        for (ArrItem item : items) {
+            StructureTypePack structureTypePack = structureTypePacks.get(item.getRuleSetId());
+            item.setDataTypeId(structureTypePack.getItemTypePacketType().getDataTypeId());
+            item.setItemTypeId(structureTypePack.getItemTypePacketType().getItemTypeId());
+        }
+        updateItems(items);
+
+        saveHibernateSequences();
     }
 
     private Integer getNextDescItemObjectId() throws DatabaseException, SQLException {
@@ -269,7 +287,8 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
         for (DbSequence dbSequence : hibernateSequences.values()) {
             if (dbSequence.isChange()) {
                 PreparedStatement ps = dc.prepareStatement("UPDATE db_hibernate_sequences SET " + DbSequence.NEXT_VAL + "=? WHERE " + DbSequence.SEQUENCE_NAME + "=?;");
-                ps.setInt(1, dbSequence.getNextVal());
+                // append safety constant to sequence generator
+                ps.setInt(1, dbSequence.getNextVal() + 20);
                 ps.setString(2, dbSequence.getTable() + "|" + dbSequence.getColumn());
                 ps.executeUpdate();
             }
@@ -312,15 +331,21 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
         StructureTypePack result = new StructureTypePack();
         result.setRuleSet(ruleSet);
 
+        // create structured type
         RulStructureType structureType = createStructureType(ruleSet.getCode() + "_PACKET", "Obaly", ruleSet.getRuleSetId(), ruleSet.getPackageId());
         insertStructureType(structureType);
         result.setStructureType(structureType);
 
-        RulItemType itemTypePacketType = createItemType(12, ruleSet.getCode() + "_PACKET_TYPE", "Typ obalu", "Typ obalu", "Typ obalu", true, nextItemTypeViewOrder(), ruleSet.getRuleSetId(), ruleSet.getPackageId(), structureType.getStructureTypeId());
+        RulItemType itemTypePacketType = createItemType(DATA_TYPE_ENUM, ruleSet.getCode() + "_PACKET_TYPE", "Typ obalu",
+                "Typ obalu", "Typ obalu", true, nextItemTypeViewOrder(), ruleSet.getRuleSetId(), ruleSet.getPackageId(),
+                structureType.getStructureTypeId());
         insertItemType(itemTypePacketType);
         result.setItemTypePacketType(itemTypePacketType);
 
-        RulItemType itemTypePacketDescription = createItemType(2, ruleSet.getCode() + "_PACKET_DESCRIPTION", "Popis obalu", "Popis obalu", "Popis obalu", false, nextItemTypeViewOrder(), ruleSet.getRuleSetId(), ruleSet.getPackageId(), structureType.getStructureTypeId());
+        RulItemType itemTypePacketDescription = createItemType(DATA_TYPE_STRING, ruleSet.getCode() + "_PACKET_PREFIX",
+                "Popis obalu",
+                "Popis obalu", "Popis obalu", false, nextItemTypeViewOrder(), ruleSet.getRuleSetId(),
+                ruleSet.getPackageId(), structureType.getStructureTypeId());
         insertItemType(itemTypePacketDescription);
         result.setItemTypePacketDescription(itemTypePacketDescription);
 
@@ -328,7 +353,7 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
         List<RulItemSpec> itemSpecPacketTypes = new ArrayList<>(packetTypes.size());
         int viewOrder = 1;
         for (RulPacketType packetType : packetTypes) {
-            String code = ruleSet.getCode() + "_PACKET_TYPE_" + packetType.getCode().replace(ruleSet.getCode() + "_", "");
+            String code = ruleSet.getCode() + "_PACKET_TYPE_" + packetType.getShortcut().toUpperCase();
             String name = packetType.getName();
             String shortcut = packetType.getShortcut();
             String description = name;
@@ -452,6 +477,13 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
         ps.executeUpdate();
     }
 
+    /**
+     * Return all existing packets
+     * 
+     * @return
+     * @throws DatabaseException
+     * @throws SQLException
+     */
     private List<ArrPacket> findAllPackets() throws DatabaseException, SQLException {
         List<ArrPacket> packets = new ArrayList<>();
         PreparedStatement ps = dc.prepareStatement("SELECT * FROM arr_packet");
@@ -825,9 +857,16 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
             return nextVal;
         }
 
+        /**
+         * Prepare next value
+         * 
+         * @return
+         */
         public Integer nextVal() {
             change = true;
-            return nextVal++;
+            int result = nextVal;
+            nextVal++;
+            return result;
         }
 
         public boolean isChange() {
