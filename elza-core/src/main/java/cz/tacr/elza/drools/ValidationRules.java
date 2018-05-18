@@ -126,8 +126,8 @@ public class ValidationRules extends Rules {
 			RulPolicyType rulPolicyType = policyTypesMap.get(validationResult.getPolicyTypeCode());
 
 			if (rulPolicyType == null) {
-				logger.warn("Kód '" + validationResult.getPolicyTypeCode()
-				        + "' neexistuje. Je nutné upravit drools pravidla");
+                logger.error("Kód '" + validationResult.getPolicyTypeCode()
+                        + "' neexistuje. Je nutné upravit drools pravidla. Message: " + validationResult.getMessage());
 				iterator.remove();
 				continue;
 			}

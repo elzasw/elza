@@ -12,6 +12,17 @@ import java.util.Arrays;
 import java.util.Set;
 import cz.tacr.elza.domain.RulItemType;
 
+rule "Vypnutí opakovatelnosti"
+salience 100
+no-loop
+when
+  $itemType : RulItemTypeExt(code in ( // nastaveni pro ulozeni
+        "ZP2015_PACKET_TYPE", "ZP2015_PACKET_FIXED_PREFIX", "ZP2015_PACKET_PREFIX",
+        "ZP2015_PACKET_NUMBER", "ZP2015_PACKET_POSTFIX"))
+then
+  $itemType.setRepeatable(false);
+end
+
 rule "Možné prvky popisu"
 no-loop
 when
