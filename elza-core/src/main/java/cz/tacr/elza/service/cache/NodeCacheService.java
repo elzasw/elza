@@ -57,9 +57,11 @@ import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.CachedNodeRepository;
 import cz.tacr.elza.repository.DaoLinkRepository;
 import cz.tacr.elza.repository.DaoRepository;
@@ -575,7 +577,16 @@ public class NodeCacheService {
 	private void loadDataType(ArrData data, RuleSystemItemType itemType) {
 		DataType dataType = itemType.getDataType();
 		// check that item type match
-		Validate.isTrue(dataType.getId() == data.getDataTypeId());
+        if (dataType.getId() != data.getDataTypeId()) {
+            throw new BusinessException(
+                    "Data inconsistency, dataId = " + data.getDataId(),
+                    BaseCode.DB_INTEGRITY_PROBLEM)
+                            .set("dataId", data.getDataId())
+                            .set("dataTypeId", data.getDataTypeId())
+                            .set("itemTypeId", itemType.getItemTypeId())
+                            .set("itemTypeCode", itemType.getCode())
+                            .set("itemTypeDataTypeId", dataType.getId());
+        }
 
 		data.setDataType(dataType.getEntity());
 	}

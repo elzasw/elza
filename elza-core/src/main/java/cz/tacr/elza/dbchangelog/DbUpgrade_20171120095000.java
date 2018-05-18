@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,11 +29,10 @@ import liquibase.resource.ResourceAccessor;
  */
 public class DbUpgrade_20171120095000 implements CustomTaskChange {
 
-    private static final int OLD_DATA_TYPE = 11;
-    private static final int NEW_DATA_TYPE = 15;
-
     private static final int DATA_TYPE_STRING = 2;
+    private static final int DATA_TYPE_PACKET_REF = 11;
     private static final int DATA_TYPE_ENUM = 12;
+    private static final int DATA_TYPE_SO_REF = 15;
 
     private List<RulRuleSet> ruleSets;
     private JdbcConnection dc;
@@ -40,7 +40,7 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
     private Map<Integer, StructureTypePack> structureTypePacks = new HashMap<>();
     private Map<Integer, Integer> fundIdRuleSetIdMap;
     private Map<Integer, ArrStructureData> packetIdStructureDataMap = new HashMap<>();
-    private Map<Integer, RulItemSpec> packetTypeIdItemSpecMap = new HashMap<>();
+    private List<RulItemType> packetRefItemTypes = new ArrayList<>();
     private Integer change;
     private Integer descItemObjectId;
 
@@ -87,6 +87,7 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
         fundIdRuleSetIdMap = createFundIdRuleSetIdMap();
         hibernateSequences = findAllHibernateSequences().stream()
                 .collect(Collectors.toMap(DbSequence::getTable, Function.identity()));
+        packetRefItemTypes.addAll(findPacketItemTypes());
         descItemObjectId = getNextDescItemObjectId();
         change = createChange();
 
@@ -122,16 +123,15 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
         }
 
         // update data type in arr_data
-        dataChangeDataType(OLD_DATA_TYPE, NEW_DATA_TYPE);
+        dataChangeDataType(DATA_TYPE_PACKET_REF, DATA_TYPE_SO_REF);
 
-        // update item.item_type_id
-        List<ArrItem> items = findItemByDataTypeId(OLD_DATA_TYPE);
-        for (ArrItem item : items) {
-            StructureTypePack structureTypePack = structureTypePacks.get(item.getRuleSetId());
-            item.setDataTypeId(structureTypePack.getItemTypePacketType().getDataTypeId());
-            item.setItemTypeId(structureTypePack.getItemTypePacketType().getItemTypeId());
+        // update item types from PACKET_REF to SO_REF
+        for (RulItemType itemType : packetRefItemTypes) {
+            // get type
+            StructureTypePack structureTypePack = structureTypePacks.get(itemType.getRuleSetId());
+            updateItemTypeWithStructureType(itemType.getItemTypeId(), DATA_TYPE_SO_REF,
+                    structureTypePack.getStructureType().getStructureTypeId());
         }
-        updateItems(items);
 
         saveHibernateSequences();
     }
@@ -156,7 +156,7 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
         insertStructureItem(structureData, itemTypePacketDescription, dataIdString);
 
         RulItemType itemTypePacketType = structureTypePack.getItemTypePacketType();
-        RulItemSpec itemSpecPacketType = packet.getPacketTypeId() == null ? null : packetTypeIdItemSpecMap.get(packet.getPacketTypeId());
+        RulItemSpec itemSpecPacketType = structureTypePack.getSpecPacketType(packet.getPacketTypeId());
         Integer dataIdNull = insertDataNull(itemTypePacketType);
         if (itemSpecPacketType == null) {
             insertStructureItem(structureData, itemTypePacketType, dataIdNull);
@@ -239,13 +239,15 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
         return dataId;
     }
 
-    private void updateItems(final List<ArrItem> items) throws DatabaseException, SQLException {
-        for (ArrItem item : items) {
-            PreparedStatement ps = dc.prepareStatement("UPDATE " + ArrItem.TABLE + " SET item_type_id = ? WHERE item_id = ?;");
-            ps.setInt(1, item.getItemTypeId());
-            ps.setInt(2, item.getItemId());
-            ps.executeUpdate();
-        }
+    private void updateItemTypeWithStructureType(int itemTypeId, int dataTypeSoRef, int structureTypeId)
+            throws DatabaseException, SQLException {
+        PreparedStatement ps = dc.prepareStatement(
+                "UPDATE " + RulItemType.TABLE + " SET data_type_id = ?, " +
+                        RulItemType.STRUCTURE_TYPE_ID + " = ? WHERE item_type_id = ?;");
+        ps.setInt(1, dataTypeSoRef);
+        ps.setInt(2, structureTypeId);
+        ps.setInt(3, itemTypeId);
+        ps.executeUpdate();
     }
 
     private void dataChangeDataType(final int fromDataTypeId, final int toDataTypeId) throws SQLException, DatabaseException {
@@ -329,28 +331,32 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
 
     private StructureTypePack createStructureTypePack(final RulRuleSet ruleSet) throws DatabaseException, SQLException {
         StructureTypePack result = new StructureTypePack();
-        result.setRuleSet(ruleSet);
 
         // create structured type
         RulStructureType structureType = createStructureType(ruleSet.getCode() + "_PACKET", "Obaly", ruleSet.getRuleSetId(), ruleSet.getPackageId());
         insertStructureType(structureType);
         result.setStructureType(structureType);
 
+        // create packet_type
         RulItemType itemTypePacketType = createItemType(DATA_TYPE_ENUM, ruleSet.getCode() + "_PACKET_TYPE", "Typ obalu",
                 "Typ obalu", "Typ obalu", true, nextItemTypeViewOrder(), ruleSet.getRuleSetId(), ruleSet.getPackageId(),
-                structureType.getStructureTypeId());
+                null);
         insertItemType(itemTypePacketType);
         result.setItemTypePacketType(itemTypePacketType);
 
         RulItemType itemTypePacketDescription = createItemType(DATA_TYPE_STRING, ruleSet.getCode() + "_PACKET_PREFIX",
                 "Popis obalu",
                 "Popis obalu", "Popis obalu", false, nextItemTypeViewOrder(), ruleSet.getRuleSetId(),
-                ruleSet.getPackageId(), structureType.getStructureTypeId());
+                ruleSet.getPackageId(),
+                null);
         insertItemType(itemTypePacketDescription);
         result.setItemTypePacketDescription(itemTypePacketDescription);
 
+        // prepare specifications for packet types
         List<RulPacketType> packetTypes = findPacketTypeByRuleSet(ruleSet);
         List<RulItemSpec> itemSpecPacketTypes = new ArrayList<>(packetTypes.size());
+
+        Map<Integer, RulItemSpec> packetTypeIdItemSpecMap = new HashMap<>();
         int viewOrder = 1;
         for (RulPacketType packetType : packetTypes) {
             String code = ruleSet.getCode() + "_PACKET_TYPE_" + packetType.getShortcut().toUpperCase();
@@ -363,7 +369,7 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
             itemSpecPacketTypes.add(itemSpec);
             packetTypeIdItemSpecMap.put(packetType.getPacketTypeId(), itemSpec);
         }
-        result.setItemSpecPacketTypes(itemSpecPacketTypes);
+        result.setPacketTypeIdItemSpecMap(packetTypeIdItemSpecMap);
 
         return result;
     }
@@ -457,7 +463,13 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
         ps.setInt(i++, itemType.getPackageId());
         ps.setString(i++, itemType.getColumnsDefinition());
         ps.setInt(i++, itemType.getRuleSetId());
-        ps.setInt(i++, itemType.getStructureTypeId());
+
+        Integer structTypeId = itemType.getStructureTypeId();
+        if (structTypeId != null) {
+            ps.setInt(i++, structTypeId);
+        } else {
+            ps.setNull(i++, java.sql.Types.INTEGER);
+        }
         ps.executeUpdate();
     }
 
@@ -495,23 +507,33 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
         return packets;
     }
 
-    private List<ArrItem> findItemByDataTypeId(int dataTypeId) throws DatabaseException, SQLException {
-        List<ArrItem> items = new ArrayList<>();
-        PreparedStatement ps = dc.prepareStatement("SELECT i.item_id, i.item_type_id, it.data_type_id, it.rule_set_id FROM arr_item i JOIN rul_item_type it ON i.item_type_id = it.item_type_id WHERE it.data_type_id = ?");
-        ps.setInt(1, dataTypeId);
+    private Collection<RulItemType> findPacketItemTypes() throws DatabaseException, SQLException {
+        List<RulItemType> items = new ArrayList<>();
+        PreparedStatement ps = dc.prepareStatement("SELECT * FROM rul_item_type it WHERE it.data_type_id = ?");
+        ps.setInt(1, DATA_TYPE_PACKET_REF);
         ps.execute();
         ResultSet rs = ps.getResultSet();
         while (rs.next()) {
-            items.add(createItem(rs));
+            items.add(createItemType(rs));
         }
         return items;
     }
 
-    private ArrItem createItem(final ResultSet rs) throws SQLException {
-        return new ArrItem(rs.getInt(ArrItem.ITEM_ID),
-                rs.getInt(ArrItem.ITEM_TYPE_ID),
-                rs.getInt(ArrItem.DATA_TYPE_ID),
-                rs.getInt(ArrItem.RULE_SET_ID));
+    private RulItemType createItemType(ResultSet rs) throws SQLException {
+        return new RulItemType(rs.getInt(RulItemType.ITEM_TYPE_ID),
+                rs.getInt(RulItemType.DATA_TYPE_ID),
+                rs.getString(RulItemType.CODE),
+                rs.getString(RulItemType.NAME),
+                rs.getString(RulItemType.SHORTCUT),
+                rs.getString(RulItemType.DESCRIPTION),
+                rs.getBoolean(RulItemType.IS_VALUE_UNIQUE),
+                rs.getBoolean(RulItemType.CAN_BE_ORDERED),
+                rs.getBoolean(RulItemType.USE_SPECIFICATION),
+                rs.getInt(RulItemType.VIEW_ORDER),
+                rs.getInt(RulItemType.PACKAGE_ID),
+                rs.getInt(RulItemType.RULE_SET_ID),
+                rs.getString(RulItemType.COLUMNS_DEFINITION),
+                null /*struct_type - not exists yet*/);
     }
 
     private Integer nextItemTypeViewOrder() throws DatabaseException, SQLException {
@@ -626,34 +648,45 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
 
     private static class StructureTypePack {
 
-        private RulRuleSet ruleSet;
+        // packet type (kar, fas)
         private RulItemType itemTypePacketType;
-        private List<RulItemSpec> itemSpecPacketTypes;
+
+        // old packet type -> specs for packet type
+        private Map<Integer, RulItemSpec> packetTypeIdItemSpecMap = new HashMap<>();
+
+        // packet number/prefix
         private RulItemType itemTypePacketDescription;
+
+        // structured type
         private RulStructureType structureType;
-
-        public RulRuleSet getRuleSet() {
-            return ruleSet;
-        }
-
-        public void setRuleSet(final RulRuleSet ruleSet) {
-            this.ruleSet = ruleSet;
-        }
 
         public RulItemType getItemTypePacketType() {
             return itemTypePacketType;
+        }
+
+        /**
+         * Return specification for old packet type
+         * 
+         * @param packetTypeId
+         * @return
+         */
+        public RulItemSpec getSpecPacketType(Integer packetTypeId) {
+            RulItemSpec ret = null;
+            if (packetTypeId != null) {
+                ret = packetTypeIdItemSpecMap.get(packetTypeId);
+                if (ret == null) {
+                    throw new IllegalStateException("Unexpected packetTypeId = " + packetTypeId);
+                }
+            }
+            return ret;
         }
 
         public void setItemTypePacketType(final RulItemType itemTypePacketType) {
             this.itemTypePacketType = itemTypePacketType;
         }
 
-        public List<RulItemSpec> getItemSpecPacketTypes() {
-            return itemSpecPacketTypes;
-        }
-
-        public void setItemSpecPacketTypes(final List<RulItemSpec> itemSpecPacketTypes) {
-            this.itemSpecPacketTypes = itemSpecPacketTypes;
+        public void setPacketTypeIdItemSpecMap(final Map<Integer, RulItemSpec> packetTypeIdItemSpecMap) {
+            this.packetTypeIdItemSpecMap = packetTypeIdItemSpecMap;
         }
 
         public RulItemType getItemTypePacketDescription() {
@@ -738,7 +771,19 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
 
         private static String TABLE = "rul_item_type";
         private static String ITEM_TYPE_ID = "item_type_id";
+        private static String DATA_TYPE_ID = "data_type_id";
+        private static String CODE = "code";
+        private static String NAME = "name";
+        private static String SHORTCUT = "shortcut";
+        private static String DESCRIPTION = "description";
+        private static String IS_VALUE_UNIQUE = "is_value_unique";
+        private static String CAN_BE_ORDERED = "can_be_ordered";
+        private static String USE_SPECIFICATION = "use_specification";
         private static String VIEW_ORDER = "view_order";
+        private static String PACKAGE_ID = "package_id";
+        private static String COLUMNS_DEFINITION = "columns_definition";
+        private static String RULE_SET_ID = "rule_set_id";
+        private static String STRUCTURE_TYPE_ID = "structure_type_id";
 
         private Integer itemTypeId;
         private Integer dataTypeId;
@@ -755,7 +800,13 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
         private String columnsDefinition;
         private Integer structureTypeId;
 
-        public RulItemType(final Integer itemTypeId, final Integer dataTypeId, final String code, final String name, final String shortcut, final String description, final Boolean isValueUnique, final Boolean canBeOrdered, final Boolean useSpecification, final Integer viewOrder, final Integer ruleSetId, final Integer packageId, final String columnsDefinition, final Integer structureTypeId) {
+        public RulItemType(final Integer itemTypeId, final Integer dataTypeId,
+                           final String code, final String name, final String shortcut,
+                           final String description, final Boolean isValueUnique,
+                           final Boolean canBeOrdered, final Boolean useSpecification,
+                           final Integer viewOrder, final Integer ruleSetId,
+                           final Integer packageId,
+                           final String columnsDefinition, final Integer structureTypeId) {
             this.itemTypeId = itemTypeId;
             this.dataTypeId = dataTypeId;
             this.code = code;
@@ -993,48 +1044,23 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
             return packetTypeId;
         }
 
-        public void setPacketTypeId(final Integer packetTypeId) {
-            this.packetTypeId = packetTypeId;
-        }
-
         public String getCode() {
             return code;
-        }
-
-        public void setCode(final String code) {
-            this.code = code;
         }
 
         public String getName() {
             return name;
         }
 
-        public void setName(final String name) {
-            this.name = name;
-        }
-
         public String getShortcut() {
             return shortcut;
         }
-
-        public void setShortcut(final String shortcut) {
-            this.shortcut = shortcut;
-        }
-
         public Integer getRuleSetId() {
             return ruleSetId;
         }
 
-        public void setRuleSetId(final Integer ruleSetId) {
-            this.ruleSetId = ruleSetId;
-        }
-
         public Integer getPackageId() {
             return packageId;
-        }
-
-        public void setPackageId(final Integer packageId) {
-            this.packageId = packageId;
         }
     }
 
@@ -1111,51 +1137,6 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
 
         public Integer getPacketId() {
             return packetId;
-        }
-    }
-
-    private static class ArrItem {
-
-        private static String TABLE = "arr_item";
-        private static String ITEM_ID = "item_id";
-        private static String ITEM_TYPE_ID = "item_type_id";
-        private static String DATA_TYPE_ID = "data_type_id";
-        private static String RULE_SET_ID = "rule_set_id";
-
-        private Integer itemId;
-        private Integer itemTypeId;
-        private Integer dataTypeId;
-        private Integer ruleSetId;
-
-        public ArrItem(final Integer itemId, final Integer itemTypeId, final Integer dataTypeId, final Integer ruleSetId) {
-            this.itemId = itemId;
-            this.itemTypeId = itemTypeId;
-            this.dataTypeId = dataTypeId;
-            this.ruleSetId = ruleSetId;
-        }
-
-        public Integer getItemId() {
-            return itemId;
-        }
-
-        public Integer getItemTypeId() {
-            return itemTypeId;
-        }
-
-        public void setItemTypeId(final Integer itemTypeId) {
-            this.itemTypeId = itemTypeId;
-        }
-
-        public Integer getDataTypeId() {
-            return dataTypeId;
-        }
-
-        public void setDataTypeId(final Integer dataTypeId) {
-            this.dataTypeId = dataTypeId;
-        }
-
-        public Integer getRuleSetId() {
-            return ruleSetId;
         }
     }
 }
