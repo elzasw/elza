@@ -12,10 +12,13 @@ import java.util.Map;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
-import cz.tacr.elza.bulkaction.generator.PersistentSortConfig;
+import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.yaml.snakeyaml.TypeDescription;
 import org.yaml.snakeyaml.Yaml;
@@ -24,6 +27,7 @@ import org.yaml.snakeyaml.constructor.Constructor;
 import cz.tacr.elza.bulkaction.generator.FundValidationConfig;
 import cz.tacr.elza.bulkaction.generator.MoveDescItemConfig;
 import cz.tacr.elza.bulkaction.generator.MultiActionConfig;
+import cz.tacr.elza.bulkaction.generator.PersistentSortConfig;
 import cz.tacr.elza.bulkaction.generator.SerialNumberConfig;
 import cz.tacr.elza.bulkaction.generator.TestDataConfig;
 import cz.tacr.elza.bulkaction.generator.UnitIdConfig;
@@ -40,6 +44,7 @@ import cz.tacr.elza.repository.ActionRepository;
  * Manager konfigurace hromadných akcí.
  */
 @Component
+@Configuration
 public class BulkActionConfigManager {
 
 	private static final Logger logger = LoggerFactory.getLogger(BulkActionConfigManager.class);
@@ -101,6 +106,24 @@ public class BulkActionConfigManager {
      */
     public BulkActionConfig get(final String code) {
         return bulkActionConfigMap.get(code);
+    }
+
+    /**
+     * Gets bulk action.
+     *
+     * @param code
+     *            the code
+     * @return the bulk action
+     */
+    @Bean
+    @Scope("prototype")
+    public BulkAction getBulkAction(final String code) {
+        // get configuration object
+        BulkActionConfig bac = bulkActionConfigMap.get(code);
+
+        Validate.notNull(bac, "Failed to find action, code: %s", code);
+
+        return bac.createBulkAction();
     }
 
     /**

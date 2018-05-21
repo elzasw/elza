@@ -253,11 +253,12 @@ class ArrStructurePanel extends AbstractReactComponent {
                 className="list"
                 items={rows}
                 onChangeSelection={this.handleChangeSelection}
-                renderItemContent={i => {
-                    let title = i.errorDescription ? i.errorDescription : null;
-                    return <div onContextMenu={this.handleContextMenu.bind(this, i)} title={title}>
-                        {i.value || <em>{i18n("arr.structure.list.item.noValue")}</em>} {
-                            i.state === 'ERROR' && i.errorDescription && <Icon glyph="fa-exclamation-triangle pull-right" />
+                renderItemContent={(props) => {
+                    const {item, ...otherProps} = props;
+                    let title = item.errorDescription ? item.errorDescription : null;
+                    return <div {...otherProps} onContextMenu={this.handleContextMenu.bind(this, item)} title={title}>
+                        {item.value || <em>{i18n("arr.structure.list.item.noValue")}</em>} {
+                            item.state === 'ERROR' && item.errorDescription && <Icon glyph="fa-exclamation-triangle pull-right" />
                         }
                     </div>
                 }}

@@ -44,7 +44,7 @@ class UserAndGroupField extends AbstractReactComponent {
 
         text = text == "" ? null : text;
 
-        const findUser = findUserApi(text, true, false, 200, null);
+        const findUser = findUserApi(text, true, false);
         const findGroup = findGroupApi(text);
 
         Utils.barrier(findUser, findGroup)

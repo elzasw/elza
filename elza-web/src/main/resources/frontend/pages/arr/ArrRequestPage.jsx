@@ -202,7 +202,8 @@ class ArrRequestPage extends ArrParentPage {
         }
     };
 
-    renderListItem = (item, isActive, index) => {
+    renderListItem = (props) => {
+        const {item, active, index} = props;
         const {userDetail} = this.props;
         const fund = this.getActiveFund(this.props);
 

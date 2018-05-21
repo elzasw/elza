@@ -28,7 +28,7 @@ class AddRemoveList extends AbstractReactComponent {
         addTitle: "global.action.add",
         removeTitle: "global.action.remove",
         readOnly: false,
-        renderItem: (item, index) => <div key={"rendered-item-" + index}>{item.name}</div>
+        renderItem: (props) => <div key={"rendered-item-" + props.index}>{props.item.name}</div>
     };
 
     handleRemove = (item, index) => {
@@ -42,7 +42,7 @@ class AddRemoveList extends AbstractReactComponent {
         const groups = items == null ? [] : items.map((item, index) => {
             return (
                 <div className="item-container" key={"item-" + index}>
-                    {renderItem(item, index)}
+                    {renderItem({item, index})}
                     {!readOnly && <div className="item-actions-container">
                         <NoFocusButton className="remove" onClick={this.handleRemove.bind(this, item, index)} title={i18n(removeTitle)}>
                             <Icon glyph="fa-remove"/>

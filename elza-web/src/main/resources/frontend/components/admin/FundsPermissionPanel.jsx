@@ -338,10 +338,12 @@ class FundsPermissionPanel extends AbstractReactComponent {
         ));
     };
 
-    renderItem = (item, isActive, index, onCheckItem) => {
+    renderItem = (props, onCheckItem) => {
+        const {item, active, index} = props;
+        //console.log("fund perms panel", item);
         if (item.id === FundsPermissionPanel.ALL_ID) {
             return <div>{i18n("admin.perms.tabs.funds.items.fundAll")}</div>;
-        } else {
+        } else if(item.fund){
             return <div>
                 {item.fund.name}
             </div>;

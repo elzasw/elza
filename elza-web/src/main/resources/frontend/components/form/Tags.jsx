@@ -22,7 +22,7 @@ const Tags = class Tags extends AbstractReactComponent {
                 {items.map((item, index) => (
                     <div className="selected-data" key={index}>
                         <div className="data-label">
-                            {renderItem(item)}
+                          {renderItem({item})}
                         </div>
                         <Button onClick={() => {onRemove(item, index)}}>
                             <Icon glyph="fa-times"/>

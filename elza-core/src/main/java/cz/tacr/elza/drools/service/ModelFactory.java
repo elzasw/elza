@@ -7,6 +7,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataInteger;
@@ -81,11 +82,11 @@ public class ModelFactory {
             if (!voDescItem.isUndefined()) {
 				ArrData data = descItem.getData();
 				if (data.getType() == DataType.STRUCTURED) {
-					ArrDataStructureRef structureRef = (ArrDataStructureRef) descItem.getData();
+                    ArrDataStructureRef structureRef = HibernateUtils.unproxy(data);
                     ArrStructuredObject structureData = structureRef.getStructuredObject();
                     voDescItem.setStructured(createStructured(structureData));
 				} else if (data.getType() == DataType.INT) {
-					ArrDataInteger integer = (ArrDataInteger) descItem.getData();
+                    ArrDataInteger integer = HibernateUtils.unproxy(data);
                     voDescItem.setInteger(integer.getValue());
                 }
             }
@@ -150,7 +151,7 @@ public class ModelFactory {
         if (!structuredItem.isUndefined()) {
             ArrData data = structuredItem.getData();
             if (data.getType() == DataType.INT) {
-                ArrDataInteger integer = (ArrDataInteger) data;
+                ArrDataInteger integer = HibernateUtils.unproxy(data);
                 result.setInteger(integer.getValue());
             }
         }

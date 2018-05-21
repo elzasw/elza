@@ -34,7 +34,7 @@ when
 		"ZP2015_UNIT_SOURCE",
         "ZP2015_UNIT_HIST",
         "ZP2015_FUTURE_UNITS",
-		"ZP2015_UNIT_ARR",
+        "ZP2015_UNIT_ARR",
         "ZP2015_ARRANGE_RULES",
         "ZP2015_DESCRIPTION_DATE",
         "ZP2015_DATE_RANGE",
@@ -46,7 +46,8 @@ when
         "ZP2015_FINDING_AID_EDITOR",
         "ZP2015_FINDING_AID_APPROVED_BY",
         // Je nutne urcit typ vystupu
-        "ZP2015_OUTPUT_TYPE"
+        "ZP2015_OUTPUT_TYPE",
+        "ZP2015_RELEASE_DATE_PLACE"
         ) )
 then
     $itemType.setType(RulItemType.Type.REQUIRED);

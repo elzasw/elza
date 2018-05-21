@@ -69,7 +69,16 @@
                 <type code="ZP2015_UNIT_EXT_TYPE" width="1"/>
                 <type code="ZP2015_CONNECTED_RECORD" width="2"/>                
             </group>
-            <group code="03_GROUP2">
+            <group code="03_OUTPUT_ITEMS">
+              <name>Prvky popisu výstupu</name>
+              <type code="ZP2015_UNITS_AMOUNT" width="1"/>
+              <type code="ZP2015_FINDING_AID_DATE" width="1"/>
+              <type code="ZP2015_ARRANGER_TEXT" width="1"/>
+              <type code="ZP2015_FINDING_AID_EDITOR" width="1"/>
+              <type code="ZP2015_FINDING_AID_APPROVED_BY" width="1"/>
+              <type code="ZP2015_RELEASE_DATE_PLACE" width="1"/>
+            </group>
+            <group code="04_GROUP2">
                 <name>Identifikátory jednotky popisu</name>
                 <type code="ZP2015_UNIT_ID" width="1"/>
                 <type code="ZP2015_SERIAL_NUMBER" width="1"/>
@@ -78,7 +87,7 @@
                 <type code="ZP2015_ITEM_ORDER" width="1"/>
                 <type code="ZP2015_INVALID_RECORD" width="2"/>
             </group>
-            <group code="04_GROUP3">
+            <group code="05_GROUP3">
                 <name>Hlavní popis jednotky</name>
                 <type code="ZP2015_TITLE" width="0"/>
                 <!-- 4.2.4 Formální název jednotky popisu -->
@@ -92,7 +101,7 @@
                 <type code="ZP2015_ITEM_TITLE" width="0"/>
                 <type code="ZP2015_ITEM_TITLE_REF" width="0"/>
             </group>
-            <group code="05_ZP2015_CH4">
+            <group code="06_ZP2015_CH4">
                 <name>Společné prvky popisu</name>
                 <!-- 4.3.1 Odkaz na původce -->
                 <type code="ZP2015_ORIGINATOR" width="0"/>
@@ -126,7 +135,7 @@
                 <!-- 4.7.3 Datum (data) popisu -->
                 <type code="ZP2015_DESCRIPTION_DATE" width="1"/>
             </group>
-            <group code="06_ZP2015_CH5">
+            <group code="07_ZP2015_CH5">
                 <name>Rozšířený popis archiválií</name>
                 <!-- 5.2.3 Způsob a forma dochování -->
                 <type code="ZP2015_STORAGE_COND" width="2"/>
@@ -136,6 +145,8 @@
                 <type code="ZP2015_SIZE_HEIGHT" width="1"/>
                 <type code="ZP2015_SIZE_DEPTH" width="1"/>
                 <type code="ZP2015_SIZE_UNITS" width="1"/>
+                <type code="ZP2015_WEIGHT" width="1"/>
+                <type code="ZP2015_AMOUNT" width="1"/>
                 <!-- ZP5.2.5 Měřítko -->
                 <type code="ZP2015_SCALE" width="1"/>
                 <!-- 5.2.6 Souřadnice - tvar a souřadnice -->
@@ -144,6 +155,10 @@
                 <type code="ZP2015_ORIENTATION" width="1"/>
                 <!-- 5.2.8 Technika, adjustace, nosič a látka záznamu -->
                 <type code="ZP2015_ITEM_MAT" width="1"/>
+                <type code="ZP2015_ITEM_MAT_TECHNIKA" width="1"/>
+                <type code="ZP2015_ITEM_MAT_ADJUSTACE" width="1"/>
+                <type code="ZP2015_ITEM_MAT_NOSIC" width="1"/>
+                <type code="ZP2015_ITEM_MAT_LATKA_ZAZNAMU" width="1"/>
                 <!-- 5.2.9 Díl, část, pořadí vydání jednotky popisu -->
                 <type code="ZP2015_PART" width="1"/>
                 <!--  5.2.10 Jazyk -->
@@ -156,7 +171,7 @@
                 <type code="ZP2015_ENTITY_ROLE" width="0"/>
             </group>
             <!-- Other items -->
-            <group code="07_OTHERS">
+            <group code="08_OTHERS">
                 <name>Ostatní</name>
                 <type code="ZP2015_INTERNAL_NOTE" width="0"/>
                 <type code="ZP2015_NOTE" width="0"/>

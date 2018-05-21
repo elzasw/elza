@@ -55,11 +55,12 @@ class ControlledEntitiesPanel extends AbstractReactComponent {
         }
     };
 
-    renderItem = (item, isActive, index, onCheckItem) => {
+    renderItem = (props) => {
+        const {item, isActive, index, onCheckItem} = props;
         if (item.permission === perms.USER_CONTROL_ENTITITY) {
-            return renderUserItem(item.userControl, isActive, index, onCheckItem);
+            return renderUserItem({item: item.userControl, selected: isActive});
         } else if (item.permission === perms.GROUP_CONTROL_ENTITITY) {
-            return renderGroupItem(item.groupControl, isActive, index, onCheckItem);
+            return renderGroupItem({item: item.groupControl, selected: isActive});
         }
     };
 

@@ -549,7 +549,8 @@ return true
      * onClick {Object} on click metoda, která se má zavolat po aktivaci řádku
      * item {Object} položka pro renderování
      */
-    renderRowItem(onClick, item) {
+    renderRowItem(onClick, props) {
+        const {item} = props;
         var icon = item.icon ? <Icon className="node-icon" glyph={getGlyph(item.icon)} /> : ''
         var refmark = createReferenceMarkString(item);
         var levels = "";
