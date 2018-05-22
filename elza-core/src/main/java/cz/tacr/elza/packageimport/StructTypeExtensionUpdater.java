@@ -1,27 +1,26 @@
 package cz.tacr.elza.packageimport;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import cz.tacr.elza.domain.RulComponent;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.RulStructureExtensionDefinition;
 import cz.tacr.elza.domain.RulStructuredType;
 import cz.tacr.elza.domain.RulStructuredTypeExtension;
+import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.packageimport.xml.StructureExtension;
 import cz.tacr.elza.packageimport.xml.StructureExtensionDefinition;
 import cz.tacr.elza.packageimport.xml.StructureExtensionDefinitions;
@@ -32,7 +31,7 @@ import cz.tacr.elza.repository.StructuredTypeExtensionRepository;
 import cz.tacr.elza.service.StructureService;
 
 /**
- * Update for structured type extensions
+ * Update extensions for structured types
  * 
  *
  */
@@ -45,6 +44,18 @@ public class StructTypeExtensionUpdater
 	final private ComponentRepository componentRepository;
 	
 	private StructureService structureService;
+
+	/**
+	 * Updated and new structured extensions
+	 */
+    private List<RulStructuredTypeExtension> structExts;
+    
+    /**
+     * Original structured extensions
+     */
+    private List<RulStructuredTypeExtension> origStructExts;
+
+    private List<RulStructuredTypeExtension> rulStructureExtensionsDelete;
 	
 
     private String getZipDir(final RulStructureExtensionDefinition extensionDefinition) {
@@ -68,19 +79,25 @@ public class StructTypeExtensionUpdater
     	this.structureService = structureService;
     }
     
-	private List<RulStructureExtensionDefinition> processStructureExtensionDefinitions(
-			final StructureExtensionDefinitions structureExtensionDefinitions, final RuleUpdateContext ruc,
-			final List<RulStructuredTypeExtension> rulStructureExtensionList) {
-		List<RulStructureExtensionDefinition> rulStructureExtensionDefinitions = rulStructureExtensionList.size() == 0
+    /**
+     * Process extension definitions
+     * @param extDefs
+     * @param ruc
+     * @return
+     */
+    private void procExtDefs(final StructureExtensionDefinitions extDefs, final RuleUpdateContext ruc) {
+	    // get current definitions
+        List<RulStructureExtensionDefinition> rulStructureExtensionDefinitions = this.origStructExts.size() == 0
 				? Collections.emptyList()
 				: structureExtensionDefinitionRepository.findByRulPackageAndStructuredTypeExtensionIn(ruc.getRulPackage(),
-						rulStructureExtensionList);
+				                                                                                      origStructExts);
 
+		// updated and new extension definitions
 		List<RulStructureExtensionDefinition> rulStructureExtensionDefinitionsNew = new ArrayList<>();
 
-		if (structureExtensionDefinitions != null
-				&& !CollectionUtils.isEmpty(structureExtensionDefinitions.getStructureExtensions())) {
-			for (StructureExtensionDefinition structureExtensionDefinition : structureExtensionDefinitions
+		// update extension definitions
+		if (extDefs != null && !CollectionUtils.isEmpty(extDefs.getStructureExtensions())) {
+			for (StructureExtensionDefinition structureExtensionDefinition : extDefs
 					.getStructureExtensions()) {
 
 				RulStructureExtensionDefinition item = rulStructureExtensionDefinitions.stream()
@@ -94,8 +111,7 @@ public class StructTypeExtensionUpdater
 					item = new RulStructureExtensionDefinition();
 				}
 
-				convertRulStructureExtensionDefinition(ruc.getRulPackage(), structureExtensionDefinition, item,
-						rulStructureExtensionList);
+                convertDef(ruc.getRulPackage(), structureExtensionDefinition, item);
 				rulStructureExtensionDefinitionsNew.add(item);
 			}
 		}
@@ -139,33 +155,43 @@ public class StructTypeExtensionUpdater
 		}
 
 		structureService.revalidateStructureExtensions(revalidateStructureExtensions);
-		return rulStructureExtensionDefinitionsNew;
 	}
 
-	private void convertRulStructureExtensionDefinition(final RulPackage rulPackage,
-			final StructureExtensionDefinition structureExtensionDefinition, final RulStructureExtensionDefinition item,
-			final List<RulStructuredTypeExtension> rulStructureExtensionList) {
-		item.setDefType(structureExtensionDefinition.getDefType());
-		item.setPriority(structureExtensionDefinition.getPriority());
-		item.setRulPackage(rulPackage);
-		item.setStructuredTypeExtension(rulStructureExtensionList.stream()
-				.filter(x -> x.getCode().equals(structureExtensionDefinition.getStructureExtension())).findFirst()
-				.orElse(null));
+	private void convertDef(final RulPackage rulPackage,
+			final StructureExtensionDefinition xmlExtDef, final RulStructureExtensionDefinition dbExtDef) {
+	    dbExtDef.setDefType(xmlExtDef.getDefType());
+	    dbExtDef.setPriority(xmlExtDef.getPriority());
+	    dbExtDef.setRulPackage(rulPackage);
+		
+		// find extension
+        RulStructuredTypeExtension structExt = this.structExts.stream()
+                .filter(x -> x.getCode()
+                        .equals(xmlExtDef
+                                .getStructureExtension()))
+                .findFirst().orElse(null);
+        if(structExt==null) {
+            throw new BusinessException(
+                    "Not found structured type for extension definition",
+                    BaseCode.ID_NOT_EXIST)
+                            .set("code", xmlExtDef
+                                    .getStructureExtension());
+        }
+        dbExtDef.setStructuredTypeExtension(structExt);
 
-		String filename = structureExtensionDefinition.getFilename();
+		String filename = xmlExtDef.getFilename();
 		if (filename != null) {
-			RulComponent component = item.getComponent();
+			RulComponent component = dbExtDef.getComponent();
 			if (component == null) {
 				component = new RulComponent();
 			}
 			component.setFilename(filename);
 			componentRepository.save(component);
-			item.setComponent(component);
+			dbExtDef.setComponent(component);
 		} else {
-			RulComponent component = item.getComponent();
-			item.setComponent(null);
+			RulComponent component = dbExtDef.getComponent();
+			dbExtDef.setComponent(null);
 			if (component != null) {
-				structureExtensionDefinitionRepository.save(item);
+				structureExtensionDefinitionRepository.save(dbExtDef);
 				componentRepository.delete(component);
 			}
 		}
@@ -180,17 +206,22 @@ public class StructTypeExtensionUpdater
 		item.setRulPackage(rulPackage);
 	}
     
-	private List<RulStructuredTypeExtension> processStructureExtensions(final StructureExtensions structureExtensions,
-                                                                        final RulPackage rulPackage,
-                                                                        final List<RulStructuredType> rulStructureTypes) {
-        List<RulStructuredTypeExtension> rulStructureExtensions = rulStructureTypes.size() == 0 ? Collections.emptyList() :
+	private void procExtensions(final StructureExtensions structureExtensions,
+	                                        final RulPackage rulPackage,
+	                                        final List<RulStructuredType> rulStructureTypes) 
+	{
+	    // prepare list of current extensions
+	    origStructExts = rulStructureTypes.size() == 0 ? Collections.emptyList() :
                 structureExtensionRepository.findByRulPackageAndStructuredTypeIn(rulPackage, rulStructureTypes);
+        
+        // List of new extensions
         List<RulStructuredTypeExtension> rulStructureExtensionsNew = new ArrayList<>();
-
+        // iterate extensions from XML
         if (structureExtensions != null && !CollectionUtils.isEmpty(structureExtensions.getStructureExtensions())) {
             for (StructureExtension structureExtension : structureExtensions.getStructureExtensions()) {
 
-                RulStructuredTypeExtension item = rulStructureExtensions.stream()
+                // get existing extension
+                RulStructuredTypeExtension item = origStructExts.stream()
                         .filter((r) -> r.getCode().equals(structureExtension.getCode()))
                         .filter((r) -> r.getStructuredType().getCode().equals(structureExtension.getStructureType()))
                         .findFirst()
@@ -200,29 +231,32 @@ public class StructTypeExtensionUpdater
                     item = new RulStructuredTypeExtension();
                 }
 
+                // update extension
                 convertRulStructureExtension(rulPackage, structureExtension, item, rulStructureTypes);
                 rulStructureExtensionsNew.add(item);
             }
         }
 
-        rulStructureExtensionsNew = structureExtensionRepository.save(rulStructureExtensionsNew);
+        this.structExts = structureExtensionRepository.save(rulStructureExtensionsNew);
 
-        List<RulStructuredTypeExtension> rulStructureExtensionsDelete = new ArrayList<>(rulStructureExtensions);
+        // prepare list of extensions for delete
+        List<RulStructuredTypeExtension> rulStructureExtensionsDelete = new ArrayList<>(origStructExts);
         rulStructureExtensionsDelete.removeAll(rulStructureExtensionsNew);
-
-        structureExtensionRepository.delete(rulStructureExtensionsDelete);
-
-        return rulStructureExtensionsNew;
+        this.rulStructureExtensionsDelete = rulStructureExtensionsDelete;
     }
 
 	public void run(RuleUpdateContext ruc) {
-        StructureExtensions structureExtensions = PackageUtils.convertXmlStreamToObject(StructureExtensions.class,
+        StructureExtensions xmlExtensions = PackageUtils.convertXmlStreamToObject(StructureExtensions.class,
         		ruc.getByteStream(PackageService.STRUCTURE_EXTENSION_XML));
-        StructureExtensionDefinitions structureExtensionDefinitions = PackageUtils.convertXmlStreamToObject(StructureExtensionDefinitions.class, 
+        StructureExtensionDefinitions xmlExtDefs = PackageUtils.convertXmlStreamToObject(StructureExtensionDefinitions.class, 
         		ruc.getByteStream(PackageService.STRUCTURE_EXTENSION_DEFINITION_XML));		
 		
-        List<RulStructuredTypeExtension> rulStructureExtensionList = processStructureExtensions(structureExtensions, ruc.getRulPackage(), ruc.getStructureTypes());
-        List<RulStructureExtensionDefinition> rulStructureExtensionDefinitionList = processStructureExtensionDefinitions(
-        		structureExtensionDefinitions, ruc, rulStructureExtensionList);		
+        procExtensions(xmlExtensions, ruc.getRulPackage(), ruc.getStructureTypes());
+        procExtDefs(xmlExtDefs, ruc);
+        
+        // Remove unused extensions
+        if(CollectionUtils.isNotEmpty(rulStructureExtensionsDelete)) {
+            structureExtensionRepository.delete(rulStructureExtensionsDelete);
+        }
 	}
 }

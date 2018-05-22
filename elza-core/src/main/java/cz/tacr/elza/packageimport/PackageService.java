@@ -1,11 +1,9 @@
 package cz.tacr.elza.packageimport;
 
-import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
@@ -99,8 +97,8 @@ import cz.tacr.elza.domain.RulTemplate;
 import cz.tacr.elza.domain.RulTemplate.Engine;
 import cz.tacr.elza.domain.UIPartyGroup;
 import cz.tacr.elza.domain.UISettings;
-import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UISettings.EntityType;
+import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.table.ElzaColumn;
 import cz.tacr.elza.exception.AbstractException;
 import cz.tacr.elza.exception.BusinessException;
@@ -2125,16 +2123,16 @@ public class PackageService {
             Files.move(file.toPath(), fileMove.toPath(), StandardCopyOption.REPLACE_EXISTING);
         }
 
-        BufferedWriter output = null;
-        try {
-            output = new BufferedWriter(new FileWriter(file));
+        // BufferedWriter output = null;
+        try (FileOutputStream bw = new FileOutputStream(file)) {
+            // output = new BufferedWriter(new FileWriter(file));
             ByteArrayInputStream byteArrayInputStream = mapEntry.get(zipDir + "/" + filename);
 
             if (byteArrayInputStream == null) {
                 throw new IllegalStateException("Soubor " + zipDir + "/" + filename + " neexistuje v zip");
             }
 
-            FileOutputStream bw = new FileOutputStream(file);
+
 
             byte[] buf = new byte[8192];
             for (; ; ) {
@@ -2146,11 +2144,6 @@ public class PackageService {
             }
 
             bw.close();
-
-        } finally {
-            if (output != null) {
-                output.close();
-            }
         }
 
         return file;
