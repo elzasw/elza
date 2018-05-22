@@ -21,13 +21,13 @@ import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.drools.model.DescItem;
 import cz.tacr.elza.drools.model.Level;
 import cz.tacr.elza.drools.model.Structured;
-import cz.tacr.elza.drools.model.StrucutedItem;
+import cz.tacr.elza.repository.StructuredItemRepository;
+import cz.tacr.elza.drools.model.StructObjItem;
 
 /**
  * Factory method for the base Drools model objects.
  * This class contains only static methods.
  *
- * @author Petr Pytelka
  */
 public class ModelFactory {
     /**
@@ -69,7 +69,8 @@ public class ModelFactory {
      * @return seznam vo hodnot atributu
      */
     static public List<DescItem> createDescItems(@Nullable final List<ArrDescItem> descItems,
-	        DescItemFactory descItemFactory)
+	        DescItemFactory descItemFactory,
+	        StructuredItemRepository itemRepos)
     {
     	if(descItems==null) {
     		return new ArrayList<>();
@@ -83,8 +84,8 @@ public class ModelFactory {
 				ArrData data = descItem.getData();
 				if (data.getType() == DataType.STRUCTURED) {
                     ArrDataStructureRef structureRef = HibernateUtils.unproxy(data);
-                    ArrStructuredObject structureData = structureRef.getStructuredObject();
-                    voDescItem.setStructured(createStructured(structureData));
+                    ArrStructuredObject structObj = structureRef.getStructuredObject();
+                    voDescItem.setStructured(createStructured(structObj, itemRepos));
 				} else if (data.getType() == DataType.INT) {
                     ArrDataInteger integer = HibernateUtils.unproxy(data);
                     voDescItem.setInteger(integer.getValue());
@@ -100,9 +101,8 @@ public class ModelFactory {
      * @param structureData
      * @return
      */
-    static public Structured createStructured(final ArrStructuredObject structureData) {
-        Structured result = new Structured();
-        result.setValue(structureData.getValue());
+    static public Structured createStructured(final ArrStructuredObject structObj, StructuredItemRepository itemRepos) {
+        Structured result = new Structured(structObj, itemRepos);
         return result;
     }
 
@@ -125,12 +125,12 @@ public class ModelFactory {
      * @param structuredItems položky pro konverzi
      * @return vytvořené položky
      */
-    public static List<StrucutedItem> createStructuredItems(@Nullable final List<ArrStructuredItem> structuredItems) {
+    public static List<StructObjItem> createStructuredItems(@Nullable final List<ArrStructuredItem> structuredItems) {
 	    if (structuredItems == null) {
             return Collections.emptyList();
         }
 
-        List<StrucutedItem> result = new ArrayList<>(structuredItems.size());
+        List<StructObjItem> result = new ArrayList<>(structuredItems.size());
         for (ArrStructuredItem structuredItem : structuredItems) {
             result.add(createStructuredItem(structuredItem));
         }
@@ -143,8 +143,8 @@ public class ModelFactory {
      * @param structuredItem položka pro konverzi
      * @return vytvořená položka
      */
-	public static StrucutedItem createStructuredItem(final ArrStructuredItem structuredItem) {
-	    StrucutedItem result = new StrucutedItem();
+	public static StructObjItem createStructuredItem(final ArrStructuredItem structuredItem) {
+	    StructObjItem result = new StructObjItem();
         result.setType(structuredItem.getItemType().getCode());
         result.setSpecCode(structuredItem.getItemSpec() == null ? null : structuredItem.getItemSpec().getCode());
         result.setDataType(structuredItem.getItemType().getDataType().getCode());

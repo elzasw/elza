@@ -36,6 +36,7 @@ import cz.tacr.elza.drools.model.NewLevel;
 import cz.tacr.elza.drools.model.NewLevelApproach;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.LevelRepository;
+import cz.tacr.elza.repository.StructuredItemRepository;
 import cz.tacr.elza.service.cache.NodeCacheService;
 
 
@@ -60,6 +61,9 @@ public class ScriptModelFactory {
 
 	@Autowired
 	private StaticDataService staticDataService;
+
+	@Autowired
+	private StructuredItemRepository structItemRepos;	
 
     /**
 	 * Vytvoří strukturu od výchozího levelu. Načte všechny jeho rodiče a prvky
@@ -104,7 +108,8 @@ public class ScriptModelFactory {
 
 		DescItemReader descItemReader = new DescItemReader(version, descItemRepository,
 		        descItemFactory,
-		        nodeCacheService);
+		        nodeCacheService,
+		        structItemRepos);
 		return descItemReader;
 	}
 
