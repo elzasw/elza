@@ -23,7 +23,6 @@ import cz.tacr.elza.domain.RulItemSpecRegister;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.RulPackageDependency;
-import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.RulStructuredType;
 import cz.tacr.elza.domain.table.ElzaColumn;
 import cz.tacr.elza.exception.BusinessException;
@@ -50,17 +49,17 @@ import cz.tacr.elza.repository.RegisterTypeRepository;
  *
  * Class will use types from XML and try to synchronize them in DB
  *
- * @author Petr Pytelka
  *
  */
 @Component
 @Scope("prototype")
 public class ItemTypeUpdater {
 
-	private RulPackage rulPackage;
-
 	private List<RulDataType> rulDataTypes;
 
+	/**
+	 * Item types loaded from the given package
+	 */
 	List<RulItemType> rulItemTypesOrig;
 
 	@Autowired
@@ -90,6 +89,8 @@ public class ItemTypeUpdater {
      * Max used view order
      */
     int maxViewOrderPos = 0;
+
+	private RuleUpdateContext ruc;
 
 	public ItemTypeUpdater() {
 	}
@@ -121,17 +122,16 @@ public class ItemTypeUpdater {
 
     /**
      * Zpracování specifikací atributů.
-     *  @param itemSpecs       seznam importovaných specifikací
-     * @param rulPackage          balíček
-     * @param rulDescItemTypes    seznam typů atributů
-     * @param rulRuleSet
+     * @param rulRuleSet		rules
+     * @param itemSpecs       	seznam importovaných specifikací
+     * @param rulDescItemTypes  seznam typů atributů
      */
-    private void processDescItemSpecs(final ItemSpecs itemSpecs,
-                                      final RulPackage rulPackage,
-                                      final List<RulItemType> rulDescItemTypes,
-                                      final RulRuleSet rulRuleSet) {
+    private void processDescItemSpecs(
+    								  final ItemSpecs itemSpecs,
+                                      final List<RulItemType> rulDescItemTypes) 
+    {
 
-        List<RulItemSpec> rulDescItemSpecs = itemSpecRepository.findByRulPackageAndRuleSet(rulPackage, rulRuleSet);
+        List<RulItemSpec> rulDescItemSpecs = itemSpecRepository.findByRulPackageAndRuleSet(ruc.getRulPackage(), ruc.getRulSet());
         List<RulItemSpec> rulDescItemSpecsNew = new ArrayList<>();
 
         // item type code -> local view order
@@ -149,7 +149,7 @@ public class ItemTypeUpdater {
                     item = new RulItemSpec();
                 }
 
-                convertRulDescItemSpec(rulPackage, itemSpec, item, rulDescItemTypes);
+                convertRulDescItemSpec(ruc.getRulPackage(), itemSpec, item, rulDescItemTypes);
 
                 Integer nextViewOrder = viewOrderMap.computeIfAbsent(item.getItemType().getCode(), next -> 1);
                 item.setViewOrder(nextViewOrder);
@@ -179,32 +179,31 @@ public class ItemTypeUpdater {
      * @return return list of updated types
 	 */
 	public List<RulItemType> update(final List<RulDataType> rulDataTypes,
-                                    final List<RulStructuredType> rulStructureTypes,
-                                    final RulPackage rulPackage,
+                                    RuleUpdateContext ruc,
                                     final ItemTypes itemTypes,
-                                    final ItemSpecs itemSpecs,
-                                    final RulRuleSet rulRuleSet) {
+                                    final ItemSpecs itemSpecs
+                                    ) {
 		this.rulDataTypes = rulDataTypes;
-		this.rulPackage = rulPackage;
+		this.ruc = ruc;
 
-		prepareForUpdate(rulRuleSet);
+		prepareForUpdate();
 
         List<RulItemType> rulItemTypesUpdated = new ArrayList<>();
         if (itemTypes != null) {
             // prepare list of updated/new items
             List<ItemType> itemTypesList = itemTypes.getItemTypes();
             if (!CollectionUtils.isEmpty(itemTypesList)) {
-                rulItemTypesUpdated = updateItemTypes(rulItemTypesOrig, itemTypesList, rulRuleSet, rulStructureTypes);
+                rulItemTypesUpdated = updateItemTypes(rulItemTypesOrig, itemTypesList);
                 // try to save updated items
                 rulItemTypesUpdated = itemTypeRepository.save(rulItemTypesUpdated);
             }
 
         }
         List<RulItemType> rulItemTypesAllByRules = new ArrayList<>(rulItemTypesUpdated);
-        rulItemTypesAllByRules.addAll(itemTypeRepository.findByRuleSet(rulRuleSet));
+        rulItemTypesAllByRules.addAll(itemTypeRepository.findByRuleSet(ruc.getRulSet()));
 
         // update specifications
-        processDescItemSpecs(itemSpecs, rulPackage, rulItemTypesAllByRules, rulRuleSet);
+        processDescItemSpecs(itemSpecs, rulItemTypesAllByRules);
         postSpecsOrder();
 
 		// delete unused item types
@@ -273,9 +272,7 @@ public class ItemTypeUpdater {
 	 * @param rulRuleSet
      * @return Return new list of active item types
 	 */
-    private List<RulItemType> updateItemTypes(List<RulItemType> rulItemTypesOrig, List<ItemType> itemTypes,
-                                              final RulRuleSet rulRuleSet,
-                                              final List<RulStructuredType> rulStructureTypes) {
+    private List<RulItemType> updateItemTypes(List<RulItemType> rulItemTypesOrig, List<ItemType> itemTypes) {
     	List<RulItemType> rulItemTypesUpdated = new ArrayList<>();
     	int lastUsedViewOrder = -1;
 		for (ItemType itemType : itemTypes) {
@@ -315,7 +312,7 @@ public class ItemTypeUpdater {
 				lastUsedViewOrder = getNextViewOrderPos();
 			}
 
-			convertRulDescItemType(rulPackage, itemType, dbItemType, rulDataTypes, rulStructureTypes, rulRuleSet);
+			convertRulDescItemType(itemType, dbItemType, rulDataTypes);
 
 			// update view order
 			dbItemType.setViewOrder(lastUsedViewOrder);
@@ -356,15 +353,11 @@ public class ItemTypeUpdater {
      *  @param rulPackage      balíček
      * @param itemType    VO typu
      * @param rulDescItemType DAO typy
-     * @param rulDataTypes    datové typy atributů
-     * @param rulRuleSet    pravidla
      */
-    private void convertRulDescItemType(final RulPackage rulPackage,
-                                        final ItemType itemType,
+    private void convertRulDescItemType(final ItemType itemType,
                                         final RulItemType rulDescItemType,
-                                        final List<RulDataType> rulDataTypes,
-                                        final List<RulStructuredType> rulStructureTypes,
-                                        final RulRuleSet rulRuleSet) {
+                                        final List<RulDataType> rulDataTypes
+                                        ) {
 
         rulDescItemType.setCode(itemType.getCode());
         rulDescItemType.setName(itemType.getName());
@@ -383,7 +376,7 @@ public class ItemTypeUpdater {
 
         RulStructuredType rulStructureType = null;
         if (DataType.STRUCTURED == DataType.fromCode(itemType.getDataType())) {
-            List<RulStructuredType> findStructureTypes = rulStructureTypes.stream()
+            List<RulStructuredType> findStructureTypes = ruc.getStructureTypes().stream()
                     .filter((r) -> r.getCode().equals(itemType.getStructureType()))
                     .collect(Collectors.toList());
             if (findStructureTypes.size() > 0) {
@@ -415,8 +408,8 @@ public class ItemTypeUpdater {
             rulDescItemType.setColumnsDefinition(elzaColumns);
         }
 
-        rulDescItemType.setRulPackage(rulPackage);
-        rulDescItemType.setRuleSet(rulRuleSet);
+        rulDescItemType.setRulPackage(ruc.getRulPackage());
+        rulDescItemType.setRuleSet(ruc.getRulSet());
     }
 
     /**
@@ -554,9 +547,10 @@ public class ItemTypeUpdater {
 
      * @param rulRuleSet rule set
 	 */
-	private void prepareForUpdate(final RulRuleSet rulRuleSet) {
+	private void prepareForUpdate() {
 
-		rulItemTypesOrig = itemTypeRepository.findByRulPackageAndRuleSet(rulRuleSet.getPackage(), rulRuleSet);
+		// read current items types from DB
+		rulItemTypesOrig = itemTypeRepository.findByRulPackageAndRuleSet(ruc.getRulPackage(), ruc.getRulSet());
 
 		// read first free view-order id
 		RulItemType itemTypeHighest = itemTypeRepository.findFirstByOrderByViewOrderDesc();

@@ -50,6 +50,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronizationAdapter;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.util.FileSystemUtils;
 
 import cz.tacr.elza.api.UseUnitdateEnum;
 import cz.tacr.elza.api.enums.ParRelationClassTypeRepeatabilityEnum;
@@ -60,6 +61,7 @@ import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.core.data.RuleSystemItemType;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrOutputDefinition;
 import cz.tacr.elza.domain.ArrOutputDefinition.OutputState;
@@ -91,13 +93,13 @@ import cz.tacr.elza.domain.RulPackageDependency;
 import cz.tacr.elza.domain.RulPolicyType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.RulStructureDefinition;
-import cz.tacr.elza.domain.RulStructuredTypeExtension;
 import cz.tacr.elza.domain.RulStructureExtensionDefinition;
 import cz.tacr.elza.domain.RulStructuredType;
 import cz.tacr.elza.domain.RulTemplate;
 import cz.tacr.elza.domain.RulTemplate.Engine;
 import cz.tacr.elza.domain.UIPartyGroup;
 import cz.tacr.elza.domain.UISettings;
+import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UISettings.EntityType;
 import cz.tacr.elza.domain.table.ElzaColumn;
 import cz.tacr.elza.exception.AbstractException;
@@ -164,10 +166,6 @@ import cz.tacr.elza.packageimport.xml.SettingTypeGroups;
 import cz.tacr.elza.packageimport.xml.Settings;
 import cz.tacr.elza.packageimport.xml.StructureDefinition;
 import cz.tacr.elza.packageimport.xml.StructureDefinitions;
-import cz.tacr.elza.packageimport.xml.StructureExtension;
-import cz.tacr.elza.packageimport.xml.StructureExtensionDefinition;
-import cz.tacr.elza.packageimport.xml.StructureExtensionDefinitions;
-import cz.tacr.elza.packageimport.xml.StructureExtensions;
 import cz.tacr.elza.packageimport.xml.StructureType;
 import cz.tacr.elza.packageimport.xml.StructureTypes;
 import cz.tacr.elza.packageimport.xml.Template;
@@ -219,7 +217,6 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
 /**
  * Service pro správu importovaných balíčků s pravidly, hromadnými akcemi apod.
  *
- * @author Martin Šlapa
  * @since 14.12.2015
  */
 @Service
@@ -312,7 +309,7 @@ public class PackageService {
     /**
      * Složka templatů
      */
-    private final String ZIP_DIR_TEMPLATES = "templates";
+    public final String ZIP_DIR_TEMPLATES = "templates";
 
     /**
      * název složky pro vyhledání pravidel
@@ -322,17 +319,17 @@ public class PackageService {
     /**
      * adresář pro hromadné akce v zip
      */
-    static private final String ZIP_DIR_ACTIONS = "bulk_actions";
+    static public final String ZIP_DIR_ACTIONS = "bulk_actions";
 
     /**
      * adresář pro pravidla v zip
      */
-    static private final String ZIP_DIR_RULES = "rules";
+    static public final String ZIP_DIR_RULES = "rules";
 
     /**
      * adresář pro groovy v zip
      */
-    static private final String ZIP_DIR_SCRIPTS = "scripts";
+    static public final String ZIP_DIR_SCRIPTS = "scripts";
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -470,23 +467,20 @@ public class PackageService {
      *
      * @param file soubor balíčku
      */
-    public void importPackage(final File file) {
-        List<File> dirsActions = new ArrayList<>();
-        List<File> dirsRules = new ArrayList<>();
-        List<File> dirsGroovies = new ArrayList<>();
-        List<File> dirsTemplates = new ArrayList<>();
-
+    @Transactional
+	@AuthMethod(permission = { UsrPermission.Permission.ADMIN })    
+    public void importPackage(final File file) {  	
         ZipFile zipFile = null;
         List<RulAction> rulPackageActions = new ArrayList<>();
         List<RulArrangementRule> rulArrangementRules = new ArrayList<>();
         List<RulExtensionRule> rulExtensionRules = new ArrayList<>();
-        List<RulTemplate> originalRulTemplates = new ArrayList<>();
         List<RulStructureDefinition> rulStructureDefinitions = new ArrayList<>();
-        List<RulStructureExtensionDefinition> rulStructureExtensionDefinitions = new ArrayList<>();
 
         // odebrání používaných groovy scritpů
         cacheService.resetCache(CacheInvalidateEvent.Type.GROOVY);
 
+        File packageDir = null;
+        File oldPackageDir = null;
         try {
 
             zipFile = new ZipFile(file);
@@ -500,12 +494,14 @@ public class PackageService {
             if (packageInfo == null) {
                 throw new BusinessException("Soubor " + PACKAGE_XML + " nenalezen", PackageCode.FILE_NOT_FOUND).set("file", PACKAGE_XML);
             }
-
-            RulPackage rulPackage = processRulPackage(packageInfo);
-
+            
+            PackageUpdateContext puc = processRulPackage(packageInfo);
+            packageDir = puc.preparePackageDir();
+            // get old packageDir
+            oldPackageDir = puc.getOldPackageDir();
+            RulPackage rulPackage = puc.getPackage();
+            
             Map<String, String> rulePaths = PackageUtils.findRulePaths(ZIP_DIR_RULE_SET, mapEntry.keySet());
-
-            originalRulTemplates = templateRepository.findByRulPackage(rulPackage);
 
             RuleSets ruleSets = PackageUtils.convertXmlStreamToObject(RuleSets.class, mapEntry.get(RULE_SET_XML));
 
@@ -529,39 +525,14 @@ public class PackageService {
                 if (rulRuleSet == null) {
                     throw new BusinessException("RulRuleSet s code=" + ruleCode + " nenalezen", PackageCode.CODE_NOT_FOUND).set("code", ruleCode).set("file", RULE_SET_XML);
                 }
-
-                File dirActions = resourcePathResolver.getFunctionsDir(rulPackage, rulRuleSet).toFile();
-                dirsActions.add(dirActions);
-                if (!dirActions.exists()) {
-                    dirActions.mkdirs();
-                }
-
-                File dirRules = resourcePathResolver.getDroolsDir(rulPackage, rulRuleSet).toFile();
-                dirsRules.add(dirRules);
-                if (!dirRules.exists()) {
-                    dirRules.mkdirs();
-                }
-
-                File dirGroovies = resourcePathResolver.getGroovyDir(rulPackage, rulRuleSet).toFile();
-                dirsGroovies.add(dirGroovies);
-                if (!dirGroovies.exists()) {
-                    dirGroovies.mkdirs();
-                }
-
-                File dirTemplates = resourcePathResolver.getTemplatesDir(rulPackage, rulRuleSet).toFile();
-                dirsTemplates.add(dirTemplates);
-                if (!dirTemplates.exists()) {
-                    dirTemplates.mkdirs();
-                }
-
-                List<RulStructuredType> rulStructureTypes = structureTypeRepository.findByRuleSet(rulRuleSet);
+                
+                RuleUpdateContext ruc = new RuleUpdateContext(rulPackage, rulRuleSet, resourcePathResolver, mapEntry,
+                		ruleDirPath);
+                ruc.init(structureTypeRepository);                
 
                 PolicyTypes policyTypes = PackageUtils.convertXmlStreamToObject(PolicyTypes.class, mapEntry.get(ruleDirPath + POLICY_TYPE_XML));
-
-                StructureTypes structureTypes = PackageUtils.convertXmlStreamToObject(StructureTypes.class, mapEntry.get(ruleDirPath + STRUCTURE_TYPE_XML));
+                
                 StructureDefinitions structureDefinitions = PackageUtils.convertXmlStreamToObject(StructureDefinitions.class, mapEntry.get(ruleDirPath + STRUCTURE_DEFINITION_XML));
-                StructureExtensions structureExtensions = PackageUtils.convertXmlStreamToObject(StructureExtensions.class, mapEntry.get(ruleDirPath + STRUCTURE_EXTENSION_XML));
-                StructureExtensionDefinitions structureExtensionDefinitions = PackageUtils.convertXmlStreamToObject(StructureExtensionDefinitions.class, mapEntry.get(ruleDirPath + STRUCTURE_EXTENSION_DEFINITION_XML));
                 ItemSpecs itemSpecs = PackageUtils.convertXmlStreamToObject(ItemSpecs.class, mapEntry.get(ruleDirPath + ITEM_SPEC_XML));
                 ItemTypes itemTypes = PackageUtils.convertXmlStreamToObject(ItemTypes.class, mapEntry.get(ruleDirPath + ITEM_TYPE_XML));
                 PackageActions packageActions = PackageUtils.convertXmlStreamToObject(PackageActions.class, mapEntry.get(ruleDirPath + PACKAGE_ACTIONS_XML));
@@ -572,30 +543,31 @@ public class PackageService {
                 ArrangementExtensions arrangementExtensions = PackageUtils.convertXmlStreamToObject(ArrangementExtensions.class, mapEntry.get(ruleDirPath + ARRANGEMENT_EXTENSION_XML));
                 ExtensionRules extensionRules = PackageUtils.convertXmlStreamToObject(ExtensionRules.class, mapEntry.get(ruleDirPath + EXTENSION_RULE_XML));
 
-                List<RulStructuredType> rulStructureTypeList = processStructureTypes(structureTypes, rulPackage, rulRuleSet);
-                rulStructureTypes.addAll(rulStructureTypeList);
+                processStructureTypes(ruc);
 
-                List<RulStructureDefinition> rulStructureDefinitionList = processStructureDefinitions(structureDefinitions, rulPackage, mapEntry, rulRuleSet, dirRules, dirGroovies, rulStructureTypes);
+                List<RulStructureDefinition> rulStructureDefinitionList = processStructureDefinitions(structureDefinitions, mapEntry, ruc, ruc.getStructureTypes());
                 rulStructureDefinitions.addAll(rulStructureDefinitionList);
 
-                List<RulStructuredTypeExtension> rulStructureExtensionList = processStructureExtensions(structureExtensions, rulPackage, rulStructureTypes);
-                List<RulStructureExtensionDefinition> rulStructureExtensionDefinitionList = processStructureExtensionDefinitions(structureExtensionDefinitions, rulPackage, mapEntry, rulRuleSet, dirRules, dirGroovies, rulStructureExtensionList);
-                rulStructureExtensionDefinitions.addAll(rulStructureExtensionDefinitionList);
-
-                List<RulArrangementRule> rulArrangementRuleList = processArrangementRules(arrangementRules, rulPackage, mapEntry, rulRuleSet, dirRules);
+                StructTypeExtensionUpdater steu = new StructTypeExtensionUpdater(this.structureExtensionRepository,
+                		this.structureExtensionDefinitionRepository,
+                		this.componentRepository,
+                		this.structureService);
+                steu.run(ruc);
+                
+                List<RulArrangementRule> rulArrangementRuleList = processArrangementRules(arrangementRules, ruc, mapEntry);
                 rulArrangementRules.addAll(rulArrangementRuleList);
 
                 List<RulArrangementExtension> rulArrangementExtensions = processArrangementExtensions(arrangementExtensions, rulPackage, rulRuleSet);
-                List<RulExtensionRule> rulExtensionRuleList = processExtensionRules(extensionRules, rulPackage, rulArrangementExtensions, mapEntry, rulRuleSet, dirRules);
+                List<RulExtensionRule> rulExtensionRuleList = processExtensionRules(extensionRules, ruc, rulArrangementExtensions, mapEntry);
                 rulExtensionRules.addAll(rulExtensionRuleList);
 
-                List<RulOutputType> rulOutputTypes = processOutputTypes(outputTypes, templates, rulPackage, mapEntry, dirTemplates, rulRuleSet, dirRules);
+                List<RulOutputType> rulOutputTypes = processOutputTypes(outputTypes, templates, ruc, mapEntry);
 
                 checkUniqueFilename(rulArrangementRuleList, rulExtensionRuleList, rulOutputTypes);
 
                 processPolicyTypes(policyTypes, rulPackage, rulRuleSet);
-                List<RulItemType> rulDescItemTypes = processItemTypes(itemTypes, itemSpecs, rulPackage, rulRuleSet, rulStructureTypes);
-                List<RulAction> rulActions = processPackageActions(packageActions, rulPackage, mapEntry, dirActions, rulRuleSet);
+                List<RulItemType> rulDescItemTypes = processItemTypes(itemTypes, itemSpecs, ruc);
+                List<RulAction> rulActions = processPackageActions(packageActions, ruc, mapEntry);
                 rulPackageActions.addAll(rulActions);
 
                 rulDescItemTypes.addAll(itemTypeRepository.findByRuleSet(rulRuleSet));
@@ -657,33 +629,6 @@ public class PackageService {
 
             entityManager.flush();
 
-            if (dirsActions.size() > 0) {
-                dirsActions.forEach(this::cleanBackupFiles);
-            }
-
-            if (dirsRules.size() > 0) {
-                dirsRules.forEach(this::cleanBackupFiles);
-            }
-
-            if (dirsGroovies.size() > 0) {
-                dirsGroovies.forEach(this::cleanBackupFiles);
-            }
-
-            if (dirsTemplates.size() > 0) {
-                if (originalRulTemplates.size() > 0) {
-                    for (File dirsTemplate : dirsTemplates) {
-                        cleanBackupTemplates(dirsTemplate, originalRulTemplates);
-                    }
-                }
-                if (newRultemplates.size() > 0) {
-                    for (File dirsTemplate : dirsTemplates) {
-                        cleanBackupTemplates(dirsTemplate, newRultemplates);
-                    }
-                }
-            }
-
-            //StaticDataProvider modifiedProvider = staticDataService.createProvider();
-
             staticDataService.reloadOnCommit();
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
                 @Override
@@ -705,98 +650,11 @@ public class PackageService {
         } catch (Exception e) {
             try {
                 logger.error("Chyba během importu balíčku", e);
-
-                if (rulPackageActions.size() > 0) {
-                    for (RulAction rulPackageAction : rulPackageActions) {
-                        for (File dirsAction : dirsActions) {
-                            forceDeleteFile(dirsAction, rulPackageAction.getFilename());
-                        }
-                    }
+                
+                // drop new package dir
+                if(packageDir!=null) {
+                	FileSystemUtils.deleteRecursively(packageDir);
                 }
-
-                if (rulArrangementRules.size() > 0) {
-                    for (RulArrangementRule rulArrangementRule : rulArrangementRules) {
-                        for (File dirRule : dirsRules) {
-                            forceDeleteFile(dirRule, rulArrangementRule.getComponent().getFilename());
-                        }
-                    }
-                }
-
-                if (rulExtensionRules.size() > 0) {
-                    for (RulExtensionRule rulExtensionRule : rulExtensionRules) {
-                        for (File dirRule : dirsRules) {
-                            forceDeleteFile(dirRule, rulExtensionRule.getComponent().getFilename());
-                        }
-                    }
-                }
-
-                if (rulStructureDefinitions.size() > 0) {
-                    for (RulStructureDefinition rulStructureDefinition : rulStructureDefinitions) {
-                        List<File> dirs;
-                        switch (rulStructureDefinition.getDefType()) {
-                            case ATTRIBUTE_TYPES:
-                                dirs = dirsRules;
-                                break;
-                            case SERIALIZED_VALUE:
-                                dirs = dirsGroovies;
-                                break;
-                            default:
-                                throw new NotImplementedException("Def type: " + rulStructureDefinition.getDefType());
-                        }
-                        for (File dir : dirs) {
-                            forceDeleteFile(dir, rulStructureDefinition.getComponent().getFilename());
-                        }
-                    }
-                }
-
-                if (rulStructureExtensionDefinitions.size() > 0) {
-                    for (RulStructureExtensionDefinition rulStructureExtensionDefinition : rulStructureExtensionDefinitions) {
-                        List<File> dirs;
-                        switch (rulStructureExtensionDefinition.getDefType()) {
-                            case ATTRIBUTE_TYPES:
-                                dirs = dirsRules;
-                                break;
-                            case SERIALIZED_VALUE:
-                                dirs = dirsGroovies;
-                                break;
-                            default:
-                                throw new NotImplementedException("Def type: " + rulStructureExtensionDefinition.getDefType());
-                        }
-                        for (File dir : dirs) {
-                            forceDeleteFile(dir, rulStructureExtensionDefinition.getComponent().getFilename());
-                        }
-                    }
-                }
-
-                if (newRultemplates.size() > 0) {
-                    for (File dirTemplates : dirsTemplates) {
-                        deleteTemplatesForRollback(dirTemplates, newRultemplates);
-                    }
-                }
-
-                if (originalRulTemplates.size() > 0) {
-                    for (RulTemplate rulTemplate : originalRulTemplates) {
-                        for (File dirTemplates : dirsTemplates) {
-                            File dirFile = new File(dirTemplates + File.separator + rulTemplate.getDirectory());
-                            if (dirFile.exists()) {
-                                rollBackFiles(dirFile);
-                            }
-                        }
-                    }
-                }
-
-                if (dirsActions != null) {
-                    for (File dirActions : dirsActions) {
-                        rollBackFiles(dirActions);
-                    }
-                }
-
-                if (dirsRules.size() > 0) {
-                    for (File dirRules : dirsRules) {
-                        rollBackFiles(dirRules);
-                    }
-                }
-
                 if (e instanceof AbstractException) {
                     throw e;
                 } else {
@@ -814,166 +672,20 @@ public class PackageService {
                 }
             }
         }
-
-    }
-
-    private List<RulStructureExtensionDefinition> processStructureExtensionDefinitions(final StructureExtensionDefinitions structureExtensionDefinitions,
-                                                                                       final RulPackage rulPackage,
-                                                                                       final Map<String, ByteArrayInputStream> mapEntry,
-                                                                                       final RulRuleSet rulRuleSet,
-                                                                                       final File dirRules,
-                                                                                       final File dirGroovies,
-                                                                                       final List<RulStructuredTypeExtension> rulStructureExtensionList) {
-        List<RulStructureExtensionDefinition> rulStructureExtensionDefinitions = rulStructureExtensionList.size() == 0 ? Collections.emptyList() :
-                structureExtensionDefinitionRepository.findByRulPackageAndStructuredTypeExtensionIn(rulPackage, rulStructureExtensionList);
-
-        List<RulStructureExtensionDefinition> rulStructureExtensionDefinitionsNew = new ArrayList<>();
-
-        if (structureExtensionDefinitions != null && !CollectionUtils.isEmpty(structureExtensionDefinitions.getStructureExtensions())) {
-            for (StructureExtensionDefinition structureExtensionDefinition : structureExtensionDefinitions.getStructureExtensions()) {
-
-                RulStructureExtensionDefinition item = rulStructureExtensionDefinitions.stream()
-                        .filter((r) -> r.getComponent().getFilename().equals(structureExtensionDefinition.getFilename()))
-                        .filter((r) -> r.getStructuredTypeExtension().getCode().equals(structureExtensionDefinition.getStructureExtension()))
-                        .findFirst()
-                        .orElse(null);
-
-                if (item == null) {
-                    item = new RulStructureExtensionDefinition();
-                }
-
-                convertRulStructureExtensionDefinition(rulPackage, structureExtensionDefinition, item, rulStructureExtensionList);
-                rulStructureExtensionDefinitionsNew.add(item);
-            }
+        
+        if(oldPackageDir!=null) {
+        	FileSystemUtils.deleteRecursively(oldPackageDir);
         }
 
-        rulStructureExtensionDefinitionsNew = structureExtensionDefinitionRepository.save(rulStructureExtensionDefinitionsNew);
-
-        List<RulStructureExtensionDefinition> rulStructureDefinitionDelete = new ArrayList<>(rulStructureExtensionDefinitions);
-        rulStructureDefinitionDelete.removeAll(rulStructureExtensionDefinitionsNew);
-
-        List<RulComponent> rulComponentsDelete = rulStructureDefinitionDelete.stream().map(RulStructureExtensionDefinition::getComponent).collect(Collectors.toList());
-        structureExtensionDefinitionRepository.delete(rulStructureDefinitionDelete);
-        componentRepository.delete(rulComponentsDelete);
-
-        Set<RulStructuredTypeExtension> revalidateStructureExtensions = new HashSet<>();
-        try {
-            for (RulStructureExtensionDefinition definition : rulStructureDefinitionDelete) {
-                deleteFile(getDir(dirRules, dirGroovies, definition), definition.getComponent().getFilename());
-                if (definition.getDefType() == RulStructureExtensionDefinition.DefType.SERIALIZED_VALUE) {
-                    revalidateStructureExtensions.add(definition.getStructuredTypeExtension());
-                }
-            }
-
-            for (RulStructureExtensionDefinition definition : rulStructureExtensionDefinitionsNew) {
-                File file = saveFile(mapEntry, getDir(dirRules, dirGroovies, definition), ZIP_DIR_RULE_SET + "/" + rulRuleSet.getCode() + "/" + getZipDir(definition), definition.getComponent().getFilename());
-                if (definition.getDefType() == RulStructureExtensionDefinition.DefType.SERIALIZED_VALUE) {
-                    String newHash = PackageUtils.sha256File(file);
-                    String oldHash = definition.getComponent().getHash();
-                    if (!StringUtils.equalsIgnoreCase(newHash, oldHash)) {
-                        definition.getComponent().setHash(newHash);
-                        componentRepository.save(definition.getComponent());
-                        revalidateStructureExtensions.add(definition.getStructuredTypeExtension());
-                    }
-                }
-            }
-            bulkActionConfigManager.load();
-        } catch (IOException e) {
-            throw new SystemException(e);
-        }
-
-        structureService.revalidateStructureExtensions(revalidateStructureExtensions);
-        return rulStructureExtensionDefinitionsNew;
     }
 
-    private void convertRulStructureExtensionDefinition(final RulPackage rulPackage,
-                                                        final StructureExtensionDefinition structureExtensionDefinition,
-                                                        final RulStructureExtensionDefinition item,
-                                                        final List<RulStructuredTypeExtension> rulStructureExtensionList) {
-        item.setDefType(structureExtensionDefinition.getDefType());
-        item.setPriority(structureExtensionDefinition.getPriority());
-        item.setRulPackage(rulPackage);
-        item.setStructuredTypeExtension(rulStructureExtensionList.stream()
-                .filter(x -> x.getCode().equals(structureExtensionDefinition.getStructureExtension()))
-                .findFirst()
-                .orElse(null));
-
-        String filename = structureExtensionDefinition.getFilename();
-        if (filename != null) {
-            RulComponent component = item.getComponent();
-            if (component == null) {
-                component = new RulComponent();
-            }
-            component.setFilename(filename);
-            componentRepository.save(component);
-            item.setComponent(component);
-        } else {
-            RulComponent component = item.getComponent();
-            item.setComponent(null);
-            if (component != null) {
-                structureExtensionDefinitionRepository.save(item);
-                componentRepository.delete(component);
-            }
-        }
-    }
-
-    private List<RulStructuredTypeExtension> processStructureExtensions(final StructureExtensions structureExtensions,
-                                                                        final RulPackage rulPackage,
-                                                                        final List<RulStructuredType> rulStructureTypes) {
-        List<RulStructuredTypeExtension> rulStructureExtensions = rulStructureTypes.size() == 0 ? Collections.emptyList() :
-                structureExtensionRepository.findByRulPackageAndStructuredTypeIn(rulPackage, rulStructureTypes);
-        List<RulStructuredTypeExtension> rulStructureExtensionsNew = new ArrayList<>();
-
-        if (structureExtensions != null && !CollectionUtils.isEmpty(structureExtensions.getStructureExtensions())) {
-            for (StructureExtension structureExtension : structureExtensions.getStructureExtensions()) {
-
-                RulStructuredTypeExtension item = rulStructureExtensions.stream()
-                        .filter((r) -> r.getCode().equals(structureExtension.getCode()))
-                        .filter((r) -> r.getStructuredType().getCode().equals(structureExtension.getStructureType()))
-                        .findFirst()
-                        .orElse(null);
-
-                if (item == null) {
-                    item = new RulStructuredTypeExtension();
-                }
-
-                convertRulStructureExtension(rulPackage, structureExtension, item, rulStructureTypes);
-                rulStructureExtensionsNew.add(item);
-            }
-        }
-
-        rulStructureExtensionsNew = structureExtensionRepository.save(rulStructureExtensionsNew);
-
-        List<RulStructuredTypeExtension> rulStructureExtensionsDelete = new ArrayList<>(rulStructureExtensions);
-        rulStructureExtensionsDelete.removeAll(rulStructureExtensionsNew);
-
-        structureExtensionRepository.delete(rulStructureExtensionsDelete);
-
-        return rulStructureExtensionsNew;
-    }
-
-    private void convertRulStructureExtension(final RulPackage rulPackage,
-                                              final StructureExtension structureExtension,
-                                              final RulStructuredTypeExtension item,
-                                              final List<RulStructuredType> rulStructureTypes) {
-        item.setCode(structureExtension.getCode());
-        item.setName(structureExtension.getName());
-        item.setStructuredType(rulStructureTypes.stream()
-                .filter(x -> x.getCode().equals(structureExtension.getStructureType()))
-                .findFirst()
-                .orElse(null));
-        item.setRulPackage(rulPackage);
-    }
 
     private List<RulStructureDefinition> processStructureDefinitions(final StructureDefinitions structureDefinitions,
-                                                                     final RulPackage rulPackage,
                                                                      final Map<String, ByteArrayInputStream> mapEntry,
-                                                                     final RulRuleSet rulRuleSet,
-                                                                     final File dirRules,
-                                                                     final File dirGroovies,
+                                                                     final RuleUpdateContext ruc,
                                                                      final List<RulStructuredType> rulStructureTypes) {
         List<RulStructureDefinition> rulStructureDefinitions = rulStructureTypes.size() == 0 ? Collections.emptyList() :
-                structureDefinitionRepository.findByRulPackageAndStructuredTypeIn(rulPackage, rulStructureTypes);
+                structureDefinitionRepository.findByRulPackageAndStructuredTypeIn(ruc.getRulPackage(), rulStructureTypes);
         List<RulStructureDefinition> rulStructureDefinitionsNew = new ArrayList<>();
 
         if (structureDefinitions != null && !CollectionUtils.isEmpty(structureDefinitions.getStructureDefinitions())) {
@@ -989,7 +701,7 @@ public class PackageService {
                     item = new RulStructureDefinition();
                 }
 
-                convertRulStructureDefinition(rulPackage, structureDefinition, item, rulStructureTypes);
+                convertRulStructureDefinition(ruc.getRulPackage(), structureDefinition, item, rulStructureTypes);
                 rulStructureDefinitionsNew.add(item);
             }
         }
@@ -1006,14 +718,16 @@ public class PackageService {
         Set<RulStructuredType> revalidateStructureTypes = new HashSet<>();
         try {
             for (RulStructureDefinition definition : rulStructureDefinitionDelete) {
-                deleteFile(getDir(dirRules, dirGroovies, definition), definition.getComponent().getFilename());
+            	// if deleted -> has to be revalidated
                 if (definition.getDefType() == RulStructureDefinition.DefType.SERIALIZED_VALUE) {
                     revalidateStructureTypes.add(definition.getStructuredType());
                 }
             }
 
             for (RulStructureDefinition definition : rulStructureDefinitionsNew) {
-                File file = saveFile(mapEntry, getDir(dirRules, dirGroovies, definition), ZIP_DIR_RULE_SET + "/" + rulRuleSet.getCode() + "/" + getZipDir(definition), definition.getComponent().getFilename());
+                File file = saveFile(mapEntry, ruc.getDir(definition), 
+                		ZIP_DIR_RULE_SET + "/" + ruc.getRulSetCode() + "/" + getZipDir(definition), 
+                		definition.getComponent().getFilename());
                 if (definition.getDefType() == RulStructureDefinition.DefType.SERIALIZED_VALUE) {
                     String newHash = PackageUtils.sha256File(file);
                     String oldHash = definition.getComponent().getHash();
@@ -1033,17 +747,6 @@ public class PackageService {
         return rulStructureDefinitionsNew;
     }
 
-    private File getDir(final File dirRules, final File dirGroovies, final RulStructureDefinition definition) {
-        switch (definition.getDefType()) {
-            case ATTRIBUTE_TYPES:
-                return dirRules;
-            case SERIALIZED_VALUE:
-                return dirGroovies;
-            default:
-                throw new NotImplementedException("Def type: " + definition.getDefType());
-        }
-    }
-
     private String getZipDir(final RulStructureDefinition definition) {
         switch (definition.getDefType()) {
             case ATTRIBUTE_TYPES:
@@ -1052,28 +755,6 @@ public class PackageService {
                 return ZIP_DIR_SCRIPTS;
             default:
                 throw new NotImplementedException("Def type: " + definition.getDefType());
-        }
-    }
-
-    private File getDir(final File dirRules, final File dirGroovies, final RulStructureExtensionDefinition extensionDefinition) {
-        switch (extensionDefinition.getDefType()) {
-            case ATTRIBUTE_TYPES:
-                return dirRules;
-            case SERIALIZED_VALUE:
-                return dirGroovies;
-            default:
-                throw new NotImplementedException("Def type: " + extensionDefinition.getDefType());
-        }
-    }
-
-    private String getZipDir(final RulStructureExtensionDefinition extensionDefinition) {
-        switch (extensionDefinition.getDefType()) {
-            case ATTRIBUTE_TYPES:
-                return ZIP_DIR_RULES;
-            case SERIALIZED_VALUE:
-                return ZIP_DIR_SCRIPTS;
-            default:
-                throw new NotImplementedException("Def type: " + extensionDefinition.getDefType());
         }
     }
 
@@ -1108,10 +789,12 @@ public class PackageService {
         }
     }
 
-    private List<RulStructuredType> processStructureTypes(final StructureTypes structureTypes,
-                                                          final RulPackage rulPackage,
-                                                          final RulRuleSet rulRuleSet) {
-        List<RulStructuredType> rulStructureTypes = structureTypeRepository.findByRulPackageAndRuleSet(rulPackage, rulRuleSet);
+    private void processStructureTypes(final RuleUpdateContext ruc
+                                                          ) {
+    	StructureTypes structureTypes = PackageUtils.convertXmlStreamToObject(StructureTypes.class, 
+    			ruc.getByteStream(STRUCTURE_TYPE_XML));
+    	
+        List<RulStructuredType> rulStructureTypes = structureTypeRepository.findByRulPackageAndRuleSet(ruc.getRulPackage(), ruc.getRulSet());
         List<RulStructuredType> rulStructureTypesNew = new ArrayList<>();
 
         if (structureTypes != null && !CollectionUtils.isEmpty(structureTypes.getStructureTypes())) {
@@ -1122,18 +805,20 @@ public class PackageService {
                     item = new RulStructuredType();
                 }
 
-                convertRulStructureType(rulPackage, structureType, item, rulRuleSet);
+                convertRulStructureType(ruc.getRulPackage(), structureType, item, ruc.getRulSet());
                 rulStructureTypesNew.add(item);
             }
         }
 
         rulStructureTypesNew = structureTypeRepository.save(rulStructureTypesNew);
 
-        List<RulStructuredType> rulRuleDelete = new ArrayList<>(rulStructureTypes);
-        rulRuleDelete.removeAll(rulStructureTypesNew);
+        List<RulStructuredType> rulRuleDelete = new ArrayList<>(rulStructureTypes);        
+        rulRuleDelete.removeAll(rulStructureTypesNew);        
         structureTypeRepository.delete(rulRuleDelete);
-
-        return rulStructureTypesNew;
+        
+        // Modify stored types
+        ruc.getStructureTypes().removeAll(rulRuleDelete);
+        ruc.getStructureTypes().addAll(rulStructureTypesNew);
     }
 
     private void convertRulStructureType(final RulPackage rulPackage,
@@ -1896,15 +1581,6 @@ public class PackageService {
         return null;
     }
 
-    private void cleanBackupTemplates(final File dirTemplates, final List<RulTemplate> originalRulTemplates) {
-        for (RulTemplate rulTemplate : originalRulTemplates) {
-            File dirFile = new File(dirTemplates + File.separator + rulTemplate.getDirectory());
-            if (dirFile.exists()) {
-                cleanBackupFiles(dirFile);
-            }
-        }
-    }
-
     /**
      * Zpracování policy.
      *
@@ -2006,12 +1682,12 @@ public class PackageService {
      * @return seznam pravidel
      */
     private List<RulArrangementRule> processArrangementRules(final ArrangementRules packageRules,
-                                              final RulPackage rulPackage,
-                                              final Map<String, ByteArrayInputStream> mapEntry,
-                                              final RulRuleSet rulRuleSet,
-                                              final File dir) {
+                                              final RuleUpdateContext ruc,
+                                              final Map<String, ByteArrayInputStream> mapEntry) 
+    {
 
-        List<RulArrangementRule> rulPackageRules = arrangementRuleRepository.findByRulPackageAndRuleSet(rulPackage, rulRuleSet);
+        List<RulArrangementRule> rulPackageRules = arrangementRuleRepository.findByRulPackageAndRuleSet(ruc.getRulPackage(),
+        		ruc.getRulSet());
         List<RulArrangementRule> rulRuleNew = new ArrayList<>();
 
         if (packageRules != null && !CollectionUtils.isEmpty(packageRules.getArrangementRules())) {
@@ -2026,7 +1702,7 @@ public class PackageService {
                     item = new RulArrangementRule();
                 }
 
-                convertRulArrangementRule(rulPackage, packageRule, item, rulRuleSet);
+                convertRulArrangementRule(ruc.getRulPackage(), packageRule, item, ruc.getRulSet());
                 rulRuleNew.add(item);
             }
         }
@@ -2040,12 +1716,8 @@ public class PackageService {
         componentRepository.delete(rulComponentsDelete);
 
         try {
-            for (RulArrangementRule rule : rulRuleDelete) {
-                deleteFile(dir, rule.getComponent().getFilename());
-            }
-
             for (RulArrangementRule rule : rulRuleNew) {
-                saveFile(mapEntry, dir, ZIP_DIR_RULE_SET + "/" + rulRuleSet.getCode() + "/" + ZIP_DIR_RULES, rule.getComponent().getFilename());
+                saveFile(mapEntry, ruc.getRulesDir(), ZIP_DIR_RULE_SET + "/" + ruc.getRulSetCode() + "/" + ZIP_DIR_RULES, rule.getComponent().getFilename());
             }
         } catch (IOException e) {
             throw new SystemException(e);
@@ -2104,13 +1776,13 @@ public class PackageService {
      *@param rulRuleSet @return seznam řídících pravidel
      */
     private List<RulExtensionRule> processExtensionRules(final ExtensionRules extensionRules,
-                                                         final RulPackage rulPackage,
+                                                         final RuleUpdateContext ruc,
                                                          final List<RulArrangementExtension> rulArrangementExtensions,
-                                                         final Map<String, ByteArrayInputStream> mapEntry,
-                                                         final RulRuleSet rulRuleSet,
-                                                         final File dir) {
+                                                         final Map<String, ByteArrayInputStream> mapEntry
+                                                         ) {
         List<RulExtensionRule> rulExtensionRules = rulArrangementExtensions.size() == 0 ? Collections.emptyList() :
-                extensionRuleRepository.findByRulPackageAndArrangementExtensionIn(rulPackage, rulArrangementExtensions);
+                extensionRuleRepository.findByRulPackageAndArrangementExtensionIn(ruc.getRulPackage(), 
+                		rulArrangementExtensions);
         List<RulExtensionRule> rulExtensionRulesNew = new ArrayList<>();
 
         if (extensionRules != null && !CollectionUtils.isEmpty(extensionRules.getExtensionRules())) {
@@ -2126,7 +1798,7 @@ public class PackageService {
                     item = new RulExtensionRule();
                 }
 
-                convertRulExtensionRule(rulPackage, extensionRule, item, rulArrangementExtensions);
+                convertRulExtensionRule(ruc.getRulPackage(), extensionRule, item, rulArrangementExtensions);
                 rulExtensionRulesNew.add(item);
             }
         }
@@ -2141,12 +1813,8 @@ public class PackageService {
         componentRepository.delete(rulComponentsDelete);
 
         try {
-            for (RulExtensionRule rule : rulExtensionRulesDelete) {
-                deleteFile(dir, rule.getComponent().getFilename());
-            }
-
             for (RulExtensionRule rule : rulExtensionRulesNew) {
-                saveFile(mapEntry, dir, ZIP_DIR_RULE_SET + "/" + rulRuleSet.getCode() + "/" + ZIP_DIR_RULES, rule.getComponent().getFilename());
+                saveFile(mapEntry, ruc.getRulesDir(), ZIP_DIR_RULE_SET + "/" + ruc.getRulSetCode() + "/" + ZIP_DIR_RULES, rule.getComponent().getFilename());
             }
 
             bulkActionConfigManager.load();
@@ -2254,12 +1922,12 @@ public class PackageService {
      * @param rulRuleSet       pravidla
      */
     private List<RulAction> processPackageActions(final PackageActions packageActions,
-                                                  final RulPackage rulPackage,
-                                                  final Map<String, ByteArrayInputStream> mapEntry,
-                                                  final File dir,
-                                                  final RulRuleSet rulRuleSet) {
+                                                  final RuleUpdateContext ruc,
+                                                  final Map<String, ByteArrayInputStream> mapEntry
+                                                  ) 
+    {
 
-        List<RulAction> rulPackageActions = packageActionsRepository.findByRulPackage(rulPackage);
+        List<RulAction> rulPackageActions = packageActionsRepository.findByRulPackage(ruc.getRulPackage());
         List<RulAction> rulPackageActionsNew = new ArrayList<>();
 
         if (packageActions != null && !CollectionUtils.isEmpty(packageActions.getPackageActions())) {
@@ -2287,7 +1955,7 @@ public class PackageService {
                 }
 
                 // vytvořím/úpravím a uložím akci
-                convertRulPackageAction(rulPackage, packageAction, item, rulRuleSet);
+                convertRulPackageAction(ruc.getRulPackage(), packageAction, item, ruc.getRulSet());
                 packageActionsRepository.save(item);
 
                 List<RulItemTypeAction> rulTypeActionsNew = new ArrayList<>();
@@ -2371,12 +2039,8 @@ public class PackageService {
 
         // odstranění/vytvoření definičních souborů pro hromadné akce
         try {
-            for (RulAction action : rulPackageActionsDelete) {
-                deleteFile(dir, action.getFilename());
-            }
-
             for (RulAction action : rulPackageActionsNew) {
-                saveFile(mapEntry, dir, ZIP_DIR_RULE_SET + "/" + rulRuleSet.getCode() + "/" + ZIP_DIR_ACTIONS, action.getFilename());
+                saveFile(mapEntry, ruc.getActionsDir(), ZIP_DIR_RULE_SET + "/" + ruc.getRulSetCode() + "/" + ZIP_DIR_ACTIONS, action.getFilename());
             }
 
         } catch (IOException e) {
@@ -2402,20 +2066,6 @@ public class PackageService {
             Files.move(file.toPath(), fileMove.toPath());
         }
 
-    }
-
-    /**
-     * Smazání souboru.
-     *
-     * @param dir      adresář
-     * @param filename název souboru
-     */
-    private void forceDeleteFile(final File dir, final String filename) {
-        File file = new File(dir.getPath() + File.separator + filename);
-
-        if (file.exists()) {
-            file.delete();
-        }
     }
 
     /**
@@ -2503,8 +2153,6 @@ public class PackageService {
             }
         }
 
-        mapEntry.keySet();
-
         return file;
     }
 
@@ -2536,14 +2184,12 @@ public class PackageService {
      */
     private List<RulItemType> processItemTypes(final ItemTypes itemTypes,
                                                final ItemSpecs itemSpecs,
-                                               final RulPackage rulPackage,
-                                               final RulRuleSet rulRuleSet,
-                                               final List<RulStructuredType> rulStructureTypes) {
+                                               RuleUpdateContext ruc) {
         List<RulDataType> rulDataTypes = dataTypeRepository.findAll();
 
         ItemTypeUpdater updater = AppContext.getBean(ItemTypeUpdater.class);
 
-        return updater.update(rulDataTypes, rulStructureTypes, rulPackage, itemTypes, itemSpecs, rulRuleSet);
+        return updater.update(rulDataTypes, ruc, itemTypes, itemSpecs);
     }
 
     /**
@@ -2559,13 +2205,12 @@ public class PackageService {
      */
     private List<RulOutputType> processOutputTypes(final OutputTypes outputTypes,
                                                    final Templates templates,
-                                                   final RulPackage rulPackage,
-                                                   final Map<String, ByteArrayInputStream> mapEntry,
-                                                   final File dirTemplates,
-                                                   final RulRuleSet rulRuleSet,
-                                                   final File dirRules) {
+                                                   final RuleUpdateContext ruc,
+                                                   final Map<String, ByteArrayInputStream> mapEntry
+                                                   ) {
 
-        List<RulOutputType> rulOutputTypes = outputTypeRepository.findByRulPackageAndRuleSet(rulPackage, rulRuleSet);
+        List<RulOutputType> rulOutputTypes = outputTypeRepository.findByRulPackageAndRuleSet(ruc.getRulPackage(),
+        		ruc.getRulSet());
         List<RulOutputType> rulOutputTypesNew = new ArrayList<>();
 
         if (outputTypes != null && !CollectionUtils.isEmpty(outputTypes.getOutputTypes())) {
@@ -2579,14 +2224,15 @@ public class PackageService {
                     item = new RulOutputType();
                 }
 
-                convertRulOutputType(rulPackage, outputType, item, rulRuleSet);
+                convertRulOutputType(ruc.getRulPackage(), outputType, item, ruc.getRulSet());
                 rulOutputTypesNew.add(item);
             }
         }
 
         rulOutputTypesNew = outputTypeRepository.save(rulOutputTypesNew);
 
-        newRultemplates.addAll(processTemplates(templates, rulPackage, rulOutputTypesNew, mapEntry, dirTemplates, rulRuleSet));
+        List<RulTemplate> newTemplates = processTemplates(templates, ruc, rulOutputTypesNew, mapEntry);
+        newRultemplates.addAll(newTemplates);
 
         List<RulOutputType> rulOutputTypesDelete = new ArrayList<>(rulOutputTypes);
         rulOutputTypesDelete.removeAll(rulOutputTypesNew);
@@ -2603,16 +2249,10 @@ public class PackageService {
         }
 
         try {
-            for (RulOutputType outputType : rulOutputTypesDelete) {
-                RulComponent component = outputType.getComponent();
-                if (component != null && component.getFilename() != null) {
-                    deleteFile(dirRules, component.getFilename());
-                }
-            }
             for (RulOutputType outputType : rulOutputTypesNew) {
                 RulComponent component = outputType.getComponent();
                 if (component != null && component.getFilename() != null) {
-                    saveFile(mapEntry, dirRules, ZIP_DIR_RULE_SET + "/" + rulRuleSet.getCode() + "/" + ZIP_DIR_RULES, component.getFilename());
+                    saveFile(mapEntry, ruc.getRulesDir(), ZIP_DIR_RULE_SET + "/" + ruc.getRulSetCode() + "/" + ZIP_DIR_RULES, component.getFilename());
                 }
             }
         } catch (IOException e) {
@@ -2632,12 +2272,11 @@ public class PackageService {
      */
     private List<RulTemplate> processTemplates(
             final Templates templates,
-            final RulPackage rulPackage,
+            final RuleUpdateContext ruc,
             final List<RulOutputType> rulOutputTypes,
-            final Map<String, ByteArrayInputStream> mapEntry,
-            final File dirTemplates,
-            final RulRuleSet rulRuleSet) {
-        List<RulTemplate> rulTemplate = templateRepository.findByRulPackage(rulPackage);
+            final Map<String, ByteArrayInputStream> mapEntry) 
+    {
+        List<RulTemplate> rulTemplate = templateRepository.findByRulPackage(ruc.getRulPackage());
         List<RulTemplate> rulTemplateNew = new ArrayList<>();
         List<RulTemplate> rulTemplateActual = new ArrayList<>();
 
@@ -2655,7 +2294,7 @@ public class PackageService {
                     item = new RulTemplate();
                 }
 
-                convertRulTemplate(rulPackage, template, item, rulOutputTypes);
+                convertRulTemplate(ruc.getRulPackage(), template, item, rulOutputTypes);
                 if (existTemplate) {
                     rulTemplateActual.add(item);
                 }
@@ -2686,40 +2325,11 @@ public class PackageService {
         }
 
         try {
-            deleteTemplates(dirTemplates, rulTemplateToDelete);
-            deleteTemplates(dirTemplates, rulTemplateActual);
-
-            importTemplatesFiles(mapEntry, dirTemplates, rulTemplateNew, rulRuleSet);
+            importTemplatesFiles(mapEntry, ruc.getTemplatesDir(), rulTemplateNew, ruc.getRulSet());
 
             return rulTemplateNew;
         } catch (IOException e) {
             throw new IllegalStateException(e);
-        }
-    }
-
-    private void deleteTemplates(final File dirTemplates, final List<RulTemplate> rulTemplateActual) throws IOException {
-        for (RulTemplate template : rulTemplateActual) {
-            File dirFile = new File(dirTemplates + File.separator + template.getDirectory());
-            if (!dirFile.exists()) {
-                continue;
-            }
-            for (File file : dirFile.listFiles()) {
-                deleteFile(dirFile, file.getName());
-            }
-        }
-    }
-
-    private void deleteTemplatesForRollback(final File dirTemplates, final List<RulTemplate> rulTemplateActual) throws IOException {
-        for (RulTemplate template : rulTemplateActual) {
-            File dirFile = new File(dirTemplates + File.separator + template.getDirectory());
-            if (!dirFile.exists()) {
-                continue;
-            }
-            File[] files = dirFile.listFiles((dir1, name) -> !name.endsWith(".bck"));
-
-            for (File file : files) {
-                file.delete();
-            }
         }
     }
 
@@ -2847,7 +2457,9 @@ public class PackageService {
      *
      * @param packageInfo VO importovaného balíčku
      */
-    private RulPackage processRulPackage(final PackageInfo packageInfo) {
+    private PackageUpdateContext processRulPackage(final PackageInfo packageInfo) {
+    	PackageUpdateContext puc = new PackageUpdateContext(this.resourcePathResolver);
+    	
         RulPackage rulPackage = packageRepository.findTopByCode(packageInfo.getCode());
 
         if (rulPackage == null) {
@@ -2857,6 +2469,7 @@ public class PackageService {
                 throw new BusinessException("Verze (" + packageInfo.getVersion() + ") balíčku (" + rulPackage.getCode() + ") byla již aplikována", PackageCode.VERSION_APPLIED).set("code", rulPackage.getCode()).set("version", packageInfo.getVersion())
                         .set("version", rulPackage.getVersion());
             }
+            puc.setOldPackageVersion(rulPackage.getVersion());
         }
 
         rulPackage.setCode(packageInfo.getCode());
@@ -2865,11 +2478,13 @@ public class PackageService {
         rulPackage.setVersion(packageInfo.getVersion());
 
         rulPackage = packageRepository.save(rulPackage);
+        
+        puc.setPackage(rulPackage);
 
         processRulPackageDependencies(packageInfo, rulPackage);
 
         detectCyclicDependencies();
-        return rulPackage;
+        return puc;
     }
 
     /**
