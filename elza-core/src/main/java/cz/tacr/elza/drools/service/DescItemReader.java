@@ -15,6 +15,7 @@ import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.drools.model.DescItem;
 import cz.tacr.elza.drools.model.Level;
 import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.StructuredItemRepository;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.cache.RestoredNode;
 
@@ -37,14 +38,18 @@ public class DescItemReader {
 
 	private final ArrFundVersion version;
 
+	private final StructuredItemRepository structItemRepos;
+
 	public DescItemReader(ArrFundVersion version, DescItemRepository descItemRepository,
 						  DescItemFactory descItemFactory,
-						  NodeCacheService nodeCacheService)
+						  NodeCacheService nodeCacheService,
+						  final StructuredItemRepository structItemRepos)
 	{
 		this.version = version;
 		this.descItemRepository = descItemRepository;
 		this.descItemFactory = descItemFactory;
 		this.nodeCacheService = nodeCacheService;
+		this.structItemRepos = structItemRepos;
 	}
 
 	/**
@@ -91,7 +96,7 @@ public class DescItemReader {
             } else {
                 levelDescItems = descItemsMap.get(level.getNodeId());
             }
-			List<DescItem> items = ModelFactory.createDescItems(levelDescItems, descItemFactory);
+			List<DescItem> items = ModelFactory.createDescItems(levelDescItems, descItemFactory, structItemRepos);
             level.setDescItems(items);
         }
 
