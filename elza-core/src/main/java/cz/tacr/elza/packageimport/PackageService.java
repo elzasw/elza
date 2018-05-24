@@ -518,7 +518,13 @@ public class PackageService {
      */
     @Transactional
 	@AuthMethod(permission = { UsrPermission.Permission.ADMIN })    
-    public void importPackage(final File file) {  	
+    public void importPackage(final File file) {
+        importPackageInternal(file);
+    }
+
+    @Transactional
+    public void importPackageInternal(final File file) {
+
         ZipFile zipFile = null;
         List<RulAction> rulPackageActions = new ArrayList<>();
         List<RulArrangementRule> rulArrangementRules = new ArrayList<>();
