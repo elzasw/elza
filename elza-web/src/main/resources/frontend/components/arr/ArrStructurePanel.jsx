@@ -137,6 +137,7 @@ class ArrStructurePanel extends AbstractReactComponent {
 
         if (structureDataIds.length === 1) {
             this.props.dispatch(modalDialogShow(this, title, <UpdateStructureDataForm
+                descItemFactory={DescItemFactory}
                 fundId={fundId}
                 readMode={readMode}
                 fundVersionId={fundVersionId}
