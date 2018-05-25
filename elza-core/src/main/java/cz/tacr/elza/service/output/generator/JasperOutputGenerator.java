@@ -13,13 +13,19 @@ import java.util.Map;
 
 import javax.persistence.EntityManager;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.pdfbox.io.MemoryUsageSetting;
 import org.apache.pdfbox.multipdf.PDFMergerUtility;
 import org.springframework.http.MediaType;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import cz.tacr.elza.controller.vo.OutputSettingsVO;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.fund.FundTreeProvider;
+import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ProcessException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.print.File;
 import cz.tacr.elza.print.OutputModel;
 import cz.tacr.elza.print.item.Item;
@@ -28,13 +34,17 @@ import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.service.DmsService;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.output.OutputParams;
+import net.sf.jasperreports.engine.DefaultJasperReportsContext;
 import net.sf.jasperreports.engine.JREmptyDataSource;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperCompileManager;
-import net.sf.jasperreports.engine.JasperExportManager;
 import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
+import net.sf.jasperreports.engine.export.JRPdfExporter;
+import net.sf.jasperreports.export.SimpleExporterInput;
+import net.sf.jasperreports.export.SimpleOutputStreamExporterOutput;
+import net.sf.jasperreports.export.SimplePdfReportConfiguration;
 
 public class JasperOutputGenerator extends DmsOutputGenerator {
 
@@ -43,6 +53,8 @@ public class JasperOutputGenerator extends DmsOutputGenerator {
     private static final int MAX_MERGE_MAIN_MEMORY_BYTES = 100 * 1024 * 1024;
 
     private final OutputModel outputModel;
+
+    SimplePdfReportConfiguration pdfExpConfig = new SimplePdfReportConfiguration();
 
     JasperOutputGenerator(StaticDataService staticDataService,
                           FundTreeProvider fundTreeProvider,
@@ -58,6 +70,23 @@ public class JasperOutputGenerator extends DmsOutputGenerator {
     public void init(OutputParams params) {
         super.init(params);
         outputModel.init(params);
+
+        // Parse PDF settings
+        String outputSettings = params.getDefinition().getOutputSettings();
+        if (StringUtils.isNotBlank(outputSettings)) {
+            ObjectMapper mapper = new ObjectMapper();
+            OutputSettingsVO settingsVO;
+            try {
+                settingsVO = mapper.readValue(outputSettings, OutputSettingsVO.class);
+            } catch (Exception e) {
+                throw new BusinessException("Failed to parse configuration", e, BaseCode.JSON_PARSE)
+                        .set("settings", outputSettings);
+            }
+            pdfExpConfig.setEvenPageOffsetX(settingsVO.getEvenPageOffsetX());
+            pdfExpConfig.setEvenPageOffsetY(settingsVO.getEvenPageOffsetY());
+            pdfExpConfig.setOddPageOffsetX(settingsVO.getOddPageOffsetX());
+            pdfExpConfig.setOddPageOffsetY(settingsVO.getOddPageOffsetY());
+        }
     }
     @Override
     protected void generate(OutputStream os) throws IOException {
@@ -97,9 +126,13 @@ public class JasperOutputGenerator extends DmsOutputGenerator {
     }
 
     private Path generatePdfFile(JasperReport report, Map<String, Object> parameters) {
-        JasperPrint print;
+
+        DefaultJasperReportsContext jasperContext = DefaultJasperReportsContext.getInstance();
+        JasperFillManager fillManager = JasperFillManager.getInstance(jasperContext);
+
+        JasperPrint jasperPrint;
         try {
-            print = JasperFillManager.fillReport(report, parameters, new JREmptyDataSource());
+            jasperPrint = fillManager.fill(report, parameters, new JREmptyDataSource());
         } catch (JRException e) {
             throw new ProcessException(params.getDefinitionId(), "Failed to create Jasper document", e);
         }
@@ -107,7 +140,17 @@ public class JasperOutputGenerator extends DmsOutputGenerator {
         Path pdfFile = tempFileProvider.createTempFile();
 
         try (OutputStream os = Files.newOutputStream(pdfFile, StandardOpenOption.WRITE)) {
-            JasperExportManager.exportReportToPdfStream(print, os);
+
+            // Generate output to PDF
+            JRPdfExporter exporter = new JRPdfExporter(jasperContext);
+
+            exporter.setExporterInput(new SimpleExporterInput(jasperPrint));
+            exporter.setExporterOutput(new SimpleOutputStreamExporterOutput(os));
+            exporter.setConfiguration(pdfExpConfig);
+
+            exporter.exportReport();
+
+            // JasperExportManager.exportReportToPdfStream(print, os);
         } catch (IOException | JRException e) {
             throw new ProcessException(params.getDefinitionId(), "Failed to generate PDF from Jasper document", e);
         }
