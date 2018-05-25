@@ -14,6 +14,7 @@ class AddStructureDataForm extends AbstractReactComponent {
         fundVersionId: PropTypes.number.isRequired,
         fundId: PropTypes.number.isRequired,
         structureData: PropTypes.object.isRequired,
+        descItemFactory: PropTypes.object.isRequired
     };
 
     static defaultProps = {

@@ -19,6 +19,7 @@ import StructureExtensionsForm from "./structure/StructureExtensionsForm";
 import PropTypes from 'prop-types';
 import UpdateMultipleSub from "./structure/UpdateMultipleSub";
 import {addToastrWarning} from "../shared/toastr/ToastrActions";
+import DescItemFactory from "components/arr/nodeForm/DescItemFactory.jsx";
 
 class ArrStructurePanel extends AbstractReactComponent {
 
@@ -69,6 +70,7 @@ class ArrStructurePanel extends AbstractReactComponent {
                 fundId={fundId}
                 fundVersionId={fundVersionId}
                 structureData={structureData}
+                descItemFactory={DescItemFactory}
                 onSubmit={() => WebApi.confirmStructureData(fundVersionId, structureData.id)}
                 onSubmitSuccess={() => {
                     this.props.dispatch(modalDialogHide());
@@ -86,6 +88,7 @@ class ArrStructurePanel extends AbstractReactComponent {
                 fundId={fundId}
                 fundVersionId={fundVersionId}
                 structureData={structureData}
+                descItemFactory={DescItemFactory}
                 onSubmit={(data) => WebApi.duplicateStructureDataBatch(fundVersionId, structureData.id, data)}
                 onSubmitSuccess={() => {
                     this.props.dispatch(modalDialogHide());
@@ -141,6 +144,7 @@ class ArrStructurePanel extends AbstractReactComponent {
             />));
         } else if (structureDataIds.length > 1 && !readMode) {
             this.props.dispatch(modalDialogShow(this, title, <UpdateMultipleSub
+                descItemFactory={DescItemFactory}
                 onSubmit={(data) => WebApi.updateStructureDataBatch(fundVersionId, code, data)}
                 onSubmitSuccess={() => {
                     this.props.dispatch(modalDialogHide());

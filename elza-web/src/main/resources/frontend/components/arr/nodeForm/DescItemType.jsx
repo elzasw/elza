@@ -617,6 +617,15 @@ class DescItemType extends AbstractReactComponent {
             },
             "UNITDATE":{
                 calendarTypes: calendarTypes
+            },
+            "JSON_TABLE":{
+                refType,
+                onDownload: (value)=>{this.props.onJsonTableDownload(descItem.descItemObjectId, value);},
+                onUpload: this.handleJsonTableUploadUpload
+            },
+            "COORDINATES":{
+                onUpload: this.handleCoordinatesUpload,
+                onDownload: (value)=>{this.props.onCoordinatesDownload(descItem.descItemObjectId, value);}
             }
         };
 
@@ -639,6 +648,7 @@ class DescItemType extends AbstractReactComponent {
             fundId: fundId,
             key: itemComponentKey,
             descItemFactory,
+            repeatable: infoType.rep == 1,
             ...additionalProps[rulDataType.code]
         };
 
@@ -1053,46 +1063,47 @@ function mapStateToProps(state) {
 }
 
 DescItemType.propTypes = {
-    onChange: React.PropTypes.func.isRequired,
-    onChangeSpec: React.PropTypes.func.isRequired,
-    onChangePosition: React.PropTypes.func.isRequired,
-    onBlur: React.PropTypes.func.isRequired,
-    onFocus: React.PropTypes.func.isRequired,
-    onCreateParty: React.PropTypes.func.isRequired,
-    onCoordinatesDownload: React.PropTypes.func.isRequired,
-    onJsonTableDownload: React.PropTypes.func.isRequired,
-    onCoordinatesUpload: React.PropTypes.func.isRequired,
-    onDetailParty: React.PropTypes.func.isRequired,
-    onCreateRecord: React.PropTypes.func.isRequired,
-    onDetailRecord: React.PropTypes.func.isRequired,
-    onCreatePacket: React.PropTypes.func.isRequired,
-    onCreateFile: React.PropTypes.func.isRequired,
-    onFundFiles: React.PropTypes.func.isRequired,
-    onDescItemTypeRemove: React.PropTypes.func.isRequired,
-    onDescItemTypeLock: React.PropTypes.func.isRequired,
-    onDescItemTypeCopy: React.PropTypes.func.isRequired,
-    onDescItemTypeCopyFromPrev: React.PropTypes.func.isRequired,
-    onDescItemRemove: React.PropTypes.func.isRequired,
-    onDescItemAdd: React.PropTypes.func.isRequired,
-    refType: React.PropTypes.object.isRequired,
-    infoType: React.PropTypes.object.isRequired,
-    descItemType: React.PropTypes.object.isRequired,
-    rulDataType: React.PropTypes.object.isRequired,
-    calendarTypes: React.PropTypes.object.isRequired,
-    structureTypes: React.PropTypes.object.isRequired,
-    locked: React.PropTypes.bool.isRequired,
-    hideDelete: React.PropTypes.bool,
-    readMode: React.PropTypes.bool.isRequired,
-    notIdentified: React.PropTypes.bool.isRequired,
-    onDescItemNotIdentified: React.PropTypes.func.isRequired,
-    closed: React.PropTypes.bool.isRequired,
-    copy: React.PropTypes.bool.isRequired,
-    conformityInfo: React.PropTypes.object.isRequired,
-    versionId: React.PropTypes.number.isRequired,
-    fundId: React.PropTypes.number.isRequired,
-    userDetail: React.PropTypes.object.isRequired,
-    showNodeAddons: React.PropTypes.bool.isRequired,
-    strictMode: React.PropTypes.bool.isRequired,
+    onChange: PropTypes.func.isRequired,
+    onChangeSpec: PropTypes.func.isRequired,
+    onChangePosition: PropTypes.func.isRequired,
+    onBlur: PropTypes.func.isRequired,
+    onFocus: PropTypes.func.isRequired,
+    onCreateParty: PropTypes.func.isRequired,
+    onCoordinatesDownload: PropTypes.func.isRequired,
+    onJsonTableDownload: PropTypes.func.isRequired,
+    onCoordinatesUpload: PropTypes.func.isRequired,
+    onDetailParty: PropTypes.func.isRequired,
+    onCreateRecord: PropTypes.func.isRequired,
+    onDetailRecord: PropTypes.func.isRequired,
+    onCreatePacket: PropTypes.func.isRequired,
+    onCreateFile: PropTypes.func.isRequired,
+    onFundFiles: PropTypes.func.isRequired,
+    onDescItemTypeRemove: PropTypes.func.isRequired,
+    onDescItemTypeLock: PropTypes.func.isRequired,
+    onDescItemTypeCopy: PropTypes.func.isRequired,
+    onDescItemTypeCopyFromPrev: PropTypes.func.isRequired,
+    onDescItemRemove: PropTypes.func.isRequired,
+    onDescItemAdd: PropTypes.func.isRequired,
+    refType: PropTypes.object.isRequired,
+    infoType: PropTypes.object.isRequired,
+    descItemType: PropTypes.object.isRequired,
+    rulDataType: PropTypes.object.isRequired,
+    calendarTypes: PropTypes.object.isRequired,
+    structureTypes: PropTypes.object.isRequired,
+    locked: PropTypes.bool.isRequired,
+    hideDelete: PropTypes.bool,
+    readMode: PropTypes.bool.isRequired,
+    notIdentified: PropTypes.bool.isRequired,
+    onDescItemNotIdentified: PropTypes.func.isRequired,
+    closed: PropTypes.bool.isRequired,
+    copy: PropTypes.bool.isRequired,
+    conformityInfo: PropTypes.object.isRequired,
+    versionId: PropTypes.number.isRequired,
+    fundId: PropTypes.number.isRequired,
+    userDetail: PropTypes.object.isRequired,
+    showNodeAddons: PropTypes.bool.isRequired,
+    strictMode: PropTypes.bool.isRequired,
+    descItemType: PropTypes.object.isRequired
 };
 
 export default connect(mapStateToProps, null, null, {withRef: true})(DescItemType);
