@@ -727,6 +727,7 @@ var messages = {
 
     "arr.structure.addOne": "Přidat jednotlivě",
     "arr.structure.addMany": "Přidat hromadně",
+    "arr.structure.add": "Přidat {0}",
     "arr.structure.filter.assignable.all": "Vše",
     "arr.structure.filter.assignable.true": "Otevřený",
     "arr.structure.filter.assignable.false": "Uzavřený",

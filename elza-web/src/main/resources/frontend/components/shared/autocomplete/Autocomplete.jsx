@@ -162,6 +162,11 @@ export default class Autocomplete extends AbstractReactComponent {
         }
     }
 
+    blur = () => {
+        const input = ReactDOM.findDOMNode(this.input);
+        input.blur();
+    }
+
     componentDidMount = () => {
         this.props.selectOnlyValue && this.selectOnlyValue();
     }
@@ -175,6 +180,11 @@ export default class Autocomplete extends AbstractReactComponent {
             value: value
         });
     }
+    /*
+    componentWillUpdate = (nextProps, nextState) => {
+        console.log("### AC will update", nextState.hasFocus);
+    }
+     */
 
     selectOnlyValue = () => {
         const {items} = this.state;
@@ -217,7 +227,7 @@ export default class Autocomplete extends AbstractReactComponent {
         onSearchChange && onSearchChange(value);
     }
 
-    handleInputBlur = () => {
+    handleInputBlur = (e) => {
         const {onBlur} = this.props;
         const {value} = this.state;
 
@@ -230,6 +240,8 @@ export default class Autocomplete extends AbstractReactComponent {
         }
 
         this.setState({hasFocus: false});
+        console.log("### AC should blur", document.activeElement, e);
+        debugger;
         onBlur && onBlur(value);
         this.closeMenu();
         return true;
@@ -237,10 +249,12 @@ export default class Autocomplete extends AbstractReactComponent {
 
     handleInputFocus = () => {
         const {onFocus} = this.props;
+        debugger;
         if(this.state.hasFocus){
             return false;
         }
         this.setState({hasFocus: true});
+        console.log("### AC should focus", document.activeElement);
         onFocus && onFocus();
 
         return true;
@@ -270,6 +284,13 @@ export default class Autocomplete extends AbstractReactComponent {
             });
         }
     }
+    handleEmptySelect = () => {
+        const {onEmptySelect} = this.props;
+        const {inputValue} = this.state;
+
+        console.log(inputValue);
+        onEmptySelect && onEmptySelect(inputValue);
+    }
 
     selectItem = (item) => {
         const {getItemName, getItemId, allowSelectItem, onChange, tags} = this.props;
@@ -283,6 +304,9 @@ export default class Autocomplete extends AbstractReactComponent {
         };
 
         if (true || isOpen || changed) {
+            if (!item) {
+                this.handleEmptySelect();
+            }
             if (tags) {
                 if (!item) {
                     item = {
@@ -526,7 +550,8 @@ export default class Autocomplete extends AbstractReactComponent {
                             key="input"
                             className='input'
                             type='text'
-                            onFocus={this.handleInputFocus}
+                          onFocus={this.handleInputFocus}
+                          //onFocusout={(e)=>{console.log("### onfocus out", document.activeElement, e);}}
                             onBlur={this.handleInputBlur}
                             {...inlineProps}
                             {...this.props.inputProps}

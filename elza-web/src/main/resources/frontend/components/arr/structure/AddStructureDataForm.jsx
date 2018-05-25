@@ -1,6 +1,6 @@
 import React from 'react';
 import {Button, Form, Modal, Checkbox} from "react-bootstrap";
-import {i18n, AbstractReactComponent, FormInput} from "components";
+import {i18n, AbstractReactComponent, FormInput} from "components/shared";
 import {connect} from "react-redux";
 import {reduxForm} from "redux-form";
 import StructureSubNodeForm from "./StructureSubNodeForm";
@@ -70,6 +70,7 @@ class AddStructureDataForm extends AbstractReactComponent {
                                       selectedSubNodeId={structureData.id}
                                       customActions={multiple && this.customRender} // pokud form je mnohonásobný renderujeme doplňkově inkrementaci
                                       x={itemTypeIds} // Zdůvodu renderování formu aby při změně nastal render
+                                      descItemFactory={this.props.descItemFactory}
                 />
                 {multiple && <FormInput name="count" type="number" label={i18n("arr.structure.modal.addMultiple.count")} {...count} />}
             </Modal.Body>

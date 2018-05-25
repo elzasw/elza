@@ -25,6 +25,7 @@ import {getMapFromList} from 'stores/app/utils.jsx'
 import {indexById} from 'stores/app/utils.jsx'
 import {fundSelectSubNode} from 'actions/arr/node.jsx';
 import {addToastrSuccess, addToastr} from 'components/shared/toastr/ToastrActions.jsx';
+import DescItemFactory from "components/arr/nodeForm/DescItemFactory.jsx";
 
 class NodeSubNodeForm extends AbstractReactComponent {
     constructor(props) {
@@ -276,6 +277,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
                     formActions={nodeFormActions}
                     readMode={readMode}
                     showNodeAddons={true}
+                    descItemFactory={DescItemFactory}
                     />
             </div>
         )
