@@ -70,6 +70,7 @@ class AddStructureDataForm extends AbstractReactComponent {
                                       fundId={fundId}
                                       selectedSubNodeId={structureData.id}
                                       customActions={multiple && this.customRender} // pokud form je mnohonásobný renderujeme doplňkově inkrementaci
+                                      // Pyta: Jak toto funguje, neni to tu nadbytecne?
                                       x={itemTypeIds} // Zdůvodu renderování formu aby při změně nastal render
                                       descItemFactory={this.props.descItemFactory}
                 />
