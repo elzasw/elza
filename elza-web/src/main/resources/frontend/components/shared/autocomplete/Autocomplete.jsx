@@ -12,7 +12,7 @@ import {Shortcuts} from 'react-shortcuts';
 import defaultKeymap from './AutocompleteKeymap.jsx';
 import ListItem from "components/shared/tree-list/list-item/ListItem.jsx";
 import List from "components/shared/tree-list/TreeList.jsx";
-import flattenItems, {filterItems} from "components/shared/utils/itemFilter.jsx";
+import flattenItems, {filterItems, cleanItem} from "components/shared/utils/itemFilter.jsx";
 import FloatingMenu from "components/shared/floating-menu/FLoatingMenu.jsx";
 import classNames from "classnames";
 import i18n from "components/i18n.jsx";
@@ -295,6 +295,9 @@ export default class Autocomplete extends AbstractReactComponent {
     selectItem = (item) => {
         const {getItemName, getItemId, allowSelectItem, onChange, tags} = this.props;
         const {isOpen, changed, inputValue} = this.state;
+
+        // delete redundant props from item
+        cleanItem(item);
 
         let newState = { 
             inputValue: "",
