@@ -79,6 +79,7 @@ function getFlatTree(items) {
 };
 
 function _getFlatSubTree(node, depth, parentId=null) {
+    node = {...node};
     node.parent = parentId;
     node.depth = depth;
     let nodeId = _getItemId(node);
@@ -93,6 +94,11 @@ function _getFlatSubTree(node, depth, parentId=null) {
     // go through each child recursively
     node.children && node.children.forEach(child => _getFlatSubTree(child, depth + 1, node.id));
 };
+
+export function cleanItem(item){
+    delete item.depth;
+    delete item.parent;
+}
 
 function nameContains(filterText, itemName){
     const caseSensitive = false;
