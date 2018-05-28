@@ -1,5 +1,6 @@
 import React from 'react';
-import {AbstractReactComponent, i18n, Icon, Loading, ListBox, FormInput} from 'components/shared';
+import {AbstractReactComponent, i18n, Icon, Loading, ListBox, FormInput, TooltipTrigger} from 'components/shared';
+import {objectById} from "shared/utils";
 import {Button, DropdownButton, FormControl, MenuItem} from 'react-bootstrap';
 import {connect} from 'react-redux';
 import {WebApi} from "../../actions/WebApi";
@@ -223,6 +224,71 @@ class ArrStructurePanel extends AbstractReactComponent {
         this.props.dispatch(contextMenuShow(this, menu, {x: e.clientX, y:e.clientY}));
     };
 
+    renderErrorContent = (error) => {
+        const {descItemTypes} = this.props;
+        /*
+        const exampleError = {
+            emptyValue: true,
+            duplicateValue: true,
+            impossibleItemTypeIds: ["25", "2", "3"],
+            requiredItemTypeIds: ["1"]
+        };
+        */
+        let parts = [];
+        error = JSON.parse(error);
+        if(error.emptyValue){
+            parts.push(<div className="error-item">{i18n("arr.structure.item.error.emptyValue")}</div>);
+        }
+        if(error.duplicateValue){
+            parts.push(<div className="error-item">{i18n("arr.structure.item.error.duplicateValue")}</div>);
+        }
+        if(error.impossibleItemTypeIds.length > 0){
+            const items = [];
+            error.impossibleItemTypeIds.map((id)=>{
+                const descItem = objectById(descItemTypes, id);
+                items.push(<li>{descItem.name}</li>);
+            });
+            parts.push(
+                <div className="error-list error-item">
+                  <div>{i18n("arr.structure.item.error.impossibleItemTypes")}</div>
+                  <ul>{items}</ul>
+                </div>
+            );
+        }
+        if(error.requiredItemTypeIds.length > 0){
+            const items = [];
+            error.requiredItemTypeIds.map((id)=>{
+                const descItem = objectById(descItemTypes, id);
+                items.push(<li>{descItem.name}</li>);
+            });
+            parts.push(
+                <div className="error-list error-item">
+                  <div>{i18n("arr.structure.item.error.requiredItemTypes")}</div>
+                  <ul>{items}</ul>
+                </div>
+            );
+        }
+        return <div>{parts}</div>;
+    }
+
+    renderItemContent = (props) => {
+        const {item, ...otherProps} = props;
+        const hasError = item.state === 'ERROR' && item.errorDescription;
+        return (
+            <div {...otherProps} onContextMenu={this.handleContextMenu.bind(this, item)}>
+              <div className="structure-name">
+                {item.value || <em>{i18n("arr.structure.list.item.noValue")}</em>}
+              </div>
+                {
+                    hasError &&
+                        <TooltipTrigger tooltipClass="error-message" content={this.renderErrorContent(item.errorDescription)} placement="left">
+                            <Icon glyph="fa-exclamation-triangle" />
+                        </TooltipTrigger>
+                }
+            </div>
+        )
+    }
+
     render() {
         const {rows, filter, fetched} = this.props.store;
         const {readMode} = this.props;
@@ -258,15 +324,7 @@ class ArrStructurePanel extends AbstractReactComponent {
                 className="list"
                 items={rows}
                 onChangeSelection={this.handleChangeSelection}
-                renderItemContent={(props) => {
-                    const {item, ...otherProps} = props;
-                    let title = item.errorDescription ? item.errorDescription : null;
-                    return <div {...otherProps} onContextMenu={this.handleContextMenu.bind(this, item)} title={title}>
-                        {item.value || <em>{i18n("arr.structure.list.item.noValue")}</em>} {
-                            item.state === 'ERROR' && item.errorDescription && <Icon glyph="fa-exclamation-triangle pull-right" />
-                        }
-                    </div>
-                }}
+                renderItemContent={this.renderItemContent}
                 multiselect={true}
             /> : <div className="list listbox-wrapper no-result text-center">{i18n('search.action.noResult')}</div>}
         </div>
@@ -277,7 +335,8 @@ class ArrStructurePanel extends AbstractReactComponent {
 
 export default connect((state, props) => {
     return {
-        store: storeFromArea(state, AREA)
+        store: storeFromArea(state, AREA),
+        descItemTypes: state.refTables.descItemTypes.items
     }
 })(ArrStructurePanel);
 

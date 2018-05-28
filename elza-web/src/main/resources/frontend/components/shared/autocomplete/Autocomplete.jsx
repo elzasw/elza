@@ -233,15 +233,12 @@ export default class Autocomplete extends AbstractReactComponent {
 
         // ignore the blur event if set and reset the ignoreBlur value
         if(this._ignoreBlur){
-            console.log("ignored");
             this._ignoreBlur = false;
             this.focus();
             return false;
         }
 
         this.setState({hasFocus: false});
-        console.log("### AC should blur", document.activeElement, e);
-        debugger;
         onBlur && onBlur(value);
         this.closeMenu();
         return true;
@@ -249,12 +246,10 @@ export default class Autocomplete extends AbstractReactComponent {
 
     handleInputFocus = () => {
         const {onFocus} = this.props;
-        debugger;
         if(this.state.hasFocus){
             return false;
         }
         this.setState({hasFocus: true});
-        console.log("### AC should focus", document.activeElement);
         onFocus && onFocus();
 
         return true;
@@ -288,7 +283,6 @@ export default class Autocomplete extends AbstractReactComponent {
         const {onEmptySelect} = this.props;
         const {inputValue} = this.state;
 
-        console.log(inputValue);
         onEmptySelect && onEmptySelect(inputValue);
     }
 
@@ -504,7 +498,6 @@ export default class Autocomplete extends AbstractReactComponent {
                    toggled={this.state.isOpen}
                    disabled={disabled}
                    onMouseDown={()=>{
-                       console.log("click dropdown toggle", this.state.isOpen);
                        this._ignoreBlur = true;
                        this.handleInputFocus();
                        this.state.isOpen ? this.closeMenu() : this.openMenu();
