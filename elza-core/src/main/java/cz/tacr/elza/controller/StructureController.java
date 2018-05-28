@@ -1,27 +1,11 @@
 package cz.tacr.elza.controller;
 
-import cz.tacr.elza.controller.config.ClientFactoryDO;
-import cz.tacr.elza.controller.config.ClientFactoryVO;
-import cz.tacr.elza.controller.vo.ArrStructureDataVO;
-import cz.tacr.elza.controller.vo.FilteredResultVO;
-import cz.tacr.elza.controller.vo.RulStructureTypeVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ItemGroupVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ItemTypeGroupVO;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrStructuredObject;
-import cz.tacr.elza.domain.ArrStructuredItem;
-import cz.tacr.elza.domain.RulItemTypeExt;
-import cz.tacr.elza.domain.RulStructuredTypeExtension;
-import cz.tacr.elza.domain.RulStructuredType;
-import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.ArrangementCode;
-import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.repository.FilteredResult;
-import cz.tacr.elza.service.ArrangementService;
-import cz.tacr.elza.service.RuleService;
-import cz.tacr.elza.service.StructureService;
+import java.util.List;
+import java.util.Map;
+
+import javax.transaction.Transactional;
+
+import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
@@ -32,9 +16,28 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.transaction.Transactional;
-import java.util.List;
-import java.util.Map;
+import cz.tacr.elza.controller.config.ClientFactoryDO;
+import cz.tacr.elza.controller.config.ClientFactoryVO;
+import cz.tacr.elza.controller.vo.ArrStructureDataVO;
+import cz.tacr.elza.controller.vo.FilteredResultVO;
+import cz.tacr.elza.controller.vo.RulStructureTypeVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ItemGroupVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ItemTypeGroupVO;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrStructuredItem;
+import cz.tacr.elza.domain.ArrStructuredObject;
+import cz.tacr.elza.domain.RulItemTypeExt;
+import cz.tacr.elza.domain.RulStructuredType;
+import cz.tacr.elza.domain.RulStructuredTypeExtension;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.repository.FilteredResult;
+import cz.tacr.elza.service.ArrangementService;
+import cz.tacr.elza.service.RuleService;
+import cz.tacr.elza.service.StructureService;
 
 
 /**
@@ -99,11 +102,16 @@ public class StructureController {
     public void duplicateStructureDataBatch(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                             @PathVariable(value = "structureDataId") final Integer structureDataId,
                                             @RequestBody StructureDataBatch structureDataBatch) {
-        Assert.notNull(structureDataBatch.getCount(), "Počet položek musí být vyplněn");
-        Assert.notEmpty(structureDataBatch.getItemTypeIds(), "Autoincrementující typ musí být alespoň jeden");
+        Integer count = structureDataBatch.getCount();
+        Validate.notNull(count, "Počet položek musí být vyplněn");
+
+        List<Integer> incrementedTypeIds = structureDataBatch.getIncrementedTypeIds();
+        Validate.notEmpty(incrementedTypeIds, "Autoincrementující typ musí být alespoň jeden");
+
         ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
         ArrStructuredObject structureData = structureService.getStructureDataById(structureDataId);
-        structureService.duplicateStructureDataBatch(fundVersion, structureData, structureDataBatch.getCount(), structureDataBatch.getItemTypeIds());
+        structureService.duplicateStructureDataBatch(fundVersion, structureData, count,
+                                                     incrementedTypeIds);
     }
 
     /**
@@ -511,14 +519,14 @@ public class StructureController {
         /**
          * Identifikátory číselných typů atributu, které se budou incrementovat.
          */
-        private List<Integer> itemTypeIds;
+        private List<Integer> incrementedTypeIds;
 
         public StructureDataBatch() {
         }
 
         public StructureDataBatch(final Integer count, final List<Integer> itemTypeIds) {
             this.count = count;
-            this.itemTypeIds = itemTypeIds;
+            this.incrementedTypeIds = itemTypeIds;
         }
 
         public Integer getCount() {
@@ -529,12 +537,12 @@ public class StructureController {
             this.count = count;
         }
 
-        public List<Integer> getItemTypeIds() {
-            return itemTypeIds;
+        public List<Integer> getIncrementedTypeIds() {
+            return incrementedTypeIds;
         }
 
-        public void setItemTypeIds(final List<Integer> itemTypeIds) {
-            this.itemTypeIds = itemTypeIds;
+        public void setIncrementedTypeIds(final List<Integer> itemTypeIds) {
+            this.incrementedTypeIds = itemTypeIds;
         }
     }
 }
