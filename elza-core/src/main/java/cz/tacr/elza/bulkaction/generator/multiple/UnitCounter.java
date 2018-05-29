@@ -18,6 +18,8 @@ import cz.tacr.elza.domain.ArrDataStructureRef;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.StructuredItemRepository;
 
 public class UnitCounter {
@@ -117,7 +119,10 @@ public class UnitCounter {
             Map<String, String> packetTypeMapping = config.getObjectItemMapping();
             packetTypeMapping.forEach((packetTypeCode, targetValue) -> {
                 RulItemSpec itemSpec = objectItemType.getItemSpecByCode(packetTypeCode);
-                Validate.notNull(itemSpec);
+                if (itemSpec == null) {
+                    throw new BusinessException("Missing specification: " + packetTypeCode, BaseCode.ID_NOT_EXIST)
+                            .set("packetTypeCode", packetTypeCode);
+                }
                 objectMapping.put(itemSpec.getItemSpecId(), targetValue);
             });
         }
