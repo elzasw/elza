@@ -291,7 +291,7 @@ export default class Autocomplete extends AbstractReactComponent {
         const {isOpen, changed, inputValue} = this.state;
 
         // delete redundant props from item
-        cleanItem(item);
+        item && cleanItem(item);
 
         let newState = { 
             inputValue: "",
