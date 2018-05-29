@@ -13,7 +13,7 @@ import defaultKeymap from './AutocompleteKeymap.jsx';
 import ListItem from "components/shared/tree-list/list-item/ListItem.jsx";
 import List from "components/shared/tree-list/TreeList.jsx";
 import flattenItems, {filterItems, cleanItem} from "components/shared/utils/itemFilter.jsx";
-import FloatingMenu from "components/shared/floating-menu/FLoatingMenu.jsx";
+import FloatingMenu from "components/shared/floating-menu/FloatingMenu.jsx";
 import classNames from "classnames";
 import i18n from "components/i18n.jsx";
 

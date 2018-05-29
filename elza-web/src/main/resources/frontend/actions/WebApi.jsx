@@ -1238,7 +1238,7 @@ export class WebApiCls {
     }
 
     setAssignableStructureDataList(fundVersionId, assignable, structureDataIds) {
-        return AjaxUtils.ajaxPut(WebApiCls.structureUrl + '/data/' + fundVersionId + '/assignable/' + assignable, null, structureDataIds)
+        return AjaxUtils.ajaxPost(WebApiCls.structureUrl + '/data/' + fundVersionId + '/assignable/' + assignable, null, structureDataIds)
     }
 
 
