@@ -115,12 +115,14 @@ class RegistryField extends AbstractReactComponent {
 
     handleChange = (e) => {
         this.setState({searchText: null});
-        this.normalizeValue(this.props.onChange)(e)
+        const value = this.normalizeValue(e);
+        this.props.onChange(value);
     };
 
     handleBlur = (e) => {
         this.setState({searchText: null});
-        this.normalizeValue(this.props.onBlur)(e)
+        const value = this.normalizeValue(e);
+        this.props.onBlur(value);
     };
 
     renderFooter = () => {
@@ -162,13 +164,13 @@ class RegistryField extends AbstractReactComponent {
     }
 
 
-    normalizeValue = (call) => (obj,id) => {
+    normalizeValue = (obj) => {
         // změna typu aby se objekt dal použít jako návazný
         const newobj = {
             ...obj,
             '@class': 'cz.tacr.elza.controller.vo.RegRecordVO',
         };
-        call(newobj, id);
+        return newobj;
     };
 
     render() {
@@ -199,6 +201,7 @@ class RegistryField extends AbstractReactComponent {
         }
 
         return <Autocomplete
+            {...otherProps}
             ref='autocomplete'
             customFilter
             className={classNames("autocomplete-record", className)}
@@ -212,7 +215,6 @@ class RegistryField extends AbstractReactComponent {
             onChange={this.handleChange}
             onBlur={this.handleBlur}
             value={value}
-            {...otherProps}
         />;
     }
 }
