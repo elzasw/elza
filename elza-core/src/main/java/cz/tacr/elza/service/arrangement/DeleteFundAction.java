@@ -35,6 +35,7 @@ import cz.tacr.elza.repository.DaoPackageRepository;
 import cz.tacr.elza.repository.DaoRepository;
 import cz.tacr.elza.repository.DaoRequestDaoRepository;
 import cz.tacr.elza.repository.DaoRequestRepository;
+import cz.tacr.elza.repository.DataFileRefRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DataStructureRefRepository;
 import cz.tacr.elza.repository.DescItemRepository;
@@ -213,6 +214,9 @@ public class DeleteFundAction {
     @Autowired
     private FundStructureExtensionRepository fundStructureExtensionRepository;
 
+    @Autowired
+    private DataFileRefRepository dataFileRefRepository;
+
     /**
      * Prepare fund deletion
      */
@@ -354,6 +358,8 @@ public class DeleteFundAction {
 
         // drop links from data structured_ref 
         dataStructureRefRepository.deleteByStructuredObjectFund(fund);
+        // drop links from data_file_ref
+        dataFileRefRepository.deleteByFileFund(fund);
 
         // drop items
         this.descItemRepository.deleteByNodeFund(fund);
