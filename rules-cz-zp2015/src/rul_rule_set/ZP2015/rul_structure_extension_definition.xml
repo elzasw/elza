@@ -2,6 +2,6 @@
     <structure-extension-definition structure-type="ZP2015_PACKET" structure-extension="ZP2015_PACKET_PREFIX" 
             filename="ZP2015_PACKET_Prefix.drl">
         <def-type>ATTRIBUTE_TYPES</def-type>
-        <priority>1</priority>
+        <priority>100</priority>
     </structure-extension-definition>
 </structure-extension-definitions>

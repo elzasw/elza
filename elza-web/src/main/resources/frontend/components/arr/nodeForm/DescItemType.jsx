@@ -4,18 +4,6 @@ import {TooltipTrigger, Autocomplete, Utils, Icon, i18n, AbstractReactComponent,
 import {Tooltip, OverlayTrigger} from 'react-bootstrap';
 import {addToastrDanger} from 'components/shared/toastr/ToastrActions.jsx'
 import {connect} from 'react-redux'
-import DescItemString from './DescItemString.jsx'
-import DescItemUnitid from './DescItemUnitid.jsx'
-import DescItemText from './DescItemText.jsx'
-import DescItemInt from './DescItemInt.jsx'
-import DescItemDecimal from './DescItemDecimal.jsx'
-import DescItemCoordinates from './DescItemCoordinates.jsx'
-import DescItemUnitdate from './DescItemUnitdate.jsx'
-import DescItemStructureRef from './DescItemStructureRef.jsx'
-import DescItemFileRef from './DescItemFileRef.jsx'
-import DescItemPartyRef from './DescItemPartyRef.jsx'
-import DescItemRecordRef from './DescItemRecordRef.jsx'
-import DescItemJsonTable from './DescItemJsonTable.jsx'
 import {propsEquals} from 'components/Utils.jsx'
 import {nodeFormActions} from 'actions/arr/subNodeForm.jsx'
 import {hasDescItemTypeValue} from 'components/arr/ArrUtils.jsx'
@@ -27,9 +15,9 @@ import {getSetFromIdsList} from "stores/app/utils.jsx";
 import DescItemTypeSpec from "./DescItemTypeSpec";
 import {PropTypes} from 'prop-types';
 import defaultKeymap from './DescItemTypeKeymap.jsx';
-import './AbstractDescItem.less'
+import './AbstractDescItem.less';
 import {validate, convertValue} from "stores/app/arr/subNodeForm.jsx";
-import {valuesEquals} from 'components/Utils.jsx'
+import {valuesEquals} from 'components/Utils.jsx';
 import {WebApi} from 'actions/index.jsx';
 import objectById from "../../../shared/utils/objectById";
 
@@ -44,7 +32,9 @@ class DescItemType extends AbstractReactComponent {
     static childContextTypes = { shortcuts: PropTypes.object.isRequired };
 
     static defaultProps = {
-        draggable: true
+        draggable: true,
+        hideDelete: false,
+        onCreatePacket: ()=>{}
     };
 
     componentWillMount(){
@@ -119,7 +109,7 @@ class DescItemType extends AbstractReactComponent {
     }
 
     handleDescItemShortcuts(descItemIndex, action) {
-        console.log("#handleDescItemShortcuts", '[' + action + ']', this, 'index', descItemIndex);
+        //console.log("#handleDescItemShortcuts", '[' + action + ']', this, 'index', descItemIndex);
 
         const {locked, readMode, descItemType, infoType, onDescItemRemove, onDescItemAdd} = this.props;
 
@@ -243,7 +233,8 @@ class DescItemType extends AbstractReactComponent {
 
         // Convert value to a value compatible with specified data type
         const descItem = {...newDescItemType.descItems[descItemIndex]};
-        const convertedValue = convertValue(value, descItem, rulDataType.code);
+        // convert value only if it exists
+        const convertedValue = value ? convertValue(value, descItem, rulDataType.code) : {value};
         const touched = convertedValue.touched || !valuesEquals(convertedValue.value, descItem.prevValue);
         const newDescItem = {
             ...descItem,
@@ -572,6 +563,97 @@ class DescItemType extends AbstractReactComponent {
         e.target.value = null;
     }
 
+    /**
+     * Renders the value of the descItem
+     */
+    renderDescItemValue = (descItem, descItemIndex, locked) => {
+        const {
+            refType,
+            singleDescItemTypeEdit,
+            structureTypes,
+            calendarTypes,
+            rulDataType,
+            descItemFactory,
+            readMode,
+            infoType,
+            typePrefix,
+            versionId,
+            fundId
+        } = this.props;
+
+        let specName = null;
+        if (descItem.descItemSpecId) {
+            specName = refType.descItemSpecsMap[descItem.descItemSpecId].name;
+        }
+
+        let structureType = {};
+        if(structureTypes){
+            structureType = objectById(structureTypes.data, refType.structureTypeId);
+        }
+
+        const additionalProps = {
+            "PARTY_REF":{
+                itemName: refType.shortcut,
+                specName: specName,
+                singleDescItemTypeEdit: singleDescItemTypeEdit,
+                onDetail: (value)=>{this.handleDetailParty(descItemIndex, value);},
+                onCreateParty: (value)=>{this.handleCreateParty(descItemIndex, value);}
+            },
+            "RECORD_REF": {
+                itemName: refType.shortcut,
+                specName: specName,
+                singleDescItemTypeEdit: singleDescItemTypeEdit,
+                onDetail: (value)=>{this.handleDetailRecord(descItemIndex, value);},
+                onCreateRecord: (value)=>{this.handleCreateRecord(descItemIndex);},
+            },
+            "STRUCTURED":{
+                singleDescItemTypeEdit: singleDescItemTypeEdit,
+                structureTypeCode: structureType ? structureType.code : null,
+                structureTypeName: structureType ? structureType.name : null,
+            },
+            "FILE_REF": {
+                onCreateFile: (value)=>{this.handleCreateFile(descItemIndex);},
+                onFundFiles: (value)=>{this.handleFundFiles(descItemIndex);}
+            },
+            "UNITDATE":{
+                calendarTypes: calendarTypes
+            },
+            "JSON_TABLE":{
+                refType,
+                onDownload: (value)=>{this.props.onJsonTableDownload(descItem.descItemObjectId, value);},
+                onUpload: this.handleJsonTableUploadUpload
+            },
+            "COORDINATES":{
+                onUpload: this.handleCoordinatesUpload,
+                onDownload: (value)=>{this.props.onCoordinatesDownload(descItem.descItemObjectId, value);}
+            }
+        };
+
+        const key = descItem.formKey;
+        const itemComponentKey = 'value_' + key;
+
+        let descItemProps = {
+            hasSpecification: refType.useSpecification,
+            descItem: descItem,
+            onChange: this.handleChange.bind(this, descItemIndex),
+            onBlur: this.handleBlur.bind(this, descItemIndex),
+            onFocus: this.handleFocus.bind(this, descItemIndex),
+            locked: locked,
+            readMode: readMode,
+            ref: key,
+            cal: infoType.cal && !infoType.calSt,
+            typePrefix,
+            readOnly: descItem.saving,
+            versionId: versionId,
+            fundId: fundId,
+            key: itemComponentKey,
+            descItemFactory,
+            repeatable: infoType.rep == 1,
+            ...additionalProps[rulDataType.code]
+        };
+
+        return descItemFactory.createDescItem(rulDataType.code, descItemProps);
+    }
 
     /**
      * Renderování hodnoty atributu.
@@ -583,7 +665,7 @@ class DescItemType extends AbstractReactComponent {
      * @return {Object} view
      */
     renderDescItem(descItemType, descItem, descItemIndex, actions, locked) {
-        const {refType, readMode, fundId, infoType, singleDescItemTypeEdit, rulDataType, calendarTypes, versionId, typePrefix, draggable} = this.props;
+        const {refType, readMode, infoType, rulDataType, draggable} = this.props;
 
         let cls = 'desc-item-type-desc-item-container';
         if (actions.length > 0) {
@@ -608,19 +690,7 @@ class DescItemType extends AbstractReactComponent {
         }
         partsCls += " dt" + rulDataType.code;
 
-        const descItemProps = {
-            hasSpecification: refType.useSpecification,
-            descItem: descItem,
-            onChange: this.handleChange.bind(this, descItemIndex),
-            onBlur: this.handleBlur.bind(this, descItemIndex),
-            onFocus: this.handleFocus.bind(this, descItemIndex),
-            locked: locked,
-            readMode: readMode,
-            ref: key,
-            cal: infoType.cal && !infoType.calSt,
-            typePrefix,
-            readOnly: descItem.saving
-        };
+
 
         let dragProps;
         if (Utils.detectIE() || readMode || !draggable) {
@@ -634,121 +704,22 @@ class DescItemType extends AbstractReactComponent {
             }
         }
 
-        const itemComponentKey = 'value_' + key;
-        let specName = null;
-        switch (rulDataType.code) {
-            case 'PARTY_REF':
-                if (descItem.descItemSpecId) {
-                    specName = refType.descItemSpecsMap[descItem.descItemSpecId].name;
-                }
-                parts.push(<DescItemPartyRef key={itemComponentKey}
-                                             {...descItemProps}
-                                             itemName={refType.shortcut}
-                                             specName={specName}
-                                             singleDescItemTypeEdit={singleDescItemTypeEdit}
-                                             onDetail={this.handleDetailParty.bind(this, descItemIndex)}
-                                             onCreateParty={this.handleCreateParty.bind(this, descItemIndex)}
-                                             versionId={versionId}
-                />);
-                break;
-            case 'RECORD_REF':
-                if (descItem.descItemSpecId) {
-                    specName = refType.descItemSpecsMap[descItem.descItemSpecId].name;
-                }
-                parts.push(<DescItemRecordRef key={itemComponentKey}
-                                              {...descItemProps}
-                                              itemName={refType.shortcut}
-                                              specName={specName}
-                                              singleDescItemTypeEdit={singleDescItemTypeEdit}
-                                              onDetail={this.handleDetailRecord.bind(this, descItemIndex)}
-                                              onCreateRecord={this.handleCreateRecord.bind(this, descItemIndex)}
-                                              versionId={versionId}
-                />);
-                break;
-            case 'STRUCTURED':
-                const {structureTypes} = this.props;
-                const structureType = objectById(structureTypes.data, refType.structureTypeId);
-
-                parts.push(<DescItemStructureRef key={itemComponentKey}
-                                              {...descItemProps}
-                                              singleDescItemTypeEdit={singleDescItemTypeEdit}
-                                              structureTypeCode={structureType.code}
-                                              fundVersionId={versionId}
-                />);
-                break;
-            case 'FILE_REF':
-                parts.push(<DescItemFileRef key={itemComponentKey}
-                                            {...descItemProps}
-                                            onCreateFile={this.handleCreateFile.bind(this, descItemIndex)}
-                                            onFundFiles={this.handleFundFiles.bind(this, descItemIndex)}
-                                            fundId={fundId}
-                />);
-                break;
-            case 'UNITDATE':
-                parts.push(<DescItemUnitdate key={itemComponentKey}
-                                             {...descItemProps}
-                                             calendarTypes={calendarTypes}
-                />);
-                break;
-            case 'UNITID':
-                parts.push(<DescItemUnitid key={itemComponentKey}
-                                           {...descItemProps}
-                />);
-                break;
-            case 'JSON_TABLE':
-                parts.push(<DescItemJsonTable key={itemComponentKey}
-                                              {...descItemProps}
-                                              refType={refType}
-                                              onDownload={this.props.onJsonTableDownload.bind(this, descItem.descItemObjectId)}
-                                              onUpload={this.handleJsonTableUploadUpload}
-                />);
-                break;
-            case 'STRING':
-                parts.push(<DescItemString key={itemComponentKey}
-                                           {...descItemProps}
-                />);
-                break;
-            case 'FORMATTED_TEXT':
-            case 'TEXT':
-                parts.push(<DescItemText key={itemComponentKey}
-                                         {...descItemProps}
-                />);
-                break;
-            case 'DECIMAL':
-                parts.push(<DescItemDecimal key={itemComponentKey}
-                                            {...descItemProps}
-                />);
-                break;
-            case 'INT':
-                parts.push(<DescItemInt key={itemComponentKey}
-                                        {...descItemProps}
-                />);
-                break;
-            case 'COORDINATES':
-                parts.push(<DescItemCoordinates key={itemComponentKey}
-                                                repeatable={infoType.rep == 1}
-                                                onUpload={this.handleCoordinatesUpload}
-                                                {...descItemProps}
-                                                onDownload={this.props.onCoordinatesDownload.bind(this, descItem.descItemObjectId)}
-                />)
-                break;
-            case 'ENUM':
-                break;
-            default:
-                parts.push(<div key={itemComponentKey}>-unsupported type {rulDataType.code}-</div>)
+        // render value (if not enum)
+        if(rulDataType.code != "ENUM"){
+            parts.push(this.renderDescItemValue(descItem, descItemIndex, locked));
         }
-        //{actions.length > 0 && <div key="actions" className='desc-item-action-container'>{actions.map(i => <span>{i}<Icon glyph="fa-save" /></span>)}</div>}
+
         return (
             <Shortcuts key={key} name='DescItem' handler={this.handleDescItemShortcuts.bind(this, descItemIndex)} alwaysFireHandler global>
                 <div key="container" className={cls} {...dragProps} ref={(ref)=>{this.containers[descItemIndex] = ref;}}>
-                    {this.props.customPreRender && this.props.customPreRender(rulDataType.code, descItemProps, infoType)}
                     {!readMode && infoType.rep == 1 && draggable &&
-                    <div className='dragger'><Icon className="up" glyph="fa-angle-up"/><Icon className="down"
-                                                                                             glyph="fa-angle-down"/>&nbsp;
+                      <div className='dragger'>
+                            <Icon className="up" glyph="fa-angle-up"/>
+                            <Icon className="down" glyph="fa-angle-down"/>&nbsp;
                     </div>}
 
                     <div key="container" className={partsCls}>
-                        {parts}
+                      {parts}
                     </div>
                     {actions.length > 0 && <div key="actions" className='desc-item-action-container'>{actions}</div>}
                 </div>
@@ -1092,48 +1063,47 @@ function mapStateToProps(state) {
 }
 
 DescItemType.propTypes = {
-    onChange: React.PropTypes.func.isRequired,
-    onChangeSpec: React.PropTypes.func.isRequired,
-    onChangePosition: React.PropTypes.func.isRequired,
-    onBlur: React.PropTypes.func.isRequired,
-    onFocus: React.PropTypes.func.isRequired,
-    onCreateParty: React.PropTypes.func.isRequired,
-    onCoordinatesDownload: React.PropTypes.func.isRequired,
-    onJsonTableDownload: React.PropTypes.func.isRequired,
-    onCoordinatesUpload: React.PropTypes.func.isRequired,
-    onDetailParty: React.PropTypes.func.isRequired,
-    onCreateRecord: React.PropTypes.func.isRequired,
-    onDetailRecord: React.PropTypes.func.isRequired,
-    onCreatePacket: React.PropTypes.func.isRequired,
-    onCreateFile: React.PropTypes.func.isRequired,
-    onFundFiles: React.PropTypes.func.isRequired,
-    onDescItemTypeRemove: React.PropTypes.func.isRequired,
-    onDescItemTypeLock: React.PropTypes.func.isRequired,
-    onDescItemTypeCopy: React.PropTypes.func.isRequired,
-    onDescItemTypeCopyFromPrev: React.PropTypes.func.isRequired,
-    onDescItemRemove: React.PropTypes.func.isRequired,
-    onDescItemAdd: React.PropTypes.func.isRequired,
-    refType: React.PropTypes.object.isRequired,
-    infoType: React.PropTypes.object.isRequired,
-    descItemType: React.PropTypes.object.isRequired,
-    rulDataType: React.PropTypes.object.isRequired,
-    calendarTypes: React.PropTypes.object.isRequired,
-    structureTypes: React.PropTypes.object.isRequired,
-    locked: React.PropTypes.bool.isRequired,
-    hideDelete: React.PropTypes.bool.isRequired,
-    readMode: React.PropTypes.bool.isRequired,
-    notIdentified: React.PropTypes.bool.isRequired,
-    onDescItemNotIdentified: React.PropTypes.func.isRequired,
-    closed: React.PropTypes.bool.isRequired,
-    copy: React.PropTypes.bool.isRequired,
-    conformityInfo: React.PropTypes.object.isRequired,
-    versionId: React.PropTypes.number.isRequired,
-    fundId: React.PropTypes.number.isRequired,
-    userDetail: React.PropTypes.object.isRequired,
-    showNodeAddons: React.PropTypes.bool.isRequired,
-    strictMode: React.PropTypes.bool.isRequired,
-    customRender: React.PropTypes.func,
-    customPreRender: React.PropTypes.func,
+    onChange: PropTypes.func.isRequired,
+    onChangeSpec: PropTypes.func.isRequired,
+    onChangePosition: PropTypes.func.isRequired,
+    onBlur: PropTypes.func.isRequired,
+    onFocus: PropTypes.func.isRequired,
+    onCreateParty: PropTypes.func.isRequired,
+    onCoordinatesDownload: PropTypes.func.isRequired,
+    onJsonTableDownload: PropTypes.func.isRequired,
+    onCoordinatesUpload: PropTypes.func.isRequired,
+    onDetailParty: PropTypes.func.isRequired,
+    onCreateRecord: PropTypes.func.isRequired,
+    onDetailRecord: PropTypes.func.isRequired,
+    onCreatePacket: PropTypes.func.isRequired,
+    onCreateFile: PropTypes.func.isRequired,
+    onFundFiles: PropTypes.func.isRequired,
+    onDescItemTypeRemove: PropTypes.func.isRequired,
+    onDescItemTypeLock: PropTypes.func.isRequired,
+    onDescItemTypeCopy: PropTypes.func.isRequired,
+    onDescItemTypeCopyFromPrev: PropTypes.func.isRequired,
+    onDescItemRemove: PropTypes.func.isRequired,
+    onDescItemAdd: PropTypes.func.isRequired,
+    refType: PropTypes.object.isRequired,
+    infoType: PropTypes.object.isRequired,
+    descItemType: PropTypes.object.isRequired,
+    rulDataType: PropTypes.object.isRequired,
+    calendarTypes: PropTypes.object.isRequired,
+    structureTypes: PropTypes.object.isRequired,
+    locked: PropTypes.bool.isRequired,
+    hideDelete: PropTypes.bool,
+    readMode: PropTypes.bool.isRequired,
+    notIdentified: PropTypes.bool.isRequired,
+    onDescItemNotIdentified: PropTypes.func.isRequired,
+    closed: PropTypes.bool.isRequired,
+    copy: PropTypes.bool.isRequired,
+    conformityInfo: PropTypes.object.isRequired,
+    versionId: PropTypes.number.isRequired,
+    fundId: PropTypes.number.isRequired,
+    userDetail: PropTypes.object.isRequired,
+    showNodeAddons: PropTypes.bool.isRequired,
+    strictMode: PropTypes.bool.isRequired,
+    descItemType: PropTypes.object.isRequired
 };
 
 export default connect(mapStateToProps, null, null, {withRef: true})(DescItemType);

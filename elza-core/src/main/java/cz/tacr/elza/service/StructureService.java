@@ -31,12 +31,12 @@ import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundStructureExtension;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrItem;
-import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.ArrStructuredItem;
+import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.RulStructuredTypeExtension;
 import cz.tacr.elza.domain.RulStructuredType;
+import cz.tacr.elza.domain.RulStructuredTypeExtension;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.Level;
@@ -49,9 +49,9 @@ import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.FilteredResult;
 import cz.tacr.elza.repository.FundStructureExtensionRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
+import cz.tacr.elza.repository.StructuredItemRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
 import cz.tacr.elza.repository.StructuredTypeExtensionRepository;
-import cz.tacr.elza.repository.StructuredItemRepository;
 import cz.tacr.elza.repository.StructuredTypeRepository;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventStructureDataChange;
@@ -1100,8 +1100,9 @@ public class StructureService {
                 newData.setDataType(structureItem.getItemType().getDataType());
                 Integer val = autoincrementMap.get(structureItem.getItemType());
                 if (val != null) {
-                    val++;
                     ((ArrDataInteger) newData).setValue(val);
+                    // Increment for next item
+                    val++;
                     autoincrementMap.put(structureItem.getItemType(), val);
                 }
                 newDataList.add(newData);

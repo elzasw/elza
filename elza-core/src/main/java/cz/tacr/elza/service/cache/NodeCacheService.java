@@ -17,7 +17,7 @@ import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 import org.castor.core.util.Assert;
 import org.hibernate.ScrollableResults;
@@ -267,6 +267,10 @@ public class NodeCacheService {
      * @param nodeIds seznam požadovaných JP k synchronizaci
      */
     private void syncNodesInternal(final Collection<Integer> nodeIds) {
+        if (CollectionUtils.isEmpty(nodeIds)) {
+            return;
+        }
+
         List<ArrCachedNode> cachedNodes = cachedNodeRepository.findByNodeIdIn(nodeIds);
 
         logger.debug("Synchronizace požadovaných JP: " + cachedNodes.size());

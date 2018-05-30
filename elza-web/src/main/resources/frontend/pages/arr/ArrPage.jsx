@@ -509,6 +509,15 @@ class ArrPage extends ArrParentPage {
         }
     }
 
+    renderFundErrorItem(item){
+        if(item){
+            return <div>{item.name}</div>;
+        }
+        else {
+            return "...";
+        }
+    }
+
     renderFundErrors(activeFund) {
         let activeNode = null;
         if (activeFund.nodes.activeIndex !== null) {
@@ -522,7 +531,7 @@ class ArrPage extends ArrParentPage {
                     getItems={(fromIndex, toIndex) => {
                                 return WebApi.getValidationItems(activeFund.versionId, fromIndex, toIndex)
                             }}
-                    renderItemContent={(props) => props.item !== null ? <div>{props.item.name}</div> : '...'}
+                    renderItemContent={this.renderFundErrorItem}
                     selectedItem={activeNode ? activeNode.selectedSubNodeId : null}
                     itemHeight={25} // nutne dat stejne cislo i do css jako .pokusny-listbox-container .listbox-item { height: 24px; }
                     onSelect={this.handleSelectErrorNode.bind(this, activeFund)}

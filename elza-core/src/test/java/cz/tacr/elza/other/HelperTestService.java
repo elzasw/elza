@@ -191,7 +191,7 @@ public class HelperTestService {
 
     @Transactional
     public void importPackage(final File file) {
-        packageService.importPackage(file);
+        packageService.importPackageInternal(file);
         // refresh static structures
         staticDataService.refreshForCurrentThread();
     }

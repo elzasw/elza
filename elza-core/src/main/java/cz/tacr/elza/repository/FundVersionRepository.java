@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
 
@@ -43,4 +44,11 @@ public interface FundVersionRepository extends ElzaJpaRepository<ArrFundVersion,
      */
     @Query(value = "SELECT v FROM arr_fund_version v JOIN FETCH v.fund f JOIN FETCH f.institution i LEFT JOIN FETCH v.lockChange lc WHERE v.fundVersionId = :fundVersionId")
     ArrFundVersion findByIdWithFetchForExport(@Param(value = "fundVersionId") Integer fundVersionId);
+
+    /**
+     * Delete fund versions by fund
+     * 
+     * @param fund
+     */
+    void deleteByFund(ArrFund fund);
 }

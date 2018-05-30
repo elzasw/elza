@@ -6,10 +6,10 @@
     <!-- Rozšíření pro strukturovaný zápis veliosti -->
     <extension-rule filename="Items_StructuredSize.drl" arrangement-extension="ZP2015_KvantitaStrukturovana">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
-        <priority>1</priority>
+        <priority>100</priority>
     </extension-rule>
     <extension-rule filename="Items_StructuredTechZazn.drl" arrangement-extension="ZP2015_TechZaznStrukturovana">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
-        <priority>1</priority>
+        <priority>100</priority>
     </extension-rule>
 </extension-rules>

@@ -6,7 +6,7 @@ package cz.tacr.elza.drools.model;
  *
  * @since 27.02.2018
  */
-public class StrucutedItem {
+public class StructObjItem {
 
     /**
      * Typ atributu
@@ -27,11 +27,11 @@ public class StrucutedItem {
      */
     private Integer integerValue;
 
-    public StrucutedItem() {
+    public StructObjItem() {
 
     }
 
-    public StrucutedItem(final String type, final String spec) {
+    public StructObjItem(final String type, final String spec) {
         this.type = type;
         this.specCode = spec;
     }
@@ -40,7 +40,7 @@ public class StrucutedItem {
      * Copy constructor
      * @param strucutedItem kopírovaný atribut
      */
-    public StrucutedItem(final StrucutedItem strucutedItem) {
+    public StructObjItem(final StructObjItem strucutedItem) {
         this.type = strucutedItem.type;
         this.specCode = strucutedItem.specCode;
         this.dataType = strucutedItem.dataType;

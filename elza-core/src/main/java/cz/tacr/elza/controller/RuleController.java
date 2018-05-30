@@ -264,7 +264,6 @@ public class RuleController {
         return result;
     }
 
-    @Transactional
     @RequestMapping(value="/importPackage", method=RequestMethod.POST)
     public void importPackageRest(@RequestParam("file") final MultipartFile file){
         Assert.notNull(file, "Soubor musí být vyplněn");
