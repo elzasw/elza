@@ -1,16 +1,16 @@
 package cz.tacr.elza.dataexchange.input.aps.context;
 
-import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApType;
 import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.dataexchange.input.context.EntityIdHolder;
 import cz.tacr.elza.dataexchange.input.context.PersistMethod;
+import cz.tacr.elza.domain.ApRecord;
 
 /**
  * Access point import info which primarily stores id and result of record pairing.
  */
-public class AccessPointInfo extends EntityIdHolder<ApAccessPoint> {
+public class AccessPointInfo extends EntityIdHolder<ApRecord> {
 
     private final String entryId;
 
@@ -21,7 +21,7 @@ public class AccessPointInfo extends EntityIdHolder<ApAccessPoint> {
     private String name;
 
     AccessPointInfo(String entryId, ApType apType) {
-        super(ApAccessPoint.class);
+        super(ApRecord.class);
         this.entryId = Validate.notNull(entryId);
         this.apType = Validate.notNull(apType);
     }

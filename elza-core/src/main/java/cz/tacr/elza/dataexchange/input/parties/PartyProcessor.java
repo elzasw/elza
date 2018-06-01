@@ -1,5 +1,12 @@
 package cz.tacr.elza.dataexchange.input.parties;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.xml.bind.JAXBElement;
+
+import org.apache.commons.lang3.StringUtils;
+
 import cz.tacr.elza.core.data.CalendarType;
 import cz.tacr.elza.core.data.PartyType;
 import cz.tacr.elza.core.data.PartyTypeComplementTypes;
@@ -28,12 +35,6 @@ import cz.tacr.elza.schema.v2.NameComplements;
 import cz.tacr.elza.schema.v2.Party;
 import cz.tacr.elza.schema.v2.PartyName;
 import cz.tacr.elza.schema.v2.TimeIntervalExt;
-import org.apache.commons.lang3.StringUtils;
-
-import javax.xml.bind.JAXBElement;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 /**
  * Implementation is not thread-safe.
@@ -127,11 +128,12 @@ public class PartyProcessor<P extends Party, E extends ParParty> implements Item
     }
 
     protected void processSubEntities(P item, PartyInfo partyInfo) {
-        List<PartyName> nms = item.getNms().getNm();
-        // first name in the list is the preferred one
-        processPartyName(nms.get(0), partyInfo, true);
-        // process rest of the names
-        nms.stream().skip(1).forEach(name -> processPartyName(name, partyInfo, false));
+        processPartyName(item.getName(), partyInfo, true);
+        if (item.getVnms() != null) {
+            for (PartyName name : item.getVnms().getVnm()) {
+                processPartyName(name, partyInfo, false);
+            }
+        }
     }
 
     protected final EntityIdHolder<ParUnitdate> processTimeInterval(TimeIntervalExt interval, PartyInfo partyInfo) {

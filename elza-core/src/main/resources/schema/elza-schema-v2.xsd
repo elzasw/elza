@@ -45,21 +45,11 @@
 					<xs:documentation>Characteristics of record</xs:documentation>
 				</xs:annotation>
 			</xs:element>
-			<xs:element name="n" type="xs:string" minOccurs="1" maxOccurs="1">
-				<xs:annotation>
-					<xs:documentation>Name (term) of access point</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-			<xs:element name="note" type="xs:string" minOccurs="0" maxOccurs="1">
-				<xs:annotation>
-					<xs:documentation>Note for record</xs:documentation>
-				</xs:annotation>
-			</xs:element>
 			<xs:element name="nms" type="e:AccessPointtNames" minOccurs="1" maxOccurs="1">
 				<xs:annotation>
 					<xs:documentation>Names of accesspoint
 
-						At least one name have to be defined.</xs:documentation>
+At least one name have to be defined.</xs:documentation>
 				</xs:annotation>
 			</xs:element>
 			<xs:element name="ape" type="e:AccessPointEntry" minOccurs="1" maxOccurs="1">
@@ -81,7 +71,7 @@
 			<xs:annotation>
 				<xs:documentation>Revision ID.
 
-					Revision ID can be UUID or any another ID (e.g. timestamp, id, ...). Revision ID are not used for ordering</xs:documentation>
+Revision ID can be UUID or any another ID (e.g. timestamp, id, ...). Revision ID are not used for ordering</xs:documentation>
 			</xs:annotation>
 		</xs:attribute>
 		<xs:attribute name="t" use="required" type="e:AccessPointType">
@@ -194,7 +184,7 @@
 				<xs:attribute name="v" use="required" type="xs:decimal">
 					<xs:annotation>
 						<xs:documentation>Value
-							Type: decimal</xs:documentation>
+Type: decimal</xs:documentation>
 					</xs:annotation>
 				</xs:attribute>
 			</xs:extension>
@@ -220,7 +210,7 @@
 				<xs:attribute name="v" use="required" type="xs:integer">
 					<xs:annotation>
 						<xs:documentation>Value
-							Type: Integer</xs:documentation>
+Type: Integer</xs:documentation>
 					</xs:annotation>
 				</xs:attribute>
 			</xs:extension>
@@ -245,12 +235,12 @@
 		<xs:annotation>
 			<xs:documentation>Description item for single String value. This is most generic description item. It can be used to store values of other types.
 
-				Item is used to represent at least:
-				Coordinates serialized in string
-				Simple string value
-				Text  / LongText with unlimited length
-				Formatted text
-				Item ID</xs:documentation>
+Item is used to represent at least:
+Coordinates serialized in string
+Simple string value
+Text  / LongText with unlimited length
+Formatted text
+Item ID</xs:documentation>
 		</xs:annotation>
 		<xs:complexContent>
 			<xs:extension base="e:DescriptionItem">
@@ -448,10 +438,7 @@
 				<xs:annotation>
 					<xs:documentation>Description item</xs:documentation>
 				</xs:annotation>
-				<xs:element name="de" type="e:DescriptionItemEnum" minOccurs="1" maxOccurs="1"/>
-				<xs:element name="di" type="e:DescriptionItemInteger" minOccurs="1" maxOccurs="1"/>
 				<xs:element name="dd" type="e:DescriptionItemDecimal" minOccurs="1" maxOccurs="1"/>
-				<xs:element name="ds" type="e:DescriptionItemString" minOccurs="1" maxOccurs="1"/>
 				<xs:element name="do" type="e:DescriptionItemStructObjectRef" minOccurs="1" maxOccurs="1">
 					<xs:annotation>
 						<xs:documentation>Description item for packet</xs:documentation>
@@ -462,17 +449,20 @@
 						<xs:documentation>Party reference</xs:documentation>
 					</xs:annotation>
 				</xs:element>
-				<xs:element name="da" type="e:DescriptionItemAPRef" minOccurs="1" maxOccurs="1">
-					<xs:annotation>
-						<xs:documentation>Access point entry reference</xs:documentation>
-					</xs:annotation>
-				</xs:element>
 				<xs:element name="dt" type="e:DescriptionItemUnitDate" minOccurs="1" maxOccurs="1">
 					<xs:annotation>
 						<xs:documentation>Description item date</xs:documentation>
 					</xs:annotation>
 				</xs:element>
+				<xs:element name="ds" type="e:DescriptionItemString" minOccurs="1" maxOccurs="1"/>
+				<xs:element name="de" type="e:DescriptionItemEnum" minOccurs="1" maxOccurs="1"/>
+				<xs:element name="di" type="e:DescriptionItemInteger" minOccurs="1" maxOccurs="1"/>
 				<xs:element name="du" type="e:DescriptionItemUndefined" minOccurs="1" maxOccurs="1"/>
+				<xs:element name="da" type="e:DescriptionItemAPRef" minOccurs="1" maxOccurs="1">
+					<xs:annotation>
+						<xs:documentation>Access point entry reference</xs:documentation>
+					</xs:annotation>
+				</xs:element>
 			</xs:choice>
 			<xs:element name="aprs" type="e:AccessPointRefs" minOccurs="0" maxOccurs="1">
 				<xs:annotation>
@@ -572,12 +562,12 @@
 		</xs:annotation>
 		<xs:sequence>
 			<xs:choice minOccurs="0" maxOccurs="unbounded">
-				<xs:element name="per" type="e:Person" minOccurs="1" maxOccurs="1"/>
 				<xs:element name="famy" type="e:Family" minOccurs="1" maxOccurs="1">
 					<xs:annotation>
 						<xs:documentation>Family</xs:documentation>
 					</xs:annotation>
 				</xs:element>
+				<xs:element name="per" type="e:Person" minOccurs="1" maxOccurs="1"/>
 				<xs:element name="pg" type="e:PartyGroup" minOccurs="1" maxOccurs="1"/>
 				<xs:element name="evnt" type="e:Event" minOccurs="1" maxOccurs="1"/>
 			</xs:choice>
@@ -603,12 +593,12 @@
 					<xs:documentation>Source of information</xs:documentation>
 				</xs:annotation>
 			</xs:element>
-			<xs:element name="ape" type="e:AccessPointEntry" minOccurs="1" maxOccurs="1"/>
 			<xs:element name="nms" type="e:PartyNames" minOccurs="1" maxOccurs="1">
 				<xs:annotation>
 					<xs:documentation>Party names. At least one name have to exists.</xs:documentation>
 				</xs:annotation>
 			</xs:element>
+			<xs:element name="ape" type="e:AccessPointEntry" minOccurs="1" maxOccurs="1"/>
 		</xs:sequence>
 		<xs:attribute name="id" use="required" type="e:Id">
 			<xs:annotation>
@@ -624,13 +614,13 @@
 		<xs:attribute name="cid" use="optional" type="e:Id">
 			<xs:annotation>
 				<xs:documentation>ID of the creator.
-					This is person who created description.</xs:documentation>
+This is person who created description.</xs:documentation>
 			</xs:annotation>
 		</xs:attribute>
 		<xs:attribute name="paid" use="optional" type="e:Id">
 			<xs:annotation>
 				<xs:documentation>Party ID.
-					This is ID of the created party</xs:documentation>
+This is ID of the created party</xs:documentation>
 			</xs:annotation>
 		</xs:attribute>
 	</xs:complexType>
@@ -798,9 +788,9 @@
 					<xs:documentation>Source of relation</xs:documentation>
 				</xs:annotation>
 			</xs:element>
-			<xs:element name="ef" type="e:TimeIntervalExt" minOccurs="0" maxOccurs="1">
+			<xs:element name="lrs" type="e:LinkToRecords" minOccurs="0" maxOccurs="1">
 				<xs:annotation>
-					<xs:documentation>Exist from</xs:documentation>
+					<xs:documentation>List of connected records</xs:documentation>
 				</xs:annotation>
 			</xs:element>
 			<xs:element name="eto" type="e:TimeIntervalExt" minOccurs="0" maxOccurs="1">
@@ -808,9 +798,9 @@
 					<xs:documentation>Exists to</xs:documentation>
 				</xs:annotation>
 			</xs:element>
-			<xs:element name="lrs" type="e:LinkToRecords" minOccurs="0" maxOccurs="1">
+			<xs:element name="ef" type="e:TimeIntervalExt" minOccurs="0" maxOccurs="1">
 				<xs:annotation>
-					<xs:documentation>List of connected records</xs:documentation>
+					<xs:documentation>Exist from</xs:documentation>
 				</xs:annotation>
 			</xs:element>
 		</xs:sequence>
@@ -854,14 +844,14 @@
 			<xs:documentation>Relations</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
-			<xs:element name="prs" type="e:PartyRelations" minOccurs="0" maxOccurs="1">
-				<xs:annotation>
-					<xs:documentation>Party relations</xs:documentation>
-				</xs:annotation>
-			</xs:element>
 			<xs:element name="pcs" type="e:PartyCreatorList" minOccurs="0" maxOccurs="1">
 				<xs:annotation>
 					<xs:documentation>List of party creators</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="prs" type="e:PartyRelations" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Party relations</xs:documentation>
 				</xs:annotation>
 			</xs:element>
 		</xs:sequence>
@@ -910,10 +900,7 @@
 				<xs:annotation>
 					<xs:documentation>Description item</xs:documentation>
 				</xs:annotation>
-				<xs:element name="de" type="e:DescriptionItemEnum" minOccurs="1" maxOccurs="1"/>
-				<xs:element name="di" type="e:DescriptionItemInteger" minOccurs="1" maxOccurs="1"/>
 				<xs:element name="dd" type="e:DescriptionItemDecimal" minOccurs="1" maxOccurs="1"/>
-				<xs:element name="ds" type="e:DescriptionItemString" minOccurs="1" maxOccurs="1"/>
 				<xs:element name="do" type="e:DescriptionItemStructObjectRef" minOccurs="1" maxOccurs="1">
 					<xs:annotation>
 						<xs:documentation>Description item for packet</xs:documentation>
@@ -924,17 +911,20 @@
 						<xs:documentation>Party reference</xs:documentation>
 					</xs:annotation>
 				</xs:element>
-				<xs:element name="da" type="e:DescriptionItemAPRef" minOccurs="1" maxOccurs="1">
-					<xs:annotation>
-						<xs:documentation>Access point entry reference</xs:documentation>
-					</xs:annotation>
-				</xs:element>
 				<xs:element name="dt" type="e:DescriptionItemUnitDate" minOccurs="1" maxOccurs="1">
 					<xs:annotation>
 						<xs:documentation>Description item date</xs:documentation>
 					</xs:annotation>
 				</xs:element>
+				<xs:element name="ds" type="e:DescriptionItemString" minOccurs="1" maxOccurs="1"/>
+				<xs:element name="de" type="e:DescriptionItemEnum" minOccurs="1" maxOccurs="1"/>
+				<xs:element name="di" type="e:DescriptionItemInteger" minOccurs="1" maxOccurs="1"/>
 				<xs:element name="du" type="e:DescriptionItemUndefined" minOccurs="1" maxOccurs="1"/>
+				<xs:element name="da" type="e:DescriptionItemAPRef" minOccurs="1" maxOccurs="1">
+					<xs:annotation>
+						<xs:documentation>Access point entry reference</xs:documentation>
+					</xs:annotation>
+				</xs:element>
 			</xs:choice>
 		</xs:sequence>
 		<xs:attribute name="id" use="required" type="e:Id">
@@ -976,14 +966,14 @@
 	<xs:complexType name="TimeInterval">
 		<xs:annotation>
 			<xs:documentation>Complex date.
-				Allows to represent single time point and also interval</xs:documentation>
+Allows to represent single time point and also interval</xs:documentation>
 		</xs:annotation>
 		<xs:sequence/>
 		<xs:attribute name="ct" use="optional" type="xs:string">
 			<xs:annotation>
-				<xs:documentation>Calendar type. If calendar type is not present then Gregorian calendar is used. Typical values are:
-					G - Gregorian calendar
-					J - Julian calendar</xs:documentation>
+				<xs:documentation>Calendar type. If calendar type is not present then Gregorian calendar is used. Typical values are: 
+G - Gregorian calendar
+J - Julian calendar</xs:documentation>
 			</xs:annotation>
 		</xs:attribute>
 		<xs:attribute name="f" use="required" type="xs:string">
@@ -1015,8 +1005,8 @@
 	<xs:complexType name="TimeIntervalExt">
 		<xs:annotation>
 			<xs:documentation>Extended complex date with:
-				- text form of date
-				- note</xs:documentation>
+	- text form of date
+	- note</xs:documentation>
 		</xs:annotation>
 		<xs:complexContent>
 			<xs:extension base="e:TimeInterval">

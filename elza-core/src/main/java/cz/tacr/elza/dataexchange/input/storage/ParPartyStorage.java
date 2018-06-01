@@ -70,7 +70,7 @@ class ParPartyStorage extends EntityStorage<PartyWrapper> {
             recordIdMap.put(recordId, item);
         }
         // find all current parties
-        List<ParPartyInfo> currentParties = partyRepository.findInfoByRecordAccessPointIdIn(recordIdMap.keySet());
+        List<ParPartyInfo> currentParties = partyRepository.findInfoByRecordRecordIdIn(recordIdMap.keySet());
         if (currentParties.size() != recordIdMap.size()) {
             throw new IllegalStateException(
                     "Not all parties for update found, recordIds:" + StringUtils.join(recordIdMap.keySet(), ','));

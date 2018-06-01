@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import cz.tacr.elza.service.AccessPointDataService;
 import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
 
@@ -65,8 +64,6 @@ public class PartiesContext {
 
     private final GroovyScriptService groovyScriptService;
 
-    private final AccessPointDataService accessPointDataService;
-
     public PartiesContext(StorageManager storageManager,
                           int batchSize,
                           AccessPointsContext accessPointContext,
@@ -77,7 +74,6 @@ public class PartiesContext {
         this.accessPointContext = accessPointContext;
         this.session = session;
         this.groovyScriptService = initHelper.getGroovyScriptService();
-        this.accessPointDataService = initHelper.getAccessPointDataService();
     }
 
     public void init(ObservableImport observableImport) {
@@ -269,7 +265,7 @@ public class PartiesContext {
 
         private void buildPartiesAccessPoints(PartiesContext context, StaticDataProvider staticData) {
             PartiesAccessPointsBuilder builder = new PartiesAccessPointsBuilder(staticData, context.groovyScriptService,
-                    context.session, context.accessPointDataService);
+                    context.session);
             Collection<PartyInfo> partiesInfo = context.partyImportIdMap.values();
             for (List<PartyInfo> batch : Iterables.partition(partiesInfo, context.batchSize)) {
                 List<PartyAccessPointWrapper> items = builder.build(batch);

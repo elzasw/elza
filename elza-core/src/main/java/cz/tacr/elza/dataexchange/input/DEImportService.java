@@ -15,9 +15,6 @@ import javax.transaction.Transactional.TxType;
 import javax.xml.stream.XMLStreamException;
 
 import cz.tacr.elza.domain.*;
-import cz.tacr.elza.repository.ApAccessPointRepository;
-import cz.tacr.elza.repository.ApNameRepository;
-import cz.tacr.elza.service.AccessPointDataService;
 import org.apache.commons.lang3.Validate;
 import org.hibernate.FlushMode;
 import org.hibernate.Session;
@@ -63,6 +60,8 @@ import cz.tacr.elza.repository.PartyNameComplementRepository;
 import cz.tacr.elza.repository.PartyNameRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.ApExternalSystemRepository;
+import cz.tacr.elza.repository.ApRecordRepository;
+import cz.tacr.elza.repository.ApVariantRecordRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.UnitdateRepository;
 import cz.tacr.elza.service.ArrangementService;
@@ -95,12 +94,11 @@ public class DEImportService {
 
     private final ResourcePathResolver resourcePathResolver;
 
-    private final ApNameRepository apNameRepository;
-
     @Autowired
     public DEImportService(EntityManager em,
-                           ApAccessPointRepository recordRepository,
+                           ApRecordRepository recordRepository,
                            ArrangementService arrangementService,
+                           ApVariantRecordRepository variantRecordRepository,
                            PartyRepository partyRepository,
                            PartyNameRepository nameRepository,
                            PartyNameComplementRepository nameComplementRepository,
@@ -117,13 +115,12 @@ public class DEImportService {
                            FundVersionRepository fundVersionRepository,
                            LevelRepository levelRepository,
                            LevelTreeCacheService levelTreeCacheService,
-                           ResourcePathResolver resourcePathResolver,
-                           ApNameRepository apNameRepository,
-                           AccessPointDataService accessPointDataService) {
+                           ResourcePathResolver resourcePathResolver) {
 
         this.initHelper = new ImportInitHelper(externalSystemRepository, groovyScriptService, institutionRepository,
-                institutionTypeRepository, arrangementService, levelRepository, recordRepository, partyRepository, nameRepository, nameComplementRepository, groupIdentifierRepository,
-                unitdateRepository, apNameRepository, accessPointDataService);
+                institutionTypeRepository, arrangementService, levelRepository, recordRepository,
+                variantRecordRepository, partyRepository, nameRepository, nameComplementRepository, groupIdentifierRepository,
+                unitdateRepository);
         this.em = em;
         this.userService = userService;
         this.staticDataService = staticDataService;
@@ -132,7 +129,6 @@ public class DEImportService {
         this.fundVersionRepository = fundVersionRepository;
         this.levelTreeCacheService = levelTreeCacheService;
         this.resourcePathResolver = resourcePathResolver;
-        this.apNameRepository = apNameRepository;
     }
 
     public List<String> getTransformationNames() throws IOException {

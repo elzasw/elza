@@ -10,8 +10,6 @@ import javax.xml.bind.Marshaller;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
-import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.service.vo.ApAccessPointData;
 import org.apache.commons.lang.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,17 +64,17 @@ public class XmlPartiesOutputStream implements PartiesOutputStream {
     }
 
     @Override
-    public void addParty(ParParty party, ApAccessPointData apData) {
+    public void addParty(ParParty party) {
         Validate.isTrue(!processed);
 
         Party element = createParty(party);
-        ApAccessPoint accessPoint = party.getRecord();
-        element.setApe(XmlAccessPointOutputStream.createEntry(accessPoint, apData));
+        element.setApe(XmlAccessPointOutputStream.createEntry(party.getRecord()));
         element.setChr(party.getCharacteristics());
         element.setHst(party.getHistory());
         element.setId(party.getPartyId().toString());
+        element.setName(createPartyName(party.getPreferredName()));
         element.setSrc(party.getSourceInformation());
-        element.setNms(createPartyNames(party));
+        element.setVnms(createPartyNames(party));
 
         try {
             writeParty(element);
@@ -181,11 +179,13 @@ public class XmlPartiesOutputStream implements PartiesOutputStream {
     }
 
     private static PartyNames createPartyNames(ParParty party) {
-        PartyNames listElement = new PartyNames();
-        List<PartyName> list = listElement.getNm();
-        list.add(createPartyName(party.getPreferredName()));
-
         List<ParPartyName> names = party.getPartyNames();
+        if (names == null || names.isEmpty()) {
+            return null;
+        }
+        PartyNames listElement = new PartyNames();
+        List<PartyName> list = listElement.getVnm();
+
         names.forEach(source -> {
             PartyName target = createPartyName(source);
             list.add(target);

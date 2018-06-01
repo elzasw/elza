@@ -1,17 +1,15 @@
 package cz.tacr.elza.dataexchange.input.aps;
 
+import cz.tacr.elza.domain.ApRecord;
+import cz.tacr.elza.domain.ApVariantRecord;
+import org.apache.commons.lang3.StringUtils;
+
 import cz.tacr.elza.dataexchange.input.DEImportException;
 import cz.tacr.elza.dataexchange.input.aps.context.AccessPointInfo;
 import cz.tacr.elza.dataexchange.input.context.ImportContext;
-import cz.tacr.elza.domain.ApDescription;
-import cz.tacr.elza.domain.ApName;
 import cz.tacr.elza.schema.v2.AccessPoint;
 import cz.tacr.elza.schema.v2.AccessPointEntry;
-import cz.tacr.elza.schema.v2.AccessPointName;
-import cz.tacr.elza.service.vo.ApAccessPointData;
-import org.apache.commons.lang3.StringUtils;
-
-import java.util.stream.Stream;
+import cz.tacr.elza.schema.v2.AccessPointVariantNames;
 
 /**
  * Processing access points. Implementation is not thread-safe.
@@ -39,19 +37,15 @@ public class AccessPointProcessor extends AccessPointEntryProcessor {
     }
 
     @Override
-    protected ApAccessPointData createAP(AccessPointEntry item) {
-        ApAccessPointData record = super.createAP(item);
-        ApName apName = new ApName();
-        apName.setName(accessPoint.getN());
-        record.setPreferredName(apName);
-        ApDescription apDescription = new ApDescription();
-        apDescription.setDescription(accessPoint.getChr());
-        record.setCharacteristics(apDescription);
+    protected ApRecord createAP(AccessPointEntry item) {
+        ApRecord record = super.createAP(item);
+        record.setRecord(accessPoint.getN());
+        record.setCharacteristics(accessPoint.getChr());
         return record;
     }
 
     @Override
-    protected AccessPointInfo addAccessPoint(ApAccessPointData ap, String entryId) {
+    protected AccessPointInfo addAccessPoint(ApRecord ap, String entryId) {
         AccessPointInfo info = super.addAccessPoint(ap, entryId);
         info.setName(accessPoint.getN());
         return info;
@@ -64,13 +58,14 @@ public class AccessPointProcessor extends AccessPointEntryProcessor {
     }
 
     private void processVariantNames(AccessPointInfo apInfo) {
-        // we skip the first one because it the preferred one
-        Stream<AccessPointName> variantNamesStream = accessPoint.getNms().getNm().stream().skip(1);
-        variantNamesStream.forEach(apName -> {
-            ApName variantName = new ApName();
-            variantName.setName(apName.getN());
-            variantName.setPreferredName(false);
-            context.addVariantName(variantName, apInfo);
-        });
+        AccessPointVariantNames variantNames = accessPoint.getVnms();
+        if (variantNames == null) {
+            return;
+        }
+        for (String vn : variantNames.getVnm()) {
+            ApVariantRecord variantRecord = new ApVariantRecord();
+            variantRecord.setRecord(vn);
+            context.addVariantName(variantRecord, apInfo);
+        }
     }
 }
