@@ -31,6 +31,7 @@ import {DropdownButton, MenuItem} from 'react-bootstrap';
 import TemplateForm, {EXISTS_TEMPLATE, NEW_TEMPLATE} from "./TemplateForm";
 import TemplateUseForm from "./TemplateUseForm";
 import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx'
+import DescItemFactory from "components/arr/nodeForm/DescItemFactory.jsx";
 
 require('./NodeSubNodeForm.less');
 
@@ -544,6 +545,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
                     formActions={nodeFormActions}
                     readMode={readMode}
                     showNodeAddons={true}
+                    descItemFactory={DescItemFactory}
                     />
             </div>
         )

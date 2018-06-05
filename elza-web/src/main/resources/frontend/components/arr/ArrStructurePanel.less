@@ -30,9 +30,49 @@
     }
 
     .list {
-        flex:1;
+        flex: 1 1 auto;
         .listbox-item > div {
             padding: 2px 5px;
+            display: flex;
+
+            .structure-name {
+                flex-grow: 1;
+            }
+        }
+    }
+    .floating-menu {
+        border: 1px solid #ccc;
+        box-shadow: 2px 5px 12px rgba(0,0,0,0.125);
+        .item {
+            padding: 3px 10px;
+
+            &:hover {
+                background-color: #eee;
+            }
+        }
+        .divider {
+            height: 0;
+            border-top: 1px solid #ccc;
+        }
+    }
+    
+}
+.error-message {
+    //background-color:red;
+    padding: 5px;
+    text-align: left;
+    
+    .error-list {
+        ul {
+            margin-bottom:0;
+            padding-left: 15px;
+        }
+    }
+    .error-item {
+        margin-bottom: 5px;
+
+        &:last-child {
+            margin-bottom: 0;
         }
     }
 }

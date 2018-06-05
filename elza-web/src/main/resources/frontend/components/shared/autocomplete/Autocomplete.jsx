@@ -12,8 +12,8 @@ import {Shortcuts} from 'react-shortcuts';
 import defaultKeymap from './AutocompleteKeymap.jsx';
 import ListItem from "components/shared/tree-list/list-item/ListItem.jsx";
 import List from "components/shared/tree-list/TreeList.jsx";
-import flattenItems, {filterItems} from "components/shared/utils/itemFilter.jsx";
-import FloatingMenu from "components/shared/floating-menu/FLoatingMenu.jsx";
+import flattenItems, {filterItems, cleanItem} from "components/shared/utils/itemFilter.jsx";
+import FloatingMenu from "components/shared/floating-menu/FloatingMenu.jsx";
 import classNames from "classnames";
 import i18n from "components/i18n.jsx";
 
@@ -162,6 +162,11 @@ export default class Autocomplete extends AbstractReactComponent {
         }
     }
 
+    blur = () => {
+        const input = ReactDOM.findDOMNode(this.input);
+        input.blur();
+    }
+
     componentDidMount = () => {
         this.props.selectOnlyValue && this.selectOnlyValue();
     }
@@ -175,6 +180,11 @@ export default class Autocomplete extends AbstractReactComponent {
             value: value
         });
     }
+    /*
+    componentWillUpdate = (nextProps, nextState) => {
+        console.log("### AC will update", nextState.hasFocus);
+    }
+     */
 
     selectOnlyValue = () => {
         const {items} = this.state;
@@ -217,13 +227,12 @@ export default class Autocomplete extends AbstractReactComponent {
         onSearchChange && onSearchChange(value);
     }
 
-    handleInputBlur = () => {
+    handleInputBlur = (e) => {
         const {onBlur} = this.props;
         const {value} = this.state;
 
         // ignore the blur event if set and reset the ignoreBlur value
         if(this._ignoreBlur){
-            console.log("ignored");
             this._ignoreBlur = false;
             this.focus();
             return false;
@@ -270,10 +279,19 @@ export default class Autocomplete extends AbstractReactComponent {
             });
         }
     }
+    handleEmptySelect = () => {
+        const {onEmptySelect} = this.props;
+        const {inputValue} = this.state;
+
+        onEmptySelect && onEmptySelect(inputValue);
+    }
 
     selectItem = (item) => {
         const {getItemName, getItemId, allowSelectItem, onChange, tags} = this.props;
         const {isOpen, changed, inputValue} = this.state;
+
+        // delete redundant props from item
+        item && cleanItem(item);
 
         let newState = { 
             inputValue: "",
@@ -283,6 +301,9 @@ export default class Autocomplete extends AbstractReactComponent {
         };
 
         if (true || isOpen || changed) {
+            if (!item) {
+                this.handleEmptySelect();
+            }
             if (tags) {
                 if (!item) {
                     item = {
@@ -477,7 +498,6 @@ export default class Autocomplete extends AbstractReactComponent {
                    toggled={this.state.isOpen}
                    disabled={disabled}
                    onMouseDown={()=>{
-                       console.log("click dropdown toggle", this.state.isOpen);
                        this._ignoreBlur = true;
                        this.handleInputFocus();
                        this.state.isOpen ? this.closeMenu() : this.openMenu();
@@ -526,7 +546,8 @@ export default class Autocomplete extends AbstractReactComponent {
                             key="input"
                             className='input'
                             type='text'
-                            onFocus={this.handleInputFocus}
+                          onFocus={this.handleInputFocus}
+                          //onFocusout={(e)=>{console.log("### onfocus out", document.activeElement, e);}}
                             onBlur={this.handleInputBlur}
                             {...inlineProps}
                             {...this.props.inputProps}

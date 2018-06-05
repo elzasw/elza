@@ -143,8 +143,7 @@ export function convertValue(value, descItem, type) {
         FILE_REF: (value)=>{
             return {
                 value: value.id,
-                file: value,
-                ["@class"]: ".ArrFileVO"
+                file: value
             };
         },
         STRUCTURED: (value)=>{

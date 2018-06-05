@@ -12,6 +12,7 @@ import {outputFormActions} from 'actions/arr/subNodeForm.jsx'
 import './NodeSubNodeForm.less';
 import SubNodeForm from "./SubNodeForm";
 import objectById from "../../shared/utils/objectById";
+import DescItemFactory from "components/arr/nodeForm/DescItemFactory.jsx";
 
 /**
  * Formulář detailu a editace jedné JP - jednoho NODE v konkrétní verzi.
@@ -65,6 +66,7 @@ class OutputSubNodeForm extends AbstractReactComponent {
                     formActions={outputFormActions}
                     showNodeAddons={false}
                     readMode={closed || readMode}
+                    descItemFactory={DescItemFactory}
                 />
             </div>
         )
