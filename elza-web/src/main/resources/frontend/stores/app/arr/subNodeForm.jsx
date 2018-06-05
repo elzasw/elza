@@ -9,8 +9,9 @@ import {
     mergeAfterUpdate,
     updateFormData
 } from './subNodeFormUtils.jsx'
-import {validateCoordinatePoint, validateDouble, validateInt} from 'components/validate.jsx'
+import {validateCoordinatePoint, validateDouble, validateInt, validateDuration} from 'components/validate.jsx'
 import {valuesEquals} from 'components/Utils.jsx'
+import {DisplayType} from "../../../constants";
 
 function getLoc(state, valueLocation) {
     var descItemGroup = state.formData.descItemGroups[valueLocation.descItemGroupIndex];
@@ -92,7 +93,11 @@ function validate(descItem, refType, valueServerError) {
             if (!descItem.value || descItem.value.length === 0) {
                 error.value = i18n('subNodeForm.validate.value.notEmpty');
             } else {
-                error.value = validateInt(descItem.value)
+                if (refType.viewDefinition === DisplayType.DURATION) {
+                    error.value = validateDuration(descItem.value);
+                } else {
+                    error.value = validateInt(descItem.value);
+                }
             }
             break;
         case 'COORDINATES':
@@ -545,7 +550,7 @@ export default function subNodeForm(state = initialState, action = {}) {
                     ...type,
                     dataType: dataTypeMap[type.dataTypeId],
                     descItemSpecsMap: getMapFromList(type.descItemSpecs),
-                    columnsDefinitionMap: type.columnsDefinition ? getMapFromList(type.columnsDefinition, "code") : null,
+                    //viewDefinitionMap: type.viewDefinition ? getMapFromList(type.viewDefinition, "code") : null,
                 }
             })
 

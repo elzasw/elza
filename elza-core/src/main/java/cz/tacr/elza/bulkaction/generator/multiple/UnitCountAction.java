@@ -84,7 +84,7 @@ public class UnitCountAction extends Action {
 		Validate.notBlank(config.getOutputColumnUnitCount());
 
 		// validate column definitions
-		List<ElzaColumn> columnsDefinition = outputItemType.getEntity().getColumnsDefinition();
+		List<ElzaColumn> columnsDefinition = (List<ElzaColumn>) outputItemType.getEntity().getViewDefinition();
 		Map<String, ElzaColumn> outputColumns = columnsDefinition.stream()
 		        .collect(Collectors.toMap(ElzaColumn::getCode, Function.identity()));
 
@@ -182,7 +182,7 @@ public class UnitCountAction extends Action {
 	 * Add value to the result
 	 *
 	 * @param value
-	 * @param count
+	 * @param inc
 	 */
 	public void addValue(String value, int inc) {
 		Validate.isTrue(inc >= 0, "Číslo nemůže být záporné");

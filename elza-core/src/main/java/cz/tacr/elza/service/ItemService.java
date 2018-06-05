@@ -133,7 +133,7 @@ public class ItemService {
 
         if (data != null) {
             if (data instanceof ArrDataJsonTable) {
-                checkJsonTableData(((ArrDataJsonTable) data).getValue(), item.getItemType().getColumnsDefinition());
+                checkJsonTableData(((ArrDataJsonTable) data).getValue(), (List<ElzaColumn>) item.getItemType().getViewDefinition());
         }
 
             ArrData dataNew = ArrData.makeCopyWithoutId(data);
@@ -170,7 +170,7 @@ public class ItemService {
     /**
      * Kontrola typu a specifikace.
      *
-     * @param item hodnota atributu
+     * @param descItem hodnota atributu
      */
     @Transactional(TxType.MANDATORY)
     public void checkValidTypeAndSpec(final RuleSystem ruleSystem, final ArrItem descItem) {

@@ -9,6 +9,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 import cz.tacr.elza.domain.ArrDataStructureRef;
+import cz.tacr.elza.domain.table.ElzaColumn;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.springframework.beans.factory.InitializingBean;
@@ -828,7 +829,7 @@ public class DescItemFactory implements InitializingBean {
 		}
 		// Check data
 		if (data instanceof ArrDataJsonTable) {
-			itemService.checkJsonTableData(((ArrDataJsonTable) data).getValue(), itemType.getColumnsDefinition());
+			itemService.checkJsonTableData(((ArrDataJsonTable) data).getValue(), (List<ElzaColumn>) itemType.getViewDefinition());
 		}
 		// Set data type
 		// dataType is not set when object is received as JSON from client
@@ -908,7 +909,7 @@ public class DescItemFactory implements InitializingBean {
 
         if (data != null) {
             if (data instanceof ArrDataJsonTable) {
-                itemService.checkJsonTableData(((ArrDataJsonTable) data).getValue(), descItem.getItemType().getColumnsDefinition());
+                itemService.checkJsonTableData(((ArrDataJsonTable) data).getValue(), (List<ElzaColumn>) descItem.getItemType().getViewDefinition());
         }
 
             ArrData dataNew;

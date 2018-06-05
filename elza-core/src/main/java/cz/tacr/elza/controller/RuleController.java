@@ -38,6 +38,8 @@ import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.service.PolicyService;
 import cz.tacr.elza.service.RuleService;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -73,6 +75,8 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/rule")
 public class RuleController {
+
+    private final Logger logger = LoggerFactory.getLogger(RuleController.class);
 
     @Autowired
     private ClientFactoryVO factoryVo;
@@ -226,8 +230,12 @@ public class RuleController {
             for (TypeInfo typeInfo : configuration.getTypes()) {
                 String code = typeInfo.getCode();
                 RuleSystemItemType itemType = rs.getItemTypeByCode(code);
-                ruleSystemItemTypes.remove(itemType);
-                typeInfos.add(new TypeInfoVO(itemType.getItemTypeId(), typeInfo.getWidth()));
+                if (itemType != null) {
+                    ruleSystemItemTypes.remove(itemType);
+                    typeInfos.add(new TypeInfoVO(itemType.getItemTypeId(), typeInfo.getWidth()));
+                } else {
+                    logger.warn("Nebyl nalezen RuleSystemItemType podle kódu {}", code);
+                }
             }
             group.setItemTypes(typeInfos);
             result.add(group);

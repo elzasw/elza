@@ -7,10 +7,11 @@ import ReactDOM from 'react-dom';
 import {connect} from 'react-redux';
 import {AbstractReactComponent, i18n} from 'components/shared';
 import {Checkbox} from 'react-bootstrap'
-import {normalizeInt} from 'components/validate.jsx'
+import {normalizeInt, fromDuration, toDuration, normalizeDuration} from 'components/validate.jsx'
 import {decorateValue} from './DescItemUtils.jsx'
 import DescItemLabel from './DescItemLabel.jsx'
 import ItemTooltipWrapper from "./ItemTooltipWrapper.jsx";
+import {DisplayType} from "../../../constants";
 
 class DescItemInt extends AbstractReactComponent {
 
@@ -19,11 +20,22 @@ class DescItemInt extends AbstractReactComponent {
     };
 
     handleChange = (e) => {
-        const newValue = normalizeInt(e.target.value);
+        let newValue;
+
+        if (this.getDisplayType() === DisplayType.DURATION) {
+            newValue = normalizeDuration(e.target.value);
+        } else {
+            newValue = normalizeInt(e.target.value);
+        }
 
         if (newValue != this.props.descItem.value) {
             this.props.onChange(newValue);
         }
+    };
+
+    getDisplayType = () => {
+        const {refType:{viewDefinition}} = this.props;
+        return viewDefinition ? viewDefinition : DisplayType.NUMBER;
     };
 
     render() {

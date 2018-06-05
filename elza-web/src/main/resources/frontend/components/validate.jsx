@@ -36,6 +36,13 @@ export function validateInt(number) {
     return null;
 };
 
+export function validateDuration(duration) {
+    const number = fromDuration(duration);
+    if (number < 0 || number > MAX_INTEGER)
+        return i18n('validate.validateDuration.outOfRange');
+    return null;
+};
+
 /**
  * Validace souřadnice typu bod.
  * @param value
@@ -99,6 +106,75 @@ export function normalizeInt(number) {
         }
     }
     return output;
+}
+
+/**
+ * Normalizace délky trvání.
+ * @param duration
+ * @returns {string}
+ */
+export function normalizeDuration(duration) {
+    const pole = ('' + duration);
+    let allow = '';
+    let k = 0;
+    for (let i = 0, len = pole.length; i < len; i++) {
+        if (parseInt(pole[i]) || pole[i] === "0" || pole[i] === ':') {
+            if (pole[i] === ':') {
+                k++;
+            }
+            if (k < 3) {
+                allow += pole[i];
+            }
+        }
+    }
+    return allow;
+}
+
+/**
+ * Převedení délky trvání na číslo v sekundách.
+ * @param duration
+ * @returns {string}
+ */
+export function fromDuration(duration) {
+    const pole = ('' + duration);
+    let allow = '';
+    for (let i = 0, len = pole.length; i < len; i++) {
+        if (parseInt(pole[i]) || pole[i] === "0" || pole[i] === ':') {
+            allow += pole[i];
+        }
+    }
+
+    const data = allow.split(':');
+    let result = 0;
+
+    for (let i = 0; i < data.length; i++) {
+        console.warn(result)
+        result += data[data.length - (i + 1)] * Math.pow(60, i);
+    }
+
+    return '' + result;
+}
+
+/**
+ * Převedení počtu sekund na délku trvání,
+ * @param number
+ * @returns {string}
+ */
+export function toDuration(number) {
+    number = Number(number);
+    let h = Math.floor(number / 3600);
+    let m = Math.floor(number % 3600 / 60);
+    let s = Math.floor(number % 3600 % 60);
+    return pad2(h) + ":" + pad2(m) + ":" + pad2(s);
+}
+
+/**
+ * Zarovnání na 2 cifry.
+ * @param number
+ * @returns {string}
+ */
+function pad2(number) {
+    return (number < 10 ? '0' : '') + number
 }
 
 /**

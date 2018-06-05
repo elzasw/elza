@@ -48,5 +48,14 @@ export const FOCUS_KEYS = {
     ADMIN_EXT_SYSTEM: 'admin-extSystem',
 };
 
+/**
+ * Formát pro zobrazení typu Integer.
+ * @type {{NUMBER: string, DURATION: string}}
+ */
+export const DisplayType = {
+    NUMBER: 'NUMBER',
+    DURATION: 'DURATION',
+};
+
 //konkrétrní kód akce pro perzistentní řazení v balíčku ZP2015
 export const PERSISTENT_SORT_CODE = "PERZISTENTNI_RAZENI";

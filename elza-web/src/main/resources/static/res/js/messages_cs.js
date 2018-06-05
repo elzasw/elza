@@ -1217,6 +1217,8 @@ var messages = {
     "validate.validateInt.outOfRange": "Zadané číslo je mimo rozsah celého čísla typu INT",
     "validate.validateDouble.outOfRange": "Zadané číslo je mimo rozsah desetinného čísla typu Decimal(18,6)",
 
+    "validate.validateDuration.outOfRange": "Zadaná doba trvání je mimo rozsah intervalu <00:00:00,596523:14:07>",
+
     "login.form.title": "Přihlášení uživatele",
     "login.field.username": "Uživatelské jméno",
     "login.field.password": "Heslo",

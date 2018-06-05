@@ -24,7 +24,7 @@ public class ItemType {
 
     private final Integer viewOrder;
 
-    private final List<ElzaColumn> tableDefinition;
+    private final Object viewDefinition;
 
     public ItemType(RulItemType rulItemType) {
         this.name = rulItemType.getName();
@@ -33,7 +33,7 @@ public class ItemType {
         this.description = rulItemType.getDescription();
         this.code = rulItemType.getCode();
         this.viewOrder = rulItemType.getViewOrder();
-        this.tableDefinition = rulItemType.getColumnsDefinition();
+        this.viewDefinition = rulItemType.getViewDefinition();
     }
 
     public String getCode() {
@@ -60,7 +60,7 @@ public class ItemType {
         return viewOrder;
     }
 
-    public List<ElzaColumn> getTableDefinition() {
-        return tableDefinition;
+    public Object getViewDefinition() {
+        return viewDefinition;
     }
 }

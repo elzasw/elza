@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.packageimport.xml.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,13 +31,6 @@ import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.PackageCode;
-import cz.tacr.elza.packageimport.xml.Category;
-import cz.tacr.elza.packageimport.xml.Column;
-import cz.tacr.elza.packageimport.xml.ItemSpec;
-import cz.tacr.elza.packageimport.xml.ItemSpecRegister;
-import cz.tacr.elza.packageimport.xml.ItemSpecs;
-import cz.tacr.elza.packageimport.xml.ItemType;
-import cz.tacr.elza.packageimport.xml.ItemTypes;
 import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.ItemSpecRegisterRepository;
@@ -293,14 +287,22 @@ public class ItemTypeUpdater {
 					}
 				}
 
-				if (dbItemType.getColumnsDefinition() != null
-						&& !equalsColumns(dbItemType.getColumnsDefinition(), itemType.getColumnsDefinition())) {
-					Long countDescItems = descItemRepository.getCountByType(dbItemType);
-					if (countDescItems != null && countDescItems > 0) {
-						throw new SystemException("Nelze změnit definici sloupců (datový typ a kód) u typu "
-								+ dbItemType.getCode() + ", protože existují záznamy, které typ využívají");
-					}
-				}
+                Object viewDefinition = dbItemType.getViewDefinition();
+                if (viewDefinition != null) {
+                    DataType dataType = DataType.fromId(dbItemType.getDataTypeId());
+                    switch (dataType) {
+                        case JSON_TABLE: {
+                            if (!equalsColumns((List<ElzaColumn>) viewDefinition, itemType.getColumnsDefinition())) {
+                                Long countDescItems = descItemRepository.getCountByType(dbItemType);
+                                if (countDescItems != null && countDescItems > 0) {
+                                    throw new SystemException("Nelze změnit definici sloupců (datový typ a kód) u typu "
+                                            + dbItemType.getCode() + ", protože existují záznamy, které typ využívají");
+                                }
+                            }
+                            break;
+                        }
+                    }
+                }
 
 				// update view order
 				int i = dbItemType.getViewOrder();
@@ -412,7 +414,12 @@ public class ItemTypeUpdater {
                 elzaColumns.add(elzaColumn);
             }
 
-            rulDescItemType.setColumnsDefinition(elzaColumns);
+            rulDescItemType.setViewDefinition(elzaColumns);
+        }
+
+        DisplayType displayType = itemType.getDisplayType();
+        if (displayType != null) {
+            rulDescItemType.setViewDefinition(cz.tacr.elza.domain.integer.DisplayType.valueOf(displayType.name()));
         }
 
         rulDescItemType.setRulPackage(rulPackage);

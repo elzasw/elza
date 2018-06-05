@@ -637,6 +637,7 @@ class DescItemType extends AbstractReactComponent {
                 break;
             case 'INT':
                 parts.push(<DescItemInt key={itemComponentKey}
+                                        refType={refType}
                                         {...descItemProps}
                 />);
                 break;

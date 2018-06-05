@@ -769,10 +769,19 @@ public class ConfigMapperConfiguration {
         mapperFactory.classMap(RulItemType.class, ItemTypeDescItemsLiteVO.class).byDefault()
                 .field("itemTypeId", "id")
                 .register();
-        mapperFactory.classMap(RulItemTypeExt.class, RulDescItemTypeExtVO.class).byDefault()
+        mapperFactory.classMap(RulItemTypeExt.class, RulDescItemTypeExtVO.class)
                 .field("itemTypeId", "id")
                 .field("rulItemSpecList", "descItemSpecs")
                 .field("structuredTypeId", "structureTypeId")
+                .exclude("viewDefinition")
+                .byDefault()
+                .customize(new CustomMapper<RulItemTypeExt, RulDescItemTypeExtVO>() {
+                    @Override
+                    public void mapAtoB(RulItemTypeExt rulItemTypeExt, RulDescItemTypeExtVO rulDescItemTypeExtVO, MappingContext context) {
+                        super.mapAtoB(rulItemTypeExt, rulDescItemTypeExtVO, context);
+                        rulDescItemTypeExtVO.setViewDefinition(rulItemTypeExt.getViewDefinition());
+                    }
+                })
                 .register();
         mapperFactory.classMap(RulItemTypeExt.class, ItemTypeLiteVO.class).byDefault()
                 .field("itemTypeId", "id")

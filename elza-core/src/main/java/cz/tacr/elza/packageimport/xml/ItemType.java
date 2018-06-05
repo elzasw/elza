@@ -52,6 +52,9 @@ public class ItemType {
     @XmlElementWrapper(name = "columns-definitions")
     private List<Column> columnsDefinition;
 
+    @XmlElement(name = "display-type")
+    private DisplayType displayType;
+
     public String getCode() {
         return code;
     }
@@ -130,5 +133,13 @@ public class ItemType {
 
     public void setColumnsDefinition(final List<Column> columnsDefinition) {
         this.columnsDefinition = columnsDefinition;
+    }
+
+    public DisplayType getDisplayType() {
+        return displayType;
+    }
+
+    public void setDisplayType(DisplayType displayType) {
+        this.displayType = displayType;
     }
 }

@@ -118,7 +118,7 @@ public class ArrIOService {
      */
     public <T extends ArrItem> void csvExport(final T item, final OutputStream os) throws IOException {
         RulItemType descItemType = item.getItemType();
-        List<String> columNames = descItemType.getColumnsDefinition()
+        List<String> columNames = ((List<ElzaColumn>) descItemType.getViewDefinition())
                 .stream()
                 .map(ElzaColumn::getCode)
                 .collect(Collectors.toList());
@@ -131,7 +131,7 @@ public class ArrIOService {
 
             for (ElzaRow elzaRow : table.getRows()) {
                 Map<String, String> values = elzaRow.getValues();
-                List<Object> rowValues = descItemType.getColumnsDefinition()
+                List<Object> rowValues = ((List<ElzaColumn>) descItemType.getViewDefinition())
                         .stream()
                         .map(elzaColumn -> values.get(elzaColumn.getCode()))
                         .collect(Collectors.toList());
@@ -222,7 +222,7 @@ public class ArrIOService {
         Iterable<CSVRecord> records = CSV_EXCEL_FORMAT.withFirstRecordAsHeader().parse(in);
         for (CSVRecord record : records) {
             ElzaRow row = new ElzaRow();
-            for (ElzaColumn elzaColumn : descItemType.getColumnsDefinition()) {
+            for (ElzaColumn elzaColumn : (List<ElzaColumn>) descItemType.getViewDefinition()) {
                 row.setValue(elzaColumn.getCode(), record.get(elzaColumn.getCode()));
             }
             table.addRow(row);
@@ -231,7 +231,7 @@ public class ArrIOService {
         jsonTable.setValue(table);
 
         // kontrola datových typů tabulky
-        itemService.checkJsonTableData(table, descItemType.getColumnsDefinition());
+        itemService.checkJsonTableData(table, (List<ElzaColumn>) descItemType.getViewDefinition());
 
         return item;
     }

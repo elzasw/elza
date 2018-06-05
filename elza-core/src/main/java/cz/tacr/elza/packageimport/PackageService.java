@@ -6,6 +6,7 @@ import cz.tacr.elza.api.enums.UIPartyGroupTypeEnum;
 import cz.tacr.elza.bulkaction.BulkActionConfigManager;
 import cz.tacr.elza.core.AppContext;
 import cz.tacr.elza.core.ResourcePathResolver;
+import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.core.data.RuleSystemItemType;
 import cz.tacr.elza.core.data.StaticDataService;
@@ -48,6 +49,7 @@ import cz.tacr.elza.domain.RulTemplate.Engine;
 import cz.tacr.elza.domain.UIPartyGroup;
 import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.UISettings.EntityType;
+import cz.tacr.elza.domain.integer.DisplayType;
 import cz.tacr.elza.domain.table.ElzaColumn;
 import cz.tacr.elza.exception.AbstractException;
 import cz.tacr.elza.exception.BusinessException;
@@ -3943,18 +3945,27 @@ public class PackageService {
         itemType.setIsValueUnique(rulDescItemType.getIsValueUnique());
         itemType.setUseSpecification(rulDescItemType.getUseSpecification());
 
-        List<ElzaColumn> columnsDefinition = rulDescItemType.getColumnsDefinition();
-        if (columnsDefinition != null) {
-            List<Column> columns = new ArrayList<>(columnsDefinition.size());
-            for (ElzaColumn elzaColumn : columnsDefinition) {
-                Column column = new Column();
-                column.setCode(elzaColumn.getCode());
-                column.setName(elzaColumn.getName());
-                column.setDataType(elzaColumn.getDataType().name());
-                column.setWidth(elzaColumn.getWidth());
-                columns.add(column);
+        DataType dataType = DataType.fromCode(rulDescItemType.getDataType().getCode());
+
+        if (dataType == DataType.JSON_TABLE) {
+            List<ElzaColumn> columnsDefinition = (List<ElzaColumn>) rulDescItemType.getViewDefinition();
+            if (columnsDefinition != null) {
+                List<Column> columns = new ArrayList<>(columnsDefinition.size());
+                for (ElzaColumn elzaColumn : columnsDefinition) {
+                    Column column = new Column();
+                    column.setCode(elzaColumn.getCode());
+                    column.setName(elzaColumn.getName());
+                    column.setDataType(elzaColumn.getDataType().name());
+                    column.setWidth(elzaColumn.getWidth());
+                    columns.add(column);
+                }
+                itemType.setColumnsDefinition(columns);
             }
-            itemType.setColumnsDefinition(columns);
+        } else if (dataType == DataType.INT) {
+            DisplayType displayType = (DisplayType) rulDescItemType.getViewDefinition();
+            if (displayType != null) {
+                itemType.setDisplayType(cz.tacr.elza.packageimport.xml.DisplayType.valueOf(displayType.name()));
+            }
         }
 
     }
