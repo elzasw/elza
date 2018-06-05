@@ -2,7 +2,8 @@
  * Formulář detailu a editace jedné JP - jednoho NODE v konkrétní verzi.
  */
 
-import objectById from "../../shared/utils/objectById";
+import {notEmpty, objectById} from "../../shared/utils";
+import * as factory from "../../shared/factory";
 import React from 'react';
 import SubNodeForm from "./SubNodeForm";
 import {AbstractReactComponent, i18n, Icon, NoFocusButton} from 'components/shared';
@@ -305,36 +306,9 @@ class NodeSubNodeForm extends AbstractReactComponent {
 
                     const items = [];
                     type.descItems.forEach(item => {
-                        const newItem = {
-                            '@class': item['@class'],
-                            descItemSpecId: withValues/* || item['@class'] !== '.ArrItemEnumVO'*/ ? item.descItemSpecId : null, // u enumů je hodnotou specifikace
-                            position: item.position,
-                            undefined: item.undefined,
-                            error: item.error,
-                            value: withValues ? item.value : null,
-                        };
-                        switch (item['@class']) {
-                            case '.ArrItemUnitdateVO':
-                                newItem.calendarTypeId = item.calendarTypeId;
-                                break;
-                            case '.ArrItemRecordRefVO':
-                                if (item.record) {
-                                    newItem.strValue = item.record.record;
-                                }
-                                break;
-                            case '.ArrItemFileRefVO':
-                                if (item.name) {
-                                    newItem.strValue = item.name;
-                                }
-                                break;
-                            case '.ArrItemPartyRefVO':
-                                if (item.party) {
-                                    newItem.strValue = item.party.record.record;
-                                }
-                                break;
-                        }
-
-                        console.warn(newItem, item);
+                        const itemCls = factory.createClass(item);
+                        const newItem = itemCls.copyItem(withValues);
+                        newItem.strValue = itemCls.toSimpleString();
                         items.push(newItem);
                     });
 
@@ -348,16 +322,11 @@ class NodeSubNodeForm extends AbstractReactComponent {
             withValues: withValues,
             formData: formData
         };
-        console.warn(template);
         return template;
     };
 
-    notEmpty = (value) => {
-        return value !== null && value !== "";
-    };
-
     handleUseTemplate = () => {
-        const {userDetail, fund, routingKey, selectedSubNode, subNodeForm, groups} = this.props;
+        const {userDetail, fund, routingKey, selectedSubNode, subNodeForm} = this.props;
 
         let settings = userDetail.settings;
 
@@ -369,8 +338,6 @@ class NodeSubNodeForm extends AbstractReactComponent {
 
         const templates = fundTemplates.value ? JSON.parse(fundTemplates.value).map(template => template.name) : [];
 
-        console.warn(groups, subNodeForm.formData);
-
         this.props.dispatch(modalDialogShow(this, i18n('arr.fund.useTemplate.title'), <TemplateUseForm initialValues={initialValues} templates={templates} onSubmitForm={(data) => {
             const value = JSON.parse(fundTemplates.value);
             const index = indexById(value, data.name, 'name');
@@ -379,7 +346,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
                 console.error("Nebyla nalezena šablona s názvem: " + data.name);
             } else {
                 const template = value[index];
-                console.warn("using template", template);
+                console.debug("Apply template", template);
 
                 const formData = template.formData;
                 let createItems = [];
@@ -387,89 +354,11 @@ class NodeSubNodeForm extends AbstractReactComponent {
                 let deleteItems = [];
                 let deleteItemsAdded = {};
 
-                const actualFormData = {};
-                subNodeForm.formData.descItemGroups.forEach(group => {
-                    group.descItemTypes.forEach(type => {
-                        if (type.descItems.length > 0) {
-                            let adding = false;
-                            type.descItems.forEach(item => {
-                                if (item.descItemObjectId) {
-                                    adding = true;
-                                }
-                            });
-                            if (adding) {
-                                actualFormData[type.id] = type.descItems;
-                            }
-                        }
-                    });
-                });
+                const actualFormData = this.createFormData(subNodeForm);
 
                 Object.keys(formData).map(itemTypeId => {
-                    const items = formData[itemTypeId];
-                    items.forEach(item => {
-                        const newItem = {
-                            ...item,
-                            itemTypeId: itemTypeId
-                        };
-
-                        if (this.notEmpty(newItem.value) || (newItem['@class'] === '.ArrItemEnumVO' && this.notEmpty(item.descItemSpecId))) {
-                            if (actualFormData[itemTypeId]) { // pokud existuje
-                                const itemType = this.findItemType(itemTypeId);
-                                if (itemType.rep) { // je opakovatelný
-                                    const existsItems = actualFormData[itemTypeId];
-                                    let addAsNew = true;
-                                    if (data.replaceValues) {
-                                        for (let i = 0; i < existsItems.length; i++) {
-                                            const existsItem = existsItems[i];
-                                            const itemObjectId = existsItem.descItemObjectId;
-                                            if (itemObjectId && !deleteItemsAdded[itemObjectId]) {
-                                                deleteItemsAdded[itemObjectId] = true;
-                                                deleteItems.push(existsItem);
-                                            }
-                                        }
-                                    } else {
-                                        for (let i = 0; i < existsItems.length; i++) {
-                                            const existsItem =  existsItems[i];
-                                            const changeValue = existsItem.value !== item.value || existsItem.undefined !== item.undefined; // pokud se liší hodnota (nebo nedefinovanost)
-
-                                            if (existsItem.descItemSpecId === item.descItemSpecId) { // pokud je stejná specifikace
-                                                if (!changeValue) {
-                                                    addAsNew = false;
-                                                }
-                                            } else {
-                                                const updateItem = {
-                                                    ...item,
-                                                    descItemObjectId: existsItem.descItemObjectId,
-                                                    itemTypeId: itemTypeId
-                                                };
-                                                updateItems.push(updateItem);
-                                            }
-                                        }
-                                    }
-                                    if (addAsNew) {
-                                        createItems.push(newItem);
-                                    }
-                                } else { // není opakovatelný, pouze aktualizujeme hodnotu
-                                    if (data.replaceValues) { // pouze pokud chceme existující hodnoty nahradit
-                                        const itemOrig = actualFormData[itemTypeId][0];
-                                        if (itemOrig.value !== item.value || itemOrig.descItemSpecId !== item.descItemSpecId) { // pouze pokud jsou odlišené
-                                            const updateItem = {
-                                                ...item,
-                                                descItemObjectId: itemOrig.descItemObjectId,
-                                                itemTypeId: itemTypeId
-                                            };
-                                            updateItems.push(updateItem);
-                                        }
-                                    }
-                                }
-                            } else { // pokud neexistuje, zakládáme nový
-                                createItems.push(newItem);
-                            }
-                        }
-                    });
+                    this.processItemType(formData, itemTypeId, actualFormData, data, deleteItemsAdded, deleteItems, updateItems, createItems);
                 });
-
-                console.warn(1, createItems, updateItems, deleteItems);
 
                 Object.keys(deleteItemsAdded).map(itemObjectId => {
                     let updateItemsTemp = [];
@@ -487,8 +376,6 @@ class NodeSubNodeForm extends AbstractReactComponent {
                     updateItems = updateItemsTemp;
                 });
 
-                console.warn(2, createItems, updateItems, deleteItems);
-
                 if (createItems.length > 0 || updateItems.length > 0 || deleteItems.length > 0) {
                     return WebApi.updateDescItems(fund.versionId, selectedSubNode.id, selectedSubNode.version, createItems, updateItems, deleteItems).then(() => {
                         this.dispatch(nodeFormActions.fundSubNodeFormTemplateUse(fund.versionId, routingKey, template, data.replaceValues));
@@ -501,6 +388,109 @@ class NodeSubNodeForm extends AbstractReactComponent {
             }
         }} />));
 
+    };
+
+    processItemType = (formData, itemTypeId, actualFormData, data, deleteItemsAdded, deleteItems, updateItems, createItems) => {
+        const items = formData[itemTypeId];
+        items.forEach(item => {
+            const newItem = {
+                ...item,
+                itemTypeId: itemTypeId
+            };
+
+            if (notEmpty(newItem.value) || (newItem['@class'] === '.ArrItemEnumVO' && notEmpty(item.descItemSpecId))) {
+                if (actualFormData[itemTypeId]) { // pokud existuje
+                    this.processExistsItemType(itemTypeId, actualFormData, data, deleteItemsAdded, deleteItems, item, updateItems, createItems, newItem);
+                } else { // pokud neexistuje, zakládáme nový
+                    createItems.push(newItem);
+                }
+            }
+        });
+    };
+
+    processExistsItemType = (itemTypeId, actualFormData, data, deleteItemsAdded, deleteItems, item, updateItems, createItems, newItem) => {
+        const itemType = this.findItemType(itemTypeId);
+        if (itemType.rep) { // je opakovatelný
+            const existsItems = actualFormData[itemTypeId];
+            if (data.replaceValues) {
+                this.processItemsToDelete(existsItems, deleteItemsAdded, deleteItems);
+            } else {
+                const addAsNew = this.processRepetitiveItemsToUpdate(existsItems, item, itemTypeId, updateItems);
+                if (addAsNew) {
+                    createItems.push(newItem);
+                }
+            }
+        } else { // není opakovatelný, pouze aktualizujeme hodnotu
+            if (data.replaceValues) { // pouze pokud chceme existující hodnoty nahradit
+                const itemOrig = actualFormData[itemTypeId][0];
+                if (itemOrig.value !== item.value || itemOrig.descItemSpecId !== item.descItemSpecId) { // pouze pokud jsou odlišené
+                    const updateItem = {
+                        ...item,
+                        descItemObjectId: itemOrig.descItemObjectId,
+                        itemTypeId: itemTypeId
+                    };
+                    updateItems.push(updateItem);
+                }
+            }
+        }
+    };
+
+    processItemsToDelete = (existsItems, deleteItemsAdded, deleteItems) => {
+        for (let i = 0; i < existsItems.length; i++) {
+            const existsItem = existsItems[i];
+            const itemObjectId = existsItem.descItemObjectId;
+            if (itemObjectId && !deleteItemsAdded[itemObjectId]) {
+                deleteItemsAdded[itemObjectId] = true;
+                deleteItems.push(existsItem);
+            }
+        }
+    };
+
+    processRepetitiveItemsToUpdate = (existsItems, item, itemTypeId, updateItems) => {
+        let addAsNew = true;
+        for (let i = 0; i < existsItems.length; i++) {
+            const existsItem = existsItems[i];
+            const changeValue = existsItem.value !== item.value || existsItem.undefined !== item.undefined; // pokud se liší hodnota (nebo nedefinovanost)
+
+            if (existsItem.descItemSpecId === item.descItemSpecId) { // pokud je stejná specifikace
+                if (!changeValue) {
+                    addAsNew = false;
+                }
+            } else {
+                const updateItem = {
+                    ...item,
+                    descItemObjectId: existsItem.descItemObjectId,
+                    itemTypeId: itemTypeId
+                };
+                updateItems.push(updateItem);
+            }
+        }
+        return addAsNew;
+    };
+
+    /**
+     * Sestaví mapu typů atributů s hodnotami - pouze uložené.
+     *
+     * @param subNodeForm formulář
+     */
+    createFormData = (subNodeForm) => {
+        const actualFormData = {};
+        subNodeForm.formData.descItemGroups.forEach(group => {
+            group.descItemTypes.forEach(type => {
+                if (type.descItems.length > 0) {
+                    let adding = false;
+                    type.descItems.forEach(item => {
+                        if (item.descItemObjectId) {
+                            adding = true;
+                        }
+                    });
+                    if (adding) {
+                        actualFormData[type.id] = type.descItems;
+                    }
+                }
+            });
+        });
+        return actualFormData;
     };
 
     findItemType = (itemTypeId) => {
