@@ -329,10 +329,6 @@ class ItemFormActions {
         return (dispatch, getState) => {
             let undef = descItem.undefined || false;
 
-            if(!descItem.value){
-                descItem.value = "unknown";
-            }
-            
             descItem.undefined = !undef;
             this._formValueStore(dispatch, getState, versionId, routingKey, valueLocation, descItem)
             /*let state = getState();
