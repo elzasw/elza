@@ -24,6 +24,7 @@ import cz.tacr.elza.repository.PackageRepository;
 import cz.tacr.elza.repository.PartyNameFormTypeRepository;
 import cz.tacr.elza.repository.PartyTypeComplementTypeRepository;
 import cz.tacr.elza.repository.PartyTypeRepository;
+import cz.tacr.elza.repository.ApExternalIdTypeRepository;
 import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRoleTypeRepository;
@@ -55,6 +56,8 @@ public class StaticDataService {
 
     private final EntityManager em;
 
+    /* repository with package visibility for initialization */
+    
     final RuleSetRepository ruleSetRepository;
 
     final ItemTypeRepository itemTypeRepository;
@@ -82,6 +85,8 @@ public class StaticDataService {
     final RelationTypeRepository relationTypeRepository;
 
     final RelationTypeRoleTypeRepository relationTypeRoleTypeRepository;
+    
+    final ApExternalIdTypeRepository apEidTypeRepository;
 
     @Autowired
     public StaticDataService(EntityManager em,
@@ -98,7 +103,8 @@ public class StaticDataService {
                              PartyTypeComplementTypeRepository partyTypeComplementTypeRepository,
                              ApTypeRepository apTypeRepository,
                              RelationTypeRepository relationTypeRepository,
-                             RelationTypeRoleTypeRepository relationTypeRoleTypeRepository) {
+                             RelationTypeRoleTypeRepository relationTypeRoleTypeRepository,
+                             ApExternalIdTypeRepository apEidTypeRepository) {
         this.em = em;
         this.ruleSetRepository = ruleSetRepository;
         this.itemTypeRepository = itemTypeRepository;
@@ -114,6 +120,7 @@ public class StaticDataService {
         this.apTypeRepository = apTypeRepository;
         this.relationTypeRepository = relationTypeRepository;
         this.relationTypeRoleTypeRepository = relationTypeRoleTypeRepository;
+        this.apEidTypeRepository = apEidTypeRepository;
     }
 
     /**

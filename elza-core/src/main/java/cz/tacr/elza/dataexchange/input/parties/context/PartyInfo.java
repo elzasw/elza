@@ -13,62 +13,64 @@ import cz.tacr.elza.domain.ApRecord;
 
 public class PartyInfo extends EntityIdHolder<ParParty> {
 
-    private final String importId;
+	private final String importId;
 
-    private final AccessPointInfo apInfo;
+	private final AccessPointInfo apInfo;
 
-    private final PartyType partyType;
+	private final PartyType partyType;
 
-    public PartyInfo(String importId, AccessPointInfo apInfo, PartyType partyType) {
-        super(partyType.getDomainClass());
-        this.importId = Validate.notNull(importId);
-        this.apInfo = Validate.notNull(apInfo);
-        this.partyType = Validate.notNull(partyType);
-    }
+	public PartyInfo(String importId, AccessPointInfo apInfo, PartyType partyType) {
+		super(partyType.getDomainClass());
+		this.importId = Validate.notNull(importId);
+		this.apInfo = Validate.notNull(apInfo);
+		this.partyType = Validate.notNull(partyType);
+	}
 
-    @Override
-    public Integer getEntityId() {
-        return (Integer) super.getEntityId();
-    }
+	@Override
+	public Integer getEntityId() {
+		return (Integer) super.getEntityId();
+	}
 
-    public String getImportId() {
-        return importId;
-    }
+	public String getImportId() {
+		return importId;
+	}
 
-    public PartyType getPartyType() {
-        return partyType;
-    }
+	public PartyType getPartyType() {
+		return partyType;
+	}
 
-    public String getAPName() {
-        return apInfo.getName();
-    }
+	public String getFulltext() {
+		return apInfo.getFulltext();
+	}
 
-    public void setAPName(String apName) {
-        apInfo.setName(apName);
-    }
+	public void setFulltext(String fulltext) {
+		apInfo.setFulltext(fulltext);
+	}
 
-    public boolean isIgnored() {
-        return apInfo.isIgnored();
-    }
+	public boolean isIgnored() {
+		PersistMethod pm = apInfo.getPersistMethod();
+		Validate.notNull(pm);
+		return pm == PersistMethod.NONE;
+	}
 
-    public PersistMethod getPersistMethod() {
-        return apInfo.getPersistMethod();
-    }
+	public PersistMethod getPersistMethod() {
+		return apInfo.getPersistMethod();
+	}
 
-    public Integer getAPId() {
-        return apInfo.getEntityId();
-    }
+	public Integer getAPId() {
+		return apInfo.getEntityId();
+	}
 
-    public ApRecord getAPReference(Session session) {
-        return apInfo.getEntityReference(session);
-    }
+	public ApRecord getAPReference(Session session) {
+		return apInfo.getEntityReference(session);
+	}
 
-    public ApRecord getUpdatableAPReference(Session session) {
-        return HibernateUtils.getEntityReference(apInfo.getEntityId(), apInfo.getEntityClass(), session, true);
-    }
+	public ApRecord getUpdatableAPReference(Session session) {
+		return HibernateUtils.getEntityReference(apInfo.getEntityId(), apInfo.getEntityClass(), session, true);
+	}
 
-    @Override
-    protected boolean isReferenceInitOnDemand() {
-        return true;
-    }
+	@Override
+	protected boolean isReferenceInitOnDemand() {
+		return true;
+	}
 }

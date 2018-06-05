@@ -21,7 +21,7 @@ public class ApExternalIdType implements Serializable {
     @GeneratedValue
     private Integer externalIdType;
 
-    @Column(length = 20, nullable = false)
+    @Column(length = 20, nullable = false, unique = true)
     private String code;
 
     @Column(length = 20, nullable = false)

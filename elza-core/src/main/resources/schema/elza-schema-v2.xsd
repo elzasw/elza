@@ -67,13 +67,6 @@ At least one name have to be defined.</xs:documentation>
 			<xs:element name="eid" type="e:ExternalId" minOccurs="0" maxOccurs="unbounded"/>
 		</xs:sequence>
 		<xs:attribute name="id" use="required" type="e:Id"/>
-		<xs:attribute name="rid" use="optional" type="xs:string">
-			<xs:annotation>
-				<xs:documentation>Revision ID.
-
-Revision ID can be UUID or any another ID (e.g. timestamp, id, ...). Revision ID are not used for ordering</xs:documentation>
-			</xs:annotation>
-		</xs:attribute>
 		<xs:attribute name="t" use="required" type="e:AccessPointType">
 			<xs:annotation>
 				<xs:documentation>Type of access point</xs:documentation>
@@ -342,12 +335,12 @@ Item ID</xs:documentation>
 			<xs:documentation>ID defined by external system</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
-			<xs:element name="esc" type="e:Id" minOccurs="1" maxOccurs="1">
+			<xs:element name="t" type="e:Id" minOccurs="1" maxOccurs="1">
 				<xs:annotation>
-					<xs:documentation>External system ID / code</xs:documentation>
+					<xs:documentation>External system ID code / type</xs:documentation>
 				</xs:annotation>
 			</xs:element>
-			<xs:element name="id" type="e:Id" minOccurs="1" maxOccurs="1">
+			<xs:element name="v" type="e:Id" minOccurs="1" maxOccurs="1">
 				<xs:annotation>
 					<xs:documentation>ID in external system</xs:documentation>
 				</xs:annotation>

@@ -11,7 +11,7 @@ public class EntityIdHolder<E> {
 
     private final Class<? extends E> entityClass;
 
-    private Serializable entityId;
+    private Integer entityId;
 
     public EntityIdHolder(Class<? extends E> entityClass) {
         this.entityClass = Validate.notNull(entityClass);
@@ -25,11 +25,11 @@ public class EntityIdHolder<E> {
         return entityId != null;
     }
 
-    public Serializable getEntityId() {
+    public Integer getEntityId() {
         return entityId;
     }
 
-    public void setEntityId(Serializable entityId) {
+    public void setEntityId(Integer entityId) {
         Validate.isTrue(!isInitialized(), "Entity id holder already initialized");
         Validate.notNull(entityId);
 

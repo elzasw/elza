@@ -49,6 +49,7 @@ public class ContextStructObject {
         ArrStructItemWrapper structItemWrapper = createItemWrapper(structItem);
         // create data without reference
         ArrDataStructureRef data = new ArrDataStructureRef();
+        xxxx cached ?
         data.setDataType(structItem.getItemType().getDataType());
         // create delayed data wrapper
         DelayedStructObjectRefWrapper dataWrapper = new DelayedStructObjectRefWrapper(data, refStructObjectImportId, section);

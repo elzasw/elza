@@ -119,12 +119,7 @@ public class SectionLevelProcessor implements ItemProcessor {
             // create data
             DataType dataType = itemType.getDataType();
             ImportableItemData itemData = item.createData(context, dataType);
-
-            // update data type reference
             ArrData data = itemData.getData();
-            if (data != null) {
-                data.setDataType(dataType.getEntity());
-            }
 
             ImportIndexData indexData = new ImportIndexData(section.getFund().getFundId(), itemData.getFulltext(), data);
             ArrDescItem descItem = createDescItem(section, itemType, item.getS(), indexData);

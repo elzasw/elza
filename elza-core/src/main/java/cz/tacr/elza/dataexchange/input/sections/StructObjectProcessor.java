@@ -23,91 +23,86 @@ import cz.tacr.elza.schema.v2.StructuredObject;
 
 public class StructObjectProcessor implements ItemProcessor {
 
-    private final ImportContext context;
+	private final ImportContext context;
 
-    // current section context
-    private final ContextSection section;
+	// current section context
+	private final ContextSection section;
 
-    public StructObjectProcessor(ImportContext context) {
-        this.context = context;
-        this.section = context.getSections().getCurrentSection();
-    }
+	public StructObjectProcessor(ImportContext context) {
+		this.context = context;
+		this.section = context.getSections().getCurrentSection();
+	}
 
-    @Override
-    public void process(Object item) {
-        StructuredObject object = (StructuredObject) item;
-        validateObject(object);
-        ContextStructObject cso = processObject(object);
-        processItems(object.getDeOrDiOrDd(), cso);
-    }
+	@Override
+	public void process(Object item) {
+		StructuredObject object = (StructuredObject) item;
+		validateObject(object);
+		ContextStructObject cso = processObject(object);
+		processItems(object.getDeOrDiOrDd(), cso);
+	}
 
-    private void validateObject(StructuredObject item) {
-        if (StringUtils.isEmpty(item.getId())) {
-            throw new DEImportException("Structured object id is not set");
-        }
-    }
+	private void validateObject(StructuredObject item) {
+		if (StringUtils.isEmpty(item.getId())) {
+			throw new DEImportException("Structured object id is not set");
+		}
+	}
 
-    private ContextStructObject processObject(StructuredObject item) {
-    	ArrStructuredObject so = new ArrStructuredObject();
-        so.setCreateChange(section.getCreateChange());
-        so.setFund(section.getFund());
-        so.setState(State.OK);
-        so.setAssignable(Boolean.TRUE);
+	private ContextStructObject processObject(StructuredObject item) {
+		ArrStructuredObject so = new ArrStructuredObject();
+		so.setCreateChange(section.getCreateChange());
+		so.setFund(section.getFund());
+		so.setState(State.OK);
+		so.setAssignable(Boolean.TRUE);
 
-        return section.addStructObject(so, item.getId());
-    }
+		return section.addStructObject(so, item.getId());
+	}
 
-    private void processItems(Collection<DescriptionItem> descItems, ContextStructObject cso) {
-        RuleSystem rs = section.getRuleSystem();
+	private void processItems(Collection<DescriptionItem> descItems, ContextStructObject cso) {
+		RuleSystem rs = section.getRuleSystem();
 
-        for (DescriptionItem descItem : descItems) {
-            // resolve item type
-            RuleSystemItemType rsit = rs.getItemTypeByCode(descItem.getT());
-            if (rsit == null) {
-                throw new DEImportException("Description item type not found, code:" + descItem.getT());
-            }
-            // check if structured object reference
-            // dataType check is insufficient, item can be DescriptionItemUndefined
-            if (descItem instanceof DescriptionItemStructObjectRef) {
-                DescriptionItemStructObjectRef refItem = (DescriptionItemStructObjectRef) descItem;
-                // check if referenced structured object already processed
-                ContextStructObject refCso = section.getContextStructObject(refItem.getSoid());
-                if (refCso == null) {
-                    // not yet processed (cannot call processData directly)
-                    ArrStructuredItem structItem = createStructItem(rsit, descItem.getS());
-                    cso.addStructItem(structItem, refItem.getSoid());
-                    continue;
-                }
-            }
-            processData(descItem, rsit, cso);
-        }
-    }
+		for (DescriptionItem descItem : descItems) {
+			// resolve item type
+			RuleSystemItemType rsit = rs.getItemTypeByCode(descItem.getT());
+			if (rsit == null) {
+				throw new DEImportException("Description item type not found, code:" + descItem.getT());
+			}
+			// check if structured object reference
+			// dataType check is insufficient, item can be DescriptionItemUndefined
+			if (descItem instanceof DescriptionItemStructObjectRef) {
+				DescriptionItemStructObjectRef refItem = (DescriptionItemStructObjectRef) descItem;
+				// check if referenced structured object already processed
+				ContextStructObject refCso = section.getContextStructObject(refItem.getSoid());
+				if (refCso == null) {
+					// not yet processed (cannot call processData directly)
+					ArrStructuredItem structItem = createStructItem(rsit, descItem.getS());
+					cso.addStructItem(structItem, refItem.getSoid());
+					continue;
+				}
+			}
+			processData(descItem, rsit, cso);
+		}
+	}
 
-    private void processData(DescriptionItem descItem, RuleSystemItemType rsit, ContextStructObject cso) {
-        // create data
-        DataType dataType = rsit.getDataType();
-        ImportableItemData itemData = descItem.createData(context, dataType);
+	private void processData(DescriptionItem descItem, RuleSystemItemType rsit, ContextStructObject cso) {
+		// create data
+		DataType dataType = rsit.getDataType();
+		ImportableItemData itemData = descItem.createData(context, dataType);
+		ArrData data = itemData.getData();
 
-        // update data type reference
-        ArrData data = itemData.getData();
-        if (data != null) {
-            data.setDataType(dataType.getEntity());
-        }
+		// add structured item
+		ArrStructuredItem structItem = createStructItem(rsit, descItem.getS());
+		cso.addStructItem(structItem, data);
+	}
 
-        // add structured item
-        ArrStructuredItem structItem = createStructItem(rsit, descItem.getS());
-        cso.addStructItem(structItem, data);
-    }
-
-    private ArrStructuredItem createStructItem(RuleSystemItemType rsit, String specCode) {
-        ArrStructuredItem structItem = new ArrStructuredItem();
-        structItem.setCreateChange(section.getCreateChange());
-        structItem.setDescItemObjectId(section.generateDescItemObjectId());
-        structItem.setItemType(rsit.getEntity());
-        structItem.setItemSpec(SectionLevelProcessor.resolveItemSpec(rsit, specCode));
-        // structItem.setData(...) - updates internally
-        // structItem.setPosition(...) - updates internally
-        // structItem.setStructureData(...) - updates internally
-        return structItem;
-    }
+	private ArrStructuredItem createStructItem(RuleSystemItemType rsit, String specCode) {
+		ArrStructuredItem structItem = new ArrStructuredItem();
+		structItem.setCreateChange(section.getCreateChange());
+		structItem.setDescItemObjectId(section.generateDescItemObjectId());
+		structItem.setItemType(rsit.getEntity());
+		structItem.setItemSpec(SectionLevelProcessor.resolveItemSpec(rsit, specCode));
+		// structItem.setData(...) - updates internally
+		// structItem.setPosition(...) - updates internally
+		// structItem.setStructureData(...) - updates internally
+		return structItem;
+	}
 }

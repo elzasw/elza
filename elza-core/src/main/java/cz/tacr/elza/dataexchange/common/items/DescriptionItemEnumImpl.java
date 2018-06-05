@@ -8,12 +8,14 @@ import cz.tacr.elza.schema.v2.DescriptionItemEnum;
 
 public class DescriptionItemEnumImpl extends DescriptionItemEnum {
 
-    @Override
-    public ImportableItemData createData(ImportContext context, DataType dataType) {
-        if (dataType != DataType.ENUM) {
-            throw new DEImportException("Unsupported data type:" + dataType);
-        }
-
-        return new ImportableItemData(new ArrDataNull());
-    }
+	@Override
+	public ImportableItemData createData(ImportContext context, DataType dataType) {
+		if (dataType != DataType.ENUM) {
+			throw new DEImportException("Unsupported data type:" + dataType);
+		}
+		ArrDataNull data = new ArrDataNull();
+		data.setDataType(dataType.getEntity());
+		
+		return new ImportableItemData(data);
+	}
 }

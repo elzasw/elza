@@ -16,6 +16,7 @@ import cz.tacr.elza.repository.ComplementTypeRepository;
 import cz.tacr.elza.repository.PackageRepository;
 import cz.tacr.elza.repository.PartyNameFormTypeRepository;
 import cz.tacr.elza.repository.PartyTypeComplementTypeRepository;
+import cz.tacr.elza.repository.ApExternalIdTypeRepository;
 import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRoleTypeRepository;
@@ -34,6 +35,8 @@ public class StaticDataProvider {
 
     private List<RelationType> relationTypes;
 
+    private List<ApExternalIdType> apEidTypes;
+    
     private Map<Integer, RulPackage> packageIdMap;
 
     private Map<Integer, ParPartyNameFormType> partyNameFormTypeIdMap;
@@ -51,6 +54,8 @@ public class StaticDataProvider {
     private Map<Integer, RelationTypeImpl> relationTypeIdMap;
 
     private Map<String, RelationTypeImpl> relationTypeCodeMap;
+    
+    private Map<String, ApExternalIdType> apEidTypeCodeMap;
 
     StaticDataProvider() {
     }
@@ -77,6 +82,10 @@ public class StaticDataProvider {
 
     public List<RelationType> getRelationTypes() {
         return relationTypes;
+    }
+    
+    public List<ApExternalIdType> getApEidTypes() {
+    	return apEidTypes;
     }
 
     public RulPackage getPackageById(Integer id) {
@@ -128,9 +137,17 @@ public class StaticDataProvider {
         return relationTypeCodeMap.get(code);
     }
 
-    /**
-     * Init all values. Method must be called inside transaction and synchronized.
-     */
+	public ApExternalIdType getApEidTypeByCode(String code) {
+		Validate.notEmpty(code);
+		return apEidTypeCodeMap.get(code);
+	}
+    
+    /* initialization methods */
+
+	/**
+	 * Initialize all static values. Caller must must ensure synchronized. Method
+	 * needs to be called in active transaction.
+	 */
     void init(StaticDataService service) {
         ruleSystemProvider.init(service.ruleSetRepository, service.itemTypeRepository,
                 service.itemSpecRepository, service.structuredTypeRepository);
@@ -139,9 +156,10 @@ public class StaticDataProvider {
         initComplementTypes(service.complementTypeRepository, service.partyTypeComplementTypeRepository);
         initApTypes(service.apTypeRepository);
         initRelationTypes(service.relationTypeRepository, service.relationTypeRoleTypeRepository);
+        initApEidTypes(service.apEidTypeRepository);
     }
 
-    private void initPackages(PackageRepository packageRepository) {
+	private void initPackages(PackageRepository packageRepository) {
         List<RulPackage> packages = packageRepository.findAll();
 
         // update fields
@@ -238,6 +256,14 @@ public class StaticDataProvider {
         this.relationTypeIdMap = idMap;
         this.relationTypeCodeMap = createLookup(types, RelationType::getCode);
     }
+    
+    private void initApEidTypes(ApExternalIdTypeRepository apEidTypeRepository) {
+		List<ApExternalIdType> eidTypes = apEidTypeRepository.findAll();
+		
+        // update fields
+        this.apEidTypes = Collections.unmodifiableList(eidTypes);
+        this.apEidTypeCodeMap = createLookup(eidTypes, ApExternalIdType::getCode);
+	}
 
     public static <K, V> Map<K, V> createLookup(Collection<V> values, Function<V, K> keyMapping) {
         Map<K, V> lookup = new HashMap<>(values.size());

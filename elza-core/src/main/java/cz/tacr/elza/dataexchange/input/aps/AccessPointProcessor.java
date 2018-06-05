@@ -1,71 +1,76 @@
 package cz.tacr.elza.dataexchange.input.aps;
 
-import cz.tacr.elza.domain.ApRecord;
-import cz.tacr.elza.domain.ApVariantRecord;
+import cz.tacr.elza.domain.ApDescription;
+import cz.tacr.elza.domain.ApName;
+import cz.tacr.elza.domain.ApNameType;
+
+import java.util.Iterator;
 import org.apache.commons.lang3.StringUtils;
 
 import cz.tacr.elza.dataexchange.input.DEImportException;
-import cz.tacr.elza.dataexchange.input.aps.context.AccessPointInfo;
 import cz.tacr.elza.dataexchange.input.context.ImportContext;
 import cz.tacr.elza.schema.v2.AccessPoint;
-import cz.tacr.elza.schema.v2.AccessPointEntry;
-import cz.tacr.elza.schema.v2.AccessPointVariantNames;
+import cz.tacr.elza.schema.v2.AccessPointName;
+import cz.tacr.elza.schema.v2.AccessPointtNames;
 
 /**
  * Processing access points. Implementation is not thread-safe.
  */
 public class AccessPointProcessor extends AccessPointEntryProcessor {
 
-    private AccessPoint accessPoint;
+	public AccessPointProcessor(ImportContext context) {
+		super(context, false);
+	}
 
-    public AccessPointProcessor(ImportContext context) {
-        super(context, false);
-    }
+	@Override
+	public void process(Object item) {
+		AccessPoint ap = (AccessPoint) item;
+		processEntry(ap.getApe());
+		processDesc(ap.getChr());
+		processNames(ap.getNms());
+	}
 
-    @Override
-    public void process(Object item) {
-        accessPoint = (AccessPoint) item;
-        super.process(accessPoint.getApe());
-    }
+	private void processDesc(String value) {
+		if (StringUtils.isEmpty(value)) {
+			return;
+		}
+		ApDescription apDesc = new ApDescription();
+		apDesc.setCreateChange(context.getCreateChange());
+		apDesc.setDescription(value);
+		context.addDescription(apDesc, info);
+	}
 
-    @Override
-    protected void validateAccessPointEntry(AccessPointEntry item) {
-        super.validateAccessPointEntry(item);
-        if (StringUtils.isBlank(accessPoint.getN())) {
-            throw new DEImportException("AccessPoint name is not set, apeId:" + item.getId());
-        }
-    }
+	private void processNames(AccessPointtNames names) {
+		if (names == null || names.getNm().isEmpty()) {
+			throw new DEImportException("AP preferred name not found, apeId=" + info.getEntryId());
+		}
+		Iterator<AccessPointName> it = names.getNm().iterator();
+		processName(it.next(), true);
+		while (it.hasNext()) {
+			processName(it.next(), false);
+		}
+	}
 
-    @Override
-    protected ApRecord createAP(AccessPointEntry item) {
-        ApRecord record = super.createAP(item);
-        record.setRecord(accessPoint.getN());
-        record.setCharacteristics(accessPoint.getChr());
-        return record;
-    }
-
-    @Override
-    protected AccessPointInfo addAccessPoint(ApRecord ap, String entryId) {
-        AccessPointInfo info = super.addAccessPoint(ap, entryId);
-        info.setName(accessPoint.getN());
-        return info;
-    }
-
-    @Override
-    protected void processSubEntities(AccessPointInfo apInfo) {
-        super.processSubEntities(apInfo);
-        processVariantNames(apInfo);
-    }
-
-    private void processVariantNames(AccessPointInfo apInfo) {
-        AccessPointVariantNames variantNames = accessPoint.getVnms();
-        if (variantNames == null) {
-            return;
-        }
-        for (String vn : variantNames.getVnm()) {
-            ApVariantRecord variantRecord = new ApVariantRecord();
-            variantRecord.setRecord(vn);
-            context.addVariantName(variantRecord, apInfo);
-        }
-    }
+	private void processName(AccessPointName name, boolean preferred) {
+		if (StringUtils.isEmpty(name.getN())) {
+			throw new DEImportException("AP name without value, apeId=" + info.getEntryId());
+		}
+		if (!context.isValidLanguage(name.getL())) {
+			throw new DEImportException(
+					"AP name has invalid language apeId=" + info.getEntryId() + ", code=" + name.getL());
+		}
+		ApNameType nameType = context.getNameTypeByCode(name.getT());
+		if (nameType == null) {
+			throw new DEImportException("AP name type not found, apeId=" + info.getEntryId() + ", code=" + name.getT());
+		}
+		// create name
+		ApName apName = new ApName();
+		apName.setComplement(name.getCpl());
+		apName.setCreateChange(context.getCreateChange());
+		apName.setLanguage(name.getL());
+		apName.setName(name.getN());
+		apName.setNameType(nameType);
+		apName.setPreferredName(preferred);
+		context.addName(apName, info);
+	}
 }

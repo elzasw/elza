@@ -20,7 +20,8 @@ public class DescriptionItemPartyRefImpl extends DescriptionItemPartyRef {
         }
         ArrDataPartyRef data = new ArrDataPartyRef();
         data.setParty(partyInfo.getEntityReference(context.getSession()));
+        data.setDataType(dataType.getEntity());
 
-        return new ImportableItemData(data, partyInfo.getAPName());
+        return new ImportableItemData(data, partyInfo.getFulltext());
     }
 }

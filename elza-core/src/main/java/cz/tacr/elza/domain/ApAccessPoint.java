@@ -217,8 +217,4 @@ public class ApAccessPoint implements Serializable, IApScope {
     public void setNameList(List<ApName> nameList) {
         this.nameList = nameList;
     }
-
-    //todo [fric] odebrat az bude jasno co a jak s tim
-    public void setLastUpdate(LocalDateTime now) {}
-    public LocalDateTime getLastUpdate() {return null;}
 }

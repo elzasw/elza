@@ -49,7 +49,7 @@ public class ImportContext implements ObservableImport {
         this.parties = parties;
         this.institutions = institutions;
         this.sections = sections;
-        initAllContexts();
+        initSubContexts();
     }
 
     public Session getSession() {
@@ -99,7 +99,7 @@ public class ImportContext implements ObservableImport {
         phaseChangeListeners.add(phaseChangeListener);
     }
 
-    private void initAllContexts() {
+    private void initSubContexts() {
         accessPoints.init(this);
         parties.init(this);
         institutions.init(this);

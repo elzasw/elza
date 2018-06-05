@@ -33,53 +33,48 @@ import cz.tacr.elza.service.ArrangementService;
  */
 public class SectionsContext {
 
-    private static final Logger LOG = LoggerFactory.getLogger(SectionsContext.class);
+	private static final Logger LOG = LoggerFactory.getLogger(SectionsContext.class);
 
-    private final List<SectionProcessedListener> sectionProcessedListeners = new LinkedList<>();
+	private final List<SectionProcessedListener> sectionProcessedListeners = new LinkedList<>();
 
-    private final StorageManager storageManager;
+	private final StorageManager storageManager;
 
-    private final int batchSize;
+	private final int batchSize;
 
-    private final ArrChange createChange;
+	private final ArrChange createChange;
 
-    private final ApScope importScope;
+	private final ApScope importScope;
 
-    private final ImportPosition importPosition;
+	private final ImportPosition importPosition;
 
-    private final StaticDataProvider staticData;
+	private final StaticDataProvider staticData;
 
-    private final ImportInitHelper initHelper;
+	private final ImportInitHelper initHelper;
 
-    private ContextSection currentSection;
+	private ContextSection currentSection;
 
-    public SectionsContext(StorageManager storageManager,
-                           int batchSize,
-                           ArrChange createChange,
-                           ApScope importScope,
-                           ImportPosition importPosition,
-                           StaticDataProvider staticData,
-                           ImportInitHelper initHelper) {
-        this.storageManager = storageManager;
-        this.batchSize = batchSize;
-        this.createChange = createChange;
-        this.importScope = importScope;
-        this.importPosition = importPosition;
-        this.staticData = staticData;
-        this.initHelper = initHelper;
-    }
+	public SectionsContext(StorageManager storageManager, int batchSize, ArrChange createChange, ApScope importScope,
+			ImportPosition importPosition, StaticDataProvider staticData, ImportInitHelper initHelper) {
+		this.storageManager = storageManager;
+		this.batchSize = batchSize;
+		this.createChange = createChange;
+		this.importScope = importScope;
+		this.importPosition = importPosition;
+		this.staticData = staticData;
+		this.initHelper = initHelper;
+	}
 
-    public ImportPosition getImportPostition() {
-        return importPosition;
-    }
+	public ImportPosition getImportPostition() {
+		return importPosition;
+	}
 
-    public void init(ObservableImport observableImport) {
-        // NOP
-    }
+	public void init(ObservableImport observableImport) {
+		// NOP
+	}
 
-    public void registerSectionProcessedListener(SectionProcessedListener sectionProcessedListener) {
-        sectionProcessedListeners.add(sectionProcessedListener);
-    }
+	public void registerSectionProcessedListener(SectionProcessedListener sectionProcessedListener) {
+		sectionProcessedListeners.add(sectionProcessedListener);
+	}
 
 	/**
 	 * Prepare context for new section.
@@ -89,126 +84,128 @@ public class SectionsContext {
 	 * @param ruleSetCode
 	 *            Rules for section
 	 */
-    public void beginSection(String ruleSetCode) {
-        Validate.isTrue(currentSection == null);
+	public void beginSection(String ruleSetCode) {
+		Validate.isTrue(currentSection == null);
 
-        // find rule system
-        if (StringUtils.isEmpty(ruleSetCode)) {
-            throw new DEImportException("Rule set code is empty");
-        }
-        RuleSystem ruleSystem = staticData.getRuleSystems().getByRuleSetCode(ruleSetCode);
-        if (ruleSystem == null) {
-            throw new DEImportException("Rule set not found, code:" + ruleSetCode);
-        }
+		// find rule system
+		if (StringUtils.isEmpty(ruleSetCode)) {
+			throw new DEImportException("Rule set code is empty");
+		}
+		RuleSystem ruleSystem = staticData.getRuleSystems().getByRuleSetCode(ruleSetCode);
+		if (ruleSystem == null) {
+			throw new DEImportException("Rule set not found, code:" + ruleSetCode);
+		}
 
-        // create current section
-        ContextSection section = new ContextSection(storageManager, batchSize, createChange, ruleSystem, initHelper);
+		// create current section
+		ContextSection section = new ContextSection(storageManager, batchSize, createChange, ruleSystem, initHelper);
 
-        // set subsection root adapter when present
-        if (importPosition != null) {
-            String fundRuleSetCode = importPosition.getFundVersion().getRuleSet().getCode();
-            if (!ruleSetCode.equals(fundRuleSetCode)) {
-                throw new DEImportException(
-                        "Rule set must match with fund, subsection code:" + ruleSetCode + ", fund code:" + fundRuleSetCode);
-            }
-            section.setRootAdapter(new SubsectionRootAdapter(importPosition, createChange, initHelper));
-        }
+		// set subsection root adapter when present
+		if (importPosition != null) {
+			String fundRuleSetCode = importPosition.getFundVersion().getRuleSet().getCode();
+			if (!ruleSetCode.equals(fundRuleSetCode)) {
+				throw new DEImportException("Rule set must match with fund, subsection code:" + ruleSetCode
+						+ ", fund code:" + fundRuleSetCode);
+			}
+			section.setRootAdapter(new SubsectionRootAdapter(importPosition, createChange, initHelper));
+		}
 
-        // set current section
-        currentSection = section;
-    }
+		// set current section
+		currentSection = section;
+	}
 
-    public void setFundInfo(FundInfo fundInfo) {
-        Validate.notNull(currentSection);
+	public void setFundInfo(FundInfo fundInfo) {
+		Validate.notNull(currentSection);
 
-        if (importPosition != null) {
-            LOG.warn("Fund info will be ignored during subsection import");
-        } else {
-            currentSection.setRootAdapter(
-                    createFundRootAdapter(fundInfo, currentSection.getRuleSystem(), currentSection.getCreateChange()));
-        }
-    }
+		if (importPosition != null) {
+			LOG.warn("Fund info will be ignored during subsection import");
+		} else {
+			FundRootAdapter fra = createNewFundRootAdapter(fundInfo, currentSection.getRuleSystem(),
+					currentSection.getCreateChange());
+			currentSection.setRootAdapter(fra);
+		}
+	}
 
-    public ContextSection getCurrentSection() {
-        Validate.notNull(currentSection);
+	public ContextSection getCurrentSection() {
+		Validate.notNull(currentSection);
 
-        return currentSection;
-    }
+		return currentSection;
+	}
 
-    public void endSection() {
-        Validate.notNull(currentSection);
+	public void endSection() {
+		Validate.notNull(currentSection);
 
-        currentSection.storeNodes();
+		currentSection.storeNodes();
 
-        // notify listeners
-        List<SectionProcessedListener> listeners = new ArrayList<>(sectionProcessedListeners);
-        listeners.forEach(l -> l.onSectionProcessed(currentSection));
+		// notify listeners
+		List<SectionProcessedListener> listeners = new ArrayList<>(sectionProcessedListeners);
+		listeners.forEach(l -> l.onSectionProcessed(currentSection));
 
-        // close & clear current section
-        currentSection.close();
-        currentSection = null;
-    }
+		// close & clear current section
+		currentSection.close();
+		currentSection = null;
+	}
 
-    /* internal methods */
+	/* internal methods */
 
-    private FundRootAdapter createFundRootAdapter(FundInfo fundInfo, RuleSystem ruleSystem, ArrChange createChange) {
-        InstitutionRepository instRepo = initHelper.getInstitutionRepository();
-        ArrangementService arrService = initHelper.getArrangementService();
+	private FundRootAdapter createNewFundRootAdapter(FundInfo fundInfo, RuleSystem ruleSystem, ArrChange createChange) {
+		InstitutionRepository instRepo = initHelper.getInstitutionRepository();
+		ArrangementService arrService = initHelper.getArrangementService();
 
-        if (StringUtils.isBlank(fundInfo.getN())) {
-            throw new DEImportException("Fund name must be set");
-        }
-        ParInstitution institution = instRepo.findByInternalCode(fundInfo.getIc());
-        if (institution == null) {
-            throw new DEImportException("Institution not found, internal code:" + fundInfo.getIc());
-        }
-        ArrFund fund = arrService.createFund(fundInfo.getN(), fundInfo.getC(), institution);
-        arrService.addScopeToFund(fund, importScope);
+		if (StringUtils.isBlank(fundInfo.getN())) {
+			throw new DEImportException("Fund name must be set");
+		}
+		ParInstitution institution = instRepo.findByInternalCode(fundInfo.getIc());
+		if (institution == null) {
+			throw new DEImportException("Institution not found, internal code:" + fundInfo.getIc());
+		}
+		ArrFund fund = arrService.createFund(fundInfo.getN(), fundInfo.getC(), institution);
+		arrService.addScopeToFund(fund, importScope);
 
-        return new FundRootAdapter(fund, ruleSystem, createChange, fundInfo.getTr(), arrService);
-    }
+		return new FundRootAdapter(fund, ruleSystem, createChange, fundInfo.getTr(), arrService);
+	}
 
-    public static class ImportPosition {
+	public static class ImportPosition {
 
-        private final ArrFundVersion fundVersion;
+		private final ArrFundVersion fundVersion;
 
-        private final ArrLevel parentLevel;
+		private final ArrLevel parentLevel;
 
-        private final ArrLevel targetLevel;
+		private final ArrLevel targetLevel;
 
-        private final ImportDirection direction;
+		private final ImportDirection direction;
 
-        private Integer levelPosition;
+		private Integer levelPosition;
 
-        public ImportPosition(ArrFundVersion fundVersion, ArrLevel parentLevel, ArrLevel targetLevel, ImportDirection direction) {
-            this.fundVersion = Validate.notNull(fundVersion);
-            this.parentLevel = Validate.notNull(parentLevel);
-            this.targetLevel = targetLevel;
-            this.direction = Validate.notNull(direction);
-        }
+		public ImportPosition(ArrFundVersion fundVersion, ArrLevel parentLevel, ArrLevel targetLevel,
+				ImportDirection direction) {
+			this.fundVersion = Validate.notNull(fundVersion);
+			this.parentLevel = Validate.notNull(parentLevel);
+			this.targetLevel = targetLevel;
+			this.direction = Validate.notNull(direction);
+		}
 
-        public ArrFundVersion getFundVersion() {
-            return fundVersion;
-        }
+		public ArrFundVersion getFundVersion() {
+			return fundVersion;
+		}
 
-        public ArrLevel getParentLevel() {
-            return parentLevel;
-        }
+		public ArrLevel getParentLevel() {
+			return parentLevel;
+		}
 
-        public ArrLevel getTargetLevel() {
-            return targetLevel;
-        }
+		public ArrLevel getTargetLevel() {
+			return targetLevel;
+		}
 
-        public ImportDirection getDirection() {
-            return direction;
-        }
+		public ImportDirection getDirection() {
+			return direction;
+		}
 
-        public Integer getLevelPosition() {
-            return levelPosition;
-        }
+		public Integer getLevelPosition() {
+			return levelPosition;
+		}
 
-        void setLevelPosition(Integer levelPosition) {
-            this.levelPosition = levelPosition;
-        }
-    }
+		void setLevelPosition(Integer levelPosition) {
+			this.levelPosition = levelPosition;
+		}
+	}
 }
