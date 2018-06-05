@@ -19,11 +19,8 @@ import javax.persistence.criteria.Root;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.Validate;
-import org.hibernate.CacheMode;
 import org.springframework.stereotype.Component;
 
-import cz.tacr.elza.common.db.DatabaseType;
-import cz.tacr.elza.common.db.RecursiveQueryBuilder;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RegScope;
@@ -152,28 +149,5 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
         }
 
         return builder.and(conditions.toArray(new Predicate[conditions.size()]));
-    }
-
-    @Override
-    public List<RegRecord> findAccessPointsWithParents(Collection<Integer> apIds) {
-
-        RecursiveQueryBuilder<RegRecord> rqBuilder = DatabaseType.getCurrent().createRecursiveQueryBuilder(RegRecord.class);
-
-        rqBuilder.addSqlPart("WITH RECURSIVE apTree(record_id, register_type_id, record, characteristics, note, external_id, ")
-                .addSqlPart("version, parent_record_id, scope_id, uuid, last_update, external_system_id, invalid, source_id, path) AS ")
-
-                .addSqlPart("(SELECT r.*, r.record_id, 0 FROM reg_record r WHERE record_id in (:apIds) ")
-                .addSqlPart("UNION ALL ")
-                .addSqlPart("SELECT r.*, apt.source_id, apt.path + 1 FROM reg_record r ")
-                .addSqlPart("JOIN apTree apt ON apt.parent_record_id=r.record_id)")
-
-                .addSqlPart("SELECT * FROM apTree apt ORDER BY apt.source_id, apt.path desc");
-
-        rqBuilder.prepareQuery(entityManager);
-        rqBuilder.setParameter("apIds", apIds);
-
-        org.hibernate.query.Query<RegRecord> query = rqBuilder.getQuery();
-        query.setCacheMode(CacheMode.IGNORE);
-        return query.getResultList();
     }
 }

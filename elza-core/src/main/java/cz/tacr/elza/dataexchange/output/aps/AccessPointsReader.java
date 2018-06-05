@@ -8,10 +8,6 @@ import java.util.Set;
 
 import javax.persistence.EntityManager;
 
-import org.apache.commons.collections4.ListValuedMap;
-import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
-import org.apache.commons.lang.Validate;
-
 import com.google.common.collect.Iterables;
 
 import cz.tacr.elza.core.security.Authorization;
@@ -77,7 +73,7 @@ public class AccessPointsReader implements ExportReader {
 
     private void readAccessPoints(Collection<Integer> apIds, AccessPointsOutputStream os) {
         // TODO: replace findAccessPointsWithParents with loader after removal of hierarchy
-        List<RegRecord> apWithParents = recordRepository.findAccessPointsWithParents(apIds);
+        List<RegRecord> apWithParents = recordRepository.findAll(apIds);
         List<RegRecord> batch = new ArrayList<>(context.getBatchSize());
 
         boolean globalPermission = userService.hasPermission(Permission.REG_SCOPE_RD_ALL);
