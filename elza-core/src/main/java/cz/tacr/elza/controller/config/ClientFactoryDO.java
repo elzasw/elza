@@ -232,7 +232,11 @@ public class ClientFactoryDO {
     public ArrDescItem createDescItem(final ArrItemVO descItemVO, final Integer descItemTypeId) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
 
-        ArrData data = mapper.map(descItemVO, ArrData.class);
+        ArrData data = null;
+
+        if (!descItemVO.isUndefined()) {
+            data = mapper.map(descItemVO, ArrData.class);
+        }
         ArrDescItem descItem = new ArrDescItem();
         descItem.setData(data);
 
