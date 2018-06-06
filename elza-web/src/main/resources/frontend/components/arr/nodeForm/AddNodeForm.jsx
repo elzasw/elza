@@ -67,9 +67,23 @@ class AddNodeForm extends AbstractReactComponent {
         scopeList: [],
         value: '',
         ignoreRootNodes: false,
-        submitting: false
+        submitting: false,
+        valid: true
     };
 
+    validate = (props, state) => {
+        const {selectedType, selectedSourceAS, selectedScope, importXml} = state;
+        let errors = [];
+        if(selectedType != "NEW" && selectedSourceAS === "FILE"){
+            if(!selectedScope || selectedScope.id < 0){
+                errors.push("no scope selected");
+            }
+            if(!importXml){
+                errors.push("no file selected");
+            }
+        }
+        return errors;
+    }
     /**
      * Připravuje hodnoty proměnných rodič, směr pro potřeby API serveru
      * - Přidání JP na konec se mění na přidání dítěte rodiči
@@ -215,10 +229,10 @@ class AddNodeForm extends AbstractReactComponent {
 
             onSubmit(submitData, 'NEW');
         } else if (this.state.selectedSourceAS === 'FILE') {
-            
+
             const submitData = {
                 xmlFile:this.state.importXml,
-                scopeId:this.state.selectedScopeId,
+                scopeId:this.state.selectedScope.id,
                 ignoreRootNodes: this.state.ignoreRootNodes
             };
             //Upravena rozhodovaci logika pro umisteni uzlu
@@ -284,9 +298,11 @@ class AddNodeForm extends AbstractReactComponent {
         this.fetchScopeList();
     }
     fetchScopeList = () => {
-        WebApi.getAllScopes().then(data => {
+        WebApi.getScopes(this.props.versionId).then(data => {
+            const selectedScope = data[0] || undefined;
             this.setState({
-                scopeList: data
+                scopeList: data,
+                selectedScope
             });
         });
     };
@@ -302,7 +318,7 @@ class AddNodeForm extends AbstractReactComponent {
             arrRegion,
             userDetail
         } = this.props;
-        const { scenarios, loading, submitting } = this.state;
+        const { scenarios, loading, submitting, valid } = this.state;
         const notRoot = !isFundRootId(parentNode.id);
          
         // Položky v select na směr
@@ -355,7 +371,8 @@ class AddNodeForm extends AbstractReactComponent {
                                     }
                                     onChange={e => {
                                         this.setState({
-                                            selectedType: 'EXISTING'
+                                            selectedType: 'EXISTING',
+                                            valid: false
                                         });
                                     }}
                                 >
@@ -403,7 +420,7 @@ class AddNodeForm extends AbstractReactComponent {
                         </Col>
                         <Col xs={4} xsOffset={4}>
                             <Button
-                                disabled={submitting}
+                                disabled={submitting || !valid}
                                 type="submit"
                                 onClick={this.handleFormSubmit}
                             >
@@ -523,7 +540,8 @@ class AddNodeForm extends AbstractReactComponent {
                                     }
                                     onChange={e => {
                                         this.setState({
-                                            selectedSourceAS: 'FILE'
+                                            selectedSourceAS: 'FILE',
+                                            valid:false
                                         });
                                     }}
                                 >
@@ -542,7 +560,8 @@ class AddNodeForm extends AbstractReactComponent {
                                     }
                                     onChange={e => {
                                         this.setState({
-                                            selectedSourceAS: 'OTHER'
+                                            selectedSourceAS: 'OTHER',
+                                            valid: true
                                         });
                                     }}
                                 >
@@ -560,11 +579,28 @@ class AddNodeForm extends AbstractReactComponent {
                 : this.renderCreateFromFile()
         ];
     }
-    handleScopeChange = (e) => {
-        this.setState({selectedScopeId:e.id}); 
+    setValidatedState = (state)=>{
+        const newState = {
+            ...this.state,
+            ...state
+        };
+        const errors = this.validate(this.props, newState);
+        const valid = errors.length === 0;
+        this.setState({
+            ...newState,
+            valid
+        });
+    }
+    handleScopeChange = (item) => {
+        this.setValidatedState({
+            selectedScope: item
+        });
     }
     handleFileChange = (e) => {
-        this.setState({importXml:e.target.files[0]});
+        this.setValidatedState({
+            importXml: e.target.files[0]
+        });
+
     }
     renderCreateFromFile() {
         const { scopeList, submitting } = this.state;
@@ -578,7 +614,7 @@ class AddNodeForm extends AbstractReactComponent {
                     getItemName={item => {
                         return item ? item.name : '';
                     }}
-                    value={this.state.selectedScopeId}
+                    value={this.state.selectedScope}
                     onChange={this.handleScopeChange}
                 />
             </FormGroup>,
