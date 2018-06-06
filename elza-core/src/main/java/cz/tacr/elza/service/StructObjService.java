@@ -260,16 +260,18 @@ public class StructObjService {
             return;
         }
 
-        // same values -> simply end
-        if (StringUtils.equals(newValue, oldValue)) {
-            return;
-        }
+        // Method is called also after ext update etc -> can be called 
+        // with same values
 
         if (StringUtils.isNotEmpty(oldValue)) {
             recheckDuplicates(oldValue, structObj);
         }
+
         if (StringUtils.isNotEmpty(newValue)) {
-            recheckDuplicates(newValue, structObj);
+            // same values -> do only one check
+            if (!newValue.equals(oldValue)) {
+                recheckDuplicates(newValue, structObj);
+            }
         }
     }
 

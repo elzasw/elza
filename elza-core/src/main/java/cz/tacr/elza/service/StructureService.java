@@ -610,6 +610,12 @@ public class StructureService {
         return structureDataList;
     }
 
+    private void revalidateStructObjs(RulStructuredType structuredType, ArrFund fund) {
+        List<Integer> structureDataIds = structObjRepository.findStructuredObjectIdByStructureTypeFund(structuredType,
+                                                                                                       fund);
+        structObjService.addIdsToValidate(structureDataIds);
+    }
+
     /**
      * Provede revalidaci podle strukt. typu.
      *
@@ -825,7 +831,9 @@ public class StructureService {
     public void setFundStructureExtensions(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
                                            final RulStructuredType structureType,
                                            final List<RulStructuredTypeExtension> structureExtensions) {
-        structureExtensions.forEach(se -> validateFundStructureExtension(fundVersion, structureType, se));
+        for (RulStructuredTypeExtension se : structureExtensions) {
+            validateFundStructureExtension(fundVersion, structureType, se);
+        }
 
         List<ArrFundStructureExtension> fundStructureExtensions = fundStructureExtensionRepository.findByFundAndDeleteChangeIsNull(fundVersion.getFund());
 
@@ -856,10 +864,8 @@ public class StructureService {
             fundStructureExtensionsDelete.forEach(fse -> fse.setDeleteChange(change));
             fundStructureExtensionRepository.save(fundStructureExtensionsCreate);
             fundStructureExtensionRepository.save(fundStructureExtensionsDelete);
-            Set<RulStructuredType> structureTypes = new HashSet<>();
-            fundStructureExtensionsCreate.forEach(fse -> structureTypes.add(fse.getStructuredTypeExtension().getStructuredType()));
-            fundStructureExtensionsDelete.forEach(fse -> structureTypes.add(fse.getStructuredTypeExtension().getStructuredType()));
-            revalidateStructureTypes(structureTypes);
+
+            revalidateStructObjs(structureType, fundVersion.getFund());
         }
     }
 
