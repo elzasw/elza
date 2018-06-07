@@ -784,6 +784,7 @@ class SubNodeForm extends AbstractReactComponent {
             notIdentified={notIdentified}
             onDescItemNotIdentified={(descItemIndex, descItem) => this.handleDescItemNotIdentified(descItemGroupIndex, descItemTypeIndex, descItemIndex, descItem)}
             customActions={this.props.customActions && this.props.customActions(rulDataType.code, infoType)}
+            descItemFactory={this.props.descItemFactory}
         />
     }
 

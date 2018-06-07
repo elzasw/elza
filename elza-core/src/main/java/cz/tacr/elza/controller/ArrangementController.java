@@ -112,6 +112,7 @@ import cz.tacr.elza.service.importnodes.vo.ImportParams;
 import cz.tacr.elza.service.importnodes.vo.ValidateResult;
 import cz.tacr.elza.service.output.OutputRequestStatus;
 import cz.tacr.elza.service.vo.ChangesResult;
+import cz.tacr.elza.service.vo.UpdateDescItemsParam;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.Validate;
@@ -1088,12 +1089,15 @@ public class ArrangementController {
     }
 
     /**
-     * Smazání celého archivního souboru. (pouze pokud neexistuje výstup (arr_named_output))
+     * Smazání celého archivního souboru. (pouze pokud neexistuje výstup
+     * (arr_named_output))
      *
-     * @param fundId id archivního souboru
-     * @throws DeleteFailedException Nelze smazat archivní soubor, pro který existuje alespoň jeden výstup.
+     * @param fundId
+     *            id archivního souboru
+     * @throws DeleteFailedException
+     *             Nelze smazat archivní soubor, pro který existuje alespoň jeden
+     *             výstup.
      */
-    @Transactional
     @RequestMapping(value = "/deleteFund/{fundId}", method = RequestMethod.DELETE)
     public void deleteFund(@PathVariable("fundId") final Integer fundId) throws DeleteFailedException {
 
@@ -1517,7 +1521,12 @@ public class ArrangementController {
                 descItemCopyTypes);
 
         if (CollectionUtils.isNotEmpty(addLevelParam.getCreateItems())) {
-            formService.updateDescItems(version.getFundVersionId(), newLevel.getNodeId(), newLevel.getNode().getVersion(), addLevelParam.getCreateItems(), Collections.emptyList(), Collections.emptyList(), null);
+            UpdateDescItemsParam params = new UpdateDescItemsParam(newLevel.getNodeId(),
+                    newLevel.getNode().getVersion(),
+                    addLevelParam.getCreateItems(),
+                    Collections.emptyList(),
+                    Collections.emptyList());
+            formService.updateDescItems(version.getFundVersionId(), params, null);
         }
 
         Collection<TreeNodeVO> nodeClients = levelTreeCacheService

@@ -472,7 +472,9 @@ class TreeList extends React.Component {
                     onChange && onChange(item);
                 });
             }
-        } 
+        } else {
+            onChange && onChange(null);
+        }
     }
 
     selectHighlightedItem = () => {

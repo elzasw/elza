@@ -16,6 +16,7 @@ import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.service.ArrangementFormService;
 import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.LevelTreeCacheService;
+import cz.tacr.elza.service.vo.UpdateDescItemsParam;
 import cz.tacr.elza.websocket.WebSocketAwareController;
 import cz.tacr.elza.websocket.service.WebScoketStompService;
 import org.apache.commons.collections4.CollectionUtils;
@@ -121,7 +122,12 @@ public class ArrangementWebsocketController {
             }
         }
 
-        arrangementFormService.updateDescItems(fundVersionId, nodeId, nodeVersion, createItems, updateItems, deleteItems, requestHeaders);
+        UpdateDescItemsParam params = new UpdateDescItemsParam(nodeId,
+                nodeVersion,
+                createItems,
+                updateItems,
+                deleteItems);
+        arrangementFormService.updateDescItems(fundVersionId, params, requestHeaders);
     }
 
     /**
@@ -156,7 +162,12 @@ public class ArrangementWebsocketController {
                 descItemCopyTypes);
 
         if (CollectionUtils.isNotEmpty(addLevelParam.getCreateItems())) {
-            arrangementFormService.updateDescItems(version.getFundVersionId(), newLevel.getNodeId(), newLevel.getNode().getVersion(), addLevelParam.getCreateItems(), Collections.emptyList(), Collections.emptyList(), null);
+            UpdateDescItemsParam params = new UpdateDescItemsParam(newLevel.getNodeId(),
+                    newLevel.getNode().getVersion(),
+                    addLevelParam.getCreateItems(),
+                    Collections.emptyList(),
+                    Collections.emptyList());
+            arrangementFormService.updateDescItems(version.getFundVersionId(), params, null);
         }
 
         Collection<TreeNodeVO> nodeClients = levelTreeCacheService

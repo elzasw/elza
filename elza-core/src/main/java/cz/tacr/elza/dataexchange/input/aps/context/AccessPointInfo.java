@@ -26,11 +26,6 @@ public class AccessPointInfo extends EntityIdHolder<ApRecord> {
         this.apType = Validate.notNull(apType);
     }
 
-    @Override
-    public Integer getEntityId() {
-        return (Integer) super.getEntityId();
-    }
-
     public String getEntryId() {
         return entryId;
     }

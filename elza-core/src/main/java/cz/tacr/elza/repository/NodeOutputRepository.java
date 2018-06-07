@@ -7,13 +7,13 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrNodeOutput;
 import cz.tacr.elza.domain.ArrOutputDefinition;
 
 /**
  * Respozitory pro vazbu výstupu na podstromy archivního popisu.
  *
- * @author Martin Šlapa
  * @since 01.04.2016
  */
 @Repository
@@ -32,4 +32,6 @@ public interface NodeOutputRepository extends JpaRepository<ArrNodeOutput, Integ
      */
     @Query(SELECT_OUTPUT_NODES + " AND no.createChange < ?2 AND (l.deleteChange is null or l.deleteChange > ?2) AND (no.deleteChange is null or no.deleteChange > ?2)")
     List<ArrNodeOutput> findByOutputDefinitionAndChange(ArrOutputDefinition outputDefinition, ArrChange lockChange);
+
+    void deleteByOutputDefinitionFund(ArrFund fund);
 }

@@ -1,5 +1,21 @@
 package cz.tacr.elza.controller;
 
+import java.util.List;
+import java.util.Map;
+
+import javax.transaction.Transactional;
+
+import org.apache.commons.lang3.Validate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.ArrStructureDataVO;
@@ -21,19 +37,6 @@ import cz.tacr.elza.repository.FilteredResult;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.StructureService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-import javax.transaction.Transactional;
-import java.util.List;
-import java.util.Map;
 
 
 /**
@@ -81,7 +84,7 @@ public class StructureController {
         ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
         RulStructuredType structureType = structureService.getStructureTypeByCode(structureTypeCode);
         validateRuleSet(fundVersion, structureType);
-        ArrStructuredObject createStructureData = structureService.createStructureData(fundVersion.getFund(), structureType, ArrStructuredObject.State.TEMP);
+        ArrStructuredObject createStructureData = structureService.createStructObj(fundVersion.getFund(), structureType, ArrStructuredObject.State.TEMP);
         return factoryVO.createStructureData(createStructureData);
     }
 
@@ -98,11 +101,16 @@ public class StructureController {
     public void duplicateStructureDataBatch(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                             @PathVariable(value = "structureDataId") final Integer structureDataId,
                                             @RequestBody StructureDataBatch structureDataBatch) {
-        Assert.notNull(structureDataBatch.getCount(), "Počet položek musí být vyplněn");
-        Assert.notEmpty(structureDataBatch.getItemTypeIds(), "Autoincrementující typ musí být alespoň jeden");
+        Integer count = structureDataBatch.getCount();
+        Validate.notNull(count, "Počet položek musí být vyplněn");
+
+        List<Integer> incrementedTypeIds = structureDataBatch.getIncrementedTypeIds();
+        Validate.notEmpty(incrementedTypeIds, "Autoincrementující typ musí být alespoň jeden");
+
         ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
-        ArrStructuredObject structureData = structureService.getStructureDataById(structureDataId);
-        structureService.duplicateStructureDataBatch(fundVersion, structureData, structureDataBatch.getCount(), structureDataBatch.getItemTypeIds());
+        ArrStructuredObject structureData = structureService.getStructObjById(structureDataId);
+        structureService.duplicateStructureDataBatch(fundVersion, structureData, count,
+                                                     incrementedTypeIds);
     }
 
     /**
@@ -127,7 +135,7 @@ public class StructureController {
         Assert.notEmpty(structureDataBatchUpdate.structureDataIds, "Musí být vyplněn alespoň jeden identifikátor hodnoty strukt. typu");
 
         List<ArrStructuredItem> structureItems = factoryDO.createStructureItem(structureDataBatchUpdate.getItems());
-        structureService.updateStructureDataBatch(fundVersion,
+        structureService.updateStructObjBatch(fundVersion,
                 structureType,
                 structureDataBatchUpdate.getStructureDataIds(),
                 structureItems,
@@ -147,7 +155,7 @@ public class StructureController {
     public ArrStructureDataVO confirmStructureData(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                                    @PathVariable(value = "structureDataId") final Integer structureDataId) {
         ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
-        ArrStructuredObject structureData = structureService.getStructureDataById(structureDataId);
+        ArrStructuredObject structureData = structureService.getStructObjById(structureDataId);
         validateRuleSet(fundVersion, structureData.getStructuredType());
         ArrStructuredObject createStructureData = structureService.confirmStructureData(fundVersion.getFund(), structureData);
         return factoryVO.createStructureData(createStructureData);
@@ -162,11 +170,11 @@ public class StructureController {
      */
     @Transactional
     @RequestMapping(value = "/data/{fundVersionId}/assignable/{assignable}", method = RequestMethod.POST)
-    public void setAssignableStructureDataList(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+    public void setAssignableStructObjList(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                                @PathVariable(value = "assignable") final Boolean assignable,
                                                @RequestBody List<Integer> structureDataIds) {
         ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
-        List<ArrStructuredObject> structureDataList = structureService.getStructureDataByIds(structureDataIds);
+        List<ArrStructuredObject> structureDataList = structureService.getStructObjByIds(structureDataIds);
         for (ArrStructuredObject structureData : structureDataList) {
             validateRuleSet(fundVersion, structureData.getStructuredType());
         }
@@ -185,9 +193,9 @@ public class StructureController {
     public ArrStructureDataVO deleteStructureData(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                                   @PathVariable(value = "structureDataId") final Integer structureDataId) {
         ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
-        ArrStructuredObject structureData = structureService.getStructureDataById(structureDataId);
+        ArrStructuredObject structureData = structureService.getStructObjById(structureDataId);
         validateRuleSet(fundVersion, structureData.getStructuredType());
-        ArrStructuredObject deleteStructureData = structureService.deleteStructureData(structureData);
+        ArrStructuredObject deleteStructureData = structureService.deleteStructObj(structureData);
         return factoryVO.createStructureData(deleteStructureData);
     }
 
@@ -203,7 +211,7 @@ public class StructureController {
     public ArrStructureDataVO getStructureData(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                                @PathVariable(value = "structureDataId") final Integer structureDataId) {
         ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
-        return factoryVO.createStructureData(structureService.getStructureDataById(structureDataId, fundVersion));
+        return factoryVO.createStructureData(structureService.getStructObjById(structureDataId, fundVersion));
     }
 
     /**
@@ -219,7 +227,7 @@ public class StructureController {
      */
     @Transactional
     @RequestMapping(value = "/data/{fundVersionId}/{structureTypeCode}/search", method = RequestMethod.GET)
-    public FilteredResultVO<ArrStructureDataVO> findStructureData(@PathVariable("fundVersionId") final Integer fundVersionId,
+    public FilteredResultVO<ArrStructureDataVO> findStructObj(@PathVariable("fundVersionId") final Integer fundVersionId,
                                                                   @PathVariable("structureTypeCode") final String structureTypeCode,
                                                                   @RequestParam(value = "search", required = false) final String search,
                                                                   @RequestParam(value = "assignable", required = false) final Boolean assignable,
@@ -345,7 +353,7 @@ public class StructureController {
     public StructureDataFormDataVO getFormStructureItems(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                                          @PathVariable(value = "structureDataId") final Integer structureDataId) {
         ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
-        ArrStructuredObject structureData = structureService.getStructureDataById(structureDataId);
+        ArrStructuredObject structureData = structureService.getStructObjById(structureDataId);
 
         validateRuleSet(fundVersion, structureData.getStructuredType());
 
@@ -510,14 +518,14 @@ public class StructureController {
         /**
          * Identifikátory číselných typů atributu, které se budou incrementovat.
          */
-        private List<Integer> itemTypeIds;
+        private List<Integer> incrementedTypeIds;
 
         public StructureDataBatch() {
         }
 
         public StructureDataBatch(final Integer count, final List<Integer> itemTypeIds) {
             this.count = count;
-            this.itemTypeIds = itemTypeIds;
+            this.incrementedTypeIds = itemTypeIds;
         }
 
         public Integer getCount() {
@@ -528,12 +536,12 @@ public class StructureController {
             this.count = count;
         }
 
-        public List<Integer> getItemTypeIds() {
-            return itemTypeIds;
+        public List<Integer> getIncrementedTypeIds() {
+            return incrementedTypeIds;
         }
 
-        public void setItemTypeIds(final List<Integer> itemTypeIds) {
-            this.itemTypeIds = itemTypeIds;
+        public void setIncrementedTypeIds(final List<Integer> itemTypeIds) {
+            this.incrementedTypeIds = itemTypeIds;
         }
     }
 }

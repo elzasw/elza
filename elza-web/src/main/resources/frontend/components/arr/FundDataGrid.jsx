@@ -442,7 +442,7 @@ class FundDataGrid extends AbstractReactComponent {
             const refType = refTypesMap[id];
             return {
                 id: refType.id,
-                title: refType.shortcut,
+                name: refType.name,
                 desc: refType.description
             }
         });

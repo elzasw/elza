@@ -42,9 +42,11 @@ import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundStructureExtension;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrOutputDefinition;
+import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
@@ -620,32 +622,43 @@ public class RevertingChangesService {
         return Arrays.asList(configUnionTables);
     }
 
+    /**
+     * Delete from ARR_CHANGE unused change_ids
+     * 
+     * @return
+     */
     public Query createDeleteNotUseChangesQuery() {
 
         String[][] configUnionTables = new String[][]{
-            {"arr_level", "createChange"},
-            {"arr_level", "deleteChange"},
-            {"arr_item", "createChange"},
-            {"arr_item", "deleteChange"},
-            {"arr_node_register", "createChange"},
-            {"arr_node_register", "deleteChange"},
-            {"arr_node_extension", "createChange"},
-            {"arr_node_extension", "deleteChange"},
+                {"arr_level", "createChange"},
+                {"arr_level", "deleteChange"},
+                {"arr_item", "createChange"},
+                {"arr_item", "deleteChange"},
+                {"arr_node_register", "createChange"},
+                {"arr_node_register", "deleteChange"},
+                {"arr_node_extension", "createChange"},
+                {"arr_node_extension", "deleteChange"},
+                
+                {"arr_fund_version", "createChange"},
+                {"arr_fund_version", "lockChange"},
+                {"arr_bulk_action_run", "change"},
+                {"arr_output", "createChange"},
+                {"arr_output", "lockChange"},
+                {"arr_node_output", "createChange"},
+                {"arr_node_output", "deleteChange"},
+                {"arr_output_result", "change"},
+                
+                {"arr_dao_link", "createChange"},
+                {"arr_dao_link", "deleteChange"},
+                
+                {"arr_request_queue_item", "createChange"},
+                {"arr_request", "createChange"},
 
-            {"arr_fund_version", "createChange"},
-            {"arr_fund_version", "lockChange"},
-            {"arr_bulk_action_run", "change"},
-            {"arr_output", "createChange"},
-            {"arr_output", "lockChange"},
-            {"arr_node_output", "createChange"},
-            {"arr_node_output", "deleteChange"},
-            {"arr_output_result", "change"},
+                { ArrStructuredObject.TABLE_NAME, ArrStructuredObject.CREATE_CHANGE },
+                { ArrStructuredObject.TABLE_NAME, ArrStructuredObject.DELETE_CHANGE },
 
-            {"arr_dao_link", "createChange"},
-            {"arr_dao_link", "deleteChange"},
-
-            {"arr_request_queue_item", "createChange"},
-            {"arr_request", "createChange"},
+                { ArrFundStructureExtension.TABLE_NAME, ArrFundStructureExtension.CREATE_CHANGE },
+                { ArrFundStructureExtension.TABLE_NAME, ArrFundStructureExtension.DELETE_CHANGE }
         };
 
         List<String[]> changeTables = Arrays.asList(configUnionTables);

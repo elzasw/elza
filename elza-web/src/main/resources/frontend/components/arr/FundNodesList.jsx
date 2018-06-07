@@ -24,8 +24,9 @@ class FuncNodesList extends AbstractReactComponent {
         }
     };
 
-    handleRenderItem = (node) => {
-        return <NodeLabel node={node} />
+    handleRenderItem = (props) => {
+        const {item} = props;
+        return <NodeLabel node={item} />;
     };
 
     render() {

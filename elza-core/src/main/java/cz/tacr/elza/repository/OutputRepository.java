@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutputDefinition;
@@ -13,8 +14,7 @@ import cz.tacr.elza.domain.ArrOutputDefinition.OutputState;
 
 /**
  * Respozitory pro verzi pojmenovaného výstupu z archivního výstupu.
- *
- * @author Martin Šlapa
+ * 
  * @since 01.04.2016
  */
 @Repository
@@ -30,4 +30,13 @@ public interface OutputRepository extends ElzaJpaRepository<ArrOutput, Integer> 
     List<ArrOutput> findByFundVersionAndStateSorted(@Param("fundVersion") ArrFundVersion fundVersion, @Param("state") OutputState state);
 
     ArrOutput findOneByOutputDefinitionAndLockChangeIsNull(ArrOutputDefinition outputDefinition);
+
+    /**
+     * Delete output by fund
+     * 
+     * Used by method deleteFund
+     * 
+     * @param fund
+     */
+    void deleteByOutputDefinitionFund(ArrFund fund);
 }

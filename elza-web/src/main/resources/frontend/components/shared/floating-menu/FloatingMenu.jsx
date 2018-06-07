@@ -7,14 +7,18 @@ import './FloatingMenu.less';
 
 export default class FloatingMenu extends React.PureComponent {
     static propTypes = {
-        target: PropTypes.object.isRequired,
+        target: PropTypes.object,
+        coordinates: PropTypes.object,
         shouldUpdate: PropTypes.bool,
-        closeMenu: PropTypes.func
+        closeMenu: PropTypes.func,
+        //@TODO: selectable placement direction
+        //position: PropTypes.oneOf(["both", "horizontal", "vertical", "left", "right", "up", "down"])
     }
 
     static defaultProps = {
         shouldUpdate: true,
-        closeMenu: ()=>{}
+        closeMenu: ()=>{},
+        coordinates: {x:0,y:0}
     }
 
     constructor(props) {
@@ -57,9 +61,8 @@ export default class FloatingMenu extends React.PureComponent {
             eventTarget = eventTarget.parentNode;
         }
 
-        // if the click was made outside of the menu,
-        // call the closeMenu callback (if it exists)
-        closeMenu && closeMenu();
+        // call the closeMenu callback, if the click was made outside of the menu
+        closeMenu();
     }
 
     /**
@@ -67,38 +70,14 @@ export default class FloatingMenu extends React.PureComponent {
      * @param {object} origin
      * @return {object}
      */
-    getElementRelativeScreenConstraints = (origin) => {
-        const originRect = origin.getBoundingClientRect();
+    getElementRelativeScreenConstraints = (originRect) => {
+        const screen = $(document);
         const originOffset = this.getRectScreenOffset(originRect);
         var maxHeight = originOffset.bottom < originOffset.top ? originOffset.top : originOffset.bottom;
-        var maxWidth = originOffset.right + originRect.width;
+        var maxWidth = screen.width();
         var minWidth = originRect.width;
         var minHeight = 0;
         return{
-            minHeight: minHeight,
-            maxHeight: maxHeight,
-            minWidth: minWidth,
-            maxWidth: maxWidth
-        };
-    }
-
-    /**
-     * Získá maximální a minimální rozměry elementu vůči origin elementu a okrajům obrazovky.
-     * Bere v úvahu i omezení z css stylů daného elementu
-     * @param {object} node
-     * @param {object} origin
-     * @return {object}
-     */
-    getSizeConstraints = (node, origin) => {
-        const nodeStyle = getComputedStyle(node);
-        var constraints = this.getElementRelativeScreenConstraints(origin);
-        // Pokud má obalující element našeptávače nastavenou maximální výšku nebo šířku,
-        // která je menší než maximální povolená hodnota, přiřadí se její hodnota
-        var maxWidth = nodeStyle.maxWidth === 'none' || (parseInt(nodeStyle.maxWidth , 10) > constraints.maxWidth) ? constraints.maxWidth : parseInt(nodeStyle.maxWidth , 10);
-        var maxHeight = nodeStyle.maxHeight === 'none' || (parseInt(nodeStyle.maxHeight , 10) > constraints.maxHeight) ? constraints.maxHeight : parseInt(nodeStyle.maxHeight , 10);
-        var minWidth = nodeStyle.minWidth === 'none' || (parseInt(nodeStyle.minWidth , 10) < constraints.minWidth) ? constraints.minWidth : parseInt(nodeStyle.minWidth , 10);
-        var minHeight = nodeStyle.minHeight === 'none' || (parseInt(nodeStyle.minHeight , 10) < constraints.minHeight) ? constraints.minHeight : parseInt(nodeStyle.minHeight , 10);
-        return {
             minHeight: minHeight,
             maxHeight: maxHeight,
             minWidth: minWidth,
@@ -115,8 +94,8 @@ export default class FloatingMenu extends React.PureComponent {
     getConstrainedElementSize = (element, constraints) => {
         const {maxWidth, maxHeight, minWidth, minHeight} = constraints;
         let scrollbarWidth = getScrollbarWidth();
-        let height = element.offsetHeight;
-        let width = element.offsetWidth;
+        let height = element.getBoundingClientRect().height;
+        let width = element.getBoundingClientRect().width;
 
         const heightLimited = height > maxHeight;
         const heightStretched = height < minHeight;
@@ -173,35 +152,56 @@ export default class FloatingMenu extends React.PureComponent {
      * @param {object} origin
      * @return {object}
      */
-    getRelativeMenuPlacement = (origin) => {
-        const originRect = origin.getBoundingClientRect();
-        const originOffset = this.getRectScreenOffset(originRect);
-        var placement = {left: originOffset.left + 'px'};
-        if (originOffset.bottom < originOffset.top) { // nevejde se dolu, dáme ho nahoru
-            placement.bottom = originOffset.bottom + originRect.height + 'px';
+    getRelativeMenuPlacement = (rect, size) => {
+        const originOffset = this.getRectScreenOffset(rect);
+        var placement = {};
+
+        if(size.width > (originOffset.right + rect.width)){
+            placement.right = 0;
         } else {
-            placement.top = originRect.bottom + 'px';
+            placement.left = originOffset.left + "px";
+        }
+        if (originOffset.bottom < originOffset.top) { // nevejde se dolu, dáme ho nahoru
+            placement.bottom = originOffset.bottom + rect.height + 'px';
+        } else {
+            placement.top = rect.bottom + 'px';
         }
         return placement;
     }
 
+    getRectFromCoordinates = (x, y) => {
+         return {
+            left: x,
+            right: x,
+            top: y,
+            bottom: y,
+            width: 0,
+            height: 0
+        }
+    }
+
     setMenuPositions() {
+        const {coordinates} = this.props;
         const targetNode = ReactDOM.findDOMNode(this.props.target);
         const containerNode = ReactDOM.findDOMNode(this.menu);
+        let originRect = this.getRectFromCoordinates(coordinates.x, coordinates.y);
+        if(targetNode){
+            originRect = targetNode.getBoundingClientRect();
+        }
 
         //Resetování velikostí elementů
         this.resetElementSize(containerNode);
 
         //Zjistí velikost obsahu
-        var containerConstraints = this.getSizeConstraints(containerNode,targetNode);
-        var containerSize = this.getConstrainedElementSize(containerNode,containerConstraints);
+        var constraints = this.getElementRelativeScreenConstraints(originRect);
+        var size = this.getConstrainedElementSize(containerNode,constraints);
         //Zjištění okrajů okna našeptávače
-        var containerPlacement = this.getRelativeMenuPlacement(targetNode);
+        var placement = this.getRelativeMenuPlacement(originRect, size);
 
         $(containerNode).css({
-            height: containerSize.height + 'px',
-            width: containerSize.width + 'px',
-            ...containerPlacement
+            height: size.height + 'px',
+            width: size.width + 'px',
+            ...placement
         });
         //this.setState({...this.state});
     }

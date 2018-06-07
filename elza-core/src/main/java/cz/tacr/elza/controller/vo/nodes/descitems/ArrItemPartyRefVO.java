@@ -1,6 +1,8 @@
 package cz.tacr.elza.controller.vo.nodes.descitems;
 
 
+import java.util.Objects;
+
 import javax.persistence.EntityManager;
 
 import cz.tacr.elza.controller.vo.ParPartyVO;
@@ -49,7 +51,10 @@ public class ArrItemPartyRefVO extends ArrItemVO {
         ArrDataPartyRef data = new ArrDataPartyRef();
 
         if (party != null) {
-            throw new BusinessException("Inconsistent data, party is not null", BaseCode.PROPERTY_IS_INVALID);
+            if (!Objects.equals(party.getId(), value)) {
+                throw new BusinessException("Inconsistent data, party is not null", BaseCode.PROPERTY_IS_INVALID)
+                        .set("value", value).set("party.id", party.getId());
+            }
         }
 
         // try to map party

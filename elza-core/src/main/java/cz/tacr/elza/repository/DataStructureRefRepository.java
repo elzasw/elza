@@ -1,8 +1,10 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.ArrDataStructureRef;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+
+import cz.tacr.elza.domain.ArrDataStructureRef;
+import cz.tacr.elza.domain.ArrFund;
 
 
 /**
@@ -10,5 +12,7 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public interface DataStructureRefRepository extends JpaRepository<ArrDataStructureRef, Integer> {
+
+    void deleteByStructuredObjectFund(ArrFund fund);
 
 }
