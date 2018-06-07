@@ -193,7 +193,7 @@ public class ItemService {
 
             // extra check for data
             ArrData data = descItem.getData();
-            if (data != null) {
+            if (data != null && !descItem.isUndefined()) {
                 // check record_ref
                 if (descItemType.getDataType().equals(DataType.RECORD_REF)) {
                     ArrDataRecordRef dataRecordRef = (ArrDataRecordRef) data;

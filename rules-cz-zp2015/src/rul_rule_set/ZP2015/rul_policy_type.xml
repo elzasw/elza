@@ -3,7 +3,7 @@
         <name>Základní</name>
     </policy-type>
     <policy-type code="ZP2015_POL_STORAGE_ID">
-        <name>Ukládací jendotky</name>
+        <name>Ukládací jednotky</name>
     </policy-type>
     <policy-type code="ZP2015_POL_REF_NO">
         <name>Referenční označení</name>

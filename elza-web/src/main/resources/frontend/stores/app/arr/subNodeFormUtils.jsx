@@ -696,7 +696,7 @@ class FlatFormData{
                 let nextEmptyItemIdBase = "item_";
                 let nextEmptyItemId = nextEmptyItemIdBase + this._emptyItemCounter;
 
-                if (forcedTypeSpecs && !typeItems){
+                if (forcedTypeSpecs){
                     //Add forced specifications
                     let unusedForcedSpecs = this._getUnusedSpecIds(forcedTypeSpecs, typeItems);
                     let lastPosition = typeItems ? typeItems.length : 0;
