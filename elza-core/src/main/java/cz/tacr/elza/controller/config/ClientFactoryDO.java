@@ -17,7 +17,6 @@ import javax.persistence.EntityManager;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.Validate;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -346,10 +345,10 @@ public class ClientFactoryDO {
     public ArrDescItem createDescItem(final ArrItemVO descItemVO) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
 
-        ArrData data = mapper.map(descItemVO, ArrData.class);
-        if (data != null) {
-            // If item has data -> it cannot be undefined
-            Validate.isTrue(descItemVO.getUndefined() != Boolean.TRUE);
+        ArrData data = null;
+        // Item is not undefined -> parse data
+        if (descItemVO.getUndefined() != Boolean.TRUE) {
+            data = mapper.map(descItemVO, ArrData.class);
         }
 
         ArrDescItem descItem = new ArrDescItem();
