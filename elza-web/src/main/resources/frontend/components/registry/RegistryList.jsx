@@ -165,9 +165,13 @@ class RegistryList extends AbstractReactComponent {
         }));
     };
 
-    renderListItem = (item) => <RegistryListItem {...item}
-                                                 onClick={this.handleRegistryDetail.bind(this, item)}
-                                                 onDoubleClick={this.handleRegistrySetParent.bind(this,item)} />
+    renderListItem = (props) => {
+        const {item} = props;
+        return <RegistryListItem 
+            {...item}
+            onClick={this.handleRegistryDetail.bind(this, item)}
+            onDoubleClick={this.handleRegistrySetParent.bind(this,item)} />
+    }
 
     /**
      * Vrátí pole akcí pro registry type filtr
@@ -295,7 +299,7 @@ class RegistryList extends AbstractReactComponent {
                         disabled={!registryTypes || registryList.filter.parents.length || registryList.filter.itemSpecId ? true : false}
                         tree
                         alwaysExpanded
-                        allowSelectItem={(id, item) => true}
+                        allowSelectItem={(item) => true}
                         value={!filter.registryTypeId ? this.registryTypeDefaultValue : getTreeItemById(filter.registryTypeId, registryTypes)}
                         onChange={this.handleFilterRegistryType}
                         actions={this.getRegistryTypeActions()}

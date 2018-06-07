@@ -294,7 +294,7 @@ class AddPartyForm extends AbstractReactComponent {
                                         items={treeItems}
                                         tree
                                         alwaysExpanded
-                                        allowSelectItem={(id, item) => item.addRecord}
+                                        allowSelectItem={(item) => item.addRecord}
                                         {...apTypeId}
                                         value={value}
                                         onChange={item => apTypeId.onChange(item ? item.id : null)}

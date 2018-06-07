@@ -1,12 +1,13 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrFundStructureExtension;
-import cz.tacr.elza.domain.RulStructuredTypeExtension;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundStructureExtension;
+import cz.tacr.elza.domain.RulStructuredTypeExtension;
 
 /**
  * Repozitory pro {@link ArrFundStructureExtension}
@@ -19,4 +20,6 @@ public interface FundStructureExtensionRepository extends JpaRepository<ArrFundS
     ArrFundStructureExtension findByFundAndStructuredTypeExtensionAndDeleteChangeIsNull(ArrFund fund, RulStructuredTypeExtension structuredTypeExtension);
 
     List<ArrFundStructureExtension> findByFundAndDeleteChangeIsNull(ArrFund fund);
+
+    void deleteByFund(ArrFund fund);
 }

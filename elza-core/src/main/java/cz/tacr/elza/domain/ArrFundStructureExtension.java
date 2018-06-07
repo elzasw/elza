@@ -1,7 +1,5 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -9,6 +7,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 
 /**
@@ -20,6 +20,12 @@ import javax.persistence.Table;
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ArrFundStructureExtension {
+
+    public final static String TABLE_NAME = "arr_fund_structure_extension";
+
+    public final static String CREATE_CHANGE = "createChange";
+
+    public final static String DELETE_CHANGE = "deleteChange";
 
     @Id
     @GeneratedValue

@@ -52,6 +52,8 @@
 
                 .desc-item-type {
                     background: @node-form-item-type-bg;
+                    padding: 5px 5px 7px 5px;
+
                     &.active {
                         background: @node-form-item-type-active-bg;
                         .desc-item-type-label {
@@ -108,7 +110,6 @@
                     }
                     // END - Dragger
 
-                    padding: 5px 5px 7px 5px;
 
                     .desc-item-type-label {
                         height: 1.7em;
@@ -229,6 +230,37 @@
                                 .node-form-standard-actions;
                                 flex-shrink: 0;
 
+                                .btn {
+                                    height: 1.8em;
+                                    width: 1.8em;
+                                    display: inline-flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    background-color: #eee;
+                                    border: solid 1px #eee;
+                                    border-left: 0;
+                                    font-size:1em;
+
+                                    &.disabled{
+                                        opacity:1;
+                                        .icon{
+                                            //color: lighten(@node-form-actions-color, 80%);
+                                            opacity: 0.3;
+                                        }
+                                    }
+                                    &:hover {
+                                        background-color: @node-form-actions-hover;
+                                        border-color: @node-form-actions-hover;
+                                    }
+
+                                    .icon  {
+                                        color: @node-form-actions-color;
+                                        height: auto;
+                                        line-height: auto;
+                                        width: auto;
+                                        vertical-align: middle;
+                                    }
+                                }
                                 .identified {
                                     color: @node-form-actions-active-color;
                                 }

@@ -66,6 +66,7 @@ class PartyListItem extends AbstractReactComponent {
     render() {
         const {id, relationTypesForClass, partyType, relations, record, record: {invalid}, className, ...otherProps} = this.props;
 
+        console.log("render party list item");
         let icon = PartyListItem.partyIconByPartyTypeCode(partyType.code);
         const birth = relations == null || relationTypesForClass == false ? "" : this.getDatationRelationString(relations.filter(i => (relationTypesForClass[RELATION_CLASS_CODES.BIRTH].indexOf(i.relationTypeId) !== -1) && ((i.from && i.from.value) || (i.to && i.to.value))),'*');
         const extinction = relations == null || relationTypesForClass == false ? "" : this.getDatationRelationString(relations.filter(i => (relationTypesForClass[RELATION_CLASS_CODES.EXTINCTION].indexOf(i.relationTypeId) !== -1) && ((i.from && i.from.value) || (i.to && i.to.value))),'†');

@@ -1,7 +1,10 @@
 package cz.tacr.elza.dataexchange.input.sections.context;
 
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.Validate;
 
@@ -15,6 +18,7 @@ import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.RulStructuredType;
 import cz.tacr.elza.service.ArrangementService;
+import cz.tacr.elza.service.StructObjService;
 
 /**
  * Represents single imported fund or subtree for specified node.
@@ -35,6 +39,8 @@ public class ContextSection {
 
     private final ArrangementService arrangementService;
 
+    private final StructObjService structObjService;
+
     private RulStructuredType processingStructType;
 
     private SectionRootAdapter rootAdapter;
@@ -49,6 +55,7 @@ public class ContextSection {
         this.createChange = Validate.notNull(createChange);
         this.ruleSystem = Validate.notNull(ruleSystem);
         this.arrangementService = initHelper.getArrangementService();
+        this.structObjService = initHelper.getStructObjService();
     }
 
     public ArrChange getCreateChange() {
@@ -82,14 +89,23 @@ public class ContextSection {
     }
 
     /**
+     * Notification about finished imported sections
+     */
+    public void structObjsFinished() {
+        // store all previous entities before node processing
+        structObjectStorageDispatcher.dispatchAll();
+        processingStructType = null;
+        // validate and regenerate
+        Collection<ContextStructObject> values = contextStructObjectImportIdMap.values();
+        List<Integer> soIds = values.stream().map(cso -> cso.getIdHolder().getEntityId()).collect(Collectors.toList());
+        structObjService.addIdsToValidate(soIds);
+    }
+
+    /**
      * Create root node for section and stores all remaining packets.
      */
     public ContextNode setRootNode(ArrNode rootNode, String importNodeId) {
         Validate.notNull(rootAdapter);
-
-        // store all previous entities before node processing
-        structObjectStorageDispatcher.dispatchAll();
-        processingStructType = null;
 
         // create root context node
         return rootAdapter.createRoot(this, rootNode, importNodeId);

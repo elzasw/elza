@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNodeConformity;
 import cz.tacr.elza.domain.ArrNodeConformityMissing;
@@ -44,4 +45,6 @@ public interface NodeConformityMissingRepository extends JpaRepository<ArrNodeCo
 
     @Query("SELECT c FROM arr_node_conformity_missing c JOIN FETCH c.nodeConformity n WHERE n.fundVersion = ?1 AND n.state = 'ERR'")
     List<ArrNodeConformityMissing> findMissingsByFundVersion(ArrFundVersion fundVersion);
+
+    void deleteByNodeConformityNodeFund(ArrFund fund);
 }

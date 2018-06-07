@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNodeConformity;
 import cz.tacr.elza.domain.ArrNodeConformityError;
@@ -44,4 +45,6 @@ public interface NodeConformityErrorRepository extends JpaRepository<ArrNodeConf
 
     @Query("SELECT c FROM arr_node_conformity_error c JOIN FETCH c.nodeConformity n WHERE n.fundVersion = ?1 AND n.state = 'ERR'")
     List<ArrNodeConformityError> findErrorsByFundVersion(ArrFundVersion fundVersion);
+
+    void deleteByNodeConformityNodeFund(ArrFund fund);
 }

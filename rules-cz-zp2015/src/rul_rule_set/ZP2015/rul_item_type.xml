@@ -540,6 +540,14 @@
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
+    <item-type code="ZP2015_FINDING_AID_DATE" data-type="STRING">
+        <name>Stav archivní pomůckou zpřístupněných archiválií ke dni</name>
+        <shortcut>Datum AP</shortcut>
+        <description>Stav archivní pomůckou zpřístupněných archiválií ke dni (uvádí se v tiráži)</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>true</can-be-ordered>
+        <use-specification>false</use-specification>
+    </item-type>
     <item-type code="ZP2015_UNITS_AMOUNT" data-type="STRING">
         <name>Rozsah archivní pomůckou zpřístupněných archiválií</name>
         <shortcut>Rozsah archiválií</shortcut>
@@ -548,10 +556,18 @@
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
-    <item-type code="ZP2015_FINDING_AID_DATE" data-type="STRING">
-        <name>Stav archivní pomůckou zpřístupněných archiválií ke dni</name>
-        <shortcut>Datum AP</shortcut>
-        <description>Stav archivní pomůckou zpřístupněných archiválií ke dni (uvádí se v tiráži)</description>
+    <item-type code="ZP2015_RELEASE_DATE_PLACE" data-type="STRING">
+        <name>Datum a místo vydání</name>
+        <shortcut>Datum a místo vydání</shortcut>>
+        <description>Datum a místo vydání uvedené na titulní straně archivní pomůcky</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>true</can-be-ordered>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="ZP2015_FINDING_AID_APPROVED_BY" data-type="STRING">
+        <name>Archivní pomůcku schválil</name>
+        <shortcut>Schválil</shortcut>
+        <description>Archivní pomůcku schválil(uvádí se v tiráži)</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
@@ -568,14 +584,6 @@
         <name>Archivní pomůcku sestavil</name>
         <shortcut>Sestavil</shortcut>
         <description>Archivní pomůcku sestavil (uvádí se v tiráži)</description>
-        <is-value-unique>false</is-value-unique>
-        <can-be-ordered>true</can-be-ordered>
-        <use-specification>false</use-specification>
-    </item-type>
-    <item-type code="ZP2015_FINDING_AID_APPROVED_BY" data-type="STRING">
-        <name>Archivní pomůcku schválil</name>
-        <shortcut>Schválil</shortcut>
-        <description>Archivní pomůcku schválil(uvádí se v tiráži)</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
@@ -604,46 +612,49 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
+    
+    <!-- Prvky popisu pro uložení -->
     <item-type code="ZP2015_PACKET_TYPE" data-type="ENUM">
-        <name>Typ obalu</name>
-        <shortcut>Typ obalu</shortcut>
-        <description>Typ obalu</description>
+        <name>Způsob uložení</name>
+        <shortcut>Způsob</shortcut>
+        <description>Způsob uložení</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>false</can-be-ordered>
+        <use-specification>true</use-specification>
+    </item-type>
+    <item-type code="ZP2015_PACKET_FIXED_PREFIX" data-type="ENUM">
+        <name>Pevný prefix uložení</name>
+        <shortcut>Prefix</shortcut>
+        <description>Pevný  Prefix pro ukládací číslo</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>true</use-specification>
     </item-type>
     <item-type code="ZP2015_PACKET_PREFIX" data-type="STRING">
-        <name>Prefix obalu</name>
+        <name>Prefix uložení</name>
         <shortcut>Prefix</shortcut>
-        <description>Prefix pro obal</description>
+        <description>Prefix pro ukládací číslo</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
     <item-type code="ZP2015_PACKET_NUMBER" data-type="INT">
-        <name>Číslo obalu</name>
-        <shortcut>Č. obalu</shortcut>
-        <description>Číslo obalu</description>
+        <name>Číslo uložení</name>
+        <shortcut>Číslo</shortcut>
+        <description>Samotné číslo uložení</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
     <item-type code="ZP2015_PACKET_POSTFIX" data-type="STRING">
-        <name>Postfix obalu</name>
+        <name>Postfix uložení</name>
         <shortcut>Postfix</shortcut>
-        <description>Postfix pro obal</description>
+        <description>Postfix pro ukládací číslo</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
-    <item-type code="ZP2015_PACKET_DESCRIPTION" data-type="STRING">
-        <name>Popis obalu</name>
-        <shortcut>Popis obalu</shortcut>
-        <description>Popis obalu</description>
-        <is-value-unique>false</is-value-unique>
-        <can-be-ordered>false</can-be-ordered>
-        <use-specification>false</use-specification>
-    </item-type>
+    
     <!-- Inventární číslo pro starší pomůcky (dle pravidel 1958) -->
     <item-type code="ZP2015_INV_CISLO" data-type="STRING">
         <name>Inventární číslo</name>
@@ -688,11 +699,12 @@
         <can-be-ordered>true</can-be-ordered>
         <use-specification>true</use-specification>
     </item-type>
+    
     <!-- Rozměry -->
     <item-type code="ZP2015_SIZE_WIDTH" data-type="DECIMAL">
-        <name>Šířka</name>
-        <shortcut>Šířka</shortcut>
-        <description>Šířka</description>
+        <name>Šířka / Průměr</name>
+        <shortcut>Šířka / Průměr</shortcut>
+        <description>ZP5.2.4 Šířka / Průměr</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
@@ -700,7 +712,7 @@
     <item-type code="ZP2015_SIZE_HEIGHT" data-type="DECIMAL">
         <name>Výška</name>
         <shortcut>Výška</shortcut>
-        <description>Výška</description>
+        <description>ZP5.2.4 Výška</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
@@ -708,17 +720,71 @@
     <item-type code="ZP2015_SIZE_DEPTH" data-type="DECIMAL">
         <name>Hloubka</name>
         <shortcut>Hloubka</shortcut>
-        <description>Hloubka</description>
+        <description>ZP5.2.4  Hloubka</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
     <item-type code="ZP2015_SIZE_UNITS" data-type="ENUM">
-        <name>Jednotka</name>
+        <name>Jednotka pro rozměry</name>
         <shortcut>Jednotka</shortcut>
-        <description>Jednotka</description>
+        <description>ZP5.2.4 Jednotka pro rozměry</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>true</use-specification>
+    </item-type>
+    
+    <!-- Hmotnost -->
+    <item-type code="ZP2015_WEIGHT" data-type="DECIMAL">
+        <name>Hmotnost</name>
+        <shortcut>Hmotnost</shortcut>
+        <description>ZP5.2.4 Hmotnost</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>true</can-be-ordered>
+        <use-specification>true</use-specification>
+    </item-type>
+
+    <!-- Množství -->
+    <item-type code="ZP2015_AMOUNT" data-type="DECIMAL">
+        <name>Množství</name>
+        <shortcut>Množství</shortcut>
+        <description>ZP5.2.4 Množství (velikost dat, kusy)</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>true</can-be-ordered>
+        <use-specification>true</use-specification>
+    </item-type>
+
+	<!-- Technika, adjustace, nosič a látka záznamu - strukturovaný popis -->
+    <item-type code="ZP2015_ITEM_MAT_TECHNIKA" data-type="TEXT">
+        <name>Technika záznamu</name>
+        <shortcut>Techn. záznamu</shortcut>
+        <description>ZP5.2.8 Technika záznamu</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>false</can-be-ordered>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="ZP2015_ITEM_MAT_ADJUSTACE" data-type="TEXT">
+        <name>Adjustace nosiče záznamu</name>
+        <shortcut>Adjustace</shortcut>
+        <description>ZP5.2.8 Adjustace nosiče záznamu</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>false</can-be-ordered>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="ZP2015_ITEM_MAT_NOSIC" data-type="TEXT">
+        <name>Nosič záznamu</name>
+        <shortcut>Nosič</shortcut>
+        <description>ZP5.2.8 Nosič záznamu</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>false</can-be-ordered>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="ZP2015_ITEM_MAT_LATKA_ZAZNAMU" data-type="TEXT">
+        <name>Látka záznamu</name>
+        <shortcut>Látka záznamu</shortcut>
+        <description>ZP5.2.8 Látka záznamu</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>false</can-be-ordered>
+        <use-specification>false</use-specification>
     </item-type>
 </item-types>

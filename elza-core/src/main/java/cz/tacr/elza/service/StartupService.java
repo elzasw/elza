@@ -82,7 +82,7 @@ public class StartupService implements SmartLifecycle {
     }
 
     @Autowired
-    private StructureDataService structureDataService;
+    private StructObjService structureDataService;
 
     @Override
     @Transactional(value = TxType.REQUIRES_NEW)

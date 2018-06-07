@@ -29,7 +29,7 @@ class DataGridColumnsSettings extends AbstractReactComponent {
         })
 
         // Seřazení dostupných sloupečků podle abecedy
-        available.sort((a, b) => a.title.toLowerCase().localeCompare(b.title.toLowerCase()))
+        available.sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()))
 
         this.state = {
             columns: props.columns,
@@ -123,7 +123,7 @@ class DataGridColumnsSettings extends AbstractReactComponent {
             }
         });
         // Seřazení dostupných sloupečků podle abecedy
-        newAvailable.sort((a, b) => a.title.toLowerCase().localeCompare(b.title.toLowerCase()));
+        newAvailable.sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
 
         // ---
 
@@ -152,6 +152,10 @@ class DataGridColumnsSettings extends AbstractReactComponent {
         }
     }
 
+    renderItemContent(props) {
+        return (<div>{props.item.name}</div>);
+    }
+
     render() {
         const {onSubmitForm, onClose} = this.props
         const {available, visible, leftSelected, rightSelected} = this.state
@@ -168,7 +172,7 @@ class DataGridColumnsSettings extends AbstractReactComponent {
                                     items={available}
                                     multiselect
                                     activeIndexes={leftSelected}
-                                    renderItemContent={(item, isActive) => <div>{item.title}</div>}
+                                    renderItemContent={this.renderItemContent}
                                     onChangeSelection={this.handleChangeSelection.bind(this, 'left')}
                                     onDoubleClick={this.handleAddVisible}
                                 />
@@ -186,7 +190,7 @@ class DataGridColumnsSettings extends AbstractReactComponent {
                                     sortable
                                     multiselect
                                     activeIndexes={rightSelected}
-                                    renderItemContent={(item, isActive) => <div>{item.title}</div>}
+                                    renderItemContent={this.renderItemContent}
                                     onChangeOrder={this.handleChangeOrder}
                                     onChangeSelection={this.handleChangeSelection.bind(this, 'right')}
                                     onDoubleClick={this.handleRemoveVisible}

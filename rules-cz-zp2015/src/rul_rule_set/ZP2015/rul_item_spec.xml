@@ -2642,15 +2642,20 @@
         <description>Datace pořízení filmového / zvukového záznamu</description>
         <shortcut></shortcut>
     </item-spec>
-    <item-spec code="ZP2015_PACKET_TYPE_BOX" item-type="ZP2015_PACKET_TYPE">
+    <item-spec code="ZP2015_PACKET_TYPE_SAMOST" item-type="ZP2015_PACKET_TYPE">
+        <name>Samostatně</name>
+        <description>Samostatně</description>
+        <shortcut>sam</shortcut>
+    </item-spec>
+    <item-spec code="ZP2015_PACKET_TYPE_KAR" item-type="ZP2015_PACKET_TYPE">
         <name>Karton</name>
         <description>Karton</description>
-        <shortcut></shortcut>
+        <shortcut>kar</shortcut>
     </item-spec>
-    <item-spec code="ZP2015_PACKET_TYPE_FASCICLE" item-type="ZP2015_PACKET_TYPE">
+    <item-spec code="ZP2015_PACKET_TYPE_FAS" item-type="ZP2015_PACKET_TYPE">
         <name>Fascikl</name>
         <description>Fascikl</description>
-        <shortcut></shortcut>
+        <shortcut>fas</shortcut>
     </item-spec>
     
     <!-- typ vystpupu -->
@@ -2712,6 +2717,28 @@
         <name>mm</name>
         <description>mm</description>
         <shortcut>mm</shortcut>
+        <view-order>1</view-order>
+    </item-spec>
+    
+    <!-- Hmotnost -->
+    <item-spec code="ZP2015_WEIGHT_G" item-type="ZP2015_WEIGHT">
+        <name>g</name>
+        <description>g</description>
+        <shortcut>g</shortcut>
+        <view-order>1</view-order>
+    </item-spec>
+
+    <!-- Množství -->
+    <item-spec code="ZP2015_AMOUNT_B" item-type="ZP2015_AMOUNT">
+        <name>byte</name>
+        <description>byte</description>
+        <shortcut>b</shortcut>
+        <view-order>1</view-order>
+    </item-spec>
+    <item-spec code="ZP2015_AMOUNT_PIECES" item-type="ZP2015_AMOUNT">
+        <name>kusy</name>
+        <description>kusy</description>
+        <shortcut>kusy</shortcut>
         <view-order>1</view-order>
     </item-spec>
 </item-specs>

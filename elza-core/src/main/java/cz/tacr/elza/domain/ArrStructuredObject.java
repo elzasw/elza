@@ -33,7 +33,13 @@ import cz.tacr.elza.service.importnodes.vo.Structured;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ArrStructuredObject implements IArrFund, Structured {
 
+    public final static String TABLE_NAME = "arr_structured_object";
+
     public final static String STRUCTURED_OBJECT_ID = "structuredObjectId";
+
+    public final static String CREATE_CHANGE = "createChange";
+
+    public final static String DELETE_CHANGE = "deleteChange";
 
     public static String VALUE = "value";
 

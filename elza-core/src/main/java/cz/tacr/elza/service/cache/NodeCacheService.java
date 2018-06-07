@@ -10,45 +10,15 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.collect.Lists;
 import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.common.db.HibernateUtils;
-import cz.tacr.elza.core.data.CalendarType;
-import cz.tacr.elza.core.data.DataType;
-import cz.tacr.elza.core.data.RuleSystemItemType;
-import cz.tacr.elza.core.data.RuleSystemProvider;
-import cz.tacr.elza.core.data.StaticDataProvider;
-import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.domain.ApRecord;
-import cz.tacr.elza.domain.ArrCachedNode;
-import cz.tacr.elza.domain.ArrDao;
-import cz.tacr.elza.domain.ArrDaoLink;
-import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDataFileRef;
-import cz.tacr.elza.domain.ArrDataPartyRef;
-import cz.tacr.elza.domain.ArrDataRecordRef;
-import cz.tacr.elza.domain.ArrDataStructureRef;
-import cz.tacr.elza.domain.ArrDataUnitdate;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFile;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrNodeRegister;
-import cz.tacr.elza.domain.ArrStructuredObject;
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.ParPartyName;
-import cz.tacr.elza.domain.ParPartyNameComplement;
-import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.core.data.*;
+import cz.tacr.elza.domain.*;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.repository.ApRecordRepository;
-import cz.tacr.elza.repository.CachedNodeRepository;
-import cz.tacr.elza.repository.DaoLinkRepository;
-import cz.tacr.elza.repository.DaoRepository;
-import cz.tacr.elza.repository.DescItemRepository;
-import cz.tacr.elza.repository.FundFileRepository;
-import cz.tacr.elza.repository.NodeRegisterRepository;
-import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.repository.PartyNameComplementRepository;
-import cz.tacr.elza.repository.PartyNameRepository;
-import cz.tacr.elza.repository.PartyRepository;
-import cz.tacr.elza.repository.StructuredObjectRepository;
-import org.apache.commons.collections.CollectionUtils;
+import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.repository.*;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 import org.castor.core.util.Assert;
 import org.hibernate.ScrollableResults;
@@ -64,15 +34,7 @@ import javax.transaction.Transactional.TxType;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
 
@@ -279,6 +241,10 @@ public class NodeCacheService {
      * @param nodeIds seznam požadovaných JP k synchronizaci
      */
     private void syncNodesInternal(final Collection<Integer> nodeIds) {
+        if (CollectionUtils.isEmpty(nodeIds)) {
+            return;
+        }
+
         List<ArrCachedNode> cachedNodes = cachedNodeRepository.findByNodeIdIn(nodeIds);
 
         logger.debug("Synchronizace požadovaných JP: " + cachedNodes.size());
@@ -463,6 +429,10 @@ public class NodeCacheService {
 	private RestoredNode getNodeInternal(final Integer nodeId) {
         Assert.notNull(nodeId, "Identifikátor JP musí být vyplněn");
 		ArrCachedNode cachedNode = cachedNodeRepository.findByNodeId(nodeId);
+        if (cachedNode == null) {
+            throw new ObjectNotFoundException("Node not found in cache", ArrangementCode.NODE_NOT_FOUND)
+                    .set("id", nodeId);
+        }
 		RestoredNode result = deserialize(cachedNode);
         reloadCachedNodes(Collections.singletonList(result));
         return result;
@@ -585,7 +555,16 @@ public class NodeCacheService {
 	private void loadDataType(ArrData data, RuleSystemItemType itemType) {
 		DataType dataType = itemType.getDataType();
 		// check that item type match
-		Validate.isTrue(dataType.getId() == data.getDataTypeId());
+        if (dataType.getId() != data.getDataTypeId()) {
+            throw new BusinessException(
+                    "Data inconsistency, dataId = " + data.getDataId(),
+                    BaseCode.DB_INTEGRITY_PROBLEM)
+                            .set("dataId", data.getDataId())
+                            .set("dataTypeId", data.getDataTypeId())
+                            .set("itemTypeId", itemType.getItemTypeId())
+                            .set("itemTypeCode", itemType.getCode())
+                            .set("itemTypeDataTypeId", dataType.getId());
+        }
 
 		data.setDataType(dataType.getEntity());
 	}

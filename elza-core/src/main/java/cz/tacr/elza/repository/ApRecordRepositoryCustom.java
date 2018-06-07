@@ -46,10 +46,4 @@ public interface ApRecordRepositoryCustom {
     long findApRecordByTextAndTypeCount(String searchRecord, Collection<Integer> apTypeIds,
                                         @Nullable ApRecord parentRecord, Set<Integer> scopeIds, boolean excludeInvalid);
 
-    /**
-     * Searches access points and all their parents. Parents are always returned before children.
-     *
-     * @param apIds collection of AP ids
-     */
-    List<ApRecord> findAccessPointsWithParents(Collection<Integer> apIds);
 }
