@@ -618,6 +618,9 @@ class ArrPage extends ArrParentPage {
             dispatch(setVisiblePolicyReceive(node.selectedSubNodeId, versionId));
         });
     }
+    renderPolicyItem(node) {
+        return <div>{node.name}</div>;
+    }
 
     renderFundVisiblePolicies(activeFund) {
         const nodesPolicy = activeFund.fundNodesPolicy;
@@ -640,7 +643,7 @@ class ArrPage extends ArrParentPage {
                     ref="fundVisiblePolicies"
                     items={nodesPolicy.items}
                     selectedItem={activeNode !== null ? activeNode.selectedSubNodeId : null}
-                    renderItemContent={(props) => <div>{props.node.name}</div>}
+                    renderItemContent={this.renderPolicyItem}
                     onSelect={this.handleSelectVisiblePoliciesNode.bind(this, activeFund)}
                     /*onDoubleClick={this.handleShowVisiblePolicies.bind(this, activeFund)}*/
                 />

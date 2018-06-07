@@ -74,7 +74,7 @@ class AddStructureDataForm extends AbstractReactComponent {
                                       x={incrementedTypeIds} // Zdůvodu renderování formu aby při změně nastal render
                                       descItemFactory={this.props.descItemFactory}
                 />
-                {multiple && <FormInput name="count" type="number" label={i18n("arr.structure.modal.addMultiple.count")} {...count} />}
+            {multiple && <FormInput name="count" min="2" type="number" label={i18n("arr.structure.modal.addMultiple.count")} {...count} />}
             </Modal.Body>
             <Modal.Footer>
                 <Button type="submit" disabled={submitting}>{i18n('global.action.add')}</Button>

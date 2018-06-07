@@ -89,6 +89,7 @@ import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MapperFactory;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.Validate;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -127,9 +128,6 @@ public class ClientFactoryDO {
 
     @Autowired
     private ItemSpecRepository itemSpecRepository;
-
-    @Autowired
-    private FundRepository fundRepository;
 
     @Autowired
     private ApRecordRepository apRecordRepository;
@@ -231,7 +229,11 @@ public class ClientFactoryDO {
     public ArrDescItem createDescItem(final ArrItemVO descItemVO, final Integer descItemTypeId) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
 
-        ArrData data = mapper.map(descItemVO, ArrData.class);
+        ArrData data = null;
+
+        if (!descItemVO.isUndefined()) {
+            data = mapper.map(descItemVO, ArrData.class);
+        }
         ArrDescItem descItem = new ArrDescItem();
         descItem.setData(data);
 
@@ -339,7 +341,13 @@ public class ClientFactoryDO {
 
     public ArrDescItem createDescItem(final ArrItemVO descItemVO) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
+
         ArrData data = mapper.map(descItemVO, ArrData.class);
+        if (data != null) {
+            // If item has data -> it cannot be undefined
+            Validate.isTrue(descItemVO.getUndefined() != Boolean.TRUE);
+        }
+
         ArrDescItem descItem = new ArrDescItem();
         descItem.setData(data);
         // Copy properties to application object
