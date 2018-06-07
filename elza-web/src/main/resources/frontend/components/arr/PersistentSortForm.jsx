@@ -89,7 +89,7 @@ class PersistentSortForm extends AbstractReactComponent {
                 items={filteredDescItems}
                 getItemRenderClass={item => item.groupItem ? null : ' type-' + item.type.toLowerCase()}
                 allowSelectItem={(id, item) => !item.groupItem}
-                onBlurValidation={false}
+                onBlur={() => {}}
             />
 
             {
@@ -100,7 +100,7 @@ class PersistentSortForm extends AbstractReactComponent {
                     {...itemSpec}
                     items={itemType.value.descItemSpecs}
                     getItemRenderClass={item => item.name.toLowerCase()}
-                    onBlurValidation={false}
+                    onBlur={() => {}}
                 />
             }
 

@@ -56,6 +56,8 @@ import URLParse from "url-parse";
 import {reloadUserDetail} from 'actions/user/userDetail';
 import {fundTreeFetch} from "./actions/arr/fundTree";
 import * as types from "./actions/constants/ActionTypes";
+import {fundNodeSubNodeFulltextSearch} from "./actions/arr/node";
+import {PERSISTENT_SORT_CODE} from "./constants";
 
 const url = new URLParse(serverContextPath + '/stomp');
 
@@ -214,7 +216,6 @@ let eventMap = {
     'OUTPUT_ITEM_CHANGE': outputItemChange,
     'FILES_CHANGE': filesChangeEvent,
     'BULK_ACTION_STATE_CHANGE': fundActionActionChange,
-    'PERSISTENT_SORT': persistentSortResult,
     'DELETE_LEVEL': deleteLevelChange,
     'ADD_LEVEL_AFTER': addLevelAfterChange,
     'ADD_LEVEL_BEFORE': addLevelBeforeChange,
@@ -440,21 +441,27 @@ function deleteLevelChange(value) {
  * Změna hromadných akcí.
  */
 function fundActionActionChange(value) {
+    //speciální handling eventu pro hromadnou akci "PERZISTENTNI_RAZENI"
+    if (value.code === PERSISTENT_SORT_CODE) {
+        processPersistentSort(value);
+    }
     store.dispatch(changeFundAction(value.versionId, value.entityId));
 }
 
-function persistentSortResult(value) {
+function processPersistentSort(value) {
     if (value.state === "FINISHED") {
         let state = store.getState();
         const fund = state.arrRegion.activeIndex != null ? state.arrRegion.funds[state.arrRegion.activeIndex] : null;
 
         if (fund) {
             store.dispatch(fundTreeFetch(types.FUND_TREE_AREA_MAIN, fund.versionId, null, fund.fundTree.expandedIds));
+            //Přenačtení nodeForm
+            store.dispatch(fundNodeSubNodeFulltextSearch(undefined));
         }
         store.dispatch(addToastrSuccess(i18n("arr.functions.persistentSort.sortSuccess")));
     } else if (value.state === "INTERRUPTED") {
         store.dispatch(addToastrDanger(i18n("arr.functions.persistentSort.sortInterrupted")));
-    } else {
+    } else if (value.state === "FAILED") {
         store.dispatch(addToastrDanger(i18n("arr.functions.persistentSort.sortFailed")));
     }
 }

@@ -83,13 +83,14 @@ return true
      * @param e {Object} event
      */
     handleContextMenu(node, e) {
+        const {readMode} = this.props;
         e.preventDefault();
         e.stopPropagation();
 
         var menu = (
             <ul className="dropdown-menu">
                 <MenuItem onClick={this.handleSelectInNewTab.bind(this, node)}>{i18n('fundTree.action.openInNewTab')}</MenuItem>
-                <MenuItem onClick={() => this.handleOpenPersistentSortDialog(node)}>{i18n('arr.functions.persistentSort')}</MenuItem>
+                {!readMode && <MenuItem onClick={() => this.handleOpenPersistentSortDialog(node)}>{i18n('arr.functions.persistentSort')}</MenuItem>}
             </ul>
         )
 

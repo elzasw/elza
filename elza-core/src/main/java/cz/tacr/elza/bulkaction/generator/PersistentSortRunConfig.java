@@ -1,7 +1,7 @@
 package cz.tacr.elza.bulkaction.generator;
 
 /**
- * @author <a href="mailto:jiri.vanek@marbes.cz">Jiří Vaněk</a>
+ * Dodatečné nastavení funkce.
  */
 public class PersistentSortRunConfig {
 

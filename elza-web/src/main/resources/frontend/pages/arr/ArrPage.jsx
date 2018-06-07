@@ -1031,6 +1031,7 @@ class ArrPage extends ArrParentPage {
                     focus={focus}
                     actionAddons={<Button onClick={() => {this.handleSetExtendedView(true)}} className='extended-view-toggle'><Icon glyph='fa-arrows-alt'/></Button>}
                     colorCoded={colorCoded}
+                    readMode={readMode}
                 />
             )
         }
