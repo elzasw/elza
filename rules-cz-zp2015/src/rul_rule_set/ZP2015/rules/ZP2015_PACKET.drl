@@ -12,28 +12,49 @@ import java.util.Arrays;
 import java.util.Set;
 import cz.tacr.elza.domain.RulItemType;
 
-rule "Doporučené atributy pro obaly"
+rule "Vypnutí opakovatelnosti"
+salience 100
 no-loop
 when
-    $itemType : RulItemTypeExt(code in ("ZP2015_PACKET_TYPE", "ZP2015_PACKET_PREFIX", "ZP2015_PACKET_NUMBER",
-                                        "ZP2015_PACKET_POSTFIX"))
+  $itemType : RulItemTypeExt(code in ( // nastaveni pro ulozeni
+        "ZP2015_PACKET_TYPE", "ZP2015_PACKET_FIXED_PREFIX", "ZP2015_PACKET_PREFIX",
+        "ZP2015_PACKET_NUMBER", "ZP2015_PACKET_POSTFIX"))
 then
-    $itemType.setType(RulItemType.Type.RECOMMENDED);
+  $itemType.setRepeatable(false);
 end
 
-rule "Možné atributy pro obaly"
+rule "Možné prvky popisu"
 no-loop
 when
-    $itemType : RulItemTypeExt(code in ("ZP2015_PACKET_DESCRIPTION"))
+    $itemType : RulItemTypeExt(code in ("ZP2015_PACKET_PREFIX", "ZP2015_PACKET_POSTFIX"))
 then
     $itemType.setType(RulItemType.Type.POSSIBLE);
 end
 
-rule "Typy obalů"
+rule "Možné typy obalů"
 no-loop
 when
     $itemType : RulItemTypeExt(code == "ZP2015_PACKET_TYPE")
-    $itemSpec : RulItemSpecExt(code in ("ZP2015_PACKET_TYPE_BOX", "ZP2015_PACKET_TYPE_FASCICLE")) from $itemType.rulItemSpecList
+    $itemSpec : RulItemSpecExt(code in ("ZP2015_PACKET_TYPE_SAMOST",
+                                        "ZP2015_PACKET_TYPE_KAR", 
+                                        "ZP2015_PACKET_TYPE_FAS")) from $itemType.rulItemSpecList
 then
     $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+end
+
+rule "Možné typy prefixů"
+no-loop
+when
+    $itemType : RulItemTypeExt(code == "ZP2015_PACKET_FIXED_PREFIX")
+    $itemSpec : RulItemSpecExt() from $itemType.rulItemSpecList
+then
+    $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+end
+
+rule "Doporučené"
+no-loop
+when
+    $itemType : RulItemTypeExt(code in ("ZP2015_PACKET_TYPE", "ZP2015_PACKET_NUMBER"))
+then
+    $itemType.setType(RulItemType.Type.RECOMMENDED);
 end

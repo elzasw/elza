@@ -1,5 +1,31 @@
 package cz.tacr.elza.service.cache;
 
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.transaction.Transactional;
+import javax.transaction.Transactional.TxType;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.Validate;
+import org.castor.core.util.Assert;
+import org.hibernate.ScrollableResults;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -33,7 +59,11 @@ import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyName;
 import cz.tacr.elza.domain.ParPartyNameComplement;
 import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApRecordRepository;
 import cz.tacr.elza.repository.CachedNodeRepository;
 import cz.tacr.elza.repository.DaoLinkRepository;
@@ -273,6 +303,10 @@ public class NodeCacheService {
      * @param nodeIds seznam požadovaných JP k synchronizaci
      */
     private void syncNodesInternal(final Collection<Integer> nodeIds) {
+        if (CollectionUtils.isEmpty(nodeIds)) {
+            return;
+        }
+
         List<ArrCachedNode> cachedNodes = cachedNodeRepository.findByNodeIdIn(nodeIds);
 
         logger.debug("Synchronizace požadovaných JP: " + cachedNodes.size());
@@ -457,6 +491,10 @@ public class NodeCacheService {
 	private RestoredNode getNodeInternal(final Integer nodeId) {
         Assert.notNull(nodeId, "Identifikátor JP musí být vyplněn");
 		ArrCachedNode cachedNode = cachedNodeRepository.findByNodeId(nodeId);
+        if (cachedNode == null) {
+            throw new ObjectNotFoundException("Node not found in cache", ArrangementCode.NODE_NOT_FOUND)
+                    .set("id", nodeId);
+        }
 		RestoredNode result = deserialize(cachedNode);
         reloadCachedNodes(Collections.singletonList(result));
         return result;
@@ -579,7 +617,16 @@ public class NodeCacheService {
 	private void loadDataType(ArrData data, RuleSystemItemType itemType) {
 		DataType dataType = itemType.getDataType();
 		// check that item type match
-		Validate.isTrue(dataType.getId() == data.getDataTypeId());
+        if (dataType.getId() != data.getDataTypeId()) {
+            throw new BusinessException(
+                    "Data inconsistency, dataId = " + data.getDataId(),
+                    BaseCode.DB_INTEGRITY_PROBLEM)
+                            .set("dataId", data.getDataId())
+                            .set("dataTypeId", data.getDataTypeId())
+                            .set("itemTypeId", itemType.getItemTypeId())
+                            .set("itemTypeCode", itemType.getCode())
+                            .set("itemTypeDataTypeId", dataType.getId());
+        }
 
 		data.setDataType(dataType.getEntity());
 	}

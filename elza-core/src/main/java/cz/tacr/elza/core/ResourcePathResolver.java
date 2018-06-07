@@ -317,11 +317,25 @@ public class ResourcePathResolver {
         return path;
     }
 
-    private Path getPackageDir(RulPackage rulPackage) {
+    /**
+     * Return path for the package
+     * @param rulPackage
+     * @return
+     */
+    @Transactional(TxType.MANDATORY)
+    public Path getPackageDir(RulPackage rulPackage) {
         String packageDir = rulPackage.getCode();
 
-        Path path = Paths.get(workDir, PACKAGES_DIR, packageDir);
+        Path path = Paths.get(workDir, PACKAGES_DIR, packageDir + "." + rulPackage.getVersion().toString());
 
         return path;
     }
+
+	public Path getPackageDirVersion(RulPackage rulPackage, Integer otherVersion) {
+        String packageDir = rulPackage.getCode();
+
+        Path path = Paths.get(workDir, PACKAGES_DIR, packageDir + "." + otherVersion.toString());
+
+        return path;
+	}
 }

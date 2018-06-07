@@ -433,7 +433,7 @@ class ListBox extends AbstractReactComponent {
                     onDoubleClick={this.handleDoubleClick}
                     {...draggableProps}
                 >
-                    {renderItemContent(item, active, index, (e) => this.handleCheckItem(e, item, index))}
+                    {renderItemContent({item, active, index}, (e) => this.handleCheckItem(e, item, index))}
                 </div>
             )
         })

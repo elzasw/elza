@@ -1,5 +1,12 @@
 package cz.tacr.elza.drools.model;
 
+import java.util.List;
+
+import cz.tacr.elza.domain.ArrStructuredItem;
+import cz.tacr.elza.domain.ArrStructuredObject;
+import cz.tacr.elza.drools.service.ModelFactory;
+import cz.tacr.elza.repository.StructuredItemRepository;
+
 /**
  * Objekt strukt. datového typu atributu.
  *
@@ -7,14 +14,27 @@ package cz.tacr.elza.drools.model;
  */
 public class Structured {
 
-    private String value;
+    private final ArrStructuredObject structObj;
+    
+    private final StructuredItemRepository itemRepos;
+    
+    private List<StructObjItem> items;
 
-    public String getValue() {
-        return value;
+    public Structured(final ArrStructuredObject structObj, final StructuredItemRepository itemRepos) {
+		this.structObj = structObj;
+		this.itemRepos = itemRepos;
+	}
+
+	public String getValue() {
+        return structObj.getValue();
     }
-
-    public void setValue(final String value) {
-        this.value = value;
-    }
-
+	
+	public List<StructObjItem> getItems() {
+		if(items==null) {
+			// read description items (if needed) from DB
+			List<ArrStructuredItem> dbItems = itemRepos.findByStructuredObjectAndDeleteChangeIsNullFetchData(structObj);
+			items = ModelFactory.createStructuredItems(dbItems);
+		}
+		return items;
+	}
 }

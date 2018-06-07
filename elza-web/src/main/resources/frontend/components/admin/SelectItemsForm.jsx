@@ -42,6 +42,7 @@ const SelectItemsForm = class extends AbstractReactComponent {
     };
 
     handleChange = (item) => {
+        console.log("select items form",item);
         if (item) {
             const {items} = this.state;
 

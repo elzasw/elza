@@ -113,44 +113,45 @@ const Permissions2 = class Permissions2 extends AbstractReactComponent {
         permission.permission.onChange(event);
     }
 
-    renderPermission(permission, index) {
+    renderPermission(props) {
         const {scopes} = this.state;
-        const permInfo = perms.all[permission.permission.value]
+        const {item, index} = props;
+        const permInfo = perms.all[item.permission.value];
         const permInput = (
             <FormInput
                 componentClass="select"
-                {...permission.permission}
-                onChange={this.handlePermissionChange.bind(this, permission)}
+                {...item.permission}
+                onChange={this.handlePermissionChange.bind(this, item)}
                 inline
             >
                 <option />
                 {Object.keys(perms.all).map(perm => {
-                    return <option value={perm}>{i18n("permission." + perm)}</option>
+                    return <option value={perm}>{i18n("permission." + perm)}</option>;
                 })}
             </FormInput>
-        )
+        );
 
         var permValue;
         if (permInfo && (permInfo.fund || permInfo.scope)) {
             if (permInfo.fund) {
                 permValue = (
                     <FundField
-                        {...permission.fund}
+                        {...item.fund}
                         inline
                     />
-                )
+                );
             } else if (permInfo.scope) {
                 permValue = (
                     <ScopeField
                         type="text"
-                        {...permission.scope}
+                        {...item.scope}
                         inline
                         scopes={scopes}
                     />
-                )
+                );
             }
         } else {
-            permValue = <div className="form-group"></div>
+            permValue = <div className="form-group"></div>;
         }
 
         return (
@@ -158,7 +159,7 @@ const Permissions2 = class Permissions2 extends AbstractReactComponent {
                 {permInput}
                 {permValue}
             </div>
-        )
+        );
     }
 
     render() {

@@ -67,6 +67,7 @@ import cz.tacr.elza.repository.UnitdateRepository;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.GroovyScriptService;
 import cz.tacr.elza.service.LevelTreeCacheService;
+import cz.tacr.elza.service.StructObjService;
 import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.cache.NodeCacheService;
 
@@ -115,12 +116,12 @@ public class DEImportService {
                            FundVersionRepository fundVersionRepository,
                            LevelRepository levelRepository,
                            LevelTreeCacheService levelTreeCacheService,
-                           ResourcePathResolver resourcePathResolver) {
+                           ResourcePathResolver resourcePathResolver, StructObjService structObjService) {
 
         this.initHelper = new ImportInitHelper(externalSystemRepository, groovyScriptService, institutionRepository,
                 institutionTypeRepository, arrangementService, levelRepository, recordRepository,
                 variantRecordRepository, partyRepository, nameRepository, nameComplementRepository, groupIdentifierRepository,
-                unitdateRepository);
+                unitdateRepository, structObjService);
         this.em = em;
         this.userService = userService;
         this.staticDataService = staticDataService;

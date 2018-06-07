@@ -46,7 +46,8 @@ when
         "ZP2015_FINDING_AID_EDITOR",
         "ZP2015_FINDING_AID_APPROVED_BY",
         // Je nutne urcit typ vystupu
-        "ZP2015_OUTPUT_TYPE"
+        "ZP2015_OUTPUT_TYPE",
+        "ZP2015_RELEASE_DATE_PLACE"
         ) )
 then
     $itemType.setType(RulItemType.Type.REQUIRED);

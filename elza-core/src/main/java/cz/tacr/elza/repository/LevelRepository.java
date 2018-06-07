@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 
@@ -68,4 +69,6 @@ public interface LevelRepository extends JpaRepository<ArrLevel, Integer>, Level
 
     @Query("SELECT l FROM arr_level l WHERE l.nodeParent = ?1")
     List<ArrLevel> findByParentNode(ArrNode node);
+
+    void deleteByNodeFund(ArrFund fund);
 }

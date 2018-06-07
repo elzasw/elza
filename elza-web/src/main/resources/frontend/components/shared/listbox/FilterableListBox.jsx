@@ -168,7 +168,8 @@ var FilterableListBox = class FilterableListBox extends AbstractReactComponent {
         onChange && onChange(type, [], unselectedIds, "UNSELECT_ALL");
     };
 
-    renderItemContent(item, isActive, index, onCheckItem) {
+    renderItemContent(props, onCheckItem) {
+        const {item, index} = props;
         const {selectionType, selectedIds} = this.state
         const checked = selectionType === 'selected' ? !!selectedIds[item.id] : !selectedIds[item.id]
 

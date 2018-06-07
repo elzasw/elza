@@ -74,7 +74,7 @@ public class AccessPointsReader implements ExportReader {
 
     private void readAccessPoints(Collection<Integer> apIds, AccessPointsOutputStream os) {
         // TODO: replace findAccessPointsWithParents with loader after removal of hierarchy
-        List<ApRecord> apWithParents = recordRepository.findAccessPointsWithParents(apIds);
+        List<ApRecord> apWithParents = recordRepository.findAll(apIds);
         List<ApRecord> batch = new ArrayList<>(context.getBatchSize());
 
         boolean globalPermission = userService.hasPermission(Permission.AP_SCOPE_RD_ALL);

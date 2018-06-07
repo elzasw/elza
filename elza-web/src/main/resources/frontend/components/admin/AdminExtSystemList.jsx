@@ -59,7 +59,8 @@ class AdminExtSystemList extends AbstractReactComponent {
         this.dispatch(extSystemDetailFetchIfNeeded(item.id));
     };
 
-    renderListItem = (item) => {
+    renderListItem = (props) => {
+        const {item} = props;
         return <AdminExtSystemListItem {...item} />
     };
 

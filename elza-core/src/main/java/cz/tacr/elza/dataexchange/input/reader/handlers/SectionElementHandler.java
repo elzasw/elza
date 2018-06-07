@@ -43,6 +43,7 @@ public class SectionElementHandler extends ContextAwareElementHandler {
 	 */
 	private void installSectionHandlers() {
 		reader.addElementHandler("/edx/fs/s/fi", new FundInfoElementHandler(context));
+        reader.addElementHandler("/edx/fs/s/sts", new StructTypesHandler(context));
 		reader.addElementHandler("/edx/fs/s/sts/st", new StructTypeElementHandler(context));
 		reader.addElementHandler("/edx/fs/s/sts/st/sos/so", new StructObjectElementHandler(context));
 

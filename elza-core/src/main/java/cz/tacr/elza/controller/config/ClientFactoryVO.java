@@ -1324,7 +1324,12 @@ public class ClientFactoryVO {
             }
 
             // set width from type info
-            itemTypeVO.setWidth(typeInfo != null ? typeInfo.getWidth() : 1);
+            Integer width = 1;
+            if(typeInfo != null && typeInfo.getWidth() != null) {
+            	width = typeInfo.getWidth();
+            }            
+            
+            itemTypeVO.setWidth(width);
 
             List<ItemTypeLiteVO> itemTypeList = itemTypeGroupVO.getTypes();
             itemTypeList.add(itemTypeVO);

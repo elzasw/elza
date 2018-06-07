@@ -13,7 +13,13 @@ import cz.tacr.elza.repository.ApVariantRecordRepository;
 import cz.tacr.elza.repository.UnitdateRepository;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.GroovyScriptService;
+import cz.tacr.elza.service.StructObjService;
 
+/**
+ * Helper object with references to all repositories and services
+ * 
+ *
+ */
 public class ImportInitHelper {
 
     private final ApExternalSystemRepository externalSystemRepository;
@@ -25,6 +31,8 @@ public class ImportInitHelper {
     private final InstitutionTypeRepository institutionTypeRepository;
 
     private final ArrangementService arrangementService;
+
+    private final StructObjService structObjService;
 
     private final LevelRepository levelRepository;
 
@@ -54,7 +62,8 @@ public class ImportInitHelper {
                             PartyNameRepository nameRepository,
                             PartyNameComplementRepository nameComplementRepository,
                             PartyGroupIdentifierRepository groupIdentifierRepository,
-                            UnitdateRepository unitdateRepository) {
+                            UnitdateRepository unitdateRepository,
+                            StructObjService structObjService) {
         this.externalSystemRepository = externalSystemRepository;
         this.groovyScriptService = groovyScriptService;
         this.institutionRepository = institutionRepository;
@@ -68,6 +77,7 @@ public class ImportInitHelper {
         this.nameComplementRepository = nameComplementRepository;
         this.groupIdentifierRepository = groupIdentifierRepository;
         this.unitdateRepository = unitdateRepository;
+        this.structObjService = structObjService;
     }
 
     public ApExternalSystemRepository getExternalSystemRepository() {
@@ -120,5 +130,9 @@ public class ImportInitHelper {
 
     public UnitdateRepository getUnitdateRepository() {
         return unitdateRepository;
+    }
+
+    public StructObjService getStructObjService() {
+        return structObjService;
     }
 }

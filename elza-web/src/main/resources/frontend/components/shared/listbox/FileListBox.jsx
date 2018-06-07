@@ -34,7 +34,8 @@ const FileListBox = class FileListBox extends AbstractReactComponent {
 
     componentWillReceiveProps(nextProps) {}
 
-    renderItemContent(item) {
+    renderItemContent(props) {
+        const {item} = props;
         const {onDelete, onDownloadPdf, supportDownloadPdf, onReplace, onEdit, supportEdit, onDownload, onInfo} = this.props;
         let iconName;
         switch (item.mimeType) {

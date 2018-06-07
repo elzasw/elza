@@ -7,11 +7,19 @@ import org.hibernate.Session;
 
 import cz.tacr.elza.common.db.HibernateUtils;
 
+/**
+ * Class is used as ID transfer object.
+ * 
+ * Class allows to assign ID to object later, typically
+ * when object is stored in DB.
+ * 
+ * @param <E>
+ */
 public class EntityIdHolder<E> {
 
     private final Class<? extends E> entityClass;
 
-    private Serializable entityId;
+    private Integer entityId;
 
     public EntityIdHolder(Class<? extends E> entityClass) {
         this.entityClass = Validate.notNull(entityClass);
@@ -21,16 +29,26 @@ public class EntityIdHolder<E> {
         return entityClass;
     }
 
-    public boolean isInitialized() {
+    /**
+     * Check if entity has already ID
+     * 
+     * @return
+     */
+    public boolean hasEntityId() {
         return entityId != null;
     }
 
-    public Serializable getEntityId() {
+    /**
+     * Return entity ID
+     * 
+     * @return
+     */
+    public Integer getEntityId() {
         return entityId;
     }
 
-    public void setEntityId(Serializable entityId) {
-        Validate.isTrue(!isInitialized(), "Entity id holder already initialized");
+    public void setEntityId(Integer entityId) {
+        Validate.isTrue(!hasEntityId(), "Entity id holder already initialized");
         Validate.notNull(entityId);
 
         this.entityId = entityId;
@@ -43,7 +61,7 @@ public class EntityIdHolder<E> {
      * @see #isReferenceInitOnDemand()
      */
     public final E getEntityReference(Session session) {
-        Validate.isTrue(isInitialized(), "Entity id holder not initialized");
+        Validate.isTrue(hasEntityId(), "Entity id holder not initialized");
 
         return HibernateUtils.getEntityReference(entityId, entityClass, session, isReferenceInitOnDemand());
     }

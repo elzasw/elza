@@ -17,7 +17,7 @@ import {
     unlockDescItemType
 } from 'actions/arr/nodeSetting.jsx'
 import {deleteNode} from '../../actions/arr/node.jsx'
-import {isFundRootId} from './ArrUtils.jsx'
+import {createFundRoot, isFundRootId} from './ArrUtils.jsx'
 import * as perms from 'actions/user/Permission.jsx';
 import {nodeFormActions} from 'actions/arr/subNodeForm.jsx'
 import {getOneSettings, setSettings} from 'components/arr/ArrUtils.jsx';
@@ -31,6 +31,7 @@ import {DropdownButton, MenuItem} from 'react-bootstrap';
 import TemplateForm, {EXISTS_TEMPLATE, NEW_TEMPLATE} from "./TemplateForm";
 import TemplateUseForm from "./TemplateUseForm";
 import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx'
+import DescItemFactory from "components/arr/nodeForm/DescItemFactory.jsx";
 
 require('./NodeSubNodeForm.less');
 
@@ -124,17 +125,41 @@ class NodeSubNodeForm extends AbstractReactComponent {
         let childNodeCount = outdatedParent.childNodes.length;
         let newNodeId = outdatedParent.childNodes[0];
         let selectedParent = false;
-        if (childNodeCount <= 1){ //Pokud je posledním potomkem, přejde se na rodiče
+        // if the old parent had only one child node
+        if (childNodeCount <= 1){
             newNodeId = outdatedParent.id;
-            outdatedParent = outdatedParent.parentNodes[0];
-            selectedParent = true;
-        } else if (prevIndex === 0){ //Pokud je smazaná JP první, bude jako další vybrána následující JP
+            let newParent = outdatedParent.parentNodes[0];
+            const selectNearestParent = (parents)=>{
+                newParent = parents[0];
+                // if there are no parents even in the server response
+                // set the newParent as the root node virtual parent
+                if(!newParent){
+                    if(outdatedParent.depth > 1){
+                        console.warn("Missing parent on level deeper than root", outdatedParent);
+                    }
+                    // create virtual parent for fund root node
+                    newParent = createFundRoot(this.props.fund);
+                }
+                this.dispatch(fundSelectSubNode(versionId, newNodeId, newParent));
+                callback(true);
+            };
+            // if parent doesn't exist, get parents from server
+            if(!newParent){
+                WebApi.getNodeParents(versionId, newNodeId).then(selectNearestParent);
+            }
+            // if parent exists, use it
+            else {
+                selectNearestParent([newParent]);
+            }
+        } else {
+            if (prevIndex === 0){ //Pokud je smazaná JP první, bude jako další vybrána následující JP
             newNodeId = outdatedParent.childNodes[prevIndex + 1].id;
         } else { //Bude vybrána předcházející JP
             newNodeId = outdatedParent.childNodes[prevIndex - 1].id;
         }
         this.dispatch(fundSelectSubNode(versionId, newNodeId, outdatedParent));
-        callback(selectedParent);
+            callback(false);
+    }
     }
     /**
      * Funkce zavolána po skončení smazání JP
@@ -520,6 +545,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
                     formActions={nodeFormActions}
                     readMode={readMode}
                     showNodeAddons={true}
+                    descItemFactory={DescItemFactory}
                     />
             </div>
         )
