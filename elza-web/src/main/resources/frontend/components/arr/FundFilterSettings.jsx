@@ -1,3 +1,5 @@
+import {decorateAutocompleteValue} from "./nodeForm/DescItemUtils";
+
 /**
  * Formulář nastavení filtru na sloupečku.
  */
@@ -26,6 +28,8 @@ import FundNodesSelect from "./FundNodesSelect";
 import SimpleCheckListBox from "./SimpleCheckListBox";
 import FundFilterCondition from "./FundFilterCondition";
 import {createFilterStructure} from 'actions/arr/fundDataGrid.jsx'
+import DateTimePicker from 'react-widgets/lib/DateTimePicker';
+import {formatDate} from "../validate";
 
 var _ffs_validateTimer
 var _ffs_prevReject = null
@@ -45,6 +49,31 @@ const renderTextFields = (fields) => {
             <div key={index} className='value-container'>
                 <FormInput {...decorate} type="text" value={field.value}
                            onChange={(e) => field.onChange(e.target.value)}/>
+            </div>
+        )
+    })
+}
+
+const renderDateFields = (fields) => {
+
+    return fields.map((field, index) => {
+        let decorate;
+        if (field.error) {
+            decorate = {
+                bsStyle: 'error',
+                hasFeedback: true,
+                help: field.error
+            }
+        }
+
+        return (
+            <div key={index} className='value-container'>
+                <DateTimePicker
+                    {...decorate}
+                    time={false}
+                    value={field.value == null ? null : new Date(field.value)}
+                    onChange={(value) => field.onChange(formatDate(value))}
+                />
             </div>
         )
     })
@@ -344,6 +373,7 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
             case 'FORMATTED_TEXT':
             case 'UNITID':
             case 'INT':
+            case 'DATE':
             case 'DECIMAL':
             case 'PARTY_REF':
             case 'STRUCTURED':
@@ -440,6 +470,29 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
                     if (!value) return i18n('global.validation.required')
                     return dataType.code === 'INT' ? validateInt(value) : validateDouble(value)
                 }
+                items = [
+                    {values: 0, code: 'NONE', name: i18n('arr.fund.filterSettings.condition.none')},
+                    {values: 0, code: 'EMPTY', name: i18n('arr.fund.filterSettings.condition.empty')},
+                    {values: 0, code: 'NOT_EMPTY', name: i18n('arr.fund.filterSettings.condition.notEmpty')},
+                    {values: 0, code: 'UNDEFINED', name: i18n('arr.fund.filterSettings.condition.undefined')},
+                    {values: 1, code: 'GT', name: i18n('arr.fund.filterSettings.condition.gt')},
+                    {values: 1, code: 'GE', name: i18n('arr.fund.filterSettings.condition.ge')},
+                    {values: 1, code: 'LT', name: i18n('arr.fund.filterSettings.condition.lt')},
+                    {values: 1, code: 'LE', name: i18n('arr.fund.filterSettings.condition.le')},
+                    {values: 1, code: 'EQ', name: i18n('arr.fund.filterSettings.condition.eq')},
+                    {values: 1, code: 'NE', name: i18n('arr.fund.filterSettings.condition.ne')},
+                    {values: 2, code: 'INTERVAL', name: i18n('arr.fund.filterSettings.condition.interval')},
+                    {values: 2, code: 'NOT_INTERVAL', name: i18n('arr.fund.filterSettings.condition.notInterval')},
+                ]
+                break
+            case 'DATE':
+                renderFields = renderDateFields;
+                normalizeField = (code, valuesCount, value, index) => {
+                    return value
+                };
+                validateField = (code, valuesCount, value, index) => {
+                    if (!value) return i18n('global.validation.required')
+                };
                 items = [
                     {values: 0, code: 'NONE', name: i18n('arr.fund.filterSettings.condition.none')},
                     {values: 0, code: 'EMPTY', name: i18n('arr.fund.filterSettings.condition.empty')},

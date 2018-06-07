@@ -8,5 +8,37 @@
         <renameColumn tableName="rul_item_type" oldColumnName="columns_definition" newColumnName="view_definition" columnDataType="${type.text}" />
     </changeSet>
 
+    <changeSet id="20180601083200" author="slapa">
+        <createTable tableName="arr_data_date">
+            <column name="data_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="value" type="date">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint constraintName="fk_dataDate_data"
+                                 baseTableName="arr_data_date"
+                                 baseColumnNames="data_id"
+                                 referencedTableName="arr_data"
+                                 referencedColumnNames="data_id"
+                                 onDelete="NO ACTION"/>
+
+        <insert tableName="rul_data_type">
+            <column name="data_type_id" value="16"/>
+            <column name="code" value="DATE"/>
+            <column name="name" value="Datum"/>
+            <column name="description" value="Datový typ prvku popisu (Date) pro zadání běžného občanského data"/>
+            <column name="regexp_use" value="false"/>
+            <column name="text_length_limit_use" value="false"/>
+            <column name="storage_table" value="arr_data_date"/>
+        </insert>
+
+        <update tableName="db_hibernate_sequences">
+            <column name="next_val" value="17"/>
+            <where>sequence_name = 'rul_data_type|data_type_id'</where>
+        </update>
+    </changeSet>
 
 </databaseChangeLog>

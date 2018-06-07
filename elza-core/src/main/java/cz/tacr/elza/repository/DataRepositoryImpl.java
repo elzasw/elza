@@ -2,25 +2,7 @@ package cz.tacr.elza.repository;
 
 import com.google.common.collect.Lists;
 import cz.tacr.elza.common.ObjectListIterator;
-import cz.tacr.elza.domain.ApRecord;
-import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDataCoordinates;
-import cz.tacr.elza.domain.ArrDataDecimal;
-import cz.tacr.elza.domain.ArrDataInteger;
-import cz.tacr.elza.domain.ArrDataPartyRef;
-import cz.tacr.elza.domain.ArrDataRecordRef;
-import cz.tacr.elza.domain.ArrDataString;
-import cz.tacr.elza.domain.ArrDataStructureRef;
-import cz.tacr.elza.domain.ArrDataText;
-import cz.tacr.elza.domain.ArrDataUnitid;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrItem;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrStructuredObject;
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.*;
 import cz.tacr.elza.exception.SystemException;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.NotImplementedException;
@@ -429,6 +411,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
                 dataClassType.equals(ArrDataCoordinates.class) ||
                 dataClassType.equals(ArrDataUnitid.class) ||
                 dataClassType.equals(ArrDataDecimal.class) ||
+                dataClassType.equals(ArrDataDate.class) ||
                 dataClassType.equals(ArrDataInteger.class)) {
             return new AbstractDescItemDataTypeHelper() {
 

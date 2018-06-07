@@ -228,6 +228,9 @@ public class PersistentSortBulkAction extends BulkAction {
             case UNITDATE:
                 valueFuncion = ArrDescItem::getNormalizedFrom;
                 break;
+            case DATE:
+                valueFuncion = ArrDescItem::getValueDate;
+                break;
             default:
                 throw new SystemException("Hromadná akce " + getName() + " nepodporuje datový typ:", BaseCode.SYSTEM_ERROR).
                         set("dataTypeCode", dataType.getCode());

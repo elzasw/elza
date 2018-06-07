@@ -1,6 +1,7 @@
 package cz.tacr.elza.dataexchange.input.sections;
 
 import java.util.Collection;
+import java.util.Date;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -189,6 +190,8 @@ public class SectionLevelProcessor implements ItemProcessor {
 
         private final Long normalizedTo;
 
+        private final Date date;
+
         public ImportIndexData(Integer fundId, String fulltext, ArrData data) {
             this.fundId = fundId;
             this.fulltext = fulltext;
@@ -196,6 +199,7 @@ public class SectionLevelProcessor implements ItemProcessor {
             this.valueDouble = data.getValueDouble();
             this.normalizedFrom = data.getNormalizedFrom();
             this.normalizedTo = data.getNormalizedTo();
+            this.date = data.getDate();
         }
 
         @Override
@@ -226,6 +230,11 @@ public class SectionLevelProcessor implements ItemProcessor {
         @Override
         public Long getNormalizedTo() {
             return normalizedTo;
+        }
+
+        @Override
+        public Date getValueDate() {
+            return date;
         }
     }
 }

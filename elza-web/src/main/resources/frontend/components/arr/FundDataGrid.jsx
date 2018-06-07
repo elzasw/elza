@@ -64,6 +64,8 @@ import {getPagesCount} from "../shared/datagrid/DataGridPagination";
 import {FILTER_NULL_VALUE} from 'actions/arr/fundDataGrid.jsx'
 import {toDuration} from "../validate";
 import {DisplayType} from "../../constants";
+import Moment from 'moment';
+import * as groups from "../../actions/refTables/groups"
 
 class FundDataGrid extends AbstractReactComponent {
     static PropTypes = {
@@ -113,6 +115,7 @@ class FundDataGrid extends AbstractReactComponent {
     fetchData(props) {
         const {fundDataGrid, descItemTypes, fund, versionId, ruleSet} = props;
         this.dispatch(descItemTypesFetchIfNeeded());
+        this.dispatch(groups.fetchIfNeeded(this.props.versionId));
         this.dispatch(refRulDataTypesFetchIfNeeded());
         this.dispatch(fundDataGridFetchFilterIfNeeded(versionId));
         this.dispatch(fundDataGridFetchDataIfNeeded(versionId, fundDataGrid.pageIndex, fundDataGrid.pageSize));
@@ -219,6 +222,9 @@ class FundDataGrid extends AbstractReactComponent {
                             } else {
                                 itemValue = value.value;
                             }
+                            break;
+                        case 'DATE':
+                            itemValue = Moment(value.value).format('l');
                             break;
                         default:
                             itemValue = value.value;

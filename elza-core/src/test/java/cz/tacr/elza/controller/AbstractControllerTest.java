@@ -63,20 +63,7 @@ import cz.tacr.elza.controller.vo.nodes.NodeData;
 import cz.tacr.elza.controller.vo.nodes.NodeDataParam;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemCoordinatesVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemDecimalVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemEnumVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemFormattedTextVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemIntVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemJsonTableVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemPartyRefVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemRecordRefVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStringVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStructureVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemTextVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitdateVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitidVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.*;
 import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.table.ElzaTable;
@@ -99,6 +86,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.net.URL;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -1201,6 +1189,12 @@ public abstract class AbstractControllerTest extends AbstractTest {
             case "JSON_TABLE": {
                 descItem = new ArrItemJsonTableVO();
                 ((ArrItemJsonTableVO) descItem).setValue(((ElzaTable) value));
+                break;
+            }
+
+            case "DATE": {
+                descItem = new ArrItemDateVO();
+                ((ArrItemDateVO) descItem).setValue((LocalDate) value);
                 break;
             }
 

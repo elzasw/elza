@@ -110,6 +110,11 @@ function validate(descItem, refType, valueServerError) {
                 error.value = validateDouble(descItem.value)
             }
             break;
+        case 'DATE':
+            if (!descItem.value || descItem.value.length === 0) {
+                error.value = i18n('subNodeForm.validate.value.notEmpty');
+            }
+            break;
         default:
             break;
     }

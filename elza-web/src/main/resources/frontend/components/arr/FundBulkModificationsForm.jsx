@@ -172,6 +172,7 @@ class FundBulkModificationsForm extends AbstractReactComponent {
             case 'FORMATTED_TEXT':
             case 'UNITID':
             case 'INT':
+            case 'DATE':
             case 'UNITDATE':
             case 'RECORD_REF':
                 result = true;

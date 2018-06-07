@@ -1,5 +1,6 @@
 package cz.tacr.elza.controller.config;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -8,6 +9,8 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import cz.tacr.elza.controller.vo.nodes.descitems.*;
+import cz.tacr.elza.domain.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -91,110 +94,7 @@ import cz.tacr.elza.controller.vo.nodes.ItemTypeLiteVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeDescItemsVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemCoordinatesVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemDecimalVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemEnumVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemFileRefVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemFormattedTextVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemIntVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemJsonTableVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemPartyRefVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemRecordRefVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStringVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStructureVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemTextVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitdateVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitidVO;
 import cz.tacr.elza.core.data.CalendarType;
-import cz.tacr.elza.domain.ApExternalSystem;
-import cz.tacr.elza.domain.ApRecord;
-import cz.tacr.elza.domain.ApScope;
-import cz.tacr.elza.domain.ApType;
-import cz.tacr.elza.domain.ApVariantRecord;
-import cz.tacr.elza.domain.ArrBulkActionRun;
-import cz.tacr.elza.domain.ArrCalendarType;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrDao;
-import cz.tacr.elza.domain.ArrDaoFile;
-import cz.tacr.elza.domain.ArrDaoFileGroup;
-import cz.tacr.elza.domain.ArrDataCoordinates;
-import cz.tacr.elza.domain.ArrDataDecimal;
-import cz.tacr.elza.domain.ArrDataFileRef;
-import cz.tacr.elza.domain.ArrDataInteger;
-import cz.tacr.elza.domain.ArrDataJsonTable;
-import cz.tacr.elza.domain.ArrDataNull;
-import cz.tacr.elza.domain.ArrDataPartyRef;
-import cz.tacr.elza.domain.ArrDataRecordRef;
-import cz.tacr.elza.domain.ArrDataString;
-import cz.tacr.elza.domain.ArrDataStructureRef;
-import cz.tacr.elza.domain.ArrDataText;
-import cz.tacr.elza.domain.ArrDataUnitdate;
-import cz.tacr.elza.domain.ArrDataUnitid;
-import cz.tacr.elza.domain.ArrDigitalRepository;
-import cz.tacr.elza.domain.ArrDigitizationFrontdesk;
-import cz.tacr.elza.domain.ArrFile;
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrItemCoordinates;
-import cz.tacr.elza.domain.ArrItemDecimal;
-import cz.tacr.elza.domain.ArrItemEnum;
-import cz.tacr.elza.domain.ArrItemFileRef;
-import cz.tacr.elza.domain.ArrItemFormattedText;
-import cz.tacr.elza.domain.ArrItemInt;
-import cz.tacr.elza.domain.ArrItemJsonTable;
-import cz.tacr.elza.domain.ArrItemPartyRef;
-import cz.tacr.elza.domain.ArrItemRecordRef;
-import cz.tacr.elza.domain.ArrItemString;
-import cz.tacr.elza.domain.ArrItemStructureRef;
-import cz.tacr.elza.domain.ArrItemText;
-import cz.tacr.elza.domain.ArrItemUnitdate;
-import cz.tacr.elza.domain.ArrItemUnitid;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrNodeConformityError;
-import cz.tacr.elza.domain.ArrNodeConformityExt;
-import cz.tacr.elza.domain.ArrNodeConformityMissing;
-import cz.tacr.elza.domain.ArrNodeRegister;
-import cz.tacr.elza.domain.ArrOutput;
-import cz.tacr.elza.domain.ArrOutputDefinition;
-import cz.tacr.elza.domain.ArrOutputFile;
-import cz.tacr.elza.domain.ArrOutputResult;
-import cz.tacr.elza.domain.DmsFile;
-import cz.tacr.elza.domain.ParComplementType;
-import cz.tacr.elza.domain.ParCreator;
-import cz.tacr.elza.domain.ParDynasty;
-import cz.tacr.elza.domain.ParEvent;
-import cz.tacr.elza.domain.ParInstitution;
-import cz.tacr.elza.domain.ParInstitutionType;
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.ParPartyGroup;
-import cz.tacr.elza.domain.ParPartyGroupIdentifier;
-import cz.tacr.elza.domain.ParPartyName;
-import cz.tacr.elza.domain.ParPartyNameComplement;
-import cz.tacr.elza.domain.ParPartyNameFormType;
-import cz.tacr.elza.domain.ParPartyType;
-import cz.tacr.elza.domain.ParPerson;
-import cz.tacr.elza.domain.ParRelation;
-import cz.tacr.elza.domain.ParRelationClassType;
-import cz.tacr.elza.domain.ParRelationEntity;
-import cz.tacr.elza.domain.ParRelationRoleType;
-import cz.tacr.elza.domain.ParRelationType;
-import cz.tacr.elza.domain.ParUnitdate;
-import cz.tacr.elza.domain.RulArrangementExtension;
-import cz.tacr.elza.domain.RulDataType;
-import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.RulItemSpecExt;
-import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.RulItemTypeExt;
-import cz.tacr.elza.domain.RulOutputType;
-import cz.tacr.elza.domain.RulPolicyType;
-import cz.tacr.elza.domain.RulRuleSet;
-import cz.tacr.elza.domain.RulStructuredType;
-import cz.tacr.elza.domain.RulTemplate;
-import cz.tacr.elza.domain.UIPartyGroup;
-import cz.tacr.elza.domain.UISettings;
-import cz.tacr.elza.domain.UsrGroup;
-import cz.tacr.elza.domain.UsrPermission;
-import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.convertor.CalendarConverter;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
@@ -255,6 +155,7 @@ public class ConfigMapperConfiguration {
         initSimpleVO(mapperFactory);
 
         mapperFactory.getConverterFactory().registerConverter(new LocalDateTimeConverter());
+        mapperFactory.getConverterFactory().registerConverter(new LocalDateConverter());
         mapperFactory.getConverterFactory().registerConverter(new DescItemTypeEnumConverter());
         mapperFactory.getConverterFactory().registerConverter(new DescItemSpecEnumConverter());
 
@@ -340,6 +241,7 @@ public class ConfigMapperConfiguration {
          mapperFactory.classMap(ArrItemInt.class, ArrItemIntVO.class).byDefault().register();
          mapperFactory.classMap(ArrItemJsonTable.class, ArrItemJsonTableVO.class).byDefault().register();
          mapperFactory.classMap(ArrItemText.class, ArrItemTextVO.class).byDefault().register();
+         mapperFactory.classMap(ArrItemDate.class, ArrItemDateVO.class).byDefault().register();
          mapperFactory.classMap(ArrItemDecimal.class, ArrItemDecimalVO.class).byDefault().register();
          mapperFactory.classMap(ArrItemUnitid.class, ArrItemUnitidVO.class).byDefault().register();
          mapperFactory.classMap(ArrItemUnitdate.class, ArrItemUnitdateVO.class).customize(
@@ -1015,6 +917,7 @@ public class ConfigMapperConfiguration {
                 }).exclude("value").byDefault().register();
         mapperFactory.classMap(ArrDataNull.class, ArrItemEnumVO.class).byDefault().register();
         mapperFactory.classMap(ArrDataInteger.class, ArrItemIntVO.class).byDefault().register();
+        mapperFactory.classMap(ArrDataDate.class, ArrItemDateVO.class).byDefault().register();
         mapperFactory.classMap(ArrDataJsonTable.class, ArrItemJsonTableVO.class).byDefault().register();
         mapperFactory.classMap(ArrDataDecimal.class, ArrItemDecimalVO.class).byDefault().register();
         mapperFactory.classMap(ArrDataUnitid.class, ArrItemUnitidVO.class).byDefault().register();
@@ -1198,6 +1101,20 @@ public class ConfigMapperConfiguration {
         public LocalDateTime convertFrom(final Date date, final Type<LocalDateTime> type) {
             return LocalDateTime.from(LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault()));
         }
+    }
+
+    public class LocalDateConverter extends BidirectionalConverter<LocalDate, LocalDate> {
+
+        @Override
+        public LocalDate convertTo(LocalDate source, Type<LocalDate> destinationType) {
+            return (LocalDate.from(source));
+        }
+
+        @Override
+        public LocalDate convertFrom(LocalDate source, Type<LocalDate> destinationType) {
+            return (LocalDate.from(source));
+        }
+
     }
 
     public class DescItemTypeEnumConverter extends BidirectionalConverter<RulItemType.Type, Integer> {

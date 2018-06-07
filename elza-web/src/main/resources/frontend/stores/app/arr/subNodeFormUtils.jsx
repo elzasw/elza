@@ -1143,6 +1143,8 @@ export function getItemClass(dataType) {
             return '.ArrItemUnitdateVO';
         case 'UNITID':
             return '.ArrItemUnitidVO';
+        case 'DATE':
+            return '.ArrItemDateVO';
         default:
             console.error("Unsupported data type", dataType);
             return null;

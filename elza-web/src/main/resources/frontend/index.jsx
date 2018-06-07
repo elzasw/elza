@@ -73,6 +73,12 @@ if (!String.prototype.startsWith) {
 
 //setTimeout(fc, 1500)
 
+import Moment from 'moment'
+import momentLocalizer from 'react-widgets-moment';
+
+Moment.locale(window.navigator.language || 'cs-CZ');
+momentLocalizer();
+
 // Načtení dat z local storage = vrácení aplikace do předchozího stavu
 import {store} from 'stores/index.jsx';
 import AjaxUtils from 'components/AjaxUtils.jsx';

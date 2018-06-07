@@ -5,38 +5,10 @@ import com.google.common.collect.Lists;
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.controller.ArrangementController;
 import cz.tacr.elza.controller.vo.TreeNode;
-import cz.tacr.elza.core.data.CalendarType;
-import cz.tacr.elza.core.data.RuleSystem;
-import cz.tacr.elza.core.data.RuleSystemItemType;
-import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.core.data.*;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
-import cz.tacr.elza.domain.ApRecord;
-import cz.tacr.elza.domain.ArrCalendarType;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDataCoordinates;
-import cz.tacr.elza.domain.ArrDataDecimal;
-import cz.tacr.elza.domain.ArrDataInteger;
-import cz.tacr.elza.domain.ArrDataJsonTable;
-import cz.tacr.elza.domain.ArrDataNull;
-import cz.tacr.elza.domain.ArrDataPartyRef;
-import cz.tacr.elza.domain.ArrDataRecordRef;
-import cz.tacr.elza.domain.ArrDataString;
-import cz.tacr.elza.domain.ArrDataStructureRef;
-import cz.tacr.elza.domain.ArrDataText;
-import cz.tacr.elza.domain.ArrDataUnitdate;
-import cz.tacr.elza.domain.ArrDataUnitid;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrItem;
-import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrStructuredObject;
-import cz.tacr.elza.domain.ParUnitdate;
-import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.*;
 import cz.tacr.elza.domain.convertor.CalendarConverter;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.domain.factory.DescItemFactory;
@@ -71,6 +43,8 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -150,6 +124,8 @@ public class DescriptionItemService {
 
     @Autowired
     StaticDataService staticDataService;
+
+    private static final Logger logger = LoggerFactory.getLogger(DescriptionItemService.class);
 
     /**
      * Kontrola otevřené verze.
@@ -751,7 +727,7 @@ public class DescriptionItemService {
 	 *
 	 * Function will save created data in repository
 	 *
-	 * @param descItemFrom
+	 * @param itemFrom
 	 *            z hodnoty atributu
 	 * @return Return object with data copy. If data are not defined in source
 	 *         item method will return null.
@@ -1145,11 +1121,17 @@ public class DescriptionItemService {
             } else if (data.getDataType().getCode().equals("JSON_TABLE")) {
                 ArrDataJsonTable table = (ArrDataJsonTable) data;
                 value = new JsonTableTitleValue(table.getFulltextValue(), table.getValue().getRows().size());
+            } else if (DataType.DATE.getEntity().equals(data.getDataType())) {
+                ArrDataDate date = (ArrDataDate) data;
+                value = new TitleValue(date.getValue().format(DateTimeFormatter.ISO_LOCAL_DATE));
             }
 
             if (value != null) {
                 String iconValue = getIconValue(descItem);
                 addValuesToMap(valueMap, value, code, specCode, nodeId, iconValue, position);
+            } else {
+                // TODO možná by mělo být spíš throw exception, že není implementovaný kód
+                logger.error("Nebyla vytvořena hodnota pro typ atributu " + data.getDataType().getCode());
             }
         }
 
@@ -1405,6 +1387,8 @@ public class DescriptionItemService {
             case "TEXT":
             case "FORMATTED_TEXT":
                 return ArrDataText.class;
+            case "DATE":
+                return ArrDataDate.class;
             case "UNITDATE":
                 return ArrDataUnitdate.class;
             case "UNITID":

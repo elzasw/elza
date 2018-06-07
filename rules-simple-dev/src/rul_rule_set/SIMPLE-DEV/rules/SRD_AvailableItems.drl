@@ -48,7 +48,7 @@ when
         "SRD_ARRANGE_RULES", "SRD_ITEM_TITLE", "SRD_STORAGE_COND", "SRD_SIZE", "SRD_SCALE",
         "SRD_EXERQUE", "SRD_PAINTING_CHAR", "SRD_CORROBORATION", "SRD_IMPRINT_COUNT",
         "SRD_IMPRINT_ORDER", "SRD_LEGEND", "SRD_MOVIE_LENGTH", "SRD_RECORD_LENGTH",
-        "SRD_COLL_EXTENT_LENGTH", "SRD_NAD"))
+        "SRD_COLL_EXTENT_LENGTH", "SRD_NAD", "SRD_SIMPLE_DATE"))
 then
     $itemType.setRepeatable(false);
 end
@@ -384,4 +384,12 @@ when
     $itemType : RulItemTypeExt(code=="SRD_UNIT_DATE_TEXT")
 then
        $itemType.setType(RulItemType.Type.REQUIRED);
+end
+
+rule "Možné atributy pro testování"
+no-loop
+when
+    $itemType : RulItemTypeExt(code in ("SRD_SIMPLE_DATE", "SRD_MOVIE_LENGTH"))
+then
+    $itemType.setType(RulItemType.Type.POSSIBLE);
 end

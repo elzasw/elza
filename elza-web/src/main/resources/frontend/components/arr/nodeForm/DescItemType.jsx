@@ -13,6 +13,7 @@ import {
 import {addToastrDanger} from 'components/shared/toastr/ToastrActions.jsx'
 import {connect} from 'react-redux'
 import DescItemString from './DescItemString.jsx'
+import DescItemDate from './DescItemDate.jsx'
 import DescItemUnitid from './DescItemUnitid.jsx'
 import DescItemText from './DescItemText.jsx'
 import DescItemInt from './DescItemInt.jsx'
@@ -621,6 +622,11 @@ class DescItemType extends AbstractReactComponent {
                 break;
             case 'STRING':
                 parts.push(<DescItemString key={itemComponentKey}
+                                           {...descItemProps}
+                />);
+                break;
+            case 'DATE':
+                parts.push(<DescItemDate key={itemComponentKey}
                                            {...descItemProps}
                 />);
                 break;

@@ -178,6 +178,19 @@ function pad2(number) {
 }
 
 /**
+ * Přeformátování datumu do YYYY-MM-DD řetězce.
+ *
+ * @param date
+ * @returns {string}
+ */
+export function formatDate(date) {
+    let month = date.getMonth() + 1,
+        day = date.getDate(),
+        year = date.getFullYear();
+    return [year, pad2(month), pad2(day)].join('-');
+}
+
+/**
  * Normalizace čísla - lze pouze číslice a nahrazení '.' za ',' kdy náhodou - (přes string rychlejší než ukládat do pole)
  * @param number decimal(18,6)
  **/

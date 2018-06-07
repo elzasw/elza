@@ -54,6 +54,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -146,7 +147,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         ChangesResult changesAll = findChanges(fundVersion.getId(), MAX_SIZE, 0, null, null);
         assertNotNull(changesAll);
         assertNotNull(changesAll.getChanges());
-        assertTrue(changesAll.getTotalCount().equals(changesAll.getChanges().size()) && changesAll.getChanges().size() == 28);
+        assertTrue(changesAll.getTotalCount().equals(changesAll.getChanges().size()) && changesAll.getChanges().size() == 29);
         assertTrue(!changesAll.getOutdated());
 
         ChangesResult changesByNode = findChanges(fundVersion.getId(), MAX_SIZE, 0, null, nodes.get(0).getId());
@@ -173,7 +174,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
             e.printStackTrace();
         }
 
-        assertTrue(changesByDate.getTotalCount().equals(changesByDate.getChanges().size()) && changesByDate.getChanges().size() == 28);
+        assertTrue(changesByDate.getTotalCount().equals(changesByDate.getChanges().size()) && changesByDate.getChanges().size() == 29);
         assertTrue(!changesByDate.getOutdated());
 
         // obdoba revertChanges s fail očekáváním
@@ -542,6 +543,12 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         type = findDescItemTypeByCode("SRD_UNIT_DATE");
         descItem = buildDescItem(type.getCode(), null, "1920", 1, null);
+        descItemResult = createDescItem(descItem, fundVersion, node, type);
+        node = descItemResult.getParent();
+
+        LocalDate dateNow = LocalDate.now();
+        type = findDescItemTypeByCode("SRD_SIMPLE_DATE");
+        descItem = buildDescItem(type.getCode(), null, dateNow, 1, null);
         descItemResult = createDescItem(descItem, fundVersion, node, type);
         node = descItemResult.getParent();
 

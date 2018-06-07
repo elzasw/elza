@@ -431,6 +431,7 @@ export function hasDescItemTypeValue(dataType) {
         case 'TEXT':
         case 'STRING':
         case 'INT':
+        case 'DATE':
         case 'COORDINATES':
         case 'DECIMAL':
         case 'PARTY_REF':

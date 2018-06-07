@@ -3,8 +3,10 @@ package cz.tacr.elza.service.cache;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.introspect.AnnotatedMethod;
 import com.fasterxml.jackson.databind.introspect.VisibilityChecker;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.collect.Lists;
 import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.common.db.HibernateUtils;
@@ -61,6 +63,7 @@ import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -141,8 +144,11 @@ public class NodeCacheService {
 
     public NodeCacheService() {
         mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+        mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
         mapper.setVisibility(new InterfaceVisibilityChecker(NodeCacheSerializable.class,
-                String.class, Number.class, Boolean.class, Iterable.class));
+                String.class, Number.class, Boolean.class, Iterable.class,
+                LocalDate.class));
     }
 
     /**
