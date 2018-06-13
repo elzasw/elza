@@ -9,6 +9,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApChange;
+import cz.tacr.elza.domain.ApDescription;
 import cz.tacr.elza.domain.ApExternalSystem;
 import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
@@ -18,29 +21,37 @@ import cz.tacr.elza.dataexchange.input.aps.context.AccessPointWrapper;
 import cz.tacr.elza.dataexchange.input.context.ImportInitHelper;
 import cz.tacr.elza.dataexchange.input.context.PersistMethod;
 import cz.tacr.elza.domain.ApRecord;
+import cz.tacr.elza.domain.projection.ApAccessPointInfo;
 import cz.tacr.elza.domain.projection.ApRecordInfo;
 import cz.tacr.elza.domain.projection.ApRecordInfoExternal;
+import cz.tacr.elza.repository.ApAccessPointRepository;
+import cz.tacr.elza.repository.ApDescriptionRepository;
+import cz.tacr.elza.repository.ApExternalIdRepository;
+import cz.tacr.elza.repository.ApNameRepository;
 import cz.tacr.elza.repository.ApRecordRepository;
 import cz.tacr.elza.repository.ApVariantRecordRepository;
 import cz.tacr.elza.service.ArrangementService;
 
 /**
- * Specialization of wrapper storage witch pairs imported records with database state.
+ * Specialization of wrapper storage witch pairs imported records with database
+ * state.
  */
 class ApRecordStorage extends EntityStorage<AccessPointWrapper> {
 
-    private final ApRecordRepository recordRepository;
+    private final ApAccessPointRepository apRepository;
+
+    private final ApNameRepository apNameRepository;
+
+    private final ApDescriptionRepository apDescRepository;
+
+    private final ApExternalIdRepository apEidRepository;
 
     private final ArrangementService arrangementService;
 
-    private final ApVariantRecordRepository variantRecordRepository;
+    private final ApChange deleteChange;
 
-    private final LocalDateTime updateDateTime;
-
-    public ApRecordStorage(StorageListener storageListener,
-                           LocalDateTime updateDateTime,
-                           Session session,
-                           ImportInitHelper initHelper) {
+    public ApRecordStorage(StorageListener storageListener, LocalDateTime updateDateTime, Session session,
+            ImportInitHelper initHelper) {
         super(session, storageListener);
         this.updateDateTime = updateDateTime;
         this.recordRepository = initHelper.getRecordRepository();
@@ -50,73 +61,68 @@ class ApRecordStorage extends EntityStorage<AccessPointWrapper> {
 
     @Override
     public void save(Collection<AccessPointWrapper> items) {
-        pairCurrentRecordsByUuid(items);
-        pairCurrentRecordsByEid(items);
+        pairCurrentApsByUuid(items);
+        pairCurrentApsByEid(items);
         super.save(items);
     }
 
     @Override
     protected void update(Collection<AccessPointWrapper> items) {
-        prepareCollectionForUpdate(items);
-        super.update(items);
+        prepareItemsForUpdate(items);
+        // AP update is not needed
     }
 
     @Override
-    protected void create(AccessPointWrapper item, Session session) {
-        prepareItemForCreate(item);
-        super.create(item, session);
+    protected void create(AccessPointWrapper item) {
+        // set UUID for new AP
+        item.getEntity().setUuid(arrangementService.generateUuid());
+        // create item
+        super.create(item);
     }
 
     /**
-     * Deletes current sub-entities for each access point.
+     * Invalidates current sub-entities for each access point.
      */
-    private void prepareCollectionForUpdate(Collection<AccessPointWrapper> items) {
-        List<ApRecord> records = new ArrayList<>(items.size());
-        for (AccessPointWrapper rw : items) {
-            ApRecord record = rw.getEntity();
-            Validate.notNull(record.getRecordId());
-            records.add(record);
+    private void prepareItemsForUpdate(Collection<AccessPointWrapper> items) {
+        List<Integer> apIds = new ArrayList<>(items.size());
+        for (AccessPointWrapper item : items) {
+            Integer apId = item.getEntity().getAccessPointId();
+            apIds.add(Validate.notNull(apId));
         }
-        variantRecordRepository.deleteByApRecordIn(records);
+        apNameRepository.deleteAllByAccessPointIdIn(apIds, deleteChange);
+        apDescRepository.deleteAllByAccessPointIdIn(apIds, deleteChange);
+        apEidRepository.deleteAllByAccessPointIdIn(apIds, deleteChange);
     }
 
     /**
-     * Sets last update dateTime and unique UUID for new entity.
+     * Searches for current AP with same UUID, paired AP will be prepared for
+     * update.
      */
-    private void prepareItemForCreate(AccessPointWrapper item) {
-        ApRecord record = item.getEntity();
-        if (record.getLastUpdate() == null) {
-            record.setLastUpdate(updateDateTime);
-        }
-        record.setUuid(arrangementService.generateUuid());
-    }
-
-    /**
-     * Searches for record pairs by uuid, paired records will be prepared for update.
-     */
-    private void pairCurrentRecordsByUuid(Collection<AccessPointWrapper> rws) {
-        // create record map and check uuid duplicate
+    private void pairCurrentApsByUuid(Collection<AccessPointWrapper> items) {
+        // init mapping: UUID -> AP wrapper
         Map<String, AccessPointWrapper> uuidMap = new HashMap<>();
-        for (AccessPointWrapper rw : rws) {
-            String uuid = rw.getEntity().getUuid();
-            if (uuid != null) {
-                if (uuidMap.put(uuid, rw) != null) {
-                    throw new DEImportException("Duplicate record uuid, uuid:" + uuid);
-                }
+        for (AccessPointWrapper item : items) {
+            String uuid = item.getEntity().getUuid();
+            if (uuid == null) {
+                continue;
+            }
+            if (uuidMap.put(uuid, item) != null) {
+                throw new DEImportException(
+                        "Duplicate AP uuid, apId=" + item.getEntity().getAccessPointId() + ", uuid=" + uuid);
             }
         }
-        // find pairs by uuid
-        List<ApRecordInfo> pairs = recordRepository.findByUuidIn(uuidMap.keySet());
-        for (ApRecordInfo pair : pairs) {
-            AccessPointWrapper rw = uuidMap.get(pair.getUuid());
-            rw.setPair(pair);
+        // find all current AP by UUID
+        List<ApAccessPointInfo> currentAps = apRepository.findByUuidIn(uuidMap.keySet());
+        for (ApAccessPointInfo info : currentAps) {
+            AccessPointWrapper wrapper = uuidMap.get(info.getUuid());
+            wrapper.prepareUpdate(info);
         }
     }
 
     /**
-     * Searches for record pairs by external id, paired records will be prepared for update.
+     * Searches for AP with same external id, paired AP will be prepared for update.
      */
-    private void pairCurrentRecordsByEid(Collection<AccessPointWrapper> rws) {
+    private void pairCurrentApsByEid(Collection<AccessPointWrapper> rws) {
         // create external system groups by code
         ExternalSystemAggregator aggregator = new ExternalSystemAggregator();
         for (AccessPointWrapper rw : rws) {

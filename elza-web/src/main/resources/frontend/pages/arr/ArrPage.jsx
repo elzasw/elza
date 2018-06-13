@@ -541,6 +541,15 @@ class ArrPage extends ArrParentPage {
         }
     }
 
+    renderFundErrorItem(item){
+        if(item){
+            return <div>{item.name}</div>;
+        }
+        else {
+            return "...";
+        }
+    }
+
     renderFundErrors(activeFund) {
         let activeNode = null;
         if (activeFund.nodes.activeIndex !== null) {
@@ -554,7 +563,7 @@ class ArrPage extends ArrParentPage {
                     getItems={(fromIndex, toIndex) => {
                                 return WebApi.getValidationItems(activeFund.versionId, fromIndex, toIndex)
                             }}
-                    renderItemContent={(item) => item !== null ? <div>{item.name}</div> : '...'}
+                    renderItemContent={this.renderFundErrorItem}
                     selectedItem={activeNode ? activeNode.selectedSubNodeId : null}
                     itemHeight={25} // nutne dat stejne cislo i do css jako .pokusny-listbox-container .listbox-item { height: 24px; }
                     onSelect={this.handleSelectErrorNode.bind(this, activeFund)}
@@ -631,7 +640,7 @@ class ArrPage extends ArrParentPage {
                     ref="fundVisiblePolicies"
                     items={nodesPolicy.items}
                     selectedItem={activeNode !== null ? activeNode.selectedSubNodeId : null}
-                    renderItemContent={(node, isActive) => <div>{node.name}</div>}
+                    renderItemContent={(props) => <div>{props.node.name}</div>}
                     onSelect={this.handleSelectVisiblePoliciesNode.bind(this, activeFund)}
                     /*onDoubleClick={this.handleShowVisiblePolicies.bind(this, activeFund)}*/
                 />

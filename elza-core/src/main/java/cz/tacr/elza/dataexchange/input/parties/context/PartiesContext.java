@@ -8,13 +8,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang3.Validate;
-import org.hibernate.Session;
-
-import com.google.common.collect.Iterables;
-import com.vividsolutions.jts.util.Assert;
-
 import cz.tacr.elza.core.data.PartyType;
+import cz.tacr.elza.core.data.PartyTypeCmplTypes;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.dataexchange.input.DEImportException;
 import cz.tacr.elza.dataexchange.input.aps.context.AccessPointInfo;
@@ -25,32 +20,34 @@ import cz.tacr.elza.dataexchange.input.context.ImportInitHelper;
 import cz.tacr.elza.dataexchange.input.context.ImportPhase;
 import cz.tacr.elza.dataexchange.input.context.ImportPhaseChangeListener;
 import cz.tacr.elza.dataexchange.input.context.ObservableImport;
-import cz.tacr.elza.dataexchange.input.parties.aps.PartiesAccessPointsBuilder;
-import cz.tacr.elza.dataexchange.input.parties.aps.PartyAccessPointWrapper;
 import cz.tacr.elza.dataexchange.input.storage.StorageManager;
+import cz.tacr.elza.domain.ApDescription;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyGroupIdentifier;
 import cz.tacr.elza.domain.ParPartyName;
 import cz.tacr.elza.domain.ParPartyNameComplement;
 import cz.tacr.elza.domain.ParUnitdate;
 import cz.tacr.elza.service.GroovyScriptService;
+import cz.tacr.elza.service.party.ApConvResult;
 
 /**
  * Context for data exchange parties.
  */
 public class PartiesContext {
 
-    private final Map<String, PartyInfo> partyImportIdMap = new HashMap<>();
+    private final Map<String, PartyInfo> importIdPartyInfoMap = new HashMap<>();
 
     private final StorageManager storageManager;
 
     private final int batchSize;
 
-    private final AccessPointsContext accessPointContext;
+    private final AccessPointsContext apContext;
 
-    private final Session session;
+    private final StaticDataProvider staticData;
 
-    private final Map<PartyType, PartyTypeGroup> partyTypeGroupQueueMap = new EnumMap<>(PartyType.class);
+    private final GroovyScriptService gsService;
+
+    private final Map<PartyType, List<PartyWrapper>> typeGroupedPartyQueue = new EnumMap<>(PartyType.class);
 
     private final List<PartyUnitDateWrapper> unitDateQueue = new ArrayList<>();
 
@@ -58,22 +55,19 @@ public class PartiesContext {
 
     private final List<PartyNameWrapper> nameQueue = new ArrayList<>();
 
-    private final List<PartyNameComplementWrapper> nameComplementQueue = new ArrayList<>();
+    private final List<PartyNameCmplWrapper> nameCmplQueue = new ArrayList<>();
 
-    private final List<PartyPreferredNameWrapper> preferredNameQueue = new ArrayList<>();
+    private final List<PartyPreferredNameWrapper> prefNameQueue = new ArrayList<>();
 
-    private final GroovyScriptService groovyScriptService;
+    private long currentMemoryScore;
 
-    public PartiesContext(StorageManager storageManager,
-                          int batchSize,
-                          AccessPointsContext accessPointContext,
-                          Session session,
-                          ImportInitHelper initHelper) {
+    public PartiesContext(StorageManager storageManager, int batchSize, AccessPointsContext apContext,
+            StaticDataProvider staticData, ImportInitHelper initHelper) {
         this.storageManager = storageManager;
         this.batchSize = batchSize;
-        this.accessPointContext = accessPointContext;
-        this.session = session;
-        this.groovyScriptService = initHelper.getGroovyScriptService();
+        this.apContext = apContext;
+        this.staticData = staticData;
+        this.gsService = initHelper.getGroovyScriptService();
     }
 
     public void init(ObservableImport observableImport) {
@@ -81,74 +75,105 @@ public class PartiesContext {
     }
 
     public Collection<PartyInfo> getAllPartyInfo() {
-        return Collections.unmodifiableCollection(partyImportIdMap.values());
+        return Collections.unmodifiableCollection(importIdPartyInfoMap.values());
     }
 
     public PartyInfo getPartyInfo(String importId) {
-        return partyImportIdMap.get(importId);
+        return importIdPartyInfoMap.get(importId);
     }
 
-    public PartyInfo addParty(ParParty party, String importId, AccessPointInfo apInfo, PartyType partyType) {
-        PartyInfo info = new PartyInfo(importId, apInfo, partyType);
-        if (partyImportIdMap.putIfAbsent(importId, info) != null) {
+    public PartyInfo addParty(ParParty entity, String importId, AccessPointInfo apInfo, PartyType partyType) {
+        PartyInfo info = new PartyInfo(importId, apInfo, partyType, this);
+        if (importIdPartyInfoMap.putIfAbsent(importId, info) != null) {
             throw new DEImportException("Party has duplicate id, partyId:" + importId);
         }
-        PartyTypeGroup group = partyTypeGroupQueueMap.get(partyType);
-        if (group == null) {
-            group = new PartyTypeGroup(partyType);
-            partyTypeGroupQueueMap.put(partyType, group);
+        List<PartyWrapper> partyQueue = typeGroupedPartyQueue.get(partyType);
+        if (partyQueue == null) {
+            partyQueue = new ArrayList<>();
+            typeGroupedPartyQueue.put(partyType, partyQueue);
         }
-        PartyWrapper wrapper = new PartyWrapper(party, info);
-        group.add(wrapper);
-        if (group.getSize() >= batchSize) {
-            group.storeParties();
+        partyQueue.add(new PartyWrapper(entity, info));
+        info.onEntityQueued();
+        if (partyQueue.size() >= batchSize) {
+            storeParties(partyQueue);
         }
         return info;
     }
 
-    public PartyNameWrapper addName(ParPartyName partyName, PartyInfo partyInfo, boolean preferred) {
-        PartyNameWrapper wrapper = new PartyNameWrapper(partyName, partyInfo);
+    public PartyNameWrapper addName(ParPartyName entity, PartyInfo partyInfo, boolean preferred) {
+        PartyNameWrapper wrapper = new PartyNameWrapper(entity, partyInfo);
         nameQueue.add(wrapper);
+        partyInfo.onEntityQueued();
         if (nameQueue.size() >= batchSize) {
             storeNames();
         }
         if (preferred) {
-            preferredNameQueue.add(new PartyPreferredNameWrapper(partyInfo, wrapper.getIdHolder()));
-            if (preferredNameQueue.size() >= batchSize) {
+            prefNameQueue.add(new PartyPreferredNameWrapper(partyInfo, wrapper.getIdHolder()));
+            partyInfo.onEntityQueued();
+            if (prefNameQueue.size() >= batchSize) {
                 storePreferredNames();
             }
         }
         return wrapper;
     }
 
-    public EntityIdHolder<ParUnitdate> addUnitDate(ParUnitdate unitDate, PartyInfo partyInfo) {
-        PartyUnitDateWrapper wrapper = new PartyUnitDateWrapper(unitDate, partyInfo);
+    public EntityIdHolder<ParUnitdate> addUnitDate(ParUnitdate entity, PartyInfo partyInfo) {
+        PartyUnitDateWrapper wrapper = new PartyUnitDateWrapper(entity, partyInfo);
         unitDateQueue.add(wrapper);
+        partyInfo.onEntityQueued();
         if (unitDateQueue.size() >= batchSize) {
             storeUnitDates();
         }
         return wrapper.getIdHolder();
     }
 
-    public void addNameComplement(ParPartyNameComplement partyNameComplement, PartyRelatedIdHolder<ParPartyName> partyNameIdHolder) {
-        PartyNameComplementWrapper wrapper = new PartyNameComplementWrapper(partyNameComplement, partyNameIdHolder);
-        nameComplementQueue.add(wrapper);
-        if (nameComplementQueue.size() >= batchSize) {
+    public void addNameComplement(ParPartyNameComplement entity, EntityIdHolder<ParPartyName> nameIdHolder,
+            PartyInfo partyInfo) {
+        nameCmplQueue.add(new PartyNameCmplWrapper(entity, nameIdHolder, partyInfo));
+        partyInfo.onEntityQueued();
+        if (nameCmplQueue.size() >= batchSize) {
             storeNameComplements();
         }
     }
 
-    public PartyGroupIdentifierWrapper addGroupIdentifier(ParPartyGroupIdentifier entity, PartyInfo partyInfo) {
+    public PartyGroupIdentifierWrapper addIdentifier(ParPartyGroupIdentifier entity, PartyInfo partyInfo) {
         PartyGroupIdentifierWrapper wrapper = new PartyGroupIdentifierWrapper(entity, partyInfo);
         groupIdentifierQueue.add(wrapper);
+        partyInfo.onEntityQueued();
         if (groupIdentifierQueue.size() >= batchSize) {
             storeGroupIdentifiers();
         }
         return wrapper;
     }
 
+    public void onPartyFinished(PartyInfo partyInfo) {
+        updatePartyAp(partyInfo);
+        // clear all entities potentially loaded by groovy script
+        currentMemoryScore += partyInfo.getMemoryScore();
+        if (currentMemoryScore > storageManager.getAvailableMemoryScore()) {
+            storageManager.flushAndClear(true);
+            currentMemoryScore = 0;
+        }
+        // AP is now processed
+        partyInfo.getApInfo().onProcessed();
+    }
+
+    private void updatePartyAp(PartyInfo partyInfo) {
+        ParParty entity = partyInfo.getEntityRef(storageManager.getSession());
+        // get supported complement types
+        String partyTypeCode = partyInfo.getPartyType().getCode();
+        PartyTypeCmplTypes cmplTypes = staticData.getCmplTypesByPartyTypeCode(partyTypeCode);
+        // execute groovy script
+        ApConvResult convResult = gsService.convertPartyToAp(entity, cmplTypes.getTypes());
+        // add AP description and names
+        AccessPointInfo apInfo = partyInfo.getApInfo();
+        ApDescription apDesc = convResult.createDesc(apContext.getCreateChange());
+        apContext.addDescription(apDesc, apInfo);
+        convResult.createNames(apContext.getCreateChange(), n -> apContext.addName(n, apInfo));
+    }
+
     public void storeAll() {
-        storePartyTypeGroups();
+        storeParties();
         storeUnitDates();
         storeGroupIdentifiers();
         storeNames();
@@ -156,34 +181,34 @@ public class PartiesContext {
         storePreferredNames();
     }
 
-    /**
-     * @param partyTypes not-null, if empty all present type groups are stored.
-     */
-    private void storePartyTypeGroups(PartyType... partyTypes) {
-        if (partyTypes.length == 0) {
-            partyTypeGroupQueueMap.values().forEach(PartyTypeGroup::storeParties);
-        } else {
-            for (PartyType pt : partyTypes) {
-                PartyTypeGroup group = partyTypeGroupQueueMap.get(pt);
-                if (group != null) {
-                    group.storeParties();
-                }
-            }
+    private void storeParties() {
+        typeGroupedPartyQueue.values().forEach(this::storeParties);
+    }
+
+    private void storeParties(Collection<PartyWrapper> partyQueue) {
+        if (partyQueue.isEmpty()) {
+            return;
         }
+        apContext.storeAccessPoints();
+        storageManager.saveParties(partyQueue);
+        partyQueue.clear();
     }
 
     private void storeUnitDates() {
         if (unitDateQueue.isEmpty()) {
             return;
         }
-        storageManager.savePartyUnitDates(unitDateQueue);
+        storageManager.saveGeneric(unitDateQueue);
         unitDateQueue.clear();
     }
 
     private void storeGroupIdentifiers() {
-        storePartyTypeGroups(PartyType.GROUP_PARTY);
+        List<PartyWrapper> partyGroupQueue = typeGroupedPartyQueue.get(PartyType.GROUP_PARTY);
+        if (partyGroupQueue != null) {
+            storeParties(partyGroupQueue);
+        }
         storeUnitDates();
-        storageManager.savePartyGroupIdentifiers(groupIdentifierQueue);
+        storageManager.saveGeneric(groupIdentifierQueue);
         groupIdentifierQueue.clear();
     }
 
@@ -191,51 +216,22 @@ public class PartiesContext {
         if (nameQueue.isEmpty()) {
             return;
         }
-        storePartyTypeGroups();
+        storeParties();
         storeUnitDates();
-        storageManager.savePartyNames(nameQueue);
+        storageManager.saveGeneric(nameQueue);
         nameQueue.clear();
     }
 
     private void storeNameComplements() {
         storeNames();
-        storageManager.savePartyNameComplements(nameComplementQueue);
-        nameComplementQueue.clear();
+        storageManager.saveGeneric(nameCmplQueue);
+        nameCmplQueue.clear();
     }
 
     private void storePreferredNames() {
         storeNames();
-        storageManager.savePartyPreferredNames(preferredNameQueue);
-        preferredNameQueue.clear();
-    }
-
-    private class PartyTypeGroup {
-
-        private final List<PartyWrapper> partyQueue = new ArrayList<>();
-
-        private final PartyType partyType;
-
-        public PartyTypeGroup(PartyType partyType) {
-            this.partyType = Validate.notNull(partyType);
-        }
-
-        public int getSize() {
-            return partyQueue.size();
-        }
-
-        public void add(PartyWrapper item) {
-            Assert.equals(partyType, item.getPartyInfo().getPartyType());
-            partyQueue.add(item);
-        }
-
-        public void storeParties() {
-            if (partyQueue.isEmpty()) {
-                return;
-            }
-            accessPointContext.storeAccessPoints();
-            storageManager.saveParties(partyQueue);
-            partyQueue.clear();
-        }
+        storageManager.saveGeneric(prefNameQueue);
+        prefNameQueue.clear();
     }
 
     /**
@@ -245,32 +241,13 @@ public class PartiesContext {
 
         @Override
         public boolean onPhaseChange(ImportPhase previousPhase, ImportPhase nextPhase, ImportContext context) {
-            boolean partyRelatedEnds = ImportPhase.RELATIONS.isSubsequent(nextPhase);
-            PartiesContext partiesContext = context.getParties();
-
-            if (partyRelatedEnds || previousPhase == ImportPhase.PARTIES) {
-                // store remaining access points and parties
+            boolean lastPartyModifiablePhase = ImportPhase.RELATIONS.isSubsequent(nextPhase);
+            if (lastPartyModifiablePhase || previousPhase == ImportPhase.PARTIES) {
+                // store remaining APs and parties
                 context.getAccessPoints().storeAll();
-                partiesContext.storeAll();
-            }
-            if (partyRelatedEnds) {
-                // execute builder
-                buildPartiesAccessPoints(partiesContext, context.getStaticData());
-                // clear all party related entities
-                partiesContext.storageManager.clear();
-                return false;
+                context.getParties().storeAll();
             }
             return true;
-        }
-
-        private void buildPartiesAccessPoints(PartiesContext context, StaticDataProvider staticData) {
-            PartiesAccessPointsBuilder builder = new PartiesAccessPointsBuilder(staticData, context.groovyScriptService,
-                    context.session);
-            Collection<PartyInfo> partiesInfo = context.partyImportIdMap.values();
-            for (List<PartyInfo> batch : Iterables.partition(partiesInfo, context.batchSize)) {
-                List<PartyAccessPointWrapper> items = builder.build(batch);
-                context.storageManager.savePartyAccessPoints(items);
-            }
         }
     }
 }

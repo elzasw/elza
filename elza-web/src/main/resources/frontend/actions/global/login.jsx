@@ -80,7 +80,7 @@ function saveLoggedUser(userDetail, reset) {
 
 export function login(username, password) {
     return(dispatch, getState) => {
-        return WebApi.login(username, password).then((data) => {
+        return _WebApi.login(username, password).then((data) => {
             dispatch(loginSuccess());
         })
     }

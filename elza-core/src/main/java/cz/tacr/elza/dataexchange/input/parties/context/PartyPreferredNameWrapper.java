@@ -4,7 +4,6 @@ import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
 
 import cz.tacr.elza.dataexchange.input.context.EntityIdHolder;
-import cz.tacr.elza.dataexchange.input.context.PersistMethod;
 import cz.tacr.elza.dataexchange.input.storage.EntityMetrics;
 import cz.tacr.elza.dataexchange.input.storage.EntityWrapper;
 import cz.tacr.elza.domain.ParParty;
@@ -24,8 +23,10 @@ public class PartyPreferredNameWrapper implements EntityWrapper, EntityMetrics {
     }
 
     @Override
-    public PersistMethod getPersistMethod() {
-        return partyInfo.isIgnored() ? PersistMethod.NONE : PersistMethod.UPDATE;
+    public PersistType getPersistType() {
+        PersistType pt = partyInfo.getPersistType();
+        // preferred name is always updated
+        return pt.equals(PersistType.NONE) ? PersistType.NONE : PersistType.UPDATE;
     }
 
     @Override
@@ -40,7 +41,12 @@ public class PartyPreferredNameWrapper implements EntityWrapper, EntityMetrics {
 
     @Override
     public void beforeEntityPersist(Session session) {
-        entity = partyInfo.getEntityReference(session);
-        entity.setPreferredName(partyNameIdHolder.getEntityReference(session));
+        entity = partyInfo.getEntityRef(session);
+        entity.setPreferredName(partyNameIdHolder.getEntityRef(session));
+    }
+
+    @Override
+    public void afterEntityPersist() {
+        partyInfo.onEntityPersist(getMemoryScore());
     }
 }

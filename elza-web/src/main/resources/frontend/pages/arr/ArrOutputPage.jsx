@@ -390,7 +390,8 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
         }
     }
 
-    renderListItem(item, isActive, index) {
+    renderListItem(props) {
+        const {item, isActive, index} = props;
         const {outputTypes} = this.props;
         const fund = this.getActiveFund(this.props);
         const fundOutput = fund.fundOutput

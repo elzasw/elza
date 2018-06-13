@@ -39,6 +39,7 @@ class UpdateMultipleSub extends AbstractReactComponent {
         descItemTypes: PropTypes.object,
         subNodeForm: PropTypes.object,
         focus: PropTypes.object,
+        descItemFactory: PropTypes.object.isRequired
     };
 
     initFocus = () => {
@@ -309,7 +310,7 @@ class UpdateMultipleSub extends AbstractReactComponent {
 
     renderDescItemType = (descItemType, descItemTypeIndex, descItemGroupIndex, nodeSetting) => {
         const {fields:{items, deleteItemTypeIds}} = this.props;
-        const {fundId, subNodeForm, descItemCopyFromPrevEnabled, singleDescItemTypeEdit, calendarTypes, closed, showNodeAddons, fundVersionId, typePrefix} = this.props;
+        const {fundId, subNodeForm, descItemCopyFromPrevEnabled, singleDescItemTypeEdit, calendarTypes, closed, showNodeAddons, fundVersionId, typePrefix, descItemFactory} = this.props;
 
         const refType = subNodeForm.refTypesMap[descItemType.id];
         const infoType = subNodeForm.infoTypesMap[descItemType.id];
@@ -391,6 +392,7 @@ class UpdateMultipleSub extends AbstractReactComponent {
             strictMode={strictMode}
             customActions={this.customInRender(descItems, rulDataType.code, infoType)}
             hideDelete={true}
+            descItemFactory={descItemFactory}
             // onChangePosition={this.handleChangePosition.bind(this, infoType.id)}
             // onBlur={this.handleBlur.bind(this, descItemGroupIndex, descItemTypeIndex)}
             // onFocus={this.handleFocus.bind(this, descItemGroupIndex, descItemTypeIndex)}

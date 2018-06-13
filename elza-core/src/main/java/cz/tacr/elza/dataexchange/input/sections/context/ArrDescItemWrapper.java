@@ -40,11 +40,11 @@ public class ArrDescItemWrapper implements EntityWrapper {
     @Override
     public void beforeEntityPersist(Session session) {
         Validate.isTrue(entity.getNode() == null);
-        entity.setNode(nodeIdHolder.getEntityReference(session));
+        entity.setNode(nodeIdHolder.getEntityRef(session));
         // set data reference if exist
         Validate.isTrue(entity.isUndefined());
         if (dataIdHolder != null) {
-            entity.setData(dataIdHolder.getEntityReference(session));
+            entity.setData(dataIdHolder.getEntityRef(session));
         }
     }
 }

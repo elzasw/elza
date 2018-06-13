@@ -254,7 +254,7 @@ class ItemFormActions {
      * @param {int} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
      * @param {Object} valueLocation konkrétní umístění hodnoty
      */
-    _formValueStore(dispatch, getState, versionId, routingKey, valueLocation) {
+    _formValueStore(dispatch, getState, versionId, routingKey, valueLocation, overrideDescItem=false) {
         const state = getState();
         const subNodeForm = this._getItemFormStore(state, versionId, routingKey);
         const loc = subNodeForm.getLoc(subNodeForm, valueLocation);
@@ -262,17 +262,17 @@ class ItemFormActions {
         const refType = subNodeForm.refTypesMap[loc.descItemType.id];
         const refTables = state.refTables;
 
-        const descItem = loc.descItem;
+        const descItem = overrideDescItem || loc.descItem;
         const parentVersionId = subNodeForm.data.parent.version;
         const parentId = subNodeForm.data.parent.id;
 
-        if (this.descItemNeedStore(descItem, refType)) {
+        if (this.descItemNeedStore(descItem, refType) || overrideDescItem) {
             dispatch(statusSaving());
 
             // Umělé navýšení verze o 1 - aby mohla pozitivně projít případná další update operace
             dispatch(increaseNodeVersion(versionId, parentId, parentVersionId));
             // Reálné provedení operace
-            if (typeof loc.descItem.id !== 'undefined') {
+            if (typeof descItem.id !== 'undefined') {
                 this._callUpdateDescItem(versionId, parentVersionId, parentId, descItem)
                     .then(json => {
                         if(this.area === OutputFormActions.AREA || this.area === StructureFormActions.AREA){
@@ -284,7 +284,7 @@ class ItemFormActions {
             } else {
                 if (!loc.descItem.saving) {
                     dispatch(this._fundSubNodeFormDescItemCreate(versionId, routingKey, valueLocation));
-                    this._callCreateDescItem(versionId, subNodeForm.data.parent.id, subNodeForm.data.parent.version, loc.descItemType.id, loc.descItem)
+                    this._callCreateDescItem(versionId, subNodeForm.data.parent.id, subNodeForm.data.parent.version, loc.descItemType.id, descItem)
                         .then(json => {
                             console.log("formValueStore - id undefined",json);
                             dispatch(this._fundSubNodeFormDescItemResponse(versionId, routingKey, valueLocation, json, 'CREATE'));
@@ -330,7 +330,15 @@ class ItemFormActions {
      */
     fundSubNodeFormValueNotIdentified(versionId, routingKey, valueLocation, descItem) {
         return (dispatch, getState) => {
-            let state = getState();
+            let undef = descItem.undefined || false;
+
+            if(!descItem.value){
+                descItem.value = "unknown";
+            }
+            
+            descItem.undefined = !undef;
+            this._formValueStore(dispatch, getState, versionId, routingKey, valueLocation, descItem)
+            /*let state = getState();
             let subNodeForm = this._getItemFormStore(state, versionId, routingKey);
             let loc = subNodeForm.getLoc(subNodeForm, valueLocation);
 
@@ -352,7 +360,7 @@ class ItemFormActions {
                     .then(json => {
                         dispatch(this._fundSubNodeFormDescItemResponse(versionId, routingKey, valueLocation, json, 'CREATE'));
                     });
-            }
+            }*/
         };
     }
 
@@ -416,11 +424,14 @@ class ItemFormActions {
             const subNodeForm = this._getItemFormStore(state, versionId, routingKey);
             const loc = subNodeForm.getLoc(subNodeForm, valueLocation);
 
+            // only when loc exists
+            if(loc){
             WebApi.validateUnitdate(loc.descItem.value)
                 .then(json => {
                     dispatch(this._fundSubNodeFormValueValidateResult(versionId, routingKey, valueLocation, json));
                 })
         }
+    }
     }
 
     /**
@@ -1052,6 +1063,8 @@ class NodeFormActions extends ItemFormActions {
     // @Override
     _callUpdateDescItem(versionId, parentVersionId, parentId, descItem) {
         //return WebApi.updateDescItem(versionId, parentVersionId, descItem);
+        //
+        console.log("update desc Item");
         return new Promise((resolve, reject) => {
             NodeRequestController.updateRequest(versionId, parentVersionId, parentId, descItem, (json) => {resolve(json)})
         });
@@ -1064,6 +1077,7 @@ class NodeFormActions extends ItemFormActions {
 
     // @Override
     _callCreateDescItem(versionId, parentId, parentVersionId, descItemTypeId, descItem) {
+        console.log("create desc Item");
         return WebApi.createDescItem(versionId, parentId, parentVersionId, descItemTypeId, descItem);
     }
 

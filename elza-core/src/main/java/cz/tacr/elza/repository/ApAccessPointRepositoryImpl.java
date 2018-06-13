@@ -110,7 +110,9 @@ public class ApAccessPointRepositoryImpl implements ApAccessPointRepositoryCusto
                                                                 final Set<Integer> scopeIdsForSearch,
                                                                 final CriteriaQuery<T> query,
                                                                 final Boolean excludeInvalid) {
-        Validate.notEmpty(scopeIdsForSearch);
+        throw new UnsupportedOperationException();
+        
+        /* Validate.notEmpty(scopeIdsForSearch);
 
         Join<Object, Object> variantRecord = record.join(ApAccessPoint.NAME_LIST, JoinType.LEFT);
         Join<Object, Object> apType = record.join(ApAccessPoint.AP_TYPE);
@@ -143,6 +145,6 @@ public class ApAccessPointRepositoryImpl implements ApAccessPointRepositoryCusto
             conditions.add(builder.equal(record.get(ApAccessPoint.INVALID), false));
         }
 
-        return builder.and(conditions.toArray(new Predicate[conditions.size()]));
+        return builder.and(conditions.toArray(new Predicate[conditions.size()])); */
     }
 }

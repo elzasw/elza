@@ -1,110 +1,5 @@
 package cz.tacr.elza.service;
 
-import com.google.common.collect.Iterables;
-import cz.tacr.elza.ElzaTools;
-import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
-import cz.tacr.elza.bulkaction.BulkActionService;
-import cz.tacr.elza.common.ObjectListIterator;
-import cz.tacr.elza.controller.ArrangementController;
-import cz.tacr.elza.controller.ArrangementController.Depth;
-import cz.tacr.elza.controller.ArrangementController.TreeNodeFulltext;
-import cz.tacr.elza.controller.ArrangementController.VersionValidationItem;
-import cz.tacr.elza.controller.vo.NodeItemWithParent;
-import cz.tacr.elza.controller.vo.TreeNode;
-import cz.tacr.elza.controller.vo.TreeNodeVO;
-import cz.tacr.elza.controller.vo.filter.SearchParam;
-import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
-import cz.tacr.elza.core.security.AuthMethod;
-import cz.tacr.elza.core.security.AuthParam;
-import cz.tacr.elza.core.security.AuthParam.Type;
-import cz.tacr.elza.domain.ApScope;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrFundRegisterScope;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrNodeConformity;
-import cz.tacr.elza.domain.ArrNodeConformity.State;
-import cz.tacr.elza.domain.ArrNodeConformityError;
-import cz.tacr.elza.domain.ArrNodeConformityMissing;
-import cz.tacr.elza.domain.ArrOutputDefinition;
-import cz.tacr.elza.domain.ArrStructuredObject;
-import cz.tacr.elza.domain.ParInstitution;
-import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.RulRuleSet;
-import cz.tacr.elza.domain.UIVisiblePolicy;
-import cz.tacr.elza.domain.UsrPermission;
-import cz.tacr.elza.domain.UsrUser;
-import cz.tacr.elza.domain.vo.NodeTypeOperation;
-import cz.tacr.elza.domain.vo.RelatedNodeDirection;
-import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
-import cz.tacr.elza.drools.DirectionLevel;
-import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.ConcurrentUpdateException;
-import cz.tacr.elza.exception.InvalidQueryException;
-import cz.tacr.elza.exception.ObjectNotFoundException;
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.ArrangementCode;
-import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.repository.BulkActionNodeRepository;
-import cz.tacr.elza.repository.BulkActionRunRepository;
-import cz.tacr.elza.repository.CachedNodeRepository;
-import cz.tacr.elza.repository.ChangeRepository;
-import cz.tacr.elza.repository.DaoFileGroupRepository;
-import cz.tacr.elza.repository.DaoFileRepository;
-import cz.tacr.elza.repository.DaoLinkRepository;
-import cz.tacr.elza.repository.DaoLinkRequestRepository;
-import cz.tacr.elza.repository.DaoPackageRepository;
-import cz.tacr.elza.repository.DaoRepository;
-import cz.tacr.elza.repository.DaoRequestDaoRepository;
-import cz.tacr.elza.repository.DaoRequestRepository;
-import cz.tacr.elza.repository.DataRepository;
-import cz.tacr.elza.repository.DescItemRepository;
-import cz.tacr.elza.repository.DigitizationRequestNodeRepository;
-import cz.tacr.elza.repository.DigitizationRequestRepository;
-import cz.tacr.elza.repository.FundRegisterScopeRepository;
-import cz.tacr.elza.repository.FundRepository;
-import cz.tacr.elza.repository.FundVersionRepository;
-import cz.tacr.elza.repository.ItemRepository;
-import cz.tacr.elza.repository.ItemSettingsRepository;
-import cz.tacr.elza.repository.LevelRepository;
-import cz.tacr.elza.repository.NodeConformityErrorRepository;
-import cz.tacr.elza.repository.NodeConformityMissingRepository;
-import cz.tacr.elza.repository.NodeConformityRepository;
-import cz.tacr.elza.repository.NodeOutputRepository;
-import cz.tacr.elza.repository.NodeRegisterRepository;
-import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.repository.OutputDefinitionRepository;
-import cz.tacr.elza.repository.OutputFileRepository;
-import cz.tacr.elza.repository.OutputItemRepository;
-import cz.tacr.elza.repository.OutputRepository;
-import cz.tacr.elza.repository.OutputResultRepository;
-import cz.tacr.elza.repository.RequestQueueItemRepository;
-import cz.tacr.elza.repository.ScopeRepository;
-import cz.tacr.elza.repository.StructuredItemRepository;
-import cz.tacr.elza.repository.StructuredObjectRepository;
-import cz.tacr.elza.repository.VisiblePolicyRepository;
-import cz.tacr.elza.security.UserDetail;
-import cz.tacr.elza.service.cache.NodeCacheService;
-import cz.tacr.elza.service.eventnotification.EventFactory;
-import cz.tacr.elza.service.eventnotification.events.EventFund;
-import cz.tacr.elza.service.eventnotification.events.EventType;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-
-import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
-import javax.persistence.LockModeType;
-import javax.persistence.Query;
-import javax.transaction.Transactional;
 import java.text.Normalizer;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -122,6 +17,85 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
+import javax.persistence.EntityManager;
+import javax.persistence.LockModeType;
+import javax.transaction.Transactional;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
+import com.google.common.collect.Iterables;
+import cz.tacr.elza.ElzaTools;
+import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
+import cz.tacr.elza.bulkaction.BulkActionService;
+import cz.tacr.elza.controller.ArrangementController;
+import cz.tacr.elza.controller.ArrangementController.Depth;
+import cz.tacr.elza.controller.ArrangementController.TreeNodeFulltext;
+import cz.tacr.elza.controller.ArrangementController.VersionValidationItem;
+import cz.tacr.elza.controller.vo.NodeItemWithParent;
+import cz.tacr.elza.controller.vo.TreeNode;
+import cz.tacr.elza.controller.vo.TreeNodeVO;
+import cz.tacr.elza.controller.vo.filter.SearchParam;
+import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.core.security.AuthMethod;
+import cz.tacr.elza.core.security.AuthParam;
+import cz.tacr.elza.core.security.AuthParam.Type;
+import cz.tacr.elza.domain.ApScope;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundRegisterScope;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrNodeConformity;
+import cz.tacr.elza.domain.ArrNodeConformity.State;
+import cz.tacr.elza.domain.ArrNodeConformityError;
+import cz.tacr.elza.domain.ArrNodeConformityMissing;
+import cz.tacr.elza.domain.ParInstitution;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.UIVisiblePolicy;
+import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.domain.vo.NodeTypeOperation;
+import cz.tacr.elza.domain.vo.RelatedNodeDirection;
+import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
+import cz.tacr.elza.drools.DirectionLevel;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.ConcurrentUpdateException;
+import cz.tacr.elza.exception.InvalidQueryException;
+import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.repository.ChangeRepository;
+import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.FundRegisterScopeRepository;
+import cz.tacr.elza.repository.FundRepository;
+import cz.tacr.elza.repository.FundVersionRepository;
+import cz.tacr.elza.repository.ItemRepository;
+import cz.tacr.elza.repository.LevelRepository;
+import cz.tacr.elza.repository.NodeConformityErrorRepository;
+import cz.tacr.elza.repository.NodeConformityMissingRepository;
+import cz.tacr.elza.repository.NodeConformityRepository;
+import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.repository.ScopeRepository;
+import cz.tacr.elza.repository.VisiblePolicyRepository;
+import cz.tacr.elza.security.UserDetail;
+import cz.tacr.elza.service.arrangement.DeleteFundAction;
+import cz.tacr.elza.service.cache.NodeCacheService;
+import cz.tacr.elza.service.eventnotification.EventFactory;
+import cz.tacr.elza.service.eventnotification.events.EventFund;
+import cz.tacr.elza.service.eventnotification.events.EventType;
+
 /**
  * Main arrangement service.
  *
@@ -133,10 +107,13 @@ public class ArrangementService {
 
 	private static final AtomicInteger LAST_DESC_ITEM_OBJECT_ID = new AtomicInteger(-1);
 
+    @Autowired
+    private FundRegisterScopeRepository faRegisterRepository;
+
     //TODO smazat závislost až bude DescItemService
     @Autowired
     protected FundRegisterScopeRepository fundRegisterScopeRepository;
-    private Log logger = LogFactory.getLog(this.getClass());
+    final private static Logger logger = LoggerFactory.getLogger(ArrangementService.class);
     @Autowired
     private LevelTreeCacheService levelTreeCacheService;
     @Autowired
@@ -164,31 +141,13 @@ public class ArrangementService {
     @Autowired
     private NodeRepository nodeRepository;
     @Autowired
-    private DescItemRepository descItemRepository;
-    @Autowired
-    private DataRepository dataRepository;
-    @Autowired
-    private NodeRegisterRepository nodeRegisterRepository;
-    @Autowired
     private NodeConformityRepository nodeConformityInfoRepository;
-    @Autowired
-    private NodeConformityErrorRepository nodeConformityErrorsRepository;
     @Autowired
     private NodeConformityMissingRepository nodeConformityMissingRepository;
     @Autowired
-    private BulkActionRunRepository faBulkActionRepository;
+    private NodeConformityErrorRepository nodeConformityErrorsRepository;
     @Autowired
-    private BulkActionNodeRepository faBulkActionNodeRepository;
-    @Autowired
-    private StructuredObjectRepository structureDataRepository;
-    @Autowired
-    private StructuredItemRepository structureItemRepository;
-    @Autowired
-    private FundRegisterScopeRepository faRegisterRepository;
-    @Autowired
-    private ScopeRepository scopeRepository;
-    @Autowired
-    private OutputItemRepository outputItemRepository;
+    private DescItemRepository descItemRepository;
     @Autowired
     private AccessPointService accessPointService;
 
@@ -198,77 +157,22 @@ public class ArrangementService {
     private PolicyService policyService;
 
     @Autowired
-    private OutputDefinitionRepository outputDefinitionRepository;
-
-    @Autowired
-    private OutputRepository outputRepository;
-
-    @Autowired
-    private NodeOutputRepository nodeOutputRepository;
-
-    @Autowired
     private VisiblePolicyRepository visiblePolicyRepository;
 
     @Autowired
-    private DmsService dmsService;
-
-    @Autowired
-    private OutputResultRepository outputResultRepository;
-
-    @Autowired
-    private OutputFileRepository outputFileRepository;
-
-    @Autowired
-    private ItemSettingsRepository itemSettingsRepository;
-
-    @Autowired
-    private RevertingChangesService revertingChangesService;
-
-    @Autowired
     private ArrangementCacheService arrangementCacheService;
-
-    @Autowired
-    private DaoLinkRepository daoLinkRepository;
-
-    @Autowired
-    private DigitizationRequestRepository digitizationRequestRepository;
-
-    @Autowired
-    private DigitizationRequestNodeRepository digitizationRequestNodeRepository;
-
-    @Autowired
-    private DaoRequestRepository daoRequestRepository;
-
-    @Autowired
-    private DaoLinkRequestRepository daoLinkRequestRepository;
-
-    @Autowired
-    private DaoRequestDaoRepository daoRequestDaoRepository;
-
-    @Autowired
-    private RequestQueueItemRepository requestQueueItemRepository;
-
-    @Autowired
-    private DaoFileRepository daoFileRepository;
-
-    @Autowired
-    private DaoFileGroupRepository daoFileGroupRepository;
-
-    @Autowired
-    private DaoRepository daoRepository;
-
-    @Autowired
-    private DaoPackageRepository daoPackageRepository;
-
-	//TODO: Should not be used here, method accessing this repository have to be refactorized
-    @Autowired
-    private CachedNodeRepository cachedNodeRepository;
 
 	@Autowired
 	private NodeCacheService nodeCacheService;
 
     @Autowired
+    private ScopeRepository scopeRepository;
+
+    @Autowired
     private EntityManager em;
+
+    @Autowired
+    private ApplicationContext appCtx;
 
     public static final String UNDEFINED = "Nezjištěno";
 
@@ -620,107 +524,13 @@ public class ArrangementService {
      *
      * @param fundId id archivní pomůcky
      */
+    @Transactional
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN})
     public void deleteFund(final Integer fundId) {
-        Assert.notNull(fundId, "Nebyl vyplněn identifikátor AS");
+        Validate.notNull(fundId, "Nebyl vyplněn identifikátor AS");
 
-        if (!fundRepository.exists(fundId)) {
-            return;
-        }
-
-        ArrFundVersion version = getOpenVersionByFundId(fundId);
-        ArrFund fund = version.getFund();
-
-        faBulkActionRepository.deleteByFundVersionFund(fund);
-
-        List<ArrOutputDefinition> outputDefinitions = outputDefinitionRepository.findByFund(fund);
-
-        if (!outputDefinitions.isEmpty()) {
-            Collection<Integer> dataIdsToDelete = new HashSet<>();
-            for (ArrOutputDefinition outputDefinition : outputDefinitions) {
-                outputRepository.delete(outputDefinition.getOutputs());
-                nodeOutputRepository.delete(outputDefinition.getOutputNodes());
-                dataIdsToDelete.addAll(dataRepository.findByIdsOutputDefinition(outputDefinition));
-                outputItemRepository.deleteByOutputDefinition(outputDefinition);
-                itemSettingsRepository.deleteByOutputDefinition(outputDefinition);
-                outputFileRepository.deleteByOutputDefinition(outputDefinition);
-                outputResultRepository.deleteByOutputDefinition(outputDefinition);
-                outputDefinitionRepository.delete(outputDefinition);
-            }
-            outputItemRepository.flush();
-            ObjectListIterator<Integer> dataIdsToDeleteIterator = new ObjectListIterator<>(dataIdsToDelete);
-            while (dataIdsToDeleteIterator.hasNext()) {
-                List<Integer> ids = dataIdsToDeleteIterator.next();
-                dataRepository.deleteByIds(ids);
-                dataRepository.flush();
-            }
-        }
-
-        cachedNodeRepository.deleteByFund(fund);
-
-        ArrLevel rootLevel = levelRepository.findByNode(version.getRootNode(), version.getLockChange());
-        ArrNode node = rootLevel.getNode();
-
-        fundVersionRepository.findVersionsByFundIdOrderByCreateDateDesc(fundId)
-                .forEach(deleteVersion ->
-                        deleteVersion(deleteVersion)
-                );
-
-
-        policyService.deleteFundVisiblePolicies(fund);
-        userService.deleteByFund(fund);
-
-        requestQueueItemRepository.deleteByFund(fund);
-
-        digitizationRequestNodeRepository.deleteByFund(fund);
-        digitizationRequestRepository.deleteByFund(fund);
-
-        daoLinkRequestRepository.deleteByFund(fund);
-
-        daoRequestDaoRepository.deleteByFund(fund);
-        daoRequestRepository.deleteByFund(fund);
-
-        deleteFundLevels(rootLevel);
-
-        daoLinkRepository.deleteByNode(node);
-        changeRepository.deleteByPrimaryNode(node);
-
-        nodeRegisterRepository.findByNode(node).forEach(relation -> {
-            nodeRegisterRepository.delete(relation);
-        });
-
-        nodeConformityInfoRepository.findByNode(node).forEach(conformityInfo -> {
-            deleteConformityInfo(conformityInfo);
-        });
-        arrangementCacheService.deleteNode(node.getNodeId());
-        nodeRepository.delete(node);
-
-        dmsService.deleteFilesByFund(fund);
-
-        List<ArrStructuredObject> objList = structureDataRepository.findByFund(fund);
-        objList.forEach(obj -> {
-            structureItemRepository.deleteByStructuredObject(obj);
-            dataRepository.deleteByStructuredObject(obj);
-        });
-        structureDataRepository.deleteInBatch(objList);
-
-        faRegisterRepository.findByFund(fund).forEach(
-                faScope -> faRegisterRepository.delete(faScope)
-        );
-
-        daoFileRepository.deleteByFund(fund);
-        daoFileGroupRepository.deleteByFund(fund);
-        daoRepository.deleteByFund(fund);
-        daoPackageRepository.deleteByFund(fund);
-
-        eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.FUND_DELETE, fundId));
-
-        nodeRepository.deleteByFund(fund);
-
-        fundRepository.delete(fundId);
-
-        Query deleteNotUseChangesQuery = revertingChangesService.createDeleteNotUseChangesQuery();
-        deleteNotUseChangesQuery.executeUpdate();
+        DeleteFundAction dfa = appCtx.getBean(DeleteFundAction.class);
+        dfa.run(fundId);
     }
 
     /**
@@ -766,103 +576,6 @@ public class ArrangementService {
                 new EventFund(EventType.APPROVE_VERSION, version.getFund().getFundId(), version.getFundVersionId()));
 
         return newVersion;
-    }
-
-    private void deleteVersion(final ArrFundVersion version) {
-        Assert.notNull(version, "Verze AS musí být vyplněna");
-
-        updateConformityInfoService.terminateWorkerInVersionAndWait(version.getFundVersionId());
-
-        bulkActionService.terminateBulkActions(version.getFundVersionId());
-
-        faBulkActionRepository.findByFundVersionId(version.getFundVersionId()).forEach(action -> {
-            faBulkActionNodeRepository.deleteByBulkAction(action);
-            faBulkActionRepository.delete(action);
-        });
-
-        nodeConformityInfoRepository.findByFundVersion(version).forEach(conformityInfo -> {
-            deleteConformityInfo(conformityInfo);
-        });
-
-        fundVersionRepository.delete(version);
-    }
-
-    private void deleteConformityInfo(final ArrNodeConformity conformityInfo) {
-        nodeConformityErrorsRepository.findByNodeConformity(conformityInfo).forEach(error ->
-                nodeConformityErrorsRepository.delete(error)
-        );
-        nodeConformityMissingRepository.findByNodeConformity(conformityInfo).forEach(error ->
-                nodeConformityMissingRepository.delete(error)
-        );
-
-        nodeConformityInfoRepository.delete(conformityInfo);
-    }
-
-
-    /**
-     * Smaže uzly pro celou archivní pomůcku.
-     *
-     * @param rootLevel kořenový uzel archivní pomůcky
-     */
-    private void deleteFundLevels(final ArrLevel rootLevel) {
-        Assert.notNull(rootLevel, "Level musí být vyplněn");
-
-        Set<ArrNode> nodesToDelete = new HashSet<>();
-        Set<ArrData> dataToDelete = new HashSet<>();
-
-        deleteLevelCascadeForce(rootLevel, nodesToDelete, dataToDelete);
-
-        List<Integer> nodeIds = new ArrayList<>(nodesToDelete.size());
-        for (ArrNode node : nodesToDelete) {
-            nodeIds.add(node.getNodeId());
-        }
-        arrangementCacheService.deleteNodes(nodeIds);
-        dataRepository.delete(dataToDelete);
-        nodesToDelete.forEach(this::deleteNodeForce);
-    }
-
-    private void deleteLevelCascadeForce(final ArrLevel level, final Set<ArrNode> nodesToDelete, final Set<ArrData> dataToDelete) {
-        ArrNode parentNode = level.getNode();
-        for (ArrLevel childLevel : levelRepository.findByParentNode(parentNode)) {
-            nodesToDelete.add(childLevel.getNode());
-            deleteLevelCascadeForce(childLevel, nodesToDelete, dataToDelete);
-        }
-
-        for (ArrDescItem descItem : descItemRepository.findByNodeOrderByCreateChangeAsc(parentNode)) {
-            deleteDescItemForce(descItem, dataToDelete);
-        }
-
-        levelRepository.delete(level);
-    }
-
-    private void deleteNodeForce(final ArrNode node) {
-        Assert.notNull(node, "Musí být vyplněno");
-
-        nodeRegisterRepository.findByNode(node).forEach(relation -> {
-            nodeRegisterRepository.delete(relation);
-        });
-
-        nodeConformityInfoRepository.findByNode(node).forEach(conformityInfo -> {
-            deleteConformityInfo(conformityInfo);
-        });
-
-        daoLinkRepository.deleteByNode(node);
-
-        changeRepository.deleteByPrimaryNode(node);
-
-        nodeRepository.delete(node);
-    }
-
-    private void deleteDescItemForce(final ArrDescItem descItem, final Set<ArrData> dataToDelete) {
-        Assert.notNull(descItem, "Hodnota atributu musí být vyplněna");
-
-        ArrData data = descItem.getData();
-
-        descItemRepository.delete(descItem);
-
-        if (data != null) {
-            dataToDelete.add(data);
-        }
     }
 
     /**

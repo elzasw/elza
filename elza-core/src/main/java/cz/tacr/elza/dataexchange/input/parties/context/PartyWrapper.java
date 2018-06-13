@@ -3,14 +3,10 @@ package cz.tacr.elza.dataexchange.input.parties.context;
 import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
 
-import cz.tacr.elza.dataexchange.input.context.PersistMethod;
 import cz.tacr.elza.dataexchange.input.storage.EntityMetrics;
 import cz.tacr.elza.dataexchange.input.storage.EntityWrapper;
 import cz.tacr.elza.domain.ParParty;
 
-/**
- * Created by todtj on 12.06.2017.
- */
 public class PartyWrapper implements EntityWrapper, EntityMetrics {
 
     private final ParParty entity;
@@ -27,8 +23,8 @@ public class PartyWrapper implements EntityWrapper, EntityMetrics {
     }
 
     @Override
-    public PersistMethod getPersistMethod() {
-        return partyInfo.getPersistMethod();
+    public PersistType getPersistType() {
+        return partyInfo.getPersistType();
     }
 
     @Override
@@ -44,11 +40,12 @@ public class PartyWrapper implements EntityWrapper, EntityMetrics {
     @Override
     public void beforeEntityPersist(Session session) {
         Validate.isTrue(entity.getRecord() == null);
-        entity.setRecord(partyInfo.getAPReference(session));
+        entity.setRecord(partyInfo.getApInfo().getEntityRef(session));
     }
 
     @Override
     public void afterEntityPersist() {
         partyInfo.setEntityId(entity.getPartyId());
+        partyInfo.onEntityPersist(getMemoryScore());
     }
 }

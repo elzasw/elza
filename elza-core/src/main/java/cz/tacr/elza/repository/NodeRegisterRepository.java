@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.List;
 
 import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeRegister;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -54,7 +55,7 @@ public interface NodeRegisterRepository extends JpaRepository<ArrNodeRegister, I
     @Query("SELECT COUNT(nr) FROM arr_node_register nr WHERE nr.record = ?1")
     long countByRecordId(ApAccessPoint record);
 
-    List<ArrNodeRegister> findByNode(ArrNode node);
+    //List<ArrNodeRegister> findByNode(ArrNode node);
 
     @Query("SELECT record FROM arr_node_register nr WHERE nr.node = ?1")
     List<ApAccessPoint> findRecordsByNode(ArrNode node);
@@ -76,4 +77,6 @@ public interface NodeRegisterRepository extends JpaRepository<ArrNodeRegister, I
      */
     @Query("SELECT COUNT(nr) FROM arr_node_register nr WHERE nr.deleteChange IS NULL AND nr.record = ?1")
     long countByRecordAndDeleteChangeIsNull(ApAccessPoint record);
+
+    void deleteByNodeFund(ArrFund fund);
 }

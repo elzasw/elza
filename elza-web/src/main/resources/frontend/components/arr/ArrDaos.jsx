@@ -95,7 +95,8 @@ class ArrDaos extends AbstractReactComponent {
         }
     };
 
-    renderItem = (item) => {
+    renderItem = (props) => {
+        const {item} = props;
         return <div key={"daos" + item.id} className="item">{item.label}<br /><i><small>{item.code}</small></i></div>
     };
 

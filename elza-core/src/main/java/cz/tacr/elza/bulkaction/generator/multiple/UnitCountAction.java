@@ -57,22 +57,24 @@ public class UnitCountAction extends Action {
 	 */
 	private Map<String, Integer> resultMap = new TreeMap<>();
 
-    final StructuredItemRepository structureItemRepository;
+    @Autowired
+    StructuredItemRepository structureItemRepository;
 
 	final UnitCountConfig config;
 
+
     @Autowired
-    UnitCountAction(final UnitCountConfig config,
-            final StructuredItemRepository structureItemRepository) {
+    UnitCountAction(final UnitCountConfig config) {
 		Validate.notNull(config);
-        Validate.notNull(structureItemRepository);
 
 		this.config = config;
-        this.structureItemRepository = structureItemRepository;
+        // this.structureItemRepository = structureItemRepository;
     }
 
     @Override
 	public void init(ArrBulkActionRun bulkActionRun) {
+        Validate.notNull(structureItemRepository);
+
 		RuleSystem ruleSystem = getRuleSystem(bulkActionRun);
 
 		String outputType = config.getOutputType();

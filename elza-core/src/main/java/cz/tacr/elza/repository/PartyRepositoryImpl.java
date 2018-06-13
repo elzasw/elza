@@ -115,8 +115,9 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
                                                            final Set<Integer> scopeIds,
                                                            final CriteriaQuery<T> query,
                                                            final Boolean excludeInvalid) {
-
-        final String searchString = (searchRecord != null ? searchRecord.toLowerCase() : null);
+        throw new UnsupportedOperationException();
+        
+        /* final String searchString = (searchRecord != null ? searchRecord.toLowerCase() : null);
 
         Join<Object, Object> record = party.join(ParParty.RECORD, JoinType.LEFT);
         Join<ApAccessPoint, ApName> variantRecord = record.join(ApAccessPoint.NAME_LIST, JoinType.LEFT);
@@ -149,7 +150,7 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
             condition.add(record.get(ApAccessPoint.AP_TYPE).in(apTypeIds));
         }
 
-        return builder.and(condition.toArray(new Predicate[condition.size()]));
+        return builder.and(condition.toArray(new Predicate[condition.size()])); */
     }
 
     @Override

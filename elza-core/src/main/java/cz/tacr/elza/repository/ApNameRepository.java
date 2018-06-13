@@ -1,6 +1,7 @@
 package cz.tacr.elza.repository;
 
 import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApName;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -24,5 +25,6 @@ public interface ApNameRepository extends ElzaJpaRepository<ApName, Integer> {
     ApName findPreferredNameByAccessPoint(ApAccessPoint accessPoint);
 
     @Modifying
-    int deleteByAccessPointIn(Collection<ApAccessPoint> accessPoints);
+    @Query("UPDATE ap_name name SET name.deleteChange=?2 WHERE name.accessPointId IN ?1 AND name.deleteChange IS NULL")
+    int deleteAllByAccessPointIdIn(Collection<Integer> apIds, ApChange deleteChange);
 }

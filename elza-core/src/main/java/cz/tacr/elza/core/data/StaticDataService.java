@@ -25,11 +25,13 @@ import cz.tacr.elza.repository.PartyNameFormTypeRepository;
 import cz.tacr.elza.repository.PartyTypeComplementTypeRepository;
 import cz.tacr.elza.repository.PartyTypeRepository;
 import cz.tacr.elza.repository.ApExternalIdTypeRepository;
+import cz.tacr.elza.repository.ApNameTypeRepository;
 import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRoleTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.repository.StructuredTypeRepository;
+import cz.tacr.elza.repository.SysLanguageRepository;
 
 /**
  * Service for static data
@@ -88,6 +90,10 @@ public class StaticDataService {
     
     final ApExternalIdTypeRepository apEidTypeRepository;
 
+    final ApNameTypeRepository apNameTypeRepository;
+
+    final SysLanguageRepository sysLanguageRepository;
+
     @Autowired
     public StaticDataService(EntityManager em,
                              RuleSetRepository ruleSetRepository,
@@ -104,7 +110,9 @@ public class StaticDataService {
                              ApTypeRepository apTypeRepository,
                              RelationTypeRepository relationTypeRepository,
                              RelationTypeRoleTypeRepository relationTypeRoleTypeRepository,
-                             ApExternalIdTypeRepository apEidTypeRepository) {
+                             ApExternalIdTypeRepository apEidTypeRepository,
+                             ApNameTypeRepository apNameTypeRepository,
+                             SysLanguageRepository sysLanguageRepository) {
         this.em = em;
         this.ruleSetRepository = ruleSetRepository;
         this.itemTypeRepository = itemTypeRepository;
@@ -121,6 +129,8 @@ public class StaticDataService {
         this.relationTypeRepository = relationTypeRepository;
         this.relationTypeRoleTypeRepository = relationTypeRoleTypeRepository;
         this.apEidTypeRepository = apEidTypeRepository;
+        this.apNameTypeRepository = apNameTypeRepository;
+        this.sysLanguageRepository = sysLanguageRepository;
     }
 
     /**

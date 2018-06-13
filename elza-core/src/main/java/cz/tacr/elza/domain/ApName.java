@@ -27,6 +27,7 @@ import java.io.Serializable;
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ApName implements Serializable {
+    
     @Id
     @GeneratedValue
     @Access(AccessType.PROPERTY)

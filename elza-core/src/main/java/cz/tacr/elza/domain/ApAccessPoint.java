@@ -62,22 +62,6 @@ public class ApAccessPoint implements Serializable, IApScope {
     @Column(nullable = false, updatable = false, insertable = false)
     private Integer scopeId;
 
-    @RestResource(exported = false)
-    @OneToMany(mappedBy = "accessPoint")
-    @JsonIgnore
-    private List<ApName> nameList = new ArrayList<>(0);
-
-    @RestResource(exported = false)
-    @OneToMany(mappedBy = "accessPoint", fetch = FetchType.LAZY)
-    @JsonIgnore
-    private List<ParRelationEntity> relationEntities = new ArrayList<>();
-
-    @RestResource(exported = false)
-    @OneToMany(mappedBy = "accessPoint")
-    @JsonIgnore
-    private List<ApDescription> descriptionList = new ArrayList<>(0);
-
-
     @Column(length = StringLength.LENGTH_36, nullable = false, unique = true)
     private String uuid;
 
@@ -90,8 +74,6 @@ public class ApAccessPoint implements Serializable, IApScope {
     public static final String SCOPE = "scope";
     public static final String UUID = "uuid";
     public static final String INVALID = "invalid";
-    public static final String NAME_LIST = "nameList";
-    public static final String DESCRIPTION_LIST = "descriptionList";
 
     /**
      * ID hesla.
@@ -178,20 +160,6 @@ public class ApAccessPoint implements Serializable, IApScope {
         this.invalid = invalid;
     }
 
-    @Override
-    public boolean equals(final Object obj) {
-        if (!(obj instanceof cz.tacr.elza.domain.ApAccessPoint)) {
-            return false;
-        }
-        if (this == obj) {
-            return true;
-        }
-
-        cz.tacr.elza.domain.ApAccessPoint other = (cz.tacr.elza.domain.ApAccessPoint) obj;
-
-        return new EqualsBuilder().append(accessPointId, other.getAccessPointId()).isEquals();
-    }
-
     public Integer getApTypeId() {
         return apTypeId;
     }
@@ -201,20 +169,7 @@ public class ApAccessPoint implements Serializable, IApScope {
     }
 
     @Override
-    public int hashCode() {
-        return new HashCodeBuilder().append(accessPointId).toHashCode();
-    }
-
-    @Override
     public String toString() {
         return "ApAccessPoint pk=" + accessPointId;
-    }
-
-    public List<ApName> getNameList() {
-        return nameList;
-    }
-
-    public void setNameList(List<ApName> nameList) {
-        this.nameList = nameList;
     }
 }

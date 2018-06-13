@@ -8,27 +8,13 @@ import java.util.List;
 import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
 
-import cz.tacr.elza.dataexchange.input.aps.context.APVariantNameWrapper;
 import cz.tacr.elza.dataexchange.input.aps.context.AccessPointWrapper;
 import cz.tacr.elza.dataexchange.input.context.ImportInitHelper;
-import cz.tacr.elza.dataexchange.input.institutions.context.InstitutionWrapper;
-import cz.tacr.elza.dataexchange.input.parties.aps.PartyAccessPointWrapper;
-import cz.tacr.elza.dataexchange.input.parties.context.PartyGroupIdentifierWrapper;
-import cz.tacr.elza.dataexchange.input.parties.context.PartyNameComplementWrapper;
-import cz.tacr.elza.dataexchange.input.parties.context.PartyNameWrapper;
-import cz.tacr.elza.dataexchange.input.parties.context.PartyPreferredNameWrapper;
-import cz.tacr.elza.dataexchange.input.parties.context.PartyUnitDateWrapper;
 import cz.tacr.elza.dataexchange.input.parties.context.PartyWrapper;
-import cz.tacr.elza.dataexchange.input.sections.context.ArrDataWrapper;
-import cz.tacr.elza.dataexchange.input.sections.context.ArrDescItemWrapper;
-import cz.tacr.elza.dataexchange.input.sections.context.ArrLevelWrapper;
-import cz.tacr.elza.dataexchange.input.sections.context.ArrNodeRegisterWrapper;
-import cz.tacr.elza.dataexchange.input.sections.context.ArrNodeWrapper;
-import cz.tacr.elza.dataexchange.input.sections.context.ArrStructItemWrapper;
-import cz.tacr.elza.dataexchange.input.sections.context.ArrStructObjectWrapper;
 
 /**
- * Storage manager for all imported items. Must be initialized with active session.
+ * Storage manager for all imported items. Must be initialized with active
+ * session.
  */
 public class StorageManager implements StorageListener {
 
@@ -38,7 +24,7 @@ public class StorageManager implements StorageListener {
 
     private final Session session;
 
-    private final ApRecordStorage recordStorage;
+    private final ApRecordStorage apStorage;
 
     private final ParPartyStorage partyStorage;
 
@@ -47,17 +33,31 @@ public class StorageManager implements StorageListener {
     public StorageManager(long memoryScoreLimit, Session session, ImportInitHelper initHelper) {
         this.memoryScoreLimit = memoryScoreLimit;
         this.session = session;
-        this.recordStorage = new ApRecordStorage(this, LocalDateTime.now(), session, initHelper);
+        this.apStorage = new ApRecordStorage(this, LocalDateTime.now(), session, initHelper);
         this.partyStorage = new ParPartyStorage(this, session, initHelper);
     }
 
+    public Session getSession() {
+        return session;
+    }
+
+    public long getAvailableMemoryScore() {
+        return memoryScoreLimit - currentMemoryScore;
+    }
+
     /**
-     * Clear all stored entities from persistent context. Unflushed changes to the entity will not
-     * be synchronized with the database.
+     * Flush all changes and completely clear the session. All existing references
+     * will be detached.
+     * 
+     * @param clearAll
+     *            If false only entities manages by storage will be cleared.
      */
-    public void clear() {
-        for (Object entity : persistEntities) {
-            session.evict(entity);
+    public void flushAndClear(boolean clearAll) {
+        session.flush();
+        if (clearAll) {
+            session.clear();
+        } else {
+            persistEntities.forEach(session::evict);
         }
         persistEntities.clear();
         currentMemoryScore = 0;
@@ -74,88 +74,35 @@ public class StorageManager implements StorageListener {
         if (item instanceof EntityMetrics) {
             memoryScore = ((EntityMetrics) item).getMemoryScore();
         }
-        // flush & clear when overflow the limit
+        // check memory limit
         currentMemoryScore += memoryScore;
-        if (currentMemoryScore > memoryScoreLimit) {
-            session.flush();
-            clear();
+        if (currentMemoryScore <= memoryScoreLimit) {
+            return;
         }
+        // flush & clear when overflowed the limit
+        flushAndClear(false);
     }
 
     public void saveAccessPoints(Collection<AccessPointWrapper> items) {
-        recordStorage.save(items);
+        if (items.isEmpty()) {
+            return;
+        }
+        apStorage.save(items);
         session.flush();
-    }
-
-    public void saveAPVariantNames(Collection<APVariantNameWrapper> items) {
-        saveEntities(items);
     }
 
     public void saveParties(Collection<PartyWrapper> items) {
+        if (items.isEmpty()) {
+            return;
+        }
         partyStorage.save(items);
         session.flush();
-    }
-
-    public void savePartyUnitDates(Collection<PartyUnitDateWrapper> items) {
-        saveEntities(items);
-    }
-
-    public void savePartyGroupIdentifiers(Collection<PartyGroupIdentifierWrapper> items) {
-        saveEntities(items);
-    }
-
-    public void savePartyNames(Collection<PartyNameWrapper> items) {
-        saveEntities(items);
-    }
-
-    public void savePartyNameComplements(Collection<PartyNameComplementWrapper> items) {
-        saveEntities(items);
-    }
-
-    public void savePartyPreferredNames(Collection<PartyPreferredNameWrapper> items) {
-        saveEntities(items);
-    }
-
-    public void saveInstitutions(Collection<InstitutionWrapper> items) {
-        saveEntities(items);
-    }
-
-    public void savePartyAccessPoints(Collection<PartyAccessPointWrapper> items) {
-        saveEntities(items);
-    }
-
-    public void saveSectionNodes(Collection<ArrNodeWrapper> items) {
-        saveEntities(items);
-    }
-
-    public void saveSectionNodeRegistry(Collection<ArrNodeRegisterWrapper> items) {
-        saveEntities(items);
-    }
-
-    public void saveSectionLevels(Collection<ArrLevelWrapper> items) {
-        saveEntities(items);
-    }
-
-    public void saveSectionDescItems(Collection<ArrDescItemWrapper> items) {
-        saveEntities(items);
-    }
-
-    public void saveStructItems(Collection<ArrStructItemWrapper> items) {
-        saveEntities(items);
-    }
-
-    public void saveStructObjects(Collection<ArrStructObjectWrapper> items) {
-        saveEntities(items);
-    }
-
-    public void saveData(Collection<ArrDataWrapper> items) {
-        saveEntities(items);
     }
 
     /**
      * Stores all items and flushes persistent context.
      */
-    private <T extends EntityWrapper> void saveEntities(Collection<T> items) {
+    public <T extends EntityWrapper> void saveGeneric(Collection<T> items) {
         if (items.isEmpty()) {
             return;
         }

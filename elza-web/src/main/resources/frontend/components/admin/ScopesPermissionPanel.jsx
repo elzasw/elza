@@ -317,7 +317,8 @@ class ScopesPermissionPanel extends AbstractReactComponent {
         ));
     };
 
-    renderItem = (item, isActive, index, onCheckItem) => {
+    renderItem = (props, onCheckItem) => {
+        const {item, index} = props;
         if (item.id === ScopesPermissionPanel.ALL_ID) {
             return <div>{i18n("admin.perms.tabs.scopes.items.scopeAll")}</div>;
         } else {

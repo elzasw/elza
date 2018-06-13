@@ -1089,12 +1089,15 @@ public class ArrangementController {
     }
 
     /**
-     * Smazání celého archivního souboru. (pouze pokud neexistuje výstup (arr_named_output))
+     * Smazání celého archivního souboru. (pouze pokud neexistuje výstup
+     * (arr_named_output))
      *
-     * @param fundId id archivního souboru
-     * @throws DeleteFailedException Nelze smazat archivní soubor, pro který existuje alespoň jeden výstup.
+     * @param fundId
+     *            id archivního souboru
+     * @throws DeleteFailedException
+     *             Nelze smazat archivní soubor, pro který existuje alespoň jeden
+     *             výstup.
      */
-    @Transactional
     @RequestMapping(value = "/deleteFund/{fundId}", method = RequestMethod.DELETE)
     public void deleteFund(@PathVariable("fundId") final Integer fundId) throws DeleteFailedException {
 

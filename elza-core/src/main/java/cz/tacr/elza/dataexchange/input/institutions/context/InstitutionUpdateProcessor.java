@@ -48,7 +48,7 @@ class InstitutionUpdateProcessor implements ImportPhaseChangeListener {
 
     public InstitutionWrapper createWrapper(ParInstitution entity, PartyInfo partyInfo) {
         Validate.notNull(partyIdInstitutionMap);
-        Validate.isTrue(partyInfo.isInitialized());
+        Validate.isTrue(partyInfo.hasEntityId());
 
         InstitutionInfo info = partyIdInstitutionMap.get(partyInfo.getEntityId());
         if (info != null) {
@@ -89,7 +89,7 @@ class InstitutionUpdateProcessor implements ImportPhaseChangeListener {
         // prepare list of party ids
         List<Integer> updatedPartyIds = new ArrayList<>();
         for (PartyInfo info : allPartyInfo) {
-            Validate.isTrue(info.isInitialized());
+            Validate.isTrue(info.hasEntityId());
             if (info.getPersistMethod().equals(PersistMethod.UPDATE)) {
                 updatedPartyIds.add(info.getEntityId());
             }

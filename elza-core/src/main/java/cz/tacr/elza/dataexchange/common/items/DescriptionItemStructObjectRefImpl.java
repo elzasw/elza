@@ -22,7 +22,7 @@ public class DescriptionItemStructObjectRefImpl extends DescriptionItemStructObj
             throw new DEImportException("Referenced structured object not found, soId:" + getSoid());
         }
         ArrDataStructureRef data = new ArrDataStructureRef();
-        data.setStructuredObject(cso.getIdHolder().getEntityReference(context.getSession()));
+        data.setStructuredObject(cso.getIdHolder().getEntityRef(context.getSession()));
         data.setDataType(dataType.getEntity());
         
         return new ImportableItemData(data);

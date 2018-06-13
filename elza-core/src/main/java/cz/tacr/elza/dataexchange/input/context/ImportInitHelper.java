@@ -7,16 +7,13 @@ import cz.tacr.elza.repository.PartyGroupIdentifierRepository;
 import cz.tacr.elza.repository.PartyNameComplementRepository;
 import cz.tacr.elza.repository.PartyNameRepository;
 import cz.tacr.elza.repository.PartyRepository;
-import cz.tacr.elza.repository.ApExternalSystemRepository;
-import cz.tacr.elza.repository.ApRecordRepository;
-import cz.tacr.elza.repository.ApVariantRecordRepository;
+import cz.tacr.elza.repository.ApAccessPointRepository;
+import cz.tacr.elza.repository.ApNameRepository;
 import cz.tacr.elza.repository.UnitdateRepository;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.GroovyScriptService;
 
 public class ImportInitHelper {
-
-    private final ApExternalSystemRepository externalSystemRepository;
 
     private final GroovyScriptService groovyScriptService;
 
@@ -28,9 +25,9 @@ public class ImportInitHelper {
 
     private final LevelRepository levelRepository;
 
-    private final ApRecordRepository recordRepository;
+    private final ApAccessPointRepository apRepository;
 
-    private final ApVariantRecordRepository variantRecordRepository;
+    private final ApNameRepository apNameRepository;
 
     private final PartyRepository partyRepository;
 
@@ -42,36 +39,24 @@ public class ImportInitHelper {
 
     private final UnitdateRepository unitdateRepository;
 
-    public ImportInitHelper(ApExternalSystemRepository externalSystemRepository,
-                            GroovyScriptService groovyScriptService,
-                            InstitutionRepository institutionRepository,
-                            InstitutionTypeRepository institutionTypeRepository,
-                            ArrangementService arrangementService,
-                            LevelRepository levelRepository,
-                            ApRecordRepository recordRepository,
-                            ApVariantRecordRepository variantRecordRepository,
-                            PartyRepository partyRepository,
-                            PartyNameRepository nameRepository,
-                            PartyNameComplementRepository nameComplementRepository,
-                            PartyGroupIdentifierRepository groupIdentifierRepository,
-                            UnitdateRepository unitdateRepository) {
-        this.externalSystemRepository = externalSystemRepository;
+    public ImportInitHelper(GroovyScriptService groovyScriptService, InstitutionRepository institutionRepository,
+            InstitutionTypeRepository institutionTypeRepository, ArrangementService arrangementService,
+            LevelRepository levelRepository, ApAccessPointRepository apRepository, ApNameRepository apNameRepository,
+            PartyRepository partyRepository, PartyNameRepository nameRepository,
+            PartyNameComplementRepository nameComplementRepository,
+            PartyGroupIdentifierRepository groupIdentifierRepository, UnitdateRepository unitdateRepository) {
         this.groovyScriptService = groovyScriptService;
         this.institutionRepository = institutionRepository;
         this.institutionTypeRepository = institutionTypeRepository;
         this.arrangementService = arrangementService;
         this.levelRepository = levelRepository;
-        this.recordRepository = recordRepository;
-        this.variantRecordRepository = variantRecordRepository;
+        this.apRepository = apRepository;
+        this.apNameRepository = apNameRepository;
         this.partyRepository = partyRepository;
         this.nameRepository = nameRepository;
         this.nameComplementRepository = nameComplementRepository;
         this.groupIdentifierRepository = groupIdentifierRepository;
         this.unitdateRepository = unitdateRepository;
-    }
-
-    public ApExternalSystemRepository getExternalSystemRepository() {
-        return externalSystemRepository;
     }
 
     public GroovyScriptService getGroovyScriptService() {
@@ -94,12 +79,12 @@ public class ImportInitHelper {
         return levelRepository;
     }
 
-    public ApRecordRepository getRecordRepository() {
-        return recordRepository;
+    public ApAccessPointRepository getApRepository() {
+        return apRepository;
     }
 
-    public ApVariantRecordRepository getVariantRecordRepository() {
-        return variantRecordRepository;
+    public ApNameRepository getApNameRepository() {
+        return apNameRepository;
     }
 
     public PartyRepository getPartyRepository() {

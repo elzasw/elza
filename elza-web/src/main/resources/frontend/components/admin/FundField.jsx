@@ -40,7 +40,7 @@ class FundField extends AbstractReactComponent {
 
     render() {
         // onChange nutno excludnout z other props - jinak by vlezno na autocomplete a přestal by fugnovat event on Change na komponentě
-        const {value, ...otherProps} = this.props;
+        const {value, onChange, ...otherProps} = this.props;
         const {dataList} = this.state;
 
         return <Autocomplete
@@ -50,6 +50,7 @@ class FundField extends AbstractReactComponent {
             value={value}
             items={dataList}
             onSearchChange={this.handleSearchChange}
+            onChange={onChange}
             {...otherProps}
         />;
     }

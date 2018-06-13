@@ -58,4 +58,6 @@ public interface OutputDefinitionRepository extends JpaRepository<ArrOutputDefin
 
     @Query("SELECT COUNT(no) > 0 FROM arr_output_definition no WHERE no.name LIKE :name")
     boolean existsByName(@Param("name") String name);
+
+    void deleteByFund(ArrFund fund);
 }

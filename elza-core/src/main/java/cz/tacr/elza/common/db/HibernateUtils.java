@@ -18,11 +18,13 @@ import org.hibernate.search.hcore.util.impl.HibernateHelper;
 public class HibernateUtils {
 
     /**
-     * Unproxy specified object. In case of uninitialized proxy will be entity loaded from database.
+     * Unproxy given object. If object is uninitialized Hibernate proxy then entity
+     * will be loaded from database.
      *
-     * @param object POJO or hibernate proxy
+     * @param object
+     *            POJO or Hibernate proxy
      *
-     * @return POJO or initialized entity, can be null when object was null.
+     * @return Returns POJO or initialized entity, can be null when object was null.
      */
     @SuppressWarnings("unchecked")
     public static <T> T unproxy(Object object) {
@@ -36,27 +38,32 @@ public class HibernateUtils {
      * Unproxy initialized object.
      *
      * @param object
-     *            POJO or hibernate proxy
+     *            POJO or Hibernate proxy
      *
-     * @return POJO or initialized entity, can be null when object was null.
+     * @return Returns initialized entity.
+     * @throws RuntimeException
+     *             When object was null or uninitialized Hibernate proxy.
      */
     @SuppressWarnings("unchecked")
-    public static <T> T unproxyInitialized(Object entity) {
-        if (!Hibernate.isInitialized(entity)) {
-            throw new IllegalStateException("Unitialized entity, class = " + entity.getClass().getName());
+    public static <T> T unproxyInitialized(Object object) {
+        if (!Hibernate.isInitialized(object)) {
+            throw new IllegalStateException("Unitialized entity, class = " + object.getClass().getName());
         }
-        return (T) HibernateHelper.unproxy(entity);
+        return (T) HibernateHelper.unproxy(object);
     }
 
     /**
-     * Unproxy active session from entity manager for current thread.
+     * Unwraps Hibernate session from given entity manager.
      */
     public static Session getCurrentSession(EntityManager em) {
         return em.unwrap(Session.class);
     }
 
     /**
-     * Returns currently running transaction for specified session.
+     * Returns currently running transaction for given entity manager.
+     * 
+     * @throws RuntimeException
+     *             When given entity manager does not have active transaction.
      */
     public static Transaction getCurrentTransaction(EntityManager em) {
         SharedSessionContractImplementor ssci = em.unwrap(SharedSessionContractImplementor.class);
@@ -67,38 +74,34 @@ public class HibernateUtils {
     }
 
     /**
-     * Test if specified object is initialized.
+     * Method testing if given object is initialized.
      *
-     * @param object pojo or hibernate proxy
-     * @return True when specified object is not proxy or LazyInitializer is initialized.
+     * @param object
+     *            POJO or Hibernate proxy
+     * @return True when object is POJO or it is Hibernate proxy and internal
+     *         LazyInitializer is initialized.
+     * @throws RuntimeException
+     *             When object is null.
      */
     public static boolean isInitialized(Object object) {
-        if (object == null) {
-            return false;
-        }
+        Validate.isTrue(object != null);
         return Hibernate.isInitialized(object);
     }
 
     /**
-     * Get entity from persistent context or create proxy if missing. Exception is thrown when
-     * entity does not exist during proxy initialization.
-     *
-     * @param entityId not-null
-     * @param entityClass not-null
-     * @param session active session
-     * @param activeProxy Active proxy can be initialized on demand or used for updates.
-     *
-     * @throws RuntimeException When holder id is not set or entity class is not acceptable.
+     * Return the persistent instance with the given identifier, assuming that the
+     * instance exists. This method might return a proxied instance.
+     * 
+     * @param detachIfNotLoaded
+     *            When true and entity is not loaded in persistent context returned
+     *            reference will be detached.
      */
-    public static <E> E getEntityReference(Serializable entityId, Class<E> entityClass, Session session, boolean activeProxy) {
-        // L2 cache access
-        CacheMode cacheMode = activeProxy ? CacheMode.NORMAL : CacheMode.GET;
-
+    public static <E> E getEntityRef(Serializable entityId, Class<E> entityClass, Session session,
+            boolean detachIfNotLoaded) {
         // retrieve entity or create proxy
-        E entity = session.byId(entityClass).with(cacheMode).getReference(entityId);
-
+        E entity = session.byId(entityClass).getReference(entityId);
         // L1 cache access
-        if (!activeProxy && !isInitialized(entity)) {
+        if (detachIfNotLoaded && !isInitialized(entity)) {
             session.evict(entity);
         }
         return entity;

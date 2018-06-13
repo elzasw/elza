@@ -101,7 +101,7 @@ public class SectionLevelProcessor implements ItemProcessor {
                 throw new DEImportException("Referenced access point not found, apeId:" + apEntryId);
             }
             ArrNodeRegister nodeRegister = new ArrNodeRegister();
-            nodeRegister.setRecord(apInfo.getEntityReference(context.getSession()));
+            nodeRegister.setRecord(apInfo.getEntityRef(context.getSession()));
             nodeRegister.setCreateChange(section.getCreateChange());
             node.addNodeRegister(nodeRegister);
         }

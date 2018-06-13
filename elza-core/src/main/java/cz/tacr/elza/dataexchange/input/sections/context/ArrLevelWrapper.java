@@ -42,12 +42,12 @@ public class ArrLevelWrapper implements EntityWrapper {
     @Override
     public void beforeEntityPersist(Session session) {
         Validate.isTrue(entity.getNode() == null);
-        entity.setNode(nodeIdHolder.getEntityReference(session));
+        entity.setNode(nodeIdHolder.getEntityRef(session));
 
         // sets parent reference (null for root level)
         Validate.isTrue(entity.getNodeParent() == null);
         if (parentNodeIdHolder != null) {
-            entity.setNodeParent(parentNodeIdHolder.getEntityReference(session));
+            entity.setNodeParent(parentNodeIdHolder.getEntityRef(session));
         }
     }
 

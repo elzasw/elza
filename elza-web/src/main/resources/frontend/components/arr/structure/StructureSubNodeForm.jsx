@@ -37,6 +37,7 @@ class StructureSubNodeForm extends AbstractReactComponent {
         subNodeForm: PropTypes.object,
         focus: PropTypes.object,
         readMode: PropTypes.bool,
+        descItemFactory: PropTypes.object.isRequired
     };
 
     static defaultProps = {
@@ -122,7 +123,8 @@ class StructureSubNodeForm extends AbstractReactComponent {
                     formActions={structureFormActions}
                     showNodeAddons={false}
                     readMode={readMode}
-                    customActions={this.props.customActions}
+                  customActions={this.props.customActions}
+                  descItemFactory={this.props.descItemFactory}
                 />
             </div>
         )

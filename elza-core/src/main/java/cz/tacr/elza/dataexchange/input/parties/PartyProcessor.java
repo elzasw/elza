@@ -1,6 +1,7 @@
 package cz.tacr.elza.dataexchange.input.parties;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 import javax.xml.bind.JAXBElement;
@@ -9,7 +10,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import cz.tacr.elza.core.data.CalendarType;
 import cz.tacr.elza.core.data.PartyType;
-import cz.tacr.elza.core.data.PartyTypeComplementTypes;
+import cz.tacr.elza.core.data.PartyTypeCmplType;
+import cz.tacr.elza.core.data.PartyTypeCmplTypes;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.dataexchange.common.timeinterval.TimeInterval;
 import cz.tacr.elza.dataexchange.input.DEImportException;
@@ -20,9 +22,7 @@ import cz.tacr.elza.dataexchange.input.context.ImportContext;
 import cz.tacr.elza.dataexchange.input.parties.context.PartiesContext;
 import cz.tacr.elza.dataexchange.input.parties.context.PartyInfo;
 import cz.tacr.elza.dataexchange.input.parties.context.PartyNameWrapper;
-import cz.tacr.elza.dataexchange.input.parties.context.PartyRelatedIdHolder;
 import cz.tacr.elza.dataexchange.input.reader.ItemProcessor;
-import cz.tacr.elza.domain.ParComplementType;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyName;
 import cz.tacr.elza.domain.ParPartyNameComplement;
@@ -34,6 +34,7 @@ import cz.tacr.elza.schema.v2.NameComplement;
 import cz.tacr.elza.schema.v2.NameComplements;
 import cz.tacr.elza.schema.v2.Party;
 import cz.tacr.elza.schema.v2.PartyName;
+import cz.tacr.elza.schema.v2.PartyNames;
 import cz.tacr.elza.schema.v2.TimeIntervalExt;
 
 /**
@@ -45,173 +46,170 @@ public class PartyProcessor<P extends Party, E extends ParParty> implements Item
 
     protected final PartiesContext partiesContext;
 
-    protected final AccessPointsContext accessPointsContext;
+    protected final AccessPointsContext apContext;
 
     protected final StaticDataProvider staticData;
 
-    private PartyType partyType;
+    protected P party;
 
-    private AccessPointInfo apInfo;
+    protected PartyInfo info;
 
     public PartyProcessor(ImportContext context, Class<E> partyClass) {
         this.partyClass = partyClass;
         this.partiesContext = context.getParties();
-        this.accessPointsContext = context.getAccessPoints();
+        this.apContext = context.getAccessPoints();
         this.staticData = context.getStaticData();
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public void process(Object item) {
-        JAXBElement<P> element = (JAXBElement<P>) item;
-        prepareCachedReferences(element);
-        P party = element.getValue();
-        validateParty(party);
-        E entity = createEntity(party);
-        PartyInfo partyInfo = addParty(entity, party.getId());
-        processSubEntities(party, partyInfo);
+        processInternal((JAXBElement<P>) item);
+        info.onProcessed();
     }
 
-    protected void prepareCachedReferences(JAXBElement<P> element) {
-        // party type by element name
-        switch (element.getName().getLocalPart()) {
-            case "per":
-                partyType = PartyType.PERSON;
-                break;
-            case "famy":
-                partyType = PartyType.DYNASTY;
-                break;
-            case "pg":
-                partyType = PartyType.GROUP_PARTY;
-                break;
-            case "evnt":
-                partyType = PartyType.EVENT;
-                break;
-            default:
-                throw new IllegalStateException("Uknown party element, name:" + element.getName());
-        }
-        // access point entry by id
-        String entryId = element.getValue().getApe().getId();
-        apInfo = accessPointsContext.getAccessPointInfo(entryId);
-        if (apInfo == null) {
-            throw new IllegalStateException("Party access point entry must be processed first, entryId:" + entryId);
-        }
+    protected void processInternal(JAXBElement<P> element) {
+        processParty(element);
+        processNames(party.getNms());
     }
 
-    protected void validateParty(P item) {
-        if (StringUtils.isEmpty(item.getId())) {
+    private void processParty(JAXBElement<P> element) {
+        party = element.getValue();
+        PartyType type = resolvePartyType(element);
+        AccessPointInfo apInfo = apContext.getApInfo(party.getApe().getId());
+        E entity = createParty(party, type, apInfo);
+        info = partiesContext.addParty(entity, party.getId(), apInfo, type);
+    }
+
+    protected E createParty(P party, PartyType type, AccessPointInfo apInfo) {
+        if (StringUtils.isEmpty(party.getId())) {
             throw new DEImportException("Party id is empty");
         }
-        ParPartyType recordPartyType = apInfo.getApType().getPartyType();
-        if (partyType.getEntity() != recordPartyType) {
-            throw new DEImportException("Party type does not match with registry type, partyId:" + item.getId());
+        ParPartyType apPartyType = apInfo.getApType().getPartyType();
+        // references should match (both initialized from static data)
+        if (apPartyType != type.getEntity()) {
+            throw new DEImportException("Party type does not match with AP type, partyId=" + party.getId());
         }
-    }
-
-    protected E createEntity(P item) {
-        E party;
+        // invoke no-arg constructor (should be implemented for Hibernate)
+        E entity;
         try {
-            party = partyClass.newInstance();
+            entity = partyClass.newInstance();
         } catch (Exception e) {
-            throw new SystemException("Failed to intialized no args constructor, entity: " + partyClass, e);
+            throw new SystemException("Failed to intialized no arg constructor, entity: " + partyClass, e);
         }
-        party.setCharacteristics(item.getChr());
-        party.setHistory(item.getHst());
-        party.setOriginator(true);
-        party.setPartyType(apInfo.getApType().getPartyType());
-        party.setSourceInformation(item.getSrc());
-        return party;
+        entity.setCharacteristics(party.getChr());
+        entity.setHistory(party.getHst());
+        entity.setOriginator(true);
+        entity.setPartyType(apPartyType);
+        entity.setSourceInformation(party.getSrc());
+        return entity;
     }
 
-    protected PartyInfo addParty(E entity, String importId) {
-        return partiesContext.addParty(entity, importId, apInfo, partyType);
-    }
-
-    protected void processSubEntities(P item, PartyInfo partyInfo) {
-        processPartyName(item.getName(), partyInfo, true);
-        if (item.getVnms() != null) {
-            for (PartyName name : item.getVnms().getVnm()) {
-                processPartyName(name, partyInfo, false);
-            }
+    private void processNames(PartyNames names) {
+        if (names == null || names.getNm().isEmpty()) {
+            throw new DEImportException("Preferred party name not found, partyId=" + party.getId());
+        }
+        Iterator<PartyName> it = names.getNm().iterator();
+        processName(it.next(), true);
+        while (it.hasNext()) {
+            processName(it.next(), false);
         }
     }
 
-    protected final EntityIdHolder<ParUnitdate> processTimeInterval(TimeIntervalExt interval, PartyInfo partyInfo) {
-        if (interval == null) {
-            return null;
-        }
-        ParUnitdate unitDate = new ParUnitdate();
-        unitDate.setNote(interval.getNote());
-        unitDate.setTextDate(interval.getTf());
-        TimeInterval it = null;
-        try {
-            it = TimeInterval.create(interval);
-        } catch (IllegalArgumentException e) {
-            throw new DEImportException(
-                    "Conversion of time interval failed, partyId:" + partyInfo.getImportId() + ", detail:" + e.getMessage());
-        }
-        CalendarType calendarType = it.getCalendarType();
-        if (calendarType == null) {
-            throw new IllegalArgumentException("Calendar type for time interval not found, code:" + it.getCalendarType());
-        }
-        unitDate.setCalendarType(calendarType.getEntity());
-        unitDate.setFormat(it.getFormat());
-        unitDate.setValueFrom(it.getFormattedFrom());
-        unitDate.setValueTo(it.getFormattedTo());
-        unitDate.setValueFromEstimated(it.isFromEst());
-        unitDate.setValueToEstimated(it.isToEst());
-        return partiesContext.addUnitDate(unitDate, partyInfo);
-    }
-
-    private void processPartyName(PartyName partyName, PartyInfo partyInfo, boolean preferred) {
-        if (StringUtils.isBlank(partyName.getMain())) {
-            throw new DEImportException("Main part of party name not set, partyId:" + partyInfo.getImportId());
+    private void processName(PartyName name, boolean preferred) {
+        if (StringUtils.isEmpty(name.getMain())) {
+            throw new DEImportException("Main part of party name not set, partyId=" + party.getId());
         }
         ParPartyNameFormType formType = null;
-        if (StringUtils.isNotEmpty(partyName.getFt())) {
-            formType = staticData.getPartyNameFormTypeByCode(partyName.getFt());
+        if (StringUtils.isNotEmpty(name.getFt())) {
+            formType = staticData.getPartyNameFormTypeByCode(name.getFt());
             if (formType == null) {
-                throw new DEImportException("Form type of party name not found, partyId:" + partyInfo.getImportId() + ", formType: "
-                        + partyName.getFt());
+                throw new DEImportException(
+                        "Form type of party name not found, partyId=" + party.getId() + ", name=" + name.getFt());
             }
         }
-        ParPartyName name = new ParPartyName();
-        name.setDegreeAfter(partyName.getDga());
-        name.setDegreeBefore(partyName.getDgb());
-        name.setMainPart(partyName.getMain());
-        name.setNameFormType(formType);
-        name.setNote(partyName.getNote());
-        name.setOtherPart(partyName.getOth());
-        PartyNameWrapper wrapper = partiesContext.addName(name, partyInfo, preferred);
-        wrapper.setValidFrom(processTimeInterval(partyName.getVf(), partyInfo));
-        wrapper.setValidTo(processTimeInterval(partyName.getVto(), partyInfo));
-        processNameComplements(partyName.getNcs(), wrapper.getIdHolder());
+        ParPartyName entity = new ParPartyName();
+        entity.setDegreeAfter(name.getDga());
+        entity.setDegreeBefore(name.getDgb());
+        entity.setMainPart(name.getMain());
+        entity.setNameFormType(formType);
+        entity.setNote(name.getNote());
+        entity.setOtherPart(name.getOth());
+        PartyNameWrapper wrapper = partiesContext.addName(entity, info, preferred);
+
+        wrapper.setValidFrom(processTimeInterval(name.getVf()));
+        wrapper.setValidTo(processTimeInterval(name.getVto()));
+
+        processNameCmpls(name.getNcs(), wrapper.getIdHolder());
+
     }
 
-    private void processNameComplements(NameComplements nameComplements, PartyRelatedIdHolder<ParPartyName> partyNameIdHolder) {
-        if (nameComplements == null) {
+    protected final EntityIdHolder<ParUnitdate> processTimeInterval(TimeIntervalExt strInterval) {
+        if (strInterval == null) {
+            return null;
+        }
+        ParUnitdate entity = new ParUnitdate();
+        entity.setNote(strInterval.getNote());
+        entity.setTextDate(strInterval.getTf());
+        TimeInterval interval = null;
+        try {
+            interval = TimeInterval.create(strInterval);
+        } catch (IllegalArgumentException e) {
+            throw new DEImportException(
+                    "Conversion of time interval failed, partyId=" + party.getId() + ", detail: " + e.getMessage());
+        }
+        CalendarType ct = interval.getCalendarType();
+        if (ct == null) {
+            throw new IllegalArgumentException("Calendar type for time interval not found, code=" + party.getId());
+        }
+        entity.setCalendarType(ct.getEntity());
+        entity.setFormat(interval.getFormat());
+        entity.setValueFrom(interval.getFormattedFrom());
+        entity.setValueTo(interval.getFormattedTo());
+        entity.setValueFromEstimated(interval.isFromEst());
+        entity.setValueToEstimated(interval.isToEst());
+        return partiesContext.addUnitDate(entity, info);
+    }
+
+    private void processNameCmpls(NameComplements nameCmpls, EntityIdHolder<ParPartyName> nameIdHolder) {
+        if (nameCmpls == null || nameCmpls.getNc().isEmpty()) {
             return;
         }
-        String partyImportId = partyNameIdHolder.getPartyInfo().getImportId();
         Set<String> foundTypes = new HashSet<>();
+        for (NameComplement cmpl : nameCmpls.getNc()) {
+            if (StringUtils.isBlank(cmpl.getV())) {
+                throw new DEImportException("Value of party name complement is not set, partyId=" + party.getId());
+            }
+            PartyTypeCmplTypes types = staticData.getCmplTypesByPartyTypeCode(info.getPartyType().getCode());
+            PartyTypeCmplType type = types.getTypeByCode(cmpl.getCt());
+            if (type == null) {
+                throw new DEImportException(
+                        "Type of party name complement not found, partyId=" + party.getId() + ", code=" + cmpl.getCt());
+            }
+            if (!foundTypes.add(type.getCode()) && !type.isRepeatable()) {
+                throw new DEImportException("Type of party name complement is not repeatable, partyId=" + party.getId()
+                        + ", code=" + type.getCode());
+            }
+            ParPartyNameComplement entity = new ParPartyNameComplement();
+            entity.setComplement(cmpl.getV());
+            entity.setComplementType(type.getEntity());
+            partiesContext.addNameComplement(entity, nameIdHolder, info);
+        }
+    }
 
-        for (NameComplement nc : nameComplements.getNc()) {
-            if (StringUtils.isBlank(nc.getV())) {
-                throw new DEImportException("Value of party name complement is not set, partyId:" + partyImportId);
-            }
-            PartyTypeComplementTypes typeGroup = staticData.getComplementTypesByPartyTypeCode(partyType.getCode());
-            String typeCode = nc.getCt();
-            ParComplementType complementType = typeGroup.getTypeByCode(typeCode);
-            if (complementType == null) {
-                throw new DEImportException("Type of party name complement not found, partyId:" + partyImportId);
-            }
-            if (!foundTypes.add(typeCode) && !typeGroup.getRepeatableByCode(typeCode)) {
-                throw new DEImportException("Type of party name complement is not repeatable, partyId:" + partyImportId);
-            }
-            ParPartyNameComplement complement = new ParPartyNameComplement();
-            complement.setComplement(nc.getV());
-            complement.setComplementType(complementType);
-            partiesContext.addNameComplement(complement, partyNameIdHolder);
+    public static PartyType resolvePartyType(JAXBElement<? extends Party> element) {
+        String localName = element.getName().getLocalPart();
+        switch (localName) {
+        case "per":
+            return PartyType.PERSON;
+        case "famy":
+            return PartyType.DYNASTY;
+        case "pg":
+            return PartyType.GROUP_PARTY;
+        case "evnt":
+            return PartyType.EVENT;
+        default:
+            throw new IllegalStateException("Uknown party element, name:" + element.getName());
         }
     }
 }

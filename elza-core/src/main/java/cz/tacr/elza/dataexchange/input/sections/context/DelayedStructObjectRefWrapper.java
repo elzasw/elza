@@ -27,6 +27,6 @@ public class DelayedStructObjectRefWrapper extends ArrDataWrapper {
         Validate.isTrue(ref.getStructuredObject() == null);
         // init structured object reference
         ContextStructObject cso = section.getContextStructObject(refStructObjectImportId);
-        ref.setStructuredObject(cso.getIdHolder().getEntityReference(session));
+        ref.setStructuredObject(cso.getIdHolder().getEntityRef(session));
     }
 }

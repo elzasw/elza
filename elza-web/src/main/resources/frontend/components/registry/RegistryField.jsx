@@ -115,12 +115,14 @@ class RegistryField extends AbstractReactComponent {
 
     handleChange = (e) => {
         this.setState({searchText: null});
-        this.normalizeValue(this.props.onChange)(e)
+        const value = this.normalizeValue(e);
+        this.props.onChange(value);
     };
 
     handleBlur = (e) => {
         this.setState({searchText: null});
-        this.normalizeValue(this.props.onBlur)(e)
+        const value = this.normalizeValue(e);
+        this.props.onBlur(value);
     };
 
     renderFooter = () => {
@@ -144,27 +146,35 @@ class RegistryField extends AbstractReactComponent {
         </div> : null;
     };
 
-    renderRecord = (item, focus, active) => <TooltipTrigger
+    renderRecord = (props) => {
+        const {item, highlighted, selected, ...otherProps} = props;
+
+        return <TooltipTrigger
             content={item.characteristics}
             holdOnHover
             placement="horizontal"
             className="tooltip-container"
+            {...otherProps}
         >
-            <RegistryListItem {...item} className={classNames('item', {focus, active})} />
+            <RegistryListItem 
+                {...item} 
+                className={classNames('item', {focus: highlighted, active: selected})}
+            />
         </TooltipTrigger>;
+    }
 
 
-    normalizeValue = (call) => (obj,id) => {
+    normalizeValue = (obj) => {
         // změna typu aby se objekt dal použít jako návazný
         const newobj = {
             ...obj,
             '@class': 'cz.tacr.elza.controller.vo.ApAccessPointVO',
         };
-        call(newobj, id);
+        return newobj;
     };
 
     render() {
-        const {onChange, onBlur, footer, detail, value, className, undefined, ...otherProps} = this.props;
+        const {value, footer, detail, className, undefined, ...otherProps} = this.props;
 
         let footerRender = null;
         if (footer) {
@@ -174,7 +184,14 @@ class RegistryField extends AbstractReactComponent {
         let actions = [];
         if (detail) {
             // if (value && userDetail.hasOne(perms.AP_SCOPE_RD_ALL, {type: perms.AP_SCOPE_RD, scopeId: value.scopeId})) {
-                actions.push(<div onClick={this.handleDetail.bind(this, value ? value.id : null)} className={'btn btn-default detail'}><Icon glyph={'fa-th-list'}/></div>);
+            actions.push(
+                <div 
+                    onClick={this.handleDetail.bind(this, value ? value.id : null)} 
+                    className={'btn btn-default detail'}
+                >
+                    <Icon glyph={'fa-th-list'}/>
+                </div>
+            );
             // }
         }
 
@@ -184,6 +201,7 @@ class RegistryField extends AbstractReactComponent {
         }
 
         return <Autocomplete
+            {...otherProps}
             ref='autocomplete'
             customFilter
             className={classNames("autocomplete-record", className)}
@@ -197,7 +215,6 @@ class RegistryField extends AbstractReactComponent {
             onChange={this.handleChange}
             onBlur={this.handleBlur}
             value={value}
-            {...otherProps}
         />;
     }
 }

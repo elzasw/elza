@@ -61,8 +61,9 @@ class AddRemoveListBox extends AbstractReactComponent {
         }
     };
 
-    renderItem = (item, isActive, index, onCheckItem) => {
+    renderItem = (props, onCheckItem) => {
         const {readOnly, canDeleteItem, renderItemContent, addTitle, removeTitle, onRemove, onAdd} = this.props;
+        const {item, index} = props; 
 
         if (item._addItem) {
             return <div className="arlb-plus-item">
@@ -73,7 +74,7 @@ class AddRemoveListBox extends AbstractReactComponent {
         } else {
             return <div className="arlb-item">
                 <div className="item-label">
-                    {renderItemContent(item, isActive, index, onCheckItem)}
+                    {renderItemContent(props, onCheckItem)}
                 </div>
                 {!readOnly && canDeleteItem(item, index) && <NoFocusButton className="item-action" onClick={() => onRemove(item, index)} title={i18n(removeTitle)}>
                     <Icon glyph="fa-remove"/>

@@ -2,21 +2,29 @@ package cz.tacr.elza.dataexchange.input.storage;
 
 import org.hibernate.Session;
 
-import cz.tacr.elza.dataexchange.input.context.PersistMethod;
-
 /**
  * Entity wrapper for import storage process.
  */
 public interface EntityWrapper {
 
-    PersistMethod getPersistMethod();
+    public enum PersistType {
+        CREATE, UPDATE, NONE
+    }
+
+    PersistType getPersistType();
 
     Object getEntity();
 
-    void beforeEntityPersist(Session session);
+    /**
+     * Method is called before wrapped entity is persist. Default implementation is
+     * empty.
+     */
+    default void beforeEntityPersist(Session session) {
+    }
 
     /**
-     * Default implementation is empty.
+     * Method is called after wrapped entity is persist. Default implementation is
+     * empty.
      */
     default void afterEntityPersist() {
     }

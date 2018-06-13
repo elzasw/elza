@@ -40,11 +40,11 @@ public class ArrStructItemWrapper implements EntityWrapper {
     @Override
     public void beforeEntityPersist(Session session) {
         Validate.isTrue(entity.getStructuredObject() == null);
-        entity.setStructuredObject(structObjectIdHolder.getEntityReference(session));
+        entity.setStructuredObject(structObjectIdHolder.getEntityRef(session));
         // set data reference if exist
         Validate.isTrue(entity.isUndefined());
         if (dataIdHolder != null) {
-            entity.setData(dataIdHolder.getEntityReference(session));
+            entity.setData(dataIdHolder.getEntityRef(session));
         }
     }
 }

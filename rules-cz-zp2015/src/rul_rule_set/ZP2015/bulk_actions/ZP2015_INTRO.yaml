@@ -214,5 +214,5 @@ actions:
              objectType: ZP2015_STORAGE_ID
              objectItemType: ZP2015_PACKET_TYPE
              objectItemMapping:
-               ZP2015_BOX: kar
-               ZP2015_FASCICLE: fas
+               ZP2015_PACKET_TYPE_KAR: kar
+               ZP2015_PACKET_TYPE_FAS: fas

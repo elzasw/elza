@@ -39,48 +39,49 @@ class ParPartyStorage extends EntityStorage<PartyWrapper> {
 
     private final PartyNameRepository nameRepository;
 
-    private final PartyNameComplementRepository nameComplementRepository;
+    private final PartyNameComplementRepository nameCmplRepository;
 
     public ParPartyStorage(StorageListener storageListener, Session session, ImportInitHelper initHelper) {
         super(session, storageListener);
         this.partyRepository = initHelper.getPartyRepository();
         this.nameRepository = initHelper.getNameRepository();
-        this.nameComplementRepository = initHelper.getNameComplementRepository();
+        this.nameCmplRepository = initHelper.getNameComplementRepository();
         this.groupIdentifierRepository = initHelper.getGroupIdentifierRepository();
         this.unitdateRepository = initHelper.getUnitdateRepository();
     }
 
     @Override
     protected void update(Collection<PartyWrapper> items) {
-        prepareCollectionForUpdate(items);
+        prepareItemsForUpdate(items);
         super.update(items);
     }
 
-    private void prepareCollectionForUpdate(Collection<PartyWrapper> items) {
-        readCurrentPartyIds(items);
-        deleteSubEntities(items);
-    }
-
-    private void readCurrentPartyIds(Collection<PartyWrapper> items) {
-        Map<Integer, PartyWrapper> recordIdMap = new HashMap<>(items.size());
-        // init record id - party wrapper map
+    /**
+     * Copies partyId and version from existing party to imported entity. All
+     * current sub-entities are deleted.
+     */
+    private void prepareItemsForUpdate(Collection<PartyWrapper> items) {
+        Map<Integer, PartyWrapper> apIdMap = new HashMap<>(items.size());
+        // init mapping: apId -> party wrapper
         for (PartyWrapper item : items) {
-            Integer recordId = item.getPartyInfo().getAPId();
-            Validate.notNull(recordId);
-            recordIdMap.put(recordId, item);
+            Integer apId = item.getPartyInfo().getApInfo().getEntityId();
+            Validate.notNull(apId);
+            apIdMap.put(apId, item);
         }
-        // find all current parties
-        List<ParPartyInfo> currentParties = partyRepository.findInfoByRecordRecordIdIn(recordIdMap.keySet());
-        if (currentParties.size() != recordIdMap.size()) {
+        // find all current parties by apIds
+        List<ParPartyInfo> currParties = partyRepository.findInfoByRecordAccessPointIdIn(apIdMap.keySet());
+        if (currParties.size() != apIdMap.size()) {
             throw new IllegalStateException(
-                    "Not all parties for update found, recordIds:" + StringUtils.join(recordIdMap.keySet(), ','));
+                    "Not all parties for update found, apIds=" + StringUtils.join(apIdMap.keySet(), ','));
         }
-        // update wrapper by current party
-        for (ParPartyInfo info : currentParties) {
-            ParParty entity = recordIdMap.get(info.getRecordId()).getEntity();
+        // update wrapped parties by existing
+        for (ParPartyInfo info : currParties) {
+            ParParty entity = apIdMap.get(info.getRecordId()).getEntity();
             entity.setPartyId(info.getPartyId());
             entity.setVersion(info.getVersion());
         }
+        // delete all sub entities
+        deleteSubEntities(items);
     }
 
     /**
@@ -120,7 +121,7 @@ class ParPartyStorage extends EntityStorage<PartyWrapper> {
         // delete all names
         nameRepository.deleteInBatch(names);
         // delete all complements
-        nameComplementRepository.deleteByPartyNameIn(names);
+        nameCmplRepository.deleteByPartyNameIn(names);
 
         // find all group identifiers and their intervals
         if (partyGroups.size() > 0) {

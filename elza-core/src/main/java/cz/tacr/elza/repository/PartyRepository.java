@@ -53,7 +53,7 @@ public interface PartyRepository extends ElzaJpaRepository<ParParty, Integer>, P
     @Query("SELECT c.creatorParty FROM par_creator c WHERE c.party = ?1 ORDER BY c.creatorId")
     List<ParParty> findCreatorsByParty(ParParty party);
 
-    List<ParPartyInfo> findInfoByRecordAccessPointIdIn(Collection<Integer> recordIds);
+    List<ParPartyInfo> findInfoByRecordAccessPointIdIn(Collection<Integer> apIds);
 
     @Query("SELECT ap FROM par_party ap " +
             "LEFT JOIN FETCH ap.preferredName pn " +

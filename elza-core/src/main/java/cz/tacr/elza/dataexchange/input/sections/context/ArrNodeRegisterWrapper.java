@@ -33,6 +33,6 @@ public class ArrNodeRegisterWrapper implements EntityWrapper {
     @Override
     public void beforeEntityPersist(Session session) {
         Validate.isTrue(entity.getNode() == null);
-        entity.setNode(nodeIdHolder.getEntityReference(session));
+        entity.setNode(nodeIdHolder.getEntityRef(session));
     }
 }

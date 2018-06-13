@@ -41,6 +41,6 @@ public class InstitutionWrapper implements EntityWrapper {
     @Override
     public void beforeEntityPersist(Session session) {
         Validate.isTrue(entity.getParty() == null);
-        entity.setParty(partyInfo.getEntityReference(session));
+        entity.setParty(partyInfo.getEntityRef(session));
     }
 }

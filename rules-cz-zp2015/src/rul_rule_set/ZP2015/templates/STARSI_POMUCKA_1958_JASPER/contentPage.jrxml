@@ -129,7 +129,7 @@ $F{node}.getItemsWithSpec("ZP2015_LEVEL_TYPE","ZP2015_LEVEL_ROOT").size() > 0]]>
 		<queryString>
 			<![CDATA[]]>
 		</queryString>
-		<field name="packet" class="cz.tacr.elza.print.Packet">
+		<field name="packet" class="cz.tacr.elza.print.Structured">
 			<fieldDescription><![CDATA[packet]]></fieldDescription>
 		</field>
 	</subDataset>
@@ -377,10 +377,19 @@ $F{node}.getItemsWithSpec("ZP2015_LEVEL_TYPE","ZP2015_LEVEL_ROOT").size() > 0]]>
 	.setTitleSeparator(": ")
 	.setItemSeparator("<br>")
 	.setSpecSeparator(": ")
-	.setBlockSeparators("","")
-	.beginBlock()
 		.addValueWithTitle("ZP2015_ORIGINATOR")
-		.addValueWithTitle("ZP2015_UNIT_COUNT")
+		.addValueWithTitle("ZP2015_UNIT_COUNT", 
+			new cz.tacr.elza.print.format.Formatter()
+			    .setBlockSeparators(" (",")", true, true)
+			    .beginBlock()
+                .addValue("ZP2015_UNIT_TYPE")
+                .endBlock()
+		)
+		.setItemSeparator(", ")
+		.setSpecFormat(" (", ")",true)
+		.addValueWithTitle("ZP2015_EXTRA_UNITS")
+		.setSpecFormat("", ": ", false)
+		.setItemSeparator("<br>")
 		.addValueWithTitle("ZP2015_DATE_OTHER")
 		.addValueWithTitle("ZP2015_ITEM_TITLE")
 		.addValueWithTitle("ZP2015_PART")
@@ -410,8 +419,7 @@ $F{node}.getItemsWithSpec("ZP2015_LEVEL_TYPE","ZP2015_LEVEL_ROOT").size() > 0]]>
 		.addValueWithTitle("ZP2015_EDITION")
 		.addValueWithTitle("ZP2015_NOTE")
 		.addValueWithTitle("ZP2015_ARRANGER")
-		.addValueWithTitle("ZP2015_DESCRIPTION_DATE")
-	.endBlock()]]></defaultValueExpression>
+		.addValueWithTitle("ZP2015_DESCRIPTION_DATE")]]></defaultValueExpression>
 	</parameter>
 	<parameter name="outputInfoFotmatter" class="cz.tacr.elza.print.format.Formatter" isForPrompting="false">
 		<parameterDescription><![CDATA[]]></parameterDescription>
@@ -648,7 +656,7 @@ $F{node}.getItemsWithSpec("ZP2015_LEVEL_TYPE","ZP2015_LEVEL_ROOT").size() > 0]]>
 	)]]></variableExpression>
 	</variable>
 	<variable name="unitDate" class="java.lang.String">
-		<variableExpression><![CDATA[$F{node}.getSingleItemValue( "ZP2015_UNIT_DATE" )]]></variableExpression>
+		<variableExpression><![CDATA[$F{node}.getSingleItem( "ZP2015_UNIT_DATE_TEXT") == null ? $F{node}.getSingleItemValue( "ZP2015_UNIT_DATE" ) : $F{node}.getSingleItemValue( "ZP2015_UNIT_DATE_TEXT" )]]></variableExpression>
 	</variable>
 	<pageHeader>
 		<band height="29">

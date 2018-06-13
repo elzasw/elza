@@ -234,13 +234,14 @@ public class DEImportService {
         StaticDataProvider staticData = staticDataService.getData();
 
         // initialize contexts
-        AccessPointsContext apContext = new AccessPointsContext(storageManager, params.getBatchSize(), importScope, initHelper);
+        AccessPointsContext apContext = new AccessPointsContext(storageManager, params.getBatchSize(), importScope, importApChange, staticData);
         PartiesContext partiesContext = new PartiesContext(storageManager, params.getBatchSize(), apContext, session, initHelper);
         InstitutionsContext institutionsContext = new InstitutionsContext(storageManager, params.getBatchSize(), initHelper);
         SectionsContext sectionsContext = initSectionsContext(storageManager, params, importScope, staticData);
 
         ImportContext context = new ImportContext(session, staticData, apContext, partiesContext, institutionsContext,
                 sectionsContext);
+        context.initSubContexts();
 
         // register listeners
         params.getImportPhaseChangeListeners().forEach(context::registerPhaseChangeListener);
@@ -304,5 +305,4 @@ public class DEImportService {
         session.setHibernateFlushMode(origFlushMode);
         session.setJdbcBatchSize(null);
     }
-
 }

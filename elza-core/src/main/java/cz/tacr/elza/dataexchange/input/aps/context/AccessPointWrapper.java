@@ -1,67 +1,58 @@
 package cz.tacr.elza.dataexchange.input.aps.context;
 
-import java.time.LocalDateTime;
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.projection.ApAccessPointInfo;
 
-import cz.tacr.elza.domain.ApRecord;
 import org.apache.commons.lang3.Validate;
-import org.hibernate.Session;
-
 import cz.tacr.elza.dataexchange.input.DEImportException;
-import cz.tacr.elza.dataexchange.input.context.PersistMethod;
 import cz.tacr.elza.dataexchange.input.storage.EntityMetrics;
 import cz.tacr.elza.dataexchange.input.storage.EntityWrapper;
-import cz.tacr.elza.domain.projection.ApRecordInfo;
 
 /**
- * Access point (i.e. record) entity wrapper.
+ * Access point entity wrapper.
  */
 public class AccessPointWrapper implements EntityWrapper, EntityMetrics {
 
-    private final ApRecord entity;
+    private ApAccessPoint entity;
 
     private final AccessPointInfo apInfo;
 
-    private PersistMethod persistMethod = PersistMethod.CREATE;
-
-    AccessPointWrapper(ApRecord entity, AccessPointInfo apInfo, AccessPointInfo parentAPInfo) {
+    AccessPointWrapper(ApAccessPoint entity, AccessPointInfo apInfo) {
         this.entity = Validate.notNull(entity);
         this.apInfo = Validate.notNull(apInfo);
     }
 
+    @Override
+    public PersistType getPersistType() {
+        return apInfo.getPersistType();
+    }
+
     /**
-     * Updates wrapped entity by paired AP. Uuid, version and apId are copied. When pair is older
-     * then imported entity then pair will be updated otherwise no operation is needed.
+     * Updates wrapper with existing AP. When existing AP is older then importing
+     * entity no operation is needed.
      *
-     * @throws DEImportException When scopes does not match.
+     * @throws DEImportException
+     *             When scopes or types does not match.
      */
-    public void setPair(ApRecordInfo pair) {
-        if (!entity.getScopeId().equals(pair.getScopeId())) {
-            throw new DEImportException("Import scope doesn't match with scope of paired record, import scopeId:"
-                    + entity.getScopeId() + ", paired scopeId:" + pair.getScopeId());
+    public void prepareUpdate(ApAccessPointInfo info) {
+        if (!entity.getScopeId().equals(info.getScopeId())) {
+            throw new DEImportException("Scope of importing AP doesn't match with scope of existing AP, import scopeId:"
+                    + entity.getScopeId() + ", existing scopeId:" + info.getScopeId());
         }
-
-        entity.setUuid(pair.getUuid());
-        entity.setVersion(pair.getVersion());
-        entity.setRecordId(pair.getRecordId());
-
-        if (entity.getLastUpdate() == null) {
-            entity.setLastUpdate(LocalDateTime.now());
-            persistMethod = PersistMethod.UPDATE;
-        } else if (entity.getLastUpdate().isAfter(pair.getLastUpdate())) {
-            persistMethod = PersistMethod.UPDATE;
-        } else {
-            persistMethod = PersistMethod.NONE;
-            afterEntityPersist(); // set info immediately
+        if (!entity.getApTypeId().equals(info.getApTypeId())) {
+            throw new DEImportException("Type of importing AP doesn't match with type of existing AP, import typeId:"
+                    + entity.getApTypeId() + ", existing typeId:" + info.getApTypeId());
         }
+        // change current to existing AP
+        entity = info;
+        apInfo.setPersistType(PersistType.UPDATE);
+        afterEntityPersist();
+        // TODO: implement how to detect older AP and which versionable sub-entity
+        // should be updated.
     }
 
     @Override
-    public PersistMethod getPersistMethod() {
-        return persistMethod;
-    }
-
-    @Override
-    public ApRecord getEntity() {
+    public ApAccessPoint getEntity() {
         return entity;
     }
 
@@ -71,11 +62,8 @@ public class AccessPointWrapper implements EntityWrapper, EntityMetrics {
     }
 
     @Override
-    public void beforeEntityPersist(Session session) {}
-
-    @Override
     public void afterEntityPersist() {
-        apInfo.setEntityId(entity.getRecordId());
-        apInfo.setPersistMethod(persistMethod);
+        apInfo.setEntityId(entity.getAccessPointId());
+        apInfo.onEntityPersist(getMemoryScore());
     }
 }

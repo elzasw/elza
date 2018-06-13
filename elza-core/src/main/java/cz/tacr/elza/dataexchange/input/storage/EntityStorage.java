@@ -14,7 +14,7 @@ class EntityStorage<T extends EntityWrapper> {
 
     protected final Session session;
 
-    private final StorageListener storageListener;
+    protected final StorageListener storageListener;
 
     public EntityStorage(Session session, StorageListener storageListener) {
         this.session = Validate.notNull(session);
@@ -32,15 +32,15 @@ class EntityStorage<T extends EntityWrapper> {
         List<T> updates = new ArrayList<>(items.size());
 
         for (T item : items) {
-            switch (item.getPersistMethod()) {
-                case CREATE:
-                    creates.add(item);
-                    break;
-                case UPDATE:
-                    updates.add(item);
-                    break;
-                default:
-                    // ignored entity
+            switch (item.getPersistType()) {
+            case CREATE:
+                creates.add(item);
+                break;
+            case UPDATE:
+                updates.add(item);
+                break;
+            default:
+                // ignored entity
             }
         }
         // add to persistent context
@@ -56,8 +56,10 @@ class EntityStorage<T extends EntityWrapper> {
         for (T item : items) {
             // notify wrapper before save
             item.beforeEntityPersist(session);
-
-            create(item, session);
+            // persist item
+            create(item);
+            // notify wrapper after save
+            item.afterEntityPersist();
         }
     }
 
@@ -65,27 +67,26 @@ class EntityStorage<T extends EntityWrapper> {
         for (T item : items) {
             // notify wrapper before save
             item.beforeEntityPersist(session);
-
-            update(item, session);
+            // merge item
+            update(item);
+            // notify wrapper after save
+            item.afterEntityPersist();
         }
     }
 
-    protected void create(T item, Session session) {
+    protected void create(T item) {
         Object entity = item.getEntity();
         session.persist(entity);
-        fireEntityPersist(item, entity);
+        onEntityPersist(item, entity);
     }
 
-    protected void update(T item, Session session) {
+    protected void update(T item) {
         Object entity = item.getEntity();
         entity = session.merge(entity);
-        fireEntityPersist(item, entity);
+        onEntityPersist(item, entity);
     }
 
-    private void fireEntityPersist(T item, Object entity) {
-        // notify wrapper after save
-        item.afterEntityPersist();
-
+    protected void onEntityPersist(T item, Object entity) {
         if (storageListener != null) {
             storageListener.onEntityPersist(item, entity);
         }

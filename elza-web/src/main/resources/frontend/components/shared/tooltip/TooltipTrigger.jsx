@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import PropTypes from "prop-types";
 import {Button, Tooltip, Overlay} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
 import AbstractReactComponent from "../../AbstractReactComponent";
@@ -17,16 +18,17 @@ const TOOLTIP_WINDOW_PADDING = 40;
 class TooltipTrigger extends AbstractReactComponent {
 
     static PropTypes = {
-        content: React.PropTypes.object,
-        placement: React.PropTypes.oneOf(['left', 'right', 'top', 'bottom', 'vertical', 'horizontal', 'auto']),
-        holdOnHover: React.PropTypes.bool,
-        holdOnFocus: React.PropTypes.bool,
-        delay: React.PropTypes.number,
-        showDelay: React.PropTypes.number,
-        hideDelay: React.PropTypes.number,
-        focusDelay: React.PropTypes.number,
-        focusShowDelay: React.PropTypes.number,
-        focusHideDelay: React.PropTypes.number,
+        content: PropTypes.object,
+        placement: PropTypes.oneOf(['left', 'right', 'top', 'bottom', 'vertical', 'horizontal', 'auto']),
+        holdOnHover: PropTypes.bool,
+        holdOnFocus: PropTypes.bool,
+        delay: PropTypes.number,
+        showDelay: PropTypes.number,
+        hideDelay: PropTypes.number,
+        focusDelay: PropTypes.number,
+        focusShowDelay: PropTypes.number,
+        focusHideDelay: PropTypes.number,
+        tooltipClass: PropTypes.string
     };
 
     static defaultProps = {
@@ -34,7 +36,8 @@ class TooltipTrigger extends AbstractReactComponent {
         hideDelay: 200,
         focusShowDelay: 250,
         focusHideDelay: 1,
-        placement: "auto"
+        placement: "auto",
+        tooltipClass: ""
     }
 
     constructor(props) {
@@ -239,6 +242,7 @@ class TooltipTrigger extends AbstractReactComponent {
     render() {
         const {
             className,
+            tooltipClass,
             content,
             children,
             placement,
@@ -256,7 +260,7 @@ class TooltipTrigger extends AbstractReactComponent {
 
         return (
             <span
-                className={className}
+               className={"tooltip-trigger "+ (className ? className : "")}
                 ref="ttTarget"
                 onFocus={() => this.handleFocus(true)}
                 onBlur={() => this.handleFocus(false)}
@@ -275,7 +279,7 @@ class TooltipTrigger extends AbstractReactComponent {
                         onMouseLeave={() => this.handleTooltipHover(false)}
                         id='tt'
                     >
-                        <div className="tooltip-inner-content" style={{maxWidth: maxWidth + "px", maxHeight: maxHeight + "px"}}>
+                        <div className={"tooltip-inner-content "+tooltipClass} style={{maxWidth: maxWidth + "px", maxHeight: maxHeight + "px"}}>
                             {content}
                         </div>
                     </Tooltip>
