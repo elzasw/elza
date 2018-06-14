@@ -917,7 +917,7 @@ public class LevelTreeCacheService {
                 .getViewTitles(version.getRuleSet().getCode(), version.getFund().getFundId());
         Set<RulItemType> descItemTypes = getDescriptionItemTypes(viewTitles);
 
-        return descriptionItemService.createNodeValuesMap(treeNodeMap.keySet(), subtreeRoot, descItemTypes, version);
+        return descriptionItemService.createNodeValuesMap(treeNodeMap.keySet(), subtreeRoot, descItemTypes, version, false);
     }
 
 

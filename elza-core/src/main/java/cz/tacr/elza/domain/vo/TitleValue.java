@@ -17,6 +17,11 @@ public class TitleValue extends DescItemValue {
 
     private Integer position;
 
+    /** Id navázané entity(rejstříkové heslo, osoba, obal...)*/
+    private Integer entityId;
+
+    private String specName;
+
     public TitleValue() {
     }
 
@@ -40,6 +45,21 @@ public class TitleValue extends DescItemValue {
         this.position = position;
     }
 
+    public Integer getEntityId() {
+        return entityId;
+    }
+
+    public void setEntityId(Integer entityId) {
+        this.entityId = entityId;
+    }
+
+    public String getSpecName() {
+        return specName;
+    }
+
+    public void setSpecName(String specName) {
+        this.specName = specName;
+    }
 
     @Override
     public boolean equals(final Object o) {

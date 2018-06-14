@@ -1046,7 +1046,8 @@ public class DescriptionItemService {
     public Map<Integer, Map<String, TitleValues>> createNodeValuesMap(final Set<Integer> subtreeNodeIds,
                                                                       @Nullable final TreeNode subtreeRoot,
                                                                       final Set<RulItemType> descItemTypes,
-                                                                      final ArrFundVersion version) {
+                                                                      final ArrFundVersion version,
+                                                                      final boolean dataExport) {
         Map<Integer, Map<String, TitleValues>> valueMap = new HashMap<>();
 
         if (descItemTypes.isEmpty()) {
@@ -1067,8 +1068,12 @@ public class DescriptionItemService {
 
             TitleValue value = null;
             String code = descItem.getItemType().getCode();
-            String specCode = descItem.getItemSpec() == null ? null : descItem.getItemSpec()
-                    .getCode();
+            RulItemSpec itemSpec = descItem.getItemSpec();
+            String specCode = itemSpec == null ? null : itemSpec.getCode();
+            String specName = null;
+            if (dataExport) {
+                specName = itemSpec == null ? null : itemSpec.getName();
+            }
             Integer nodeId = descItem.getNodeId();
             Integer position = descItem.getPosition();
 
@@ -1081,12 +1086,21 @@ public class DescriptionItemService {
             } else if (data.getDataType().getCode().equals("PARTY_REF")) {
                 ArrDataPartyRef partyData = (ArrDataPartyRef) data;
                 value = new TitleValue(partyData.getParty().getRecord().getRecord());
+                if (dataExport) {
+                    value.setEntityId(partyData.getPartyId());
+                }
             } else if (data.getDataType().getCode().equals("RECORD_REF")) {
                 ArrDataRecordRef recordData = (ArrDataRecordRef) data;
                 value = new TitleValue(recordData.getRecord().getRecord());
+                if (dataExport) {
+                    value.setEntityId(recordData.getRecordId());
+                }
             } else if (data.getDataType().getCode().equals("STRUCTURED")) {
                 ArrStructuredObject structureData = ((ArrDataStructureRef) data).getStructuredObject();
                 value = new TitleValue(structureData.getValue());
+                if (dataExport) {
+                    value.setEntityId(structureData.getStructuredObjectId());
+                }
             } else if (data.getDataType().getCode().equals("UNITDATE")) {
                 ArrDataUnitdate unitDate = (ArrDataUnitdate) data;
 
@@ -1128,7 +1142,7 @@ public class DescriptionItemService {
 
             if (value != null) {
                 String iconValue = getIconValue(descItem);
-                addValuesToMap(valueMap, value, code, specCode, nodeId, iconValue, position);
+                addValuesToMap(valueMap, value, code, specCode, nodeId, iconValue, position, specName);
             } else {
                 // TODO možná by mělo být spíš throw exception, že není implementovaný kód
                 logger.error("Nebyla vytvořena hodnota pro typ atributu " + data.getDataType().getCode());
@@ -1223,7 +1237,7 @@ public class DescriptionItemService {
 
             if (value != null) {
                 String iconValue = getIconValue(descItem);
-                addValuesToMap(valueMap, value, code, specCode, nodeId, iconValue, position);
+                addValuesToMap(valueMap, value, code, specCode, nodeId, iconValue, position, null);
             }
         }
 
@@ -1290,7 +1304,8 @@ public class DescriptionItemService {
     }
 
     private void addValuesToMap(final Map<Integer, Map<String, TitleValues>> valueMap, final TitleValue titleValue, final String code,
-                                final String specCode, final Integer nodeId, final String iconValue, final Integer position) {
+                                final String specCode, final Integer nodeId, final String iconValue, final Integer position,
+                                final String specName) {
 
         if (titleValue == null && iconValue == null) {
             return;
@@ -1311,6 +1326,7 @@ public class DescriptionItemService {
 
         titleValue.setIconValue(iconValue);
         titleValue.setSpecCode(specCode);
+        titleValue.setSpecName(specName);
         titleValue.setPosition(position);
 
         titleValues.addValue(titleValue);

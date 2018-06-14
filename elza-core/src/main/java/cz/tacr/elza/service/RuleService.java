@@ -1,6 +1,8 @@
 package cz.tacr.elza.service;
 
 import com.google.common.collect.Lists;
+
+import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
 import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.controller.factory.ExtendedObjectsFactory;
@@ -88,6 +90,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 
@@ -923,5 +926,21 @@ public class RuleService {
         List<RulItemTypeExt> rulDescItemTypeExtList = getRulesetDescriptionItemTypes(
                 structureType.getRuleSet().getRuleSetId());
         return rulesExecutor.executeStructureItemTypesRules(structureType, rulDescItemTypeExtList, fundVersion, structureItems);
+    }
+
+
+    /**
+     * Vrátí typy atributů ve stejném pořadí v jakém jsou předáná jejich id.
+     *
+     * @param ids id typů atribuů
+     * @return typy atributů
+     */
+    public List<RulItemType> findItemTypesByIdsOrdered(List<Integer> ids) {
+        Map<Integer, RulItemType> rulItemTypeMap = itemTypeRepository.findAll(ids).stream().
+                collect(Collectors.toMap(RulItemType::getItemTypeId, Function.identity()));
+
+        return ids.stream().
+                map(id -> rulItemTypeMap.get(id)).
+                collect(Collectors.toList());
     }
 }

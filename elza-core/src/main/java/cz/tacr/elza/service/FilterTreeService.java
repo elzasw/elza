@@ -135,12 +135,35 @@ public class FilterTreeService {
      * @param page            číslo stránky, od 0
      * @param pageSize        velikost stránky
      * @param descItemTypeIds id typů atributů, které chceme načíst
+     * @param dataExport      příznak zda se načítají data pro export
      * @return seznam uzlů s hodnotami atributů
      */
     public List<FilterNode> getFilteredData(final ArrFundVersion version,
-                                                              final int page,
-                                                              final int pageSize,
-                                                              final Set<Integer> descItemTypeIds)
+                                            final int page,
+                                            final int pageSize,
+                                            final List<Integer> descItemTypeIds,
+                                            final boolean dataExport) {
+        ArrayList<Integer> filteredIds = getUserFilterSession().getFilteredIds(version.getFundVersionId());
+        return getFilteredData(version, page, pageSize, descItemTypeIds, dataExport, filteredIds);
+    }
+
+    /**
+     * Do filtrovaného seznamu načte hodnoty atributů a vrátí podstránku záznamů.
+     *
+     * @param version         verze
+     * @param page            číslo stránky, od 0
+     * @param pageSize        velikost stránky
+     * @param descItemTypeIds id typů atributů, které chceme načíst
+     * @param dataExport      příznak zda se načítají data pro export
+     * @param filteredIds     filtrované id ve stromu, seřazené.
+     * @return seznam uzlů s hodnotami atributů
+     */
+    public List<FilterNode> getFilteredData(final ArrFundVersion version,
+                                            final int page,
+                                            final int pageSize,
+                                            final List<Integer> descItemTypeIds,
+                                            final boolean dataExport,
+                                            final ArrayList<Integer> filteredIds)
             {
 
         Map<String, RulItemType> descItemTypeMap = new HashMap<>();
@@ -148,18 +171,18 @@ public class FilterTreeService {
             descItemTypeMap.put(descItemType.getCode(), descItemType);
         }
 
-        ArrayList<Integer> filteredIds = getUserFilterSession().getFilteredIds(version.getFundVersionId());
         ArrayList<Integer> subIds = FilterTools.getSublist(page, pageSize, filteredIds);
 
 
         Map<Integer, Map<String, TitleValues>> nodeValuesMap = Collections.emptyMap();
         if (!subIds.isEmpty() && !descItemTypeIds.isEmpty()) {
             nodeValuesMap = descriptionItemService.createNodeValuesMap(new HashSet<>(subIds), null,
-                    new HashSet<>(descItemTypeMap.values()), version);
+                    new HashSet<>(descItemTypeMap.values()), version, dataExport);
         }
 
 
-        return createResult(version, subIds, levelTreeCacheService.getVersionTreeCache(version), descItemTypeMap, nodeValuesMap);
+        return createResult(version, subIds, levelTreeCacheService.getVersionTreeCache(version), descItemTypeMap,
+                nodeValuesMap);
     }
 
     /**
@@ -361,6 +384,15 @@ public class FilterTreeService {
         return session;
     }
 
+    /**
+     * Vrací novou instanci seznamu filtrovaných id ve stromu.
+     * @param versionId
+     * @return
+     */
+    public ArrayList<Integer> getFilteredIds(Integer versionId) {
+        return new ArrayList<>(getUserFilterSession().getFilteredIds(versionId));
+    }
+
 
     /**
      * @return vrací session uživatele
@@ -370,7 +402,6 @@ public class FilterTreeService {
     protected FilterTreeSession getUserFilterSession() {
         return new FilterTreeSession();
     }
-
 
     /**
      * Session uživatele s filtrovanými id.

@@ -1,7 +1,45 @@
 package cz.tacr.elza.controller;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.servlet.http.HttpServletResponse;
+import javax.transaction.Transactional;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.MediaType;
+import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonProcessingException;
+
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.AddLevelParam;
@@ -18,6 +56,7 @@ import cz.tacr.elza.controller.vo.ArrRequestVO;
 import cz.tacr.elza.controller.vo.CopyNodesParams;
 import cz.tacr.elza.controller.vo.CopyNodesValidate;
 import cz.tacr.elza.controller.vo.CreateFundVO;
+import cz.tacr.elza.controller.vo.DataGridExportType;
 import cz.tacr.elza.controller.vo.FilterNode;
 import cz.tacr.elza.controller.vo.FilterNodePosition;
 import cz.tacr.elza.controller.vo.FundListCountResult;
@@ -113,41 +152,6 @@ import cz.tacr.elza.service.importnodes.vo.ValidateResult;
 import cz.tacr.elza.service.output.OutputRequestStatus;
 import cz.tacr.elza.service.vo.ChangesResult;
 import cz.tacr.elza.service.vo.UpdateDescItemsParam;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.BooleanUtils;
-import org.apache.commons.lang3.Validate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.MediaType;
-import org.springframework.util.Assert;
-import org.springframework.util.ObjectUtils;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
-
-import javax.servlet.http.HttpServletResponse;
-import javax.transaction.Transactional;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 
 /**
@@ -1794,13 +1798,41 @@ public class ArrangementController {
     public List<FilterNode> getFilteredNodes(@PathVariable("versionId") final Integer versionId,
                                              @RequestParam("page") final Integer page,
                                              @RequestParam("pageSize") final Integer pageSize,
-                                             @RequestBody final Set<Integer> descItemTypeIds) {
+                                             @RequestBody final List<Integer> descItemTypeIds) {
 
         ArrFundVersion version = fundVersionRepository.getOneCheckExist(versionId);
 
-        return filterTreeService.getFilteredData(version, page, pageSize, descItemTypeIds);
+        return filterTreeService.getFilteredData(version, page, pageSize, descItemTypeIds, false);
     }
 
+    /**
+     * Export dat z tabulkového zobrazení.
+     *
+     * @param response http response
+     * @param versionId id verze archivního souboru
+     * @param exportType typ exportu
+     * @param rulItemTypeIds id typů atributů v pořadí v jakém se mají exportovat
+     * @throws IOException chyba při zápisu dat
+     */
+    @RequestMapping(value = "/dataGrid/export/{versionId}/{exportType}", method = RequestMethod.GET)
+    public void exportDataGrid(final HttpServletResponse response,
+                               @PathVariable("versionId") final Integer versionId,
+                               @PathVariable("exportType") final DataGridExportType exportType,
+                               @RequestParam("rulItemTypeIds") final List<Integer> rulItemTypeIds) throws IOException {
+        Assert.notNull(versionId, "Nebyl vyplněn identifikátor verze AS");
+        Assert.notNull(exportType, "Nebyl vyplněn typ exportu");
+
+        switch (exportType) {
+            case DATA:
+                arrIOService.dataGridDataExport(response, versionId, rulItemTypeIds);
+                break;
+            case TABLE:
+                arrIOService.dataGridTableExport(response, versionId, rulItemTypeIds);
+                break;
+            default:
+                throw new IllegalStateException("Neznámý typ exportu " + exportType);
+        }
+    }
 
     /**
      * Ve filtrovaném seznamu najde uzly podle fulltextu. Vrací seřazený seznam uzlů podle jejich indexu v seznamu

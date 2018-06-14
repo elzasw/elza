@@ -236,6 +236,7 @@ var messages = {
     "ribbon.action.arr.output": "Výstupy",
     "ribbon.action.arr.arr": "Pořádání",
     "ribbon.action.arr.dataGrid": "Tabulkové zobrazení",
+    "ribbon.action.arr.dataGrid.export": "Export",
     "ribbon.action.arr.movements": "Přesuny",
     "ribbon.action.arr.output.add": "Nový výstup",
     "ribbon.action.arr.output.generate": "Generovat výstup",
@@ -1302,6 +1303,11 @@ var messages = {
     "requestQueue.title.description": "Popis",
     "requestQueue.title.type": "Typ",
     "requestQueue.delete.confirm": "Opravdu chcete zmazat položku z fronty?",
+
+    "dataGrid.export.exportType.table" : "Tabulka",
+    "dataGrid.export.exportType.data" : "Data",
+    "dataGrid.export.exportType.noSelection.item" : "Není vybrán prvek",
+    "dataGrid.export.title" : "Export tabulkového zobrazení",
 
     "____": ""
 };
