@@ -328,15 +328,18 @@ class ItemFormActions {
     fundSubNodeFormValueNotIdentified(versionId, routingKey, valueLocation, descItem) {
         return (dispatch, getState) => {
             let undef = descItem.undefined || false;
-
-            if(!descItem.value){
-                descItem.value = "unknown";
-            }
-            
             descItem.undefined = !undef;
-            this._formValueStore(dispatch, getState, versionId, routingKey, valueLocation, descItem)
-            /*let state = getState();
-            let subNodeForm = this._getItemFormStore(state, versionId, routingKey);
+
+            const state = getState();
+            const subNodeForm = this._getItemFormStore(state, versionId, routingKey);
+            const parentVersionId = subNodeForm.data.parent.version;
+
+            if(!undef){
+                this._formValueStore(dispatch, getState, versionId, routingKey, valueLocation, descItem);
+            } else {
+                this._callDeleteDescItem(versionId, parentVersionId, descItem);
+            }
+            /*
             let loc = subNodeForm.getLoc(subNodeForm, valueLocation);
 
             if (descItem && descItem.undefined) {

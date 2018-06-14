@@ -7,7 +7,6 @@ import java.util.Set;
 import javax.annotation.Nullable;
 
 import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.domain.UsrUser;
 
 
 /**
@@ -47,10 +46,4 @@ public interface RegRecordRepositoryCustom {
     long findRegRecordByTextAndTypeCount(String searchRecord, Collection<Integer> registerTypeIds,
                                          @Nullable RegRecord parentRecord, Set<Integer> scopeIds, boolean excludeInvalid);
 
-    /**
-     * Searches access points and all their parents. Parents are always returned before children.
-     *
-     * @param apIds collection of AP ids
-     */
-    List<RegRecord> findAccessPointsWithParents(Collection<Integer> apIds);
 }

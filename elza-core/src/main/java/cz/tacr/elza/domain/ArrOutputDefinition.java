@@ -3,6 +3,8 @@ package cz.tacr.elza.domain;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import javax.persistence.Access;
+import javax.persistence.AccessType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -29,6 +31,7 @@ public class ArrOutputDefinition extends AbstractVersionableEntity {
 
     @Id
     @GeneratedValue
+    @Access(AccessType.PROPERTY) // required to read id without fetch from db
     private Integer outputDefinitionId;
 
     @Column(nullable = true)

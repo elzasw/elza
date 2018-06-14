@@ -155,7 +155,8 @@ export default class FloatingMenu extends React.PureComponent {
     getRelativeMenuPlacement = (rect, size) => {
         const originOffset = this.getRectScreenOffset(rect);
         var placement = {};
-        if(size.width > originOffset.right){
+
+        if(size.width > (originOffset.right + rect.width)){
             placement.right = 0;
         } else {
             placement.left = originOffset.left + "px";

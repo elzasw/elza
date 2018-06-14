@@ -232,7 +232,11 @@ public class ClientFactoryDO {
     public ArrDescItem createDescItem(final ArrItemVO descItemVO, final Integer descItemTypeId) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
 
-        ArrData data = mapper.map(descItemVO, ArrData.class);
+        ArrData data = null;
+
+        if (!descItemVO.isUndefined()) {
+            data = mapper.map(descItemVO, ArrData.class);
+        }
         ArrDescItem descItem = new ArrDescItem();
         descItem.setData(data);
 
@@ -340,7 +344,13 @@ public class ClientFactoryDO {
 
     public ArrDescItem createDescItem(final ArrItemVO descItemVO) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
-        ArrData data = mapper.map(descItemVO, ArrData.class);
+
+        ArrData data = null;
+        // Item is not undefined -> parse data
+        if (descItemVO.getUndefined() != Boolean.TRUE) {
+            data = mapper.map(descItemVO, ArrData.class);
+        }
+
         ArrDescItem descItem = new ArrDescItem();
         descItem.setData(data);
 		// Copy properties to application object

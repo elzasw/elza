@@ -85,7 +85,7 @@ public class StructureController {
         ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
         RulStructuredType structureType = structureService.getStructureTypeByCode(structureTypeCode);
         validateRuleSet(fundVersion, structureType);
-        ArrStructuredObject createStructureData = structureService.createStructureData(fundVersion.getFund(), structureType, ArrStructuredObject.State.TEMP);
+        ArrStructuredObject createStructureData = structureService.createStructObj(fundVersion.getFund(), structureType, ArrStructuredObject.State.TEMP);
         return factoryVO.createStructureData(createStructureData);
     }
 
@@ -109,7 +109,7 @@ public class StructureController {
         Validate.notEmpty(incrementedTypeIds, "Autoincrementující typ musí být alespoň jeden");
 
         ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
-        ArrStructuredObject structureData = structureService.getStructureDataById(structureDataId);
+        ArrStructuredObject structureData = structureService.getStructObjById(structureDataId);
         structureService.duplicateStructureDataBatch(fundVersion, structureData, count,
                                                      incrementedTypeIds);
     }
@@ -136,7 +136,7 @@ public class StructureController {
         Assert.notEmpty(structureDataBatchUpdate.structureDataIds, "Musí být vyplněn alespoň jeden identifikátor hodnoty strukt. typu");
 
         List<ArrStructuredItem> structureItems = factoryDO.createStructureItem(structureDataBatchUpdate.getItems());
-        structureService.updateStructureDataBatch(fundVersion,
+        structureService.updateStructObjBatch(fundVersion,
                 structureType,
                 structureDataBatchUpdate.getStructureDataIds(),
                 structureItems,
@@ -156,7 +156,7 @@ public class StructureController {
     public ArrStructureDataVO confirmStructureData(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                                    @PathVariable(value = "structureDataId") final Integer structureDataId) {
         ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
-        ArrStructuredObject structureData = structureService.getStructureDataById(structureDataId);
+        ArrStructuredObject structureData = structureService.getStructObjById(structureDataId);
         validateRuleSet(fundVersion, structureData.getStructuredType());
         ArrStructuredObject createStructureData = structureService.confirmStructureData(fundVersion.getFund(), structureData);
         return factoryVO.createStructureData(createStructureData);
@@ -171,11 +171,11 @@ public class StructureController {
      */
     @Transactional
     @RequestMapping(value = "/data/{fundVersionId}/assignable/{assignable}", method = RequestMethod.POST)
-    public void setAssignableStructureDataList(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+    public void setAssignableStructObjList(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                                @PathVariable(value = "assignable") final Boolean assignable,
                                                @RequestBody List<Integer> structureDataIds) {
         ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
-        List<ArrStructuredObject> structureDataList = structureService.getStructureDataByIds(structureDataIds);
+        List<ArrStructuredObject> structureDataList = structureService.getStructObjByIds(structureDataIds);
         for (ArrStructuredObject structureData : structureDataList) {
             validateRuleSet(fundVersion, structureData.getStructuredType());
         }
@@ -194,10 +194,10 @@ public class StructureController {
     public ArrStructureDataVO deleteStructureData(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                                   @PathVariable(value = "structureDataId") final Integer structureDataId) {
         ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
-        ArrStructuredObject structureData = structureService.getStructureDataById(structureDataId);
-        validateRuleSet(fundVersion, structureData.getStructuredType());
-        ArrStructuredObject deleteStructureData = structureService.deleteStructureData(structureData);
-        return factoryVO.createStructureData(deleteStructureData);
+        ArrStructuredObject structObj = structureService.getStructObjById(structureDataId);
+        validateRuleSet(fundVersion, structObj.getStructuredType());
+        structureService.deleteStructObj(structObj);
+        return factoryVO.createStructureData(structObj);
     }
 
     /**
@@ -212,7 +212,7 @@ public class StructureController {
     public ArrStructureDataVO getStructureData(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                                @PathVariable(value = "structureDataId") final Integer structureDataId) {
         ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
-        return factoryVO.createStructureData(structureService.getStructureDataById(structureDataId, fundVersion));
+        return factoryVO.createStructureData(structureService.getStructObjById(structureDataId, fundVersion));
     }
 
     /**
@@ -228,7 +228,7 @@ public class StructureController {
      */
     @Transactional
     @RequestMapping(value = "/data/{fundVersionId}/{structureTypeCode}/search", method = RequestMethod.GET)
-    public FilteredResultVO<ArrStructureDataVO> findStructureData(@PathVariable("fundVersionId") final Integer fundVersionId,
+    public FilteredResultVO<ArrStructureDataVO> findStructObj(@PathVariable("fundVersionId") final Integer fundVersionId,
                                                                   @PathVariable("structureTypeCode") final String structureTypeCode,
                                                                   @RequestParam(value = "search", required = false) final String search,
                                                                   @RequestParam(value = "assignable", required = false) final Boolean assignable,
@@ -354,7 +354,7 @@ public class StructureController {
     public StructureDataFormDataVO getFormStructureItems(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                                          @PathVariable(value = "structureDataId") final Integer structureDataId) {
         ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
-        ArrStructuredObject structureData = structureService.getStructureDataById(structureDataId);
+        ArrStructuredObject structureData = structureService.getStructObjById(structureDataId);
 
         validateRuleSet(fundVersion, structureData.getStructuredType());
 

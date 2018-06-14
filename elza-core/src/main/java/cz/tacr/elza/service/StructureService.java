@@ -66,13 +66,13 @@ public class StructureService {
 
     private final StructuredItemRepository structureItemRepository;
     private final StructuredTypeExtensionRepository structureExtensionRepository;
-    private final StructuredObjectRepository structureDataRepository;
+    private final StructuredObjectRepository structObjRepository;
     private final StructuredTypeRepository structureTypeRepository;
     private final ArrangementService arrangementService;
     private final DataRepository dataRepository;
     private final RuleService ruleService;
     private final FundStructureExtensionRepository fundStructureExtensionRepository;
-    private final StructureDataService structureDataService;
+    private final StructObjService structObjService;
     private final ItemTypeRepository itemTypeRepository;
     private final ChangeRepository changeRepository;
     private final EventNotificationService notificationService;
@@ -86,19 +86,19 @@ public class StructureService {
                             final DataRepository dataRepository,
                             final RuleService ruleService,
                             final FundStructureExtensionRepository fundStructureExtensionRepository,
-                            final StructureDataService structureDataService,
+                            final StructObjService structureDataService,
                             final ItemTypeRepository itemTypeRepository,
                             final ChangeRepository changeRepository,
                             final EventNotificationService notificationService) {
         this.structureItemRepository = structureItemRepository;
         this.structureExtensionRepository = structureExtensionRepository;
-        this.structureDataRepository = structureDataRepository;
+        this.structObjRepository = structureDataRepository;
         this.structureTypeRepository = structureTypeRepository;
         this.arrangementService = arrangementService;
         this.dataRepository = dataRepository;
         this.ruleService = ruleService;
         this.fundStructureExtensionRepository = fundStructureExtensionRepository;
-        this.structureDataService = structureDataService;
+        this.structObjService = structureDataService;
         this.itemTypeRepository = itemTypeRepository;
         this.changeRepository = changeRepository;
         this.notificationService = notificationService;
@@ -138,7 +138,7 @@ public class StructureService {
      * @return vytvořená entita
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
-    public ArrStructuredObject createStructureData(@AuthParam(type = AuthParam.Type.FUND) final ArrFund fund,
+    public ArrStructuredObject createStructObj(@AuthParam(type = AuthParam.Type.FUND) final ArrFund fund,
                                                    final RulStructuredType structureType,
                                                    final ArrStructuredObject.State state) {
         ArrChange change = arrangementService.createChange(ArrChange.Type.ADD_STRUCTURE_DATA);
@@ -149,7 +149,7 @@ public class StructureService {
         structureData.setStructuredType(structureType);
         structureData.setState(state);
 
-        ArrStructuredObject createStructureData = structureDataRepository.save(structureData);
+        ArrStructuredObject createStructureData = structObjRepository.save(structureData);
         if (state == ArrStructuredObject.State.TEMP) {
             notificationService.publishEvent(new EventStructureDataChange(fund.getFundId(),
                     structureType.getCode(),
@@ -178,7 +178,7 @@ public class StructureService {
      * @param count         počet vytvářených položek
      * @return vytvořené entity
      */
-    private List<ArrStructuredObject> createStructureDataList(final ArrFund fund,
+    private List<ArrStructuredObject> createStructObjList(final ArrFund fund,
                                                               final RulStructuredType structureType,
                                                               final ArrStructuredObject.State state,
                                                               final ArrChange change,
@@ -193,48 +193,58 @@ public class StructureService {
             structureData.setState(state);
             result.add(structureData);
         }
-        return structureDataRepository.save(result);
+        return structObjRepository.save(result);
     }
 
     /**
      * Smazání hodnoty strukturovaného datového typu.
      *
-     * @param structureData hodnota struktovaného datového typu
-     * @return smazaná entita
+     * @param structObj
+     *            hodnota struktovaného datového typu
+     * 
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
-    public ArrStructuredObject deleteStructureData(@AuthParam(type = AuthParam.Type.FUND) final ArrStructuredObject structureData) {
-        if (structureData.getDeleteChange() != null) {
+    public void deleteStructObj(@AuthParam(type = AuthParam.Type.FUND) final ArrStructuredObject structObj) {
+        if (structObj.getDeleteChange() != null) {
             throw new BusinessException("Nelze odstranit již smazaná strukturovaná data", BaseCode.INVALID_STATE);
         }
-        if (structureData.getState() == ArrStructuredObject.State.TEMP) {
-            structureItemRepository.deleteByStructuredObject(structureData);
-            dataRepository.deleteByStructuredObject(structureData);
-            ArrChange change = structureDataRepository.findTempChangeByStructuredObject(structureData);
-            structureDataRepository.delete(structureData);
+
+        if (structObj.getState() == ArrStructuredObject.State.TEMP) {
+
+            // remove temporary object
+            structureItemRepository.deleteByStructuredObject(structObj);
+            dataRepository.deleteByStructuredObject(structObj);
+            ArrChange change = structObjRepository.findTempChangeByStructuredObject(structObj);
+            structObjRepository.delete(structObj);
             changeRepository.delete(change);
-            return structureData;
+
         } else {
 
-            Integer count = structureItemRepository.countItemsByStructuredObject(structureData);
+            // drop permanent object
+
+            // check usage
+            Integer count = structureItemRepository.countItemsByStructuredObject(structObj);
             if (count > 0) {
                 throw new BusinessException("Existují návazné entity, položka nelze smazat", ArrangementCode.STRUCTURE_DATA_DELETE_ERROR)
                         .level(Level.WARNING)
                         .set("count", count)
-                        .set("id", structureData.getStructuredObjectId());
+                                .set("id", structObj.getStructuredObjectId());
             }
 
             ArrChange change = arrangementService.createChange(ArrChange.Type.DELETE_STRUCTURE_DATA);
-            structureData.setDeleteChange(change);
+            structObj.setDeleteChange(change);
 
-            notificationService.publishEvent(new EventStructureDataChange(structureData.getFundId(),
-                    structureData.getStructuredType().getCode(),
-                    null,
-                    null,
-                    null,
-                    Collections.singletonList(structureData.getStructuredObjectId())));
+            structObjRepository.save(structObj);
 
-            return structureDataRepository.save(structureData);
+            // check duplicates for deleted item
+            structObjService.addToValidate(structObj);
+
+            notificationService.publishEvent(new EventStructureDataChange(structObj.getFundId(),
+                    structObj.getStructuredType().getCode(),
+                    null,
+                    null,
+                    null,
+                    Collections.singletonList(structObj.getStructuredObjectId())));
         }
     }
 
@@ -266,7 +276,7 @@ public class StructureService {
                 null,
                 structureDataList.stream().map(ArrStructuredObject::getStructuredObjectId).collect(Collectors.toList()),
                 null));
-        return structureDataRepository.save(structureDataList);
+        return structObjRepository.save(structureDataList);
     }
 
     /**
@@ -282,7 +292,7 @@ public class StructureService {
                                                  final Integer structureDataId,
                                                  @AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId) {
 
-        ArrStructuredObject structureData = getStructureDataById(structureDataId);
+        ArrStructuredObject structureData = getStructObjById(structureDataId);
         ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
 
         if (!fundVersion.getRuleSet().equals(structureData.getStructuredType().getRuleSet())) {
@@ -334,7 +344,7 @@ public class StructureService {
         createStructureItem.setItemSpec(structureItem.getItemSpec());
 
         ArrStructuredItem save = structureItemRepository.save(createStructureItem);
-        structureDataService.saveStructureData(save.getStructuredObject());
+        structObjService.generateAndValidate(save.getStructuredObject());
 
         notificationService.publishEvent(new EventStructureDataChange(fundVersion.getFundId(),
                 structureData.getStructuredType().getCode(),
@@ -494,7 +504,7 @@ public class StructureService {
         }
 
         ArrStructuredItem save = structureItemRepository.save(updateStructureItem);
-        structureDataService.saveStructureData(save.getStructuredObject());
+        structObjService.generateAndValidate(save.getStructuredObject());
 
         notificationService.publishEvent(new EventStructureDataChange(fundVersion.getFundId(),
                 structureData.getStructuredType().getCode(),
@@ -544,7 +554,7 @@ public class StructureService {
         structureItemDB.setDeleteChange(change);
 
         ArrStructuredItem save = structureItemRepository.save(structureItemDB);
-        structureDataService.saveStructureData(save.getStructuredObject());
+        structObjService.generateAndValidate(save.getStructuredObject());
 
         notificationService.publishEvent(new EventStructureDataChange(fundVersion.getFundId(),
                 structureData.getStructuredType().getCode(),
@@ -595,9 +605,15 @@ public class StructureService {
             structureData.setValue(null);
             structureData.setErrorDescription(null);
         }
-        structureDataRepository.save(structureDataList);
-        structureDataService.addToValidate(structureDataList);
+        structObjRepository.save(structureDataList);
+        structObjService.addToValidate(structureDataList);
         return structureDataList;
+    }
+
+    private void revalidateStructObjs(RulStructuredType structuredType, ArrFund fund) {
+        List<Integer> structureDataIds = structObjRepository.findStructuredObjectIdByStructureTypeFund(structuredType,
+                                                                                                       fund);
+        structObjService.addIdsToValidate(structureDataIds);
     }
 
     /**
@@ -609,8 +625,8 @@ public class StructureService {
         if (structureTypes.isEmpty()) {
             return;
         }
-        List<Integer> structureDataIds = structureDataRepository.findStructuredObjectIdByStructureTypes(structureTypes);
-        structureDataService.addIdsToValidate(structureDataIds);
+        List<Integer> structureDataIds = structObjRepository.findStructuredObjectIdByStructureTypes(structureTypes);
+        structObjService.addIdsToValidate(structureDataIds);
     }
 
     /**
@@ -622,8 +638,8 @@ public class StructureService {
         if (structureExtensions.isEmpty()) {
             return;
         }
-        List<Integer> structureDataIds = structureDataRepository.findStructuredObjectIdByActiveStructureExtensions(structureExtensions);
-        structureDataService.addIdsToValidate(structureDataIds);
+        List<Integer> structureDataIds = structObjRepository.findStructuredObjectIdByActiveStructureExtensions(structureExtensions);
+        structObjService.addIdsToValidate(structureDataIds);
     }
 
     /**
@@ -646,8 +662,8 @@ public class StructureService {
      * @param structureDataId identifikátor hodnoty strukt. datového typu
      * @return entita
      */
-    public ArrStructuredObject getStructureDataById(final Integer structureDataId) {
-        ArrStructuredObject structureData = structureDataRepository.findOneFetch(structureDataId);
+    public ArrStructuredObject getStructObjById(final Integer structureDataId) {
+        ArrStructuredObject structureData = structObjRepository.findOneFetch(structureDataId);
         if (structureData == null) {
             throw new ObjectNotFoundException("Strukturovaná data neexistují: " + structureDataId, BaseCode.ID_NOT_EXIST).setId(structureDataId);
         }
@@ -660,11 +676,11 @@ public class StructureService {
      * @param structureDataIds identifikátory hodnoty strukt. datového typu
      * @return entity
      */
-    public List<ArrStructuredObject> getStructureDataByIds(final List<Integer> structureDataIds) {
+    public List<ArrStructuredObject> getStructObjByIds(final List<Integer> structureDataIds) {
         List<List<Integer>> idsParts = Lists.partition(structureDataIds, 1000);
         List<ArrStructuredObject> structureDataList = new ArrayList<>();
         for (List<Integer> idsPart : idsParts) {
-            structureDataList.addAll(structureDataRepository.findByIdsFetch(idsPart));
+            structureDataList.addAll(structObjRepository.findByIdsFetch(idsPart));
         }
         if (structureDataList.size() != structureDataIds.size()) {
             throw new ObjectNotFoundException("Nenalezeny všechny rozšíření", BaseCode.ID_NOT_EXIST).setId(structureDataIds);
@@ -680,9 +696,9 @@ public class StructureService {
      * @return entita
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
-    public ArrStructuredObject getStructureDataById(final Integer structureDataId,
+    public ArrStructuredObject getStructObjById(final Integer structureDataId,
                                                     @AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion) {
-        ArrStructuredObject structureData = getStructureDataById(structureDataId);
+        ArrStructuredObject structureData = getStructObjById(structureDataId);
         if (!structureData.getStructuredType().getRuleSet().equals(fundVersion.getRuleSet())) {
             throw new BusinessException("Pravidla AS nesouhlasí s pravidly hodnoty strukt. typu", BaseCode.INVALID_STATE);
         }
@@ -701,26 +717,29 @@ public class StructureService {
                                                           final Integer structureDataId,
                                                           final Integer itemTypeId) {
         ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
-        ArrStructuredObject structureData = getStructureDataById(structureDataId);
+        ArrStructuredObject structObj = getStructObjById(structureDataId);
         RulItemType type = ruleService.getItemTypeById(itemTypeId);
         validateRuleSet(fundVersion, type);
-        List<ArrStructuredItem> structureItems = structureItemRepository.findOpenItems(type, structureData);
+        List<ArrStructuredItem> structureItems = structureItemRepository.findOpenItems(type, structObj);
 
-        ArrChange change = structureData.getState() == ArrStructuredObject.State.TEMP ? structureData.getCreateChange() : arrangementService.createChange(ArrChange.Type.DELETE_STRUCTURE_ITEM);
+        ArrChange change = structObj.getState() == ArrStructuredObject.State.TEMP ? structObj.getCreateChange() : arrangementService.createChange(ArrChange.Type.DELETE_STRUCTURE_ITEM);
         for (ArrStructuredItem structureItem : structureItems) {
             structureItem.setDeleteChange(change);
         }
 
         structureItemRepository.save(structureItems);
 
+        structObjService.generateAndValidate(structObj);
+
+        // Notification about deleted item
         notificationService.publishEvent(new EventStructureDataChange(fundVersion.getFundId(),
-                structureData.getStructuredType().getCode(),
+                structObj.getStructuredType().getCode(),
                 null,
                 null,
-                Collections.singletonList(structureData.getStructuredObjectId()),
+                Collections.singletonList(structObj.getStructuredObjectId()),
                 null));
 
-        return structureDataService.saveStructureData(structureData);
+        return structObj;
     }
 
     /**
@@ -753,17 +772,20 @@ public class StructureService {
         if (!structureData.getState().equals(ArrStructuredObject.State.TEMP)) {
             throw new BusinessException("Strukturovaná data nemají dočasný stav", BaseCode.INVALID_STATE);
         }
+        // reset temporary value -> final have to be calculated
+        structureData.setValue(null);
         structureData.setState(ArrStructuredObject.State.OK);
-        ArrStructuredObject confirmStructureData = structureDataService.saveStructureData(structureData);
+        ArrStructuredObject savedStructObj = structObjRepository.save(structureData);
+        structObjService.generateAndValidate(savedStructObj);
         if (event) {
             notificationService.publishEvent(new EventStructureDataChange(fund.getFundId(),
-                    structureData.getStructuredType().getCode(),
+                    savedStructObj.getStructuredType().getCode(),
                     null,
-                    Collections.singletonList(confirmStructureData.getStructuredObjectId()),
+                    Collections.singletonList(savedStructObj.getStructuredObjectId()),
                     null,
                     null));
         }
-        return confirmStructureData;
+        return savedStructObj;
     }
 
     /**
@@ -795,7 +817,7 @@ public class StructureService {
                                                                  @Nullable final Boolean assignable,
                                                                  final int from,
                                                                  final int count) {
-        return structureDataRepository.findStructureData(structureType.getStructuredTypeId(), fund.getFundId(), search, assignable, from, count);
+        return structObjRepository.findStructureData(structureType.getStructuredTypeId(), fund.getFundId(), search, assignable, from, count);
     }
 
     /**
@@ -809,7 +831,9 @@ public class StructureService {
     public void setFundStructureExtensions(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
                                            final RulStructuredType structureType,
                                            final List<RulStructuredTypeExtension> structureExtensions) {
-        structureExtensions.forEach(se -> validateFundStructureExtension(fundVersion, structureType, se));
+        for (RulStructuredTypeExtension se : structureExtensions) {
+            validateFundStructureExtension(fundVersion, structureType, se);
+        }
 
         List<ArrFundStructureExtension> fundStructureExtensions = fundStructureExtensionRepository.findByFundAndDeleteChangeIsNull(fundVersion.getFund());
 
@@ -840,10 +864,8 @@ public class StructureService {
             fundStructureExtensionsDelete.forEach(fse -> fse.setDeleteChange(change));
             fundStructureExtensionRepository.save(fundStructureExtensionsCreate);
             fundStructureExtensionRepository.save(fundStructureExtensionsDelete);
-            Set<RulStructuredType> structureTypes = new HashSet<>();
-            fundStructureExtensionsCreate.forEach(fse -> structureTypes.add(fse.getStructuredTypeExtension().getStructuredType()));
-            fundStructureExtensionsDelete.forEach(fse -> structureTypes.add(fse.getStructuredTypeExtension().getStructuredType()));
-            revalidateStructureTypes(structureTypes);
+
+            revalidateStructObjs(structureType, fundVersion.getFund());
         }
     }
 
@@ -931,7 +953,7 @@ public class StructureService {
         validateStructureItems(itemTypes, structureItems);
 
         ArrChange change = arrangementService.createChange(ArrChange.Type.ADD_STRUCTURE_DATA_BATCH);
-        List<ArrStructuredObject> structureDataList = createStructureDataList(fundVersion.getFund(),
+        List<ArrStructuredObject> structureDataList = createStructObjList(fundVersion.getFund(),
                 structureData.getStructuredType(), ArrStructuredObject.State.OK, change, count - 1);
 
         int countItems = structureDataList.size() * structureItems.size();
@@ -1055,14 +1077,14 @@ public class StructureService {
      * @param deleteItemTypeIds        identifikátory typů, které se mají odstranit
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
-    public void updateStructureDataBatch(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
+    public void updateStructObjBatch(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
                                          final RulStructuredType structureType,
                                          final List<Integer> structureDataIds,
                                          final List<ArrStructuredItem> sourceStructureItems,
                                          final List<Integer> autoincrementItemTypeIds,
                                          final List<Integer> deleteItemTypeIds) {
-        List<ArrStructuredObject> structureDataList = getStructureDataByIds(structureDataIds);
-        validateStructureData(fundVersion, structureType, structureDataList);
+        List<ArrStructuredObject> structureDataList = getStructObjByIds(structureDataIds);
+        validateStructObj(fundVersion, structureType, structureDataList);
 
         List<RulItemType> autoincrementItemTypes = autoincrementItemTypeIds.isEmpty() ? Collections.emptyList() : findAndValidateIntItemTypes(fundVersion, autoincrementItemTypeIds);
         validateStructureItems(autoincrementItemTypes, sourceStructureItems);
@@ -1135,26 +1157,26 @@ public class StructureService {
      *
      * @param fundVersion       verze AS
      * @param structureType     strukturovaný typ
-     * @param structureDataList hodnoty strukturovaného datového typu
+     * @param StructObjList hodnoty strukturovaného datového typu
      */
-    private void validateStructureData(final ArrFundVersion fundVersion,
+    private void validateStructObj(final ArrFundVersion fundVersion,
                                        final RulStructuredType structureType,
-                                       final List<ArrStructuredObject> structureDataList) {
-        if (CollectionUtils.isEmpty(structureDataList)) {
+                                       final List<ArrStructuredObject> StructObjList) {
+        if (CollectionUtils.isEmpty(StructObjList)) {
             throw new BusinessException("Musí být upravována alespoň jedna hodnota strukt. typu", BaseCode.INVALID_STATE);
         }
-        for (ArrStructuredObject structureData : structureDataList) {
-            if (structureData.getDeleteChange() != null) {
+        for (ArrStructuredObject structObj : StructObjList) {
+            if (structObj.getDeleteChange() != null) {
                 throw new BusinessException("Nelze upravit již smazaná strukturovaná data", BaseCode.INVALID_STATE)
-                        .set("id", structureData.getStructuredObjectId());
+                        .set("id", structObj.getStructuredObjectId());
             }
-            if (!structureData.getFund().equals(fundVersion.getFund())) {
+            if (!structObj.getFund().equals(fundVersion.getFund())) {
                 throw new BusinessException("Strukturovaná data nepatří pod AS", BaseCode.INVALID_STATE)
-                        .set("id", structureData.getStructuredObjectId());
+                        .set("id", structObj.getStructuredObjectId());
             }
-            if (!structureData.getStructuredType().equals(structureType)) {
+            if (!structObj.getStructuredType().equals(structureType)) {
                 throw new BusinessException("Strukturovaná data jsou jiného strukt. datového typu", BaseCode.INVALID_STATE)
-                        .set("id", structureData.getStructuredObjectId());
+                        .set("id", structObj.getStructuredObjectId());
             }
         }
     }

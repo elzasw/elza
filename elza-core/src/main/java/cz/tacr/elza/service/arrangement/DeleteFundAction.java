@@ -1,7 +1,6 @@
 package cz.tacr.elza.service.arrangement;
 
 import java.util.List;
-import java.util.Set;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
@@ -11,15 +10,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
-import org.springframework.util.Assert;
 
 import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
 import cz.tacr.elza.bulkaction.BulkActionService;
-import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
@@ -36,7 +31,6 @@ import cz.tacr.elza.repository.DaoRepository;
 import cz.tacr.elza.repository.DaoRequestDaoRepository;
 import cz.tacr.elza.repository.DaoRequestRepository;
 import cz.tacr.elza.repository.DataFileRefRepository;
-import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DataStructureRefRepository;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.DigitizationRequestNodeRepository;
@@ -62,7 +56,6 @@ import cz.tacr.elza.repository.OutputResultRepository;
 import cz.tacr.elza.repository.RequestQueueItemRepository;
 import cz.tacr.elza.repository.StructuredItemRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
-import cz.tacr.elza.service.ArrangementCacheService;
 import cz.tacr.elza.service.DmsService;
 import cz.tacr.elza.service.IEventNotificationService;
 import cz.tacr.elza.service.PolicyService;
@@ -93,10 +86,6 @@ public class DeleteFundAction {
     private UserService userService;
     @Autowired
     private IEventNotificationService eventNotificationService;
-    @Autowired
-    private ArrangementCacheService arrangementCacheService;
-    @Autowired
-    private DataRepository dataRepository;
     @Autowired
     private NodeRegisterRepository nodeRegisterRepository;
     @Autowired
@@ -198,8 +187,6 @@ public class DeleteFundAction {
 
     private ArrFundVersion fundVersion;
 
-    private ArrLevel rootLevel;
-
     private ArrNode rootNode;
 
     @Autowired
@@ -241,28 +228,12 @@ public class DeleteFundAction {
                     .set("fundVersionId", fundVersion.getFundVersionId());
         }
 
-        this.rootLevel = levelRepository.findByNodeAndDeleteChangeIsNull(rootNode);
-
         // terminate all services - for all versions
         List<ArrFundVersion> versions = this.fundVersionRepository.findVersionsByFundIdOrderByCreateDateDesc(fundId);
         for (ArrFundVersion version : versions) {
             updateConformityInfoService.terminateWorkerInVersionAndWait(version.getFundVersionId());
 
             bulkActionService.terminateBulkActions(version.getFundVersionId());
-        }
-    }
-
-
-
-    private void deleteDescItemForce(final ArrDescItem descItem, final Set<ArrData> dataToDelete) {
-        Assert.notNull(descItem, "Hodnota atributu musí být vyplněna");
-
-        ArrData data = descItem.getData();
-
-        descItemRepository.delete(descItem);
-
-        if (data != null) {
-            dataToDelete.add(data);
         }
     }
 
@@ -356,13 +327,13 @@ public class DeleteFundAction {
     private void dropDescItems() {
         // TODO: drop arr_data and all subtypes
 
+        // drop items
+        this.descItemRepository.deleteByNodeFund(fund);
+
         // drop links from data structured_ref 
         dataStructureRefRepository.deleteByStructuredObjectFund(fund);
         // drop links from data_file_ref
         dataFileRefRepository.deleteByFileFund(fund);
-
-        // drop items
-        this.descItemRepository.deleteByNodeFund(fund);
 
         em.flush();
     }

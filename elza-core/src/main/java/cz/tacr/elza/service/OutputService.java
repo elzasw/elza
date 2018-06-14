@@ -17,6 +17,8 @@ import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
 import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -83,6 +85,8 @@ import cz.tacr.elza.service.output.OutputRequestStatus;
 
 @Service
 public class OutputService {
+
+    private static final Logger logger = LoggerFactory.getLogger(OutputService.class);
 
     @Autowired
     private OutputDefinitionRepository outputDefinitionRepository;
@@ -503,7 +507,7 @@ public class OutputService {
 
         nodeOutputRepository.save(removedNodes);
 
-        updateCountedResults(fundVersion, change, remainingNodeIds, outputDefinition);
+        updateCalculatedItems(fundVersion, change, remainingNodeIds, outputDefinition);
 
         Integer[] outputIds = outputDefinition.getOutputs().stream().map(ArrOutput::getOutputId).toArray(Integer[]::new);
         EventIdsInVersion event = EventFactory.createIdsInVersionEvent(EventType.OUTPUT_CHANGES_DETAIL, fundVersion, outputIds);
@@ -656,7 +660,7 @@ public class OutputService {
         nodeOutputRepository.save(nodeOutputs);
 
         currNodeIds.addAll(connectNodeIds);
-        updateCountedResults(fundVersion, change, currNodeIds, outputDefinition);
+        updateCalculatedItems(fundVersion, change, currNodeIds, outputDefinition);
 
         Integer[] outputIds = outputDefinition.getOutputs().stream().map(ArrOutput::getOutputId)
                 .toArray(Integer[]::new);
@@ -672,70 +676,84 @@ public class OutputService {
      * @param change      změna překlopení
      * @param nodeIds    kompletní seznam uzlů
      */
-    private boolean updateCountedResults(final ArrFundVersion fundVersion,
-                                 final ArrChange change,
-                                 final Collection<Integer> nodeIds,
-                                 final ArrOutputDefinition outputDefinition) {
-        
+    private void updateCalculatedItems(final ArrFundVersion fundVersion, final ArrChange change,
+                                          final Collection<Integer> nodeIds,
+                                          final ArrOutputDefinition outputDefinition) {
+
         // nalezeni automaticky vypoctenych hodnot a jejich vymazani
-        
+
         // get recommended actions -> calculated item type
-        List<RulItemTypeAction> itemTypeLinks = itemTypeActionRepository.findByOutputType(outputDefinition.getOutputType());
+        List<RulItemTypeAction> itemTypeLinks = itemTypeActionRepository
+                .findByOutputType(outputDefinition.getOutputType());
 
         // remove itemtypes which do not have extra settings
         List<ArrItemSettings> itemSettings = this.itemSettingsRepository.findByOutputDefinition(outputDefinition);
         // Collection of item types to not delete
-        Set<Integer> preserveItemTypeIds = itemSettings.stream().filter(is -> Boolean.TRUE.equals(is.getBlockActionResult()))
-            .map(is -> is.getItemTypeId())
-            .collect(Collectors.toSet());
-        
+        Set<Integer> preserveItemTypeIds = itemSettings.stream()
+                .filter(is -> Boolean.TRUE.equals(is.getBlockActionResult())).map(is -> is.getItemTypeId())
+                .collect(Collectors.toSet());
+
         // delete item types
-        for(RulItemTypeAction ria: itemTypeLinks) {
+        for (RulItemTypeAction ria : itemTypeLinks) {
             Integer itemTypeId = ria.getItemTypeId();
-            if(!preserveItemTypeIds.contains(itemTypeId)) {
+            if (!preserveItemTypeIds.contains(itemTypeId)) {
                 outputServiceInternal.deleteOutputItemsByType(fundVersion, outputDefinition, itemTypeId, change);
             }
         }
 
+        // check if nodes are connected
         if (nodeIds.size() == 0) {
-            return false;
-            }
-        
-        return storeResults(fundVersion, change, nodeIds, outputDefinition, null);
+            return;
         }
-        
-    private boolean storeResults(final ArrFundVersion fundVersion,
-                                 final ArrChange change,
-                                 final Collection<Integer> nodes,
-                                 final ArrOutputDefinition outputDefinition,
-                                 final RulItemType itemType) 
-    {        
-
-        List<ArrBulkActionRun> bulkActionRunList = bulkActionService.findFinishedBulkActionsByNodeIds(fundVersion, nodes);
-        List<RulActionRecommended> actionRecommendeds = actionRecommendedRepository.findByOutputType(outputDefinition.getOutputType());
 
         // create item connector
         OutputItemConnector connector = outputServiceInternal.createItemConnector(fundVersion, outputDefinition);
         connector.setChangeSupplier(() -> change);
-        // set item type as filter if present
-        if (itemType != null) {
-            connector.setItemTypeFilter(itemType.getItemTypeId());
-        }
+
+        storeResults(fundVersion, nodeIds, outputDefinition, connector);
+    }
+
+    /**
+     * 
+     * @param fundVersion
+     * @param nodes
+     * @param outputDefinition
+     * @return Return true if some item was modified
+     */
+    private boolean storeResults(final ArrFundVersion fundVersion,
+                                 final Collection<Integer> nodes,
+                                 final ArrOutputDefinition outputDefinition,
+                                 final OutputItemConnector connector) {
+
+        List<ArrBulkActionRun> bulkActionRunList = bulkActionService.findFinishedBulkActionsByNodeIds(fundVersion,
+                                                                                                      nodes);
+        List<RulActionRecommended> actionRecommendeds = actionRecommendedRepository
+                .findByOutputType(outputDefinition.getOutputType());
 
         for (ArrBulkActionRun bulkActionRun : bulkActionRunList) {
             RulAction action = bulkActionService.getBulkActionByCode(bulkActionRun.getBulkActionCode());
             for (RulActionRecommended actionRecommended : actionRecommendeds) {
                 // process only recommended actions
                 if (actionRecommended.getAction().equals(action)) {
-                    Result resultObj = bulkActionRun.getResult();
+
+                    // read results
+                    Result resultObj = null;
+                    try {
+                        resultObj = bulkActionRun.getResult();
+                    } catch (Exception e) {
+                        // Due to updates it might happen that we are not
+                        // able to deserialize results
+                        // In such case we are ignoring / skipping these results
+                        logger.error("Failed to deserialize results", e);
+                    }
                     if (resultObj != null && resultObj.getResults() != null) {
-                    // process all results
+                        // process all results
                         for (ActionResult result : resultObj.getResults()) {
-                        result.createOutputItems(connector);
+                            result.createOutputItems(connector);
+                        }
                     }
                 }
             }
-        }
         }
 
         return connector.getModifiedItemTypeIds().size() > 0;
@@ -1329,7 +1347,17 @@ public class OutputService {
             boolean changed = false;
             if(nodes.size()>0) {
                 List<Integer> nodeIds = nodes.stream().map(n -> n.getNodeId()).collect(Collectors.toList());
-                changed = storeResults(fundVersion, change, nodeIds, outputDefinition, itemType);
+
+                // create item connector
+                OutputItemConnector connector = outputServiceInternal.createItemConnector(fundVersion,
+                                                                                          outputDefinition);
+                connector.setChangeSupplier(() -> change);
+                // set item type as filter if present
+                if (itemType != null) {
+                    connector.setItemTypeFilter(itemType.getItemTypeId());
+                }
+
+                changed = storeResults(fundVersion, nodeIds, outputDefinition, connector);
             }
 
             if (strict && !changed) {

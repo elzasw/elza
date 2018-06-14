@@ -509,7 +509,14 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         }
 
         RegRegisterType regType = staticData.getRegisterTypeById(apTypeId);
-        type = RecordType.newInstance(null, regType);
+
+        // get parent type
+        RecordType parentType = null;
+        Integer apParentTypeId = regType.getParentRegisterTypeId();
+        if (apParentTypeId != null) {
+            parentType = getAPType(apParentTypeId);
+        }
+        type = RecordType.newInstance(parentType, regType);
 
         // add to lookup
         apTypeIdMap.put(apTypeId, type);

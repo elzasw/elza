@@ -26,11 +26,6 @@ public class AccessPointInfo extends EntityIdHolder<RegRecord> {
         this.registerType = Validate.notNull(registerType);
     }
 
-    @Override
-    public Integer getEntityId() {
-        return (Integer) super.getEntityId();
-    }
-
     public String getEntryId() {
         return entryId;
     }
