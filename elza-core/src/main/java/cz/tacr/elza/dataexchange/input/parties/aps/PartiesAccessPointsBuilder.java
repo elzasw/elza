@@ -36,13 +36,14 @@ public class PartiesAccessPointsBuilder {
     }
 
     public List<PartyAccessPointWrapper> build(Collection<PartyInfo> partiesInfo) {
-        LOG.info("Starting party AP builder.");
+        LOG.info("Starting party AP builder, count: {}", partiesInfo.size());
 
         List<PartyAccessPointWrapper> results = new ArrayList<>(partiesInfo.size());
         for (PartyInfo info : partiesInfo) {
             if (info.isIgnored()) {
                 continue;
             }
+
             RegRecord partyRecord = createPartyRecord(info);
             PartyAccessPointWrapper wrapper = createPartyAccessPoint(info, partyRecord);
             results.add(wrapper);
@@ -53,11 +54,14 @@ public class PartiesAccessPointsBuilder {
     }
 
     private RegRecord createPartyRecord(PartyInfo info) {
+        LOG.debug("Create party record, party importId = {}", info.getImportId());
+
         // supported complement types
         String partyTypeCode = info.getPartyType().getCode();
         PartyTypeComplementTypes partyTypes = staticData.getComplementTypesByPartyTypeCode(partyTypeCode);
         // evaluate groovy script
         ParParty party = info.getEntityReference(session);
+
         return groovyScriptService.getRecordFromGroovy(party, partyTypes.getComplementTypes());
     }
 

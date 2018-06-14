@@ -3,6 +3,8 @@ package cz.tacr.elza.domain;
 import java.util.Date;
 import java.util.Set;
 
+import javax.persistence.Access;
+import javax.persistence.AccessType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -37,6 +39,7 @@ public class ArrNodeConformity {
 
     @Id
     @GeneratedValue
+    @Access(AccessType.PROPERTY) // required to read id without fetch from db
     private Integer nodeConformityId;
 
     @RestResource(exported = false)

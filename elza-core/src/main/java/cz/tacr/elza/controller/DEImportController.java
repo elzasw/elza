@@ -68,7 +68,8 @@ public class DEImportController {
         }
 
         // prepare import parameters
-		DEImportParams params = new DEImportParams(scopeId, 1000, 10000, importPositionParams, ignoreRootNodes);
+        DEImportParams params = new DEImportParams(scopeId, 1000, 10000, importPositionParams,
+                ignoreRootNodes);
         params.addImportPhaseChangeListeners(new SectionNotifications(eventNotificationService));
 
         // validate
