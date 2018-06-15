@@ -77,12 +77,22 @@ class EntityStorage<T extends EntityWrapper> {
     protected void create(T item) {
         Object entity = item.getEntity();
         session.persist(entity);
-        memoryManager.onEntityPersist(item, entity);
+        fireEntityPersist(item);
     }
 
     protected void update(T item) {
         Object entity = item.getEntity();
-        entity = session.merge(entity);
-        memoryManager.onEntityPersist(item, entity);
+
+        // note: returned entity is in most cases
+        //       same as input
+        // !!! do not store resultEntity back into wrapper
+        //     wrapper have to use same entity when calling evict 
+        //     as firstly obtained reference !!!                
+        Object resultEntity = session.merge(entity);
+        
+        /*System.out.println("updateEntity input = " + entity.getClass() + " (" + System.identityHashCode(entity)
+                + "), output = " + resultEntity.getClass() + " (" + System.identityHashCode(resultEntity) + ")");
+                */
+        fireEntityPersist(item);
     }
 }

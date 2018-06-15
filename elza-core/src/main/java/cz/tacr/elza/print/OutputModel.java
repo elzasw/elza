@@ -508,7 +508,14 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         }
 
         ApType apType = staticData.getApTypeById(apTypeId);
-        type = RecordType.newInstance(null, apType);
+
+        // add to lookup
+        RecordType parentType = null;
+        Integer apParentTypeId = apType.getParentApTypeId();
+        if (apParentTypeId != null) {
+            parentType = getAPType(apParentTypeId);
+        }
+        type = RecordType.newInstance(parentType, apType);
 
         // add to lookup
         apTypeIdMap.put(apTypeId, type);

@@ -3,7 +3,7 @@ package cz.tacr.elza.controller.vo;
 import java.util.List;
 
 /**
- * @author <a href="mailto:jiri.vanek@marbes.cz">Jiří Vaněk</a>
+ * VO pro dodatečné nastavení funkce.
  */
 public class PersistentSortConfigVO {
 

@@ -434,7 +434,8 @@ $F{node}.getItemsWithSpec("ZP2015_LEVEL_TYPE","ZP2015_LEVEL_ROOT").size() > 0]]>
 	<parameter name="storageFormatter" class="cz.tacr.elza.print.format.Formatter" isForPrompting="false">
 		<parameterDescription><![CDATA[]]></parameterDescription>
 		<defaultValueExpression><![CDATA[new cz.tacr.elza.print.format.Formatter()
-	.setBlockSeparators("/","")
+    .setBlockSeparators("/","")
+    .setItemSeparator("")
 	.addValue("ZP2015_STORAGE_ID")
 	.beginBlock().addValue("ZP2015_ITEM_ORDER").endBlock()]]></defaultValueExpression>
 	</parameter>

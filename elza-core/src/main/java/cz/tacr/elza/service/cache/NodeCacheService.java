@@ -10,7 +10,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -86,7 +88,6 @@ import java.util.stream.Collectors;
  * serializuje do JSON pro určení, co se má serializovat se využívá interface
  * {@link NodeCacheSerializable} + základní primitivní typy při spuštění
  * synchronizace {@link #syncCache()} je zamknuta cache pro čtení
- */
 @Service
 public class NodeCacheService {
 

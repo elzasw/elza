@@ -35,6 +35,8 @@ import cz.tacr.elza.service.party.ApConvResult;
  */
 public class PartiesContext {
 
+    private static final Logger logger = LoggerFactory.getLogger(PartiesContext.class);
+
     private final Map<String, PartyInfo> importIdPartyInfoMap = new HashMap<>();
 
     private final StorageManager storageManager;
@@ -83,6 +85,8 @@ public class PartiesContext {
     }
 
     public PartyInfo addParty(ParParty entity, String importId, AccessPointInfo apInfo, PartyType partyType) {
+        logger.debug("Add party to the context, importId = {}", importId);
+
         PartyInfo info = new PartyInfo(apInfo, partyType, this);
         if (importIdPartyInfoMap.putIfAbsent(importId, info) != null) {
             throw new DEImportException("Party has duplicate id, partyId:" + importId);
@@ -101,6 +105,9 @@ public class PartiesContext {
     }
 
     public PartyNameWrapper addName(ParPartyName entity, PartyInfo partyInfo, boolean preferred) {
+        logger.debug("Add name to the context, importId = {}, name = {}", partyInfo.getImportId(),
+                    partyName.getMainPart());
+
         PartyNameWrapper wrapper = new PartyNameWrapper(entity, partyInfo);
         nameQueue.add(wrapper);
         partyInfo.onEntityQueued();
@@ -213,6 +220,8 @@ public class PartiesContext {
     }
 
     private void storeNames() {
+        logger.debug("Store names, count: {}", nameQueue.size());
+
         if (nameQueue.isEmpty()) {
             return;
         }
@@ -229,6 +238,8 @@ public class PartiesContext {
     }
 
     private void storePreferredNames() {
+        logger.debug("Store prefer names, count: {}", preferredNameQueue.size());
+
         storeNames();
         storageManager.saveGeneric(prefNameQueue);
         prefNameQueue.clear();

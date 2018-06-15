@@ -1,5 +1,6 @@
 package cz.tacr.elza.service.eventnotification;
 
+import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
@@ -7,6 +8,7 @@ import cz.tacr.elza.service.eventnotification.events.*;
 import cz.tacr.elza.service.eventnotification.events.vo.NodeInfo;
 import org.springframework.util.Assert;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,7 +44,27 @@ public class EventFactory {
                                                           final Integer entityId) {
         Assert.notNull(version, "Verze AS musí být vyplněna");
 
-        return new EventIdInVersion(eventType, version.getFundVersionId(), entityId);
+        return createIdInVersionEvent(eventType, version, entityId, null, null);
+    }
+
+    public static EventIdInVersion createIdInVersionEvent(final EventType eventType,
+                                                          final ArrFundVersion version,
+                                                          final Integer entityId,
+                                                          @Nullable final String code,
+                                                          @Nullable final ArrBulkActionRun.State state) {
+        Assert.notNull(version, "Verze AS musí být vyplněna");
+
+        EventIdInVersion eventIdInVersion = new EventIdInVersion(eventType, version.getFundVersionId(), entityId);
+
+        if (state != null) {
+            eventIdInVersion.setState(state.toString());
+        }
+
+        if (code != null) {
+            eventIdInVersion.setCode(code);
+        }
+
+        return eventIdInVersion;
     }
 
     public static EventStringInVersion createStringInVersionEvent(final EventType eventType,

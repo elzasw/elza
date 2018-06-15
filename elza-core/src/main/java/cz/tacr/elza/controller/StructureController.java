@@ -193,10 +193,10 @@ public class StructureController {
     public ArrStructureDataVO deleteStructureData(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                                   @PathVariable(value = "structureDataId") final Integer structureDataId) {
         ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
-        ArrStructuredObject structureData = structureService.getStructObjById(structureDataId);
-        validateRuleSet(fundVersion, structureData.getStructuredType());
-        ArrStructuredObject deleteStructureData = structureService.deleteStructObj(structureData);
-        return factoryVO.createStructureData(deleteStructureData);
+        ArrStructuredObject structObj = structureService.getStructObjById(structureDataId);
+        validateRuleSet(fundVersion, structObj.getStructuredType());
+        structureService.deleteStructObj(structObj);
+        return factoryVO.createStructureData(structObj);
     }
 
     /**

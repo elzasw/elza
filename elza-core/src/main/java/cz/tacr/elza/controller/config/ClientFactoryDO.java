@@ -1,5 +1,28 @@
 package cz.tacr.elza.controller.config;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+import javax.persistence.EntityManager;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
 import cz.tacr.elza.FilterTools;
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.bulkaction.generator.PersistentSortRunConfig;
@@ -89,29 +112,16 @@ import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MapperFactory;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.Validate;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Továrna na vytváření DO objektů z VO objektů.
- */
 @Service
 public class ClientFactoryDO {
 
@@ -127,9 +137,6 @@ public class ClientFactoryDO {
 
     @Autowired
     private ItemSpecRepository itemSpecRepository;
-
-    @Autowired
-    private FundRepository fundRepository;
 
     @Autowired
     private ApAccessPointRepository apAccessPointRepository;
@@ -231,7 +238,11 @@ public class ClientFactoryDO {
     public ArrDescItem createDescItem(final ArrItemVO descItemVO, final Integer descItemTypeId) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
 
-        ArrData data = mapper.map(descItemVO, ArrData.class);
+        ArrData data = null;
+
+        if (!descItemVO.isUndefined()) {
+            data = mapper.map(descItemVO, ArrData.class);
+        }
         ArrDescItem descItem = new ArrDescItem();
         descItem.setData(data);
 
@@ -339,7 +350,13 @@ public class ClientFactoryDO {
 
     public ArrDescItem createDescItem(final ArrItemVO descItemVO) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
-        ArrData data = mapper.map(descItemVO, ArrData.class);
+
+        ArrData data = null;
+        // Item is not undefined -> parse data
+        if (descItemVO.getUndefined() != Boolean.TRUE) {
+            data = mapper.map(descItemVO, ArrData.class);
+        }
+
         ArrDescItem descItem = new ArrDescItem();
         descItem.setData(data);
         // Copy properties to application object

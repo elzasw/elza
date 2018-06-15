@@ -28,4 +28,8 @@ public interface EntityWrapper {
      */
     default void afterEntityPersist() {
     }
+
+    default void evictFrom(Session session) {
+        session.evict(getEntity());
+    }
 }

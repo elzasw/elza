@@ -7,6 +7,8 @@ import java.util.List;
 
 import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import cz.tacr.elza.dataexchange.input.aps.context.AccessPointWrapper;
 import cz.tacr.elza.dataexchange.input.context.ImportInitHelper;
@@ -16,9 +18,9 @@ import cz.tacr.elza.dataexchange.input.parties.context.PartyWrapper;
  * Storage manager for all imported items. Must be initialized with active
  * session.
  */
-public class StorageManager implements MemoryManager {
+    static final Logger logger = LoggerFactory.getLogger(StorageManager.class);
 
-    private final List<Object> persistEntities = new LinkedList<>();
+    private final List<EntityWrapper> persistEntities = new LinkedList<>();
 
     private final long memoryScoreLimit;
 
@@ -51,22 +53,27 @@ public class StorageManager implements MemoryManager {
 
     @Override
     public void flushAndClear(boolean clearAll) {
+        logger.debug("Clearing entities from persistent context, count: {}", persistEntities.size());
+
         session.flush();
         if (clearAll) {
             session.clear();
         } else {
-            persistEntities.forEach(session::evict);
+            for (EntityWrapper ew : persistEntities) {
+                //logger.debug("Evicting wrapper, class = {}", ew.getClass());
+
+                ew.evictFrom(session);
+            }
         }
         persistEntities.clear();
         currentMemoryScore = 0;
     }
 
     @Override
-    public void onEntityPersist(EntityWrapper item, Object entity) {
+    public void onEntityPersist(EntityWrapper item) {
         Validate.notNull(item);
-        Validate.notNull(entity);
 
-        persistEntities.add(entity);
+        persistEntities.add(item);
         // estimate memory score
         long memoryScore = 1;
         if (item instanceof EntityMetrics) {

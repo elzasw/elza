@@ -32,7 +32,6 @@ class SelectPage extends AbstractReactComponent {
 
     handleClose = () => {
         this.props.onClose();
-        this.dispatch(modalDialogHide());
     };
 
     static renderTitles = (titles) => {

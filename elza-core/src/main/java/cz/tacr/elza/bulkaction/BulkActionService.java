@@ -16,7 +16,6 @@ import javax.transaction.Transactional.TxType;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import cz.tacr.elza.service.eventnotification.events.EventPersistentSort;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +34,9 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureCallback;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import cz.tacr.elza.bulkaction.generator.result.ActionResult;
 import cz.tacr.elza.bulkaction.generator.result.Result;
@@ -410,22 +412,13 @@ public class BulkActionService implements ListenableFutureCallback<BulkActionWor
     @Transactional(TxType.MANDATORY)
     public void eventPublishBulkAction(final ArrBulkActionRun bulkActionRun) {
 
-        //speciální chování akce PERZISTENTNI_RAZENI pro refresh stromu po seřazení
-        if (bulkActionRun.getState() == State.FINISHED
-                || bulkActionRun.getState() == State.ERROR
-                || bulkActionRun.getState() == State.INTERRUPTED
-                && bulkActionRun.getBulkActionCode()
-                .equals(PERSISTENT_SORT_CODE)) {
-            eventNotificationService.publishEvent(new EventPersistentSort(EventType.PERSISTENT_SORT,
-                    bulkActionRun.getFundVersionId(),
-                    bulkActionRun.getState()));
-        }
-
         eventNotificationService.publishEvent(
                 EventFactory.createIdInVersionEvent(
                         EventType.BULK_ACTION_STATE_CHANGE,
                         bulkActionRun.getFundVersion(),
-                        bulkActionRun.getBulkActionRunId()
+                        bulkActionRun.getBulkActionRunId(),
+                        bulkActionRun.getBulkActionCode(),
+                        bulkActionRun.getState()
                 )
         );
     }

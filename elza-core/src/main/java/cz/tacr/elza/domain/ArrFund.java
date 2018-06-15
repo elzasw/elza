@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import javax.persistence.Access;
+import javax.persistence.AccessType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -35,6 +37,7 @@ public class ArrFund extends AbstractVersionableEntity implements Versionable, S
 
 	@Id
 	@GeneratedValue
+    @Access(AccessType.PROPERTY) // required to read id without fetch from db
 	private Integer fundId;
 
 	@Column(length = 255, nullable = false)

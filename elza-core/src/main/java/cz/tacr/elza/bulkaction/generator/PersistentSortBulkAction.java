@@ -1,9 +1,26 @@
 package cz.tacr.elza.bulkaction.generator;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.function.Function;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Iterables;
+
 import cz.tacr.elza.bulkaction.ActionRunContext;
 import cz.tacr.elza.bulkaction.BulkAction;
+import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDescItem;
@@ -18,26 +35,9 @@ import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.FundLevelService;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Validate;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
- * @author <a href="mailto:jiri.vanek@marbes.cz">Jiří Vaněk</a>
+ * Funkce řadící uzly archivního souboru podle hodnot jednotek popisu.
  */
 public class PersistentSortBulkAction extends BulkAction {
 
@@ -68,6 +68,8 @@ public class PersistentSortBulkAction extends BulkAction {
 
     private RulItemSpec itemSpec;
 
+    private Function<ArrDescItem, Comparable> valueFunction;
+
     public PersistentSortBulkAction(PersistentSortConfig persistentSortConfig) {
         Validate.notNull(persistentSortConfig);
 
@@ -96,12 +98,13 @@ public class PersistentSortBulkAction extends BulkAction {
                     BaseCode.SYSTEM_ERROR).set("itemTypeCode", runConfig.getItemTypeCode());
         }
 
-        String dataTypeCode = itemType.getDataType().getCode();
-        List<String> allowedDataTypes = Arrays.asList("INT", "DECIMAL", "STRING", "TEXT", "FORMATTED_TEXT", "UNITDATE");
-        if (!allowedDataTypes.contains(dataTypeCode)) {
+        DataType dataType = DataType.fromId(itemType.getDataTypeId());
+        List<DataType> allowedDataTypes = Arrays.asList(DataType.INT, DataType.DECIMAL, DataType.STRING, DataType.TEXT,
+                DataType.FORMATTED_TEXT, DataType.UNITDATE);
+        if (!allowedDataTypes.contains(dataType)) {
             throw new SystemException(
                     "Hromadná akce " + getName() + " je nakonfigurována pro nepodporovaný datový typ:",
-                    BaseCode.SYSTEM_ERROR).set("dataTypeCode", dataTypeCode);
+                    BaseCode.SYSTEM_ERROR).set("dataTypeCode", dataType.getCode());
         }
 
         if (itemType.getUseSpecification()) {
@@ -118,6 +121,8 @@ public class PersistentSortBulkAction extends BulkAction {
                         BaseCode.SYSTEM_ERROR).set("itemSpecCode", runConfig.getItemSpecCode());
             }
         }
+
+        valueFunction = getValueFunction(dataType);
     }
 
     @Override
@@ -136,6 +141,11 @@ public class PersistentSortBulkAction extends BulkAction {
         }
     }
 
+    /**
+     * Seřazení potomků předané úrovně.
+     * @param parent úroveň jejíž potomci se mají seřadit
+     * @param change změna v rámci které se řazení děje
+     */
     private void sort(ArrLevel parent, ArrChange change) {
         List<ArrLevel> children = levelRepository.findByParentNodeAndDeleteChangeIsNullOrderByPositionAsc(parent.getNode());
         if (children.isEmpty()) {
@@ -166,6 +176,9 @@ public class PersistentSortBulkAction extends BulkAction {
         fundLevelService.shiftNodes(children, change, 1);
     }
 
+    /**
+     * @return mapa id node -> hodnota, pokud uzel hodnotu nemá tak v mapě není
+     */
     private Map<Integer, Comparable> getNodeValues(List<ArrNode> nodes) {
         List<ArrDescItem> descItems;
         if (itemSpec == null) {
@@ -174,61 +187,54 @@ public class PersistentSortBulkAction extends BulkAction {
             descItems = descItemRepository.findOpenByNodesAndTypeAndSpec(nodes, itemType, Collections.singletonList(itemSpec));
         }
 
-        Map<Integer, List<ArrDescItem>> nodeIdToDescItemList = descItems.stream().collect(Collectors.groupingBy(ArrDescItem::getNodeId));
-
         Map<Integer, Comparable> nodeValues = new HashMap<>();
-        String dataTypeCode = itemType.getDataType().getCode();
-        for (Integer nodeId : nodeIdToDescItemList.keySet()) {
-            List<ArrDescItem> arrDescItems = nodeIdToDescItemList.get(nodeId);
-
-            Comparable value;
-            switch (dataTypeCode) {
-                case "STRING":
-                case "TEXT":
-                case "FORMATTED_TEXT":
-                    value = getNodeValue(arrDescItems, ArrDescItem::getFulltextValue);
-                    break;
-                case "INT":
-                    value = getNodeValue(arrDescItems, ArrDescItem::getValueInt);
-                    break;
-                case "DECIMAL":
-                    value = getNodeValue(arrDescItems, ArrDescItem::getValueDouble);
-                    break;
-                case "UNITDATE":
-                    value = getNodeValue(arrDescItems, ArrDescItem::getNormalizedFrom);
-                    break;
-                default:
-                    throw new SystemException("Hromadná akce " + getName() + " nepodporuje datový typ:", BaseCode.SYSTEM_ERROR).
-                            set("dataTypeCode", dataTypeCode);
-            }
-            if (value != null) {
-                nodeValues.put(nodeId, value);
+        for (ArrDescItem arrDescItem : descItems) {
+            Comparable newValue = valueFunction.apply(arrDescItem);
+            Comparable currentValue = nodeValues.get(arrDescItem.getNodeId());
+            if (currentValue == null) { // v mapě ještě hodnota není
+                if (newValue != null) { // a nová hodnota není null tak si ji uložíme
+                    nodeValues.put(arrDescItem.getNodeId(), newValue);
+                }
+            } else if (newValue != null) {
+                int compareTo = currentValue.compareTo(newValue);
+                if (runConfig.isAsc() && compareTo == -1) { // podle způsobu řazení zjistíme jestli je nová hodnota lepší než ta co už máme(pro typy atributů s více hodnotami)
+                    nodeValues.put(arrDescItem.getNodeId(), newValue);
+                } else if (!runConfig.isAsc() && compareTo == 1) {
+                    nodeValues.put(arrDescItem.getNodeId(), newValue);
+                }
             }
         }
+
         return nodeValues;
     }
 
-    private Comparable getNodeValue(List<ArrDescItem> descItems, Function<ArrDescItem, Comparable> valueFunction) {
-        Comparable value;
-        if (CollectionUtils.isEmpty(descItems)) {
-            value = null;
-        } else if (descItems.size() == 1) {
-            value = valueFunction.apply(descItems.iterator().next());
-        } else {
-            List<Comparable> values =  descItems.stream().
-                    map(i -> valueFunction.apply(i)).
-                    sorted().
-                    collect(Collectors.toList());
-
-            if (runConfig.isAsc()) {
-                value = values.iterator().next();
-            } else {
-                value = Iterables.getLast(values);
-            }
+    /**
+     * @return vrátí metodu pro získání hodnoty z {@link ArrDescItem}
+     */
+    private Function<ArrDescItem,Comparable> getValueFunction(DataType dataType) {
+        Function<ArrDescItem,Comparable> valueFuncion;
+        switch (dataType) {
+            case STRING:
+            case TEXT:
+            case FORMATTED_TEXT:
+                valueFuncion = ArrDescItem::getFulltextValue;
+                break;
+            case INT:
+                valueFuncion = ArrDescItem::getValueInt;
+                break;
+            case DECIMAL:
+                valueFuncion = ArrDescItem::getValueDouble;
+                break;
+            case UNITDATE:
+                valueFuncion = ArrDescItem::getNormalizedFrom;
+                break;
+            default:
+                throw new SystemException("Hromadná akce " + getName() + " nepodporuje datový typ:", BaseCode.SYSTEM_ERROR).
+                        set("dataTypeCode", dataType.getCode());
         }
-        return value;
-    }
 
+        return valueFuncion;
+    }
 
     @Override
     public String getName() {

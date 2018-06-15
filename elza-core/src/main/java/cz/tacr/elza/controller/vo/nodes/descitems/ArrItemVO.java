@@ -112,4 +112,13 @@ public abstract class ArrItemVO {
      * @return
      */
     public abstract ArrData createDataEntity(EntityManager em);
+
+    /**
+     * Check if value is undefined
+     * 
+     * @return Return true if undefined flag is set to TRUE
+     */
+    public boolean isUndefined() {
+        return (Boolean.TRUE.equals(undefined));
+    }
 }

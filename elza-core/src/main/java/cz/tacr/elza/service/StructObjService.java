@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.InvalidPropertiesFormatException;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
@@ -15,6 +16,7 @@ import java.util.stream.Collectors;
 import javax.transaction.Transactional;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.Validate;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -29,6 +31,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
 import com.google.common.eventbus.Subscribe;
 
 import cz.tacr.elza.EventBusListener;
@@ -38,6 +41,7 @@ import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.ArrStructuredObject;
+import cz.tacr.elza.domain.ArrStructuredObject.State;
 import cz.tacr.elza.domain.RulComponent;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulItemTypeExt;
@@ -46,7 +50,6 @@ import cz.tacr.elza.domain.RulStructureDefinition;
 import cz.tacr.elza.domain.RulStructureExtensionDefinition;
 import cz.tacr.elza.domain.RulStructuredType;
 import cz.tacr.elza.domain.UISettings;
-import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
@@ -64,6 +67,10 @@ import cz.tacr.elza.service.eventnotification.events.EventStructureDataChange;
 /**
  * Servisní třída pro aktualizaci hodnot strukturovaných objektů.
  *
+ *
+ * Pokud je do fronty zařazen smazaný uzel, tak se použije
+ * pouze k validaci duplicit.
+ * 
  * @since 13.11.2017
  */
 @Service
@@ -168,15 +175,15 @@ public class StructObjService {
     /**
      * Přidání položek k validaci, případně založení vlákna pro asynchronní chod.
      *
-     * @param structureDataIds identifikátory hodnot
+     * @param structObjIds identifikátory hodnot
      */
-    private void runValidator(final List<Integer> structureDataIds) {
-        if (structureDataIds.isEmpty()) {
+    private void runValidator(final List<Integer> structObjIds) {
+        if (structObjIds.isEmpty()) {
             return;
         }
         synchronized (lock) {
             boolean createThread = queueObjIds.size() == 0;
-            queueObjIds.addAll(structureDataIds);
+            queueObjIds.addAll(structObjIds);
             if (createThread) {
                 StructObjService structureDataService = applicationContext.getBean(StructObjService.class);
                 structureDataService.run();
@@ -215,6 +222,105 @@ public class StructObjService {
             throw new ObjectNotFoundException("Nenalezena hodnota strukturovaného typu", BaseCode.ID_NOT_EXIST).setId(structObjId);
         }
         generateAndValidate(structObj);
+        // do not send notification for deleted items
+        if (structObj.getDeleteChangeId() != null) {
+            return;
+        }
+        sendNotification(structObj);
+    }
+
+    /**
+     * Uložení hodnoty strukturovaného datového typu.
+     * <ul>
+     * <li>vygenerování textové hodnoty
+     * <li>kontrola duplicity
+     * <li>validace položek hodnoty
+     *
+     * @param structObj
+     *            hodnota struktovaného datového typu
+     * 
+     */
+    @Transactional
+    public void generateAndValidate(final ArrStructuredObject structObj) {
+        // get old value (skip for temp items)
+        String oldValue = null;
+        if (structObj.getState().equals(ArrStructuredObject.State.OK)
+                || structObj.getState().equals(ArrStructuredObject.State.ERROR)) {
+            // get last value (if object was ok)
+            oldValue = structObj.getValue();
+        }
+        String newValue = null;
+        if (structObj.getDeleteChange() == null) {
+            // generate value
+            newValue = generateValue(structObj);
+        }
+
+        // do not check duplicates for temp objects
+        if (structObj.getState() == ArrStructuredObject.State.TEMP) {
+            return;
+        }
+
+        // Method is called also after ext update etc -> can be called 
+        // with same values
+
+        if (StringUtils.isNotEmpty(oldValue)) {
+            recheckDuplicates(oldValue, structObj);
+        }
+
+        if (StringUtils.isNotEmpty(newValue)) {
+            // same values -> do only one check
+            if (!newValue.equals(oldValue)) {
+                recheckDuplicates(newValue, structObj);
+            }
+        }
+    }
+
+    /**
+     * Recheck struct objects for duplicates
+     * 
+     * @param checkedValue
+     *            Value to be check
+     * @param srcStructObj
+     *            Object which caused / requested this check
+     *            Source object is not notified.
+     */
+    private void recheckDuplicates(String checkedValue, 
+                                   ArrStructuredObject srcStructObj) {
+
+        // check duplicates - if not empty
+        if (StringUtils.isEmpty(checkedValue)) {
+            return;
+        }
+
+        // read current structObjs
+        List<ArrStructuredObject> validStructureDataList = structObjRepository
+                .findValidByStructureTypeAndFund(srcStructObj.getStructuredType(), srcStructObj.getFund(),
+                                                 checkedValue);
+        int cnt = validStructureDataList.size();
+        //validStructureDataList.remove(structObj);
+        if (cnt == 1) {
+            ArrStructuredObject so = validStructureDataList.get(0);
+            // reset duplicated state
+            setDuplicatedState(so, false);
+            if (!Objects.equals(so.getStructuredObjectId(),
+                               srcStructObj.getStructuredObjectId())) {
+                sendNotification(so);
+            }
+        } else if (cnt > 1) {
+            // set state and send notifications
+            for (ArrStructuredObject so : validStructureDataList) {
+                setDuplicatedState(so, true);
+                if (!Objects.equals(so.getStructuredObjectId(), srcStructObj.getStructuredObjectId())) {
+                    sendNotification(so);
+                }
+            }
+        }
+        // TODO: call notifications
+    }
+
+    private void sendNotification(ArrStructuredObject structObj) {
+        Integer structObjId = structObj.getStructuredObjectId();
+        // send notifications
         if (structObj.getState() == ArrStructuredObject.State.TEMP) {
             notificationService.publishEvent(new EventStructureDataChange(structObj.getFundId(),
                     structObj.getStructuredType().getCode(),
@@ -229,38 +335,54 @@ public class StructObjService {
                     null,
                     Collections.singletonList(structObjId),
                     null));
+        }        
+    }
+
+    private void setDuplicatedState(ArrStructuredObject so, boolean duplicated) {
+
+        // Do not check duplicates on TEMP items
+        Validate.isTrue(so.getState() != State.TEMP);
+
+        String errorDescr = so.getErrorDescription();
+
+        ValidationErrorDescription ved = new ValidationErrorDescription();
+        if (StringUtils.isNotBlank(errorDescr)) {
+            try {
+                ValidationErrorDescription parsed = ValidationErrorDescription.fromJson(errorDescr);
+                ved = parsed;
+            } catch (Exception e) {
+                logger.error("Failed to parse JSON: " + errorDescr, e);
+            }
         }
+        ved.setDuplicateValue(duplicated);
+
+        ved.setDuplicateValue(duplicated);
+        String value = ved.asJsonString();
+        if (value != null) {
+            so.setState(State.ERROR);
+        } else {
+            so.setState(State.OK);
+        }
+        so.setErrorDescription(value);
+
+        structObjRepository.save(so);
     }
 
     /**
-     * Uložení hodnoty strukturovaného datového typu.
-     * <ul>
-     * <li>vygenerování textové hodnoty
-     * <li>kontrola duplicity
-     * <li>validace položek hodnoty
-     *
-     * @param structObj hodnota struktovaného datového typu
-     * @return uložená hodnota
+     * Internal method to generate value and save it.
+     * 
+     * Method will only check if value is empty.
+     * 
+     * @param structObj
+     * @return Return generated value. Return null if failed
      */
-    @Transactional
-    public ArrStructuredObject generateAndValidate(final ArrStructuredObject structObj) {
-        if (structObj.getDeleteChange() != null) {
-            throw new BusinessException("Nelze validovat smazanou hodnotu", BaseCode.INVALID_STATE);
-        }
-
-        // read current structObjs
-        List<ArrStructuredObject> validStructureDataList = structObjRepository.findValidByStructureTypeAndFund(structObj.getStructuredType(), structObj.getFund());
-        validStructureDataList.remove(structObj);
-
-        List<String> values = validStructureDataList.stream()
-                .map(ArrStructuredObject::getValue)
-                .map(String::toLowerCase)
-                .collect(Collectors.toList());
-
+    private String generateValue(ArrStructuredObject structObj) {
+        // generate value 
         ArrStructuredObject.State state = ArrStructuredObject.State.OK;
         ValidationErrorDescription validationErrorDescription = new ValidationErrorDescription();
 
-        List<ArrStructuredItem> structureItems = structureItemRepository.findByStructuredObjectAndDeleteChangeIsNullFetchData(structObj);
+        List<ArrStructuredItem> structureItems = structureItemRepository
+                .findByStructuredObjectAndDeleteChangeIsNullFetchData(structObj);
 
         validateStructureItems(validationErrorDescription, structObj, structureItems);
 
@@ -270,11 +392,6 @@ public class StructObjService {
             validationErrorDescription.setEmptyValue(true);
         }
 
-        if (values.contains(value.toLowerCase())) {
-            state = ArrStructuredObject.State.ERROR;
-            validationErrorDescription.setDuplicateValue(true);
-        }
-
         // pokud se jedná o tempová data, stav se nenastavuje
         state = structObj.getState() == ArrStructuredObject.State.TEMP ? ArrStructuredObject.State.TEMP : state;
 
@@ -282,15 +399,19 @@ public class StructObjService {
         structObj.setState(state);
         structObj.setErrorDescription(validationErrorDescription.asJsonString());
 
-        return structObjRepository.save(structObj);
+        structObjRepository.save(structObj);
+        return value;
     }
 
     /**
      * Validace položek pro strukturovaný datový typ.
      *
-     * @param validationErrorDescription objekt pro výsledky validace
-     * @param structureData              hodnota struktovaného datového typu
-     * @param structureItems             validované položky
+     * @param validationErrorDescription
+     *            objekt pro výsledky validace
+     * @param structureData
+     *            hodnota struktovaného datového typu
+     * @param structureItems
+     *            validované položky
      */
     private void validateStructureItems(final ValidationErrorDescription validationErrorDescription,
                                         final ArrStructuredObject structureData,
@@ -438,6 +559,15 @@ public class StructObjService {
             duplicateValue = false;
             requiredItemTypeIds = new ArrayList<>();
             impossibleItemTypeIds = new ArrayList<>();
+        }
+
+        static public ValidationErrorDescription fromJson(String json) {
+            ObjectReader reader = objectMapper.readerFor(ValidationErrorDescription.class);
+            try {
+                return reader.readValue(json);
+            } catch (IOException e) {
+                throw new SystemException("Failed to deserialize value").set("json", json);
+            }
         }
 
         public String asJsonString() {

@@ -41,7 +41,7 @@ public class ParPartyName {
 
     @Id
     @GeneratedValue
-    @Access(AccessType.PROPERTY)
+    @Access(AccessType.PROPERTY) // required to read id without fetch from db
     private Integer partyNameId;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ParUnitdate.class)
