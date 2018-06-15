@@ -16,5 +16,5 @@ public interface ApExternalIdRepository extends ElzaJpaRepository<ApExternalId, 
 
     @Modifying
     @Query("UPDATE ap_external_id eid SET eid.deleteChange=?2 WHERE eid.accessPointId IN ?1 AND eid.deleteChange IS NULL")
-    void deleteAllByAccessPointIdIn(Collection<Integer> apIds, ApChange deleteChange);
+    void deleteByAccessPointIdIn(Collection<Integer> apIds, ApChange deleteChange);
 }

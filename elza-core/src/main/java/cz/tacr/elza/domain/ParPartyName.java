@@ -2,6 +2,8 @@ package cz.tacr.elza.domain;
 
 import java.util.List;
 
+import javax.persistence.Access;
+import javax.persistence.AccessType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -21,16 +23,16 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import cz.tacr.elza.domain.enumeration.StringLength;
 
-
 /**
  * Jméno abstraktní osoby.
  *
- * @author Martin Kužel [<a href="mailto:martin.kuzel@marbes.cz">martin.kuzel@marbes.cz</a>]
+ * @author Martin Kužel
+ *         [<a href="mailto:martin.kuzel@marbes.cz">martin.kuzel@marbes.cz</a>]
  */
 @Entity(name = "par_party_name")
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 public class ParPartyName {
 
     public static final String PK = "partyNameId";
@@ -39,6 +41,7 @@ public class ParPartyName {
 
     @Id
     @GeneratedValue
+    @Access(AccessType.PROPERTY)
     private Integer partyNameId;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ParUnitdate.class)
@@ -81,12 +84,12 @@ public class ParPartyName {
     @Column(length = StringLength.LENGTH_50)
     private String degreeAfter;
 
-
     @OneToMany(mappedBy = "partyName", fetch = FetchType.LAZY)
     private List<ParPartyNameComplement> partyNameComplements;
 
     /**
      * Vlastní ID.
+     * 
      * @return id
      */
     public Integer getPartyNameId() {
@@ -95,7 +98,9 @@ public class ParPartyName {
 
     /**
      * Vlastní ID.
-     * @param partyNameId id
+     * 
+     * @param partyNameId
+     *            id
      */
     public void setPartyNameId(final Integer partyNameId) {
         this.partyNameId = partyNameId;
@@ -103,6 +108,7 @@ public class ParPartyName {
 
     /**
      * Vazba na osobu.
+     * 
      * @return osoba
      */
     public ParParty getParty() {
@@ -111,7 +117,9 @@ public class ParPartyName {
 
     /**
      * Vazba na osobu.
-     * @param party osoba
+     * 
+     * @param party
+     *            osoba
      */
     public void setParty(final ParParty party) {
         this.party = party;
@@ -119,6 +127,7 @@ public class ParPartyName {
 
     /**
      * Hlavní část jména.
+     * 
      * @return hlavní část jména
      */
     public String getMainPart() {
@@ -127,7 +136,9 @@ public class ParPartyName {
 
     /**
      * Hlavní část jména.
-     * @param mainPart hlavní část jména
+     * 
+     * @param mainPart
+     *            hlavní část jména
      */
     public void setMainPart(final String mainPart) {
         this.mainPart = mainPart;
@@ -135,6 +146,7 @@ public class ParPartyName {
 
     /**
      * Vedlejší část jména.
+     * 
      * @return vedlejší část jména
      */
     public String getOtherPart() {
@@ -143,7 +155,9 @@ public class ParPartyName {
 
     /**
      * Vedlejší část jména.
-     * @param otherPart vedlejší část jména
+     * 
+     * @param otherPart
+     *            vedlejší část jména
      */
     public void setOtherPart(final String otherPart) {
         this.otherPart = otherPart;
@@ -151,6 +165,7 @@ public class ParPartyName {
 
     /**
      * Titul před jménem.
+     * 
      * @return titul před jménem
      */
     public String getDegreeBefore() {
@@ -159,7 +174,9 @@ public class ParPartyName {
 
     /**
      * Titul před jménem.
-     * @param degreeBefore titul před jménem
+     * 
+     * @param degreeBefore
+     *            titul před jménem
      */
     public void setDegreeBefore(final String degreeBefore) {
         this.degreeBefore = degreeBefore;
@@ -167,6 +184,7 @@ public class ParPartyName {
 
     /**
      * Titul za jménem.
+     * 
      * @return titul za jménem
      */
     public String getDegreeAfter() {
@@ -175,7 +193,9 @@ public class ParPartyName {
 
     /**
      * Titul za jménem.
-     * @param degreeAfter titul za jménem
+     * 
+     * @param degreeAfter
+     *            titul za jménem
      */
     public void setDegreeAfter(final String degreeAfter) {
         this.degreeAfter = degreeAfter;
@@ -183,6 +203,7 @@ public class ParPartyName {
 
     /**
      * Platnost jména od.
+     * 
      * @return platnost jména od
      */
     public ParUnitdate getValidFrom() {
@@ -191,7 +212,9 @@ public class ParPartyName {
 
     /**
      * Platnost jména od.
-     * @param validFrom platnost jména od
+     * 
+     * @param validFrom
+     *            platnost jména od
      */
     public void setValidFrom(final ParUnitdate validFrom) {
         this.validFrom = validFrom;
@@ -204,6 +227,7 @@ public class ParPartyName {
 
     /**
      * Platnost jména do.
+     * 
      * @return platnost jména do
      */
     public ParUnitdate getValidTo() {
@@ -212,7 +236,9 @@ public class ParPartyName {
 
     /**
      * Platnost jména do.
-     * @param validTo platnost jména do
+     * 
+     * @param validTo
+     *            platnost jména do
      */
     public void setValidTo(final ParUnitdate validTo) {
         this.validTo = validTo;
@@ -237,16 +263,23 @@ public class ParPartyName {
     }
 
     /**
-     * Poznámka - využije se v případě nutnosti doplnit informaci uvedenou v prvcích.
-     * @return poznámka - využije se v případě nutnosti doplnit informaci uvedenou v prvcích
+     * Poznámka - využije se v případě nutnosti doplnit informaci uvedenou v
+     * prvcích.
+     * 
+     * @return poznámka - využije se v případě nutnosti doplnit informaci uvedenou v
+     *         prvcích
      */
     public String getNote() {
         return note;
     }
 
     /**
-     * Poznámka - využije se v případě nutnosti doplnit informaci uvedenou v prvcích.
-     * @param note poznámka - využije se v případě nutnosti doplnit informaci uvedenou v prvcích
+     * Poznámka - využije se v případě nutnosti doplnit informaci uvedenou v
+     * prvcích.
+     * 
+     * @param note
+     *            poznámka - využije se v případě nutnosti doplnit informaci
+     *            uvedenou v prvcích
      */
     public void setNote(final String note) {
         this.note = note;

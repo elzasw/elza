@@ -9,7 +9,7 @@ import java.util.Map;
 import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.domain.ParComplementType;
-import cz.tacr.elza.domain.projection.PartyTypeComplementTypeInfo;
+import cz.tacr.elza.domain.projection.PartyTypeCmplTypeInfo;
 import cz.tacr.elza.repository.PartyTypeComplementTypeRepository;
 
 public class PartyTypeCmplTypes {
@@ -41,16 +41,16 @@ public class PartyTypeCmplTypes {
      * Init all values. Method must be called inside transaction and synchronized.
      */
     void init(Map<String, ParComplementType> complementTypeCodeMap,
-            PartyTypeComplementTypeRepository partyTypeComplementTypeRepository) {
+            PartyTypeComplementTypeRepository partyTypeCmplTypeRepository) {
         // find complements types for party type
-        List<PartyTypeComplementTypeInfo> cmplTypesInfo = partyTypeComplementTypeRepository
+        List<PartyTypeCmplTypeInfo> cmplTypesInfo = partyTypeCmplTypeRepository
                 .findInfoByPartyTypeCode(partyType.getCode());
 
         List<ParComplementType> cmplTypes = new ArrayList<>(cmplTypesInfo.size());
         Map<String, PartyTypeCmplType> codeMap = new HashMap<>(cmplTypesInfo.size());
 
         // create lookups
-        for (PartyTypeComplementTypeInfo info : cmplTypesInfo) {
+        for (PartyTypeCmplTypeInfo info : cmplTypesInfo) {
             ParComplementType cmplType = complementTypeCodeMap.get(info.getComplementTypeCode());
             cmplTypes.add(Validate.notNull(cmplType));
             boolean repeatable = info.getRepeatable() != null ? info.getRepeatable() : false;

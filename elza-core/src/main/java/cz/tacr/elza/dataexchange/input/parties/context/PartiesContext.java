@@ -59,7 +59,7 @@ public class PartiesContext {
 
     private final List<PartyPreferredNameWrapper> prefNameQueue = new ArrayList<>();
 
-    private long currentMemoryScore;
+    private long scriptMemoryScore;
 
     public PartiesContext(StorageManager storageManager, int batchSize, AccessPointsContext apContext,
             StaticDataProvider staticData, ImportInitHelper initHelper) {
@@ -83,7 +83,7 @@ public class PartiesContext {
     }
 
     public PartyInfo addParty(ParParty entity, String importId, AccessPointInfo apInfo, PartyType partyType) {
-        PartyInfo info = new PartyInfo(importId, apInfo, partyType, this);
+        PartyInfo info = new PartyInfo(apInfo, partyType, this);
         if (importIdPartyInfoMap.putIfAbsent(importId, info) != null) {
             throw new DEImportException("Party has duplicate id, partyId:" + importId);
         }
@@ -149,10 +149,10 @@ public class PartiesContext {
     public void onPartyFinished(PartyInfo partyInfo) {
         updatePartyAp(partyInfo);
         // clear all entities potentially loaded by groovy script
-        currentMemoryScore += partyInfo.getMemoryScore();
-        if (currentMemoryScore > storageManager.getAvailableMemoryScore()) {
+        scriptMemoryScore += partyInfo.getMaxMemoryScore();
+        if (scriptMemoryScore > storageManager.getAvailableMemoryScore()) {
             storageManager.flushAndClear(true);
-            currentMemoryScore = 0;
+            scriptMemoryScore = 0;
         }
         // AP is now processed
         partyInfo.getApInfo().onProcessed();

@@ -13,43 +13,41 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-
 /**
  * Repository záznamy v rejstříku.
  *
  * @author <a href="mailto:martin.kuzel@marbes.cz">Martin Kužel</a>
  */
 @Repository
-public interface ApAccessPointRepository extends ElzaJpaRepository<ApAccessPoint, Integer>, ApAccessPointRepositoryCustom {
-    @Query("SELECT ap FROM ap_access_point ap " +
-            "JOIN ap_external_id eid on ap.accessPointId = eid.accessPointId " +
-            "join eid.createChange chng " +
-            "join chng.externalSystem esys " +
-            "WHERE eid.value IN (?1) and esys = ?2 and eid.deleteChange is null")
-    List<ApAccessPoint> findApAccessPointByExternalIdsAndExternalSystem(Set<String> set, ApExternalSystem externalSystem);
+public interface ApAccessPointRepository
+        extends ElzaJpaRepository<ApAccessPoint, Integer>, ApAccessPointRepositoryCustom {
+    @Query("SELECT ap FROM ap_access_point ap " + "JOIN ap_external_id eid on ap.accessPointId = eid.accessPointId "
+            + "join eid.createChange chng " + "join chng.externalSystem esys "
+            + "WHERE eid.value IN (?1) and esys = ?2 and eid.deleteChange is null")
+    List<ApAccessPoint> findApAccessPointByExternalIdsAndExternalSystem(Set<String> set,
+            ApExternalSystem externalSystem);
 
-    @Query("select ap from ap_access_point ap " +
-            "join ap_external_id eid on ap.accessPointId = eid.accessPointId " +
-            "join eid.createChange chng " +
-            "join chng.externalSystem esys " +
-            "WHERE eid.value = ?1 and eid.deleteChange is null and esys.code = ?2 and ap.scope = ?3")
-    ApAccessPoint findApAccessPointByExternalIdAndExternalSystemCodeAndScope(String externalId, String externalSystemCode, ApScope scope);
-
+    @Query("select ap from ap_access_point ap " + "join ap_external_id eid on ap.accessPointId = eid.accessPointId "
+            + "join eid.createChange chng " + "join chng.externalSystem esys "
+            + "WHERE eid.value = ?1 and eid.deleteChange is null and esys.code = ?2 and ap.scope = ?3")
+    ApAccessPoint findApAccessPointByExternalIdAndExternalSystemCodeAndScope(String externalId,
+            String externalSystemCode, ApScope scope);
 
     /**
      * Najde záznamy rejstříkových hesel pro osoby se vztahem k dané osobě.
      *
-     * @param party osoba
+     * @param party
+     *            osoba
      * @return rejstříková hesla příbuzných osob
      */
     @Query("SELECT ap FROM ap_access_point ap JOIN ap.relationEntities re JOIN re.relation r WHERE r.party = ?1")
     List<ApAccessPoint> findByPartyRelations(ParParty party);
 
-
     /**
      * Najde rejstříková hesla pro dané osoby.
      *
-     * @param parties seznam osob
+     * @param parties
+     *            seznam osob
      * @return seznam rejstříkových hesel pro osoby
      */
     @Query("SELECT p.record FROM par_party p WHERE p IN (?1)")
@@ -58,7 +56,8 @@ public interface ApAccessPointRepository extends ElzaJpaRepository<ApAccessPoint
     /**
      * Najde hesla podle třídy rejstříku.
      *
-     * @param scope třída
+     * @param scope
+     *            třída
      * @return nalezená hesla
      */
     List<ApAccessPoint> findByScope(ApScope scope);
@@ -66,29 +65,24 @@ public interface ApAccessPointRepository extends ElzaJpaRepository<ApAccessPoint
     /**
      * Najde heslo podle UUID.
      *
-     * @param uuid UUID
+     * @param uuid
+     *            UUID
      * @return rejstříkové heslo
      */
     ApAccessPoint findApAccessPointByUuid(String uuid);
 
     /**
-     * Searches records by uuid collection.
-     *
-     * @return Records projections.
+     * Searches APs by UUIDs.
+     * 
+     * @return AP projection
      */
     List<ApAccessPointInfo> findByUuidIn(Collection<String> uuids);
 
     /**
-     * Searches records by external system and collection of external ids.
-     *
-     * @return Records projections.
+     * Searches APs by external ids.
+     * 
+     * @return AP projection with external id
      */
-    @Query("select ap from ap_access_point ap " +
-            "join ap_external_id eid on ap.accessPointId = eid.accessPointId " +
-            "join eid.createChange chng " +
-            "join chng.externalSystem esys " +
-            "WHERE eid.value in (?1) and eid.deleteChange is null and esys.code = ?1")
-    List<ApAccessPointInfoExternal> findByExternalSystemCodeAndExternalIdIn(String externalSystemCode, Collection<String> externalIds);
-
-    List<ApAccessPoint> findByAccessPointIdIn(Collection<Integer> apIds);
+    @Query("SELECT eid.accessPoint FROM ap_external_id eid JOIN ap_external_id_type eidType WHERE eidType.code=?1 AND eid.value IN ?2 AND eid.deleteChange IS NULL")
+    List<ApAccessPointInfoExternal> findByEidTypeCodeAndEidValuesIn(String eidTypeCode, Collection<String> eidValues);
 }

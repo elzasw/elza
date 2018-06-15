@@ -16,7 +16,7 @@ import cz.tacr.elza.dataexchange.input.parties.context.PartyWrapper;
  * Storage manager for all imported items. Must be initialized with active
  * session.
  */
-public class StorageManager implements StorageListener {
+public class StorageManager implements MemoryManager {
 
     private final List<Object> persistEntities = new LinkedList<>();
 
@@ -34,24 +34,22 @@ public class StorageManager implements StorageListener {
         this.memoryScoreLimit = memoryScoreLimit;
         this.session = session;
         this.apStorage = new ApRecordStorage(this, LocalDateTime.now(), session, initHelper);
-        this.partyStorage = new ParPartyStorage(this, session, initHelper);
+        this.partyStorage = new ParPartyStorage(session, this, initHelper);
     }
 
     public Session getSession() {
         return session;
     }
 
+    @Override
     public long getAvailableMemoryScore() {
-        return memoryScoreLimit - currentMemoryScore;
+        long ams = memoryScoreLimit - currentMemoryScore;
+        // always must be greater than zero
+        Validate.isTrue(ams > 0);
+        return ams;
     }
 
-    /**
-     * Flush all changes and completely clear the session. All existing references
-     * will be detached.
-     * 
-     * @param clearAll
-     *            If false only entities manages by storage will be cleared.
-     */
+    @Override
     public void flushAndClear(boolean clearAll) {
         session.flush();
         if (clearAll) {

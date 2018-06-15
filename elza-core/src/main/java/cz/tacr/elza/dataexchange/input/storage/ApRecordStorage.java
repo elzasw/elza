@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
@@ -13,6 +14,9 @@ import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApDescription;
 import cz.tacr.elza.domain.ApExternalSystem;
+
+import org.apache.commons.collections4.MapIterator;
+import org.apache.commons.collections4.MultiValuedMap;
 import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
 
@@ -20,6 +24,7 @@ import cz.tacr.elza.dataexchange.input.DEImportException;
 import cz.tacr.elza.dataexchange.input.aps.context.AccessPointWrapper;
 import cz.tacr.elza.dataexchange.input.context.ImportInitHelper;
 import cz.tacr.elza.dataexchange.input.context.PersistMethod;
+import cz.tacr.elza.dataexchange.input.storage.EntityWrapper.PersistType;
 import cz.tacr.elza.domain.ApRecord;
 import cz.tacr.elza.domain.projection.ApAccessPointInfo;
 import cz.tacr.elza.domain.projection.ApRecordInfo;
@@ -50,26 +55,28 @@ class ApRecordStorage extends EntityStorage<AccessPointWrapper> {
 
     private final ApChange deleteChange;
 
-    public ApRecordStorage(StorageListener storageListener, LocalDateTime updateDateTime, Session session,
+    public ApRecordStorage(Session session, MemoryManager memoryManager, ApChange deleteChange,
             ImportInitHelper initHelper) {
-        super(session, storageListener);
-        this.updateDateTime = updateDateTime;
-        this.recordRepository = initHelper.getRecordRepository();
+        super(session, memoryManager);
+        this.apRepository = initHelper.getApRepository();
+        this.apNameRepository = initHelper.getApNameRepository();
+        this.apDescRepository = initHelper.getApDescRepository();
+        this.apEidRepository = initHelper.getApEidRepository();
         this.arrangementService = initHelper.getArrangementService();
-        this.variantRecordRepository = initHelper.getVariantRecordRepository();
+        this.deleteChange = deleteChange;
     }
 
     @Override
     public void save(Collection<AccessPointWrapper> items) {
-        pairCurrentApsByUuid(items);
-        pairCurrentApsByEid(items);
+        pairApsByUuid(items);
+        pairApsByEid(items);
         super.save(items);
     }
 
     @Override
     protected void update(Collection<AccessPointWrapper> items) {
         prepareItemsForUpdate(items);
-        // AP update is not needed
+        // actual AP update is not needed
     }
 
     @Override
@@ -89,93 +96,89 @@ class ApRecordStorage extends EntityStorage<AccessPointWrapper> {
             Integer apId = item.getEntity().getAccessPointId();
             apIds.add(Validate.notNull(apId));
         }
-        apNameRepository.deleteAllByAccessPointIdIn(apIds, deleteChange);
-        apDescRepository.deleteAllByAccessPointIdIn(apIds, deleteChange);
-        apEidRepository.deleteAllByAccessPointIdIn(apIds, deleteChange);
+        apNameRepository.deleteByAccessPointIdIn(apIds, deleteChange);
+        apDescRepository.deleteByAccessPointIdIn(apIds, deleteChange);
+        apEidRepository.deleteByAccessPointIdIn(apIds, deleteChange);
     }
 
-    /**
-     * Searches for current AP with same UUID, paired AP will be prepared for
-     * update.
-     */
-    private void pairCurrentApsByUuid(Collection<AccessPointWrapper> items) {
-        // init mapping: UUID -> AP wrapper
+    private void pairApsByUuid(Collection<AccessPointWrapper> items) {
+        // init UUID -> AP map
         Map<String, AccessPointWrapper> uuidMap = new HashMap<>();
         for (AccessPointWrapper item : items) {
             String uuid = item.getEntity().getUuid();
             if (uuid == null) {
-                continue;
+                continue; // UUID not imported
             }
             if (uuidMap.put(uuid, item) != null) {
-                throw new DEImportException(
-                        "Duplicate AP uuid, apId=" + item.getEntity().getAccessPointId() + ", uuid=" + uuid);
+                throw new DEImportException("Duplicate AP uuid, value=" + uuid);
             }
         }
-        // find all current AP by UUID
+        // find current AP by UUID
         List<ApAccessPointInfo> currentAps = apRepository.findByUuidIn(uuidMap.keySet());
-        for (ApAccessPointInfo info : currentAps) {
+        for (ApAccessPoint info : currentAps) {
             AccessPointWrapper wrapper = uuidMap.get(info.getUuid());
-            wrapper.prepareUpdate(info);
+            if (wrapper.changeToUpdated(info)) {
+                memoryManager.onEntityPersist(wrapper, info);
+            }
         }
     }
 
-    /**
-     * Searches for AP with same external id, paired AP will be prepared for update.
-     */
-    private void pairCurrentApsByEid(Collection<AccessPointWrapper> rws) {
-        // create external system groups by code
-        ExternalSystemAggregator aggregator = new ExternalSystemAggregator();
-        for (AccessPointWrapper rw : rws) {
-            // check for eid existence and if not already paired (uuid priority)
-            if (rw.getEntity().getExternalId() != null && rw.getPersistMethod().equals(PersistMethod.CREATE)) {
-                aggregator.addRecord(rw);
+    private void pairApsByEid(Collection<AccessPointWrapper> items) {
+        Map<String, ExternalIdTypeGroup> typeGroupMap = new HashMap<>();
+
+        // create external id type groups
+        for (AccessPointWrapper item : items) {
+            if (!item.getPersistType().equals(PersistType.CREATE)) {
+                continue; // ignore paired by UUID
+            }
+            MultiValuedMap<String, String> typeValueMap = item.getEidTypeValueMap();
+            if (typeValueMap == null) {
+                continue; // no external ids
+            }
+            MapIterator<String, String> typeValueIt = typeValueMap.mapIterator();
+            while (typeValueIt.hasNext()) {
+                String type = typeValueIt.getKey();
+                ExternalIdTypeGroup group = typeGroupMap.get(type);
+                if (group == null) {
+                    typeGroupMap.put(type, group = new ExternalIdTypeGroup());
+                }
+                group.addAp(typeValueIt.getValue(), item);
             }
         }
-        // find pairs by eid
-        aggregator.forEach((code, group) -> {
-            List<ApRecordInfoExternal> pairs = recordRepository.findByExternalSystemCodeAndExternalIdIn(code,
-                    group.getExternalIds());
-            for (ApRecordInfoExternal pair : pairs) {
-                AccessPointWrapper rw = group.getRecord(pair.getExternalId());
+
+        // find pairs by external ids
+        typeGroupMap.forEach((type, group) -> {
+            List<ApAccessPoint> currentAps = apRepository.findByEidTypeCodeAndEidValuesIn(type, group.getValues());
+            for (ApAccessPoint ap : currentAps) {
+                AccessPointWrapper rw = group.getAp(ap.getExternalId());
                 rw.setPair(pair);
             }
         });
     }
 
-    private static class ExternalSystemAggregator {
+    private static class ExternalIdTypeGroup {
 
-        private final Map<String, ExternalSystemGroup> codeMap = new HashMap<>();
+        private final Map<String, AccessPointWrapper> externalIdMap = new HashMap<>();
 
-        public void addRecord(AccessPointWrapper record) {
-            ApExternalSystem system = record.getEntity().getExternalSystem();
-            Validate.notNull(system);
-            ExternalSystemGroup group = codeMap.computeIfAbsent(system.getCode(), k -> new ExternalSystemGroup());
-            group.addRecord(record);
+        public AccessPointWrapper getAp(String externalId) {
+            return externalIdMap.get(externalId);
         }
 
-        public void forEach(BiConsumer<String, ExternalSystemGroup> action) {
-            codeMap.entrySet().forEach(entry -> action.accept(entry.getKey(), entry.getValue()));
+        public void addAp(String value, AccessPointWrapper item) {
+            // TODO Auto-generated method stub
+
         }
 
-        public static class ExternalSystemGroup {
+        public Collection<String> getValues() {
+            return externalIdMap.keySet();
+        }
 
-            private final Map<String, AccessPointWrapper> eIdMap = new HashMap<>();
-
-            public AccessPointWrapper getRecord(String externalId) {
-                return eIdMap.get(externalId);
-            }
-
-            public Collection<String> getExternalIds() {
-                return Collections.unmodifiableCollection(eIdMap.keySet());
-            }
-
-            private void addRecord(AccessPointWrapper record) {
-                String externalId = record.getEntity().getExternalId();
-                Validate.notEmpty(externalId);
-                if (eIdMap.putIfAbsent(externalId, record) != null) {
-                    throw new DEImportException("Access point has duplicate external id, externalSystemCode:"
-                            + record.getEntity().getExternalSystem().getCode() + ", externalId:" + externalId);
-                }
+        private void addRecord(AccessPointWrapper record) {
+            String externalId = record.getEntity().getExternalId();
+            Validate.notEmpty(externalId);
+            if (eIdMap.putIfAbsent(externalId, record) != null) {
+                throw new DEImportException("Access point has duplicate external id, externalSystemCode:"
+                        + record.getEntity().getExternalSystem().getCode() + ", externalId:" + externalId);
             }
         }
     }

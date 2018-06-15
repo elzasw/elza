@@ -28,6 +28,7 @@ public class AccessPointProcessor extends AccessPointEntryProcessor {
         processEntry(ap.getApe());
         processDesc(ap.getChr());
         processNames(ap.getNms());
+        // whole AP processed
         info.onProcessed();
     }
 
@@ -43,7 +44,7 @@ public class AccessPointProcessor extends AccessPointEntryProcessor {
 
     private void processNames(AccessPointtNames names) {
         if (names == null || names.getNm().isEmpty()) {
-            throw new DEImportException("Preferred AP name not found, apeId=" + info.getEntryId());
+            throw new DEImportException("Preferred AP name not found, apeId=" + entryId);
         }
         Iterator<AccessPointName> it = names.getNm().iterator();
         ApName prefName = createName(it.next());
@@ -57,15 +58,14 @@ public class AccessPointProcessor extends AccessPointEntryProcessor {
 
     private ApName createName(AccessPointName name) {
         if (StringUtils.isEmpty(name.getN())) {
-            throw new DEImportException("AP name without value, apeId=" + info.getEntryId());
+            throw new DEImportException("AP name without value, apeId=" + entryId);
         }
         if (!context.isValidLanguage(name.getL())) {
-            throw new DEImportException(
-                    "AP name has invalid language apeId=" + info.getEntryId() + ", code=" + name.getL());
+            throw new DEImportException("AP name has invalid language apeId=" + entryId + ", code=" + name.getL());
         }
         ApNameType nameType = context.getNameType(name.getT());
         if (nameType == null) {
-            throw new DEImportException("AP name type not found, apeId=" + info.getEntryId() + ", code=" + name.getT());
+            throw new DEImportException("AP name type not found, apeId=" + entryId + ", code=" + name.getT());
         }
         // create name
         ApName entity = new ApName();

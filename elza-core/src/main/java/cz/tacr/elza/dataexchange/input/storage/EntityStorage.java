@@ -14,11 +14,11 @@ class EntityStorage<T extends EntityWrapper> {
 
     protected final Session session;
 
-    protected final StorageListener storageListener;
+    protected final MemoryManager memoryManager;
 
-    public EntityStorage(Session session, StorageListener storageListener) {
+    public EntityStorage(Session session, MemoryManager memoryManager) {
         this.session = Validate.notNull(session);
-        this.storageListener = storageListener;
+        this.memoryManager = memoryManager;
     }
 
     /**
@@ -77,18 +77,12 @@ class EntityStorage<T extends EntityWrapper> {
     protected void create(T item) {
         Object entity = item.getEntity();
         session.persist(entity);
-        onEntityPersist(item, entity);
+        memoryManager.onEntityPersist(item, entity);
     }
 
     protected void update(T item) {
         Object entity = item.getEntity();
         entity = session.merge(entity);
-        onEntityPersist(item, entity);
-    }
-
-    protected void onEntityPersist(T item, Object entity) {
-        if (storageListener != null) {
-            storageListener.onEntityPersist(item, entity);
-        }
+        memoryManager.onEntityPersist(item, entity);
     }
 }

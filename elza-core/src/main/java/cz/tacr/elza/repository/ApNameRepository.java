@@ -26,5 +26,5 @@ public interface ApNameRepository extends ElzaJpaRepository<ApName, Integer> {
 
     @Modifying
     @Query("UPDATE ap_name name SET name.deleteChange=?2 WHERE name.accessPointId IN ?1 AND name.deleteChange IS NULL")
-    int deleteAllByAccessPointIdIn(Collection<Integer> apIds, ApChange deleteChange);
+    int deleteByAccessPointIdIn(Collection<Integer> apIds, ApChange deleteChange);
 }

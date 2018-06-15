@@ -10,8 +10,6 @@ import cz.tacr.elza.domain.ParParty;
 
 public class PartyInfo extends EntityIdHolder<ParParty> {
 
-    private final String importId;
-
     private final AccessPointInfo apInfo;
 
     private final PartyType partyType;
@@ -22,18 +20,13 @@ public class PartyInfo extends EntityIdHolder<ParParty> {
 
     private boolean processed;
 
-    private long memoryScore;
+    private long maxMemoryScore;
 
-    public PartyInfo(String importId, AccessPointInfo apInfo, PartyType partyType, PartiesContext context) {
+    public PartyInfo(AccessPointInfo apInfo, PartyType partyType, PartiesContext context) {
         super(partyType.getDomainClass(), false);
-        this.importId = importId;
         this.apInfo = apInfo;
         this.partyType = partyType;
         this.context = context;
-    }
-
-    public String getImportId() {
-        return importId;
     }
 
     public PartyType getPartyType() {
@@ -48,8 +41,11 @@ public class PartyInfo extends EntityIdHolder<ParParty> {
         return apInfo;
     }
 
-    public long getMemoryScore() {
-        return memoryScore;
+    /**
+     * Maximum memory score which party and its sub-entities can occupied.
+     */
+    public long getMaxMemoryScore() {
+        return maxMemoryScore;
     }
 
     public void onProcessed() {
@@ -68,7 +64,7 @@ public class PartyInfo extends EntityIdHolder<ParParty> {
 
     public void onEntityPersist(long memoryScore) {
         Validate.isTrue(queuedEntityCount > 0);
-        this.memoryScore += memoryScore;
+        this.maxMemoryScore += memoryScore;
         queuedEntityCount--;
         // notify context when processed and all entity are persist
         if (processed && queuedEntityCount == 0) {

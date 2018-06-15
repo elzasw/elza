@@ -1,10 +1,9 @@
 package cz.tacr.elza.dataexchange.input.aps;
 
-import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ApExternalId;
-import cz.tacr.elza.domain.ApExternalIdType;
-import cz.tacr.elza.domain.ApType;
+import java.util.Collection;
 
+import org.apache.commons.collections4.MultiValuedMap;
+import org.apache.commons.collections4.multimap.HashSetValuedHashMap;
 import org.apache.commons.lang3.StringUtils;
 
 import cz.tacr.elza.core.data.StaticDataProvider;
@@ -13,6 +12,10 @@ import cz.tacr.elza.dataexchange.input.aps.context.AccessPointInfo;
 import cz.tacr.elza.dataexchange.input.aps.context.AccessPointsContext;
 import cz.tacr.elza.dataexchange.input.context.ImportContext;
 import cz.tacr.elza.dataexchange.input.reader.ItemProcessor;
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApExternalId;
+import cz.tacr.elza.domain.ApExternalIdType;
+import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.schema.v2.AccessPointEntry;
 import cz.tacr.elza.schema.v2.ExternalId;
 
@@ -20,21 +23,20 @@ import cz.tacr.elza.schema.v2.ExternalId;
  * Processing access point entries for access points or parties. Implementation
  * is not thread-safe.
  * 
- * When AP storage updates persist type:
- * 1) CREATE -> all sub entities (also party) will be created
- * 2) UPDATE ->
- *      AP:
- *          - existing AP was paired by UUID or external id
- *          - storage will ignore AP entity (update not needed)
- *          - persist type in AP info will be set to UPDATE
- *          - all currently valid sub entities will be invalidate (set deleteChangeId)
- *          - all imported sub entities will be created
- *      PARTY:
- *          - party will read UPDATE type from AP info
- *          - party entity must be updated
- *          - all current sub entities must be deleted
- *          - all imported sub entities will be created
- *
+ * When AP storage updates persist type: <br>
+ * 1) CREATE -> all sub entities (also party) will be created <br>
+ * 2) UPDATE -> <br>
+ * AP: <br>
+ * - existing AP was paired by UUID or external id <br>
+ * - storage will ignore AP entity (update not needed) <br>
+ * - persist type in AP info will be set to UPDATE <br>
+ * - all sub entities will be invalidate (set deleteChangeId) <br>
+ * - all imported sub entities will be created <br>
+ * PARTY: <br>
+ * - party will read UPDATE type from AP info <br>
+ * - party entity must be updated <br>
+ * - all current sub entities must be deleted <br>
+ * - all imported sub entities will be created <br>
  * 3) NONE -> all AP related entities (party included) will be ignored
  */
 public class AccessPointEntryProcessor implements ItemProcessor {
@@ -44,6 +46,8 @@ public class AccessPointEntryProcessor implements ItemProcessor {
     protected final StaticDataProvider staticData;
 
     protected final boolean partyRelated;
+
+    protected String entryId;
 
     protected AccessPointInfo info;
 
@@ -59,9 +63,33 @@ public class AccessPointEntryProcessor implements ItemProcessor {
     }
 
     protected void processEntry(AccessPointEntry entry) {
+        entryId = entry.getId();
+        // create AP and prepare AP info
+        MultiValuedMap<String, String> eidTypeValueMap = createEidTypeValueMap(entry.getEid());
         ApAccessPoint entity = createEntity(entry);
-        info = context.addAccessPoint(entity, entry.getId());
+        info = context.addAccessPoint(entity, entry.getId(), eidTypeValueMap);
+        // process external ids
         entry.getEid().forEach(this::processExternalId);
+    }
+
+    private MultiValuedMap<String, String> createEidTypeValueMap(Collection<ExternalId> externalIds) {
+        if (externalIds.isEmpty()) {
+            return null;
+        }
+        HashSetValuedHashMap<String, String> map = new HashSetValuedHashMap<>();
+        for (ExternalId eid : externalIds) {
+            if (StringUtils.isEmpty(eid.getT())) {
+                throw new DEImportException("External id type is not set, apeId=" + entryId);
+            }
+            if (StringUtils.isEmpty(eid.getV())) {
+                throw new DEImportException("External id without value, apeId=" + entryId);
+            }
+            if (!map.put(eid.getT(), eid.getV())) {
+                throw new DEImportException(
+                        "External id with duplicit type-value pair, type=" + eid.getT() + ", value=" + eid.getV());
+            }
+        }
+        return map;
     }
 
     private ApAccessPoint createEntity(AccessPointEntry entry) {
@@ -93,9 +121,6 @@ public class AccessPointEntryProcessor implements ItemProcessor {
     }
 
     private void processExternalId(ExternalId eid) {
-        if (StringUtils.isEmpty(eid.getV())) {
-            throw new DEImportException("External id without value, apeId=" + info.getEntryId());
-        }
         ApExternalIdType apEidType = context.getEidType(eid.getT());
         if (apEidType == null) {
             throw new DEImportException("External id type not found, apEid=" + eid.getV() + ", code=" + eid.getT());

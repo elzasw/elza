@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.collections4.MultiValuedMap;
 import org.apache.commons.lang3.StringUtils;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.dataexchange.input.DEImportException;
@@ -50,7 +51,7 @@ public class AccessPointsContext {
 
     private final List<ApNameWrapper> nameQueue = new ArrayList<>();
 
-    private long currentMemoryScore;
+    private long providersMemoryScore;
 
     public AccessPointsContext(StorageManager storageManager, int batchSize, ApScope scope, ApChange createChange,
             AccessPointFullTextProvider fulltextProvider, StaticDataProvider staticData) {
@@ -108,13 +109,14 @@ public class AccessPointsContext {
      *            Parent information
      * @return Return access point import info
      */
-    public AccessPointInfo addAccessPoint(ApAccessPoint entity, String entryId) {
-        AccessPointInfo info = new AccessPointInfo(entryId, entity.getApType(), this);
+    public AccessPointInfo addAccessPoint(ApAccessPoint entity, String entryId,
+            MultiValuedMap<String, String> eidTypeValueMap) {
+        AccessPointInfo info = new AccessPointInfo(entity.getApType(), this);
         if (entryIdApInfoMap.putIfAbsent(entryId, info) != null) {
             throw new DEImportException("Access point has duplicate id, apeId:" + entryId);
         }
         // add to queue
-        apQueue.add(new AccessPointWrapper(entity, info));
+        apQueue.add(new AccessPointWrapper(entity, info, eidTypeValueMap));
         info.onEntityQueued();
         if (apQueue.size() >= batchSize) {
             storeAccessPoints();
@@ -155,10 +157,10 @@ public class AccessPointsContext {
         String fulltext = fulltextProvider.getFullText(entity);
         apInfo.setFulltext(fulltext);
         // clear all entities potentially loaded by provider
-        currentMemoryScore += apInfo.getMemoryScore();
-        if (currentMemoryScore > storageManager.getAvailableMemoryScore()) {
+        providersMemoryScore += apInfo.getMaxMemoryScore();
+        if (providersMemoryScore > storageManager.getAvailableMemoryScore()) {
             storageManager.flushAndClear(true);
-            currentMemoryScore = 0;
+            providersMemoryScore = 0;
         }
     }
 

@@ -12,8 +12,6 @@ import cz.tacr.elza.domain.ApType;
  */
 public class AccessPointInfo extends EntityIdHolder<ApAccessPoint> {
 
-    private final String entryId;
-
     private final ApType apType;
 
     private final AccessPointsContext context;
@@ -26,17 +24,12 @@ public class AccessPointInfo extends EntityIdHolder<ApAccessPoint> {
 
     private boolean processed;
 
-    private long memoryScore;
+    private long maxMemoryScore;
 
-    public AccessPointInfo(String entryId, ApType apType, AccessPointsContext context) {
+    public AccessPointInfo(ApType apType, AccessPointsContext context) {
         super(ApAccessPoint.class, false);
-        this.entryId = entryId;
         this.apType = apType;
         this.context = context;
-    }
-
-    public String getEntryId() {
-        return entryId;
     }
 
     public ApType getApType() {
@@ -59,8 +52,11 @@ public class AccessPointInfo extends EntityIdHolder<ApAccessPoint> {
         this.fulltext = fulltext;
     }
 
-    public long getMemoryScore() {
-        return memoryScore;
+    /**
+     * Maximum memory score which AP and its sub-entities can occupied.
+     */
+    public long getMaxMemoryScore() {
+        return maxMemoryScore;
     }
 
     public void onProcessed() {
@@ -79,7 +75,7 @@ public class AccessPointInfo extends EntityIdHolder<ApAccessPoint> {
 
     public void onEntityPersist(long memoryScore) {
         Validate.isTrue(queuedEntityCount > 0);
-        this.memoryScore += memoryScore;
+        this.maxMemoryScore += memoryScore;
         queuedEntityCount--;
         // notify context when processed and all entity are persist
         if (processed && queuedEntityCount == 0) {

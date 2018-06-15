@@ -8,6 +8,8 @@ import cz.tacr.elza.repository.PartyNameComplementRepository;
 import cz.tacr.elza.repository.PartyNameRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.ApAccessPointRepository;
+import cz.tacr.elza.repository.ApDescriptionRepository;
+import cz.tacr.elza.repository.ApExternalIdRepository;
 import cz.tacr.elza.repository.ApNameRepository;
 import cz.tacr.elza.repository.UnitdateRepository;
 import cz.tacr.elza.service.ArrangementService;
@@ -29,6 +31,10 @@ public class ImportInitHelper {
 
     private final ApNameRepository apNameRepository;
 
+    private final ApDescriptionRepository apDescRepository;
+
+    private final ApExternalIdRepository apEidRepository;
+
     private final PartyRepository partyRepository;
 
     private final PartyNameRepository nameRepository;
@@ -39,12 +45,20 @@ public class ImportInitHelper {
 
     private final UnitdateRepository unitdateRepository;
 
-    public ImportInitHelper(GroovyScriptService groovyScriptService, InstitutionRepository institutionRepository,
-            InstitutionTypeRepository institutionTypeRepository, ArrangementService arrangementService,
-            LevelRepository levelRepository, ApAccessPointRepository apRepository, ApNameRepository apNameRepository,
-            PartyRepository partyRepository, PartyNameRepository nameRepository,
+    public ImportInitHelper(GroovyScriptService groovyScriptService, 
+            InstitutionRepository institutionRepository,
+            InstitutionTypeRepository institutionTypeRepository, 
+            ArrangementService arrangementService,
+            LevelRepository levelRepository, 
+            ApAccessPointRepository apRepository, 
+            ApNameRepository apNameRepository,
+            ApDescriptionRepository apDescRepository, 
+            ApExternalIdRepository apEidRepository,
+            PartyRepository partyRepository, 
+            PartyNameRepository nameRepository,
             PartyNameComplementRepository nameComplementRepository,
-            PartyGroupIdentifierRepository groupIdentifierRepository, UnitdateRepository unitdateRepository) {
+            PartyGroupIdentifierRepository groupIdentifierRepository, 
+            UnitdateRepository unitdateRepository) {
         this.groovyScriptService = groovyScriptService;
         this.institutionRepository = institutionRepository;
         this.institutionTypeRepository = institutionTypeRepository;
@@ -52,6 +66,8 @@ public class ImportInitHelper {
         this.levelRepository = levelRepository;
         this.apRepository = apRepository;
         this.apNameRepository = apNameRepository;
+        this.apDescRepository = apDescRepository;
+        this.apEidRepository = apEidRepository;
         this.partyRepository = partyRepository;
         this.nameRepository = nameRepository;
         this.nameComplementRepository = nameComplementRepository;
@@ -85,6 +101,14 @@ public class ImportInitHelper {
 
     public ApNameRepository getApNameRepository() {
         return apNameRepository;
+    }
+
+    public ApDescriptionRepository getApDescRepository() {
+        return apDescRepository;
+    }
+
+    public ApExternalIdRepository getApEidRepository() {
+        return apEidRepository;
     }
 
     public PartyRepository getPartyRepository() {

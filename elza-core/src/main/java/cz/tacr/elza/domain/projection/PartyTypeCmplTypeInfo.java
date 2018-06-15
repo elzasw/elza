@@ -2,7 +2,7 @@ package cz.tacr.elza.domain.projection;
 
 import org.springframework.beans.factory.annotation.Value;
 
-public interface PartyTypeComplementTypeInfo {
+public interface PartyTypeCmplTypeInfo {
 
     @Value("#{target.partyType.code}")
     String getPartyTypeCode();
