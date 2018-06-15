@@ -10,6 +10,8 @@ import java.util.Map;
 
 import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Iterables;
 import com.vividsolutions.jts.util.Assert;
@@ -39,6 +41,8 @@ import cz.tacr.elza.service.GroovyScriptService;
  * Context for data exchange parties.
  */
 public class PartiesContext {
+
+    static final Logger logger = LoggerFactory.getLogger(PartiesContext.class);
 
     private final Map<String, PartyInfo> partyImportIdMap = new HashMap<>();
 
@@ -89,6 +93,8 @@ public class PartiesContext {
     }
 
     public PartyInfo addParty(ParParty party, String importId, AccessPointInfo apInfo, PartyType partyType) {
+        logger.debug("Add party to the context, importId = {}", importId);
+
         PartyInfo info = new PartyInfo(importId, apInfo, partyType);
         if (partyImportIdMap.putIfAbsent(importId, info) != null) {
             throw new DEImportException("Party has duplicate id, partyId:" + importId);
@@ -107,6 +113,8 @@ public class PartiesContext {
     }
 
     public PartyNameWrapper addName(ParPartyName partyName, PartyInfo partyInfo, boolean preferred) {
+        logger.debug("Add name to the context, importId = {}, name = {}", partyInfo.getImportId(),
+                    partyName.getMainPart());
         PartyNameWrapper wrapper = new PartyNameWrapper(partyName, partyInfo);
         nameQueue.add(wrapper);
         if (nameQueue.size() >= batchSize) {
@@ -160,6 +168,7 @@ public class PartiesContext {
      * @param partyTypes not-null, if empty all present type groups are stored.
      */
     private void storePartyTypeGroups(PartyType... partyTypes) {
+
         if (partyTypes.length == 0) {
             partyTypeGroupQueueMap.values().forEach(PartyTypeGroup::storeParties);
         } else {
@@ -188,6 +197,8 @@ public class PartiesContext {
     }
 
     private void storeNames() {
+        logger.debug("Store names, count: {}", nameQueue.size());
+
         if (nameQueue.isEmpty()) {
             return;
         }
@@ -204,6 +215,8 @@ public class PartiesContext {
     }
 
     private void storePreferredNames() {
+        logger.debug("Store prefer names, count: {}", preferredNameQueue.size());
+
         storeNames();
         storageManager.savePartyPreferredNames(preferredNameQueue);
         preferredNameQueue.clear();
@@ -229,6 +242,8 @@ public class PartiesContext {
         }
 
         public void storeParties() {
+            logger.debug("Store Parties, count: {}", partyQueue.size());
+
             if (partyQueue.isEmpty()) {
                 return;
             }

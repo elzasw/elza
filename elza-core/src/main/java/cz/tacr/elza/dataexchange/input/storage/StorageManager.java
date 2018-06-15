@@ -7,6 +7,8 @@ import java.util.List;
 
 import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import cz.tacr.elza.dataexchange.input.aps.context.APVariantNameWrapper;
 import cz.tacr.elza.dataexchange.input.aps.context.AccessPointWrapper;
@@ -32,7 +34,9 @@ import cz.tacr.elza.dataexchange.input.sections.context.ArrStructObjectWrapper;
  */
 public class StorageManager implements StorageListener {
 
-    private final List<Object> persistEntities = new LinkedList<>();
+    static final Logger logger = LoggerFactory.getLogger(StorageManager.class);
+
+    private final List<EntityWrapper> persistEntities = new LinkedList<>();
 
     private final long memoryScoreLimit;
 
@@ -56,19 +60,23 @@ public class StorageManager implements StorageListener {
      * be synchronized with the database.
      */
     public void clear() {
-        for (Object entity : persistEntities) {
-            session.evict(entity);
+        logger.debug("Clearing entities from persistent context, count: {}", persistEntities.size());
+
+        for (EntityWrapper ew : persistEntities) {
+
+            //logger.debug("Evicting wrapper, class = {}", ew.getClass());
+
+            ew.evictFrom(session);
         }
         persistEntities.clear();
         currentMemoryScore = 0;
     }
 
     @Override
-    public void onEntityPersist(EntityWrapper item, Object entity) {
+    public void onEntityPersist(EntityWrapper item) {
         Validate.notNull(item);
-        Validate.notNull(entity);
 
-        persistEntities.add(entity);
+        persistEntities.add(item);
         // estimate memory score
         long memoryScore = 1;
         if (item instanceof EntityMetrics) {

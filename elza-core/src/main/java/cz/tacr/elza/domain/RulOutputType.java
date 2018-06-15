@@ -1,5 +1,7 @@
 package cz.tacr.elza.domain;
 
+import javax.persistence.Access;
+import javax.persistence.AccessType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -9,10 +11,11 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
-import cz.tacr.elza.domain.enumeration.StringLength;
 import org.apache.commons.lang.builder.EqualsBuilder;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import cz.tacr.elza.domain.enumeration.StringLength;
 
 
 /**
@@ -25,6 +28,7 @@ public class RulOutputType {
 
     @Id
     @GeneratedValue
+    @Access(AccessType.PROPERTY) // required to read id without fetch from db
     private Integer outputTypeId;
 
     @Column(length = StringLength.LENGTH_50, nullable = false)

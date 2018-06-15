@@ -1,5 +1,7 @@
 package cz.tacr.elza.domain;
 
+import javax.persistence.Access;
+import javax.persistence.AccessType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -31,6 +33,7 @@ public class ParRelationClassType {
 
     @Id
     @GeneratedValue
+    @Access(AccessType.PROPERTY) // required to read id without fetch from db
     private Integer relationClassTypeId;
 
     @Column(length = StringLength.LENGTH_50, nullable = false)

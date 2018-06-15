@@ -50,7 +50,7 @@ public class ParParty extends AbstractVersionableEntity implements IApScope {
 
     @Id
     @GeneratedValue
-    @Access(AccessType.PROPERTY)
+    @Access(AccessType.PROPERTY) // required to read id without fetch from db
     private Integer partyId;
 
     @RestResource(exported = false)

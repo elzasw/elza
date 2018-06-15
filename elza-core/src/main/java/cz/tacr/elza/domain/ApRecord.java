@@ -45,7 +45,7 @@ public class ApRecord extends AbstractVersionableEntity implements Versionable, 
 
     @Id
     @GeneratedValue
-    @Access(AccessType.PROPERTY)
+    @Access(AccessType.PROPERTY) // required to read id without fetch from db
     private Integer recordId;
 
     @RestResource(exported = false)
@@ -71,6 +71,7 @@ public class ApRecord extends AbstractVersionableEntity implements Versionable, 
     @JsonIgnore
     private List<ApVariantRecord> variantRecordList = new ArrayList<>(0);
 
+    // Is this declaration correct/needed and anywhere used?
     @RestResource(exported = false)
     @OneToMany(mappedBy = "record", fetch = FetchType.LAZY)
     @JsonIgnore

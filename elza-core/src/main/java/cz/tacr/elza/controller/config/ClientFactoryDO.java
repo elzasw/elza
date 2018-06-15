@@ -351,10 +351,10 @@ public class ClientFactoryDO {
     public ArrDescItem createDescItem(final ArrItemVO descItemVO) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
 
-        ArrData data = mapper.map(descItemVO, ArrData.class);
-        if (data != null) {
-            // If item has data -> it cannot be undefined
-            Validate.isTrue(descItemVO.getUndefined() != Boolean.TRUE);
+        ArrData data = null;
+        // Item is not undefined -> parse data
+        if (descItemVO.getUndefined() != Boolean.TRUE) {
+            data = mapper.map(descItemVO, ArrData.class);
         }
 
         ArrDescItem descItem = new ArrDescItem();

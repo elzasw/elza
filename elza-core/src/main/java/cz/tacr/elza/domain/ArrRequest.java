@@ -2,6 +2,8 @@ package cz.tacr.elza.domain;
 
 import java.time.LocalDateTime;
 
+import javax.persistence.Access;
+import javax.persistence.AccessType;
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorColumn;
 import javax.persistence.DiscriminatorType;
@@ -85,6 +87,7 @@ public abstract class ArrRequest {
 
     @Id
     @GeneratedValue
+    @Access(AccessType.PROPERTY) // required to read id without fetch from db
     private Integer requestId;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFund.class)

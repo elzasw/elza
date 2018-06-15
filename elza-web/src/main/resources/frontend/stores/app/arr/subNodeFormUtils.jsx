@@ -634,7 +634,7 @@ class FlatFormData{
         this.descItems = items;
     }
     /**
-     * Deletes unused items (items that are empty, not required or recommended, and not added by user).
+     * Deletes unused items (items that are empty, and not added by user).
      */
     _deleteUnusedItems(){
         let items = this.descItems;
@@ -646,9 +646,8 @@ class FlatFormData{
             const isEmpty = item.value === null || item.descItemSpecId === null;
             const type = this.types[item.itemType];
             const isFromDb = item.descItemObjectId >= 0;
-            const forceVisible = type.type === availability.REQUIRED || type.type === availability.RECOMMENDED;
 
-            if(isEmpty && !item.addedByUser && !isFromDb && !forceVisible){
+            if(isEmpty && !item.addedByUser && !isFromDb){
                 delete items[itemId];
                 newIds.splice(newIds.indexOf(itemId),1);
             }
@@ -675,18 +674,18 @@ class FlatFormData{
             let forceVisible = type.type === availability.REQUIRED || type.type === availability.RECOMMENDED;
             let typeItems = itemTypesMap[typeId] && itemTypesMap[typeId].items;
 
-            if (forceVisible || typeItems){
+            if (forceVisible){
                 let refType = refTypesMap[typeId];
                 refType.dataType = refDataTypesMap[refType.dataTypeId];
-                let forcedTypeSpecs = itemSpecsMap[typeId] && itemSpecsMap[typeId].specs;
                 let newItem;
                 let nextEmptyItemIdBase = "item_";
                 let nextEmptyItemId = nextEmptyItemIdBase + this._emptyItemCounter;
+                let forcedTypeSpecs = itemSpecsMap[typeId] && itemSpecsMap[typeId].specs;
 
+                //Add forced specifications
                 if (forcedTypeSpecs){
-                    //Add forced specifications
-                    let unusedForcedSpecs = this._getUnusedSpecIds(forcedTypeSpecs, typeItems);
                     let lastPosition = typeItems ? typeItems.length : 0;
+                    let unusedForcedSpecs = this._getUnusedSpecIds(forcedTypeSpecs, typeItems);
 
                     for(let s = 0; s < unusedForcedSpecs.length; s++){
                         nextEmptyItemId = nextEmptyItemIdBase + this._emptyItemCounter;
@@ -700,8 +699,9 @@ class FlatFormData{
                         newItems.ids.push(nextEmptyItemId);
                         this._emptyItemCounter++;
                     }
-                } else if(!typeItems){
-                    //Add forced itemTypes
+                }
+                //Add forced itemTypes
+                else if(!typeItems){
                     newItem = createDescItem(type, refType, false);
                     newItem.position = 1;
                     newItem.itemType = typeId;
@@ -709,15 +709,16 @@ class FlatFormData{
                     newItems[nextEmptyItemId] = newItem;
                     newItems.ids.push(nextEmptyItemId);
                     this._emptyItemCounter++;
-                } else if (typeItems){
-                    //Add existing items
-                    for(let i = 0; i < typeItems.length; i++){
-                        const itemId = typeItems[i];
-                        const item = items[itemId];
+                }
+            }
+            if (typeItems){
+                //Add existing items
+                for(let i = 0; i < typeItems.length; i++){
+                    const itemId = typeItems[i];
+                    const item = items[itemId];
 
-                        newItems[itemId] = item;
-                        newItems.ids.push(itemId);
-                    }
+                    newItems[itemId] = item;
+                    newItems.ids.push(itemId);
                 }
             }
         }
@@ -733,7 +734,7 @@ class FlatFormData{
      * @return Array
      */
     _getUnusedSpecIds(specIds = this.specs.ids, itemIds = this.descItems.ids){
-        let unusedSpecIds = [...specIds]
+        let unusedSpecIds = [...specIds];
         for(let i = 0; i < itemIds.length; i++){
             let itemId = itemIds[i];
             let item = this.descItems[itemId];
@@ -758,7 +759,7 @@ class FlatFormData{
         for(let i = 0; i < specs.ids.length; i++){
             let itemId = specs.ids[i];
             let item = specs[itemId];
-            let typeId = item.itemType
+            let typeId = item.itemType;
 
             if(item.type === availability.RECOMMENDED || item.type === availability.REQUIRED){
                 if(!types[typeId]){
@@ -835,16 +836,16 @@ class FlatFormData{
             let type = {
                 ...types[t],
                 group: group.code
-            }
+            };
             let typeDescItems = type.descItems;
             let typeSpecs = type.specs;
 
             if(typeSpecs && typeSpecs.length > 0){
-                this._getSpecMap(typeSpecs, type)
+                this._getSpecMap(typeSpecs, type);
             }
 
             if(typeDescItems && typeDescItems.length > 0){
-                this._getDescItemsMap(typeDescItems, type)
+                this._getDescItemsMap(typeDescItems, type);
             }
 
             this.types[type.id] = type;
@@ -868,7 +869,7 @@ class FlatFormData{
             let item = {
                 ...items[d],
                 itemType: type.id
-            }
+            };
             let itemId = null;
 
             if(item.descItemObjectId >= 0){

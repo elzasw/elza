@@ -2,6 +2,8 @@ package cz.tacr.elza.domain;
 
 import java.time.LocalDateTime;
 
+import javax.persistence.Access;
+import javax.persistence.AccessType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -11,8 +13,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-
-import org.springframework.data.annotation.AccessType;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -28,7 +28,7 @@ public class ArrChange {
 
     @Id
     @GeneratedValue
-    @AccessType(AccessType.Type.PROPERTY)
+    @Access(AccessType.PROPERTY) // required to read id without fetch from db
     private Integer changeId;
 
     @Column(nullable = false)

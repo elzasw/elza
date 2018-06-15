@@ -2,6 +2,8 @@ package cz.tacr.elza.domain;
 
 import static cz.tacr.elza.domain.enumeration.StringLength.LENGTH_ENUM;
 
+import javax.persistence.Access;
+import javax.persistence.AccessType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -45,6 +47,7 @@ public class ArrStructuredObject implements IArrFund, Structured {
 
     @Id
     @GeneratedValue
+    @Access(AccessType.PROPERTY) // required to read id without fetch from db
     private Integer structuredObjectId;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrChange.class)

@@ -2,6 +2,8 @@ package cz.tacr.elza.domain;
 
 import java.util.Comparator;
 
+import javax.persistence.Access;
+import javax.persistence.AccessType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -39,6 +41,7 @@ public class ParPartyNameComplement {
 
     @Id
     @GeneratedValue
+    @Access(AccessType.PROPERTY) // required to read id without fetch from db
     private Integer partyNameComplementId;
 
     @RestResource(exported = false)
