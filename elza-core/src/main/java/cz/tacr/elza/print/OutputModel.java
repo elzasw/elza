@@ -511,7 +511,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
         // get parent type
         RecordType parentType = null;
-        Integer apParentTypeId = apType.getParentRegisterTypeId();
+        Integer apParentTypeId = apType.getParentApTypeId();
         if (apParentTypeId != null) {
             parentType = getAPType(apParentTypeId);
         }
