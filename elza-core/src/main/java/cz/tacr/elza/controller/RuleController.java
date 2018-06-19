@@ -15,9 +15,7 @@ import cz.tacr.elza.controller.vo.RulRuleSetVO;
 import cz.tacr.elza.controller.vo.RulTemplateVO;
 import cz.tacr.elza.controller.vo.TypeInfoVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
-import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.core.data.RuleSystemItemType;
-import cz.tacr.elza.core.data.RuleSystemProvider;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -220,16 +218,14 @@ public class RuleController {
 
         List<GroupVO> result = new ArrayList<>();
         StaticDataProvider sdp = staticDataService.getData();
-        RuleSystemProvider rsp = sdp.getRuleSystems();
-        RuleSystem rs = rsp.getByRuleSetCode(ruleCode);
 
-        List<RuleSystemItemType> ruleSystemItemTypes = new ArrayList<>(rs.getItemTypes());
+        List<RuleSystemItemType> ruleSystemItemTypes = new ArrayList<>(sdp.getItemTypes());
         for (GroupConfiguration configuration : viewConfig.getGroups()) {
             GroupVO group = new GroupVO(configuration.getCode(), configuration.getName());
             List<TypeInfoVO> typeInfos = new ArrayList<>(configuration.getTypes().size());
             for (TypeInfo typeInfo : configuration.getTypes()) {
                 String code = typeInfo.getCode();
-                RuleSystemItemType itemType = rs.getItemTypeByCode(code);
+                RuleSystemItemType itemType = sdp.getItemTypeByCode(code);
                 if (itemType != null) {
                     ruleSystemItemTypes.remove(itemType);
                     typeInfos.add(new TypeInfoVO(itemType.getItemTypeId(), typeInfo.getWidth()));
@@ -245,7 +241,7 @@ public class RuleController {
         List<TypeInfoVO> typeInfos = new ArrayList<>();
         for (RuleSystemItemType ruleSystemItemType : ruleSystemItemTypes) {
             String code = ruleSystemItemType.getCode();
-            RuleSystemItemType itemType = rs.getItemTypeByCode(code);
+            RuleSystemItemType itemType = sdp.getItemTypeByCode(code);
             typeInfos.add(new TypeInfoVO(itemType.getItemTypeId(), 1));
         }
         defaultGroup.setItemTypes(typeInfos);

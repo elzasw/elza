@@ -12,8 +12,6 @@ import cz.tacr.elza.domain.RulItemType;
 
 public class RuleSystemItemType {
 
-    private final RuleSystem ruleSystem;
-
     private final RulItemType itemType;
 
     private final DataType dataType;
@@ -24,8 +22,7 @@ public class RuleSystemItemType {
 
     private Map<String, RulItemSpec> itemSpecCodeMap;
 
-    RuleSystemItemType(RuleSystem ruleSystem, RulItemType itemType, DataType dataType) {
-        this.ruleSystem = ruleSystem;
+    RuleSystemItemType(RulItemType itemType, DataType dataType) {
         this.itemType = itemType;
         this.dataType = dataType;
 
@@ -33,10 +30,6 @@ public class RuleSystemItemType {
 
         // ensure reference equality
         Validate.isTrue(itemType.getDataType() == dataType.getEntity());
-    }
-
-    public RuleSystem getRuleSystem() {
-        return ruleSystem;
     }
 
     public DataType getDataType() {

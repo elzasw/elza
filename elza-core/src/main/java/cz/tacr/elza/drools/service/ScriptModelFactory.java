@@ -8,16 +8,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
+import cz.tacr.elza.core.data.*;
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
-import cz.tacr.elza.core.data.DataType;
-import cz.tacr.elza.core.data.RuleSystem;
-import cz.tacr.elza.core.data.RuleSystemItemType;
-import cz.tacr.elza.core.data.RuleSystemProvider;
-import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrDataInteger;
 import cz.tacr.elza.domain.ArrDataNull;
 import cz.tacr.elza.domain.ArrDescItem;
@@ -63,7 +59,7 @@ public class ScriptModelFactory {
 	private StaticDataService staticDataService;
 
 	@Autowired
-	private StructuredItemRepository structItemRepos;	
+	private StructuredItemRepository structItemRepos;
 
     /**
 	 * Vytvoří strukturu od výchozího levelu. Načte všechny jeho rodiče a prvky
@@ -143,15 +139,14 @@ public class ScriptModelFactory {
 	 * @return
 	 */
 	public ScenarioOfNewLevel createScenarioOfNewLevel(final NewLevelApproach newLevelApproach, int ruleSetId) {
-		RuleSystemProvider rsp = staticDataService.getData().getRuleSystems();
-		RuleSystem ruleSystem = rsp.getByRuleSetId(ruleSetId);
+        StaticDataProvider sdp = staticDataService.getData();
 
         ScenarioOfNewLevel scenarioOfNewLevel = new ScenarioOfNewLevel();
         scenarioOfNewLevel.setName(newLevelApproach.getName());
 
         List<ArrDescItem> descItems = new ArrayList<>();
 		for (DescItem descItemRules : newLevelApproach.getDescItems()) {
-			ArrDescItem descItem = createDescItem(descItemRules, ruleSystem);
+			ArrDescItem descItem = createDescItem(descItemRules, sdp);
 			descItems.add(descItem);
         }
 
@@ -165,11 +160,11 @@ public class ScriptModelFactory {
 	 *
 	 * @param descItemRule
 	 *            Source description item
-	 * @param ruleSystem
+	 * @param sdp
 	 * @return
 	 */
-	private ArrDescItem createDescItem(final DescItem descItemRule, RuleSystem ruleSystem) {
-		RuleSystemItemType itemType = ruleSystem.getItemTypeByCode(descItemRule.getType());
+	private ArrDescItem createDescItem(final DescItem descItemRule, StaticDataProvider sdp) {
+		RuleSystemItemType itemType = sdp.getItemTypeByCode(descItemRule.getType());
 		Validate.notNull(itemType, "Item type: %d", descItemRule.getType());
 
         ArrDescItem descItem = new ArrDescItem();
@@ -307,9 +302,6 @@ public class ScriptModelFactory {
 
     /**
 	 * Create active level model for given level
-	 *
-	 * @param descItemReader
-	 *            reader for description items
 	 * @return
 	 */
 	public ActiveLevel createActiveLevel(

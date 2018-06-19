@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.core.data.StaticDataProvider;
 import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.core.data.RuleSystem;
@@ -37,6 +38,8 @@ public class ContextSection {
 
     private final RuleSystem ruleSystem;
 
+    private final StaticDataProvider staticData;
+
     private final ArrangementService arrangementService;
 
     private final StructObjService structObjService;
@@ -49,11 +52,13 @@ public class ContextSection {
                    int batchSize,
                    ArrChange createChange,
                    RuleSystem ruleSystem,
+                   StaticDataProvider staticData,
                    ImportInitHelper initHelper) {
         this.nodeStorageDispatcher = new NodeStorageDispatcher(storageManager, batchSize);
         this.structObjectStorageDispatcher = new StructObjectStorageDispatcher(storageManager, batchSize);
         this.createChange = Validate.notNull(createChange);
         this.ruleSystem = Validate.notNull(ruleSystem);
+        this.staticData = Validate.notNull(staticData);
         this.arrangementService = initHelper.getArrangementService();
         this.structObjService = initHelper.getStructObjService();
     }
@@ -64,6 +69,10 @@ public class ContextSection {
 
     public RuleSystem getRuleSystem() {
         return ruleSystem;
+    }
+
+    public StaticDataProvider getStaticData() {
+        return staticData;
     }
 
     public ArrFund getFund() {
@@ -112,7 +121,7 @@ public class ContextSection {
     }
 
     public void setProcessingStructType(String structTypeCode) {
-        RulStructuredType st = ruleSystem.getStructuredTypeByCode(structTypeCode);
+        RulStructuredType st = staticData.getStructuredTypeByCode(structTypeCode);
         this.processingStructType = Validate.notNull(st);
     }
 

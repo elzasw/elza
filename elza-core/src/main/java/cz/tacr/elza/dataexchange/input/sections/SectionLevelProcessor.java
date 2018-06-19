@@ -3,10 +3,10 @@ package cz.tacr.elza.dataexchange.input.sections;
 import java.util.Collection;
 import java.util.Date;
 
+import cz.tacr.elza.core.data.StaticDataProvider;
 import org.apache.commons.lang3.StringUtils;
 
 import cz.tacr.elza.core.data.DataType;
-import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.core.data.RuleSystemItemType;
 import cz.tacr.elza.dataexchange.common.items.ImportableItem.ImportableItemData;
 import cz.tacr.elza.dataexchange.input.DEImportException;
@@ -109,7 +109,7 @@ public class SectionLevelProcessor implements ItemProcessor {
     }
 
     private void processDescItems(Collection<DescriptionItem> items, ContextNode node) {
-        RuleSystem ruleSystem = section.getRuleSystem();
+        StaticDataProvider ruleSystem = section.getStaticData();
 
         for (DescriptionItem item : items) {
             // resolve item type

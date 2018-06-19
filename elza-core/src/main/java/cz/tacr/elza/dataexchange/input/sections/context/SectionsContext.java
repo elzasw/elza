@@ -96,13 +96,13 @@ public class SectionsContext {
         if (StringUtils.isEmpty(ruleSetCode)) {
             throw new DEImportException("Rule set code is empty");
         }
-        RuleSystem ruleSystem = staticData.getRuleSystems().getByRuleSetCode(ruleSetCode);
+        RuleSystem ruleSystem = staticData.getRuleSystemByCode(ruleSetCode);
         if (ruleSystem == null) {
             throw new DEImportException("Rule set not found, code:" + ruleSetCode);
         }
 
         // create current section
-        ContextSection section = new ContextSection(storageManager, batchSize, createChange, ruleSystem, initHelper);
+        ContextSection section = new ContextSection(storageManager, batchSize, createChange, ruleSystem, staticData, initHelper);
 
         // set subsection root adapter when present
         if (importPosition != null) {

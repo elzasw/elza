@@ -201,7 +201,7 @@ public class StructureService {
      *
      * @param structObj
      *            hodnota struktovaného datového typu
-     * 
+     *
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public void deleteStructObj(@AuthParam(type = AuthParam.Type.FUND) final ArrStructuredObject structObj) {
@@ -295,12 +295,6 @@ public class StructureService {
         ArrStructuredObject structureData = getStructObjById(structureDataId);
         ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
 
-        if (!fundVersion.getRuleSet().equals(structureData.getStructuredType().getRuleSet())) {
-            throw new BusinessException("Fund a strukturovaný typ nemají stejná pravidla", BaseCode.INVALID_STATE)
-                    .set("fund_rul_set", fundVersion.getRuleSet().getCode())
-                    .set("structure_type_rul_set", structureData.getStructuredType().getRuleSet().getCode());
-        }
-
         ArrChange change = structureData.getState() == ArrStructuredObject.State.TEMP ? structureData.getCreateChange() : arrangementService.createChange(ArrChange.Type.ADD_STRUCTURE_ITEM);
 
         int nextPosition = findNextPosition(structureData, structureItem.getItemType());
@@ -329,8 +323,6 @@ public class StructureService {
             }
 
         }
-
-        validateRuleSet(fundVersion, structureItem.getItemType());
 
         ArrData data = createData(structureItem.getData(), structureItem.getItemType().getDataType());
 
@@ -444,8 +436,6 @@ public class StructureService {
         ArrStructuredObject structureData = structureItemDB.getStructuredObject();
         ArrChange change = structureData.getState() == ArrStructuredObject.State.TEMP ? structureData.getCreateChange() : arrangementService.createChange(ArrChange.Type.UPDATE_STRUCTURE_ITEM);
 
-        validateRuleSet(fundVersion, structureItemDB.getItemType());
-
         ArrStructuredItem updateStructureItem;
 
         if (createNewVersion) {
@@ -517,20 +507,6 @@ public class StructureService {
     }
 
     /**
-     * Provede kontrolu zda-li verze AS má stejná pravidla jako strukt. typ.
-     *
-     * @param fundVersion verze AS
-     * @param itemType    typ atributu
-     */
-    private void validateRuleSet(final ArrFundVersion fundVersion, final RulItemType itemType) {
-        if (itemType.getStructuredType() != null && !fundVersion.getRuleSet().equals(itemType.getStructuredType().getRuleSet())) {
-            throw new BusinessException("Fund a strukturovaný typ nemají stejná pravidla", BaseCode.INVALID_STATE)
-                    .set("fund_rul_set", fundVersion.getRuleSet().getCode())
-                    .set("structure_type_rul_set", itemType.getRuleSet().getCode());
-        }
-    }
-
-    /**
      * Smazání položky k hodnotě strukt. datového typu.
      *
      * @param structureItem položka
@@ -549,7 +525,6 @@ public class StructureService {
 
         ArrStructuredObject structureData = structureItemDB.getStructuredObject();
         ArrChange change = structureData.getState() == ArrStructuredObject.State.TEMP ? structureData.getCreateChange() : arrangementService.createChange(ArrChange.Type.DELETE_STRUCTURE_ITEM);
-        validateRuleSet(fundVersion, structureItemDB.getItemType());
 
         structureItemDB.setDeleteChange(change);
 
@@ -583,7 +558,6 @@ public class StructureService {
      * Úprava dat. Provede uložení změněných dat, popřípadně založení kopie.
      *
      * @param data             ukládaná data
-     * @param createNewVersion vytvořit nová data
      * @param dataType         datový typ dat
      * @return uložená / nová data
      */
@@ -698,11 +672,7 @@ public class StructureService {
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public ArrStructuredObject getStructObjById(final Integer structureDataId,
                                                     @AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion) {
-        ArrStructuredObject structureData = getStructObjById(structureDataId);
-        if (!structureData.getStructuredType().getRuleSet().equals(fundVersion.getRuleSet())) {
-            throw new BusinessException("Pravidla AS nesouhlasí s pravidly hodnoty strukt. typu", BaseCode.INVALID_STATE);
-        }
-        return structureData;
+        return getStructObjById(structureDataId);
     }
 
     /**
@@ -719,7 +689,6 @@ public class StructureService {
         ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
         ArrStructuredObject structObj = getStructObjById(structureDataId);
         RulItemType type = ruleService.getItemTypeById(itemTypeId);
-        validateRuleSet(fundVersion, type);
         List<ArrStructuredItem> structureItems = structureItemRepository.findOpenItems(type, structObj);
 
         ArrChange change = structObj.getState() == ArrStructuredObject.State.TEMP ? structObj.getCreateChange() : arrangementService.createChange(ArrChange.Type.DELETE_STRUCTURE_ITEM);
@@ -789,14 +758,12 @@ public class StructureService {
     }
 
     /**
-     * Vyhledání strukturovaných typů podle pravidel.
+     * Vyhledání všech strukturovaných typů.
      *
-     * @param fundVersion verze AS
      * @return nalezené entity
      */
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
-    public List<RulStructuredType> findStructureTypes(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion) {
-        return structureTypeRepository.findByRuleSet(fundVersion.getRuleSet());
+    public List<RulStructuredType> findStructureTypes() {
+        return structureTypeRepository.findAll();
     }
 
     /**
@@ -880,9 +847,6 @@ public class StructureService {
         if (!structureType.equals(structureExtension.getStructuredType())) {
             throw new BusinessException("Rozšíření nespadá pod strukt. typ", BaseCode.INVALID_STATE);
         }
-        if (!fundVersion.getRuleSet().equals(structureExtension.getStructuredType().getRuleSet())) {
-            throw new BusinessException("AS a rozšíření mají rozdílná pravidla", BaseCode.INVALID_STATE);
-        }
     }
 
     /**
@@ -942,9 +906,6 @@ public class StructureService {
         }
         if (structureData.getState() != ArrStructuredObject.State.TEMP) {
             throw new BusinessException("Neplatný stav hodnoty strukt. typu: " + structureData.getState(), BaseCode.INVALID_STATE);
-        }
-        if (!fundVersion.getRuleSet().equals(structureData.getStructuredType().getRuleSet())) {
-            throw new BusinessException("Pravidla AS nesouhlasí s pravidly hodnoty strukt. typu", BaseCode.INVALID_STATE);
         }
 
         List<RulItemType> itemTypes = findAndValidateIntItemTypes(fundVersion, itemTypeIds);
@@ -1056,9 +1017,6 @@ public class StructureService {
             throw new BusinessException("Některý z typů atributů neexistuje", BaseCode.INVALID_STATE);
         }
         for (RulItemType itemType : itemTypes) {
-            if (!itemType.getRuleSet().equals(fundVersion.getRuleSet())) {
-                throw new BusinessException("Typ atributu " + itemType.getCode() + " nepatří k pravidlům " + fundVersion.getRuleSet().getCode(), BaseCode.INVALID_STATE);
-            }
             if (DataType.fromId(itemType.getDataTypeId()) != DataType.INT) {
                 throw new BusinessException("Typ atributu " + itemType.getCode() + " není číselného typu", BaseCode.INVALID_STATE);
             }

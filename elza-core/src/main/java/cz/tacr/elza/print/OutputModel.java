@@ -360,7 +360,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         // prepare internal fields
         this.fundVersion = params.getFundVersion();
         this.staticData = staticDataService.getData();
-        this.ruleSystem = staticData.getRuleSystems().getByRuleSetId(fundVersion.getRuleSetId());
+        this.ruleSystem = staticData.getRuleSystemById(fundVersion.getRuleSetId());
 
         // init general description
         ArrOutputDefinition definition = params.getDefinition();
@@ -661,7 +661,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
             return itemType;
         }
 
-        RuleSystemItemType staticItemType = ruleSystem.getItemTypeById(id);
+        RuleSystemItemType staticItemType = staticData.getItemTypeById(id);
         RulItemType rulItemType = staticItemType.getEntity();
         itemType = new ItemType(rulItemType);
 
@@ -678,7 +678,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
             return itemSpec;
         }
 
-        RulItemSpec rulItemSpec = staticData.getRuleSystems().getItemSpec(id);
+        RulItemSpec rulItemSpec = staticData.getItemSpecById(id);
         itemSpec = new ItemSpec(rulItemSpec);
 
         // add to lookup

@@ -116,10 +116,6 @@ public class RulItemType {
     @Transient
     private Boolean indefinable;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulRuleSet.class)
-    @JoinColumn(name = "ruleSetId", nullable = false)
-    private RulRuleSet ruleSet;
-
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulPackage.class)
     @JoinColumn(name = "packageId", nullable = false)
     private RulPackage rulPackage;
@@ -144,28 +140,27 @@ public class RulItemType {
 	 * @param src
 	 */
 	protected RulItemType(RulItemType src) {
-		itemTypeId = src.itemTypeId;
-		dataTypeId = src.dataTypeId;
-		dataType = src.dataType;
-		code = src.code;
-		name = src.name;
-		shortcut = src.shortcut;
-		description = src.description;
-		isValueUnique = src.isValueUnique;
-		canBeOrdered = src.canBeOrdered;
-		useSpecification = src.useSpecification;
-		viewOrder = src.viewOrder;
-		viewDefinition = src.viewDefinition;
-		type = src.type;
-		repeatable = src.repeatable;
-		calculable = src.calculable;
-		calculableState = src.calculableState;
-		policyTypeCode = src.policyTypeCode;
-		indefinable = src.indefinable;
-		ruleSet = src.ruleSet;
-		rulPackage = src.rulPackage;
-		structuredType = src.structuredType;
-		structuredTypeId = src.structuredTypeId;
+		itemTypeId = src.getItemTypeId();
+		dataTypeId = src.getDataTypeId();
+		dataType = src.getDataType();
+		code = src.getCode();
+		name = src.getName();
+		shortcut = src.getShortcut();
+		description = src.getDescription();
+		isValueUnique = src.getIsValueUnique();
+		canBeOrdered = src.getCanBeOrdered();
+		useSpecification = src.getUseSpecification();
+		viewOrder = src.getViewOrder();
+		setViewDefinition(src.getViewDefinition());
+		type = src.getType();
+		repeatable = src.getRepeatable();
+		calculable = src.getCalculable();
+		calculableState = src.getCalculableState();
+		policyTypeCode = src.getPolicyTypeCode();
+		indefinable = src.getIndefinable();
+		rulPackage = src.getRulPackage();
+		structuredType = src.getStructuredType();
+		structuredTypeId = src.getStructuredTypeId();
 	}
 
 	public Integer getItemTypeId() {
@@ -385,20 +380,6 @@ public class RulItemType {
      */
     public void setRulPackage(final RulPackage rulPackage) {
         this.rulPackage = rulPackage;
-    }
-
-    /**
-     * @return pravidla
-     */
-    public RulRuleSet getRuleSet() {
-        return ruleSet;
-    }
-
-    /**
-     * @param ruleSet pravidla
-     */
-    public void setRuleSet(final RulRuleSet ruleSet) {
-        this.ruleSet = ruleSet;
     }
 
     /**

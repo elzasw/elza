@@ -147,7 +147,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String DELETE_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL + "/data/{fundVersionId}/{structureDataId}";
     protected static final String FIND_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL + "/data/{fundVersionId}/{structureTypeCode}/search";
     protected static final String GET_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL + "/data/{fundVersionId}/{structureDataId}";
-    protected static final String FIND_STRUCTURE_TYPES = STRUCTURE_CONTROLLER_URL + "/type/{fundVersionId}";
+    protected static final String FIND_STRUCTURE_TYPES = STRUCTURE_CONTROLLER_URL + "/type";
     protected static final String FIND_FUND_STRUCTURE_EXTENSION = STRUCTURE_CONTROLLER_URL + "/extension/{fundVersionId}/{structureTypeCode}";
     protected static final String SET_FUND_STRUCTURE_EXTENSION = STRUCTURE_CONTROLLER_URL + "/extension/{fundVersionId}/{structureTypeCode}";
     protected static final String CREATE_STRUCTURE_ITEM = STRUCTURE_CONTROLLER_URL + "/item/{fundVersionId}/{structureDataId}/{itemTypeId}/create";
@@ -3002,12 +3002,10 @@ public abstract class AbstractControllerTest extends AbstractTest {
     /**
      * Vyhledá možné typy strukt. datových typů, které lze v AS používat.
      *
-     * @param fundVersionId identifikátor verze AS
      * @return nalezené entity
      */
-    protected List<RulStructureTypeVO> findStructureTypes(final Integer fundVersionId) {
-        return Arrays.asList(get(spec -> spec
-                .pathParameter("fundVersionId", fundVersionId), FIND_STRUCTURE_TYPES)
+    protected List<RulStructureTypeVO> findStructureTypes() {
+        return Arrays.asList(get(spec -> spec, FIND_STRUCTURE_TYPES)
                 .as(RulStructureTypeVO[].class));
     }
 

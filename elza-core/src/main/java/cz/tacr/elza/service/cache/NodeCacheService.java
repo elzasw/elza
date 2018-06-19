@@ -484,7 +484,6 @@ public class NodeCacheService {
 	private void reloadCachedNodes(final Collection<RestoredNode> cachedNodes) {
 
 		StaticDataProvider sdp = staticDataService.getData();
-		RuleSystemProvider rsp = sdp.getRuleSystems();
 
         Map<ArrDescItem, Integer> itemStructureDataMap = new HashMap<>();
         Map<ArrDescItem, Integer> itemPartiesMap = new HashMap<>();
@@ -500,7 +499,7 @@ public class NodeCacheService {
 					// set node
 					descItem.setNode(node);
 
-					loadDescItemType(descItem, rsp);
+					loadDescItemType(descItem, sdp);
 
 					ArrData data = descItem.getData();
 					if (data != null) {
@@ -541,13 +540,12 @@ public class NodeCacheService {
 
 	/**
 	 * Load description item type from rule system provider
-	 *
-	 * @param descItem
-	 * @param rsp
-	 */
-	private void loadDescItemType(ArrDescItem descItem, RuleSystemProvider rsp) {
+	 *  @param descItem
+	 * @param sdp
+     */
+	private void loadDescItemType(ArrDescItem descItem, StaticDataProvider sdp) {
 		Validate.notNull(descItem.getItemTypeId());
-		RuleSystemItemType itemType = rsp.getItemType(descItem.getItemTypeId());
+		RuleSystemItemType itemType = sdp.getItemTypeById(descItem.getItemTypeId());
 		Validate.notNull(itemType);
 
 		descItem.setItemType(itemType.getEntity());
@@ -816,8 +814,7 @@ public class NodeCacheService {
     /**
 	 * Deserializace objektu.
 	 *
-	 * @param cachedNode.getData()
-	 *            serializovaný objekt
+	 * @param cachedNode serializovaný objekt
 	 * @return sestavený objekt
 	 */
 	private RestoredNode deserialize(final ArrCachedNode cachedNode) {
@@ -887,8 +884,7 @@ public class NodeCacheService {
 	/**
 	 * Založení nových záznamů v cache pro JP.
 	 *
-	 * @param cachedNodes
-	 *            seznam zakládaných objektů
+	 * @param nodes seznam zakládaných objektů
 	 */
 	private void createEmptyNodes(final Collection<ArrNode> nodes) {
 		List<ArrCachedNode> records = new ArrayList<>(nodes.size());

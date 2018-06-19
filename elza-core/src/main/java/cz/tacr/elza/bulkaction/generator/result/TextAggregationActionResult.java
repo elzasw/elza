@@ -46,7 +46,7 @@ public class TextAggregationActionResult extends ActionResult {
         if (text == null || !createInOutput) {
             return;
         }
-        RuleSystemItemType rsit = connector.getRuleSystem().getItemTypeByCode(itemType);
+        RuleSystemItemType rsit = connector.getItemTypeByCode(itemType);
         connector.addStringItem(text, rsit, null);
     }
 }

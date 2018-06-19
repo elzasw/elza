@@ -36,17 +36,16 @@ public abstract class Action {
 
     /**
 	 * Inicializace akce.
-	 * 
-	 * @param runContext
+	 *
+	 * @param bulkActionRun
 	 */
 	abstract public void init(ArrBulkActionRun bulkActionRun);
 
     /**
      * Aplikování akce na uzel.
      *
-     * @param node
-     * @param items                 hodnoty atributy uzlu
-     * @param parentLevelWithItems   hodnoty atributu nadřízených uzlů
+     * @param level
+     * @param typeLevel
      */
 	abstract public void apply(LevelWithItems level, TypeLevel typeLevel);
 
@@ -59,19 +58,17 @@ public abstract class Action {
 
 	/**
 	 * Return rule system for given context
-	 * 
+	 *
 	 * @return
 	 */
-	RuleSystem getRuleSystem(ArrBulkActionRun bulkActionRun) {
-		ArrFundVersion version = bulkActionRun.getFundVersion();
-		StaticDataProvider sdp = staticDataService.getData();
-		return sdp.getRuleSystems().getByRuleSetId(version.getRuleSetId());
+	protected StaticDataProvider getStaticDataProvider() {
+		return staticDataService.getData();
 	}
 
 	/**
 	 * Kontrola datového typu atributů
 	 *
-	 * @param inputItemType
+	 * @param itemType
 	 *            kontrolované atributy
 	 * @param codes
 	 *            kódy povolených datových typů

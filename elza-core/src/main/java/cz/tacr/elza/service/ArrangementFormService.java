@@ -9,7 +9,6 @@ import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.ItemTypeLiteVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.core.data.RuleSystem;
-import cz.tacr.elza.core.data.RuleSystemProvider;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.AuthMethod;
@@ -198,11 +197,10 @@ public class ArrangementFormService {
 			throw new ObjectNotFoundException("Nebyla nalezena JP s ID=" + params.getNodeId(),
 					ArrangementCode.NODE_NOT_FOUND).set("id", params.getNodeId());
 		}
-		StaticDataProvider dataProvider = this.staticData.getData();
-		final RuleSystemProvider ruleSystems = dataProvider.getRuleSystems();
-		List<ArrDescItem> createItems = params.getCreateItemVOs().stream().map(itemVO -> convertDescItem(ruleSystems, itemVO)).collect(Collectors.toList());
-		List<ArrDescItem> updateItems = params.getUpdateItemVOs().stream().map(itemVO -> convertDescItem(ruleSystems, itemVO)).collect(Collectors.toList());
-		List<ArrDescItem> deleteItems = params.getDeleteItemVOs().stream().map(itemVO -> convertDescItem(ruleSystems, itemVO)).collect(Collectors.toList());
+		final StaticDataProvider dataProvider = this.staticData.getData();
+		List<ArrDescItem> createItems = params.getCreateItemVOs().stream().map(itemVO -> convertDescItem(dataProvider, itemVO)).collect(Collectors.toList());
+		List<ArrDescItem> updateItems = params.getUpdateItemVOs().stream().map(itemVO -> convertDescItem(dataProvider, itemVO)).collect(Collectors.toList());
+		List<ArrDescItem> deleteItems = params.getDeleteItemVOs().stream().map(itemVO -> convertDescItem(dataProvider, itemVO)).collect(Collectors.toList());
 
 		List<ArrDescItem> arrDescItems = updateDescItems(fundVersion, node, params.getNodeVersion(), createItems, updateItems, deleteItems);
 
@@ -212,7 +210,7 @@ public class ArrangementFormService {
 			// prepare form data
 			List<RulItemTypeExt> itemTypes = ruleService.getDescriptionItemTypes(fundVersion, node);
 
-			RuleSystem rs = dataProvider.getRuleSystems().getByRuleSetId(fundVersion.getRuleSet().getRuleSetId());
+			RuleSystem rs = dataProvider.getRuleSystemById(fundVersion.getRuleSet().getRuleSetId());
 			//
 			List<ItemTypeLiteVO> itemTypesVO = factoryVo
 					.createItemTypes(rs.getRuleSet().getCode(), fundVersion.getFundId(), itemTypes);
@@ -228,9 +226,9 @@ public class ArrangementFormService {
 		}
 	}
 
-	private ArrDescItem convertDescItem(final RuleSystemProvider ruleSystems, final ArrItemVO itemVO) {
+	private ArrDescItem convertDescItem(final StaticDataProvider sdp, final ArrItemVO itemVO) {
 		ArrDescItem descItem = factoryDo.createDescItem(itemVO);
-		descItem.setItemType(ruleSystems.getItemType(itemVO.getItemTypeId()).getEntity());
+		descItem.setItemType(sdp.getItemTypeById(itemVO.getItemTypeId()).getEntity());
 		return descItem;
 	}
 
@@ -285,7 +283,6 @@ public class ArrangementFormService {
 	 * @param nodeVersion
 	 * @param descItemVO
 	 * @param createVersion
-	 * @param headerAccessor
 	 */
 	@Transactional
 	@AuthMethod(permission = { UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR })
@@ -313,7 +310,7 @@ public class ArrangementFormService {
 		List<RulItemTypeExt> itemTypes = ruleService.getDescriptionItemTypes(fundVersion, descItemUpdated.getNode());
 
 		StaticDataProvider dataProvider = this.staticData.getData();
-		RuleSystem rs = dataProvider.getRuleSystems().getByRuleSetId(fundVersion.getRuleSet().getRuleSetId());
+		RuleSystem rs = dataProvider.getRuleSystemById(fundVersion.getRuleSet().getRuleSetId());
 		//
 		List<ItemTypeLiteVO> itemTypesVO = factoryVo
 		        .createItemTypes(rs.getRuleSet().getCode(), fundVersion.getFundId(), itemTypes);

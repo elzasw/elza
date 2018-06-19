@@ -78,7 +78,7 @@ public class OutputItemConnectorImpl implements OutputItemConnector {
 
     @Override
     public RuleSystem getRuleSystem() {
-        return staticDataService.getData().getRuleSystems().getByRuleSetId(fundVersion.getRuleSetId());
+        return staticDataService.getData().getRuleSystemById(fundVersion.getRuleSetId());
     }
 
     @Override
@@ -147,7 +147,7 @@ public class OutputItemConnectorImpl implements OutputItemConnector {
             if (isItemTypeIgnored(rsit)) {
                 continue;
             }
-            RuleSystemItemType type = getRuleSystem().getItemTypeById(item.getItemTypeId());
+            RuleSystemItemType type = staticDataService.getData().getItemTypeById(item.getItemTypeId());
             if (type.hasSpecifications()) {
                 // check item type
                 Validate.isTrue(type.getItemTypeId().equals(rsit.getItemTypeId()),
@@ -167,6 +167,11 @@ public class OutputItemConnectorImpl implements OutputItemConnector {
     @Override
     public Set<Integer> getModifiedItemTypeIds() {
         return deleteItemTypeIds;
+    }
+
+    @Override
+    public RuleSystemItemType getItemTypeByCode(String code) {
+        return staticDataService.getData().getItemTypeByCode(code);
     }
 
     private void addOutputItem(ArrData data, RuleSystemItemType rsit, Integer itemSpecId) {

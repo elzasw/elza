@@ -9,20 +9,12 @@ import java.util.Map;
 import java.util.function.Function;
 
 import cz.tacr.elza.domain.*;
+import cz.tacr.elza.repository.*;
 import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.domain.ApType;
-import cz.tacr.elza.repository.ComplementTypeRepository;
-import cz.tacr.elza.repository.PackageRepository;
-import cz.tacr.elza.repository.PartyNameFormTypeRepository;
-import cz.tacr.elza.repository.PartyTypeComplementTypeRepository;
-import cz.tacr.elza.repository.ApTypeRepository;
-import cz.tacr.elza.repository.RelationTypeRepository;
-import cz.tacr.elza.repository.RelationTypeRoleTypeRepository;
 
 public class StaticDataProvider {
-
-    private final RuleSystemProvider ruleSystemProvider = new RuleSystemProvider();
 
     private List<RulPackage> packages;
 
@@ -33,6 +25,12 @@ public class StaticDataProvider {
     private List<ApType> apTypes;
 
     private List<RelationType> relationTypes;
+
+    private List<RulStructuredType> structuredTypes;
+
+    private List<RuleSystemItemType> itemTypes;
+
+    private List<RulItemSpec> itemSpecs;
 
     private Map<Integer, RulPackage> packageIdMap;
 
@@ -52,11 +50,23 @@ public class StaticDataProvider {
 
     private Map<String, RelationTypeImpl> relationTypeCodeMap;
 
-    StaticDataProvider() {
-    }
+    private Map<Integer, RulStructuredType> structuredTypeIdMap;
 
-    public RuleSystemProvider getRuleSystems() {
-        return ruleSystemProvider;
+    private Map<String, RulStructuredType> structuredTypeCodeMap;
+
+    private Map<Integer, RuleSystemItemType> itemTypeIdMap;
+
+    private Map<String, RuleSystemItemType> itemTypeCodeMap;
+
+    private Map<Integer, RuleSystem> ruleSystemIdMap;
+
+    private Map<String, RuleSystem> ruleSystemCodeMap;
+
+    private Map<Integer, RulItemSpec> itemSpecIdMap;
+
+    private Map<String, RulItemSpec> itemSpecCodeMap;
+
+    StaticDataProvider() {
     }
 
     public List<RulPackage> getPackages() {
@@ -132,13 +142,86 @@ public class StaticDataProvider {
      * Init all values. Method must be called inside transaction and synchronized.
      */
     void init(StaticDataService service) {
-        ruleSystemProvider.init(service.ruleSetRepository, service.itemTypeRepository,
-                service.itemSpecRepository, service.structuredTypeRepository);
+        initRuleSets(service.ruleSetRepository);
+        initStructuredTypes(service.structuredTypeRepository);
+        initItemTypes(service.itemTypeRepository, service.itemSpecRepository);
         initPackages(service.packageRepository);
         initPartyNameFormTypes(service.partyNameFormTypeRepository);
         initComplementTypes(service.complementTypeRepository, service.partyTypeComplementTypeRepository);
         initApTypes(service.apTypeRepository);
         initRelationTypes(service.relationTypeRepository, service.relationTypeRoleTypeRepository);
+    }
+
+    private void initRuleSets(RuleSetRepository ruleSetRepository) {
+        List<RulRuleSet> ruleSets = ruleSetRepository.findAll();
+
+        // prepare fields
+        List<RuleSystem> rulesSystems = new ArrayList<>(ruleSets.size());
+        ruleSystemIdMap = new HashMap<>(ruleSets.size());
+        ruleSystemCodeMap = new HashMap<>(ruleSets.size());
+
+        for (RulRuleSet rs : ruleSets) {
+            // create initialized rule system
+            RuleSystem ruleSystem = new RuleSystemImpl(rs);
+
+            rulesSystems.add(ruleSystem);
+            // update lookups
+            ruleSystemIdMap.put(rs.getRuleSetId(), ruleSystem);
+            ruleSystemCodeMap.put(rs.getCode(), ruleSystem);
+        }
+    }
+
+    private void initItemTypes(ItemTypeRepository itemTypeRepository, ItemSpecRepository itemSpecRepository) {
+        List<RulItemType> itemTypes = itemTypeRepository.findAll();
+
+        this.itemTypes = new ArrayList<>();
+        this.itemSpecs = new ArrayList<>();
+
+        itemTypeIdMap = new HashMap<>(itemTypes.size());
+        itemSpecIdMap = new HashMap<>();
+
+        for (RulItemType it : itemTypes) {
+            // update data type reference from cache
+            DataType dataType = DataType.fromId(it.getDataTypeId());
+            it.setDataType(dataType.getEntity());
+
+            // create initialized rule system item type
+            RuleSystemItemType rsit = new RuleSystemItemType(it, dataType);
+
+            // prepare item spec
+            initItemSpecs(rsit, itemSpecRepository);
+
+            rsit.sealUp();
+            this.itemTypes.add(rsit);
+
+            itemTypeIdMap.put(it.getItemTypeId(), rsit);
+        }
+        this.itemTypeCodeMap = StaticDataProvider.createLookup(itemTypeIdMap.values(), RuleSystemItemType::getCode);
+        this.itemSpecCodeMap = StaticDataProvider.createLookup(itemSpecIdMap.values(), RulItemSpec::getCode);
+    }
+
+    private void initItemSpecs(RuleSystemItemType rsit, ItemSpecRepository itemSpecRepository) {
+        if (!rsit.hasSpecifications()) {
+            return;
+        }
+
+        List<RulItemSpec> itemSpecs = itemSpecRepository.findByItemType(rsit.getEntity());
+        for (RulItemSpec is : itemSpecs) {
+            // check if initialized in same transaction
+            Validate.isTrue(rsit.getEntity() == is.getItemType());
+
+            rsit.addItemSpec(is);
+            this.itemSpecs.add(is);
+            itemSpecIdMap.put(is.getItemSpecId(), is);
+        }
+    }
+
+    private void initStructuredTypes(StructuredTypeRepository structuredTypeRepository) {
+        List<RulStructuredType> structuredTypes = structuredTypeRepository.findAll();
+
+        this.structuredTypes = Collections.unmodifiableList(structuredTypes);
+        this.structuredTypeIdMap = createLookup(structuredTypes, RulStructuredType::getStructuredTypeId);
+        this.structuredTypeCodeMap = createLookup(structuredTypes, RulStructuredType::getCode);
     }
 
     private void initPackages(PackageRepository packageRepository) {
@@ -243,5 +326,55 @@ public class StaticDataProvider {
         Map<K, V> lookup = new HashMap<>(values.size());
         values.forEach(is -> lookup.put(keyMapping.apply(is), is));
         return lookup;
+    }
+
+
+
+    public List<RulStructuredType> getStructuredTypes() {
+        return structuredTypes;
+    }
+
+    public RulStructuredType getStructuredTypeById(Integer id) {
+        Validate.notNull(id);
+        return structuredTypeIdMap.get(id);
+    }
+
+    public RulStructuredType getStructuredTypeByCode(String code) {
+        Validate.notEmpty(code);
+        return structuredTypeCodeMap.get(code);
+    }
+
+    public List<RuleSystemItemType> getItemTypes() {
+        return itemTypes;
+    }
+
+    public RuleSystemItemType getItemTypeById(Integer id) {
+        Validate.notNull(id);
+        return itemTypeIdMap.get(id);
+    }
+
+    public RuleSystemItemType getItemTypeByCode(String code) {
+        Validate.notEmpty(code);
+        return itemTypeCodeMap.get(code);
+    }
+
+    public RuleSystem getRuleSystemById(Integer id) {
+        Validate.notNull(id);
+        return ruleSystemIdMap.get(id);
+    }
+
+    public RuleSystem getRuleSystemByCode(String code) {
+        Validate.notEmpty(code);
+        return ruleSystemCodeMap.get(code);
+    }
+
+    public RulItemSpec getItemSpecById(Integer id) {
+        Validate.notNull(id);
+        return itemSpecIdMap.get(id);
+    }
+
+    public RulItemSpec getItemSpecByCode(String code) {
+        Validate.notEmpty(code);
+        return itemSpecCodeMap.get(code);
     }
 }

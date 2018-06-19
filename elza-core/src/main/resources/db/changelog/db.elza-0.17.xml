@@ -41,4 +41,9 @@
         </update>
     </changeSet>
 
+    <changeSet id="20180619072700" author="slapa">
+        <dropColumn tableName="rul_item_type" columnName="rule_set_id" />
+        <dropColumn tableName="rul_structured_type" columnName="rule_set_id" />
+    </changeSet>
+
 </databaseChangeLog>

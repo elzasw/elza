@@ -33,7 +33,7 @@ public class DateRangeActionResult extends ActionResult {
         if (text == null) {
             return;
         }
-        RuleSystemItemType rsit = connector.getRuleSystem().getItemTypeByCode(itemType);
+        RuleSystemItemType rsit = connector.getItemTypeByCode(itemType);
         connector.addStringItem(text, rsit, null);
     }
 }

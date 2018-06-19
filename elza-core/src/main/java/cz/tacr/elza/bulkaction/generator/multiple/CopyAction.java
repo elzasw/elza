@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import cz.tacr.elza.core.data.StaticDataProvider;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.context.annotation.Scope;
@@ -52,9 +53,9 @@ public class CopyAction extends Action {
 
     @Override
 	public void init(ArrBulkActionRun bulkActionRun) {
-		RuleSystem ruleSystem = getRuleSystem(bulkActionRun);
+        StaticDataProvider sdp = getStaticDataProvider();
 
-        inputItemType = ruleSystem.getItemTypeByCode(config.getInputType());
+        inputItemType = sdp.getItemTypeByCode(config.getInputType());
         Validate.notNull(inputItemType);
 
         String outputType = config.getOutputType();
@@ -63,7 +64,7 @@ public class CopyAction extends Action {
             return;
         }
 
-        outputItemType = ruleSystem.getItemTypeByCode(outputType);
+        outputItemType = sdp.getItemTypeByCode(outputType);
         // check if input and output have same data type
         if (inputItemType.getDataType() != outputItemType.getDataType()) {
             throw new BusinessException("Item " + config.getInputType() + " and " + outputType + " have different data type",
@@ -74,7 +75,7 @@ public class CopyAction extends Action {
 	/**
 	 * Check if item is used in output
 	 *
-	 * @param itemSpecId
+	 * @param item
 	 * @return
 	 */
     private boolean isInResult(ArrDescItem item) {

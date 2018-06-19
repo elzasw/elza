@@ -39,4 +39,6 @@ public interface OutputItemConnector {
      * Returns item type ids which were modified by any call of addXXXItem() method.
      */
     Set<Integer> getModifiedItemTypeIds();
+
+    RuleSystemItemType getItemTypeByCode(String itemType);
 }

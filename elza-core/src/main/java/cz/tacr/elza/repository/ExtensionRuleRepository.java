@@ -19,7 +19,7 @@ public interface ExtensionRuleRepository extends JpaRepository<RulExtensionRule,
 
     List<RulExtensionRule> findByRulPackage(RulPackage rulPackage);
 
-    void deleteByRulPackage(RulExtensionRule rulPackage);
+    void deleteByRulPackage(RulPackage rulPackage);
 
     List<RulExtensionRule> findByRulPackageAndArrangementExtensionIn(RulPackage rulPackage, List<RulArrangementExtension> rulArrangementExtensions);
 

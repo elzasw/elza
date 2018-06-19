@@ -110,14 +110,14 @@ public class UnitIdBulkAction extends BulkAction {
 		// read item type for UnitId
 		String unitIdCode = config.getItemType();
 		Validate.notNull(unitIdCode);
-		RuleSystemItemType itemTypeWrapper = ruleSystem.getItemTypeByCode(unitIdCode);
+		RuleSystemItemType itemTypeWrapper = staticDataProvider.getItemTypeByCode(unitIdCode);
 		Validate.notNull(itemTypeWrapper);
 		descItemType = itemTypeWrapper.getEntity();
 
 		// read level type
 		String levelTypeCode = config.getLevelTypeCode();
 		Validate.notNull(levelTypeCode);
-		RuleSystemItemType levelTypeWrapper = ruleSystem.getItemTypeByCode(levelTypeCode);
+		RuleSystemItemType levelTypeWrapper = staticDataProvider.getItemTypeByCode(levelTypeCode);
 		Validate.notNull(levelTypeWrapper);
 		descItemLevelType = levelTypeWrapper.getEntity();
 
@@ -131,7 +131,7 @@ public class UnitIdBulkAction extends BulkAction {
 		// item for previous value
 		String previousIdCode = config.getPreviousIdCode();
 		Validate.notNull(previousIdCode);
-		RuleSystemItemType previousIdTypeWrapper = ruleSystem.getItemTypeByCode(previousIdCode);
+		RuleSystemItemType previousIdTypeWrapper = staticDataProvider.getItemTypeByCode(previousIdCode);
 		Validate.notNull(previousIdTypeWrapper);
 		descItemPreviousType = previousIdTypeWrapper.getEntity();
 

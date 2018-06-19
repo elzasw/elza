@@ -70,7 +70,7 @@ import cz.tacr.elza.service.eventnotification.events.EventStructureDataChange;
  *
  * Pokud je do fronty zařazen smazaný uzel, tak se použije
  * pouze k validaci duplicit.
- * 
+ *
  * @since 13.11.2017
  */
 @Service
@@ -238,7 +238,7 @@ public class StructObjService {
      *
      * @param structObj
      *            hodnota struktovaného datového typu
-     * 
+     *
      */
     @Transactional
     public void generateAndValidate(final ArrStructuredObject structObj) {
@@ -260,7 +260,7 @@ public class StructObjService {
             return;
         }
 
-        // Method is called also after ext update etc -> can be called 
+        // Method is called also after ext update etc -> can be called
         // with same values
 
         if (StringUtils.isNotEmpty(oldValue)) {
@@ -277,14 +277,14 @@ public class StructObjService {
 
     /**
      * Recheck struct objects for duplicates
-     * 
+     *
      * @param checkedValue
      *            Value to be check
      * @param srcStructObj
      *            Object which caused / requested this check
      *            Source object is not notified.
      */
-    private void recheckDuplicates(String checkedValue, 
+    private void recheckDuplicates(String checkedValue,
                                    ArrStructuredObject srcStructObj) {
 
         // check duplicates - if not empty
@@ -335,7 +335,7 @@ public class StructObjService {
                     null,
                     Collections.singletonList(structObjId),
                     null));
-        }        
+        }
     }
 
     private void setDuplicatedState(ArrStructuredObject so, boolean duplicated) {
@@ -370,14 +370,14 @@ public class StructObjService {
 
     /**
      * Internal method to generate value and save it.
-     * 
+     *
      * Method will only check if value is empty.
-     * 
+     *
      * @param structObj
      * @return Return generated value. Return null if failed
      */
     private String generateValue(ArrStructuredObject structObj) {
-        // generate value 
+        // generate value
         ArrStructuredObject.State state = ArrStructuredObject.State.OK;
         ValidationErrorDescription validationErrorDescription = new ValidationErrorDescription();
 
@@ -530,7 +530,7 @@ public class StructObjService {
             }
         }
 
-        return resourcePathResolver.getGroovyDir(rulPackage, structureType.getRuleSet())
+        return resourcePathResolver.getGroovyDir(rulPackage)
                 .resolve(component.getFilename())
                 .toFile();
     }

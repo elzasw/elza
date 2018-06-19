@@ -60,7 +60,7 @@ public class SerialNumberBulkAction extends BulkActionDFS {
 		super.init(bulkActionRun);
 
 		// prepare item type
-		RuleSystemItemType itemType = ruleSystem.getItemTypeByCode(config.getItemType());
+		RuleSystemItemType itemType = staticDataProvider.getItemTypeByCode(config.getItemType());
 		Validate.notNull(itemType);
 
 		// check if supported type
@@ -176,7 +176,7 @@ public class SerialNumberBulkAction extends BulkActionDFS {
 
 			int pos = minLength;
 
-			// 
+			//
 			while (pos > 0) {
 				char c = lastNumber.charAt(pos - 1);
 				if (c < '0' || c > '9') {

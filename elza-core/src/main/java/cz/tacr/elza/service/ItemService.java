@@ -1,8 +1,8 @@
 package cz.tacr.elza.service;
 
 import cz.tacr.elza.core.data.DataType;
-import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.core.data.RuleSystemItemType;
+import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ApRecord;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
@@ -170,11 +170,12 @@ public class ItemService {
     /**
      * Kontrola typu a specifikace.
      *
+     * @param sdp
      * @param descItem hodnota atributu
      */
     @Transactional(TxType.MANDATORY)
-    public void checkValidTypeAndSpec(final RuleSystem ruleSystem, final ArrItem descItem) {
-        RuleSystemItemType descItemType = ruleSystem.getItemTypeById(descItem.getItemTypeId());
+    public void checkValidTypeAndSpec(final StaticDataProvider sdp, final ArrItem descItem) {
+        RuleSystemItemType descItemType = sdp.getItemTypeById(descItem.getItemTypeId());
         Validate.notNull(descItemType, "Invalid description item type");
 
         Integer descItemSpecId = descItem.getItemSpecId();

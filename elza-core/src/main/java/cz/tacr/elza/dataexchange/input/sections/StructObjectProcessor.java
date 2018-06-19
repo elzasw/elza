@@ -2,10 +2,10 @@ package cz.tacr.elza.dataexchange.input.sections;
 
 import java.util.Collection;
 
+import cz.tacr.elza.core.data.StaticDataProvider;
 import org.apache.commons.lang3.StringUtils;
 
 import cz.tacr.elza.core.data.DataType;
-import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.core.data.RuleSystemItemType;
 import cz.tacr.elza.dataexchange.common.items.ImportableItem.ImportableItemData;
 import cz.tacr.elza.dataexchange.input.DEImportException;
@@ -58,7 +58,7 @@ public class StructObjectProcessor implements ItemProcessor {
     }
 
     private void processItems(Collection<DescriptionItem> descItems, ContextStructObject cso) {
-        RuleSystem rs = section.getRuleSystem();
+        StaticDataProvider rs = section.getStaticData();
 
         for (DescriptionItem descItem : descItems) {
             // resolve item type

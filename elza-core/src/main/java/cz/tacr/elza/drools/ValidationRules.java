@@ -114,7 +114,6 @@ public class ValidationRules extends Rules {
 	public void finalizeValidationResults(final List<DataValidationResult> validationResults, Integer ruleSetId) {
 
 		StaticDataProvider sdp = staticDataService.getData();
-		RuleSystem ruleSystem = sdp.getRuleSystems().getByRuleSetId(ruleSetId);
 
 		Map<String, RulPolicyType> policyTypesMap = getPolicyTypesMap();
 
@@ -142,7 +141,7 @@ public class ValidationRules extends Rules {
 					throw new SystemException("Neni vyplnen kod chybejiciho typu.", BaseCode.PROPERTY_NOT_EXIST)
 					        .set("property", "typeCode");
 				}
-				validationResult.setType(ruleSystem.getItemTypeByCode(missingTypeCode).getEntity());
+				validationResult.setType(sdp.getItemTypeByCode(missingTypeCode).getEntity());
 				break;
 			case ERROR:
 				Integer descItemId = validationResult.getDescItemId();

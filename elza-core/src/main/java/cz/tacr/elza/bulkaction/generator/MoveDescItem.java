@@ -52,7 +52,7 @@ public class MoveDescItem extends BulkActionDFS {
 		super.init(bulkActionRun);
 
 		// prepare item type
-		RuleSystemItemType srcItemType = ruleSystem.getItemTypeByCode(config.getSource().getItemType());
+		RuleSystemItemType srcItemType = staticDataProvider.getItemTypeByCode(config.getSource().getItemType());
 		Validate.notNull(srcItemType);
 
 		// check if supported source data type
@@ -65,7 +65,7 @@ public class MoveDescItem extends BulkActionDFS {
 		this.srcItemType = srcItemType.getEntity();
 
 		// prepare target type
-		RuleSystemItemType trgItemType = ruleSystem.getItemTypeByCode(config.getTarget().getItemType());
+		RuleSystemItemType trgItemType = staticDataProvider.getItemTypeByCode(config.getTarget().getItemType());
 		Validate.notNull(trgItemType);
 		if (trgItemType.getDataType() != DataType.STRING) {
 			throw new SystemException(
@@ -86,7 +86,7 @@ public class MoveDescItem extends BulkActionDFS {
 			if (Boolean.TRUE.equals(this.trgItemType.getUseSpecification())) {
 				throw new SystemException(
 				        "Hromadná akce " + getName() + " je nakonfigurována bez určení specifikace:",
-				        BaseCode.SYSTEM_ERROR).set("itemTypeCode", trgItemType.getCode());				
+				        BaseCode.SYSTEM_ERROR).set("itemTypeCode", trgItemType.getCode());
 			}
 		}
 	}

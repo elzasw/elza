@@ -16,9 +16,5 @@ import java.util.List;
 @Repository
 public interface StructuredTypeRepository extends JpaRepository<RulStructuredType, Integer>, Packaging<RulStructuredType> {
 
-    List<RulStructuredType> findByRuleSet(RulRuleSet ruleSet);
-
-    List<RulStructuredType> findByRulPackageAndRuleSet(RulPackage rulPackage, RulRuleSet rulRuleSet);
-
     RulStructuredType findByCode(String code);
 }

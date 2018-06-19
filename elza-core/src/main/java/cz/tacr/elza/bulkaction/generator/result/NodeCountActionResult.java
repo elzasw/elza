@@ -33,7 +33,7 @@ public class NodeCountActionResult extends ActionResult {
         if (count == null) {
             return;
         }
-        RuleSystemItemType rsit = connector.getRuleSystem().getItemTypeByCode(itemType);
+        RuleSystemItemType rsit = connector.getItemTypeByCode(itemType);
         connector.addIntItem(count.intValue(), rsit, null);
     }
 }

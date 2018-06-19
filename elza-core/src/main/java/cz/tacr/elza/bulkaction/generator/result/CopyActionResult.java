@@ -36,7 +36,7 @@ public class CopyActionResult extends ActionResult {
         if (dataItems == null) {
             return;
         }
-        RuleSystemItemType rsit = connector.getRuleSystem().getItemTypeByCode(itemType);
+        RuleSystemItemType rsit = connector.getItemTypeByCode(itemType);
         connector.addItems(dataItems, rsit);
     }
 }

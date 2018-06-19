@@ -445,9 +445,7 @@ class FundDataGrid extends AbstractReactComponent {
 
         let itemTypes = [];
         descItemTypes.items.forEach(item => {
-            if (rule.itemTypeCodes.indexOf(item.code) >= 0) {
-                itemTypes.push(item);
-            }
+            itemTypes.push(item);
         });
 
         const refTypesMap = getMapFromList(itemTypes);

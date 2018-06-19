@@ -27,11 +27,11 @@ import cz.tacr.elza.repository.StructuredTypeRepository;
  */
 public class RuleUpdateContext {
 
-	final ResourcePathResolver resourcePathResolver;
+	private final ResourcePathResolver resourcePathResolver;
 
-	final RulPackage rulPackage;
+	private final RulPackage rulPackage;
 
-	final RulRuleSet rulRuleSet;
+	private final RulRuleSet rulRuleSet;
 
 	private File dirActions;
 
@@ -40,30 +40,25 @@ public class RuleUpdateContext {
 	private File dirGroovies;
 
 	private File dirTemplates;
-	
+
 	/**
 	 * Base path into byteStreams map
-	 * 
+	 *
 	 * This is usualy parent folder for the input ZIP file
 	 */
 	private final String keyDirPath;
 
-	private final Map<String, ByteArrayInputStream> byteStreams;
-	
-	private List<RulStructuredType> rulStructureTypes; 
-
-	public RuleUpdateContext(RulPackage rulPackage, RulRuleSet rulRuleSet, ResourcePathResolver resourcePathResolver, Map<String, ByteArrayInputStream> mapEntry, String ruleDirPath) {
+	public RuleUpdateContext(RulPackage rulPackage, RulRuleSet rulRuleSet, ResourcePathResolver resourcePathResolver, String ruleDirPath) {
 		this.rulPackage = rulPackage;
 		this.rulRuleSet = rulRuleSet;
 		this.resourcePathResolver = resourcePathResolver;
-		this.byteStreams = mapEntry;
-		this.keyDirPath = ruleDirPath; 
+		this.keyDirPath = ruleDirPath;
 	}
 
 	/**
 	 * Initialize rule update context
 	 */
-	public void init(StructuredTypeRepository structureTypeRepository) 
+	public void init()
 	{
 		dirActions = resourcePathResolver.getFunctionsDir(rulPackage, rulRuleSet).toFile();
 		if (!dirActions.exists()) {
@@ -84,10 +79,9 @@ public class RuleUpdateContext {
 		if (!dirTemplates.exists()) {
 			dirTemplates.mkdirs();
 		}
-		
-		this.rulStructureTypes = structureTypeRepository.findByRuleSet(rulRuleSet);
+
 	}
-	
+
 	public File getRulesDir() {
 		return dirRules;
 	}
@@ -98,28 +92,6 @@ public class RuleUpdateContext {
 
 	public File getActionsDir() {
 		return dirActions;
-	}
-	
-	public File getDir(RulStructureDefinition definition) {
-		switch (definition.getDefType()) {
-		case ATTRIBUTE_TYPES:
-			return dirRules;
-		case SERIALIZED_VALUE:
-			return dirGroovies;
-		default:
-			throw new NotImplementedException("Def type: " + definition.getDefType());
-		}
-	}
-
-	public File getDir(RulStructureExtensionDefinition def) {
-		switch (def.getDefType()) {
-		case ATTRIBUTE_TYPES:
-			return dirRules;
-		case SERIALIZED_VALUE:
-			return dirGroovies;
-		default:
-			throw new NotImplementedException("Def type: " + def.getDefType());
-		}
 	}
 
 	public RulPackage getRulPackage() {
@@ -134,50 +106,4 @@ public class RuleUpdateContext {
 		return rulRuleSet;
 	}
 
-	public ByteArrayInputStream getByteStream(String key) {
-		return byteStreams.get(keyDirPath+key);
-	}
-
-	public List<RulStructuredType> getStructureTypes() {
-		return rulStructureTypes;
-	}
-
-	public File saveFile(File dir, String zipDir, String filename) throws IOException {
-
-        File file = new File(dir.getPath() + File.separator + filename);
-
-        if (file.exists()) {
-        	throw new IllegalStateException("Soubor " + file.getPath() + " jiz existuje");
-        }
-
-        BufferedWriter output = null;
-        try {
-            output = new BufferedWriter(new FileWriter(file));
-            ByteArrayInputStream byteArrayInputStream = byteStreams.get(zipDir + "/" + filename);
-
-            if (byteArrayInputStream == null) {
-                throw new IllegalStateException("Soubor " + zipDir + "/" + filename + " neexistuje v zip");
-            }
-
-            FileOutputStream bw = new FileOutputStream(file);
-
-            byte[] buf = new byte[8192];
-            for (; ; ) {
-                int nread = byteArrayInputStream.read(buf, 0, buf.length);
-                if (nread <= 0) {
-                    break;
-                }
-                bw.write(buf, 0, nread);
-            }
-
-            bw.close();
-
-        } finally {
-            if (output != null) {
-                output.close();
-            }
-        }
-
-        return file;
-	}
 }

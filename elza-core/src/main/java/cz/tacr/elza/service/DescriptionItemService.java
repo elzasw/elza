@@ -217,8 +217,8 @@ public class DescriptionItemService {
         ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
         Validate.notNull(fundVersion, "Verze archivní pomůcky neexistuje");
 
-        RuleSystem ruleSystem = staticDataService.getData().getRuleSystems().getByRuleSetId(fundVersion.getRuleSetId());
-        RuleSystemItemType descItemType = ruleSystem.getItemTypeById(descItemTypeId);
+        StaticDataProvider sdp = staticDataService.getData();
+        RuleSystemItemType descItemType = sdp.getItemTypeById(descItemTypeId);
         Validate.notNull(descItemType, "Typ hodnoty atributu neexistuje");
 
         ArrNode node = nodeRepository.findOne(nodeId);
@@ -271,8 +271,8 @@ public class DescriptionItemService {
         ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
         Validate.notNull(fundVersion, "Verze archivní pomůcky neexistuje");
 
-        RuleSystem ruleSystem = staticDataService.getData().getRuleSystems().getByRuleSetId(fundVersion.getRuleSetId());
-        RuleSystemItemType descItemType = ruleSystem.getItemTypeById(descItemTypeId);
+        StaticDataProvider sdp = staticDataService.getData();
+        RuleSystemItemType descItemType = sdp.getItemTypeById(descItemTypeId);
         Validate.notNull(descItemType, "Typ hodnoty atributu neexistuje");
 
         ArrNode node = nodeRepository.findOne(nodeId);
@@ -479,9 +479,9 @@ public class DescriptionItemService {
         // pro vytváření musí být verze otevřená
         checkFundVersionLock(fundVersion);
 
-        RuleSystem ruleSystem = staticDataService.getData().getRuleSystems().getByRuleSetId(fundVersion.getRuleSetId());
+        StaticDataProvider sdp = staticDataService.getData();
         // kontrola validity typu a specifikace
-        itemService.checkValidTypeAndSpec(ruleSystem, descItem);
+        itemService.checkValidTypeAndSpec(sdp, descItem);
 
         int maxPosition = getMaxPosition(descItem);
 
@@ -973,14 +973,15 @@ public class DescriptionItemService {
     private ArrDescItem updateValue(final ArrFundVersion fundVersion, ArrDescItem descItemDB, RulItemSpec itemSpec,
 	        ArrData data) {
 
-        RuleSystem ruleSystem = staticDataService.getData().getRuleSystems().getByRuleSetId(fundVersion.getRuleSetId());
 
-		// set data and specification
+        StaticDataProvider sdp = staticDataService.getData();
+
+        // set data and specification
 		descItemDB.setData(data);
 		descItemDB.setItemSpec(itemSpec);
 		ArrDescItem result = descItemRepository.save(descItemDB);
 
-        itemService.checkValidTypeAndSpec(ruleSystem, result);
+        itemService.checkValidTypeAndSpec(sdp, result);
 
 		// update value in node cache
 		arrangementCacheService.changeDescItem(result.getNodeId(), result, false);
@@ -1834,8 +1835,8 @@ public class DescriptionItemService {
                     .set("id", nodeId);
         }
 
-        RuleSystem ruleSystem = staticDataService.getData().getRuleSystems().getByRuleSetId(fundVersion.getRuleSetId());
-        RuleSystemItemType descItemType = ruleSystem.getItemTypeById(descItemTypeId);
+        StaticDataProvider sdp = staticDataService.getData();
+        RuleSystemItemType descItemType = sdp.getItemTypeById(descItemTypeId);
         Validate.notNull(descItemType, "Typ hodnoty atributu neexistuje");
 
         RulItemSpec descItemSpec = null;

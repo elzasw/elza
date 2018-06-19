@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import cz.tacr.elza.core.data.StaticDataProvider;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.context.annotation.Scope;
@@ -14,7 +15,6 @@ import cz.tacr.elza.bulkaction.generator.LevelWithItems;
 import cz.tacr.elza.bulkaction.generator.result.ActionResult;
 import cz.tacr.elza.bulkaction.generator.result.TextAggregationActionResult;
 import cz.tacr.elza.core.data.DataType;
-import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.core.data.RuleSystemItemType;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrData;
@@ -63,7 +63,7 @@ public class TextAggregationAction extends Action {
 
     @Override
 	public void init(ArrBulkActionRun bulkActionRun) {
-		RuleSystem ruleSystem = getRuleSystem(bulkActionRun);
+		StaticDataProvider ruleSystem = getStaticDataProvider();
 
 		String outputType = config.getOutputType();
 		outputItemType = ruleSystem.getItemTypeByCode(outputType);

@@ -738,7 +738,6 @@ public class ConfigMapperConfiguration {
                             }
                             rulRuleSetVO.setGridViews(gridViews);
                         }
-                        rulRuleSetVO.setItemTypeCodes(ruleService.getItemTypeCodesByRuleSet(rulRuleSet));
                     }
                 })
                 .register();

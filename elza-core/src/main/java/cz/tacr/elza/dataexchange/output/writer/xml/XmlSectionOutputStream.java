@@ -162,7 +162,7 @@ class XmlSectionOutputStream implements SectionOutputStream {
         if (items == null || items.isEmpty()) {
             return;
         }
-        ItemConvertor convertor = new ItemConvertor(sectionContext.getRuleSystem(), new ContextAwareItemDataConvertorFactory());
+        ItemConvertor convertor = new ItemConvertor(sectionContext.getStaticData(), new ContextAwareItemDataConvertorFactory());
         for (ArrItem item : items) {
             DescriptionItem element = convertor.convert(item);
             outList.add(element);

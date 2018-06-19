@@ -34,7 +34,7 @@ public class UnitCountActionResult extends ActionResult {
         if (table == null) {
             return;
         }
-        RuleSystemItemType rsit = connector.getRuleSystem().getItemTypeByCode(itemType);
+        RuleSystemItemType rsit = connector.getItemTypeByCode(itemType);
         connector.addTableItem(table, rsit, null);
     }
 }

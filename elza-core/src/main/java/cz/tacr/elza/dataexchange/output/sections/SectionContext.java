@@ -5,6 +5,7 @@ import java.util.Set;
 
 import javax.persistence.EntityManager;
 
+import cz.tacr.elza.core.data.StaticDataProvider;
 import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.common.db.HibernateUtils;
@@ -24,6 +25,8 @@ public class SectionContext {
     private final ExportContext context;
 
     private final RuleSystem ruleSystem;
+
+    private final StaticDataProvider staticData;
 
     private final LevelInfoLoader levelInfoLoader;
 
@@ -49,9 +52,10 @@ public class SectionContext {
                    NodeCacheService nodeCacheService,
                    EntityManager em) {
         this.context = Validate.notNull(context);
-        this.ruleSystem = context.getStaticData().getRuleSystems().getByRuleSetId(fundVersion.getRuleSetId());
+        this.staticData = context.getStaticData();
+        this.ruleSystem = staticData.getRuleSystemById(fundVersion.getRuleSetId());
         this.levelInfoLoader = new LevelInfoLoader(context.getBatchSize(), nodeCacheService);
-        this.structObjLoader = new StructObjectInfoLoader(em, context.getBatchSize(), ruleSystem);
+        this.structObjLoader = new StructObjectInfoLoader(em, context.getBatchSize(), ruleSystem, this.staticData);
         this.fundVersion = Validate.notNull(fundVersion);
         this.multipleSections = multipleSections;
         this.levelInfoListener = levelInfoListener;
@@ -60,6 +64,10 @@ public class SectionContext {
 
     public ExportContext getContext() {
         return context;
+    }
+
+    public StaticDataProvider getStaticData() {
+        return staticData;
     }
 
     public RuleSystem getRuleSystem() {

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import cz.tacr.elza.core.data.StaticDataProvider;
 import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.bulkaction.generator.LevelWithItems;
@@ -59,29 +60,29 @@ public class UnitCounter {
     private Set<Integer> countedObjects = new HashSet<>();
 
     UnitCounter(UnitCounterConfig counterCfg,
-            final StructuredItemRepository structureItemRepository,
-            RuleSystem ruleSystem) {
+                final StructuredItemRepository structureItemRepository,
+                StaticDataProvider sdp) {
         this.config = counterCfg;
         this.structureItemRepository = structureItemRepository;
-        init(ruleSystem);
+        init(sdp);
     }
 
-    private void init(RuleSystem ruleSystem) {
+    private void init(StaticDataProvider spd) {
         // initialize exclude configuration
         WhenConditionConfig excludeWhenConfig = config.getExcludeWhen();
         if (excludeWhenConfig != null) {
-            excludeWhen = new WhenCondition(excludeWhenConfig, ruleSystem);
+            excludeWhen = new WhenCondition(excludeWhenConfig, spd);
         }
 
         WhenConditionConfig whenConfig = config.getWhen();
         if (whenConfig != null) {
-            when = new WhenCondition(whenConfig, ruleSystem);
+            when = new WhenCondition(whenConfig, spd);
         }
 
         // item type with specification
         String itemTypeCode = config.getItemType();
         if (itemTypeCode != null) {
-            itemType = ruleSystem.getItemTypeByCode(itemTypeCode);
+            itemType = spd.getItemTypeByCode(itemTypeCode);
             Validate.notNull(itemType);
             Validate.isTrue(itemType.hasSpecifications());
             // only enums and INTs are supported
@@ -98,7 +99,7 @@ public class UnitCounter {
 
         String itemCountCode = config.getItemCount();
         if (itemCountCode != null) {
-            itemCount = ruleSystem.getItemTypeByCode(itemCountCode);
+            itemCount = spd.getItemTypeByCode(itemCountCode);
             Validate.notNull(itemCount);
             Validate.isTrue(itemCount.getDataType() == DataType.INT);
         }
@@ -106,12 +107,12 @@ public class UnitCounter {
         // object / packet mapping
         String objectTypeCode = config.getObjectType();
         if (objectTypeCode != null) {
-            objectType = ruleSystem.getItemTypeByCode(objectTypeCode);
+            objectType = spd.getItemTypeByCode(objectTypeCode);
             Validate.notNull(objectType);
             Validate.isTrue(objectType.getDataType() == DataType.STRUCTURED);
 
             // get item type with packets
-            objectItemType = ruleSystem.getItemTypeByCode(config.getObjectItemType());
+            objectItemType = spd.getItemTypeByCode(config.getObjectItemType());
             Validate.notNull(objectItemType);
             Validate.notNull(objectItemType.getDataType() == DataType.ENUM);
 

@@ -6,9 +6,6 @@ import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
 import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.controller.factory.ExtendedObjectsFactory;
-import cz.tacr.elza.core.data.RuleSystem;
-import cz.tacr.elza.core.data.RuleSystemItemType;
-import cz.tacr.elza.core.data.RuleSystemProvider;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.rules.ItemTypeExtBuilder;
@@ -512,7 +509,7 @@ public class RuleService {
 
         ArrLevel level = levelRepository.findByNode(node, version.getLockChange());
 
-		List<RulItemTypeExt> rulDescItemTypeExtList = getRulesetDescriptionItemTypes(version.getRuleSetId());
+		List<RulItemTypeExt> rulDescItemTypeExtList = getRulesetDescriptionItemTypes();
 
         return rulesExecutor.executeDescItemTypesRules(level, rulDescItemTypeExtList, version);
     }
@@ -525,43 +522,23 @@ public class RuleService {
 	@Transactional
     public List<RulItemTypeExt> getAllDescriptionItemTypes() {
 		StaticDataProvider sdp = staticDataService.getData();
-		RuleSystemProvider rsp = sdp.getRuleSystems();
 
 		ItemTypeExtBuilder builder = new ItemTypeExtBuilder();
-		for (RuleSystem rs : rsp.getRulesSystems()) {
-			List<RuleSystemItemType> typeList = rs.getItemTypes();
-			builder.add(typeList);
-		}
+        builder.add(sdp.getItemTypes());
 
 		return builder.getResult();
     }
 
     /**
-     * Vrací typy atributů podle pravidla.
-     *
-     * @param ruleSet pravidla
-     * @return seznam typů
-     */
-    public List<String> getItemTypeCodesByRuleSet(final RulRuleSet ruleSet) {
-        return itemTypeRepository.findByRuleSet(ruleSet).stream()
-                .map(RulItemType::getCode)
-                .collect(Collectors.toList());
-    }
-
-    /**
 	 * Získání typů atributů se specifikacemi pro pravidla
 	 *
-	 * @param ruleSetId
 	 * @return typy hodnot atributů
 	 */
-	private List<RulItemTypeExt> getRulesetDescriptionItemTypes(final int ruleSetId) {
+	private List<RulItemTypeExt> getRulesetDescriptionItemTypes() {
 		StaticDataProvider sdp = staticDataService.getData();
-		RuleSystemProvider rsp = sdp.getRuleSystems();
-
-		RuleSystem rs = rsp.getByRuleSetId(ruleSetId);
 
 		ItemTypeExtBuilder builder = new ItemTypeExtBuilder();
-		builder.add(rs.getItemTypes());
+        builder.add(sdp.getItemTypes());
 
 		return builder.getResult();
 	}
@@ -597,8 +574,7 @@ public class RuleService {
      */
     public List<RulItemTypeExt> getOutputItemTypes(final ArrOutputDefinition outputDefinition) {
         RulOutputType outputType = outputDefinition.getOutputType();
-		List<RulItemTypeExt> rulDescItemTypeExtList = getRulesetDescriptionItemTypes(
-                outputType.getRuleSetId());
+		List<RulItemTypeExt> rulDescItemTypeExtList = getRulesetDescriptionItemTypes();
 
         List<RulItemTypeAction> itemTypeActions = itemTypeActionRepository.findAll();
         Map<Integer, RulItemType> itemTypeMap = new HashMap<>();
@@ -923,8 +899,7 @@ public class RuleService {
     public List<RulItemTypeExt> getStructureItemTypesInternal(final RulStructuredType structureType,
                                                               final ArrFundVersion fundVersion,
                                                               final List<ArrStructuredItem> structureItems) {
-        List<RulItemTypeExt> rulDescItemTypeExtList = getRulesetDescriptionItemTypes(
-                structureType.getRuleSet().getRuleSetId());
+        List<RulItemTypeExt> rulDescItemTypeExtList = getRulesetDescriptionItemTypes();
         return rulesExecutor.executeStructureItemTypesRules(structureType, rulDescItemTypeExtList, fundVersion, structureItems);
     }
 
