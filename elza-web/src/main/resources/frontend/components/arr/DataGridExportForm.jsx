@@ -21,9 +21,15 @@ const transformSubmitData = (values) => {
     };
 };
 
-const handleSubmit = (values, dispatch, versionId, fundDataGrid) => {
+const handleSubmit = (values, dispatch, versionId, fundDataGrid) => {
     dispatch(modalDialogHide());
-    dispatch(downloadFile(WebApiCls.arrangementUrl + '/dataGrid/export/' + versionId + '/' + values.exportType + "?rulItemTypeIds=" + fundDataGrid.columnsOrder));
+    let columns = [];
+    if (fundDataGrid.columnsOrder && fundDataGrid.columnsOrder.length === 0) {
+        columns = Object.keys(fundDataGrid.visibleColumns).filter(key => fundDataGrid.visibleColumns[key]).map(key => parseInt(key));
+    } else {
+        columns = fundDataGrid.columnsOrder;
+    }
+    dispatch(downloadFile(WebApiCls.arrangementUrl + '/dataGrid/export/' + versionId + '/' + values.exportType + "?rulItemTypeIds=" + columns));
 };
 
 const EXPORT_TYPE = {
