@@ -530,8 +530,8 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
                 rs.getBoolean(RulItemType.CAN_BE_ORDERED),
                 rs.getBoolean(RulItemType.USE_SPECIFICATION),
                 rs.getInt(RulItemType.VIEW_ORDER),
-                rs.getInt(RulItemType.PACKAGE_ID),
                 rs.getInt(RulItemType.RULE_SET_ID),
+                rs.getInt(RulItemType.PACKAGE_ID),
                 rs.getString(RulItemType.COLUMNS_DEFINITION),
                 null /*struct_type - not exists yet*/);
     }
