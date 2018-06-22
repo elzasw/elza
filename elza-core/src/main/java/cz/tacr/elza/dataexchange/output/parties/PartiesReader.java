@@ -12,7 +12,6 @@ import cz.tacr.elza.dataexchange.output.context.ExportContext;
 import cz.tacr.elza.dataexchange.output.context.ExportInitHelper;
 import cz.tacr.elza.dataexchange.output.context.ExportReader;
 import cz.tacr.elza.dataexchange.output.writer.PartiesOutputStream;
-import cz.tacr.elza.domain.ParParty;
 
 public class PartiesReader implements ExportReader {
 
@@ -22,15 +21,15 @@ public class PartiesReader implements ExportReader {
 
     public PartiesReader(ExportContext context, ExportInitHelper initHelper) {
         this.context = context;
-        this.em = initHelper.getEntityManager();
+        this.em = initHelper.getEm();
     }
 
     @Override
     public void read() {
         PartiesOutputStream os = context.getBuilder().openPartiesOutputStream();
         try {
-            Set<Integer> exportedAPIds = readPartyIds(os);
-            readAPIds(os, exportedAPIds);
+            Set<Integer> exportedApIds = readPartyIds(os);
+            readApIds(os, exportedApIds);
             os.processed();
         } finally {
             os.close();
@@ -43,34 +42,36 @@ public class PartiesReader implements ExportReader {
      * @return Exported access point ids.
      */
     private Set<Integer> readPartyIds(PartiesOutputStream os) {
-        Set<Integer> exportedAPIds = new HashSet<>();
+        Set<Integer> exportedApIds = new HashSet<>();
 
-        PartyLoader loader = PartyLoader.createPartyIdLoader(em, context.getBatchSize(), context.getStaticData());
+        PartyInfoLoader loader = PartyInfoLoader.createPartyIdLoader(em, context.getBatchSize(),
+                                                                     context.getStaticData());
         for (Integer partyId : context.getPartyIds()) {
-            PartyDispatcher dispatcher = new PartyDispatcher() {
+            PartyInfoDispatcher dispatcher = new PartyInfoDispatcher(context.getStaticData()) {
                 @Override
                 protected void onCompleted() {
-                    ParParty party = Validate.notNull(getParty());
-                    exportedAPIds.add(party.getRecord().getRecordId());
-                    os.addParty(party);
+                    PartyInfoImpl partyInfo = Validate.notNull(getPartyInfo());
+                    exportedApIds.add(partyInfo.getParty().getRecordId());
+                    os.addParty(partyInfo);
                 }
             };
             loader.addRequest(partyId, dispatcher);
         }
         loader.flush();
 
-        return exportedAPIds;
+        return exportedApIds;
     }
 
-    private void readAPIds(PartiesOutputStream os, Set<Integer> exportedAPIds) {
-        Set<Integer> apIds = SetUtils.difference(context.getPartyAPIds(), exportedAPIds);
+    private void readApIds(PartiesOutputStream os, Set<Integer> exportedApIds) {
+        Set<Integer> apIds = SetUtils.difference(context.getPartyApIds(), exportedApIds);
 
-        PartyLoader loader = PartyLoader.createAPIdLoader(em, context.getBatchSize(), context.getStaticData());
+        PartyInfoLoader loader = PartyInfoLoader.createAPIdLoader(em, context.getBatchSize(), context.getStaticData());
         for (Integer apId : apIds) {
-            PartyDispatcher dispatcher = new PartyDispatcher() {
+            PartyInfoDispatcher dispatcher = new PartyInfoDispatcher(context.getStaticData()) {
                 @Override
                 protected void onCompleted() {
-                    os.addParty(Validate.notNull(getParty()));
+                    PartyInfoImpl partyInfo = Validate.notNull(getPartyInfo());
+                    os.addParty(partyInfo);
                 }
             };
             loader.addRequest(apId, dispatcher);

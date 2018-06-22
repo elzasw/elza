@@ -65,6 +65,7 @@ public class ApExternalId implements Serializable {
 	public static final String EXTERNAL_ID = "externalId";
 	public static final String VALUE = "value";
 	public static final String ACCESS_POINT_ID = "accessPointId";
+	public static final String DELETE_CHANGE_ID = "deleteChangeId";
 
 	public Integer getExternalId() {
 		return externalId;

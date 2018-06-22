@@ -1,8 +1,13 @@
 package cz.tacr.elza.dataexchange.input.aps.context;
 
 import org.apache.commons.lang3.Validate;
+import org.hibernate.Session;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.dataexchange.input.context.EntityIdHolder;
-import cz.tacr.elza.dataexchange.input.storage.EntityWrapper.PersistType;
+import cz.tacr.elza.dataexchange.input.storage.SaveMethod;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApType;
 
@@ -10,13 +15,15 @@ import cz.tacr.elza.domain.ApType;
  * Access point import info which primarily stores id and result of record
  * pairing.
  */
-public class AccessPointInfo extends EntityIdHolder<ApAccessPoint> {
+public class AccessPointInfo implements EntityIdHolder<ApAccessPoint> {
+
+    private static final Logger logger = LoggerFactory.getLogger(AccessPointInfo.class);
 
     private final ApType apType;
 
-    private final AccessPointsContext context;
+    private Integer entityId;
 
-    private PersistType persistType = PersistType.CREATE;
+    private SaveMethod saveMethod;
 
     private String fulltext;
 
@@ -24,47 +31,56 @@ public class AccessPointInfo extends EntityIdHolder<ApAccessPoint> {
 
     private boolean processed;
 
-    private long maxMemoryScore;
-
-    public AccessPointInfo(ApType apType, AccessPointsContext context) {
-        super(ApAccessPoint.class, false);
+    public AccessPointInfo(ApType apType) {
         this.apType = apType;
-        this.context = context;
+    }
+
+    @Override
+    public Integer getEntityId() {
+        Validate.notNull(entityId);
+
+        return entityId;
+    }
+
+    void setEntityId(Integer entityId) {
+        this.entityId = entityId;
+    }
+
+    @Override
+    public ApAccessPoint getEntityRef(Session session) {
+        Validate.notNull(entityId);
+
+        return HibernateUtils.getEntityRef(entityId, ApAccessPoint.class, session, false);
     }
 
     public ApType getApType() {
         return apType;
     }
 
-    public PersistType getPersistType() {
-        return persistType;
+    public SaveMethod getSaveMethod() {
+        return saveMethod;
     }
 
-    public void setPersistType(PersistType persistType) {
-        this.persistType = persistType;
+    void setSaveMethod(SaveMethod saveMethod) {
+        this.saveMethod = saveMethod;
     }
 
     public String getFulltext() {
         return fulltext;
     }
 
-    public void setFulltext(String fulltext) {
+    void setFulltext(String fulltext) {
         this.fulltext = fulltext;
-    }
-
-    /**
-     * Maximum memory score which AP and its sub-entities can occupied.
-     */
-    public long getMaxMemoryScore() {
-        return maxMemoryScore;
     }
 
     public void onProcessed() {
         Validate.isTrue(!processed);
         processed = true;
-        // notify context when all entity are persist
+        // AP is finished when all entity are persist
         if (queuedEntityCount == 0) {
-            context.onAccessPointFinished(this);
+            if (logger.isDebugEnabled()) {
+                logger.debug("AP fninished, entityId={}, fulltext={}", entityId, fulltext);
+            }
         }
     }
 
@@ -73,13 +89,14 @@ public class AccessPointInfo extends EntityIdHolder<ApAccessPoint> {
         queuedEntityCount++;
     }
 
-    public void onEntityPersist(long memoryScore) {
+    public void onEntityPersist() {
         Validate.isTrue(queuedEntityCount > 0);
-        this.maxMemoryScore += memoryScore;
         queuedEntityCount--;
-        // notify context when processed and all entity are persist
+        // AP is finished when processed and all entity are persist
         if (processed && queuedEntityCount == 0) {
-            context.onAccessPointFinished(this);
+            if (logger.isDebugEnabled()) {
+                logger.debug("AP fninished, entityId={}, fulltext={}", entityId, fulltext);
+            }
         }
     }
 }

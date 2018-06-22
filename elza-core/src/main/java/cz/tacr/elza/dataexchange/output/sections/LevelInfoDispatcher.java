@@ -5,15 +5,15 @@ import org.apache.commons.lang3.Validate;
 import cz.tacr.elza.dataexchange.output.loaders.LoadDispatcher;
 import cz.tacr.elza.dataexchange.output.writer.SectionOutputStream;
 
-public class LevelInfoDispatcher implements LoadDispatcher<ExportLevelInfo> {
+public class LevelInfoDispatcher implements LoadDispatcher<LevelInfoImpl> {
 
     private final SectionOutputStream os;
 
-    private final ExportLevelInfoListener levelInfoListener;
+    private final LevelInfoListener levelInfoListener;
 
-    private ExportLevelInfo levelInfo;
+    private LevelInfoImpl levelInfo;
 
-    public LevelInfoDispatcher(SectionOutputStream os, ExportLevelInfoListener levelInfoListener) {
+    public LevelInfoDispatcher(SectionOutputStream os, LevelInfoListener levelInfoListener) {
         this.os = os;
         this.levelInfoListener = levelInfoListener;
     }
@@ -23,7 +23,7 @@ public class LevelInfoDispatcher implements LoadDispatcher<ExportLevelInfo> {
     }
 
     @Override
-    public void onLoad(ExportLevelInfo result) {
+    public void onLoad(LevelInfoImpl result) {
         Validate.isTrue(levelInfo == null);
         levelInfo = result;
     }

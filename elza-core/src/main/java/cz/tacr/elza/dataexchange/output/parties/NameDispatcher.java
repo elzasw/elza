@@ -6,10 +6,12 @@ import java.util.List;
 import org.apache.commons.lang.Validate;
 
 import cz.tacr.elza.common.db.HibernateUtils;
+import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.dataexchange.output.loaders.LoadDispatcher;
 import cz.tacr.elza.dataexchange.output.loaders.NestedLoadDispatcher;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyName;
+import cz.tacr.elza.domain.ParPartyNameFormType;
 
 public class NameDispatcher extends NestedLoadDispatcher<ParPartyName> {
 
@@ -17,13 +19,25 @@ public class NameDispatcher extends NestedLoadDispatcher<ParPartyName> {
 
     private final ParParty party;
 
-    public NameDispatcher(ParParty party, LoadDispatcher<ParParty> partyDispatcher) {
-        super(partyDispatcher);
+    private final StaticDataProvider staticData;
+
+    public NameDispatcher(ParParty party, LoadDispatcher<PartyInfoImpl> partyInfoDispatcher,
+            StaticDataProvider staticData) {
+        super(partyInfoDispatcher);
         this.party = party;
+        this.staticData = staticData;
     }
 
     @Override
     public void onLoad(ParPartyName result) {
+        // init form type if present
+        Integer formTypeId = result.getNameFormTypeId();
+        if (formTypeId != null) {
+            ParPartyNameFormType formType = staticData.getPartyNameFormTypeById(formTypeId);
+            Validate.notNull(formType);
+            result.setNameFormType(formType);
+        }
+        // init references
         if (party.getPreferredNameId().equals(result.getPartyNameId())) {
             party.setPreferredName(result);
         } else {

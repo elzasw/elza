@@ -48,16 +48,21 @@ public class ApConvResult {
     /**
      * Creates new AP names. AP reference is not set.
      */
-    public void createNames(ApChange createChange, Consumer<ApName> nameAction) {
+    public List<ApName> createNames(ApChange createChange) {
         Iterator<ApConvName> it = names.iterator();
         Validate.isTrue(it.hasNext());
+
+        List<ApName> result = new ArrayList<>(names.size());
+
         ApName prefName = createName(it.next(), createChange);
         prefName.setPreferredName(true);
-        nameAction.accept(prefName);
+        result.add(prefName);
+
         while (it.hasNext()) {
             ApName name = createName(it.next(), createChange);
-            nameAction.accept(name);
+            result.add(name);
         }
+        return result;
     }
 
     private ApName createName(ApConvName name, ApChange createChange) {

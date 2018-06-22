@@ -8,6 +8,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import cz.tacr.elza.core.data.PartyType;
 import cz.tacr.elza.core.data.PartyTypeCmplTypes;
 import cz.tacr.elza.core.data.StaticDataProvider;
@@ -22,6 +25,7 @@ import cz.tacr.elza.dataexchange.input.context.ImportPhaseChangeListener;
 import cz.tacr.elza.dataexchange.input.context.ObservableImport;
 import cz.tacr.elza.dataexchange.input.storage.StorageManager;
 import cz.tacr.elza.domain.ApDescription;
+import cz.tacr.elza.domain.ApName;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyGroupIdentifier;
 import cz.tacr.elza.domain.ParPartyName;
@@ -59,9 +63,7 @@ public class PartiesContext {
 
     private final List<PartyNameCmplWrapper> nameCmplQueue = new ArrayList<>();
 
-    private final List<PartyPreferredNameWrapper> prefNameQueue = new ArrayList<>();
-
-    private long scriptMemoryScore;
+    private final List<PartyPrefNameWrapper> prefNameQueue = new ArrayList<>();
 
     public PartiesContext(StorageManager storageManager, int batchSize, AccessPointsContext apContext,
             StaticDataProvider staticData, ImportInitHelper initHelper) {
@@ -85,9 +87,10 @@ public class PartiesContext {
     }
 
     public PartyInfo addParty(ParParty entity, String importId, AccessPointInfo apInfo, PartyType partyType) {
-        logger.debug("Add party to the context, importId = {}", importId);
-
-        PartyInfo info = new PartyInfo(apInfo, partyType, this);
+        if (logger.isDebugEnabled()) {
+            logger.debug("Add party to the context, importId = {}", importId);
+        }
+        PartyInfo info = new PartyInfo(importId, apInfo, partyType, this);
         if (importIdPartyInfoMap.putIfAbsent(importId, info) != null) {
             throw new DEImportException("Party has duplicate id, partyId:" + importId);
         }
@@ -105,20 +108,21 @@ public class PartiesContext {
     }
 
     public PartyNameWrapper addName(ParPartyName entity, PartyInfo partyInfo, boolean preferred) {
-        logger.debug("Add name to the context, importId = {}, name = {}", partyInfo.getImportId(),
-                    partyName.getMainPart());
-
+        if (logger.isDebugEnabled()) {
+            logger.debug("Add name to the context, importId = {}, name = {}", partyInfo.getImportId(),
+                         entity.getMainPart());
+        }
         PartyNameWrapper wrapper = new PartyNameWrapper(entity, partyInfo);
         nameQueue.add(wrapper);
         partyInfo.onEntityQueued();
         if (nameQueue.size() >= batchSize) {
-            storeNames();
+            storeNames(true);
         }
         if (preferred) {
-            prefNameQueue.add(new PartyPreferredNameWrapper(partyInfo, wrapper.getIdHolder()));
+            prefNameQueue.add(new PartyPrefNameWrapper(partyInfo, wrapper.getIdHolder()));
             partyInfo.onEntityQueued();
             if (prefNameQueue.size() >= batchSize) {
-                storePreferredNames();
+                storePreferredNames(true);
             }
         }
         return wrapper;
@@ -135,11 +139,11 @@ public class PartiesContext {
     }
 
     public void addNameComplement(ParPartyNameComplement entity, EntityIdHolder<ParPartyName> nameIdHolder,
-            PartyInfo partyInfo) {
+                                  PartyInfo partyInfo) {
         nameCmplQueue.add(new PartyNameCmplWrapper(entity, nameIdHolder, partyInfo));
         partyInfo.onEntityQueued();
         if (nameCmplQueue.size() >= batchSize) {
-            storeNameComplements();
+            storeNameComplements(true);
         }
     }
 
@@ -148,19 +152,13 @@ public class PartiesContext {
         groupIdentifierQueue.add(wrapper);
         partyInfo.onEntityQueued();
         if (groupIdentifierQueue.size() >= batchSize) {
-            storeGroupIdentifiers();
+            storeGroupIdentifiers(true);
         }
         return wrapper;
     }
 
     public void onPartyFinished(PartyInfo partyInfo) {
         updatePartyAp(partyInfo);
-        // clear all entities potentially loaded by groovy script
-        scriptMemoryScore += partyInfo.getMaxMemoryScore();
-        if (scriptMemoryScore > storageManager.getAvailableMemoryScore()) {
-            storageManager.flushAndClear(true);
-            scriptMemoryScore = 0;
-        }
         // AP is now processed
         partyInfo.getApInfo().onProcessed();
     }
@@ -172,20 +170,23 @@ public class PartiesContext {
         PartyTypeCmplTypes cmplTypes = staticData.getCmplTypesByPartyTypeCode(partyTypeCode);
         // execute groovy script
         ApConvResult convResult = gsService.convertPartyToAp(entity, cmplTypes.getTypes());
-        // add AP description and names
+        // TODO: clear loaded entities by groovy
+        // add converted description and names
         AccessPointInfo apInfo = partyInfo.getApInfo();
         ApDescription apDesc = convResult.createDesc(apContext.getCreateChange());
         apContext.addDescription(apDesc, apInfo);
-        convResult.createNames(apContext.getCreateChange(), n -> apContext.addName(n, apInfo));
+        for (ApName name : convResult.createNames(apContext.getCreateChange())) {
+            apContext.addName(name, apInfo);
+        }
     }
 
     public void storeAll() {
         storeParties();
         storeUnitDates();
-        storeGroupIdentifiers();
-        storeNames();
-        storeNameComplements();
-        storePreferredNames();
+        storeGroupIdentifiers(false);
+        storeNames(false);
+        storeNameComplements(false);
+        storePreferredNames(false);
     }
 
     private void storeParties() {
@@ -193,55 +194,56 @@ public class PartiesContext {
     }
 
     private void storeParties(Collection<PartyWrapper> partyQueue) {
-        if (partyQueue.isEmpty()) {
-            return;
-        }
         apContext.storeAccessPoints();
-        storageManager.saveParties(partyQueue);
+        storageManager.storeParties(partyQueue);
         partyQueue.clear();
     }
 
     private void storeUnitDates() {
-        if (unitDateQueue.isEmpty()) {
-            return;
-        }
-        storageManager.saveGeneric(unitDateQueue);
+        storageManager.storeGeneric(unitDateQueue);
         unitDateQueue.clear();
     }
 
-    private void storeGroupIdentifiers() {
-        List<PartyWrapper> partyGroupQueue = typeGroupedPartyQueue.get(PartyType.GROUP_PARTY);
-        if (partyGroupQueue != null) {
-            storeParties(partyGroupQueue);
+    private void storeGroupIdentifiers(boolean storeReferenced) {
+        if (storeReferenced) {
+            List<PartyWrapper> partyQueue = typeGroupedPartyQueue.get(PartyType.GROUP_PARTY);
+            if (partyQueue != null) {
+                storeParties(partyQueue);
+            }
+            storeUnitDates();
         }
-        storeUnitDates();
-        storageManager.saveGeneric(groupIdentifierQueue);
+        storageManager.storeGeneric(groupIdentifierQueue);
         groupIdentifierQueue.clear();
     }
 
-    private void storeNames() {
-        logger.debug("Store names, count: {}", nameQueue.size());
-
-        if (nameQueue.isEmpty()) {
-            return;
+    private void storeNames(boolean storeReferenced) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("Store names, count: {}", nameQueue.size());
         }
-        storeParties();
-        storeUnitDates();
-        storageManager.saveGeneric(nameQueue);
+        if (storeReferenced) {
+            storeParties();
+            storeUnitDates();
+        }
+        storageManager.storeGeneric(nameQueue);
         nameQueue.clear();
     }
 
-    private void storeNameComplements() {
-        storeNames();
-        storageManager.saveGeneric(nameCmplQueue);
+    private void storeNameComplements(boolean storeReferenced) {
+        if (storeReferenced) {
+            storeNames(true);
+        }
+        storageManager.storeGeneric(nameCmplQueue);
         nameCmplQueue.clear();
     }
 
-    private void storePreferredNames() {
-        logger.debug("Store prefer names, count: {}", preferredNameQueue.size());
-
-        storeNames();
-        storageManager.saveGeneric(prefNameQueue);
+    private void storePreferredNames(boolean storeReferenced) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("Store prefer names, count: {}", prefNameQueue.size());
+        }
+        if (storeReferenced) {
+            storeNames(true);
+        }
+        storageManager.storeRefUpdates(prefNameQueue);
         prefNameQueue.clear();
     }
 

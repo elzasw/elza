@@ -48,6 +48,8 @@ public class StaticDataProvider {
 
     private Map<String, ParPartyNameFormType> partyNameFormTypeCodeMap;
 
+    private Map<Integer, ParComplementType> cmplTypeIdMap;
+
     private Map<String, ParComplementType> cmplTypeCodeMap;
 
     private Map<String, PartyTypeCmplTypes> partyTypeCmplTypesCodeMap;
@@ -60,7 +62,11 @@ public class StaticDataProvider {
 
     private Map<String, RelationTypeImpl> relationTypeCodeMap;
 
+    private Map<Integer, ApExternalIdType> apEidTypeIdMap;
+
     private Map<String, ApExternalIdType> apEidTypeCodeMap;
+
+    private Map<Integer, ApNameType> apNameTypeIdMap;
 
     private Map<String, ApNameType> apNameTypeCodeMap;
 
@@ -120,6 +126,11 @@ public class StaticDataProvider {
         return partyNameFormTypeCodeMap.get(code);
     }
 
+    public ParComplementType getCmplTypeById(Integer id) {
+        Validate.notNull(id);
+        return cmplTypeIdMap.get(id);
+    }
+
     public ParComplementType getCmplTypeByCode(String code) {
         Validate.notEmpty(code);
         return cmplTypeCodeMap.get(code);
@@ -154,9 +165,19 @@ public class StaticDataProvider {
         return relationTypeCodeMap.get(code);
     }
 
+    public ApExternalIdType getApEidTypeById(Integer id) {
+        Validate.notNull(id);
+        return apEidTypeIdMap.get(id);
+    }
+
     public ApExternalIdType getApEidTypeByCode(String code) {
         Validate.notEmpty(code);
         return apEidTypeCodeMap.get(code);
+    }
+
+    public ApNameType getApNameTypeById(Integer id) {
+        Validate.notNull(id);
+        return apNameTypeIdMap.get(id);
     }
 
     public ApNameType getApNameTypeByCode(String code) {
@@ -177,7 +198,7 @@ public class StaticDataProvider {
      */
     void init(StaticDataService service) {
         ruleSystemProvider.init(service.ruleSetRepository, service.itemTypeRepository, service.itemSpecRepository,
-                service.structuredTypeRepository);
+                                service.structuredTypeRepository);
         initPackages(service.packageRepository);
         initPartyNameFormTypes(service.partyNameFormTypeRepository);
         initComplementTypes(service.complementTypeRepository, service.partyTypeComplementTypeRepository);
@@ -210,12 +231,14 @@ public class StaticDataProvider {
     }
 
     private void initComplementTypes(ComplementTypeRepository complementTypeRepository,
-            PartyTypeComplementTypeRepository partyTypeComplementTypeRepository) {
+                                     PartyTypeComplementTypeRepository partyTypeComplementTypeRepository) {
         List<ParComplementType> cmplTypes = complementTypeRepository.findAll();
 
+        Map<Integer, ParComplementType> idMap = new HashMap<>(cmplTypes.size());
         Map<String, ParComplementType> codeMap = new HashMap<>(cmplTypes.size());
         for (ParComplementType cmplType : cmplTypes) {
             checkPackageReference(cmplType.getRulPackage());
+            idMap.put(cmplType.getComplementTypeId(), cmplType);
             codeMap.put(cmplType.getCode(), cmplType);
         }
 
@@ -229,6 +252,7 @@ public class StaticDataProvider {
 
         // update fields
         this.cmplTypes = Collections.unmodifiableList(cmplTypes);
+        this.cmplTypeIdMap = idMap;
         this.cmplTypeCodeMap = codeMap;
         this.partyTypeCmplTypesCodeMap = partyTypeComplementTypesCodeMap;
     }
@@ -257,7 +281,7 @@ public class StaticDataProvider {
     }
 
     private void initRelationTypes(RelationTypeRepository relationTypeRepository,
-            RelationTypeRoleTypeRepository relationTypeRoleTypeRepository) {
+                                   RelationTypeRoleTypeRepository relationTypeRoleTypeRepository) {
         List<ParRelationType> parTypes = relationTypeRepository.findAllFetchClassType();
 
         // init all relation types and prepare id map
@@ -291,6 +315,7 @@ public class StaticDataProvider {
 
         // update fields
         this.apEidTypes = Collections.unmodifiableList(eidTypes);
+        this.apEidTypeIdMap = createLookup(eidTypes, ApExternalIdType::getExternalIdType);
         this.apEidTypeCodeMap = createLookup(eidTypes, ApExternalIdType::getCode);
     }
 
@@ -299,6 +324,7 @@ public class StaticDataProvider {
 
         // update fields
         this.apNameTypes = Collections.unmodifiableList(nameTypes);
+        this.apNameTypeIdMap = createLookup(nameTypes, ApNameType::getNameTypeId);
         this.apNameTypeCodeMap = createLookup(nameTypes, ApNameType::getCode);
     }
 

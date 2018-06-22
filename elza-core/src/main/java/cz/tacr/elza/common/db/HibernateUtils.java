@@ -84,7 +84,7 @@ public class HibernateUtils {
      *             When object is null.
      */
     public static boolean isInitialized(Object object) {
-        Validate.isTrue(object != null);
+        Validate.notNull(object);
         return Hibernate.isInitialized(object);
     }
 
@@ -94,10 +94,10 @@ public class HibernateUtils {
      * 
      * @param detachIfNotLoaded
      *            When true and entity is not loaded in persistent context returned
-     *            reference will be detached.
+     *            reference (proxy) will be detached.
      */
     public static <E> E getEntityRef(Serializable entityId, Class<E> entityClass, Session session,
-            boolean detachIfNotLoaded) {
+                                     boolean detachIfNotLoaded) {
         // retrieve entity or create proxy
         E entity = session.byId(entityClass).getReference(entityId);
         // L1 cache access

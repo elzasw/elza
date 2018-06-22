@@ -4,8 +4,11 @@ import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.ParPartyName;
 import cz.tacr.elza.domain.projection.ApAccessPointInfo;
-import cz.tacr.elza.domain.projection.ApAccessPointInfoExternal;
+import cz.tacr.elza.domain.projection.ApExternalIdInfo;
+
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -25,13 +28,13 @@ public interface ApAccessPointRepository
             + "join eid.createChange chng " + "join chng.externalSystem esys "
             + "WHERE eid.value IN (?1) and esys = ?2 and eid.deleteChange is null")
     List<ApAccessPoint> findApAccessPointByExternalIdsAndExternalSystem(Set<String> set,
-            ApExternalSystem externalSystem);
+                                                                        ApExternalSystem externalSystem);
 
     @Query("select ap from ap_access_point ap " + "join ap_external_id eid on ap.accessPointId = eid.accessPointId "
             + "join eid.createChange chng " + "join chng.externalSystem esys "
             + "WHERE eid.value = ?1 and eid.deleteChange is null and esys.code = ?2 and ap.scope = ?3")
     ApAccessPoint findApAccessPointByExternalIdAndExternalSystemCodeAndScope(String externalId,
-            String externalSystemCode, ApScope scope);
+                                                                             String externalSystemCode, ApScope scope);
 
     /**
      * Najde záznamy rejstříkových hesel pro osoby se vztahem k dané osobě.
@@ -76,13 +79,5 @@ public interface ApAccessPointRepository
      * 
      * @return AP projection
      */
-    List<ApAccessPointInfo> findByUuidIn(Collection<String> uuids);
-
-    /**
-     * Searches APs by external ids.
-     * 
-     * @return AP projection with external id
-     */
-    @Query("SELECT eid.accessPoint FROM ap_external_id eid JOIN ap_external_id_type eidType WHERE eidType.code=?1 AND eid.value IN ?2 AND eid.deleteChange IS NULL")
-    List<ApAccessPointInfoExternal> findByEidTypeCodeAndEidValuesIn(String eidTypeCode, Collection<String> eidValues);
+    List<ApAccessPointInfo> findInfoByUuidIn(Collection<String> uuids);
 }

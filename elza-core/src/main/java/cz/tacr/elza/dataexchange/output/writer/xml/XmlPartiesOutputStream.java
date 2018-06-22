@@ -2,6 +2,7 @@ package cz.tacr.elza.dataexchange.output.writer.xml;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.List;
 
 import javax.xml.bind.JAXBContext;
@@ -10,7 +11,8 @@ import javax.xml.bind.Marshaller;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
-import org.apache.commons.lang.Validate;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,6 +21,7 @@ import cz.tacr.elza.core.data.CalendarType;
 import cz.tacr.elza.core.data.PartyType;
 import cz.tacr.elza.dataexchange.common.CalendarTypeConvertor;
 import cz.tacr.elza.dataexchange.output.writer.PartiesOutputStream;
+import cz.tacr.elza.dataexchange.output.writer.PartyInfo;
 import cz.tacr.elza.dataexchange.output.writer.xml.nodes.FileNode;
 import cz.tacr.elza.dataexchange.output.writer.xml.nodes.RootNode;
 import cz.tacr.elza.dataexchange.output.writer.xml.nodes.RootNode.ChildNodeType;
@@ -50,7 +53,8 @@ public class XmlPartiesOutputStream implements PartiesOutputStream {
 
     private final static Logger logger = LoggerFactory.getLogger(XmlPartiesOutputStream.class);
 
-    private final JAXBContext jaxbContext = XmlUtils.createJAXBContext(Person.class, PartyGroup.class, Family.class, Event.class);
+    private final JAXBContext jaxbContext = XmlUtils.createJAXBContext(Person.class, PartyGroup.class, Family.class,
+                                                                       Event.class);
 
     private final RootNode rootNode;
 
@@ -64,18 +68,10 @@ public class XmlPartiesOutputStream implements PartiesOutputStream {
     }
 
     @Override
-    public void addParty(ParParty party) {
+    public void addParty(PartyInfo partyInfo) {
         Validate.isTrue(!processed);
 
-        Party element = createParty(party);
-        element.setApe(XmlAccessPointOutputStream.createEntry(party.getRecord()));
-        element.setChr(party.getCharacteristics());
-        element.setHst(party.getHistory());
-        element.setId(party.getPartyId().toString());
-        element.setName(createPartyName(party.getPreferredName()));
-        element.setSrc(party.getSourceInformation());
-        element.setVnms(createPartyNames(party));
-
+        Party element = createParty(partyInfo);
         try {
             writeParty(element);
         } catch (Exception e) {
@@ -127,23 +123,77 @@ public class XmlPartiesOutputStream implements PartiesOutputStream {
         marshaller.marshal(jaxbElement, sw);
     }
 
-    private static Party createParty(ParParty party) {
-        PartyType partyType = PartyType.fromId(party.getPartyTypeId());
+    private static Party createParty(PartyInfo partyInfo) {
+        PartyType partyType = PartyType.fromId(partyInfo.getParty().getPartyTypeId());
         switch (partyType) {
-            case PERSON:
-                return new Person();
-            case GROUP_PARTY:
-                ParPartyGroup group = (ParPartyGroup) party;
-                return createPartyGroup(group);
-            case DYNASTY:
-                ParDynasty dynasty = (ParDynasty) party;
-                Family family = new Family();
-                family.setGen(dynasty.getGenealogy());
-                return family;
-            case EVENT:
-                return new Event();
+        case PERSON:
+            Person person = new Person();
+            initCommonParty(person, partyInfo);
+            return person;
+        case GROUP_PARTY:
+            PartyGroup partyGroup = new PartyGroup();
+            initPartyGroup(partyGroup, partyInfo);
+            return partyGroup;
+        case DYNASTY:
+            Family family = new Family();
+            initFamily(family, partyInfo);
+            return family;
+        case EVENT:
+            Event event = new Event();
+            initCommonParty(event, partyInfo);
+            return event;
         }
-        throw new IllegalStateException("Unknown party type:" + partyType);
+        throw new IllegalStateException("Unknown party type, name=" + partyType.name());
+    }
+
+    private static void initCommonParty(Party element, PartyInfo partyInfo) {
+        ParParty party = partyInfo.getParty();
+        element.setChr(party.getCharacteristics());
+        element.setHst(party.getHistory());
+        element.setId(party.getPartyId().toString());
+        element.setNms(createPartyNames(party));
+        element.setSrc(party.getSourceInformation());
+        // init entry
+        element.setApe(XmlApOutputStream.createEntry(partyInfo.getBaseApInfo()));
+    }
+
+    private static void initPartyGroup(PartyGroup element, PartyInfo partyInfo) {
+        initCommonParty(element, partyInfo);
+        // init group
+        ParPartyGroup partyGroup = (ParPartyGroup) partyInfo.getParty();
+        element.setScp(partyGroup.getScope());
+        element.setFn(partyGroup.getFoundingNorm());
+        element.setSn(partyGroup.getScopeNorm());
+        element.setStr(partyGroup.getOrganization());
+        // init identifiers
+        PartyIdentifiers identifiers = createPartyGroupIdentifiers(partyGroup.getPartyGroupIdentifiers());
+        element.setPis(identifiers);
+    }
+
+    private static void initFamily(Family element, PartyInfo partyInfo) {
+        initCommonParty(element, partyInfo);
+        // init family
+        ParDynasty dynasty = (ParDynasty) partyInfo.getParty();
+        element.setGen(dynasty.getGenealogy());
+    }
+
+    private static PartyIdentifiers createPartyGroupIdentifiers(Collection<ParPartyGroupIdentifier> identifiers) {
+        if (CollectionUtils.isEmpty(identifiers)) {
+            return null;
+        }
+        PartyIdentifiers listElement = new PartyIdentifiers();
+        List<PartyIdentifier> list = listElement.getPi();
+
+        for (ParPartyGroupIdentifier indetifier : identifiers) {
+            PartyIdentifier element = new PartyIdentifier();
+            element.setNote(indetifier.getNote());
+            element.setSrc(indetifier.getSource());
+            element.setV(indetifier.getIdentifier());
+            element.setVf(createTimeIntervalExt(indetifier.getFrom()));
+            element.setVto(createTimeIntervalExt(indetifier.getTo()));
+            list.add(element);
+        }
+        return listElement;
     }
 
     private static PartyName createPartyName(ParPartyName partyName) {
@@ -153,91 +203,65 @@ public class XmlPartiesOutputStream implements PartiesOutputStream {
         element.setMain(partyName.getMainPart());
         element.setNote(partyName.getNote());
         element.setOth(partyName.getOtherPart());
-        element.setVf(createTimeIntervalEx(partyName.getValidFrom()));
-        element.setVto(createTimeIntervalEx(partyName.getValidTo()));
-
+        element.setVf(createTimeIntervalExt(partyName.getValidFrom()));
+        element.setVto(createTimeIntervalExt(partyName.getValidTo()));
+        // init form type (loaded from static data)
         if (partyName.getNameFormType() != null) {
             element.setFt(partyName.getNameFormType().getCode());
         }
-        List<ParPartyNameComplement> complements = partyName.getPartyNameComplements();
-        if (complements != null && complements.size() > 0) {
-
-            NameComplements listElement = new NameComplements();
-            List<NameComplement> list = listElement.getNc();
-
-            complements.forEach(source -> {
-                NameComplement target = new NameComplement();
-                target.setCt(source.getComplementType().getCode());
-                target.setV(source.getComplement());
-                list.add(target);
-            });
-
-            element.setNcs(listElement);
-        }
-
+        // init complements
+        NameComplements cmpls = createNameCmpls(partyName.getPartyNameComplements());
+        element.setNcs(cmpls);
         return element;
     }
 
-    private static PartyNames createPartyNames(ParParty party) {
-        List<ParPartyName> names = party.getPartyNames();
-        if (names == null || names.isEmpty()) {
+    private static NameComplements createNameCmpls(Collection<ParPartyNameComplement> nameCmpls) {
+        if (CollectionUtils.isEmpty(nameCmpls)) {
             return null;
         }
-        PartyNames listElement = new PartyNames();
-        List<PartyName> list = listElement.getVnm();
+        NameComplements listElement = new NameComplements();
+        List<NameComplement> list = listElement.getNc();
 
-        names.forEach(source -> {
-            PartyName target = createPartyName(source);
-            list.add(target);
-        });
-
+        for (ParPartyNameComplement nameCmpl : nameCmpls) {
+            NameComplement element = new NameComplement();
+            // init complement type (loaded from static data)
+            element.setCt(nameCmpl.getComplementType().getCode());
+            element.setV(nameCmpl.getComplement());
+            list.add(element);
+        }
         return listElement;
     }
 
-    private static Party createPartyGroup(ParPartyGroup partyGroup) {
-        PartyGroup element = new PartyGroup();
-        element.setScp(partyGroup.getScope());
-        element.setFn(partyGroup.getFoundingNorm());
-        element.setSn(partyGroup.getScopeNorm());
-        element.setStr(partyGroup.getOrganization());
+    private static PartyNames createPartyNames(ParParty party) {
+        PartyNames listElement = new PartyNames();
+        List<PartyName> list = listElement.getNm();
 
-        List<ParPartyGroupIdentifier> indetifiers = partyGroup.getPartyGroupIdentifiers();
-        if (indetifiers != null && indetifiers.size() > 0) {
+        ParPartyName prefName = party.getPreferredName();
+        list.add(createPartyName(prefName));
 
-            PartyIdentifiers listElement = new PartyIdentifiers();
-            List<PartyIdentifier> list = listElement.getPi();
-
-            indetifiers.forEach(source -> {
-                PartyIdentifier target = new PartyIdentifier();
-                target.setNote(source.getNote());
-                target.setSrc(source.getSource());
-                target.setV(source.getIdentifier());
-                target.setVf(createTimeIntervalEx(source.getFrom()));
-                target.setVto(createTimeIntervalEx(source.getTo()));
-                list.add(target);
-            });
-
-            element.setPis(listElement);
+        for (ParPartyName name : party.getPartyNames()) {
+            if (prefName.getPartyNameId().equals(name.getPartyNameId())) {
+                continue; // preferred already added as first
+            }
+            list.add(createPartyName(name));
         }
-
-        return element;
+        return listElement;
     }
 
-    private static TimeIntervalExt createTimeIntervalEx(ParUnitdate partyUnitdate) {
+    private static TimeIntervalExt createTimeIntervalExt(ParUnitdate partyUnitdate) {
         if (partyUnitdate == null) {
             return null;
         }
-
         String valueFrom = partyUnitdate.getValueFrom();
         String valueTo = partyUnitdate.getValueTo();
         if (valueFrom == null && valueTo == null) {
-            logger.warn("Ignored unitdate without value, parUnitdateId:{}", partyUnitdate.getUnitdateId());
+            logger.warn("Ignored unitdate without value, parUnitdateId={}", partyUnitdate.getUnitdateId());
             return null;
         }
         if (valueFrom == null || valueTo == null) {
-            throw new SystemException("Unitdate without from/to value").set("parUnitdateId", partyUnitdate.getUnitdateId());
+            throw new SystemException("Unitdate without from/to value").set("parUnitdateId",
+                                                                            partyUnitdate.getUnitdateId());
         }
-
         TimeIntervalExt element = new TimeIntervalExt();
         if (partyUnitdate.getCalendarTypeId() != null) {
             CalendarType ct = CalendarType.fromId(partyUnitdate.getCalendarTypeId());
@@ -250,7 +274,6 @@ public class XmlPartiesOutputStream implements PartiesOutputStream {
         element.setFmt(partyUnitdate.getFormat());
         element.setNote(partyUnitdate.getNote());
         element.setTf(partyUnitdate.getTextDate());
-
         return element;
     }
 }

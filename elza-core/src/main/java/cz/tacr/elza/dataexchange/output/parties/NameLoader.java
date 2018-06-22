@@ -4,6 +4,7 @@ import javax.persistence.EntityManager;
 
 import org.apache.commons.lang3.Validate;
 
+import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.dataexchange.output.loaders.AbstractEntityLoader;
 import cz.tacr.elza.dataexchange.output.loaders.LoadDispatcher;
 import cz.tacr.elza.domain.ParPartyName;
@@ -14,10 +15,13 @@ public class NameLoader extends AbstractEntityLoader<ParPartyName> {
 
     private final UnitdateLoader unitdateLoader;
 
-    public NameLoader(EntityManager em, int batchSize, UnitdateLoader unitdateLoader) {
+    private final StaticDataProvider staticData;
+
+    public NameLoader(EntityManager em, int batchSize, UnitdateLoader unitdateLoader, StaticDataProvider staticData) {
         super(ParPartyName.class, ParPartyName.PARTY_FK, em, batchSize);
         this.complementLoader = new NameComplementLoader(em, batchSize);
         this.unitdateLoader = unitdateLoader;
+        this.staticData = staticData;
     }
 
     @Override
@@ -28,7 +32,7 @@ public class NameLoader extends AbstractEntityLoader<ParPartyName> {
 
     @Override
     protected void onBatchEntryLoad(LoadDispatcher<ParPartyName> dispatcher, ParPartyName result) {
-        NameComplementDispatcher complementDispatcher = new NameComplementDispatcher(result, dispatcher);
+        NameComplementDispatcher complementDispatcher = new NameComplementDispatcher(result, dispatcher, staticData);
         complementLoader.addRequest(result.getPartyNameId(), complementDispatcher);
 
         if (result.getValidFromUnitdateId() != null) {

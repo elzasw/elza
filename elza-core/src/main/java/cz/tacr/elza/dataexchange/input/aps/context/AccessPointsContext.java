@@ -7,22 +7,26 @@ import java.util.Map;
 
 import org.apache.commons.collections4.MultiValuedMap;
 import org.apache.commons.lang3.StringUtils;
+
 import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.dataexchange.input.ApChangeHolder;
 import cz.tacr.elza.dataexchange.input.DEImportException;
 import cz.tacr.elza.dataexchange.input.context.ImportContext;
+import cz.tacr.elza.dataexchange.input.context.ImportInitHelper;
 import cz.tacr.elza.dataexchange.input.context.ImportPhase;
 import cz.tacr.elza.dataexchange.input.context.ImportPhaseChangeListener;
 import cz.tacr.elza.dataexchange.input.context.ObservableImport;
 import cz.tacr.elza.dataexchange.input.storage.StorageManager;
-import cz.tacr.elza.domain.AccessPointFullTextProvider;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApDescription;
 import cz.tacr.elza.domain.ApExternalId;
 import cz.tacr.elza.domain.ApExternalIdType;
+import cz.tacr.elza.domain.ApFulltextProviderImpl;
 import cz.tacr.elza.domain.ApName;
 import cz.tacr.elza.domain.ApNameType;
 import cz.tacr.elza.domain.ApScope;
+import cz.tacr.elza.service.ArrangementService;
 
 /**
  * Context for data exchange access points.
@@ -37,11 +41,11 @@ public class AccessPointsContext {
 
     private final ApScope scope;
 
-    private final ApChange createChange;
-
-    private final AccessPointFullTextProvider fulltextProvider;
+    private final ApChangeHolder changeHolder;
 
     private final StaticDataProvider staticData;
+
+    private final ArrangementService arrangementService;
 
     private final List<AccessPointWrapper> apQueue = new ArrayList<>();
 
@@ -51,16 +55,14 @@ public class AccessPointsContext {
 
     private final List<ApNameWrapper> nameQueue = new ArrayList<>();
 
-    private long providersMemoryScore;
-
-    public AccessPointsContext(StorageManager storageManager, int batchSize, ApScope scope, ApChange createChange,
-            AccessPointFullTextProvider fulltextProvider, StaticDataProvider staticData) {
+    public AccessPointsContext(StorageManager storageManager, int batchSize, ApScope scope, ApChangeHolder changeHolder,
+            StaticDataProvider staticData, ImportInitHelper initHelper) {
         this.storageManager = storageManager;
         this.batchSize = batchSize;
         this.scope = scope;
-        this.createChange = createChange;
-        this.fulltextProvider = fulltextProvider;
+        this.changeHolder = changeHolder;
         this.staticData = staticData;
+        this.arrangementService = initHelper.getArrangementService();
     }
 
     public void init(ObservableImport observableImport) {
@@ -72,7 +74,7 @@ public class AccessPointsContext {
     }
 
     public ApChange getCreateChange() {
-        return createChange;
+        return changeHolder.getChange();
     }
 
     public AccessPointInfo getApInfo(String entryId) {
@@ -110,13 +112,13 @@ public class AccessPointsContext {
      * @return Return access point import info
      */
     public AccessPointInfo addAccessPoint(ApAccessPoint entity, String entryId,
-            MultiValuedMap<String, String> eidTypeValueMap) {
-        AccessPointInfo info = new AccessPointInfo(entity.getApType(), this);
+                                          MultiValuedMap<String, String> eidTypeValueMap) {
+        AccessPointInfo info = new AccessPointInfo(entity.getApType());
         if (entryIdApInfoMap.putIfAbsent(entryId, info) != null) {
             throw new DEImportException("Access point has duplicate id, apeId:" + entryId);
         }
         // add to queue
-        apQueue.add(new AccessPointWrapper(entity, info, eidTypeValueMap));
+        apQueue.add(new AccessPointWrapper(entity, info, eidTypeValueMap, arrangementService));
         info.onEntityQueued();
         if (apQueue.size() >= batchSize) {
             storeAccessPoints();
@@ -128,7 +130,7 @@ public class AccessPointsContext {
         eidQueue.add(new ApExternalIdWrapper(entity, apInfo));
         apInfo.onEntityQueued();
         if (eidQueue.size() >= batchSize) {
-            storeExternalIds();
+            storeExternalIds(true);
         }
     }
 
@@ -136,31 +138,19 @@ public class AccessPointsContext {
         descQueue.add(new ApDescriptionWrapper(entity, apInfo));
         apInfo.onEntityQueued();
         if (descQueue.size() > batchSize) {
-            storeDescriptions();
+            storeDescriptions(true);
         }
     }
 
     public void addName(ApName entity, AccessPointInfo apInfo) {
+        if (Boolean.TRUE.equals(entity.getPreferredName())) {
+            String fulltext = ApFulltextProviderImpl.createFulltext(entity);
+            apInfo.setFulltext(fulltext);
+        }
         nameQueue.add(new ApNameWrapper(entity, apInfo));
         apInfo.onEntityQueued();
         if (nameQueue.size() >= batchSize) {
-            storeNames();
-        }
-    }
-
-    public void onAccessPointFinished(AccessPointInfo apInfo) {
-        if (fulltextProvider == null) {
-            return;
-        }
-        // create fulltext
-        ApAccessPoint entity = apInfo.getEntityRef(storageManager.getSession());
-        String fulltext = fulltextProvider.getFullText(entity);
-        apInfo.setFulltext(fulltext);
-        // clear all entities potentially loaded by provider
-        providersMemoryScore += apInfo.getMaxMemoryScore();
-        if (providersMemoryScore > storageManager.getAvailableMemoryScore()) {
-            storageManager.flushAndClear(true);
-            providersMemoryScore = 0;
+            storeNames(true);
         }
     }
 
@@ -169,43 +159,37 @@ public class AccessPointsContext {
      */
     public void storeAll() {
         storeAccessPoints();
-        storeExternalIds();
-        storeDescriptions();
-        storeNames();
+        storeExternalIds(false);
+        storeDescriptions(false);
+        storeNames(false);
     }
 
     public void storeAccessPoints() {
-        if (apQueue.isEmpty()) {
-            return;
-        }
-        storageManager.saveAccessPoints(apQueue);
+        storageManager.storeAccessPoints(apQueue);
         apQueue.clear();
     }
 
-    private void storeExternalIds() {
-        if (eidQueue.isEmpty()) {
-            return;
+    private void storeExternalIds(boolean storeReferenced) {
+        if (storeReferenced) {
+            storeAccessPoints();
         }
-        storeAccessPoints();
-        storageManager.saveGeneric(eidQueue);
+        storageManager.storeGeneric(eidQueue);
         eidQueue.clear();
     }
 
-    private void storeDescriptions() {
-        if (descQueue.isEmpty()) {
-            return;
+    private void storeDescriptions(boolean storeReferenced) {
+        if (storeReferenced) {
+            storeAccessPoints();
         }
-        storeAccessPoints();
-        storageManager.saveGeneric(descQueue);
+        storageManager.storeGeneric(descQueue);
         descQueue.clear();
     }
 
-    private void storeNames() {
-        if (nameQueue.isEmpty()) {
-            return;
+    private void storeNames(boolean storeReferenced) {
+        if (storeReferenced) {
+            storeAccessPoints();
         }
-        storeAccessPoints();
-        storageManager.saveGeneric(nameQueue);
+        storageManager.storeGeneric(nameQueue);
         nameQueue.clear();
     }
 

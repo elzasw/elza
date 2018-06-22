@@ -38,11 +38,11 @@ public class ImportContext implements ObservableImport {
     private ImportPhase currentPhase = ImportPhase.INIT;
 
     public ImportContext(Session session,
-                         StaticDataProvider staticData,
-                         AccessPointsContext accessPoints,
-                         PartiesContext parties,
-                         InstitutionsContext institutions,
-                         SectionsContext sections) {
+            StaticDataProvider staticData,
+            AccessPointsContext accessPoints,
+            PartiesContext parties,
+            InstitutionsContext institutions,
+            SectionsContext sections) {
         this.session = session;
         this.staticData = staticData;
         this.accessPoints = accessPoints;

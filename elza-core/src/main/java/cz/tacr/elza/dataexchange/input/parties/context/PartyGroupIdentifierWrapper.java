@@ -4,13 +4,13 @@ import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
 
 import cz.tacr.elza.dataexchange.input.context.EntityIdHolder;
-import cz.tacr.elza.dataexchange.input.storage.EntityMetrics;
 import cz.tacr.elza.dataexchange.input.storage.EntityWrapper;
+import cz.tacr.elza.dataexchange.input.storage.SaveMethod;
 import cz.tacr.elza.domain.ParPartyGroup;
 import cz.tacr.elza.domain.ParPartyGroupIdentifier;
 import cz.tacr.elza.domain.ParUnitdate;
 
-public class PartyGroupIdentifierWrapper implements EntityWrapper, EntityMetrics {
+public class PartyGroupIdentifierWrapper implements EntityWrapper {
 
     private final ParPartyGroupIdentifier entity;
 
@@ -34,33 +34,28 @@ public class PartyGroupIdentifierWrapper implements EntityWrapper, EntityMetrics
     }
 
     @Override
-    public PersistType getPersistType() {
-        PersistType pt = partyInfo.getPersistType();
-        // group identifier is never updated and old must be deleted by storage
-        return pt.equals(PersistType.NONE) ? PersistType.NONE : PersistType.CREATE;
+    public SaveMethod getSaveMethod() {
+        SaveMethod sm = partyInfo.getSaveMethod();
+        // group identifier is never updated and old must be invalidate by storage
+        return sm.equals(SaveMethod.IGNORE) ? sm : SaveMethod.CREATE;
     }
 
     @Override
-    public ParPartyGroupIdentifier getEntity() {
+    public Object getEntity() {
         return entity;
     }
 
     @Override
-    public long getMemoryScore() {
-        return 1;
-    }
-
-    @Override
-    public void beforeEntityPersist(Session session) {
-        // party group relation
+    public void beforeEntitySave(Session session) {
+        // prepare party reference
         Validate.isTrue(entity.getPartyGroup() == null);
         entity.setPartyGroup((ParPartyGroup) partyInfo.getEntityRef(session));
-        // valid from relation
+        // prepare from reference
         Validate.isTrue(entity.getFrom() == null);
         if (validFromIdHolder != null) {
             entity.setFrom(validFromIdHolder.getEntityRef(session));
         }
-        // valid to relation
+        // prepare to reference
         Validate.isTrue(entity.getTo() == null);
         if (validToIdHolder != null) {
             entity.setTo(validToIdHolder.getEntityRef(session));
@@ -68,7 +63,8 @@ public class PartyGroupIdentifierWrapper implements EntityWrapper, EntityMetrics
     }
 
     @Override
-    public void afterEntityPersist() {
-        partyInfo.onEntityPersist(getMemoryScore());
+    public void afterEntitySave() {
+        // update party info
+        partyInfo.onEntityPersist();
     }
 }

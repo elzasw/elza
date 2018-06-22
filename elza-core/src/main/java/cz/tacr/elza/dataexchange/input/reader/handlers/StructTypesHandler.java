@@ -5,7 +5,7 @@ import javax.xml.stream.XMLEventReader;
 import cz.tacr.elza.dataexchange.input.context.ImportContext;
 import cz.tacr.elza.dataexchange.input.context.ImportPhase;
 import cz.tacr.elza.dataexchange.input.reader.XmlElementHandler;
-import cz.tacr.elza.dataexchange.input.sections.context.ContextSection;
+import cz.tacr.elza.dataexchange.input.sections.context.SectionContext;
 import cz.tacr.elza.dataexchange.input.sections.context.SectionsContext;
 
 /**
@@ -27,7 +27,7 @@ public class StructTypesHandler extends ContextAwareElementHandler implements Xm
         // all structuredObjects are read
         // store them in DB
         SectionsContext ssCtx = context.getSections();
-        ContextSection secCtx = ssCtx.getCurrentSection();
+        SectionContext secCtx = ssCtx.getCurrentSection();
 
         secCtx.structObjsFinished();
     }

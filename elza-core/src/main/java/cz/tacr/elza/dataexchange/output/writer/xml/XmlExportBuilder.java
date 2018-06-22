@@ -16,7 +16,7 @@ import com.ctc.wstx.api.WstxInputProperties;
 import com.sun.xml.txw2.output.IndentingXMLStreamWriter;
 
 import cz.tacr.elza.dataexchange.output.sections.SectionContext;
-import cz.tacr.elza.dataexchange.output.writer.AccessPointsOutputStream;
+import cz.tacr.elza.dataexchange.output.writer.ApOutputStream;
 import cz.tacr.elza.dataexchange.output.writer.ExportBuilder;
 import cz.tacr.elza.dataexchange.output.writer.PartiesOutputStream;
 import cz.tacr.elza.dataexchange.output.writer.SectionOutputStream;
@@ -45,8 +45,8 @@ public class XmlExportBuilder implements ExportBuilder {
     }
 
     @Override
-    public AccessPointsOutputStream openAccessPointsOutputStream() {
-        return new XmlAccessPointOutputStream(rootNode, tempDirectory);
+    public ApOutputStream openAccessPointsOutputStream() {
+        return new XmlApOutputStream(rootNode, tempDirectory);
     }
 
     @Override

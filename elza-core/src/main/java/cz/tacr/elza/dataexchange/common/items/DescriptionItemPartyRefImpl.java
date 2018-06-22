@@ -22,6 +22,6 @@ public class DescriptionItemPartyRefImpl extends DescriptionItemPartyRef {
 		data.setParty(partyInfo.getEntityRef(context.getSession()));
 		data.setDataType(dataType.getEntity());
 
-		return new ImportableItemData(data, partyInfo.getFulltext());
+		return new ImportableItemData(data, partyInfo.getApInfo().getFulltext());
 	}
 }

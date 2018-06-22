@@ -30,7 +30,7 @@ public class ArrDataRecordRef extends ArrData {
     @Column(name = "recordId", updatable = false, insertable = false)
     private Integer recordId;
 
-    private static AccessPointFullTextProvider fullTextProvider;
+    private static ApFulltextProvider fulltextProvider;
 
 	public ArrDataRecordRef() {
 
@@ -61,7 +61,7 @@ public class ArrDataRecordRef extends ArrData {
 
     @Override
     public String getFulltextValue() {
-        return fullTextProvider.getFullText(record);
+        return fulltextProvider.getFulltext(record);
     }
 
 	@Override
@@ -81,7 +81,7 @@ public class ArrDataRecordRef extends ArrData {
         this.copyValue(src);
     }
 
-    public static void setFullTextProvider(AccessPointFullTextProvider fullTextProvider) {
-        ArrDataRecordRef.fullTextProvider = fullTextProvider;
+    public static void setFulltextProvider(ApFulltextProvider fullTextProvider) {
+        ArrDataRecordRef.fulltextProvider = fullTextProvider;
     }
 }

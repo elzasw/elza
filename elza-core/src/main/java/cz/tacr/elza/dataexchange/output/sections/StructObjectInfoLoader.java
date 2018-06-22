@@ -10,7 +10,7 @@ import cz.tacr.elza.dataexchange.output.loaders.LoadDispatcher;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.RulStructuredType;
 
-public class StructObjectInfoLoader extends AbstractEntityLoader<StructObjectInfo> {
+public class StructObjectInfoLoader extends AbstractEntityLoader<StructObjectInfoImpl> {
 
     private final StructItemLoader structItemLoader;
 
@@ -23,17 +23,17 @@ public class StructObjectInfoLoader extends AbstractEntityLoader<StructObjectInf
     }
 
     @Override
-    protected void onBatchEntryLoad(LoadDispatcher<StructObjectInfo> dispatcher, StructObjectInfo result) {
+    protected void onBatchEntryLoad(LoadDispatcher<StructObjectInfoImpl> dispatcher, StructObjectInfoImpl result) {
         StructItemDispatcher itemDispatcher = new StructItemDispatcher(result, dispatcher);
         structItemLoader.addRequest(result.getId(), itemDispatcher);
     }
 
     @Override
-    protected StructObjectInfo createResult(Object entity) {
+    protected StructObjectInfoImpl createResult(Object entity) {
         ArrStructuredObject structObj = (ArrStructuredObject) entity;
 
         RulStructuredType structType = ruleSystem.getStructuredTypeById(structObj.getStructuredTypeId());
-        return new StructObjectInfo(structObj.getStructuredObjectId(), structType);
+        return new StructObjectInfoImpl(structObj.getStructuredObjectId(), structType);
     }
 
     @Override

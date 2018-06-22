@@ -4,12 +4,12 @@ import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
 
 import cz.tacr.elza.dataexchange.input.context.EntityIdHolder;
-import cz.tacr.elza.dataexchange.input.storage.EntityMetrics;
 import cz.tacr.elza.dataexchange.input.storage.EntityWrapper;
+import cz.tacr.elza.dataexchange.input.storage.SaveMethod;
 import cz.tacr.elza.domain.ParPartyName;
 import cz.tacr.elza.domain.ParPartyNameComplement;
 
-public class PartyNameCmplWrapper implements EntityWrapper, EntityMetrics {
+public class PartyNameCmplWrapper implements EntityWrapper {
 
     private final ParPartyNameComplement entity;
 
@@ -25,30 +25,27 @@ public class PartyNameCmplWrapper implements EntityWrapper, EntityMetrics {
     }
 
     @Override
-    public PersistType getPersistType() {
-        PersistType pt = partyInfo.getPersistType();
-        // name complement is never updated and old must be deleted by storage
-        return pt.equals(PersistType.NONE) ? PersistType.NONE : PersistType.CREATE;
+    public SaveMethod getSaveMethod() {
+        SaveMethod sm = partyInfo.getSaveMethod();
+        // party name complement is never updated and old must be invalidate by storage
+        return sm.equals(SaveMethod.IGNORE) ? sm : SaveMethod.CREATE;
     }
 
     @Override
-    public ParPartyNameComplement getEntity() {
+    public Object getEntity() {
         return entity;
     }
 
     @Override
-    public long getMemoryScore() {
-        return 1;
-    }
-
-    @Override
-    public void beforeEntityPersist(Session session) {
+    public void beforeEntitySave(Session session) {
+        // prepare name reference
         Validate.isTrue(entity.getPartyName() == null);
         entity.setPartyName(nameIdHolder.getEntityRef(session));
     }
 
     @Override
-    public void afterEntityPersist() {
-        partyInfo.onEntityPersist(getMemoryScore());
+    public void afterEntitySave() {
+        // update party info
+        partyInfo.onEntityPersist();
     }
 }

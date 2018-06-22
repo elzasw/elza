@@ -24,10 +24,7 @@ import cz.tacr.elza.repository.PartyNameRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.UnitdateRepository;
 
-/**
- * Specialization of wrapper storage for imported parties.
- */
-class ParPartyStorage extends EntityStorage<PartyWrapper> {
+public class ParPartyStorage extends EntityStorage<PartyWrapper> {
 
     private final PartyRepository partyRepository;
 
@@ -39,8 +36,9 @@ class ParPartyStorage extends EntityStorage<PartyWrapper> {
 
     private final PartyNameComplementRepository nameCmplRepository;
 
-    public ParPartyStorage(Session session, MemoryManager memoryManager, ImportInitHelper initHelper) {
-        super(session, memoryManager);
+    public ParPartyStorage(Session session, StoredEntityCallback persistEntityListener,
+            ImportInitHelper initHelper) {
+        super(session, persistEntityListener);
         this.partyRepository = initHelper.getPartyRepository();
         this.nameRepository = initHelper.getNameRepository();
         this.nameCmplRepository = initHelper.getNameComplementRepository();
@@ -49,52 +47,54 @@ class ParPartyStorage extends EntityStorage<PartyWrapper> {
     }
 
     @Override
-    protected void update(Collection<PartyWrapper> items) {
-        prepareItemsForUpdate(items);
-        super.update(items);
+    protected void mergeEntities(Collection<PartyWrapper> pws) {
+        prepareCurrentEntities(pws);
+        super.mergeEntities(pws);
     }
 
     /**
      * Copies partyId and version from existing party to imported entity. All
      * current sub-entities are deleted.
      */
-    private void prepareItemsForUpdate(Collection<PartyWrapper> items) {
-        Map<Integer, PartyWrapper> apIdMap = new HashMap<>(items.size());
+    private void prepareCurrentEntities(Collection<PartyWrapper> pws) {
+        Map<Integer, PartyWrapper> apIdMap = new HashMap<>(pws.size());
         // init apId -> party map
-        for (PartyWrapper item : items) {
-            Integer apId = item.getPartyInfo().getApInfo().getEntityId();
+        for (PartyWrapper pw : pws) {
+            Integer apId = pw.getPartyInfo().getApInfo().getEntityId();
             Validate.notNull(apId);
-            apIdMap.put(apId, item);
+            apIdMap.put(apId, pw);
         }
         // find current parties by apIds
         List<ParPartyInfo> currParties = partyRepository.findInfoByRecordIdIn(apIdMap.keySet());
         if (currParties.size() != apIdMap.size()) {
             throw new IllegalStateException(
-                    "Not all parties for update found, apIds=" + StringUtils.join(apIdMap.keySet(), ','));
+                    "Not all party APs found, apIds=" + StringUtils.join(apIdMap.keySet(), ','));
         }
-        // update wrapped by existing parties
+        // update wrapped entity by existing party
         for (ParPartyInfo info : currParties) {
             PartyWrapper wrapper = apIdMap.get(info.getRecordId());
-            wrapper.prepareUpdate(info);
+            ParParty entity = wrapper.getEntity();
+            entity.setPartyId(info.getPartyId());
+            entity.setVersion(info.getVersion());
         }
         // delete all sub entities
-        deleteSubEntities(items);
+        deleteSubEntities(pws);
     }
 
     /**
      * Delete current sub-entities for each party except for institutions.
      */
-    private void deleteSubEntities(Collection<PartyWrapper> items) {
-        List<ParParty> parties = new ArrayList<>(items.size());
-        List<ParPartyGroup> partyGroups = new ArrayList<>(items.size());
+    private void deleteSubEntities(Collection<PartyWrapper> pws) {
+        List<ParParty> parties = new ArrayList<>(pws.size());
+        List<ParPartyGroup> partyGroups = new ArrayList<>(pws.size());
         List<Integer> unitdateIds = new ArrayList<>();
 
         // fill party search collections
-        for (PartyWrapper item : items) {
-            ParParty party = item.getEntity();
+        for (PartyWrapper pw : pws) {
+            ParParty party = pw.getEntity();
             Validate.notNull(party.getPartyId());
             parties.add(party);
-            if (item.getPartyInfo().getPartyType().equals(PartyType.GROUP_PARTY)) {
+            if (pw.getPartyInfo().getPartyType().equals(PartyType.GROUP_PARTY)) {
                 partyGroups.add((ParPartyGroup) party);
             }
         }

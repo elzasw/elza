@@ -24,8 +24,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import cz.tacr.elza.FilterTools;
-import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.bulkaction.generator.PersistentSortRunConfig;
+import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.controller.vo.ApScopeVO;
 import cz.tacr.elza.controller.vo.ApVariantRecordVO;
 import cz.tacr.elza.controller.vo.ArrFileVO;
@@ -103,25 +103,16 @@ import cz.tacr.elza.filter.condition.UnselectedSpecificationsDescItemEnumConditi
 import cz.tacr.elza.filter.condition.UnselectedValuesDescItemEnumCondition;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.CalendarTypeRepository;
-import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.service.vo.ApAccessPointData;
 import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MapperFactory;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang3.Validate;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-
 
 /**
  * Továrna na vytváření DO objektů z VO objektů.
+ */
 @Service
 public class ClientFactoryDO {
 

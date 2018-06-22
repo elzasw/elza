@@ -4,18 +4,19 @@ import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
 
 import cz.tacr.elza.dataexchange.input.context.EntityIdHolder;
-import cz.tacr.elza.dataexchange.input.storage.EntityMetrics;
+import cz.tacr.elza.dataexchange.input.context.SimpleIdHolder;
 import cz.tacr.elza.dataexchange.input.storage.EntityWrapper;
+import cz.tacr.elza.dataexchange.input.storage.SaveMethod;
 import cz.tacr.elza.domain.ParPartyName;
 import cz.tacr.elza.domain.ParUnitdate;
 
-public class PartyNameWrapper implements EntityWrapper, EntityMetrics {
+public class PartyNameWrapper implements EntityWrapper {
+
+    private final SimpleIdHolder<ParPartyName> idHolder = new SimpleIdHolder<>(ParPartyName.class, false);
 
     private final ParPartyName entity;
 
     private final PartyInfo partyInfo;
-
-    private final EntityIdHolder<ParPartyName> idHolder;
 
     private EntityIdHolder<ParUnitdate> validFromIdHolder;
 
@@ -24,7 +25,6 @@ public class PartyNameWrapper implements EntityWrapper, EntityMetrics {
     PartyNameWrapper(ParPartyName entity, PartyInfo partyInfo) {
         this.entity = Validate.notNull(entity);
         this.partyInfo = Validate.notNull(partyInfo);
-        this.idHolder = new EntityIdHolder<>(ParPartyName.class, false);
     }
 
     public EntityIdHolder<ParPartyName> getIdHolder() {
@@ -40,33 +40,28 @@ public class PartyNameWrapper implements EntityWrapper, EntityMetrics {
     }
 
     @Override
-    public PersistType getPersistType() {
-        PersistType pt = partyInfo.getPersistType();
-        // name is never updated and old must be deleted by storage
-        return pt.equals(PersistType.NONE) ? PersistType.NONE : PersistType.CREATE;
+    public SaveMethod getSaveMethod() {
+        SaveMethod sm = partyInfo.getSaveMethod();
+        // party name is never updated and old must be invalidate by storage
+        return sm.equals(SaveMethod.IGNORE) ? sm : SaveMethod.CREATE;
     }
 
     @Override
-    public ParPartyName getEntity() {
+    public Object getEntity() {
         return entity;
     }
 
     @Override
-    public long getMemoryScore() {
-        return 1;
-    }
-
-    @Override
-    public void beforeEntityPersist(Session session) {
-        // party relation
+    public void beforeEntitySave(Session session) {
+        // prepare party reference
         Validate.isTrue(entity.getParty() == null);
         entity.setParty(partyInfo.getEntityRef(session));
-        // valid from relation
+        // prepare from reference
         Validate.isTrue(entity.getValidFrom() == null);
         if (validFromIdHolder != null) {
             entity.setValidFrom(validFromIdHolder.getEntityRef(session));
         }
-        // valid to relation
+        // prepare to reference
         Validate.isTrue(entity.getValidTo() == null);
         if (validToIdHolder != null) {
             entity.setValidTo(validToIdHolder.getEntityRef(session));
@@ -74,8 +69,10 @@ public class PartyNameWrapper implements EntityWrapper, EntityMetrics {
     }
 
     @Override
-    public void afterEntityPersist() {
+    public void afterEntitySave() {
+        // init id holder
         idHolder.setEntityId(entity.getPartyNameId());
-        partyInfo.onEntityPersist(getMemoryScore());
+        // update party info
+        partyInfo.onEntityPersist();
     }
 }

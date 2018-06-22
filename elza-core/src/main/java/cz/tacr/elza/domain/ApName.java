@@ -20,6 +20,8 @@ import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.metamodel.SingularAttribute;
+
 import java.io.Serializable;
 
 @Entity(name = "ap_name")
@@ -27,7 +29,7 @@ import java.io.Serializable;
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ApName implements Serializable {
-    
+
     @Id
     @GeneratedValue
     @Access(AccessType.PROPERTY)
@@ -91,6 +93,7 @@ public class ApName implements Serializable {
     public static final String PREFERRED_NAME = "preferredName";
     public static final String ACCESS_POINT_ID = "accessPointId";
     public static final String NAME_TYPE_ID = "nameTypeId";
+    public static final String DELETE_CHANGE_ID = "deleteChangeId";
 
     public ApName(){}
 

@@ -34,6 +34,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.introspect.AnnotatedMethod;
 import com.fasterxml.jackson.databind.introspect.VisibilityChecker;
 import com.google.common.collect.Lists;
+
 import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.CalendarType;
@@ -78,8 +79,6 @@ import cz.tacr.elza.repository.PartyNameComplementRepository;
 import cz.tacr.elza.repository.PartyNameRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
-import java.util.TreeSet;
-import java.util.stream.Collectors;
 
 /**
  * Service for caching node related entities.
@@ -88,6 +87,7 @@ import java.util.stream.Collectors;
  * serializuje do JSON pro určení, co se má serializovat se využívá interface
  * {@link NodeCacheSerializable} + základní primitivní typy při spuštění
  * synchronizace {@link #syncCache()} je zamknuta cache pro čtení
+ */
 @Service
 public class NodeCacheService {
 

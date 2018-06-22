@@ -1,24 +1,25 @@
 package cz.tacr.elza.dataexchange.input.parties.context;
 
 import org.apache.commons.lang3.Validate;
+import org.hibernate.Session;
 
 import cz.tacr.elza.dataexchange.input.context.EntityIdHolder;
-import cz.tacr.elza.dataexchange.input.storage.EntityMetrics;
+import cz.tacr.elza.dataexchange.input.context.SimpleIdHolder;
 import cz.tacr.elza.dataexchange.input.storage.EntityWrapper;
+import cz.tacr.elza.dataexchange.input.storage.SaveMethod;
 import cz.tacr.elza.domain.ParUnitdate;
 
-public class PartyUnitDateWrapper implements EntityWrapper, EntityMetrics {
+public class PartyUnitDateWrapper implements EntityWrapper {
+
+    private final SimpleIdHolder<ParUnitdate> idHolder = new SimpleIdHolder<>(ParUnitdate.class, false);
 
     private final ParUnitdate entity;
 
     private final PartyInfo partyInfo;
 
-    private final EntityIdHolder<ParUnitdate> idHolder;
-
     PartyUnitDateWrapper(ParUnitdate entity, PartyInfo partyInfo) {
         this.entity = Validate.notNull(entity);
         this.partyInfo = Validate.notNull(partyInfo);
-        this.idHolder = new EntityIdHolder<>(ParUnitdate.class, false);
     }
 
     public EntityIdHolder<ParUnitdate> getIdHolder() {
@@ -26,25 +27,27 @@ public class PartyUnitDateWrapper implements EntityWrapper, EntityMetrics {
     }
 
     @Override
-    public PersistType getPersistType() {
-        PersistType pt = partyInfo.getPersistType();
-        // unit date is never updated and old must be deleted by storage
-        return pt.equals(PersistType.NONE) ? PersistType.NONE : PersistType.CREATE;
+    public SaveMethod getSaveMethod() {
+        SaveMethod sm = partyInfo.getSaveMethod();
+        // unit date is never updated and old must be invalidate by storage
+        return sm.equals(SaveMethod.IGNORE) ? sm : SaveMethod.CREATE;
     }
 
     @Override
-    public ParUnitdate getEntity() {
+    public Object getEntity() {
         return entity;
     }
 
     @Override
-    public long getMemoryScore() {
-        return 1;
+    public void beforeEntitySave(Session session) {
+        // NOP   
     }
 
     @Override
-    public void afterEntityPersist() {
+    public void afterEntitySave() {
+        // init id holder
         idHolder.setEntityId(entity.getUnitdateId());
-        partyInfo.onEntityPersist(getMemoryScore());
+        // update party info
+        partyInfo.onEntityPersist();
     }
 }

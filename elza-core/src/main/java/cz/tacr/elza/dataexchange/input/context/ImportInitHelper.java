@@ -1,5 +1,9 @@
 package cz.tacr.elza.dataexchange.input.context;
 
+import cz.tacr.elza.repository.ApAccessPointRepository;
+import cz.tacr.elza.repository.ApDescriptionRepository;
+import cz.tacr.elza.repository.ApExternalIdRepository;
+import cz.tacr.elza.repository.ApNameRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.InstitutionTypeRepository;
 import cz.tacr.elza.repository.LevelRepository;
@@ -7,13 +11,11 @@ import cz.tacr.elza.repository.PartyGroupIdentifierRepository;
 import cz.tacr.elza.repository.PartyNameComplementRepository;
 import cz.tacr.elza.repository.PartyNameRepository;
 import cz.tacr.elza.repository.PartyRepository;
-import cz.tacr.elza.repository.ApAccessPointRepository;
-import cz.tacr.elza.repository.ApDescriptionRepository;
-import cz.tacr.elza.repository.ApExternalIdRepository;
-import cz.tacr.elza.repository.ApNameRepository;
 import cz.tacr.elza.repository.UnitdateRepository;
+import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.GroovyScriptService;
+import cz.tacr.elza.service.StructObjService;
 
 public class ImportInitHelper {
 
@@ -45,20 +47,26 @@ public class ImportInitHelper {
 
     private final UnitdateRepository unitdateRepository;
 
-    public ImportInitHelper(GroovyScriptService groovyScriptService, 
+    private final StructObjService structObjService;
+
+    private final AccessPointService accessPointService;
+
+    public ImportInitHelper(GroovyScriptService groovyScriptService,
             InstitutionRepository institutionRepository,
-            InstitutionTypeRepository institutionTypeRepository, 
+            InstitutionTypeRepository institutionTypeRepository,
             ArrangementService arrangementService,
-            LevelRepository levelRepository, 
-            ApAccessPointRepository apRepository, 
+            LevelRepository levelRepository,
+            ApAccessPointRepository apRepository,
             ApNameRepository apNameRepository,
-            ApDescriptionRepository apDescRepository, 
+            ApDescriptionRepository apDescRepository,
             ApExternalIdRepository apEidRepository,
-            PartyRepository partyRepository, 
+            PartyRepository partyRepository,
             PartyNameRepository nameRepository,
             PartyNameComplementRepository nameComplementRepository,
-            PartyGroupIdentifierRepository groupIdentifierRepository, 
-            UnitdateRepository unitdateRepository) {
+            PartyGroupIdentifierRepository groupIdentifierRepository,
+            UnitdateRepository unitdateRepository,
+            StructObjService structObjService,
+            AccessPointService accessPointService) {
         this.groovyScriptService = groovyScriptService;
         this.institutionRepository = institutionRepository;
         this.institutionTypeRepository = institutionTypeRepository;
@@ -73,6 +81,8 @@ public class ImportInitHelper {
         this.nameComplementRepository = nameComplementRepository;
         this.groupIdentifierRepository = groupIdentifierRepository;
         this.unitdateRepository = unitdateRepository;
+        this.structObjService = structObjService;
+        this.accessPointService = accessPointService;
     }
 
     public GroovyScriptService getGroovyScriptService() {
@@ -129,5 +139,13 @@ public class ImportInitHelper {
 
     public UnitdateRepository getUnitdateRepository() {
         return unitdateRepository;
+    }
+
+    public StructObjService getStructObjService() {
+        return structObjService;
+    }
+
+    public AccessPointService getAccessPointService() {
+        return accessPointService;
     }
 }

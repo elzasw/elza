@@ -4,8 +4,8 @@ import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
 
 import cz.tacr.elza.dataexchange.input.context.EntityIdHolder;
-import cz.tacr.elza.dataexchange.input.context.PersistMethod;
 import cz.tacr.elza.dataexchange.input.storage.EntityWrapper;
+import cz.tacr.elza.dataexchange.input.storage.SaveMethod;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeRegister;
 
@@ -21,17 +21,18 @@ public class ArrNodeRegisterWrapper implements EntityWrapper {
     }
 
     @Override
-    public PersistMethod getPersistMethod() {
-        return PersistMethod.CREATE;
-    }
-
-    @Override
-    public ArrNodeRegister getEntity() {
+    public Object getEntity() {
         return entity;
     }
 
     @Override
-    public void beforeEntityPersist(Session session) {
+    public SaveMethod getSaveMethod() {
+        return SaveMethod.CREATE;
+    }
+
+    @Override
+    public void beforeEntitySave(Session session) {
+        // prepare node reference
         Validate.isTrue(entity.getNode() == null);
         entity.setNode(nodeIdHolder.getEntityRef(session));
     }

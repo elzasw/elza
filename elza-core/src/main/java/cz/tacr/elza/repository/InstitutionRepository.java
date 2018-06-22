@@ -11,7 +11,7 @@ import org.springframework.stereotype.Repository;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.ParParty;
-
+import cz.tacr.elza.domain.projection.ParInstitutionInfo;
 
 /**
  * Repository pro {@link ParInstitution}.
@@ -26,7 +26,7 @@ public interface InstitutionRepository extends JpaRepository<ParInstitution, Int
 
     ParInstitution findByParty(ParParty parParty);
 
-    List<ParInstitution> findByPartyIdIn(Collection<Integer> partyIds);
+    List<ParInstitutionInfo> findInfoByPartyIdIn(Collection<Integer> partyIds);
 
     @Modifying
     int deleteByInstitutionIdIn(Collection<Integer> partyIds);

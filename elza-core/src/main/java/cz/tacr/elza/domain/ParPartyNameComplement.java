@@ -50,6 +50,10 @@ public class ParPartyNameComplement {
     private ParComplementType complementType;
 
     @RestResource(exported = false)
+    @Column(nullable = false, insertable = false, updatable = false)
+    private Integer complementTypeId;
+    
+    @RestResource(exported = false)
     @OneToOne(fetch = FetchType.LAZY, targetEntity = ParPartyName.class)
     @JoinColumn(name = "partyNameId", nullable = false)
     private ParPartyName partyName;
@@ -75,6 +79,11 @@ public class ParPartyNameComplement {
 
     public void setComplementType(final ParComplementType complementType) {
         this.complementType = complementType;
+        this.complementTypeId = complementType != null ? complementType.getComplementTypeId() : null;
+    }
+    
+    public Integer getComplementTypeId() {
+        return complementTypeId;
     }
 
     public ParPartyName getPartyName() {

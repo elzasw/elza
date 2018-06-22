@@ -1,14 +1,18 @@
 package cz.tacr.elza.dataexchange.input.parties.context;
 
 import org.apache.commons.lang3.Validate;
+import org.hibernate.Session;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.PartyType;
 import cz.tacr.elza.dataexchange.input.aps.context.AccessPointInfo;
 import cz.tacr.elza.dataexchange.input.context.EntityIdHolder;
-import cz.tacr.elza.dataexchange.input.storage.EntityWrapper.PersistType;
+import cz.tacr.elza.dataexchange.input.storage.SaveMethod;
 import cz.tacr.elza.domain.ParParty;
 
-public class PartyInfo extends EntityIdHolder<ParParty> {
+public class PartyInfo implements EntityIdHolder<ParParty> {
+
+    private final String importId;
 
     private final AccessPointInfo apInfo;
 
@@ -16,36 +20,51 @@ public class PartyInfo extends EntityIdHolder<ParParty> {
 
     private final PartiesContext context;
 
+    private Integer entityId;
+
     private int queuedEntityCount;
 
     private boolean processed;
 
-    private long maxMemoryScore;
-
-    public PartyInfo(AccessPointInfo apInfo, PartyType partyType, PartiesContext context) {
-        super(partyType.getDomainClass(), false);
+    public PartyInfo(String importId, AccessPointInfo apInfo, PartyType partyType, PartiesContext context) {
+        this.importId = importId;
         this.apInfo = apInfo;
         this.partyType = partyType;
         this.context = context;
+    }
+
+    @Override
+    public Integer getEntityId() {
+        Validate.notNull(entityId);
+
+        return entityId;
+    }
+
+    void setEntityId(Integer entityId) {
+        this.entityId = entityId;
+    }
+
+    @Override
+    public ParParty getEntityRef(Session session) {
+        Validate.notNull(entityId);
+
+        return HibernateUtils.getEntityRef(entityId, ParParty.class, session, false);
+    }
+
+    public String getImportId() {
+        return importId;
     }
 
     public PartyType getPartyType() {
         return partyType;
     }
 
-    public PersistType getPersistType() {
-        return apInfo.getPersistType();
+    public SaveMethod getSaveMethod() {
+        return apInfo.getSaveMethod();
     }
 
     public AccessPointInfo getApInfo() {
         return apInfo;
-    }
-
-    /**
-     * Maximum memory score which party and its sub-entities can occupied.
-     */
-    public long getMaxMemoryScore() {
-        return maxMemoryScore;
     }
 
     public void onProcessed() {
@@ -62,9 +81,8 @@ public class PartyInfo extends EntityIdHolder<ParParty> {
         queuedEntityCount++;
     }
 
-    public void onEntityPersist(long memoryScore) {
+    public void onEntityPersist() {
         Validate.isTrue(queuedEntityCount > 0);
-        this.maxMemoryScore += memoryScore;
         queuedEntityCount--;
         // notify context when processed and all entity are persist
         if (processed && queuedEntityCount == 0) {

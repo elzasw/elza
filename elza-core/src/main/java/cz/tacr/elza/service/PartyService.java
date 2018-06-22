@@ -17,8 +17,12 @@ import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.ActionEvent;
 import cz.tacr.elza.service.eventnotification.events.EventId;
 import cz.tacr.elza.service.eventnotification.events.EventType;
+import cz.tacr.elza.service.party.ApConvName;
+import cz.tacr.elza.service.party.ApConvResult;
 import cz.tacr.elza.service.vo.ApAccessPointData;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang3.Validate;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -329,8 +333,21 @@ public class PartyService {
 
         //vytvoření rejstříkového hesla v groovy
         List<ParComplementType> complementTypes = complementTypeRepository.findByPartyType(party.getPartyType());
-        ApAccessPoint accessPointGroovy = groovyScriptService.getRecordFromGroovy(party, complementTypes);
-        ApAccessPointData recordFromGroovy = new ApAccessPointData(accessPointGroovy);
+        ApConvResult convResult = groovyScriptService.convertPartyToAp(party, complementTypes);
+        
+        List<ApConvName> convNames = convResult.getNames();
+        List<ApName> apNames = new ArrayList<>(convNames.size());
+        for (ApConvName convName : convNames) {
+            
+        }
+        
+        // TODO: rework ApAccessPointData
+        ApAccessPointData recordFromGroovy = new ApAccessPointData();
+        recordFromGroovy.setAccessPoint(new ApAccessPoint());
+        recordFromGroovy.setCharacteristics();
+        recordFromGroovy.setPreferredName();
+        recordFromGroovy.setVariantNameList();
+        
         List<ApName> variantRecords = new ArrayList<>(recordFromGroovy.getVariantRecordList());
 
         //uložení hesla
