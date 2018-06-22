@@ -7,10 +7,10 @@
       <src>sourceInformations 0</src>
 
       <ape id="partyId-0" t="PERSON_INDIVIDUAL">
-      <!--  <eid>
-          <esc>externalSourceCode 1341799512</esc>
-          <id>externalId 0</id>
-        </eid> -->
+        <eid>
+        	<t>externalSourceCode 1341799512</t>
+        	<v>externalId 0</v>
+        </eid>
       </ape>
 
       <name ft="LEGAL">
@@ -34,10 +34,10 @@
       <src>sourceInformations 1</src>
 
       <ape id="partyId-1" t="FAMILY_BRANCH">
-      <!--  <eid>
-          <esc>externalSourceCode 1341799512</esc>
-          <id>externalId 1</id>
-        </eid> -->
+        <eid>
+        	<t>externalSourceCode 1341799512</t>
+        	<v>externalId 1</v>
+        </eid>
       </ape>
 
       <name ft="LEGAL">
@@ -62,10 +62,10 @@
       <src>sourceInformations 2</src>
 
       <ape id="partyId-2" t="EVENT_EVENT">
-      <!--  <eid>
-          <esc>externalSourceCode 1341799512</esc>
-          <id>externalId 2</id>
-        </eid> -->
+        <eid>
+        	<t>externalSourceCode 1341799512</t>
+        	<v>externalId 2</v>
+        </eid>
       </ape>
 
       <name ft="LEGAL">
@@ -143,10 +143,10 @@
       <src>sourceInformations 3</src>
 
       <ape id="partyId-3" t="ORGANIZATION">
-      <!--  <eid>
-          <esc>externalSourceCode 1097950573</esc>
-          <id>externalId 3</id>
-        </eid> -->
+        <eid>
+        	<t>externalSourceCode 1097950573</t>
+        	<v>externalId 3</v>
+        </eid>
       </ape>
 
       <name ft="LEGAL">

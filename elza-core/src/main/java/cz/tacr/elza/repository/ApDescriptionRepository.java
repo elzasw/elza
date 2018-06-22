@@ -17,6 +17,6 @@ public interface ApDescriptionRepository extends ElzaJpaRepository<ApDescription
     ApDescription findApDescriptionByAccessPoint(ApAccessPoint accessPoint);
 
     @Modifying
-    @Query("UPDATE ap_description desc SET desc.deleteChange=?2 WHERE desc.accessPointId IN ?1 AND desc.deleteChange IS NULL")
+    @Query("UPDATE ap_description dsc SET dsc.deleteChange=?2 WHERE dsc.accessPointId IN ?1 AND dsc.deleteChange IS NULL")
     void deleteByAccessPointIdIn(Collection<Integer> apIds, ApChange deleteChange);
 }

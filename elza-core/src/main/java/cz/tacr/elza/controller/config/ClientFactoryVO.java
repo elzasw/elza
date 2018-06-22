@@ -551,8 +551,6 @@ public class ClientFactoryVO {
             relationVOMap.put(relation.getRelationId(), mapper.map(relation, ParRelationVO.class));
         }
 
-        //načtení objektů aprecord do session
-        apAccessPointRepository.findByPartyRelations(party);
         List<ParRelationEntity> partyRelations = relationEntityRepository.findByParty(party);
         List<ParRelationEntityVO> partyRelationsVo = createList(partyRelations, ParRelationEntityVO.class, null);
 

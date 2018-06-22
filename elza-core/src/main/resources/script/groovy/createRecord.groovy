@@ -1,58 +1,57 @@
 import cz.tacr.elza.domain.*
-import cz.tacr.elza.domain.convertor.UnitDateConvertor
 import org.apache.commons.collections4.CollectionUtils
 import org.apache.commons.lang.StringUtils
-import org.springframework.util.Assert
-
-import javax.annotation.Nullable
-
+import cz.tacr.elza.service.party.ApConvResult;
+import cz.tacr.elza.service.party.ApConvName;
+import org.apache.commons.lang3.Validate;
 
 /**
  * Skript pro vytvoření rejstříkového hesla z osoby.
  */
 
+final ApConvResult convResult = new ApConvResult();
 
-ParParty party = PARTY;
-return createRecord(party);
+checkParty(PARTY);
 
+String desc = generateCharacteristics(PARTY);
+convResult.setDescription(desc);
 
-/**
- * Provede vytvoření rejstříkového hesla podle dat osoby.
- * @param party data osoby
- * @return vytvořené rejstříkové heslo
- */
-ApRecord createRecord(ParParty party) {
-    Assert.notNull(party);
-    checkParty(party);
+prepareNames(PARTY, convResult);
 
-    ParPartyName preferedName = party.getPreferredName();
-
-    List<ParPartyName> otherNames = new ArrayList<>();
-    if (party.getPartyNames() != null) {
-        party.getPartyNames().each {
-            if (!it.is(preferedName)) {
-                otherNames.add(it);
-            }
-        }
-    }
+return convResult;
 
 
-    ApRecord record = new ApRecord();
-    record.setApType(party.getRecord().getApType());
-    record.setScope(party.getRecord().getScope());
-    record.setRecord(generatePartyNameString(preferedName, party.getPartyType()));
-    record.setCharacteristics(generateCharacteristics(party));
 
-    List<ApVariantRecord> variantRecords = new ArrayList<>(otherNames.size());
-    otherNames.each {
-        ApVariantRecord variantRecord = createVariantRecord(it, party.getPartyType())
-        variantRecords.add(variantRecord);
-    };
-    record.setVariantRecordList(variantRecords);
 
-    return record;
+void prepareNames(ParParty party, ApConvResult convResult) {
+	ParPartyType partyType = party.getPartyType();
+	// prepare preferred name
+	ParPartyName prefName = party.getPreferredName();
+	ApConvName convPrefName = createConvName(prefName, partyType);
+	convResult.addName(convPrefName);
+	// prepare other names
+	party.getPartyNames().each {
+        if (it.getPartyNameId().equals(prefName.getPartyNameId())) {
+			continue; // skip preferred name
+		}
+		ApConvName convName = createConvName(it, partyType);
+		convResult.addName(convName);
+	}
 }
 
+/**
+ * Vytvoří rejstříkové heslo.
+ * @param partyName jméno osoby
+ * @param partyType typ osoby
+ * @return rejstříkové heslo
+ */
+ApConvName createConvName(final ParPartyName partyName, final ParPartyType partyType) {
+    String name = generatePartyNameString(partyName, partyType);
+    
+    ApConvName convName = new ApConvName();
+    convName.setName(name);
+    return convName;
+}
 
 /**
  * Podle jména osoby provede vygenerování textu jména.
@@ -61,7 +60,7 @@ ApRecord createRecord(ParParty party) {
  * @return text rejstříkového hesla
  */
 String generatePartyNameString(final ParPartyName partyName, final ParPartyType partyType) {
-    Assert.notNull(partyName);
+    Validate.notNull(partyName);
 
     List<ParPartyNameComplement> sortedComplements =
             sortNameComplements(partyName.getPartyNameComplements(), partyType);
@@ -84,55 +83,38 @@ String generatePartyNameString(final ParPartyName partyName, final ParPartyType 
     return recordName;
 }
 
-
-
 /**
  * Provede seřazení doplňků jmen podle typu.
  * @param complements seznam doplňků jména
  * @param parPartyType typ osoby
  * @return seřazený seznam doplňků jména
  */
-List<ParPartyNameComplement> sortNameComplements(@Nullable final List<ParPartyNameComplement> complements,
+List<ParPartyNameComplement> sortNameComplements(final List<ParPartyNameComplement> complements,
                                                  final ParPartyType parPartyType) {
     if (CollectionUtils.isEmpty(complements)) {
         return Collections.EMPTY_LIST;
-    } else {
-        final Map<Integer, ParComplementType> complementTypeMap = COMPLEMENT_TYPE_MAP;
-
-        return complements.sort(false, { a, b ->
-            Integer aComplementTypeId = a.getComplementType().getComplementTypeId();
-            Integer bComplementTypeId = b.getComplementType().getComplementTypeId();
-
-            if (aComplementTypeId == null || bComplementTypeId == null) {
-                throw new IllegalStateException("Není nastaven typ doplňku jména.");
-            }
-
-            ParComplementType aType = complementTypeMap.get(aComplementTypeId);
-            ParComplementType bType = complementTypeMap.get(bComplementTypeId);
-
-            if (aType == null || bType == null) {
-                throw new IllegalStateException(
-                        "Typ doplňku jména není nastaven pro osoby typu " + parPartyType.getName());
-            }
-
-            return aType.getViewOrder().compareTo(bType.getViewOrder());
-        });
     }
+    final Map<Integer, ParComplementType> complementTypeMap = COMPLEMENT_TYPE_MAP;
+
+    return complements.sort(false, { a, b ->
+        Integer aComplementTypeId = a.getComplementType().getComplementTypeId();
+        Integer bComplementTypeId = b.getComplementType().getComplementTypeId();
+
+        if (aComplementTypeId == null || bComplementTypeId == null) {
+            throw new IllegalStateException("Není nastaven typ doplňku jména.");
+        }
+
+        ParComplementType aType = complementTypeMap.get(aComplementTypeId);
+        ParComplementType bType = complementTypeMap.get(bComplementTypeId);
+
+        if (aType == null || bType == null) {
+            throw new IllegalStateException(
+                    "Typ doplňku jména není nastaven pro osoby typu " + parPartyType.getName());
+        }
+
+        return aType.getViewOrder().compareTo(bType.getViewOrder());
+    });
 }
-
-
-/**
- * Vytvoří variantní rejstříkové heslo.
- * @param partyName jméno osoby
- * @param partyType typ osoby
- * @return variantní rejstříkové heslo
- */
-ApVariantRecord createVariantRecord(final ParPartyName partyName, final ParPartyType partyType) {
-    ApVariantRecord variantRecord = new ApVariantRecord();
-    variantRecord.setRecord(generatePartyNameString(partyName, partyType));
-    return variantRecord;
-}
-
 
 /**
  * Generování charakteristiky hesla.
@@ -186,52 +168,17 @@ String generateCharacteristics(ParParty party) {
     return builder.toString();
 }
 
-
-
-
 /**
  * Kontrola zadaných dat osoby.
  * @param party osoba
  */
 void checkParty(ParParty party) {
-
-    if (party.getRecord() == null || party.getRecord().getScope() == null ||
-            party.getRecord().getScope().getScopeId() == null) {
+	Validate.notNull(party);
+	
+    if (party.getRecord() == null || party.getRecord().getScope() == null) {
         throw new IllegalArgumentException("Není nastavena třída rejstříku.");
     }
-
     if (party.getPreferredName() == null) {
         throw new IllegalArgumentException("Osoba nemá nastaveno preferované jméno.");
     }
-
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

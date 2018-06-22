@@ -35,17 +35,7 @@ public interface ApAccessPointRepository
             + "WHERE eid.value = ?1 and eid.deleteChange is null and esys.code = ?2 and ap.scope = ?3")
     ApAccessPoint findApAccessPointByExternalIdAndExternalSystemCodeAndScope(String externalId,
                                                                              String externalSystemCode, ApScope scope);
-
-    /**
-     * Najde záznamy rejstříkových hesel pro osoby se vztahem k dané osobě.
-     *
-     * @param party
-     *            osoba
-     * @return rejstříková hesla příbuzných osob
-     */
-    @Query("SELECT ap FROM ap_access_point ap JOIN ap.relationEntities re JOIN re.relation r WHERE r.party = ?1")
-    List<ApAccessPoint> findByPartyRelations(ParParty party);
-
+    
     /**
      * Najde rejstříková hesla pro dané osoby.
      *

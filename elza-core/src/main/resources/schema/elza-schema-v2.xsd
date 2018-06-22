@@ -45,7 +45,7 @@
 					<xs:documentation>Characteristics of record</xs:documentation>
 				</xs:annotation>
 			</xs:element>
-			<xs:element name="nms" type="e:AccessPointtNames" minOccurs="1" maxOccurs="1">
+			<xs:element name="nms" type="e:AccessPointNames" minOccurs="1" maxOccurs="1">
 				<xs:annotation>
 					<xs:documentation>Names of accesspoint
 
@@ -104,6 +104,18 @@ At least one name have to be defined.</xs:documentation>
 			</xs:annotation>
 		</xs:attribute>
 	</xs:complexType>
+	<xs:complexType name="AccessPointNames">
+		<xs:annotation>
+			<xs:documentation>List of variant record names</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="nm" type="e:AccessPointName" minOccurs="1" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Names of access point. First name is prefered one.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
 	<xs:complexType name="AccessPointRefs">
 		<xs:annotation>
 			<xs:documentation>List of references to access points</xs:documentation>
@@ -122,18 +134,6 @@ At least one name have to be defined.</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
 			<xs:element name="ap" type="e:AccessPoint" minOccurs="0" maxOccurs="unbounded"/>
-		</xs:sequence>
-	</xs:complexType>
-	<xs:complexType name="AccessPointtNames">
-		<xs:annotation>
-			<xs:documentation>List of variant record names</xs:documentation>
-		</xs:annotation>
-		<xs:sequence>
-			<xs:element name="nm" type="e:AccessPointName" minOccurs="1" maxOccurs="unbounded">
-				<xs:annotation>
-					<xs:documentation>Names of access point. First name is prefered one.</xs:documentation>
-				</xs:annotation>
-			</xs:element>
 		</xs:sequence>
 	</xs:complexType>
 	<xs:complexType name="DescriptionItem" abstract="true">

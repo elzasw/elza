@@ -335,18 +335,15 @@ public class PartyService {
         List<ParComplementType> complementTypes = complementTypeRepository.findByPartyType(party.getPartyType());
         ApConvResult convResult = groovyScriptService.convertPartyToAp(party, complementTypes);
         
-        List<ApConvName> convNames = convResult.getNames();
-        List<ApName> apNames = new ArrayList<>(convNames.size());
-        for (ApConvName convName : convNames) {
-            
-        }
+        List<ApName> apNames = convResult.createNames(null);
+        ApDescription apDesc = convResult.createDesc(null);
         
         // TODO: rework ApAccessPointData
         ApAccessPointData recordFromGroovy = new ApAccessPointData();
         recordFromGroovy.setAccessPoint(new ApAccessPoint());
-        recordFromGroovy.setCharacteristics();
-        recordFromGroovy.setPreferredName();
-        recordFromGroovy.setVariantNameList();
+        recordFromGroovy.setCharacteristics(apDesc);
+        recordFromGroovy.setPreferredName(apNames.get(0));
+        recordFromGroovy.setVariantNameList(apNames);
         
         List<ApName> variantRecords = new ArrayList<>(recordFromGroovy.getVariantRecordList());
 

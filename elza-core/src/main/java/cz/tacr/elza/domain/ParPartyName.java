@@ -294,25 +294,6 @@ public class ParPartyName {
     }
 
     @Override
-    public boolean equals(final Object obj) {
-        if (!(obj instanceof ParPartyName)) {
-            return false;
-        }
-        if (this == obj) {
-            return true;
-        }
-
-        ParPartyName other = (ParPartyName) obj;
-
-        return new EqualsBuilder().append(partyNameId, other.getPartyNameId()).isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder().append(partyNameId).toHashCode();
-    }
-
-    @Override
     public String toString() {
         return "ParPartyName pk=" + partyNameId;
     }
