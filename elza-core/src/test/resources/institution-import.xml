@@ -1,188 +1,197 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <ns2:edx xmlns:ns2="http://elza.tacr.cz/schema/v2">
-  <pars>
-    <per id="recordId-0">
-      <chr>characteristics</chr>
-      <hst>history 0</hst>
-      <src>sourceInformations 0</src>
+	<pars>
+		<per id="recordId-0">
+			<chr>characteristics</chr>
+			<hst>history 0</hst>
+			<src>sourceInformations 0</src>
 
-      <ape id="partyId-0" t="PERSON_INDIVIDUAL">
-        <eid>
-        	<t>externalSourceCode 1341799512</t>
-        	<v>externalId 0</v>
-        </eid>
-      </ape>
+			<nms>
+				<nm ft="LEGAL">
+					<dga>degreeAfter 0</dga>
+					<dgb>degreeBefore 0</dgb>
+					<main>mainPart 0</main>
+					<note>anotation 0</note>
+					<oth>otherPart 0</oth>
+					<ncs>
+						<nc ct="GENERAL" v="complement" />
+						<nc ct="GEO" v="complement" />
+					</ncs>
+					<vf f="2016-02-23T18:53:22" to="2016-02-23T18:53:22" />
+					<vto f="2016-02-23T18:53:22" to="2016-02-23T18:53:22" />
+				</nm>
+			</nms>
 
-      <name ft="LEGAL">
-        <dga>degreeAfter 0</dga>
-        <dgb>degreeBefore 0</dgb>
-        <main>mainPart 0</main>
-        <note>anotation 0</note>
-        <oth>otherPart 0</oth>
-        <ncs>
-          <nc ct="GENERAL" v="complement" />
-          <nc ct="GEO" v="complement" />
-        </ncs>
-        <vf f="2016-02-23T18:53:22" to="2016-02-23T18:53:22" />
-        <vto f="2016-02-23T18:53:22" to="2016-02-23T18:53:22" />
-      </name>
-    </per>
+			<ape id="partyId-0" t="PERSON_INDIVIDUAL">
+				<!-- <eid>
+					<t>externalSourceCode 1341799512</t>
+					<v>externalId 0</v>
+				</eid> -->
+			</ape>
+		</per>
 
-    <famy id="recordId-1">
-      <chr>characteristics</chr>
-      <hst>history 1</hst>
-      <src>sourceInformations 1</src>
+		<famy id="recordId-1">
+			<chr>characteristics</chr>
+			<hst>history 1</hst>
+			<src>sourceInformations 1</src>
 
-      <ape id="partyId-1" t="FAMILY_BRANCH">
-        <eid>
-        	<t>externalSourceCode 1341799512</t>
-        	<v>externalId 1</v>
-        </eid>
-      </ape>
+			<nms>
+				<nm ft="LEGAL">
+					<dga>degreeAfter 1</dga>
+					<dgb>degreeBefore 1</dgb>
+					<main>mainPart 1</main>
+					<note>anotation 1</note>
+					<oth>otherPart 1</oth>
+					<ncs>
+						<nc ct="GENERAL" v="complement" />
+						<nc ct="GEO" v="complement" />
+					</ncs>
+					<vf f="2016-02-23T18:53:22" to="2016-02-23T18:53:22" />
+					<vto f="2016-02-23T18:53:22" to="2016-02-23T18:53:22" />
+				</nm>
+			</nms>
 
-      <name ft="LEGAL">
-        <dga>degreeAfter 1</dga>
-        <dgb>degreeBefore 1</dgb>
-        <main>mainPart 1</main>
-        <note>anotation 1</note>
-        <oth>otherPart 1</oth>
-        <ncs>
-          <nc ct="GENERAL" v="complement" />
-          <nc ct="GEO" v="complement" />
-        </ncs>
-        <vf f="2016-02-23T18:53:22" to="2016-02-23T18:53:22" />
-        <vto f="2016-02-23T18:53:22" to="2016-02-23T18:53:22" />
-      </name>
-      <gen>rod</gen>
+			<ape id="partyId-1" t="FAMILY_BRANCH">
+				<!-- <eid>
+					<t>externalSourceCode 1341799512</t>
+					<v>externalId 1</v>
+				</eid> -->
+			</ape>
 
-    </famy>
-    <evnt id="recordId-2">
-      <chr>characteristics</chr>
-      <hst>history 2</hst>
-      <src>sourceInformations 2</src>
+			<gen>rod</gen>
+		</famy>
 
-      <ape id="partyId-2" t="EVENT_EVENT">
-        <eid>
-        	<t>externalSourceCode 1341799512</t>
-        	<v>externalId 2</v>
-        </eid>
-      </ape>
+		<evnt id="recordId-2">
+			<chr>characteristics</chr>
+			<hst>history 2</hst>
+			<src>sourceInformations 2</src>
 
-      <name ft="LEGAL">
-        <dga>degreeAfter 2</dga>
-        <dgb>degreeBefore 2</dgb>
-        <main>mainPart 2</main>
-        <note>anotation 2</note>
-        <oth>otherPart 2</oth>
-        <ncs>
-          <nc ct="GENERAL" v="complement" />
-          <nc ct="GEO" v="complement" />
-        </ncs>
-        <vf f="2016-02-23T18:53:22" to="2016-02-23T18:53:22" />
-        <vto f="2016-02-23T18:53:22" to="2016-02-23T18:53:22" />
-      </name>
+			<nms>
+				<nm ft="LEGAL">
+					<dga>degreeAfter 2</dga>
+					<dgb>degreeBefore 2</dgb>
+					<main>mainPart 2</main>
+					<note>anotation 2</note>
+					<oth>otherPart 2</oth>
+					<ncs>
+						<nc ct="GENERAL" v="complement" />
+						<nc ct="GEO" v="complement" />
+					</ncs>
+					<vf f="2016-02-23T18:53:22" to="2016-02-23T18:53:22" />
+					<vto f="2016-02-23T18:53:22" to="2016-02-23T18:53:22" />
+				</nm>
+				<nm ft="ABBRV">
+					<dga>degreeAfter 2</dga>
+					<dgb>degreeBefore 2</dgb>
+					<main>mainPart 2</main>
+					<note>anotation 2</note>
+					<oth>otherPart 2</oth>
+					<ncs>
+						<nc ct="GENERAL" v="complement" />
+						<nc ct="GEO" v="complement" />
+					</ncs>
+					<vf f="2016-02-23T18:53:22" to="2016-02-23T18:53:22" />
+					<vto f="2016-02-23T18:53:22" to="2016-02-23T18:53:22" />
+				</nm>
+				<nm ft="ABBRV">
+					<dga>degreeAfter 2</dga>
+					<dgb>degreeBefore 2</dgb>
+					<main>mainPart 2</main>
+					<note>anotation 2</note>
+					<oth>otherPart 2</oth>
+					<ncs>
+						<nc ct="GENERAL" v="complement" />
+						<nc ct="GEO" v="complement" />
+					</ncs>
+					<vf f="2016-02-23T18:53:22" to="2016-02-23T18:53:22" />
+					<vto f="2016-02-23T18:53:22" to="2016-02-23T18:53:22" />
+				</nm>
+				<nm ft="ABBRV">
+					<dga>degreeAfter 2</dga>
+					<dgb>degreeBefore 2</dgb>
+					<main>mainPart 2</main>
+					<note>anotation 2</note>
+					<oth>otherPart 2</oth>
+					<ncs>
+						<nc ct="GENERAL" v="complement" />
+						<nc ct="GEO" v="complement" />
+					</ncs>
+					<vf f="2016-02-23T18:53:22" to="2016-02-23T18:53:22" />
+					<vto f="2016-02-23T18:53:22" to="2016-02-23T18:53:22" />
+				</nm>
+				<nm ft="AUTHOR">
+					<dga>degreeAfter 2</dga>
+					<dgb>degreeBefore 2</dgb>
+					<main>mainPart 2</main>
+					<note>anotation 2</note>
+					<oth>otherPart 2</oth>
+					<ncs>
+						<nc ct="GENERAL" v="complement" />
+						<nc ct="GEO" v="complement" />
+					</ncs>
+					<vf f="2016-02-23T18:53:22" to="2016-02-23T18:53:22" />
+					<vto f="2016-02-23T18:53:22" to="2016-02-23T18:53:22" />
+				</nm>
+			</nms>
 
-      <vnms>
-        <vnm ft="ABBRV">
-          <dga>degreeAfter 2</dga>
-          <dgb>degreeBefore 2</dgb>
-          <main>mainPart 2</main>
-          <note>anotation 2</note>
-          <oth>otherPart 2</oth>
-          <ncs>
-            <nc ct="GENERAL" v="complement" />
-            <nc ct="GEO" v="complement" />
-          </ncs>
-          <vf f="2016-02-23T18:53:22" to="2016-02-23T18:53:22" />
-          <vto f="2016-02-23T18:53:22" to="2016-02-23T18:53:22" />
-        </vnm>
-        <vnm ft="ABBRV">
-          <dga>degreeAfter 2</dga>
-          <dgb>degreeBefore 2</dgb>
-          <main>mainPart 2</main>
-          <note>anotation 2</note>
-          <oth>otherPart 2</oth>
-          <ncs>
-            <nc ct="GENERAL" v="complement" />
-            <nc ct="GEO" v="complement" />
-          </ncs>
-          <vf f="2016-02-23T18:53:22" to="2016-02-23T18:53:22" />
-          <vto f="2016-02-23T18:53:22" to="2016-02-23T18:53:22" />
-        </vnm>
-        <vnm ft="ABBRV">
-          <dga>degreeAfter 2</dga>
-          <dgb>degreeBefore 2</dgb>
-          <main>mainPart 2</main>
-          <note>anotation 2</note>
-          <oth>otherPart 2</oth>
-          <ncs>
-            <nc ct="GENERAL" v="complement" />
-            <nc ct="GEO" v="complement" />
-          </ncs>
-          <vf f="2016-02-23T18:53:22" to="2016-02-23T18:53:22" />
-          <vto f="2016-02-23T18:53:22" to="2016-02-23T18:53:22" />
-        </vnm>
-        <vnm ft="AUTHOR">
-          <dga>degreeAfter 2</dga>
-          <dgb>degreeBefore 2</dgb>
-          <main>mainPart 2</main>
-          <note>anotation 2</note>
-          <oth>otherPart 2</oth>
-          <ncs>
-            <nc ct="GENERAL" v="complement" />
-            <nc ct="GEO" v="complement" />
-          </ncs>
-          <vf f="2016-02-23T18:53:22" to="2016-02-23T18:53:22" />
-          <vto f="2016-02-23T18:53:22" to="2016-02-23T18:53:22" />
-        </vnm>
-      </vnms>
-    </evnt>
-    <pg id="recordId-3">
-      <chr>characteristics</chr>
-      <hst>history 3</hst>
-      <src>sourceInformations 3</src>
+			<ape id="partyId-2" t="EVENT_EVENT">
+				<!-- <eid>
+					<t>externalSourceCode 1341799512</t>
+					<v>externalId 2</v>
+				</eid> -->
+			</ape>
+		</evnt>
 
-      <ape id="partyId-3" t="ORGANIZATION">
-        <eid>
-        	<t>externalSourceCode 1097950573</t>
-        	<v>externalId 3</v>
-        </eid>
-      </ape>
+		<pg id="recordId-3">
+			<chr>characteristics</chr>
+			<hst>history 3</hst>
+			<src>sourceInformations 3</src>
 
-      <name ft="LEGAL">
-        <dga>degreeAfter 3</dga>
-        <dgb>degreeBefore 3</dgb>
-        <main>mainPart 3</main>
-        <note>anotation 3</note>
-        <oth>otherPart 3</oth>
-        <ncs>
-          <nc ct="GENERAL" v="complement" />
-          <nc ct="GEO" v="complement" />
-        </ncs>
-        <vf f="2016-02-23T18:53:22" to="2016-02-23T18:53:22" />
-        <vto f="2016-02-23T18:53:22" to="2016-02-23T18:53:22" />
-      </name>
-      <fn>foundingNorm</fn>
-      <scp>scope</scp>
-      <sn>scopeNorm</sn>
-      <str>organization</str>
-      <pis>
-        <pi v="id 0">
-          <note>note</note>
-          <src>source</src>
-          <vf f="2016-02-23T18:53:22" to="2016-02-23T18:53:22" />
-          <vto f="2016-02-23T18:53:22" to="2016-02-23T18:53:22" />
-        </pi>
-        <pi v="id 1">
-          <note>note</note>
-          <src>source</src>
-          <vf f="2016-02-23T18:53:22" to="2016-02-23T18:53:22" />
-          <vto f="2016-02-23T18:53:22" to="2016-02-23T18:53:22" />
-        </pi>
-      </pis>
-    </pg>
-  </pars>
-  <inss>
-    <inst c="in1" t="DEFAULT" paid="recordId-3" />
-  </inss>
+			<nms>
+				<nm ft="LEGAL">
+					<dga>degreeAfter 3</dga>
+					<dgb>degreeBefore 3</dgb>
+					<main>mainPart 3</main>
+					<note>anotation 3</note>
+					<oth>otherPart 3</oth>
+					<ncs>
+						<nc ct="GENERAL" v="complement" />
+						<nc ct="GEO" v="complement" />
+					</ncs>
+					<vf f="2016-02-23T18:53:22" to="2016-02-23T18:53:22" />
+					<vto f="2016-02-23T18:53:22" to="2016-02-23T18:53:22" />
+				</nm>
+			</nms>
+
+			<ape id="partyId-3" t="ORGANIZATION">
+				<!-- <eid>
+					<t>externalSourceCode 1097950573</t>
+					<v>externalId 3</v>
+				</eid> -->
+			</ape>
+
+			<fn>foundingNorm</fn>
+			<scp>scope</scp>
+			<sn>scopeNorm</sn>
+			<str>organization</str>
+			<pis>
+				<pi v="id 0">
+					<note>note</note>
+					<src>source</src>
+					<vf f="2016-02-23T18:53:22" to="2016-02-23T18:53:22" />
+					<vto f="2016-02-23T18:53:22" to="2016-02-23T18:53:22" />
+				</pi>
+				<pi v="id 1">
+					<note>note</note>
+					<src>source</src>
+					<vf f="2016-02-23T18:53:22" to="2016-02-23T18:53:22" />
+					<vto f="2016-02-23T18:53:22" to="2016-02-23T18:53:22" />
+				</pi>
+			</pis>
+		</pg>
+	</pars>
+	
+	<inss>
+		<inst c="in1" t="DEFAULT" paid="recordId-3" />
+	</inss>
 </ns2:edx>
