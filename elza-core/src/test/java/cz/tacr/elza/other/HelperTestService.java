@@ -14,6 +14,8 @@ import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
 import cz.tacr.elza.repository.ApAccessPointRepository;
+import cz.tacr.elza.repository.ApDescriptionRepository;
+import cz.tacr.elza.repository.ApExternalIdRepository;
 import cz.tacr.elza.repository.ApNameRepository;
 import org.junit.Assert;
 import org.slf4j.Logger;
@@ -159,7 +161,7 @@ public class HelperTestService {
     @Autowired
     protected PartyNameFormTypeRepository partyNameFormTypeRepository;
     @Autowired
-    protected ApAccessPointRepository recordRepository;
+    protected ApAccessPointRepository apRepository;
     @Autowired
     protected PartyNameRepository partyNameRepository;
     @Autowired
@@ -182,6 +184,10 @@ public class HelperTestService {
     private StructuredObjectRepository structureDataRepository;
     @Autowired
     private FundStructureExtensionRepository fundStructureExtensionRepository;
+    @Autowired
+    private ApDescriptionRepository apDescRepository;
+    @Autowired
+    private ApExternalIdRepository apEidRepository;
 
     @Autowired
     private PackageService packageService;
@@ -252,7 +258,9 @@ public class HelperTestService {
         fundRepository.deleteAll();
         institutionRepository.deleteAll();
         partyRepository.deleteAll();
-        recordRepository.deleteAll();
+        apDescRepository.deleteAll();
+        apEidRepository.deleteAll();
+        apRepository.deleteAll();
         externalSystemRepository.deleteAll();
 
         logger.info("All tables cleaned.");
