@@ -73,7 +73,7 @@ public class ArrDataPartyRef extends ArrData {
 
     @Override
     public String getFulltextValue() {
-        return fulltextProvider.getFulltext(party.getRecord());
+        return fulltextProvider.getFulltext(party.getAccessPoint());
     }
 
 	@Override

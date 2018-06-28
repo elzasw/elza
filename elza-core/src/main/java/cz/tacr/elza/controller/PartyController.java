@@ -273,7 +273,7 @@ public class PartyController {
 
         ParParty party = partyRepository.getOneCheckExist(partyId);
         Set<Integer> scopeIds = new HashSet<>();
-        scopeIds.add(party.getRecord().getScope().getScopeId());
+        scopeIds.add(party.getAccessPoint().getScope().getScopeId());
 
         List<ParParty> partyList = partyRepository.findPartyByTextAndType(search, partyTypeId, null,
                 from, count, scopeIds, true);
@@ -515,7 +515,7 @@ public class PartyController {
 	@Transactional
     public RecordUsageVO findUsage(@PathVariable final Integer partyId) {
     	ParParty parParty = partyRepository.getOneCheckExist(partyId);
-    	ApAccessPoint accessPoint = parParty.getRecord();
+    	ApAccessPoint accessPoint = parParty.getAccessPoint();
     	return accessPointService.findRecordUsage(accessPoint, parParty);
     }
 
@@ -543,7 +543,7 @@ public class PartyController {
     @RequestMapping(value = "/{partyId}/valid", method = RequestMethod.POST)
     public void valid(@PathVariable final Integer partyId) {
         final ParParty party = partyService.getParty(partyId);
-        ApAccessPoint record = party.getRecord();
+        ApAccessPoint record = party.getAccessPoint();
         record.setInvalid(false);
         ApAccessPointData accessPointData = accessPointDataService.findAccessPointData(record);
         record.setInvalid(true);

@@ -247,7 +247,7 @@ public class ApController {
         apTypeIds = apTypeRepository.findSubtreeIds(apTypeIds);
 
         Set<Integer> scopeIds = new HashSet<>();
-        scopeIds.add(party.getRecord().getScope().getScopeId());
+        scopeIds.add(party.getAccessPoint().getScope().getScopeId());
 
         final long foundRecordsCount = accessPointRepository.findApAccessPointByTextAndTypeCount(search, apTypeIds,
                 scopeIds, true);

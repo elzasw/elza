@@ -1327,8 +1327,8 @@ public class ClientFactoryVO {
             Integer width = 1;
             if(typeInfo != null && typeInfo.getWidth() != null) {
             	width = typeInfo.getWidth();
-            }            
-            
+            }
+
             itemTypeVO.setWidth(width);
 
             List<ItemTypeLiteVO> itemTypeList = itemTypeGroupVO.getTypes();
@@ -1648,7 +1648,7 @@ public class ClientFactoryVO {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         ParInstitutionVO institutionVO = mapper.map(institution, ParInstitutionVO.class);
 
-        ApAccessPointData apData = accessPointDataService.findAccessPointData(institution.getParty().getRecord());
+        ApAccessPointData apData = accessPointDataService.findAccessPointData(institution.getParty().getAccessPoint());
         institutionVO.setName(apData.getPreferredName().getName());
         institutionVO.setPartyId(institution.getParty().getPartyId());
         return institutionVO;

@@ -47,7 +47,7 @@ void prepareNames(ParParty party, ApConvResult convResult) {
  */
 ApConvName createConvName(final ParPartyName partyName, final ParPartyType partyType) {
     String name = generatePartyNameString(partyName, partyType);
-    
+
     ApConvName convName = new ApConvName();
     convName.setName(name);
     return convName;
@@ -174,8 +174,8 @@ String generateCharacteristics(ParParty party) {
  */
 void checkParty(ParParty party) {
 	Validate.notNull(party);
-	
-    if (party.getRecord() == null || party.getRecord().getScope() == null) {
+
+    if (party.getAccessPoint() == null || party.getAccessPoint().getScope() == null) {
         throw new IllegalArgumentException("Není nastavena třída rejstříku.");
     }
     if (party.getPreferredName() == null) {

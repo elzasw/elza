@@ -4,7 +4,7 @@ public interface ParPartyInfo {
 
     int getPartyId();
 
-    int getRecordId();
+    int getAccessPointId();
 
     int getVersion();
 }

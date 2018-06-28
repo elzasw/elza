@@ -532,7 +532,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
             return party;
         }
 
-        Record partyAP = getRecord(parParty.getRecord());
+        Record partyAP = getRecord(parParty.getAccessPoint());
         PartyInitHelper initHelper = new PartyInitHelper(partyAP);
 
         // init all party names

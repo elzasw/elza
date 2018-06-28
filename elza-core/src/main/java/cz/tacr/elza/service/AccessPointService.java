@@ -881,7 +881,7 @@ public class AccessPointService {
 			ParParty partyRel = rel.getRelation().getParty();
 			PartyVO partyVO = new PartyVO();
 			partyVO.setId(partyRel.getPartyId());
-            ApAccessPointData apData = accessPointDataService.findAccessPointData(partyRel.getRecord());
+            ApAccessPointData apData = accessPointDataService.findAccessPointData(partyRel.getAccessPoint());
             partyVO.setName(apData.getPreferredName().getName());
 
 			OccurrenceVO occurrenceVO = new OccurrenceVO(rel.getRelationEntityId(), OccurrenceType.PAR_RELATION_ENTITY);
@@ -901,7 +901,7 @@ public class AccessPointService {
 				} else {
 					partyVO = new PartyVO(); // nový výskyt
 					partyVO.setId(creator.getPartyId());
-                    ApAccessPointData apData = accessPointDataService.findAccessPointData(creator.getRecord());
+                    ApAccessPointData apData = accessPointDataService.findAccessPointData(creator.getAccessPoint());
                     partyVO.setName(apData.getPreferredName().getName());
 
 					List<OccurrenceVO> occurrences = new LinkedList<>();
