@@ -28,7 +28,7 @@ import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.schema.v2.AccessPoint;
 import cz.tacr.elza.schema.v2.AccessPointEntry;
 import cz.tacr.elza.schema.v2.AccessPointName;
-import cz.tacr.elza.schema.v2.AccessPointtNames;
+import cz.tacr.elza.schema.v2.AccessPointNames;
 import cz.tacr.elza.schema.v2.ExternalId;
 
 /**
@@ -128,11 +128,11 @@ public class XmlApOutputStream implements ApOutputStream {
         return entry;
     }
 
-    private static AccessPointtNames createNames(Collection<ApName> names) {
+    private static AccessPointNames createNames(Collection<ApName> names) {
         if (CollectionUtils.isEmpty(names)) {
             return null;
         }
-        AccessPointtNames listElement = new AccessPointtNames();
+        AccessPointNames listElement = new AccessPointNames();
         List<AccessPointName> list = listElement.getNm();
 
         for (ApName name : names) {

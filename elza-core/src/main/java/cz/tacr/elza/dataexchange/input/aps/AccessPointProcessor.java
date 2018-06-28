@@ -1,17 +1,17 @@
 package cz.tacr.elza.dataexchange.input.aps;
 
-import cz.tacr.elza.domain.ApDescription;
-import cz.tacr.elza.domain.ApName;
-import cz.tacr.elza.domain.ApNameType;
-
 import java.util.Iterator;
+
 import org.apache.commons.lang3.StringUtils;
 
 import cz.tacr.elza.dataexchange.input.DEImportException;
 import cz.tacr.elza.dataexchange.input.context.ImportContext;
+import cz.tacr.elza.domain.ApDescription;
+import cz.tacr.elza.domain.ApName;
+import cz.tacr.elza.domain.ApNameType;
 import cz.tacr.elza.schema.v2.AccessPoint;
 import cz.tacr.elza.schema.v2.AccessPointName;
-import cz.tacr.elza.schema.v2.AccessPointtNames;
+import cz.tacr.elza.schema.v2.AccessPointNames;
 
 /**
  * Processing access points. Implementation is not thread-safe.
@@ -42,7 +42,7 @@ public class AccessPointProcessor extends AccessPointEntryProcessor {
         context.addDescription(entity, info);
     }
 
-    private void processNames(AccessPointtNames names) {
+    private void processNames(AccessPointNames names) {
         if (names == null || names.getNm().isEmpty()) {
             throw new DEImportException("Preferred AP name not found, apeId=" + entryId);
         }
