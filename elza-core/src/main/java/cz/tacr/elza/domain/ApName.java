@@ -3,7 +3,6 @@ package cz.tacr.elza.domain;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import cz.tacr.elza.domain.enumeration.StringLength;
-import cz.tacr.elza.domain.interfaces.Versionable;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.springframework.data.rest.core.annotation.RestResource;
@@ -20,8 +19,6 @@ import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import javax.persistence.metamodel.SingularAttribute;
-
 import java.io.Serializable;
 
 @Entity(name = "ap_name")
@@ -59,12 +56,12 @@ public class ApName implements Serializable {
     @Column(nullable = false, updatable = false, insertable = false)
     private Integer accessPointId;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApAccessPoint.class)
-    @JoinColumn(name = "nameTypeId", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApNameType.class)
+    @JoinColumn(name = "nameTypeId")
     @JsonIgnore
     private ApNameType nameType;
 
-    @Column(nullable = false, updatable = false, insertable = false)
+    @Column(updatable = false, insertable = false)
     private Integer nameTypeId;
 
 
