@@ -17,12 +17,9 @@ import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.ActionEvent;
 import cz.tacr.elza.service.eventnotification.events.EventId;
 import cz.tacr.elza.service.eventnotification.events.EventType;
-import cz.tacr.elza.service.party.ApConvName;
 import cz.tacr.elza.service.party.ApConvResult;
 import cz.tacr.elza.service.vo.ApAccessPointData;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.NotImplementedException;
-import org.apache.commons.lang3.Validate;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -164,7 +161,7 @@ public class PartyService {
         Assert.notNull(record, "Rejstříkové heslo musí být vyplněno");
 
 
-        List<ParParty> recordParties = partyRepository.findParPartyByRecordId(record.getAccessPointId());
+        List<ParParty> recordParties = partyRepository.findParPartyByAccessPointId(record.getAccessPointId());
         return recordParties.isEmpty() ? null : recordParties.get(0);
     }
 
@@ -180,7 +177,7 @@ public class PartyService {
             return Collections.emptyMap();
         }
 
-        List<Object[]> recordIdsAndPartyIds = partyRepository.findRecordIdAndPartyIdByRecords(records);
+        List<Object[]> recordIdsAndPartyIds = partyRepository.findAccessPointIdAndPartyIdByAccessPoints(records);
         Map<Integer, Integer> recordIdPartyIdMap = new HashMap<>(recordIdsAndPartyIds.size());
         for (Object[] row : recordIdsAndPartyIds) {
             recordIdPartyIdMap.put((Integer) row[1], (Integer) row[0]);
@@ -322,10 +319,10 @@ public class PartyService {
     private void synchRecord(final ParParty party) {
         Assert.notNull(party, "Osoba nesmí být prázdná");
 
-        Assert.notNull(party.getRecord(), "Osoba nemá zadané rejstříkové heslo.");
-        Assert.notNull(party.getRecord().getApType(), "Není vyplněný typ rejstříkového hesla.");
-        Assert.notNull(party.getRecord().getScope(), "Není nastavena třída rejstříkového hesla");
-        Assert.notNull(party.getRecord().getScope().getScopeId(), "Není nastaveno id třídy rejstříkového hesla");
+        Assert.notNull(party.getAccessPoint(), "Osoba nemá zadané rejstříkové heslo.");
+        Assert.notNull(party.getAccessPoint().getApType(), "Není vyplněný typ rejstříkového hesla.");
+        Assert.notNull(party.getAccessPoint().getScope(), "Není nastavena třída rejstříkového hesla");
+        Assert.notNull(party.getAccessPoint().getScope().getScopeId(), "Není nastaveno id třídy rejstříkového hesla");
 
         if (party.getRelations() != null) {
             party.getRelations().sort(new ParRelation.ParRelationComparator());
@@ -334,33 +331,33 @@ public class PartyService {
         //vytvoření rejstříkového hesla v groovy
         List<ParComplementType> complementTypes = complementTypeRepository.findByPartyType(party.getPartyType());
         ApConvResult convResult = groovyScriptService.convertPartyToAp(party, complementTypes);
-        
+
         List<ApName> apNames = convResult.createNames(null);
         ApDescription apDesc = convResult.createDesc(null);
-        
+
         // TODO: rework ApAccessPointData
         ApAccessPointData recordFromGroovy = new ApAccessPointData();
         recordFromGroovy.setAccessPoint(new ApAccessPoint());
         recordFromGroovy.setCharacteristics(apDesc);
         recordFromGroovy.setPreferredName(apNames.get(0));
         recordFromGroovy.setVariantNameList(apNames);
-        
+
         List<ApName> variantRecords = new ArrayList<>(recordFromGroovy.getVariantRecordList());
 
         //uložení hesla
         if (party.getPartyId() != null) {
             ParParty dbParty = partyRepository.findOne(party.getPartyId());
-            recordFromGroovy.getAccessPoint().setAccessPointId(dbParty.getRecord().getAccessPointId());
-//            recordFromGroovy.getAccessPoint().setVersion(dbParty.getRecord().getVersion());
-            recordFromGroovy.getAccessPoint().setUuid(dbParty.getRecord().getUuid());
+            recordFromGroovy.getAccessPoint().setAccessPointId(dbParty.getAccessPoint().getAccessPointId());
+//            recordFromGroovy.getAccessPoint().setVersion(dbParty.getAccessPoint().getVersion());
+            recordFromGroovy.getAccessPoint().setUuid(dbParty.getAccessPoint().getUuid());
         }
 
-        ApAccessPointData partyApData = accessPointDataService.findAccessPointData(party.getRecord());
+        ApAccessPointData partyApData = accessPointDataService.findAccessPointData(party.getAccessPoint());
 
         recordFromGroovy.setExternalId(partyApData.getExternalId());
         recordFromGroovy.setExternalSystem(partyApData.getExternalSystem());
         ApAccessPoint savedRecord = accessPointService.saveAccessPoint(recordFromGroovy, true);
-        party.setRecord(savedRecord);
+        party.setAccessPoint(savedRecord);
 
         //smazání a uložení nových variantních hesel
         List<ApName> oldVariants = apNameRepository.findVariantNamesByAccessPointId(savedRecord);
@@ -648,9 +645,9 @@ public class PartyService {
 
             eventNotificationService.publishEvent(new EventId(EventType.PARTY_DELETE, party.getPartyId()));
             partyRepository.delete(party);
-            accessPointService.deleteAccessPoint(party.getRecord(), false);
+            accessPointService.deleteAccessPoint(party.getAccessPoint(), false);
         } else {
-            final ApAccessPoint record = party.getRecord();
+            final ApAccessPoint record = party.getAccessPoint();
             ApAccessPointData accessPointData = accessPointDataService.findAccessPointData(record);
             record.setInvalid(true);
             accessPointService.saveAccessPoint(accessPointData, false);
@@ -661,7 +658,7 @@ public class PartyService {
         // rejstřík AS nebo arch. popis v otevřené verzi.(arr_node_register nebo arr_data_party_ref nebo arr_data_record_ref)
 
         // arr_node_register
-        List<ArrNodeRegister> nodeRegisters = nodeRegisterRepository.findByRecordAndDeleteChangeIsNull(party.getRecord());
+        List<ArrNodeRegister> nodeRegisters = nodeRegisterRepository.findByRecordAndDeleteChangeIsNull(party.getAccessPoint());
         if (CollectionUtils.isNotEmpty(nodeRegisters)) {
             throw new BusinessException("Nelze smazat/zneplatnit osobu, která má přiřazení rejstříkového hesla k jednotce archivního popisu.", RegistryCode.EXIST_FOREIGN_DATA)
                     .set("partyId", party.getPartyId())
@@ -677,7 +674,7 @@ public class PartyService {
                     .set("fundIds", arrPartyItems.stream().map(ArrItem::getFundId).collect(Collectors.toList()));
         }
         // arr_data_record_ref
-        List<ArrDescItem> arrRecordItems = descItemRepository.findArrItemByRecord(party.getRecord());
+        List<ArrDescItem> arrRecordItems = descItemRepository.findArrItemByRecord(party.getAccessPoint());
         if (CollectionUtils.isNotEmpty(arrRecordItems)) {
             throw new BusinessException("Nelze smazat/zneplatnit osobu, která má hodnotu osoby v jednotce archivního popisu.", RegistryCode.EXIST_FOREIGN_DATA)
                     .set("partyId", party.getPartyId())
@@ -707,7 +704,7 @@ public class PartyService {
                     .set("partyIds", creators.stream().map(ParCreator::getParty).map(ParParty::getPartyId).collect(Collectors.toList()));
         }
         // vztah osoby par_relation_entity
-        List<ParRelationEntity> relationEntities = relationEntityRepository.findByAccessPoint(party.getRecord());
+        List<ParRelationEntity> relationEntities = relationEntityRepository.findByAccessPoint(party.getAccessPoint());
         if (CollectionUtils.isNotEmpty(relationEntities)) {
             throw new BusinessException("Nelze smazat/zneplatnit osobu na kterou mají vazbu jiné osoby v relacích.", RegistryCode.EXIST_FOREIGN_DATA)
                     .set("partyId", party.getPartyId())
@@ -715,7 +712,7 @@ public class PartyService {
                     .set("partyIds", relationEntities.stream().map(ParRelationEntity::getRelation).map(ParRelation::getParty).map(ParParty::getPartyId).collect(Collectors.toList()));
         }
 
-        return accessPointService.canBeDeleted(party.getRecord(), false) &&
+        return accessPointService.canBeDeleted(party.getAccessPoint(), false) &&
                 CollectionUtils.isEmpty(dataPartyRefRepository.findByParty(party));
     }
 
@@ -938,12 +935,12 @@ public class PartyService {
 
         //navázaná entita stejné scope jako osoba sama
         ApScope entityScope = relationEntity.getAccessPoint().getScope();
-        if (!relationEntity.getRelation().getParty().getRecord().getScope().equals(entityScope)) {
+        if (!relationEntity.getRelation().getParty().getAccessPoint().getScope().equals(entityScope)) {
             throw new BusinessException(
                     "Navázaná entita musí mít stejnou třídu rejstříkového hesla jako osoba, ke které entitu navazujeme.",
                     RegistryCode.FOREIGN_ENTITY_INVALID_SCOPE).level(Level.WARNING)
             .set("recordScope", entityScope.getCode())
-            .set("entityScope", relationEntity.getRelation().getParty().getRecord().getScope().getCode());
+            .set("entityScope", relationEntity.getRelation().getParty().getAccessPoint().getScope().getCode());
         }
 
         //navázaná entita povoleného typu rejstříku dle par_registry_role (mělo by to ideálně i dědit)
@@ -972,12 +969,12 @@ public class PartyService {
             throw new SystemException("Nalezeno použití party v tabulce ArrDataPartyRef.");
         }
 
-        List<ArrDataRecordRef> dataRecordRefList = dataRecordRefRepository.findByRecord(party.getRecord());
+        List<ArrDataRecordRef> dataRecordRefList = dataRecordRefRepository.findByRecord(party.getAccessPoint());
         if (CollectionUtils.isNotEmpty(dataRecordRefList)) {
             throw new SystemException("Nalezeno použití hesla v tabulce ArrDataRecordRef.");
         }
 
-        List<ArrNodeRegister> nodeRegisterList = nodeRegisterRepository.findByRecordId(party.getRecord());
+        List<ArrNodeRegister> nodeRegisterList = nodeRegisterRepository.findByRecordId(party.getAccessPoint());
         if (CollectionUtils.isNotEmpty(nodeRegisterList)) {
             throw new SystemException("Nalezeno použití hesla v tabulce ArrDataRecordRef.");
         }
@@ -1097,10 +1094,10 @@ public class PartyService {
         }
 
         // Registry replace
-        accessPointService.replace(replaced.getRecord(), replacement.getRecord());
+        accessPointService.replace(replaced.getAccessPoint(), replacement.getAccessPoint());
 
         // we have to replace relations
-        replaceRecordInRelations(replaced.getRecord(), replacement.getRecord());
+        replaceRecordInRelations(replaced.getAccessPoint(), replacement.getAccessPoint());
     }
 
     /**

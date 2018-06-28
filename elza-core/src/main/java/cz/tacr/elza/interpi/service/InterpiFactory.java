@@ -228,7 +228,7 @@ public class InterpiFactory {
             }
         }
 
-        return parParty.getRecord();
+        return parParty.getAccessPoint();
     }
 
     public String createSearchQuery(final List<ConditionVO> conditions, final boolean isParty) {
@@ -686,7 +686,7 @@ public class InterpiFactory {
                                              final SouvisejiciTyp souvisejiciTyp) {
         String interpiId = getInterpiSouvIdentifier(souvisejiciTyp.getIdentifikator());
         ApAccessPoint entityRecord = accessPointRepository.findApAccessPointByExternalIdAndExternalSystemCodeAndScope(interpiId,
-                apExternalSystem.getCode(), parParty.getRecord().getScope());
+                apExternalSystem.getCode(), parParty.getAccessPoint().getScope());
 
         if (entityRecord == null) { // pokud neexistiuje v db tak se importuje bez vztahů
             EntitaTyp entitaTyp = interpiSessionHolder.getInterpiEntitySession().getRelatedEntity(interpiId);
@@ -695,9 +695,9 @@ public class InterpiFactory {
             }
             InterpiEntity interpiEntity = new InterpiEntity(entitaTyp);
             if (isParty(interpiEntity)) {
-                entityRecord = importParty(interpiEntity, null, interpiId, false, parParty.getRecord().getScope(), apExternalSystem, null);
+                entityRecord = importParty(interpiEntity, null, interpiId, false, parParty.getAccessPoint().getScope(), apExternalSystem, null);
             } else {
-                entityRecord = importRecord(entitaTyp, null, interpiId, parParty.getRecord().getScope(), apExternalSystem);
+                entityRecord = importRecord(entitaTyp, null, interpiId, parParty.getAccessPoint().getScope(), apExternalSystem);
             }
         }
         return entityRecord;
@@ -1077,7 +1077,7 @@ public class InterpiFactory {
         }
 
         parParty.setPartyType(parPartyType);
-        parParty.setRecord(apData.getAccessPoint());
+        parParty.setAccessPoint(apData.getAccessPoint());
         parParty.setOriginator(isOriginator);
 
         fillParty(parParty, interpiEntity, apExternalSystem, mappings);

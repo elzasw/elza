@@ -53,13 +53,13 @@ public class PartyInfoLoader extends AbstractEntityLoader<PartyInfoImpl> {
     protected void setQueryFetch(FetchParent<?, ?> baseEntity) {
         baseEntity.fetch(ParParty.RECORD);
     }
-    
+
     @Override
     protected PartyInfoImpl createResult(Object entity) {
         ParParty party = (ParParty) entity;
         PartyInfoImpl partyInfo = new PartyInfoImpl(party);
 
-        ApAccessPoint ap = party.getRecord();
+        ApAccessPoint ap = party.getAccessPoint();
         Validate.isTrue(HibernateUtils.isInitialized(ap));
         BaseApInfoImpl baseApInfo = new BaseApInfoImpl(ap);
         partyInfo.setBaseApInfo(baseApInfo);
@@ -81,7 +81,7 @@ public class PartyInfoLoader extends AbstractEntityLoader<PartyInfoImpl> {
         }
 
         ExternalIdDispatcher eidd = new ExternalIdDispatcher(result.getBaseApInfo(), dispatcher, staticData);
-        externalIdLoader.addRequest(party.getRecordId(), eidd);
+        externalIdLoader.addRequest(party.getAccessPointId(), eidd);
     }
 
     public static PartyInfoLoader createPartyIdLoader(EntityManager em, int batchSize, StaticDataProvider staticData) {

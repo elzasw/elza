@@ -1367,7 +1367,7 @@ public class UserService {
 			UsrUser user = userRepository.findOneWithDetail(userId);
 			Validate.notNull(user, "Failed to get user: {}", userId);
 
-			ApAccessPoint record = user.getParty().getRecord();
+			ApAccessPoint record = user.getParty().getAccessPoint();
 			preferredName = apNameRepository.findPreferredNameByAccessPoint(record).getName();
 		}
 

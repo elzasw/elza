@@ -35,8 +35,8 @@ public class PartyWrapper implements EntityWrapper {
     @Override
     public void beforeEntitySave(Session session) {
         // prepare AP reference
-        Validate.isTrue(entity.getRecord() == null);
-        entity.setRecord(partyInfo.getApInfo().getEntityRef(session));
+        Validate.isTrue(entity.getAccessPoint() == null);
+        entity.setAccessPoint(partyInfo.getApInfo().getEntityRef(session));
     }
 
     @Override

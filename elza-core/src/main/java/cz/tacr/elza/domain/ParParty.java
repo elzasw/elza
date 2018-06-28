@@ -40,8 +40,8 @@ public class ParParty extends AbstractVersionableEntity implements IApScope {
 
     /* Konstanty pro vazby a fieldy. */
     public static final String ABSTRACT_PARTY_ID = "partyId";
-    public static final String RECORD = "record";
-    public static final String RECORD_FK = RECORD + ".recordId";
+    public static final String RECORD = "accessPoint";
+    public static final String RECORD_FK = RECORD + ".accessPointId";
     public static final String PARTY_TYPE = "partyType";
     public static final String PARTY_PREFERRED_NAME = "preferredName";
     public static final String HISTORY = "history";
@@ -55,14 +55,14 @@ public class ParParty extends AbstractVersionableEntity implements IApScope {
 
     @RestResource(exported = false)
 	@OneToOne(fetch=FetchType.LAZY, targetEntity = ApAccessPoint.class)
-    @JoinColumn(name = "recordId", nullable = false)
+    @JoinColumn(name = "accessPointId", nullable = false)
     @JsonIgnore
-    private ApAccessPoint record;
+    private ApAccessPoint accessPoint;
 
     @RestResource(exported = false)
     @JsonIgnore
     @Column(nullable = false, insertable = false, updatable = false)
-    private Integer recordId;
+    private Integer accessPointId;
 
     @RestResource(exported = false)
 	@ManyToOne(fetch=FetchType.LAZY, targetEntity = ParPartyType.class)
@@ -134,21 +134,21 @@ public class ParParty extends AbstractVersionableEntity implements IApScope {
      * Rejstříkové heslo.
      * @return  objekt navázaného rejstříkového hesla
      */
-    public ApAccessPoint getRecord() {
-        return record;
+    public ApAccessPoint getAccessPoint() {
+        return accessPoint;
     }
 
     /**
      * Rejstříkové heslo.
-     * @param record    objekt navázaného rejstříkového hesla
+     * @param accessPoint    objekt navázaného rejstříkového hesla
      */
-    public void setRecord(final ApAccessPoint record) {
-        this.record = record;
-        this.recordId = record != null ? record.getAccessPointId() : null;
+    public void setAccessPoint(final ApAccessPoint accessPoint) {
+        this.accessPoint = accessPoint;
+        this.accessPointId = accessPoint != null ? accessPoint.getAccessPointId() : null;
     }
 
-    public Integer getRecordId() {
-        return recordId;
+    public Integer getAccessPointId() {
+        return accessPointId;
     }
 
     /**
@@ -284,16 +284,16 @@ public class ParParty extends AbstractVersionableEntity implements IApScope {
     @Override
     @JsonIgnore
     public ApScope getApScope() {
-        return record.getScope();
+        return accessPoint.getScope();
     }
 
     /**
-     * Return scope id from corresponding record
+     * Return scope id from corresponding accessPoint
      *
      * @return
      */
     @JsonIgnore
     public Integer getRegScopeId() {
-        return record.getScopeId();
+        return accessPoint.getScopeId();
     }
 }

@@ -111,7 +111,7 @@ public class ValidationVOService {
             throw new IllegalArgumentException("Nelze měnit typ osoby.");
         }
 
-        if (parParty.getRecord().isInvalid()) {
+        if (parParty.getAccessPoint().isInvalid()) {
             throw new IllegalStateException("Zneplatněné osodby není možno upravovat");
         }
         List<ApType> apTypes = apTypeRepository.findApTypeByPartyType(partyType);

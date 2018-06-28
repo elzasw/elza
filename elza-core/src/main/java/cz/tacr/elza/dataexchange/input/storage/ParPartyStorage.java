@@ -65,14 +65,14 @@ public class ParPartyStorage extends EntityStorage<PartyWrapper> {
             apIdMap.put(apId, pw);
         }
         // find current parties by apIds
-        List<ParPartyInfo> currParties = partyRepository.findInfoByRecordIdIn(apIdMap.keySet());
+        List<ParPartyInfo> currParties = partyRepository.findInfoByAccessPointIdIn(apIdMap.keySet());
         if (currParties.size() != apIdMap.size()) {
             throw new IllegalStateException(
                     "Not all party APs found, apIds=" + StringUtils.join(apIdMap.keySet(), ','));
         }
         // update wrapped entity by existing party
         for (ParPartyInfo info : currParties) {
-            PartyWrapper wrapper = apIdMap.get(info.getRecordId());
+            PartyWrapper wrapper = apIdMap.get(info.getAccessPointId());
             ParParty entity = wrapper.getEntity();
             entity.setPartyId(info.getPartyId());
             entity.setVersion(info.getVersion());

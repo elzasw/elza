@@ -51,7 +51,7 @@ public class PartiesReader implements ExportReader {
                 @Override
                 protected void onCompleted() {
                     PartyInfoImpl partyInfo = Validate.notNull(getPartyInfo());
-                    exportedApIds.add(partyInfo.getParty().getRecordId());
+                    exportedApIds.add(partyInfo.getParty().getAccessPointId());
                     os.addParty(partyInfo);
                 }
             };

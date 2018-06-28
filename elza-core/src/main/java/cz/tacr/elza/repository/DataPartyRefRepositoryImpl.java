@@ -25,7 +25,7 @@ public class DataPartyRefRepositoryImpl implements DataPartyRefRepositoryCustom 
 
     @Override
     public List<ArrDataPartyRef> findByDataIdsAndVersionFetchPartyRecord(final Set<Integer> dataIds, final Set<RulItemType> itemTypes, final Integer changeId) {
-        String hql = "SELECT d FROM arr_data_party_ref d JOIN FETCH d.item di JOIN FETCH di.node n JOIN FETCH di.itemType dit JOIN FETCH d.party party JOIN FETCH party.record r WHERE ";
+        String hql = "SELECT d FROM arr_data_party_ref d JOIN FETCH d.item di JOIN FETCH di.node n JOIN FETCH di.itemType dit JOIN FETCH d.party party JOIN FETCH party.accessPoint r WHERE ";
         if (changeId == null) {
             hql += "di.deleteChange IS NULL ";
         } else {

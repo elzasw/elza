@@ -315,6 +315,7 @@
         <dropColumn tableName="ap_access_point" columnName="last_update"/>
         <dropColumn tableName="ap_access_point" columnName="external_system_id"/>
         <renameColumn newColumnName="access_point_id" oldColumnName="record_id" tableName="ap_access_point"/>
+        <renameColumn newColumnName="access_point_id" oldColumnName="record_id" tableName="par_party"/>
 
         <update tableName="db_hibernate_sequences">
             <column name="sequence_name" value="reg_record|record_id" />

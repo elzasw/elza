@@ -1108,7 +1108,7 @@ public class DescriptionItemService {
                 value = new TitleValue(descItem.getItemSpec().getName());
             } else if (data.getDataType().getCode().equals("PARTY_REF")) {
                 ArrDataPartyRef partyData = (ArrDataPartyRef) data;
-                ApAccessPointData ap = accessPointDataService.findAccessPointData(partyData.getParty().getRecord());
+                ApAccessPointData ap = accessPointDataService.findAccessPointData(partyData.getParty().getAccessPoint());
                 value = new TitleValue(ap.getPreferredName().getName());
             } else if (data.getDataType().getCode().equals("RECORD_REF")) {
                 ArrDataRecordRef recordData = (ArrDataRecordRef) data;
@@ -1202,7 +1202,7 @@ public class DescriptionItemService {
                 value = new TitleValue(descItem.getItemSpec().getName());
             } else if (data.getDataType().getCode().equals("PARTY_REF")) {
                 ArrDataPartyRef partyData = (ArrDataPartyRef) data;
-                ApAccessPointData ap = accessPointDataService.findAccessPointData(partyData.getParty().getRecord());
+                ApAccessPointData ap = accessPointDataService.findAccessPointData(partyData.getParty().getAccessPoint());
                 value = new TitleValue(ap.getPreferredName().getName());
             } else if (data.getDataType().getCode().equals("RECORD_REF")) {
                 ArrDataRecordRef recordData = (ArrDataRecordRef) data;
