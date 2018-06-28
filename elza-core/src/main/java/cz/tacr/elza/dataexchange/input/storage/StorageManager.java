@@ -4,8 +4,6 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
-import javax.persistence.criteria.CriteriaUpdate;
-
 import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
 
@@ -48,9 +46,13 @@ public class StorageManager implements StoredEntityCallback {
     public void onStoredEntity(EntityWrapper ew) {
         Validate.notNull(ew);
 
-        persistedWrappers.add(ew);
         // estimate memory score
         long memoryScore = ew.getMemoryScore();
+        // if zero skip this wrapper
+        if (memoryScore <= 0) {
+            return;
+        }
+        persistedWrappers.add(ew);
         // check memory limit
         currentMemoryScore += memoryScore;
         if (currentMemoryScore <= memoryScoreLimit) {
@@ -78,9 +80,7 @@ public class StorageManager implements StoredEntityCallback {
                 ruw.merge(session);
                 continue;
             }
-            CriteriaUpdate<?> criteria = ruw.createUpdateQuery(session);
-            int affected = session.createQuery(criteria).executeUpdate();
-            Validate.isTrue(affected == 1);
+            ruw.executeUpdateQuery(session);
         }
         // flush all changes
         session.flush();

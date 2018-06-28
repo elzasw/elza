@@ -3,7 +3,7 @@ package cz.tacr.elza.dataexchange.input.storage;
 import org.hibernate.Session;
 
 /**
- * Entity wrapper for storage. Storage expecting only loaded entities.
+ * Entity wrapper for storage. Wrapped entity must be new or loaded entity.
  */
 public interface EntityWrapper {
 

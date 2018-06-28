@@ -45,18 +45,24 @@ public class PartyPrefNameWrapper implements RefUpdateWrapper {
         entity.setPreferredName(prefName);
         // merge entity
         session.merge(entity);
+        // update party info
+        partyInfo.onEntityPersist();
     }
 
     @Override
-    public CriteriaUpdate<?> createUpdateQuery(Session session) {
+    public void executeUpdateQuery(Session session) {
         // get name reference
         ParPartyName prefName = partyNameIdHolder.getEntityRef(session);
-        // create update query
+        // create query
         CriteriaBuilder cb = session.getCriteriaBuilder();
         CriteriaUpdate<ParParty> query = cb.createCriteriaUpdate(ParParty.class);
         Root<ParParty> root = query.from(ParParty.class);
         query.set(ParParty.PARTY_PREFERRED_NAME, prefName);
         query.where(cb.equal(root.get(ParParty.ABSTRACT_PARTY_ID), partyInfo.getEntityId()));
-        return query;
+        // execute query
+        int affected = session.createQuery(query).executeUpdate();
+        Validate.isTrue(affected == 1);
+        // update party info
+        partyInfo.onEntityPersist();        
     }
 }

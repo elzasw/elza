@@ -1,11 +1,10 @@
 package cz.tacr.elza.dataexchange.input.storage;
 
-import javax.persistence.criteria.CriteriaUpdate;
-
 import org.hibernate.Session;
 
 /**
- * Wrapper for entity which may not be loaded during update.
+ * Wrapper for updating entity. This wrapper is useful for cases where entity
+ * can be detached (not loaded) e.g. by storage manager.
  */
 public interface RefUpdateWrapper {
 
@@ -25,8 +24,8 @@ public interface RefUpdateWrapper {
     void merge(Session session);
 
     /**
-     * Creates update query. Query is used if entity is uninitialized
-     * Hibernate proxy. This avoids any unnecessary fetches from database.
+     * Executes update query. Query is used if entity is uninitialized
+     * Hibernate proxy i.e. not loaded. Query avoids any unnecessary fetches from database.
      */
-    CriteriaUpdate<?> createUpdateQuery(Session session);
+    void executeUpdateQuery(Session session);
 }

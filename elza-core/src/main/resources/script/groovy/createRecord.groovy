@@ -30,8 +30,8 @@ void prepareNames(ParParty party, ApConvResult convResult) {
 	ApConvName convPrefName = createConvName(prefName, partyType);
 	convResult.addName(convPrefName);
 	// prepare other names
-	party.getPartyNames().each {
-        if (it.getPartyNameId().equals(prefName.getPartyNameId())) {
+	for (name in party.getPartyNames()) {
+        if (name.getPartyNameId().equals(prefName.getPartyNameId())) {
 			continue; // skip preferred name
 		}
 		ApConvName convName = createConvName(it, partyType);
