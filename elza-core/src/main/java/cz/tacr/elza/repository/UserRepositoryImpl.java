@@ -7,6 +7,7 @@ import cz.tacr.elza.domain.UsrGroup;
 import cz.tacr.elza.domain.UsrGroupUser;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.schema.v2.AccessPoint;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.persistence.EntityManager;
@@ -42,7 +43,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
 	        final CriteriaQuery<T> query) {
 		Join<UsrUser, ParParty> party = user.join(UsrUser.PARTY, JoinType.INNER);
 		Join<ParParty, ApAccessPoint> record = party.join(ParParty.RECORD, JoinType.INNER);
-		Join<ApAccessPoint, ApName> recordName = record.join(ApName.NAME);
+		Join<ApAccessPoint, ApName> recordName = record.join(ApAccessPoint.NAME_LIST);
 		List<Predicate> conditions = new ArrayList<>();
 
 		// Search
@@ -250,7 +251,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
 		if (condition != null) {
 			Join<UsrUser, ParParty> party = user.join(UsrUser.PARTY, JoinType.INNER);
 			Join<ParParty, ApAccessPoint> record = party.join(ParParty.RECORD, JoinType.INNER);
-            Join<ApAccessPoint, ApName> recordName = record.join(ApName.NAME);
+            Join<ApAccessPoint, ApName> recordName = record.join(ApAccessPoint.NAME_LIST);
 			Order order1 = builder.asc(recordName.get(ApName.PREFERRED_NAME));
 			Order order2 = builder.asc(user.get(UsrUser.USERNAME));
 			query.where(condition, builder.and(recordName.get(ApName.PREFERRED_NAME).in(true))).orderBy(order1, order2);
