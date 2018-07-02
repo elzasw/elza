@@ -556,6 +556,7 @@ public class DescriptionItemService {
         descItem.setDeleteChange(change);
 
         ArrDescItem retDescItem = descItemRepository.save(descItem);
+        arrangementCacheService.deleteDescItem(descItem.getNodeId(), descItem.getDescItemObjectId());
 
         // sockety
         publishChangeDescItem(version, retDescItem);
