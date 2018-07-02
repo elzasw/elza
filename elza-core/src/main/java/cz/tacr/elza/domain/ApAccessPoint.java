@@ -68,12 +68,28 @@ public class ApAccessPoint implements Serializable, IApScope {
     @Column(nullable = false)
     private boolean invalid;
 
+    // without getter/setter only for JPA query
+    @RestResource(exported = false)
+    @OneToMany(mappedBy = "accessPoint")
+    @JsonIgnore
+    private List<ApName> names;
+
+    // without getter/setter only for JPA query
+    @RestResource(exported = false)
+    @OneToMany(mappedBy = "accessPoint")
+    @JsonIgnore
+    private List<ApDescription> descriptions;
+    
     /* Konstanty pro vazby a fieldy. */
     public static final String AP_TYPE = "apType";
+    public static final String AP_TYPE_ID = "apTypeId";
     public static final String ACCESS_POINT_ID = "accessPointId";
     public static final String SCOPE = "scope";
+    public static final String SCOPE_ID = "scopeId";
     public static final String UUID = "uuid";
     public static final String INVALID = "invalid";
+    public static final String NAMES = "names";
+    public static final String DESCRIPTIONS = "descriptions";
 
     /**
      * ID hesla.

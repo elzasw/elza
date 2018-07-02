@@ -40,21 +40,19 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
 	        final Root<UsrUser> user,
 	        final Integer excludedGroupId,
 	        final CriteriaQuery<T> query) {
-		Join<UsrUser, ParParty> party = user.join(UsrUser.PARTY, JoinType.INNER);
-		Join<ParParty, ApAccessPoint> record = party.join(ParParty.RECORD, JoinType.INNER);
-		Join<ApAccessPoint, ApName> recordName = record.join(ApName.NAME);
+		Join<UsrUser, ParParty> partyJoin = user.join(UsrUser.PARTY, JoinType.INNER);
+		Join<ParParty, ApAccessPoint> apJoin = partyJoin.join(ParParty.RECORD, JoinType.INNER);
+		Join<ApAccessPoint, ApName> nameJoin = joinPrefApName(apJoin, builder);
+		
 		List<Predicate> conditions = new ArrayList<>();
 
 		// Search
 		if (StringUtils.isNotBlank(search)) {
 			final String searchValue = "%" + search.toLowerCase() + "%";
 			conditions.add(builder.or(
-			        builder.like(builder.lower(recordName.get(ApName.NAME)), searchValue),
+			        builder.like(builder.lower(nameJoin.get(ApName.NAME)), searchValue),
 			        builder.like(builder.lower(user.get(UsrUser.USERNAME)), searchValue),
 			        builder.like(builder.lower(user.get(UsrUser.DESCRIPTION)), searchValue)));
-
-			// restrict the resultset to row with preffered name only
-			conditions.add(builder.and(recordName.get(ApName.PREFERRED_NAME).in(true)));
 		}
 
 		if (excludedGroupId != null) {
@@ -143,9 +141,10 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
             final CriteriaQuery<T> query,
 	        final int userId,
 	        final boolean includeUser) {
-        Join<UsrUser, ParParty> party = user.join(UsrUser.PARTY, JoinType.INNER);
-        Join<ParParty, ApAccessPoint> record = party.join(ParParty.RECORD, JoinType.INNER);
-        Join<ApAccessPoint, ApName> recordName = record.join(ApName.NAME);
+        Join<UsrUser, ParParty> partyJoin = user.join(UsrUser.PARTY, JoinType.INNER);
+        Join<ParParty, ApAccessPoint> apJoin = partyJoin.join(ParParty.RECORD, JoinType.INNER);
+        Join<ApAccessPoint, ApName> recordName = joinPrefApName(apJoin, builder);
+        
         List<Predicate> conditions = new ArrayList<>();
 
         // Search
@@ -156,8 +155,6 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
                     builder.like(builder.lower(user.get(UsrUser.USERNAME)), searchValue),
                     builder.like(builder.lower(user.get(UsrUser.DESCRIPTION)), searchValue)
             ));
-            // restrict the resultset to row with preferred name only
-            conditions.add(builder.and(recordName.get(ApName.PREFERRED_NAME).in(true)));
         }
 
         if (excludedGroupId != null) {
@@ -248,13 +245,9 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
 		queryCount.select(builder.countDistinct(userCount));
 
 		if (condition != null) {
-			Join<UsrUser, ParParty> party = user.join(UsrUser.PARTY, JoinType.INNER);
-			Join<ParParty, ApAccessPoint> record = party.join(ParParty.RECORD, JoinType.INNER);
-            Join<ApAccessPoint, ApName> recordName = record.join(ApName.NAME);
-			Order order1 = builder.asc(recordName.get(ApName.PREFERRED_NAME));
-			Order order2 = builder.asc(user.get(UsrUser.USERNAME));
-			query.where(condition, builder.and(recordName.get(ApName.PREFERRED_NAME).in(true))).orderBy(order1, order2);
-
+			prepareUserView(user, builder, query);
+			
+			query.where(condition);
 			queryCount.where(conditionCount);
 		}
 
@@ -298,13 +291,9 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
         queryCount.select(builder.countDistinct(userCount));
 
         if (condition != null) {
-            Join<UsrUser, ParParty> party = user.join(UsrUser.PARTY, JoinType.INNER);
-            Join<ParParty, ApAccessPoint> record = party.join(ParParty.RECORD, JoinType.INNER);
-            Join<ApAccessPoint, ApName> recordName = record.join(ApName.NAME);
-            Order order1 = builder.asc(recordName.get(ApName.PREFERRED_NAME));
-            Order order2 = builder.asc(user.get(UsrUser.USERNAME));
-            query.where(condition, builder.and(recordName.get(ApName.PREFERRED_NAME).in(true))).orderBy(order1, order2);
-
+            prepareUserView(user, builder, query);
+            
+            query.where(condition);
             queryCount.where(conditionCount);
         }
 
@@ -319,5 +308,26 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
         }
 
         return new FilteredResult<>(firstResult, maxResults, count, list);
+    }
+    
+    private static void prepareUserView(Root<UsrUser> user, CriteriaBuilder cb, CriteriaQuery<?> query) {
+        Join<UsrUser, ParParty> partyJoin = user.join(UsrUser.PARTY, JoinType.INNER);
+        Join<ParParty, ApAccessPoint> apJoin = partyJoin.join(ParParty.RECORD, JoinType.INNER);
+        // join current preferred AP names
+        Join<ApAccessPoint, ApName> nameJoin = joinPrefApName(apJoin, cb);
+        // define order
+        Order order1 = cb.asc(nameJoin.get(ApName.NAME));
+        Order order2 = cb.asc(user.get(UsrUser.USERNAME));
+        query.orderBy(order1, order2);
+    }
+    
+    private static Join<ApAccessPoint, ApName> joinPrefApName(Join<ParParty, ApAccessPoint> apJoin, CriteriaBuilder cb) {
+        Join<ApAccessPoint, ApName> join = apJoin.join(ApAccessPoint.NAMES, JoinType.INNER);
+        Predicate fkCond = cb.equal(apJoin.get(ApAccessPoint.ACCESS_POINT_ID),
+                                        join.get(ApName.ACCESS_POINT_ID));
+        Predicate activeCond = join.get(ApName.DELETE_CHANGE_ID).isNull();
+        Predicate prefCond = cb.isTrue(join.get(ApName.PREFERRED_NAME));
+        join.on(cb.and(fkCond, activeCond, prefCond));
+        return join;
     }
 }

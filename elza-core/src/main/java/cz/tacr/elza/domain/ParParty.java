@@ -1,5 +1,5 @@
-package cz.tacr.elza.domain;
 
+package cz.tacr.elza.domain;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import cz.tacr.elza.api.interfaces.IApScope;
@@ -43,6 +43,7 @@ public class ParParty extends AbstractVersionableEntity implements IApScope {
     public static final String RECORD = "accessPoint";
     public static final String RECORD_FK = RECORD + ".accessPointId";
     public static final String PARTY_TYPE = "partyType";
+    public static final String PARTY_TYPE_ID = "partyTypeId";
     public static final String PARTY_PREFERRED_NAME = "preferredName";
     public static final String HISTORY = "history";
     public static final String SOURCE_INFORMATION = "sourceInformation";
