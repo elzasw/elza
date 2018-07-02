@@ -122,7 +122,7 @@ public class PartyControllerTest extends AbstractControllerTest {
 
         recordO1.setApTypeId(findApTypeAddable(recordTypesForPartyType(typeO1.getId())).getId());
         recordO1.setScopeId(scope.getId());
-        personO1.setRecord(recordO1);
+        personO1.setAccessPoint(recordO1);
         personO1.setPartyType(typeO1);
 
         ParPartyNameVO partyNameO1 = new ParPartyNameVO();
@@ -147,7 +147,7 @@ public class PartyControllerTest extends AbstractControllerTest {
         recordK1.setApTypeId(findApTypeAddable(recordTypesForPartyType(typeK1.getId())).getId());
         recordK1.setScopeId(scope.getId());
 
-        groupK1.setRecord(recordK1);
+        groupK1.setAccessPoint(recordK1);
 
         groupK1.setPartyType(typeK1);
         groupK1.setScope(scope.getId().toString());
@@ -171,7 +171,7 @@ public class PartyControllerTest extends AbstractControllerTest {
         recordR1.setApTypeId(findApTypeAddable(recordTypesForPartyType(typeR1.getId())).getId());
         recordR1.setScopeId(scope.getId());
 
-        dynastyR1.setRecord(recordR1);
+        dynastyR1.setAccessPoint(recordR1);
         dynastyR1.setGenealogy("R1");
         dynastyR1.setPartyType(typeR1);
 
@@ -193,7 +193,7 @@ public class PartyControllerTest extends AbstractControllerTest {
         recordU1.setApTypeId(findApTypeAddable(recordTypesForPartyType(typeU1.getId())).getId());
         recordU1.setScopeId(scope.getId());
 
-        eventU1.setRecord(recordU1);
+        eventU1.setAccessPoint(recordU1);
         eventU1.setPartyType(typeU1);
 
         ParPartyNameVO partyNameU1 = new ParPartyNameVO();
@@ -214,7 +214,7 @@ public class PartyControllerTest extends AbstractControllerTest {
         for (ParPartyVO party : parties) {
             ParPartyNameVO name = party.getPartyNames().iterator().next();
             Assert.assertTrue("Očekáváme 1 preferované jméno", party.getPartyNames().size() == 1 && name.isPrefferedName());
-            Assert.assertTrue("Očekáváme neprázdný rejstříkový záznam", party.getRecord() != null);
+            Assert.assertTrue("Očekáváme neprázdný rejstříkový záznam", party.getAccessPoint() != null);
         }
 
         parties = findParty(null, null, null, groupK1.getPartyType().getId(), null);
@@ -452,7 +452,7 @@ public class PartyControllerTest extends AbstractControllerTest {
 
         recordO1.setApTypeId(findApTypeAddable(recordTypesForPartyType(typeO1.getId())).getId());
         recordO1.setScopeId(scope.getId());
-        personO1.setRecord(recordO1);
+        personO1.setAccessPoint(recordO1);
         personO1.setPartyType(typeO1);
 
         ParPartyNameVO partyNameO1 = new ParPartyNameVO();
@@ -524,7 +524,7 @@ public class PartyControllerTest extends AbstractControllerTest {
         /* Vznik **/
         ParRelationVO relation = new ParRelationVO();
         ParRelationEntityVO spawnRelationEntity = new ParRelationEntityVO();
-        spawnRelationEntity.setRecord(personO1.getRecord());
+        spawnRelationEntity.setRecord(personO1.getAccessPoint());
 
         spawnRelationEntity.setRoleType(spawnRelationRoleType);
         relation.setRelationEntities(Collections.singletonList(spawnRelationEntity));
