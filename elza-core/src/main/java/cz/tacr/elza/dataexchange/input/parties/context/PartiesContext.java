@@ -174,7 +174,9 @@ public class PartiesContext {
         // add converted description and names
         AccessPointInfo apInfo = partyInfo.getApInfo();
         ApDescription apDesc = convResult.createDesc(apContext.getCreateChange());
-        apContext.addDescription(apDesc, apInfo);
+        if (apDesc != null) {
+            apContext.addDescription(apDesc, apInfo);
+        }
         for (ApName name : convResult.createNames(apContext.getCreateChange())) {
             apContext.addName(name, apInfo);
         }

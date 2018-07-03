@@ -280,7 +280,9 @@
             <column name="description_id" type="int">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="description" type="text"/>
+            <column name="description" type="text">
+                <constraints nullable="false"/>
+            </column>
             <column name="access_point_id" type="int">
                 <constraints nullable="false"/>
             </column>

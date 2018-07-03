@@ -37,7 +37,9 @@ public class ApConvResult {
      * Creates new AP description. AP reference is not set.
      */
     public ApDescription createDesc(ApChange createChange) {
-        Validate.notBlank(description);
+        if(description == null) {
+            return null;
+        }
 
         ApDescription entity = new ApDescription();
         entity.setCreateChange(createChange);

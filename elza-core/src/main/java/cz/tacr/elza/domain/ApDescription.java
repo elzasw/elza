@@ -34,7 +34,7 @@ public class ApDescription implements Serializable {
     @Access(AccessType.PROPERTY)
     private Integer descriptionId;
 
-    @Column(length = StringLength.LENGTH_1000)
+    @Column(length = StringLength.LENGTH_1000, nullable = false)
     @JsonIgnore
     private String description;
 
