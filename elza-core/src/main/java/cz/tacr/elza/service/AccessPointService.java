@@ -64,6 +64,7 @@ import cz.tacr.elza.service.eventnotification.events.EventNodeIdVersionInVersion
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.vo.ApAccessPointData;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.NotImplementedException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -99,7 +100,7 @@ import java.util.stream.Collectors;
 public class AccessPointService {
 
     @Autowired
-    private ApAccessPointRepository apAccessPointRepository;
+    private ApAccessPointRepository apRepository;
 
     @Autowired
     private ApNameRepository apNameRepository;
@@ -183,10 +184,10 @@ public class AccessPointService {
     private ApChangeRepository apChangeRepository;
 
     @Autowired
-    private ApDescriptionRepository apDescriptionRepository;
+    private ApDescriptionRepository descriptionRepository;
 
     @Autowired
-    private ApExternalIdRepository apExternalIdRepository;
+    private ApExternalIdRepository externalIdRepository;
 
     /**
      * Kody tříd rejstříků nastavené v konfiguraci elzy.
@@ -210,13 +211,12 @@ public class AccessPointService {
                                                               final Integer firstResult,
                                                               final Integer maxResults,
                                                               @Nullable final ArrFund fund,
-                                                              @Nullable final Integer scopeId,
-                                                              @Nullable final Boolean excludeInvalid) {
+                                                              @Nullable final Integer scopeId) {
 
         Set<Integer> scopeIdsForSearch = getScopeIdsForSearch(fund, scopeId);
 
-        return apAccessPointRepository.findApAccessPointByTextAndType(searchRecord, apTypeIds, firstResult,
-                maxResults, scopeIdsForSearch, excludeInvalid);
+        return apRepository.findApAccessPointByTextAndType(searchRecord, apTypeIds, firstResult,
+                maxResults, scopeIdsForSearch);
     }
 
 
@@ -232,52 +232,45 @@ public class AccessPointService {
     public long findApAccessPointByTextAndTypeCount(@Nullable final String searchRecord,
                                                     @Nullable final Collection<Integer> apTypeIds,
                                                     @Nullable final ArrFund fund,
-                                                    final Integer scopeId,
-                                                    final Boolean excludeInvalid) {
+                                                    final Integer scopeId) {
 
         Set<Integer> scopeIdsForSearch = getScopeIdsForSearch(fund, scopeId);
 
-        return apAccessPointRepository.findApAccessPointByTextAndTypeCount(searchRecord, apTypeIds,
-                scopeIdsForSearch, excludeInvalid);
+        return apRepository.findApAccessPointByTextAndTypeCount(searchRecord, apTypeIds,
+                scopeIdsForSearch);
     }
 
     /**
      * Kontrola, jestli je používáno rejstříkové heslo v navázaných tabulkách.
      *
      * @param record rejstříkové heslo
-     * @param checkUsage kontrolovat použití
      *
      * @throws BusinessException napojení na jinou tabulku
      */
-    public boolean canBeDeleted(final ApAccessPoint record, final boolean checkUsage) {
+    public void checkDeletion(final ApAccessPoint record) {
+        ParParty parParty = partyService.findParPartyByAccessPoint(record);
+        if (parParty != null) {
+            throw new BusinessException("Existuje vazba z osoby, nelze smazat.", RegistryCode.EXIST_FOREIGN_PARTY);
+        }
+        
         long countDataRecordRef = dataRecordRefRepository.countAllByRecord(record);
-        if (checkUsage) {
-            ParParty parParty = partyService.findParPartyByAccessPoint(record);
-            if (parParty != null) {
-                throw new BusinessException("Existuje vazba z osoby, nelze smazat.", RegistryCode.EXIST_FOREIGN_PARTY);
-            }
-
-            if (countDataRecordRef > 0) {
-                throw new BusinessException("Nalezeno použití hesla v tabulce ArrDataRecordRef.", RegistryCode.EXIST_FOREIGN_DATA).set("table", "ArrDataRecordRef");
-            }
-
-            long countNodeRegister = nodeRegisterRepository.countByRecordAndDeleteChangeIsNull(record);
-            if (countNodeRegister > 0) {
-                throw new BusinessException("Nalezeno použití hesla v tabulce ArrNodeRegister.", RegistryCode.EXIST_FOREIGN_DATA).set("table", "ArrNodeRegister");
-            }
-
-            // vztah osoby par_relation_entity
-            List<ParRelationEntity> relationEntities = relationEntityRepository.findActiveByRecord(record);
-            if (CollectionUtils.isNotEmpty(relationEntities)) {
-                throw new BusinessException("Nelze smazat/zneplatnit rejstříkové heslo na kterou mají vazbu jiné aktivní osoby v relacích.", RegistryCode.EXIST_FOREIGN_DATA)
-                        .set("recordId", record.getAccessPointId())
-                        .set("relationEntities", relationEntities.stream().map(ParRelationEntity::getRelationEntityId).collect(Collectors.toList()))
-                        .set("partyIds", relationEntities.stream().map(ParRelationEntity::getRelation).map(ParRelation::getParty).map(ParParty::getPartyId).collect(Collectors.toList()));
-            }
+        if (countDataRecordRef > 0) {
+            throw new BusinessException("Nalezeno použití hesla v tabulce ArrDataRecordRef.", RegistryCode.EXIST_FOREIGN_DATA).set("table", "ArrDataRecordRef");
         }
 
-        return countDataRecordRef == 0 && nodeRegisterRepository.countByRecordId(record) == 0 && relationEntityRepository.countAllByAccessPoint(record) == 0;
+        long countNodeRegister = nodeRegisterRepository.countByRecordAndDeleteChangeIsNull(record);
+        if (countNodeRegister > 0) {
+            throw new BusinessException("Nalezeno použití hesla v tabulce ArrNodeRegister.", RegistryCode.EXIST_FOREIGN_DATA).set("table", "ArrNodeRegister");
+        }
 
+        // vztah osoby par_relation_entity
+        List<ParRelationEntity> relationEntities = relationEntityRepository.findActiveByRecord(record);
+        if (CollectionUtils.isNotEmpty(relationEntities)) {
+            throw new BusinessException("Nelze smazat/zneplatnit rejstříkové heslo na kterou mají vazbu jiné aktivní osoby v relacích.", RegistryCode.EXIST_FOREIGN_DATA)
+                    .set("recordId", record.getAccessPointId())
+                    .set("relationEntities", relationEntities.stream().map(ParRelationEntity::getRelationEntityId).collect(Collectors.toList()))
+                    .set("partyIds", relationEntities.stream().map(ParRelationEntity::getRelation).map(ParRelation::getParty).map(ParParty::getPartyId).collect(Collectors.toList()));
+        }
     }
 
     /**
@@ -288,12 +281,11 @@ public class AccessPointService {
      * @return výsledný objekt
      */
     @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
-    public ApAccessPoint saveAccessPoint(@AuthParam(type = AuthParam.Type.SCOPE) final ApAccessPointData accessPointData,
-                                         final boolean partySave) {
+    public ApAccessPoint saveAccessPoint(@AuthParam(type = AuthParam.Type.SCOPE) final ApAccessPointData accessPointData) {
         ApAccessPoint record = accessPointData.getAccessPoint();
         Assert.notNull(record, "Rejstříkové heslo musí být vyplněno");
 
-        checkRecordSave(accessPointData, partySave);
+        checkRecordSave(accessPointData);
 
         ApType apType = apTypeRepository.findOne(record.getApType().getApTypeId());
         record.setApType(apType);
@@ -301,48 +293,42 @@ public class AccessPointService {
         ApScope scope = scopeRepository.findOne(record.getScope().getScopeId());
         record.setScope(scope);
 
-
-        ApExternalSystem externalSystem = accessPointData.getExternalSystem();
-        if (externalSystem != null) {
-            Integer externalSystemId = externalSystem.getExternalSystemId();
-            Assert.notNull(externalSystemId, "ApExternalSystem nemá vyplněné ID.");
-            externalSystem = apExternalSystemRepository.findOne(externalSystemId);
-            Assert.notNull(externalSystem, "ApExternalSystem nebylo nalezeno podle id " + externalSystemId);
-            accessPointData.setExternalSystem(externalSystem);
-        }
-
         if (record.getUuid() == null) {
             record.setUuid(UUID.randomUUID().toString());
         }
 
-        ApAccessPoint result = apAccessPointRepository.save(record);
-        saveAccessPointDataVersion(accessPointData, result);
+        //  TODO: nutno přepracovat na dílčí update operace, celkový merge stavu pro strukturovanou AP nevhodný - elza 0.16
+        throw new NotImplementedException();
+        // ApAccessPoint result = apRepository.save(record);
+        //saveAccessPointDataVersion(accessPointData, result);
 
-        EventType type = record.getAccessPointId() == null ? EventType.RECORD_CREATE : EventType.RECORD_UPDATE;
-        eventNotificationService.publishEvent(EventFactory.createIdEvent(type, result.getAccessPointId()));
+        //EventType type = record.getAccessPointId() == null ? EventType.RECORD_CREATE : EventType.RECORD_UPDATE;
+        //eventNotificationService.publishEvent(EventFactory.createIdEvent(type, result.getAccessPointId()));
 
-        return result;
+        //return result;
     }
 
     /**
+     * TODO: nutno přepracovat na dílčí update operace, celkový merge stavu pro strukturovanou AP nevhodný - elza 0.16
+     * 
      * Uloží nové verze všech navázaných entit pro daný přístupový bod.
      *
      * @param accessPointData wrapper který obsahuje návazné entity
      * @param result pristupovy bod, na ktery se navazou navazne entity
      * @return nová verze wrapperu, která obsahuje všechny nové uložené verze navázaných entit
-     */
+     * 
     private ApAccessPointData saveAccessPointDataVersion(ApAccessPointData accessPointData, ApAccessPoint result) {
         // ap_description
         // ap_name
         // ap_external_id
         ApChange apChange;
         if (accessPointData.getAccessPointId() == null) {
-            apChange = createChange(ApChange.Type.ACCESS_POINT_CREATE);
+            apChange = createChange(ApChange.Type.AP_CREATE);
         } else {
-            apChange = createChange(ApChange.Type.ACCESS_POINT_UPDATE);
+            apChange = createChange(ApChange.Type.AP_UPDATE);
         }
         // version description
-        ApDescription description = apDescriptionRepository.findApDescriptionByAccessPoint(result);
+        ApDescription description = apDescriptionRepository.findByAccessPoint(result);
         if (description != null) {
             description.setDeleteChange(apChange);
             apDescriptionRepository.save(description);
@@ -379,40 +365,39 @@ public class AccessPointService {
         accessPointData.setPreferredName(savedName);
 
         return accessPointData;
-    }
+    }*/
 
     /**
      * Smaže rej. heslo a jeho variantní hesla. Předpokládá, že již proběhlo ověření, že je možné ho smazat (vazby atd...).
      * @param accessPoint heslo
      */
     @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
-    public void deleteAccessPoint(@AuthParam(type = AuthParam.Type.SCOPE) final ApAccessPoint accessPoint, final boolean checkUsage) {
-        if (canBeDeleted(accessPoint, checkUsage)) {
-            eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.RECORD_DELETE, accessPoint.getAccessPointId()));
-
-            ApChange change = createChange(ApChange.Type.ACCESS_POINT_DELETE);
-            List<ApName> names = apNameRepository.findVariantNamesByAccessPointId(accessPoint);
-            names.forEach(name -> name.setDeleteChange(change));
-            apNameRepository.save(names);
-
-            ApDescription apDescription = apDescriptionRepository.findApDescriptionByAccessPoint(accessPoint);
-            apDescription.setDeleteChange(change);
-            apDescriptionRepository.save(apDescription);
-
-            ApExternalId apExternalId = apExternalIdRepository.findApExternalIdByAccessPoint(accessPoint);
-            apExternalId.setDeleteChange(change);
-            apExternalIdRepository.save(apExternalId);
-
-            //TODO [fric] je tohle spravny postup? Nemuzu primo smazat zaznam v AP
-
-            ApAccessPoint apAccessPoint = apAccessPointRepository.getOne(accessPoint.getAccessPointId());
-            apAccessPoint.setInvalid(true);
-            apAccessPointRepository.save(accessPoint);
-        } else {
-            ApAccessPointData accessPointData = accessPointDataService.findAccessPointData(accessPoint);
-            accessPoint.setInvalid(true);
-            saveAccessPoint(accessPointData, false);
+    public void deleteAccessPoint(@AuthParam(type = AuthParam.Type.AP) final int apId, final boolean checkUsage) {
+        ApChange change = createChange(ApChange.Type.AP_DELETE);
+        
+        ApAccessPoint ap = apRepository.getOne(apId);
+        if (checkUsage) {
+            checkDeletion(ap);
         }
+        ap.setDeleteChange(change);
+        apRepository.save(ap);
+        
+        List<ApName> names = apNameRepository.findByAccessPoint(ap);
+        names.forEach(name -> name.setDeleteChange(change));
+        apNameRepository.save(names);
+
+        ApDescription desc = descriptionRepository.findByAccessPoint(ap);
+        // can be without description
+        if (desc != null) {
+            desc.setDeleteChange(change);
+            descriptionRepository.save(desc);
+        }
+        
+        List<ApExternalId> eids = externalIdRepository.findByAccessPoint(ap);
+        eids.forEach(eid -> eid.setDeleteChange(change));
+        externalIdRepository.save(eids);
+        
+        eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.RECORD_DELETE, apId));
     }
 
 
@@ -422,7 +407,7 @@ public class AccessPointService {
      * @param apData    heslo
      * @param partySave true - jedná se o ukládání přes ukládání osoby, false -> editace z klienta
      */
-    private void checkRecordSave(final ApAccessPointData apData, final boolean partySave) {
+    private void checkRecordSave(final ApAccessPointData apData) {
         Assert.notNull(apData.getAccessPoint(), "Rejstříkové heslo musí být vyplněno");
 
         Assert.notNull(apData.getPreferredName(), "Není vyplněné Record.");
@@ -435,15 +420,9 @@ public class AccessPointService {
         apType = apTypeRepository.findOne(apType.getApTypeId());
         Assert.notNull(apType, "ApType nebylo nalezeno podle id " + apType.getApTypeId());
 
-        if (partySave) {
-            if (apType.getPartyType() == null) {
-                throw new BusinessException("Typ hesla musí mít vazbu na typ osoby", RegistryCode.REGISTRY_HAS_NOT_TYPE_PARTY);
-            }
-        } else {
-            if (record.getAccessPointId() == null && apType.getPartyType() != null) {
-                throw new BusinessException("Nelze vytvořit rejstříkové heslo, které je navázané na typ osoby",
-                        RegistryCode.CANT_CREATE_WITH_TYPE_PARTY);
-            }
+        if (record.getAccessPointId() == null && apType.getPartyType() != null) {
+            throw new BusinessException("Nelze vytvořit rejstříkové heslo, které je navázané na typ osoby",
+                    RegistryCode.CANT_CREATE_WITH_TYPE_PARTY);
         }
 
         Assert.notNull(record.getScope(), "Není vyplněna třída rejstříku");
@@ -452,42 +431,14 @@ public class AccessPointService {
         Assert.notNull(scope, "Nebyla nalezena třída rejstříku s id " + record.getScope().getScopeId());
 
         if (record.getAccessPointId() == null) {
-            if (!apType.getAddRecord()) {
+            if (apType.isReadOnly()) {
                 throw new BusinessException(
                         "Nelze přidávat heslo do typu, který nemá přidávání hesel povolené.", RegistryCode.REGISTRY_TYPE_DISABLE);
             }
         } else {
-            ApAccessPoint dbRecord = apAccessPointRepository.findOne(record.getAccessPointId());
-            ApAccessPointData dbApData = accessPointDataService.findAccessPointData(dbRecord);
+            ApAccessPoint dbRecord = apRepository.findOne(record.getAccessPointId());
             if (!record.getScope().getScopeId().equals(dbRecord.getScope().getScopeId())) {
                 throw new BusinessException("Nelze změnit třídu rejstříku.", RegistryCode.SCOPE_CANT_CHANGE);
-            }
-
-            ParParty party = partyService.findParPartyByAccessPoint(dbRecord);
-            if (party == null) {
-                ExceptionUtils.nullElseBusiness(apType.getPartyType(),
-                        "Nelze nastavit typ hesla, které je navázané na typ osoby.", RegistryCode.CANT_CHANGE_WITH_TYPE_PARTY);
-            } else {
-                ExceptionUtils.equalsElseBusiness(apType.getPartyType(), party.getPartyType(),
-                        "Nelze změnit typ rejstříkového hesla osoby, který odkazuje na jiný typ osoby.",
-                        RegistryCode.CANT_CREATE_WITH_OTHER_TYPE_PARTY);
-
-                //pokud editujeme heslo přes insert/update, a ne přes ukládání osoby
-                if (!partySave) {
-                    ExceptionUtils.equalsElseBusiness(apData.getPreferredName(), dbApData.getPreferredName(),
-                            "Nelze editovat hodnotu rejstříkového hesla napojeného na osobu.",
-                            RegistryCode.CANT_CHANGE_VALUE_WITH_PARTY);
-                    ExceptionUtils.equalsElseBusiness(apData.getDescription(), dbApData.getDescription(),
-                            "Nelze editovat charakteristiku rejstříkového hesla napojeného na osobu.",
-                            RegistryCode.CANT_CHANGE_CHAR_WITH_PARTY);
-                    ExceptionUtils.equalsElseBusiness(apData.getExternalId(), dbApData.getExternalId(),
-                            "Nelze editovat externí id rejstříkového hesla napojeného na osobu.",
-                            RegistryCode.CANT_CHANGE_EXID_WITH_PARTY);
-                    ExceptionUtils.equalsElseBusiness(apData.getExternalSystem(), dbApData.getExternalSystem(),
-                            "Nelze editovat externí systém rejstříkového hesla, které je napojené na osobu.",
-                            RegistryCode.CANT_CHANGE_EXSYS_WITH_PARTY);
-                }
-
             }
         }
     }
@@ -510,7 +461,7 @@ public class AccessPointService {
         Integer recordId = accessPoint.getAccessPointId();
         Assert.notNull(recordId, "ApAccessPoint nemá vyplněno ID.");
 
-        accessPoint = apAccessPointRepository.findOne(recordId);
+        accessPoint = apRepository.findOne(recordId);
         Assert.notNull(accessPoint, "ApAccessPoint nebylo nalezeno podle id " + recordId);
         variantName.setAccessPoint(accessPoint);
         variantName.setCreateChange(createChange);
@@ -550,7 +501,7 @@ public class AccessPointService {
         Assert.notNull(scope, "Scope musí být vyplněn");
         Assert.notNull(scope.getScopeId(), "Identifikátor scope musí být vyplněn");
 
-        List<ApAccessPoint> scopeRecords = apAccessPointRepository.findByScope(scope);
+        List<ApAccessPoint> scopeRecords = apRepository.findByScope(scope);
         ExceptionUtils.isEmptyElseBusiness(scopeRecords, "Nelze smazat třídu rejstříku, která je nastavena na rejstříku.", RegistryCode.USING_SCOPE_CANT_DELETE);
 
         fundRegisterScopeRepository.delete(fundRegisterScopeRepository.findByScope(scope));
@@ -817,9 +768,9 @@ public class AccessPointService {
     }
 
     @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_RD_ALL, UsrPermission.Permission.AP_SCOPE_RD})
-    public ApAccessPoint getAccessPoint(@AuthParam(type = AuthParam.Type.REGISTRY) final Integer recordId) {
+    public ApAccessPoint getAccessPoint(@AuthParam(type = AuthParam.Type.AP) final Integer recordId) {
         Assert.notNull(recordId, "Identifikátor rejstříkového hesla musí být vyplněn");
-        return apAccessPointRepository.findOne(recordId);
+        return apRepository.findOne(recordId);
     }
 
     /**
@@ -843,8 +794,8 @@ public class AccessPointService {
      * @param record record z důvodu oprávnění
      */
     @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
-    public void deleteVariantName(final ApName variantName, @AuthParam(type = AuthParam.Type.REGISTRY) final ApAccessPoint record) {
-        ApChange change = createChange(ApChange.Type.VARIANT_NAME_DELETE);
+    public void deleteVariantName(final ApName variantName, @AuthParam(type = AuthParam.Type.AP) final ApAccessPoint record) {
+        ApChange change = createChange(ApChange.Type.NAME_DELETE);
         ApName apName = apNameRepository.getOneCheckExist(variantName.getNameId());
         apName.setDeleteChange(change);
         apNameRepository.save(apName);
@@ -1158,10 +1109,10 @@ public class AccessPointService {
                 throw new SystemException("Pro AS neexistují žádné scope.", BaseCode.INVALID_STATE)
                         .set("fundId", fundId);
             } else {
-                if (!fundScopes.contains(replacement.getApScope().getScopeId())) {
+                if (!fundScopes.contains(replacement.getScopeId())) {
                     throw new BusinessException("Nelze nahradit rejsříkové heslo v AS jelikož AS nemá scope rejstříku pomocí kterého nahrazujeme.", BaseCode.INVALID_STATE)
                             .set("fundId", fundId)
-                            .set("scopeId", replacement.getApScope().getScopeId());
+                            .set("scopeId", replacement.getScopeId());
                 }
             }
             descriptionItemService.updateDescriptionItem(im, fundVersions.get(fundId), change, true);
@@ -1183,10 +1134,10 @@ public class AccessPointService {
                 throw new SystemException("Pro AS neexistují žádné scope.", BaseCode.INVALID_STATE)
                         .set("fundId", fundId);
             } else {
-                if (!fundScopes.contains(replacement.getApScope().getScopeId())) {
+                if (!fundScopes.contains(replacement.getScopeId())) {
                     throw new BusinessException("Nelze nahradit rejsříkové heslo v AS jelikož AS nemá scope rejstříku pomocí kterého nahrazujeme.", BaseCode.INVALID_STATE)
                             .set("fundId", fundId)
-                            .set("scopeId", replacement.getApScope().getScopeId());
+                            .set("scopeId", replacement.getScopeId());
                 }
             }
             self.updateRegisterLink(fundVersions.get(fundId).getFundVersionId(), i.getNodeId(), arrNodeRegister);
@@ -1194,9 +1145,9 @@ public class AccessPointService {
     }
 
     public boolean canBeDeleted(ApAccessPoint record) {
-        return CollectionUtils.isEmpty(dataRecordRefRepository.findByRecord(record)) &&
-                CollectionUtils.isEmpty(nodeRegisterRepository.findByRecordId(record)) &&
-                CollectionUtils.isEmpty(relationEntityRepository.findByAccessPoint(record));
+        return dataRecordRefRepository.findByRecord(record).isEmpty() &&
+               nodeRegisterRepository.findByRecordId(record).isEmpty() &&
+               relationEntityRepository.findByAccessPoint(record).isEmpty();
     }
 
 

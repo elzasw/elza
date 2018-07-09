@@ -1,5 +1,7 @@
 package cz.tacr.elza.domain;
 
+import javax.persistence.Access;
+import javax.persistence.AccessType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -18,6 +20,7 @@ public class SysLanguage {
 
     @Id
     @GeneratedValue
+    @Access(AccessType.PROPERTY)
     private Integer languageId;
 
     @Column(length = 3, nullable = false, unique = true)

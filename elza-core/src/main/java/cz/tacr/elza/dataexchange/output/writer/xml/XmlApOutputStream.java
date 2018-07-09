@@ -137,10 +137,11 @@ public class XmlApOutputStream implements ApOutputStream {
 
         for (ApName name : names) {
             AccessPointName element = new AccessPointName();
-            element.setCpl(name.getComplement());
-            element.setL(name.getLanguage());
             element.setN(name.getName());
-            element.setT(name.getNameType().getCode());
+            element.setCpl(name.getComplement());
+            if (name.getLanguage() != null) {
+                element.setL(name.getLanguage().getCode());
+            }
             list.add(element);
         }
         return listElement;

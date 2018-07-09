@@ -1,9 +1,9 @@
 package cz.tacr.elza.dataexchange.input.aps;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
-import org.apache.commons.collections4.MultiValuedMap;
-import org.apache.commons.collections4.multimap.HashSetValuedHashMap;
 import org.apache.commons.lang3.StringUtils;
 
 import cz.tacr.elza.core.data.StaticDataProvider;
@@ -65,71 +65,63 @@ public class AccessPointEntryProcessor implements ItemProcessor {
     protected void processEntry(AccessPointEntry entry) {
         entryId = entry.getId();
         // create AP and prepare AP info
-        MultiValuedMap<String, String> eidTypeValueMap = createEidTypeValueMap(entry.getEid());
         ApAccessPoint entity = createEntity(entry);
-        info = context.addAccessPoint(entity, entry.getId(), eidTypeValueMap);
-        // process external ids
-        entry.getEid().forEach(this::processExternalId);
+        List<ApExternalId> eids = createExternalIds(entry.getEid());
+        info = context.addAccessPoint(entity, entry.getId(), eids);
     }
 
-    private MultiValuedMap<String, String> createEidTypeValueMap(Collection<ExternalId> externalIds) {
-        if (externalIds.isEmpty()) {
+    private List<ApExternalId> createExternalIds(Collection<ExternalId> eids) {
+        if (eids.isEmpty()) {
             return null;
         }
-        HashSetValuedHashMap<String, String> map = new HashSetValuedHashMap<>();
-        for (ExternalId eid : externalIds) {
+        List<ApExternalId> entities = new ArrayList<>(eids.size());
+        for (ExternalId eid : eids) {
             if (StringUtils.isEmpty(eid.getT())) {
                 throw new DEImportException("External id type is not set, apeId=" + entryId);
             }
             if (StringUtils.isEmpty(eid.getV())) {
                 throw new DEImportException("External id without value, apeId=" + entryId);
             }
-            if (!map.put(eid.getT(), eid.getV())) {
-                throw new DEImportException(
-                        "External id with duplicit type-value pair, type=" + eid.getT() + ", value=" + eid.getV());
+            ApExternalIdType eidType = context.getEidType(eid.getT());
+            if (eidType == null) {
+                throw new DEImportException("External id type not found, apEid=" + eid.getV() + ", code=" + eid.getT());
             }
+            // create external id
+            ApExternalId entity = new ApExternalId();
+            entity.setCreateChange(context.getCreateChange());
+            entity.setValue(eid.getT());
+            entity.setExternalIdType(eidType);
+            entities.add(entity);
         }
-        return map;
+        return entities;
     }
 
     private ApAccessPoint createEntity(AccessPointEntry entry) {
         if (StringUtils.isEmpty(entry.getId())) {
-            throw new DEImportException("AccessPointEntry id is empty");
+            throw new DEImportException("AP entry id is empty");
         }
         // resolve AP type
         if (entry.getT() == null) {
-            throw new DEImportException("AccessPointEntry type is not set, apeId:" + entry.getId());
+            throw new DEImportException("AP type is not set, apeId:" + entry.getId());
         }
         ApType apType = staticData.getApTypeByCode(entry.getT());
         if (apType == null) {
-            throw new DEImportException("AccessPointEntry has invalid type, apeId:" + entry.getId());
+            throw new DEImportException("AP has invalid type, apeId:" + entry.getId());
         }
-        if (apType.getAddRecord() == null || !apType.getAddRecord()) {
-            throw new DEImportException("AccessPointEntry type is not addable, apeId:" + entry.getId());
+        if (apType.isReadOnly()) {
+            throw new DEImportException("AP type is read only, apeId:" + entry.getId());
         }
         if (partyRelated ? apType.getPartyType() == null : apType.getPartyType() != null) {
-            throw new DEImportException(
-                    "Registry type with defined party type " + (partyRelated ? "must be used" : "can be used only")
-                            + " for party related AccessPointEntry, apeId:" + entry.getId());
+            throw new DEImportException("AP type with defined party type " 
+                            + (partyRelated ? "must be used" : "can be used only")
+                            + " for party related AP entry, apeId:" + entry.getId());
         }
         // create AP
         ApAccessPoint entity = new ApAccessPoint();
         entity.setApType(apType);
         entity.setScope(context.getScope());
+        entity.setCreateChange(context.getCreateChange());
         entity.setUuid(StringUtils.trimToNull(entry.getUuid()));
         return entity;
-    }
-
-    private void processExternalId(ExternalId eid) {
-        ApExternalIdType apEidType = context.getEidType(eid.getT());
-        if (apEidType == null) {
-            throw new DEImportException("External id type not found, apEid=" + eid.getV() + ", code=" + eid.getT());
-        }
-        // create external id
-        ApExternalId entity = new ApExternalId();
-        entity.setCreateChange(context.getCreateChange());
-        entity.setValue(eid.getV());
-        entity.setExternalIdType(apEidType);
-        context.addExternalId(entity, info);
     }
 }

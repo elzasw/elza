@@ -1,127 +1,114 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import cz.tacr.elza.domain.interfaces.Versionable;
-import org.springframework.data.rest.core.annotation.RestResource;
-
+import javax.persistence.Access;
+import javax.persistence.AccessType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.Table;
-import java.io.Serializable;
+
+import cz.tacr.elza.domain.enumeration.StringLength;
 
 @Entity(name = "ap_external_id")
-@Table
-@Inheritance(strategy = InheritanceType.JOINED)
-@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
-public class ApExternalId implements Serializable {
-	@Id
-	@GeneratedValue
-	private Integer externalId;
+public class ApExternalId {
 
-	@Column(length = 50, nullable = false)
-	private String value;
+    public static final String ACCESS_POINT_ID = "accessPointId";
+    public static final String DELETE_CHANGE_ID = "deleteChangeId";
 
-	@ManyToOne(fetch = FetchType.LAZY, targetEntity = ApAccessPoint.class)
-	@JoinColumn(name = "accessPointId", nullable = false)
-	@JsonIgnore
-	private ApAccessPoint accessPoint;
+    @Id
+    @GeneratedValue
+    @Access(AccessType.PROPERTY)
+    private Integer externalId;
 
-	@Column(nullable = false, updatable = false, insertable = false)
-	private Integer accessPointId;
+    @Column(length = StringLength.LENGTH_50, nullable = false)
+    private String value;
 
-	@ManyToOne(fetch = FetchType.LAZY, targetEntity = ApExternalIdType.class)
-	@JoinColumn(name = "externalIdTypeId", nullable = false)
-	@JsonIgnore
-	private ApExternalIdType externalIdType;
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApAccessPoint.class)
+    @JoinColumn(name = "accessPointId", nullable = false)
+    private ApAccessPoint accessPoint;
 
-	@Column(nullable = false, updatable = false, insertable = false)
-	private Integer externalIdTypeId;
+    @Column(nullable = false, updatable = false, insertable = false)
+    private Integer accessPointId;
 
-	@RestResource(exported = false)
-	@ManyToOne(fetch = FetchType.LAZY, targetEntity = ApChange.class)
-	@JoinColumn(name = "createChangeId", nullable = false)
-	protected ApChange createChange;
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApExternalIdType.class)
+    @JoinColumn(name = "externalIdTypeId", nullable = false)
+    private ApExternalIdType externalIdType;
 
-	@Column(name = "createChangeId", nullable = false, updatable = false, insertable = false)
-	protected Integer createChangeId;
+    @Column(nullable = false, updatable = false, insertable = false)
+    private Integer externalIdTypeId;
 
-	@RestResource(exported = false)
-	@ManyToOne(fetch = FetchType.LAZY, targetEntity = ApChange.class)
-	@JoinColumn(name = "deleteChangeId", nullable = true)
-	protected ApChange deleteChange;
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApChange.class)
+    @JoinColumn(name = "createChangeId", nullable = false)
+    private ApChange createChange;
 
-	@Column(name = "deleteChangeId", nullable = true, updatable = false, insertable = false)
-	protected Integer deleteChangeId;
+    @Column(nullable = false, updatable = false, insertable = false)
+    private Integer createChangeId;
 
-	/* Konstanty pro vazby a fieldy. */
-	public static final String EXTERNAL_ID = "externalId";
-	public static final String VALUE = "value";
-	public static final String ACCESS_POINT_ID = "accessPointId";
-	public static final String DELETE_CHANGE_ID = "deleteChangeId";
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApChange.class)
+    @JoinColumn(name = "deleteChangeId", nullable = true)
+    private ApChange deleteChange;
 
-	public Integer getExternalId() {
-		return externalId;
-	}
+    @Column(nullable = true, updatable = false, insertable = false)
+    private Integer deleteChangeId;
 
-	public void setExternalId(Integer externalId) {
-		this.externalId = externalId;
-	}
+    public Integer getExternalId() {
+        return externalId;
+    }
 
-	public String getValue() {
-		return value;
-	}
+    public void setExternalId(Integer externalId) {
+        this.externalId = externalId;
+    }
 
-	public void setValue(String value) {
-		this.value = value;
-	}
+    public String getValue() {
+        return value;
+    }
 
-	public ApAccessPoint getAccessPoint() {
-		return accessPoint;
-	}
+    public void setValue(String value) {
+        this.value = value;
+    }
 
-	public void setAccessPoint(ApAccessPoint accessPoint) {
-		this.accessPoint = accessPoint;
-		this.accessPointId = accessPoint != null ? accessPoint.getAccessPointId() : null;
-	}
+    public ApAccessPoint getAccessPoint() {
+        return accessPoint;
+    }
 
-	public Integer getAccessPointId() {
-		return accessPointId;
-	}
+    public void setAccessPoint(ApAccessPoint accessPoint) {
+        this.accessPoint = accessPoint;
+        this.accessPointId = accessPoint != null ? accessPoint.getAccessPointId() : null;
+    }
 
-	public ApExternalIdType getExternalIdType() {
-		return externalIdType;
-	}
+    public Integer getAccessPointId() {
+        return accessPointId;
+    }
 
-	public void setExternalIdType(ApExternalIdType externalIdType) {
-		this.externalIdType = externalIdType;
-		this.externalIdTypeId = externalIdType != null ? externalIdType.getExternalIdType() : null;
-	}
+    public ApExternalIdType getExternalIdType() {
+        return externalIdType;
+    }
 
-	public Integer getExternalIdTypeId() {
-		return externalIdTypeId;
-	}
+    public void setExternalIdType(ApExternalIdType externalIdType) {
+        this.externalIdType = externalIdType;
+        this.externalIdTypeId = externalIdType != null ? externalIdType.getExternalIdTypeId() : null;
+    }
 
-	public ApChange getCreateChange() {
-		return createChange;
-	}
+    public Integer getExternalIdTypeId() {
+        return externalIdTypeId;
+    }
 
-	public void setCreateChange(ApChange createChange) {
-		this.createChange = createChange;
-	}
+    public ApChange getCreateChange() {
+        return createChange;
+    }
 
-	public ApChange getDeleteChange() {
-		return deleteChange;
-	}
+    public void setCreateChange(ApChange createChange) {
+        this.createChange = createChange;
+    }
 
-	public void setDeleteChange(ApChange deleteChange) {
-		this.deleteChange = deleteChange;
-	}
+    public ApChange getDeleteChange() {
+        return deleteChange;
+    }
+
+    public void setDeleteChange(ApChange deleteChange) {
+        this.deleteChange = deleteChange;
+    }
 }

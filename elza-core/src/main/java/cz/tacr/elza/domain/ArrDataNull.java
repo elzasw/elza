@@ -3,6 +3,8 @@ package cz.tacr.elza.domain;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
+import org.apache.commons.lang3.Validate;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
@@ -14,7 +16,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 public class ArrDataNull extends ArrData {
 
 	public ArrDataNull() {
-
 	}
 
 	protected ArrDataNull(ArrDataNull src) {
@@ -37,6 +38,6 @@ public class ArrDataNull extends ArrData {
     }
     @Override
     public void mergeInternal(final ArrData srcData) {
-        ArrDataNull src = (ArrDataNull)srcData;
+        Validate.isInstanceOf(ArrDataNull.class, srcData);
     }
 }

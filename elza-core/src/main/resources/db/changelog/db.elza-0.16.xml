@@ -193,8 +193,13 @@
 
     <changeSet id="20180205152600" author="fric">
         <addColumn tableName="ap_scope">
-            <column name="language" type="nvarchar(3)"/>
+            <column name="language_id" type="int"/>
         </addColumn>
+        
+        <addForeignKeyConstraint
+                constraintName="fk_scope_language"
+                baseTableName="ap_scope" baseColumnNames="language_id"
+                referencedTableName="sys_language" referencedColumnNames="language_id" onDelete="NO ACTION"/>
     </changeSet>
 
     <changeSet id="20180404152900" author="vanek">
@@ -213,64 +218,37 @@
                 <constraints nullable="false"/>
             </column>
             <column name="complement" type="nvarchar(1000)" />
-            <column name="language" type="char(3)" />
             <column name="preferred_name" type="boolean">
                 <constraints nullable="false"/>
             </column>
+            <column name="language_id" type="int" />
             <column name="access_point_id" type="int">
                 <constraints nullable="false"/>
             </column>
-            <column name="name_type_id" type="int">
-                <constraints nullable="true"/>
-            </column>
         </createTable>
+
+		<addForeignKeyConstraint
+                constraintName="fk_name_language"
+                baseTableName="ap_name" baseColumnNames="language_id"
+                referencedTableName="sys_language" referencedColumnNames="language_id" onDelete="NO ACTION"/>
 
         <insert tableName="db_hibernate_sequences">
             <column name="sequence_name" value="ap_name|name_id"/>
             <column name="next_val" value="1"/>
         </insert>
 
-        <sql>INSERT INTO ap_name (name_id, name, complement, language, preferred_name, access_point_id, name_type_id)
-            SELECT record_id, record, NULL, NULL, TRUE, record_id, NULL
+        <sql>INSERT INTO ap_name (name_id, name, complement, language_id, preferred_name, access_point_id)
+            SELECT record_id, record, NULL, NULL, TRUE, record_id
             FROM ap_record
         </sql>
 
         <sql>INSERT INTO
-            ap_name (name_id, name, complement, language, preferred_name, access_point_id, name_type_id)
-            SELECT (SELECT MAX(name_id) from ap_name) + variant_record_id, record, NULL, NULL, FALSE, record_id, NULL
+            ap_name (name_id, name, complement, language_id, preferred_name, access_point_id)
+            SELECT (SELECT MAX(name_id) from ap_name) + variant_record_id, record, NULL, NULL, FALSE, record_id
             FROM ap_variant_record
         </sql>
 
         <sql>update db_hibernate_sequences set next_val = (select coalesce(max(name_id),0)+1 from ap_name) where sequence_name = 'ap_name|name_id';
-        </sql>
-
-        <!--migrace name_type-->
-        <createTable tableName="ap_name_type">
-            <column name="name_type_id" type="int">
-                <constraints primaryKey="true" nullable="false"/>
-            </column>
-            <column name="code" type="nvarchar(50)">
-                <constraints nullable="false" unique="true"/>
-            </column>
-            <column name="name" type="nvarchar(250)" />
-        </createTable>
-
-        <addForeignKeyConstraint constraintName="fk_name_name_type"
-                                 baseTableName="ap_name" baseColumnNames="name_type_id"
-                                 referencedTableName="ap_name_type" referencedColumnNames="name_type_id"
-                                 onDelete="NO ACTION"/>
-
-        <insert tableName="db_hibernate_sequences">
-            <column name="sequence_name" value="ap_name_type|name_type_id"/>
-            <column name="next_val" value="1"/>
-        </insert>
-
-        <sql>INSERT INTO ap_name_type (name_type_id, code, name)
-            SELECT name_form_type_id, code, name
-            FROM par_party_name_form_type
-        </sql>
-        <sql>
-            update db_hibernate_sequences set next_val = (select coalesce(max(name_type_id),0)+1 from ap_name_type) where sequence_name = 'ap_name_type|name_type_id';
         </sql>
     </changeSet>
 
@@ -331,7 +309,7 @@
 
     <changeSet id="20180226153500" author="fric">
         <createTable tableName="ap_external_id_type">
-            <column name="external_id_type" type="int">
+            <column name="external_id_type_id" type="int">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="code" type="nvarchar(50)">
@@ -348,7 +326,7 @@
             </column>
             <column name="value" type="nvarchar(50)" />
             <column name="external_id_type_id" type="int">
-                <constraints nullable="true" foreignKeyName="fk_external_id_type" references="ap_external_id_type(external_id_type)"/>
+                <constraints nullable="true" foreignKeyName="fk_external_id_type" references="ap_external_id_type(external_id_type_id)"/>
             </column>
             <column name="access_point_id" type="int">
                 <constraints nullable="false" foreignKeyName="fk_external_id_access_point_id" references="ap_access_point(access_point_id)"/>
@@ -363,7 +341,7 @@
             </column>
             <column name="change_date" type="timestamp"/>
             <column name="user_id" type="int"/>
-            <column name="type" type="char(25)"/>
+            <column name="type" type="char(20)"/>
             <column name="external_system_id" type="int">
                 <constraints nullable="true" foreignKeyName="fk_ap_change_external_system" references="ap_external_system(external_system_id)"/>
             </column>
@@ -395,6 +373,23 @@
                 <constraints nullable="true" foreignKeyName="fk_name_delete_change" references="ap_change(change_id)"/>
             </column>
         </addColumn>
+        <addColumn tableName="ap_access_point">
+            <column name="create_change_id" type="int">
+                <constraints nullable="false" foreignKeyName="fk_access_point_create_change" references="ap_change(change_id)"/>
+            </column>
+            <column name="delete_change_id" type="int">
+                <constraints nullable="true" foreignKeyName="fk_access_point_delete_change" references="ap_change(change_id)"/>
+            </column>
+        </addColumn>
+    </changeSet>
+    
+    <changeSet id="20180704132000" author="todt">
+    	<renameColumn newColumnName="read_only" oldColumnName="add_record" tableName="ap_type"/>
+    	<sql>
+            update ap_type set read_only = not read_only where read_only is not null;
+            update ap_type set read_only = false where read_only is null;
+        </sql>
+    	<addNotNullConstraint tableName="ap_type" columnDataType="boolean" columnName="read_only"/>
     </changeSet>
 
 </databaseChangeLog>

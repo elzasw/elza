@@ -284,8 +284,8 @@ public class ParParty extends AbstractVersionableEntity implements IApScope {
 
     @Override
     @JsonIgnore
-    public ApScope getApScope() {
-        return accessPoint.getScope();
+    public Integer getScopeId() {
+        return accessPoint.getScopeId();
     }
 
     /**

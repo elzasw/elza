@@ -1,13 +1,6 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import cz.tacr.elza.api.interfaces.IApScope;
-import cz.tacr.elza.domain.enumeration.StringLength;
-import cz.tacr.elza.domain.interfaces.Versionable;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.springframework.data.rest.core.annotation.RestResource;
+import java.util.List;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;
@@ -16,80 +9,72 @@ import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-import javax.persistence.Table;
-import java.io.Serializable;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
+import cz.tacr.elza.api.interfaces.IApScope;
+import cz.tacr.elza.domain.enumeration.StringLength;
 
 /**
  * Rejstříkové heslo.
- *
- * @author Martin Kužel [<a href="mailto:martin.kuzel@marbes.cz">martin.kuzel@marbes.cz</a>]
- * @since 21.8.2015
  */
 @Entity(name = "ap_access_point")
-@Table
-@Inheritance(strategy = InheritanceType.JOINED)
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ApAccessPoint implements Serializable, IApScope {
+public class ApAccessPoint implements IApScope {
+
+    public static final String ACCESS_POINT_ID = "accessPointId";
+    public static final String UUID = "uuid";
+    public static final String AP_TYPE = "apType";
+    public static final String AP_TYPE_ID = "apTypeId";
+    public static final String SCOPE = "scope";
+    public static final String SCOPE_ID = "scopeId";
+    public static final String NAMES = "names";
+    public static final String DESCRIPTIONS = "descriptions";
+    public static final String DELETE_CHANGE_ID = "deleteChangeId";
 
     @Id
     @GeneratedValue
     @Access(AccessType.PROPERTY)
     private Integer accessPointId;
 
-    @RestResource(exported = false)
+    @Column(length = StringLength.LENGTH_36, nullable = false, unique = true)
+    private String uuid;
+
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApType.class)
-    @JoinColumn(name = "apTypeId", nullable = false)
-    @JsonIgnore
+    @JoinColumn(name = AP_TYPE_ID, nullable = false)
     private ApType apType;
 
     @Column(nullable = false, updatable = false, insertable = false)
     private Integer apTypeId;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApScope.class)
-    @JoinColumn(name = "scopeId", nullable = false)
-    @JsonIgnore
+    @JoinColumn(name = SCOPE_ID, nullable = false)
     private ApScope scope;
 
     @Column(nullable = false, updatable = false, insertable = false)
     private Integer scopeId;
 
-    @Column(length = StringLength.LENGTH_36, nullable = false, unique = true)
-    private String uuid;
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApChange.class)
+    @JoinColumn(name = "createChangeId", nullable = false)
+    private ApChange createChange;
 
-    @Column(nullable = false)
-    private boolean invalid;
+    @Column(nullable = false, updatable = false, insertable = false)
+    private Integer createChangeId;
+
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApChange.class)
+    @JoinColumn(name = DELETE_CHANGE_ID, nullable = true)
+    private ApChange deleteChange;
+
+    @Column(nullable = true, updatable = false, insertable = false)
+    private Integer deleteChangeId;
 
     // without getter/setter only for JPA query
-    @RestResource(exported = false)
     @OneToMany(mappedBy = "accessPoint")
-    @JsonIgnore
     private List<ApName> names;
 
     // without getter/setter only for JPA query
-    @RestResource(exported = false)
     @OneToMany(mappedBy = "accessPoint")
-    @JsonIgnore
     private List<ApDescription> descriptions;
-    
-    /* Konstanty pro vazby a fieldy. */
-    public static final String AP_TYPE = "apType";
-    public static final String AP_TYPE_ID = "apTypeId";
-    public static final String ACCESS_POINT_ID = "accessPointId";
-    public static final String SCOPE = "scope";
-    public static final String SCOPE_ID = "scopeId";
-    public static final String UUID = "uuid";
-    public static final String INVALID = "invalid";
-    public static final String NAMES = "names";
-    public static final String DESCRIPTIONS = "descriptions";
 
     /**
      * ID hesla.
@@ -103,10 +88,28 @@ public class ApAccessPoint implements Serializable, IApScope {
     /**
      * ID hesla.
      *
-     * @param accessPointId id hesla
+     * @param accessPointId
+     *            id hesla
      */
     public void setAccessPointId(final Integer accessPointId) {
         this.accessPointId = accessPointId;
+    }
+
+    /**
+     * @return UUID
+     */
+    public String getUuid() {
+        return uuid;
+    }
+
+    /**
+     * UUID.
+     *
+     * @param uuid
+     *            UUID
+     */
+    public void setUuid(final String uuid) {
+        this.uuid = uuid;
     }
 
     /**
@@ -121,13 +124,18 @@ public class ApAccessPoint implements Serializable, IApScope {
     /**
      * Typ rejstříku.
      *
-     * @param apType typ rejstříku
+     * @param apType
+     *            typ rejstříku
      */
     public void setApType(final ApType apType) {
-        this.apTypeId = apType == null ? null : apType.getApTypeId();
         this.apType = apType;
+        this.apTypeId = apType != null ? apType.getApTypeId() : null;
     }
 
+    public Integer getApTypeId() {
+        return apTypeId;
+    }
+    
     /**
      * @return třída rejstříku
      */
@@ -136,52 +144,33 @@ public class ApAccessPoint implements Serializable, IApScope {
     }
 
     /**
-     * @param scope třída rejstříku
+     * @param scope
+     *            třída rejstříku
      */
     public void setScope(final ApScope scope) {
         this.scope = scope;
         this.scopeId = scope != null ? scope.getScopeId() : null;
     }
 
+    @Override
     public Integer getScopeId() {
         return scopeId;
     }
 
-    @Override
-    public ApScope getApScope() {
-        return scope;
+    public ApChange getCreateChange() {
+        return createChange;
     }
 
-    /**
-     * @return UUID
-     */
-    public String getUuid() {
-        return uuid;
+    public void setCreateChange(ApChange createChange) {
+        this.createChange = createChange;
     }
 
-    /**
-     * UUID.
-     *
-     * @param uuid UUID
-     */
-    public void setUuid(final String uuid) {
-        this.uuid = uuid;
+    public ApChange getDeleteChange() {
+        return deleteChange;
     }
 
-    public boolean isInvalid() {
-        return invalid;
-    }
-
-    public void setInvalid(boolean invalid) {
-        this.invalid = invalid;
-    }
-
-    public Integer getApTypeId() {
-        return apTypeId;
-    }
-
-    public void setApTypeId(final Integer apTypeId) {
-        this.apTypeId = apTypeId;
+    public void setDeleteChange(ApChange deleteChange) {
+        this.deleteChange = deleteChange;
     }
 
     @Override

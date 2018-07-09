@@ -1,8 +1,9 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.springframework.data.annotation.AccessType;
+import java.time.LocalDateTime;
 
+import javax.persistence.Access;
+import javax.persistence.AccessType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -12,16 +13,21 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.Table;
-import java.time.LocalDateTime;
+
+import cz.tacr.elza.domain.enumeration.StringLength;
 
 @Entity(name = "ap_change")
-@Table
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
 public class ApChange {
+    
+    public enum Type {
+        AP_CREATE, AP_DELETE,
+        NAME_CREATE, NAME_UPDATE, NAME_DELETE,
+        AP_IMPORT;
+    }
+    
     @Id
     @GeneratedValue
-    @AccessType(AccessType.Type.PROPERTY)
+    @Access(AccessType.PROPERTY)
     private Integer changeId;
 
     @Column(nullable = false)
@@ -32,7 +38,7 @@ public class ApChange {
     private UsrUser user;
 
     @Enumerated(EnumType.STRING)
-    @Column(length = 25, nullable = true)
+    @Column(length = StringLength.LENGTH_20, nullable = true)
     private ApChange.Type type;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApExternalSystem.class)
@@ -77,9 +83,5 @@ public class ApChange {
 
     public void setExternalSystem(ApExternalSystem externalSystemType) {
         this.externalSystem = externalSystemType;
-    }
-
-    public enum Type {
-        VARIANT_NAME_DELETE, ACCESS_POINT_DELETE, VARIANT_NAME_UPDATE, VARIANT_NAME_CREATE, ACCESS_POINT_CREATE, ACCESS_POINT_UPDATE, AP_IMPORT;
     }
 }

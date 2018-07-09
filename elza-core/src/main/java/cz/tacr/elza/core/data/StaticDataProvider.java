@@ -16,7 +16,6 @@ import cz.tacr.elza.repository.PackageRepository;
 import cz.tacr.elza.repository.PartyNameFormTypeRepository;
 import cz.tacr.elza.repository.PartyTypeComplementTypeRepository;
 import cz.tacr.elza.repository.ApExternalIdTypeRepository;
-import cz.tacr.elza.repository.ApNameTypeRepository;
 import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRoleTypeRepository;
@@ -37,8 +36,6 @@ public class StaticDataProvider {
     private List<RelationType> relationTypes;
 
     private List<ApExternalIdType> apEidTypes;
-
-    private List<ApNameType> apNameTypes;
 
     private List<SysLanguage> sysLanguages;
 
@@ -66,10 +63,8 @@ public class StaticDataProvider {
 
     private Map<String, ApExternalIdType> apEidTypeCodeMap;
 
-    private Map<Integer, ApNameType> apNameTypeIdMap;
-
-    private Map<String, ApNameType> apNameTypeCodeMap;
-
+    private Map<Integer, SysLanguage> sysLanguageIdMap;
+    
     private Map<String, SysLanguage> sysLanguageCodeMap;
 
     StaticDataProvider() {
@@ -101,10 +96,6 @@ public class StaticDataProvider {
 
     public List<ApExternalIdType> getApEidTypes() {
         return apEidTypes;
-    }
-
-    public List<ApNameType> getApNameTypes() {
-        return apNameTypes;
     }
 
     public List<SysLanguage> getSysLanguages() {
@@ -175,16 +166,11 @@ public class StaticDataProvider {
         return apEidTypeCodeMap.get(code);
     }
 
-    public ApNameType getApNameTypeById(Integer id) {
+    public SysLanguage getSysLanguageById(Integer id) {
         Validate.notNull(id);
-        return apNameTypeIdMap.get(id);
+        return sysLanguageIdMap.get(id);
     }
-
-    public ApNameType getApNameTypeByCode(String code) {
-        Validate.notEmpty(code);
-        return apNameTypeCodeMap.get(code);
-    }
-
+    
     public SysLanguage getSysLanguageByCode(String code) {
         Validate.notEmpty(code);
         return sysLanguageCodeMap.get(code);
@@ -205,7 +191,6 @@ public class StaticDataProvider {
         initApTypes(service.apTypeRepository);
         initRelationTypes(service.relationTypeRepository, service.relationTypeRoleTypeRepository);
         initApEidTypes(service.apEidTypeRepository);
-        initApNameTypes(service.apNameTypeRepository);
         initSysLanguages(service.sysLanguageRepository);
     }
 
@@ -315,17 +300,8 @@ public class StaticDataProvider {
 
         // update fields
         this.apEidTypes = Collections.unmodifiableList(eidTypes);
-        this.apEidTypeIdMap = createLookup(eidTypes, ApExternalIdType::getExternalIdType);
+        this.apEidTypeIdMap = createLookup(eidTypes, ApExternalIdType::getExternalIdTypeId);
         this.apEidTypeCodeMap = createLookup(eidTypes, ApExternalIdType::getCode);
-    }
-
-    private void initApNameTypes(ApNameTypeRepository apNameTypeRepository) {
-        List<ApNameType> nameTypes = apNameTypeRepository.findAll();
-
-        // update fields
-        this.apNameTypes = Collections.unmodifiableList(nameTypes);
-        this.apNameTypeIdMap = createLookup(nameTypes, ApNameType::getNameTypeId);
-        this.apNameTypeCodeMap = createLookup(nameTypes, ApNameType::getCode);
     }
 
     private void initSysLanguages(SysLanguageRepository sysLanguageRepository) {
@@ -333,6 +309,7 @@ public class StaticDataProvider {
 
         // update fields
         this.sysLanguages = Collections.unmodifiableList(languages);
+        this.sysLanguageIdMap = createLookup(languages, SysLanguage::getLanguageId);
         this.sysLanguageCodeMap = createLookup(languages, SysLanguage::getCode);
     }
 

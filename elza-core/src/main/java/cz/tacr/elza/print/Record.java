@@ -3,6 +3,8 @@ package cz.tacr.elza.print;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang.NotImplementedException;
+
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApName;
 import cz.tacr.elza.service.vo.ApAccessPointData;
@@ -30,12 +32,12 @@ public class Record {
     private List<String> variantRecords;
 
     private Record(ApAccessPointData apRecord, RecordType recordType) {
-        this.externalId = apRecord.getExternalId().getValue();
         this.recordId = apRecord.getAccessPointId();
         this.record = apRecord.getPreferredName().getName();
         this.characteristics = apRecord.getDescription().getDescription();
         this.recordType = recordType;
-        this.srcNames = apRecord.getVariantRecordList();
+        // TODO: rework initialization
+        throw new NotImplementedException("rework initialization");
     }
 
     /**
@@ -85,8 +87,9 @@ public class Record {
      * Return new instance of Record. Variant names are required (fetched from database if not
      * initialized).
      */
-    public static Record newInstance(ApAccessPoint apRecord, RecordType recordType) {
-        ApAccessPointData apData = new ApAccessPointData(apRecord);
+    public static Record newInstance(ApAccessPoint ap, RecordType recordType) {
+        ApAccessPointData apData = new ApAccessPointData();
+        apData.setAccessPoint(ap);
         Record record = new Record(apData, recordType);
         return record;
     }

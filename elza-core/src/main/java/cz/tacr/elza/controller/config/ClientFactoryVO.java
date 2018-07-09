@@ -808,7 +808,7 @@ public class ClientFactoryVO {
         if (result != null) {
             return result;
         }
-        boolean addRecord = apType.getAddRecord() && ObjectUtils.equals(apType.getPartyType(), parPartyType);
+        boolean addRecord = !apType.isReadOnly() && ObjectUtils.equals(apType.getPartyType(), parPartyType);
         result = mapper.map(apType, ApTypeVO.class);
         result.setAddRecord(addRecord);
         result.setRelationRoleTypIds(registryRolesMap.get(apType.getApTypeId()));

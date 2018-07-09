@@ -8,7 +8,7 @@ import cz.tacr.elza.dataexchange.input.DEImportException;
 import cz.tacr.elza.dataexchange.input.context.ImportContext;
 import cz.tacr.elza.domain.ApDescription;
 import cz.tacr.elza.domain.ApName;
-import cz.tacr.elza.domain.ApNameType;
+import cz.tacr.elza.domain.SysLanguage;
 import cz.tacr.elza.schema.v2.AccessPoint;
 import cz.tacr.elza.schema.v2.AccessPointName;
 import cz.tacr.elza.schema.v2.AccessPointNames;
@@ -60,20 +60,19 @@ public class AccessPointProcessor extends AccessPointEntryProcessor {
         if (StringUtils.isEmpty(name.getN())) {
             throw new DEImportException("AP name without value, apeId=" + entryId);
         }
-        if (!context.isValidLanguage(name.getL())) {
-            throw new DEImportException("AP name has invalid language apeId=" + entryId + ", code=" + name.getL());
-        }
-        ApNameType nameType = context.getNameType(name.getT());
-        if (nameType == null) {
-            throw new DEImportException("AP name type not found, apeId=" + entryId + ", code=" + name.getT());
+        SysLanguage lang = null;
+        if (StringUtils.isNotEmpty(name.getL())) {
+            lang = context.getSysLanguageByCode(name.getL());
+            if (lang == null) {
+                throw new DEImportException("AP name has invalid language apeId=" + entryId + ", code=" + name.getL());
+            }   
         }
         // create name
         ApName entity = new ApName();
         entity.setComplement(name.getCpl());
         entity.setCreateChange(context.getCreateChange());
-        entity.setLanguage(name.getL());
+        entity.setLanguage(lang);
         entity.setName(name.getN());
-        entity.setNameType(nameType);
         return entity;
     }
 }

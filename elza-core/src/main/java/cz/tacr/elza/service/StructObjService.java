@@ -60,6 +60,7 @@ import cz.tacr.elza.repository.StructureDefinitionRepository;
 import cz.tacr.elza.repository.StructureExtensionDefinitionRepository;
 import cz.tacr.elza.repository.StructuredItemRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
+import cz.tacr.elza.service.GroovyScriptService.GroovyScriptFile;
 import cz.tacr.elza.service.event.CacheInvalidateEvent;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventStructureDataChange;
@@ -459,15 +460,10 @@ public class StructObjService {
         RulStructuredType structureType = structureData.getStructuredType();
         File groovyFile = findGroovyFile(structureType, structureData.getFund());
 
-        GroovyScriptService.GroovyScriptFile groovyScriptFile;
-        try {
-            groovyScriptFile = groovyScriptMap.get(groovyFile);
-            if (groovyScriptFile == null) {
-                groovyScriptFile = GroovyScriptService.GroovyScriptFile.createFromFile(groovyFile);
-                groovyScriptMap.put(groovyFile, groovyScriptFile);
-            }
-        } catch (IOException e) {
-            throw new SystemException("Problém při zpracování groovy scriptu", e);
+        GroovyScriptService.GroovyScriptFile groovyScriptFile = groovyScriptMap.get(groovyFile);
+        if (groovyScriptFile == null) {
+            groovyScriptFile = new GroovyScriptFile(groovyFile);
+            groovyScriptMap.put(groovyFile, groovyScriptFile);
         }
 
         Map<String, Object> input = new HashMap<>();

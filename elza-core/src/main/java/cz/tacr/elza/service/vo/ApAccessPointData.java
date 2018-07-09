@@ -1,72 +1,25 @@
 package cz.tacr.elza.service.vo;
 
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+
+import org.apache.commons.lang3.Validate;
+
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApDescription;
 import cz.tacr.elza.domain.ApExternalId;
-import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApName;
 
-import java.util.List;
-
 public class ApAccessPointData {
-    private ApExternalId externalId;
-    private ApName preferredName;
-    private ApDescription characteristics;
-    private List<ApName> variantRecordList;
-    private ApExternalSystem externalSystem;
+
+    private final LinkedList<ApName> names = new LinkedList<>();
+
+    private final List<ApExternalId> externalIds = new ArrayList<>();
+
     private ApAccessPoint accessPoint;
 
-    public ApAccessPointData(){
-    }
-
-    public ApAccessPointData(ApAccessPoint accessPoint) {
-        this.accessPoint = accessPoint;
-    }
-
-    public ApExternalId getExternalId() {
-        return externalId;
-    }
-
-    public void setExternalId(ApExternalId externalId) {
-        this.externalId = externalId;
-    }
-
-    public Integer getAccessPointId() {
-        return accessPoint.getAccessPointId();
-    }
-
-    public ApName getPreferredName() {
-        return preferredName;
-    }
-
-    public void setPreferredName(ApName preferredName) {
-        this.preferredName = preferredName;
-        this.preferredName.setPreferredName(Boolean.TRUE);
-    }
-
-    public ApDescription getDescription() {
-        return characteristics;
-    }
-
-    public List<ApName> getVariantRecordList() {
-        return variantRecordList;
-    }
-
-    public void setVariantNameList(List<ApName> variantRecordList) {
-        this.variantRecordList = variantRecordList;
-    }
-
-    public ApExternalSystem getExternalSystem() {
-        return externalSystem;
-    }
-
-    public void setExternalSystem(ApExternalSystem externalSystem) {
-        this.externalSystem = externalSystem;
-    }
-
-    public void setCharacteristics(ApDescription characteristics) {
-        this.characteristics = characteristics;
-    }
+    private ApDescription description;
 
     public ApAccessPoint getAccessPoint() {
         return accessPoint;
@@ -74,5 +27,48 @@ public class ApAccessPointData {
 
     public void setAccessPoint(ApAccessPoint accessPoint) {
         this.accessPoint = accessPoint;
+    }
+
+    public Integer getAccessPointId() {
+        return accessPoint.getAccessPointId();
+    }
+
+    public ApDescription getDescription() {
+        return description;
+    }
+
+    public void setDescription(ApDescription description) {
+        this.description = description;
+    }
+
+    public List<ApName> getNames() {
+        return names;
+    }
+
+    public void addName(ApName name) {
+        if (name.isPreferredName()) {
+            Validate.isTrue(names.isEmpty() || !names.getFirst().isPreferredName());
+            names.addFirst(name);
+        } else {
+            names.add(name);
+        }
+    }
+    
+    public ApName getPreferredName() {
+        if (names.size() > 0) {
+            ApName name = names.getFirst();
+            if (name.isPreferredName()) {
+                return name;
+            }
+        }
+        return null;
+    }
+
+    public List<ApExternalId> getExternalIds() {
+        return externalIds;
+    }
+
+    public void addExternalId(ApExternalId externalId) {
+        externalIds.add(externalId);
     }
 }

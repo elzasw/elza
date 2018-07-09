@@ -203,6 +203,7 @@ import ma.glasnost.orika.converter.builtin.PassThroughConverter;
 import ma.glasnost.orika.impl.DefaultMapperFactory;
 import ma.glasnost.orika.metadata.Type;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -699,9 +700,9 @@ public class ConfigMapperConfiguration {
                                         final ApAccessPointVO apAccessPointVO,
                                         final MappingContext context) {
                         apAccessPointVO.setApTypeId(apAccessPoint.getApType().getApTypeId());
-                        apAccessPointVO.setAddRecord(apAccessPoint.getApType().getAddRecord());
+                        apAccessPointVO.setAddRecord(!apAccessPoint.getApType().isReadOnly());
                         apAccessPointVO.setScopeId(apAccessPoint.getScope().getScopeId());
-                        apAccessPointVO.setInvalid(apAccessPoint.isInvalid());
+                        apAccessPointVO.setInvalid(apAccessPoint.getDeleteChange() != null);
                     }
 
                     @Override
@@ -733,15 +734,18 @@ public class ConfigMapperConfiguration {
                                         final ApAccessPointVO apAccessPointVO,
                                         final MappingContext context) {
                         apAccessPointVO.setApTypeId(apAccessPoint.getAccessPoint().getApTypeId());
-                        apAccessPointVO.setAddRecord(apAccessPoint.getAccessPoint().getApType().getAddRecord());
+                        apAccessPointVO.setAddRecord(!apAccessPoint.getAccessPoint().getApType().isReadOnly());
                         apAccessPointVO.setScopeId(apAccessPoint.getAccessPoint().getScope().getScopeId());
-                        apAccessPointVO.setInvalid(apAccessPoint.getAccessPoint().isInvalid());
+                        apAccessPointVO.setInvalid(apAccessPoint.getAccessPoint().getDeleteChange() != null);
                         apAccessPointVO.setCharacteristics(apAccessPoint.getDescription().getDescription());
                         apAccessPointVO.setRecord(apAccessPoint.getPreferredName().getName());
                         apAccessPointVO.setUuid(apAccessPoint.getAccessPoint().getUuid());
-                        if (apAccessPoint.getExternalId() != null) {
-                            apAccessPointVO.setExternalId(apAccessPoint.getExternalId().getValue());
-                        }
+                        
+                        // TODO: nutno dořešit přenos EID na klienta
+                        throw new NotImplementedException("nutno dořešit přenos EID na klienta");
+                        // if (apAccessPoint.getExternalId() != null) {
+                        //     apAccessPointVO.setExternalId(apAccessPoint.getExternalId().getValue());
+                        // }
                     }
 
                     @Override
@@ -769,13 +773,14 @@ public class ConfigMapperConfiguration {
                         if(StringUtils.isNotBlank(apAccessPointVO.getCharacteristics())){
                             ApDescription description = new ApDescription();
                             description.setDescription(apAccessPointVO.getCharacteristics());
-                            apAccessPointData.setCharacteristics(description);
+                            apAccessPointData.setDescription(description);
                         }
 
                         if(StringUtils.isNotBlank(apAccessPointVO.getRecord())){
                             ApName name = new ApName();
                             name.setName(apAccessPointVO.getRecord());
-                            apAccessPointData.setPreferredName(name);
+                            name.setPreferredName(true);
+                            apAccessPointData.addName(name);
                         }
                     }
                 }).byDefault().register();
@@ -828,6 +833,8 @@ public class ConfigMapperConfiguration {
                         if (apType.getPartyType() != null) {
                             apTypeVO.setPartyTypeId(apType.getPartyType().getPartyTypeId());
                         }
+                        
+                        apTypeVO.setAddRecord(!apType.isReadOnly());
                     }
 
                     @Override
@@ -838,6 +845,10 @@ public class ConfigMapperConfiguration {
                             ParPartyType partyType = new ParPartyType();
                             partyType.setPartyTypeId(apTypeVO.getPartyTypeId());
                             apType.setPartyType(partyType);
+                        }
+                        
+                        if (apTypeVO.getAddRecord() != null) {
+                            apType.setReadOnly(!apTypeVO.getAddRecord());
                         }
                     }
                 }).field("apTypeId", "id").byDefault()

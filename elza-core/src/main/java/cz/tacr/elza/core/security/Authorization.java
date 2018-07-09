@@ -5,7 +5,6 @@ import java.lang.reflect.Parameter;
 import java.util.Arrays;
 import java.util.List;
 
-import cz.tacr.elza.repository.ApAccessPointRepository;
 import org.apache.commons.collections.CollectionUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -18,8 +17,8 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
-import cz.tacr.elza.api.interfaces.IArrFund;
 import cz.tacr.elza.api.interfaces.IApScope;
+import cz.tacr.elza.api.interfaces.IArrFund;
 import cz.tacr.elza.core.security.AuthParam.Type;
 import cz.tacr.elza.core.security.Authorization.MethodParamBasedAccess.PermissionResult;
 import cz.tacr.elza.domain.UsrGroup;
@@ -28,6 +27,7 @@ import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.AccessDeniedException;
 import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.UserRepository;
@@ -315,21 +315,21 @@ public class Authorization {
 			if (value instanceof Integer) {
 				return (Integer) value;
 			} else if (value instanceof IApScope) {
-				return ((IApScope) value).getApScope().getScopeId();
+				return ((IApScope) value).getScopeId();
 			}
 			break;
 		case PARTY:
 			if (value instanceof Integer) {
-				return partyRepository.getOneCheckExist((Integer) value).getApScope().getScopeId();
+				return partyRepository.getOneCheckExist((Integer) value).getScopeId();
 			} else if (value instanceof IApScope) {
-				return ((IApScope) value).getApScope().getScopeId();
+				return ((IApScope) value).getScopeId();
 			}
 			break;
-		case REGISTRY:
+		case AP:
 			if (value instanceof Integer) {
-				return accessPointRepository.getOneCheckExist((Integer) value).getApScope().getScopeId();
+				return accessPointRepository.getOneCheckExist((Integer) value).getScopeId();
 			} else if (value instanceof IApScope) {
-				return ((IApScope) value).getApScope().getScopeId();
+				return ((IApScope) value).getScopeId();
 			}
 			break;
 		}

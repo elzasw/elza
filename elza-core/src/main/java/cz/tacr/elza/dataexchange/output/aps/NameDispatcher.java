@@ -9,7 +9,7 @@ import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.dataexchange.output.loaders.LoadDispatcher;
 import cz.tacr.elza.dataexchange.output.loaders.NestedLoadDispatcher;
 import cz.tacr.elza.domain.ApName;
-import cz.tacr.elza.domain.ApNameType;
+import cz.tacr.elza.domain.SysLanguage;
 
 public class NameDispatcher extends NestedLoadDispatcher<ApName> {
 
@@ -28,10 +28,12 @@ public class NameDispatcher extends NestedLoadDispatcher<ApName> {
 
     @Override
     public void onLoad(ApName result) {
-        // init name type
-        ApNameType type = staticData.getApNameTypeById(result.getNameTypeId());
-        Validate.notNull(type);
-        result.setNameType(type);
+        // init name language if present
+        if (result.getLanguageId() != null) {
+            SysLanguage lang = staticData.getSysLanguageById(result.getLanguageId());
+            Validate.notNull(lang);
+            result.setLanguage(lang);
+        }
         // set result
         names.add(result);
     }

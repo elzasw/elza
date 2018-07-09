@@ -35,7 +35,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.Assert;
 
 import cz.tacr.elza.ElzaCoreTest;
-import cz.tacr.elza.api.ApExternalSystem;
+import cz.tacr.elza.api.ApExternalSystemType;
 import cz.tacr.elza.common.XmlUtils;
 import cz.tacr.elza.common.security.NoCheckTrustManager;
 import cz.tacr.elza.controller.AbstractControllerTest;
@@ -106,7 +106,7 @@ public class InterpiTest extends AbstractControllerTest {
         externalSystem.setCode("INTERPI");
         externalSystem.setName("INTERPI");
         externalSystem.setPassword(password);
-        externalSystem.setType(ApExternalSystem.INTERPI);
+        externalSystem.setType(ApExternalSystemType.INTERPI);
         externalSystem.setUrl(url);
         externalSystem.setUsername(username);
 

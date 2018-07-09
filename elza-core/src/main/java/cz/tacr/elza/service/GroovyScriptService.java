@@ -9,7 +9,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import cz.tacr.elza.domain.ApAccessPoint;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.Validate;
 import org.codehaus.groovy.runtime.InvokerHelper;
@@ -83,7 +82,8 @@ public class GroovyScriptService {
      * @param complementTypes available complement types for party type
      * @return vytvořené rejstříkové heslo s nastavenými variantními hesly
      */
-    public ApConvResult convertPartyToAp(final ParParty party, final Collection<ParComplementType> complementTypes) {
+    public ApConvResult convertPartyToAp(final ParParty party, 
+                                         final Collection<ParComplementType> complementTypes) {
         Map<Integer, ParComplementType> complementTypeMap = ElzaTools.createEntityMap(complementTypes,
                 ParComplementType::getComplementTypeId);
 
@@ -138,7 +138,7 @@ public class GroovyScriptService {
 
         private long lastModified = -1;
 
-        private GroovyScriptFile(File scriptFile) {
+        public GroovyScriptFile(File scriptFile) {
             this.scriptFile = Validate.notNull(scriptFile);
         }
 
@@ -160,35 +160,31 @@ public class GroovyScriptService {
         private synchronized Script createScript(Binding variables) throws IOException {
             long fileLastModified = scriptFile.lastModified();
             if (lastModified < fileLastModified) {
-                scriptClass = compileClass(scriptFile);
+                scriptClass = parseClass(scriptFile);
                 lastModified = fileLastModified;
                 LOG.info("Groovy script recompiled, source:" + scriptFile);
             }
             return InvokerHelper.createScript(scriptClass, variables);
         }
 
-        private static Class<?> compileClass(File scriptFile) throws IOException {
+        private static Class<?> parseClass(File scriptFile) throws IOException {
             GroovyShell shell = new GroovyShell();
             GroovyClassLoader loader = shell.getClassLoader();
             GroovyCodeSource source = new GroovyCodeSource(scriptFile);
             return loader.parseClass(source, false);
         }
 
-        private static GroovyScriptFile create(Resource resource, Path scriptsDir) throws IOException {
+        public static GroovyScriptFile create(Resource resource, Path destDir) throws IOException {
             String fileName = resource.getFilename();
             Validate.notBlank(fileName);
 
-            File scriptFile = scriptsDir.resolve(fileName).toFile();
+            File scriptFile = destDir.resolve(fileName).toFile();
 
             long resourceLM = resource.lastModified();
             if (!scriptFile.exists() || resourceLM > scriptFile.lastModified()) {
                 FileUtils.copyInputStreamToFile(resource.getInputStream(), scriptFile);
                 scriptFile.setLastModified(resourceLM);
             }
-            return new GroovyScriptFile(scriptFile);
-        }
-
-        public static GroovyScriptFile createFromFile(File scriptFile) throws IOException {
             return new GroovyScriptFile(scriptFile);
         }
     }

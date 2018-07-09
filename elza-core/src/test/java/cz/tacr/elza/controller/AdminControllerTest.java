@@ -1,7 +1,7 @@
 package cz.tacr.elza.controller;
 
 import com.jayway.restassured.response.Response;
-import cz.tacr.elza.api.ApExternalSystem;
+import cz.tacr.elza.api.ApExternalSystemType;
 import cz.tacr.elza.controller.vo.ApExternalSystemVO;
 import cz.tacr.elza.controller.vo.ArrDigitalRepositoryVO;
 import cz.tacr.elza.controller.vo.ArrDigitizationFrontdeskVO;
@@ -58,7 +58,7 @@ public class AdminControllerTest extends AbstractControllerTest {
         ApExternalSystemVO externalSystemVO = new ApExternalSystemVO();
         externalSystemVO.setCode("TST3");
         externalSystemVO.setName("Test 3");
-        externalSystemVO.setType(ApExternalSystem.INTERPI);
+        externalSystemVO.setType(ApExternalSystemType.INTERPI);
 
         SysExternalSystemVO externalSystemCreatedVO = createExternalSystem(externalSystemVO);
         Assert.notNull(externalSystemCreatedVO.getId());

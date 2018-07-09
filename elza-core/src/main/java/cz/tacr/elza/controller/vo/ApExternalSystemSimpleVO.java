@@ -1,7 +1,7 @@
 package cz.tacr.elza.controller.vo;
 
 
-import cz.tacr.elza.api.ApExternalSystem;
+import cz.tacr.elza.api.ApExternalSystemType;
 
 /**
  * VO pro externí systém.
@@ -11,13 +11,13 @@ import cz.tacr.elza.api.ApExternalSystem;
  */
 public class ApExternalSystemSimpleVO extends SysExternalSystemSimpleVO {
 
-    private ApExternalSystem type;
+    private ApExternalSystemType type;
 
-    public ApExternalSystem getType() {
+    public ApExternalSystemType getType() {
         return type;
     }
 
-    public void setType(final ApExternalSystem type) {
+    public void setType(final ApExternalSystemType type) {
         this.type = type;
     }
 

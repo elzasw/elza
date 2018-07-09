@@ -93,11 +93,6 @@ At least one name have to be defined.</xs:documentation>
 				<xs:documentation>Name of access point</xs:documentation>
 			</xs:annotation>
 		</xs:attribute>
-		<xs:attribute name="t" use="optional" type="e:AccessPointNameType">
-			<xs:annotation>
-				<xs:documentation>Type of name</xs:documentation>
-			</xs:annotation>
-		</xs:attribute>
 		<xs:attribute name="cpl" use="optional" type="xs:string">
 			<xs:annotation>
 				<xs:documentation>Complement</xs:documentation>

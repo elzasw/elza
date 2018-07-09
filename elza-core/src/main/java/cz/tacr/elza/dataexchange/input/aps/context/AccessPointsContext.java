@@ -1,12 +1,10 @@
 package cz.tacr.elza.dataexchange.input.aps.context;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.apache.commons.collections4.MultiValuedMap;
-import org.apache.commons.lang3.StringUtils;
 
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.dataexchange.input.ApChangeHolder;
@@ -24,8 +22,8 @@ import cz.tacr.elza.domain.ApExternalId;
 import cz.tacr.elza.domain.ApExternalIdType;
 import cz.tacr.elza.domain.ApFulltextProviderImpl;
 import cz.tacr.elza.domain.ApName;
-import cz.tacr.elza.domain.ApNameType;
 import cz.tacr.elza.domain.ApScope;
+import cz.tacr.elza.domain.SysLanguage;
 import cz.tacr.elza.service.ArrangementService;
 
 /**
@@ -85,48 +83,40 @@ public class AccessPointsContext {
         return staticData.getApEidTypeByCode(code);
     }
 
-    public ApNameType getNameType(String code) {
-        return staticData.getApNameTypeByCode(code);
-    }
-
-    /**
-     * @return True when value is valid language defined as 3 letters ISO code in
-     *         SysLanguage table. Empty language is also valid.
-     */
-    public boolean isValidLanguage(String lang) {
-        if (StringUtils.isEmpty(lang)) {
-            return true;
-        }
-        return staticData.getSysLanguageByCode(lang) != null;
+    public SysLanguage getSysLanguageByCode(String code) {
+        return staticData.getSysLanguageByCode(code);
     }
 
     /**
      * Add access point for storage
      *
-     * @param ap
+     * @param entity
      *            access point to be saved
      * @param entryId
      *            import id of the access point
-     * @param parentAPInfo
-     *            Parent information
+     * @param eids
+     *            AP external ids, can be null
      * @return Return access point import info
      */
-    public AccessPointInfo addAccessPoint(ApAccessPoint entity, String entryId,
-                                          MultiValuedMap<String, String> eidTypeValueMap) {
+    public AccessPointInfo addAccessPoint(ApAccessPoint entity, String entryId, Collection<ApExternalId> eids) {
         AccessPointInfo info = new AccessPointInfo(entity.getApType());
         if (entryIdApInfoMap.putIfAbsent(entryId, info) != null) {
             throw new DEImportException("Access point has duplicate id, apeId:" + entryId);
         }
         // add to queue
-        apQueue.add(new AccessPointWrapper(entity, info, eidTypeValueMap, arrangementService));
+        apQueue.add(new AccessPointWrapper(entity, info, eids, arrangementService));
         info.onEntityQueued();
         if (apQueue.size() >= batchSize) {
             storeAccessPoints();
         }
+        // add all external ids to queue
+        if (eids != null) {
+            eids.forEach(eid -> addExternalId(eid, info));
+        }
         return info;
     }
 
-    public void addExternalId(ApExternalId entity, AccessPointInfo apInfo) {
+    private void addExternalId(ApExternalId entity, AccessPointInfo apInfo) {
         eidQueue.add(new ApExternalIdWrapper(entity, apInfo));
         apInfo.onEntityQueued();
         if (eidQueue.size() >= batchSize) {
@@ -143,7 +133,7 @@ public class AccessPointsContext {
     }
 
     public void addName(ApName entity, AccessPointInfo apInfo) {
-        if (Boolean.TRUE.equals(entity.getPreferredName())) {
+        if (entity.isPreferredName()) {
             String fulltext = ApFulltextProviderImpl.createFulltext(entity);
             apInfo.setFulltext(fulltext);
         }

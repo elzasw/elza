@@ -1,38 +1,34 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import cz.tacr.elza.domain.interfaces.Versionable;
-
+import javax.persistence.Access;
+import javax.persistence.AccessType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
-import javax.persistence.Table;
-import java.io.Serializable;
+
+import cz.tacr.elza.domain.enumeration.StringLength;
 
 @Entity(name = "ap_external_id_type")
-@Table
-@Inheritance(strategy = InheritanceType.JOINED)
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ApExternalIdType implements Serializable {
+public class ApExternalIdType {
+
     @Id
     @GeneratedValue
-    private Integer externalIdType;
+    @Access(AccessType.PROPERTY)
+    private Integer externalIdTypeId;
 
-    @Column(length = 20, nullable = false, unique = true)
+    @Column(length = StringLength.LENGTH_20, nullable = false, unique = true)
     private String code;
 
-    @Column(length = 20, nullable = false)
+    @Column(length = StringLength.LENGTH_20, nullable = false)
     private String name;
 
-    public Integer getExternalIdType() {
-        return externalIdType;
+    public Integer getExternalIdTypeId() {
+        return externalIdTypeId;
     }
 
-    public void setExternalIdType(Integer externalIdType) {
-        this.externalIdType = externalIdType;
+    public void setExternalIdTypeId(Integer externalIdTypeId) {
+        this.externalIdTypeId = externalIdTypeId;
     }
 
     public String getCode() {

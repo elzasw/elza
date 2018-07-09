@@ -5,7 +5,6 @@ import java.util.List;
 
 import cz.tacr.elza.print.Node;
 import cz.tacr.elza.print.Output;
-import cz.tacr.elza.print.Structured;
 import cz.tacr.elza.print.item.Item;
 
 /**

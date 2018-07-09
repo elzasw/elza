@@ -22,8 +22,7 @@ public interface PartyRepository extends ElzaJpaRepository<ParParty, Integer>, P
      * @return záznamy patřící danému záznamu v rejstříku
      */
     @Query("SELECT ap FROM par_party ap JOIN ap.accessPoint r WHERE r.accessPointId = ?1")
-    List<ParParty> findParPartyByAccessPointId(Integer accessPointId);
-
+    ParParty findParPartyByAccessPointId(Integer accessPointId);
 
     /**
      * Najde seznam osob podle rejstříkových hesel.

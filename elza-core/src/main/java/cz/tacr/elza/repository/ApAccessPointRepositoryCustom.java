@@ -27,8 +27,7 @@ public interface ApAccessPointRepositoryCustom {
                                                   @Nullable Collection<Integer> apTypeIds,
                                                   Integer firstResult,
                                                   Integer maxResults,
-                                                  Set<Integer> scopeIdsForSearch,
-                                                  Boolean excludeInvalid);
+                                                  Set<Integer> scopeIdsForSearch);
 
 
     /**
@@ -40,5 +39,5 @@ public interface ApAccessPointRepositoryCustom {
      * @param excludeInvalid
      * @return celkový počet záznamů, který je v db za dané parametry
      */
-    long findApAccessPointByTextAndTypeCount(String searchRecord, Collection<Integer> apTypeIds, Set<Integer> scopeIds, boolean excludeInvalid);
+    long findApAccessPointByTextAndTypeCount(String searchRecord, Collection<Integer> apTypeIds, Set<Integer> scopeIds);
 }

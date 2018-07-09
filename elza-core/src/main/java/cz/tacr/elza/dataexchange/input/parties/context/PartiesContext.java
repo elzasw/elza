@@ -173,11 +173,13 @@ public class PartiesContext {
         // TODO: clear loaded entities by groovy
         // add converted description and names
         AccessPointInfo apInfo = partyInfo.getApInfo();
-        ApDescription apDesc = convResult.createDesc(apContext.getCreateChange());
+        ApDescription apDesc = convResult.createDesc();
         if (apDesc != null) {
+            apDesc.setCreateChange(apContext.getCreateChange());
             apContext.addDescription(apDesc, apInfo);
         }
-        for (ApName name : convResult.createNames(apContext.getCreateChange())) {
+        for (ApName name : convResult.createNames()) {
+            name.setCreateChange(apContext.getCreateChange());
             apContext.addName(name, apInfo);
         }
     }

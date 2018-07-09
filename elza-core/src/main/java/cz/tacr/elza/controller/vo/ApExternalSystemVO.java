@@ -1,6 +1,7 @@
 package cz.tacr.elza.controller.vo;
 
-import cz.tacr.elza.api.ApExternalSystem;
+import cz.tacr.elza.api.ApExternalSystemType;
+import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.SysExternalSystem;
 
 /**
@@ -9,19 +10,19 @@ import cz.tacr.elza.domain.SysExternalSystem;
  */
 public class ApExternalSystemVO extends SysExternalSystemVO {
 
-    private ApExternalSystem type;
+    private ApExternalSystemType type;
 
-    public ApExternalSystem getType() {
+    public ApExternalSystemType getType() {
         return type;
     }
 
-    public void setType(final ApExternalSystem type) {
+    public void setType(final ApExternalSystemType type) {
         this.type = type;
     }
 
     @Override
     public SysExternalSystem createEntity() {
-        cz.tacr.elza.domain.ApExternalSystem entity = new cz.tacr.elza.domain.ApExternalSystem();
+        ApExternalSystem entity = new ApExternalSystem();
         entity.setType(type);
         this.fillEntity(entity);
         return entity;

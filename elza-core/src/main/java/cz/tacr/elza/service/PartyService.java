@@ -20,6 +20,7 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.party.ApConvResult;
 import cz.tacr.elza.service.vo.ApAccessPointData;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.NotImplementedException;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -160,9 +161,7 @@ public class PartyService {
     public ParParty findParPartyByAccessPoint(final ApAccessPoint record) {
         Assert.notNull(record, "Rejstříkové heslo musí být vyplněno");
 
-
-        List<ParParty> recordParties = partyRepository.findParPartyByAccessPointId(record.getAccessPointId());
-        return recordParties.isEmpty() ? null : recordParties.get(0);
+        return partyRepository.findParPartyByAccessPointId(record.getAccessPointId());
     }
 
     /**
@@ -204,7 +203,7 @@ public class PartyService {
                                                  final Integer firstResult,
                                                  final Integer maxResults,
                                                  @Nullable final ArrFund fund,
-                                                 @Nullable final Integer scopeId, Boolean excludeInvalid) {
+                                                 @Nullable final Integer scopeId) {
         Set<Integer> scopeIdsForSearch = accessPointService.getScopeIdsForSearch(fund, scopeId);
 
         Set<Integer> apTypesIds = null;
@@ -213,7 +212,7 @@ public class PartyService {
         }
 
         return partyRepository.findPartyByTextAndType(searchRecord, partyTypeId, apTypesIds, firstResult,
-                maxResults, scopeIdsForSearch, true);
+                maxResults, scopeIdsForSearch);
     }
 
     private Set<Integer> find(final Integer itemSpecId) {
@@ -242,8 +241,7 @@ public class PartyService {
                                             final Integer partyTypeId,
                                             final Integer itemSpecId,
                                             @Nullable final ArrFund fund,
-                                            @Nullable final Integer scopeId,
-                                            @Nullable final Boolean excludeInvalid){
+                                            @Nullable final Integer scopeId){
         Set<Integer> scopeIdsForSearch = accessPointService.getScopeIdsForSearch(fund, scopeId);
 
 
@@ -253,11 +251,13 @@ public class PartyService {
         }
 
         return partyRepository.findPartyByTextAndTypeCount(searchRecord, partyTypeId, apTypesIds,
-                scopeIdsForSearch, excludeInvalid);
+                scopeIdsForSearch);
     }
 
     /**
      * Uložení osoby a všech navázaných dat, která musejí být při ukládání vyplněna.
+     * Relace se neukládají.
+     * 
      * @param newParty nová osoba s navázanými daty
      * @return uložená osoba
      */
@@ -278,6 +278,7 @@ public class PartyService {
             saveParty = partyRepository.findOne(newParty.getPartyId());
             Assert.notNull(saveParty, "Osoba neexistuje");
 
+            // TODO: prepracovat - kopirovat rucne
             BeanUtils.copyProperties(newParty, saveParty, "partyGroupIdentifiers", "record",
                     "preferredName", "from", "to", "partyNames", "partyCreators", "relations");
         }
@@ -332,10 +333,14 @@ public class PartyService {
         List<ParComplementType> complementTypes = complementTypeRepository.findByPartyType(party.getPartyType());
         ApConvResult convResult = groovyScriptService.convertPartyToAp(party, complementTypes);
 
-        List<ApName> apNames = convResult.createNames(null);
-        ApDescription apDesc = convResult.createDesc(null);
+        List<ApName> apNames = convResult.createNames();
+        ApDescription apDesc = convResult.createDesc();
 
-        // TODO: rework ApAccessPointData
+        
+        
+        // TODO: predelat aktualizaci AP
+        throw new NotImplementedException("predelat aktualizaci AP");
+        /*
         ApAccessPointData recordFromGroovy = new ApAccessPointData();
         recordFromGroovy.setAccessPoint(new ApAccessPoint());
         recordFromGroovy.setCharacteristics(apDesc);
@@ -362,7 +367,7 @@ public class PartyService {
         //smazání a uložení nových variantních hesel
         List<ApName> oldVariants = apNameRepository.findVariantNamesByAccessPointId(savedRecord);
 
-        ApChange change = accessPointService.createChange(ApChange.Type.VARIANT_NAME_UPDATE);
+        ApChange change = accessPointService.createChange(ApChange.Type.NAME_UPDATE);
 
         oldVariants.forEach(apName -> apName.setDeleteChange(change));
         apNameRepository.save(oldVariants);
@@ -370,7 +375,7 @@ public class PartyService {
         for (ApName variantRecord : variantRecords) {
             variantRecord.setAccessPoint(savedRecord);
             accessPointService.saveVariantName(variantRecord, change);
-        }
+        }*/
     }
 
 
@@ -645,12 +650,14 @@ public class PartyService {
 
             eventNotificationService.publishEvent(new EventId(EventType.PARTY_DELETE, party.getPartyId()));
             partyRepository.delete(party);
-            accessPointService.deleteAccessPoint(party.getAccessPoint(), false);
+            accessPointService.deleteAccessPoint(party.getAccessPointId(), false);
         } else {
-            final ApAccessPoint record = party.getAccessPoint();
+            // TODO: nepouzivat slozite nacitani a synch metodu pro nastaveni delete change
+            throw new NotImplementedException("nepouzivat slozite nacitani a synch metodu pro nastaveni delete change");
+            /* final ApAccessPoint record = party.getAccessPoint();
             ApAccessPointData accessPointData = accessPointDataService.findAccessPointData(record);
             record.setInvalid(true);
-            accessPointService.saveAccessPoint(accessPointData, false);
+            accessPointService.saveAccessPoint(accessPointData, false); */
         }
     }
 
@@ -712,7 +719,7 @@ public class PartyService {
                     .set("partyIds", relationEntities.stream().map(ParRelationEntity::getRelation).map(ParRelation::getParty).map(ParParty::getPartyId).collect(Collectors.toList()));
         }
 
-        return accessPointService.canBeDeleted(party.getAccessPoint(), false) &&
+        return accessPointService.canBeDeleted(party.getAccessPoint()) &&
                 CollectionUtils.isEmpty(dataPartyRefRepository.findByParty(party));
     }
 
@@ -1083,10 +1090,10 @@ public class PartyService {
                     throw new SystemException("Pro AS neexistují žádné scope.", BaseCode.INVALID_STATE)
                             .set("fundId", fundId);
                 } else {
-                    if (!fundScopes.contains(replacement.getApScope().getScopeId())) {
+                    if (!fundScopes.contains(replacement.getScopeId())) {
                         throw new BusinessException("Nelze nahradit osobu v AS jelikož AS nemá scope osoby pomcí které nahrazujeme.", BaseCode.INVALID_STATE)
                                 .set("fundId", fundId)
-                                .set("scopeId", replacement.getApScope().getScopeId());
+                                .set("scopeId", replacement.getScopeId());
                     }
                 }
                 descriptionItemService.updateDescriptionItem(im, fundVersions.get(i.getFundId()), change, true);

@@ -20,9 +20,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
@@ -614,7 +616,7 @@ public class PackageService {
             processRelationTypeRoleTypes(relationTypeRoleTypes, rulPackage, parRelationRoleTypes, parRelationTypes);
 
             RegisterTypes registerTypes = PackageUtils.convertXmlStreamToObject(RegisterTypes.class, mapEntry.get(REGISTER_TYPE_XML));
-            List<ApType> apTypes = processRegisterTypes(registerTypes, rulPackage, parPartyTypes);
+            List<ApType> apTypes = processApTypes(registerTypes, rulPackage, parPartyTypes);
 
             RegistryRoles registryRoles = PackageUtils.convertXmlStreamToObject(RegistryRoles.class, mapEntry.get(REGISTRY_ROLE_XML));
             processRegistryRoles(registryRoles, rulPackage, parRelationRoleTypes, apTypes);
@@ -1028,41 +1030,38 @@ public class PackageService {
      * @param parPartyTypes seznam typů osob
      * @return seznam aktuálních záznamů
      */
-    private List<ApType> processRegisterTypes(@Nullable final RegisterTypes registerTypes,
+    private List<ApType> processApTypes(@Nullable final RegisterTypes registerTypes,
                                               @NotNull final RulPackage rulPackage,
                                               @NotNull final List<ParPartyType> parPartyTypes) {
-        List<ApType> apTypes = apTypeRepository.findByRulPackage(rulPackage);
-        List<ApType> apTypesNew = new ArrayList<>();
-
-        if (registerTypes != null && !CollectionUtils.isEmpty(registerTypes.getRegisterTypes())) {
+        Map<String, ApType> oldTypeCodeMap = apTypeRepository.findByRulPackage(rulPackage)
+                .stream().collect(Collectors.toMap(ApType::getCode, Function.identity()));
+        List<ApType> newTypes = new ArrayList<>();
+        
+        if (registerTypes != null && CollectionUtils.isNotEmpty(registerTypes.getRegisterTypes())) {
             for (RegisterType registerType : registerTypes.getRegisterTypes()) {
-                ApType apType = findEntity(apTypes, registerType.getCode(), ApType::getCode);
-                if (apType == null) {
-                    apType = new ApType();
+                ApType type = oldTypeCodeMap.remove(registerType.getCode());
+                if (type == null) {
+                    type = new ApType();
                 }
-                convertApRegisterTypes(rulPackage, registerType, apType, parPartyTypes);
-                apTypesNew.add(apType);
+                convertRegisterToApType(rulPackage, registerType, type, parPartyTypes);
+                newTypes.add(type);
             }
             // druhým průchodem nastavíme rodiče (stromová struktura)
             for (RegisterType registerType : registerTypes.getRegisterTypes()) {
                 if (registerType.getParentRegisterType() != null) {
-                    ApType apType = findEntity(apTypesNew, registerType.getCode(), ApType::getCode);
-                    ApType apTypeParent = findEntity(apTypesNew, registerType.getParentRegisterType(), ApType::getCode);
+                    ApType apType = findEntity(newTypes, registerType.getCode(), ApType::getCode);
+                    ApType apTypeParent = findEntity(newTypes, registerType.getParentRegisterType(), ApType::getCode);
                     apType.setParentApType(apTypeParent);
                 }
             }
         }
 
-        apTypesNew = apTypeRepository.save(apTypesNew);
+        Collection<ApType> oldTypes = oldTypeCodeMap.values();
+        oldTypes.forEach(registryRoleRepository::deleteByApType);
 
-        List<ApType> apTypesDelete = new ArrayList<>(apTypes);
-        apTypesDelete.removeAll(apTypesNew);
+        apTypeRepository.delete(oldTypes);
 
-        apTypesDelete.forEach(registryRoleRepository::deleteByApType);
-
-        apTypeRepository.delete(apTypesDelete);
-
-        return apTypesNew;
+        return apTypeRepository.save(newTypes);
     }
 
     /**
@@ -1073,14 +1072,14 @@ public class PackageService {
      * @param apType  vztah typů tříd - DO
      * @param parPartyTypes    seznam typů osob
      */
-    private void convertApRegisterTypes(final RulPackage rulPackage,
+    private void convertRegisterToApType(final RulPackage rulPackage,
                                         final RegisterType registerType,
                                         final ApType apType,
                                         final List<ParPartyType> parPartyTypes) {
         apType.setRulPackage(rulPackage);
         apType.setCode(registerType.getCode());
         apType.setName(registerType.getName());
-        apType.setAddRecord(registerType.getAddRecord());
+        apType.setReadOnly(registerType.isReadOnly());
         if (registerType.getPartyType() != null) {
             ParPartyType parPartyType = findEntity(parPartyTypes, registerType.getPartyType(), ParPartyType::getCode);
             if (parPartyType == null) {
@@ -3240,7 +3239,7 @@ public class PackageService {
     private void convertRegisterType(final ApType apType, final RegisterType registerType) {
         registerType.setName(apType.getName());
         registerType.setCode(apType.getCode());
-        registerType.setAddRecord(apType.getAddRecord());
+        registerType.setReadOnly(apType.isReadOnly());
         registerType.setPartyType(apType.getPartyType() == null ? null : apType.getPartyType().getCode());
         registerType.setParentRegisterType(apType.getParentApType() == null ? null : apType.getParentApType().getCode());
     }

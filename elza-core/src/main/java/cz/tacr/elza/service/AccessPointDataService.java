@@ -34,18 +34,15 @@ public class AccessPointDataService {
     private ApAccessPointRepository apAccessPointRepository;
 
     public ApAccessPointData findAccessPointData(ApAccessPoint apAccessPoint){
-        ApAccessPointData apData = new ApAccessPointData(apAccessPoint);
+        ApDescription description = apDescriptionRepository.findByAccessPoint(apAccessPoint);
+        List<ApName> names = apNameRepository.findByAccessPoint(apAccessPoint);
+        List<ApExternalId> externalIds = apExternalIdRepository.findByAccessPoint(apAccessPoint);
 
-        ApName preferredName = apNameRepository.findPreferredNameByAccessPoint(apAccessPoint);
-        List<ApName> variantNames = apNameRepository.findVariantNamesByAccessPointId(apAccessPoint);
-        ApDescription apDescription = apDescriptionRepository.findApDescriptionByAccessPoint(apAccessPoint);
-        ApExternalId apExternalId = apExternalIdRepository.findApExternalIdByAccessPoint(apAccessPoint);
-
-        apData.setPreferredName(preferredName);
-        apData.setVariantNameList(variantNames);
-        apData.setCharacteristics(apDescription);
-        apData.setExternalId(apExternalId);
-
+        ApAccessPointData apData = new ApAccessPointData();
+        apData.setAccessPoint(apAccessPoint);
+        apData.setDescription(description);
+        names.forEach(apData::addName);
+        externalIds.forEach(apData::addExternalId);
         return apData;
     }
 

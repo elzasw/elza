@@ -42,7 +42,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
 	        final CriteriaQuery<T> query) {
 		Join<UsrUser, ParParty> partyJoin = user.join(UsrUser.PARTY, JoinType.INNER);
 		Join<ParParty, ApAccessPoint> apJoin = partyJoin.join(ParParty.RECORD, JoinType.INNER);
-		Join<ApAccessPoint, ApName> nameJoin = joinPrefApName(apJoin, builder);
+		Join<ApAccessPoint, ApName> nameJoin = ApAccessPointRepositoryImpl.preparePrefNameJoin(apJoin, builder);
 		
 		List<Predicate> conditions = new ArrayList<>();
 
@@ -143,7 +143,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
 	        final boolean includeUser) {
         Join<UsrUser, ParParty> partyJoin = user.join(UsrUser.PARTY, JoinType.INNER);
         Join<ParParty, ApAccessPoint> apJoin = partyJoin.join(ParParty.RECORD, JoinType.INNER);
-        Join<ApAccessPoint, ApName> recordName = joinPrefApName(apJoin, builder);
+        Join<ApAccessPoint, ApName> recordName = ApAccessPointRepositoryImpl.preparePrefNameJoin(apJoin, builder);
         
         List<Predicate> conditions = new ArrayList<>();
 
@@ -314,20 +314,10 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
         Join<UsrUser, ParParty> partyJoin = user.join(UsrUser.PARTY, JoinType.INNER);
         Join<ParParty, ApAccessPoint> apJoin = partyJoin.join(ParParty.RECORD, JoinType.INNER);
         // join current preferred AP names
-        Join<ApAccessPoint, ApName> nameJoin = joinPrefApName(apJoin, cb);
+        Join<ApAccessPoint, ApName> nameJoin = ApAccessPointRepositoryImpl.preparePrefNameJoin(apJoin, cb);
         // define order
         Order order1 = cb.asc(nameJoin.get(ApName.NAME));
         Order order2 = cb.asc(user.get(UsrUser.USERNAME));
         query.orderBy(order1, order2);
-    }
-    
-    private static Join<ApAccessPoint, ApName> joinPrefApName(Join<ParParty, ApAccessPoint> apJoin, CriteriaBuilder cb) {
-        Join<ApAccessPoint, ApName> join = apJoin.join(ApAccessPoint.NAMES, JoinType.INNER);
-        Predicate fkCond = cb.equal(apJoin.get(ApAccessPoint.ACCESS_POINT_ID),
-                                        join.get(ApName.ACCESS_POINT_ID));
-        Predicate activeCond = join.get(ApName.DELETE_CHANGE_ID).isNull();
-        Predicate prefCond = cb.isTrue(join.get(ApName.PREFERRED_NAME));
-        join.on(cb.and(fkCond, activeCond, prefCond));
-        return join;
     }
 }

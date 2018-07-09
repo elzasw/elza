@@ -6,8 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.collections4.MapIterator;
-import org.apache.commons.collections4.MultiValuedMap;
 import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
 
@@ -16,6 +14,7 @@ import cz.tacr.elza.dataexchange.input.DEImportException;
 import cz.tacr.elza.dataexchange.input.aps.context.AccessPointWrapper;
 import cz.tacr.elza.dataexchange.input.context.ImportInitHelper;
 import cz.tacr.elza.domain.ApChange;
+import cz.tacr.elza.domain.ApExternalId;
 import cz.tacr.elza.domain.projection.ApAccessPointInfo;
 import cz.tacr.elza.domain.projection.ApExternalIdInfo;
 import cz.tacr.elza.repository.ApAccessPointRepository;
@@ -70,9 +69,9 @@ public class ApAccessPointStorage extends EntityStorage<AccessPointWrapper> {
             apIds.add(Validate.notNull(apId));
         }
         ApChange change = changeHolder.getChange();
-        apNameRepository.deleteByAccessPointIdIn(apIds, change);
-        apDescRepository.deleteByAccessPointIdIn(apIds, change);
-        apEidRepository.deleteByAccessPointIdIn(apIds, change);
+        apNameRepository.invalidateByAccessPointIdIn(apIds, change);
+        apDescRepository.invalidateByAccessPointIdIn(apIds, change);
+        apEidRepository.invalidateByAccessPointIdIn(apIds, change);
     }
 
     private void pairAccessPointsByUuid(Collection<AccessPointWrapper> apws) {
@@ -96,30 +95,29 @@ public class ApAccessPointStorage extends EntityStorage<AccessPointWrapper> {
     }
 
     private void pairAccessPointsByEid(Collection<AccessPointWrapper> apws) {
-        Map<String, EidTypeGroup> typeGroupedMap = new HashMap<>();
+        Map<Integer, EidLookup> typeIdMap = new HashMap<>();
         // create external id type groups
         for (AccessPointWrapper apw : apws) {
             if (!apw.getSaveMethod().equals(SaveMethod.CREATE)) {
                 continue; // ignore paired by UUID
             }
-            MultiValuedMap<String, String> typeValueMap = apw.getEidTypeValueMap();
-            if (typeValueMap == null) {
+            Collection<ApExternalId> eids = apw.getExternalIds();
+            if (eids == null) {
                 continue; // no external ids
             }
-            MapIterator<String, String> typeValueIt = typeValueMap.mapIterator();
-            while (typeValueIt.hasNext()) {
-                String type = typeValueIt.getKey();
-                EidTypeGroup typeGroup = typeGroupedMap.get(type);
-                if (typeGroup == null) {
-                    typeGroupedMap.put(type, typeGroup = new EidTypeGroup(type));
+            for (ApExternalId eid : eids) {
+                EidLookup lookup = typeIdMap.get(eid.getExternalIdTypeId());
+                if (lookup == null) {
+                    lookup = new EidLookup(eid.getExternalIdType().getCode());
+                    typeIdMap.put(eid.getExternalIdTypeId(), lookup);
                 }
-                typeGroup.addEid(typeValueIt.getValue(), apw);
+                lookup.addWrapper(eid.getValue(), apw);
             }
         }
         // find pairs by external ids
-        typeGroupedMap.forEach((type, group) -> {
-            List<ApExternalIdInfo> currentEids = apEidRepository.findInfoByExternalIdTypeCodeAndValuesIn(type,
-                                                                                                         group.getValues());
+        typeIdMap.forEach((typeId, group) -> {
+            List<ApExternalIdInfo> currentEids = apEidRepository
+                    .findInfoByExternalIdTypeIdAndValuesIn(typeId, group.getValues());
             for (ApExternalIdInfo info : currentEids) {
                 AccessPointWrapper apw = group.getWrapper(info.getValue());
                 apw.changeToUpdated(info.getAccessPoint());
@@ -127,16 +125,16 @@ public class ApAccessPointStorage extends EntityStorage<AccessPointWrapper> {
         });
     }
 
-    private static class EidTypeGroup {
+    private static class EidLookup {
 
-        private final Map<String, AccessPointWrapper> valueWrapperMap = new HashMap<>();
+        private final Map<String, AccessPointWrapper> valueMap = new HashMap<>();
 
         private final List<String> values = new ArrayList<>();
 
-        private final String type;
+        private final String typeCode;
 
-        public EidTypeGroup(String type) {
-            this.type = type;
+        public EidLookup(String typeCode) {
+            this.typeCode = typeCode;
         }
 
         public Collection<String> getValues() {
@@ -144,12 +142,12 @@ public class ApAccessPointStorage extends EntityStorage<AccessPointWrapper> {
         }
 
         public AccessPointWrapper getWrapper(String value) {
-            return valueWrapperMap.get(value);
+            return valueMap.get(value);
         }
 
-        public void addEid(String value, AccessPointWrapper wrapper) {
-            if (valueWrapperMap.put(value, wrapper) != null) {
-                throw new DEImportException("Duplicate AP external id, type=" + type + ", value=" + value);
+        public void addWrapper(String value, AccessPointWrapper wrapper) {
+            if (valueMap.put(value, wrapper) != null) {
+                throw new DEImportException("Duplicate AP external id, typeCode=" + typeCode + ", value=" + value);
             }
             values.add(value);
         }

@@ -1,6 +1,7 @@
 package cz.tacr.elza.dataexchange.input.aps.context;
 
-import org.apache.commons.collections4.MultiValuedMap;
+import java.util.Collection;
+
 import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
 
@@ -8,6 +9,7 @@ import cz.tacr.elza.dataexchange.input.DEImportException;
 import cz.tacr.elza.dataexchange.input.storage.EntityWrapper;
 import cz.tacr.elza.dataexchange.input.storage.SaveMethod;
 import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApExternalId;
 import cz.tacr.elza.domain.projection.ApAccessPointInfo;
 import cz.tacr.elza.service.ArrangementService;
 
@@ -20,17 +22,19 @@ public class AccessPointWrapper implements EntityWrapper {
 
     private final AccessPointInfo apInfo;
 
-    private final MultiValuedMap<String, String> eidTypeValuedMap;
+    private final Collection<ApExternalId> externalIds;
 
     private final ArrangementService arrangementService;
 
     private SaveMethod saveMethod = SaveMethod.CREATE;
 
-    AccessPointWrapper(ApAccessPoint entity, AccessPointInfo apInfo, MultiValuedMap<String, String> eidTypeValueMap,
-            ArrangementService arrangementService) {
+    AccessPointWrapper(ApAccessPoint entity, 
+                       AccessPointInfo apInfo,
+                       Collection<ApExternalId> externalIds, 
+                       ArrangementService arrangementService) {
         this.entity = Validate.notNull(entity);
         this.apInfo = Validate.notNull(apInfo);
-        this.eidTypeValuedMap = eidTypeValueMap;
+        this.externalIds = externalIds;
         this.arrangementService = arrangementService;
     }
 
@@ -44,8 +48,8 @@ public class AccessPointWrapper implements EntityWrapper {
         return entity;
     }
 
-    public MultiValuedMap<String, String> getEidTypeValueMap() {
-        return eidTypeValuedMap;
+    public Collection<ApExternalId> getExternalIds() {
+        return externalIds;
     }
 
     /**
@@ -56,6 +60,9 @@ public class AccessPointWrapper implements EntityWrapper {
      *             When scopes or types does not match.
      */
     public void changeToUpdated(ApAccessPointInfo info) {
+        // check if item is not already processed
+        Validate.isTrue(saveMethod != SaveMethod.UPDATE);
+        
         if (!entity.getScopeId().equals(info.getScopeId())) {
             throw new DEImportException("Scope of importing AP doesn't match with scope of existing AP, import scopeId:"
                     + entity.getScopeId() + ", existing scopeId:" + info.getScopeId());

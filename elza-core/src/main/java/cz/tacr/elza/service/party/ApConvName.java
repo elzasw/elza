@@ -1,6 +1,6 @@
 package cz.tacr.elza.service.party;
 
-import cz.tacr.elza.domain.ApNameType;
+import cz.tacr.elza.domain.SysLanguage;
 
 public class ApConvName {
 
@@ -8,9 +8,7 @@ public class ApConvName {
 
     private String complement;
 
-    private String language;
-
-    private ApNameType type;
+    private SysLanguage language;
     
     public String getName() {
         return name;
@@ -28,19 +26,11 @@ public class ApConvName {
         this.complement = complement;
     }
 
-    public String getLanguage() {
+    public SysLanguage getLanguage() {
         return language;
     }
 
-    public void setLanguage(String language) {
+    public void setLanguage(SysLanguage language) {
         this.language = language;
-    }
-
-    public ApNameType getType() {
-        return type;
-    }
-
-    public void setType(ApNameType type) {
-        this.type = type;
     }
 }

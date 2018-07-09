@@ -3,11 +3,9 @@ package cz.tacr.elza.service.party;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.function.Consumer;
 
 import org.apache.commons.lang3.Validate;
 
-import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApDescription;
 import cz.tacr.elza.domain.ApName;
 
@@ -36,13 +34,12 @@ public class ApConvResult {
     /**
      * Creates new AP description. AP reference is not set.
      */
-    public ApDescription createDesc(ApChange createChange) {
+    public ApDescription createDesc() {
         if(description == null) {
             return null;
         }
 
         ApDescription entity = new ApDescription();
-        entity.setCreateChange(createChange);
         entity.setDescription(description);
         return entity;
     }
@@ -50,32 +47,30 @@ public class ApConvResult {
     /**
      * Creates new AP names. AP reference is not set.
      */
-    public List<ApName> createNames(ApChange createChange) {
+    public List<ApName> createNames() {
         Iterator<ApConvName> it = names.iterator();
         Validate.isTrue(it.hasNext());
 
         List<ApName> result = new ArrayList<>(names.size());
 
-        ApName prefName = createName(it.next(), createChange);
+        ApName prefName = createName(it.next());
         prefName.setPreferredName(true);
         result.add(prefName);
 
         while (it.hasNext()) {
-            ApName name = createName(it.next(), createChange);
+            ApName name = createName(it.next());
             result.add(name);
         }
         return result;
     }
 
-    private ApName createName(ApConvName name, ApChange createChange) {
+    private ApName createName(ApConvName name) {
         Validate.notBlank(name.getName());
 
         ApName entity = new ApName();
         entity.setComplement(name.getComplement());
-        entity.setCreateChange(createChange);
         entity.setLanguage(name.getLanguage());
         entity.setName(name.getName());
-        entity.setNameType(name.getType());
         return entity;
     }
 }

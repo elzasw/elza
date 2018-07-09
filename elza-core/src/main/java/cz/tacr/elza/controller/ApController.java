@@ -1,5 +1,30 @@
 package cz.tacr.elza.controller;
 
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+import javax.transaction.Transactional;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
@@ -41,43 +66,15 @@ import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.PartyTypeRepository;
 import cz.tacr.elza.repository.RelationRoleTypeRepository;
 import cz.tacr.elza.repository.ScopeRepository;
-import cz.tacr.elza.service.AccessPointDataService;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.PartyService;
 import cz.tacr.elza.service.vo.ApAccessPointData;
-import org.apache.commons.collections4.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-import javax.annotation.Nullable;
-import javax.transaction.Transactional;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 
 /**
- * REST Kontrolér pro registry.
- *
- * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
- * @since 21.12.2015
+ * REST kontroler pro registry.
  */
-@SuppressWarnings("SpringAutowiredFieldsWarningInspection")
 @RestController
 @RequestMapping(value = "/api/registry", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 public class ApController {
@@ -132,9 +129,6 @@ public class ApController {
     @Autowired
     private InterpiService interpiService;
 
-    @Autowired
-    private AccessPointDataService accessPointDataService;
-
     /**
      * Nalezne takové záznamy rejstříku, které mají daný typ a jejich textová pole (heslo, popis, poznámka),
      * nebo pole variantního záznamu obsahují hledaný řetězec. V případě, že hledaný řetězec je null, nevyhodnocuje se.
@@ -150,15 +144,14 @@ public class ApController {
      */
 	@Transactional
     @RequestMapping(value = "/", method = RequestMethod.GET)
-    public FilteredResultVO<ApAccessPoint> findRecord(@RequestParam(required = false) @Nullable final String search,
+    public FilteredResultVO<ApAccessPointVO> findRecord(@RequestParam(required = false) @Nullable final String search,
                                                  @RequestParam final Integer from,
                                                  @RequestParam final Integer count,
                                                  @RequestParam(required = false) @Nullable final Integer apTypeId,
                                                  @RequestParam(required = false) @Nullable final Integer versionId,
                                                  @RequestParam(required = false) @Nullable final Integer itemSpecId,
                                                  @RequestParam(required = false) @Nullable final Integer scopeId,
-                                                 @RequestParam(required = false) @Nullable final Integer lastRecordNr,
-                                                 @RequestParam(required = false, defaultValue = "true") @Nullable final Boolean excludeInvalid) {
+                                                 @RequestParam(required = false) @Nullable final Integer lastRecordNr) {
 
         Set<Integer> apTypeIdTree = Collections.emptySet();
 
@@ -183,10 +176,10 @@ public class ApController {
             fund = version.getFund();
         }
 
-        final long foundRecordsCount = accessPointService.findApAccessPointByTextAndTypeCount(search, apTypeIdTree, fund, scopeId, excludeInvalid);
+        final long foundRecordsCount = accessPointService.findApAccessPointByTextAndTypeCount(search, apTypeIdTree, fund, scopeId);
 
         List<ApAccessPoint> foundRecords = accessPointService.findApAccessPointByTextAndType(search, apTypeIdTree, from,
-                count, fund, scopeId, excludeInvalid);
+                count, fund, scopeId);
 
 
         Map<Integer, Integer> recordIdPartyIdMap = partyService.findParPartyIdsByRecords(foundRecords);
@@ -214,7 +207,7 @@ public class ApController {
 //            parentVO.setHasChildren(!childrenVO.isEmpty());
 //        }
 
-        return new FilteredResultVO(foundRecordVOList, foundRecordsCount);
+        return new FilteredResultVO<>(foundRecordVOList, foundRecordsCount);
     }
 
 
@@ -231,7 +224,7 @@ public class ApController {
      */
 	@Transactional
     @RequestMapping(value = "/findRecordForRelation", method = RequestMethod.GET)
-    public FilteredResultVO<ApAccessPoint> findRecordForRelation(@RequestParam(required = false) @Nullable final String search,
+    public FilteredResultVO<ApRecordSimple> findRecordForRelation(@RequestParam(required = false) @Nullable final String search,
                                                             @RequestParam final Integer from,
                                                             @RequestParam final Integer count,
                                                             @RequestParam final Integer roleTypeId,
@@ -250,13 +243,13 @@ public class ApController {
         scopeIds.add(party.getAccessPoint().getScope().getScopeId());
 
         final long foundRecordsCount = accessPointRepository.findApAccessPointByTextAndTypeCount(search, apTypeIds,
-                scopeIds, true);
+                scopeIds);
 
         final List<ApAccessPoint> foundRecords = accessPointRepository.findApAccessPointByTextAndType(search, apTypeIds,
-                from, count, scopeIds, true);
+                from, count, scopeIds);
 
         List<ApRecordSimple> foundRecordsVO = factoryVo.createApRecordsSimple(foundRecords);
-        return new FilteredResultVO(foundRecordsVO, foundRecordsCount);
+        return new FilteredResultVO<>(foundRecordsVO, foundRecordsCount);
     }
 
     /**
@@ -271,7 +264,7 @@ public class ApController {
         Assert.isNull(record.getId(), "Při vytváření záznamu nesmí být vyplněno ID (recordId).");
 
         ApAccessPointData accessPointDO = factoryDO.createApAccessPoint(record);
-        ApAccessPoint newAccessPointDO = accessPointService.saveAccessPoint(accessPointDO, false);
+        ApAccessPoint newAccessPointDO = accessPointService.saveAccessPoint(accessPointDO);
 
         ParParty recordParty = partyService.findParPartyByAccessPoint(newAccessPointDO);
         return factoryVo.createApRecord(newAccessPointDO, recordParty == null ? null : recordParty.getPartyId());
@@ -314,7 +307,8 @@ public class ApController {
         ApAccessPointVO result = factoryVo.createApRecord(record, partyId);
         factoryVo.fillApTypeNamesToParents(result);
 
-        result.setVariantRecords(factoryVo.createApVariantRecords(nameRepository.findVariantNamesByAccessPointId(record)));
+        // TODO: predelat ApAccessPointVO
+        // result.setVariantRecords(factoryVo.createApVariantRecords(nameRepository.findVariantNamesByAccessPointId(record)));
 
         return result;
     }
@@ -340,22 +334,20 @@ public class ApController {
         Assert.notNull(recordTest, "Nebyl nalezen záznam pro update s id " + record.getId());
 
         ApAccessPointData recordDO = factoryDO.createApAccessPoint(record);
-        accessPointService.saveAccessPoint(recordDO, false);
+        accessPointService.saveAccessPoint(recordDO);
         return getRecord(record.getId());
     }
 
     /**
      * Smazání rejstříkového hesla.
      *
-     * @param recordId id rejstříkového hesla
+     * @param apId id rejstříkového hesla
      */
     @Transactional
-    @RequestMapping(value = "/{recordId}", method = RequestMethod.DELETE)
-    public void deleteRecord(@PathVariable final Integer recordId) {
-        Assert.notNull(recordId, "Identifikátor rejstříkového hesla musí být vyplněn");
-        ApAccessPoint record = accessPointService.getAccessPoint(recordId);
-
-        accessPointService.deleteAccessPoint(record, true);
+    @RequestMapping(value = "/{apId}", method = RequestMethod.DELETE)
+    public void deleteRecord(@PathVariable final Integer apId) {
+        Assert.notNull(apId, "Identifikátor rejstříkového hesla musí být vyplněn");
+        accessPointService.deleteAccessPoint(apId, true);
     }
 
     /**
@@ -388,9 +380,9 @@ public class ApController {
             Assert.notNull(partyType, "Nebyl nalezen typ osoby s id " + partyTypeId);
         }
 
-        List<ApType> allTypes = partyType == null ? apTypeRepository
-                .findNullPartyTypeEnableAdding() : apTypeRepository
-                                                 .findByPartyTypeEnableAdding(partyType);
+        List<ApType> allTypes = partyType == null 
+                ? apTypeRepository.findByPartyTypeIsNullAndReadOnlyFalseOrderByName() 
+                : apTypeRepository.findByPartyTypeAndReadOnlyFalseOrderByName(partyType);
 
         return factoryVo.createApTypesTree(allTypes, true, partyType);
     }
@@ -407,7 +399,7 @@ public class ApController {
         Assert.isNull(variantRecord.getId(), "Při vytváření záznamu nesmí být vyplněno ID (variantNameId).");
 
         ApName variantRecordDO = factoryDO.createApName(variantRecord);
-        ApChange change = accessPointService.createChange(ApChange.Type.VARIANT_NAME_CREATE);
+        ApChange change = accessPointService.createChange(ApChange.Type.NAME_CREATE);
         ApName newVariantRecord = accessPointService.saveVariantName(variantRecordDO, change);
         //TODO [fric] upravit mapper
         return factoryVo.createApVariantRecord(newVariantRecord);
@@ -434,7 +426,7 @@ public class ApController {
         ApName variantRecordTest = nameRepository.findOne(variantRecord.getId());
         Assert.notNull(variantRecordTest, "Nebyl nalezen záznam pro update s id " + variantRecord.getId());
         ApName variantRecordDO = factoryDO.createApName(variantRecord);
-        ApChange change = accessPointService.createChange(ApChange.Type.VARIANT_NAME_UPDATE);
+        ApChange change = accessPointService.createChange(ApChange.Type.NAME_UPDATE);
         ApName updatedVarRec = accessPointService.saveVariantName(variantRecordDO, change);
         accessPointRepository.flush();
         return factoryVo.createApVariantRecord(updatedVarRec);
@@ -672,17 +664,5 @@ public class ApController {
         } else {
             accessPointService.replace(replaced, replacement);
         }
-    }
-
-    /**
-     * Zplatnění rejstříkového hesla
-     * @param recordId rejstřík id
-     */
-    @Transactional
-    @RequestMapping(value = "/{recordId}/valid", method = RequestMethod.POST)
-    public void valid(@PathVariable final Integer recordId) {
-        ApAccessPointData accessPointData = accessPointDataService.findAccessPointData(recordId);
-        accessPointData.getAccessPoint().setInvalid(false);
-        accessPointService.saveAccessPoint(accessPointData, false);
     }
 }

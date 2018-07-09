@@ -1,13 +1,37 @@
 package cz.tacr.elza.interpi.service;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+
+import javax.persistence.EntityManager;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
 import cz.tacr.elza.api.enums.InterpiClass;
 import cz.tacr.elza.controller.vo.InterpiEntityMappingVO;
 import cz.tacr.elza.controller.vo.InterpiRelationMappingVO;
 import cz.tacr.elza.core.data.PartyType;
+import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApDescription;
 import cz.tacr.elza.domain.ApExternalId;
+import cz.tacr.elza.domain.ApExternalIdType;
 import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApName;
 import cz.tacr.elza.domain.ApScope;
@@ -74,26 +98,6 @@ import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.GroovyScriptService;
 import cz.tacr.elza.service.PartyService;
 import cz.tacr.elza.service.vo.ApAccessPointData;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.BooleanUtils;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 /**
  * Třída pro konverzi objektů z a do INTERPI.
@@ -104,7 +108,6 @@ import java.util.stream.Collectors;
 @Service
 public class InterpiFactory {
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
     @Autowired
     private InterpiSessionHolder interpiSessionHolder;
 
@@ -137,6 +140,12 @@ public class InterpiFactory {
 
     @Autowired
     private GroovyScriptService groovyScriptService;
+    
+    @Autowired
+    private StaticDataService staticDataService;
+    
+    @Autowired
+    private EntityManager em;
 
     /**
      * Import rejstříkového hesla.
@@ -153,11 +162,13 @@ public class InterpiFactory {
                                  final String interpiRecordId, final ApScope apScope, final ApExternalSystem apExternalSystem) {
         ApAccessPointData apData = createAccessPoint(entitaTyp, interpiRecordId, apExternalSystem, apScope, true);
 
-        ApChange change = accessPointService.createChange(ApChange.Type.VARIANT_NAME_UPDATE);
+        ApChange change = accessPointService.createChange(ApChange.Type.NAME_UPDATE);
 
-        if (originalRecord != null) {
+        // TODO: přepracovat párování entit - elza 0.16
+        throw new NotImplementedException("Nutno řádně odmazat původní AP entity a založit nové");
+        /* if (originalRecord != null) {
             apData.getAccessPoint().setAccessPointId(originalRecord.getAccessPointId());
-//            apData.getAccessPoint().setVersion(originalRecord.getVersion());
+            //apData.getAccessPoint().setVersion(originalRecord.getVersion());
             apData.getAccessPoint().setUuid(originalRecord.getUuid());
 
             //smazání variantních hesel
@@ -172,7 +183,7 @@ public class InterpiFactory {
             accessPointService.saveVariantName(variantRecord, change);
         }
 
-        return savedAccessPoint;
+        return savedAccessPoint; */
     }
 
     /**
@@ -189,14 +200,12 @@ public class InterpiFactory {
     public ApAccessPoint importParty(final InterpiEntity interpiEntity, final ApAccessPoint originalRecord,
                                 final String interpiRecordId, final boolean isOriginator, final ApScope apScope,
                                 final ApExternalSystem apExternalSystem, final List<MappingVO> mappings) {
-        ApAccessPointData apData = createPartyRecord(interpiEntity, interpiRecordId, apExternalSystem, apScope);
-
+        Integer apId = null;
         Integer partyId = null;
         Integer partyVersion = null;
+        
+        // deletes all party relations
         if (originalRecord != null) {
-            apData.getAccessPoint().setAccessPointId(originalRecord.getAccessPointId());
-//            apData.getAccessPoint().setVersion(originalRecord.getVersion());
-
             ParParty originalParty = partyService.findParPartyByAccessPoint(originalRecord);
 
             List<ParRelation> relations = new ArrayList<>(originalParty.getRelations());
@@ -205,13 +214,16 @@ public class InterpiFactory {
                     partyService.deleteRelationAndSync(relation);
                 }
             }
-            originalParty.setRelations(null);
-            partyService.saveParty(originalParty);
+            em.detach(originalParty); // party no more needed
 
+            apId = originalRecord.getAccessPointId();
             partyId = originalParty.getPartyId();
             partyVersion = originalParty.getVersion();
         }
-
+        
+        // creates new AP
+        ApAccessPointData apData = createPartyApData(interpiEntity, interpiRecordId, apScope, apId);
+        
         ParParty newParty = createParty(apData, interpiEntity, isOriginator, apExternalSystem, mappings);
         newParty.setPartyId(partyId);
         newParty.setVersion(partyVersion);
@@ -300,7 +312,7 @@ public class InterpiFactory {
     private ApAccessPointData createAccessPoint(final EntitaTyp entitaTyp, final String interpiPartyId,
                                                 final ApExternalSystem apExternalSystem, final ApScope apScope, final boolean generateVariantNames) {
         InterpiEntity interpiEntity = new InterpiEntity(entitaTyp);
-        ApAccessPointData apData = createPartyRecord(interpiEntity, interpiPartyId, apExternalSystem, apScope);
+        ApAccessPointData apData = createPartyApData(interpiEntity, interpiPartyId, apScope, null);
 
         ExternalRecordVO recordVO = groovyScriptService.convertListToExternalRecordVO(Collections.singletonList(entitaTyp), generateVariantNames, this).
                 iterator().next();
@@ -309,22 +321,19 @@ public class InterpiFactory {
 
         ApDescription apDescription = new ApDescription();
         apDescription.setDescription(String.join(", ", strucnaCharakteristika));
-
-        apData.setCharacteristics(apDescription);
+        apData.setDescription(apDescription);
+        
         ApName prefName = new ApName();
         prefName.setName(recordVO.getName());
-        apData.setPreferredName(prefName);
+        prefName.setPreferredName(true);
+        apData.addName(prefName);
 
-        List<ApName> apVariantRecords = new ArrayList<>(recordVO.getVariantNames().size());
-        for (String variantName : recordVO.getVariantNames()) {
-            ApName apVariantName = new ApName();
-            apVariantName.setName(variantName);
-            apVariantName.setPreferredName(false);
-            apVariantName.setAccessPoint(apData.getAccessPoint());
-
-            apVariantRecords.add(apVariantName);
+        for (String name : recordVO.getVariantNames()) {
+            ApName apName = new ApName();
+            apName.setName(name);
+            apName.setPreferredName(false);
+            apData.addName(apName);
         }
-        apData.setVariantNameList(apVariantRecords);
         return apData;
     }
 
@@ -338,22 +347,29 @@ public class InterpiFactory {
      *
      * @return rejstříkové heslo
      */
-    private ApAccessPointData createPartyRecord(final InterpiEntity interpiEntity,
-                                       final String interpiPartyId, final ApExternalSystem apExternalSystem, final ApScope apScope) {
+    private ApAccessPointData createPartyApData(final InterpiEntity interpiEntity,
+                                                final String interpiPartyId,
+                                                final ApScope apScope,
+                                                final Integer apId) {
+        ApType apType = getApType(interpiEntity);
+        if (apType.isReadOnly()) {
+            throw new IllegalStateException(
+                    "Do typu rejstříku s kódem " + apType.getCode() + " nelze přidávat záznamy.");
+        }
+
         ApAccessPoint accessPoint = new ApAccessPoint();
-        ApAccessPointData apData = new ApAccessPointData(accessPoint);
+        accessPoint.setAccessPointId(apId);
+        accessPoint.setApType(apType);
+        accessPoint.setScope(apScope);
+        
+        ApAccessPointData apData = new ApAccessPointData();
+        apData.setAccessPoint(accessPoint);
+        // prepare external id
+        ApExternalIdType eidType = staticDataService.getData().getApEidTypeByCode(InterpiService.EID_TYPE_CODE);
         ApExternalId apExternalId = new ApExternalId();
         apExternalId.setValue(interpiPartyId);
-        apData.setExternalId(apExternalId);
-        apData.setExternalSystem(apExternalSystem);
-
-        ApType apType = getApType(interpiEntity);
-        if (BooleanUtils.isFalse(apType.getAddRecord())) {
-            throw new IllegalStateException("Do typu rejstříku s kódem " + apType.getCode() + " nelze přidávat záznamy.");
-        }
-        accessPoint.setApType(apType);
-
-        accessPoint.setScope(apScope);
+        apExternalId.setExternalIdType(eidType);
+        apData.addExternalId(apExternalId);
 
         return apData;
     }
@@ -393,7 +409,7 @@ public class InterpiFactory {
         }
 
         String registryTypeCode = getRegistryTypeCode(registryTypeName);
-        ApType apType = apTypeRepository.findApTypeByCode(registryTypeCode);
+        ApType apType = staticDataService.getData().getApTypeByCode(registryTypeCode);
         if (apType == null) {
             throw new ObjectNotFoundException("Typ jména " + registryTypeName + " neexistuje", RegistryCode.REGISTRY_TYPE_NOT_FOUND).set("name", registryTypeName);
         }
@@ -685,8 +701,11 @@ public class InterpiFactory {
     private ApAccessPoint getRelationEntityRecord(final ParParty parParty, final ApExternalSystem apExternalSystem,
                                              final SouvisejiciTyp souvisejiciTyp) {
         String interpiId = getInterpiSouvIdentifier(souvisejiciTyp.getIdentifikator());
-        ApAccessPoint entityRecord = accessPointRepository.findApAccessPointByExternalIdAndExternalSystemCodeAndScope(interpiId,
-                apExternalSystem.getCode(), parParty.getAccessPoint().getScope());
+        ApExternalIdType eidType = staticDataService.getData().getApEidTypeByCode(InterpiService.EID_TYPE_CODE);
+        ApAccessPoint entityRecord = accessPointRepository
+                .findApAccessPointByExternalIdAndExternalSystemCodeAndScope(interpiId,
+                                                                            eidType.getExternalIdTypeId(),
+                                                                            parParty.getAccessPoint().getScope());
 
         if (entityRecord == null) { // pokud neexistiuje v db tak se importuje bez vztahů
             EntitaTyp entitaTyp = interpiSessionHolder.getInterpiEntitySession().getRelatedEntity(interpiId);
@@ -694,10 +713,11 @@ public class InterpiFactory {
                 entitaTyp = client.findOneRecord(interpiId, apExternalSystem);
             }
             InterpiEntity interpiEntity = new InterpiEntity(entitaTyp);
+            ApScope apScope = parParty.getAccessPoint().getScope();
             if (isParty(interpiEntity)) {
-                entityRecord = importParty(interpiEntity, null, interpiId, false, parParty.getAccessPoint().getScope(), apExternalSystem, null);
+                entityRecord = importParty(interpiEntity, null, interpiId, false, apScope, apExternalSystem, null);
             } else {
-                entityRecord = importRecord(entitaTyp, null, interpiId, parParty.getAccessPoint().getScope(), apExternalSystem);
+                entityRecord = importRecord(entitaTyp, null, interpiId, apScope, apExternalSystem);
             }
         }
         return entityRecord;
@@ -1231,8 +1251,10 @@ public class InterpiFactory {
                                         final ApExternalSystem apExternalSystem, final ApScope apScope) {
         String interpiEntityType = null;
         if (StringUtils.isNotBlank(interpiIdentifier)) {
-            ApAccessPoint apRecord = accessPointRepository.findApAccessPointByExternalIdAndExternalSystemCodeAndScope(interpiIdentifier,
-                    apExternalSystem.getCode(), apScope);
+            ApExternalIdType eidType = staticDataService.getData().getApEidTypeByCode(InterpiService.EID_TYPE_CODE);
+            ApAccessPoint apRecord = accessPointRepository
+                    .findApAccessPointByExternalIdAndExternalSystemCodeAndScope(interpiIdentifier,
+                                                                                eidType.getExternalIdTypeId(), apScope);
             if (apRecord == null) {
                 // najít v interpi
                 EntitaTyp entitaTyp = client.findOneRecord(interpiIdentifier, apExternalSystem);

@@ -15,12 +15,9 @@ checkParty(PARTY);
 
 String desc = generateCharacteristics(PARTY);
 convResult.setDescription(desc);
-
 prepareNames(PARTY, convResult);
 
 return convResult;
-
-
 
 
 void prepareNames(ParParty party, ApConvResult convResult) {
@@ -64,7 +61,6 @@ String generatePartyNameString(final ParPartyName partyName, final ParPartyType 
 
     List<ParPartyNameComplement> sortedComplements =
             sortNameComplements(partyName.getPartyNameComplements(), partyType);
-
 
     List<String> recordNames = new ArrayList<>();
     recordNames.add(partyName.getMainPart());
