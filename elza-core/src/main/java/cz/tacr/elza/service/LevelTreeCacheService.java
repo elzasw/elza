@@ -27,6 +27,8 @@ import org.apache.commons.lang.Validate;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -50,6 +52,9 @@ import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.controller.vo.nodes.NodeData;
 import cz.tacr.elza.controller.vo.nodes.NodeDataParam;
+import cz.tacr.elza.core.data.RuleSystemItemType;
+import cz.tacr.elza.core.data.RuleSystemProvider;
+import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrDigitizationRequest;
 import cz.tacr.elza.domain.ArrFund;
@@ -87,7 +92,7 @@ public class LevelTreeCacheService {
      */
     private static final int MAX_CACHE_SIZE = 30;
 
-    final Log logger = LogFactory.getLog(this.getClass());
+    private static final Logger logger = LoggerFactory.getLogger(LevelTreeCacheService.class);
 
     @Autowired
     private LevelRepository levelRepository;
@@ -125,6 +130,9 @@ public class LevelTreeCacheService {
     @Autowired
     private ArrangementFormService formService;
 
+    @Autowired
+    private StaticDataService staticDataService;
+    
     /**
      * Cache stromu pro danou verzi. (id verze -> nodeid uzlu -> uzel).
      * Maximální počet záznamů v cache {@link #MAX_CACHE_SIZE}.
@@ -778,24 +786,25 @@ public class LevelTreeCacheService {
         return result;
     }
 
-    private Set<RulItemType> getDescriptionItemTypes(final ViewTitles viewTitles) {
-        Set<String> descItemTypeCodes = getDescItemTypeCodes(viewTitles);
+    private List<RulItemType> getDescriptionItemTypes(final ViewTitles viewTitles) {
+        Set<String> typeCodes = getDescItemTypeCodes(viewTitles);
 
-        if (!descItemTypeCodes.isEmpty()) {
-            Set<RulItemType> descItemTypes = itemTypeRepository.findByCode(descItemTypeCodes);
-            if (descItemTypes.size() != descItemTypeCodes.size()) {
-                List<String> foundCodes = descItemTypes.stream().map(RulItemType::getCode).collect(Collectors.toList());
-                Collection<String> missingCodes = new HashSet<>(descItemTypeCodes);
-                missingCodes.removeAll(foundCodes);
-
-                logger.warn("Nepodařilo se nalézt typy atributů s kódy " + StringUtils.join(missingCodes, ", ") + ". Změňte kódy v"
-                        + " konfiguraci.");
-            }
-
-            return descItemTypes;
+        if (typeCodes.isEmpty()) {
+            return Collections.emptyList();
         }
-
-        return new HashSet<>();
+        
+        List<RulItemType> result = new ArrayList<>();
+        
+        RuleSystemProvider rsp = staticDataService.getData().getRuleSystems();
+        for (String typeCode : typeCodes) {
+            RuleSystemItemType rsit = rsp.getItemTypeByCode(typeCode);
+            if (rsit == null) {
+                logger.warn("Nepodařilo se nalézt typ atributu, kód=" + typeCode + ". Změňte kód v konfiguraci.");
+                continue;
+            }
+            result.add(rsit.getEntity());
+        }
+        return result;
     }
 
     private Set<String> getDescItemTypeCodes(final ViewTitles viewTitles) {
@@ -915,9 +924,10 @@ public class LevelTreeCacheService {
 
         ViewTitles viewTitles = configView
                 .getViewTitles(version.getRuleSet().getCode(), version.getFund().getFundId());
-        Set<RulItemType> descItemTypes = getDescriptionItemTypes(viewTitles);
+        List<RulItemType> descItemTypes = getDescriptionItemTypes(viewTitles);
 
-        return descriptionItemService.createNodeValuesMap(treeNodeMap.keySet(), subtreeRoot, descItemTypes, version);
+        return descriptionItemService.createNodeValuesByItemTypeCodeMap(treeNodeMap.keySet(), descItemTypes,
+                                                                        version.getLockChangeId(), subtreeRoot);
     }
 
 

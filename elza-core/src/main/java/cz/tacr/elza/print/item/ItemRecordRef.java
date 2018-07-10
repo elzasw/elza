@@ -16,7 +16,7 @@ public class ItemRecordRef extends AbstractItem {
 
     @Override
     public String getSerializedValue() {
-        return record.getPrefName().getSerializedValue();
+        return record.getPrefName().getFullName();
     }
 
     @Override

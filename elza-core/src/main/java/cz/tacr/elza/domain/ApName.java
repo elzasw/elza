@@ -11,6 +11,9 @@ import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.Transient;
+
+import org.apache.commons.lang3.StringUtils;
 
 import cz.tacr.elza.domain.enumeration.StringLength;
 
@@ -157,6 +160,18 @@ public class ApName {
 
     public void setDeleteChange(ApChange deleteChange) {
         this.deleteChange = deleteChange;
+    }
+    
+    @Transient
+    public String getFullName() {
+        if (StringUtils.isEmpty(name)) {
+            return null;
+        }
+        StringBuilder sb = new StringBuilder(name);
+        if (StringUtils.isNotEmpty(complement)) {
+            sb.append(" (").append(complement).append(')');
+        }
+        return sb.toString();
     }
     
     @Override

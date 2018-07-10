@@ -16,7 +16,7 @@ public class ItemPartyRef extends AbstractItem {
 
     @Override
     public String getSerializedValue() {
-        return party.getName().getSerializedValue();
+        return party.getName().getFullName();
     }
 
     @Override

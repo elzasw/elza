@@ -93,7 +93,7 @@ public class FilteredRecords {
     public void nodesAdded() {
         Collator collator = Collator.getInstance(Locale.forLanguageTag("cs"));
         records = recordsMap.values().stream()
-                .sorted((v1, v2) -> collator.compare(v1.getPrefName().getName(), v2.getPrefName().getName()))
+                .sorted((v1, v2) -> collator.compare(v1.getPrefName().getFullName(), v2.getPrefName().getFullName()))
                 .collect(Collectors.toList());
     }
 }

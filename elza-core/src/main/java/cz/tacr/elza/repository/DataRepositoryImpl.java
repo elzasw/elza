@@ -1,7 +1,33 @@
 package cz.tacr.elza.repository;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+import javax.persistence.EntityManager;
+import javax.persistence.Tuple;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Expression;
+import javax.persistence.criteria.From;
+import javax.persistence.criteria.Join;
+import javax.persistence.criteria.JoinType;
+import javax.persistence.criteria.Path;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+import javax.persistence.criteria.Selection;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import com.google.common.collect.Lists;
-import cz.tacr.elza.common.ObjectListIterator;
+
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataCoordinates;
@@ -22,32 +48,6 @@ import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.exception.SystemException;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.NotImplementedException;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
-import javax.persistence.Query;
-import javax.persistence.Tuple;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Expression;
-import javax.persistence.criteria.From;
-import javax.persistence.criteria.Join;
-import javax.persistence.criteria.JoinType;
-import javax.persistence.criteria.Path;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
-import javax.persistence.criteria.Selection;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 
 /**
@@ -61,135 +61,6 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
 
     @Autowired
     private EntityManager entityManager;
-
-
-    @Override
-    public List<ArrData> findDescItemsByNodeIds(final Set<Integer> nodeIds,
-                                                final Set<RulItemType> itemTypes,
-                                                final ArrFundVersion version) {
-        return findDescItemsByNodeIds(nodeIds, itemTypes, version.getLockChange() == null ? null : version.getLockChange().getChangeId());
-    }
-
-    @Override
-    public List<ArrData> findDescItemsByNodeIds(final Set<Integer> nodeIds, final Set<RulItemType> itemTypes, final Integer changeId) {
-        String hql = "SELECT d FROM arr_data d JOIN FETCH d.item di JOIN FETCH di.node n JOIN FETCH di.itemType dit LEFT JOIN FETCH di.itemSpec dis JOIN FETCH d.dataType dt WHERE ";
-        if (changeId == null) {
-            hql += "di.deleteChange IS NULL ";
-        } else {
-            hql += "di.createChange.changeId <= :changeId AND (di.deleteChange IS NULL OR di.deleteChange.changeId >= :changeId) ";
-        }
-
-        hql += "AND n.nodeId IN (:nodeIds)";
-
-        if (CollectionUtils.isNotEmpty(itemTypes)) {
-            hql += " AND di.itemType IN (:itemTypes)";
-        }
-
-        List<ArrData> result = new LinkedList<>();
-        ObjectListIterator<Integer> nodeIdsIterator = new ObjectListIterator<Integer>(nodeIds);
-        while (nodeIdsIterator.hasNext()) {
-
-            Query query = entityManager.createQuery(hql);
-            if (changeId != null) {
-                query.setParameter("changeId", changeId);
-            }
-            if (CollectionUtils.isNotEmpty(itemTypes)) {
-                query.setParameter("itemTypes", itemTypes);
-            }
-            query.setParameter("nodeIds", nodeIdsIterator.next());
-
-            result.addAll(query.getResultList());
-        }
-
-        return result;
-    }
-
-
-    @Override
-    public List<ArrData> findByDataIdsAndVersionFetchSpecification(final Set<Integer> dataIds, final Set<RulItemType> itemTypes, final ArrFundVersion version) {
-        return findByDataIdsAndVersionFetchSpecification(dataIds, itemTypes, version.getLockChange() == null ? null : version.getLockChange().getChangeId());
-    }
-
-    @Override
-    public List<ArrData> findByDataIdsAndVersionFetchSpecification(final Set<Integer> dataIds, final Set<RulItemType> itemTypes, final Integer changeId) {
-        String hql = "SELECT d FROM arr_data d JOIN FETCH d.item di JOIN FETCH di.node n JOIN FETCH di.itemType dit JOIN FETCH di.itemSpec dis JOIN FETCH d.dataType dt WHERE ";
-        if (changeId == null) {
-            hql += "di.deleteChange IS NULL ";
-        } else {
-            hql += "di.createChange.changeId <= :changeId AND (di.deleteChange IS NULL OR di.deleteChange.changeId >= :changeId) ";
-        }
-
-        hql += "AND di.itemType IN (:itemTypes) AND d.dataId IN (:dataIds)";
-
-        List<ArrData> result = new LinkedList<>();
-        ObjectListIterator<Integer> nodeIdsIterator = new ObjectListIterator<Integer>(dataIds);
-        while (nodeIdsIterator.hasNext()) {
-
-            Query query = entityManager.createQuery(hql);
-            if (changeId != null) {
-                query.setParameter("changeId", changeId);
-            }
-            query.setParameter("itemTypes", itemTypes);
-        	query.setParameter("dataIds", nodeIdsIterator.next());
-
-            result.addAll(query.getResultList());
-        }
-
-        return result;
-    }
-
-
-    @Override
-    public <T extends ArrData> List<T> findByNodesContainingText(final Collection<ArrNode> nodes,
-                                                                 final RulItemType itemType,
-                                                                 final Set<RulItemSpec> specifications,
-                                                                 final String text) {
-
-        if(StringUtils.isBlank(text)){
-            throw new IllegalArgumentException("Parametr text nesmí mít prázdnou hodnotu.");
-        }
-
-        if(itemType.getUseSpecification() && CollectionUtils.isEmpty(specifications)){
-            throw new IllegalArgumentException("Musí být zadána alespoň jedna filtrovaná specifikace.");
-        }
-
-
-        String searchText = "%" + text + "%";
-
-        String tableName;
-        switch (itemType.getDataType().getCode()){
-            case "STRING":
-                tableName = itemType.getDataType().getStorageTable();
-                break;
-            case "TEXT":
-                tableName = itemType.getDataType().getStorageTable();
-                break;
-            default:
-                throw new IllegalStateException(
-                        "Není zatím implementováno pro typ " + itemType.getDataType().getCode());
-        }
-
-        String hql = "SELECT d FROM " + tableName +" d"
-                + " JOIN FETCH d.item di "
-                + " JOIN FETCH di.node n WHERE di.itemType = :itemType";
-
-        if(itemType.getUseSpecification()){
-            hql+= " AND di.itemSpec IN (:specs)";
-        }
-
-        hql += " AND di.node IN (:nodes) AND d.value like :text AND di.deleteChange IS NULL";
-
-        Query query = entityManager.createQuery(hql);
-        query.setParameter("itemType", itemType);
-        query.setParameter("nodes", nodes);
-        query.setParameter("text", searchText);
-        if (itemType.getUseSpecification()) {
-            query.setParameter("specs", specifications);
-        }
-
-
-        return query.getResultList();
-    }
 
     @Override
     public List<String> findUniqueSpecValuesInVersion(final ArrFundVersion version,

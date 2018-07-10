@@ -702,7 +702,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
             return itemSpec;
         }
 
-        RulItemSpec rulItemSpec = staticData.getRuleSystems().getItemSpec(id);
+        RulItemSpec rulItemSpec = staticData.getRuleSystems().getItemSpecById(id);
         itemSpec = new ItemSpec(rulItemSpec);
 
         // add to lookup

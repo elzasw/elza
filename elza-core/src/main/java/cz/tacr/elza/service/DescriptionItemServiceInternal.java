@@ -6,9 +6,35 @@ import org.apache.commons.lang.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.domain.ApName;
 import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataCoordinates;
+import cz.tacr.elza.domain.ArrDataDecimal;
+import cz.tacr.elza.domain.ArrDataFileRef;
+import cz.tacr.elza.domain.ArrDataInteger;
+import cz.tacr.elza.domain.ArrDataJsonTable;
+import cz.tacr.elza.domain.ArrDataPartyRef;
+import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrDataString;
+import cz.tacr.elza.domain.ArrDataStructureRef;
+import cz.tacr.elza.domain.ArrDataText;
+import cz.tacr.elza.domain.ArrDataUnitdate;
+import cz.tacr.elza.domain.ArrDataUnitid;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.convertor.UnitDateConvertor;
+import cz.tacr.elza.domain.vo.CoordinatesTitleValue;
+import cz.tacr.elza.domain.vo.JsonTableTitleValue;
+import cz.tacr.elza.domain.vo.TitleValue;
+import cz.tacr.elza.domain.vo.UnitdateTitleValue;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.repository.ApNameRepository;
 import cz.tacr.elza.repository.DescItemRepository;
 
 /**
@@ -19,29 +45,111 @@ import cz.tacr.elza.repository.DescItemRepository;
 @Service
 public class DescriptionItemServiceInternal {
 
-	private final DescItemRepository descItemRepository;
+    private final DescItemRepository descItemRepository;
 
-	@Autowired
-	public DescriptionItemServiceInternal(DescItemRepository descItemRepository) {
-		this.descItemRepository = descItemRepository;
-	}
+    private final StaticDataService staticDataService;
 
-	/**
-	 * Return list of description items for the node.
-	 *
-	 * Description items are returned including data.
-	 *
-	 * Method is using NodeChage to read current values.
-	 *
-	 * @param lockChange
-	 *            Change for which items are returned. lockChange cannot be null
-	 * @param node
-	 * @return
-	 */
-	public List<ArrDescItem> getDescItems(final ArrChange lockChange, final ArrNode node) {
-		Validate.notNull(lockChange);
-		List<ArrDescItem> itemList;
-		itemList = descItemRepository.findByNodeAndChange(node, lockChange);
-		return itemList;
-	}
+    private final ApNameRepository apNameRepository;
+
+    @Autowired
+    public DescriptionItemServiceInternal(DescItemRepository descItemRepository, 
+                                          StaticDataService staticDataService,
+                                          ApNameRepository apNameRepository) {
+        this.descItemRepository = descItemRepository;
+        this.staticDataService = staticDataService;
+        this.apNameRepository = apNameRepository;
+    }
+
+    /**
+     * Return list of description items for the node.
+     *
+     * Description items are returned including data.
+     *
+     * Method is using NodeChage to read current values.
+     *
+     * @param lockChange
+     *            Change for which items are returned. lockChange cannot be null
+     * @param node
+     * @return
+     */
+    public List<ArrDescItem> getDescItems(final ArrChange lockChange, final ArrNode node) {
+        Validate.notNull(lockChange);
+        List<ArrDescItem> itemList;
+        itemList = descItemRepository.findByNodeAndChange(node, lockChange);
+        return itemList;
+    }
+    
+    public TitleValue createTitleValue(ArrDescItem descItem) {
+        // prepare item specification if present
+        RulItemSpec itemSpec = null;
+        if (descItem.getItemSpecId() != null) {
+            StaticDataProvider staticData = staticDataService.getData();
+            itemSpec = staticData.getRuleSystems().getItemSpecById(descItem.getItemSpecId());
+        }
+        // create new title value
+        TitleValue titleValue = createTitleValueInternal(descItem.getData(), itemSpec);
+        // set common values
+        titleValue.setPosition(descItem.getPosition());
+        if (itemSpec != null) {
+            String specCode = itemSpec.getCode();
+            titleValue.setIconValue(specCode);
+            titleValue.setSpecCode(specCode);
+        }
+        return titleValue;
+    }
+
+    private TitleValue createTitleValueInternal(ArrData data, RulItemSpec itemSpec) {
+        // handle undefined data
+        if (data == null) {
+            return new TitleValue(ArrangementService.UNDEFINED);
+        }
+        // resolve title value
+        DataType dataType = DataType.fromId(data.getDataTypeId());
+        switch (dataType) {
+        case ENUM:
+            return new TitleValue(itemSpec.getName());
+        case PARTY_REF:
+            ArrDataPartyRef partyData = (ArrDataPartyRef) data;
+            ApName partyName = apNameRepository.findPreferredNameByAccessPoint(partyData.getParty().getAccessPoint());
+            return new TitleValue(partyName.getFullName());
+        case RECORD_REF:
+            ArrDataRecordRef apData = (ArrDataRecordRef) data;
+            ApName apName = apNameRepository.findPreferredNameByAccessPoint(apData.getRecord());
+            return new TitleValue(apName.getFullName());
+        case STRUCTURED:
+            ArrDataStructureRef structData = (ArrDataStructureRef) data;
+            return new TitleValue(structData.getStructuredObject().getValue());
+        case UNITDATE:
+            ArrDataUnitdate unitdateData = (ArrDataUnitdate) data;
+            return new UnitdateTitleValue(UnitDateConvertor.convertToString(unitdateData),
+                    unitdateData.getCalendarTypeId());
+        case STRING:
+            ArrDataString strData = (ArrDataString) data;
+            return new TitleValue(strData.getValue());
+        case TEXT:
+        case FORMATTED_TEXT:
+            ArrDataText textData = (ArrDataText) data;
+            return new TitleValue(textData.getValue());
+        case UNITID:
+            ArrDataUnitid unitidData = (ArrDataUnitid) data;
+            return new TitleValue(unitidData.getValue());
+        case INT:
+            ArrDataInteger intData = (ArrDataInteger) data;
+            return new TitleValue(intData.getValue().toString());
+        case DECIMAL:
+            ArrDataDecimal decimalData = (ArrDataDecimal) data;
+            return new TitleValue(decimalData.getValue().toPlainString());
+        case COORDINATES:
+            ArrDataCoordinates coordsData = (ArrDataCoordinates) data;
+            return new CoordinatesTitleValue(coordsData.getValue());
+        case JSON_TABLE:
+            ArrDataJsonTable table = (ArrDataJsonTable) data;
+            return new JsonTableTitleValue(table.getJsonValue(), table.getValue().getRows().size());
+        case FILE_REF:
+            ArrDataFileRef fileData = (ArrDataFileRef) data;
+            return new TitleValue(fileData.getFile().getName());
+        default:
+            throw new SystemException("Failed to create title, uknown data type: " + dataType, BaseCode.SYSTEM_ERROR);
+        }
+    }
 }
