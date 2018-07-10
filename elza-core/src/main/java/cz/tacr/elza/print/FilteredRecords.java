@@ -63,21 +63,21 @@ public class FilteredRecords {
      * @return
      */
     private RecordWithLinks addRecord(Record rec, Node node) {
-        int recordId = rec.getRecordId();
+        int recordId = rec.getId();
         // check if record exists
         RecordWithLinks rwl = recordsMap.get(recordId);
         if (rwl == null) {
             // check if allowed record type
-            RecordType recType = rec.getRecordType();
-            while (recType != null) {
-                if (filterType.equals(recType.getCode())) {
+            RecordType type = rec.getType();
+            while (type != null) {
+                if (filterType.equals(type.getCode())) {
                     rwl = RecordWithLinks.newInstance(rec);
                     recordsMap.put(recordId, rwl);
                     rwl.addNode(node);
                     break;
                 }
                 // get parent type
-                recType = recType.getParentType();
+                type = type.getParentType();
             }
         } else {
             rwl.addNode(node);
@@ -93,7 +93,7 @@ public class FilteredRecords {
     public void nodesAdded() {
         Collator collator = Collator.getInstance(Locale.forLanguageTag("cs"));
         records = recordsMap.values().stream()
-                .sorted((v1, v2) -> collator.compare(v1.getRecord(), v2.getRecord()))
+                .sorted((v1, v2) -> collator.compare(v1.getPrefName().getName(), v2.getPrefName().getName()))
                 .collect(Collectors.toList());
     }
 }
