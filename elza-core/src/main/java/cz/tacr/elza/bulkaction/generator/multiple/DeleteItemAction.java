@@ -2,6 +2,7 @@ package cz.tacr.elza.bulkaction.generator.multiple;
 
 import java.util.List;
 
+import cz.tacr.elza.service.ArrangementCacheService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +34,9 @@ public class DeleteItemAction extends Action {
 
     @Autowired
     private DescriptionItemService descriptionItemService;
+
+    @Autowired
+    private ArrangementCacheService arrangementCacheService;
 
     private DeleteItemConfig config;
 
@@ -69,6 +73,7 @@ public class DeleteItemAction extends Action {
                         fundVersion,
                         change,
                         false);
+                arrangementCacheService.deleteDescItem(arrDescItem.getNodeId(), arrDescItem.getDescItemObjectId());
             }
         }
     }
