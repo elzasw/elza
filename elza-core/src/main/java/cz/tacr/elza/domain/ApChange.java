@@ -18,13 +18,14 @@ import cz.tacr.elza.domain.enumeration.StringLength;
 
 @Entity(name = "ap_change")
 public class ApChange {
-    
+
     public enum Type {
         AP_CREATE, AP_DELETE,
         NAME_CREATE, NAME_UPDATE, NAME_DELETE,
+        DESC_CREATE, DESC_UPDATE, DESC_DELETE,
         AP_IMPORT;
     }
-    
+
     @Id
     @GeneratedValue
     @Access(AccessType.PROPERTY)

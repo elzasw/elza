@@ -1,36 +1,10 @@
 package cz.tacr.elza.service;
 
 import cz.tacr.elza.controller.vo.TreeNodeVO;
-import cz.tacr.elza.controller.vo.usage.FundVO;
-import cz.tacr.elza.controller.vo.usage.NodeVO;
-import cz.tacr.elza.controller.vo.usage.OccurrenceType;
-import cz.tacr.elza.controller.vo.usage.OccurrenceVO;
-import cz.tacr.elza.controller.vo.usage.PartyVO;
-import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
+import cz.tacr.elza.controller.vo.usage.*;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
-import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ApChange;
-import cz.tacr.elza.domain.ApDescription;
-import cz.tacr.elza.domain.ApExternalId;
-import cz.tacr.elza.domain.ApExternalSystem;
-import cz.tacr.elza.domain.ApName;
-import cz.tacr.elza.domain.ApScope;
-import cz.tacr.elza.domain.ApType;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDataRecordRef;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrNodeRegister;
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.ParRelation;
-import cz.tacr.elza.domain.ParRelationEntity;
-import cz.tacr.elza.domain.UISettings;
-import cz.tacr.elza.domain.UsrPermission;
-import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.domain.*;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ExceptionUtils;
 import cz.tacr.elza.exception.ObjectNotFoundException;
@@ -39,25 +13,7 @@ import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.packageimport.PackageService;
 import cz.tacr.elza.packageimport.xml.SettingRecord;
-import cz.tacr.elza.repository.ApAccessPointRepository;
-import cz.tacr.elza.repository.ApChangeRepository;
-import cz.tacr.elza.repository.ApDescriptionRepository;
-import cz.tacr.elza.repository.ApExternalIdRepository;
-import cz.tacr.elza.repository.ApExternalSystemRepository;
-import cz.tacr.elza.repository.ApNameRepository;
-import cz.tacr.elza.repository.ApTypeRepository;
-import cz.tacr.elza.repository.DataPartyRefRepository;
-import cz.tacr.elza.repository.DataRecordRefRepository;
-import cz.tacr.elza.repository.DescItemRepository;
-import cz.tacr.elza.repository.FundRegisterScopeRepository;
-import cz.tacr.elza.repository.FundVersionRepository;
-import cz.tacr.elza.repository.ItemTypeRepository;
-import cz.tacr.elza.repository.NodeRegisterRepository;
-import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.repository.PartyCreatorRepository;
-import cz.tacr.elza.repository.RelationEntityRepository;
-import cz.tacr.elza.repository.ScopeRepository;
-import cz.tacr.elza.repository.SettingsRepository;
+import cz.tacr.elza.repository.*;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventNodeIdVersionInVersion;
@@ -65,9 +21,11 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.vo.ApAccessPointData;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -75,17 +33,7 @@ import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -109,9 +57,6 @@ public class AccessPointService {
     private ApTypeRepository apTypeRepository;
 
     @Autowired
-    private ApExternalSystemRepository apExternalSystemRepository;
-
-    @Autowired
     private PartyService partyService;
 
     @Autowired
@@ -122,6 +67,9 @@ public class AccessPointService {
 
     @Autowired
     private IEventNotificationService eventNotificationService;
+
+    @Autowired
+    private SysLanguageRepository sysLanguageRepository;
 
     @Autowired
     private ScopeRepository scopeRepository;
@@ -140,9 +88,6 @@ public class AccessPointService {
 
     @Autowired
     private UserService userService;
-
-    @Autowired
-    private BeanFactory beanFactory;
 
     @Autowired
     private SettingsRepository settingsRepository;
@@ -221,7 +166,7 @@ public class AccessPointService {
 
 
     /**
-     * Celkový počet záznamů v DB pro funkci {@link #findApAccessPointByTextAndType(String, Collection, Integer, Integer, ArrFund, Integer, Boolean)}
+     * Celkový počet záznamů v DB pro funkci {@link #findApAccessPointByTextAndType}
      *
      * @param searchRecord    hledaný řetězec, může být null
      * @param apTypeIds typ záznamu
@@ -252,7 +197,7 @@ public class AccessPointService {
         if (parParty != null) {
             throw new BusinessException("Existuje vazba z osoby, nelze smazat.", RegistryCode.EXIST_FOREIGN_PARTY);
         }
-        
+
         long countDataRecordRef = dataRecordRefRepository.countAllByRecord(record);
         if (countDataRecordRef > 0) {
             throw new BusinessException("Nalezeno použití hesla v tabulce ArrDataRecordRef.", RegistryCode.EXIST_FOREIGN_DATA).set("table", "ArrDataRecordRef");
@@ -274,114 +219,19 @@ public class AccessPointService {
     }
 
     /**
-     * Uložení či update záznamu.
-     *
-     * @param accessPointData    naplněný objekt, bez vazeb
-     * @param partySave true - jedná se o ukládání přes ukládání osoby, false -> editace z klienta
-     * @return výsledný objekt
-     */
-    @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
-    public ApAccessPoint saveAccessPoint(@AuthParam(type = AuthParam.Type.SCOPE) final ApAccessPointData accessPointData) {
-        ApAccessPoint record = accessPointData.getAccessPoint();
-        Assert.notNull(record, "Rejstříkové heslo musí být vyplněno");
-
-        checkRecordSave(accessPointData);
-
-        ApType apType = apTypeRepository.findOne(record.getApType().getApTypeId());
-        record.setApType(apType);
-
-        ApScope scope = scopeRepository.findOne(record.getScope().getScopeId());
-        record.setScope(scope);
-
-        if (record.getUuid() == null) {
-            record.setUuid(UUID.randomUUID().toString());
-        }
-
-        //  TODO: nutno přepracovat na dílčí update operace, celkový merge stavu pro strukturovanou AP nevhodný - elza 0.16
-        throw new NotImplementedException();
-        // ApAccessPoint result = apRepository.save(record);
-        //saveAccessPointDataVersion(accessPointData, result);
-
-        //EventType type = record.getAccessPointId() == null ? EventType.RECORD_CREATE : EventType.RECORD_UPDATE;
-        //eventNotificationService.publishEvent(EventFactory.createIdEvent(type, result.getAccessPointId()));
-
-        //return result;
-    }
-
-    /**
-     * TODO: nutno přepracovat na dílčí update operace, celkový merge stavu pro strukturovanou AP nevhodný - elza 0.16
-     * 
-     * Uloží nové verze všech navázaných entit pro daný přístupový bod.
-     *
-     * @param accessPointData wrapper který obsahuje návazné entity
-     * @param result pristupovy bod, na ktery se navazou navazne entity
-     * @return nová verze wrapperu, která obsahuje všechny nové uložené verze navázaných entit
-     * 
-    private ApAccessPointData saveAccessPointDataVersion(ApAccessPointData accessPointData, ApAccessPoint result) {
-        // ap_description
-        // ap_name
-        // ap_external_id
-        ApChange apChange;
-        if (accessPointData.getAccessPointId() == null) {
-            apChange = createChange(ApChange.Type.AP_CREATE);
-        } else {
-            apChange = createChange(ApChange.Type.AP_UPDATE);
-        }
-        // version description
-        ApDescription description = apDescriptionRepository.findByAccessPoint(result);
-        if (description != null) {
-            description.setDeleteChange(apChange);
-            apDescriptionRepository.save(description);
-        }
-        ApDescription descriptionCopy = new ApDescription(accessPointData.getDescription());
-        descriptionCopy.setDescriptionId(null);
-        descriptionCopy.setDeleteChange(null);
-        descriptionCopy.setCreateChange(apChange);
-        descriptionCopy.setAccessPoint(result);
-        ApDescription savedDescription = apDescriptionRepository.save(descriptionCopy);
-
-        // version name
-        ApName name = apNameRepository.findPreferredNameByAccessPoint(result);
-        if (name != null) {
-            name.setDeleteChange(apChange);
-            apNameRepository.save(name);
-        }
-        ApName nameCopy = new ApName(accessPointData.getPreferredName());
-        nameCopy.setNameId(null);
-        nameCopy.setDeleteChange(null);
-        nameCopy.setCreateChange(apChange);
-        nameCopy.setAccessPoint(result);
-        ApName savedName = apNameRepository.save(nameCopy);
-
-        ApExternalId externalId = apExternalIdRepository.findApExternalIdByAccessPoint(result);
-        if (externalId != null) {
-            externalId.setDeleteChange(apChange);
-            externalId.setValue(null); // the external ID is not carried over between versions
-            externalId.setAccessPoint(result);
-            apExternalIdRepository.save(externalId);
-        }
-
-        accessPointData.setCharacteristics(savedDescription);
-        accessPointData.setPreferredName(savedName);
-
-        return accessPointData;
-    }*/
-
-    /**
      * Smaže rej. heslo a jeho variantní hesla. Předpokládá, že již proběhlo ověření, že je možné ho smazat (vazby atd...).
-     * @param accessPoint heslo
      */
     @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
-    public void deleteAccessPoint(@AuthParam(type = AuthParam.Type.AP) final int apId, final boolean checkUsage) {
+    public void deleteAccessPoint(@AuthParam(type = AuthParam.Type.AP) final int accessPointId, final boolean checkUsage) {
         ApChange change = createChange(ApChange.Type.AP_DELETE);
-        
-        ApAccessPoint ap = apRepository.getOne(apId);
+
+        ApAccessPoint ap = apRepository.getOne(accessPointId);
         if (checkUsage) {
             checkDeletion(ap);
         }
         ap.setDeleteChange(change);
         apRepository.save(ap);
-        
+
         List<ApName> names = apNameRepository.findByAccessPoint(ap);
         names.forEach(name -> name.setDeleteChange(change));
         apNameRepository.save(names);
@@ -392,12 +242,12 @@ public class AccessPointService {
             desc.setDeleteChange(change);
             descriptionRepository.save(desc);
         }
-        
+
         List<ApExternalId> eids = externalIdRepository.findByAccessPoint(ap);
         eids.forEach(eid -> eid.setDeleteChange(change));
         externalIdRepository.save(eids);
-        
-        eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.RECORD_DELETE, apId));
+
+        eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.RECORD_DELETE, accessPointId));
     }
 
 
@@ -405,7 +255,6 @@ public class AccessPointService {
      * Validace uložení záznamu.
      *
      * @param apData    heslo
-     * @param partySave true - jedná se o ukládání přes ukládání osoby, false -> editace z klienta
      */
     private void checkRecordSave(final ApAccessPointData apData) {
         Assert.notNull(apData.getAccessPoint(), "Rejstříkové heslo musí být vyplněno");
@@ -765,40 +614,6 @@ public class AccessPointService {
         }
 
         return defaultScopes;
-    }
-
-    @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_RD_ALL, UsrPermission.Permission.AP_SCOPE_RD})
-    public ApAccessPoint getAccessPoint(@AuthParam(type = AuthParam.Type.AP) final Integer recordId) {
-        Assert.notNull(recordId, "Identifikátor rejstříkového hesla musí být vyplněn");
-        return apRepository.findOne(recordId);
-    }
-
-    /**
-     * Získání variant record
-     * včetně oprávnění
-     *
-     * @param variantNameId variant record id
-     * @return variant record
-     */
-    public ApName getVariantName(final Integer variantNameId) {
-        ApName variantName = apNameRepository.getOneCheckExist(variantNameId);
-        beanFactory.getBean(AccessPointService.class).getAccessPoint(variantName.getAccessPoint().getAccessPointId());
-        return variantName;
-    }
-
-
-    /**
-     * Smazání variant record
-     *
-     * @param variantName variant record ke smazání
-     * @param record record z důvodu oprávnění
-     */
-    @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
-    public void deleteVariantName(final ApName variantName, @AuthParam(type = AuthParam.Type.AP) final ApAccessPoint record) {
-        ApChange change = createChange(ApChange.Type.NAME_DELETE);
-        ApName apName = apNameRepository.getOneCheckExist(variantName.getNameId());
-        apName.setDeleteChange(change);
-        apNameRepository.save(apName);
     }
 
     /**
@@ -1170,4 +985,403 @@ public class AccessPointService {
 
         return apChangeRepository.save(change);
     }
+
+    /**
+     * Založení nového přístupového bodu.
+     *
+     * @param scope       třída přístupového bodu
+     * @param type        typ přístupového bodu
+     * @param name        jméno přístupového bodu
+     * @param complement  doplněk přístupového bodu
+     * @param language    jazyk jména
+     * @param description popis přístupového bodu
+     * @return založený přístupový bod
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
+    public ApAccessPoint createAccessPoint(@AuthParam(type = AuthParam.Type.SCOPE) final ApScope scope,
+                                           final ApType type,
+                                           @Nullable final String name,
+                                           @Nullable final String complement,
+                                           @Nullable final SysLanguage language,
+                                           @Nullable final String description) {
+        Assert.notNull(scope, "Třída musí být vyplněna");
+        Assert.notNull(type, "Typ musí být vyplněn");
+
+        ApChange change = createChange(ApChange.Type.AP_CREATE);
+        ApAccessPoint accessPoint = createAccessPoint(scope, type, change);
+
+        // založení hlavního jména
+        createName(accessPoint, true, name, complement, language, change);
+
+        if (description != null) {
+            createDescription(accessPoint, description, change);
+        }
+
+        return accessPoint;
+    }
+
+    /**
+     * Aktualizace přístupového bodu - není verzované!
+     *
+     * @param accessPoint přístupový bod
+     * @param type        měněný typ přístupového bodu
+     * @return upravený přístupový bodu
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
+    public ApAccessPoint updateAccessPoint(@AuthParam(type = AuthParam.Type.AP) final ApAccessPoint accessPoint,
+                                           final ApType type) {
+        Assert.notNull(accessPoint, "Přístupový bod musí být vyplněn");
+        Assert.notNull(type, "Typ musí být vyplněn");
+        validationNotDeleted(accessPoint);
+
+        return apRepository.save(accessPoint);
+    }
+
+    /**
+     * Změna popisu přístupového bodu.
+     * Podle vstupních a aktuálních dat se rozhodne, zda-li se bude popis mazat, vytvářet nebo jen upravovat - verzovaně.
+     *
+     * @param accessPoint přístupový bod
+     * @param description popis přístupového bodu
+     * @return
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
+    public ApAccessPoint changeDescription(@AuthParam(type = AuthParam.Type.AP) final ApAccessPoint accessPoint,
+                                           @Nullable final String description) {
+        Assert.notNull(accessPoint, "Přístupový bod musí být vyplněn");
+        validationNotDeleted(accessPoint);
+
+        // aktuálně platný popis přístupového bodu
+        ApDescription apDescription = descriptionRepository.findByAccessPoint(accessPoint);
+
+        if (StringUtils.isBlank(description)) {
+            if (apDescription != null) {
+                ApChange change = createChange(ApChange.Type.DESC_DELETE);
+                apDescription.setDeleteChange(change);
+                descriptionRepository.save(apDescription);
+            }
+        } else {
+            if (apDescription != null) {
+                ApDescription apDescriptionNew = new ApDescription(apDescription);
+                ApChange change = createChange(ApChange.Type.DESC_UPDATE);
+                apDescription.setDeleteChange(change);
+                descriptionRepository.save(apDescription);
+
+                apDescriptionNew.setCreateChange(change);
+                apDescriptionNew.setDescription(description);
+                descriptionRepository.save(apDescriptionNew);
+            } else {
+                ApChange change = createChange(ApChange.Type.DESC_CREATE);
+                ApDescription apDescriptionNew = new ApDescription();
+                apDescriptionNew.setAccessPoint(accessPoint);
+                apDescriptionNew.setDescription(description);
+                apDescriptionNew.setCreateChange(change);
+                descriptionRepository.save(apDescriptionNew);
+            }
+        }
+
+        return accessPoint;
+    }
+
+    /**
+     * Vytvoření nepreferovaného jména přístupového bodu.
+     *
+     * @param accessPoint přístupový bod
+     * @param name        jméno přístupového bodu
+     * @param complement  doplněk přístupového bodu
+     * @param language    jazyk jména
+     * @return založené jméno
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
+    public ApName createAccessPointName(@AuthParam(type = AuthParam.Type.AP) final ApAccessPoint accessPoint,
+                                        @Nullable final String name,
+                                        @Nullable final String complement,
+                                        @Nullable final SysLanguage language) {
+        Assert.notNull(accessPoint, "Přístupový bod musí být vyplněn");
+        validationNotDeleted(accessPoint);
+
+        return createName(accessPoint, false, name, complement, language, null);
+    }
+
+    /**
+     * Aktualizace jména přístupového bodu - verzovaně.
+     *
+     * @param accessPoint přístupový bod
+     * @param apName      upravované jméno přístupového bodu
+     * @param name        jméno přístupového bodu
+     * @param complement  doplněk přístupového bodu
+     * @param language    jazyk jména
+     * @return upravený jméno
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
+    public ApName updateAccessPointName(@AuthParam(type = AuthParam.Type.AP) final ApAccessPoint accessPoint,
+                                        final ApName apName,
+                                        @Nullable final String name,
+                                        @Nullable final String complement,
+                                        @Nullable final SysLanguage language) {
+        Assert.notNull(accessPoint, "Přístupový bod musí být vyplněn");
+        Assert.notNull(apName, "Upravované jméno musí být vyplněno");
+        validationNotDeleted(accessPoint);
+        validationNotDeleted(apName);
+
+        ApChange change = createChange(ApChange.Type.NAME_UPDATE);
+
+        // zneplatnění původní verze jména
+        ApName apNameNew = new ApName(apName);
+        apName.setDeleteChange(change);
+        apNameRepository.save(apName);
+
+        // založení nové verze jména
+        apNameNew.setCreateChange(change);
+        apNameNew.setName(name);
+        apNameNew.setComplement(complement);
+        apNameNew.setLanguage(language);
+
+        return apNameRepository.save(apNameNew);
+    }
+
+    /**
+     * Smazání nepreferovaného přístupového bodu.
+     *
+     * @param accessPoint přístupový bod
+     * @param name        mazané jméno
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
+    public void deleteAccessPointName(@AuthParam(type = AuthParam.Type.AP) final ApAccessPoint accessPoint,
+                                        final ApName name) {
+        Assert.notNull(accessPoint, "Přístupový bod musí být vyplněn");
+        Assert.notNull(name, "Upravované jméno musí být vyplněno");
+
+        validationNotDeleted(accessPoint);
+        validationNotDeleted(name);
+
+        if (name.isPreferredName()) {
+            throw new BusinessException("Nelze mazat preferované jméno", RegistryCode.CANT_DELETE_PREFERRED_NAME).set("nameId", name.getNameId());
+        }
+
+        ApChange change = createChange(ApChange.Type.NAME_DELETE);
+        name.setDeleteChange(change);
+        apNameRepository.save(name);
+    }
+
+    /**
+     * Nastavení nepreferované jméno jako preferované přístupovému bodu.
+     *
+     * @param accessPoint přístupový bod
+     * @param name        nastavované jméno
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
+    public void setPreferredAccessPointName(@AuthParam(type = AuthParam.Type.AP) final ApAccessPoint accessPoint,
+                                              final ApName name) {
+        Assert.notNull(accessPoint, "Přístupový bod musí být vyplněn");
+        Assert.notNull(name, "Upravované jméno musí být vyplněno");
+
+        validationNotDeleted(accessPoint);
+        validationNotDeleted(name);
+
+        // pokud je jméno již jako preferované, není třeba cokoliv dělat
+        if (name.isPreferredName()) {
+            return;
+        }
+
+        ApChange change = createChange(ApChange.Type.NAME_UPDATE);
+        ApName preferredNameOld = apNameRepository.findPreferredNameByAccessPoint(accessPoint);
+
+        // založení nové verze původního preferovaného jména (nyní nepreferované)
+        ApName nameNew = new ApName(preferredNameOld);
+        nameNew.setCreateChange(change);
+        nameNew.setPreferredName(false);
+        apNameRepository.save(nameNew);
+
+        // zneplatnění původního preferovaného jména
+        preferredNameOld.setDeleteChange(change);
+        apNameRepository.save(preferredNameOld);
+
+        // založení nové verze původního preferovaného jména (nyní preferovaného)
+        ApName preferredNameNew = new ApName(name);
+        preferredNameNew.setCreateChange(change);
+        preferredNameNew.setPreferredName(true);
+        apNameRepository.save(preferredNameNew);
+
+        // zneplatnění původního nepreferovaného jména
+        name.setDeleteChange(change);
+        apNameRepository.save(name);
+
+    }
+
+    /**
+     * Získání přístupového bodu.
+     *
+     * @param accessPointId identifikátor přístupového bodu
+     * @return přístupový bod
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_RD_ALL, UsrPermission.Permission.AP_SCOPE_RD})
+    public ApAccessPoint getAccessPoint(@AuthParam(type = AuthParam.Type.AP) final Integer accessPointId) {
+        ApAccessPoint accessPoint = apRepository.findOne(accessPointId);
+        if (accessPoint == null) {
+            throw new ObjectNotFoundException("Přístupový bod neexistuje", BaseCode.ID_NOT_EXIST).setId(accessPointId);
+        }
+        return accessPoint;
+    }
+
+    /**
+     * Získání jména.
+     *
+     * @param nameId identifikátor jména
+     * @return jméno
+     */
+    public ApName getName(final Integer nameId) {
+        ApName name = apNameRepository.findOne(nameId);
+        if (name == null) {
+            throw new ObjectNotFoundException("Jméno přístupového bodu neexistuje", BaseCode.ID_NOT_EXIST).setId(nameId);
+        }
+        return name;
+    }
+
+    /**
+     * Vyhledání všech jazyků seřazených podle kódu.
+     *
+     * @return nalezené jazyky
+     */
+    public List<SysLanguage> findAllLanguagesOrderByCode() {
+        return sysLanguageRepository.findAll(new Sort(Sort.Direction.ASC, SysLanguage.CODE));
+    }
+
+    /**
+     * Získání třídy.
+     *
+     * @param scopeId identifikátor třídy
+     * @return třída
+     */
+    public ApScope getScope(final Integer scopeId) {
+        ApScope scope = scopeRepository.findOne(scopeId);
+        if (scope == null) {
+            throw new ObjectNotFoundException("Třída neexistuje", BaseCode.ID_NOT_EXIST).setId(scopeId);
+        }
+        return scope;
+    }
+
+    /**
+     * Získání typu.
+     *
+     * @param typeId identifikátor typu
+     * @return typ
+     */
+    public ApType getType(final Integer typeId) {
+        ApType type = apTypeRepository.findOne(typeId);
+        if (type == null) {
+            throw new ObjectNotFoundException("Typ neexistuje", BaseCode.ID_NOT_EXIST).setId(typeId);
+        }
+        return type;
+    }
+
+    /**
+     * Získání jazyku podle kódu.
+     *
+     * @param languageCode kód jazyku
+     * @return jazyk
+     */
+    public SysLanguage getLanguage(final String languageCode) {
+        SysLanguage language = sysLanguageRepository.findByCode(languageCode);
+        if (language == null) {
+            throw new ObjectNotFoundException("Jazyk neexistuje", BaseCode.ID_NOT_EXIST).setId(languageCode);
+        }
+        return language;
+    }
+
+    /**
+     * Založení přístupového bodu.
+     *
+     * @param scope  třída
+     * @param type   typ
+     * @param change změna
+     * @return přístupový bod
+     */
+    private ApAccessPoint createAccessPoint(final ApScope scope, final ApType type, final ApChange change) {
+        ApAccessPoint accessPoint = new ApAccessPoint();
+        accessPoint.setUuid(UUID.randomUUID().toString());
+        accessPoint.setApType(type);
+        accessPoint.setScope(scope);
+        accessPoint.setCreateChange(change);
+        accessPoint.setDeleteChange(null);
+        return apRepository.save(accessPoint);
+    }
+
+    /**
+     * Založení jména.
+     *
+     * @param accessPoint   přístupový bod
+     * @param preferredName zda-li se jedná o preferované jméno
+     * @param name          jméno přístupového bodu
+     * @param complement    doplněk přístupového bodu
+     * @param language      jazyk jména
+     * @param change        změna
+     * @return jméno
+     */
+    private ApName createName(final ApAccessPoint accessPoint,
+                              final boolean preferredName,
+                              @Nullable final String name,
+                              @Nullable final String complement,
+                              @Nullable final SysLanguage language,
+                              @Nullable final ApChange change) {
+        Assert.notNull(accessPoint, "Přístupový bod musí být vyplněn");
+
+        ApChange createChange = change == null ? createChange(ApChange.Type.NAME_CREATE) : change;
+        ApName apName = new ApName();
+        apName.setName(name);
+        apName.setComplement(complement);
+        apName.setPreferredName(preferredName);
+        apName.setLanguage(language);
+        apName.setAccessPoint(accessPoint);
+        apName.setCreateChange(createChange);
+        return apNameRepository.save(apName);
+    }
+
+    /**
+     * Založení popisu.
+     *
+     * @param accessPoint přístupový bod
+     * @param description popis přístupového bodu
+     * @param change změna
+     */
+    private void createDescription(final ApAccessPoint accessPoint,
+                                            final String description,
+                                            @Nullable final ApChange change) {
+        Assert.notNull(accessPoint, "Přístupový bod musí být vyplněn");
+        Assert.notNull(description, "Popis musí být vyplněn");
+
+        ApChange createChange = change == null ? createChange(ApChange.Type.DESC_CREATE) : change;
+        ApDescription apDescription = new ApDescription();
+        apDescription.setDescription(description);
+        apDescription.setCreateChange(createChange);
+        apDescription.setAccessPoint(accessPoint);
+
+        descriptionRepository.save(apDescription);
+    }
+
+    /**
+     * Validace přístupového bodu, že není smazaný.
+     *
+     * @param accessPoint přístupový bod
+     */
+    private void validationNotDeleted(final ApAccessPoint accessPoint) {
+        if (accessPoint.getDeleteChange() != null) {
+            throw new BusinessException("Nelze upravit přístupový bod", RegistryCode.CANT_CHANGE_DELETED_AP)
+                    .set("accessPointId", accessPoint.getAccessPointId())
+                    .set("uuid", accessPoint.getUuid());
+        }
+    }
+
+    /**
+     * Validace jména, že není smazaný.
+     *
+     * @param name jméno
+     */
+    private void validationNotDeleted(final ApName name) {
+        if (name.getDeleteChange() != null) {
+            throw new BusinessException("Nelze upravit jméno přístupového bodu", RegistryCode.CANT_CHANGE_DELETED_NAME)
+                    .set("nameId", name.getNameId());
+        }
+    }
+
 }

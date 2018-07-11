@@ -27,7 +27,7 @@ import cz.tacr.elza.FilterTools;
 import cz.tacr.elza.bulkaction.generator.PersistentSortRunConfig;
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.controller.vo.ApScopeVO;
-import cz.tacr.elza.controller.vo.ApVariantRecordVO;
+import cz.tacr.elza.controller.vo.ApAccessPointNameVO;
 import cz.tacr.elza.controller.vo.ArrFileVO;
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
@@ -214,7 +214,7 @@ public class ClientFactoryDO {
      * @param apVariantRecord VO variantní rejstříkové heslo
      * @return DO variantní rejstříkové heslo
      */
-    public ApName createApName(final ApVariantRecordVO apVariantRecord) {
+    public ApName createApName(final ApAccessPointNameVO apVariantRecord) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         return mapper.map(apVariantRecord, ApName.class);
     }

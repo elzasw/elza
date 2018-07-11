@@ -62,7 +62,7 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
     /**
      * Seznam variantních rejstříkových hesel.
      */
-    private List<ApVariantRecordVO> variantRecords = Collections.EMPTY_LIST;
+    private List<ApAccessPointNameVO> variantRecords = Collections.EMPTY_LIST;
 
     /** Cesta od toho rejstříku až ke kořeni. První záznam je přímý nadřízený, poslední je kořen. */
     private List<RecordParent> parents;
@@ -163,11 +163,11 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
         this.version = version;
     }
 
-    public List<ApVariantRecordVO> getVariantRecords() {
+    public List<ApAccessPointNameVO> getVariantRecords() {
         return variantRecords;
     }
 
-    public void setVariantRecords(final List<ApVariantRecordVO> variantRecords) {
+    public void setVariantRecords(final List<ApAccessPointNameVO> variantRecords) {
         this.variantRecords = variantRecords;
     }
 

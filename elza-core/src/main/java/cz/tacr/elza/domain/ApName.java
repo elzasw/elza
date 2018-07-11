@@ -28,7 +28,7 @@ public class ApName {
     public static final String LANGUAGE = "language";
     public static final String ACCESS_POINT_ID = "accessPointId";
     public static final String DELETE_CHANGE_ID = "deleteChangeId";
-    
+
     @Id
     @GeneratedValue
     @Access(AccessType.PROPERTY)
@@ -42,7 +42,7 @@ public class ApName {
 
     @Column(nullable = false)
     private boolean preferredName;
-    
+
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = SysLanguage.class)
     @JoinColumn(name = "languageId")
     private SysLanguage language;
@@ -74,7 +74,6 @@ public class ApName {
     public ApName(){}
 
     public ApName(ApName other) {
-        this.nameId = other.nameId;
         this.name = other.name;
         this.complement = other.complement;
         this.preferredName = other.preferredName;
@@ -119,7 +118,7 @@ public class ApName {
     public void setPreferredName(boolean preferredName) {
         this.preferredName = preferredName;
     }
-    
+
     public SysLanguage getLanguage() {
         return language;
     }
@@ -128,7 +127,7 @@ public class ApName {
         this.language = language;
         this.languageId = language != null ? language.getLanguageId() : null;
     }
-    
+
     public Integer getLanguageId() {
         return languageId;
     }
@@ -161,7 +160,7 @@ public class ApName {
     public void setDeleteChange(ApChange deleteChange) {
         this.deleteChange = deleteChange;
     }
-    
+
     @Transient
     public String getFullName() {
         if (StringUtils.isEmpty(name)) {
@@ -173,7 +172,7 @@ public class ApName {
         }
         return sb.toString();
     }
-    
+
     @Override
     public String toString() {
         return "ApName pk=" + nameId;

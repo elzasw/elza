@@ -18,6 +18,9 @@ import cz.tacr.elza.domain.enumeration.StringLength;
 @Table
 public class SysLanguage {
 
+    public static final String CODE = "code";
+    public static final String NAME = "name";
+
     @Id
     @GeneratedValue
     @Access(AccessType.PROPERTY)

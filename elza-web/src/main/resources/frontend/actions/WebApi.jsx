@@ -434,12 +434,16 @@ export class WebApiCls {
         });
     }
 
-    getRegistry(registryId) {
-        return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/' + registryId);
+    getAccessPoint(accessPointId) {
+        return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/' + accessPointId);
     }
 
-    updateRegistry(record) {
-        return AjaxUtils.ajaxPut(WebApiCls.registryUrl + '/' + record.id, null, record);
+    updateAccessPoint(accessPointId, data) {
+        return AjaxUtils.ajaxPut(WebApiCls.registryUrl + '/' + accessPointId, null, data);
+    }
+
+    changeDescription(accessPointId, data) {
+        return AjaxUtils.ajaxPut(WebApiCls.registryUrl + '/' + accessPointId + '/description', null, data);
     }
 
     replaceRegistry(recordReplaceId, recordReplacementId) {
@@ -450,8 +454,8 @@ export class WebApiCls {
         return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/' + registryId +'/valid', null);
     }
 
-    deleteRegistry(recordId) {
-        return AjaxUtils.ajaxDelete(WebApiCls.registryUrl + '/' + recordId);
+    deleteAccessPoint(accessPointId) {
+        return AjaxUtils.ajaxDelete(WebApiCls.registryUrl + '/' + accessPointId);
     }
 
     getScopes(versionId = null) {
@@ -462,20 +466,28 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/scopes', null);
     }
 
+    getAllLanguages() {
+        return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/languages', null);
+    }
+
     getRecordTypesForAdd(partyTypeId = null){
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/recordTypesForPartyType', {partyTypeId});
     }
 
-    addRegistryVariant(data) {
-        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/variantRecord/', null, data);
+    createAccessPointName(accessPointId, data) {
+        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/' + accessPointId + '/name', null, data);
     }
 
-    editRegistryVariant(variantRecord) {
-        return AjaxUtils.ajaxPut(WebApiCls.registryUrl + '/variantRecord/' + variantRecord.id, null, variantRecord);
+    updateAccessPointName(accessPointId, data) {
+        return AjaxUtils.ajaxPut(WebApiCls.registryUrl + '/' + accessPointId + '/name', null, data);
     }
 
-    deleteVariantRecord(variantRecordId) {
-        return AjaxUtils.ajaxDelete(WebApiCls.registryUrl + '/variantRecord/' + variantRecordId);
+    deleteAccessPointName(accessPointId, nameId) {
+        return AjaxUtils.ajaxDelete(WebApiCls.registryUrl + '/' + accessPointId + '/name/' + nameId);
+    }
+
+    setPreferredAccessPointName(accessPointId, nameId) {
+        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/' + accessPointId + '/name/' + nameId + '/preferred');
     }
 
     createRegCoordinates(data){

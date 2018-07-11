@@ -52,8 +52,12 @@ public class ApDescription {
     public ApDescription() {
     }
 
+    /**
+     * Copy konstruktor - bez primárního klíče!
+     *
+     * @param other kopírovaný objekt
+     */
     public ApDescription(ApDescription other) {
-        this.descriptionId = other.descriptionId;
         this.description = other.description;
         this.accessPoint = other.accessPoint;
         this.accessPointId = other.accessPointId;

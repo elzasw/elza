@@ -65,7 +65,7 @@ class AddRegistryForm extends AbstractReactComponent {
             // Pokud je předán parentRecordId, přednačte se do prvku výběr rejstříku a tento prvek se nastaví jako disabled
             if (parentRecordId !== null) {
                 if (!this.state.disabled) {
-                    WebApi.getRegistry(parentRecordId).then(json => {
+                    WebApi.getAccessPoint(parentRecordId).then(json => {
                         this.props.load({apTypeId: json.apTypeId, scopeId: json.scopeId});
                     });
                     this.setState({disabled: true});
