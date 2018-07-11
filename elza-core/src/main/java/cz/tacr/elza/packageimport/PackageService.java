@@ -15,6 +15,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -1033,8 +1034,16 @@ public class PackageService {
     private List<ApType> processApTypes(@Nullable final RegisterTypes registerTypes,
                                               @NotNull final RulPackage rulPackage,
                                               @NotNull final List<ParPartyType> parPartyTypes) {
+        // TODO: nacitani AP type musi byt serazeno podle urovni (recursive query) aby mohl byt zbytek
+        // (nezaktualizovane typy) odstranen hierarchicky (linked hash map uchova poradi)
         Map<String, ApType> oldTypeCodeMap = apTypeRepository.findByRulPackage(rulPackage)
-                .stream().collect(Collectors.toMap(ApType::getCode, Function.identity()));
+                .stream().collect(Collectors.toMap(
+                                                   ApType::getCode, 
+                                                   Function.identity(), 
+                                                   (v1, v2) -> {
+                                                       throw new SystemException("Duplicate AP code, value=" + v1.getCode(), BaseCode.DB_INTEGRITY_PROBLEM);
+                                                   },
+                                                   LinkedHashMap::new));
         List<ApType> newTypes = new ArrayList<>();
         
         if (registerTypes != null && CollectionUtils.isNotEmpty(registerTypes.getRegisterTypes())) {

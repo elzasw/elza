@@ -565,7 +565,7 @@ public class NodeCacheService {
 	 */
 	private void loadDescItemType(ArrDescItem descItem, RuleSystemProvider rsp) {
 		Validate.notNull(descItem.getItemTypeId());
-		RuleSystemItemType itemType = rsp.getItemType(descItem.getItemTypeId());
+		RuleSystemItemType itemType = rsp.getItemTypeById(descItem.getItemTypeId());
 		Validate.notNull(itemType);
 
 		descItem.setItemType(itemType.getEntity());

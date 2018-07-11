@@ -14,8 +14,8 @@ import java.util.Map;
  */
 public class FilterNode {
 
-
     private ArrNodeVO node;
+
     private TreeNodeVO parentNode;
 
     /**
@@ -28,7 +28,9 @@ public class FilterNode {
     public FilterNode() {
     }
 
-    public FilterNode(final ArrNodeVO node, final TreeNodeVO parentNode, final Map<Integer, DescItemValues> valuesMap,
+    public FilterNode(final ArrNodeVO node, 
+                      final TreeNodeVO parentNode, 
+                      final Map<Integer, DescItemValues> valuesMap,
                       final String[] referenceMark) {
         this.node = node;
         this.parentNode = parentNode;

@@ -18,7 +18,7 @@ import java.util.List;
 @Repository
 public interface ApNameRepository extends ElzaJpaRepository<ApName, Integer> {
 
-    @Query("SELECT name FROM ap_name name WHERE name.accessPoint = ?1 and name.deleteChangeId is null")
+    @Query("SELECT name FROM ap_name name WHERE name.accessPoint = ?1 and name.deleteChangeId is null ORDER BY name.preferredName DESC")
     List<ApName> findByAccessPoint(ApAccessPoint accessPoint);
 
     @Query("SELECT name FROM ap_name name WHERE name.accessPoint = ?1 and name.preferredName = true and name.deleteChangeId is null")

@@ -9,6 +9,9 @@ import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.fund.FundTreeProvider;
 import cz.tacr.elza.dataexchange.output.DEExportService;
 import cz.tacr.elza.domain.RulTemplate.Engine;
+import cz.tacr.elza.repository.ApDescriptionRepository;
+import cz.tacr.elza.repository.ApExternalIdRepository;
+import cz.tacr.elza.repository.ApNameRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.service.DmsService;
 import cz.tacr.elza.service.cache.NodeCacheService;
@@ -29,19 +32,31 @@ public class OutputGeneratorFactory {
     private final DEExportService exportService;
 
     private final InstitutionRepository institutionRepository;
+    
+    private final ApDescriptionRepository apDescRepository;
+    
+    private final ApNameRepository apNameRepository;
+    
+    private final ApExternalIdRepository apEidRepository;
 
     @Autowired
     public OutputGeneratorFactory(StaticDataService staticDataService,
-                                  FundTreeProvider fundTreeProvider,
-                                  NodeCacheService nodeCacheService,
-                                  InstitutionRepository institutionRepository,
-                                  EntityManager em,
-                                  DmsService dmsService,
-                                  DEExportService exportService) {
+            FundTreeProvider fundTreeProvider,
+            NodeCacheService nodeCacheService,
+            InstitutionRepository institutionRepository,
+            ApDescriptionRepository apDescRepository,
+            ApNameRepository apNameRepository,
+            ApExternalIdRepository apEidRepository,
+            EntityManager em,
+            DmsService dmsService,
+            DEExportService exportService) {
         this.staticDataService = staticDataService;
         this.fundTreeProvider = fundTreeProvider;
         this.nodeCacheService = nodeCacheService;
         this.institutionRepository = institutionRepository;
+        this.apDescRepository = apDescRepository;
+        this.apNameRepository = apNameRepository;
+        this.apEidRepository = apEidRepository;
         this.em = em;
         this.dmsService = dmsService;
         this.exportService = exportService;
@@ -49,25 +64,25 @@ public class OutputGeneratorFactory {
 
     public OutputGenerator createOutputGenerator(Engine engine) {
         switch (engine) {
-            case FREEMARKER:
-                return createFreemarkerOutputGenerator();
-            case JASPER:
-                return createJasperOutputGenerator();
-            case DE_XML:
-                return createDEXmlOutputGenerator();
-            default:
-                throw new IllegalStateException("Uknown output engine, name:" + engine);
+        case FREEMARKER:
+            return createFreemarkerOutputGenerator();
+        case JASPER:
+            return createJasperOutputGenerator();
+        case DE_XML:
+            return createDEXmlOutputGenerator();
+        default:
+            throw new IllegalStateException("Uknown output engine, name:" + engine);
         }
     }
 
     public FreemarkerOutputGenerator createFreemarkerOutputGenerator() {
-        return new FreemarkerOutputGenerator(staticDataService, fundTreeProvider, nodeCacheService, institutionRepository, em,
-                dmsService);
+        return new FreemarkerOutputGenerator(staticDataService, fundTreeProvider, nodeCacheService,
+                institutionRepository, apDescRepository, apNameRepository, apEidRepository, em, dmsService);
     }
 
     public JasperOutputGenerator createJasperOutputGenerator() {
-        return new JasperOutputGenerator(staticDataService, fundTreeProvider, nodeCacheService, institutionRepository, em,
-                dmsService);
+        return new JasperOutputGenerator(staticDataService, fundTreeProvider, nodeCacheService, institutionRepository,
+                apDescRepository, apNameRepository, apEidRepository, em, dmsService);
     }
 
     public DEXmlOutputGenerator createDEXmlOutputGenerator() {

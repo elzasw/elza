@@ -36,6 +36,8 @@ public class RuleSystemProvider {
      */
     private Map<Integer, RuleSystemItemType> itemTypeIdMap;
 
+    private Map<String, RuleSystemItemType> itemTypeCodeMap;
+    
     private Map<Integer, RulItemSpec> itemSpecIdMap;
 
     RuleSystemProvider() {
@@ -62,17 +64,22 @@ public class RuleSystemProvider {
     /**
      * Get item type by id
      *
-     * @param itemTypeId
+     * @param id
      * @return
      */
-    public RuleSystemItemType getItemType(Integer itemTypeId) {
-        Validate.notNull(itemTypeId);
-        return itemTypeIdMap.get(itemTypeId);
+    public RuleSystemItemType getItemTypeById(Integer id) {
+        Validate.notNull(id);
+        return itemTypeIdMap.get(id);
+    }
+    
+    public RuleSystemItemType getItemTypeByCode(String code) {
+        Validate.notEmpty(code);
+        return itemTypeCodeMap.get(code);
     }
 
-    public RulItemSpec getItemSpec(Integer itemSpecId) {
-        Validate.notNull(itemSpecId);
-        return itemSpecIdMap.get(itemSpecId);
+    public RulItemSpec getItemSpecById(Integer id) {
+        Validate.notNull(id);
+        return itemSpecIdMap.get(id);
     }
 
     /**
@@ -128,6 +135,7 @@ public class RuleSystemProvider {
         List<RulItemType> itemTypes = itemTypeRepository.findAll();
 
         itemTypeIdMap = new HashMap<>(itemTypes.size());
+        itemTypeCodeMap = new HashMap<>(itemTypes.size());
         itemSpecIdMap = new HashMap<>();
 
         for (RulItemType it : itemTypes) {
@@ -149,6 +157,7 @@ public class RuleSystemProvider {
             ruleSystemImpl.addItemType(rsit);
 
             itemTypeIdMap.put(it.getItemTypeId(), rsit);
+            itemTypeCodeMap.put(it.getCode(), rsit);
         }
     }
 

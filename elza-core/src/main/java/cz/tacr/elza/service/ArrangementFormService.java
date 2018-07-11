@@ -230,7 +230,7 @@ public class ArrangementFormService {
 
 	private ArrDescItem convertDescItem(final RuleSystemProvider ruleSystems, final ArrItemVO itemVO) {
 		ArrDescItem descItem = factoryDo.createDescItem(itemVO);
-		descItem.setItemType(ruleSystems.getItemType(itemVO.getItemTypeId()).getEntity());
+		descItem.setItemType(ruleSystems.getItemTypeById(itemVO.getItemTypeId()).getEntity());
 		return descItem;
 	}
 

@@ -52,9 +52,9 @@ public interface ApAccessPointRepository
     ApAccessPoint findApAccessPointByUuid(String uuid);
 
     /**
-     * Searches APs by UUIDs.
+     * Searches not deleted APs by UUIDs.
      *
      * @return AP projection
      */
-    List<ApAccessPointInfo> findInfoByUuidIn(Collection<String> uuids);
+    List<ApAccessPointInfo> findInfoByUuidInAndDeleteChangeIdIsNull(Collection<String> uuids);
 }

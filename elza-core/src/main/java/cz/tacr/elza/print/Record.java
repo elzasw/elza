@@ -1,13 +1,23 @@
 package cz.tacr.elza.print;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
 
+import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApDescription;
+import cz.tacr.elza.domain.ApExternalId;
 import cz.tacr.elza.domain.ApName;
-import cz.tacr.elza.service.vo.ApAccessPointData;
+import cz.tacr.elza.print.ap.ExternalId;
+import cz.tacr.elza.print.ap.Name;
+import cz.tacr.elza.repository.ApDescriptionRepository;
+import cz.tacr.elza.repository.ApExternalIdRepository;
+import cz.tacr.elza.repository.ApNameRepository;
 
 /**
  * One record from registry
@@ -16,82 +26,114 @@ import cz.tacr.elza.service.vo.ApAccessPointData;
  */
 public class Record {
 
-    private final Integer recordId;
+    private final ApAccessPoint ap;
 
-    private final String record;
+    private final RecordType type;
 
-    private final String characteristics;
+    private final StaticDataProvider staticData;
 
-    private final String externalId;
+    private final ApDescriptionRepository descRepository;
 
-    private final RecordType recordType;
+    private final ApNameRepository nameRepository;
 
-    // can be proxy, initialized only when needed
-    private final List<ApName> srcNames;
+    private final ApExternalIdRepository eidRepository;
 
-    private List<String> variantRecords;
+    private String desc;
 
-    private Record(ApAccessPointData apRecord, RecordType recordType) {
-        this.recordId = apRecord.getAccessPointId();
-        this.record = apRecord.getPreferredName().getName();
-        this.characteristics = apRecord.getDescription().getDescription();
-        this.recordType = recordType;
-        // TODO: rework initialization
-        throw new NotImplementedException("rework initialization");
+    private List<Name> names;
+
+    private List<ExternalId> eids;
+
+    public Record(ApAccessPoint ap, 
+                  RecordType type, 
+                  StaticDataProvider staticData,
+                  ApDescriptionRepository descRepository, 
+                  ApNameRepository nameRepository,
+                  ApExternalIdRepository eidRepository) {
+        this.ap = ap;
+        this.type = type;
+        this.staticData = staticData;
+        this.descRepository = descRepository;
+        this.nameRepository = nameRepository;
+        this.eidRepository = eidRepository;
     }
 
     /**
      * Copy constructor
      *
-     * @param srcRecord
+     * @param src
      */
-    protected Record(Record srcRecord) {
-        this.recordId = srcRecord.recordId;
-        this.record = srcRecord.record;
-        this.characteristics = srcRecord.characteristics;
-        this.recordType = srcRecord.recordType;
-        this.externalId = srcRecord.externalId;
-        this.srcNames = srcRecord.srcNames;
+    protected Record(Record src) {
+        this.ap = src.ap;
+        this.type = src.type;
+        this.staticData = src.staticData;
+        this.descRepository = src.descRepository;
+        this.nameRepository = src.nameRepository;
+        this.eidRepository = src.eidRepository;
+        this.desc = src.desc;
+        this.names = src.names;
+        this.eids = src.eids;
     }
 
-    public int getRecordId() {
-        return recordId;
+    public int getId() {
+        return ap.getAccessPointId().intValue();
     }
 
-    public RecordType getRecordType() {
-        return recordType;
+    public RecordType getType() {
+        return type;
     }
 
-    public String getCharacteristics() {
-        return characteristics;
-    }
-
-    public String getRecord() {
-        return record;
-    }
-
-    public List<String> getVariantRecords() {
-        if (variantRecords == null) { // lazy initialization
-            variantRecords = srcNames.stream()
-                    .map(ApName::getName)
-                    .collect(Collectors.toList());
+    public String getDesc() {
+        if (desc == null) {
+            ApDescription apDesc = descRepository.findByAccessPoint(ap);
+            if (apDesc == null) {
+                desc = StringUtils.EMPTY;
+            } else {
+                desc = apDesc.getDescription();
+            }
         }
-        return variantRecords;
+        return desc;
     }
 
-    public String getExternalId() {
-        return externalId;
+    public Name getPrefName() {
+        List<Name> names = getNames();
+        Name prefName = names.get(0);
+        Validate.isTrue(prefName.isPreferred());
+        return prefName;
     }
 
-    /**
-     * Return new instance of Record. Variant names are required (fetched from database if not
-     * initialized).
-     */
-    public static Record newInstance(ApAccessPoint ap, RecordType recordType) {
-        ApAccessPointData apData = new ApAccessPointData();
-        apData.setAccessPoint(ap);
-        Record record = new Record(apData, recordType);
-        return record;
+    public List<Name> getNames() {
+        if (names == null) {
+            List<ApName> apNames = nameRepository.findByAccessPoint(ap);
+            Iterator<ApName> it = apNames.iterator();
+            names = new ArrayList<>(apNames.size());
+            // add preferred name
+            Name name = Name.newInstance(it.next(), staticData);
+            Validate.isTrue(name.isPreferred());
+            names.add(name);
+            // add other names
+            while (it.hasNext()) {
+                name = Name.newInstance(it.next(), staticData);
+                Validate.isTrue(!name.isPreferred());
+                names.add(name);
+            }
+            // make names read-only
+            names = Collections.unmodifiableList(names);
+        }
+        return names;
     }
 
+    public List<ExternalId> getEids() {
+        if (eids == null) {
+            List<ApExternalId> apEids = eidRepository.findByAccessPoint(ap);
+            eids = new ArrayList<>(apEids.size());
+            for (ApExternalId apEid : apEids) {
+                ExternalId eid = ExternalId.newInstance(apEid, staticData);
+                eids.add(eid);
+            }
+            // make external ids read-only
+            eids = Collections.unmodifiableList(eids);
+        }
+        return eids;
+    }
 }

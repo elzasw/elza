@@ -55,6 +55,9 @@ import cz.tacr.elza.print.party.Relation;
 import cz.tacr.elza.print.party.RelationTo;
 import cz.tacr.elza.print.party.RelationToType;
 import cz.tacr.elza.print.party.RelationType;
+import cz.tacr.elza.repository.ApDescriptionRepository;
+import cz.tacr.elza.repository.ApExternalIdRepository;
+import cz.tacr.elza.repository.ApNameRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.service.cache.CachedNode;
 import cz.tacr.elza.service.cache.NodeCacheService;
@@ -141,12 +144,27 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
     private final NodeCacheService nodeCacheService;
 
     private final InstitutionRepository institutionRepository;
+    
+    private final ApDescriptionRepository apDescRepository;
 
-    public OutputModel(StaticDataService staticDataService, FundTreeProvider fundTreeProvider, NodeCacheService nodeCacheService, InstitutionRepository institutionRepository) {
+    private final ApNameRepository apNameRepository;
+
+    private final ApExternalIdRepository apEidRepository;
+
+    public OutputModel(StaticDataService staticDataService, 
+                       FundTreeProvider fundTreeProvider,
+                       NodeCacheService nodeCacheService, 
+                       InstitutionRepository institutionRepository,
+                       ApDescriptionRepository apDescRepository, 
+                       ApNameRepository apNameRepository,
+                       ApExternalIdRepository apEidRepository) {
         this.staticDataService = staticDataService;
         this.fundTreeProvider = fundTreeProvider;
         this.nodeCacheService = nodeCacheService;
         this.institutionRepository = institutionRepository;
+        this.apDescRepository = apDescRepository;
+        this.apNameRepository = apNameRepository;
+        this.apEidRepository = apEidRepository;
     }
 
     public boolean isInitialized() {
@@ -481,22 +499,21 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
     /* factory methods */
 
-    // TODO: record variants should be fetched
     @Override
-    public Record getRecord(ApAccessPoint record) {
+    public Record getRecord(ApAccessPoint ap) {
         // id without fetch -> access type property
-        Record ap = apIdMap.get(record.getAccessPointId());
-        if (ap != null) {
-            return ap;
+        Record record = apIdMap.get(ap.getAccessPointId());
+        if (record != null) {
+            return record;
         }
 
-        RecordType apType = getAPType(record.getApTypeId());
-        ap = Record.newInstance(record, apType);
+        RecordType type = getAPType(ap.getApTypeId());
+        record = new Record(ap, type, staticData, apDescRepository, apNameRepository, apEidRepository);
 
         // add to lookup
-        apIdMap.put(record.getAccessPointId(), ap);
+        apIdMap.put(ap.getAccessPointId(), record);
 
-        return ap;
+        return record;
     }
 
     private RecordType getAPType(Integer apTypeId) {
@@ -685,7 +702,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
             return itemSpec;
         }
 
-        RulItemSpec rulItemSpec = staticData.getRuleSystems().getItemSpec(id);
+        RulItemSpec rulItemSpec = staticData.getRuleSystems().getItemSpecById(id);
         itemSpec = new ItemSpec(rulItemSpec);
 
         // add to lookup

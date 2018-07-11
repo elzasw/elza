@@ -384,12 +384,28 @@
     </changeSet>
     
     <changeSet id="20180704132000" author="todt">
+    	<!-- rename ApType addRecord to readOnly -->
     	<renameColumn newColumnName="read_only" oldColumnName="add_record" tableName="ap_type"/>
     	<sql>
             update ap_type set read_only = not read_only where read_only is not null;
             update ap_type set read_only = false where read_only is null;
         </sql>
     	<addNotNullConstraint tableName="ap_type" columnDataType="boolean" columnName="read_only"/>
+    	
+    	<!-- add index to delete change id for AP related entities -->
+    	<createIndex indexName="ap_access_point_delete_change_id_idx" tableName="ap_access_point">
+	        <column name="delete_change_id" type="int"/>
+	    </createIndex>
+	    <createIndex indexName="ap_name_delete_change_id_idx" tableName="ap_name">
+	        <column name="delete_change_id" type="int"/>
+	    </createIndex>
+	    <createIndex indexName="ap_description_delete_change_id_idx" tableName="ap_description">
+	        <column name="delete_change_id" type="int"/>
+	    </createIndex>
+	    <createIndex indexName="ap_external_id_delete_change_id_idx" tableName="ap_external_id">
+	        <column name="delete_change_id" type="int"/>
+	    </createIndex>
+	    
     </changeSet>
 
 </databaseChangeLog>
