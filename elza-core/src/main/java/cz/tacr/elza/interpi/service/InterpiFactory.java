@@ -14,9 +14,9 @@ import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
 
+import cz.tacr.elza.interpi.service.vo.*;
+import cz.tacr.elza.service.vo.ImportAccessPoint;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.BooleanUtils;
-import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -59,10 +59,6 @@ import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.interpi.service.pqf.PQFQueryBuilder;
-import cz.tacr.elza.interpi.service.vo.ConditionVO;
-import cz.tacr.elza.interpi.service.vo.ExternalRecordVO;
-import cz.tacr.elza.interpi.service.vo.InterpiEntity;
-import cz.tacr.elza.interpi.service.vo.MappingVO;
 import cz.tacr.elza.interpi.ws.wo.DoplnekTyp;
 import cz.tacr.elza.interpi.ws.wo.EntitaTyp;
 import cz.tacr.elza.interpi.ws.wo.IdentifikaceTyp;
@@ -151,42 +147,40 @@ public class InterpiFactory {
      * Import rejstříkového hesla.
      *
      * @param entitaTyp INTERPI objekt
-     * @param originalRecord původní rejstřík, může být null
      * @param interpiRecordId id INTERPI
-     * @param apScope třída rejstříku
+     * @param scope třída rejstříku
      * @param apExternalSystem externí systém
      *
      * @return uložené rejstříkové heslo
      */
     public ApAccessPoint importRecord(final EntitaTyp entitaTyp,
-                                      final ApAccessPoint originalRecord,
                                       final String interpiRecordId,
-                                      final ApScope apScope,
+                                      final ApScope scope,
                                       final ApExternalSystem apExternalSystem) {
-        ApAccessPointData apData = createAccessPoint(entitaTyp, interpiRecordId, apExternalSystem, apScope, true);
+        InterpiEntity interpiEntity = new InterpiEntity(entitaTyp);
+        ExternalRecordVO externalRecordVO = groovyScriptService.convertListToExternalRecordVO(Collections.singletonList(entitaTyp), true, this)
+                .iterator().next();
 
-        ApChange change = accessPointService.createChange(ApChange.Type.AP_IMPORT, apExternalSystem);
+        List<String> strucnaCharakteristika = interpiEntity.getPopisTyp().stream()
+                .filter(i -> PopisTypA.STRUČNÁ_CHARAKTERISTIKA.equals(i.getTyp()))
+                .map(PopisTyp::getTextPopisu)
+                .collect(Collectors.toList());
 
-        // TODO: přepracovat párování entit - elza 0.16
-        throw new NotImplementedException("Nutno řádně odmazat původní AP entity a založit nové");
-        /* if (originalRecord != null) {
-            apData.getAccessPoint().setAccessPointId(originalRecord.getAccessPointId());
-            //apData.getAccessPoint().setVersion(originalRecord.getVersion());
-            apData.getAccessPoint().setUuid(originalRecord.getUuid());
-
-            //smazání variantních hesel
-            List<ApName> oldVariants = nameRepository.findVariantNamesByAccessPointId(originalRecord);
-            oldVariants.forEach(apName -> apName.setDeleteChange(change));
-            nameRepository.delete(oldVariants);
+        ApType type = getApType(interpiEntity);
+        if (type.isReadOnly()) {
+            throw new IllegalStateException("Do typu rejstříku s kódem " + type.getCode() + " nelze přidávat záznamy.");
         }
 
-        List<ApName> variantRecordList = nameRepository.findVariantNamesByAccessPointId(apData.getAccessPoint());
-        ApAccessPoint savedAccessPoint = accessPointService.saveAccessPoint(apData, false);
-        for (ApName variantRecord : variantRecordList) {
-            accessPointService.saveVariantName(variantRecord, change);
+        ImportAccessPoint data = new ImportAccessPoint();
+        data.setScope(scope);
+        data.setType(type);
+        data.setDescription(strucnaCharakteristika.isEmpty() ? null : String.join(", ", strucnaCharakteristika));
+        data.setPreferredName(externalRecordVO.getName(), null, null);
+        for (String name : externalRecordVO.getVariantNames()) {
+            data.addName(name, null, null);
         }
 
-        return savedAccessPoint; */
+        return accessPointService.importAccessPoint(interpiRecordId, InterpiService.EID_TYPE_CODE, apExternalSystem, data);
     }
 
     /**
@@ -312,8 +306,11 @@ public class InterpiFactory {
      *
      * @return rejstříkové heslo
      */
-    private ApAccessPointData createAccessPoint(final EntitaTyp entitaTyp, final String interpiPartyId,
-                                                final ApExternalSystem apExternalSystem, final ApScope apScope, final boolean generateVariantNames) {
+/*    private ApAccessPointData createAccessPoint(final EntitaTyp entitaTyp,
+                                                final String interpiPartyId,
+                                                final ApExternalSystem apExternalSystem,
+                                                final ApScope apScope,
+                                                final boolean generateVariantNames) {
         InterpiEntity interpiEntity = new InterpiEntity(entitaTyp);
         ApAccessPointData apData = createPartyApData(interpiEntity, interpiPartyId, apScope, null);
 
@@ -338,7 +335,7 @@ public class InterpiFactory {
             apData.addName(apName);
         }
         return apData;
-    }
+    }*/
 
     /**
      * Vytvoří rejstříkové heslo se základními informacemi potřebnými pro uložení osoby.
@@ -720,7 +717,7 @@ public class InterpiFactory {
             if (isParty(interpiEntity)) {
                 entityRecord = importParty(interpiEntity, null, interpiId, false, apScope, apExternalSystem, null);
             } else {
-                entityRecord = importRecord(entitaTyp, null, interpiId, apScope, apExternalSystem);
+                entityRecord = importRecord(entitaTyp, interpiId, apScope, apExternalSystem);
             }
         }
         return entityRecord;

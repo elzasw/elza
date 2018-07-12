@@ -2,6 +2,7 @@ package cz.tacr.elza.service;
 
 import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.controller.vo.usage.*;
+import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.domain.*;
@@ -19,10 +20,9 @@ import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventNodeIdVersionInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.vo.ApAccessPointData;
+import cz.tacr.elza.service.vo.ImportAccessPoint;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.NotImplementedException;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.BeanFactory;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.Sort;
@@ -31,6 +31,7 @@ import org.springframework.util.Assert;
 
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
+import javax.transaction.Transactional;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -133,6 +134,9 @@ public class AccessPointService {
 
     @Autowired
     private ApExternalIdRepository externalIdRepository;
+
+    @Autowired
+    private StaticDataService staticDataService;
 
     /**
      * Kody tříd rejstříků nastavené v konfiguraci elzy.
@@ -1033,7 +1037,10 @@ public class AccessPointService {
         Assert.notNull(accessPoint, "Přístupový bod musí být vyplněn");
         Assert.notNull(type, "Typ musí být vyplněn");
         validationNotDeleted(accessPoint);
-
+        if (type.getApTypeId().equals(accessPoint.getApType().getApTypeId())) {
+            return accessPoint;
+        }
+        accessPoint.setApType(type);
         return apRepository.save(accessPoint);
     }
 
@@ -1072,11 +1079,7 @@ public class AccessPointService {
                 descriptionRepository.save(apDescriptionNew);
             } else {
                 ApChange change = createChange(ApChange.Type.DESC_CREATE);
-                ApDescription apDescriptionNew = new ApDescription();
-                apDescriptionNew.setAccessPoint(accessPoint);
-                apDescriptionNew.setDescription(description);
-                apDescriptionNew.setCreateChange(change);
-                descriptionRepository.save(apDescriptionNew);
+                createDescription(accessPoint, description, change);
             }
         }
 
@@ -1384,4 +1387,91 @@ public class AccessPointService {
         }
     }
 
+    /**
+     * Import přístupového bodu z externího systému.
+     *
+     * @param externalId         identifikátor přístupového bodu v externím systému
+     * @param externalIdTypeCode kód typu externího systému
+     * @param externalSystem     externí systém
+     * @param data               data pro založení/aktualizaci přístupového bodu
+     * @return přístupový bod
+     */
+    @Transactional
+    @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
+    public ApAccessPoint importAccessPoint(final String externalId,
+                                           final String externalIdTypeCode,
+                                           final ApExternalSystem externalSystem,
+                                           @AuthParam(type = AuthParam.Type.SCOPE) final ImportAccessPoint data) {
+        Assert.notNull(externalId, "Identifikátor z externího systému musí být vyplněn");
+        Assert.notNull(externalIdTypeCode, "Kód typu externího identifikátoru musí být vyplněn");
+        Assert.notNull(externalSystem, "Externí systém, ze kterého importujeme přístupový bod musí být vyplněn");
+        Assert.notNull(data, "Importní data musí být vyplněny");
+
+        ApScope scope = data.getScope();
+        ApType type = data.getType();
+        ImportAccessPoint.Name preferredName = data.getPreferredName();
+        List<ImportAccessPoint.Name> names = data.getNames();
+        String description = data.getDescription();
+
+        ApChange change = createChange(ApChange.Type.AP_IMPORT, externalSystem);
+
+        ApExternalIdType externalIdType = staticDataService.getData().getApEidTypeByCode(externalIdTypeCode);
+        ApAccessPoint accessPointExists = apRepository.findApAccessPointByExternalIdAndExternalSystemCodeAndScope(externalId, externalIdType.getExternalIdTypeId(), scope);
+
+        ApAccessPoint accessPoint;
+        if (accessPointExists == null) {
+            accessPoint = createAccessPoint(scope, type, change);
+            if (StringUtils.isNotEmpty(description)) {
+                createDescription(accessPoint, description, change);
+            }
+            createExternalId(accessPoint, externalIdType, externalId, change);
+        } else {
+            accessPoint = updateAccessPoint(accessPointExists, type);
+            invalidateAllNames(accessPoint, change);
+            changeDescription(accessPoint, description);
+        }
+
+        // založení preferovaného jména
+        createName(accessPoint, true, preferredName.getName(), preferredName.getComplement(), preferredName.getLanguage(), change);
+
+        // založení další jmen
+        if (CollectionUtils.isNotEmpty(names)) {
+            for (ImportAccessPoint.Name name : names) {
+                createName(accessPoint, false, name.getName(), name.getComplement(), name.getLanguage(), change);
+            }
+        }
+
+        return accessPoint;
+    }
+
+    /**
+     * Invalidace všech jmen na přístupovém bodu.
+     *
+     * @param accessPoint přístupový bod
+     * @param change      změna, která se nastaví na smazání jmen
+     */
+    private void invalidateAllNames(final ApAccessPoint accessPoint, final ApChange change) {
+        apNameRepository.flush();
+        apNameRepository.invalidateByAccessPointIdIn(Collections.singleton(accessPoint.getAccessPointId()), change);
+    }
+
+    /**
+     * Založení externího identifikátoru přístupového bodu.
+     *
+     * @param accessPoint    přístupový bod
+     * @param externalIdType typ externího systému
+     * @param externalId     identifikátor v externím systému
+     * @param change         změna ve které se identifikátor zakládá
+     */
+    private void createExternalId(final ApAccessPoint accessPoint,
+                                  final ApExternalIdType externalIdType,
+                                  final String externalId,
+                                  final ApChange change) {
+        ApExternalId apExternalId = new ApExternalId();
+        apExternalId.setValue(externalId);
+        apExternalId.setAccessPoint(accessPoint);
+        apExternalId.setCreateChange(change);
+        apExternalId.setExternalIdType(externalIdType);
+        externalIdRepository.save(apExternalId);
+    }
 }

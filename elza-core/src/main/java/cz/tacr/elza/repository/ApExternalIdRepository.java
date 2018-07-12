@@ -18,7 +18,7 @@ public interface ApExternalIdRepository extends ElzaJpaRepository<ApExternalId, 
 
     /**
      * Searches external ids and its APs by type code and values.
-     * 
+     *
      * @return External id and AP projections.
      */
     @Query("SELECT eid.accessPoint as accessPoint, eid.value as value FROM ap_external_id eid "

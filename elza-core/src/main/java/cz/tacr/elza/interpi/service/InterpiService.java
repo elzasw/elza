@@ -76,7 +76,7 @@ import cz.tacr.elza.service.GroovyScriptService;
 public class InterpiService {
 
     public static final String EID_TYPE_CODE = "INTERPI";
-    
+
     /** Oddělovač v klíči pro unikátnost mapování. */
     private static final String DELIMITER = "-%-%-";
 
@@ -120,13 +120,13 @@ public class InterpiService {
 
     @Autowired
     private ApExternalIdRepository apEidRepository;
-    
+
     @Autowired
     private PartyRepository partyRepository;
-    
+
     @Autowired
     private StaticDataService staticDataService;
-    
+
     /**
      * Vyhledá záznamy v INTERPI.
      *
@@ -331,7 +331,7 @@ public class InterpiService {
             List<MappingVO> updatedMappings = processMappings(mappings);
             result = interpiFactory.importParty(interpiEntity, originalRecord, interpiRecordId, isOriginator, apScope, apExternalSystem, updatedMappings);
         } else {
-            result = interpiFactory.importRecord(entitaTyp, originalRecord, interpiRecordId, apScope, apExternalSystem);
+            result = interpiFactory.importRecord(entitaTyp, interpiRecordId, apScope, apExternalSystem);
         }
 
         if (interpiEntity.getHierarchickaStruktura().size() > 0) {
@@ -348,8 +348,6 @@ public class InterpiService {
             if (parentRecordExtId == null) {
                 throw new SystemException("Při importu hierarchického hesla nebyl nalezen interpi idetifikátor rodiče.");
             }
-
-            accessPointRepository.save(result);
         }
 
         interpiEntitySession.clear();
@@ -591,7 +589,7 @@ public class InterpiService {
         ApExternalIdType eidType = staticDataService.getData().getApEidTypeByCode(EID_TYPE_CODE);
         List<ApExternalIdInfo> eidInfoList = apEidRepository
                 .findInfoByExternalIdTypeIdAndValuesIn(eidType.getExternalIdTypeId(), externalRecords.keySet());
-        
+
         Map<Integer, ApScopeVO> convertedScopes = new HashMap<>();
         for (ApExternalIdInfo eidInfo : eidInfoList) {
             ExternalRecordVO recordVO = externalRecords.get(eidInfo.getValue());
@@ -609,10 +607,10 @@ public class InterpiService {
             PairedRecordVO pairedRecordVO = new PairedRecordVO(apScopeVO, apId, partyId);
             recordVO.addPairedRecord(pairedRecordVO);
         }
-        
+
         /* TODO: po testech odebrat - přepracováno v rámci 0.16
         Map<String, List<ApAccessPointData>> externalIdToApRecordsMap = apDataList.stream().collect(Collectors.groupingBy(o -> o.getExternalId().getValue()));
-        
+
         for (String externalId : externalRecords.keySet()) {
             List<ApAccessPointData> sameRecords = externalIdToApRecordsMap.get(externalId);
             if (sameRecords != null) {
