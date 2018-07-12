@@ -3,27 +3,9 @@ package cz.tacr.elza.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import cz.tacr.elza.controller.ArrangementController.CopySiblingResult;
 import cz.tacr.elza.controller.ArrangementController.DescFormDataNewVO;
-import cz.tacr.elza.controller.vo.ApAccessPointVO;
-import cz.tacr.elza.controller.vo.ApScopeVO;
-import cz.tacr.elza.controller.vo.ApTypeVO;
-import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
-import cz.tacr.elza.controller.vo.ArrFundVO;
-import cz.tacr.elza.controller.vo.ArrFundVersionVO;
-import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
-import cz.tacr.elza.controller.vo.ArrOutputDefinitionVO;
-import cz.tacr.elza.controller.vo.ArrOutputExtVO;
-import cz.tacr.elza.controller.vo.CopyNodesParams;
-import cz.tacr.elza.controller.vo.CopyNodesValidate;
-import cz.tacr.elza.controller.vo.CopyNodesValidateResult;
-import cz.tacr.elza.controller.vo.FilterNode;
-import cz.tacr.elza.controller.vo.FilterNodePosition;
-import cz.tacr.elza.controller.vo.NodeItemWithParent;
-import cz.tacr.elza.controller.vo.OutputSettingsVO;
+import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.controller.vo.ApTypeVO;
 import cz.tacr.elza.controller.vo.ApScopeVO;
-import cz.tacr.elza.controller.vo.RulOutputTypeVO;
-import cz.tacr.elza.controller.vo.TreeData;
-import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.controller.vo.filter.Filters;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.NodeDataParam;
@@ -892,23 +874,16 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         List<ApScopeVO> scopes = getAllScopes();
         Integer scopeId = scopes.iterator().next().getId();
 
-        ApAccessPointVO record = new ApAccessPointVO();
-
-        record.setApTypeId(getNonHierarchicalApType(types, false).getId());
-
-        record.setCharacteristics("Ja jsem apRecordA");
-
-        record.setRecord("ApRecordA");
-
-        record.setScopeId(scopeId);
-
-        record.setAddRecord(true);
-
-        record = createRecord(record);
+        ApAccessPointCreateVO ap = new ApAccessPointCreateVO();
+        ap.setTypeId(getNonHierarchicalApType(types, false).getId());
+        ap.setName("ApRecordA name");
+        ap.setComplement("ApRecordA complement");
+        ap.setScopeId(scopeId);
+        ApAccessPointVO accessPointCreated = createAccessPoint(ap);
 
         ArrNodeRegisterVO nodeRegister = new ArrNodeRegisterVO();
 
-        nodeRegister.setValue(record.getId());
+        nodeRegister.setValue(accessPointCreated.getId());
         nodeRegister.setNodeId(rootNode.getId());
         nodeRegister.setNode(rootNode);
 

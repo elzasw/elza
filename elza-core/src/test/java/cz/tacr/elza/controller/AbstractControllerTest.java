@@ -237,7 +237,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String FIND_RECORD = REGISTRY_CONTROLLER_URL + "/";
     protected static final String FIND_RECORD_FOR_RELATION = REGISTRY_CONTROLLER_URL + "/findRecordForRelation";
     protected static final String GET_RECORD = REGISTRY_CONTROLLER_URL + "/{recordId}";
-    protected static final String CREATE_RECORD = REGISTRY_CONTROLLER_URL + "/";
+    protected static final String CREATE_ACCESS_POINT = REGISTRY_CONTROLLER_URL + "/";
     protected static final String UPDATE_RECORD = REGISTRY_CONTROLLER_URL + "/{recordId}";
     protected static final String DELETE_RECORD = REGISTRY_CONTROLLER_URL + "/{recordId}";
     protected static final String USAGES_RECORD = REGISTRY_CONTROLLER_URL + "/{recordId}/usage";
@@ -1660,10 +1660,10 @@ public abstract class AbstractControllerTest extends AbstractTest {
     /**
      * Vytvoření rejstříkového hesla.
      *
-     * @param record VO rejstříkové heslo
+     * @param accessPoint VO rejstříkové heslo
      */
-    protected ApAccessPointVO createRecord(final ApAccessPointVO record) {
-        return post(spec -> spec.body(record), CREATE_RECORD).getBody().as(ApAccessPointVO.class);
+    protected ApAccessPointVO createAccessPoint(final ApAccessPointCreateVO accessPoint) {
+        return post(spec -> spec.body(accessPoint), CREATE_ACCESS_POINT).getBody().as(ApAccessPointVO.class);
     }
 
     /**

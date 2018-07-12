@@ -2,13 +2,7 @@ package cz.tacr.elza.controller;
 
 import java.util.List;
 
-import cz.tacr.elza.controller.vo.ApAccessPointVO;
-import cz.tacr.elza.controller.vo.ApScopeVO;
-import cz.tacr.elza.controller.vo.ApTypeVO;
-import cz.tacr.elza.controller.vo.ArrFundVO;
-import cz.tacr.elza.controller.vo.ArrFundVersionVO;
-import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
-import cz.tacr.elza.controller.vo.TreeData;
+import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
 import org.junit.Assert;
@@ -108,26 +102,18 @@ public class ApControllerTest extends AbstractControllerTest {
         Integer scopeId = scopes.iterator().next().getId();
 
         // Vytvoření replace
-        ApAccessPointVO replacedRecord = new ApAccessPointVO();
-
-        replacedRecord.setApTypeId(getNonHierarchicalApType(types, false).getId());
-
-        replacedRecord.setCharacteristics("Ja jsem apRecordA");
-
-        replacedRecord.setRecord("ApRecordA");
-
+        ApAccessPointCreateVO replacedRecord = new ApAccessPointCreateVO();
+        replacedRecord.setTypeId(getNonHierarchicalApType(types, false).getId());
+        replacedRecord.setName("ApRecordA name");
+        replacedRecord.setComplement("ApRecordA complement");
         replacedRecord.setScopeId(scopeId);
-
-        replacedRecord.setAddRecord(true);
-
-        replacedRecord = createRecord(replacedRecord);
-        Assert.assertNotNull(replacedRecord.getId());
-
+        ApAccessPointVO replacedRecordCreated = createAccessPoint(replacedRecord);
+        Assert.assertNotNull(replacedRecordCreated.getId());
 
         // Vytvoření node register
         ArrNodeRegisterVO nodeRegister = new ArrNodeRegisterVO();
 
-        nodeRegister.setValue(replacedRecord.getId());
+        nodeRegister.setValue(replacedRecordCreated.getId());
         nodeRegister.setNodeId(rootNode.getId());
         nodeRegister.setNode(rootNode);
 
@@ -150,28 +136,22 @@ public class ApControllerTest extends AbstractControllerTest {
 
 
         // Vytvoření replacement
-        ApAccessPointVO replacementRecord = new ApAccessPointVO();
-
-        replacementRecord.setApTypeId(getNonHierarchicalApType(types, false).getId());
-
-        replacementRecord.setCharacteristics("Ja jsem apRecordB");
-
-        replacementRecord.setRecord("ApRecordB");
-
+        ApAccessPointCreateVO replacementRecord = new ApAccessPointCreateVO();
+        replacementRecord.setTypeId(getNonHierarchicalApType(types, false).getId());
+        replacementRecord.setName("ApRecordB name");
+        replacementRecord.setComplement("ApRecordB complement");
         replacementRecord.setScopeId(scopeId);
 
-        replacementRecord.setAddRecord(true);
-
-        replacementRecord = createRecord(replacementRecord);
-        Assert.assertNotNull(replacementRecord.getId());
+        ApAccessPointVO replacementRecordCreated = createAccessPoint(replacementRecord);
+        Assert.assertNotNull(replacementRecordCreated.getId());
 
         // Dohledání usages
-        RecordUsageVO usage = usagesRecord(replacedRecord.getId());
+        RecordUsageVO usage = usagesRecord(replacedRecordCreated.getId());
         Assert.assertNotNull(usage.funds);
 
         // Replace
-        replaceRecord(replacedRecord.getId(), replacementRecord.getId());
-        RecordUsageVO usageAfterReplace = usagesRecord(replacedRecord.getId());
+        replaceRecord(replacedRecordCreated.getId(), replacementRecordCreated.getId());
+        RecordUsageVO usageAfterReplace = usagesRecord(replacedRecordCreated.getId());
         Assert.assertTrue(usageAfterReplace.funds == null || usageAfterReplace.funds.isEmpty());
     }
 

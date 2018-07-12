@@ -4,33 +4,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import cz.tacr.elza.controller.vo.ApAccessPointVO;
+import cz.tacr.elza.controller.vo.*;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
-import cz.tacr.elza.controller.vo.ArrFundVO;
-import cz.tacr.elza.controller.vo.ArrFundVersionVO;
-import cz.tacr.elza.controller.vo.ParComplementTypeVO;
-import cz.tacr.elza.controller.vo.ParDynastyVO;
-import cz.tacr.elza.controller.vo.ParEventVO;
-import cz.tacr.elza.controller.vo.ParPartyGroupIdentifierVO;
-import cz.tacr.elza.controller.vo.ParPartyGroupVO;
-import cz.tacr.elza.controller.vo.ParPartyNameComplementVO;
-import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
-import cz.tacr.elza.controller.vo.ParPartyNameVO;
-import cz.tacr.elza.controller.vo.ParPartyTypeVO;
-import cz.tacr.elza.controller.vo.ParPartyVO;
-import cz.tacr.elza.controller.vo.ParPersonVO;
-import cz.tacr.elza.controller.vo.ParRelationEntityVO;
-import cz.tacr.elza.controller.vo.ParRelationRoleTypeVO;
-import cz.tacr.elza.controller.vo.ParRelationTypeVO;
-import cz.tacr.elza.controller.vo.ParRelationVO;
-import cz.tacr.elza.controller.vo.ParUnitdateVO;
-import cz.tacr.elza.controller.vo.ApTypeVO;
-import cz.tacr.elza.controller.vo.ApScopeVO;
-import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
@@ -346,14 +324,14 @@ public class PartyControllerTest extends AbstractControllerTest {
         Assert.assertTrue("Očekáváme 0 záznamů", recordForRelation.size() == 0);
 
         /* Přidání relací osoby **/
-        ApAccessPointVO record = new ApAccessPointVO();
+        ApAccessPointCreateVO recordCreate = new ApAccessPointCreateVO();
 
-        record.setScopeId(scope.getId());
-        record.setCharacteristics("Characteristic");
-        record.setRecord("GEO1");
-        record.setApTypeId(findApTypeByCode(getRecordTypes(), "GEO_SPACE").getId());
+        recordCreate.setScopeId(scope.getId());
+        recordCreate.setName("GEO1 name");
+        recordCreate.setComplement("GEO1 complement");
+        recordCreate.setTypeId(findApTypeByCode(getRecordTypes(), "GEO_SPACE").getId());
 
-        record = createRecord(record);
+        ApAccessPointVO record = createAccessPoint(recordCreate);
 
         /* Test zda existuje heslo s tímto typem pro přidání (test metody findRecordForRelation) **/
         recordForRelation = findRecordForRelation(null, null, null, spawnRelationRoleType.getId(), personO1.getId());

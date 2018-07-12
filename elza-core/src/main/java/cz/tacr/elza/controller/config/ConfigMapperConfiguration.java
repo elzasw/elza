@@ -675,12 +675,12 @@ public class ConfigMapperConfiguration {
                         apAccessPointVO.setAddRecord(!apAccessPoint.getAccessPoint().getApType().isReadOnly());
                         apAccessPointVO.setScopeId(apAccessPoint.getAccessPoint().getScope().getScopeId());
                         apAccessPointVO.setInvalid(apAccessPoint.getAccessPoint().getDeleteChange() != null);
-                        apAccessPointVO.setCharacteristics(apAccessPoint.getDescription().getDescription());
+                        apAccessPointVO.setCharacteristics(apAccessPoint.getDescription() == null ? null : apAccessPoint.getDescription().getDescription());
                         apAccessPointVO.setRecord(apAccessPoint.getPreferredName().getName());
                         apAccessPointVO.setUuid(apAccessPoint.getAccessPoint().getUuid());
 
                         // TODO: nutno dořešit přenos EID na klienta
-                        throw new NotImplementedException("nutno dořešit přenos EID na klienta");
+                        //throw new NotImplementedException("nutno dořešit přenos EID na klienta");
                         // if (apAccessPoint.getExternalId() != null) {
                         //     apAccessPointVO.setExternalId(apAccessPoint.getExternalId().getValue());
                         // }

@@ -140,10 +140,10 @@ public class InterpiFactory {
 
     @Autowired
     private GroovyScriptService groovyScriptService;
-    
+
     @Autowired
     private StaticDataService staticDataService;
-    
+
     @Autowired
     private EntityManager em;
 
@@ -158,11 +158,14 @@ public class InterpiFactory {
      *
      * @return uložené rejstříkové heslo
      */
-    public ApAccessPoint importRecord(final EntitaTyp entitaTyp, final ApAccessPoint originalRecord,
-                                 final String interpiRecordId, final ApScope apScope, final ApExternalSystem apExternalSystem) {
+    public ApAccessPoint importRecord(final EntitaTyp entitaTyp,
+                                      final ApAccessPoint originalRecord,
+                                      final String interpiRecordId,
+                                      final ApScope apScope,
+                                      final ApExternalSystem apExternalSystem) {
         ApAccessPointData apData = createAccessPoint(entitaTyp, interpiRecordId, apExternalSystem, apScope, true);
 
-        ApChange change = accessPointService.createChange(ApChange.Type.NAME_UPDATE);
+        ApChange change = accessPointService.createChange(ApChange.Type.AP_IMPORT, apExternalSystem);
 
         // TODO: přepracovat párování entit - elza 0.16
         throw new NotImplementedException("Nutno řádně odmazat původní AP entity a založit nové");
@@ -203,7 +206,7 @@ public class InterpiFactory {
         Integer apId = null;
         Integer partyId = null;
         Integer partyVersion = null;
-        
+
         // deletes all party relations
         if (originalRecord != null) {
             ParParty originalParty = partyService.findParPartyByAccessPoint(originalRecord);
@@ -220,10 +223,10 @@ public class InterpiFactory {
             partyId = originalParty.getPartyId();
             partyVersion = originalParty.getVersion();
         }
-        
+
         // creates new AP
         ApAccessPointData apData = createPartyApData(interpiEntity, interpiRecordId, apScope, apId);
-        
+
         ParParty newParty = createParty(apData, interpiEntity, isOriginator, apExternalSystem, mappings);
         newParty.setPartyId(partyId);
         newParty.setVersion(partyVersion);
@@ -322,7 +325,7 @@ public class InterpiFactory {
         ApDescription apDescription = new ApDescription();
         apDescription.setDescription(String.join(", ", strucnaCharakteristika));
         apData.setDescription(apDescription);
-        
+
         ApName prefName = new ApName();
         prefName.setName(recordVO.getName());
         prefName.setPreferredName(true);
@@ -361,7 +364,7 @@ public class InterpiFactory {
         accessPoint.setAccessPointId(apId);
         accessPoint.setApType(apType);
         accessPoint.setScope(apScope);
-        
+
         ApAccessPointData apData = new ApAccessPointData();
         apData.setAccessPoint(accessPoint);
         // prepare external id

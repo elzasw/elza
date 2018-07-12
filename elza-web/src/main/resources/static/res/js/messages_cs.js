@@ -1016,7 +1016,7 @@ var messages = {
     "admin.extSystem.sendNotification": "Zasílání upozornění",
     "admin.extSystem.sendNotification.true": "Ano",
     "admin.extSystem.sendNotification.false": "Ne",
-    "admin.extSystem.class.RegExternalSystemVO": "Externí systém pro rejstříky/osoby",
+    "admin.extSystem.class.ApExternalSystemVO": "Externí systém pro rejstříky/osoby",
     "admin.extSystem.class.ArrDigitalRepositoryVO": "Uložiště digitalizátů",
     "admin.extSystem.class.ArrDigitizationFrontdeskVO": "Digitalizační linka",
     "admin.extSystem.noSelection.title": "Není vybrán externí systém",

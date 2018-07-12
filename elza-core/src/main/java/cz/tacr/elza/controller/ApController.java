@@ -220,11 +220,10 @@ public class ApController {
     public ApAccessPointVO createAccessPoint(@RequestBody final ApAccessPointCreateVO accessPoint) {
         Integer typeId = accessPoint.getTypeId();
         Integer scopeId = accessPoint.getScopeId();
-        String languageCode = accessPoint.getLanguageCode();
 
         ApScope scope = accessPointService.getScope(scopeId);
         ApType type = accessPointService.getType(typeId);
-        SysLanguage language = accessPointService.getLanguage(languageCode);
+        SysLanguage language = StringUtils.isEmpty(accessPoint.getLanguageCode()) ? null : accessPointService.getLanguage(accessPoint.getLanguageCode());
         String name = StringUtils.isEmpty(accessPoint.getName()) ? null : accessPoint.getName();
         String description = StringUtils.isEmpty(accessPoint.getDescription()) ? null : accessPoint.getDescription();
         String complement = StringUtils.isEmpty(accessPoint.getComplement()) ? null : accessPoint.getComplement();
