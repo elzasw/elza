@@ -1,6 +1,6 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.ApRecord;
+import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.projection.ParPartyInfo;
 import org.springframework.data.jpa.repository.Query;
@@ -18,30 +18,29 @@ import java.util.List;
 public interface PartyRepository extends ElzaJpaRepository<ParParty, Integer>, PartyRepositoryCustom {
 
     /**
-     * @param recordId id záznamu rejtříku
+     * @param accessPointId id záznamu rejtříku
      * @return záznamy patřící danému záznamu v rejstříku
      */
-    @Query("SELECT ap FROM par_party ap JOIN ap.record r WHERE r.recordId = ?1")
-    List<ParParty> findParPartyByRecordId(Integer recordId);
-
-
-    /**
-     * Najde seznam osob podle rejstříkových hesel.
-     *
-     * @param recordIds seznam rejstříkových hesel
-     * @return seznam osob s danými hesly
-     */
-    @Query("SELECT ap FROM par_party ap WHERE ap.record IN (?1)")
-    List<ParParty> findParPartyByRecords(Collection<ApRecord> records);
+    @Query("SELECT ap FROM par_party ap JOIN ap.accessPoint r WHERE r.accessPointId = ?1")
+    ParParty findParPartyByAccessPointId(Integer accessPointId);
 
     /**
      * Najde seznam osob podle rejstříkových hesel.
      *
-     * @param recordIds seznam rejstříkových hesel
+     * @param accessPoints seznam rejstříkových hesel
      * @return seznam osob s danými hesly
      */
-    @Query("SELECT ap.partyId, r.recordId FROM par_party ap JOIN ap.record r WHERE r IN (?1)")
-    List<Object[]> findRecordIdAndPartyIdByRecords(Collection<ApRecord> records);
+    @Query("SELECT party FROM par_party party WHERE party.accessPoint IN (?1)")
+    List<ParParty> findParPartyByAccessPoints(Collection<ApAccessPoint> accessPoints);
+
+    /**
+     * Najde seznam osob podle rejstříkových hesel.
+     *
+     * @param accessPoints seznam rejstříkových hesel
+     * @return seznam osob s danými hesly
+     */
+    @Query("SELECT party.partyId, r.accessPointId FROM par_party party JOIN party.accessPoint r WHERE r IN (?1)")
+    List<Object[]> findAccessPointIdAndPartyIdByAccessPoints(Collection<ApAccessPoint> accessPoints);
 
 
     /**
@@ -53,7 +52,7 @@ public interface PartyRepository extends ElzaJpaRepository<ParParty, Integer>, P
     @Query("SELECT c.creatorParty FROM par_creator c WHERE c.party = ?1 ORDER BY c.creatorId")
     List<ParParty> findCreatorsByParty(ParParty party);
 
-    List<ParPartyInfo> findInfoByRecordRecordIdIn(Collection<Integer> recordIds);
+    List<ParPartyInfo> findInfoByAccessPointIdIn(Collection<Integer> apIds);
 
     @Query("SELECT ap FROM par_party ap " +
             "LEFT JOIN FETCH ap.preferredName pn " +
@@ -63,7 +62,7 @@ public interface PartyRepository extends ElzaJpaRepository<ParParty, Integer>, P
             "LEFT JOIN FETCH pn.validTo vt " +
             "LEFT JOIN FETCH vt.calendarType vtct " +
             "JOIN FETCH ap.partyType pt " +
-            "JOIN FETCH ap.record rec " +
+            "JOIN FETCH ap.accessPoint rec " +
             "WHERE ap.partyId IN :ids")
     List<ParParty> findAllFetch(@Param("ids") Iterable<Integer> ids);
 }

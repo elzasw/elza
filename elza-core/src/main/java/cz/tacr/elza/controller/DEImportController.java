@@ -20,8 +20,8 @@ import cz.tacr.elza.dataexchange.input.DEImportService;
 import cz.tacr.elza.dataexchange.input.context.ImportContext;
 import cz.tacr.elza.dataexchange.input.context.ImportPhase;
 import cz.tacr.elza.dataexchange.input.context.ImportPhaseChangeListener;
+import cz.tacr.elza.dataexchange.input.sections.context.ImportPosition;
 import cz.tacr.elza.dataexchange.input.sections.context.SectionsContext;
-import cz.tacr.elza.dataexchange.input.sections.context.SectionsContext.ImportPosition;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.service.IEventNotificationService;
@@ -68,7 +68,7 @@ public class DEImportController {
         }
 
         // prepare import parameters
-		DEImportParams params = new DEImportParams(scopeId, 1000, 10000, importPositionParams, ignoreRootNodes);
+        DEImportParams params = new DEImportParams(scopeId, 1000, 10000, importPositionParams, ignoreRootNodes);
         params.addImportPhaseChangeListeners(new SectionNotifications(eventNotificationService));
 
         // validate

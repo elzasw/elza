@@ -39,7 +39,7 @@ public class SectionContext {
      */
     private final boolean multipleSections;
 
-    private final ExportLevelInfoListener levelInfoListener;
+    private final LevelInfoListener levelInfoListener;
 
     private final EntityManager em;
 
@@ -48,7 +48,7 @@ public class SectionContext {
     SectionContext(ArrFundVersion fundVersion,
                    ExportContext context,
                    boolean multipleSections,
-                   ExportLevelInfoListener levelInfoListener,
+                   LevelInfoListener levelInfoListener,
                    NodeCacheService nodeCacheService,
                    EntityManager em) {
         this.context = Validate.notNull(context);

@@ -9,6 +9,8 @@ import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
+import cz.tacr.elza.domain.ArrDataPartyRef;
+import cz.tacr.elza.domain.ArrDataRecordRef;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,9 +22,11 @@ import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
 import cz.tacr.elza.bulkaction.BulkActionConfigManager;
 import cz.tacr.elza.common.db.DatabaseType;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.domain.ApFulltextProviderImpl;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.repository.ApNameRepository;
 import cz.tacr.elza.repository.BulkActionRunRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.NodeRepository;
@@ -55,6 +59,8 @@ public class StartupService implements SmartLifecycle {
     private final BulkActionConfigManager bulkActionConfigManager;
 
     private final EntityManager em;
+    
+    private final ApNameRepository apNameRepository;
 
     private boolean running;
 
@@ -68,7 +74,8 @@ public class StartupService implements SmartLifecycle {
                           NodeCacheService nodeCacheService,
                           StaticDataService staticDataService,
                           BulkActionConfigManager bulkActionConfigManager,
-                          EntityManager em) {
+                          EntityManager em,
+                          ApNameRepository apNameRepository) {
         this.nodeRepository = nodeRepository;
         this.fundVersionRepository = fundVersionRepository;
         this.updateConformityInfoService = updateConformityInfoService;
@@ -78,6 +85,7 @@ public class StartupService implements SmartLifecycle {
         this.nodeCacheService = nodeCacheService;
         this.staticDataService = staticDataService;
         this.bulkActionConfigManager = bulkActionConfigManager;
+        this.apNameRepository = apNameRepository;
         this.em = em;
     }
 
@@ -89,9 +97,12 @@ public class StartupService implements SmartLifecycle {
     public void start() {
         logger.info("Elza startup service ...");
 
+        ApFulltextProviderImpl fulltextProvider = new ApFulltextProviderImpl(apNameRepository);
+        ArrDataRecordRef.setFulltextProvider(fulltextProvider);
+        ArrDataPartyRef.setFulltextProvider(fulltextProvider);
         startInTransaction();
+        
         running = true;
-
         logger.info("Elza startup finished");
     }
 

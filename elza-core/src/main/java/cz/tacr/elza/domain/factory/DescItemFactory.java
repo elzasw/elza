@@ -389,14 +389,14 @@ public class DescItemFactory implements InitializingBean {
                     public void mapAtoB(final ArrItemRecordRef arrItemRecordRef,
                                         final ArrDataRecordRef arrDataRecordRef,
                                         final MappingContext context) {
-                        arrDataRecordRef.setRecord(arrItemRecordRef.getRecord());
+                        arrDataRecordRef.setRecord(arrItemRecordRef.getAccessPoint());
                     }
 
                     @Override
                     public void mapBtoA(final ArrDataRecordRef arrDataRecordRef,
                                         final ArrItemRecordRef arrItemRecordRef,
                                         final MappingContext context) {
-                        arrItemRecordRef.setRecord(arrDataRecordRef.getRecord());
+                        arrItemRecordRef.setAccessPoint(arrDataRecordRef.getRecord());
                     }
 
                 }).register();

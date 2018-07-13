@@ -15,13 +15,13 @@ public class XmlNameConsts {
 
     public static final QName ROOT = new QName("http://elza.tacr.cz/schema/v2", "edx", "ns2");
 
-    public static final String SECTIONS = "s";
+    public static final String SECTIONS = "fs";
 
     public static final String ACCESS_POINTS = "aps";
 
     public static final String PARTIES = "pars";
 
-    public static final String SECTION = "fs";
+    public static final String SECTION = "s";
 
     public static final String PARTY = "ap";
 

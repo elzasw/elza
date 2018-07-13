@@ -41,7 +41,15 @@ class ArrStructurePanel extends AbstractReactComponent {
     };
 
     componentDidMount() {
+        const {store:{filter}} = this.props;
         this.fetchIfNeeded();
+        // set default filter to "all"
+        if(!filter || typeof filter.assignable === "undefined"){
+            this.filter({
+                ...filter,
+                assignable: ""
+            });
+        }
     }
 
     componentWillReceiveProps(nextProps) {
@@ -170,7 +178,8 @@ class ArrStructurePanel extends AbstractReactComponent {
     };
 
     filter = (toFilter) => {
-        this.props.dispatch(structureTypeFilter({...this.props.filter, ...toFilter}));
+        const {store:{filter}} = this.props;
+        this.props.dispatch(structureTypeFilter({...filter, ...toFilter}));
     };
 
     /**

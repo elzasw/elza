@@ -4,33 +4,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import cz.tacr.elza.controller.vo.*;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
-import cz.tacr.elza.controller.vo.ArrFundVO;
-import cz.tacr.elza.controller.vo.ArrFundVersionVO;
-import cz.tacr.elza.controller.vo.ParComplementTypeVO;
-import cz.tacr.elza.controller.vo.ParDynastyVO;
-import cz.tacr.elza.controller.vo.ParEventVO;
-import cz.tacr.elza.controller.vo.ParPartyGroupIdentifierVO;
-import cz.tacr.elza.controller.vo.ParPartyGroupVO;
-import cz.tacr.elza.controller.vo.ParPartyNameComplementVO;
-import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
-import cz.tacr.elza.controller.vo.ParPartyNameVO;
-import cz.tacr.elza.controller.vo.ParPartyTypeVO;
-import cz.tacr.elza.controller.vo.ParPartyVO;
-import cz.tacr.elza.controller.vo.ParPersonVO;
-import cz.tacr.elza.controller.vo.ParRelationEntityVO;
-import cz.tacr.elza.controller.vo.ParRelationRoleTypeVO;
-import cz.tacr.elza.controller.vo.ParRelationTypeVO;
-import cz.tacr.elza.controller.vo.ParRelationVO;
-import cz.tacr.elza.controller.vo.ParUnitdateVO;
-import cz.tacr.elza.controller.vo.ApRecordVO;
-import cz.tacr.elza.controller.vo.ApTypeVO;
-import cz.tacr.elza.controller.vo.ApScopeVO;
-import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
@@ -118,11 +96,11 @@ public class PartyControllerTest extends AbstractControllerTest {
 
         /* Vytvoření osoby **/
         ParPersonVO personO1 = new ParPersonVO();
-        ApRecordVO recordO1 = new ApRecordVO();
+        ApAccessPointVO recordO1 = new ApAccessPointVO();
 
         recordO1.setApTypeId(findApTypeAddable(recordTypesForPartyType(typeO1.getId())).getId());
         recordO1.setScopeId(scope.getId());
-        personO1.setRecord(recordO1);
+        personO1.setAccessPoint(recordO1);
         personO1.setPartyType(typeO1);
 
         ParPartyNameVO partyNameO1 = new ParPartyNameVO();
@@ -142,12 +120,12 @@ public class PartyControllerTest extends AbstractControllerTest {
 
         /* Vytvoření korporace **/
         ParPartyGroupVO groupK1 = new ParPartyGroupVO();
-        ApRecordVO recordK1 = new ApRecordVO();
+        ApAccessPointVO recordK1 = new ApAccessPointVO();
 
         recordK1.setApTypeId(findApTypeAddable(recordTypesForPartyType(typeK1.getId())).getId());
         recordK1.setScopeId(scope.getId());
 
-        groupK1.setRecord(recordK1);
+        groupK1.setAccessPoint(recordK1);
 
         groupK1.setPartyType(typeK1);
         groupK1.setScope(scope.getId().toString());
@@ -166,12 +144,12 @@ public class PartyControllerTest extends AbstractControllerTest {
 
         /* Vytvoření rodu **/
         ParDynastyVO dynastyR1 = new ParDynastyVO();
-        ApRecordVO recordR1 = new ApRecordVO();
+        ApAccessPointVO recordR1 = new ApAccessPointVO();
 
         recordR1.setApTypeId(findApTypeAddable(recordTypesForPartyType(typeR1.getId())).getId());
         recordR1.setScopeId(scope.getId());
 
-        dynastyR1.setRecord(recordR1);
+        dynastyR1.setAccessPoint(recordR1);
         dynastyR1.setGenealogy("R1");
         dynastyR1.setPartyType(typeR1);
 
@@ -188,12 +166,12 @@ public class PartyControllerTest extends AbstractControllerTest {
 
         /* vytvoření události **/
         ParEventVO eventU1 = new ParEventVO();
-        ApRecordVO recordU1 = new ApRecordVO();
+        ApAccessPointVO recordU1 = new ApAccessPointVO();
 
         recordU1.setApTypeId(findApTypeAddable(recordTypesForPartyType(typeU1.getId())).getId());
         recordU1.setScopeId(scope.getId());
 
-        eventU1.setRecord(recordU1);
+        eventU1.setAccessPoint(recordU1);
         eventU1.setPartyType(typeU1);
 
         ParPartyNameVO partyNameU1 = new ParPartyNameVO();
@@ -214,7 +192,7 @@ public class PartyControllerTest extends AbstractControllerTest {
         for (ParPartyVO party : parties) {
             ParPartyNameVO name = party.getPartyNames().iterator().next();
             Assert.assertTrue("Očekáváme 1 preferované jméno", party.getPartyNames().size() == 1 && name.isPrefferedName());
-            Assert.assertTrue("Očekáváme neprázdný rejstříkový záznam", party.getRecord() != null);
+            Assert.assertTrue("Očekáváme neprázdný rejstříkový záznam", party.getAccessPoint() != null);
         }
 
         parties = findParty(null, null, null, groupK1.getPartyType().getId(), null);
@@ -341,19 +319,19 @@ public class PartyControllerTest extends AbstractControllerTest {
         Assert.assertNotNull(spawnRelationType);
         ParRelationRoleTypeVO spawnRelationRoleType = findRelationRoleTypeByCode(spawnRelationType.getRelationRoleTypes(), "PLACE");
         Assert.assertNotNull(spawnRelationRoleType);
-        List<ApRecordVO> recordForRelation = findRecordForRelation(null, null, null, spawnRelationRoleType.getId(), personO1.getId());
+        List<ApAccessPointVO> recordForRelation = findRecordForRelation(null, null, null, spawnRelationRoleType.getId(), personO1.getId());
 
         Assert.assertTrue("Očekáváme 0 záznamů", recordForRelation.size() == 0);
 
         /* Přidání relací osoby **/
-        ApRecordVO record = new ApRecordVO();
+        ApAccessPointCreateVO recordCreate = new ApAccessPointCreateVO();
 
-        record.setScopeId(scope.getId());
-        record.setCharacteristics("Characteristic");
-        record.setRecord("GEO1");
-        record.setApTypeId(findApTypeByCode(getRecordTypes(), "GEO_SPACE").getId());
+        recordCreate.setScopeId(scope.getId());
+        recordCreate.setName("GEO1 name");
+        recordCreate.setComplement("GEO1 complement");
+        recordCreate.setTypeId(findApTypeByCode(getRecordTypes(), "GEO_SPACE").getId());
 
-        record = createRecord(record);
+        ApAccessPointVO record = createAccessPoint(recordCreate);
 
         /* Test zda existuje heslo s tímto typem pro přidání (test metody findRecordForRelation) **/
         recordForRelation = findRecordForRelation(null, null, null, spawnRelationRoleType.getId(), personO1.getId());
@@ -448,11 +426,11 @@ public class PartyControllerTest extends AbstractControllerTest {
 
         /* Vytvoření osoby **/
         ParPersonVO personO1 = new ParPersonVO();
-        ApRecordVO recordO1 = new ApRecordVO();
+        ApAccessPointVO recordO1 = new ApAccessPointVO();
 
         recordO1.setApTypeId(findApTypeAddable(recordTypesForPartyType(typeO1.getId())).getId());
         recordO1.setScopeId(scope.getId());
-        personO1.setRecord(recordO1);
+        personO1.setAccessPoint(recordO1);
         personO1.setPartyType(typeO1);
 
         ParPartyNameVO partyNameO1 = new ParPartyNameVO();
@@ -524,7 +502,7 @@ public class PartyControllerTest extends AbstractControllerTest {
         /* Vznik **/
         ParRelationVO relation = new ParRelationVO();
         ParRelationEntityVO spawnRelationEntity = new ParRelationEntityVO();
-        spawnRelationEntity.setRecord(personO1.getRecord());
+        spawnRelationEntity.setRecord(personO1.getAccessPoint());
 
         spawnRelationEntity.setRoleType(spawnRelationRoleType);
         relation.setRelationEntities(Collections.singletonList(spawnRelationEntity));

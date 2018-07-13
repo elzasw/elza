@@ -45,14 +45,4 @@ public class DescItemValue {
     public void setSpecCode(final String specCode) {
         this.specCode = specCode;
     }
-
-
-    public static DescItemValue create(final TitleValue titleValue) {
-        if (titleValue instanceof UnitdateTitleValue) {
-            return new UnitdateDescItemValue(titleValue.getValue(), titleValue.getSpecCode(),
-                    ((UnitdateTitleValue) titleValue).getCalendarTypeId());
-        } else {
-            return new DescItemValue(titleValue.getValue(), titleValue.getSpecCode());
-        }
-    }
 }

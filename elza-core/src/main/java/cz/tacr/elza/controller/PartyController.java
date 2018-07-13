@@ -11,9 +11,6 @@ import java.util.Set;
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
-import cz.tacr.elza.controller.vo.*;
-import cz.tacr.elza.domain.*;
-import cz.tacr.elza.exception.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
@@ -27,8 +24,33 @@ import org.springframework.web.bind.annotation.RestController;
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.ApTypeVO;
+import cz.tacr.elza.controller.vo.FilteredResultVO;
+import cz.tacr.elza.controller.vo.ParComplementTypeVO;
+import cz.tacr.elza.controller.vo.ParInstitutionVO;
+import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
+import cz.tacr.elza.controller.vo.ParPartyTypeVO;
+import cz.tacr.elza.controller.vo.ParPartyVO;
+import cz.tacr.elza.controller.vo.ParRelationRoleTypeVO;
+import cz.tacr.elza.controller.vo.ParRelationTypeVO;
+import cz.tacr.elza.controller.vo.ParRelationVO;
+import cz.tacr.elza.controller.vo.UIPartyGroupVO;
 import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
+import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApType;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ParComplementType;
+import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.ParPartyNameFormType;
+import cz.tacr.elza.domain.ParPartyType;
+import cz.tacr.elza.domain.ParPartyTypeComplementType;
+import cz.tacr.elza.domain.ParPartyTypeRelation;
+import cz.tacr.elza.domain.ParRelation;
+import cz.tacr.elza.domain.ParRelationEntity;
+import cz.tacr.elza.domain.ParRelationRoleType;
+import cz.tacr.elza.domain.ParRelationType;
+import cz.tacr.elza.domain.ParRelationTypeRoleType;
+import cz.tacr.elza.domain.UIPartyGroup;
 import cz.tacr.elza.exception.DeleteException;
 import cz.tacr.elza.exception.Level;
 import cz.tacr.elza.exception.ObjectNotFoundException;
@@ -36,6 +58,7 @@ import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.exception.codes.UserCode;
+import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.ComplementTypeRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
@@ -44,14 +67,13 @@ import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.PartyTypeComplementTypeRepository;
 import cz.tacr.elza.repository.PartyTypeRelationRepository;
 import cz.tacr.elza.repository.PartyTypeRepository;
-import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.RelationRepository;
 import cz.tacr.elza.repository.RelationRoleTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRoleTypeRepository;
 import cz.tacr.elza.repository.UIPartyGroupRepository;
+import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.PartyService;
-import cz.tacr.elza.service.ApService;
 import cz.tacr.elza.service.UserService;
 
 
@@ -61,7 +83,6 @@ import cz.tacr.elza.service.UserService;
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 21.12.2015
  */
-@SuppressWarnings("SpringAutowiredFieldsWarningInspection")
 @RestController
 @RequestMapping(value = "/api/party", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 public class PartyController {
@@ -124,7 +145,7 @@ public class PartyController {
     private UIPartyGroupRepository uiPartyGroupRepository;
 
     @Autowired
-    private ApService apService;
+    private AccessPointService accessPointService;
 
     /**
      * Uložení nové osoby
@@ -229,8 +250,7 @@ public class PartyController {
                                        @Nullable @RequestParam(required = false) final Integer partyTypeId,
                                        @Nullable @RequestParam(required = false) final Integer itemSpecId,
                                        @RequestParam(required = false) @Nullable final Integer versionId,
-                                       @RequestParam(required = false) @Nullable final Integer scopeId,
-                                       @RequestParam(required = false, defaultValue = "true") @Nullable final Boolean excludeInvalid) {
+                                       @RequestParam(required = false) @Nullable final Integer scopeId) {
 
         ArrFund fund;
         if (versionId == null) {
@@ -241,10 +261,10 @@ public class PartyController {
         }
 
         List<ParParty> partyList = partyService.findPartyByTextAndType(search, partyTypeId, itemSpecId, from, count,
-                fund, scopeId, excludeInvalid);
+                fund, scopeId);
         List<ParPartyVO> resultVo = factoryVo.createPartyList(partyList);
 
-        long countAll = partyService.findPartyByTextAndTypeCount(search, partyTypeId, itemSpecId, fund, scopeId, excludeInvalid);
+        long countAll = partyService.findPartyByTextAndTypeCount(search, partyTypeId, itemSpecId, fund, scopeId);
         return new FilteredResultVO<>(resultVo, countAll);
     }
 
@@ -269,14 +289,14 @@ public class PartyController {
 
         ParParty party = partyRepository.getOneCheckExist(partyId);
         Set<Integer> scopeIds = new HashSet<>();
-        scopeIds.add(party.getRecord().getScope().getScopeId());
+        scopeIds.add(party.getAccessPoint().getScope().getScopeId());
 
         List<ParParty> partyList = partyRepository.findPartyByTextAndType(search, partyTypeId, null,
-                from, count, scopeIds, true);
+                from, count, scopeIds);
 
         List<ParPartyVO> resultVo = factoryVo.createPartyList(partyList);
 
-        long countAll = partyRepository.findPartyByTextAndTypeCount(search, partyTypeId, null, scopeIds, true);
+        long countAll = partyRepository.findPartyByTextAndTypeCount(search, partyTypeId, null, scopeIds);
         return new FilteredResultVO<>(resultVo, countAll);
     }
 
@@ -447,8 +467,7 @@ public class PartyController {
 
         for (ParPartyTypeVO partyTypeVO : partyTypeVoMap.values()) {
             ParPartyType partyType = partyTypeRepository.findOne(partyTypeVO.getId());
-            List<ApType> partyApTypes = apTypeRepository
-                    .findByPartyTypeEnableAdding(partyType);
+            List<ApType> partyApTypes = apTypeRepository.findByPartyTypeAndReadOnlyFalseOrderByName(partyType);
 
             partyTypeVO.setApTypes(factoryVo.createApTypesTree(partyApTypes, true, partyType));
 
@@ -511,8 +530,8 @@ public class PartyController {
 	@Transactional
     public RecordUsageVO findUsage(@PathVariable final Integer partyId) {
     	ParParty parParty = partyRepository.getOneCheckExist(partyId);
-    	ApRecord apRecord = parParty.getRecord();
-    	return apService.findRecordUsage(apRecord, parParty);
+    	ApAccessPoint accessPoint = parParty.getAccessPoint();
+    	return accessPointService.findRecordUsage(accessPoint, parParty);
     }
 
 
@@ -528,20 +547,5 @@ public class PartyController {
         final ParParty replaced = partyService.getParty(partyId);
         final ParParty replacement = partyService.getParty(replacedId);
         partyService.replace(replaced, replacement);
-    }
-
-
-    /**
-     * Zplatnění osoby
-     * @param partyId ID osoby
-     */
-    @Transactional
-    @RequestMapping(value = "/{partyId}/valid", method = RequestMethod.POST)
-    public void valid(@PathVariable final Integer partyId) {
-        final ParParty party = partyService.getParty(partyId);
-        ApRecord record = party.getRecord();
-        record.setInvalid(false);
-        apService.saveRecord(record, false);
-
     }
 }

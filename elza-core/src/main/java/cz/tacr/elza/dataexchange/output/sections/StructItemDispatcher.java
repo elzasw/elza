@@ -6,9 +6,9 @@ import cz.tacr.elza.domain.ArrStructuredItem;
 
 public class StructItemDispatcher extends NestedLoadDispatcher<ArrStructuredItem> {
 
-    private final StructObjectInfo structObjectInfo;
+    private final StructObjectInfoImpl structObjectInfo;
 
-    StructItemDispatcher(StructObjectInfo structObjectInfo, LoadDispatcher<StructObjectInfo> structObjectDispatcher) {
+    StructItemDispatcher(StructObjectInfoImpl structObjectInfo, LoadDispatcher<StructObjectInfoImpl> structObjectDispatcher) {
         super(structObjectDispatcher);
         this.structObjectInfo = structObjectInfo;
     }

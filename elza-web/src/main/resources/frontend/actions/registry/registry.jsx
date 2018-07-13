@@ -55,8 +55,9 @@ export function registryMove(parentRecordId) {
             return;
         }
 
-        WebApi.getRegistry(list.recordForMove.id).then((data) => {
-            savingApiWrapper(dispatch, WebApi.updateRegistry({...data, parentRecordId})).then(json => {
+        WebApi.getAccessPoint(list.recordForMove.id).then((data) => {
+            // TODO compel AP
+            savingApiWrapper(dispatch, WebApi.updateAccessPoint({...data, parentRecordId})).then(json => {
                 dispatch(registryMoveFinish());
                 dispatch(registryListInvalidate());
             });
@@ -98,7 +99,7 @@ export const AREA_REGISTRY_DETAIL = "registryDetail";
 export function registryDetailFetchIfNeeded(id) {
     return (dispatch, getState) => {
         return dispatch(DetailActions.fetchIfNeeded(AREA_REGISTRY_DETAIL, id, () => {
-            return WebApi.getRegistry(id).catch(() => dispatch(registryDetailClear()));
+            return WebApi.getAccessPoint(id).catch(() => dispatch(registryDetailClear()));
         }));
     }
 }
@@ -139,7 +140,8 @@ function registryRecordCreate(parentId, callback, data, submitType) {
 
 export function registryUpdate(data, callback = null) {
     return (dispatch, getState) => {
-        return savingApiWrapper(dispatch, WebApi.updateRegistry(data)).then(json => {
+        // TODO compel AP
+        return savingApiWrapper(dispatch, WebApi.updateAccessPoint(data)).then(json => {
             const store = getState();
             const detail = storeFromArea(store, AREA_REGISTRY_DETAIL);
 
@@ -162,7 +164,7 @@ export function registryUpdate(data, callback = null) {
 
 export function registryDelete(id) {
     return (dispatch, getState) => {
-        WebApi.deleteRegistry(id).then(() => {
+        WebApi.deleteAccessPoint(id).then(() => {
             const store = getState();
             const detail = storeFromArea(store, AREA_REGISTRY_DETAIL);
             const list = storeFromArea(store, AREA_REGISTRY_LIST);
@@ -196,7 +198,7 @@ export function setValidRegistry(id) {
 */
 export function registrySetFolder(recordId) {
     return (dispatch, getState) => {
-        return WebApi.getRegistry(recordId).then(item => {
+        return WebApi.getAccessPoint(recordId).then(item => {
             const store = getState();
             const list = storeFromArea(store, AREA_REGISTRY_LIST);
 
@@ -229,7 +231,8 @@ export function registryVariantUpdate(data) {
             }
         });
         if (needFetch === true) {
-            return savingApiWrapper(dispatch, WebApi.editRegistryVariant(data)).then(json => {
+            // TODO compel AP
+            return savingApiWrapper(dispatch, WebApi.updateAccessPointName(-1, data)).then(json => {
                 dispatch(receiveRegistryVariantRecord(json));
             });
         }
@@ -253,7 +256,8 @@ export function registryVariantAddRow() {
 
 export function registryVariantCreate(data, variantRecordInternalId) {
     return (dispatch) => {
-        savingApiWrapper(dispatch, WebApi.addRegistryVariant(data)).then(json => {
+        // TODO compel AP
+        savingApiWrapper(dispatch, WebApi.createAccessPointName(-1 ,data)).then(json => {
             dispatch(registryVariantCreated(json, variantRecordInternalId));
         });
     }
@@ -270,7 +274,8 @@ export function registryVariantCreated(json, variantRecordInternalId) {
 
 export function registryVariantDelete(variantRecordId){
     return (dispatch) => {
-        WebApi.deleteVariantRecord(variantRecordId).then(json => {
+        // TODO compel AP
+        WebApi.deleteAccessPointName(-1, variantRecordId).then(json => {
             dispatch(registryVariantDeleted(variantRecordId));
         });
     }

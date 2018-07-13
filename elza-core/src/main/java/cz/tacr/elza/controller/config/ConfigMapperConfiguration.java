@@ -19,74 +19,11 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.util.Assert;
 
 import com.vividsolutions.jts.geom.Geometry;
-
 import cz.tacr.elza.bulkaction.BulkActionConfig;
 import cz.tacr.elza.bulkaction.generator.PersistentSortRunConfig;
 import cz.tacr.elza.common.GeometryConvertor;
-import cz.tacr.elza.controller.vo.ApExternalSystemSimpleVO;
-import cz.tacr.elza.controller.vo.ApExternalSystemVO;
-import cz.tacr.elza.controller.vo.ApRecordSimple;
-import cz.tacr.elza.controller.vo.ApRecordVO;
-import cz.tacr.elza.controller.vo.ApScopeVO;
-import cz.tacr.elza.controller.vo.ApTypeVO;
-import cz.tacr.elza.controller.vo.ApVariantRecordVO;
-import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
-import cz.tacr.elza.controller.vo.ArrChangeVO;
-import cz.tacr.elza.controller.vo.ArrDaoFileGroupVO;
-import cz.tacr.elza.controller.vo.ArrDaoFileVO;
-import cz.tacr.elza.controller.vo.ArrDaoVO;
-import cz.tacr.elza.controller.vo.ArrDigitalRepositorySimpleVO;
-import cz.tacr.elza.controller.vo.ArrDigitalRepositoryVO;
-import cz.tacr.elza.controller.vo.ArrDigitizationFrontdeskSimpleVO;
-import cz.tacr.elza.controller.vo.ArrDigitizationFrontdeskVO;
-import cz.tacr.elza.controller.vo.ArrFileVO;
-import cz.tacr.elza.controller.vo.ArrFundBaseVO;
-import cz.tacr.elza.controller.vo.ArrFundVO;
-import cz.tacr.elza.controller.vo.ArrFundVersionVO;
-import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
-import cz.tacr.elza.controller.vo.ArrOutputDefinitionVO;
-import cz.tacr.elza.controller.vo.ArrOutputFileVO;
-import cz.tacr.elza.controller.vo.ArrOutputVO;
-import cz.tacr.elza.controller.vo.BulkActionRunVO;
-import cz.tacr.elza.controller.vo.BulkActionVO;
-import cz.tacr.elza.controller.vo.DmsFileVO;
-import cz.tacr.elza.controller.vo.NodeConformityErrorVO;
-import cz.tacr.elza.controller.vo.NodeConformityMissingVO;
-import cz.tacr.elza.controller.vo.NodeConformityVO;
-import cz.tacr.elza.controller.vo.ParComplementTypeVO;
-import cz.tacr.elza.controller.vo.ParDynastyVO;
-import cz.tacr.elza.controller.vo.ParEventVO;
-import cz.tacr.elza.controller.vo.ParInstitutionTypeVO;
-import cz.tacr.elza.controller.vo.ParInstitutionVO;
-import cz.tacr.elza.controller.vo.ParPartyGroupIdentifierVO;
-import cz.tacr.elza.controller.vo.ParPartyGroupVO;
-import cz.tacr.elza.controller.vo.ParPartyNameComplementVO;
-import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
-import cz.tacr.elza.controller.vo.ParPartyNameVO;
-import cz.tacr.elza.controller.vo.ParPartyTypeVO;
-import cz.tacr.elza.controller.vo.ParPartyVO;
-import cz.tacr.elza.controller.vo.ParPersonVO;
-import cz.tacr.elza.controller.vo.ParRelationClassTypeVO;
-import cz.tacr.elza.controller.vo.ParRelationEntityVO;
-import cz.tacr.elza.controller.vo.ParRelationRoleTypeVO;
-import cz.tacr.elza.controller.vo.ParRelationTypeVO;
-import cz.tacr.elza.controller.vo.ParRelationVO;
-import cz.tacr.elza.controller.vo.ParUnitdateVO;
-import cz.tacr.elza.controller.vo.PersistentSortConfigVO;
-import cz.tacr.elza.controller.vo.RulArrangementExtensionVO;
-import cz.tacr.elza.controller.vo.RulDataTypeVO;
-import cz.tacr.elza.controller.vo.RulDescItemSpecVO;
-import cz.tacr.elza.controller.vo.RulOutputTypeVO;
-import cz.tacr.elza.controller.vo.RulPolicyTypeVO;
-import cz.tacr.elza.controller.vo.RulRuleSetVO;
-import cz.tacr.elza.controller.vo.RulStructureTypeVO;
-import cz.tacr.elza.controller.vo.RulTemplateVO;
-import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
-import cz.tacr.elza.controller.vo.UIPartyGroupVO;
-import cz.tacr.elza.controller.vo.UISettingsVO;
-import cz.tacr.elza.controller.vo.UsrGroupVO;
-import cz.tacr.elza.controller.vo.UsrPermissionVO;
-import cz.tacr.elza.controller.vo.UsrUserVO;
+import cz.tacr.elza.controller.vo.*;
+import cz.tacr.elza.controller.vo.ApAccessPointNameVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.DescItemSpecLiteVO;
 import cz.tacr.elza.controller.vo.nodes.ItemTypeDescItemsLiteVO;
@@ -95,19 +32,111 @@ import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeDescItemsVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.core.data.CalendarType;
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApDescription;
+import cz.tacr.elza.domain.ApExternalSystem;
+import cz.tacr.elza.domain.ApName;
+import cz.tacr.elza.domain.ApScope;
+import cz.tacr.elza.domain.ApType;
+import cz.tacr.elza.domain.ArrBulkActionRun;
+import cz.tacr.elza.domain.ArrCalendarType;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDao;
+import cz.tacr.elza.domain.ArrDaoFile;
+import cz.tacr.elza.domain.ArrDaoFileGroup;
+import cz.tacr.elza.domain.ArrDataCoordinates;
+import cz.tacr.elza.domain.ArrDataDecimal;
+import cz.tacr.elza.domain.ArrDataFileRef;
+import cz.tacr.elza.domain.ArrDataInteger;
+import cz.tacr.elza.domain.ArrDataJsonTable;
+import cz.tacr.elza.domain.ArrDataNull;
+import cz.tacr.elza.domain.ArrDataPartyRef;
+import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrDataString;
+import cz.tacr.elza.domain.ArrDataStructureRef;
+import cz.tacr.elza.domain.ArrDataText;
+import cz.tacr.elza.domain.ArrDataUnitdate;
+import cz.tacr.elza.domain.ArrDataUnitid;
+import cz.tacr.elza.domain.ArrDigitalRepository;
+import cz.tacr.elza.domain.ArrDigitizationFrontdesk;
+import cz.tacr.elza.domain.ArrFile;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrItemCoordinates;
+import cz.tacr.elza.domain.ArrItemDecimal;
+import cz.tacr.elza.domain.ArrItemEnum;
+import cz.tacr.elza.domain.ArrItemFileRef;
+import cz.tacr.elza.domain.ArrItemFormattedText;
+import cz.tacr.elza.domain.ArrItemInt;
+import cz.tacr.elza.domain.ArrItemJsonTable;
+import cz.tacr.elza.domain.ArrItemPartyRef;
+import cz.tacr.elza.domain.ArrItemRecordRef;
+import cz.tacr.elza.domain.ArrItemString;
+import cz.tacr.elza.domain.ArrItemStructureRef;
+import cz.tacr.elza.domain.ArrItemText;
+import cz.tacr.elza.domain.ArrItemUnitdate;
+import cz.tacr.elza.domain.ArrItemUnitid;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrNodeConformityError;
+import cz.tacr.elza.domain.ArrNodeConformityExt;
+import cz.tacr.elza.domain.ArrNodeConformityMissing;
+import cz.tacr.elza.domain.ArrNodeRegister;
+import cz.tacr.elza.domain.ArrOutput;
+import cz.tacr.elza.domain.ArrOutputDefinition;
+import cz.tacr.elza.domain.ArrOutputFile;
+import cz.tacr.elza.domain.ArrOutputResult;
+import cz.tacr.elza.domain.DmsFile;
+import cz.tacr.elza.domain.ParComplementType;
+import cz.tacr.elza.domain.ParCreator;
+import cz.tacr.elza.domain.ParDynasty;
+import cz.tacr.elza.domain.ParEvent;
+import cz.tacr.elza.domain.ParInstitution;
+import cz.tacr.elza.domain.ParInstitutionType;
+import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.ParPartyGroup;
+import cz.tacr.elza.domain.ParPartyGroupIdentifier;
+import cz.tacr.elza.domain.ParPartyName;
+import cz.tacr.elza.domain.ParPartyNameComplement;
+import cz.tacr.elza.domain.ParPartyNameFormType;
+import cz.tacr.elza.domain.ParPartyType;
+import cz.tacr.elza.domain.ParPerson;
+import cz.tacr.elza.domain.ParRelation;
+import cz.tacr.elza.domain.ParRelationClassType;
+import cz.tacr.elza.domain.ParRelationEntity;
+import cz.tacr.elza.domain.ParRelationRoleType;
+import cz.tacr.elza.domain.ParRelationType;
+import cz.tacr.elza.domain.ParUnitdate;
+import cz.tacr.elza.domain.RulArrangementExtension;
+import cz.tacr.elza.domain.RulDataType;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemSpecExt;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulItemTypeExt;
+import cz.tacr.elza.domain.RulOutputType;
+import cz.tacr.elza.domain.RulPolicyType;
+import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.RulStructuredType;
+import cz.tacr.elza.domain.RulTemplate;
+import cz.tacr.elza.domain.UIPartyGroup;
+import cz.tacr.elza.domain.UISettings;
+import cz.tacr.elza.domain.UsrGroup;
+import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.convertor.CalendarConverter;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.packageimport.xml.SettingGridView;
-import cz.tacr.elza.repository.ApRecordRepository;
+import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.FundFileRepository;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.OutputResultRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
+import cz.tacr.elza.service.AccessPointDataService;
 import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.attachment.AttachmentService;
+import cz.tacr.elza.service.vo.ApAccessPointData;
 import ma.glasnost.orika.CustomMapper;
 import ma.glasnost.orika.MapperFactory;
 import ma.glasnost.orika.MappingContext;
@@ -115,6 +144,21 @@ import ma.glasnost.orika.converter.BidirectionalConverter;
 import ma.glasnost.orika.converter.builtin.PassThroughConverter;
 import ma.glasnost.orika.impl.DefaultMapperFactory;
 import ma.glasnost.orika.metadata.Type;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.util.Assert;
+
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
 
 
 /**
@@ -140,11 +184,13 @@ public class ConfigMapperConfiguration {
     @Autowired
     private PartyRepository partyRepository;
     @Autowired
-    private ApRecordRepository recordRepository;
+    private ApAccessPointRepository apAccessPointRepository;
     @Autowired
     private RuleService ruleService;
     @Autowired
     private AttachmentService attachmentService;
+    @Autowired
+    private AccessPointDataService accessPointDataService;
 
     /**
      * @return Tovární třída.
@@ -331,7 +377,7 @@ public class ConfigMapperConfiguration {
                                         final ArrItemRecordRefVO recordRefVO,
                                         final MappingContext context) {
                         super.mapAtoB(recordRef, recordRefVO, context);
-                        recordRefVO.setValue(recordRef == null || recordRef.getRecord() == null ? null : recordRef.getRecord().getRecordId());
+                        recordRefVO.setValue(recordRef == null || recordRef.getAccessPoint() == null ? null : recordRef.getAccessPoint().getAccessPointId());
                     }
 
                     @Override
@@ -339,7 +385,7 @@ public class ConfigMapperConfiguration {
                                         final ArrItemRecordRef recordRef,
                                         final MappingContext context) {
                         super.mapBtoA(recordRefVO, recordRef, context);
-                        recordRef.setRecord(recordRefVO.getValue() == null ? null : recordRepository.findOne(recordRefVO.getValue()));
+                        recordRef.setAccessPoint(recordRefVO.getValue() == null ? null : apAccessPointRepository.findOne(recordRefVO.getValue()));
                     }
                 }).byDefault().register();
         mapperFactory.classMap(ArrItemString.class, ArrItemStringVO.class).byDefault().register();
@@ -433,8 +479,8 @@ public class ConfigMapperConfiguration {
         mapperFactory.classMap(ParInstitutionType.class, ParInstitutionTypeVO.class).byDefault()
                 .field("institutionTypeId", "id").register();
 
-        mapperFactory.classMap(ApRecord.class, ApRecord.class)
-                .exclude(ApRecord.RECORD_ID)
+        mapperFactory.classMap(ApAccessPoint.class, ApAccessPoint.class)
+                .exclude(ApAccessPoint.ACCESS_POINT_ID)
             .byDefault().register();
 
 
@@ -552,9 +598,9 @@ public class ConfigMapperConfiguration {
                         }
 
                         if (relationEntityVO.getRecord() != null) {
-                            ApRecord record = new ApRecord();
-                            record.setRecordId(relationEntityVO.getRecord().getId());
-                            parRelationEntity.setRecord(record);
+                            ApAccessPoint record = new ApAccessPoint();
+                            record.setAccessPointId(relationEntityVO.getRecord().getId());
+                            parRelationEntity.setAccessPoint(record);
                         }
                     }
                 }).byDefault().register();
@@ -588,41 +634,125 @@ public class ConfigMapperConfiguration {
                 }
             }).byDefault().register();
 
-        mapperFactory.classMap(ApRecord.class, ApRecordVO.class)
+        mapperFactory.classMap(ApAccessPoint.class, ApAccessPointVO.class)
                 .exclude("apType")
                 .exclude("scope")
-                .exclude("variantRecordList")
-                .field("recordId", "id")
-                .customize(new CustomMapper<ApRecord, ApRecordVO>() {
+                .field("accessPointId", "id")
+                .customize(new CustomMapper<ApAccessPoint, ApAccessPointVO>() {
                     @Override
-                    public void mapAtoB(final ApRecord apRecord,
-                                        final ApRecordVO apRecordVO,
+                    public void mapAtoB(final ApAccessPoint apAccessPoint,
+                                        final ApAccessPointVO apAccessPointVO,
                                         final MappingContext context) {
-                        apRecordVO.setApTypeId(apRecord.getApType().getApTypeId());
-                        apRecordVO.setAddRecord(apRecord.getApType().getAddRecord());
-                        apRecordVO.setScopeId(apRecord.getScope().getScopeId());
-                        apRecordVO.setInvalid(apRecord.isInvalid());
+                        apAccessPointVO.setApTypeId(apAccessPoint.getApType().getApTypeId());
+                        apAccessPointVO.setAddRecord(!apAccessPoint.getApType().isReadOnly());
+                        apAccessPointVO.setScopeId(apAccessPoint.getScope().getScopeId());
+                        apAccessPointVO.setInvalid(apAccessPoint.getDeleteChange() != null);
                     }
 
                     @Override
-                    public void mapBtoA(final ApRecordVO apRecordVO,
-                                        final ApRecord apRecord,
+                    public void mapBtoA(final ApAccessPointVO apAccessPointVO,
+                                        final ApAccessPoint apAccessPoint,
                                         final MappingContext context) {
 
-                        if (apRecordVO.getApTypeId() != null) {
+                        if (apAccessPointVO.getApTypeId() != null) {
                             ApType apType = new ApType();
-                            apType.setApTypeId(apRecordVO.getApTypeId());
-                            apRecord.setApType(apType);
+                            apType.setApTypeId(apAccessPointVO.getApTypeId());
+                            apAccessPoint.setApType(apType);
                         }
 
-                        if (apRecordVO.getScopeId() != null) {
+                        if (apAccessPointVO.getScopeId() != null) {
                             ApScope scope = new ApScope();
-                            scope.setScopeId(apRecordVO.getScopeId());
-                            apRecord.setScope(scope);
+                            scope.setScopeId(apAccessPointVO.getScopeId());
+                            apAccessPoint.setScope(scope);
                         }
                     }
                 }).byDefault().register();
-        mapperFactory.classMap(ApRecord.class, ApRecordSimple.class).field("recordId", "id").byDefault().register();
+
+        mapperFactory.classMap(ApAccessPointData.class, ApAccessPointVO.class)
+                .exclude("apType")
+                .exclude("scope")
+                .field("accessPointId", "id")
+                .customize(new CustomMapper<ApAccessPointData, ApAccessPointVO>() {
+                    @Override
+                    public void mapAtoB(final ApAccessPointData apAccessPoint,
+                                        final ApAccessPointVO apAccessPointVO,
+                                        final MappingContext context) {
+                        apAccessPointVO.setApTypeId(apAccessPoint.getAccessPoint().getApTypeId());
+                        apAccessPointVO.setAddRecord(!apAccessPoint.getAccessPoint().getApType().isReadOnly());
+                        apAccessPointVO.setScopeId(apAccessPoint.getAccessPoint().getScope().getScopeId());
+                        apAccessPointVO.setInvalid(apAccessPoint.getAccessPoint().getDeleteChange() != null);
+                        apAccessPointVO.setCharacteristics(apAccessPoint.getDescription() == null ? null : apAccessPoint.getDescription().getDescription());
+                        apAccessPointVO.setRecord(apAccessPoint.getPreferredName().getName());
+                        apAccessPointVO.setUuid(apAccessPoint.getAccessPoint().getUuid());
+
+                        // TODO: nutno dořešit přenos EID na klienta
+                        //throw new NotImplementedException("nutno dořešit přenos EID na klienta");
+                        // if (apAccessPoint.getExternalId() != null) {
+                        //     apAccessPointVO.setExternalId(apAccessPoint.getExternalId().getValue());
+                        // }
+                    }
+
+                    @Override
+                    public void mapBtoA(final ApAccessPointVO apAccessPointVO,
+                                        final ApAccessPointData apAccessPointData,
+                                        final MappingContext context) {
+
+                        ApAccessPoint accessPoint = new ApAccessPoint();
+                        accessPoint.setAccessPointId(apAccessPointVO.getId());
+                        apAccessPointData.setAccessPoint(accessPoint);
+                        accessPoint.setUuid(apAccessPointVO.getUuid());
+
+                        if (apAccessPointVO.getApTypeId() != null) {
+                            ApType apType = new ApType();
+                            apType.setApTypeId(apAccessPointVO.getApTypeId());
+                            apAccessPointData.getAccessPoint().setApType(apType);
+                        }
+
+                        if (apAccessPointVO.getScopeId() != null) {
+                            ApScope scope = new ApScope();
+                            scope.setScopeId(apAccessPointVO.getScopeId());
+                            apAccessPointData.getAccessPoint().setScope(scope);
+                        }
+
+                        if(StringUtils.isNotBlank(apAccessPointVO.getCharacteristics())){
+                            ApDescription description = new ApDescription();
+                            description.setDescription(apAccessPointVO.getCharacteristics());
+                            apAccessPointData.setDescription(description);
+                        }
+
+                        if(StringUtils.isNotBlank(apAccessPointVO.getRecord())){
+                            ApName name = new ApName();
+                            name.setName(apAccessPointVO.getRecord());
+                            name.setPreferredName(true);
+                            apAccessPointData.addName(name);
+                        }
+                    }
+                }).byDefault().register();
+
+        mapperFactory.classMap(ApAccessPoint.class, ApRecordSimple.class).field("accessPointId", "id").byDefault()
+                .customize(new CustomMapper<ApAccessPoint, ApRecordSimple>() {
+                    @Override
+                    public void mapAtoB(final ApAccessPoint apAccessPoint,
+                                        final ApRecordSimple apRecordSimple,
+                                        final MappingContext context) {
+                        ApAccessPointData accessPointData = accessPointDataService.findAccessPointData(apAccessPoint);
+                        apRecordSimple.setApTypeId(apAccessPoint.getApType().getApTypeId());
+                        apRecordSimple.setCharacteristics(accessPointData.getDescription() == null ? null : accessPointData.getDescription().getDescription());
+                        apRecordSimple.setRecord(accessPointData.getPreferredName().getName());
+                    }
+
+                    @Override
+                    public void mapBtoA(final ApRecordSimple apRecordSimple,
+                                        final ApAccessPoint apAccessPoint,
+                                        final MappingContext context) {
+                        //TODO [fric] mapovani simple -> AP se nikde nevyskytuje, je nutne rozmyslet zbytek mapovani?
+                        if (apRecordSimple.getApTypeId() != null) {
+                            ApType apType = new ApType();
+                            apType.setApTypeId(apRecordSimple.getApTypeId());
+                            apAccessPoint.setApType(apType);
+                        }
+                    }
+                }).register();
 
         mapperFactory.classMap(ApExternalSystem.class, ApExternalSystemVO.class).field("externalSystemId", "id").byDefault().register();
         mapperFactory.classMap(ArrDigitizationFrontdesk.class, ArrDigitizationFrontdeskVO.class).field("externalSystemId", "id").byDefault().register();
@@ -647,6 +777,8 @@ public class ConfigMapperConfiguration {
                         if (apType.getPartyType() != null) {
                             apTypeVO.setPartyTypeId(apType.getPartyType().getPartyTypeId());
                         }
+
+                        apTypeVO.setAddRecord(!apType.isReadOnly());
                     }
 
                     @Override
@@ -657,6 +789,10 @@ public class ConfigMapperConfiguration {
                             ParPartyType partyType = new ParPartyType();
                             partyType.setPartyTypeId(apTypeVO.getPartyTypeId());
                             apType.setPartyType(partyType);
+                        }
+
+                        if (apTypeVO.getAddRecord() != null) {
+                            apType.setReadOnly(!apTypeVO.getAddRecord());
                         }
                     }
                 }).field("apTypeId", "id").byDefault()
@@ -794,30 +930,6 @@ public class ConfigMapperConfiguration {
                 }).register();
         mapperFactory.classMap(ArrOutput.class, ArrOutputVO.class).byDefault().field("outputId", "id").register();
         mapperFactory.getConverterFactory().registerConverter(new PassThroughConverter(LocalDateTime.class));
-
-        mapperFactory.classMap(ApVariantRecord.class, ApVariantRecordVO.class)
-                .field("variantRecordId", "id")
-                .customize(
-                new CustomMapper<ApVariantRecord, ApVariantRecordVO>() {
-                    @Override
-                    public void mapAtoB(final ApVariantRecord apVariantRecord,
-                                        final ApVariantRecordVO apVariantRecordVO,
-                                        final MappingContext context) {
-                        ApRecord apRecord = apVariantRecord.getApRecord();
-                        apVariantRecordVO.setApRecordId(apRecord.getRecordId());
-                    }
-
-                    @Override
-                    public void mapBtoA(final ApVariantRecordVO apVariantRecordVO,
-                                        final ApVariantRecord apVariantRecord,
-                                        final MappingContext context) {
-                        if (apVariantRecordVO.getApRecordId() != null) {
-                            ApRecord apRecord = new ApRecord();
-                            apRecord.setRecordId(apVariantRecordVO.getApRecordId());
-                            apVariantRecord.setApRecord(apRecord);
-                        }
-                    }
-                }).byDefault().register();
 
         mapperFactory.classMap(UsrUser.class, UsrUserVO.class)
                 .byDefault()
@@ -1035,7 +1147,7 @@ public class ConfigMapperConfiguration {
                                         final ArrItemRecordRefVO recordRefVO,
                                         final MappingContext context) {
                         super.mapAtoB(recordRef, recordRefVO, context);
-                        recordRefVO.setValue(recordRef == null || recordRef.getRecord() == null ? null : recordRef.getRecord().getRecordId());
+                        recordRefVO.setValue(recordRef == null || recordRef.getRecord() == null ? null : recordRef.getRecord().getAccessPointId());
                     }
 
                     @Override
@@ -1043,7 +1155,7 @@ public class ConfigMapperConfiguration {
                                         final ArrDataRecordRef recordRef,
                                         final MappingContext context) {
                         super.mapBtoA(recordRefVO, recordRef, context);
-                        recordRef.setRecord(recordRefVO.getValue() == null ? null : recordRepository.findOne(recordRefVO.getValue()));
+                        recordRef.setRecord(recordRefVO.getValue() == null ? null : apAccessPointRepository.findOne(recordRefVO.getValue()));
                     }
                 }).byDefault().register();
         mapperFactory.classMap(ArrDataString.class, ArrItemStringVO.class).byDefault().register();

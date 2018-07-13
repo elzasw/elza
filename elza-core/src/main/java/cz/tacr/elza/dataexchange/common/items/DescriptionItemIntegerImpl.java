@@ -31,6 +31,7 @@ public class DescriptionItemIntegerImpl extends DescriptionItemInteger {
         }
         ArrDataInteger data = new ArrDataInteger();
         data.setValue(value);
+        data.setDataType(dataType.getEntity());
 
         return new ImportableItemData(data);
     }

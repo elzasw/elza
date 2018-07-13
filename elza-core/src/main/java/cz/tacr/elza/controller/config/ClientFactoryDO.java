@@ -23,9 +23,9 @@ import org.springframework.util.Assert;
 
 import cz.tacr.elza.FilterTools;
 import cz.tacr.elza.bulkaction.generator.PersistentSortRunConfig;
-import cz.tacr.elza.controller.vo.ApRecordVO;
+import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.controller.vo.ApScopeVO;
-import cz.tacr.elza.controller.vo.ApVariantRecordVO;
+import cz.tacr.elza.controller.vo.ApAccessPointNameVO;
 import cz.tacr.elza.controller.vo.ArrFileVO;
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
@@ -76,22 +76,14 @@ import cz.tacr.elza.filter.condition.SubsetDescItemCondition;
 import cz.tacr.elza.filter.condition.UndefinedDescItemCondition;
 import cz.tacr.elza.filter.condition.UnselectedSpecificationsDescItemEnumCondition;
 import cz.tacr.elza.filter.condition.UnselectedValuesDescItemEnumCondition;
-import cz.tacr.elza.repository.ApRecordRepository;
+import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.CalendarTypeRepository;
-import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
+import cz.tacr.elza.service.vo.ApAccessPointData;
 import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MapperFactory;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang3.Validate;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
 
 /**
  * Továrna na vytváření DO objektů z VO objektů.
@@ -113,7 +105,7 @@ public class ClientFactoryDO {
     private ItemSpecRepository itemSpecRepository;
 
     @Autowired
-    private ApRecordRepository apRecordRepository;
+    private ApAccessPointRepository apAccessPointRepository;
 
     @Autowired
     private InstitutionRepository institutionRepository;
@@ -186,9 +178,9 @@ public class ClientFactoryDO {
      * @param apRecordVO VO rejstříkové heslo
      * @return DO rejstříkové heslo
      */
-    public ApRecord createApRecord(final ApRecordVO apRecordVO) {
+    public ApAccessPointData createApAccessPoint(final ApAccessPointVO apRecordVO) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
-        return mapper.map(apRecordVO, ApRecord.class);
+        return mapper.map(apRecordVO, ApAccessPointData.class);
     }
 
     /**
@@ -197,9 +189,9 @@ public class ClientFactoryDO {
      * @param apVariantRecord VO variantní rejstříkové heslo
      * @return DO variantní rejstříkové heslo
      */
-    public ApVariantRecord createApVariantRecord(final ApVariantRecordVO apVariantRecord) {
+    public ApName createApName(final ApAccessPointNameVO apVariantRecord) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
-        return mapper.map(apVariantRecord, ApVariantRecord.class);
+        return mapper.map(apVariantRecord, ApName.class);
     }
 
     /**
@@ -325,10 +317,10 @@ public class ClientFactoryDO {
     public ArrDescItem createDescItem(final ArrItemVO descItemVO) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
 
-        ArrData data = mapper.map(descItemVO, ArrData.class);
-        if (data != null) {
-            // If item has data -> it cannot be undefined
-            Validate.isTrue(descItemVO.getUndefined() != Boolean.TRUE);
+        ArrData data = null;
+        // Item is not undefined -> parse data
+        if (descItemVO.getUndefined() != Boolean.TRUE) {
+            data = mapper.map(descItemVO, ArrData.class);
         }
 
         ArrDescItem descItem = new ArrDescItem();
@@ -401,7 +393,7 @@ public class ClientFactoryDO {
         ArrNodeRegister nodeRegister = mapper.map(nodeRegisterVO, ArrNodeRegister.class);
 
         if (nodeRegisterVO.getValue() != null) {
-            nodeRegister.setRecord(apRecordRepository.findOne(nodeRegisterVO.getValue()));
+            nodeRegister.setRecord(apAccessPointRepository.findOne(nodeRegisterVO.getValue()));
         }
 
         return nodeRegister;

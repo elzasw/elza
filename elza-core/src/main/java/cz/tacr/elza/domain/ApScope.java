@@ -1,52 +1,49 @@
 package cz.tacr.elza.domain;
 
+import javax.persistence.Access;
+import javax.persistence.AccessType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
 import cz.tacr.elza.api.interfaces.IApScope;
-
+import cz.tacr.elza.domain.enumeration.StringLength;
 
 /**
  * Třída rejstříku.
- *
  */
 @Entity(name = "ap_scope")
 @Cache(region = "domain", usage = CacheConcurrencyStrategy.READ_WRITE)
-@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"code"}))
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ApScope implements IApScope {
-
-    public static final String SCOPE_ID = "scopeId";
 
     @Id
     @GeneratedValue
+    @Access(AccessType.PROPERTY)
     private Integer scopeId;
 
-    @Column(length = 50, nullable = false)
+    @Column(length = StringLength.LENGTH_50, nullable = false, unique = true)
     private String code;
 
-    @Column(length = 250, nullable = false)
+    @Column(length = StringLength.LENGTH_250, nullable = false)
     private String name;
 
-    @Column(length = 3)
-    private String language;
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = SysLanguage.class)
+    @JoinColumn(name = "languageId")
+    private SysLanguage language;
 
+    @Override
     public Integer getScopeId() {
         return scopeId;
     }
 
-    public void setScopeId(final Integer scopeId) {
+    public void setScopeId(Integer scopeId) {
         this.scopeId = scopeId;
     }
 
@@ -58,9 +55,10 @@ public class ApScope implements IApScope {
     }
 
     /**
-     * @param code Kód třídy rejstříku.
+     * @param code
+     *            Kód třídy rejstříku.
      */
-    public void setCode(final String code) {
+    public void setCode(String code) {
         this.code = code;
     }
 
@@ -72,61 +70,30 @@ public class ApScope implements IApScope {
     }
 
     /**
-     * @return @param language 3-místný kód jazyka, podle ISO 639-2.
+     * @param name
+     *            Název třídy rejstříku.
      */
-    public String getLanguage() {
-        return this.language;
-    }
-
-    /**
-     * @param name Název třídy rejstříku.
-     */
-    public void setName(final String name) {
+    public void setName(String name) {
         this.name = name;
     }
 
     /**
-     * @param language 3-místný kód jazyka, podle ISO 639-2.
+     * @return @param language 3-místný kód jazyka, podle ISO 639-2.
      */
-    public void setLanguage(final String language) {
+    public SysLanguage getLanguage() {
+        return language;
+    }
+
+    /**
+     * @param language
+     *            3-místný kód jazyka, podle ISO 639-2.
+     */
+    public void setLanguage(SysLanguage language) {
         this.language = language;
     }
 
     @Override
-    public boolean equals(final Object o) {
-        if (this == o) {
-            return true;
-        }
-
-        if (o == null) {
-            return false;
-        }
-
-        ApScope apScope = (ApScope) o;
-
-        return new EqualsBuilder()
-                .append(scopeId, apScope.getScopeId())
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .append(scopeId)
-                .toHashCode();
-    }
-
-    @Override
     public String toString() {
-        return "ApScope{" +
-                "scopeId=" + scopeId +
-                ", code='" + code + '\'' +
-                ", name='" + name + '\'' +
-                '}';
-    }
-
-    @Override
-    public ApScope getApScope() {
-        return this;
+        return "ApScope [scopeId=" + scopeId + ", code=" + code + ", name=" + name + "]";
     }
 }

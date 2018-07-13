@@ -122,7 +122,28 @@ public enum RegistryCode implements ErrorCode {
     FOREIGN_ENTITY_INVALID_SUBTYPE,
 
     /**
+     * Nelze upravit odstraněný přístupový bod.
+     */
+    CANT_CHANGE_DELETED_AP,
+
+    /**
+     * Nelze upravit odstraněné jméno přístupového bodu.
+     */
+    CANT_CHANGE_DELETED_NAME,
+
+    /**
+     * Celé jméno není unikátní v rámci třídy.
+     */
+    NOT_UNIQUE_FULL_NAME,
+
+    /**
+     * Nelze smazat preferované jméno.
+     */
+    CANT_DELETE_PREFERRED_NAME,
+
+    /**
      * Typ hesla musí mít vazbu na typ osoby.
      */
-    REGISTRY_HAS_NOT_TYPE_PARTY
+    REGISTRY_HAS_NOT_TYPE_PARTY;
+
 }

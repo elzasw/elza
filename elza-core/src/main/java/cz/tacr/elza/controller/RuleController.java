@@ -291,13 +291,16 @@ public class RuleController {
     }
 
     /**
-     * Získání nastavení oprávnění pro uzly.
+     * Získání nastavení pravidel zobrazení pro uzly.
      *
-     * @param nodeId         identifikátor node ke kterému hledám oprávnění
-     * @param fundVersionId  identifikátor verze AS
+     * @param nodeId
+     *            identifikátor node ke kterému hledám oprávnění
+     * @param fundVersionId
+     *            identifikátor verze AS
      * @return mapa uzlů map typů a jejich zobrazení
      */
     @RequestMapping(value = "/policy/{nodeId}/{fundVersionId}", method = RequestMethod.GET)
+    @Transactional
     public VisiblePolicyTypes getVisiblePolicy(@PathVariable(value = "nodeId") final Integer nodeId,
                                                @PathVariable(value = "fundVersionId") final Integer fundVersionId) {
         Assert.notNull(nodeId, "Identifikátor JP musí být vyplněn");
@@ -308,6 +311,9 @@ public class RuleController {
 
         ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
         Assert.notNull(fundVersion, "Verze fondu s id=" + fundVersionId + " neexistuje");
+
+        // TODO: Develop new request in policy service to prepare list of active
+        //       policy types. Recursive query could be used
 
         VisiblePolicyTypes result = new VisiblePolicyTypes();
 
@@ -400,9 +406,13 @@ public class RuleController {
         private List<RulArrangementExtensionVO> availableExtensions;
 
         /**
-         * Mapa typů oprávnění a jejich zobrazení
+         * Mapa typů oprávnění a jejich zobrazení z rodiče
          */
         private Map<Integer, Boolean> policyTypeIdsMap;
+
+        /**
+         * Node specific settings
+         */
         private Map<Integer, Boolean> nodePolicyTypeIdsMap;
 
         public List<RulArrangementExtensionVO> getParentExtensions() {

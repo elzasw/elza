@@ -13,6 +13,15 @@ import cz.tacr.elza.repository.*;
 import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.domain.ApType;
+import cz.tacr.elza.repository.ComplementTypeRepository;
+import cz.tacr.elza.repository.PackageRepository;
+import cz.tacr.elza.repository.PartyNameFormTypeRepository;
+import cz.tacr.elza.repository.PartyTypeComplementTypeRepository;
+import cz.tacr.elza.repository.ApExternalIdTypeRepository;
+import cz.tacr.elza.repository.ApTypeRepository;
+import cz.tacr.elza.repository.RelationTypeRepository;
+import cz.tacr.elza.repository.RelationTypeRoleTypeRepository;
+import cz.tacr.elza.repository.SysLanguageRepository;
 
 public class StaticDataProvider {
 
@@ -20,7 +29,7 @@ public class StaticDataProvider {
 
     private List<ParPartyNameFormType> partyNameFormTypes;
 
-    private List<ParComplementType> complementTypes;
+    private List<ParComplementType> cmplTypes;
 
     private List<ApType> apTypes;
 
@@ -32,15 +41,21 @@ public class StaticDataProvider {
 
     private List<RulItemSpec> itemSpecs;
 
+    private List<ApExternalIdType> apEidTypes;
+
+    private List<SysLanguage> sysLanguages;
+
     private Map<Integer, RulPackage> packageIdMap;
 
     private Map<Integer, ParPartyNameFormType> partyNameFormTypeIdMap;
 
     private Map<String, ParPartyNameFormType> partyNameFormTypeCodeMap;
 
-    private Map<String, ParComplementType> complementTypeCodeMap;
+    private Map<Integer, ParComplementType> cmplTypeIdMap;
 
-    private Map<String, PartyTypeComplementTypes> partyTypeComplementTypesCodeMap;
+    private Map<String, ParComplementType> cmplTypeCodeMap;
+
+    private Map<String, PartyTypeCmplTypes> partyTypeCmplTypesCodeMap;
 
     private Map<Integer, ApType> apTypeIdMap;
 
@@ -66,6 +81,14 @@ public class StaticDataProvider {
 
     private Map<String, RulItemSpec> itemSpecCodeMap;
 
+    private Map<Integer, ApExternalIdType> apEidTypeIdMap;
+
+    private Map<String, ApExternalIdType> apEidTypeCodeMap;
+
+    private Map<Integer, SysLanguage> sysLanguageIdMap;
+
+    private Map<String, SysLanguage> sysLanguageCodeMap;
+
     StaticDataProvider() {
     }
 
@@ -77,8 +100,8 @@ public class StaticDataProvider {
         return partyNameFormTypes;
     }
 
-    public List<ParComplementType> getComplementTypes() {
-        return complementTypes;
+    public List<ParComplementType> getCmplTypes() {
+        return cmplTypes;
     }
 
     public List<ApType> getApTypes() {
@@ -87,6 +110,14 @@ public class StaticDataProvider {
 
     public List<RelationType> getRelationTypes() {
         return relationTypes;
+    }
+
+    public List<ApExternalIdType> getApEidTypes() {
+        return apEidTypes;
+    }
+
+    public List<SysLanguage> getSysLanguages() {
+        return sysLanguages;
     }
 
     public RulPackage getPackageById(Integer id) {
@@ -104,19 +135,24 @@ public class StaticDataProvider {
         return partyNameFormTypeCodeMap.get(code);
     }
 
-    public ParComplementType getComplementTypeByCode(String code) {
-        Validate.notEmpty(code);
-        return complementTypeCodeMap.get(code);
+    public ParComplementType getCmplTypeById(Integer id) {
+        Validate.notNull(id);
+        return cmplTypeIdMap.get(id);
     }
 
-    public PartyTypeComplementTypes getComplementTypesByPartyTypeCode(String code) {
+    public ParComplementType getCmplTypeByCode(String code) {
         Validate.notEmpty(code);
-        return partyTypeComplementTypesCodeMap.get(code);
+        return cmplTypeCodeMap.get(code);
+    }
+
+    public PartyTypeCmplTypes getCmplTypesByPartyTypeCode(String code) {
+        Validate.notEmpty(code);
+        return partyTypeCmplTypesCodeMap.get(code);
     }
 
     /**
-     * Returns fully initialized register type by id.
-     * This object and all his referenced entities are detached.
+     * Returns fully initialized register type by id. This object and all his
+     * referenced entities are detached.
      */
     public ApType getApTypeById(Integer id) {
         Validate.notNull(id);
@@ -138,18 +174,44 @@ public class StaticDataProvider {
         return relationTypeCodeMap.get(code);
     }
 
+    public ApExternalIdType getApEidTypeById(Integer id) {
+        Validate.notNull(id);
+        return apEidTypeIdMap.get(id);
+    }
+
+    public ApExternalIdType getApEidTypeByCode(String code) {
+        Validate.notEmpty(code);
+        return apEidTypeCodeMap.get(code);
+    }
+
+    public SysLanguage getSysLanguageById(Integer id) {
+        Validate.notNull(id);
+        return sysLanguageIdMap.get(id);
+    }
+
+    public SysLanguage getSysLanguageByCode(String code) {
+        Validate.notEmpty(code);
+        return sysLanguageCodeMap.get(code);
+    }
+
+    /* initialization methods */
+
     /**
-     * Init all values. Method must be called inside transaction and synchronized.
+     * Initialize all static values. Caller must must ensure synchronized. Method
+     * needs to be called in active transaction.
      */
     void init(StaticDataService service) {
         initRuleSets(service.ruleSetRepository);
         initStructuredTypes(service.structuredTypeRepository);
-        initItemTypes(service.itemTypeRepository, service.itemSpecRepository);
+        initItemTypes( service.itemTypeRepository,
+                service.itemSpecRepository);
         initPackages(service.packageRepository);
         initPartyNameFormTypes(service.partyNameFormTypeRepository);
         initComplementTypes(service.complementTypeRepository, service.partyTypeComplementTypeRepository);
         initApTypes(service.apTypeRepository);
         initRelationTypes(service.relationTypeRepository, service.relationTypeRoleTypeRepository);
+        initApEidTypes(service.apEidTypeRepository);
+        initSysLanguages(service.sysLanguageRepository);
     }
 
     private void initRuleSets(RuleSetRepository ruleSetRepository) {
@@ -249,24 +311,27 @@ public class StaticDataProvider {
                                      PartyTypeComplementTypeRepository partyTypeComplementTypeRepository) {
         List<ParComplementType> cmplTypes = complementTypeRepository.findAll();
 
+        Map<Integer, ParComplementType> idMap = new HashMap<>(cmplTypes.size());
         Map<String, ParComplementType> codeMap = new HashMap<>(cmplTypes.size());
         for (ParComplementType cmplType : cmplTypes) {
             checkPackageReference(cmplType.getRulPackage());
+            idMap.put(cmplType.getComplementTypeId(), cmplType);
             codeMap.put(cmplType.getCode(), cmplType);
         }
 
         // create initialized complement type groups
-        Map<String, PartyTypeComplementTypes> partyTypeComplementTypesCodeMap = new HashMap<>();
+        Map<String, PartyTypeCmplTypes> partyTypeComplementTypesCodeMap = new HashMap<>();
         for (PartyType pt : PartyType.values()) {
-            PartyTypeComplementTypes group = new PartyTypeComplementTypes(pt);
+            PartyTypeCmplTypes group = new PartyTypeCmplTypes(pt);
             group.init(codeMap, partyTypeComplementTypeRepository);
             partyTypeComplementTypesCodeMap.put(pt.getCode(), group);
         }
 
         // update fields
-        this.complementTypes = Collections.unmodifiableList(cmplTypes);
-        this.complementTypeCodeMap = codeMap;
-        this.partyTypeComplementTypesCodeMap = partyTypeComplementTypesCodeMap;
+        this.cmplTypes = Collections.unmodifiableList(cmplTypes);
+        this.cmplTypeIdMap = idMap;
+        this.cmplTypeCodeMap = codeMap;
+        this.partyTypeCmplTypesCodeMap = partyTypeComplementTypesCodeMap;
     }
 
     private void initApTypes(ApTypeRepository apTypeRepository) {
@@ -320,6 +385,24 @@ public class StaticDataProvider {
         this.relationTypes = Collections.unmodifiableList(types);
         this.relationTypeIdMap = idMap;
         this.relationTypeCodeMap = createLookup(types, RelationType::getCode);
+    }
+
+    private void initApEidTypes(ApExternalIdTypeRepository apEidTypeRepository) {
+        List<ApExternalIdType> eidTypes = apEidTypeRepository.findAll();
+
+        // update fields
+        this.apEidTypes = Collections.unmodifiableList(eidTypes);
+        this.apEidTypeIdMap = createLookup(eidTypes, ApExternalIdType::getExternalIdTypeId);
+        this.apEidTypeCodeMap = createLookup(eidTypes, ApExternalIdType::getCode);
+    }
+
+    private void initSysLanguages(SysLanguageRepository sysLanguageRepository) {
+        List<SysLanguage> languages = sysLanguageRepository.findAll();
+
+        // update fields
+        this.sysLanguages = Collections.unmodifiableList(languages);
+        this.sysLanguageIdMap = createLookup(languages, SysLanguage::getLanguageId);
+        this.sysLanguageCodeMap = createLookup(languages, SysLanguage::getCode);
     }
 
     public static <K, V> Map<K, V> createLookup(Collection<V> values, Function<V, K> keyMapping) {

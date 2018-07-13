@@ -1,8 +1,8 @@
 package cz.tacr.elza.dataexchange.input.sections;
 
-import cz.tacr.elza.dataexchange.input.sections.context.ContextSection;
+import cz.tacr.elza.dataexchange.input.sections.context.SectionContext;
 
 public interface SectionProcessedListener {
 
-    void onSectionProcessed(ContextSection section);
+    void onSectionProcessed(SectionContext section);
 }

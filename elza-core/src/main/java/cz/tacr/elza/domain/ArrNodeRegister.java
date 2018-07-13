@@ -1,5 +1,7 @@
 package cz.tacr.elza.domain;
 
+import javax.persistence.Access;
+import javax.persistence.AccessType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -28,6 +30,7 @@ public class ArrNodeRegister implements NodeRegister {
 
     @Id
     @GeneratedValue
+    @Access(AccessType.PROPERTY) // required to read id without fetch from db
     private Integer nodeRegisterId;
 
     @RestResource(exported = false)
@@ -39,9 +42,9 @@ public class ArrNodeRegister implements NodeRegister {
     private Integer nodeId;
 
     @RestResource(exported = false)
-	@ManyToOne(fetch=FetchType.LAZY, targetEntity = ApRecord.class)
+	@ManyToOne(fetch=FetchType.LAZY, targetEntity = ApAccessPoint.class)
     @JoinColumn(name = "recordId", nullable = false)
-    private ApRecord record;
+    private ApAccessPoint record;
 
     @Column(name = "recordId", updatable = false, insertable = false)
     private Integer recordId;
@@ -79,13 +82,13 @@ public class ArrNodeRegister implements NodeRegister {
         this.nodeId = node != null ? node.getNodeId() : null;
     }
 
-    public ApRecord getRecord() {
+    public ApAccessPoint getRecord() {
         return record;
     }
 
-    public void setRecord(final ApRecord record) {
+    public void setRecord(final ApAccessPoint record) {
         this.record = record;
-        this.recordId = record != null ? record.getRecordId() : null;
+        this.recordId = record != null ? record.getAccessPointId() : null;
     }
 
     public ArrChange getCreateChange() {

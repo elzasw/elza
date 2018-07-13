@@ -25,10 +25,10 @@ import cz.tacr.elza.dataexchange.output.items.ItemConvertor;
 import cz.tacr.elza.dataexchange.output.items.ItemDataConvertorFactory;
 import cz.tacr.elza.dataexchange.output.items.PartyRefConvertor;
 import cz.tacr.elza.dataexchange.output.items.StructObjRefConvertor;
-import cz.tacr.elza.dataexchange.output.sections.ExportLevelInfo;
 import cz.tacr.elza.dataexchange.output.sections.SectionContext;
-import cz.tacr.elza.dataexchange.output.sections.StructObjectInfo;
+import cz.tacr.elza.dataexchange.output.writer.LevelInfo;
 import cz.tacr.elza.dataexchange.output.writer.SectionOutputStream;
+import cz.tacr.elza.dataexchange.output.writer.StructObjectInfo;
 import cz.tacr.elza.dataexchange.output.writer.xml.nodes.FileNode;
 import cz.tacr.elza.dataexchange.output.writer.xml.nodes.InternalNode;
 import cz.tacr.elza.dataexchange.output.writer.xml.nodes.JaxbNode;
@@ -74,7 +74,7 @@ class XmlSectionOutputStream implements SectionOutputStream {
     }
 
     @Override
-    public void addLevel(ExportLevelInfo levelInfo) {
+    public void addLevel(LevelInfo levelInfo) {
         Validate.isTrue(!processed);
 
         Level level = new Level();
@@ -84,9 +84,9 @@ class XmlSectionOutputStream implements SectionOutputStream {
             level.setPid(levelInfo.getParentNodeId().toString());
         }
         // convert node APs references
-        convertNodeAPs(levelInfo.getNodeAPs(), level);
-        // convert desc items references
-        convertItems(levelInfo.getItems(), level.getDeOrDiOrDd());
+        convertNodeAPs(levelInfo.getNodeAps(), level);
+        // convert description items references
+        convertItems(levelInfo.getItems(), level.getDdOrDoOrDp());
 
         try {
             writeLevel(level);
@@ -102,8 +102,8 @@ class XmlSectionOutputStream implements SectionOutputStream {
         StructuredObject structObj = new StructuredObject();
         structObj.setId(Integer.toString(structObjInfo.getId()));
 
-        // convert desc items references
-        convertItems(structObjInfo.getItems(), structObj.getDeOrDiOrDd());
+        // convert description items references
+        convertItems(structObjInfo.getItems(), structObj.getDdOrDoOrDp());
 
         try {
             writeStructObject(structObj, structObjInfo.getStructType());
@@ -153,7 +153,7 @@ class XmlSectionOutputStream implements SectionOutputStream {
         List<String> apIds = apRefs.getApid();
         level.setAprs(apRefs);
         for (ArrNodeRegister nodeAP : nodeAPs) {
-            sectionContext.getContext().addAPId(nodeAP.getRecordId());
+            sectionContext.getContext().addApId(nodeAP.getRecordId());
             apIds.add(nodeAP.getRecordId().toString());
         }
     }
@@ -162,7 +162,8 @@ class XmlSectionOutputStream implements SectionOutputStream {
         if (items == null || items.isEmpty()) {
             return;
         }
-        ItemConvertor convertor = new ItemConvertor(sectionContext.getStaticData(), new ContextAwareItemDataConvertorFactory());
+        ItemConvertor convertor = new ItemConvertor(sectionContext.getStaticData(),
+                new ContextAwareItemDataConvertorFactory());
         for (ArrItem item : items) {
             DescriptionItem element = convertor.convert(item);
             outList.add(element);
@@ -170,7 +171,7 @@ class XmlSectionOutputStream implements SectionOutputStream {
     }
 
     private InternalNode getSectionNode() {
-        InternalNode sectionNode = new InternalNode(XmlNameConsts.SECTIONS);
+        InternalNode sectionNode = new InternalNode(XmlNameConsts.SECTION);
         RulRuleSet ruleSet = sectionContext.getRuleSystem().getRuleSet();
         sectionNode.addAttribute(XmlNameConsts.RULE_SET_CODE, ruleSet.getCode());
 
@@ -242,7 +243,7 @@ class XmlSectionOutputStream implements SectionOutputStream {
                     DescriptionItemAPRefImpl item = super.convert(data);
                     if (item != null) {
                         ArrDataRecordRef apRef = (ArrDataRecordRef) data;
-                        sectionContext.getContext().addAPId(apRef.getRecordId());
+                        sectionContext.getContext().addApId(apRef.getRecordId());
                     }
                     return item;
                 }

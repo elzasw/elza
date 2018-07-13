@@ -2,6 +2,8 @@ package cz.tacr.elza.domain;
 
 import java.util.Comparator;
 
+import javax.persistence.Access;
+import javax.persistence.AccessType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -21,16 +23,16 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import cz.tacr.elza.domain.enumeration.StringLength;
 
-
 /**
  * Doplňky jmen osob.
  *
- * @author Martin Kužel [<a href="mailto:martin.kuzel@marbes.cz">martin.kuzel@marbes.cz</a>]
+ * @author Martin Kužel
+ *         [<a href="mailto:martin.kuzel@marbes.cz">martin.kuzel@marbes.cz</a>]
  */
 @Entity(name = "par_party_name_complement")
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 public class ParPartyNameComplement {
 
     /* Konstanty pro vazby a fieldy. */
@@ -39,6 +41,7 @@ public class ParPartyNameComplement {
 
     @Id
     @GeneratedValue
+    @Access(AccessType.PROPERTY) // required to read id without fetch from db
     private Integer partyNameComplementId;
 
     @RestResource(exported = false)
@@ -47,13 +50,20 @@ public class ParPartyNameComplement {
     private ParComplementType complementType;
 
     @RestResource(exported = false)
+    @Column(nullable = false, insertable = false, updatable = false)
+    private Integer complementTypeId;
+    
+    @RestResource(exported = false)
     @OneToOne(fetch = FetchType.LAZY, targetEntity = ParPartyName.class)
     @JoinColumn(name = "partyNameId", nullable = false)
     private ParPartyName partyName;
 
+    @RestResource(exported = false)
+    @Column(nullable = false, insertable = false, updatable = false)
+    private Integer partyNameId;
+
     @Column(length = StringLength.LENGTH_1000)
     private String complement;
-
 
     public Integer getPartyNameComplementId() {
         return partyNameComplementId;
@@ -69,6 +79,11 @@ public class ParPartyNameComplement {
 
     public void setComplementType(final ParComplementType complementType) {
         this.complementType = complementType;
+        this.complementTypeId = complementType != null ? complementType.getComplementTypeId() : null;
+    }
+    
+    public Integer getComplementTypeId() {
+        return complementTypeId;
     }
 
     public ParPartyName getPartyName() {
@@ -77,6 +92,11 @@ public class ParPartyNameComplement {
 
     public void setPartyName(final ParPartyName partyName) {
         this.partyName = partyName;
+        this.partyNameId = partyName != null ? partyName.getPartyNameId() : null;
+    }
+
+    public Integer getPartyNameId() {
+        return partyNameId;
     }
 
     public String getComplement() {

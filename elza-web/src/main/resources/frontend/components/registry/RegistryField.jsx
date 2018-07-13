@@ -168,7 +168,7 @@ class RegistryField extends AbstractReactComponent {
         // změna typu aby se objekt dal použít jako návazný
         const newobj = {
             ...obj,
-            '@class': 'cz.tacr.elza.controller.vo.ApRecordVO',
+            '@class': 'cz.tacr.elza.controller.vo.ApAccessPointVO',
         };
         return newobj;
     };

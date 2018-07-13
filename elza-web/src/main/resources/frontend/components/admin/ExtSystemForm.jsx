@@ -16,13 +16,13 @@ import AbstractReactComponent from "../AbstractReactComponent";
 import {FormInput} from "../shared/index";
 
 const EXT_SYSTEM_CLASS = {
-    ApExternalSystem: ".RegExternalSystemVO",
+    ApExternalSystem: ".ApExternalSystemVO",
     ArrDigitalRepository: ".ArrDigitalRepositoryVO",
     ArrDigitizationFrontdesk: ".ArrDigitizationFrontdeskVO"
 };
 
 const EXT_SYSTEM_CLASS_LABEL = {
-    [EXT_SYSTEM_CLASS.ApExternalSystem]: i18n("admin.extSystem.class.RegExternalSystemVO"),
+    [EXT_SYSTEM_CLASS.ApExternalSystem]: i18n("admin.extSystem.class.ApExternalSystemVO"),
     [EXT_SYSTEM_CLASS.ArrDigitalRepository]: i18n("admin.extSystem.class.ArrDigitalRepositoryVO"),
     [EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk]: i18n("admin.extSystem.class.ArrDigitizationFrontdeskVO"),
 };

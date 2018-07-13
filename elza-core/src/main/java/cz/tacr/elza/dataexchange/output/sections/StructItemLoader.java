@@ -13,7 +13,7 @@ public class StructItemLoader extends AbstractEntityLoader<ArrStructuredItem> {
     }
 
     @Override
-    protected void setEntityFetch(FetchParent<?, ?> baseEntity) {
-        baseEntity.fetch(ArrStructuredItem.DATA);
+    protected void setQueryFetch(FetchParent<?, ?> root) {
+        root.fetch(ArrStructuredItem.DATA);
     }
 }

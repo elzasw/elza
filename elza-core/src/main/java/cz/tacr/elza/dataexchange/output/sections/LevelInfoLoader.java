@@ -16,7 +16,7 @@ import cz.tacr.elza.service.cache.RestoredNode;
 /**
  * Reads supplied levels from node cache and pass them to {@link SectionOutputStream}.
  */
-public class LevelInfoLoader extends AbstractBatchLoader<ArrLevel, ExportLevelInfo> {
+public class LevelInfoLoader extends AbstractBatchLoader<ArrLevel, LevelInfoImpl> {
 
     private final NodeCacheService nodeCacheService;
 
@@ -41,8 +41,8 @@ public class LevelInfoLoader extends AbstractBatchLoader<ArrLevel, ExportLevelIn
             // cached node from prepared map
             RestoredNode cachedNode = cachedNodes.get(level.getNodeId());
 
-            ExportLevelInfo levelInfo = createLevelInfo(level.getNodeId(), parentNodeId, cachedNode);
-            entry.addResult(levelInfo);
+            LevelInfoImpl levelInfo = createLevelInfo(level.getNodeId(), parentNodeId, cachedNode);
+            entry.setResult(levelInfo);
         }
 
         firstBatch = false;
@@ -56,13 +56,13 @@ public class LevelInfoLoader extends AbstractBatchLoader<ArrLevel, ExportLevelIn
         return nodeIds;
     }
 
-    private static ExportLevelInfo createLevelInfo(Integer nodeId, Integer parentNodeId, CachedNode cachedNode) {
+    private static LevelInfoImpl createLevelInfo(Integer nodeId, Integer parentNodeId, CachedNode cachedNode) {
         Validate.notNull(nodeId);
         Validate.notNull(cachedNode);
 
-        ExportLevelInfo levelInfo = new ExportLevelInfo(nodeId, parentNodeId);
+        LevelInfoImpl levelInfo = new LevelInfoImpl(nodeId, parentNodeId);
         levelInfo.setNodeUuid(cachedNode.getUuid());
-        levelInfo.setNodeAPs(cachedNode.getNodeRegisters());
+        levelInfo.setNodeAps(cachedNode.getNodeRegisters());
         cachedNode.getDescItems().forEach(levelInfo::addItem);
 
         return levelInfo;

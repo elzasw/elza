@@ -1,7 +1,13 @@
 package cz.tacr.elza.repository;
 
-import java.util.ArrayList;
-import java.util.List;
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApName;
+import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.UsrGroup;
+import cz.tacr.elza.domain.UsrGroupUser;
+import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.UsrUser;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -14,15 +20,8 @@ import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.persistence.criteria.Subquery;
-
-import org.apache.commons.lang3.StringUtils;
-
-import cz.tacr.elza.domain.ApRecord;
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.UsrGroup;
-import cz.tacr.elza.domain.UsrGroupUser;
-import cz.tacr.elza.domain.UsrPermission;
-import cz.tacr.elza.domain.UsrUser;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Rozšířené repository pro uživatele.
@@ -41,15 +40,17 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
 	        final Root<UsrUser> user,
 	        final Integer excludedGroupId,
 	        final CriteriaQuery<T> query) {
-		Join<UsrUser, ParParty> party = user.join(UsrUser.PARTY, JoinType.INNER);
-		Join<ParParty, ApRecord> record = party.join(ParParty.RECORD, JoinType.INNER);
+		Join<UsrUser, ParParty> partyJoin = user.join(UsrUser.PARTY, JoinType.INNER);
+		Join<ParParty, ApAccessPoint> apJoin = partyJoin.join(ParParty.RECORD, JoinType.INNER);
+		Join<ApAccessPoint, ApName> nameJoin = ApAccessPointRepositoryImpl.preparePrefNameJoin(apJoin, builder);
+		
 		List<Predicate> conditions = new ArrayList<>();
 
 		// Search
 		if (StringUtils.isNotBlank(search)) {
 			final String searchValue = "%" + search.toLowerCase() + "%";
 			conditions.add(builder.or(
-			        builder.like(builder.lower(record.get(ApRecord.RECORD)), searchValue),
+			        builder.like(builder.lower(nameJoin.get(ApName.NAME)), searchValue),
 			        builder.like(builder.lower(user.get(UsrUser.USERNAME)), searchValue),
 			        builder.like(builder.lower(user.get(UsrUser.DESCRIPTION)), searchValue)));
 		}
@@ -118,7 +119,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
 	 */
 
 	/**
-	 * 
+	 *
 	 * @param search
 	 * @param active
 	 * @param disabled
@@ -140,15 +141,17 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
             final CriteriaQuery<T> query,
 	        final int userId,
 	        final boolean includeUser) {
-        Join<UsrUser, ParParty> party = user.join(UsrUser.PARTY, JoinType.INNER);
-        Join<ParParty, ApRecord> record = party.join(ParParty.RECORD, JoinType.INNER);
+        Join<UsrUser, ParParty> partyJoin = user.join(UsrUser.PARTY, JoinType.INNER);
+        Join<ParParty, ApAccessPoint> apJoin = partyJoin.join(ParParty.RECORD, JoinType.INNER);
+        Join<ApAccessPoint, ApName> recordName = ApAccessPointRepositoryImpl.preparePrefNameJoin(apJoin, builder);
+        
         List<Predicate> conditions = new ArrayList<>();
 
         // Search
         if (StringUtils.isNotBlank(search)) {
             final String searchValue = "%" + search.toLowerCase() + "%";
             conditions.add(builder.or(
-                    builder.like(builder.lower(record.get(ApRecord.RECORD)), searchValue),
+                    builder.like(builder.lower(recordName.get(ApName.NAME)), searchValue),
                     builder.like(builder.lower(user.get(UsrUser.USERNAME)), searchValue),
                     builder.like(builder.lower(user.get(UsrUser.DESCRIPTION)), searchValue)
             ));
@@ -195,11 +198,11 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
 		Predicate userCondition;
 		// add subquery as in condition
 		In<Object> subqeryInPredicate = builder.in(user.get(UsrUser.USER_ID)).value(subquery);
-		if(includeUser) {			
+		if(includeUser) {
 			userCondition = builder.or(
 					subqeryInPredicate,
 					builder.equal(user.get(UsrUser.USER_ID), userId)
-					); 
+					);
 		} else {
 			userCondition = subqeryInPredicate;
 		}
@@ -219,7 +222,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
 
 		// Append conditions
         Predicate result = builder.and(conditions.toArray(new Predicate[conditions.size()]));
-        
+
         return result;
     }
 
@@ -242,12 +245,9 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
 		queryCount.select(builder.countDistinct(userCount));
 
 		if (condition != null) {
-			Join<UsrUser, ParParty> party = user.join(UsrUser.PARTY, JoinType.INNER);
-			Join<ParParty, ApRecord> record = party.join(ParParty.RECORD, JoinType.INNER);
-			Order order1 = builder.asc(record.get(ApRecord.RECORD));
-			Order order2 = builder.asc(user.get(UsrUser.USERNAME));
-			query.where(condition).orderBy(order1, order2);
-
+			prepareUserView(user, builder, query);
+			
+			query.where(condition);
 			queryCount.where(conditionCount);
 		}
 
@@ -282,28 +282,25 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
         Root<UsrUser> user = query.from(UsrUser.class);
         Root<UsrUser> userCount = queryCount.from(UsrUser.class);
 
-        Predicate condition = prepareFindUserByTextAndStateCount(search, active, disabled, builder, user, 
+        Predicate condition = prepareFindUserByTextAndStateCount(search, active, disabled, builder, user,
                 excludedGroupId, query, userId, includeUser);
-        Predicate conditionCount = prepareFindUserByTextAndStateCount(search, active, disabled, builder, userCount, 
+        Predicate conditionCount = prepareFindUserByTextAndStateCount(search, active, disabled, builder, userCount,
                 excludedGroupId, queryCount, userId, includeUser);
 
         query.select(user);
         queryCount.select(builder.countDistinct(userCount));
 
         if (condition != null) {
-            Join<UsrUser, ParParty> party = user.join(UsrUser.PARTY, JoinType.INNER);
-            Join<ParParty, ApRecord> record = party.join(ParParty.RECORD, JoinType.INNER);
-            Order order1 = builder.asc(record.get(ApRecord.RECORD));
-            Order order2 = builder.asc(user.get(UsrUser.USERNAME));
-            query.where(condition).orderBy(order1, order2);
-
+            prepareUserView(user, builder, query);
+            
+            query.where(condition);
             queryCount.where(conditionCount);
         }
 
         List<UsrUser> list = entityManager.createQuery(query)
                 .setFirstResult(firstResult)
                 .setMaxResults(maxResults)
-                .getResultList(); 
+                .getResultList();
         int count = list.size();
         // count number of items
         if (count >= maxResults || firstResult != 0) {
@@ -311,5 +308,16 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
         }
 
         return new FilteredResult<>(firstResult, maxResults, count, list);
+    }
+    
+    private static void prepareUserView(Root<UsrUser> user, CriteriaBuilder cb, CriteriaQuery<?> query) {
+        Join<UsrUser, ParParty> partyJoin = user.join(UsrUser.PARTY, JoinType.INNER);
+        Join<ParParty, ApAccessPoint> apJoin = partyJoin.join(ParParty.RECORD, JoinType.INNER);
+        // join current preferred AP names
+        Join<ApAccessPoint, ApName> nameJoin = ApAccessPointRepositoryImpl.preparePrefNameJoin(apJoin, cb);
+        // define order
+        Order order1 = cb.asc(nameJoin.get(ApName.NAME));
+        Order order2 = cb.asc(user.get(UsrUser.USERNAME));
+        query.orderBy(order1, order2);
     }
 }

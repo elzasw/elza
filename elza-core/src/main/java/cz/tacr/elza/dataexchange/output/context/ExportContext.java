@@ -46,20 +46,20 @@ public class ExportContext {
         return batchSize;
     }
 
-    public Set<Integer> getAPIds() {
+    public Set<Integer> getApIds() {
         return Collections.unmodifiableSet(apIds);
     }
 
-    public void addAPId(Integer apId) {
+    public void addApId(Integer apId) {
         Validate.notNull(apId);
         apIds.add(apId);
     }
 
-    public Set<Integer> getPartyAPIds() {
+    public Set<Integer> getPartyApIds() {
         return Collections.unmodifiableSet(partyAPIds);
     }
 
-    public void addPartyAPId(Integer partyApId) {
+    public void addPartyApId(Integer partyApId) {
         Validate.notNull(partyApId);
         partyAPIds.add(partyApId);
     }

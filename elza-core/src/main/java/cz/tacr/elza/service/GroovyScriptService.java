@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,11 +24,11 @@ import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ParComplementType;
 import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.ApRecord;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.interpi.service.InterpiFactory;
 import cz.tacr.elza.interpi.service.vo.ExternalRecordVO;
 import cz.tacr.elza.interpi.ws.wo.EntitaTyp;
+import cz.tacr.elza.service.party.ApConvResult;
 import cz.tacr.elza.ws.types.v1.Did;
 import groovy.lang.Binding;
 import groovy.lang.GroovyClassLoader;
@@ -81,7 +82,8 @@ public class GroovyScriptService {
      * @param complementTypes available complement types for party type
      * @return vytvořené rejstříkové heslo s nastavenými variantními hesly
      */
-    public ApRecord getRecordFromGroovy(final ParParty party, final List<ParComplementType> complementTypes) {
+    public ApConvResult convertPartyToAp(final ParParty party, 
+                                         final Collection<ParComplementType> complementTypes) {
         Map<Integer, ParComplementType> complementTypeMap = ElzaTools.createEntityMap(complementTypes,
                 ParComplementType::getComplementTypeId);
 
@@ -89,7 +91,7 @@ public class GroovyScriptService {
         input.put("PARTY", party);
         input.put("COMPLEMENT_TYPE_MAP", complementTypeMap);
 
-        return (ApRecord) createRecordScriptFile.evaluate(input);
+        return (ApConvResult) createRecordScriptFile.evaluate(input);
     }
 
     /**
@@ -136,7 +138,7 @@ public class GroovyScriptService {
 
         private long lastModified = -1;
 
-        private GroovyScriptFile(File scriptFile) {
+        public GroovyScriptFile(File scriptFile) {
             this.scriptFile = Validate.notNull(scriptFile);
         }
 
@@ -158,35 +160,31 @@ public class GroovyScriptService {
         private synchronized Script createScript(Binding variables) throws IOException {
             long fileLastModified = scriptFile.lastModified();
             if (lastModified < fileLastModified) {
-                scriptClass = compileClass(scriptFile);
+                scriptClass = parseClass(scriptFile);
                 lastModified = fileLastModified;
                 LOG.info("Groovy script recompiled, source:" + scriptFile);
             }
             return InvokerHelper.createScript(scriptClass, variables);
         }
 
-        private static Class<?> compileClass(File scriptFile) throws IOException {
+        private static Class<?> parseClass(File scriptFile) throws IOException {
             GroovyShell shell = new GroovyShell();
             GroovyClassLoader loader = shell.getClassLoader();
             GroovyCodeSource source = new GroovyCodeSource(scriptFile);
             return loader.parseClass(source, false);
         }
 
-        private static GroovyScriptFile create(Resource resource, Path scriptsDir) throws IOException {
+        public static GroovyScriptFile create(Resource resource, Path destDir) throws IOException {
             String fileName = resource.getFilename();
             Validate.notBlank(fileName);
 
-            File scriptFile = scriptsDir.resolve(fileName).toFile();
+            File scriptFile = destDir.resolve(fileName).toFile();
 
             long resourceLM = resource.lastModified();
             if (!scriptFile.exists() || resourceLM > scriptFile.lastModified()) {
                 FileUtils.copyInputStreamToFile(resource.getInputStream(), scriptFile);
                 scriptFile.setLastModified(resourceLM);
             }
-            return new GroovyScriptFile(scriptFile);
-        }
-
-        public static GroovyScriptFile createFromFile(File scriptFile) throws IOException {
             return new GroovyScriptFile(scriptFile);
         }
     }

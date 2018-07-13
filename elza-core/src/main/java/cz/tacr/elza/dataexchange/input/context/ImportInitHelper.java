@@ -1,5 +1,9 @@
 package cz.tacr.elza.dataexchange.input.context;
 
+import cz.tacr.elza.repository.ApAccessPointRepository;
+import cz.tacr.elza.repository.ApDescriptionRepository;
+import cz.tacr.elza.repository.ApExternalIdRepository;
+import cz.tacr.elza.repository.ApNameRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.InstitutionTypeRepository;
 import cz.tacr.elza.repository.LevelRepository;
@@ -7,22 +11,13 @@ import cz.tacr.elza.repository.PartyGroupIdentifierRepository;
 import cz.tacr.elza.repository.PartyNameComplementRepository;
 import cz.tacr.elza.repository.PartyNameRepository;
 import cz.tacr.elza.repository.PartyRepository;
-import cz.tacr.elza.repository.ApExternalSystemRepository;
-import cz.tacr.elza.repository.ApRecordRepository;
-import cz.tacr.elza.repository.ApVariantRecordRepository;
 import cz.tacr.elza.repository.UnitdateRepository;
+import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.GroovyScriptService;
 import cz.tacr.elza.service.StructObjService;
 
-/**
- * Helper object with references to all repositories and services
- * 
- *
- */
 public class ImportInitHelper {
-
-    private final ApExternalSystemRepository externalSystemRepository;
 
     private final GroovyScriptService groovyScriptService;
 
@@ -32,13 +27,15 @@ public class ImportInitHelper {
 
     private final ArrangementService arrangementService;
 
-    private final StructObjService structObjService;
-
     private final LevelRepository levelRepository;
 
-    private final ApRecordRepository recordRepository;
+    private final ApAccessPointRepository apRepository;
 
-    private final ApVariantRecordRepository variantRecordRepository;
+    private final ApNameRepository apNameRepository;
+
+    private final ApDescriptionRepository apDescRepository;
+
+    private final ApExternalIdRepository apEidRepository;
 
     private final PartyRepository partyRepository;
 
@@ -50,38 +47,42 @@ public class ImportInitHelper {
 
     private final UnitdateRepository unitdateRepository;
 
-    public ImportInitHelper(ApExternalSystemRepository externalSystemRepository,
-                            GroovyScriptService groovyScriptService,
-                            InstitutionRepository institutionRepository,
-                            InstitutionTypeRepository institutionTypeRepository,
-                            ArrangementService arrangementService,
-                            LevelRepository levelRepository,
-                            ApRecordRepository recordRepository,
-                            ApVariantRecordRepository variantRecordRepository,
-                            PartyRepository partyRepository,
-                            PartyNameRepository nameRepository,
-                            PartyNameComplementRepository nameComplementRepository,
-                            PartyGroupIdentifierRepository groupIdentifierRepository,
-                            UnitdateRepository unitdateRepository,
-                            StructObjService structObjService) {
-        this.externalSystemRepository = externalSystemRepository;
+    private final StructObjService structObjService;
+
+    private final AccessPointService accessPointService;
+
+    public ImportInitHelper(GroovyScriptService groovyScriptService,
+            InstitutionRepository institutionRepository,
+            InstitutionTypeRepository institutionTypeRepository,
+            ArrangementService arrangementService,
+            LevelRepository levelRepository,
+            ApAccessPointRepository apRepository,
+            ApNameRepository apNameRepository,
+            ApDescriptionRepository apDescRepository,
+            ApExternalIdRepository apEidRepository,
+            PartyRepository partyRepository,
+            PartyNameRepository nameRepository,
+            PartyNameComplementRepository nameComplementRepository,
+            PartyGroupIdentifierRepository groupIdentifierRepository,
+            UnitdateRepository unitdateRepository,
+            StructObjService structObjService,
+            AccessPointService accessPointService) {
         this.groovyScriptService = groovyScriptService;
         this.institutionRepository = institutionRepository;
         this.institutionTypeRepository = institutionTypeRepository;
         this.arrangementService = arrangementService;
         this.levelRepository = levelRepository;
-        this.recordRepository = recordRepository;
-        this.variantRecordRepository = variantRecordRepository;
+        this.apRepository = apRepository;
+        this.apNameRepository = apNameRepository;
+        this.apDescRepository = apDescRepository;
+        this.apEidRepository = apEidRepository;
         this.partyRepository = partyRepository;
         this.nameRepository = nameRepository;
         this.nameComplementRepository = nameComplementRepository;
         this.groupIdentifierRepository = groupIdentifierRepository;
         this.unitdateRepository = unitdateRepository;
         this.structObjService = structObjService;
-    }
-
-    public ApExternalSystemRepository getExternalSystemRepository() {
-        return externalSystemRepository;
+        this.accessPointService = accessPointService;
     }
 
     public GroovyScriptService getGroovyScriptService() {
@@ -104,12 +105,20 @@ public class ImportInitHelper {
         return levelRepository;
     }
 
-    public ApRecordRepository getRecordRepository() {
-        return recordRepository;
+    public ApAccessPointRepository getApRepository() {
+        return apRepository;
     }
 
-    public ApVariantRecordRepository getVariantRecordRepository() {
-        return variantRecordRepository;
+    public ApNameRepository getApNameRepository() {
+        return apNameRepository;
+    }
+
+    public ApDescriptionRepository getApDescRepository() {
+        return apDescRepository;
+    }
+
+    public ApExternalIdRepository getApEidRepository() {
+        return apEidRepository;
     }
 
     public PartyRepository getPartyRepository() {
@@ -134,5 +143,9 @@ public class ImportInitHelper {
 
     public StructObjService getStructObjService() {
         return structObjService;
+    }
+
+    public AccessPointService getAccessPointService() {
+        return accessPointService;
     }
 }

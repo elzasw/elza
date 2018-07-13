@@ -5,6 +5,7 @@ import java.util.List;
 import cz.tacr.elza.core.data.PartyType;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.print.Record;
+import cz.tacr.elza.print.ap.Name;
 
 /**
  * Abstract party
@@ -59,11 +60,8 @@ public abstract class Party {
         return getPartyType().getCode();
     }
 
-    /**
-     * @return obsah položky record.getRecord()
-     */
-    public String getName() {
-        return record.getRecord();
+    public Name getName() {
+        return record.getPrefName();
     }
 
     public String getCharacteristics() {

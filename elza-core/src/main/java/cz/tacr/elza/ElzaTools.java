@@ -1,11 +1,5 @@
 package cz.tacr.elza;
 
-import cz.tacr.elza.domain.ArrItem;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.ObjectUtils;
-import org.hibernate.proxy.HibernateProxy;
-
-import javax.annotation.Nullable;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.HashMap;
@@ -13,6 +7,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+
+import javax.annotation.Nullable;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.hibernate.proxy.HibernateProxy;
 
 
 /**

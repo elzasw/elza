@@ -3,7 +3,6 @@ package cz.tacr.elza.dataexchange.input.storage;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -16,20 +15,16 @@ import cz.tacr.elza.dataexchange.input.context.ImportInitHelper;
 import cz.tacr.elza.dataexchange.input.parties.context.PartyWrapper;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyGroup;
-import cz.tacr.elza.domain.ParPartyGroupIdentifier;
-import cz.tacr.elza.domain.ParPartyName;
-import cz.tacr.elza.domain.ParUnitdate;
+import cz.tacr.elza.domain.projection.ParPartyGroupIdentifierInfo;
 import cz.tacr.elza.domain.projection.ParPartyInfo;
+import cz.tacr.elza.domain.projection.ParPartyNameInfo;
 import cz.tacr.elza.repository.PartyGroupIdentifierRepository;
 import cz.tacr.elza.repository.PartyNameComplementRepository;
 import cz.tacr.elza.repository.PartyNameRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.UnitdateRepository;
 
-/**
- * Specialization of wrapper storage for imported parties.
- */
-class ParPartyStorage extends EntityStorage<PartyWrapper> {
+public class ParPartyStorage extends EntityStorage<PartyWrapper> {
 
     private final PartyRepository partyRepository;
 
@@ -39,77 +34,80 @@ class ParPartyStorage extends EntityStorage<PartyWrapper> {
 
     private final PartyNameRepository nameRepository;
 
-    private final PartyNameComplementRepository nameComplementRepository;
+    private final PartyNameComplementRepository nameCmplRepository;
 
-    public ParPartyStorage(StorageListener storageListener, Session session, ImportInitHelper initHelper) {
-        super(session, storageListener);
+    public ParPartyStorage(Session session, StoredEntityCallback persistEntityListener,
+            ImportInitHelper initHelper) {
+        super(session, persistEntityListener);
         this.partyRepository = initHelper.getPartyRepository();
         this.nameRepository = initHelper.getNameRepository();
-        this.nameComplementRepository = initHelper.getNameComplementRepository();
+        this.nameCmplRepository = initHelper.getNameComplementRepository();
         this.groupIdentifierRepository = initHelper.getGroupIdentifierRepository();
         this.unitdateRepository = initHelper.getUnitdateRepository();
     }
 
     @Override
-    protected void update(Collection<PartyWrapper> items) {
-        prepareCollectionForUpdate(items);
-        super.update(items);
+    protected void mergeEntities(Collection<PartyWrapper> pws) {
+        prepareCurrentEntities(pws);
+        super.mergeEntities(pws);
     }
 
-    private void prepareCollectionForUpdate(Collection<PartyWrapper> items) {
-        readCurrentPartyIds(items);
-        deleteSubEntities(items);
-    }
-
-    private void readCurrentPartyIds(Collection<PartyWrapper> items) {
-        Map<Integer, PartyWrapper> recordIdMap = new HashMap<>(items.size());
-        // init record id - party wrapper map
-        for (PartyWrapper item : items) {
-            Integer recordId = item.getPartyInfo().getAPId();
-            Validate.notNull(recordId);
-            recordIdMap.put(recordId, item);
+    /**
+     * Copies partyId and version from existing party to imported entity. All
+     * current sub-entities are deleted.
+     */
+    private void prepareCurrentEntities(Collection<PartyWrapper> pws) {
+        Map<Integer, PartyWrapper> apIdMap = new HashMap<>(pws.size());
+        // init apId -> party map
+        for (PartyWrapper pw : pws) {
+            Integer apId = pw.getPartyInfo().getApInfo().getEntityId();
+            Validate.notNull(apId);
+            apIdMap.put(apId, pw);
         }
-        // find all current parties
-        List<ParPartyInfo> currentParties = partyRepository.findInfoByRecordRecordIdIn(recordIdMap.keySet());
-        if (currentParties.size() != recordIdMap.size()) {
+        // find current parties by apIds
+        List<ParPartyInfo> currParties = partyRepository.findInfoByAccessPointIdIn(apIdMap.keySet());
+        if (currParties.size() != apIdMap.size()) {
             throw new IllegalStateException(
-                    "Not all parties for update found, recordIds:" + StringUtils.join(recordIdMap.keySet(), ','));
+                    "Not all party APs found, apIds=" + StringUtils.join(apIdMap.keySet(), ','));
         }
-        // update wrapper by current party
-        for (ParPartyInfo info : currentParties) {
-            ParParty entity = recordIdMap.get(info.getRecordId()).getEntity();
+        // update wrapped entity by existing party
+        for (ParPartyInfo info : currParties) {
+            PartyWrapper wrapper = apIdMap.get(info.getAccessPointId());
+            ParParty entity = wrapper.getEntity();
             entity.setPartyId(info.getPartyId());
             entity.setVersion(info.getVersion());
         }
+        // delete all sub entities
+        deleteSubEntities(pws);
     }
 
     /**
      * Delete current sub-entities for each party except for institutions.
      */
-    private void deleteSubEntities(Collection<PartyWrapper> items) {
-        List<ParParty> parties = new ArrayList<>(items.size());
-        List<ParPartyGroup> partyGroups = new ArrayList<>(items.size());
-        List<ParUnitdate> unitdates = new LinkedList<>();
+    private void deleteSubEntities(Collection<PartyWrapper> pws) {
+        List<ParParty> parties = new ArrayList<>(pws.size());
+        List<ParPartyGroup> partyGroups = new ArrayList<>(pws.size());
+        List<Integer> unitdateIds = new ArrayList<>();
 
         // fill party search collections
-        for (PartyWrapper item : items) {
-            ParParty party = item.getEntity();
+        for (PartyWrapper pw : pws) {
+            ParParty party = pw.getEntity();
             Validate.notNull(party.getPartyId());
             parties.add(party);
-            if (item.getPartyInfo().getPartyType().equals(PartyType.GROUP_PARTY)) {
+            if (pw.getPartyInfo().getPartyType().equals(PartyType.GROUP_PARTY)) {
                 partyGroups.add((ParPartyGroup) party);
             }
         }
 
-        // find all names and their intervals
-        List<ParPartyName> names = nameRepository.findByPartyIn(parties);
+        // find all names and its unit dates
+        List<ParPartyNameInfo> names = nameRepository.findInfoByPartyIn(parties);
         List<Integer> nameIds = new ArrayList<>(names.size());
-        for (ParPartyName name : names) {
-            if (name.getValidFrom() != null) {
-                unitdates.add(name.getValidFrom());
+        for (ParPartyNameInfo name : names) {
+            if (name.getValidFromUnitdateId() != null) {
+                unitdateIds.add(name.getValidFromUnitdateId());
             }
-            if (name.getValidTo() != null) {
-                unitdates.add(name.getValidTo());
+            if (name.getValidToUnitdateId() != null) {
+                unitdateIds.add(name.getValidToUnitdateId());
             }
             nameIds.add(name.getPartyNameId());
         }
@@ -118,26 +116,28 @@ class ParPartyStorage extends EntityStorage<PartyWrapper> {
         nameRepository.deletePreferredNameReferencesByPartyNameIdIn(nameIds);
         nameRepository.deleteComplementReferencesByPartyNameIdIn(nameIds);
         // delete all names
-        nameRepository.deleteInBatch(names);
+        nameRepository.deleteByPartyNameIdIn(nameIds);
         // delete all complements
-        nameComplementRepository.deleteByPartyNameIn(names);
+        nameCmplRepository.deleteByPartyNameIdIn(nameIds);
 
         // find all group identifiers and their intervals
         if (partyGroups.size() > 0) {
-            List<ParPartyGroupIdentifier> groupIdentifiers = groupIdentifierRepository.findByPartyGroupIn(partyGroups);
-            for (ParPartyGroupIdentifier gid : groupIdentifiers) {
-                if (gid.getFrom() != null) {
-                    unitdates.add(gid.getFrom());
+            List<ParPartyGroupIdentifierInfo> gids = groupIdentifierRepository.findInfoByPartyGroupIn(partyGroups);
+            List<Integer> gidIds = new ArrayList<>(gids.size());
+            for (ParPartyGroupIdentifierInfo gid : gids) {
+                if (gid.getFromUnitdateId() != null) {
+                    unitdateIds.add(gid.getFromUnitdateId());
                 }
-                if (gid.getTo() != null) {
-                    unitdates.add(gid.getTo());
+                if (gid.getToUnitdateId() != null) {
+                    unitdateIds.add(gid.getToUnitdateId());
                 }
+                gidIds.add(gid.getPartyGroupIdentifierId());
             }
             // delete all group identifiers
-            groupIdentifierRepository.deleteInBatch(groupIdentifiers);
+            groupIdentifierRepository.deleteByPartyGroupIdentifierIdIn(gidIds);
         }
 
         // delete all unit dates
-        unitdateRepository.deleteInBatch(unitdates);
+        unitdateRepository.deleteByUnitdateIdIn(unitdateIds);
     }
 }

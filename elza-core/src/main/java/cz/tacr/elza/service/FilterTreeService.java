@@ -1,29 +1,20 @@
 package cz.tacr.elza.service;
 
-import cz.tacr.elza.ElzaTools;
-import cz.tacr.elza.FilterTools;
-import cz.tacr.elza.controller.ArrangementController;
-import cz.tacr.elza.controller.vo.FilterNode;
-import cz.tacr.elza.controller.vo.FilterNodePosition;
-import cz.tacr.elza.controller.vo.TreeNode;
-import cz.tacr.elza.controller.vo.TreeNodeVO;
-import cz.tacr.elza.controller.vo.filter.SearchParam;
-import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
-import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.vo.DescItemValues;
-import cz.tacr.elza.domain.vo.TitleValue;
-import cz.tacr.elza.domain.vo.TitleValues;
-import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.codes.ArrangementCode;
-import cz.tacr.elza.filter.DescItemTypeFilter;
-import cz.tacr.elza.repository.DataRepository;
-import cz.tacr.elza.repository.ItemSpecRepository;
-import cz.tacr.elza.repository.ItemTypeRepository;
-import cz.tacr.elza.repository.NodeRepository;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeSet;
+
+import javax.annotation.Nullable;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,18 +25,32 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+import cz.tacr.elza.ElzaTools;
+import cz.tacr.elza.FilterTools;
+import cz.tacr.elza.controller.ArrangementController;
+import cz.tacr.elza.controller.vo.FilterNode;
+import cz.tacr.elza.controller.vo.FilterNodePosition;
+import cz.tacr.elza.controller.vo.TreeNode;
+import cz.tacr.elza.controller.vo.TreeNodeVO;
+import cz.tacr.elza.controller.vo.filter.SearchParam;
+import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.core.data.RuleSystemItemType;
+import cz.tacr.elza.core.data.RuleSystemProvider;
+import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.vo.DescItemValues;
+import cz.tacr.elza.domain.vo.TitleValues;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.filter.DescItemTypeFilter;
+import cz.tacr.elza.repository.DataRepository;
+import cz.tacr.elza.repository.ItemSpecRepository;
+import cz.tacr.elza.repository.NodeRepository;
 
 
 /**
@@ -63,8 +68,6 @@ public class FilterTreeService {
     @Autowired
     private LevelTreeCacheWalker levelTreeCacheWalker;
     @Autowired
-    private ItemTypeRepository itemTypeRepository;
-    @Autowired
     private DescriptionItemService descriptionItemService;
     @Autowired
     private NodeRepository nodeRepository;
@@ -74,6 +77,8 @@ public class FilterTreeService {
     private ItemSpecRepository itemSpecRepository;
     @Autowired
     private ArrangementService arrangementService;
+    @Autowired
+    private StaticDataService staticDataService;
 
     /**
      * Provede filtraci uzlů podle filtru a uloží všechny filtrované id do session. ID jsou seřazeny podle výskytu ve
@@ -135,54 +140,32 @@ public class FilterTreeService {
      * @param page            číslo stránky, od 0
      * @param pageSize        velikost stránky
      * @param descItemTypeIds id typů atributů, které chceme načíst
-     * @param dataExport      příznak zda se načítají data pro export
      * @return seznam uzlů s hodnotami atributů
      */
     public List<FilterNode> getFilteredData(final ArrFundVersion version,
                                             final int page,
                                             final int pageSize,
-                                            final List<Integer> descItemTypeIds,
-                                            final boolean dataExport) {
-        ArrayList<Integer> filteredIds = getUserFilterSession().getFilteredIds(version.getFundVersionId());
-        return getFilteredData(version, page, pageSize, descItemTypeIds, dataExport, filteredIds);
-    }
-
-    /**
-     * Do filtrovaného seznamu načte hodnoty atributů a vrátí podstránku záznamů.
-     *
-     * @param version         verze
-     * @param page            číslo stránky, od 0
-     * @param pageSize        velikost stránky
-     * @param descItemTypeIds id typů atributů, které chceme načíst
-     * @param dataExport      příznak zda se načítají data pro export
-     * @param filteredIds     filtrované id ve stromu, seřazené.
-     * @return seznam uzlů s hodnotami atributů
-     */
-    public List<FilterNode> getFilteredData(final ArrFundVersion version,
-                                            final int page,
-                                            final int pageSize,
-                                            final List<Integer> descItemTypeIds,
-                                            final boolean dataExport,
-                                            final ArrayList<Integer> filteredIds)
-            {
-
-        Map<String, RulItemType> descItemTypeMap = new HashMap<>();
-        for (RulItemType descItemType : itemTypeRepository.findAll(descItemTypeIds)) {
-            descItemTypeMap.put(descItemType.getCode(), descItemType);
+                                            final Collection<Integer> descItemTypeIds) {
+        List<RulItemType> itemTypes = new ArrayList<>();
+        RuleSystemProvider rsp = staticDataService.getData().getRuleSystems();
+        for (Integer id : descItemTypeIds) {
+            RuleSystemItemType rsit = rsp.getItemTypeById(id);
+            if (rsit == null) {
+                throw new BusinessException("Uknown desc item type", BaseCode.ID_NOT_EXIST).set("descItemTypeId", id);
+            }
+            itemTypes.add(rsit.getEntity());
         }
 
+        ArrayList<Integer> filteredIds = getUserFilterSession().getFilteredIds(version.getFundVersionId());
         ArrayList<Integer> subIds = FilterTools.getSublist(page, pageSize, filteredIds);
 
-
-        Map<Integer, Map<String, TitleValues>> nodeValuesMap = Collections.emptyMap();
-        if (!subIds.isEmpty() && !descItemTypeIds.isEmpty()) {
-            nodeValuesMap = descriptionItemService.createNodeValuesMap(new HashSet<>(subIds), null,
-                    new HashSet<>(descItemTypeMap.values()), version, dataExport);
+        Map<Integer, Map<Integer, TitleValues>> nodeValuesMap = Collections.emptyMap();
+        if (!subIds.isEmpty() && !itemTypes.isEmpty()) {
+            nodeValuesMap = descriptionItemService.createNodeValuesByItemTypeIdMap(subIds, itemTypes,
+                                                                                   version.getLockChangeId(), null);
         }
 
-
-        return createResult(version, subIds, levelTreeCacheService.getVersionTreeCache(version), descItemTypeMap,
-                nodeValuesMap);
+        return createResult(version, subIds, levelTreeCacheService.getVersionTreeCache(version), nodeValuesMap);
     }
 
     /**
@@ -292,13 +275,13 @@ public class FilterTreeService {
      * @param version
      * @param filteredIds     id filtrovaných uzlů
      * @param descItemTypeMap mapa typů atributů (kod typu -> typ)
-     * @param valuesMap       mapa nalezených hodnot atributů (id uzlu -> kod typu -> hodnota atributu)
+     * @param nodeValuesMap2       mapa nalezených hodnot atributů (id uzlu -> kod typu -> hodnota atributu)
      * @return seznam uzlů s hodnotami atributů
      */
-    private List<FilterNode> createResult(final ArrFundVersion version, final List<Integer> filteredIds,
+    private List<FilterNode> createResult(final ArrFundVersion version,
+                                          final List<Integer> filteredIds,
                                           final Map<Integer, TreeNode> versionCache,
-                                          final Map<String, RulItemType> descItemTypeMap,
-                                          final Map<Integer, Map<String, TitleValues>> valuesMap) {
+                                          final Map<Integer, Map<Integer, TitleValues>> nodeValuesMap) {
 
         List<FilterNode> result = new ArrayList<>(filteredIds.size());
 
@@ -327,22 +310,12 @@ public class FilterTreeService {
         for (Integer filteredId : filteredIds) {
 
             //vytvoření mapy hodnot podle typu atributu
-            Map<Integer, DescItemValues> nodeValuesMap = new HashMap<>();
-            Map<String, TitleValues> nodeValues = valuesMap.get(filteredId);
-            if (nodeValues != null) {
-                for (Map.Entry<String, TitleValues> nodeValueEntry : nodeValues.entrySet()) {
-                    DescItemValues values = new DescItemValues();
-                    Integer descItymTypeId = descItemTypeMap.get(nodeValueEntry.getKey()).getItemTypeId();
-
-
-                    Iterator<TitleValue> valueIterator = nodeValueEntry.getValue().getValues().iterator();
-                    while (valueIterator.hasNext()) {
-                        TitleValue titleValue = valueIterator.next();
-
-                        //values.addValue(DescItemValue.create(titleValue));
-                        values.addValue(titleValue);
-                        nodeValuesMap.put(descItymTypeId, values);
-                    }
+            Map<Integer, TitleValues> titleValuesMap = nodeValuesMap.get(filteredId);
+            Map<Integer, DescItemValues> descItemValuesMap = null;
+            if (titleValuesMap != null) {
+                descItemValuesMap = new HashMap<>(titleValuesMap.size());
+                for (Entry<Integer, TitleValues> entry : titleValuesMap.entrySet()) {
+                    descItemValuesMap.put(entry.getKey(), entry.getValue().toDescItemValues());
                 }
             }
 
@@ -358,7 +331,7 @@ public class FilterTreeService {
                 arrParentNodeVo = parentIdsMap.get(treeParentNode.getId());
             }
 
-            result.add(new FilterNode(arrNodeVo, arrParentNodeVo, nodeValuesMap, treeNodeClient.getReferenceMark()));
+            result.add(new FilterNode(arrNodeVo, arrParentNodeVo, descItemValuesMap, treeNodeClient.getReferenceMark()));
         }
 
         return result;

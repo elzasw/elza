@@ -8,13 +8,13 @@ import org.apache.commons.lang3.StringUtils;
 
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.RuleSystemItemType;
-import cz.tacr.elza.dataexchange.common.items.ImportableItem.ImportableItemData;
+import cz.tacr.elza.dataexchange.common.items.ImportableItemData;
 import cz.tacr.elza.dataexchange.input.DEImportException;
 import cz.tacr.elza.dataexchange.input.aps.context.AccessPointInfo;
 import cz.tacr.elza.dataexchange.input.context.ImportContext;
 import cz.tacr.elza.dataexchange.input.reader.ItemProcessor;
-import cz.tacr.elza.dataexchange.input.sections.context.ContextNode;
-import cz.tacr.elza.dataexchange.input.sections.context.ContextSection;
+import cz.tacr.elza.dataexchange.input.sections.context.SectionContext;
+import cz.tacr.elza.dataexchange.input.sections.context.NodeContext;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrDescItemIndexData;
@@ -33,8 +33,8 @@ public class SectionLevelProcessor implements ItemProcessor {
 
     private final ImportContext context;
 
-	// Current section context
-    private final ContextSection section;
+    // Current section context
+    private final SectionContext section;
 
     public SectionLevelProcessor(ImportContext context) {
         this.context = context;
@@ -44,16 +44,9 @@ public class SectionLevelProcessor implements ItemProcessor {
     @Override
     public void process(Object item) {
         Level level = (Level) item;
-        validateLevel(level);
         ArrNode node = createNode(level);
-        ContextNode contextNode = createContextNode(level, node);
+        NodeContext contextNode = createContextNode(level, node);
         processSubEntities(level, contextNode);
-    }
-
-    private void validateLevel(Level item) {
-        if (StringUtils.isEmpty(item.getId())) {
-			throw new DEImportException("Level id is not set");
-        }
     }
 
     private ArrNode createNode(Level item) {
@@ -67,48 +60,51 @@ public class SectionLevelProcessor implements ItemProcessor {
     /**
      * Create context node and sets ArrLevel.
      */
-    private ContextNode createContextNode(Level item, ArrNode node) {
+    private NodeContext createContextNode(Level item, ArrNode node) {
         String importId = item.getId();
+        if (StringUtils.isEmpty(importId)) {
+            throw new DEImportException("Level id is not set");
+        }
         String parentImportId = item.getPid();
-
-		// root node needs special processing
+        // root node needs special processing
         if (StringUtils.isEmpty(parentImportId)) {
             return section.setRootNode(node, importId);
         }
-		// get parent context and append as child node
-        ContextNode parentNode = section.getContextNode(parentImportId);
+        // get parent context and append as child node
+        NodeContext parentNode = section.getNode(parentImportId);
         if (parentNode == null) {
             throw new DEImportException("Parent for level not found, parentLevelId:" + parentImportId);
         }
         return parentNode.addChildNode(node, importId);
     }
 
-    private void processSubEntities(Level item, ContextNode node) {
+    private void processSubEntities(Level item, NodeContext node) {
         try {
             processAccessPointRefs(item.getAprs(), node);
-            processDescItems(item.getDeOrDiOrDd(), node);
+            processDescItems(item.getDdOrDoOrDp(), node);
         } catch (DEImportException e) {
-            throw new DEImportException("Fund level cannot be processed, levelId:" + item.getId() + ", detail:" + e.getMessage(), e);
+            throw new DEImportException(
+                    "Fund level cannot be processed, levelId:" + item.getId() + ", detail:" + e.getMessage(), e);
         }
     }
 
-    private void processAccessPointRefs(AccessPointRefs references, ContextNode node) {
+    private void processAccessPointRefs(AccessPointRefs references, NodeContext node) {
         if (references == null) {
             return;
         }
         for (String apEntryId : references.getApid()) {
-            AccessPointInfo apInfo = context.getAccessPoints().getAccessPointInfo(apEntryId);
+            AccessPointInfo apInfo = context.getAccessPoints().getApInfo(apEntryId);
             if (apInfo == null) {
                 throw new DEImportException("Referenced access point not found, apeId:" + apEntryId);
             }
             ArrNodeRegister nodeRegister = new ArrNodeRegister();
-            nodeRegister.setRecord(apInfo.getEntityReference(context.getSession()));
+            nodeRegister.setRecord(apInfo.getEntityRef(context.getSession()));
             nodeRegister.setCreateChange(section.getCreateChange());
             node.addNodeRegister(nodeRegister);
         }
     }
 
-    private void processDescItems(Collection<DescriptionItem> items, ContextNode node) {
+    private void processDescItems(Collection<DescriptionItem> items, NodeContext node) {
         StaticDataProvider ruleSystem = section.getStaticData();
 
         for (DescriptionItem item : items) {
@@ -120,21 +116,17 @@ public class SectionLevelProcessor implements ItemProcessor {
             // create data
             DataType dataType = itemType.getDataType();
             ImportableItemData itemData = item.createData(context, dataType);
-
-            // update data type reference
             ArrData data = itemData.getData();
-            if (data != null) {
-                data.setDataType(dataType.getEntity());
-            }
 
-            ImportIndexData indexData = new ImportIndexData(section.getFund().getFundId(), itemData.getFulltext(), data);
+            DescItemIndexData indexData = new DescItemIndexData(section.getFund().getFundId(), itemData.getFulltext(),
+                    data);
             ArrDescItem descItem = createDescItem(section, itemType, item.getS(), indexData);
 
             node.addDescItem(descItem, data);
         }
     }
 
-    private ArrDescItem createDescItem(ContextSection section,
+    private ArrDescItem createDescItem(SectionContext section,
                                        RuleSystemItemType rsit,
                                        String specCode,
                                        ArrDescItemIndexData indexData) {
@@ -158,7 +150,8 @@ public class SectionLevelProcessor implements ItemProcessor {
                 RulItemSpec itemSpec = rsit.getItemSpecByCode(specCode);
                 if (itemSpec == null) {
                     throw new DEImportException(
-                            "Description item specification not found, typeCode:" + typeCode + ", specCode:" + specCode);
+                            "Description item specification not found, typeCode:" + typeCode + ", specCode:"
+                                    + specCode);
                 }
                 return itemSpec;
             } else {

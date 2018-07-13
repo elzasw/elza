@@ -1,5 +1,7 @@
 package cz.tacr.elza.domain;
 
+import javax.persistence.Access;
+import javax.persistence.AccessType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -33,6 +35,7 @@ public class ParRelationEntity {
 
     @Id
     @GeneratedValue
+    @Access(AccessType.PROPERTY) // required to read id without fetch from db
     private Integer relationEntityId;
 
     @RestResource(exported = false)
@@ -41,9 +44,9 @@ public class ParRelationEntity {
     private ParRelation relation;
 
     @RestResource(exported = false)
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApRecord.class)
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApAccessPoint.class)
     @JoinColumn(name = "recordId", nullable = false)
-    private ApRecord record;
+    private ApAccessPoint accessPoint;
 
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ParRelationRoleType.class)
@@ -74,12 +77,12 @@ public class ParRelationEntity {
         this.relation = relation;
     }
 
-    public ApRecord getRecord() {
-        return record;
+    public ApAccessPoint getAccessPoint() {
+        return accessPoint;
     }
 
-    public void setRecord(final ApRecord record) {
-        this.record = record;
+    public void setAccessPoint(ApAccessPoint accessPoint) {
+        this.accessPoint = accessPoint;
     }
 
     public ParRelationRoleType getRoleType() {

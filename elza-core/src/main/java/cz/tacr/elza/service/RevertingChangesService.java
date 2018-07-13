@@ -952,7 +952,8 @@ public class RevertingChangesService {
         HashMap<Map.Entry<Integer, Integer>, String> result = new HashMap<>();
 
         for (Map.Entry<Integer, Integer> entry : changeIdNodeIdMap.entrySet()) {
-            Map<Integer, Map<String, TitleValues>> nodeValuesMap = descriptionItemService.createNodeValuesMap(Sets.newHashSet(entry.getValue()), itemTypes, entry.getKey());
+            Map<Integer, Map<String, TitleValues>> nodeValuesMap = descriptionItemService
+                    .createNodeValuesByItemTypeCodeMap(Collections.singleton(entry.getValue()), itemTypes, entry.getKey(), null);
             Map<String, TitleValues> valuesMap = nodeValuesMap.get(entry.getValue());
             if (valuesMap != null) {
                 List<String> titles = new ArrayList<>();

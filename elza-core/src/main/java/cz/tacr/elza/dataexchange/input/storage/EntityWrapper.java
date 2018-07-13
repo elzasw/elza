@@ -2,22 +2,45 @@ package cz.tacr.elza.dataexchange.input.storage;
 
 import org.hibernate.Session;
 
-import cz.tacr.elza.dataexchange.input.context.PersistMethod;
-
 /**
- * Entity wrapper for import storage process.
+ * Entity wrapper for storage. Wrapped entity must be new or loaded entity.
  */
 public interface EntityWrapper {
 
-    PersistMethod getPersistMethod();
-
+    /**
+     * Wrapped entity.
+     */
     Object getEntity();
 
-    void beforeEntityPersist(Session session);
+    /**
+     * Save method of wrapped entity.
+     */
+    SaveMethod getSaveMethod();
 
     /**
-     * Default implementation is empty.
+     * Heuristic value which determines memory footprint of wrapper. Default
+     * value is 1.
      */
-    default void afterEntityPersist() {
+    default long getMemoryScore() {
+        return 1;
+    }
+
+    /**
+     * Evicts all entities initialized by wrapper from persistent context. Default
+     * implementation evicts only wrapped entity.
+     */
+    default void evictFrom(Session session) {
+        session.evict(getEntity());
+    }
+
+    /**
+     * Callback is used by storage to notify wrapper before entity saves.
+     */
+    void beforeEntitySave(Session session);
+
+    /**
+     * Callback is used by storage to notify wrapper after entity saves.
+     */
+    default void afterEntitySave() {
     }
 }
