@@ -2,6 +2,7 @@ package cz.tacr.elza.dataexchange.input.sections;
 
 import java.util.Collection;
 
+import cz.tacr.elza.core.data.StaticDataProvider;
 import org.apache.commons.lang3.StringUtils;
 
 import cz.tacr.elza.core.data.DataType;
@@ -54,10 +55,10 @@ public class StructObjProcessor implements ItemProcessor {
     }
 
     private void processItems(Collection<DescriptionItem> items, StructObjContext structObjCtx) {
-        RuleSystem rs = section.getRuleSystem();
+        StaticDataProvider staticData = section.getStaticData();
         // process structured object items
         for (DescriptionItem item : items) {
-            RuleSystemItemType rsit = rs.getItemTypeByCode(item.getT());
+            RuleSystemItemType rsit = staticData.getItemTypeByCode(item.getT());
             if (rsit == null) {
                 throw new DEImportException("Description item type not found, code:" + item.getT());
             }

@@ -704,22 +704,6 @@ public class OutputService {
         if (nodeIds.size() == 0) {
             return;
         }
-
-    private boolean storeResults(final ArrFundVersion fundVersion,
-                                 final ArrChange change,
-                                 final Collection<Integer> nodes,
-                                 final ArrOutputDefinition outputDefinition,
-                                 final RulItemType itemType)
-    {
-
-        List<ArrBulkActionRun> bulkActionRunList = bulkActionService.findFinishedBulkActionsByNodeIds(fundVersion, nodes);
-        List<RulActionRecommended> actionRecommendeds = actionRecommendedRepository.findByOutputType(outputDefinition.getOutputType());
-
-        // create item connector
-        OutputItemConnector connector = outputServiceInternal.createItemConnector(fundVersion, outputDefinition);
-        connector.setChangeSupplier(() -> change);
-
-        storeResults(fundVersion, nodeIds, outputDefinition, connector);
     }
 
     /**

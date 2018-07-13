@@ -32,11 +32,9 @@ import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.controller.ArrangementController;
 import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.core.data.CalendarType;
-import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.core.data.RuleSystemItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.core.data.*;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.domain.ApAccessPoint;
@@ -88,30 +86,8 @@ import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventChangeDescItem;
 import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.BooleanUtils;
-import org.apache.commons.lang3.NotImplementedException;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-
-import javax.annotation.Nullable;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 
 /**
@@ -1097,7 +1073,8 @@ public class DescriptionItemService {
     public Map<Integer, Map<Integer, TitleValues>> createNodeValuesByItemTypeIdMap(final Collection<Integer> nodeIds,
                                                                                    final Collection<RulItemType> descItemTypes,
                                                                                    final Integer changeId,
-                                                                                   @Nullable final TreeNode subtreeRoot) {
+                                                                                   @Nullable final TreeNode subtreeRoot,
+                                                                                   final boolean dataExport) {
         if (nodeIds.isEmpty() || descItemTypes.isEmpty()) {
             return Collections.emptyMap();
         }
@@ -1115,7 +1092,7 @@ public class DescriptionItemService {
 
         Map<Integer, Map<Integer, TitleValues>> nodeIdMap = new HashMap<>();
         for (ArrDescItem descItem : descItems) {
-            TitleValue titleValue = serviceInternal.createTitleValue(descItem);
+            TitleValue titleValue = serviceInternal.createTitleValue(descItem, dataExport);
             Integer nodeId = descItem.getNodeId();
             Integer itemTypeId = descItem.getItemTypeId();
             addTitleValueToMap(titleValue, nodeId, itemTypeId, nodeIdMap);
@@ -1146,9 +1123,9 @@ public class DescriptionItemService {
         Map<Integer, Map<String, TitleValues>> nodeIdMap = new HashMap<>();
         StaticDataProvider staticData = staticDataService.getData();
         for (ArrDescItem descItem : descItems) {
-            TitleValue titleValue = serviceInternal.createTitleValue(descItem);
+            TitleValue titleValue = serviceInternal.createTitleValue(descItem, false);
             Integer nodeId = descItem.getNodeId();
-            String itemTypeCode = staticData.getRuleSystems().getItemTypeById(descItem.getItemTypeId()).getCode();
+            String itemTypeCode = staticData.getItemTypeById(descItem.getItemTypeId()).getCode();
             addTitleValueToMap(titleValue, nodeId, itemTypeCode, nodeIdMap);
         }
         return nodeIdMap;

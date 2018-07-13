@@ -15,6 +15,7 @@ import java.util.TreeSet;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.core.data.StaticDataProvider;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +36,6 @@ import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.controller.vo.filter.SearchParam;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.core.data.RuleSystemItemType;
-import cz.tacr.elza.core.data.RuleSystemProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -132,6 +132,24 @@ public class FilterTreeService {
         return versionIdsTable;
     }
 
+    /**
+     * Do filtrovaného seznamu načte hodnoty atributů a vrátí podstránku záznamů.
+     *
+     * @param version         verze
+     * @param page            číslo stránky, od 0
+     * @param pageSize        velikost stránky
+     * @param descItemTypeIds id typů atributů, které chceme načíst
+     * @param dataExport      příznak zda se načítají data pro export
+     * @return seznam uzlů s hodnotami atributů
+     */
+    public List<FilterNode> getFilteredData(final ArrFundVersion version,
+                                            final int page,
+                                            final int pageSize,
+                                            final List<Integer> descItemTypeIds,
+                                            final boolean dataExport) {
+        ArrayList<Integer> filteredIds = getUserFilterSession().getFilteredIds(version.getFundVersionId());
+        return getFilteredData(version, page, pageSize, descItemTypeIds, dataExport, filteredIds);
+    }
 
     /**
      * Do filtrovaného seznamu načte hodnoty atributů a vrátí podstránku záznamů.
@@ -145,24 +163,27 @@ public class FilterTreeService {
     public List<FilterNode> getFilteredData(final ArrFundVersion version,
                                             final int page,
                                             final int pageSize,
-                                            final Collection<Integer> descItemTypeIds) {
+                                            final Collection<Integer> descItemTypeIds,
+                                            final boolean dataExport,
+                                            final ArrayList<Integer> filteredIds) {
         List<RulItemType> itemTypes = new ArrayList<>();
-        RuleSystemProvider rsp = staticDataService.getData().getRuleSystems();
+        StaticDataProvider data = staticDataService.getData();
         for (Integer id : descItemTypeIds) {
-            RuleSystemItemType rsit = rsp.getItemTypeById(id);
+            RuleSystemItemType rsit = data.getItemTypeById(id);
             if (rsit == null) {
                 throw new BusinessException("Uknown desc item type", BaseCode.ID_NOT_EXIST).set("descItemTypeId", id);
             }
             itemTypes.add(rsit.getEntity());
         }
 
-        ArrayList<Integer> filteredIds = getUserFilterSession().getFilteredIds(version.getFundVersionId());
         ArrayList<Integer> subIds = FilterTools.getSublist(page, pageSize, filteredIds);
-
         Map<Integer, Map<Integer, TitleValues>> nodeValuesMap = Collections.emptyMap();
         if (!subIds.isEmpty() && !itemTypes.isEmpty()) {
-            nodeValuesMap = descriptionItemService.createNodeValuesByItemTypeIdMap(subIds, itemTypes,
-                                                                                   version.getLockChangeId(), null);
+            nodeValuesMap = descriptionItemService.createNodeValuesByItemTypeIdMap(subIds,
+                    itemTypes,
+                    version.getLockChangeId(),
+                    null,
+                    dataExport);
         }
 
         return createResult(version, subIds, levelTreeCacheService.getVersionTreeCache(version), nodeValuesMap);
@@ -274,8 +295,6 @@ public class FilterTreeService {
      *
      * @param version
      * @param filteredIds     id filtrovaných uzlů
-     * @param descItemTypeMap mapa typů atributů (kod typu -> typ)
-     * @param nodeValuesMap2       mapa nalezených hodnot atributů (id uzlu -> kod typu -> hodnota atributu)
      * @return seznam uzlů s hodnotami atributů
      */
     private List<FilterNode> createResult(final ArrFundVersion version,

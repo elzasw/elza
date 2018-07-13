@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.exception.ObjectNotFoundException;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -582,11 +583,14 @@ public class InterpiService {
     /**
      * Dohledání existujících rejstříkových hesel pro vyhledané záznamy.
      *
-     * @param apExternalSystem systém ze kterého jsou nalezená rejstříková hesla
      * @param externalRecords nalezené záznamy pro které se mají najít existující hesla
      */
     private void matchWithExistingRecords(final Map<String, ExternalRecordVO> externalRecords) {
         ApExternalIdType eidType = staticDataService.getData().getApEidTypeByCode(EID_TYPE_CODE);
+        if (eidType == null) {
+            throw new ObjectNotFoundException("Nebyl nalezen typ externího identifikátoru", BaseCode.ID_NOT_EXIST)
+                    .set("externalIdTypeCode", EID_TYPE_CODE);
+        }
         List<ApExternalIdInfo> eidInfoList = apEidRepository
                 .findInfoByExternalIdTypeIdAndValuesIn(eidType.getExternalIdTypeId(), externalRecords.keySet());
 

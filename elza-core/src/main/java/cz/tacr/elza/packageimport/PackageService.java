@@ -541,7 +541,7 @@ public class PackageService {
             processRelationTypeRoleTypes(relationTypeRoleTypes, rulPackage, parRelationRoleTypes, parRelationTypes);
 
             RegisterTypes registerTypes = PackageUtils.convertXmlStreamToObject(RegisterTypes.class, mapEntry.get(REGISTER_TYPE_XML));
-            List<ApType> apTypes = processRegisterTypes(registerTypes, rulPackage, parPartyTypes);
+            List<ApType> apTypes = processApTypes(registerTypes, rulPackage, parPartyTypes);
 
             RegistryRoles registryRoles = PackageUtils.convertXmlStreamToObject(RegistryRoles.class, mapEntry.get(REGISTRY_ROLE_XML));
             processRegistryRoles(registryRoles, rulPackage, parRelationRoleTypes, apTypes);
@@ -624,45 +624,6 @@ public class PackageService {
             }
 
             deleteRuleSets(rulRuleSetsDelete);
-
-            // OSOBY ---------------------------------------------------------------------------------------------------
-
-            List<ParPartyType> parPartyTypes = partyTypeRepository.findAll();
-
-            RelationRoleTypes relationRoleTypes = PackageUtils.convertXmlStreamToObject(RelationRoleTypes.class, mapEntry.get(RELATION_ROLE_TYPE_XML));
-            List<ParRelationRoleType> parRelationRoleTypes = processRelationRoleTypes(relationRoleTypes, rulPackage);
-
-            PartyNameFormTypes partyNameFormTypes = PackageUtils.convertXmlStreamToObject(PartyNameFormTypes.class, mapEntry.get(PARTY_NAME_FORM_TYPE_XML));
-            processPartyNameFormTypes(partyNameFormTypes, rulPackage);
-
-            RelationClassTypes relationClassTypes = PackageUtils.convertXmlStreamToObject(RelationClassTypes.class, mapEntry.get(RELATION_CLASS_TYPE_XML));
-            List<ParRelationClassType> parRelationClassTypes = processRelationClassTypes(relationClassTypes, rulPackage);
-
-            ComplementTypes complementTypes = PackageUtils.convertXmlStreamToObject(ComplementTypes.class, mapEntry.get(COMPLEMENT_TYPE_XML));
-            List<ParComplementType> parComplementTypes = processComplementTypes(complementTypes, rulPackage);
-
-            PartyGroups partyGroups = PackageUtils.convertXmlStreamToObject(PartyGroups.class, mapEntry.get(PARTY_GROUP_XML));
-            processPartyGroups(partyGroups, rulPackage, parPartyTypes);
-
-            PartyTypeComplementTypes partyTypeComplementTypes = PackageUtils.convertXmlStreamToObject(PartyTypeComplementTypes.class, mapEntry.get(PARTY_TYPE_COMPLEMENT_TYPE_XML));
-            processPartyTypeComplementTypes(partyTypeComplementTypes, rulPackage, parComplementTypes, parPartyTypes);
-
-            RelationTypes relationTypes = PackageUtils.convertXmlStreamToObject(RelationTypes.class, mapEntry.get(RELATION_TYPE_XML));
-            List<ParRelationType> parRelationTypes = processRelationTypes(relationTypes, rulPackage, parRelationClassTypes);
-
-            PartyTypeRelations partyTypeRelations = PackageUtils.convertXmlStreamToObject(PartyTypeRelations.class, mapEntry.get(PARTY_TYPE_RELATION_XML));
-            processPartyTypeRelations(partyTypeRelations, rulPackage, parRelationTypes, parPartyTypes);
-
-            RelationTypeRoleTypes relationTypeRoleTypes = PackageUtils.convertXmlStreamToObject(RelationTypeRoleTypes.class, mapEntry.get(RELATION_TYPE_ROLE_TYPE_XML));
-            processRelationTypeRoleTypes(relationTypeRoleTypes, rulPackage, parRelationRoleTypes, parRelationTypes);
-
-            RegisterTypes registerTypes = PackageUtils.convertXmlStreamToObject(RegisterTypes.class, mapEntry.get(REGISTER_TYPE_XML));
-            List<ApType> apTypes = processApTypes(registerTypes, rulPackage, parPartyTypes);
-
-            RegistryRoles registryRoles = PackageUtils.convertXmlStreamToObject(RegistryRoles.class, mapEntry.get(REGISTRY_ROLE_XML));
-            processRegistryRoles(registryRoles, rulPackage, parRelationRoleTypes, apTypes);
-
-            // END OSOBY -----------------------------------------------------------------------------------------------
 
             // NASTAVENÍ -----------------------------------------------------------------------------------------------
 

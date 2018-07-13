@@ -1,7 +1,9 @@
 package cz.tacr.elza.service;
 
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+import cz.tacr.elza.domain.*;
 import org.apache.commons.lang.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -9,24 +11,6 @@ import org.springframework.stereotype.Service;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.domain.ApName;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDataCoordinates;
-import cz.tacr.elza.domain.ArrDataDecimal;
-import cz.tacr.elza.domain.ArrDataFileRef;
-import cz.tacr.elza.domain.ArrDataInteger;
-import cz.tacr.elza.domain.ArrDataJsonTable;
-import cz.tacr.elza.domain.ArrDataPartyRef;
-import cz.tacr.elza.domain.ArrDataRecordRef;
-import cz.tacr.elza.domain.ArrDataString;
-import cz.tacr.elza.domain.ArrDataStructureRef;
-import cz.tacr.elza.domain.ArrDataText;
-import cz.tacr.elza.domain.ArrDataUnitdate;
-import cz.tacr.elza.domain.ArrDataUnitid;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.domain.vo.CoordinatesTitleValue;
 import cz.tacr.elza.domain.vo.JsonTableTitleValue;
@@ -52,7 +36,7 @@ public class DescriptionItemServiceInternal {
     private final ApNameRepository apNameRepository;
 
     @Autowired
-    public DescriptionItemServiceInternal(DescItemRepository descItemRepository, 
+    public DescriptionItemServiceInternal(DescItemRepository descItemRepository,
                                           StaticDataService staticDataService,
                                           ApNameRepository apNameRepository) {
         this.descItemRepository = descItemRepository;
@@ -78,27 +62,30 @@ public class DescriptionItemServiceInternal {
         itemList = descItemRepository.findByNodeAndChange(node, lockChange);
         return itemList;
     }
-    
-    public TitleValue createTitleValue(ArrDescItem descItem) {
+
+    public TitleValue createTitleValue(ArrDescItem descItem, final boolean dataExport) {
         // prepare item specification if present
         RulItemSpec itemSpec = null;
         if (descItem.getItemSpecId() != null) {
             StaticDataProvider staticData = staticDataService.getData();
-            itemSpec = staticData.getRuleSystems().getItemSpecById(descItem.getItemSpecId());
+            itemSpec = staticData.getItemSpecById(descItem.getItemSpecId());
         }
         // create new title value
-        TitleValue titleValue = createTitleValueInternal(descItem.getData(), itemSpec);
+        TitleValue titleValue = createTitleValueInternal(descItem.getData(), itemSpec, dataExport);
         // set common values
         titleValue.setPosition(descItem.getPosition());
         if (itemSpec != null) {
             String specCode = itemSpec.getCode();
             titleValue.setIconValue(specCode);
             titleValue.setSpecCode(specCode);
+            if (dataExport) {
+                titleValue.setSpecName(itemSpec.getName());
+            }
         }
         return titleValue;
     }
 
-    private TitleValue createTitleValueInternal(ArrData data, RulItemSpec itemSpec) {
+    private TitleValue createTitleValueInternal(ArrData data, RulItemSpec itemSpec, final boolean dataExport) {
         // handle undefined data
         if (data == null) {
             return new TitleValue(ArrangementService.UNDEFINED);
@@ -108,17 +95,32 @@ public class DescriptionItemServiceInternal {
         switch (dataType) {
         case ENUM:
             return new TitleValue(itemSpec.getName());
-        case PARTY_REF:
+        case PARTY_REF: {
             ArrDataPartyRef partyData = (ArrDataPartyRef) data;
             ApName partyName = apNameRepository.findPreferredNameByAccessPoint(partyData.getParty().getAccessPoint());
-            return new TitleValue(partyName.getFullName());
-        case RECORD_REF:
+            TitleValue value = new TitleValue(partyName.getFullName());
+            if (dataExport) {
+                value.setEntityId(partyData.getPartyId());
+            }
+            return value;
+        }
+        case RECORD_REF: {
             ArrDataRecordRef apData = (ArrDataRecordRef) data;
             ApName apName = apNameRepository.findPreferredNameByAccessPoint(apData.getRecord());
-            return new TitleValue(apName.getFullName());
-        case STRUCTURED:
+            TitleValue value = new TitleValue(apName.getFullName());
+            if (dataExport) {
+                value.setEntityId(apName.getAccessPointId());
+            }
+            return value;
+        }
+        case STRUCTURED: {
             ArrDataStructureRef structData = (ArrDataStructureRef) data;
-            return new TitleValue(structData.getStructuredObject().getValue());
+            TitleValue value = new TitleValue(structData.getStructuredObject().getValue());
+            if (dataExport) {
+                value.setEntityId(structData.getStructuredObjectId());
+            }
+            return value;
+        }
         case UNITDATE:
             ArrDataUnitdate unitdateData = (ArrDataUnitdate) data;
             return new UnitdateTitleValue(UnitDateConvertor.convertToString(unitdateData),
@@ -148,6 +150,9 @@ public class DescriptionItemServiceInternal {
         case FILE_REF:
             ArrDataFileRef fileData = (ArrDataFileRef) data;
             return new TitleValue(fileData.getFile().getName());
+        case DATE:
+            ArrDataDate dataDate = (ArrDataDate) data;
+            return new TitleValue(DateTimeFormatter.ISO_LOCAL_DATE.format(dataDate.getValue()));
         default:
             throw new SystemException("Failed to create title, uknown data type: " + dataType, BaseCode.SYSTEM_ERROR);
         }

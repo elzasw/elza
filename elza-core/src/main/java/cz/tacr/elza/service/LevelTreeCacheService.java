@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.core.data.StaticDataProvider;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.Validate;
@@ -53,7 +54,6 @@ import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.controller.vo.nodes.NodeData;
 import cz.tacr.elza.controller.vo.nodes.NodeDataParam;
 import cz.tacr.elza.core.data.RuleSystemItemType;
-import cz.tacr.elza.core.data.RuleSystemProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrDigitizationRequest;
@@ -795,9 +795,9 @@ public class LevelTreeCacheService {
 
         List<RulItemType> result = new ArrayList<>();
 
-        RuleSystemProvider rsp = staticDataService.getData().getRuleSystems();
+        StaticDataProvider data = staticDataService.getData();
         for (String typeCode : typeCodes) {
-            RuleSystemItemType rsit = rsp.getItemTypeByCode(typeCode);
+            RuleSystemItemType rsit = data.getItemTypeByCode(typeCode);
             if (rsit == null) {
                 logger.warn("Nepodařilo se nalézt typ atributu, kód=" + typeCode + ". Změňte kód v konfiguraci.");
                 continue;
