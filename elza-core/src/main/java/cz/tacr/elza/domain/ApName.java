@@ -1,17 +1,6 @@
 package cz.tacr.elza.domain;
 
-import javax.persistence.Access;
-import javax.persistence.AccessType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Transient;
+import javax.persistence.*;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -39,6 +28,9 @@ public class ApName {
 
     @Column(length = StringLength.LENGTH_1000)
     private String complement;
+
+    @Column(length = StringLength.LENGTH_2000)
+    private String fullName;
 
     @Column(nullable = false)
     private boolean preferredName;
@@ -77,6 +69,7 @@ public class ApName {
         this.name = other.name;
         this.complement = other.complement;
         this.preferredName = other.preferredName;
+        this.fullName = other.fullName;
         this.language = other.language;
         this.languageId = other.languageId;
         this.accessPoint = other.accessPoint;
@@ -161,16 +154,12 @@ public class ApName {
         this.deleteChange = deleteChange;
     }
 
-    @Transient
+    public void setFullName(final String fullName) {
+        this.fullName = fullName;
+    }
+
     public String getFullName() {
-        if (StringUtils.isEmpty(name)) {
-            return null;
-        }
-        StringBuilder sb = new StringBuilder(name);
-        if (StringUtils.isNotEmpty(complement)) {
-            sb.append(" (").append(complement).append(')');
-        }
-        return sb.toString();
+        return fullName;
     }
 
     @Override

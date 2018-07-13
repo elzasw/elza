@@ -132,6 +132,11 @@ public enum RegistryCode implements ErrorCode {
     CANT_CHANGE_DELETED_NAME,
 
     /**
+     * Celé jméno není unikátní v rámci třídy.
+     */
+    NOT_UNIQUE_FULL_NAME,
+
+    /**
      * Nelze smazat preferované jméno.
      */
     CANT_DELETE_PREFERRED_NAME,

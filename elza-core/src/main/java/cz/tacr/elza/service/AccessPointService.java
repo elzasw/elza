@@ -1004,7 +1004,7 @@ public class AccessPointService {
     @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
     public ApAccessPoint createAccessPoint(@AuthParam(type = AuthParam.Type.SCOPE) final ApScope scope,
                                            final ApType type,
-                                           @Nullable final String name,
+                                           final String name,
                                            @Nullable final String complement,
                                            @Nullable final SysLanguage language,
                                            @Nullable final String description) {
@@ -1097,7 +1097,7 @@ public class AccessPointService {
      */
     @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
     public ApName createAccessPointName(@AuthParam(type = AuthParam.Type.AP) final ApAccessPoint accessPoint,
-                                        @Nullable final String name,
+                                        final String name,
                                         @Nullable final String complement,
                                         @Nullable final SysLanguage language) {
         Assert.notNull(accessPoint, "Přístupový bod musí být vyplněn");
@@ -1128,9 +1128,9 @@ public class AccessPointService {
         validationNotDeleted(apName);
 
         ApChange change = createChange(ApChange.Type.NAME_UPDATE);
+        ApName apNameNew = new ApName(apName);
 
         // zneplatnění původní verze jména
-        ApName apNameNew = new ApName(apName);
         apName.setDeleteChange(change);
         apNameRepository.save(apName);
 
@@ -1138,8 +1138,10 @@ public class AccessPointService {
         apNameNew.setCreateChange(change);
         apNameNew.setName(name);
         apNameNew.setComplement(complement);
+        apNameNew.setFullName(generateFullName(name, complement));
         apNameNew.setLanguage(language);
 
+        validationNameUnique(accessPoint.getScope(), apNameNew.getFullName());
         return apNameRepository.save(apNameNew);
     }
 
@@ -1323,21 +1325,65 @@ public class AccessPointService {
      */
     private ApName createName(final ApAccessPoint accessPoint,
                               final boolean preferredName,
-                              @Nullable final String name,
+                              final String name,
                               @Nullable final String complement,
                               @Nullable final SysLanguage language,
                               @Nullable final ApChange change) {
         Assert.notNull(accessPoint, "Přístupový bod musí být vyplněn");
+        Assert.notNull(name, "Jméno musí být vyplněno");
 
         ApChange createChange = change == null ? createChange(ApChange.Type.NAME_CREATE) : change;
+        ApName apName = createNameEntity(accessPoint, preferredName, name, complement, language, createChange);
+        validationNameUnique(accessPoint.getScope(), apName.getFullName());
+
+        return apNameRepository.save(apName);
+    }
+
+    /**
+     * Vytvoření entity pro jméno přístupového bodu.
+     *
+     * @param accessPoint   přístupový bod
+     * @param preferredName zda-li se jedná o preferované jméno
+     * @param name          jméno přístupového bodu
+     * @param complement    doplněk přístupového bodu
+     * @param language      jazyk jména
+     * @param createChange  zakládací změna
+     * @return vytvořená entita
+     */
+    public static ApName createNameEntity(final ApAccessPoint accessPoint,
+                                          final boolean preferredName,
+                                          final String name,
+                                          final @Nullable String complement,
+                                          final @Nullable SysLanguage language,
+                                          final ApChange createChange) {
         ApName apName = new ApName();
         apName.setName(name);
         apName.setComplement(complement);
+        apName.setFullName(generateFullName(name, complement));
         apName.setPreferredName(preferredName);
         apName.setLanguage(language);
         apName.setAccessPoint(accessPoint);
         apName.setCreateChange(createChange);
-        return apNameRepository.save(apName);
+        return apName;
+    }
+
+    /**
+     * Sestavení celého jména z jména a doplňku.
+     *
+     * @param name       jméno
+     * @param complement doplněk
+     * @return celé jméno
+     */
+    @Nullable
+    public static String generateFullName(@Nullable final String name, @Nullable final String complement) {
+        if (StringUtils.isEmpty(name)) {
+            return null;
+        }
+        StringBuilder sb = new StringBuilder(name.trim());
+        if (StringUtils.isNotEmpty(complement)) {
+            sb.append(" (").append(complement.trim()).append(')');
+        }
+        return sb.toString();
     }
 
     /**
@@ -1388,6 +1434,24 @@ public class AccessPointService {
     }
 
     /**
+     * Validace unikátnosti jména v daném scope.
+     *
+     * @param scope    třída
+     * @param fullName validované jméno
+     */
+    private void validationNameUnique(final ApScope scope, final String fullName) {
+        Assert.notNull(scope, "Přístupový bod musí být vyplněn");
+        Assert.notNull(fullName, "Plné jméno musí být vyplněno");
+
+        long count = apNameRepository.countUniqueName(fullName, scope);
+        if (count > 0) {
+            throw new BusinessException("Celé jméno není unikátní v rámci třídy", RegistryCode.NOT_UNIQUE_FULL_NAME)
+                    .set("fullName", fullName)
+                    .set("scopeId", scope.getScopeId());
+        }
+    }
+
+    /**
      * Import přístupového bodu z externího systému.
      *
      * @param externalId         identifikátor přístupového bodu v externím systému
@@ -1431,13 +1495,24 @@ public class AccessPointService {
             changeDescription(accessPoint, description);
         }
 
+        // kolekce pro kontrolu jmen vlastního přístupového bodu
+        Set<String> uniqueNames = new HashSet<>();
+
         // založení preferovaného jména
-        createName(accessPoint, true, preferredName.getName(), preferredName.getComplement(), preferredName.getLanguage(), change);
+        ApName nameCreated = createName(accessPoint, true, preferredName.getName(), preferredName.getComplement(), preferredName.getLanguage(), change);
+        uniqueNames.add(nameCreated.getFullName().toLowerCase());
 
         // založení další jmen
         if (CollectionUtils.isNotEmpty(names)) {
             for (ImportAccessPoint.Name name : names) {
-                createName(accessPoint, false, name.getName(), name.getComplement(), name.getLanguage(), change);
+                nameCreated = createName(accessPoint, false, name.getName(), name.getComplement(), name.getLanguage(), change);
+                String compareName = nameCreated.getFullName().toLowerCase();
+                if (uniqueNames.contains(compareName)) {
+                    throw new BusinessException("Celé jméno není unikátní v rámci jmen přístupového bodu", RegistryCode.NOT_UNIQUE_FULL_NAME)
+                            .set("fullName", nameCreated.getFullName())
+                            .set("scopeId", accessPoint.getScopeId());
+                }
+                uniqueNames.add(compareName);
             }
         }
 

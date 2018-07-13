@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import cz.tacr.elza.service.AccessPointService;
 import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.domain.ApDescription;
@@ -71,6 +72,7 @@ public class ApConvResult {
         entity.setComplement(name.getComplement());
         entity.setLanguage(name.getLanguage());
         entity.setName(name.getName());
+        entity.setFullName(AccessPointService.generateFullName(name.getName(), name.getComplement()));
         return entity;
     }
 }
