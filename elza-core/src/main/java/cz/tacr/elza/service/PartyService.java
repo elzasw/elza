@@ -18,7 +18,6 @@ import cz.tacr.elza.service.eventnotification.events.ActionEvent;
 import cz.tacr.elza.service.eventnotification.events.EventId;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.party.ApConvResult;
-import cz.tacr.elza.service.vo.ApAccessPointData;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.springframework.beans.BeanUtils;
@@ -257,7 +256,7 @@ public class PartyService {
     /**
      * Uložení osoby a všech navázaných dat, která musejí být při ukládání vyplněna.
      * Relace se neukládají.
-     * 
+     *
      * @param newParty nová osoba s navázanými daty
      * @return uložená osoba
      */
@@ -320,10 +319,10 @@ public class PartyService {
     private void synchRecord(final ParParty party) {
         Assert.notNull(party, "Osoba nesmí být prázdná");
 
-        Assert.notNull(party.getAccessPoint(), "Osoba nemá zadané rejstříkové heslo.");
-        Assert.notNull(party.getAccessPoint().getApType(), "Není vyplněný typ rejstříkového hesla.");
-        Assert.notNull(party.getAccessPoint().getScope(), "Není nastavena třída rejstříkového hesla");
-        Assert.notNull(party.getAccessPoint().getScope().getScopeId(), "Není nastaveno id třídy rejstříkového hesla");
+        ApAccessPoint accessPoint = party.getAccessPoint();
+        Assert.notNull(accessPoint, "Osoba nemá zadané rejstříkové heslo.");
+        Assert.notNull(accessPoint.getApType(), "Není vyplněný typ rejstříkového hesla.");
+        Assert.notNull(accessPoint.getScope(), "Není nastavena třída rejstříkového hesla");
 
         if (party.getRelations() != null) {
             party.getRelations().sort(new ParRelation.ParRelationComparator());
@@ -333,49 +332,11 @@ public class PartyService {
         List<ParComplementType> complementTypes = complementTypeRepository.findByPartyType(party.getPartyType());
         ApConvResult convResult = groovyScriptService.convertPartyToAp(party, complementTypes);
 
-        List<ApName> apNames = convResult.createNames();
-        ApDescription apDesc = convResult.createDesc();
+        List<ApName> names = convResult.createNames();
+        ApDescription description = convResult.createDesc();
 
-        
-        
-        // TODO: predelat aktualizaci AP
-        throw new NotImplementedException("predelat aktualizaci AP");
-        /*
-        ApAccessPointData recordFromGroovy = new ApAccessPointData();
-        recordFromGroovy.setAccessPoint(new ApAccessPoint());
-        recordFromGroovy.setCharacteristics(apDesc);
-        recordFromGroovy.setPreferredName(apNames.get(0));
-        recordFromGroovy.setVariantNameList(apNames);
-
-        List<ApName> variantRecords = new ArrayList<>(recordFromGroovy.getVariantRecordList());
-
-        //uložení hesla
-        if (party.getPartyId() != null) {
-            ParParty dbParty = partyRepository.findOne(party.getPartyId());
-            recordFromGroovy.getAccessPoint().setAccessPointId(dbParty.getAccessPoint().getAccessPointId());
-//            recordFromGroovy.getAccessPoint().setVersion(dbParty.getAccessPoint().getVersion());
-            recordFromGroovy.getAccessPoint().setUuid(dbParty.getAccessPoint().getUuid());
-        }
-
-        ApAccessPointData partyApData = accessPointDataService.findAccessPointData(party.getAccessPoint());
-
-        recordFromGroovy.setExternalId(partyApData.getExternalId());
-        recordFromGroovy.setExternalSystem(partyApData.getExternalSystem());
-        ApAccessPoint savedRecord = accessPointService.saveAccessPoint(recordFromGroovy, true);
-        party.setAccessPoint(savedRecord);
-
-        //smazání a uložení nových variantních hesel
-        List<ApName> oldVariants = apNameRepository.findVariantNamesByAccessPointId(savedRecord);
-
-        ApChange change = accessPointService.createChange(ApChange.Type.NAME_UPDATE);
-
-        oldVariants.forEach(apName -> apName.setDeleteChange(change));
-        apNameRepository.save(oldVariants);
-
-        for (ApName variantRecord : variantRecords) {
-            variantRecord.setAccessPoint(savedRecord);
-            accessPointService.saveVariantName(variantRecord, change);
-        }*/
+        accessPoint = accessPointService.syncAccessPoint(accessPoint, names, description);
+        party.setAccessPoint(accessPoint);
     }
 
 

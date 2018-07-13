@@ -1050,11 +1050,26 @@ public class AccessPointService {
      *
      * @param accessPoint přístupový bod
      * @param description popis přístupového bodu
-     * @return
+     * @return přístupový bod
      */
     @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
     public ApAccessPoint changeDescription(@AuthParam(type = AuthParam.Type.AP) final ApAccessPoint accessPoint,
                                            @Nullable final String description) {
+        return changeDescription(accessPoint, description, null);
+    }
+
+    /**
+     * Změna popisu přístupového bodu.
+     * Podle vstupních a aktuálních dat se rozhodne, zda-li se bude popis mazat, vytvářet nebo jen upravovat - verzovaně.
+     *
+     * @param accessPoint přístupový bod
+     * @param description popis přístupového bodu
+     * @param change      změna pod kterou se provádí změna (pokud null, volí se individuelně)
+     * @return přístupový bod
+     */
+    private ApAccessPoint changeDescription(@AuthParam(type = AuthParam.Type.AP) final ApAccessPoint accessPoint,
+                                            @Nullable final String description,
+                                            @Nullable final ApChange change) {
         Assert.notNull(accessPoint, "Přístupový bod musí být vyplněn");
         validationNotDeleted(accessPoint);
 
@@ -1063,23 +1078,21 @@ public class AccessPointService {
 
         if (StringUtils.isBlank(description)) {
             if (apDescription != null) {
-                ApChange change = createChange(ApChange.Type.DESC_DELETE);
-                apDescription.setDeleteChange(change);
+                apDescription.setDeleteChange(change == null ? createChange(ApChange.Type.DESC_DELETE) : change);
                 descriptionRepository.save(apDescription);
             }
         } else {
             if (apDescription != null) {
                 ApDescription apDescriptionNew = new ApDescription(apDescription);
-                ApChange change = createChange(ApChange.Type.DESC_UPDATE);
-                apDescription.setDeleteChange(change);
+                ApChange updateChange = change == null ? createChange(ApChange.Type.DESC_UPDATE) : change;
+                apDescription.setDeleteChange(updateChange);
                 descriptionRepository.save(apDescription);
 
-                apDescriptionNew.setCreateChange(change);
+                apDescriptionNew.setCreateChange(updateChange);
                 apDescriptionNew.setDescription(description);
                 descriptionRepository.save(apDescriptionNew);
             } else {
-                ApChange change = createChange(ApChange.Type.DESC_CREATE);
-                createDescription(accessPoint, description, change);
+                createDescription(accessPoint, description, change == null ? createChange(ApChange.Type.DESC_CREATE) : change);
             }
         }
 
@@ -1119,15 +1132,43 @@ public class AccessPointService {
     @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
     public ApName updateAccessPointName(@AuthParam(type = AuthParam.Type.AP) final ApAccessPoint accessPoint,
                                         final ApName apName,
-                                        @Nullable final String name,
+                                        final String name,
                                         @Nullable final String complement,
                                         @Nullable final SysLanguage language) {
         Assert.notNull(accessPoint, "Přístupový bod musí být vyplněn");
         Assert.notNull(apName, "Upravované jméno musí být vyplněno");
+        Assert.notNull(name, "Nové jméno musí být vyplněno");
         validationNotDeleted(accessPoint);
         validationNotDeleted(apName);
 
         ApChange change = createChange(ApChange.Type.NAME_UPDATE);
+        return updateAccessPointName(accessPoint, apName, name, complement, language, change);
+    }
+
+    /**
+     * Aktualizace jména přístupového bodu - verzovaně.
+     *
+     * @param accessPoint přístupový bod
+     * @param apName      upravované jméno přístupového bodu
+     * @param name        jméno přístupového bodu
+     * @param complement  doplněk přístupového bodu
+     * @param language    jazyk jména
+     * @param change      změna
+     * @return upravený jméno
+     */
+    private ApName updateAccessPointName(final @AuthParam(type = AuthParam.Type.AP) ApAccessPoint accessPoint,
+                                         final ApName apName,
+                                         final String name,
+                                         final @Nullable String complement,
+                                         final @Nullable SysLanguage language,
+                                         final ApChange change) {
+        Assert.notNull(accessPoint, "Přístupový bod musí být vyplněn");
+        Assert.notNull(apName, "Upravované jméno musí být vyplněno");
+        Assert.notNull(name, "Nové jméno musí být vyplněno");
+        Assert.notNull(change, "Změna musí být vyplněna");
+        validationNotDeleted(accessPoint);
+        validationNotDeleted(apName);
+
         ApName apNameNew = new ApName(apName);
 
         // zneplatnění původní verze jména
@@ -1153,9 +1194,30 @@ public class AccessPointService {
      */
     @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
     public void deleteAccessPointName(@AuthParam(type = AuthParam.Type.AP) final ApAccessPoint accessPoint,
-                                        final ApName name) {
+                                      final ApName name) {
         Assert.notNull(accessPoint, "Přístupový bod musí být vyplněn");
         Assert.notNull(name, "Upravované jméno musí být vyplněno");
+
+        validationNotDeleted(accessPoint);
+        validationNotDeleted(name);
+
+        ApChange change = createChange(ApChange.Type.NAME_DELETE);
+        deleteName(accessPoint, name, change);
+    }
+
+    /**
+     * Smazání nepreferovaného přístupového bodu.
+     *
+     * @param accessPoint  přístupový bod
+     * @param name         mazané jméno
+     * @param deleteChange změna pro smazání
+     */
+    private void deleteName(final @AuthParam(type = AuthParam.Type.AP) ApAccessPoint accessPoint,
+                            final ApName name,
+                            final ApChange deleteChange) {
+        Assert.notNull(accessPoint, "Přístupový bod musí být vyplněn");
+        Assert.notNull(name, "Upravované jméno musí být vyplněno");
+        Assert.notNull(deleteChange, "Změna pro mazání musí být vyplněna");
 
         validationNotDeleted(accessPoint);
         validationNotDeleted(name);
@@ -1164,8 +1226,7 @@ public class AccessPointService {
             throw new BusinessException("Nelze mazat preferované jméno", RegistryCode.CANT_DELETE_PREFERRED_NAME).set("nameId", name.getNameId());
         }
 
-        ApChange change = createChange(ApChange.Type.NAME_DELETE);
-        name.setDeleteChange(change);
+        name.setDeleteChange(deleteChange);
         apNameRepository.save(name);
     }
 
@@ -1548,5 +1609,121 @@ public class AccessPointService {
         apExternalId.setCreateChange(change);
         apExternalId.setExternalIdType(externalIdType);
         externalIdRepository.save(apExternalId);
+    }
+
+    /**
+     * Synchronizace přístupového bodu.
+     *
+     * @param accessPointCmp porovnávaný přístupový bod (v případě, že není uložen v DB, zakládáme nový)
+     * @param names          jména přístupového bodu (musí existovat alespoň jedna hodnota - preferované jméno,
+     *                       které je vždy první)
+     * @param description    popis přístupového bodu
+     * @return synchronizovaný přístupový bod
+     */
+    public ApAccessPoint syncAccessPoint(final ApAccessPoint accessPointCmp,
+                                         final List<ApName> names,
+                                         @Nullable final ApDescription description) {
+        Assert.notNull(accessPointCmp, "Přístupový bod musí být vyplněn");
+        Assert.notEmpty(names, "Musí být vyplněno alespoň jedno jméno");
+
+        Iterator<ApName> namesIterator = names.iterator();
+        ApName preferredName = namesIterator.next();
+
+        ApChangeNeed change = new ApChangeNeed(ApChange.Type.AP_SYNCH);
+        ApAccessPoint accessPoint;
+
+        // pokud není uložen v DB, zakládáme nový
+        if (accessPointCmp.getAccessPointId() == null) {
+            accessPoint = createAccessPoint(accessPointCmp.getScope(), accessPointCmp.getApType(), change.get());
+            createName(accessPoint, true, preferredName.getName(), preferredName.getComplement(), preferredName.getLanguage(), change.get());
+            while (namesIterator.hasNext()) {
+                ApName name = namesIterator.next();
+                createName(accessPoint, false, name.getName(), name.getComplement(), name.getLanguage(), change.get());
+            }
+        } else {
+            accessPoint = accessPointCmp;
+
+            List<ApName> existsNames = apNameRepository.findByAccessPoint(accessPoint);
+
+            Iterator<ApName> existsNamesIterator = existsNames.iterator();
+            ApName existsPreferredName = existsNamesIterator.next();
+
+            if (equalsNames(existsPreferredName, preferredName)) {
+                updateAccessPointName(accessPoint, existsPreferredName, preferredName.getName(), preferredName.getComplement(), preferredName.getLanguage(), change.get());
+            }
+
+            int count = Math.max(existsNames.size(), names.size()) - 1;
+            for (int i = 0; i < count; i++) {
+                boolean eNHas = existsNamesIterator.hasNext();
+                boolean nHas = namesIterator.hasNext();
+
+                if (nHas && eNHas) { // pokud oba existují, aktualizujeme
+                    ApName existsName = existsNamesIterator.next();
+                    ApName name = namesIterator.next();
+                    if (equalsNames(existsName, name)) {
+                        updateAccessPointName(accessPoint, existsName, name.getName(), name.getComplement(), name.getLanguage(), change.get());
+                    }
+                } else if (nHas) { // pokud existuje pouze nový, zakládáme
+                    ApName name = namesIterator.next();
+                    createName(accessPoint, false, name.getName(), name.getComplement(), name.getLanguage(), change.get());
+                } else if (eNHas) { // pokud existuje pouze v db, mažeme
+                    ApName existsName = existsNamesIterator.next();
+                    deleteName(accessPoint, existsName, change.get());
+                } else {
+                    throw new IllegalStateException("Nesedí počty iterací!");
+                }
+            }
+        }
+
+        // sychronizace popisu
+        if (description != null) {
+            changeDescription(accessPoint, description.getDescription(), change.get());
+        }
+
+        return accessPoint;
+    }
+
+    /**
+     * Porovnání obsahů jmen.
+     *
+     * @param name1 první jméno
+     * @param name2 druhé jméno
+     * @return true pokud se shodují
+     */
+    private boolean equalsNames(final ApName name1, final ApName name2) {
+        return Objects.equals(name1.getComplement(), name2.getComplement())
+                && Objects.equals(name1.getName(), name2.getName())
+                && Objects.equals(name1.getFullName(), name2.getFullName())
+                && Objects.equals(name1.getLanguageId(), name2.getLanguageId());
+    }
+
+    /**
+     * Pomocná třída pro založení změny až při její první potřebě.
+     */
+    private class ApChangeNeed {
+
+        /**
+         * Zakládaný typ změny.
+         */
+        private final ApChange.Type type;
+
+        /**
+         * Založená změna.
+         */
+        private ApChange change;
+
+        ApChangeNeed(final ApChange.Type type) {
+            this.type = type;
+        }
+
+        /**
+         * @return získání/založení změny
+         */
+        public ApChange get() {
+            if (change == null) {
+                change = createChange(type);
+            }
+            return change;
+        }
     }
 }

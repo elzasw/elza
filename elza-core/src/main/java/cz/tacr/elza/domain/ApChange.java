@@ -23,7 +23,7 @@ public class ApChange {
         AP_CREATE, AP_DELETE,
         NAME_CREATE, NAME_UPDATE, NAME_DELETE,
         DESC_CREATE, DESC_UPDATE, DESC_DELETE,
-        AP_IMPORT;
+        AP_IMPORT, AP_SYNCH;
     }
 
     @Id

@@ -731,7 +731,7 @@ public class ConfigMapperConfiguration {
                                         final MappingContext context) {
                         ApAccessPointData accessPointData = accessPointDataService.findAccessPointData(apAccessPoint);
                         apRecordSimple.setApTypeId(apAccessPoint.getApType().getApTypeId());
-                        apRecordSimple.setCharacteristics(accessPointData.getDescription().getDescription());
+                        apRecordSimple.setCharacteristics(accessPointData.getDescription() == null ? null : accessPointData.getDescription().getDescription());
                         apRecordSimple.setRecord(accessPointData.getPreferredName().getName());
                     }
 

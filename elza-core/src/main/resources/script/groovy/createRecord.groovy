@@ -1,4 +1,5 @@
 import cz.tacr.elza.domain.*
+import cz.tacr.elza.domain.convertor.UnitDateConvertor
 import org.apache.commons.collections4.CollectionUtils
 import org.apache.commons.lang.StringUtils
 import cz.tacr.elza.service.party.ApConvResult;
@@ -31,7 +32,7 @@ void prepareNames(ParParty party, ApConvResult convResult) {
         if (name.getPartyNameId().equals(prefName.getPartyNameId())) {
 			continue; // skip preferred name
 		}
-		ApConvName convName = createConvName(it, partyType);
+		ApConvName convName = createConvName(name, partyType);
 		convResult.addName(convName);
 	}
 }
