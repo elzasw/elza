@@ -28,11 +28,11 @@ class CollapsablePanel extends AbstractReactComponent {
     };
     panelToggle = (e)=>{
         const {onSelect, eventKey} = this.props;
-        onSelect(eventKey);
+        onSelect && onSelect(eventKey);
     }
     panelPin = (e)=>{
         const {onPin, eventKey} = this.props;
-        onPin(eventKey);
+        onPin && onPin(eventKey);
     }
     actionMap = {
         "PANEL_TOGGLE":this.panelToggle,
@@ -50,9 +50,9 @@ class CollapsablePanel extends AbstractReactComponent {
             <Panel eventKey={true}
                 header={<Shortcuts name="CollapsablePanel" handler={(action,e)=>this.handleShortcuts(action,e)} tabIndex={0}>
                     {header}
-                    <NoFocusButton className={"btn-action pull-right" + (pinned ? " pinned" : " hover-button")} onClick={() => this.panelPin()}>
+                    {onPin && <NoFocusButton className={"btn-action pull-right" + (pinned ? " pinned" : " hover-button")} onClick={() => this.panelPin()}>
                         <Icon glyph="fa-thumb-tack" />
-                    </NoFocusButton>
+                    </NoFocusButton>}
                 </Shortcuts>}>
                 {children}
             </Panel>

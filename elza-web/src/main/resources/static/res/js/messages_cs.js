@@ -1300,5 +1300,20 @@ var messages = {
     "requestQueue.title.type": "Typ",
     "requestQueue.delete.confirm": "Opravdu chcete zmazat položku z fronty?",
 
+    "accesspoint.name.name": "Jméno",
+    "accesspoint.name.complement": "Komplement",
+    "accesspoint.name.languageCode": "Jazyk",
+
+    "accesspoint.detail.name.new": "Nový",
+    "accesspoint.detail.name.update": "Upravit",
+    "accesspoint.detail.name.delete": "Opravdu chcete smazat jméno?",
+    "accesspoint.detail.name.setPreferredNameAlert": "Opravdu chcete nastavit jméno jako preferované?",
+    "accesspoint.detail.formNames": "Formy jména",
+    "accesspoint.detail.description": "Popis",
+    "accesspoint.complement": "Komplement",
+    "accesspoint.languageCode": "Jazyk",
+    "accesspoint.description": "Popis",
+    "accesspoint.update.description": "Úprava popisu",
+
     "____": ""
 };

@@ -394,15 +394,16 @@ export class WebApiCls {
     }
 
     /// Registry
-    createRecord(record, characteristics, apTypeId, parentId, scopeId) {
+    createAccessPoint(name, complement, languageCode, description, typeId, scopeId) {
         return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/', null, {
-            '@class': 'cz.tacr.elza.controller.vo.ApAccessPointVO',
-            record,
-            characteristics,
-            local: false,
+            '@class': 'cz.tacr.elza.controller.vo.ApAccessPointCreateVO',
+            name,
+            description,
+            complement,
+            languageCode,
+            // local: false,
             scopeId,
-            parentRecordId: parentId,
-            apTypeId
+            typeId
         });
     }
 

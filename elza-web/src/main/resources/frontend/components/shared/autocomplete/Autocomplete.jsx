@@ -100,10 +100,12 @@ export default class Autocomplete extends AbstractReactComponent {
         allowSelectItem: PropTypes.func,  // vrací true, pokud je možné řádek vybrat jako hodnotu
         allowFocusItem: PropTypes.func,   // vrací true, pokud se na řádek dá najet focusem, např. přes klávesnici
         getItemId: PropTypes.func,
-        getItemName: PropTypes.func
-    }
+        getItemName: PropTypes.func,
+        useIdAsValue: React.PropTypes.bool, // pokud je true, pracuje navenek komponenta tak, že jeko hodnotu nemá objekt, ale jeho id - stejně jako html select
+    };
 
     static defaultProps = {
+        useIdAsValue: false,
         value: {},
         onSearchChange (text) {},
         onChange (item) {},
@@ -121,16 +123,16 @@ export default class Autocomplete extends AbstractReactComponent {
         itemFilter: (filterText, items, props) => { return filterItems(filterText, items, props); },
         actions: [],
         selectOnlyValue: false
-    }
+    };
 
     defaultState = {
-        inputValue: '',
+        inputStrValue: '',
         isOpen: false,
         hasFocus: false,
         changed: false,
         items: {ids:[]},
         value: {}
-    }
+    };
 
     getChildContext() {
         return { shortcuts: this.shortcutManager };
@@ -138,27 +140,98 @@ export default class Autocomplete extends AbstractReactComponent {
 
     constructor(props) {
         super(props);
-        const {value, getItemName} = props;
 
         this.itemCount = 0;
         this._ignoreBlur = false;
         this.state = {
             ...this.defaultState,
-            items: this.flattenItems(props),
-            inputValue: getItemName(value) || "",
-            value: value,
-            hasFocus: false
+            ...this.getStateFromProps({}, props, {inputStrValue: '', changed: false, items: []}),
         };
     }
 
+
+    componentWillReceiveProps(nextProps) {
+        const newState = this.getStateFromProps(this.props, nextProps, this.state);
+        this.setState(newState);
+    }
+
+    getStateFromProps = (props, nextProps, state) => {
+        let shouldItemRender;
+        let changed = state.changed;
+        if (nextProps.shouldItemRender) {
+            shouldItemRender = nextProps.shouldItemRender;
+        } else {
+            shouldItemRender = (item, value) => {
+                return nextProps.getItemName(item).toLowerCase().indexOf(value.toLowerCase()) !== -1
+            }
+        }
+
+        // ---
+        let inputStrValue;
+        const prevRealValue = this.getRealValue(props.value, props);
+        const nextRealValue = this.getRealValue(nextProps.value, nextProps);
+        const prevId = props.getItemId ? props.getItemId(prevRealValue) : nextProps.getItemId(prevRealValue);
+        const newId = nextProps.getItemId(nextRealValue);
+        _debugStates && console.log("getStateFromProps", "prevId", prevId, "newId", newId, "state", state);
+        if (prevId != newId) {
+            // Změna stavu, při které byla vybrána jiná položka.
+            changed = false;
+            inputStrValue = nextProps.getItemName(nextRealValue);
+            if (typeof inputStrValue === 'undefined') {
+                inputStrValue = ''
+            }
+        } else if (prevId === newId && !state.changed) {
+            /* pokud došlo ke změně stavu, při které zůstala vybrána stejná položka
+             a nebyl změněn vyhledávaný text ručně.*/
+            inputStrValue = nextProps.getItemName(nextRealValue);
+        } else {
+            inputStrValue = state.inputStrValue;
+        }
+
+        // ---
+
+        const result = {
+            shouldItemRender: shouldItemRender,
+            value: nextRealValue,
+            inputStrValue: inputStrValue,
+            changed: changed,
+            items: this.flattenItems(nextProps)
+        };
+
+        _debugStates && console.log("getStateFromProps", result);
+
+        return result;
+    };
+
+    getRealValue = (value, props = this.props) => {
+        const {useIdAsValue} = props;
+        if (!useIdAsValue) {
+            return value;
+        }
+
+        if (value == null || value == "") {
+            return value;
+        }
+
+        const {getItemId} = props;
+        for (let a=0; a<props.items.length; a++) {
+            const i = props.items[a];
+            if (getItemId(i) === value) {
+                return i;
+            }
+        }
+
+        return null;
+    };
+
     focus = () => {
-        const {inputValue} = this.state;
+        const {inputStrValue} = this.state;
         const input = ReactDOM.findDOMNode(this.input);
 
         input.focus();
         // select whole input value
-        if(inputValue){
-            input.setSelectionRange(0, inputValue.length);
+        if(inputStrValue){
+            input.setSelectionRange(0, inputStrValue.length);
         }
     }
 
@@ -171,15 +244,6 @@ export default class Autocomplete extends AbstractReactComponent {
         this.props.selectOnlyValue && this.selectOnlyValue();
     }
 
-    componentWillReceiveProps = (nextProps) => {
-        const {value, getItemName} = nextProps;
-        const {inputValue, changed} = this.state;
-        this.setState({
-            items: this.flattenItems(nextProps),
-            inputValue: changed ? inputValue : getItemName(value), 
-            value: value
-        });
-    }
     /*
     componentWillUpdate = (nextProps, nextState) => {
         console.log("### AC will update", nextState.hasFocus);
@@ -217,9 +281,9 @@ export default class Autocomplete extends AbstractReactComponent {
     handleChange = (event) => {
         const {onSearchChange} = this.props;
         const value = event.target.value;
-        const prevValue = this.state.inputValue;
+        const prevValue = this.state.inputStrValue;
 
-        this.setState({inputValue: value, changed: true});
+        this.setState({inputStrValue: value, changed: true});
         // input value changed > number of items may have changed > recalculate floating menu size
         this.recalculateFloatingMenu();
         this.openMenu();
@@ -228,7 +292,6 @@ export default class Autocomplete extends AbstractReactComponent {
     }
 
     handleInputBlur = (e) => {
-        const {onBlur} = this.props;
         const {value} = this.state;
 
         // ignore the blur event if set and reset the ignoreBlur value
@@ -239,7 +302,7 @@ export default class Autocomplete extends AbstractReactComponent {
         }
 
         this.setState({hasFocus: false});
-        onBlur && onBlur(value);
+        this.callOnBlur(value);
         this.closeMenu();
         return true;
     }
@@ -274,27 +337,47 @@ export default class Autocomplete extends AbstractReactComponent {
         if(isOpen){
             this.setState({
                 isOpen:false,
-                inputValue: getItemName(value) || "", // reset input value
+                inputStrValue: getItemName(value) || "", // reset input value
                 changed: false
             });
         }
     }
     handleEmptySelect = () => {
         const {onEmptySelect} = this.props;
-        const {inputValue} = this.state;
+        const {inputStrValue} = this.state;
 
-        onEmptySelect && onEmptySelect(inputValue);
+        onEmptySelect && onEmptySelect(inputStrValue);
     }
 
+    callOnChange = (value) => {
+        const {onChange, getItemId, useIdAsValue} = this.props;
+        if (useIdAsValue) {
+            onChange(getItemId(value));
+        } else {
+            onChange(value);
+        }
+    };
+
+    callOnBlur = (value) => {
+        const {onBlur, getItemId, useIdAsValue} = this.props;
+        if (onBlur) {
+            if (useIdAsValue) {
+                onBlur(getItemId(value));
+            } else {
+                onBlur(value);
+            }
+        }
+    };
+
     selectItem = (item) => {
-        const {getItemName, getItemId, allowSelectItem, onChange, tags} = this.props;
-        const {isOpen, changed, inputValue} = this.state;
+        const {getItemName, getItemId, allowSelectItem, tags} = this.props;
+        const {isOpen, changed, inputStrValue} = this.state;
 
         // delete redundant props from item
         item && cleanItem(item);
 
-        let newState = { 
-            inputValue: "",
+        let newState = {
+            inputStrValue: "",
             value: {},
             isOpen: false,
             changed:false
@@ -307,11 +390,11 @@ export default class Autocomplete extends AbstractReactComponent {
             if (tags) {
                 if (!item) {
                     item = {
-                        name: inputValue
+                        name: inputStrValue
                     };
                 }
                 this.setState(newState, () => {
-                    onChange(item);
+                    this.callOnChange(item);
                 });
             } else {
                 if (!item) {
@@ -319,16 +402,16 @@ export default class Autocomplete extends AbstractReactComponent {
                     // so no autocomplete attempt yet
                     this.setState(newState, () => {
                         ReactDOM.findDOMNode(this.input).select();
-                        onChange(null);
+                        this.callOnChange(null);
                     });
                 } else {
                     const name = getItemName(item);
                     this.setState({
                         ...newState,
-                        inputValue: name,
+                        inputStrValue: name,
                         value: item
                     }, () => {
-                        onChange(item);
+                        this.callOnChange(item);
                     });
                 }
             }
@@ -372,7 +455,7 @@ export default class Autocomplete extends AbstractReactComponent {
     renderMenu() {
         const {items, changed, value} = this.state;
         const {header, footer, allowSelectItem, allowFocusItem, favoriteItems, renderItem, itemFilter, customFilter, alwaysExpanded} = this.props;
-        const filterText = this.state.inputValue;
+        const filterText = this.state.inputStrValue;
         let filterActive = false;
         let selectedItemId = value && value.id;
         let highlightedItemId = selectedItemId || (items ? items.ids[0] : null); // if highlighted item does not exist, highlights first value
@@ -380,7 +463,7 @@ export default class Autocomplete extends AbstractReactComponent {
         let filteredItems = items;
 
         if(!customFilter && filterText && filterText.length > 0 && changed && items){
-            filteredItems = itemFilter(this.state.inputValue, items, {allowSelectItem});
+            filteredItems = itemFilter(this.state.inputStrValue, items, {allowSelectItem});
             highlightedItemId = filteredItems.firstItemId && filteredItems.firstItemId;
             filterActive = true;
         }
@@ -428,9 +511,9 @@ export default class Autocomplete extends AbstractReactComponent {
         }
 
         return (
-            <FloatingMenu 
-                target={this.wrap} 
-                closeMenu={this.closeMenu} 
+            <FloatingMenu
+                target={this.wrap}
+                closeMenu={this.closeMenu}
                 ref={(menu)=>{this.menu = menu;}}
               onMouseDown={()=>{console.log("ignore next blur"); this.focus(); this._ignoreBlur=true;}}
               onMouseUp={()=>{this.focus();}}
@@ -438,8 +521,8 @@ export default class Autocomplete extends AbstractReactComponent {
                 // sets ignoreBlur to true to ignore the next input blur when the menu is clicked
             >
                 {headerComp}
-                <List 
-                    onContentChange={this.recalculateFloatingMenu} 
+                <List
+                    onContentChange={this.recalculateFloatingMenu}
                     items={filteredItems}
                     onChange={this.selectItem}
                     allowSelectItem={allowSelectItem}
@@ -515,7 +598,7 @@ export default class Autocomplete extends AbstractReactComponent {
     render() {
         _debugStates && console.log("RENDER", "props", this.props, "state", this.state);
         const {customFilter, error, title, touched, inline} = this.props;
-        const {inputValue, hasFocus} = this.state;
+        const {inputStrValue, hasFocus} = this.state;
 
         const hasError = touched && error;
         let inlineProps = {};
@@ -557,7 +640,7 @@ export default class Autocomplete extends AbstractReactComponent {
                             aria-autocomplete="both"
                             autoComplete="off"
                             onChange={this.handleChange}
-                            value={inputValue}
+                            value={inputStrValue}
                         />
                         <div ref='actions' className="actions">
                             {this.renderActions()}
