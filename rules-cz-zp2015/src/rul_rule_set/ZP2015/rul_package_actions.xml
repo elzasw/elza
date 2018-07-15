@@ -53,4 +53,5 @@
     <package-action filename="ZP2015_TEST_DATA_GENERATOR.yaml">
     </package-action>
     <package-action filename="PERZISTENTNI_RAZENI.yaml" />
+    <package-action filename="ZP2015_INTRO_VYPOCET_EJ.yaml" />
 </package-actions>
