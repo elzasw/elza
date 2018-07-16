@@ -112,13 +112,15 @@ public class ParPartyStorage extends EntityStorage<PartyWrapper> {
             nameIds.add(name.getPartyNameId());
         }
 
-        // delete references to party names
-        nameRepository.deletePreferredNameReferencesByPartyNameIdIn(nameIds);
-        nameRepository.deleteComplementReferencesByPartyNameIdIn(nameIds);
-        // delete all names
-        nameRepository.deleteByPartyNameIdIn(nameIds);
-        // delete all complements
-        nameCmplRepository.deleteByPartyNameIdIn(nameIds);
+        if (nameIds.size() > 0) {
+            // delete references to party names
+            nameRepository.deletePreferredNameReferencesByPartyNameIdIn(nameIds);
+            nameRepository.deleteComplementReferencesByPartyNameIdIn(nameIds);
+            // delete all names
+            nameRepository.deleteByPartyNameIdIn(nameIds);
+            // delete all complements
+            nameCmplRepository.deleteByPartyNameIdIn(nameIds);
+        }
 
         // find all group identifiers and their intervals
         if (partyGroups.size() > 0) {
