@@ -19,7 +19,7 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
     /**
      * Typ rejstříku.
      */
-    private Integer apTypeId;
+    private Integer typeId;
 
     /**
      * Id osoby.
@@ -34,6 +34,7 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
     /**
      * Externí zdroj hesel.
      */
+    @Deprecated
     private ApExternalSystemVO externalSystem;
 
     /**
@@ -48,6 +49,7 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
     /**
      * Poznámka k heslu v rejstříku.
      */
+    @Deprecated
     private String note;
     /**
      * Externí identifikátor rejstříkového hesla v externím zdroji záznamů, například interpi.
@@ -57,12 +59,13 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
     /**
      * Verze záznamu.
      */
+    @Deprecated
     private Integer version;
 
     /**
-     * Seznam variantních rejstříkových hesel.
+     * Seznam jmen přístupového bodu.
      */
-    private List<ApAccessPointNameVO> variantRecords = Collections.EMPTY_LIST;
+    private List<ApAccessPointNameVO> names = Collections.emptyList();
 
     /** Cesta od toho rejstříku až ke kořeni. První záznam je přímý nadřízený, poslední je kořen. */
     private List<RecordParent> parents;
@@ -91,12 +94,12 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
         this.id = id;
     }
 
-    public Integer getApTypeId() {
-        return apTypeId;
+    public Integer getTypeId() {
+        return typeId;
     }
 
-    public void setApTypeId(final Integer apTypeId) {
-        this.apTypeId = apTypeId;
+    public void setTypeId(final Integer typeId) {
+        this.typeId = typeId;
     }
 
     public ApExternalSystemVO getExternalSystem() {
@@ -163,12 +166,12 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
         this.version = version;
     }
 
-    public List<ApAccessPointNameVO> getVariantRecords() {
-        return variantRecords;
+    public List<ApAccessPointNameVO> getNames() {
+        return names;
     }
 
-    public void setVariantRecords(final List<ApAccessPointNameVO> variantRecords) {
-        this.variantRecords = variantRecords;
+    public void setNames(final List<ApAccessPointNameVO> names) {
+        this.names = names;
     }
 
     public boolean isAddRecord() {

@@ -98,7 +98,7 @@ public class PartyControllerTest extends AbstractControllerTest {
         ParPersonVO personO1 = new ParPersonVO();
         ApAccessPointVO recordO1 = new ApAccessPointVO();
 
-        recordO1.setApTypeId(findApTypeAddable(recordTypesForPartyType(typeO1.getId())).getId());
+        recordO1.setTypeId(findApTypeAddable(recordTypesForPartyType(typeO1.getId())).getId());
         recordO1.setScopeId(scope.getId());
         personO1.setAccessPoint(recordO1);
         personO1.setPartyType(typeO1);
@@ -122,7 +122,7 @@ public class PartyControllerTest extends AbstractControllerTest {
         ParPartyGroupVO groupK1 = new ParPartyGroupVO();
         ApAccessPointVO recordK1 = new ApAccessPointVO();
 
-        recordK1.setApTypeId(findApTypeAddable(recordTypesForPartyType(typeK1.getId())).getId());
+        recordK1.setTypeId(findApTypeAddable(recordTypesForPartyType(typeK1.getId())).getId());
         recordK1.setScopeId(scope.getId());
 
         groupK1.setAccessPoint(recordK1);
@@ -146,7 +146,7 @@ public class PartyControllerTest extends AbstractControllerTest {
         ParDynastyVO dynastyR1 = new ParDynastyVO();
         ApAccessPointVO recordR1 = new ApAccessPointVO();
 
-        recordR1.setApTypeId(findApTypeAddable(recordTypesForPartyType(typeR1.getId())).getId());
+        recordR1.setTypeId(findApTypeAddable(recordTypesForPartyType(typeR1.getId())).getId());
         recordR1.setScopeId(scope.getId());
 
         dynastyR1.setAccessPoint(recordR1);
@@ -168,7 +168,7 @@ public class PartyControllerTest extends AbstractControllerTest {
         ParEventVO eventU1 = new ParEventVO();
         ApAccessPointVO recordU1 = new ApAccessPointVO();
 
-        recordU1.setApTypeId(findApTypeAddable(recordTypesForPartyType(typeU1.getId())).getId());
+        recordU1.setTypeId(findApTypeAddable(recordTypesForPartyType(typeU1.getId())).getId());
         recordU1.setScopeId(scope.getId());
 
         eventU1.setAccessPoint(recordU1);
@@ -428,7 +428,7 @@ public class PartyControllerTest extends AbstractControllerTest {
         ParPersonVO personO1 = new ParPersonVO();
         ApAccessPointVO recordO1 = new ApAccessPointVO();
 
-        recordO1.setApTypeId(findApTypeAddable(recordTypesForPartyType(typeO1.getId())).getId());
+        recordO1.setTypeId(findApTypeAddable(recordTypesForPartyType(typeO1.getId())).getId());
         recordO1.setScopeId(scope.getId());
         personO1.setAccessPoint(recordO1);
         personO1.setPartyType(typeO1);

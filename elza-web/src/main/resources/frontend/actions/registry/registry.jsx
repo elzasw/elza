@@ -143,9 +143,9 @@ function registryRecordCreate(parentId, callback, data, submitType) {
     }
 }
 
-export function registryUpdate(id, apTypeId, callback = null) {
+export function registryUpdate(id, typeId, callback = null) {
     return (dispatch, getState) => {
-        return savingApiWrapper(dispatch, WebApi.updateAccessPoint(id, {apTypeId})).then(json => {
+        return savingApiWrapper(dispatch, WebApi.updateAccessPoint(id, {typeId})).then(json => {
             const store = getState();
             const detail = storeFromArea(store, AREA_REGISTRY_DETAIL);
 
@@ -155,7 +155,7 @@ export function registryUpdate(id, apTypeId, callback = null) {
                 dispatch(registryDetailInvalidate());
             }
 
-            if (list.filteredRows && indexById(list.filteredRows, data.id) !== null) {
+            if (list.filteredRows && indexById(list.filteredRows, id) !== null) {
                 dispatch(registryListInvalidate())
             }
 
@@ -234,7 +234,7 @@ export function registryVariantUpdate(data) {
         const store = getState();
         const detail = storeFromArea(store, AREA_REGISTRY_DETAIL);
         let needFetch = false;
-        detail.data.variantRecords.map(variant => {
+        detail.data.names.map(variant => {
             if (variant.id == data.id && variant.record !== data.record) {
                 needFetch = true;
             }

@@ -1,4 +1,5 @@
 package cz.tacr.elza.controller.config;
+import com.google.common.collect.Lists;
 
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.bulkaction.BulkActionConfig;
@@ -88,6 +89,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import javax.annotation.Nullable;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -483,7 +485,7 @@ public class ClientFactoryVO {
         List<ApAccessPointVO> result = new ArrayList<>(records.size());
         for (final ApAccessPoint ap : records) {
             Integer partyId = recordIdPartyIdMap.get(ap.getAccessPointId());
-            result.add(createApRecord(ap, partyId));
+            result.add(createAccessPoint(ap, partyId));
         }
 
         return result;
@@ -496,33 +498,62 @@ public class ClientFactoryVO {
      * @param partyId     id osoby
      * @return rejstříkové heslo
      */
-    public ApAccessPointVO createApRecord(final ApAccessPoint apAccessPoint, @Nullable final Integer partyId) {
-        MapperFacade mapper = mapperFactory.getMapperFacade();
+    public ApAccessPointVO createAccessPoint(final ApAccessPoint apAccessPoint, @Nullable final Integer partyId) {
         ApAccessPointData accessPointData = accessPointDataService.findAccessPointData(apAccessPoint);
-        ApAccessPointVO result = mapper.map(accessPointData, ApAccessPointVO.class);
+        ApAccessPoint accessPoint = accessPointData.getAccessPoint();
+        ApType type = accessPoint.getApType();
+        ApDescription description = accessPointData.getDescription();
+
+
+
+        ApAccessPointVO result = new ApAccessPointVO();
+        result.setId(accessPointData.getAccessPointId());
+        result.setTypeId(accessPoint.getApTypeId());
+        //result.setExternalSystem(); TODO: jak s ext. systémy?
+        result.setRecord(accessPointData.getPreferredName().getFullName());
+        result.setCharacteristics(description == null ? null : description.getDescription());
+        //result.setNote(); TODO: je to ještě k něčemu?
+        //result.setExternalId(); TODO: jak s ext. systémy?
+        result.setPartyId(partyId);
+        result.setScopeId(accessPoint.getScopeId());
+        //result.setVersion(); TODO: je to ještě k něčemu?
+        result.setNames(createApNames(accessPointData.getNames()));
+        result.setAddRecord(!apAccessPoint.getApType().isReadOnly());
+        result.setParents(Lists.newArrayList());
+        result.setTypesToRoot(Collections.singletonList(new ApAccessPointVO.RecordParent(type.getApTypeId(), type.getName())));
+        result.setUuid(accessPoint.getUuid());
+        result.setLastUpdate(findLastUpdate(accessPointData));
+        result.setInvalid(accessPoint.getDeleteChange() != null);
         result.setPartyId(partyId);
         return result;
     }
 
-    /**
-     * Pro heslo vytvoří seznam typů až po kořen typů nebo po typ v seznamu.
-     *  @param record        heslo
-     */
-    public void fillApTypeNamesToParents(final ApAccessPointVO record) {
+    private Date findLastUpdate(final ApAccessPointData accessPointData) {
+        ApAccessPoint accessPoint = accessPointData.getAccessPoint();
+        ApDescription description = accessPointData.getDescription();
+        LocalDateTime last = LocalDateTime.MIN;
+        last = findMaxDate(accessPoint.getCreateChange(), last);
+        last = findMaxDate(accessPoint.getDeleteChange(), last);
 
-        List<ApAccessPointVO.RecordParent> parentTypeNames = new ArrayList<>();
-
-        ApType recordType = apTypeRepository.findOne(record.getApTypeId());
-        parentTypeNames.add(new ApAccessPointVO.RecordParent(recordType.getApTypeId(), recordType.getName()));
-        record.setTypesToRoot(parentTypeNames);
-
-
-        ApType parentType = recordType.getParentApType();
-        while (parentType != null) {
-            parentTypeNames.add(new ApAccessPointVO.RecordParent(parentType.getApTypeId(), parentType.getName()));
-            parentType = parentType.getParentApType();
+        if (description != null) {
+            last = findMaxDate(description.getCreateChange(), last);
+            last = findMaxDate(description.getDeleteChange(), last);
         }
 
+        for (ApName name : accessPointData.getNames()) {
+            last = findMaxDate(name.getCreateChange(), last);
+            last = findMaxDate(name.getDeleteChange(), last);
+        }
+
+        return Date.from(last.atZone(ZoneId.systemDefault()).toInstant());
+    }
+
+    private LocalDateTime findMaxDate(final ApChange createChange, final LocalDateTime changeDate) {
+        if (createChange == null) {
+            return changeDate;
+        }
+        LocalDateTime date = createChange.getChangeDate();
+        return date.isAfter(changeDate) ? date : changeDate;
     }
 
     /**
@@ -549,13 +580,15 @@ public class ClientFactoryVO {
      * @return VO variantní rejstříkové heslo
      */
     public ApAccessPointNameVO createApName(final ApName name) {
+        SysLanguage language = name.getLanguage();
         ApAccessPointNameVO accessPointNameVO = new ApAccessPointNameVO();
         accessPointNameVO.setId(name.getNameId());
         accessPointNameVO.setAccessPointId(name.getAccessPointId());
         accessPointNameVO.setName(name.getName());
         accessPointNameVO.setComplement(name.getComplement());
         accessPointNameVO.setPreferredName(name.isPreferredName());
-        accessPointNameVO.setLanguageCode(name.getLanguage().getCode());
+        accessPointNameVO.setLanguageCode(language == null ? null : language.getCode());
+        accessPointNameVO.setFullName(name.getFullName());
         return accessPointNameVO;
     }
 
@@ -565,7 +598,7 @@ public class ClientFactoryVO {
      * @param variantNames seznam variantních rejstříkových hesel
      * @return seznam VO variantních hesel
      */
-    public List<ApAccessPointNameVO> createApVariantRecords(@Nullable final List<ApName> variantNames) {
+    public List<ApAccessPointNameVO> createApNames(@Nullable final List<ApName> variantNames) {
         if (variantNames == null) {
             return null;
         }

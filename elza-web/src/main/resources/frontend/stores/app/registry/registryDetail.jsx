@@ -42,9 +42,9 @@ export default function reducer(state = undefined, action = {}, config = undefin
     switch (action.type) {
         case types.REGISTRY_VARIANT_RECORD_RECEIVED: {
             const data = {...state.data};
-            data.variantRecords.map((variant, key) => {
+            data.names.map((variant, key) => {
                 if (variant.id == action.item.id && action.item.version>variant.version){
-                    data.variantRecords[key] = action.item;
+                    data.names[key] = action.item;
                 }
             });
             return {
@@ -54,7 +54,7 @@ export default function reducer(state = undefined, action = {}, config = undefin
         }
         case types.REGISTRY_VARIANT_RECORD_CREATE: {
             const data = {...state.data};
-            data.variantRecords.push({
+            data.names.push({
                 id: null,
                 apRecordId: data.id,
                 version: 0,
@@ -70,10 +70,10 @@ export default function reducer(state = undefined, action = {}, config = undefin
         case types.REGISTRY_VARIANT_RECORD_CREATED: {
             const data = {...state.data};
 
-            data.variantRecords.map((variant, key) => {
+            data.names.map((variant, key) => {
                 if (variant.variantRecordInternalId == action.variantRecordInternalId && !variant.id) {
-                    data.variantRecords[key] = {
-                        ...data.variantRecords[key],
+                    data.names[key] = {
+                        ...data.names[key],
                         ...action.json,
                         variantRecordInternalId: null
                     };
@@ -85,13 +85,13 @@ export default function reducer(state = undefined, action = {}, config = undefin
             }
         }
         case types.REGISTRY_VARIANT_RECORD_DELETED: {
-            const indexForDelete = indexById(state.data.variantRecords, action.variantRecordId);
+            const indexForDelete = indexById(state.data.names, action.variantRecordId);
             if (indexForDelete === null) {
                 return state;
             }
             const data = {...state.data};
 
-            data.variantRecords.splice(indexForDelete, 1);
+            data.names.splice(indexForDelete, 1);
 
             return {
                 ...state,
@@ -99,13 +99,13 @@ export default function reducer(state = undefined, action = {}, config = undefin
             }
         }
         case types.REGISTRY_VARIANT_RECORD_INTERNAL_DELETED: {
-            const indexForDelete = indexById(state.data.variantRecords, action.variantRecordInternalId, 'variantRecordInternalId');
+            const indexForDelete = indexById(state.data.names, action.variantRecordInternalId, 'variantRecordInternalId');
             if (indexForDelete === null) {
                 return state;
             }
             const data = {...state.data};
 
-            data.variantRecords.splice(indexForDelete, 1);
+            data.names.splice(indexForDelete, 1);
 
             return {
                 ...state,
@@ -218,10 +218,10 @@ export default function reducer(state = undefined, action = {}, config = undefin
         case RESPONSE: {
             const newState = DetailReducer(state, action, config ? {...config, reducer} : {reducer});
             if (state.data) {
-                if (state.data.variantRecords) {
-                    state.data.variantRecords.map((variant) => {
+                if (state.data.names) {
+                    state.data.names.map((variant) => {
                         if (!variant.id) {
-                            newState.data.variantRecords.push(variant);
+                            newState.data.names.push(variant);
                         }
                     });
                 }

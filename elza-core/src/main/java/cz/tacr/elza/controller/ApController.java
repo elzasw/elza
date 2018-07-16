@@ -143,10 +143,6 @@ public class ApController {
 
         List<ApAccessPointVO> foundRecordVOList = factoryVo.createApAccessPoints(foundRecords, recordIdPartyIdMap);
 
-        for (ApAccessPointVO apRecordVO : foundRecordVOList) {
-            factoryVo.fillApTypeNamesToParents(apRecordVO);
-        }
-
 //        for (ApRecord record : parentChildrenMap.keySet()) {
 //            List<ApRecord> children = parentChildrenMap.get(record);
 //
@@ -229,7 +225,7 @@ public class ApController {
         String complement = StringUtils.isEmpty(accessPoint.getComplement()) ? null : accessPoint.getComplement();
 
         ApAccessPoint createdAccessPoint = accessPointService.createAccessPoint(scope, type, name, complement, language, description);
-        return factoryVo.createApRecord(createdAccessPoint, null);
+        return factoryVo.createAccessPoint(createdAccessPoint, null);
     }
 
 	@Transactional
@@ -266,11 +262,7 @@ public class ApController {
         Map<Integer, Integer> recordIdPartyIdMap = partyService.findParPartyIdsByRecords(records);
 
         Integer partyId = recordIdPartyIdMap.get(accessPointId);
-        ApAccessPointVO result = factoryVo.createApRecord(accessPoint, partyId);
-        factoryVo.fillApTypeNamesToParents(result);
-
-        // TODO: predelat ApAccessPointVO
-        // result.setVariantRecords(factoryVo.createApVariantRecords(nameRepository.findVariantNamesByAccessPointId(record)));
+        ApAccessPointVO result = factoryVo.createAccessPoint(accessPoint, partyId);
 
         return result;
     }

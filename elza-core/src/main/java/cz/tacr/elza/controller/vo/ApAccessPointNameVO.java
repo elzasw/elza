@@ -28,6 +28,11 @@ public class ApAccessPointNameVO {
     private String complement;
 
     /**
+     * Celé jméno.
+     */
+    private String fullName;
+
+    /**
      * Jedná se o preferované jméno?
      */
     private Boolean preferredName;
@@ -83,5 +88,13 @@ public class ApAccessPointNameVO {
 
     public void setLanguageCode(final String languageCode) {
         this.languageCode = languageCode;
+    }
+
+    public String getFullName() {
+        return fullName;
+    }
+
+    public void setFullName(final String fullName) {
+        this.fullName = fullName;
     }
 }

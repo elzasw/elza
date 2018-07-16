@@ -23,7 +23,6 @@ import cz.tacr.elza.bulkaction.BulkActionConfig;
 import cz.tacr.elza.bulkaction.generator.PersistentSortRunConfig;
 import cz.tacr.elza.common.GeometryConvertor;
 import cz.tacr.elza.controller.vo.*;
-import cz.tacr.elza.controller.vo.ApAccessPointNameVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.DescItemSpecLiteVO;
 import cz.tacr.elza.controller.vo.nodes.ItemTypeDescItemsLiteVO;
@@ -144,21 +143,6 @@ import ma.glasnost.orika.converter.BidirectionalConverter;
 import ma.glasnost.orika.converter.builtin.PassThroughConverter;
 import ma.glasnost.orika.impl.DefaultMapperFactory;
 import ma.glasnost.orika.metadata.Type;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.NotImplementedException;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.util.Assert;
-
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
 
 
 /**
@@ -643,7 +627,7 @@ public class ConfigMapperConfiguration {
                     public void mapAtoB(final ApAccessPoint apAccessPoint,
                                         final ApAccessPointVO apAccessPointVO,
                                         final MappingContext context) {
-                        apAccessPointVO.setApTypeId(apAccessPoint.getApType().getApTypeId());
+                        apAccessPointVO.setTypeId(apAccessPoint.getApType().getApTypeId());
                         apAccessPointVO.setAddRecord(!apAccessPoint.getApType().isReadOnly());
                         apAccessPointVO.setScopeId(apAccessPoint.getScope().getScopeId());
                         apAccessPointVO.setInvalid(apAccessPoint.getDeleteChange() != null);
@@ -654,9 +638,9 @@ public class ConfigMapperConfiguration {
                                         final ApAccessPoint apAccessPoint,
                                         final MappingContext context) {
 
-                        if (apAccessPointVO.getApTypeId() != null) {
+                        if (apAccessPointVO.getTypeId() != null) {
                             ApType apType = new ApType();
-                            apType.setApTypeId(apAccessPointVO.getApTypeId());
+                            apType.setApTypeId(apAccessPointVO.getTypeId());
                             apAccessPoint.setApType(apType);
                         }
 
@@ -677,7 +661,7 @@ public class ConfigMapperConfiguration {
                     public void mapAtoB(final ApAccessPointData apAccessPoint,
                                         final ApAccessPointVO apAccessPointVO,
                                         final MappingContext context) {
-                        apAccessPointVO.setApTypeId(apAccessPoint.getAccessPoint().getApTypeId());
+                        apAccessPointVO.setTypeId(apAccessPoint.getAccessPoint().getApTypeId());
                         apAccessPointVO.setAddRecord(!apAccessPoint.getAccessPoint().getApType().isReadOnly());
                         apAccessPointVO.setScopeId(apAccessPoint.getAccessPoint().getScope().getScopeId());
                         apAccessPointVO.setInvalid(apAccessPoint.getAccessPoint().getDeleteChange() != null);
@@ -702,9 +686,9 @@ public class ConfigMapperConfiguration {
                         apAccessPointData.setAccessPoint(accessPoint);
                         accessPoint.setUuid(apAccessPointVO.getUuid());
 
-                        if (apAccessPointVO.getApTypeId() != null) {
+                        if (apAccessPointVO.getTypeId() != null) {
                             ApType apType = new ApType();
-                            apType.setApTypeId(apAccessPointVO.getApTypeId());
+                            apType.setApTypeId(apAccessPointVO.getTypeId());
                             apAccessPointData.getAccessPoint().setApType(apType);
                         }
 

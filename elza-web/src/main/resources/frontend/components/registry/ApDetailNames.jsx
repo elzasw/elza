@@ -19,7 +19,7 @@ class ApDetailNames extends AbstractReactComponent {
     };
 
     getName = (name) => {
-        return name.name + " " + name.complement;
+        return name.fullName;
     };
 
     nameAdd = (data) => {
@@ -81,7 +81,7 @@ class ApDetailNames extends AbstractReactComponent {
                 {canEdit && <Button bsStyle="action" onClick={this.handleNameAdd}><Icon glyph="fa-plus" /></Button>}
             </div>
             <div className="name-group">
-                {accessPoint.variantRecords.map((name, index) =>
+                {accessPoint.names.map((name, index) =>
                     <div key={name.id} className={name.preferredName ? "preffered value-group" : "value-group"}>
                         <div className="value">{this.getName(name)}</div>
                         <div className="actions">

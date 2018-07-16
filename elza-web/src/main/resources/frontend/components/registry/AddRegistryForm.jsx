@@ -68,7 +68,7 @@ class AddRegistryForm extends AbstractReactComponent {
             if (parentRecordId !== null) {
                 if (!this.state.disabled) {
                     WebApi.getAccessPoint(parentRecordId).then(json => {
-                        this.props.load({typeId: json.apTypeId, scopeId: json.scopeId});
+                        this.props.load({typeId: json.typeId, scopeId: json.scopeId});
                     });
                     this.setState({disabled: true});
                 }
