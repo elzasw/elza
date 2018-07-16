@@ -16,6 +16,7 @@ class PartyListItem extends AbstractReactComponent {
         relationTypesForClass: React.PropTypes.object,
         record: React.PropTypes.object.isRequired,
         relations: React.PropTypes.array,
+        partyNames: React.PropTypes.array,
     };
 
     static partyIconByPartyTypeCode = (code) => {
@@ -64,7 +65,7 @@ class PartyListItem extends AbstractReactComponent {
 
 
     render() {
-        const {id, relationTypesForClass, partyType, relations, accessPoint, accessPoint: {invalid}, className, ...otherProps} = this.props;
+        const {id, relationTypesForClass, partyType, relations, accessPoint, accessPoint: {invalid}, partyNames, className, ...otherProps} = this.props;
 
         console.log("render party list item");
         let icon = PartyListItem.partyIconByPartyTypeCode(partyType.code);
@@ -79,12 +80,24 @@ class PartyListItem extends AbstractReactComponent {
             datation = extinction;
         }
 
+        let preferredName = null;
+        if (partyNames && partyNames.length > 0) {
+            const preferredNames = partyNames.filter(i => i.prefferedName);
+            if (preferredNames.length > 0) {
+                if (preferredNames.length > 1) {
+                    console.warn("2 preferred names in party");
+                }
+
+                preferredName = preferredNames[0];
+            }
+        }
+
         return <div className={classNames('party-list-item', className, {
             invalid
         })} {...otherProps}>
             <div>
                 <Icon glyph={icon} />
-                <span className="name">{accessPoint.record}</span>
+                <span className="name">{preferredName && preferredName.displayName}</span>
             </div>
             <div>
                 <span className="date">{datation}</span>
