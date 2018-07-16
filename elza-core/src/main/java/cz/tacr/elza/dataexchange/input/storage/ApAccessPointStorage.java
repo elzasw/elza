@@ -69,9 +69,11 @@ public class ApAccessPointStorage extends EntityStorage<AccessPointWrapper> {
             apIds.add(Validate.notNull(apId));
         }
         ApChange change = changeHolder.getChange();
-        apNameRepository.invalidateByAccessPointIdIn(apIds, change);
-        apDescRepository.invalidateByAccessPointIdIn(apIds, change);
-        apEidRepository.invalidateByAccessPointIdIn(apIds, change);
+        if (apIds.size() > 0) {
+            apNameRepository.invalidateByAccessPointIdIn(apIds, change);
+            apDescRepository.invalidateByAccessPointIdIn(apIds, change);
+            apEidRepository.invalidateByAccessPointIdIn(apIds, change);
+        }
     }
 
     private void pairAccessPointsByUuid(Collection<AccessPointWrapper> apws) {
