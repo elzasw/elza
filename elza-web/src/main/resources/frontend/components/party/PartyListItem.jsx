@@ -64,7 +64,7 @@ class PartyListItem extends AbstractReactComponent {
 
 
     render() {
-        const {id, relationTypesForClass, partyType, relations, record, record: {invalid}, className, ...otherProps} = this.props;
+        const {id, relationTypesForClass, partyType, relations, accessPoint, accessPoint: {invalid}, className, ...otherProps} = this.props;
 
         console.log("render party list item");
         let icon = PartyListItem.partyIconByPartyTypeCode(partyType.code);
@@ -84,13 +84,13 @@ class PartyListItem extends AbstractReactComponent {
         })} {...otherProps}>
             <div>
                 <Icon glyph={icon} />
-                <span className="name">{record.record}</span>
+                <span className="name">{accessPoint.record}</span>
             </div>
             <div>
                 <span className="date">{datation}</span>
-                {record.externalId && record.externalSystem && record.externalSystem.name && <span className="description">{record.externalSystem.name + ':' + record.externalId}</span>}
-                {record.externalId && (!record.externalSystem || !record.externalSystem.name) && <span className="description">{'UNKNOWN:' + record.externalId}</span>}
-                {!record.externalId && <span className="description">{id}</span>}
+                {accessPoint.externalId && accessPoint.externalSystem && accessPoint.externalSystem.name && <span className="description">{accessPoint.externalSystem.name + ':' + accessPoint.externalId}</span>}
+                {accessPoint.externalId && (!accessPoint.externalSystem || !accessPoint.externalSystem.name) && <span className="description">{'UNKNOWN:' + accessPoint.externalId}</span>}
+                {!accessPoint.externalId && <span className="description">{id}</span>}
             </div>
         </div>
     };
