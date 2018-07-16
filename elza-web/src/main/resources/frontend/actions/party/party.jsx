@@ -224,9 +224,9 @@ function partyAddSubmit(callback, dispatch, submitType, data) {
     const party = {
         '@class': PARTY_CLASS_BY_TYPE[data.partyType.code],
         ...other,
-        record: {
+        accessPoint: {
             '@class': "cz.tacr.elza.controller.vo.ApAccessPointVO",
-            ...other.record
+            ...other.accessPoint
         },
         partyNames : [
             {

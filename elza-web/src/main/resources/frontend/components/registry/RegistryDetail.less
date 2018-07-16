@@ -157,4 +157,126 @@
             color: white;
         }
     }
+
+    .panel-group {
+        margin-bottom: 0;
+
+        &.open {
+            .panel {
+                .panel-heading {
+                    background: #C0C0C0;
+
+                    .panel-title {
+                        font-weight: bold;
+
+                        &:hover {
+                            background-color: #ddd;
+                        }
+                    }
+                }
+            }
+        }
+
+        .panel {
+            border: none;
+            border-bottom: 1px solid #f8f8f8;
+            box-shadow: none;
+
+            .panel-heading {
+                border: none;
+                padding: 0;
+                cursor: pointer;
+                background-color: #E7E7E7;
+
+                .panel-title {
+                    font-size: 1em;
+                    line-height: 2em;
+
+                    a,
+                    a:focus,
+                    a:hover,
+                    a:visited {
+                        padding: 5px 5px 5px 10px;
+                        display: block;
+                        width: 100%;
+                        text-decoration: none;
+                        border-color: transparent !important;
+                        outline-color: transparent !important;
+                        -webkit-box-shadow: none;
+                        box-shadow: none;
+                    }
+
+                    &:hover, &:focus{
+                        text-decoration: none;
+                        background-color: #f0f0f0;
+
+                        .hover-button {
+                            visibility: visible;
+                        }
+                    }
+
+                    .hover-button {
+                        visibility: hidden;
+                    }
+
+                    .pinned {
+                        .icon {
+                            transform: rotate(45deg);
+                        }
+                    }
+                }
+            }
+            .panel-body {
+                .group-label {
+                    line-height: 2em;
+                    margin: 0 5px 0 0;
+                    vertical-align: middle;
+                }
+
+                .form-group label,
+                label {
+                    font-weight: normal;
+                }
+
+                .value-group {
+                    display: flex;
+                    align-items: center;
+                    padding-left: 10px;
+
+                    label {
+                        margin: 0;
+                        font-weight: bold;
+                    }
+
+                    .value {
+                        flex: 1;
+                    }
+
+                    .actions {
+                        height: 100%;
+
+                        .btn-action {
+                            height: 100%;
+                        }
+                    }
+
+                    &.relation-group {
+                        //border: 2px solid #eee;
+                        padding: 10px;
+                        align-items: flex-start;
+
+                        .actions {
+                            height: 2em;
+                        }
+                    }
+                }
+
+                .elements-container {
+                    [class*="el-"] {
+                        padding: 5px 0 7px;
+                    }
+                }
+            }
+        }
+    }
 }

@@ -170,7 +170,7 @@ class PartyField extends AbstractReactComponent {
         if (detail) {
             // if (userDetail.hasOne(perms.AP_SCOPE_RD_ALL, {type: perms.AP_SCOPE_RD, scopeId: value.record.scopeId})) {
             actions.push(
-                <div 
+                <div
                     onClick={this.handleDetail.bind(this, value ? value.id : null)}
                     className={'btn btn-default detail'}
                 >
@@ -192,7 +192,7 @@ class PartyField extends AbstractReactComponent {
             footer={footerRender}
             items={this.state.partyList}
             getItemId={(item) => item ? item.id : null}
-            getItemName={(item) => item && item.record ? item.record.record : tmpVal}
+            getItemName={(item) => item && item.accessPoint ? item.accessPoint.record : tmpVal}
             onSearchChange={this.handleSearchChange}
             renderItem={this.renderParty}
             actions={[actions]}
