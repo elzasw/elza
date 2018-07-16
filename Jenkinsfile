@@ -2,24 +2,21 @@ pipeline {
     agent any
 
     stages {
-
-    stage('Test') {
-                steps {
-                    sh "mvn -Ptest test"
-                }
-                post {
-                    always {
-                        junit '**/target/surefire-reports/*.xml'
-                    }
-                }
-            }
-
         stage('Build') {
             steps {
                 sh "-Prelease clean install"
             }
         }
-
+        stage('Test') {
+            steps {
+                sh "mvn -Ptest test"
+            }
+            post {
+                always {
+                    junit '**/target/surefire-reports/*.xml'
+                }
+            }
+        }
     }
     post {
         success {
