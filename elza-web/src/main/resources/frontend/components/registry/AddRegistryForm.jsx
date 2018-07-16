@@ -9,6 +9,8 @@ import {getRegistryRecordTypesIfNeeded} from 'actions/registry/registryRecordTyp
 import {WebApi} from 'actions/index.jsx';
 import {getTreeItemById} from "./registryUtils";
 import Scope from "../shared/scope/Scope";
+import StoreSuggestField from "../../shared/field/StoreSuggestField";
+import LanguageCodeField from "../LanguageCodeField";
 
 /**
  * Formulář přidání nového rejstříkového hesla
@@ -17,18 +19,18 @@ import Scope from "../shared/scope/Scope";
 class AddRegistryForm extends AbstractReactComponent {
     static validate = (values, props) => {
         const errors = {};
-        if (!values.record) {
-            errors.record = i18n('global.validation.required');
+        if (!values.name) {
+            errors.name = i18n('global.validation.required');
         }
-        if (!values.characteristics) {
-            errors.characteristics = i18n('global.validation.required');
+        if (!values.description) {
+            errors.description = i18n('global.validation.required');
         }
         if (!values.scopeId) {
             errors.scopeId = i18n('global.validation.required');
         }
 
-        if (!values.apTypeId) {
-            errors.apTypeId = i18n('global.validation.required');
+        if (!values.typeId) {
+            errors.typeId = i18n('global.validation.required');
         }
 
         return errors;
@@ -58,22 +60,22 @@ class AddRegistryForm extends AbstractReactComponent {
     }
 
     prepareState = (props) => {
-        const {fields: {apTypeId}, parentRecordId, registryList:{filter:{registryTypeId}}, registryRegionRecordTypes} = props;
+        const {fields: {typeId}, parentRecordId, registryList:{filter:{registryTypeId}}, registryRegionRecordTypes} = props;
 
         // Pokud není nastaven typ rejstříku, pokusíme se ho nastavit
-        if (!apTypeId || apTypeId.value === "") {
+        if (!typeId || typeId.value === "") {
             // Pokud je předán parentRecordId, přednačte se do prvku výběr rejstříku a tento prvek se nastaví jako disabled
             if (parentRecordId !== null) {
                 if (!this.state.disabled) {
                     WebApi.getAccessPoint(parentRecordId).then(json => {
-                        this.props.load({apTypeId: json.apTypeId, scopeId: json.scopeId});
+                        this.props.load({typeId: json.apTypeId, scopeId: json.scopeId});
                     });
                     this.setState({disabled: true});
                 }
             } else {    //  pokud není předán parentRecordId, může se výběr rejstříku editovat
                 this.setState({disabled: false});
                 if (registryTypeId && this.isValueUseable(registryRegionRecordTypes.item, registryTypeId)){ // pokud o vybrání nějaké položky, která je uvedena v registryRegion.registryTypesId
-                    this.props.load({apTypeId: registryTypeId});
+                    this.props.load({typeId: registryTypeId});
                 }
             }
         }
@@ -100,7 +102,7 @@ class AddRegistryForm extends AbstractReactComponent {
     }
 
     render() {
-        const {fields: {record, characteristics, apTypeId, scopeId}, handleSubmit, onClose, versionId, refTables: {scopesData}, submitting, registryRegionRecordTypes, registryRegion} = this.props;
+        const {fields: {name, description, complement, languageCode, typeId, scopeId}, handleSubmit, onClose, versionId, refTables: {scopesData}, submitting, registryRegionRecordTypes} = this.props;
 
         const okSubmitForm = submitReduxFormWithProp.bind(this, AddRegistryForm.validate, 'store');
         const okAndDetailSubmitForm = submitReduxFormWithProp.bind(this, AddRegistryForm.validate, 'storeAndViewDetail');
@@ -114,7 +116,7 @@ class AddRegistryForm extends AbstractReactComponent {
             }
         }
 
-        const value = getTreeItemById(apTypeId ? apTypeId.value : "", items);
+        const value = getTreeItemById(typeId ? typeId.value : "", items);
 
         return (
             <div key={this.props.key}>
@@ -127,15 +129,17 @@ class AddRegistryForm extends AbstractReactComponent {
                             tree
                             alwaysExpanded
                             allowSelectItem={(item) => item.addRecord}
-                            {...apTypeId}
-                            {...decorateFormField(apTypeId)}
-                            onChange={item => apTypeId.onChange(item ? item.id : null)}
-                            onBlur={item => apTypeId.onBlur(item ? item.id : null)}
+                            {...typeId}
+                            {...decorateFormField(typeId)}
+                            onChange={item => typeId.onChange(item ? item.id : null)}
+                            onBlur={item => typeId.onBlur(item ? item.id : null)}
                             value={value}
                             disabled={this.state.disabled}
                             />
-                        <FormInput type="text" label={i18n('registry.name')} {...record} {...decorateFormField(record)}/>
-                        <FormInput componentClass="textarea" label={i18n('registry.characteristics')} {...characteristics} {...decorateFormField(characteristics)} />
+                        <FormInput type="text" label={i18n('registry.name')} {...name} {...decorateFormField(name)}/>
+                        <FormInput type="text" label={i18n('accesspoint.complement')} {...complement} {...decorateFormField(complement)}/>
+                        <LanguageCodeField label={i18n('accesspoint.languageCode')} {...languageCode} {...decorateFormField(languageCode)} />
+                        <FormInput componentClass="textarea" label={i18n('accesspoint.description')} {...description} {...decorateFormField(description)} />
                     </Modal.Body>
                     <Modal.Footer>
                         {this.props.showSubmitTypes && <Button onClick={handleSubmit(okAndDetailSubmitForm)} disabled={submitting}>{i18n('global.action.storeAndViewDetail')}</Button>}
@@ -149,7 +153,7 @@ class AddRegistryForm extends AbstractReactComponent {
 }
 export default reduxForm({
     form: 'addRegistryForm',
-    fields: ['record', 'characteristics', 'apTypeId', 'scopeId'],
+    fields: ['name', 'complement', 'languageCode', 'description', 'typeId', 'scopeId'],
 },state => ({
     initialValues: state.form.addRegistryForm.initialValues,
     refTables: state.refTables,

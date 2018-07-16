@@ -24,6 +24,9 @@ import RegistryLabel from "./RegistryLabel";
 import defaultKeymap from './RegistryDetailVariantRecordsKeymap.jsx';
 import {FOCUS_KEYS} from "../../constants";
 
+/**
+ * @deprecated
+ */
 class RegistryDetailVariantRecords extends AbstractReactComponent {
     static contextTypes = { shortcuts: PropTypes.object };
     static childContextTypes = { shortcuts: PropTypes.object.isRequired };

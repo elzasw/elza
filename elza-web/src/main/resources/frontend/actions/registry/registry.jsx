@@ -45,7 +45,12 @@ export function registryListInvalidate() {
 }
 
 
-
+/**
+ * TODO Rejstříky ve verzi 16 nemají žádnou možnost pro move (hierarchie)
+ *
+ * @param parentRecordId
+ * @returns {Function}
+ */
 export function registryMove(parentRecordId) {
     return (dispatch, getState) => {
         const store = getState();
@@ -57,7 +62,7 @@ export function registryMove(parentRecordId) {
 
         WebApi.getAccessPoint(list.recordForMove.id).then((data) => {
             // TODO compel AP
-            savingApiWrapper(dispatch, WebApi.updateAccessPoint({...data, parentRecordId})).then(json => {
+            savingApiWrapper(dispatch, WebApi.updateAccessPoint(list.recordForMove.id, {...data, parentRecordId})).then(json => {
                 dispatch(registryMoveFinish());
                 dispatch(registryListInvalidate());
             });
@@ -131,23 +136,22 @@ export function registryAdd(parentId, versionId, callback, parentName = '', show
 
 function registryRecordCreate(parentId, callback, data, submitType) {
     return (dispatch, getState) => {
-        savingApiWrapper(dispatch, WebApi.createRecord(data.record, data.characteristics, data.apTypeId, parentId, data.scopeId)).then(json => {
+        savingApiWrapper(dispatch, WebApi.createAccessPoint(data.name, data.complement, data.langaugeCode, data.description, data.typeId, data.scopeId)).then(json => {
             dispatch(modalDialogHide());
             callback && callback(json, submitType);
         });
     }
 }
 
-export function registryUpdate(data, callback = null) {
+export function registryUpdate(id, apTypeId, callback = null) {
     return (dispatch, getState) => {
-        // TODO compel AP
-        return savingApiWrapper(dispatch, WebApi.updateAccessPoint(data)).then(json => {
+        return savingApiWrapper(dispatch, WebApi.updateAccessPoint(id, {apTypeId})).then(json => {
             const store = getState();
             const detail = storeFromArea(store, AREA_REGISTRY_DETAIL);
 
             const list = storeFromArea(store, AREA_REGISTRY_LIST);
 
-            if (detail.id == data.id) {
+            if (detail.id == id) {
                 dispatch(registryDetailInvalidate());
             }
 
@@ -220,6 +224,11 @@ export function registrySetFolder(recordId) {
 /// Variant registry
 
 
+/**
+ * @deprecated
+ * @param data
+ * @returns {Function}
+ */
 export function registryVariantUpdate(data) {
     return (dispatch, getState) => {
         const store = getState();
@@ -231,7 +240,6 @@ export function registryVariantUpdate(data) {
             }
         });
         if (needFetch === true) {
-            // TODO compel AP
             return savingApiWrapper(dispatch, WebApi.updateAccessPointName(-1, data)).then(json => {
                 dispatch(receiveRegistryVariantRecord(json));
             });
@@ -254,9 +262,11 @@ export function registryVariantAddRow() {
     }
 }
 
+/**
+ * @deprecated
+ */
 export function registryVariantCreate(data, variantRecordInternalId) {
     return (dispatch) => {
-        // TODO compel AP
         savingApiWrapper(dispatch, WebApi.createAccessPointName(-1 ,data)).then(json => {
             dispatch(registryVariantCreated(json, variantRecordInternalId));
         });
@@ -272,9 +282,11 @@ export function registryVariantCreated(json, variantRecordInternalId) {
     }
 }
 
+/**
+ * @deprecated
+ */
 export function registryVariantDelete(variantRecordId){
     return (dispatch) => {
-        // TODO compel AP
         WebApi.deleteAccessPointName(-1, variantRecordId).then(json => {
             dispatch(registryVariantDeleted(variantRecordId));
         });
