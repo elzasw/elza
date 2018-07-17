@@ -175,4 +175,27 @@
         </update>
     </changeSet>
 
+    <changeSet id="20180717155700" author="slapa">
+        <createTable tableName="ap_rule">
+            <column name="rule_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="rule_system_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_ap_rule_rule_system"
+                             referencedTableName="ap_rule_system"
+                             referencedColumnNames="rule_system_id"/>
+            </column>
+            <column name="component_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_ap_rule_component"
+                             referencedTableName="rul_component"
+                             referencedColumnNames="component_id"/>
+            </column>
+            <column name="rule_type" type="nvarchar(50)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
 </databaseChangeLog>
