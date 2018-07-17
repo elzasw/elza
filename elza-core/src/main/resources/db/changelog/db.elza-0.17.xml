@@ -46,4 +46,12 @@
         <dropColumn tableName="rul_structured_type" columnName="rule_set_id" />
     </changeSet>
 
+    <changeSet id="20180717095200" author="slapa">
+        <addColumn tableName="ap_external_id_type">
+            <column name="package_id" type="int" />
+        </addColumn>
+        <sql>UPDATE ap_external_id_type SET package_id = (SELECT package_id FROM rul_package WHERE code = 'CZ_BASE')</sql>
+        <addNotNullConstraint tableName="ap_external_id_type" columnName="package_id" columnDataType="int" />
+    </changeSet>
+
 </databaseChangeLog>
