@@ -1,42 +1,36 @@
 package cz.tacr.elza.packageimport;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
-import java.util.zip.ZipOutputStream;
-
-import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.validation.constraints.NotNull;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Marshaller;
-
+import cz.tacr.elza.api.UseUnitdateEnum;
+import cz.tacr.elza.api.enums.ParRelationClassTypeRepeatabilityEnum;
+import cz.tacr.elza.api.enums.UIPartyGroupTypeEnum;
+import cz.tacr.elza.bulkaction.BulkActionConfigManager;
+import cz.tacr.elza.core.AppContext;
+import cz.tacr.elza.core.ResourcePathResolver;
+import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.core.data.RuleSystemItemType;
+import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.core.security.AuthMethod;
+import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.ArrOutputDefinition.OutputState;
+import cz.tacr.elza.domain.RulTemplate.Engine;
+import cz.tacr.elza.domain.UISettings.EntityType;
+import cz.tacr.elza.domain.integer.DisplayType;
+import cz.tacr.elza.domain.table.ElzaColumn;
+import cz.tacr.elza.exception.AbstractException;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.exception.codes.PackageCode;
+import cz.tacr.elza.interpi.service.InterpiService;
+import cz.tacr.elza.packageimport.xml.*;
+import cz.tacr.elza.repository.*;
+import cz.tacr.elza.service.CacheService;
+import cz.tacr.elza.service.StructureService;
+import cz.tacr.elza.service.event.CacheInvalidateEvent;
+import cz.tacr.elza.service.eventnotification.EventNotificationService;
+import cz.tacr.elza.service.eventnotification.events.ActionEvent;
+import cz.tacr.elza.service.eventnotification.events.EventType;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
@@ -53,167 +47,22 @@ import org.springframework.transaction.support.TransactionSynchronizationAdapter
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.FileSystemUtils;
 
-import cz.tacr.elza.api.UseUnitdateEnum;
-import cz.tacr.elza.api.enums.ParRelationClassTypeRepeatabilityEnum;
-import cz.tacr.elza.api.enums.UIPartyGroupTypeEnum;
-import cz.tacr.elza.bulkaction.BulkActionConfigManager;
-import cz.tacr.elza.core.AppContext;
-import cz.tacr.elza.core.ResourcePathResolver;
-import cz.tacr.elza.core.data.DataType;
-import cz.tacr.elza.core.data.RuleSystemItemType;
-import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.core.security.AuthMethod;
-import cz.tacr.elza.domain.ApType;
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrOutputDefinition;
-import cz.tacr.elza.domain.ArrOutputDefinition.OutputState;
-import cz.tacr.elza.domain.ParComplementType;
-import cz.tacr.elza.domain.ParPartyNameFormType;
-import cz.tacr.elza.domain.ParPartyType;
-import cz.tacr.elza.domain.ParPartyTypeComplementType;
-import cz.tacr.elza.domain.ParPartyTypeRelation;
-import cz.tacr.elza.domain.ParRegistryRole;
-import cz.tacr.elza.domain.ParRelationClassType;
-import cz.tacr.elza.domain.ParRelationRoleType;
-import cz.tacr.elza.domain.ParRelationType;
-import cz.tacr.elza.domain.ParRelationTypeRoleType;
-import cz.tacr.elza.domain.RulAction;
-import cz.tacr.elza.domain.RulActionRecommended;
-import cz.tacr.elza.domain.RulArrangementExtension;
-import cz.tacr.elza.domain.RulArrangementRule;
-import cz.tacr.elza.domain.RulComponent;
-import cz.tacr.elza.domain.RulDataType;
-import cz.tacr.elza.domain.RulExtensionRule;
-import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.RulItemSpecRegister;
-import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.RulItemTypeAction;
-import cz.tacr.elza.domain.RulOutputType;
-import cz.tacr.elza.domain.RulPackage;
-import cz.tacr.elza.domain.RulPackageDependency;
-import cz.tacr.elza.domain.RulPolicyType;
-import cz.tacr.elza.domain.RulRuleSet;
-import cz.tacr.elza.domain.RulStructureDefinition;
-import cz.tacr.elza.domain.RulStructureExtensionDefinition;
-import cz.tacr.elza.domain.RulStructuredType;
-import cz.tacr.elza.domain.RulTemplate;
-import cz.tacr.elza.domain.RulTemplate.Engine;
-import cz.tacr.elza.domain.UIPartyGroup;
-import cz.tacr.elza.domain.UISettings;
-import cz.tacr.elza.domain.UISettings.EntityType;
-import cz.tacr.elza.domain.integer.DisplayType;
-import cz.tacr.elza.domain.UsrPermission;
-import cz.tacr.elza.domain.table.ElzaColumn;
-import cz.tacr.elza.exception.AbstractException;
-import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.ObjectNotFoundException;
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.exception.codes.PackageCode;
-import cz.tacr.elza.interpi.service.InterpiService;
-import cz.tacr.elza.packageimport.xml.ActionItemType;
-import cz.tacr.elza.packageimport.xml.ActionRecommended;
-import cz.tacr.elza.packageimport.xml.ArrangementExtension;
-import cz.tacr.elza.packageimport.xml.ArrangementExtensions;
-import cz.tacr.elza.packageimport.xml.ArrangementRule;
-import cz.tacr.elza.packageimport.xml.ArrangementRules;
-import cz.tacr.elza.packageimport.xml.Category;
-import cz.tacr.elza.packageimport.xml.Column;
-import cz.tacr.elza.packageimport.xml.ComplementType;
-import cz.tacr.elza.packageimport.xml.ComplementTypes;
-import cz.tacr.elza.packageimport.xml.ExtensionRule;
-import cz.tacr.elza.packageimport.xml.ExtensionRules;
-import cz.tacr.elza.packageimport.xml.ItemSpec;
-import cz.tacr.elza.packageimport.xml.ItemSpecRegister;
-import cz.tacr.elza.packageimport.xml.ItemSpecs;
-import cz.tacr.elza.packageimport.xml.ItemType;
-import cz.tacr.elza.packageimport.xml.ItemTypes;
-import cz.tacr.elza.packageimport.xml.OutputType;
-import cz.tacr.elza.packageimport.xml.OutputTypes;
-import cz.tacr.elza.packageimport.xml.PackageAction;
-import cz.tacr.elza.packageimport.xml.PackageActions;
-import cz.tacr.elza.packageimport.xml.PackageDependency;
-import cz.tacr.elza.packageimport.xml.PackageInfo;
-import cz.tacr.elza.packageimport.xml.PartyGroup;
-import cz.tacr.elza.packageimport.xml.PartyGroups;
-import cz.tacr.elza.packageimport.xml.PartyNameFormType;
-import cz.tacr.elza.packageimport.xml.PartyNameFormTypes;
-import cz.tacr.elza.packageimport.xml.PartyTypeComplementType;
-import cz.tacr.elza.packageimport.xml.PartyTypeComplementTypes;
-import cz.tacr.elza.packageimport.xml.PartyTypeRelation;
-import cz.tacr.elza.packageimport.xml.PartyTypeRelations;
-import cz.tacr.elza.packageimport.xml.PolicyType;
-import cz.tacr.elza.packageimport.xml.PolicyTypes;
-import cz.tacr.elza.packageimport.xml.RegisterType;
-import cz.tacr.elza.packageimport.xml.RegisterTypes;
-import cz.tacr.elza.packageimport.xml.RegistryRole;
-import cz.tacr.elza.packageimport.xml.RegistryRoles;
-import cz.tacr.elza.packageimport.xml.RelationClassType;
-import cz.tacr.elza.packageimport.xml.RelationClassTypes;
-import cz.tacr.elza.packageimport.xml.RelationRoleType;
-import cz.tacr.elza.packageimport.xml.RelationRoleTypes;
-import cz.tacr.elza.packageimport.xml.RelationType;
-import cz.tacr.elza.packageimport.xml.RelationTypeRoleType;
-import cz.tacr.elza.packageimport.xml.RelationTypeRoleTypes;
-import cz.tacr.elza.packageimport.xml.RelationTypes;
-import cz.tacr.elza.packageimport.xml.RuleSet;
-import cz.tacr.elza.packageimport.xml.RuleSets;
-import cz.tacr.elza.packageimport.xml.Setting;
-import cz.tacr.elza.packageimport.xml.SettingBase;
-import cz.tacr.elza.packageimport.xml.SettingFavoriteItemSpecs;
-import cz.tacr.elza.packageimport.xml.SettingFundViews;
-import cz.tacr.elza.packageimport.xml.SettingGridView;
-import cz.tacr.elza.packageimport.xml.SettingRecord;
-import cz.tacr.elza.packageimport.xml.SettingTypeGroups;
-import cz.tacr.elza.packageimport.xml.Settings;
-import cz.tacr.elza.packageimport.xml.StructureDefinition;
-import cz.tacr.elza.packageimport.xml.StructureDefinitions;
-import cz.tacr.elza.packageimport.xml.StructureType;
-import cz.tacr.elza.packageimport.xml.StructureTypes;
-import cz.tacr.elza.packageimport.xml.Template;
-import cz.tacr.elza.packageimport.xml.Templates;
-import cz.tacr.elza.repository.ActionRecommendedRepository;
-import cz.tacr.elza.repository.ActionRepository;
-import cz.tacr.elza.repository.ApTypeRepository;
-import cz.tacr.elza.repository.ArrangementExtensionRepository;
-import cz.tacr.elza.repository.ArrangementRuleRepository;
-import cz.tacr.elza.repository.ComplementTypeRepository;
-import cz.tacr.elza.repository.ComponentRepository;
-import cz.tacr.elza.repository.DataTypeRepository;
-import cz.tacr.elza.repository.ExtensionRuleRepository;
-import cz.tacr.elza.repository.ItemSpecRegisterRepository;
-import cz.tacr.elza.repository.ItemSpecRepository;
-import cz.tacr.elza.repository.ItemTypeActionRepository;
-import cz.tacr.elza.repository.ItemTypeRepository;
-import cz.tacr.elza.repository.OutputDefinitionRepository;
-import cz.tacr.elza.repository.OutputTypeRepository;
-import cz.tacr.elza.repository.PackageDependencyRepository;
-import cz.tacr.elza.repository.PackageRepository;
-import cz.tacr.elza.repository.Packaging;
-import cz.tacr.elza.repository.PartyNameFormTypeRepository;
-import cz.tacr.elza.repository.PartyRelationClassTypeRepository;
-import cz.tacr.elza.repository.PartyTypeComplementTypeRepository;
-import cz.tacr.elza.repository.PartyTypeRelationRepository;
-import cz.tacr.elza.repository.PartyTypeRepository;
-import cz.tacr.elza.repository.PolicyTypeRepository;
-import cz.tacr.elza.repository.RegistryRoleRepository;
-import cz.tacr.elza.repository.RelationRoleTypeRepository;
-import cz.tacr.elza.repository.RelationTypeRepository;
-import cz.tacr.elza.repository.RelationTypeRoleTypeRepository;
-import cz.tacr.elza.repository.RuleSetRepository;
-import cz.tacr.elza.repository.SettingsRepository;
-import cz.tacr.elza.repository.StructureDefinitionRepository;
-import cz.tacr.elza.repository.StructureExtensionDefinitionRepository;
-import cz.tacr.elza.repository.StructuredTypeExtensionRepository;
-import cz.tacr.elza.repository.StructuredTypeRepository;
-import cz.tacr.elza.repository.TemplateRepository;
-import cz.tacr.elza.repository.UIPartyGroupRepository;
-import cz.tacr.elza.service.CacheService;
-import cz.tacr.elza.service.StructureService;
-import cz.tacr.elza.service.event.CacheInvalidateEvent;
-import cz.tacr.elza.service.eventnotification.EventNotificationService;
-import cz.tacr.elza.service.eventnotification.events.ActionEvent;
-import cz.tacr.elza.service.eventnotification.events.EventType;
+import javax.annotation.Nullable;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.validation.constraints.NotNull;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.Marshaller;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
+import java.util.*;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+import java.util.zip.ZipOutputStream;
 
 
 /**
@@ -307,6 +156,11 @@ public class PackageService {
     public static final String REGISTRY_ROLE_XML = "par_registry_role.xml";
     public static final String REGISTER_TYPE_XML = "reg_register_type.xml";
     public static final String SETTING_XML = "ui_setting.xml";
+
+    /**
+     * typy externích identifikátorů
+     */
+    public static final String EXTERNAL_ID_TYPE_XML = "ap_external_id_type.xml";
 
     /**
      * Složka templatů
@@ -446,6 +300,9 @@ public class PackageService {
 
     @Autowired
     private ExtensionRuleRepository extensionRuleRepository;
+
+    @Autowired
+    private ApExternalIdTypeRepository externalIdTypeRepository;
 
     @Autowired
     private StructuredTypeRepository structureTypeRepository;
@@ -635,6 +492,13 @@ public class PackageService {
 
             // END NASTAVENÍ -------------------------------------------------------------------------------------------
 
+            // AP ------------------------------------------------------------------------------------------------------
+
+            ExternalIdTypes externalIdTypes = PackageUtils.convertXmlStreamToObject(ExternalIdTypes.class, mapEntry.get(EXTERNAL_ID_TYPE_XML));
+            processExternalIdTypes(externalIdTypes, rulPackage);
+
+            // END AP --------------------------------------------------------------------------------------------------
+
             entityManager.flush();
 
             staticDataService.reloadOnCommit();
@@ -687,6 +551,50 @@ public class PackageService {
 
     }
 
+    /**
+     * Provede synchronizaci typů externích identifikátorů.
+     *
+     * @param externalIdTypes identifikátory v balíčku
+     * @param rulPackage      importovaný balíček
+     */
+    private void processExternalIdTypes(final ExternalIdTypes externalIdTypes, final RulPackage rulPackage) {
+        List<ApExternalIdType> apExternalIdTypes = externalIdTypeRepository.findByRulPackage(rulPackage);
+
+        List<ApExternalIdType> apExternalIdTypesNew = new ArrayList<>();
+
+        if (externalIdTypes != null && !CollectionUtils.isEmpty(externalIdTypes.getExternalIdTypes())) {
+            for (ExternalIdType externalIdType : externalIdTypes.getExternalIdTypes()) {
+                ApExternalIdType apExternalIdType = findEntity(apExternalIdTypes, externalIdType.getCode(), ApExternalIdType::getCode);
+                if (apExternalIdType == null) {
+                    apExternalIdType = new ApExternalIdType();
+                }
+                convertApExternalIdTypes(rulPackage, externalIdType, apExternalIdType);
+                apExternalIdTypesNew.add(apExternalIdType);
+            }
+        }
+
+        apExternalIdTypesNew = externalIdTypeRepository.save(apExternalIdTypesNew);
+
+        List<ApExternalIdType> apExternalIdTypesDelete = new ArrayList<>(apExternalIdTypes);
+        apExternalIdTypesDelete.removeAll(apExternalIdTypesNew);
+
+        externalIdTypeRepository.delete(apExternalIdTypesDelete);
+    }
+
+    /**
+     * Konverze VO na DAO.
+     *
+     * @param rulPackage       importovaný balíček
+     * @param externalIdType   VO typ
+     * @param apExternalIdType DAO typ
+     */
+    private void convertApExternalIdTypes(final RulPackage rulPackage,
+                                          final ExternalIdType externalIdType,
+                                          final ApExternalIdType apExternalIdType) {
+        apExternalIdType.setCode(externalIdType.getCode());
+        apExternalIdType.setName(externalIdType.getName());
+        apExternalIdType.setRulPackage(rulPackage);
+    }
 
     private List<RulStructureDefinition> processStructureDefinitions(final StructureDefinitions structureDefinitions,
                                                                      final Map<String, ByteArrayInputStream> mapEntry,
@@ -2774,6 +2682,7 @@ public class PackageService {
             exportPartyNameFormTypes(rulPackage, zos);
             exportRelationRoleTypes(rulPackage, zos);
             exportSettings(rulPackage, zos);
+            exportExternalIdTypes(rulPackage, zos);
 
             file.deleteOnExit();
         } catch (Exception e) {
@@ -3337,6 +3246,41 @@ public class PackageService {
         }
 
         addObjectToZipFile(ruleSets, zos, RULE_SET_XML);
+    }
+
+    /**
+     * Exportování typů externích identifikátorů.
+     *
+     * @param rulPackage balíček
+     * @param zos        stream zip souboru
+     */
+    private void exportExternalIdTypes(final RulPackage rulPackage, final ZipOutputStream zos) throws IOException {
+        ExternalIdTypes externalIdTypes = new ExternalIdTypes();
+        List<ApExternalIdType> apExternalIdTypes = externalIdTypeRepository.findByRulPackage(rulPackage);
+        if (apExternalIdTypes.size() == 0) {
+            return;
+        }
+        List<ExternalIdType> externalIdTypeList = new ArrayList<>(apExternalIdTypes.size());
+        externalIdTypes.setExternalIdTypes(externalIdTypeList);
+
+        for (ApExternalIdType apExternalIdType : apExternalIdTypes) {
+            ExternalIdType externalIdType = new ExternalIdType();
+            convertExternalIdType(apExternalIdType, externalIdType);
+            externalIdTypeList.add(externalIdType);
+        }
+
+        addObjectToZipFile(externalIdTypes, zos, EXTERNAL_ID_TYPE_XML);
+    }
+
+    /**
+     * Převod DAO na VO pro typy externích identifikátorů.
+     *
+     * @param apExternalIdType DAO typ
+     * @param externalIdType   VO typ
+     */
+    private void convertExternalIdType(final ApExternalIdType apExternalIdType, final ExternalIdType externalIdType) {
+        externalIdType.setCode(apExternalIdType.getCode());
+        externalIdType.setName(apExternalIdType.getName());
     }
 
     /**
