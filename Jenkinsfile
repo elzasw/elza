@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                sh "mvn -Prelease clean install"
+                sh "-Prelease clean install"
             }
         }
         stage('Test') {
