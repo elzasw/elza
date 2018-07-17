@@ -5,6 +5,7 @@ import javax.persistence.*;
 import org.apache.commons.lang3.StringUtils;
 
 import cz.tacr.elza.domain.enumeration.StringLength;
+import org.hibernate.annotations.Type;
 
 @Entity(name = "ap_name")
 @Inheritance(strategy = InheritanceType.JOINED)
@@ -49,6 +50,15 @@ public class ApName {
     @Column(nullable = false, updatable = false, insertable = false)
     private Integer accessPointId;
 
+    @Enumerated(EnumType.STRING)
+    @Column(length = StringLength.LENGTH_ENUM)
+    private ApState state;
+
+    @Column
+    @Lob
+    @Type(type = "org.hibernate.type.TextType")
+    private String errorDescription;
+
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApChange.class)
     @JoinColumn(name = "createChangeId", nullable = false)
     private ApChange createChange;
@@ -71,6 +81,8 @@ public class ApName {
         this.preferredName = other.preferredName;
         this.fullName = other.fullName;
         this.language = other.language;
+        this.state = other.state;
+        this.errorDescription = other.errorDescription;
         this.languageId = other.languageId;
         this.accessPoint = other.accessPoint;
         this.accessPointId = other.accessPointId;
@@ -160,6 +172,22 @@ public class ApName {
 
     public String getFullName() {
         return fullName;
+    }
+
+    public ApState getState() {
+        return state;
+    }
+
+    public void setState(final ApState state) {
+        this.state = state;
+    }
+
+    public String getErrorDescription() {
+        return errorDescription;
+    }
+
+    public void setErrorDescription(final String errorDescription) {
+        this.errorDescription = errorDescription;
     }
 
     @Override
