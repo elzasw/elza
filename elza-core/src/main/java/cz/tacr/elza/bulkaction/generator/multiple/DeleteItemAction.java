@@ -13,7 +13,7 @@ import cz.tacr.elza.bulkaction.generator.DeleteItemConfig;
 import cz.tacr.elza.bulkaction.generator.LevelWithItems;
 import cz.tacr.elza.bulkaction.generator.result.ActionResult;
 import cz.tacr.elza.bulkaction.generator.result.DeleteItemResult;
-import cz.tacr.elza.core.data.RuleSystemItemType;
+import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDescItem;
@@ -40,7 +40,7 @@ public class DeleteItemAction extends Action {
 
     private DeleteItemConfig config;
 
-    private RuleSystemItemType itemType;
+    private ItemType itemType;
 
     private ArrChange change;
 

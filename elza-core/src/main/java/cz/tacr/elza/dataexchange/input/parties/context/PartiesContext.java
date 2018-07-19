@@ -169,7 +169,7 @@ public class PartiesContext {
         String partyTypeCode = partyInfo.getPartyType().getCode();
         PartyTypeCmplTypes cmplTypes = staticData.getCmplTypesByPartyTypeCode(partyTypeCode);
         // execute groovy script
-        ApConvResult convResult = gsService.convertPartyToAp(entity, cmplTypes.getTypes());
+        ApConvResult convResult = gsService.convertPartyToAp(entity, cmplTypes.getCmplTypes());
         // TODO: clear loaded entities by groovy
         // add converted description and names
         AccessPointInfo apInfo = partyInfo.getApInfo();

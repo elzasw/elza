@@ -172,7 +172,7 @@ class XmlSectionOutputStream implements SectionOutputStream {
 
     private InternalNode getSectionNode() {
         InternalNode sectionNode = new InternalNode(XmlNameConsts.SECTION);
-        RulRuleSet ruleSet = sectionContext.getRuleSystem().getRuleSet();
+        RulRuleSet ruleSet = sectionContext.getRuleSet();
         sectionNode.addAttribute(XmlNameConsts.RULE_SET_CODE, ruleSet.getCode());
 
         FundInfo fundInfo = new FundInfo();

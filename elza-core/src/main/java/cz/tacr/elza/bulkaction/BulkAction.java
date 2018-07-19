@@ -7,7 +7,6 @@ import javax.transaction.Transactional;
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrBulkActionRun;
@@ -59,8 +58,6 @@ public abstract class BulkAction {
 	 */
 	protected ArrBulkActionRun bulkActionRun;
 
-	protected RuleSystem ruleSystem;
-
 	/**
 	 * Změna
 	 */
@@ -81,8 +78,6 @@ public abstract class BulkAction {
 		checkVersion(version);
 
 		staticDataProvider = staticDataService.getData();
-		ruleSystem = staticDataProvider.getRuleSystemById(version.getRuleSetId());
-		Validate.notNull(ruleSystem, "Rule system not available, id: {}", version.getRuleSetId());
 	}
 
     /**

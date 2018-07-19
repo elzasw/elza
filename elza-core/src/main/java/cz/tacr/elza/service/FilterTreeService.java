@@ -35,7 +35,7 @@ import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.controller.vo.filter.SearchParam;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
-import cz.tacr.elza.core.data.RuleSystemItemType;
+import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -169,7 +169,7 @@ public class FilterTreeService {
         List<RulItemType> itemTypes = new ArrayList<>();
         StaticDataProvider data = staticDataService.getData();
         for (Integer id : descItemTypeIds) {
-            RuleSystemItemType rsit = data.getItemTypeById(id);
+            ItemType rsit = data.getItemTypeById(id);
             if (rsit == null) {
                 throw new BusinessException("Uknown desc item type", BaseCode.ID_NOT_EXIST).set("descItemTypeId", id);
             }

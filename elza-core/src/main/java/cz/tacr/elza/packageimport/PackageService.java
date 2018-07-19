@@ -7,7 +7,7 @@ import cz.tacr.elza.bulkaction.BulkActionConfigManager;
 import cz.tacr.elza.core.AppContext;
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.core.data.DataType;
-import cz.tacr.elza.core.data.RuleSystemItemType;
+import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.domain.*;
@@ -2858,8 +2858,8 @@ public class PackageService {
             if (ruleSet == null) {
                 return false;
             }
-            RuleSystemItemType itemType = staticDataService.getData().getItemTypeById(setting.getEntityId());
-            return itemType != null;
+            StaticDataProvider staticData = staticDataService.getData();
+            return staticData.getItemTypeById(setting.getEntityId()) != null;
         }
 
         if (ruleSet != null) {

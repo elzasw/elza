@@ -4,14 +4,20 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 
-import cz.tacr.elza.core.data.DataType;
-import cz.tacr.elza.domain.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
@@ -23,9 +29,6 @@ import org.springframework.util.Assert;
 
 import cz.tacr.elza.FilterTools;
 import cz.tacr.elza.bulkaction.generator.PersistentSortRunConfig;
-import cz.tacr.elza.controller.vo.ApAccessPointVO;
-import cz.tacr.elza.controller.vo.ApScopeVO;
-import cz.tacr.elza.controller.vo.ApAccessPointNameVO;
 import cz.tacr.elza.controller.vo.ArrFileVO;
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
@@ -45,6 +48,29 @@ import cz.tacr.elza.controller.vo.filter.ValuesTypes;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.core.data.CalendarType;
+import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.domain.ArrCalendarType;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataUnitdate;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFile;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrNodeRegister;
+import cz.tacr.elza.domain.ArrOutputFile;
+import cz.tacr.elza.domain.ArrOutputItem;
+import cz.tacr.elza.domain.ArrStructuredItem;
+import cz.tacr.elza.domain.DmsFile;
+import cz.tacr.elza.domain.ParInstitution;
+import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.ParPartyName;
+import cz.tacr.elza.domain.ParRelation;
+import cz.tacr.elza.domain.ParRelationEntity;
+import cz.tacr.elza.domain.RulDataType;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.UISettings;
+import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.convertor.CalendarConverter;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.exception.BusinessException;
@@ -81,7 +107,6 @@ import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
-import cz.tacr.elza.service.vo.ApAccessPointData;
 import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MapperFactory;
 
@@ -169,29 +194,6 @@ public class ClientFactoryDO {
         }
 
         return party;
-    }
-
-
-    /**
-     * Vytvoření rejstříkového hesla.
-     *
-     * @param apRecordVO VO rejstříkové heslo
-     * @return DO rejstříkové heslo
-     */
-    public ApAccessPointData createApAccessPoint(final ApAccessPointVO apRecordVO) {
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        return mapper.map(apRecordVO, ApAccessPointData.class);
-    }
-
-    /**
-     * Vytvoření variantního rejstříkového hesla.
-     *
-     * @param apVariantRecord VO variantní rejstříkové heslo
-     * @return DO variantní rejstříkové heslo
-     */
-    public ApName createApName(final ApAccessPointNameVO apVariantRecord) {
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        return mapper.map(apVariantRecord, ApName.class);
     }
 
     /**
@@ -337,39 +339,6 @@ public class ClientFactoryDO {
         }
 
         return descItem;
-    }
-
-    /**
-     * Vytvoří třídu rejstříku.
-     *
-     * @param scopeVO třída rejstříku
-     * @return třída rejstříku
-     */
-    public ApScope createScope(final ApScopeVO scopeVO) {
-        Assert.notNull(scopeVO, "Scope musí být vyplněn");
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        return mapper.map(scopeVO, ApScope.class);
-    }
-
-
-    /**
-     * Vytvoří seznam rejstříků
-     *
-     * @param scopeVOs seznam VO rejstříků
-     * @return seznam DO
-     */
-    public List<ApScope> createScopeList(@Nullable final Collection<ApScopeVO> scopeVOs) {
-        if (scopeVOs == null) {
-            return new ArrayList<>();
-        }
-
-        List<ApScope> result = new ArrayList<>(scopeVOs.size());
-
-        for (ApScopeVO scopeVO : scopeVOs) {
-            result.add(createScope(scopeVO));
-        }
-
-        return result;
     }
 
     /**

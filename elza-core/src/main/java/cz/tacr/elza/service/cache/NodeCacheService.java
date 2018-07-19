@@ -42,7 +42,7 @@ import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.CalendarType;
 import cz.tacr.elza.core.data.DataType;
-import cz.tacr.elza.core.data.RuleSystemItemType;
+import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ApAccessPoint;
@@ -568,7 +568,7 @@ public class NodeCacheService {
      */
 	private void loadDescItemType(ArrDescItem descItem, StaticDataProvider sdp) {
 		Validate.notNull(descItem.getItemTypeId());
-		RuleSystemItemType itemType = sdp.getItemTypeById(descItem.getItemTypeId());
+		ItemType itemType = sdp.getItemTypeById(descItem.getItemTypeId());
 		Validate.notNull(itemType);
 
 		descItem.setItemType(itemType.getEntity());
@@ -594,7 +594,7 @@ public class NodeCacheService {
 	 * @param data
 	 * @param itemType
 	 */
-	private void loadDataType(ArrData data, RuleSystemItemType itemType) {
+	private void loadDataType(ArrData data, ItemType itemType) {
 		DataType dataType = itemType.getDataType();
 		// check that item type match
         if (dataType.getId() != data.getDataTypeId()) {

@@ -1,6 +1,5 @@
 package cz.tacr.elza.dataexchange.input.sections.context;
 
-import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.dataexchange.input.DEImportException;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFund;
@@ -17,7 +16,7 @@ class FundRootAdapter implements SectionRootAdapter {
 
     private final ArrFund fund;
 
-    private final RuleSystem ruleSystem;
+    private final RulRuleSet ruleSet;
 
     private final ArrChange createChange;
 
@@ -33,12 +32,12 @@ class FundRootAdapter implements SectionRootAdapter {
     boolean rootCreated = false;
 
     public FundRootAdapter(ArrFund fund,
-            RuleSystem ruleSystem,
+            RulRuleSet ruleSet,
             ArrChange createChange,
             String timeRange,
             ArrangementService arrangementService) {
         this.fund = fund;
-        this.ruleSystem = ruleSystem;
+        this.ruleSet = ruleSet;
         this.createChange = createChange;
         this.timeRange = timeRange;
         this.arrangementService = arrangementService;
@@ -69,7 +68,6 @@ class FundRootAdapter implements SectionRootAdapter {
             public void afterEntitySave() {
                 // fund version requires rootNode, 
                 // can be created only after persist of root node
-                RulRuleSet ruleSet = ruleSystem.getRuleSet();
                 fundVersion = arrangementService.createVersion(createChange, fund, ruleSet, rootNode, timeRange);
                 super.afterEntitySave();
             }

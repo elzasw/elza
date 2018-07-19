@@ -1,5 +1,9 @@
 package cz.tacr.elza.controller.vo;
 
+import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.domain.ApName;
+import cz.tacr.elza.domain.SysLanguage;
+
 /**
  * Jméno přístupového bodu.
  *
@@ -96,5 +100,23 @@ public class ApAccessPointNameVO {
 
     public void setFullName(final String fullName) {
         this.fullName = fullName;
+    }
+    
+    /**
+     * Creates value object from AP name.
+     */
+    public static ApAccessPointNameVO newInstance(ApName src, StaticDataProvider staticData) {
+        ApAccessPointNameVO vo = new ApAccessPointNameVO();
+        vo.setAccessPointId(src.getAccessPointId());
+        vo.setComplement(src.getComplement());
+        vo.setFullName(src.getFullName());
+        vo.setId(src.getNameId());
+        vo.setName(src.getName());
+        vo.setPreferredName(src.isPreferredName());
+        if (src.getLanguageId() != null) {
+            SysLanguage lang = staticData.getSysLanguageById(src.getLanguageId());
+            vo.setLanguageCode(lang.getCode());
+        }
+        return vo;
     }
 }

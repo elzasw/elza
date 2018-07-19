@@ -24,6 +24,7 @@ import cz.tacr.elza.repository.PackageRepository;
 import cz.tacr.elza.repository.PartyNameFormTypeRepository;
 import cz.tacr.elza.repository.PartyTypeComplementTypeRepository;
 import cz.tacr.elza.repository.PartyTypeRepository;
+import cz.tacr.elza.repository.RegistryRoleRepository;
 import cz.tacr.elza.repository.ApExternalIdTypeRepository;
 import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRepository;
@@ -91,6 +92,8 @@ public class StaticDataService {
 
     final SysLanguageRepository sysLanguageRepository;
 
+    final RegistryRoleRepository registryRoleRepository;
+
     @Autowired
     public StaticDataService(EntityManager em,
                              RuleSetRepository ruleSetRepository,
@@ -108,7 +111,8 @@ public class StaticDataService {
                              RelationTypeRepository relationTypeRepository,
                              RelationTypeRoleTypeRepository relationTypeRoleTypeRepository,
                              ApExternalIdTypeRepository apEidTypeRepository,
-                             SysLanguageRepository sysLanguageRepository) {
+                             SysLanguageRepository sysLanguageRepository,
+                             RegistryRoleRepository registryRoleRepository) {
         this.em = em;
         this.ruleSetRepository = ruleSetRepository;
         this.itemTypeRepository = itemTypeRepository;
@@ -126,6 +130,7 @@ public class StaticDataService {
         this.relationTypeRoleTypeRepository = relationTypeRoleTypeRepository;
         this.apEidTypeRepository = apEidTypeRepository;
         this.sysLanguageRepository = sysLanguageRepository;
+        this.registryRoleRepository = registryRoleRepository;
     }
 
     /**

@@ -32,7 +32,7 @@ import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.controller.ArrangementController;
 import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.core.data.CalendarType;
-import cz.tacr.elza.core.data.RuleSystemItemType;
+import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.AuthMethod;
@@ -244,7 +244,7 @@ public class DescriptionItemService {
         Validate.notNull(fundVersion, "Verze archivní pomůcky neexistuje");
 
         StaticDataProvider sdp = staticDataService.getData();
-        RuleSystemItemType descItemType = sdp.getItemTypeById(descItemTypeId);
+        ItemType descItemType = sdp.getItemTypeById(descItemTypeId);
         Validate.notNull(descItemType, "Typ hodnoty atributu neexistuje");
 
         ArrNode node = nodeRepository.findOne(nodeId);
@@ -298,7 +298,7 @@ public class DescriptionItemService {
         Validate.notNull(fundVersion, "Verze archivní pomůcky neexistuje");
 
         StaticDataProvider sdp = staticDataService.getData();
-        RuleSystemItemType descItemType = sdp.getItemTypeById(descItemTypeId);
+        ItemType descItemType = sdp.getItemTypeById(descItemTypeId);
         Validate.notNull(descItemType, "Typ hodnoty atributu neexistuje");
 
         ArrNode node = nodeRepository.findOne(nodeId);
@@ -1642,7 +1642,7 @@ public class DescriptionItemService {
         }
 
         StaticDataProvider sdp = staticDataService.getData();
-        RuleSystemItemType descItemType = sdp.getItemTypeById(descItemTypeId);
+        ItemType descItemType = sdp.getItemTypeById(descItemTypeId);
         Validate.notNull(descItemType, "Typ hodnoty atributu neexistuje");
 
         RulItemSpec descItemSpec = null;

@@ -13,15 +13,6 @@ import cz.tacr.elza.repository.*;
 import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.domain.ApType;
-import cz.tacr.elza.repository.ComplementTypeRepository;
-import cz.tacr.elza.repository.PackageRepository;
-import cz.tacr.elza.repository.PartyNameFormTypeRepository;
-import cz.tacr.elza.repository.PartyTypeComplementTypeRepository;
-import cz.tacr.elza.repository.ApExternalIdTypeRepository;
-import cz.tacr.elza.repository.ApTypeRepository;
-import cz.tacr.elza.repository.RelationTypeRepository;
-import cz.tacr.elza.repository.RelationTypeRoleTypeRepository;
-import cz.tacr.elza.repository.SysLanguageRepository;
 
 public class StaticDataProvider {
 
@@ -37,7 +28,9 @@ public class StaticDataProvider {
 
     private List<RulStructuredType> structuredTypes;
 
-    private List<RuleSystemItemType> itemTypes;
+    private List<ItemType> itemTypes;
+    
+    private List<RulRuleSet> ruleSets;
 
     private List<RulItemSpec> itemSpecs;
 
@@ -69,13 +62,13 @@ public class StaticDataProvider {
 
     private Map<String, RulStructuredType> structuredTypeCodeMap;
 
-    private Map<Integer, RuleSystemItemType> itemTypeIdMap;
+    private Map<Integer, ItemType> itemTypeIdMap;
 
-    private Map<String, RuleSystemItemType> itemTypeCodeMap;
+    private Map<String, ItemType> itemTypeCodeMap;
 
-    private Map<Integer, RuleSystem> ruleSystemIdMap;
+    private Map<Integer, RulRuleSet> ruleSetIdMap;
 
-    private Map<String, RuleSystem> ruleSystemCodeMap;
+    private Map<String, RulRuleSet> ruleSetCodeMap;
 
     private Map<Integer, RulItemSpec> itemSpecIdMap;
 
@@ -88,6 +81,8 @@ public class StaticDataProvider {
     private Map<Integer, SysLanguage> sysLanguageIdMap;
 
     private Map<String, SysLanguage> sysLanguageCodeMap;
+    
+    private Map<Integer, ApTypeRoles> apTypeRolesIdMap;
 
     StaticDataProvider() {
     }
@@ -120,6 +115,10 @@ public class StaticDataProvider {
         return sysLanguages;
     }
 
+    public List<RulRuleSet> getRuleSets() {
+        return ruleSets;
+    }
+    
     public RulPackage getPackageById(Integer id) {
         Validate.notNull(id);
         return packageIdMap.get(id);
@@ -193,7 +192,60 @@ public class StaticDataProvider {
         Validate.notEmpty(code);
         return sysLanguageCodeMap.get(code);
     }
+    
+    public List<RulStructuredType> getStructuredTypes() {
+        return structuredTypes;
+    }
 
+    public RulStructuredType getStructuredTypeById(Integer id) {
+        Validate.notNull(id);
+        return structuredTypeIdMap.get(id);
+    }
+
+    public RulStructuredType getStructuredTypeByCode(String code) {
+        Validate.notEmpty(code);
+        return structuredTypeCodeMap.get(code);
+    }
+
+    public List<ItemType> getItemTypes() {
+        return itemTypes;
+    }
+
+    public ItemType getItemTypeById(Integer id) {
+        Validate.notNull(id);
+        return itemTypeIdMap.get(id);
+    }
+
+    public ItemType getItemTypeByCode(String code) {
+        Validate.notEmpty(code);
+        return itemTypeCodeMap.get(code);
+    }
+
+    public RulRuleSet getRuleSetById(Integer id) {
+        Validate.notNull(id);
+        return ruleSetIdMap.get(id);
+    }
+
+    public RulRuleSet getRuleSetByCode(String code) {
+        Validate.notEmpty(code);
+        return ruleSetCodeMap.get(code);
+    }
+
+    public RulItemSpec getItemSpecById(Integer id) {
+        Validate.notNull(id);
+        return itemSpecIdMap.get(id);
+    }
+
+    public RulItemSpec getItemSpecByCode(String code) {
+        Validate.notEmpty(code);
+        return itemSpecCodeMap.get(code);
+    }
+
+    public ApTypeRoles getApTypeRolesById(Integer id) {
+        Validate.notNull(id);
+        return apTypeRolesIdMap.get(id);
+    }
+    
     /* initialization methods */
 
     /**
@@ -203,8 +255,7 @@ public class StaticDataProvider {
     void init(StaticDataService service) {
         initRuleSets(service.ruleSetRepository);
         initStructuredTypes(service.structuredTypeRepository);
-        initItemTypes( service.itemTypeRepository,
-                service.itemSpecRepository);
+        initItemTypes( service.itemTypeRepository, service.itemSpecRepository);
         initPackages(service.packageRepository);
         initPartyNameFormTypes(service.partyNameFormTypeRepository);
         initComplementTypes(service.complementTypeRepository, service.partyTypeComplementTypeRepository);
@@ -212,25 +263,15 @@ public class StaticDataProvider {
         initRelationTypes(service.relationTypeRepository, service.relationTypeRoleTypeRepository);
         initApEidTypes(service.apEidTypeRepository);
         initSysLanguages(service.sysLanguageRepository);
+        initApTypeRoles(service.registryRoleRepository);
     }
 
     private void initRuleSets(RuleSetRepository ruleSetRepository) {
         List<RulRuleSet> ruleSets = ruleSetRepository.findAll();
 
-        // prepare fields
-        List<RuleSystem> rulesSystems = new ArrayList<>(ruleSets.size());
-        ruleSystemIdMap = new HashMap<>(ruleSets.size());
-        ruleSystemCodeMap = new HashMap<>(ruleSets.size());
-
-        for (RulRuleSet rs : ruleSets) {
-            // create initialized rule system
-            RuleSystem ruleSystem = new RuleSystemImpl(rs);
-
-            rulesSystems.add(ruleSystem);
-            // update lookups
-            ruleSystemIdMap.put(rs.getRuleSetId(), ruleSystem);
-            ruleSystemCodeMap.put(rs.getCode(), ruleSystem);
-        }
+        this.ruleSets = Collections.unmodifiableList(ruleSets);
+        this.ruleSetIdMap = createLookup(ruleSets, RulRuleSet::getRuleSetId);
+        this.ruleSetCodeMap = createLookup(ruleSets, RulRuleSet::getCode);
     }
 
     private void initItemTypes(ItemTypeRepository itemTypeRepository, ItemSpecRepository itemSpecRepository) {
@@ -248,7 +289,7 @@ public class StaticDataProvider {
             it.setDataType(dataType.getEntity());
 
             // create initialized rule system item type
-            RuleSystemItemType rsit = new RuleSystemItemType(it, dataType);
+            ItemType rsit = new ItemType(it, dataType);
 
             // prepare item spec
             initItemSpecs(rsit, itemSpecRepository);
@@ -258,11 +299,11 @@ public class StaticDataProvider {
 
             itemTypeIdMap.put(it.getItemTypeId(), rsit);
         }
-        this.itemTypeCodeMap = StaticDataProvider.createLookup(itemTypeIdMap.values(), RuleSystemItemType::getCode);
+        this.itemTypeCodeMap = StaticDataProvider.createLookup(itemTypeIdMap.values(), ItemType::getCode);
         this.itemSpecCodeMap = StaticDataProvider.createLookup(itemSpecIdMap.values(), RulItemSpec::getCode);
     }
 
-    private void initItemSpecs(RuleSystemItemType rsit, ItemSpecRepository itemSpecRepository) {
+    private void initItemSpecs(ItemType rsit, ItemSpecRepository itemSpecRepository) {
         if (!rsit.hasSpecifications()) {
             return;
         }
@@ -405,59 +446,27 @@ public class StaticDataProvider {
         this.sysLanguageCodeMap = createLookup(languages, SysLanguage::getCode);
     }
 
+    private void initApTypeRoles(RegistryRoleRepository registryRoleRepository) {
+        List<ParRegistryRole> roles = registryRoleRepository.findAll();
+        
+        this.apTypeRolesIdMap = new HashMap<>();
+        
+        for (ParRegistryRole role : roles) {
+            ApType type = role.getApType();
+            ApTypeRoles typeRoles = apTypeRolesIdMap.get(type.getApTypeId());
+            if (typeRoles == null) {    
+                typeRoles = new ApTypeRoles(type);
+                apTypeRolesIdMap.put(type.getApTypeId(), typeRoles);
+            }
+            typeRoles.addRole(role);
+        }
+        
+        apTypeRolesIdMap.values().forEach(ApTypeRoles::sealUp);
+    }
+
     public static <K, V> Map<K, V> createLookup(Collection<V> values, Function<V, K> keyMapping) {
         Map<K, V> lookup = new HashMap<>(values.size());
         values.forEach(is -> lookup.put(keyMapping.apply(is), is));
         return lookup;
-    }
-
-
-
-    public List<RulStructuredType> getStructuredTypes() {
-        return structuredTypes;
-    }
-
-    public RulStructuredType getStructuredTypeById(Integer id) {
-        Validate.notNull(id);
-        return structuredTypeIdMap.get(id);
-    }
-
-    public RulStructuredType getStructuredTypeByCode(String code) {
-        Validate.notEmpty(code);
-        return structuredTypeCodeMap.get(code);
-    }
-
-    public List<RuleSystemItemType> getItemTypes() {
-        return itemTypes;
-    }
-
-    public RuleSystemItemType getItemTypeById(Integer id) {
-        Validate.notNull(id);
-        return itemTypeIdMap.get(id);
-    }
-
-    public RuleSystemItemType getItemTypeByCode(String code) {
-        Validate.notEmpty(code);
-        return itemTypeCodeMap.get(code);
-    }
-
-    public RuleSystem getRuleSystemById(Integer id) {
-        Validate.notNull(id);
-        return ruleSystemIdMap.get(id);
-    }
-
-    public RuleSystem getRuleSystemByCode(String code) {
-        Validate.notEmpty(code);
-        return ruleSystemCodeMap.get(code);
-    }
-
-    public RulItemSpec getItemSpecById(Integer id) {
-        Validate.notNull(id);
-        return itemSpecIdMap.get(id);
-    }
-
-    public RulItemSpec getItemSpecByCode(String code) {
-        Validate.notEmpty(code);
-        return itemSpecCodeMap.get(code);
     }
 }

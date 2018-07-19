@@ -2,8 +2,6 @@ package cz.tacr.elza.print;
 
 import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.PartyType;
-import cz.tacr.elza.core.data.RuleSystem;
-import cz.tacr.elza.core.data.RuleSystemItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.fund.FundTree;
@@ -92,8 +90,6 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
     private ArrFundVersion fundVersion;
 
     private StaticDataProvider staticData;
-
-    private RuleSystem ruleSystem;
 
     /* general description */
 
@@ -378,7 +374,6 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         // prepare internal fields
         this.fundVersion = params.getFundVersion();
         this.staticData = staticDataService.getData();
-        this.ruleSystem = staticData.getRuleSystemById(fundVersion.getRuleSetId());
 
         // init general description
         ArrOutputDefinition definition = params.getDefinition();
@@ -685,8 +680,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
             return itemType;
         }
 
-        RuleSystemItemType staticItemType = staticData.getItemTypeById(id);
-        RulItemType rulItemType = staticItemType.getEntity();
+        RulItemType rulItemType = staticData.getItemTypeById(id).getEntity();
         itemType = new ItemType(rulItemType);
 
         // add to lookup
@@ -717,7 +711,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
         Structured result = structObjIdMap.get(structObj.getStructuredObjectId());
         if (result == null) {
-            result = Structured.newInstance(structObj, ruleSystem, this);
+            result = Structured.newInstance(structObj, this);
 
             // add to lookup
             structObjIdMap.put(structObj.getStructuredObjectId(), result);

@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import cz.tacr.elza.core.data.DataType;
-import cz.tacr.elza.core.data.RuleSystemItemType;
+import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrDataString;
 import cz.tacr.elza.domain.ArrDescItem;
@@ -52,7 +52,7 @@ public class MoveDescItem extends BulkActionDFS {
 		super.init(bulkActionRun);
 
 		// prepare item type
-		RuleSystemItemType srcItemType = staticDataProvider.getItemTypeByCode(config.getSource().getItemType());
+		ItemType srcItemType = staticDataProvider.getItemTypeByCode(config.getSource().getItemType());
 		Validate.notNull(srcItemType);
 
 		// check if supported source data type
@@ -65,7 +65,7 @@ public class MoveDescItem extends BulkActionDFS {
 		this.srcItemType = srcItemType.getEntity();
 
 		// prepare target type
-		RuleSystemItemType trgItemType = staticDataProvider.getItemTypeByCode(config.getTarget().getItemType());
+		ItemType trgItemType = staticDataProvider.getItemTypeByCode(config.getTarget().getItemType());
 		Validate.notNull(trgItemType);
 		if (trgItemType.getDataType() != DataType.STRING) {
 			throw new SystemException(

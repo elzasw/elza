@@ -2,12 +2,11 @@ package cz.tacr.elza.dataexchange.input.sections;
 
 import java.util.Collection;
 
-import cz.tacr.elza.core.data.StaticDataProvider;
 import org.apache.commons.lang3.StringUtils;
 
 import cz.tacr.elza.core.data.DataType;
-import cz.tacr.elza.core.data.RuleSystem;
-import cz.tacr.elza.core.data.RuleSystemItemType;
+import cz.tacr.elza.core.data.ItemType;
+import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.dataexchange.common.items.ImportableItemData;
 import cz.tacr.elza.dataexchange.input.DEImportException;
 import cz.tacr.elza.dataexchange.input.context.ImportContext;
@@ -58,7 +57,7 @@ public class StructObjProcessor implements ItemProcessor {
         StaticDataProvider staticData = section.getStaticData();
         // process structured object items
         for (DescriptionItem item : items) {
-            RuleSystemItemType rsit = staticData.getItemTypeByCode(item.getT());
+            ItemType rsit = staticData.getItemTypeByCode(item.getT());
             if (rsit == null) {
                 throw new DEImportException("Description item type not found, code:" + item.getT());
             }
@@ -66,7 +65,7 @@ public class StructObjProcessor implements ItemProcessor {
         }
     }
 
-    private void processData(DescriptionItem item, RuleSystemItemType rsit, StructObjContext structObjCtx) {
+    private void processData(DescriptionItem item, ItemType rsit, StructObjContext structObjCtx) {
         // check if structured object reference
         // - dataType check is insufficient, item can be DescriptionItemUndefined
         if (item instanceof DescriptionItemStructObjectRef) {
@@ -89,7 +88,7 @@ public class StructObjProcessor implements ItemProcessor {
         structObjCtx.addStructItem(structItem, data);
     }
 
-    private ArrStructuredItem createStructItem(RuleSystemItemType rsit, String specCode) {
+    private ArrStructuredItem createStructItem(ItemType rsit, String specCode) {
         ArrStructuredItem structItem = new ArrStructuredItem();
         structItem.setCreateChange(section.getCreateChange());
         structItem.setDescItemObjectId(section.generateDescItemObjectId());
