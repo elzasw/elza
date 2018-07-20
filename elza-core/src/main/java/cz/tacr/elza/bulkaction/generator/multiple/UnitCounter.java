@@ -10,7 +10,7 @@ import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.bulkaction.generator.LevelWithItems;
 import cz.tacr.elza.core.data.DataType;
-import cz.tacr.elza.core.data.RuleSystemItemType;
+import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataInteger;
