@@ -1,19 +1,17 @@
 package cz.tacr.elza.controller;
 
-import cz.tacr.elza.controller.config.ClientFactoryDO;
-import cz.tacr.elza.controller.config.ClientFactoryVO;
-import cz.tacr.elza.controller.vo.*;
-import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
-import cz.tacr.elza.domain.*;
-import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.interpi.service.InterpiService;
-import cz.tacr.elza.interpi.service.vo.ExternalRecordVO;
-import cz.tacr.elza.repository.*;
-import cz.tacr.elza.service.AccessPointService;
-import cz.tacr.elza.service.ExternalSystemService;
-import cz.tacr.elza.service.PartyService;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+import javax.transaction.Transactional;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -21,12 +19,62 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import javax.annotation.Nullable;
-import javax.transaction.Transactional;
-import java.util.*;
-import java.util.stream.Collectors;
+import cz.tacr.elza.controller.config.ClientFactoryVO;
+import cz.tacr.elza.controller.factory.ApFactory;
+import cz.tacr.elza.controller.vo.ApAccessPointCreateVO;
+import cz.tacr.elza.controller.vo.ApAccessPointDescriptionVO;
+import cz.tacr.elza.controller.vo.ApAccessPointEditVO;
+import cz.tacr.elza.controller.vo.ApAccessPointNameVO;
+import cz.tacr.elza.controller.vo.ApAccessPointVO;
+import cz.tacr.elza.controller.vo.ApExternalSystemSimpleVO;
+import cz.tacr.elza.controller.vo.ApRecordSimple;
+import cz.tacr.elza.controller.vo.ApScopeVO;
+import cz.tacr.elza.controller.vo.ApTypeVO;
+import cz.tacr.elza.controller.vo.FilteredResultVO;
+import cz.tacr.elza.controller.vo.InterpiMappingVO;
+import cz.tacr.elza.controller.vo.InterpiSearchVO;
+import cz.tacr.elza.controller.vo.LanguageVO;
+import cz.tacr.elza.controller.vo.RecordImportVO;
+import cz.tacr.elza.controller.vo.RelationSearchVO;
+import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
+import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApExternalSystem;
+import cz.tacr.elza.domain.ApName;
+import cz.tacr.elza.domain.ApScope;
+import cz.tacr.elza.domain.ApType;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.ParPartyType;
+import cz.tacr.elza.domain.ParRelationRoleType;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.SysLanguage;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.interpi.service.InterpiService;
+import cz.tacr.elza.interpi.service.vo.ExternalRecordVO;
+import cz.tacr.elza.repository.ApAccessPointRepository;
+import cz.tacr.elza.repository.ApTypeRepository;
+import cz.tacr.elza.repository.FundVersionRepository;
+import cz.tacr.elza.repository.ItemSpecRegisterRepository;
+import cz.tacr.elza.repository.ItemSpecRepository;
+import cz.tacr.elza.repository.PartyRepository;
+import cz.tacr.elza.repository.PartyTypeRepository;
+import cz.tacr.elza.repository.RelationRoleTypeRepository;
+import cz.tacr.elza.repository.ScopeRepository;
+import cz.tacr.elza.service.AccessPointService;
+import cz.tacr.elza.service.ExternalSystemService;
+import cz.tacr.elza.service.PartyService;
 
 
 /**
@@ -42,9 +90,6 @@ public class ApController {
     private ApAccessPointRepository accessPointRepository;
 
     @Autowired
-    private ApNameRepository nameRepository;
-
-    @Autowired
     private ApTypeRepository apTypeRepository;
 
     @Autowired
@@ -58,9 +103,6 @@ public class ApController {
 
     @Autowired
     private ClientFactoryVO factoryVo;
-
-    @Autowired
-    private ClientFactoryDO factoryDO;
 
     @Autowired
     private FundVersionRepository fundVersionRepository;
@@ -85,6 +127,12 @@ public class ApController {
 
     @Autowired
     private InterpiService interpiService;
+    
+    @Autowired
+    private ApFactory apFactory;
+    
+    @Autowired
+    private StaticDataService staticDataService;
 
     /**
      * Nalezne takové záznamy rejstříku, které mají daný typ a jejich textová pole (heslo, popis, poznámka),
@@ -138,28 +186,14 @@ public class ApController {
         List<ApAccessPoint> foundRecords = accessPointService.findApAccessPointByTextAndType(search, apTypeIdTree, from,
                 count, fund, scopeId);
 
-
         Map<Integer, Integer> recordIdPartyIdMap = partyService.findParPartyIdsByRecords(foundRecords);
 
-        List<ApAccessPointVO> foundRecordVOList = factoryVo.createApAccessPoints(foundRecords, recordIdPartyIdMap);
-
-//        for (ApRecord record : parentChildrenMap.keySet()) {
-//            List<ApRecord> children = parentChildrenMap.get(record);
-//
-//            List<ApRecordVO> childrenVO = new ArrayList<ApRecordVO>(children.size());
-//            ApRecordVO parentVO = parentRecordVOMap.get(record.getId());
-//            parentVO.setChilds(childrenVO);
-//            for (ApRecord child : children) {
-//                Integer partyId = recordIdPartyIdMap.get(child.getId());
-//                ApRecordVO apRecordVO = factoryVo.createApAccessPoint(child, partyId, true);
-//                childrenVO.add(apRecordVO);
-//
-//                List<ApRecord> childChildren = accessPointRepository.findByParentRecord(child);
-//                apRecordVO.setHasChildren(childChildren.isEmpty() ? false : true);
-//            }
-//            parentVO.setHasChildren(!childrenVO.isEmpty());
-//        }
-
+        List<ApAccessPointVO> foundRecordVOList = new ArrayList<>(foundRecords.size());
+        for (ApAccessPoint ap : foundRecords) {
+            ApAccessPointVO vo = apFactory.createVO(ap);
+            vo.setPartyId(recordIdPartyIdMap.get(vo.getId()));
+            foundRecordVOList.add(vo);
+        }
         return new FilteredResultVO<>(foundRecordVOList, foundRecordsCount);
     }
 
@@ -201,7 +235,9 @@ public class ApController {
         final List<ApAccessPoint> foundRecords = accessPointRepository.findApAccessPointByTextAndType(search, apTypeIds,
                 from, count, scopeIds);
 
-        List<ApRecordSimple> foundRecordsVO = factoryVo.createApRecordsSimple(foundRecords);
+        List<ApRecordSimple> foundRecordsVO = new ArrayList<>(foundRecords.size());
+        foundRecords.forEach(ap -> foundRecordsVO.add(apFactory.createVOSimple(ap)));
+        
         return new FilteredResultVO<>(foundRecordsVO, foundRecordsCount);
     }
 
@@ -225,7 +261,7 @@ public class ApController {
         String complement = StringUtils.isEmpty(accessPoint.getComplement()) ? null : accessPoint.getComplement();
 
         ApAccessPoint createdAccessPoint = accessPointService.createAccessPoint(scope, type, name, complement, language, description);
-        return factoryVo.createAccessPoint(createdAccessPoint, null);
+        return apFactory.createVO(createdAccessPoint);
     }
 
 	@Transactional
@@ -252,19 +288,14 @@ public class ApController {
     public ApAccessPointVO getAccessPoint(@PathVariable final Integer accessPointId) {
         Assert.notNull(accessPointId, "Identifikátor rejstříkového hesla musí být vyplněn");
 
-        ApAccessPoint accessPoint = accessPointService.getAccessPoint(accessPointId);
-
-        //seznam nalezeného záznamu spolu s dětmi
-        List<ApAccessPoint> records = new LinkedList<>();
-        records.add(accessPoint);
-
-        //seznam pouze dětí
-        Map<Integer, Integer> recordIdPartyIdMap = partyService.findParPartyIdsByRecords(records);
-
-        Integer partyId = recordIdPartyIdMap.get(accessPointId);
-        ApAccessPointVO result = factoryVo.createAccessPoint(accessPoint, partyId);
-
-        return result;
+        ApAccessPoint ap = accessPointService.getAccessPoint(accessPointId);
+        ApAccessPointVO vo = apFactory.createVO(ap);
+        
+        ParParty party = partyService.findParPartyByAccessPoint(ap);
+        if (party != null) {
+            vo.setPartyId(party.getPartyId());
+        }
+        return vo;
     }
 
     /**
@@ -328,7 +359,7 @@ public class ApController {
     public List<ApTypeVO> getApTypes() {
         List<ApType> allTypes = apTypeRepository.findAllOrderByNameAsc();
 
-        return factoryVo.createApTypesTree(allTypes, false, null);
+        return apFactory.createTypesWithHierarchy(allTypes);
     }
 
     /**
@@ -341,17 +372,16 @@ public class ApController {
     public List<ApTypeVO> getRecordTypesForPartyType(
             @RequestParam(value = "partyTypeId", required = false) @Nullable final Integer partyTypeId) {
 
-        ParPartyType partyType = null;
-        if (partyTypeId != null) {
-            partyType = partyTypeRepository.findOne(partyTypeId);
-            Assert.notNull(partyType, "Nebyl nalezen typ osoby s id " + partyTypeId);
+        if (partyTypeId == null) {
+            List<ApType> apTypes = apTypeRepository.findByPartyTypeIsNullAndReadOnlyFalseOrderByName();
+            return apFactory.createTypesWithHierarchy(apTypes);
         }
-
-        List<ApType> allTypes = partyType == null
-                ? apTypeRepository.findByPartyTypeIsNullAndReadOnlyFalseOrderByName()
-                : apTypeRepository.findByPartyTypeAndReadOnlyFalseOrderByName(partyType);
-
-        return factoryVo.createApTypesTree(allTypes, true, partyType);
+        
+        ParPartyType partyType = partyTypeRepository.findOne(partyTypeId);
+        Assert.notNull(partyType, "Nebyl nalezen typ osoby s id " + partyTypeId);
+        
+        List<ApType> apTypes = apTypeRepository.findByPartyTypeAndReadOnlyFalseOrderByName(partyType);
+        return apFactory.createTypesWithHierarchy(apTypes);
     }
 
     /**
@@ -377,7 +407,7 @@ public class ApController {
                 accessPointName.getName(),
                 accessPointName.getComplement(),
                 language);
-        return factoryVo.createApName(name);
+        return ApAccessPointNameVO.newInstance(name, staticDataService.getData());
     }
 
     /**
@@ -405,7 +435,8 @@ public class ApController {
                 accessPointName.getName(),
                 accessPointName.getComplement(),
                 language);
-        return factoryVo.createApName(updatedName);
+        
+        return ApAccessPointNameVO.newInstance(updatedName, staticDataService.getData());
     }
 
     /**
@@ -460,8 +491,9 @@ public class ApController {
     @RequestMapping(value = "/scopes", method = RequestMethod.GET)
 	@Transactional
     public List<ApScopeVO> getAllScopes(){
-        List<ApScope> scopes = scopeRepository.findAllOrderByCode();
-        return factoryVo.createScopes(scopes);
+        List<ApScope> apScopes = scopeRepository.findAllOrderByCode();
+        StaticDataProvider staticData = staticDataService.getData();
+        return ApFactory.transformList(apScopes, s -> ApScopeVO.newInstance(s, staticData));
     }
 
     /**
@@ -485,11 +517,13 @@ public class ApController {
         Set<Integer> scopeIdsByFund = accessPointService.getScopeIdsForSearch(fund, null);
         if (CollectionUtils.isEmpty(scopeIdsByFund)) {
             return Collections.emptyList();
-        } else {
-            List<ApScopeVO> result = factoryVo.createScopes(scopeRepository.findAll(scopeIdsByFund));
-            result.sort(Comparator.comparing(ApScopeVO::getCode));
-            return result;
         }
+        
+        List<ApScope> apScopes = scopeRepository.findAll(scopeIdsByFund);
+        StaticDataProvider staticData = staticDataService.getData();
+        List<ApScopeVO> result = ApFactory.transformList(apScopes, s -> ApScopeVO.newInstance(s, staticData));
+        result.sort(Comparator.comparing(ApScopeVO::getCode));
+        return result;
     }
 
     /**
@@ -504,9 +538,10 @@ public class ApController {
         Assert.notNull(scopeVO, "Scope musí být vyplněn");
         Assert.isNull(scopeVO.getId(), "Identifikátor scope musí být vyplněn");
 
-        ApScope apScope = factoryDO.createScope(scopeVO);
-
-        return factoryVo.createScope(accessPointService.saveScope(apScope));
+        StaticDataProvider staticData = staticDataService.getData();
+        ApScope apScope = scopeVO.createEntity(staticData);
+        apScope = accessPointService.saveScope(apScope);
+        return ApScopeVO.newInstance(apScope, staticData);
     }
 
     /**
@@ -526,9 +561,11 @@ public class ApController {
                 scopeId.equals(scopeVO.getId()),
                 "V url požadavku je odkazováno na jiné ID (" + scopeId + ") než ve VO (" + scopeVO.getId() + ")."
         );
-
-        ApScope apScope = factoryDO.createScope(scopeVO);
-        return factoryVo.createScope(accessPointService.saveScope(apScope));
+        
+        StaticDataProvider staticData = staticDataService.getData();
+        ApScope apScope = scopeVO.createEntity(staticData);
+        apScope = accessPointService.saveScope(apScope);
+        return ApScopeVO.newInstance(apScope, staticData);
     }
 
     /**
@@ -552,7 +589,7 @@ public class ApController {
 	@Transactional
     public List<ApExternalSystemSimpleVO> findAllExternalSystems() {
 		List<ApExternalSystem> extSystems = externalSystemService.findAllApSystem();
-		return factoryVo.createSimpleEntity(extSystems, ApExternalSystemSimpleVO.class);
+		return ApFactory.transformList(extSystems, ApExternalSystemSimpleVO::newInstance);
     }
 
     /**

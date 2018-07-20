@@ -12,7 +12,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import cz.tacr.elza.common.db.HibernateUtils;
-import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.RulAction;
@@ -126,9 +125,9 @@ public class ResourcePathResolver {
     public Path getTemplatesDir(int packageId, int ruleSetId) {
         StaticDataProvider staticData = staticDataService.getData();
         RulPackage rulPackage = staticData.getPackageById(packageId);
-        RuleSystem ruleSystem = staticData.getRuleSystemById(ruleSetId);
+        RulRuleSet ruleSet = staticData.getRuleSetById(ruleSetId);
 
-        Path path = getTemplatesDir(rulPackage, ruleSystem.getRuleSet());
+        Path path = getTemplatesDir(rulPackage, ruleSet);
 
         return path;
     }
@@ -225,9 +224,9 @@ public class ResourcePathResolver {
     public Path getDroolsDir(int packageId, int ruleSetId) {
         StaticDataProvider staticData = staticDataService.getData();
         RulPackage rulPackage = staticData.getPackageById(packageId);
-        RuleSystem ruleSystem = staticData.getRuleSystemById(ruleSetId);
+        RulRuleSet ruleSet = staticData.getRuleSetById(ruleSetId);
 
-        Path path = getDroolsDir(rulPackage, ruleSystem.getRuleSet());
+        Path path = getDroolsDir(rulPackage, ruleSet);
 
         return path;
     }
@@ -286,9 +285,9 @@ public class ResourcePathResolver {
     public Path getGroovyDir(int packageId, int ruleSetId) {
         StaticDataProvider staticData = staticDataService.getData();
         RulPackage rulPackage = staticData.getPackageById(packageId);
-        RuleSystem ruleSystem = staticData.getRuleSystemById(ruleSetId);
+        RulRuleSet ruleSet = staticData.getRuleSetById(ruleSetId);
 
-        Path path = getGroovyDir(rulPackage, ruleSystem.getRuleSet());
+        Path path = getGroovyDir(rulPackage, ruleSet);
 
         return path;
     }
@@ -334,9 +333,9 @@ public class ResourcePathResolver {
     public Path getFunctionsDir(int packageId, int ruleSetId) {
         StaticDataProvider staticData = staticDataService.getData();
         RulPackage rulPackage = staticData.getPackageById(packageId);
-        RuleSystem ruleSystem = staticData.getRuleSystemById(ruleSetId);
+        RulRuleSet ruleSet = staticData.getRuleSetById(ruleSetId);
 
-        Path path = getFunctionsDir(rulPackage, ruleSystem.getRuleSet());
+        Path path = getFunctionsDir(rulPackage, ruleSet);
 
         return path;
     }

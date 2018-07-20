@@ -18,7 +18,7 @@ import cz.tacr.elza.bulkaction.generator.LevelWithItems;
 import cz.tacr.elza.bulkaction.generator.result.ActionResult;
 import cz.tacr.elza.bulkaction.generator.result.UnitCountActionResult;
 import cz.tacr.elza.core.data.DataType;
-import cz.tacr.elza.core.data.RuleSystemItemType;
+import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.table.ElzaColumn;
 import cz.tacr.elza.domain.table.ElzaRow;
@@ -38,7 +38,7 @@ public class UnitCountAction extends Action {
     /**
      * Výstupní atribut
      */
-	private RuleSystemItemType outputItemType;
+	private ItemType outputItemType;
 
 	/**
 	 * Skip subtree

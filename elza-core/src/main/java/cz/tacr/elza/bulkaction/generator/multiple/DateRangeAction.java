@@ -13,7 +13,7 @@ import cz.tacr.elza.bulkaction.generator.LevelWithItems;
 import cz.tacr.elza.bulkaction.generator.result.ActionResult;
 import cz.tacr.elza.bulkaction.generator.result.DateRangeActionResult;
 import cz.tacr.elza.core.data.DataType;
-import cz.tacr.elza.core.data.RuleSystemItemType;
+import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDescItem;
@@ -36,17 +36,17 @@ public class DateRangeAction extends Action {
     /**
      * Vstupní atributy datace.
      */
-	private RuleSystemItemType inputItemType;
+	private ItemType inputItemType;
 
     /**
      * Vlastní rozsah fondu.
      */
-    private RuleSystemItemType bulkRangeType;
+    private ItemType bulkRangeType;
 
     /**
      * Výstupní atribut
      */
-	private RuleSystemItemType outputItemType;
+	private ItemType outputItemType;
 
     /**
      * Minimální čas prior

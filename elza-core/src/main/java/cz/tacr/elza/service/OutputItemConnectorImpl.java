@@ -10,8 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cz.tacr.elza.core.data.DataType;
-import cz.tacr.elza.core.data.RuleSystem;
-import cz.tacr.elza.core.data.RuleSystemItemType;
+import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
@@ -77,11 +76,6 @@ public class OutputItemConnectorImpl implements OutputItemConnector {
     }
 
     @Override
-    public RuleSystem getRuleSystem() {
-        return staticDataService.getData().getRuleSystemById(fundVersion.getRuleSetId());
-    }
-
-    @Override
     public void setChangeSupplier(Supplier<ArrChange> changeSupplier) {
         Validate.isTrue(this.changeSupplier == null);
 
@@ -89,7 +83,7 @@ public class OutputItemConnectorImpl implements OutputItemConnector {
     }
 
     @Override
-    public void addIntItem(int value, RuleSystemItemType rsit, Integer itemSpecId) {
+    public void addIntItem(int value, ItemType rsit, Integer itemSpecId) {
         Validate.isTrue(rsit.getDataType() == DataType.INT);
         if (isItemTypeIgnored(rsit)) {
             return;
@@ -102,7 +96,7 @@ public class OutputItemConnectorImpl implements OutputItemConnector {
     }
 
     @Override
-    public void addStringItem(String value, RuleSystemItemType rsit, Integer itemSpecId) {
+    public void addStringItem(String value, ItemType rsit, Integer itemSpecId) {
         if (isItemTypeIgnored(rsit)) {
             return;
         }
@@ -126,7 +120,7 @@ public class OutputItemConnectorImpl implements OutputItemConnector {
     }
 
     @Override
-    public void addTableItem(ElzaTable value, RuleSystemItemType rsit, Integer itemSpecId) {
+    public void addTableItem(ElzaTable value, ItemType rsit, Integer itemSpecId) {
         Validate.isTrue(rsit.getDataType() == DataType.JSON_TABLE);
         if (isItemTypeIgnored(rsit)) {
             return;
@@ -139,7 +133,7 @@ public class OutputItemConnectorImpl implements OutputItemConnector {
     }
 
     @Override
-    public void addItems(Collection<ArrItem> items, RuleSystemItemType rsit) {
+    public void addItems(Collection<ArrItem> items, ItemType rsit) {
         // fetch data
         itemService.refItemsLoader(items);
 
@@ -147,7 +141,7 @@ public class OutputItemConnectorImpl implements OutputItemConnector {
             if (isItemTypeIgnored(rsit)) {
                 continue;
             }
-            RuleSystemItemType type = staticDataService.getData().getItemTypeById(item.getItemTypeId());
+            ItemType type = staticDataService.getData().getItemTypeById(item.getItemTypeId());
             if (type.hasSpecifications()) {
                 // check item type
                 Validate.isTrue(type.getItemTypeId().equals(rsit.getItemTypeId()),
@@ -170,11 +164,11 @@ public class OutputItemConnectorImpl implements OutputItemConnector {
     }
 
     @Override
-    public RuleSystemItemType getItemTypeByCode(String code) {
+    public ItemType getItemTypeByCode(String code) {
         return staticDataService.getData().getItemTypeByCode(code);
     }
 
-    private void addOutputItem(ArrData data, RuleSystemItemType rsit, Integer itemSpecId) {
+    private void addOutputItem(ArrData data, ItemType rsit, Integer itemSpecId) {
         // create output item
         ArrOutputItem outputItem = new ArrOutputItem();
         outputItem.setData(data);
@@ -196,7 +190,7 @@ public class OutputItemConnectorImpl implements OutputItemConnector {
         outputServiceInternal.createOutputItem(outputItem, fundVersion, change);
     }
 
-    private boolean isItemTypeIgnored(RuleSystemItemType rsit) {
+    private boolean isItemTypeIgnored(ItemType rsit) {
         Integer itemTypeId = rsit.getItemTypeId();
 
         if (ignoredItemTypeIds != null && ignoredItemTypeIds.contains(itemTypeId)) {

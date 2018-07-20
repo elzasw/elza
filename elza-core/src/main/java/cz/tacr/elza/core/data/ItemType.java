@@ -10,7 +10,7 @@ import org.apache.commons.lang3.Validate;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 
-public class RuleSystemItemType {
+public class ItemType {
 
     private final RulItemType itemType;
 
@@ -22,7 +22,7 @@ public class RuleSystemItemType {
 
     private Map<String, RulItemSpec> itemSpecCodeMap;
 
-    RuleSystemItemType(RulItemType itemType, DataType dataType) {
+    ItemType(RulItemType itemType, DataType dataType) {
         this.itemType = itemType;
         this.dataType = dataType;
 

@@ -4,19 +4,22 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import cz.tacr.elza.domain.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.dataexchange.input.DEImportException;
 import cz.tacr.elza.dataexchange.input.context.ImportInitHelper;
 import cz.tacr.elza.dataexchange.input.context.ObservableImport;
 import cz.tacr.elza.dataexchange.input.sections.SectionProcessedListener;
 import cz.tacr.elza.dataexchange.input.storage.StorageManager;
+import cz.tacr.elza.domain.ApScope;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ParInstitution;
+import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.schema.v2.FundInfo;
 import cz.tacr.elza.service.ArrangementService;
@@ -84,13 +87,14 @@ public class SectionsContext {
         if (StringUtils.isEmpty(ruleSetCode)) {
             throw new DEImportException("Rule set code is empty");
         }
-        RuleSystem ruleSystem = staticData.getRuleSystemByCode(ruleSetCode);
-        if (ruleSystem == null) {
+        RulRuleSet ruleSet = staticData.getRuleSetByCode(ruleSetCode);
+        if (ruleSet == null) {
             throw new DEImportException("Rule set not found, code:" + ruleSetCode);
         }
 
         // create current section
-        SectionContext section = new SectionContext(storageManager, batchSize, createChange, ruleSystem, staticData, initHelper);
+        SectionContext section = new SectionContext(storageManager, batchSize, createChange, 
+                                                    ruleSet, staticData, initHelper);
 
         // set subsection root adapter when position present
         if (importPosition != null) {
@@ -112,9 +116,7 @@ public class SectionsContext {
         if (importPosition != null) {
             LOG.warn("Fund info will be ignored during subsection import");
         } else {
-            FundRootAdapter fra = createNewFundRootAdapter(fundInfo, currentSection.getRuleSystem(),
-                                                           currentSection.getCreateChange());
-            currentSection.setRootAdapter(fra);
+            prepareNewFundRootAdapter(fundInfo, currentSection);
         }
     }
 
@@ -140,7 +142,7 @@ public class SectionsContext {
 
     /* internal methods */
 
-    private FundRootAdapter createNewFundRootAdapter(FundInfo fundInfo, RuleSystem ruleSystem, ArrChange createChange) {
+    private void prepareNewFundRootAdapter(FundInfo fundInfo, SectionContext sectionCtx) {
         InstitutionRepository instRepo = initHelper.getInstitutionRepository();
         ArrangementService arrService = initHelper.getArrangementService();
 
@@ -154,6 +156,11 @@ public class SectionsContext {
         ArrFund fund = arrService.createFund(fundInfo.getN(), fundInfo.getC(), institution);
         arrService.addScopeToFund(fund, importScope);
 
-        return new FundRootAdapter(fund, ruleSystem, createChange, fundInfo.getTr(), arrService);
+        FundRootAdapter adapter = new FundRootAdapter(fund, 
+                                   sectionCtx.getRuleSet(), 
+                                   sectionCtx.getCreateChange(), 
+                                   fundInfo.getTr(), 
+                                   arrService);
+        currentSection.setRootAdapter(adapter);
     }
 }

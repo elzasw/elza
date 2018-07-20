@@ -1,20 +1,19 @@
 package cz.tacr.elza.dataexchange.input.sections;
 
 import java.util.Collection;
-import java.util.Date;
 
-import cz.tacr.elza.core.data.StaticDataProvider;
 import org.apache.commons.lang3.StringUtils;
 
 import cz.tacr.elza.core.data.DataType;
-import cz.tacr.elza.core.data.RuleSystemItemType;
+import cz.tacr.elza.core.data.ItemType;
+import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.dataexchange.common.items.ImportableItemData;
 import cz.tacr.elza.dataexchange.input.DEImportException;
 import cz.tacr.elza.dataexchange.input.aps.context.AccessPointInfo;
 import cz.tacr.elza.dataexchange.input.context.ImportContext;
 import cz.tacr.elza.dataexchange.input.reader.ItemProcessor;
-import cz.tacr.elza.dataexchange.input.sections.context.SectionContext;
 import cz.tacr.elza.dataexchange.input.sections.context.NodeContext;
+import cz.tacr.elza.dataexchange.input.sections.context.SectionContext;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrDescItemIndexData;
@@ -109,7 +108,7 @@ public class SectionLevelProcessor implements ItemProcessor {
 
         for (DescriptionItem item : items) {
             // resolve item type
-            RuleSystemItemType itemType = ruleSystem.getItemTypeByCode(item.getT());
+            ItemType itemType = ruleSystem.getItemTypeByCode(item.getT());
             if (itemType == null) {
                 throw new DEImportException("Description item type not found, code:" + item.getT());
             }
@@ -127,7 +126,7 @@ public class SectionLevelProcessor implements ItemProcessor {
     }
 
     private ArrDescItem createDescItem(SectionContext section,
-                                       RuleSystemItemType rsit,
+                                       ItemType rsit,
                                        String specCode,
                                        ArrDescItemIndexData indexData) {
         ArrDescItem descItem = new ArrDescItem(indexData);
@@ -141,7 +140,7 @@ public class SectionLevelProcessor implements ItemProcessor {
         return descItem;
     }
 
-    public static RulItemSpec resolveItemSpec(RuleSystemItemType rsit, String specCode) {
+    public static RulItemSpec resolveItemSpec(ItemType rsit, String specCode) {
         boolean specCodeExists = StringUtils.isNotEmpty(specCode);
         String typeCode = rsit.getCode();
 
@@ -163,71 +162,5 @@ public class SectionLevelProcessor implements ItemProcessor {
                     "Specification for description item not expected, typeCode:" + typeCode + ", specCode:" + specCode);
         }
         return null;
-    }
-
-	/**
-	 * Class with prepared data for fulltext indexing
-	 *
-	 */
-    private static class ImportIndexData implements ArrDescItemIndexData {
-
-        private final Integer fundId;
-
-        private final String fulltext;
-
-        private final Integer valueInt;
-
-        private final Double valueDouble;
-
-        private final Long normalizedFrom;
-
-        private final Long normalizedTo;
-
-        private final Date date;
-
-        public ImportIndexData(Integer fundId, String fulltext, ArrData data) {
-            this.fundId = fundId;
-            this.fulltext = fulltext;
-            this.valueInt = data.getValueInt();
-            this.valueDouble = data.getValueDouble();
-            this.normalizedFrom = data.getNormalizedFrom();
-            this.normalizedTo = data.getNormalizedTo();
-            this.date = data.getDate();
-        }
-
-        @Override
-        public Integer getFundId() {
-            return fundId;
-        }
-
-        @Override
-        public String getFulltextValue() {
-            return fulltext;
-        }
-
-        @Override
-        public Integer getValueInt() {
-            return valueInt;
-        }
-
-        @Override
-        public Double getValueDouble() {
-            return valueDouble;
-        }
-
-        @Override
-        public Long getNormalizedFrom() {
-            return normalizedFrom;
-        }
-
-        @Override
-        public Long getNormalizedTo() {
-            return normalizedTo;
-        }
-
-        @Override
-        public Date getValueDate() {
-            return date;
-        }
     }
 }

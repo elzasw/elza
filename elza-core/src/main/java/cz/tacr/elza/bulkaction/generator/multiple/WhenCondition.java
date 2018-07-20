@@ -4,8 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import cz.tacr.elza.bulkaction.generator.LevelWithItems;
-import cz.tacr.elza.core.data.RuleSystem;
-import cz.tacr.elza.core.data.RuleSystemItemType;
+import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.RulItemSpec;
@@ -13,7 +12,7 @@ import liquibase.util.Validate;
 
 public class WhenCondition {
 
-	RuleSystemItemType itemType;
+	ItemType itemType;
 
 	RulItemSpec itemSpec;
 

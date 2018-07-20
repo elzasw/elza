@@ -28,11 +28,11 @@ public class PartyTypeCmplTypes {
         return partyType;
     }
 
-    public List<ParComplementType> getTypes() {
+    public List<ParComplementType> getCmplTypes() {
         return Collections.unmodifiableList(cmplTypes);
     }
 
-    public PartyTypeCmplType getTypeByCode(String code) {
+    public PartyTypeCmplType getCmplTypeByCode(String code) {
         Validate.notEmpty(code);
         return cmplTypeCodeMap.get(code);
     }

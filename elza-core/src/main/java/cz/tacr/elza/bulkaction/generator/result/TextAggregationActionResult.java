@@ -1,6 +1,6 @@
 package cz.tacr.elza.bulkaction.generator.result;
 
-import cz.tacr.elza.core.data.RuleSystemItemType;
+import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.service.OutputItemConnector;
 
 /**
@@ -46,7 +46,7 @@ public class TextAggregationActionResult extends ActionResult {
         if (text == null || !createInOutput) {
             return;
         }
-        RuleSystemItemType rsit = connector.getItemTypeByCode(itemType);
+        ItemType rsit = connector.getItemTypeByCode(itemType);
         connector.addStringItem(text, rsit, null);
     }
 }

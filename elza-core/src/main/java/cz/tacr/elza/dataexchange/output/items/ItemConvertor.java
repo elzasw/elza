@@ -7,7 +7,7 @@ import org.apache.commons.lang.Validate;
 
 import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.DataType;
-import cz.tacr.elza.core.data.RuleSystemItemType;
+import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.RulItemSpec;
@@ -37,7 +37,7 @@ public class ItemConvertor {
     public final DescriptionItem convert(ArrItem item) {
         DescriptionItem converted = convert(item.getData());
 
-        RuleSystemItemType itemType = staticDataProvider.getItemTypeById(item.getItemTypeId());
+        ItemType itemType = staticDataProvider.getItemTypeById(item.getItemTypeId());
         converted.setT(itemType.getCode());
         if (item.getItemSpecId() != null) {
             RulItemSpec itemSpec = itemType.getItemSpecById(item.getItemSpecId());
