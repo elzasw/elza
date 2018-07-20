@@ -1,0 +1,136 @@
+!MultiAction
+name: Výpočet a vizualizace EJ
+fastAction: true
+
+actions:
+    - !DeleteItem
+        inputType: ZP2015_UNIT_COUNT_ITEM
+    - !UnitCount
+        outputType: ZP2015_UNIT_COUNT_ITEM
+        local: true
+        aggegators:
+           # Extra EJ - kdekoliv
+           - excludeWhen:
+               # Nesmí být nastaven jako připojený záznam
+               itemType: ZP2015_CONNECTED_RECORD
+             when:
+               # Je nastaven typ i pocet
+               itemType: ZP2015_EXTRA_UNITS
+             itemType: ZP2015_EXTRA_UNITS
+             itemSpecMapping:
+               ZP2015_EXTRA_UNITS_LIO: ZP2015_UNIT_COUNT_LIO
+               ZP2015_EXTRA_UNITS_LIP: ZP2015_UNIT_COUNT_LIP
+               ZP2015_EXTRA_UNITS_UKN: ZP2015_UNIT_COUNT_UKN
+               ZP2015_EXTRA_UNITS_RKP: ZP2015_UNIT_COUNT_RKP
+               ZP2015_EXTRA_UNITS_PPR: ZP2015_UNIT_COUNT_PPR
+               ZP2015_EXTRA_UNITS_IND: ZP2015_UNIT_COUNT_IND
+               ZP2015_EXTRA_UNITS_ELE: ZP2015_UNIT_COUNT_ELE
+               ZP2015_EXTRA_UNITS_REP: ZP2015_UNIT_COUNT_REP
+               # KTT - zapocte se pocet kart. zasuvek
+               ZP2015_EXTRA_UNITS_KTT: ZP2015_UNIT_COUNT_KTT
+               ZP2015_EXTRA_UNITS_PEC: ZP2015_UNIT_COUNT_PEC
+               ZP2015_EXTRA_UNITS_RAZ: ZP2015_UNIT_COUNT_RAZ
+               ZP2015_EXTRA_UNITS_OTD: ZP2015_UNIT_COUNT_OTD
+               ZP2015_EXTRA_UNITS_MAP: ZP2015_UNIT_COUNT_MAP
+               ZP2015_EXTRA_UNITS_ATL: ZP2015_UNIT_COUNT_ATL
+               ZP2015_EXTRA_UNITS_TVY: ZP2015_UNIT_COUNT_TVY
+               ZP2015_EXTRA_UNITS_GLI: ZP2015_UNIT_COUNT_GLI
+               ZP2015_EXTRA_UNITS_KRE: ZP2015_UNIT_COUNT_KRE
+               ZP2015_EXTRA_UNITS_FSN: ZP2015_UNIT_COUNT_FSN
+               ZP2015_EXTRA_UNITS_FSD: ZP2015_UNIT_COUNT_FSD
+               ZP2015_EXTRA_UNITS_LFI: ZP2015_UNIT_COUNT_LFI
+               ZP2015_EXTRA_UNITS_SFI: ZP2015_UNIT_COUNT_SFI
+               ZP2015_EXTRA_UNITS_KIN: ZP2015_UNIT_COUNT_KIN
+               ZP2015_EXTRA_UNITS_MF: ZP2015_UNIT_COUNT_MF
+               ZP2015_EXTRA_UNITS_MFS: ZP2015_UNIT_COUNT_MFS
+               ZP2015_EXTRA_UNITS_FAL: ZP2015_UNIT_COUNT_FAL
+               ZP2015_EXTRA_UNITS_DFO: ZP2015_UNIT_COUNT_DFO
+               ZP2015_EXTRA_UNITS_KZA: ZP2015_UNIT_COUNT_KZA
+               ZP2015_EXTRA_UNITS_ZZA: ZP2015_UNIT_COUNT_ZZA
+               ZP2015_EXTRA_UNITS_TIO: ZP2015_UNIT_COUNT_TIO
+               ZP2015_EXTRA_UNITS_TIP: ZP2015_UNIT_COUNT_TIP
+               ZP2015_EXTRA_UNITS_POH: ZP2015_UNIT_COUNT_POH
+               ZP2015_EXTRA_UNITS_PKT: ZP2015_UNIT_COUNT_PKT
+               ZP2015_EXTRA_UNITS_CPA: ZP2015_UNIT_COUNT_CPA
+               ZP2015_EXTRA_UNITS_STO: ZP2015_UNIT_COUNT_STO
+               ZP2015_EXTRA_UNITS_PNP: ZP2015_UNIT_COUNT_PNP
+               ZP2015_EXTRA_UNITS_PFP: ZP2015_UNIT_COUNT_PFP
+               ZP2015_EXTRA_UNITS_JIN: ZP2015_UNIT_COUNT_JIN
+           - excludeWhen:
+               # Nesmí být nastaven jako připojený záznam
+               itemType: ZP2015_CONNECTED_RECORD
+             when:
+               someOf:
+                 # Složka s počtem EJ
+                 - all:
+                   - itemType: ZP2015_FOLDER_TYPE
+                     itemSpec: ZP2015_FOLDER_SINGLE_TYPE
+                   - itemType: ZP2015_UNIT_COUNT
+                 # Jednotlivost pod serii nebo logickou slozkou
+                 - itemType: ZP2015_LEVEL_TYPE
+                   itemSpec: ZP2015_LEVEL_ITEM
+                   someOf:
+                     # test na serii
+                     - parent:
+                         itemType: ZP2015_LEVEL_TYPE
+                         itemSpec: ZP2015_LEVEL_SERIES
+                     # test na logickou slozku
+                     - parent:
+                         itemType: ZP2015_FOLDER_TYPE
+                         itemSpec: ZP2015_FOLDER_LOGICAL
+             stopProcessing: true
+             itemCount: ZP2015_UNIT_COUNT
+             itemType: ZP2015_UNIT_TYPE
+             itemSpecMapping:
+               ZP2015_UNIT_TYPE_LIO: ZP2015_UNIT_COUNT_LIO
+               ZP2015_UNIT_TYPE_LIP: ZP2015_UNIT_COUNT_LIP
+               ZP2015_UNIT_TYPE_UKN: ZP2015_UNIT_COUNT_UKN
+               ZP2015_UNIT_TYPE_RKP: ZP2015_UNIT_COUNT_RKP
+               ZP2015_UNIT_TYPE_HDB: ZP2015_UNIT_COUNT_HDB
+               ZP2015_UNIT_TYPE_PPR: ZP2015_UNIT_COUNT_PPR
+               ZP2015_UNIT_TYPE_IND: ZP2015_UNIT_COUNT_IND
+               ZP2015_UNIT_TYP_ELE: ZP2015_UNIT_COUNT_ELE
+               ZP2015_UNIT_TYPE_REP: ZP2015_UNIT_COUNT_REP
+               ZP2015_UNIT_TYPE_KTT: ZP2015_UNIT_COUNT_KTT
+               ZP2015_UNIT_TYPE_PEC: ZP2015_UNIT_COUNT_PEC
+               ZP2015_UNIT_TYPE_RAZ: ZP2015_UNIT_COUNT_RAZ
+               ZP2015_UNIT_TYPE_OTD: ZP2015_UNIT_COUNT_OTD
+               ZP2015_UNIT_TYPE_OTC: ZP2015_UNIT_COUNT_OTC
+               ZP2015_UNIT_TYPE_MAP: ZP2015_UNIT_COUNT_MAP
+               ZP2015_UNIT_TYPE_ATL: ZP2015_UNIT_COUNT_ATL
+               ZP2015_UNIT_TYPE_TVY: ZP2015_UNIT_COUNT_TVY
+               ZP2015_UNIT_TYPE_GLI: ZP2015_UNIT_COUNT_GLI
+               ZP2015_UNIT_TYPE_KRE: ZP2015_UNIT_COUNT_KRE
+               ZP2015_UNIT_TYPE_FSN: ZP2015_UNIT_COUNT_FSN
+               ZP2015_UNIT_TYPE_FSD: ZP2015_UNIT_COUNT_FSD
+               ZP2015_UNIT_TYPE_LFI: ZP2015_UNIT_COUNT_LFI
+               ZP2015_UNIT_TYPE_SFI: ZP2015_UNIT_COUNT_SFI
+               ZP2015_UNIT_TYPE_KIN: ZP2015_UNIT_COUNT_KIN
+               ZP2015_UNIT_TYPE_MF: ZP2015_UNIT_COUNT_MF
+               ZP2015_UNIT_TYPE_MFS: ZP2015_UNIT_COUNT_MFS
+               ZP2015_UNIT_TYPE_FAL: ZP2015_UNIT_COUNT_FAL
+               ZP2015_UNIT_TYPE_DFO: ZP2015_UNIT_COUNT_DFO
+               ZP2015_UNIT_TYPE_KZA: ZP2015_UNIT_COUNT_KZA
+               ZP2015_UNIT_TYPE_ZZA: ZP2015_UNIT_COUNT_ZZA
+               ZP2015_UNIT_TYPE_TIO: ZP2015_UNIT_COUNT_TIO
+               ZP2015_UNIT_TYPE_TIP: ZP2015_UNIT_COUNT_TIP
+               ZP2015_UNIT_TYPE_POH: ZP2015_UNIT_COUNT_POH
+               ZP2015_UNIT_TYPE_PKT: ZP2015_UNIT_COUNT_PKT
+               ZP2015_UNIT_TYPE_CPA: ZP2015_UNIT_COUNT_CPA
+               ZP2015_UNIT_TYPE_STO: ZP2015_UNIT_COUNT_STO
+               ZP2015_UNIT_TYPE_PNP: ZP2015_UNIT_COUNT_PNP
+               ZP2015_UNIT_TYPE_PFP: ZP2015_UNIT_COUNT_PFP
+               ZP2015_UNIT_TYPE_JIN: ZP2015_UNIT_COUNT_JIN
+           # Složka s hromadinou
+           - excludeWhen:
+               # Nesmí být nastaven jako připojený záznam
+               itemType: ZP2015_CONNECTED_RECORD
+             when:
+               itemType: ZP2015_FOLDER_TYPE
+               itemSpec: ZP2015_FOLDER_UNITS
+             stopProcessing: true
+             objectType: ZP2015_STORAGE_ID
+             objectItemType: ZP2015_PACKET_TYPE
+             objectItemMapping:
+               ZP2015_PACKET_TYPE_KAR: ZP2015_UNIT_COUNT_KAR
+               ZP2015_PACKET_TYPE_FAS: ZP2015_UNIT_COUNT_FAS
