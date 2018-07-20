@@ -164,7 +164,7 @@ public class ScriptModelFactory {
 	 * @return
 	 */
 	private ArrDescItem createDescItem(final DescItem descItemRule, StaticDataProvider sdp) {
-		RuleSystemItemType itemType = sdp.getItemTypeByCode(descItemRule.getType());
+		ItemType itemType = sdp.getItemTypeByCode(descItemRule.getType());
 		Validate.notNull(itemType, "Item type: %d", descItemRule.getType());
 
         ArrDescItem descItem = new ArrDescItem();

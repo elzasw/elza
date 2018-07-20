@@ -22,7 +22,6 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -134,9 +133,6 @@ public class PartyService {
     private DescItemRepository descItemRepository;
 
     @Autowired
-    private ApplicationContext applicationContext;
-
-    @Autowired
     private UserRepository userRepository;
 
     @Autowired
@@ -144,12 +140,6 @@ public class PartyService {
 
     @Autowired
     private ScopeRepository scopeRepository;
-
-    @Autowired
-    private ApNameRepository apNameRepository;
-
-    @Autowired
-    private AccessPointDataService accessPointDataService;
 
     /**
      * Najde osobu podle rejstříkového hesla.

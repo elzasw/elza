@@ -9,7 +9,7 @@ import cz.tacr.elza.dataexchange.input.sections.context.StructObjContext;
 import org.apache.commons.lang3.StringUtils;
 
 import cz.tacr.elza.core.data.DataType;
-import cz.tacr.elza.core.data.RuleSystemItemType;
+import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.dataexchange.input.DEImportException;
 import cz.tacr.elza.dataexchange.input.context.ImportContext;
 import cz.tacr.elza.dataexchange.input.reader.ItemProcessor;
@@ -62,7 +62,7 @@ public class StructObjectProcessor implements ItemProcessor {
 
         for (DescriptionItem descItem : descItems) {
             // resolve item type
-            RuleSystemItemType rsit = rs.getItemTypeByCode(descItem.getT());
+            ItemType rsit = rs.getItemTypeByCode(descItem.getT());
             if (rsit == null) {
                 throw new DEImportException("Description item type not found, code:" + descItem.getT());
             }
@@ -83,7 +83,7 @@ public class StructObjectProcessor implements ItemProcessor {
         }
     }
 
-    private void processData(DescriptionItem descItem, RuleSystemItemType rsit, StructObjContext cso) {
+    private void processData(DescriptionItem descItem, ItemType rsit, StructObjContext cso) {
         // create data
         DataType dataType = rsit.getDataType();
         ImportableItemData itemData = descItem.createData(context, dataType);
@@ -99,7 +99,7 @@ public class StructObjectProcessor implements ItemProcessor {
         cso.addStructItem(structItem, data);
     }
 
-    private ArrStructuredItem createStructItem(RuleSystemItemType rsit, String specCode) {
+    private ArrStructuredItem createStructItem(ItemType rsit, String specCode) {
         ArrStructuredItem structItem = new ArrStructuredItem();
         structItem.setCreateChange(section.getCreateChange());
         structItem.setDescItemObjectId(section.generateDescItemObjectId());

@@ -18,15 +18,14 @@ import com.jayway.restassured.response.Response;
 
 import cz.tacr.elza.controller.ArrangementController.FaTreeParam;
 import cz.tacr.elza.controller.DEExportController.DEExportParamsVO;
+import cz.tacr.elza.controller.vo.ApScopeVO;
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
 import cz.tacr.elza.controller.vo.ArrStructureDataVO;
 import cz.tacr.elza.controller.vo.FilteredResultVO;
-import cz.tacr.elza.controller.vo.ApScopeVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.core.data.DataType;
-import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.dataexchange.output.DEExportParams.FundSections;
@@ -114,8 +113,7 @@ public class DataExchangeControllerTest extends AbstractControllerTest {
         // get last fund version and rule system
         ArrFundVO fund = funds.iterator().next();
         ArrFundVersionVO fVersion = getOpenVersion(fund);
-        RuleSystem rs = staticData.getRuleSystemById(fVersion.getRuleSetId());
-
+        
         // check node count
         FaTreeParam treeParam = new FaTreeParam();
         treeParam.setVersionId(fVersion.getId());

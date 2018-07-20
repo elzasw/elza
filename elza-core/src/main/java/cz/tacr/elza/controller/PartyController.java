@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
+import cz.tacr.elza.controller.factory.ApFactory;
 import cz.tacr.elza.controller.vo.ApTypeVO;
 import cz.tacr.elza.controller.vo.FilteredResultVO;
 import cz.tacr.elza.controller.vo.ParComplementTypeVO;
@@ -35,6 +36,8 @@ import cz.tacr.elza.controller.vo.ParRelationTypeVO;
 import cz.tacr.elza.controller.vo.ParRelationVO;
 import cz.tacr.elza.controller.vo.UIPartyGroupVO;
 import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
+import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrFund;
@@ -146,7 +149,13 @@ public class PartyController {
 
     @Autowired
     private AccessPointService accessPointService;
+    
+    @Autowired
+    private ApFactory apFactory;
 
+    @Autowired
+    private StaticDataService staticDataService; 
+    
     /**
      * Uložení nové osoby
      * @param partyVO data osoby
@@ -434,12 +443,13 @@ public class PartyController {
 
 
         //načtení ParPartyTypeVO
+        StaticDataProvider staticData = staticDataService.getData();
         for (ApType apType : apTypeRepository.findTypesForPartyTypes()) {
             ParPartyType partyType = apType.getPartyType();
             ParPartyTypeVO partyTypeVO = factoryVo
                     .getOrCreateVo(partyType.getPartyTypeId(), partyType, partyTypeVoMap, ParPartyTypeVO.class);
 
-            ApTypeVO apTypeVO = factoryVo.createApType(apType);
+            ApTypeVO apTypeVO = ApTypeVO.newInstnace(apType, staticData);
             partyTypeVO.addApType(apTypeVO);
         }
 
@@ -469,7 +479,7 @@ public class PartyController {
             ParPartyType partyType = partyTypeRepository.findOne(partyTypeVO.getId());
             List<ApType> partyApTypes = apTypeRepository.findByPartyTypeAndReadOnlyFalseOrderByName(partyType);
 
-            partyTypeVO.setApTypes(factoryVo.createApTypesTree(partyApTypes, true, partyType));
+            partyTypeVO.setApTypes(apFactory.createTypesWithHierarchy(partyApTypes));
 
             List<UIPartyGroupVO> uiGroups = new LinkedList<>();
             List<UIPartyGroupVO> commonUIGroups = partyTypeCodeToUIPartyGroupsVOMap.get(null);

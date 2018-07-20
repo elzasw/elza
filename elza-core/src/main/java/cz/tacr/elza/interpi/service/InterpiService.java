@@ -26,10 +26,12 @@ import org.springframework.util.Assert;
 
 import cz.tacr.elza.api.enums.InterpiClass;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
+import cz.tacr.elza.controller.factory.ApFactory;
 import cz.tacr.elza.controller.vo.ApScopeVO;
 import cz.tacr.elza.controller.vo.InterpiEntityMappingVO;
 import cz.tacr.elza.controller.vo.InterpiMappingVO;
 import cz.tacr.elza.controller.vo.InterpiRelationMappingVO;
+import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApExternalIdType;
@@ -594,14 +596,19 @@ public class InterpiService {
         List<ApExternalIdInfo> eidInfoList = apEidRepository
                 .findInfoByExternalIdTypeIdAndValuesIn(eidType.getExternalIdTypeId(), externalRecords.keySet());
 
+        StaticDataProvider staticData = staticDataService.getData();
         Map<Integer, ApScopeVO> convertedScopes = new HashMap<>();
         for (ApExternalIdInfo eidInfo : eidInfoList) {
             ExternalRecordVO recordVO = externalRecords.get(eidInfo.getValue());
 
             Integer apScopeId = eidInfo.getAccessPoint().getScopeId();
-            ApScope apScope = scopeRepository.findOne(apScopeId);
-            ApScopeVO apScopeVO = factoryVO.getOrCreateVo(apScope.getScopeId(), apScope, convertedScopes, ApScopeVO.class);
-
+            ApScopeVO apScopeVO = convertedScopes.get(apScopeId);
+            if (apScopeVO == null) {
+                ApScope apScope = scopeRepository.findOne(apScopeId);
+                apScopeVO = ApScopeVO.newInstance(apScope, staticData);
+                convertedScopes.put(apScopeId, apScopeVO);
+            }
+            
             Integer apId = eidInfo.getAccessPoint().getAccessPointId();
             Integer partyId = null;
             ParParty existingParty = partyRepository.findParPartyByAccessPointId(apId);

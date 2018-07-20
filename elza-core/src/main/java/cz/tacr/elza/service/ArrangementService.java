@@ -231,14 +231,6 @@ public class ArrangementService {
 
         fundRepository.save(originalFund);
 
-        for (ApScope scope : scopes) {
-            if (scope.getScopeId() == null) {
-                scope.setCode(StringUtils.upperCase(Normalizer.normalize(StringUtils.replace(StringUtils.substring(scope.getName(), 0, 50).trim(), " ", "_"), Normalizer.Form.NFD)));
-                scopeRepository.save(scope);
-            }
-        }
-
-
         ArrFundVersion openVersion = getOpenVersionByFundId(originalFund.getFundId());
         if (!ruleSet.equals(openVersion.getRuleSet())) {
             openVersion.setRuleSet(ruleSet);
@@ -247,7 +239,16 @@ public class ArrangementService {
             ruleService.conformityInfoAll(openVersion);
         }
 
-        synchApScopes(originalFund, scopes);
+        if (scopes != null) {
+            for (ApScope scope : scopes) {
+                if (scope.getScopeId() == null) {
+                    scope.setCode(StringUtils.upperCase(Normalizer.normalize(StringUtils
+                            .replace(StringUtils.substring(scope.getName(), 0, 50).trim(), " ", "_"), Normalizer.Form.NFD)));
+                    scopeRepository.save(scope);
+                }
+            }
+            synchApScopes(originalFund, scopes);
+        }
 
         eventNotificationService
                 .publishEvent(EventFactory.createIdEvent(EventType.FUND_UPDATE, originalFund.getFundId()));

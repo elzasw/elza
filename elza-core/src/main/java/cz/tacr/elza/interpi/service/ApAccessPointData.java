@@ -1,4 +1,4 @@
-package cz.tacr.elza.service.vo;
+package cz.tacr.elza.interpi.service;
 
 import java.util.ArrayList;
 import java.util.LinkedList;

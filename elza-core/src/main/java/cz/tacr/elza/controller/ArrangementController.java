@@ -42,6 +42,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
+import cz.tacr.elza.controller.factory.ApFactory;
 import cz.tacr.elza.controller.vo.AddLevelParam;
 import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
 import cz.tacr.elza.controller.vo.ArrDaoPackageVO;
@@ -74,6 +75,9 @@ import cz.tacr.elza.controller.vo.nodes.NodeData;
 import cz.tacr.elza.controller.vo.nodes.NodeDataParam;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeDescItemsVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
+import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDao;
@@ -270,7 +274,10 @@ public class ArrangementController {
 
 	@Autowired
 	private ArrangementFormService formService;
-
+	
+	@Autowired
+    private StaticDataService staticDataService;
+    
     /**
      *  Poskytuje seznam balíčků digitalizátů pouze pod archivní souborem (AS).
      *
@@ -1369,12 +1376,14 @@ public class ArrangementController {
             @RequestBody final ArrFundVO arrFundVO) {
         Assert.notNull(arrFundVO, "AS musí být vyplněn");
 
+        StaticDataProvider staticData = staticDataService.getData();
+        List<ApScope> apScopes = ApFactory.transformList(arrFundVO.getApScopes(), s -> s.createEntity(staticData));
+        
         return factoryVo.createFundVO(
                 arrangementService.updateFund(
                         factoryDO.createFund(arrFundVO),
                         ruleSetRepository.findOne(ruleSetId),
-                        factoryDO.createScopeList(arrFundVO.getApScopes()
-                        )
+                        apScopes
                 ),
                 false
         );
@@ -1487,7 +1496,7 @@ public class ArrangementController {
 
         List<Integer> nodeIds = idsParam.getIds();
         if (nodeIds.isEmpty()) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
 
         return levelTreeCacheService.getNodesByIds(nodeIds, idsParam.getVersionId());

@@ -16,7 +16,6 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
-import cz.tacr.elza.core.data.StaticDataProvider;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,8 +30,8 @@ import cz.tacr.elza.bulkaction.BulkActionService;
 import cz.tacr.elza.bulkaction.generator.result.ActionResult;
 import cz.tacr.elza.bulkaction.generator.result.Result;
 import cz.tacr.elza.controller.vo.OutputSettingsVO;
-import cz.tacr.elza.core.data.RuleSystem;
-import cz.tacr.elza.core.data.RuleSystemItemType;
+import cz.tacr.elza.core.data.ItemType;
+import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
@@ -1256,7 +1255,7 @@ public class OutputService {
         Validate.notNull(fundVersion, "Verze archivní pomůcky neexistuje");
 
         StaticDataProvider sdp = staticDataService.getData();
-        RuleSystemItemType itemType = sdp.getItemTypeById(itemTypeId);
+        ItemType itemType = sdp.getItemTypeById(itemTypeId);
 
         Validate.notNull(itemType, "Typ atributu neexistuje");
 
@@ -1466,7 +1465,7 @@ public class OutputService {
         }
 
         StaticDataProvider sdp = staticDataService.getData();
-        RuleSystemItemType itemType = sdp.getItemTypeById(outputItemTypeId);
+        ItemType itemType = sdp.getItemTypeById(outputItemTypeId);
         if (itemType == null) {
             throw new ObjectNotFoundException("Nebyla nalezen typ atributu s ID=" + outputItemTypeId, ArrangementCode.ITEM_TYPE_NOT_FOUND).set("id", outputItemTypeId);
         }

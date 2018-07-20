@@ -181,7 +181,7 @@ public class PartyProcessor<P extends Party, E extends ParParty> implements Item
                 throw new DEImportException("Value of party name complement is not set, partyId=" + party.getId());
             }
             PartyTypeCmplTypes types = staticData.getCmplTypesByPartyTypeCode(info.getPartyType().getCode());
-            PartyTypeCmplType type = types.getTypeByCode(cmpl.getCt());
+            PartyTypeCmplType type = types.getCmplTypeByCode(cmpl.getCt());
             if (type == null) {
                 throw new DEImportException(
                         "Type of party name complement not found, partyId=" + party.getId() + ", code=" + cmpl.getCt());
