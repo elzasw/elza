@@ -53,7 +53,7 @@ import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.controller.vo.nodes.NodeData;
 import cz.tacr.elza.controller.vo.nodes.NodeDataParam;
-import cz.tacr.elza.core.data.RuleSystemItemType;
+import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrDigitizationRequest;
@@ -797,7 +797,7 @@ public class LevelTreeCacheService {
 
         StaticDataProvider data = staticDataService.getData();
         for (String typeCode : typeCodes) {
-            RuleSystemItemType rsit = data.getItemTypeByCode(typeCode);
+            ItemType rsit = data.getItemTypeByCode(typeCode);
             if (rsit == null) {
                 logger.warn("Nepodařilo se nalézt typ atributu, kód=" + typeCode + ". Změňte kód v konfiguraci.");
                 continue;

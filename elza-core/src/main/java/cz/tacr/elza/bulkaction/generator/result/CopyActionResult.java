@@ -2,7 +2,7 @@ package cz.tacr.elza.bulkaction.generator.result;
 
 import java.util.List;
 
-import cz.tacr.elza.core.data.RuleSystemItemType;
+import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.service.OutputItemConnector;
 
@@ -36,7 +36,7 @@ public class CopyActionResult extends ActionResult {
         if (dataItems == null) {
             return;
         }
-        RuleSystemItemType rsit = connector.getItemTypeByCode(itemType);
+        ItemType rsit = connector.getItemTypeByCode(itemType);
         connector.addItems(dataItems, rsit);
     }
 }

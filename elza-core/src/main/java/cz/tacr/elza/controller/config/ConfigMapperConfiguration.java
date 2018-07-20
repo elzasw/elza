@@ -9,8 +9,6 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
-import cz.tacr.elza.controller.vo.nodes.descitems.*;
-import cz.tacr.elza.domain.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,10 +17,70 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.util.Assert;
 
 import com.vividsolutions.jts.geom.Geometry;
+
 import cz.tacr.elza.bulkaction.BulkActionConfig;
 import cz.tacr.elza.bulkaction.generator.PersistentSortRunConfig;
 import cz.tacr.elza.common.GeometryConvertor;
-import cz.tacr.elza.controller.vo.*;
+import cz.tacr.elza.controller.factory.ApFactory;
+import cz.tacr.elza.controller.vo.ApAccessPointVO;
+import cz.tacr.elza.controller.vo.ApScopeVO;
+import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
+import cz.tacr.elza.controller.vo.ArrChangeVO;
+import cz.tacr.elza.controller.vo.ArrDaoFileGroupVO;
+import cz.tacr.elza.controller.vo.ArrDaoFileVO;
+import cz.tacr.elza.controller.vo.ArrDaoVO;
+import cz.tacr.elza.controller.vo.ArrDigitalRepositorySimpleVO;
+import cz.tacr.elza.controller.vo.ArrDigitalRepositoryVO;
+import cz.tacr.elza.controller.vo.ArrDigitizationFrontdeskSimpleVO;
+import cz.tacr.elza.controller.vo.ArrDigitizationFrontdeskVO;
+import cz.tacr.elza.controller.vo.ArrFileVO;
+import cz.tacr.elza.controller.vo.ArrFundBaseVO;
+import cz.tacr.elza.controller.vo.ArrFundVO;
+import cz.tacr.elza.controller.vo.ArrFundVersionVO;
+import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
+import cz.tacr.elza.controller.vo.ArrOutputDefinitionVO;
+import cz.tacr.elza.controller.vo.ArrOutputFileVO;
+import cz.tacr.elza.controller.vo.ArrOutputVO;
+import cz.tacr.elza.controller.vo.BulkActionRunVO;
+import cz.tacr.elza.controller.vo.BulkActionVO;
+import cz.tacr.elza.controller.vo.DmsFileVO;
+import cz.tacr.elza.controller.vo.NodeConformityErrorVO;
+import cz.tacr.elza.controller.vo.NodeConformityMissingVO;
+import cz.tacr.elza.controller.vo.NodeConformityVO;
+import cz.tacr.elza.controller.vo.ParComplementTypeVO;
+import cz.tacr.elza.controller.vo.ParDynastyVO;
+import cz.tacr.elza.controller.vo.ParEventVO;
+import cz.tacr.elza.controller.vo.ParInstitutionTypeVO;
+import cz.tacr.elza.controller.vo.ParInstitutionVO;
+import cz.tacr.elza.controller.vo.ParPartyGroupIdentifierVO;
+import cz.tacr.elza.controller.vo.ParPartyGroupVO;
+import cz.tacr.elza.controller.vo.ParPartyNameComplementVO;
+import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
+import cz.tacr.elza.controller.vo.ParPartyNameVO;
+import cz.tacr.elza.controller.vo.ParPartyTypeVO;
+import cz.tacr.elza.controller.vo.ParPartyVO;
+import cz.tacr.elza.controller.vo.ParPersonVO;
+import cz.tacr.elza.controller.vo.ParRelationClassTypeVO;
+import cz.tacr.elza.controller.vo.ParRelationEntityVO;
+import cz.tacr.elza.controller.vo.ParRelationRoleTypeVO;
+import cz.tacr.elza.controller.vo.ParRelationTypeVO;
+import cz.tacr.elza.controller.vo.ParRelationVO;
+import cz.tacr.elza.controller.vo.ParUnitdateVO;
+import cz.tacr.elza.controller.vo.PersistentSortConfigVO;
+import cz.tacr.elza.controller.vo.RulArrangementExtensionVO;
+import cz.tacr.elza.controller.vo.RulDataTypeVO;
+import cz.tacr.elza.controller.vo.RulDescItemSpecVO;
+import cz.tacr.elza.controller.vo.RulOutputTypeVO;
+import cz.tacr.elza.controller.vo.RulPolicyTypeVO;
+import cz.tacr.elza.controller.vo.RulRuleSetVO;
+import cz.tacr.elza.controller.vo.RulStructureTypeVO;
+import cz.tacr.elza.controller.vo.RulTemplateVO;
+import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
+import cz.tacr.elza.controller.vo.UIPartyGroupVO;
+import cz.tacr.elza.controller.vo.UISettingsVO;
+import cz.tacr.elza.controller.vo.UsrGroupVO;
+import cz.tacr.elza.controller.vo.UsrPermissionVO;
+import cz.tacr.elza.controller.vo.UsrUserVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.DescItemSpecLiteVO;
 import cz.tacr.elza.controller.vo.nodes.ItemTypeDescItemsLiteVO;
@@ -30,13 +88,25 @@ import cz.tacr.elza.controller.vo.nodes.ItemTypeLiteVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeDescItemsVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemCoordinatesVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemDateVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemDecimalVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemEnumVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemFileRefVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemFormattedTextVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemIntVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemJsonTableVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemPartyRefVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemRecordRefVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStringVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStructureVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemTextVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitdateVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitidVO;
 import cz.tacr.elza.core.data.CalendarType;
+import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ApDescription;
-import cz.tacr.elza.domain.ApExternalSystem;
-import cz.tacr.elza.domain.ApName;
 import cz.tacr.elza.domain.ApScope;
-import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
@@ -44,6 +114,7 @@ import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDaoFile;
 import cz.tacr.elza.domain.ArrDaoFileGroup;
 import cz.tacr.elza.domain.ArrDataCoordinates;
+import cz.tacr.elza.domain.ArrDataDate;
 import cz.tacr.elza.domain.ArrDataDecimal;
 import cz.tacr.elza.domain.ArrDataFileRef;
 import cz.tacr.elza.domain.ArrDataInteger;
@@ -62,6 +133,7 @@ import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrItemCoordinates;
+import cz.tacr.elza.domain.ArrItemDate;
 import cz.tacr.elza.domain.ArrItemDecimal;
 import cz.tacr.elza.domain.ArrItemEnum;
 import cz.tacr.elza.domain.ArrItemFileRef;
@@ -132,10 +204,8 @@ import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.OutputResultRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
-import cz.tacr.elza.service.AccessPointDataService;
 import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.attachment.AttachmentService;
-import cz.tacr.elza.service.vo.ApAccessPointData;
 import ma.glasnost.orika.CustomMapper;
 import ma.glasnost.orika.MapperFactory;
 import ma.glasnost.orika.MappingContext;
@@ -174,8 +244,10 @@ public class ConfigMapperConfiguration {
     @Autowired
     private AttachmentService attachmentService;
     @Autowired
-    private AccessPointDataService accessPointDataService;
-
+    private ApFactory apFactory;
+    @Autowired
+    private StaticDataService staticDataService;
+    
     /**
      * @return Tovární třída.
      */
@@ -374,8 +446,24 @@ public class ConfigMapperConfiguration {
                 }).byDefault().register();
         mapperFactory.classMap(ArrItemString.class, ArrItemStringVO.class).byDefault().register();
 
-        mapperFactory.classMap(ArrNodeRegister.class, ArrNodeRegisterVO.class).byDefault().field(
-                "nodeRegisterId", "id").register();
+        mapperFactory.classMap(ArrNodeRegister.class, ArrNodeRegisterVO.class)
+            .field("nodeRegisterId", "id")
+            .exclude(ArrNodeRegister.RECORD)
+            .customize(new CustomMapper<ArrNodeRegister, ArrNodeRegisterVO>() {
+                @Override
+                public void mapAtoB(ArrNodeRegister a, ArrNodeRegisterVO b, MappingContext context) {
+                    ApAccessPointVO apVO = apFactory.createVO(a.getRecord());
+                    b.setRecord(apVO);
+                }
+                @Override
+                public void mapBtoA(ArrNodeRegisterVO b, ArrNodeRegister a, MappingContext context) {
+                    ApAccessPointVO apVO = b.getRecord();
+                    if (apVO != null) {
+                        a.setRecord(apFactory.create(apVO));
+                    }
+                }
+            })
+            .byDefault().register();
 
         mapperFactory.classMap(ArrNode.class, ArrNodeVO.class).byDefault().field("nodeId", "id").register();
 
@@ -433,14 +521,20 @@ public class ConfigMapperConfiguration {
                 .exclude("partyNames")
                 .exclude("partyCreators")
                 .exclude("relations")
+                .exclude(ParParty.RECORD)
                 .customize(new CustomMapper<ParParty, ParPartyVO>() {
-
+                    @Override
+                    public void mapAtoB(ParParty a, ParPartyVO b, MappingContext context) {
+                        ApAccessPointVO apVO = apFactory.createVO(a.getAccessPoint());
+                        b.setAccessPoint(apVO);
+                    }
                     @Override
                     public void mapBtoA(final ParPartyVO parPartyVO,
                                         final ParParty party,
                                         final MappingContext context) {
-
-
+                        ApAccessPoint ap = apFactory.create(parPartyVO.getAccessPoint());
+                        party.setAccessPoint(ap);
+                        
                         if (CollectionUtils.isNotEmpty(parPartyVO.getCreators())) {
                             List<ParCreator> creators = new ArrayList<>(parPartyVO.getCreators().size());
                             for (ParPartyVO creator : parPartyVO.getCreators()) {
@@ -462,11 +556,6 @@ public class ConfigMapperConfiguration {
                 .field("institutionId", "id").register();
         mapperFactory.classMap(ParInstitutionType.class, ParInstitutionTypeVO.class).byDefault()
                 .field("institutionTypeId", "id").register();
-
-        mapperFactory.classMap(ApAccessPoint.class, ApAccessPoint.class)
-                .exclude(ApAccessPoint.ACCESS_POINT_ID)
-            .byDefault().register();
-
 
         mapperFactory.classMap(ParPartyGroup.class, ParPartyGroupVO.class).byDefault().register();
         mapperFactory.classMap(ParPartyGroupIdentifier.class, ParPartyGroupIdentifierVO.class)
@@ -568,6 +657,9 @@ public class ConfigMapperConfiguration {
                                         final MappingContext context) {
                         ParRelation relation = parRelationEntity.getRelation();
                         parRelationEntityVO.setRelationId(relation.getRelationId());
+                        
+                        ApAccessPointVO apVO = apFactory.createVO(parRelationEntity.getAccessPoint());
+                        parRelationEntityVO.setRecord(apVO);
                     }
 
                     @Override
@@ -618,173 +710,13 @@ public class ConfigMapperConfiguration {
                 }
             }).byDefault().register();
 
-        mapperFactory.classMap(ApAccessPoint.class, ApAccessPointVO.class)
-                .exclude("apType")
-                .exclude("scope")
-                .field("accessPointId", "id")
-                .customize(new CustomMapper<ApAccessPoint, ApAccessPointVO>() {
-                    @Override
-                    public void mapAtoB(final ApAccessPoint apAccessPoint,
-                                        final ApAccessPointVO apAccessPointVO,
-                                        final MappingContext context) {
-                        apAccessPointVO.setTypeId(apAccessPoint.getApType().getApTypeId());
-                        apAccessPointVO.setAddRecord(!apAccessPoint.getApType().isReadOnly());
-                        apAccessPointVO.setScopeId(apAccessPoint.getScope().getScopeId());
-                        apAccessPointVO.setInvalid(apAccessPoint.getDeleteChange() != null);
-                    }
-
-                    @Override
-                    public void mapBtoA(final ApAccessPointVO apAccessPointVO,
-                                        final ApAccessPoint apAccessPoint,
-                                        final MappingContext context) {
-
-                        if (apAccessPointVO.getTypeId() != null) {
-                            ApType apType = new ApType();
-                            apType.setApTypeId(apAccessPointVO.getTypeId());
-                            apAccessPoint.setApType(apType);
-                        }
-
-                        if (apAccessPointVO.getScopeId() != null) {
-                            ApScope scope = new ApScope();
-                            scope.setScopeId(apAccessPointVO.getScopeId());
-                            apAccessPoint.setScope(scope);
-                        }
-                    }
-                }).byDefault().register();
-
-        mapperFactory.classMap(ApAccessPointData.class, ApAccessPointVO.class)
-                .exclude("apType")
-                .exclude("scope")
-                .field("accessPointId", "id")
-                .customize(new CustomMapper<ApAccessPointData, ApAccessPointVO>() {
-                    @Override
-                    public void mapAtoB(final ApAccessPointData apAccessPoint,
-                                        final ApAccessPointVO apAccessPointVO,
-                                        final MappingContext context) {
-                        apAccessPointVO.setTypeId(apAccessPoint.getAccessPoint().getApTypeId());
-                        apAccessPointVO.setAddRecord(!apAccessPoint.getAccessPoint().getApType().isReadOnly());
-                        apAccessPointVO.setScopeId(apAccessPoint.getAccessPoint().getScope().getScopeId());
-                        apAccessPointVO.setInvalid(apAccessPoint.getAccessPoint().getDeleteChange() != null);
-                        apAccessPointVO.setCharacteristics(apAccessPoint.getDescription() == null ? null : apAccessPoint.getDescription().getDescription());
-                        apAccessPointVO.setRecord(apAccessPoint.getPreferredName().getName());
-                        apAccessPointVO.setUuid(apAccessPoint.getAccessPoint().getUuid());
-
-                        // TODO: nutno dořešit přenos EID na klienta
-                        //throw new NotImplementedException("nutno dořešit přenos EID na klienta");
-                        // if (apAccessPoint.getExternalId() != null) {
-                        //     apAccessPointVO.setExternalId(apAccessPoint.getExternalId().getValue());
-                        // }
-                    }
-
-                    @Override
-                    public void mapBtoA(final ApAccessPointVO apAccessPointVO,
-                                        final ApAccessPointData apAccessPointData,
-                                        final MappingContext context) {
-
-                        ApAccessPoint accessPoint = new ApAccessPoint();
-                        accessPoint.setAccessPointId(apAccessPointVO.getId());
-                        apAccessPointData.setAccessPoint(accessPoint);
-                        accessPoint.setUuid(apAccessPointVO.getUuid());
-
-                        if (apAccessPointVO.getTypeId() != null) {
-                            ApType apType = new ApType();
-                            apType.setApTypeId(apAccessPointVO.getTypeId());
-                            apAccessPointData.getAccessPoint().setApType(apType);
-                        }
-
-                        if (apAccessPointVO.getScopeId() != null) {
-                            ApScope scope = new ApScope();
-                            scope.setScopeId(apAccessPointVO.getScopeId());
-                            apAccessPointData.getAccessPoint().setScope(scope);
-                        }
-
-                        if(StringUtils.isNotBlank(apAccessPointVO.getCharacteristics())){
-                            ApDescription description = new ApDescription();
-                            description.setDescription(apAccessPointVO.getCharacteristics());
-                            apAccessPointData.setDescription(description);
-                        }
-
-                        if(StringUtils.isNotBlank(apAccessPointVO.getRecord())){
-                            ApName name = new ApName();
-                            name.setName(apAccessPointVO.getRecord());
-                            name.setPreferredName(true);
-                            apAccessPointData.addName(name);
-                        }
-                    }
-                }).byDefault().register();
-
-        mapperFactory.classMap(ApAccessPoint.class, ApRecordSimple.class).field("accessPointId", "id").byDefault()
-                .customize(new CustomMapper<ApAccessPoint, ApRecordSimple>() {
-                    @Override
-                    public void mapAtoB(final ApAccessPoint apAccessPoint,
-                                        final ApRecordSimple apRecordSimple,
-                                        final MappingContext context) {
-                        ApAccessPointData accessPointData = accessPointDataService.findAccessPointData(apAccessPoint);
-                        apRecordSimple.setApTypeId(apAccessPoint.getApType().getApTypeId());
-                        apRecordSimple.setCharacteristics(accessPointData.getDescription() == null ? null : accessPointData.getDescription().getDescription());
-                        apRecordSimple.setRecord(accessPointData.getPreferredName().getName());
-                    }
-
-                    @Override
-                    public void mapBtoA(final ApRecordSimple apRecordSimple,
-                                        final ApAccessPoint apAccessPoint,
-                                        final MappingContext context) {
-                        //TODO [fric] mapovani simple -> AP se nikde nevyskytuje, je nutne rozmyslet zbytek mapovani?
-                        if (apRecordSimple.getApTypeId() != null) {
-                            ApType apType = new ApType();
-                            apType.setApTypeId(apRecordSimple.getApTypeId());
-                            apAccessPoint.setApType(apType);
-                        }
-                    }
-                }).register();
-
-        mapperFactory.classMap(ApExternalSystem.class, ApExternalSystemVO.class).field("externalSystemId", "id").byDefault().register();
         mapperFactory.classMap(ArrDigitizationFrontdesk.class, ArrDigitizationFrontdeskVO.class).field("externalSystemId", "id").byDefault().register();
         mapperFactory.classMap(ArrDigitalRepository.class, ArrDigitalRepositoryVO.class).field("externalSystemId", "id").byDefault().register();
 
-        mapperFactory.classMap(ApExternalSystem.class, ApExternalSystemSimpleVO.class).field("externalSystemId", "id").byDefault().register();
         mapperFactory.classMap(ArrDigitizationFrontdesk.class, ArrDigitizationFrontdeskSimpleVO.class).field("externalSystemId", "id").byDefault().register();
         mapperFactory.classMap(ArrDigitalRepository.class, ArrDigitalRepositorySimpleVO.class).field("externalSystemId", "id").byDefault().register();
-
-
-        mapperFactory.classMap(ApType.class, ApTypeVO.class).customize(
-                new CustomMapper<ApType, ApTypeVO>() {
-                    @Override
-                    public void mapAtoB(final ApType apType,
-                                        final ApTypeVO apTypeVO,
-                                        final MappingContext context) {
-                        ApType parentType = apType.getParentApType();
-                        if (parentType != null) {
-                            apTypeVO.setParentApTypeId(parentType.getApTypeId());
-                        }
-
-                        if (apType.getPartyType() != null) {
-                            apTypeVO.setPartyTypeId(apType.getPartyType().getPartyTypeId());
-                        }
-
-                        apTypeVO.setAddRecord(!apType.isReadOnly());
-                    }
-
-                    @Override
-                    public void mapBtoA(final ApTypeVO apTypeVO,
-                                        final ApType apType,
-                                        final MappingContext context) {
-                        if (apTypeVO.getPartyTypeId() != null) {
-                            ParPartyType partyType = new ParPartyType();
-                            partyType.setPartyTypeId(apTypeVO.getPartyTypeId());
-                            apType.setPartyType(partyType);
-                        }
-
-                        if (apTypeVO.getAddRecord() != null) {
-                            apType.setReadOnly(!apTypeVO.getAddRecord());
-                        }
-                    }
-                }).field("apTypeId", "id").byDefault()
-                .register();
-        mapperFactory.classMap(ApScope.class, ApScopeVO.class).field("scopeId", "id").byDefault().register();
+        
         mapperFactory.classMap(RulDataType.class, RulDataTypeVO.class).byDefault().field("dataTypeId", "id").register();
-
-
         mapperFactory.classMap(RulItemType.class, RulDescItemTypeDescItemsVO.class).byDefault().field(
                 "itemTypeId",
                 "id").register();
@@ -929,7 +861,7 @@ public class ConfigMapperConfiguration {
                 .customize(new CustomMapper<UsrPermission, UsrPermissionVO>() {
                     @Override
                     public void mapAtoB(final UsrPermission usrPermission, final UsrPermissionVO usrPermissionVO, final MappingContext context) {
-                        Class targetEntity = (Class) context.getProperty("targetEntity");
+                        Class<?> targetEntity = (Class<?>) context.getProperty("targetEntity");
                         final boolean inherited;
                         if (targetEntity == UsrUser.class) {
                             inherited = usrPermission.getGroup() != null;
@@ -941,6 +873,18 @@ public class ConfigMapperConfiguration {
                         usrPermissionVO.setInherited(inherited);
                         if (inherited) {
                             usrPermissionVO.setGroupId(usrPermission.getGroup().getGroupId());
+                        }
+                        // create scope VO
+                        ApScope apScope = usrPermission.getScope();
+                        if (apScope != null) {
+                            usrPermissionVO.setScope(ApScopeVO.newInstance(apScope, staticDataService.getData()));    
+                        }
+                    }
+                    @Override
+                    public void mapBtoA(UsrPermissionVO usrPermissionVO, UsrPermission usrPermission, MappingContext context) {
+                        ApScopeVO apScopeVO = usrPermissionVO.getScope();
+                        if (apScopeVO != null) {
+                            usrPermission.setScope(apScopeVO.createEntity(staticDataService.getData()));
                         }
                     }
                 })

@@ -1,8 +1,7 @@
 package cz.tacr.elza.controller.vo;
 
+import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
-import java.util.List;
 
 
 /**
@@ -12,6 +11,7 @@ import java.util.List;
  * @since 21.12.2015
  */
 public class ApAccessPointVO extends AbstractApAccessPoint {
+    
     /**
      * Id hesla.
      */
@@ -24,18 +24,14 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
     /**
      * Id osoby.
      */
+    // TODO: validate if needed, client should read if it's party AP by cached AP types
+    @Deprecated
     private Integer partyId;
 
     /**
      * Id třídy rejstříku.
      */
     private Integer scopeId;
-
-    /**
-     * Externí zdroj hesel.
-     */
-    @Deprecated
-    private ApExternalSystemVO externalSystem;
 
     /**
      * Rejstříkové heslo.
@@ -46,43 +42,18 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
      * Podrobná charakteristika rejstříkového hesla.
      */
     private String characteristics;
+    
     /**
-     * Poznámka k heslu v rejstříku.
+     * Externí identifikátory rejstříkového hesla, například interpi.
      */
-    @Deprecated
-    private String note;
-    /**
-     * Externí identifikátor rejstříkového hesla v externím zdroji záznamů, například interpi.
-     */
-    private String externalId;
-
-    /**
-     * Verze záznamu.
-     */
-    @Deprecated
-    private Integer version;
+    private Collection<ApExternalIdVO> externalIds = Collections.emptyList();
 
     /**
      * Seznam jmen přístupového bodu.
      */
-    private List<ApAccessPointNameVO> names = Collections.emptyList();
-
-    /** Cesta od toho rejstříku až ke kořeni. První záznam je přímý nadřízený, poslední je kořen. */
-    private List<RecordParent> parents;
-
-    /**
-     * Názvy typů rejstříku od typu až po kořenový typ.
-     */
-    private List<RecordParent> typesToRoot;
-
-    /**
-     * Lze přidat podřízený záznam.
-     */
-    private boolean addRecord;
+    private Collection<ApAccessPointNameVO> names = Collections.emptyList();
 
     private String uuid;
-
-    private Date lastUpdate;
 
     private boolean invalid;
 
@@ -102,14 +73,6 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
         this.typeId = typeId;
     }
 
-    public ApExternalSystemVO getExternalSystem() {
-        return externalSystem;
-    }
-
-    public void setExternalSystem(final ApExternalSystemVO externalSystem) {
-        this.externalSystem = externalSystem;
-    }
-
     public String getRecord() {
         return record;
     }
@@ -126,26 +89,20 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
         this.characteristics = characteristics;
     }
 
-    public String getNote() {
-        return note;
+    public Collection<ApExternalIdVO> getExternalIds() {
+        return externalIds;
     }
 
-    public void setNote(final String note) {
-        this.note = note;
+    public void setExternalIds(final Collection<ApExternalIdVO> externalIds) {
+        this.externalIds = externalIds;
     }
 
-    public String getExternalId() {
-        return externalId;
-    }
-
-    public void setExternalId(final String externalId) {
-        this.externalId = externalId;
-    }
-
+    @Deprecated
     public Integer getPartyId() {
         return partyId;
     }
 
+    @Deprecated
     public void setPartyId(final Integer partyId) {
         this.partyId = partyId;
     }
@@ -158,44 +115,12 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
         this.scopeId = scopeId;
     }
 
-    public Integer getVersion() {
-        return version;
-    }
-
-    public void setVersion(final Integer version) {
-        this.version = version;
-    }
-
-    public List<ApAccessPointNameVO> getNames() {
+    public Collection<ApAccessPointNameVO> getNames() {
         return names;
     }
 
-    public void setNames(final List<ApAccessPointNameVO> names) {
+    public void setNames(final Collection<ApAccessPointNameVO> names) {
         this.names = names;
-    }
-
-    public boolean isAddRecord() {
-        return addRecord;
-    }
-
-    public void setAddRecord(final boolean addRecord) {
-        this.addRecord = addRecord;
-    }
-
-    public List<RecordParent> getParents() {
-        return parents;
-    }
-
-    public void setParents(final List<RecordParent> parents) {
-        this.parents = parents;
-    }
-
-    public List<RecordParent> getTypesToRoot() {
-        return typesToRoot;
-    }
-
-    public void setTypesToRoot(final List<RecordParent> typesToRoot) {
-        this.typesToRoot = typesToRoot;
     }
 
     public String getUuid() {
@@ -204,14 +129,6 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
 
     public void setUuid(final String uuid) {
         this.uuid = uuid;
-    }
-
-    public Date getLastUpdate() {
-        return lastUpdate;
-    }
-
-    public void setLastUpdate(final Date lastUpdate) {
-        this.lastUpdate = lastUpdate;
     }
 
     public boolean getInvalid() {
@@ -225,33 +142,4 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
 	public void setInvalid(final boolean invalid) {
 		this.invalid = invalid;
 	}
-
-    public static class RecordParent{
-        private Integer id;
-        private String name;
-
-        public RecordParent() {
-        }
-
-        public RecordParent(final Integer id, final String name) {
-            this.id = id;
-            this.name = name;
-        }
-
-        public Integer getId() {
-            return id;
-        }
-
-        public void setId(final Integer id) {
-            this.id = id;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(final String name) {
-            this.name = name;
-        }
-    }
 }

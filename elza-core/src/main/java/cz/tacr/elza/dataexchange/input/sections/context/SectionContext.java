@@ -5,10 +5,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import cz.tacr.elza.core.data.StaticDataProvider;
 import org.apache.commons.lang3.Validate;
 
-import cz.tacr.elza.core.data.RuleSystem;
+import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.dataexchange.input.DEImportException;
 import cz.tacr.elza.dataexchange.input.context.ImportInitHelper;
 import cz.tacr.elza.dataexchange.input.storage.StorageManager;
@@ -16,6 +15,7 @@ import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrStructuredObject;
+import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.RulStructuredType;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.StructObjService;
@@ -35,7 +35,7 @@ public class SectionContext {
 
     private final ArrChange createChange;
 
-    private final RuleSystem ruleSystem;
+    private final RulRuleSet ruleSet;
 
     private final StaticDataProvider staticData;
 
@@ -50,12 +50,13 @@ public class SectionContext {
     SectionContext(StorageManager storageManager,
                    int batchSize,
                    ArrChange createChange,
-                   RuleSystem ruleSystem,
-                   StaticDataProvider staticData,ImportInitHelper initHelper) {
+                   RulRuleSet ruleSet,
+                   StaticDataProvider staticData,
+                   ImportInitHelper initHelper) {
         this.nodeStorageDispatcher = new NodeStorageDispatcher(storageManager, batchSize);
         this.structObjectStorageDispatcher = new StructObjStorageDispatcher(storageManager, batchSize);
         this.createChange = Validate.notNull(createChange);
-        this.ruleSystem = Validate.notNull(ruleSystem);
+        this.ruleSet = Validate.notNull(ruleSet);
         this.staticData = Validate.notNull(staticData);
         this.arrangementService = initHelper.getArrangementService();
         this.structObjService = initHelper.getStructObjService();
@@ -65,14 +66,14 @@ public class SectionContext {
         return createChange;
     }
 
-    public RuleSystem getRuleSystem() {
-        return ruleSystem;
-    }
-
     public StaticDataProvider getStaticData() {
         return staticData;
     }
 
+    public RulRuleSet getRuleSet() {
+        return ruleSet;
+    }
+    
     public ArrFund getFund() {
         Validate.notNull(rootAdapter);
 

@@ -37,6 +37,9 @@ public class ApScope implements IApScope {
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = SysLanguage.class)
     @JoinColumn(name = "languageId")
     private SysLanguage language;
+    
+    @Column(insertable = false, updatable = false)
+    private Integer languageId;
 
     @Override
     public Integer getScopeId() {
@@ -90,6 +93,11 @@ public class ApScope implements IApScope {
      */
     public void setLanguage(SysLanguage language) {
         this.language = language;
+        this.languageId = language != null ? language.getLanguageId() : null;
+    }
+    
+    public Integer getLanguageId() {
+        return languageId;
     }
 
     @Override

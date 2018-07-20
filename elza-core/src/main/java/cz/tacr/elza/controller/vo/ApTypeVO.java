@@ -3,6 +3,10 @@ package cz.tacr.elza.controller.vo;
 import java.util.LinkedList;
 import java.util.List;
 
+import cz.tacr.elza.core.data.ApTypeRoles;
+import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.domain.ApType;
+
 
 /**
  * VO pro Číselník typů rejstříkových hesel.
@@ -141,5 +145,29 @@ public class ApTypeVO {
 
     public void setRelationRoleTypIds(final List<Integer> relationRoleTypIds) {
         this.relationRoleTypIds = relationRoleTypIds;
+    }
+    
+    /**
+     * Creates value object from AP type. Hierarchy is not set.
+     */
+    public static ApTypeVO newInstnace(ApType src, StaticDataProvider staticData) {
+        ApTypeVO vo = new ApTypeVO();
+        vo.setAddRecord(!src.isReadOnly());
+        //vo.addChild(child);
+        //vo.setChildren(children);
+        vo.setCode(src.getCode());
+        vo.setId(src.getApTypeId());
+        vo.setName(src.getName());
+        vo.setParentApTypeId(src.getParentApTypeId());
+        //vo.setParents(parents);
+        //vo.addParent(parentName);
+        //vo.addParents(nextParents);
+        vo.setPartyTypeId(src.getPartyTypeId());
+        // set roles
+        ApTypeRoles roles = staticData.getApTypeRolesById(src.getApTypeId());
+        if (roles != null) {
+            vo.setRelationRoleTypIds(roles.getRoleIds());
+        }
+        return vo;
     }
 }

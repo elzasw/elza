@@ -3,7 +3,7 @@ package cz.tacr.elza.core.rules;
 import java.util.ArrayList;
 import java.util.List;
 
-import cz.tacr.elza.core.data.RuleSystemItemType;
+import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulItemTypeExt;
 
@@ -34,13 +34,13 @@ public class ItemTypeExtBuilder {
 		return itemTypes;
 	}
 
-	public void add(List<RuleSystemItemType> typeList) {
-		for (RuleSystemItemType rst : typeList) {
+	public void add(List<ItemType> typeList) {
+		for (ItemType rst : typeList) {
 			add(rst);
 		}
 	}
 
-	public void add(RuleSystemItemType rst) {
+	public void add(ItemType rst) {
 
 		RulItemTypeExt itemTypeExt = new RulItemTypeExt(rst.getEntity(), rst.getItemSpecs());
 

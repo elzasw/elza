@@ -5,15 +5,15 @@ import java.util.Set;
 
 import javax.persistence.EntityManager;
 
-import cz.tacr.elza.core.data.StaticDataProvider;
 import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.common.db.HibernateUtils;
-import cz.tacr.elza.core.data.RuleSystem;
+import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.dataexchange.output.context.ExportContext;
 import cz.tacr.elza.dataexchange.output.writer.SectionOutputStream;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.service.cache.NodeCacheService;
 
 public class SectionContext {
@@ -23,8 +23,6 @@ public class SectionContext {
     private final Set<Integer> processedNodeIds = new HashSet<>();
 
     private final ExportContext context;
-
-    private final RuleSystem ruleSystem;
 
     private final StaticDataProvider staticData;
 
@@ -53,9 +51,8 @@ public class SectionContext {
                    EntityManager em) {
         this.context = Validate.notNull(context);
         this.staticData = context.getStaticData();
-        this.ruleSystem = staticData.getRuleSystemById(fundVersion.getRuleSetId());
         this.levelInfoLoader = new LevelInfoLoader(context.getBatchSize(), nodeCacheService);
-        this.structObjLoader = new StructObjectInfoLoader(em, context.getBatchSize(), ruleSystem, this.staticData);
+        this.structObjLoader = new StructObjectInfoLoader(em, context.getBatchSize(), this.staticData);
         this.fundVersion = Validate.notNull(fundVersion);
         this.multipleSections = multipleSections;
         this.levelInfoListener = levelInfoListener;
@@ -69,9 +66,9 @@ public class SectionContext {
     public StaticDataProvider getStaticData() {
         return staticData;
     }
-
-    public RuleSystem getRuleSystem() {
-        return ruleSystem;
+    
+    public RulRuleSet getRuleSet() {
+        return staticData.getRuleSetById(fundVersion.getRuleSetId());
     }
 
     public String getInstitutionCode() {

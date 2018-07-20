@@ -8,12 +8,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import cz.tacr.elza.bulkaction.generator.LevelWithItems;
 import cz.tacr.elza.bulkaction.generator.result.ActionResult;
 import cz.tacr.elza.core.data.DataType;
-import cz.tacr.elza.core.data.RuleSystem;
-import cz.tacr.elza.core.data.RuleSystemItemType;
+import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrBulkActionRun;
-import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ItemSpecRepository;
@@ -73,7 +71,7 @@ public abstract class Action {
 	 * @param codes
 	 *            kódy povolených datových typů
 	 */
-	protected void checkValidDataType(final RuleSystemItemType itemType, final DataType... codes) {
+	protected void checkValidDataType(final ItemType itemType, final DataType... codes) {
 		DataType dataType = itemType.getDataType();
 		List<DataType> codeList = Arrays.asList(codes);
 		if (!codeList.contains(dataType)) {

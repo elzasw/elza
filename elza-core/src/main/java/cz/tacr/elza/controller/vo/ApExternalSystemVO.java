@@ -27,4 +27,20 @@ public class ApExternalSystemVO extends SysExternalSystemVO {
         this.fillEntity(entity);
         return entity;
     }
+    
+    /**
+     * Creates value object from AP external system.
+     */
+    public static ApExternalSystemVO newInstance(ApExternalSystem src) {
+        ApExternalSystemVO vo = new ApExternalSystemVO();
+        vo.setCode(src.getCode());
+        vo.setElzaCode(src.getElzaCode());
+        vo.setId(src.getExternalSystemId());
+        vo.setName(src.getName());
+        vo.setPassword(src.getPassword());
+        vo.setType(src.getType());
+        vo.setUrl(src.getUrl());
+        vo.setUsername(src.getUsername());
+        return vo;
+    }
 }

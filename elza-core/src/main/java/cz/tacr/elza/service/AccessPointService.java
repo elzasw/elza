@@ -12,6 +12,7 @@ import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.RegistryCode;
+import cz.tacr.elza.interpi.service.ApAccessPointData;
 import cz.tacr.elza.packageimport.PackageService;
 import cz.tacr.elza.packageimport.xml.SettingRecord;
 import cz.tacr.elza.repository.*;
@@ -19,7 +20,6 @@ import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventNodeIdVersionInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
-import cz.tacr.elza.service.vo.ApAccessPointData;
 import cz.tacr.elza.service.vo.ImportAccessPoint;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -119,9 +119,6 @@ public class AccessPointService {
 
     @Autowired
     private ItemTypeRepository itemTypeRepository;
-
-    @Autowired
-    private AccessPointDataService accessPointDataService;
 
     @Autowired
     private EntityManager em;
@@ -253,50 +250,6 @@ public class AccessPointService {
 
         eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.RECORD_DELETE, accessPointId));
     }
-
-
-    /**
-     * Validace uložení záznamu.
-     *
-     * @param apData    heslo
-     */
-    private void checkRecordSave(final ApAccessPointData apData) {
-        Assert.notNull(apData.getAccessPoint(), "Rejstříkové heslo musí být vyplněno");
-
-        Assert.notNull(apData.getPreferredName(), "Není vyplněné Record.");
-
-        ApAccessPoint record = apData.getAccessPoint();
-
-        ApType apType = record.getApType();
-        Assert.notNull(apType, "Není vyplněné ApType.");
-        Assert.notNull(apType.getApTypeId(), "ApType nemá vyplněné ID.");
-        apType = apTypeRepository.findOne(apType.getApTypeId());
-        Assert.notNull(apType, "ApType nebylo nalezeno podle id " + apType.getApTypeId());
-
-        if (record.getAccessPointId() == null && apType.getPartyType() != null) {
-            throw new BusinessException("Nelze vytvořit rejstříkové heslo, které je navázané na typ osoby",
-                    RegistryCode.CANT_CREATE_WITH_TYPE_PARTY);
-        }
-
-        Assert.notNull(record.getScope(), "Není vyplněna třída rejstříku");
-        Assert.notNull(record.getScope().getScopeId(), "Není vyplněno id třídy rejstříku");
-        ApScope scope = scopeRepository.findOne(record.getScope().getScopeId());
-        Assert.notNull(scope, "Nebyla nalezena třída rejstříku s id " + record.getScope().getScopeId());
-
-        if (record.getAccessPointId() == null) {
-            if (apType.isReadOnly()) {
-                throw new BusinessException(
-                        "Nelze přidávat heslo do typu, který nemá přidávání hesel povolené.", RegistryCode.REGISTRY_TYPE_DISABLE);
-            }
-        } else {
-            ApAccessPoint dbRecord = apRepository.findOne(record.getAccessPointId());
-            if (!record.getScope().getScopeId().equals(dbRecord.getScope().getScopeId())) {
-                throw new BusinessException("Nelze změnit třídu rejstříku.", RegistryCode.SCOPE_CANT_CHANGE);
-            }
-        }
-    }
-
-
 
     /**
      * Uložení či update variantního záznamu.
@@ -648,11 +601,11 @@ public class AccessPointService {
 
 		// hledání podle vztahů
 		final Map<Integer, PartyVO> partyVOMap = relationEntityRepository.findByAccessPoint(record).stream().map(rel -> {
-			ParParty partyRel = rel.getRelation().getParty();
+			ParParty relParty = rel.getRelation().getParty(); // party fetched by query
 			PartyVO partyVO = new PartyVO();
-			partyVO.setId(partyRel.getPartyId());
-            ApAccessPointData apData = accessPointDataService.findAccessPointData(partyRel.getAccessPoint());
-            partyVO.setName(apData.getPreferredName().getName());
+			partyVO.setId(relParty.getPartyId());
+            ApName prefName = apNameRepository.findPreferredNameByAccessPoint(relParty.getAccessPoint());
+            partyVO.setName(prefName.getFullName());
 
 			OccurrenceVO occurrenceVO = new OccurrenceVO(rel.getRelationEntityId(), OccurrenceType.PAR_RELATION_ENTITY);
 			List<OccurrenceVO> occurrences = new LinkedList<>();
@@ -671,8 +624,8 @@ public class AccessPointService {
 				} else {
 					partyVO = new PartyVO(); // nový výskyt
 					partyVO.setId(creator.getPartyId());
-                    ApAccessPointData apData = accessPointDataService.findAccessPointData(creator.getAccessPoint());
-                    partyVO.setName(apData.getPreferredName().getName());
+                    ApName prefName = apNameRepository.findPreferredNameByAccessPoint(creator.getAccessPoint());
+                    partyVO.setName(prefName.getFullName());
 
 					List<OccurrenceVO> occurrences = new LinkedList<>();
 					partyVO.setOccurrences(occurrences);

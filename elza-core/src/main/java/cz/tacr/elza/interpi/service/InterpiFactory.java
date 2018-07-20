@@ -93,7 +93,6 @@ import cz.tacr.elza.repository.PartyTypeRepository;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.GroovyScriptService;
 import cz.tacr.elza.service.PartyService;
-import cz.tacr.elza.service.vo.ApAccessPointData;
 
 /**
  * Třída pro konverzi objektů z a do INTERPI.

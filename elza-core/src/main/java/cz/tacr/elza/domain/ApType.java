@@ -46,6 +46,9 @@ public class ApType {
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ParPartyType.class)
     @JoinColumn(name = "partyTypeId", nullable = true)
     private ParPartyType partyType;
+    
+    @Column(insertable = false, updatable = false, nullable = true)
+    private Integer partyTypeId;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulPackage.class)
     @JoinColumn(name = "packageId", nullable = false)
@@ -169,8 +172,13 @@ public class ApType {
      */
     public void setPartyType(final ParPartyType partyType) {
         this.partyType = partyType;
+        this.partyTypeId = partyType != null ? partyType.getPartyTypeId() : null;
     }
 
+    public Integer getPartyTypeId() {
+        return partyTypeId;
+    }
+    
     public RulPackage getRulPackage() {
         return rulPackage;
     }
