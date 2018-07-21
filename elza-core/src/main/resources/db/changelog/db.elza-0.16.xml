@@ -349,6 +349,7 @@
     </changeSet>
 
     <changeSet id="20180315114500" author="fric">
+    	<validCheckSum>7:f2b597aa8501d88efb9c8870e74c8739</validCheckSum>
 		<!-- create AP change and update sequence -->
     	<sql>
     		INSERT INTO ap_change (change_id, change_date, type) VALUES (1, now(), 'AP_IMPORT');
@@ -432,9 +433,14 @@
     </changeSet>
 
     <changeSet id="20180713090700" author="slapa">
+    	<validCheckSum>7:4a7bb7e085f83a20b4fd51ff1246ca15</validCheckSum>
         <addColumn tableName="ap_name">
             <column name="full_name" type="nvarchar(2000)" />
         </addColumn>
+        <!-- only ap_name.name is set after migration so it will be our initial source of full_name value -->
+        <sql>
+        	UPDATE ap_name SET full_name = name;
+        </sql>
     </changeSet>
 
 </databaseChangeLog>

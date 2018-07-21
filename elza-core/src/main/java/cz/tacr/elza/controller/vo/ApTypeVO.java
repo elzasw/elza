@@ -50,6 +50,8 @@ public class ApTypeVO {
     /**
      * Seznam rodičů seřazený od přímého rodiče po kořen.
      */
+    @Deprecated
+    // TODO: change to parent reference or id
     private List<String> parents;
 
     public Integer getId() {
@@ -115,14 +117,17 @@ public class ApTypeVO {
         children.add(child);
     }
 
+    @Deprecated
     public List<String> getParents() {
         return parents;
     }
 
+    @Deprecated
     public void setParents(final List<String> parents) {
         this.parents = parents;
     }
 
+    @Deprecated
     public void addParent(final String parentName){
         if(parents == null){
             parents = new LinkedList<>();
@@ -130,6 +135,7 @@ public class ApTypeVO {
         parents.add(parentName);
     }
 
+    @Deprecated
     public void addParents(final List<String> nextParents){
         if(parents == null){
             parents = new LinkedList<>();
