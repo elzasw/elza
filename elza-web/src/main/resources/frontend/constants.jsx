@@ -59,3 +59,4 @@ export const DisplayType = {
 
 //konkrétrní kód akce pro perzistentní řazení v balíčku ZP2015
 export const PERSISTENT_SORT_CODE = "PERZISTENTNI_RAZENI";
+export const ZP2015_INTRO_VYPOCET_EJ = "ZP2015_INTRO_VYPOCET_EJ";

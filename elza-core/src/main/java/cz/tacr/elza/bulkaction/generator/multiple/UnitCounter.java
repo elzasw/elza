@@ -180,7 +180,11 @@ public class UnitCounter {
                 // get mapping
                 String value = itemSpecMapping.get(item.getItemSpecId());
                 if (value != null) {
-                    unitCountAction.addValue(value, count);
+                    if (unitCountAction.isLocal()) {
+                        unitCountAction.createDescItem(level.getNode(), value, count);
+                    } else {
+                        unitCountAction.addValue(value, count);
+                    }
                 }
             }
         }
@@ -204,7 +208,11 @@ public class UnitCounter {
                             // find mapping
                             String value = objectMapping.get(structObjItem.getItemSpecId());
                             if (value != null) {
-                                unitCountAction.addValue(value, 1);
+                                if (unitCountAction.isLocal()) {
+                                    unitCountAction.createDescItem(level.getNode(), value, 1);
+                                } else {
+                                    unitCountAction.addValue(value, 1);
+                                }
 
                                 // mark as counted
                                 countedObjects.add(packetId);

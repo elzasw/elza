@@ -1295,6 +1295,11 @@ var messages = {
     "arr.functions.persistentSort.sortError": "Prezistetntní řazení selhalo",
     "arr.functions.persistentSort.sortInterrupted": "Prezistetntní řazení bylo přerušeno",
 
+    "arr.functions.computeAndVizualizeEJ": "Výpočet a vizualizace EJ ",
+    "arr.functions.computeAndVizualizeEJ.success": "Výpočet a vizualizace EJ proběhlo úspěšně",
+    "arr.functions.computeAndVizualizeEJ.interrupted": "Výpočet a vizualizace EJ bylo přerušeno",
+    "arr.functions.computeAndVizualizeEJ.error": "Výpočet a vizualizace EJ selhalo",
+
     "requestQueue.title.requestQueue": "Požadavky ve frontě",
     "requestQueue.title.create": "Vytvořeno",
     "requestQueue.title.attemptToSend": "Poslední pokud o odeslání",
