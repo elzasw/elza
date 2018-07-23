@@ -90,7 +90,7 @@ public class ApFactory {
             ApAccessPoint ap = apRepository.findOne(id);
             return Validate.notNull(ap);
         }
-        Validate.isTrue(!apVO.getInvalid());
+        Validate.isTrue(!apVO.isInvalid());
         // prepare type and scope
         StaticDataProvider staticData = staticDataService.getData();
         ApType type = staticData.getApTypeById(apVO.getTypeId());

@@ -278,7 +278,7 @@
 
         <sql>INSERT INTO ap_description (description_id, description, access_point_id)
             SELECT record_id, characteristics, record_id
-            FROM ap_record
+            FROM ap_record WHERE characteristics is not null
         </sql>
         <sql>
             update db_hibernate_sequences set next_val = (select coalesce(max(description_id),0)+1 from ap_description) where sequence_name = 'ap_description|description_id';
@@ -349,9 +349,19 @@
     </changeSet>
 
     <changeSet id="20180315114500" author="fric">
+    	<validCheckSum>7:f2b597aa8501d88efb9c8870e74c8739</validCheckSum>
+		<!-- create AP change and update sequence -->
+    	<sql>
+    		INSERT INTO ap_change (change_id, change_date, type) VALUES (1, now(), 'AP_IMPORT');
+    	</sql>
+        <insert tableName="db_hibernate_sequences">
+            <column name="sequence_name" value="ap_change|change_id"/>
+            <column name="next_val" value="2"/>
+        </insert>
+        <!-- add create and delete change columns -->
         <addColumn tableName="ap_external_id">
             <column name="create_change_id" type="int">
-                <constraints nullable="false" foreignKeyName="fk_external_id_create_change" references="ap_change(change_id)"/>
+                <constraints nullable="true" foreignKeyName="fk_external_id_create_change" references="ap_change(change_id)"/>
             </column>
             <column name="delete_change_id" type="int">
                 <constraints nullable="true" foreignKeyName="fk_external_id_delete_change" references="ap_change(change_id)"/>
@@ -359,7 +369,7 @@
         </addColumn>
         <addColumn tableName="ap_description">
             <column name="create_change_id" type="int">
-                <constraints nullable="false" foreignKeyName="fk_description_create_change" references="ap_change(change_id)"/>
+                <constraints nullable="true" foreignKeyName="fk_description_create_change" references="ap_change(change_id)"/>
             </column>
             <column name="delete_change_id" type="int">
                 <constraints nullable="true" foreignKeyName="fk_description_delete_change" references="ap_change(change_id)"/>
@@ -367,7 +377,7 @@
         </addColumn>
         <addColumn tableName="ap_name">
             <column name="create_change_id" type="int">
-                <constraints nullable="false" foreignKeyName="fk_name_create_change" references="ap_change(change_id)"/>
+                <constraints nullable="true" foreignKeyName="fk_name_create_change" references="ap_change(change_id)"/>
             </column>
             <column name="delete_change_id" type="int">
                 <constraints nullable="true" foreignKeyName="fk_name_delete_change" references="ap_change(change_id)"/>
@@ -375,12 +385,26 @@
         </addColumn>
         <addColumn tableName="ap_access_point">
             <column name="create_change_id" type="int">
-                <constraints nullable="false" foreignKeyName="fk_access_point_create_change" references="ap_change(change_id)"/>
+                <constraints nullable="true" foreignKeyName="fk_access_point_create_change" references="ap_change(change_id)"/>
             </column>
             <column name="delete_change_id" type="int">
                 <constraints nullable="true" foreignKeyName="fk_access_point_delete_change" references="ap_change(change_id)"/>
             </column>
         </addColumn>
+        <!-- update changes and drop invalid column -->
+        <sql>
+        	UPDATE ap_external_id SET create_change_id = 1;
+        	UPDATE ap_description SET create_change_id = 1;
+        	UPDATE ap_name SET create_change_id = 1;
+        	UPDATE ap_access_point SET create_change_id = 1;
+        	UPDATE ap_access_point SET delete_change_id = 1 WHERE invalid = true;
+        </sql>
+        <dropColumn tableName="ap_access_point" columnName="invalid"/>
+        <!-- add not null constraints to delete_change_id -->
+        <addNotNullConstraint tableName="ap_external_id" columnDataType="int" columnName="create_change_id"/>
+        <addNotNullConstraint tableName="ap_description" columnDataType="int" columnName="create_change_id"/>
+        <addNotNullConstraint tableName="ap_name" columnDataType="int" columnName="create_change_id"/>
+        <addNotNullConstraint tableName="ap_access_point" columnDataType="int" columnName="create_change_id"/>
     </changeSet>
 
     <changeSet id="20180704132000" author="todt">
@@ -409,9 +433,14 @@
     </changeSet>
 
     <changeSet id="20180713090700" author="slapa">
+    	<validCheckSum>7:4a7bb7e085f83a20b4fd51ff1246ca15</validCheckSum>
         <addColumn tableName="ap_name">
             <column name="full_name" type="nvarchar(2000)" />
         </addColumn>
+        <!-- only ap_name.name is set after migration so it will be our initial source of full_name value -->
+        <sql>
+        	UPDATE ap_name SET full_name = name;
+        </sql>
     </changeSet>
 
 </databaseChangeLog>

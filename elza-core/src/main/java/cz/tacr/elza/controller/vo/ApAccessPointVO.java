@@ -4,14 +4,10 @@ import cz.tacr.elza.controller.vo.ap.ApFormVO;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
-import java.util.Collections;
 
 
 /**
  * VO rejstříkového záznamu.
- *
- * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
- * @since 21.12.2015
  */
 public class ApAccessPointVO extends AbstractApAccessPoint {
 
@@ -19,17 +15,13 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
      * Id hesla.
      */
     private Integer id;
+
+    private String uuid;
+
     /**
      * Typ rejstříku.
      */
     private Integer typeId;
-
-    /**
-     * Id osoby.
-     */
-    // TODO: validate if needed, client should read if it's party AP by cached AP types
-    @Deprecated
-    private Integer partyId;
 
     /**
      * Id třídy rejstříku.
@@ -46,19 +38,24 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
      */
     private String characteristics;
 
+    private boolean invalid;
+
+    /**
+     * Id osoby.
+     */
+    // TODO: client should read if it's party AP by cached AP types and find party by AP if needed
+    @Deprecated
+    private Integer partyId;
+
     /**
      * Externí identifikátory rejstříkového hesla, například interpi.
      */
-    private Collection<ApExternalIdVO> externalIds = Collections.emptyList();
+    private Collection<ApExternalIdVO> externalIds;
 
     /**
      * Seznam jmen přístupového bodu.
      */
-    private Collection<ApAccessPointNameVO> names = Collections.emptyList();
-
-    private String uuid;
-
-    private boolean invalid;
+    private Collection<ApAccessPointNameVO> names;
 
     /**
      * Strukturované data formuláře pro AP. Vyplněné pouze v případě, že se jedná o strukturovaný typ.
@@ -70,23 +67,39 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
         return id;
     }
 
-    public void setId(final Integer id) {
+    public void setId(Integer id) {
         this.id = id;
+    }
+
+    public String getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
     }
 
     public Integer getTypeId() {
         return typeId;
     }
 
-    public void setTypeId(final Integer typeId) {
+    public void setTypeId(Integer typeId) {
         this.typeId = typeId;
+    }
+
+    public Integer getScopeId() {
+        return scopeId;
+    }
+
+    public void setScopeId(Integer scopeId) {
+        this.scopeId = scopeId;
     }
 
     public String getRecord() {
         return record;
     }
 
-    public void setRecord(final String record) {
+    public void setRecord(String record) {
         this.record = record;
     }
 
@@ -94,16 +107,16 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
         return characteristics;
     }
 
-    public void setCharacteristics(final String characteristics) {
+    public void setCharacteristics(String characteristics) {
         this.characteristics = characteristics;
     }
 
-    public Collection<ApExternalIdVO> getExternalIds() {
-        return externalIds;
+    public boolean isInvalid() {
+        return invalid;
     }
 
-    public void setExternalIds(final Collection<ApExternalIdVO> externalIds) {
-        this.externalIds = externalIds;
+    public void setInvalid(boolean invalid) {
+        this.invalid = invalid;
     }
 
     @Deprecated
@@ -112,45 +125,25 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
     }
 
     @Deprecated
-    public void setPartyId(final Integer partyId) {
+    public void setPartyId(Integer partyId) {
         this.partyId = partyId;
     }
 
-    public Integer getScopeId() {
-        return scopeId;
+    public Collection<ApExternalIdVO> getExternalIds() {
+        return externalIds;
     }
 
-    public void setScopeId(final Integer scopeId) {
-        this.scopeId = scopeId;
+    public void setExternalIds(Collection<ApExternalIdVO> externalIds) {
+        this.externalIds = externalIds;
     }
 
     public Collection<ApAccessPointNameVO> getNames() {
         return names;
     }
 
-    public void setNames(final Collection<ApAccessPointNameVO> names) {
+    public void setNames(Collection<ApAccessPointNameVO> names) {
         this.names = names;
     }
-
-    public String getUuid() {
-        return uuid;
-    }
-
-    public void setUuid(final String uuid) {
-        this.uuid = uuid;
-    }
-
-    public boolean getInvalid() {
-        return invalid;
-    }
-
-	public boolean isInvalid() {
-		return invalid;
-	}
-
-	public void setInvalid(final boolean invalid) {
-		this.invalid = invalid;
-	}
 
     @Nullable
     public ApFormVO getForm() {

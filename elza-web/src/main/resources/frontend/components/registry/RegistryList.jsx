@@ -126,51 +126,15 @@ class RegistryList extends AbstractReactComponent {
     };
 
     handleRegistryTypesSelectNavigation = (id) => {
-        this.handleFilterParentClear();
         this.handleFilterRegistryType({id});
-    };
-
-    handleFilterParentClear = () => {
-        this.dispatch(registryListFilter({
-            ...this.props.registryList.filter,
-            parents: [],
-            typesToRoot: null,
-            text: null,
-            registryParentId: null,
-            registryTypeId: null
-        }));
-    };
-
-    handleRegistrySetParent = (item) => {
-        if (!item.hierarchical) {
-            return
-        }
-        const {registryList: {recordForMove}} = this.props;
-
-        if (recordForMove && recordForMove.id === item.id) {
-            this.dispatch(addToastrWarning(i18n('registry.disallowedMoveAction.title'), i18n('registry.disallowedMoveAction.text')));
-            return false;
-        }
-
-        this.dispatch(registryListFilter({
-            ...this.props.registryList.filter,
-            parents: [
-                {id: item.id, name:item.record},
-                ...this.props.registryList.filter.parents
-            ],
-            typesToRoot: item.typesToRoot,
-            text: null,
-            registryParentId: item.id,
-            registryTypeId: item.apTypeId
-        }));
     };
 
     renderListItem = (props) => {
         const {item} = props;
         return <RegistryListItem 
             {...item}
-            onClick={this.handleRegistryDetail.bind(this, item)}
-            onDoubleClick={this.handleRegistrySetParent.bind(this,item)} />
+			apTypeIdMap = {this.props.apTypeIdMap}
+            onClick={this.handleRegistryDetail.bind(this, item)} />
     }
 
     /**
@@ -235,7 +199,6 @@ class RegistryList extends AbstractReactComponent {
                     activeIndex={activeIndex}
                     renderItemContent={this.renderListItem}
                     onFocus={this.handleRegistryDetail}
-                    onSelect={this.handleRegistrySetParent}
                 />;
             } else {
                 list = <div className='search-norecord'>{i18n('registry.list.noRecord')}</div>;
@@ -243,44 +206,6 @@ class RegistryList extends AbstractReactComponent {
         }
 
         const {filter} = registryList;
-
-        let navParents = null;
-
-        if (filter.registryTypeId !== null && filter.parents && filter.parents.length > 0) {
-            const tmpParents = filter.parents.slice();
-            const nazevRodice = tmpParents[0].name;
-            tmpParents.shift();
-
-            const cestaRodice = [];
-            tmpParents.map((val, index) => {
-                cestaRodice.push(<span className='clickAwaiblePath parentPath' key={index}  title={val.name} onClick={this.handleRegistryNavigation.bind(this,val.id)}>{val.name}</span>);
-            });
-
-            if (filter.typesToRoot) {
-                filter.typesToRoot.map((val, index) => {
-                    cestaRodice.push(<span className='clickAwaiblePath parentPath' key={index} title={val.name} onClick={this.handleRegistryTypesSelectNavigation.bind(this,val.id)} >{val.name}</span>);
-                });
-            }
-
-            const breadcrumbs = [];
-            cestaRodice.map((val, key) => {
-                if (key) {
-                    breadcrumbs.push(<span className='parentPath' key={key}><span className='parentPath'>&nbsp;|&nbsp;</span>{val}</span>);
-                } else {
-                    breadcrumbs.push(<span key={key} className='parentPath'>{val}</span>);
-                }
-            });
-
-            navParents = <div className="record-parent-info">
-                <div className='record-selected-name'>
-                    <div className="icon"><Icon glyph="fa-folder-open"/></div>
-                    <div className="title" title={nazevRodice}>{nazevRodice}</div>
-                    <div className="back" onClick={this.handleFilterParentClear}><Icon glyph="fa-close"/></div>
-                </div>
-                <div className='record-selected-breadcrumbs'>{breadcrumbs}</div>
-            </div>
-
-        }
 
         let apTypesWithAll = [...registryTypes];
         apTypesWithAll.unshift({name:this.registryTypeDefaultValue});
@@ -315,7 +240,6 @@ class RegistryList extends AbstractReactComponent {
                     allItemsCount={registryList.count}
                 />
             </div>
-            <div className='registry-list-breadcrumbs' key='breadcrumbs'>{navParents}</div>
             <StoreHorizontalLoader store={registryList}/>
             {list}
             {isFetched && registryList.filteredRows.length > maxSize && <span className="items-count">{i18n('party.list.itemsVisibleCountFrom', registryList.filteredRows.length, registryList.count)}</span>}
@@ -336,8 +260,9 @@ export default connect((state) => {
         focus,
         registryDetail,
         registryList,
-        registryTypes: recordTypes && recordTypes.items ? recordTypes.items : false,
-        scopes: scopesData.scopes,
-        userDetail
+        registryTypes: recordTypes.items,
+		apTypeIdMap: recordTypes.typeIdMap,
+		scopes: scopesData.scopes,
+        userDetail,
     }
 })(RegistryList);
