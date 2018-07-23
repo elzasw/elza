@@ -16,7 +16,7 @@ public class ApFormVO {
     private List<ApItemVO> items;
 
     /**
-     * typy atributů
+     * typy atributů (všechny kromě nemožných)
      */
     private List<ItemTypeLiteVO> itemTypes;
 

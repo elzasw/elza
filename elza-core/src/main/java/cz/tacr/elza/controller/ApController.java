@@ -367,7 +367,7 @@ public class ApController {
         Validate.notNull(fragmentTypeCode, "Kód typu fragmentu musí být vyplněn");
         ApFragmentType fragmentType = fragmentService.getFragmentType(fragmentTypeCode);
         ApFragment fragment = fragmentService.createFragment(fragmentType);
-        return apFactory.createVO(fragment);
+        return apFactory.createVO(fragment, true);
     }
 
     @Transactional
@@ -378,7 +378,7 @@ public class ApController {
 
         ApFragment fragment = fragmentService.getFragment(fragmentId);
         fragmentService.changeFragmentItems(fragment, items);
-        return apFactory.createVO(fragment);
+        return apFactory.createVO(fragment, true);
     }
 
     /**
@@ -404,7 +404,7 @@ public class ApController {
     public ApFragmentVO getFragment(@PathVariable final Integer fragmentId) {
         Validate.notNull(fragmentId, "Identifikátor fragmentu musí být vyplněn");
         ApFragment fragment = fragmentService.getFragment(fragmentId);
-        return apFactory.createVO(fragment);
+        return apFactory.createVO(fragment, true);
     }
 
     /**

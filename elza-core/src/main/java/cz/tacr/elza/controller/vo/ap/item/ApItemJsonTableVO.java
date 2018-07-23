@@ -2,6 +2,7 @@ package cz.tacr.elza.controller.vo.ap.item;
 
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataJsonTable;
 import cz.tacr.elza.domain.table.ElzaTable;
@@ -20,6 +21,15 @@ public class ApItemJsonTableVO extends ApItemVO {
      * celé číslo
      */
     private ElzaTable value;
+
+    public ApItemJsonTableVO() {
+    }
+
+    public ApItemJsonTableVO(final ApItem item) {
+        super(item);
+        ArrDataJsonTable data = (ArrDataJsonTable) item.getData();
+        value = data == null ? null : data.getValue();
+    }
 
     public ElzaTable getValue() {
         return value;

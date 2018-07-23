@@ -2,9 +2,7 @@ package cz.tacr.elza.controller.vo.ap.item;
 
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.core.data.DataType;
-import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.*;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
 
@@ -21,6 +19,15 @@ public class ApItemAccessPointRefVO extends ApItemVO {
     private ApAccessPointVO accessPoint;
 
     private Integer value;
+
+    public ApItemAccessPointRefVO() {
+    }
+
+    public ApItemAccessPointRefVO(final ApItem item) {
+        super(item);
+        ArrDataRecordRef data = (ArrDataRecordRef) item.getData();
+        value = data == null ? null : data.getRecordId();
+    }
 
     public ApAccessPointVO getAccessPoint() {
         return accessPoint;

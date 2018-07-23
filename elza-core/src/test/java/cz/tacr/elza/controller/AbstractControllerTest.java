@@ -1176,9 +1176,14 @@ public abstract class AbstractControllerTest extends AbstractTest {
                                          final Object value,
                                          final Integer position,
                                          final Integer objectId) {
+        return buildApItem(updateOp, buildApItem(typeCode, specCode, value, position, objectId));
+    }
+
+    protected ApUpdateItemVO buildApItem(final UpdateOp updateOp,
+                                         final ApItemVO item) {
         ApUpdateItemVO updateItem = new ApUpdateItemVO();
         updateItem.setUpdateOp(updateOp);
-        updateItem.setItem(buildApItem(typeCode, specCode, value, position, objectId));
+        updateItem.setItem(item);
         return updateItem;
     }
 

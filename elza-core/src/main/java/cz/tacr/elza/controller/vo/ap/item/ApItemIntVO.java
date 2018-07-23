@@ -1,6 +1,7 @@
 package cz.tacr.elza.controller.vo.ap.item;
 
 import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataInteger;
 
@@ -15,6 +16,15 @@ public class ApItemIntVO extends ApItemVO {
      * celé číslo
      */
     private Integer value;
+
+    public ApItemIntVO() {
+    }
+
+    public ApItemIntVO(final ApItem item) {
+        super(item);
+        ArrDataInteger data = (ArrDataInteger) item.getData();
+        value = data == null ? null : data.getValue();
+    }
 
     public Integer getValue() {
         return value;

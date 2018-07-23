@@ -1,9 +1,12 @@
 package cz.tacr.elza.repository;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import cz.tacr.elza.domain.ApAccessPoint;
@@ -15,6 +18,9 @@ public interface ApDescriptionRepository extends ElzaJpaRepository<ApDescription
 
     @Query("SELECT dsc FROM ap_description dsc WHERE dsc.accessPoint = ?1 and dsc.deleteChangeId is null")
     ApDescription findByAccessPoint(ApAccessPoint accessPoint);
+
+    @Query("SELECT dsc FROM ap_description dsc WHERE dsc.accessPoint IN :accessPoints AND dsc.deleteChangeId IS NULL")
+    List<ApDescription> findByAccessPoints(@Param("accessPoints") Collection<ApAccessPoint> accessPoints);
 
     @Modifying
     @Query("UPDATE ap_description dsc SET dsc.deleteChange=?2 WHERE dsc.accessPointId IN ?1 AND dsc.deleteChangeId IS NULL")

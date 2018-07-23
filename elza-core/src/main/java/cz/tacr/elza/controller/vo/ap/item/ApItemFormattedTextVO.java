@@ -1,7 +1,7 @@
 package cz.tacr.elza.controller.vo.ap.item;
 
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataText;
 
@@ -16,6 +16,15 @@ public class ApItemFormattedTextVO extends ApItemVO {
      * formátovaný text
      */
     private String value;
+
+    public ApItemFormattedTextVO() {
+    }
+
+    public ApItemFormattedTextVO(final ApItem item) {
+        super(item);
+        ArrDataText data = (ArrDataText) item.getData();
+        value = data == null ? null : data.getValue();
+    }
 
     public String getValue() {
         return value;

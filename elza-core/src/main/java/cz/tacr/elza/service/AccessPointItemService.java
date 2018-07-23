@@ -6,21 +6,21 @@ import cz.tacr.elza.controller.vo.nodes.descitems.UpdateOp;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.*;
+import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApChangeRepository;
 import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.security.UserDetail;
 import org.apache.commons.lang3.NotImplementedException;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -79,14 +79,92 @@ public class AccessPointItemService {
         }
 
         ApChange change = createChange(ApChange.Type.FRAGMENT_CHANGE);
+        deleteItems(deleteItems, typeIdItemsMap, itemsDb, objectIdItemMap, change);
         createItems(createItems, typeIdItemsMap, itemsDb, change, create);
+        updateItems(updateItems, typeIdItemsMap, itemsDb, objectIdItemMap, change);
 
         itemRepository.save(itemsDb);
+    }
+
+    private void updateItems(final List<ApItemVO> updateItems,
+                             final Map<Integer, List<ApItem>> typeIdItemsMap,
+                             final List<ApItem> itemsDb,
+                             final Map<Integer, ApItem> objectIdItemMap,
+                             final ApChange change) {
+        List<ArrData> dataToSave = new ArrayList<>();
+        for (ApItemVO updateItem : updateItems) {
+            Integer objectId = updateItem.getObjectId();
+            ApItem item = objectIdItemMap.get(objectId);
+            if (item == null) {
+                throw new ObjectNotFoundException("Položka neexistuje", BaseCode.ID_NOT_EXIST).setId(objectId);
+            }
+
+            List<ApItem> existsItems = typeIdItemsMap.computeIfAbsent(item.getItemTypeId(), k -> new ArrayList<>());
+            ArrData data = updateItem.createDataEntity(em);
+            ApItem newItem = item.copy();
+            item.setDeleteChange(change);
+            newItem.setCreateChange(change);
+            newItem.setData(data);
+
+            dataToSave.add(data);
+
+            itemsDb.add(newItem);
+            existsItems.add(newItem);
+
+            Integer oldPosition = item.getPosition();
+            Integer newPosition = updateItem.getPosition();
+            Validate.notNull(newPosition);
+            if (!Objects.equals(oldPosition, newPosition)) {
+                Validate.isTrue(newPosition > 0);
+                newPosition = Math.min(newPosition, findMaxPosition(existsItems));
+                List<ApItem> itemsToShift = findItemsBetween(existsItems, oldPosition, newPosition);
+                newItem.setPosition(newPosition);
+                itemsToShift.remove(newItem);
+                List<ApItem> newItems = shiftItems(itemsToShift, oldPosition.compareTo(newPosition), change);
+                itemsDb.addAll(newItems);
+                existsItems.addAll(newItems);
+            }
+        }
+        dataRepository.save(dataToSave);
+    }
+
+    private int findMaxPosition(final List<ApItem> items) {
+        int max = 1;
+        for (ApItem item : items) {
+            if (item.getDeleteChange() == null) {
+                if (item.getPosition() > max) {
+                    max = item.getPosition();
+                }
+            }
+        }
+        return max;
+    }
+
+    private void deleteItems(final List<ApItemVO> deleteItems,
+                             final Map<Integer, List<ApItem>> typeIdItemsMap,
+                             final List<ApItem> itemsDb,
+                             final Map<Integer, ApItem> objectIdItemMap,
+                             final ApChange change) {
+        for (ApItemVO deleteItem : deleteItems) {
+            Integer objectId = deleteItem.getObjectId();
+            ApItem item = objectIdItemMap.get(objectId);
+            if (item == null) {
+                throw new ObjectNotFoundException("Položka neexistuje", BaseCode.ID_NOT_EXIST).setId(objectId);
+            }
+
+            item.setDeleteChange(change);
+            List<ApItem> existsItems = typeIdItemsMap.computeIfAbsent(item.getItemTypeId(), k -> new ArrayList<>());
+            List<ApItem> itemsToShift = findItemsGE(existsItems, item.getPosition());
+            List<ApItem> newItems = shiftItems(itemsToShift, -1, change);
+            itemsDb.addAll(newItems);
+            existsItems.addAll(newItems);
+        }
     }
 
     private static Random r = new Random();
 
     private int nextObjectId() {
+        // TODO: předělat na DB sequence (ideálně přes hibernate)
         return r.nextInt();
     }
 
@@ -154,6 +232,19 @@ public class AccessPointItemService {
         return result;
     }
 
+    private List<ApItem> findItemsBetween(final List<ApItem> items, final int aPosition, final int bPosition) {
+        int minPosition = Math.min(aPosition, bPosition);
+        int maxPosition = Math.max(aPosition, bPosition);
+        List<ApItem> result = new ArrayList<>();
+        for (ApItem item : items) {
+            if (item.getDeleteChange() == null) {
+                if (item.getPosition() >= minPosition && item.getPosition() <= maxPosition) {
+                    result.add(item);
+                }
+            }
+        }
+        return result;
+    }
 
     private int nextPosition(final List<ApItem> existsItems) {
         if (existsItems.size() == 0) {

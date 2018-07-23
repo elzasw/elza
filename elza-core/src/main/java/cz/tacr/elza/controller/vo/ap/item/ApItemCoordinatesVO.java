@@ -4,6 +4,7 @@ import com.vividsolutions.jts.geom.Geometry;
 import cz.tacr.elza.common.GeometryConvertor;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataCoordinates;
 
@@ -18,6 +19,15 @@ public class ApItemCoordinatesVO extends ApItemVO {
      * Souřadnice.
      */
     private String value;
+
+    public ApItemCoordinatesVO() {
+    }
+
+    public ApItemCoordinatesVO(final ApItem item) {
+        super(item);
+        ArrDataCoordinates data = (ArrDataCoordinates) item.getData();
+        value = data == null ? null : GeometryConvertor.convert(data.getValue());
+    }
 
     public String getValue() {
         return value;

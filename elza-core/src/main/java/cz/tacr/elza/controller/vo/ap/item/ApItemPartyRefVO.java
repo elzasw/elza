@@ -4,6 +4,7 @@ package cz.tacr.elza.controller.vo.ap.item;
 import cz.tacr.elza.controller.vo.ParPartyVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataPartyRef;
 import cz.tacr.elza.domain.ParParty;
@@ -25,6 +26,15 @@ public class ApItemPartyRefVO extends ApItemVO {
     private ParPartyVO party;
 
     private Integer value;
+
+    public ApItemPartyRefVO() {
+    }
+
+    public ApItemPartyRefVO(final ApItem item) {
+        super(item);
+        ArrDataPartyRef data = (ArrDataPartyRef) item.getData();
+        value = data == null ? null : data.getPartyId();
+    }
 
     public ParPartyVO getParty() {
         return party;

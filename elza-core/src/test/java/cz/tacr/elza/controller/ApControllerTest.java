@@ -7,9 +7,11 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import cz.tacr.elza.controller.vo.*;
+import cz.tacr.elza.controller.vo.ap.ApFormVO;
 import cz.tacr.elza.controller.vo.ap.ApFragmentTypeVO;
 import cz.tacr.elza.controller.vo.ap.ApFragmentVO;
 import cz.tacr.elza.controller.vo.ap.ApStateVO;
+import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
 import cz.tacr.elza.controller.vo.ap.item.ApUpdateItemVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
@@ -36,7 +38,6 @@ public class ApControllerTest extends AbstractControllerTest {
     public static final String STAT_ZASTUPCE = "STAT_ZASTUPCE";
 
     @Test
-    @Ignore
     public void getRecordTypesTest() {
         getRecordTypes();
     }
@@ -45,7 +46,6 @@ public class ApControllerTest extends AbstractControllerTest {
      * Vrací všechny třídy rejstříků z databáze.
      */
     @Test
-    @Ignore
     public void getAllScopesTest() {
         getAllScopes();
     }
@@ -65,7 +65,6 @@ public class ApControllerTest extends AbstractControllerTest {
      * Testování vytvoření, upravení a smazání scope
      */
     @Test
-    @Ignore
     public void createUpdateDeleteScopesTest() {
         ApScopeVO scopeVO = new ApScopeVO();
         scopeVO.setName("Testing");
@@ -110,6 +109,40 @@ public class ApControllerTest extends AbstractControllerTest {
 
         ApFragmentVO fragmentConfirmed = getFragment(fragment.getId());
         Assert.assertEquals(ApStateVO.OK, fragmentConfirmed.getState());
+
+        items = new ArrayList<>();
+        RulDescItemTypeExtVO nadType = findDescItemTypeByCode("ZP2015_NAD");
+        items.add(buildApItem(UpdateOp.CREATE, nadType.getCode(), null, 1, null, null));
+        items.add(buildApItem(UpdateOp.CREATE, nadType.getCode(), null, 2, null, null));
+        items.add(buildApItem(UpdateOp.CREATE, nadType.getCode(), null, 3, 1, null));
+        items.add(buildApItem(UpdateOp.CREATE, nadType.getCode(), null, 4, 8, null));
+        items.add(buildApItem(UpdateOp.CREATE, nadType.getCode(), null, 5, 2, null));
+        fragment = changeFragmentItems(fragment.getId(), items);
+
+        ApFormVO fragmentForm = fragment.getForm();
+        List<ApItemVO> fragmentItems = fragmentForm.getItems();
+        ApItemVO itemVO = fragmentItems.get(2);
+
+        items = new ArrayList<>();
+        items.add(buildApItem(UpdateOp.DELETE, nadType.getCode(), null, null, null, itemVO.getObjectId()));
+        fragment = changeFragmentItems(fragment.getId(), items);
+
+        fragmentForm = fragment.getForm();
+        fragmentItems = fragmentForm.getItems();
+        itemVO = fragmentItems.get(5);
+
+        itemVO.setPosition(2);
+        items = new ArrayList<>();
+        items.add(buildApItem(UpdateOp.UPDATE, itemVO));
+
+        ApFragmentVO fragmentUpdated = changeFragmentItems(fragment.getId(), items);
+        ApFormVO fragmentUpdatedForm = fragmentUpdated.getForm();
+        List<ApItemVO> fragmentUpdatedItems = fragmentUpdatedForm.getItems();
+
+        Assert.assertEquals(fragmentItems.get(2).getObjectId(), fragmentUpdatedItems.get(2).getObjectId());
+        Assert.assertEquals(fragmentItems.get(3).getObjectId(), fragmentUpdatedItems.get(4).getObjectId());
+        Assert.assertEquals(fragmentItems.get(4).getObjectId(), fragmentUpdatedItems.get(5).getObjectId());
+        Assert.assertEquals(fragmentItems.get(5).getObjectId(), fragmentUpdatedItems.get(3).getObjectId());
     }
 
     @Test
@@ -154,7 +187,6 @@ public class ApControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    @Ignore
     public void registerReplaceTest() {
         // Vytvoření fund
         ArrFundVO fund = createFund("RegisterLinks Test AP", "IC3");

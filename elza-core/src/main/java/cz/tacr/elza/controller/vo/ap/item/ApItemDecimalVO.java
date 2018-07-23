@@ -1,6 +1,7 @@
 package cz.tacr.elza.controller.vo.ap.item;
 
 import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataDecimal;
 
@@ -17,6 +18,15 @@ public class ApItemDecimalVO extends ApItemVO {
      * desetinné číslo
      */
     private BigDecimal value;
+
+    public ApItemDecimalVO() {
+    }
+
+    public ApItemDecimalVO(final ApItem item) {
+        super(item);
+        ArrDataDecimal data = (ArrDataDecimal) item.getData();
+        value = data == null ? null : data.getValue();
+    }
 
     public BigDecimal getValue() {
         return value;

@@ -19,4 +19,16 @@ when
     $itemType : RulItemTypeExt(code in ("VZTAH_TYP", "VZTAH_ENTITA"))
 then
     $itemType.setType(RulItemType.Type.REQUIRED);
+    $itemType.setRepeatable(false);
+end
+
+rule "Možné typy vztahů"
+no-loop
+when
+    $itemType : RulItemTypeExt(code == "VZTAH_TYP")
+    $itemSpec : RulItemSpecExt(code in ("VZTAH_TYP_PRIMATOR",
+                                        "VZTAH_TYP_TAJEMNIK")) from $itemType.rulItemSpecList
+then
+    $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+    $itemSpec.setRepeatable(false);
 end

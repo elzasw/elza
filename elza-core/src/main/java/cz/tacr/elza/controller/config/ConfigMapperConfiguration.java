@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import cz.tacr.elza.controller.factory.RuleFactory;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -1162,19 +1163,8 @@ public class ConfigMapperConfiguration {
 
         @Override
         public Integer convertTo(final RulItemType.Type type,
-                                                 final Type<Integer> type2) {
-            switch (type) {
-                case REQUIRED:
-                    return 3;
-                case RECOMMENDED:
-                    return 2;
-                case POSSIBLE:
-                    return 1;
-                case IMPOSSIBLE:
-                    return 0;
-                default:
-                    throw new IllegalStateException("Type convert not defined: " + type);
-            }
+                                 final Type<Integer> type2) {
+            return RuleFactory.convertType(type);
         }
 
         @Override
@@ -1202,18 +1192,7 @@ public class ConfigMapperConfiguration {
         @Override
         public Integer convertTo(final RulItemSpec.Type type,
                                                  final Type<Integer> type2) {
-            switch (type) {
-                case REQUIRED:
-                    return 3;
-                case RECOMMENDED:
-                    return 2;
-                case POSSIBLE:
-                    return 1;
-                case IMPOSSIBLE:
-                    return 0;
-                default:
-                    throw new IllegalStateException("Type convert not defined: " + type);
-            }
+            return RuleFactory.convertType(type);
         }
 
         @Override

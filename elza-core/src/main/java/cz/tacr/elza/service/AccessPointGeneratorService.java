@@ -83,6 +83,10 @@ public class AccessPointGeneratorService {
             fragmentErrorDescription.setEmptyValue(true);
             state = ApState.ERROR;
         }
+        if (CollectionUtils.isNotEmpty(fragmentErrorDescription.getImpossibleItemTypeIds())
+                || CollectionUtils.isNotEmpty(fragmentErrorDescription.getRequiredItemTypeIds())) {
+            state = ApState.ERROR;
+        }
         fragment.setValue(value);
         fragment.setErrorDescription(fragmentErrorDescription.asJsonString());
         fragment.setState(stateOld == ApState.TEMP ? ApState.TEMP : state);
@@ -170,7 +174,7 @@ public class AccessPointGeneratorService {
             impossibleItemTypeIds = new ArrayList<>();
         }
 
-        static public FragmentErrorDescription fromJson(String json) {
+        public static FragmentErrorDescription fromJson(String json) {
             ObjectReader reader = objectMapper.readerFor(FragmentErrorDescription.class);
             try {
                 return reader.readValue(json);

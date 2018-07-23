@@ -2,6 +2,7 @@ package cz.tacr.elza.controller.vo.ap.item;
 
 import cz.tacr.elza.core.data.CalendarType;
 import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.convertor.CalendarConverter;
@@ -26,6 +27,18 @@ public class ApItemUnitdateVO extends ApItemVO {
      * identifikátor kalendáře
      */
     private Integer calendarTypeId;
+
+    public ApItemUnitdateVO() {
+    }
+
+    public ApItemUnitdateVO(final ApItem item) {
+        super(item);
+        ArrDataUnitdate data = (ArrDataUnitdate) item.getData();
+        if (data != null) {
+            value = UnitDateConvertor.convertToString(data);
+            calendarTypeId = data.getCalendarTypeId();
+        }
+    }
 
     public String getValue() {
         return value;
