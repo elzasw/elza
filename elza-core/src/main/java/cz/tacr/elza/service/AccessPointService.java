@@ -1601,7 +1601,7 @@ public class AccessPointService {
             Iterator<ApName> existsNamesIterator = existsNames.iterator();
             ApName existsPreferredName = existsNamesIterator.next();
 
-            if (equalsNames(existsPreferredName, preferredName)) {
+            if (!equalsNames(existsPreferredName, preferredName)) {
                 updateAccessPointName(accessPoint, existsPreferredName, preferredName.getName(), preferredName.getComplement(), preferredName.getLanguage(), change.get());
             }
 
@@ -1613,7 +1613,7 @@ public class AccessPointService {
                 if (nHas && eNHas) { // pokud oba existují, aktualizujeme
                     ApName existsName = existsNamesIterator.next();
                     ApName name = namesIterator.next();
-                    if (equalsNames(existsName, name)) {
+                    if (!equalsNames(existsName, name)) {
                         updateAccessPointName(accessPoint, existsName, name.getName(), name.getComplement(), name.getLanguage(), change.get());
                     }
                 } else if (nHas) { // pokud existuje pouze nový, zakládáme
