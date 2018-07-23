@@ -191,6 +191,36 @@ class RegistryDetail extends AbstractReactComponent {
         }
     }
 
+	getApId = (ap) => {
+		const eids = ap.externalIds;
+		if (!eids || eids.length == 0) {
+			return ap.id;
+		}
+	
+		let eidArr = [];
+		eids.forEach(eid => {
+			// TODO: read eid type name from refTables by id
+			const eidTypeName =  "eid_type_name-" + eid.typeId;
+			eidArr.push(eidTypeName + ":" + eid.value);
+		});
+		return eidArr.join(", ");
+    }
+
+    renderApTypeNames = (apTypeId, delimiter) => {
+		const type = this.props.apTypeIdMap[apTypeId];
+        let elements = [];
+		
+        if (type.parents) {
+			type.parents.reverse().forEach((name, i) => {
+				elements.push(<span key={"name-" + i} className="hierarchy-level">{name.toUpperCase()}</span>);
+				elements.push(<span key={"delimiter-" + i} className="hierarchy-delimiter">{delimiter}</span>);
+			})
+		}
+		elements.push(<span key="name-main" className="hierarchy-level main">{type.name.toUpperCase()}</span>);
+        
+		return elements;
+    }
+
     getScopeLabel = (scopeId, scopes) => {
         return scopeId && scopes[0].scopes.find(scope => (scope.id === scopeId)).name.toUpperCase();
     };
@@ -229,7 +259,7 @@ class RegistryDetail extends AbstractReactComponent {
 
         let icon = 'fa-folder';
 
-        if (registryDetail.data) {
+        if (data) {
             icon = 'fa-file-o';
         }
 
@@ -251,6 +281,9 @@ class RegistryDetail extends AbstractReactComponent {
             headerCls += " invalid";
         }
 
+        const delimiter = <Icon glyph="fa-angle-right"/>;
+		const apTypeNames = this.renderApTypeNames(data.typeId, delimiter);
+		
         return <div className='registry'>
             <Shortcuts name='RegistryDetail' handler={this.handleShortcuts} global>
                 <div className="registry-detail">
@@ -273,12 +306,12 @@ class RegistryDetail extends AbstractReactComponent {
                                 </div>
                             </div>
                             <div>
-                                <div className="description">{this.getRecordId(data)}</div>
-                                <div>{dateTimeToString(new Date(data.lastUpdate))}</div>
+                                <div className="description">{this.getApId(data)}</div>
                             </div>
                         </div>
                     </div>
                     <div className="registry-type">
+						{apTypeNames}
                         {data.scopeId && <span className="scope-label">
                             {scopes && this.getScopeLabel(data.scopeId, scopes)}
                         </span>}
@@ -306,6 +339,7 @@ export default connect((state) => {
         focus,
         registryDetail,
         userDetail,
-        scopes: refTables.scopesData.scopes
+        scopes: refTables.scopesData.scopes,
+		apTypeIdMap: refTables.recordTypes.typeIdMap
     }
 })(RegistryDetail);
