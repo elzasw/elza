@@ -111,6 +111,14 @@ public class PartyControllerTest extends AbstractControllerTest {
         partyNameO1.setDisplayName("O1");
         partyNameO1.setMainPart("O1");
         partyNameO1.setPrefferedName(true);
+        ParPartyNameVO partyNameO2 = new ParPartyNameVO();
+        partyNameO2.setDegreeAfter("O2 After");
+        partyNameO2.setDegreeBefore("O2 Before");
+        partyNameO2.setOtherPart("O2 Other");
+        partyNameO2.setNote("O2 Note");
+        partyNameO2.setDisplayName("O2");
+        partyNameO2.setMainPart("O2");
+        partyNameO2.setPrefferedName(true);
 
         partyNameO1.setNameFormType(typePrimaryName);
         personO1.setPartyNames(Collections.singletonList(partyNameO1));
@@ -210,6 +218,14 @@ public class PartyControllerTest extends AbstractControllerTest {
         newPersonName.setNote("Poznámka jména");
         newPersonName.setValidFrom(testFromDate);
         newPersonName.setValidTo(testToDate);
+        /* Změna jména a přidání doplňků */
+        ParPartyNameVO newPersonName2 = new ParPartyNameVO();
+        newPersonName2.setDisplayName("ABCDE");
+        newPersonName2.setMainPart("ABCDE");
+        newPersonName2.setNameFormType(typePrimaryName);
+        newPersonName2.setNote("Poznámka jména 2");
+        newPersonName2.setValidFrom(testFromDate);
+        newPersonName2.setValidTo(testToDate);
 
         // complement
         ParPartyNameComplementVO complement1 = new ParPartyNameComplementVO();
@@ -233,9 +249,9 @@ public class PartyControllerTest extends AbstractControllerTest {
         Assert.assertTrue("Očekáváme 2 doplňková jména", personO1.getPartyNames().get(1).getPartyNameComplements().size() == 2);
 
         /* Změna preferovaného jména **/
-        partyNameO1.setPrefferedName(false);
-        newPersonName.setPrefferedName(true);
-        personO1.setPartyNames(Arrays.asList(partyNameO1, newPersonName));
+        partyNameO2.setPrefferedName(false);
+        newPersonName2.setPrefferedName(true);
+        personO1.setPartyNames(Arrays.asList(partyNameO2, newPersonName2));
         personO1 = (ParPersonVO) updateParty(personO1);
 
         /* Změna attributů osoby **/
