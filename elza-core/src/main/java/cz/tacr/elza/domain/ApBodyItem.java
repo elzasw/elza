@@ -23,6 +23,11 @@ public class ApBodyItem extends ApItem {
     public ApBodyItem() {
     }
 
+    @Override
+    public ApBodyItem copy() {
+        return new ApBodyItem(this);
+    }
+
     public ApBodyItem(final ApBodyItem other) {
         super(other);
         this.accessPoint = other.accessPoint;

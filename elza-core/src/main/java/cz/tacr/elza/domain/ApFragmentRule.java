@@ -38,6 +38,9 @@ public class ApFragmentRule {
     @JoinColumn(name = "fragmentTypeId", nullable = false)
     private ApFragmentType fragmentType;
 
+    @Column(updatable = false, insertable = false, nullable = false)
+    private Integer fragmentTypeId;
+
     @Enumerated(EnumType.STRING)
     @Column(length = StringLength.LENGTH_ENUM, nullable = false)
     private ApFragmentRule.RuleType ruleType;
@@ -58,12 +61,17 @@ public class ApFragmentRule {
         this.component = component;
     }
 
-    public ApFragmentType getRuleSystem() {
+    public ApFragmentType getFragmentType() {
         return fragmentType;
     }
 
-    public void setRuleSystem(final ApFragmentType fragmentType) {
+    public void setFragmentType(final ApFragmentType fragmentType) {
         this.fragmentType = fragmentType;
+        this.fragmentTypeId = fragmentType == null ? null : fragmentType.getFragmentTypeId();
+    }
+
+    public Integer getFragmentTypeId() {
+        return fragmentTypeId;
     }
 
     public RuleType getRuleType() {

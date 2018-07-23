@@ -240,4 +240,25 @@
         </createTable>
     </changeSet>
 
+    <changeSet id="20180718125300" author="slapa">
+        <addColumn tableName="rul_item_type">
+            <column name="fragment_type_id" type="int">
+                <constraints foreignKeyName="fk_rul_item_type_fragment_type"
+                             referencedTableName="ap_fragment_type"
+                             referencedColumnNames="fragment_type_id"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20180718132200" author="slapa">
+        <addColumn tableName="ap_fragment">
+            <column name="fragment_type_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_ap_fragment_fragment_type"
+                             referencedTableName="ap_fragment_type"
+                             referencedColumnNames="fragment_type_id"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

@@ -247,7 +247,7 @@ public class ConfigMapperConfiguration {
     private ApFactory apFactory;
     @Autowired
     private StaticDataService staticDataService;
-    
+
     /**
      * @return Tovární třída.
      */
@@ -534,7 +534,7 @@ public class ConfigMapperConfiguration {
                                         final MappingContext context) {
                         ApAccessPoint ap = apFactory.create(parPartyVO.getAccessPoint());
                         party.setAccessPoint(ap);
-                        
+
                         if (CollectionUtils.isNotEmpty(parPartyVO.getCreators())) {
                             List<ParCreator> creators = new ArrayList<>(parPartyVO.getCreators().size());
                             for (ParPartyVO creator : parPartyVO.getCreators()) {
@@ -657,7 +657,7 @@ public class ConfigMapperConfiguration {
                                         final MappingContext context) {
                         ParRelation relation = parRelationEntity.getRelation();
                         parRelationEntityVO.setRelationId(relation.getRelationId());
-                        
+
                         ApAccessPointVO apVO = apFactory.createVO(parRelationEntity.getAccessPoint());
                         parRelationEntityVO.setRecord(apVO);
                     }
@@ -715,7 +715,7 @@ public class ConfigMapperConfiguration {
 
         mapperFactory.classMap(ArrDigitizationFrontdesk.class, ArrDigitizationFrontdeskSimpleVO.class).field("externalSystemId", "id").byDefault().register();
         mapperFactory.classMap(ArrDigitalRepository.class, ArrDigitalRepositorySimpleVO.class).field("externalSystemId", "id").byDefault().register();
-        
+
         mapperFactory.classMap(RulDataType.class, RulDataTypeVO.class).byDefault().field("dataTypeId", "id").register();
         mapperFactory.classMap(RulItemType.class, RulDescItemTypeDescItemsVO.class).byDefault().field(
                 "itemTypeId",
@@ -727,6 +727,7 @@ public class ConfigMapperConfiguration {
                 .field("itemTypeId", "id")
                 .field("rulItemSpecList", "descItemSpecs")
                 .field("structuredTypeId", "structureTypeId")
+                .field("fragmentTypeId", "fragmentTypeId")
                 .exclude("viewDefinition")
                 .byDefault()
                 .customize(new CustomMapper<RulItemTypeExt, RulDescItemTypeExtVO>() {
@@ -877,7 +878,7 @@ public class ConfigMapperConfiguration {
                         // create scope VO
                         ApScope apScope = usrPermission.getScope();
                         if (apScope != null) {
-                            usrPermissionVO.setScope(ApScopeVO.newInstance(apScope, staticDataService.getData()));    
+                            usrPermissionVO.setScope(ApScopeVO.newInstance(apScope, staticDataService.getData()));
                         }
                     }
                     @Override

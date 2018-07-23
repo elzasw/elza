@@ -4,16 +4,13 @@ import java.io.*;
 import java.util.List;
 import java.util.Map;
 
-import cz.tacr.elza.domain.RulStructureDefinition;
-import cz.tacr.elza.domain.RulStructureExtensionDefinition;
-import cz.tacr.elza.domain.RulStructuredType;
+import cz.tacr.elza.domain.*;
 import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.FileSystemUtils;
 
 import cz.tacr.elza.core.ResourcePathResolver;
-import cz.tacr.elza.domain.RulPackage;
 
 public class PackageUpdateContext {
 
@@ -32,6 +29,8 @@ public class PackageUpdateContext {
 	private final Map<String, ByteArrayInputStream> byteStreams;
 
 	private List<RulStructuredType> structuredTypes;
+
+	private List<ApFragmentType> fragmentTypes;
 
 	public PackageUpdateContext(ResourcePathResolver resourcePathResolver, Map<String, ByteArrayInputStream> byteStreams) {
 		this.resourcePathResolver = resourcePathResolver;
@@ -148,6 +147,29 @@ public class PackageUpdateContext {
 		}
 	}
 
+	public File getDir(ApFragmentRule fragmentRule) {
+		switch (fragmentRule.getRuleType()) {
+			case FRAGMENT_ITEMS:
+				return dirRules;
+			case TEXT_GENERATOR:
+				return dirGroovies;
+			default:
+				throw new NotImplementedException("Rule type: " + fragmentRule.getRuleType());
+		}
+	}
+
+	public File getDir(ApRule apRule) {
+		switch (apRule.getRuleType()) {
+			case BODY_ITEMS:
+			case NAME_ITEMS:
+				return dirRules;
+			case TEXT_GENERATOR:
+				return dirGroovies;
+			default:
+				throw new NotImplementedException("Rule type: " + apRule.getRuleType());
+		}
+	}
+
 	public File getDir(RulStructureExtensionDefinition def) {
 		switch (def.getDefType()) {
 			case ATTRIBUTE_TYPES:
@@ -165,5 +187,13 @@ public class PackageUpdateContext {
 
 	public void setStructureTypes(List<RulStructuredType> structuredTypes) {
 		this.structuredTypes = structuredTypes;
+	}
+
+	public List<ApFragmentType> getFragmentTypes() {
+		return fragmentTypes;
+	}
+
+	public void setFragmentTypes(final List<ApFragmentType> fragmentTypes) {
+		this.fragmentTypes = fragmentTypes;
 	}
 }

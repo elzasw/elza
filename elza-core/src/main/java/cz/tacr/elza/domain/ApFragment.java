@@ -36,6 +36,10 @@ public class ApFragment {
     @Type(type = "org.hibernate.type.TextType")
     private String errorDescription;
 
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApFragmentType.class)
+    @JoinColumn(name = "fragmentTypeId", nullable = false)
+    private ApFragmentType fragmentType;
+
     public Integer getFragmentId() {
         return fragmentId;
     }
@@ -67,4 +71,13 @@ public class ApFragment {
     public void setErrorDescription(final String errorDescription) {
         this.errorDescription = errorDescription;
     }
+
+    public ApFragmentType getFragmentType() {
+        return fragmentType;
+    }
+
+    public void setFragmentType(final ApFragmentType fragmentType) {
+        this.fragmentType = fragmentType;
+    }
+
 }

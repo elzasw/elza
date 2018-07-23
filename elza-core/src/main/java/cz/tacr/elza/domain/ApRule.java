@@ -48,6 +48,9 @@ public class ApRule {
     @JoinColumn(name = "ruleSystemId", nullable = false)
     private ApRuleSystem ruleSystem;
 
+    @Column(updatable = false, insertable = false, nullable = false)
+    private Integer ruleSystemId;
+
     @Enumerated(EnumType.STRING)
     @Column(length = StringLength.LENGTH_ENUM, nullable = false)
     private ApRule.RuleType ruleType;
@@ -74,6 +77,11 @@ public class ApRule {
 
     public void setRuleSystem(final ApRuleSystem ruleSystem) {
         this.ruleSystem = ruleSystem;
+        this.ruleSystemId = ruleSystem == null ? null : ruleSystem.getRuleSystemId();
+    }
+
+    public Integer getRuleSystemId() {
+        return ruleSystemId;
     }
 
     public RuleType getRuleType() {

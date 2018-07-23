@@ -23,6 +23,11 @@ public class ApNameItem extends ApItem {
     public ApNameItem() {
     }
 
+    @Override
+    public ApNameItem copy() {
+        return new ApNameItem(this);
+    }
+
     public ApNameItem(final ApNameItem other) {
         super(other);
         this.name = other.name;

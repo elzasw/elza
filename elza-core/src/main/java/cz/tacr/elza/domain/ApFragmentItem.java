@@ -21,6 +21,11 @@ public class ApFragmentItem extends ApItem {
     public ApFragmentItem() {
     }
 
+    @Override
+    public ApFragmentItem copy() {
+        return new ApFragmentItem(this);
+    }
+
     public ApFragmentItem(final ApFragmentItem other) {
         super(other);
         this.fragment = other.fragment;

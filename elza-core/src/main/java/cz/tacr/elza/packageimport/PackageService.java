@@ -163,6 +163,16 @@ public class PackageService {
     public static final String EXTERNAL_ID_TYPE_XML = "ap_external_id_type.xml";
 
     /**
+     * typy fragmentů
+     */
+    public static final String FRAGMENT_TYPE_XML = "ap_fragment_type.xml";
+
+    /**
+     * pravidla popisu ap
+     */
+    public static final String RULE_SYSTEM_XML = "ap_rule_system.xml";
+
+    /**
      * Složka templatů
      */
     public final String ZIP_DIR_TEMPLATES = "templates";
@@ -308,6 +318,18 @@ public class PackageService {
     private StructuredTypeRepository structureTypeRepository;
 
     @Autowired
+    private ApFragmentTypeRepository fragmentTypeRepository;
+
+    @Autowired
+    private ApFragmentRuleRepository fragmentRuleRepository;
+
+    @Autowired
+    private ApRuleSystemRepository ruleSystemRepository;
+
+    @Autowired
+    private ApRuleRepository ruleRepository;
+
+    @Autowired
     private StructureDefinitionRepository structureDefinitionRepository;
 
     @Autowired
@@ -366,6 +388,9 @@ public class PackageService {
             oldPackageDir = puc.getOldPackageDir();
             RulPackage rulPackage = puc.getPackage();
 
+            List<ApFragmentType> apFragmentTypes = processFragmentTypes(puc);
+            List<ApRuleSystem> apRuleSystems = processRuleSystems(puc);
+
             // OSOBY ---------------------------------------------------------------------------------------------------
 
             List<ParPartyType> parPartyTypes = partyTypeRepository.findAll();
@@ -398,7 +423,7 @@ public class PackageService {
             processRelationTypeRoleTypes(relationTypeRoleTypes, rulPackage, parRelationRoleTypes, parRelationTypes);
 
             RegisterTypes registerTypes = PackageUtils.convertXmlStreamToObject(RegisterTypes.class, mapEntry.get(REGISTER_TYPE_XML));
-            List<ApType> apTypes = processApTypes(registerTypes, rulPackage, parPartyTypes);
+            List<ApType> apTypes = processApTypes(registerTypes, rulPackage, parPartyTypes, apRuleSystems);
 
             RegistryRoles registryRoles = PackageUtils.convertXmlStreamToObject(RegistryRoles.class, mapEntry.get(REGISTRY_ROLE_XML));
             processRegistryRoles(registryRoles, rulPackage, parRelationRoleTypes, apTypes);
@@ -551,6 +576,226 @@ public class PackageService {
 
     }
 
+    private List<ApRuleSystem> processRuleSystems(final PackageUpdateContext puc) throws IOException {
+        RuleSystems ruleSystems = PackageUtils.convertXmlStreamToObject(RuleSystems.class,
+                puc.getByteStream(RULE_SYSTEM_XML));
+
+        List<ApRuleSystem> apRuleSystems = ruleSystemRepository.findByRulPackage(puc.getPackage());
+        Map<Integer, List<ApRule>> typeRules = apRuleSystems.isEmpty()
+                ? Collections.emptyMap()
+                : ruleRepository.findByRuleSystemIn(apRuleSystems).stream()
+                .collect(Collectors.groupingBy(ApRule::getRuleSystemId));
+
+        List<ApRuleSystem> apRuleSystemsNew = new ArrayList<>();
+        List<ApRule> apRulesNew = new ArrayList<>();
+
+        if (ruleSystems != null && !CollectionUtils.isEmpty(ruleSystems.getRuleSystems())) {
+            for (RuleSystem ruleSystem : ruleSystems.getRuleSystems()) {
+                ApRuleSystem item = findEntity(apRuleSystems, ruleSystem.getCode(), ApRuleSystem::getCode);
+                if (item == null) {
+                    item = new ApRuleSystem();
+                }
+                convertApRuleSystem(puc.getPackage(), ruleSystem, item);
+                ruleSystemRepository.save(item);
+                List<ApRule> apRules = typeRules.get(item.getRuleSystemId());
+                apRules = mergeApRules(apRules == null ? new ArrayList<>() : apRules, ruleSystem.getRules(), item, puc);
+                apRulesNew.addAll(apRules);
+                apRuleSystemsNew.add(item);
+            }
+        }
+
+        List<ApRuleSystem> apRuleSystemsDelete = new ArrayList<>(apRuleSystems);
+        apRuleSystemsDelete.removeAll(apRuleSystemsNew);
+
+        List<RulComponent> componentsDelete = new ArrayList<>();
+        List<ApRule> rulesDelete = new ArrayList<>();
+        for (ApRuleSystem apRuleSystem : apRuleSystemsDelete) {
+            List<ApRule> apRules = typeRules.get(apRuleSystem.getRuleSystemId());
+            for (ApRule apRule : apRules) {
+                RulComponent component = apRule.getComponent();
+                componentsDelete.add(component);
+                deleteFile(puc.getDir(apRule), component.getFilename());
+            }
+            rulesDelete.addAll(apRules);
+        }
+        ruleRepository.delete(rulesDelete);
+        componentRepository.delete(componentsDelete);
+        ruleSystemRepository.delete(apRuleSystemsDelete);
+
+        try {
+            for (ApRule apRule : apRulesNew) {
+                RulComponent component = apRule.getComponent();
+                updateComponentHash(puc, component, puc.getDir(apRule), getZipDir(apRule));
+            }
+        } catch (IOException e) {
+            throw new SystemException(e);
+        }
+
+        apRuleSystems.addAll(apRuleSystemsNew);
+        return apRuleSystems;
+    }
+
+    private void updateComponentHash(final PackageUpdateContext puc, final RulComponent component, final File dir, final String zipDir) throws IOException {
+        String filename = component.getFilename();
+        String hash = component.getHash();
+        File file = puc.saveFile(dir, zipDir, filename);
+        String newHash = PackageUtils.sha256File(file);
+        if (!StringUtils.equalsIgnoreCase(newHash, hash)) {
+            component.setHash(newHash);
+        }
+        componentRepository.save(component);
+    }
+
+    private List<ApRule> mergeApRules(final List<ApRule> apRules, final List<Rule> rules, final ApRuleSystem apRuleSystem, final PackageUpdateContext puc) throws IOException {
+        Validate.notEmpty(rules);
+        Validate.notNull(apRules);
+        List<ApRule> apRulesNew = new ArrayList<>();
+        for (Rule rule : rules) {
+            ApRule apRule = findEntity(apRules, rule.getRuleType(), ApRule::getRuleType);
+            if (apRule == null) {
+                apRule = new ApRule();
+                RulComponent component = new RulComponent();
+                component.setFilename(rule.getFilename());
+                apRule.setComponent(component);
+            } else {
+                RulComponent component = apRule.getComponent();
+                component.setFilename(rule.getFilename());
+            }
+            apRule.setRuleSystem(apRuleSystem);
+            apRule.setRuleType(rule.getRuleType());
+            apRulesNew.add(apRule);
+        }
+
+        List<ApRule> apRulesDelete = new ArrayList<>(apRules);
+        apRulesDelete.removeAll(apRulesNew);
+        for (ApRule apRule : apRulesDelete) {
+            deleteFile(puc.getDir(apRule), apRule.getComponent().getFilename());
+        }
+        List<RulComponent> componentsDelete = apRulesDelete.stream().map(ApRule::getComponent).collect(Collectors.toList());
+
+        ruleRepository.delete(apRulesDelete);
+        componentRepository.delete(componentsDelete);
+
+        List<RulComponent> components = apRulesNew.stream().map(ApRule::getComponent).collect(Collectors.toList());
+        componentRepository.save(components);
+
+        return ruleRepository.save(apRulesNew);
+    }
+
+    private void convertApRuleSystem(final RulPackage rulPackage, final RuleSystem ruleSystem, final ApRuleSystem apRuleSystem) {
+        apRuleSystem.setCode(ruleSystem.getCode());
+        apRuleSystem.setRulPackage(rulPackage);
+    }
+
+    private List<ApFragmentType> processFragmentTypes(final PackageUpdateContext puc) throws IOException {
+        FragmentTypes structureTypes = PackageUtils.convertXmlStreamToObject(FragmentTypes.class,
+                puc.getByteStream(FRAGMENT_TYPE_XML));
+
+        List<ApFragmentType> apFragmentTypes = fragmentTypeRepository.findByRulPackage(puc.getPackage());
+        Map<Integer, List<ApFragmentRule>> typeRules = apFragmentTypes.isEmpty()
+                ? Collections.emptyMap()
+                : fragmentRuleRepository.findByFragmentTypeIn(apFragmentTypes).stream()
+                .collect(Collectors.groupingBy(ApFragmentRule::getFragmentTypeId));
+
+        List<ApFragmentType> apFragmentTypesNew = new ArrayList<>();
+        List<ApFragmentRule> apFragmentRulesNew = new ArrayList<>();
+
+        if (structureTypes != null && !CollectionUtils.isEmpty(structureTypes.getFragmentTypes())) {
+            for (FragmentType fragmentType : structureTypes.getFragmentTypes()) {
+                ApFragmentType item = findEntity(apFragmentTypes, fragmentType.getCode(), ApFragmentType::getCode);
+                if (item == null) {
+                    item = new ApFragmentType();
+                }
+                convertApFragmentType(puc.getPackage(), fragmentType, item);
+                fragmentTypeRepository.save(item);
+                List<ApFragmentRule> apFragmentRules = typeRules.get(item.getFragmentTypeId());
+                apFragmentRules = mergeApFragmentRules(apFragmentRules == null ? new ArrayList<>() : apFragmentRules, fragmentType.getRules(), item, puc);
+                apFragmentRulesNew.addAll(apFragmentRules);
+                apFragmentTypesNew.add(item);
+            }
+
+        }
+
+        List<ApFragmentType> apFragmentTypesDelete = new ArrayList<>(apFragmentTypes);
+        apFragmentTypesDelete.removeAll(apFragmentTypesNew);
+
+        List<RulComponent> componentsDelete = new ArrayList<>();
+        List<ApFragmentRule> fragmentRulesDelete = new ArrayList<>();
+        for (ApFragmentType apFragmentType : apFragmentTypesDelete) {
+            List<ApFragmentRule> apFragmentRules = typeRules.get(apFragmentType.getFragmentTypeId());
+            for (ApFragmentRule apFragmentRule : apFragmentRules) {
+                RulComponent component = apFragmentRule.getComponent();
+                componentsDelete.add(component);
+                deleteFile(puc.getDir(apFragmentRule), component.getFilename());
+            }
+            fragmentRulesDelete.addAll(apFragmentRules);
+        }
+        fragmentRuleRepository.delete(fragmentRulesDelete);
+        componentRepository.delete(componentsDelete);
+        fragmentTypeRepository.delete(apFragmentTypesDelete);
+
+        try {
+            for (ApFragmentRule apFragmentRule : apFragmentRulesNew) {
+                RulComponent component = apFragmentRule.getComponent();
+                updateComponentHash(puc, component, puc.getDir(apFragmentRule), getZipDir(apFragmentRule));
+            }
+        } catch (IOException e) {
+            throw new SystemException(e);
+        }
+
+        apFragmentTypes.addAll(apFragmentTypesNew);
+        puc.setFragmentTypes(apFragmentTypes);
+        return apFragmentTypes;
+    }
+
+    private List<ApFragmentRule> mergeApFragmentRules(final List<ApFragmentRule> apFragmentRules,
+                                                      final List<FragmentRule> fragmentRules,
+                                                      final ApFragmentType apFragmentType,
+                                                      final PackageUpdateContext puc) throws IOException {
+        Validate.notEmpty(fragmentRules);
+        Validate.notNull(apFragmentRules);
+        List<ApFragmentRule> apFragmentRulesNew = new ArrayList<>();
+        for (FragmentRule fragmentRule : fragmentRules) {
+            ApFragmentRule apFragmentRule = findEntity(apFragmentRules, fragmentRule.getRuleType(), ApFragmentRule::getRuleType);
+            if (apFragmentRule == null) {
+                apFragmentRule = new ApFragmentRule();
+                RulComponent component = new RulComponent();
+                component.setFilename(fragmentRule.getFilename());
+                apFragmentRule.setComponent(component);
+            } else {
+                RulComponent component = apFragmentRule.getComponent();
+                component.setFilename(fragmentRule.getFilename());
+            }
+            apFragmentRule.setFragmentType(apFragmentType);
+            apFragmentRule.setRuleType(fragmentRule.getRuleType());
+            apFragmentRulesNew.add(apFragmentRule);
+        }
+
+        List<ApFragmentRule> apFragmentRulesDelete = new ArrayList<>(apFragmentRules);
+        apFragmentRulesDelete.removeAll(apFragmentRulesNew);
+        for (ApFragmentRule apFragmentRule : apFragmentRulesDelete) {
+            deleteFile(puc.getDir(apFragmentRule), apFragmentRule.getComponent().getFilename());
+        }
+        List<RulComponent> componentsDelete = apFragmentRulesDelete.stream().map(ApFragmentRule::getComponent).collect(Collectors.toList());
+
+        fragmentRuleRepository.delete(apFragmentRulesDelete);
+        componentRepository.delete(componentsDelete);
+
+        List<RulComponent> components = apFragmentRulesNew.stream().map(ApFragmentRule::getComponent).collect(Collectors.toList());
+        componentRepository.save(components);
+
+        return fragmentRuleRepository.save(apFragmentRulesNew);
+    }
+
+
+    private void convertApFragmentType(final RulPackage rulPackage,
+                                       final FragmentType fragmentType,
+                                       final ApFragmentType apFragmentType) {
+        apFragmentType.setCode(fragmentType.getCode());
+        apFragmentType.setName(fragmentType.getName());
+        apFragmentType.setRulPackage(rulPackage);
+    }
+
     /**
      * Provede synchronizaci typů externích identifikátorů.
      *
@@ -663,7 +908,7 @@ public class PackageService {
         return rulStructureDefinitionsNew;
     }
 
-    private String getZipDir(final RulStructureDefinition definition) {
+    public String getZipDir(final RulStructureDefinition definition) {
         switch (definition.getDefType()) {
             case ATTRIBUTE_TYPES:
                 return ZIP_DIR_RULES;
@@ -671,6 +916,29 @@ public class PackageService {
                 return ZIP_DIR_SCRIPTS;
             default:
                 throw new NotImplementedException("Def type: " + definition.getDefType());
+        }
+    }
+
+    public String getZipDir(final ApFragmentRule fragmentRule) {
+        switch (fragmentRule.getRuleType()) {
+            case FRAGMENT_ITEMS:
+                return ZIP_DIR_RULES;
+            case TEXT_GENERATOR:
+                return ZIP_DIR_SCRIPTS;
+            default:
+                throw new NotImplementedException("Rule type: " + fragmentRule.getRuleType());
+        }
+    }
+
+    public String getZipDir(final ApRule rule) {
+        switch (rule.getRuleType()) {
+            case BODY_ITEMS:
+            case NAME_ITEMS:
+                return ZIP_DIR_RULES;
+            case TEXT_GENERATOR:
+                return ZIP_DIR_SCRIPTS;
+            default:
+                throw new NotImplementedException("Rule type: " + rule.getRuleType());
         }
     }
 
@@ -935,11 +1203,13 @@ public class PackageService {
      * @param registerTypes vztahy typů tříd
      * @param rulPackage    balíček
      * @param parPartyTypes seznam typů osob
+     * @param apRuleSystems
      * @return seznam aktuálních záznamů
      */
     private List<ApType> processApTypes(@Nullable final RegisterTypes registerTypes,
-                                              @NotNull final RulPackage rulPackage,
-                                              @NotNull final List<ParPartyType> parPartyTypes) {
+                                        @NotNull final RulPackage rulPackage,
+                                        @NotNull final List<ParPartyType> parPartyTypes,
+                                        final List<ApRuleSystem> apRuleSystems) {
         // TODO: nacitani AP type musi byt serazeno podle urovni (recursive query) aby mohl byt zbytek
         // (nezaktualizovane typy) odstranen hierarchicky (linked hash map uchova poradi)
         Map<String, ApType> oldTypeCodeMap = apTypeRepository.findByRulPackage(rulPackage)
@@ -958,7 +1228,7 @@ public class PackageService {
                 if (type == null) {
                     type = new ApType();
                 }
-                convertRegisterToApType(rulPackage, registerType, type, parPartyTypes);
+                convertRegisterToApType(rulPackage, registerType, type, parPartyTypes, apRuleSystems);
                 newTypes.add(type);
             }
             // druhým průchodem nastavíme rodiče (stromová struktura)
@@ -982,19 +1252,32 @@ public class PackageService {
     /**
      * Konverze VO -> DO.
      *
-     * @param rulPackage       balíček
-     * @param registerType     vztah typů tříd - VO
-     * @param apType  vztah typů tříd - DO
-     * @param parPartyTypes    seznam typů osob
+     * @param rulPackage    balíček
+     * @param registerType  vztah typů tříd - VO
+     * @param apType        vztah typů tříd - DO
+     * @param parPartyTypes seznam typů osob
+     * @param apRuleSystems seznam pravidel ap
      */
     private void convertRegisterToApType(final RulPackage rulPackage,
-                                        final RegisterType registerType,
-                                        final ApType apType,
-                                        final List<ParPartyType> parPartyTypes) {
+                                         final RegisterType registerType,
+                                         final ApType apType,
+                                         final List<ParPartyType> parPartyTypes,
+                                         final List<ApRuleSystem> apRuleSystems) {
         apType.setRulPackage(rulPackage);
         apType.setCode(registerType.getCode());
         apType.setName(registerType.getName());
         apType.setReadOnly(registerType.isReadOnly());
+        if (StringUtils.isNotEmpty(registerType.getRuleSystem())) {
+            ApRuleSystem apRuleSystem = findEntity(apRuleSystems, registerType.getRuleSystem(), ApRuleSystem::getCode);
+            if (apRuleSystem == null) {
+                throw new ObjectNotFoundException("Nebyl nalezeny pravidla pro typ přístupového bodu", BaseCode.ID_NOT_EXIST)
+                        .setId(registerType.getRuleSystem());
+            }
+            apType.setRuleSystem(apRuleSystem);
+        } else {
+            apType.setRuleSystem(null);
+        }
+
         if (registerType.getPartyType() != null) {
             ParPartyType parPartyType = findEntity(parPartyTypes, registerType.getPartyType(), ParPartyType::getCode);
             if (parPartyType == null) {
@@ -3145,6 +3428,7 @@ public class PackageService {
         registerType.setReadOnly(apType.isReadOnly());
         registerType.setPartyType(apType.getPartyType() == null ? null : apType.getPartyType().getCode());
         registerType.setParentRegisterType(apType.getParentApType() == null ? null : apType.getParentApType().getCode());
+        registerType.setRuleSystem(apType.getRuleSystem() == null ? null : apType.getRuleSystem().getCode());
     }
 
     private void exportRegistryRoles(final RulPackage rulPackage, final ZipOutputStream zos) throws IOException {

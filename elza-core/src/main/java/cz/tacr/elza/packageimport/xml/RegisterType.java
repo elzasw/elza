@@ -26,6 +26,9 @@ public class RegisterType {
     @XmlAttribute(name = "parent-register-type")
     private String parentRegisterType;
 
+    @XmlAttribute(name = "rule-system")
+    private String ruleSystem;
+
     @XmlElement(name = "name", required = true)
     private String name;
 
@@ -54,6 +57,14 @@ public class RegisterType {
 
     public void setParentRegisterType(final String parentRegisterType) {
         this.parentRegisterType = parentRegisterType;
+    }
+
+    public String getRuleSystem() {
+        return ruleSystem;
+    }
+
+    public void setRuleSystem(final String ruleSystem) {
+        this.ruleSystem = ruleSystem;
     }
 
     public String getName() {

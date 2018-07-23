@@ -370,6 +370,18 @@ public class ItemTypeUpdater {
             }
         }
 
+        ApFragmentType apFragmentType = null;
+        if (DataType.APFRAG_REF == DataType.fromCode(itemType.getDataType())) {
+            List<ApFragmentType> findFragmentTypes = puc.getFragmentTypes().stream()
+                    .filter((r) -> r.getCode().equals(itemType.getFragmentType()))
+                    .collect(Collectors.toList());
+            if (findFragmentTypes.size() > 0) {
+                apFragmentType = findFragmentTypes.get(0);
+            } else {
+                throw new SystemException("Kód " + itemType.getFragmentType() + " neexistuje v ApFragmentType", BaseCode.ID_NOT_EXIST);
+            }
+        }
+
         rulDescItemType.setDataType(item);
         rulDescItemType.setShortcut(itemType.getShortcut());
         rulDescItemType.setDescription(itemType.getDescription());
@@ -377,6 +389,7 @@ public class ItemTypeUpdater {
         rulDescItemType.setCanBeOrdered(itemType.getCanBeOrdered());
         rulDescItemType.setUseSpecification(itemType.getUseSpecification());
         rulDescItemType.setStructuredType(rulStructureType);
+        rulDescItemType.setFragmentType(apFragmentType);
 
         if (itemType.getColumnsDefinition() != null) {
             List<ElzaColumn> elzaColumns = new ArrayList<>(itemType.getColumnsDefinition().size());

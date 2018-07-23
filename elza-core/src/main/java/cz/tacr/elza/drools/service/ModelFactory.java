@@ -9,20 +9,14 @@ import javax.annotation.Nullable;
 
 import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.DataType;
-import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDataInteger;
-import cz.tacr.elza.domain.ArrDataStructureRef;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.domain.ArrStructuredItem;
-import cz.tacr.elza.domain.ArrStructuredObject;
+import cz.tacr.elza.domain.*;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.drools.model.DescItem;
 import cz.tacr.elza.drools.model.Level;
 import cz.tacr.elza.drools.model.Structured;
 import cz.tacr.elza.repository.StructuredItemRepository;
 import cz.tacr.elza.drools.model.StructObjItem;
+import cz.tacr.elza.service.vo.SimpleItem;
 
 /**
  * Factory method for the base Drools model objects.
@@ -158,4 +152,23 @@ public class ModelFactory {
 	    return result;
     }
 
+    public static List<SimpleItem> createFragmentItems(final List<ApItem> items) {
+        List<SimpleItem> result = new ArrayList<>(items.size());
+        for (ApItem item : items) {
+            RulItemType itemType = item.getItemType();
+            RulItemSpec itemSpec = item.getItemSpec();
+            ArrData data = item.getData();
+            String value = null;
+            if (data != null) {
+                if (data.getType() == DataType.ENUM) {
+                    value = item.getItemSpec().getName();
+                } else {
+                    value = data.getFulltextValue();
+                }
+            }
+            SimpleItem fi = new SimpleItem(item.getItemId(), itemType.getCode(), itemSpec == null ? null : itemSpec.getCode(), item.getPosition(), value);
+            result.add(fi);
+        }
+        return result;
+    }
 }

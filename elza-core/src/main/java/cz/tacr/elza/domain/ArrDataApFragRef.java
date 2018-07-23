@@ -46,6 +46,10 @@ public class ArrDataApFragRef extends ArrData {
         this.fragmentId = fragment == null ? null : fragment.getFragmentId();
     }
 
+    public Integer getFragmentId() {
+        return fragmentId;
+    }
+
     @Override
     public String getFulltextValue() {
         return null; // TODO: není jasné jakým způsobem indexovat

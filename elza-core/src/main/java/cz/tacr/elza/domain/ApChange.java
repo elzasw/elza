@@ -21,6 +21,7 @@ public class ApChange {
 
     public enum Type {
         AP_CREATE, AP_DELETE,
+        FRAGMENT_CHANGE,
         NAME_CREATE, NAME_UPDATE, NAME_DELETE,
         DESC_CREATE, DESC_UPDATE, DESC_DELETE,
         AP_IMPORT, AP_SYNCH;

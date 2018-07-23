@@ -1,11 +1,23 @@
 package cz.tacr.elza.controller;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import cz.tacr.elza.controller.vo.*;
+import cz.tacr.elza.controller.vo.ap.ApFragmentTypeVO;
+import cz.tacr.elza.controller.vo.ap.ApFragmentVO;
+import cz.tacr.elza.controller.vo.ap.ApStateVO;
+import cz.tacr.elza.controller.vo.ap.item.ApUpdateItemVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
+import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.UpdateOp;
 import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.assertNotNull;
@@ -18,7 +30,13 @@ import static org.junit.Assert.assertTrue;
  */
 public class ApControllerTest extends AbstractControllerTest {
 
+    /**
+     * Kód typu fragmentu pro testování.
+     */
+    public static final String STAT_ZASTUPCE = "STAT_ZASTUPCE";
+
     @Test
+    @Ignore
     public void getRecordTypesTest() {
         getRecordTypes();
     }
@@ -27,6 +45,7 @@ public class ApControllerTest extends AbstractControllerTest {
      * Vrací všechny třídy rejstříků z databáze.
      */
     @Test
+    @Ignore
     public void getAllScopesTest() {
         getAllScopes();
     }
@@ -46,6 +65,7 @@ public class ApControllerTest extends AbstractControllerTest {
      * Testování vytvoření, upravení a smazání scope
      */
     @Test
+    @Ignore
     public void createUpdateDeleteScopesTest() {
         ApScopeVO scopeVO = new ApScopeVO();
         scopeVO.setName("Testing");
@@ -54,6 +74,56 @@ public class ApControllerTest extends AbstractControllerTest {
         scopeVO.setName("Testing2");
         scopeVO = updateScopeTest(scopeVO);
         deleteScopeTest(scopeVO.getId());
+    }
+
+    @Test
+    public void testFragment() {
+        Map<String, ApFragmentTypeVO> fragmentTypes = findFragmentTypesMap();
+
+        ApFragmentTypeVO fragmentType = fragmentTypes.get(STAT_ZASTUPCE);
+        Assert.assertNotNull(fragmentType);
+        List<ApTypeVO> types = getRecordTypes();
+        List<ApScopeVO> scopes = getAllScopes();
+        Integer scopeId = scopes.iterator().next().getId();
+
+        ApAccessPointCreateVO ap = new ApAccessPointCreateVO();
+        ap.setTypeId(getNonHierarchicalApType(types, false).getId());
+        ap.setName("Petr Novák");
+        ap.setComplement("1920-1986");
+        ap.setScopeId(scopeId);
+        ApAccessPointVO accessPoint = createAccessPoint(ap);
+
+        ApFragmentVO fragment = createFragment(fragmentType.getCode());
+
+        List<ApUpdateItemVO> items = new ArrayList<>();
+        RulDescItemTypeExtVO vztahTypType = findDescItemTypeByCode("VZTAH_TYP");
+        RulDescItemSpecExtVO vztahTypSpec = findDescItemSpecByCode("VZTAH_TYP_PRIMATOR", vztahTypType);
+        RulDescItemTypeExtVO vztahEntitaType = findDescItemTypeByCode("VZTAH_ENTITA");
+
+        items.add(buildApItem(UpdateOp.CREATE, vztahTypType.getCode(), vztahTypSpec.getCode(), null, null, null));
+        items.add(buildApItem(UpdateOp.CREATE, vztahEntitaType.getCode(), null, accessPoint, null, null));
+
+        fragment = changeFragmentItems(fragment.getId(), items);
+        Assert.assertEquals(vztahTypSpec.getName() + ": " + accessPoint.getRecord(), fragment.getValue());
+
+        confirmFragment(fragment.getId());
+
+        ApFragmentVO fragmentConfirmed = getFragment(fragment.getId());
+        Assert.assertEquals(ApStateVO.OK, fragmentConfirmed.getState());
+    }
+
+    @Test
+    public void testTempFragment() {
+        Map<String, ApFragmentTypeVO> fragmentTypes = findFragmentTypesMap();
+        ApFragmentTypeVO fragmentType = fragmentTypes.get(STAT_ZASTUPCE);
+        Assert.assertNotNull(fragmentType);
+
+        ApFragmentVO fragment = createFragment(fragmentType.getCode());
+        deleteFragment(fragment.getId());
+    }
+
+    private Map<String, ApFragmentTypeVO> findFragmentTypesMap() {
+        return findFragmentTypes().stream().collect(Collectors.toMap(ApFragmentTypeVO::getCode, Function.identity()));
     }
 
     /**
@@ -84,6 +154,7 @@ public class ApControllerTest extends AbstractControllerTest {
     }
 
     @Test
+    @Ignore
     public void registerReplaceTest() {
         // Vytvoření fund
         ArrFundVO fund = createFund("RegisterLinks Test AP", "IC3");

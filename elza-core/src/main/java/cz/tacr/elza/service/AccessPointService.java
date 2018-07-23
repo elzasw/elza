@@ -23,10 +23,13 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.vo.ImportAccessPoint;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.Assert;
 
 import javax.annotation.Nullable;
@@ -977,6 +980,21 @@ public class AccessPointService {
         return accessPoint;
     }
 
+    @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
+    public ApAccessPoint createStructuredAccessPoint(final ApScope scope, final ApType type, final SysLanguage language) {
+        Assert.notNull(scope, "Třída musí být vyplněna");
+        Assert.notNull(type, "Typ musí být vyplněn");
+        Assert.notNull(type.getRuleSystem(), "Typ musí mít vazbu na pravidla");
+
+        ApChange change = createChange(ApChange.Type.AP_CREATE);
+        ApAccessPoint accessPoint = createStrucuredAccessPoint(scope, type, change);
+
+        // založení strukturovaného hlavního jména
+        createStructuredName(accessPoint, true, language, change);
+
+        return accessPoint;
+    }
+
     /**
      * Aktualizace přístupového bodu - není verzované!
      *
@@ -1026,6 +1044,11 @@ public class AccessPointService {
         Assert.notNull(accessPoint, "Přístupový bod musí být vyplněn");
         validationNotDeleted(accessPoint);
 
+        if (accessPoint.getRuleSystem() != null) {
+            throw new BusinessException("Nelze upravovat charakteristiku u strukturovaného přístupového bodu",
+                    BaseCode.INVALID_STATE);
+        }
+
         // aktuálně platný popis přístupového bodu
         ApDescription apDescription = descriptionRepository.findByAccessPoint(accessPoint);
 
@@ -1072,6 +1095,62 @@ public class AccessPointService {
         return createName(accessPoint, false, name, complement, language, null);
     }
 
+    @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
+    public ApName createAccessPointStructuredName(@AuthParam(type = AuthParam.Type.AP) final ApAccessPoint accessPoint) {
+        Validate.notNull(accessPoint, "Přístupový bod musí být vyplněn");
+        validationNotDeleted(accessPoint);
+
+        return createStructuredName(accessPoint, false, null, null);
+    }
+
+    @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
+    public void confirmAccessPoint(@AuthParam(type = AuthParam.Type.AP) final ApAccessPoint accessPoint) {
+        Validate.notNull(accessPoint);
+        validationNotDeleted(accessPoint);
+
+        if (accessPoint.getState() == ApState.TEMP) {
+            accessPoint.setState(ApState.INIT);
+            apRepository.save(accessPoint);
+
+            ApName preferredName = apNameRepository.findPreferredNameByAccessPoint(accessPoint);
+            preferredName.setState(ApState.INIT);
+            apNameRepository.save(preferredName);
+
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+                @Override
+                public void afterCommit() {
+                    // TODO: přidat do fronty pro přegenerování podle groovy
+                }
+            });
+        } else {
+            throw new BusinessException("Nelze potvrdit přístupový bod, který není dočasný", BaseCode.INVALID_STATE);
+        }
+    }
+
+    @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
+    public void confirmAccessPointName(@AuthParam(type = AuthParam.Type.AP) final ApAccessPoint accessPoint,
+                                       final ApName name) {
+        Validate.notNull(accessPoint, "Přístupový bod musí být vyplněn");
+        Validate.notNull(name, "Jméno musí být vyplněno");
+        validationNotDeleted(accessPoint);
+        validationNotDeleted(name);
+
+        if (name.getState() == ApState.TEMP) {
+            name.setState(ApState.INIT);
+            apNameRepository.save(name);
+
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+                @Override
+                public void afterCommit() {
+                    // TODO: přidat do fronty pro přegenerování podle groovy
+                }
+            });
+        } else {
+            throw new BusinessException("Nelze potvrdit jméno, které není dočasné", BaseCode.INVALID_STATE);
+        }
+    }
+
+
     /**
      * Aktualizace jména přístupového bodu - verzovaně.
      *
@@ -1088,11 +1167,16 @@ public class AccessPointService {
                                         final String name,
                                         @Nullable final String complement,
                                         @Nullable final SysLanguage language) {
-        Assert.notNull(accessPoint, "Přístupový bod musí být vyplněn");
-        Assert.notNull(apName, "Upravované jméno musí být vyplněno");
-        Assert.notNull(name, "Nové jméno musí být vyplněno");
+        Validate.notNull(accessPoint, "Přístupový bod musí být vyplněn");
+        Validate.notNull(apName, "Upravované jméno musí být vyplněno");
+        Validate.notNull(name, "Nové jméno musí být vyplněno");
         validationNotDeleted(accessPoint);
         validationNotDeleted(apName);
+
+        if (accessPoint.getRuleSystem() != null) {
+            throw new BusinessException("Nelze upravovat jméno u strukturovaného přístupového bodu",
+                    BaseCode.INVALID_STATE);
+        }
 
         ApChange change = createChange(ApChange.Type.NAME_UPDATE);
         return updateAccessPointName(accessPoint, apName, name, complement, language, change);
@@ -1115,10 +1199,10 @@ public class AccessPointService {
                                          final @Nullable String complement,
                                          final @Nullable SysLanguage language,
                                          final ApChange change) {
-        Assert.notNull(accessPoint, "Přístupový bod musí být vyplněn");
-        Assert.notNull(apName, "Upravované jméno musí být vyplněno");
-        Assert.notNull(name, "Nové jméno musí být vyplněno");
-        Assert.notNull(change, "Změna musí být vyplněna");
+        Validate.notNull(accessPoint, "Přístupový bod musí být vyplněn");
+        Validate.notNull(apName, "Upravované jméno musí být vyplněno");
+        Validate.notNull(name, "Nové jméno musí být vyplněno");
+        Validate.notNull(change, "Změna musí být vyplněna");
         validationNotDeleted(accessPoint);
         validationNotDeleted(apName);
 
@@ -1148,8 +1232,8 @@ public class AccessPointService {
     @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
     public void deleteAccessPointName(@AuthParam(type = AuthParam.Type.AP) final ApAccessPoint accessPoint,
                                       final ApName name) {
-        Assert.notNull(accessPoint, "Přístupový bod musí být vyplněn");
-        Assert.notNull(name, "Upravované jméno musí být vyplněno");
+        Validate.notNull(accessPoint, "Přístupový bod musí být vyplněn");
+        Validate.notNull(name, "Upravované jméno musí být vyplněno");
 
         validationNotDeleted(accessPoint);
         validationNotDeleted(name);
@@ -1168,9 +1252,9 @@ public class AccessPointService {
     private void deleteName(final @AuthParam(type = AuthParam.Type.AP) ApAccessPoint accessPoint,
                             final ApName name,
                             final ApChange deleteChange) {
-        Assert.notNull(accessPoint, "Přístupový bod musí být vyplněn");
-        Assert.notNull(name, "Upravované jméno musí být vyplněno");
-        Assert.notNull(deleteChange, "Změna pro mazání musí být vyplněna");
+        Validate.notNull(accessPoint, "Přístupový bod musí být vyplněn");
+        Validate.notNull(name, "Upravované jméno musí být vyplněno");
+        Validate.notNull(deleteChange, "Změna pro mazání musí být vyplněna");
 
         validationNotDeleted(accessPoint);
         validationNotDeleted(name);
@@ -1192,8 +1276,8 @@ public class AccessPointService {
     @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
     public void setPreferredAccessPointName(@AuthParam(type = AuthParam.Type.AP) final ApAccessPoint accessPoint,
                                               final ApName name) {
-        Assert.notNull(accessPoint, "Přístupový bod musí být vyplněn");
-        Assert.notNull(name, "Upravované jméno musí být vyplněno");
+        Validate.notNull(accessPoint, "Přístupový bod musí být vyplněn");
+        Validate.notNull(name, "Upravované jméno musí být vyplněno");
 
         validationNotDeleted(accessPoint);
         validationNotDeleted(name);
@@ -1317,14 +1401,17 @@ public class AccessPointService {
      * @return přístupový bod
      */
     private ApAccessPoint createAccessPoint(final ApScope scope, final ApType type, final ApChange change) {
-        ApAccessPoint accessPoint = new ApAccessPoint();
-        accessPoint.setUuid(UUID.randomUUID().toString());
-        accessPoint.setApType(type);
-        accessPoint.setScope(scope);
-        accessPoint.setCreateChange(change);
-        accessPoint.setDeleteChange(null);
+        ApAccessPoint accessPoint = createAccessPointEntity(scope, type, change);
         return apRepository.save(accessPoint);
     }
+
+    private ApAccessPoint createStrucuredAccessPoint(final ApScope scope, final ApType type, final ApChange change) {
+        ApAccessPoint accessPoint = createAccessPointEntity(scope, type, change);
+        accessPoint.setRuleSystem(type.getRuleSystem());
+        accessPoint.setState(ApState.TEMP);
+        return apRepository.save(accessPoint);
+    }
+
 
     /**
      * Založení jména.
@@ -1343,12 +1430,25 @@ public class AccessPointService {
                               @Nullable final String complement,
                               @Nullable final SysLanguage language,
                               @Nullable final ApChange change) {
-        Assert.notNull(accessPoint, "Přístupový bod musí být vyplněn");
-        Assert.notNull(name, "Jméno musí být vyplněno");
+        Validate.notNull(accessPoint, "Přístupový bod musí být vyplněn");
+        Validate.notNull(name, "Jméno musí být vyplněno");
 
         ApChange createChange = change == null ? createChange(ApChange.Type.NAME_CREATE) : change;
         ApName apName = createNameEntity(accessPoint, preferredName, name, complement, language, createChange);
         validationNameUnique(accessPoint.getScope(), apName.getFullName());
+
+        return apNameRepository.save(apName);
+    }
+
+    private ApName createStructuredName(final ApAccessPoint accessPoint,
+                                        final boolean preferredName,
+                                        @Nullable final SysLanguage language,
+                                        @Nullable final ApChange change) {
+        Validate.notNull(accessPoint, "Přístupový bod musí být vyplněn");
+
+        ApChange createChange = change == null ? createChange(ApChange.Type.NAME_CREATE) : change;
+        ApName apName = createNameEntity(accessPoint, preferredName, null, null, language, createChange);
+        apName.setState(ApState.TEMP);
 
         return apNameRepository.save(apName);
     }
@@ -1366,7 +1466,7 @@ public class AccessPointService {
      */
     public static ApName createNameEntity(final ApAccessPoint accessPoint,
                                           final boolean preferredName,
-                                          final String name,
+                                          final @Nullable String name,
                                           final @Nullable String complement,
                                           final @Nullable SysLanguage language,
                                           final ApChange createChange) {
@@ -1379,6 +1479,16 @@ public class AccessPointService {
         apName.setAccessPoint(accessPoint);
         apName.setCreateChange(createChange);
         return apName;
+    }
+
+    public static ApAccessPoint createAccessPointEntity(final ApScope scope, final ApType type, final ApChange change) {
+        ApAccessPoint accessPoint = new ApAccessPoint();
+        accessPoint.setUuid(UUID.randomUUID().toString());
+        accessPoint.setApType(type);
+        accessPoint.setScope(scope);
+        accessPoint.setCreateChange(change);
+        accessPoint.setDeleteChange(null);
+        return accessPoint;
     }
 
     /**

@@ -9,6 +9,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
+import cz.tacr.elza.controller.vo.ap.ApFormVO;
+import cz.tacr.elza.controller.vo.ap.ApFragmentTypeVO;
+import cz.tacr.elza.controller.vo.ap.ApFragmentVO;
+import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
+import cz.tacr.elza.domain.*;
+import cz.tacr.elza.repository.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,17 +27,6 @@ import cz.tacr.elza.controller.vo.ApRecordSimple;
 import cz.tacr.elza.controller.vo.ApTypeVO;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ApDescription;
-import cz.tacr.elza.domain.ApExternalId;
-import cz.tacr.elza.domain.ApName;
-import cz.tacr.elza.domain.ApScope;
-import cz.tacr.elza.domain.ApType;
-import cz.tacr.elza.repository.ApAccessPointRepository;
-import cz.tacr.elza.repository.ApDescriptionRepository;
-import cz.tacr.elza.repository.ApExternalIdRepository;
-import cz.tacr.elza.repository.ApNameRepository;
-import cz.tacr.elza.repository.ScopeRepository;
 
 @Service
 public class ApFactory {
@@ -48,19 +43,23 @@ public class ApFactory {
 
     private final StaticDataService staticDataService;
 
+    private final ApFragmentItemRepository fragmentItemRepository;
+
     @Autowired
     public ApFactory(ApAccessPointRepository apRepository,
-            ApNameRepository nameRepository,
-            ApDescriptionRepository descRepository,
-            ApExternalIdRepository eidRepository,
-            ScopeRepository scopeRepository,
-            StaticDataService staticDataService) {
+                     ApNameRepository nameRepository,
+                     ApDescriptionRepository descRepository,
+                     ApExternalIdRepository eidRepository,
+                     ScopeRepository scopeRepository,
+                     StaticDataService staticDataService,
+                     final ApFragmentItemRepository fragmentItemRepository) {
         this.apRepository = apRepository;
         this.nameRepository = nameRepository;
         this.descRepository = descRepository;
         this.eidRepository = eidRepository;
         this.scopeRepository = scopeRepository;
         this.staticDataService = staticDataService;
+        this.fragmentItemRepository = fragmentItemRepository;
     }
 
     /**
@@ -150,12 +149,39 @@ public class ApFactory {
         return vo;
     }
 
+    public ApAccessPointNameVO createVO(ApName name) {
+        StaticDataProvider staticData = staticDataService.getData();
+        return ApAccessPointNameVO.newInstance(name, staticData);
+    }
+
+    public ApFragmentTypeVO createVO(ApFragmentType type) {
+        return new ApFragmentTypeVO(type.getFragmentTypeId(), type.getCode(), type.getName());
+    }
+
+    public ApFragmentVO createVO(final ApFragment fragment) {
+        ApFragmentVO vo = ApFragmentVO.newInstance(fragment);
+        vo.setForm(createFormVO(fragment));
+        return vo;
+    }
+
+    private ApFormVO createFormVO(final ApFragment fragment) {
+        ApFormVO form = new ApFormVO();
+        List<ApFragmentItem> fragmentItems = fragmentItemRepository.findValidItemsByFragment(fragment);
+        List<ApItemVO> items = new ArrayList<>(fragmentItems.size());
+        form.setItems(items);
+
+        for (ApFragmentItem fragmentItem : fragmentItems) {
+            //items.add(createItem(fragmentItem));
+        }
+
+        // TODO
+
+        return form;
+    }
+
     /**
      * Creates types with theirs parent hierarchy up to root.
-     * 
-     * @param partyType
-     *            null-able
-     * 
+     *
      * @return List of root nodes which contains given types on proper parent path.
      */
     public List<ApTypeVO> createTypesWithHierarchy(Collection<ApType> types) {
@@ -177,9 +203,6 @@ public class ApFactory {
 
     /**
      * Creates type with his parent hierarchy up to root.
-     * 
-     * @param partyType
-     *            null-able
      */
     private ApTypeVO createTypeHierarchy(ApType type,
                                          Map<Integer, ApTypeVO> typeIdVOMap,

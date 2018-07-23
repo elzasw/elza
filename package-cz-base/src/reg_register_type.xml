@@ -84,6 +84,11 @@
         <hierarchical>false</hierarchical>
         <read-only>false</read-only>
     </register-type>
+    <register-type code="PERSON_BEING_STRUCT" parent-register-type="PERSON" rule-system="AP-BASE">
+        <name>bytost - strukturovaná</name>
+        <hierarchical>false</hierarchical>
+        <read-only>false</read-only>
+    </register-type>
     <register-type code="PERSON_ANIMAL" parent-register-type="PERSON">
         <name>zvíře</name>
         <hierarchical>false</hierarchical>

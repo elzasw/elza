@@ -1,5 +1,7 @@
 package cz.tacr.elza.domain;
 
+import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
+
 import javax.persistence.*;
 
 /**
@@ -9,6 +11,7 @@ import javax.persistence.*;
  * @since 17.07.2018
  */
 @Entity
+@Inheritance(strategy = InheritanceType.JOINED)
 @Table(name = "ap_item")
 public abstract class ApItem {
 
@@ -17,16 +20,16 @@ public abstract class ApItem {
     @Access(AccessType.PROPERTY)
     protected Integer itemId;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrChange.class)
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApChange.class)
     @JoinColumn(name = "createChangeId", nullable = false)
-    protected ArrChange createChange;
+    protected ApChange createChange;
 
     @Column(name = "createChangeId", nullable = false, updatable = false, insertable = false)
     protected Integer createChangeId;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrChange.class)
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApChange.class)
     @JoinColumn(name = "deleteChangeId")
-    protected ArrChange deleteChange;
+    protected ApChange deleteChange;
 
     @Column(name = "deleteChangeId", updatable = false, insertable = false)
     protected Integer deleteChangeId;
@@ -77,6 +80,8 @@ public abstract class ApItem {
         this.dataId = other.dataId;
     }
 
+    public abstract ApItem copy();
+
     public Integer getItemId() {
         return itemId;
     }
@@ -85,19 +90,19 @@ public abstract class ApItem {
         this.itemId = itemId;
     }
 
-    public ArrChange getCreateChange() {
+    public ApChange getCreateChange() {
         return createChange;
     }
 
-    public void setCreateChange(final ArrChange createChange) {
+    public void setCreateChange(final ApChange createChange) {
         this.createChange = createChange;
     }
 
-    public ArrChange getDeleteChange() {
+    public ApChange getDeleteChange() {
         return deleteChange;
     }
 
-    public void setDeleteChange(final ArrChange deleteChange) {
+    public void setDeleteChange(final ApChange deleteChange) {
         this.deleteChange = deleteChange;
     }
 
@@ -113,8 +118,13 @@ public abstract class ApItem {
         return itemType;
     }
 
+    public Integer getItemTypeId() {
+        return itemTypeId;
+    }
+
     public void setItemType(final RulItemType itemType) {
         this.itemType = itemType;
+        this.itemTypeId = itemType == null ? null : itemType.getItemTypeId();
     }
 
     public RulItemSpec getItemSpec() {
@@ -123,6 +133,11 @@ public abstract class ApItem {
 
     public void setItemSpec(final RulItemSpec itemSpec) {
         this.itemSpec = itemSpec;
+        this.itemSpecId = itemSpec == null ? null : itemSpec.getItemSpecId();
+    }
+
+    public Integer getItemSpecId() {
+        return itemSpecId;
     }
 
     public Integer getPosition() {

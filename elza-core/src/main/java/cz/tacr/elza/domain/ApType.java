@@ -37,18 +37,22 @@ public class ApType {
     private boolean readOnly;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApType.class)
-    @JoinColumn(name = "parentApTypeId", nullable = true)
+    @JoinColumn(name = "parentApTypeId")
     private ApType parentApType;
 
     @Column(insertable = false, updatable = false)
     private Integer parentApTypeId;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ParPartyType.class)
-    @JoinColumn(name = "partyTypeId", nullable = true)
+    @JoinColumn(name = "partyTypeId")
     private ParPartyType partyType;
-    
+
     @Column(insertable = false, updatable = false, nullable = true)
     private Integer partyTypeId;
+
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApRuleSystem.class)
+    @JoinColumn(name = "ruleSystemId")
+    private ApRuleSystem ruleSystem;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulPackage.class)
     @JoinColumn(name = "packageId", nullable = false)
@@ -56,7 +60,7 @@ public class ApType {
 
     /**
      * Vlastní ID.
-     * 
+     *
      * @return id
      */
     public Integer getApTypeId() {
@@ -65,7 +69,7 @@ public class ApType {
 
     /**
      * Vlastní ID.
-     * 
+     *
      * @param apTypeId
      *            id
      */
@@ -75,7 +79,7 @@ public class ApType {
 
     /**
      * Kód typu.
-     * 
+     *
      * @return kód typu
      */
     public String getCode() {
@@ -84,7 +88,7 @@ public class ApType {
 
     /**
      * Kód typu.
-     * 
+     *
      * @param code
      *            kód typu
      */
@@ -94,7 +98,7 @@ public class ApType {
 
     /**
      * Název typu.
-     * 
+     *
      * @return název typu
      */
     public String getName() {
@@ -103,7 +107,7 @@ public class ApType {
 
     /**
      * Název typu.
-     * 
+     *
      * @param name
      *            název typu
      */
@@ -114,7 +118,7 @@ public class ApType {
     /**
      * Příznak, zda může daný typ rejstříku obsahovat hesla nebo se jedná jen o
      * "nadtyp".
-     * 
+     *
      * @return Příznak, zda může daný typ rejstříku obsahovat hesla nebo se jedná
      *         jen o "nadtyp".
      */
@@ -125,13 +129,13 @@ public class ApType {
     /**
      * Příznak, zda může daný typ rejstříku obsahovat hesla nebo se jedná jen o
      * "nadtyp".
-     * 
+     *
      * @param addRecord
      */
     public void setReadOnly(final boolean readOnly) {
         this.readOnly = readOnly;
     }
-    
+
     /**
      * Odkaz na sebe sama (hierarchie typů rejstříků).
      */
@@ -141,7 +145,7 @@ public class ApType {
 
     /**
      * Odkaz na sebe sama (hierarchie typů rejstříků).
-     * 
+     *
      * @return Odkaz na sebe sama (hierarchie typů rejstříků).
      */
     public void setParentApType(final ApType parentApType) {
@@ -156,7 +160,7 @@ public class ApType {
     /**
      * Určení, zda hesla daného typu mohou být "abstraktní" osobou/původcem a jakého
      * typu.
-     * 
+     *
      * @return Určení, zda hesla daného typu mohou být "abstraktní" osobou/původcem
      *         a jakého typu.
      */
@@ -167,7 +171,7 @@ public class ApType {
     /**
      * Určení, zda hesla daného typu mohou být "abstraktní" osobou/původcem a jakého
      * typu.
-     * 
+     *
      * @param partyType
      */
     public void setPartyType(final ParPartyType partyType) {
@@ -178,7 +182,14 @@ public class ApType {
     public Integer getPartyTypeId() {
         return partyTypeId;
     }
-    
+
+    public ApRuleSystem getRuleSystem() {
+        return ruleSystem;
+    }
+
+    public void setRuleSystem(final ApRuleSystem ruleSystem) {
+        this.ruleSystem = ruleSystem;
+    }
     public RulPackage getRulPackage() {
         return rulPackage;
     }

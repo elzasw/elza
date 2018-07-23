@@ -4,6 +4,10 @@ import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ApName;
 import cz.tacr.elza.domain.SysLanguage;
 
+import cz.tacr.elza.controller.vo.ap.ApFormVO;
+
+import javax.annotation.Nullable;
+
 /**
  * Jméno přístupového bodu.
  *
@@ -45,6 +49,12 @@ public class ApAccessPointNameVO {
      * Kód jazyku jména.
      */
     private String languageCode;
+
+    /**
+     * Strukturované data formuláře pro jméno. Vyplněné pouze v případě, že se jedná o strukturovaný typ.
+     */
+    @Nullable
+    private ApFormVO form;
 
     public Integer getId() {
         return id;
@@ -101,7 +111,16 @@ public class ApAccessPointNameVO {
     public void setFullName(final String fullName) {
         this.fullName = fullName;
     }
-    
+
+    @Nullable
+    public ApFormVO getForm() {
+        return form;
+    }
+
+    public void setForm(@Nullable final ApFormVO form) {
+        this.form = form;
+    }
+
     /**
      * Creates value object from AP name.
      */

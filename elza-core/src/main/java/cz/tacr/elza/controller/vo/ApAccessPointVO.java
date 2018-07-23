@@ -1,5 +1,8 @@
 package cz.tacr.elza.controller.vo;
 
+import cz.tacr.elza.controller.vo.ap.ApFormVO;
+
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -11,7 +14,7 @@ import java.util.Collections;
  * @since 21.12.2015
  */
 public class ApAccessPointVO extends AbstractApAccessPoint {
-    
+
     /**
      * Id hesla.
      */
@@ -42,7 +45,7 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
      * Podrobná charakteristika rejstříkového hesla.
      */
     private String characteristics;
-    
+
     /**
      * Externí identifikátory rejstříkového hesla, například interpi.
      */
@@ -56,6 +59,12 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
     private String uuid;
 
     private boolean invalid;
+
+    /**
+     * Strukturované data formuláře pro AP. Vyplněné pouze v případě, že se jedná o strukturovaný typ.
+     */
+    @Nullable
+    private ApFormVO form;
 
     public Integer getId() {
         return id;
@@ -142,4 +151,13 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
 	public void setInvalid(final boolean invalid) {
 		this.invalid = invalid;
 	}
+
+    @Nullable
+    public ApFormVO getForm() {
+        return form;
+    }
+
+    public void setForm(@Nullable final ApFormVO form) {
+        this.form = form;
+    }
 }
