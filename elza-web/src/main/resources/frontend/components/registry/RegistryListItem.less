@@ -28,17 +28,20 @@
 			font-size: 1em;
 			flex: 1;
 		}
-		.ids {
-			font-size: 0.8em;
-			color: @color-link;
-			padding-right: 10px;
-			flex: initial;
-			flex-shrink: 0.3;
-		}
 		.types {
 			font-size: 0.8em;
-			text-align: right;
+			color: @color-link;
 			flex-grow: 1;
+			flex-shrink: 1;
+			max-width: 98%;
+		}
+		.ids {
+			font-size: 0.8em;
+			text-align: right;
+			flex-grow: 0;
+			flex-shrink: 3;
+			padding-left: 10px;
+			min-width: 20px;
 		}
     }
 

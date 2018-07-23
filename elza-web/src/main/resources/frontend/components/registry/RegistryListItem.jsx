@@ -19,10 +19,10 @@ class RegistryListItem extends AbstractReactComponent {
         invalid: React.PropTypes.bool
     };
 
-    getApId = () => {
+    getDisplayIds = () => {
 		const eids = this.props.externalIds;
 		if (!eids || eids.length == 0) {
-			return this.props.id;
+			return [this.props.id];
 		}
 	
 		let eidArr = [];
@@ -31,7 +31,7 @@ class RegistryListItem extends AbstractReactComponent {
 			const eidTypeName =  "eid_type_name-" + eid.typeId;
 			eidArr.push(eidTypeName + ":" + eid.value);
 		});
-		return eidArr.join(", ");
+		return eidArr;
     }
 
 	getApTypeNames = () => {
@@ -58,16 +58,17 @@ class RegistryListItem extends AbstractReactComponent {
             invalid: invalid
         });
 
-		const typeNames = this.getApTypeNames();
+		const typeNames = this.getApTypeNames().join(' | ');
+		const displayId = this.getDisplayIds().join(', ');
 
-		return <div key={'record-id-' + id} title={typeNames} className={cls} onDoubleClick={doubleClick}>
+		return <div key={'record-id-' + id} className={cls} onDoubleClick={doubleClick}>
 			<div>
 				<Icon glyph={iconName} />
-				<span className="name">{record}</span>
+				<span className="name" title={record}>{record}</span>
 			</div>
 			<div>
-				<span className="ids">{typeNames.join(' | ')}</span>
-				<span className="types">{this.getApId()}</span>
+				<span className="types" title={typeNames}>{typeNames}</span>
+				<span className="ids" title={displayId}>{displayId}</span>
 			</div>
 		</div>;
     };
