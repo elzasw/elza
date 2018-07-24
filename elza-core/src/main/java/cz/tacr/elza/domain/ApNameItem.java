@@ -43,4 +43,7 @@ public class ApNameItem extends ApItem {
         this.nameId = name == null ? null : name.getNameId();
     }
 
+    public Integer getNameId() {
+        return nameId;
+    }
 }

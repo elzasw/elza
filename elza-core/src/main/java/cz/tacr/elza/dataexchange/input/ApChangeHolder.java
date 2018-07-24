@@ -2,6 +2,7 @@ package cz.tacr.elza.dataexchange.input;
 
 import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApChange.Type;
+import cz.tacr.elza.service.AccessPointDataService;
 import cz.tacr.elza.service.AccessPointService;
 
 /**
@@ -9,17 +10,17 @@ import cz.tacr.elza.service.AccessPointService;
  */
 public class ApChangeHolder {
 
-    private final AccessPointService accessPointService;
+    private final AccessPointDataService apDataService;
 
     private ApChange change;
 
-    public ApChangeHolder(AccessPointService accessPointService) {
-        this.accessPointService = accessPointService;
+    public ApChangeHolder(AccessPointDataService apDataService) {
+        this.apDataService = apDataService;
     }
 
     public ApChange getChange() {
         if (change == null) {
-            change = accessPointService.createChange(Type.AP_IMPORT);
+            change = apDataService.createChange(Type.AP_IMPORT);
         }
         return change;
     }

@@ -5,6 +5,7 @@ import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.controller.vo.ap.ApFormVO;
 import cz.tacr.elza.controller.vo.ap.ApFragmentTypeVO;
 import cz.tacr.elza.controller.vo.ap.ApFragmentVO;
+import cz.tacr.elza.controller.vo.ap.ApStateVO;
 import cz.tacr.elza.controller.vo.ap.item.*;
 import cz.tacr.elza.controller.vo.nodes.ItemTypeLiteVO;
 import cz.tacr.elza.core.data.DataType;
@@ -41,7 +42,11 @@ public class ApFactory {
 
     private final ApFragmentItemRepository fragmentItemRepository;
 
+    private final ApNameItemRepository nameItemRepository;
+
     private final ApFragmentRepository fragmentRepository;
+
+    private final ApBodyItemRepository bodyItemRepository;
 
     private final RuleService ruleService;
 
@@ -59,10 +64,13 @@ public class ApFactory {
                      final ScopeRepository scopeRepository,
                      final StaticDataService staticDataService,
                      final ApFragmentItemRepository fragmentItemRepository,
+                     final ApNameItemRepository nameItemRepository,
                      final ApFragmentRepository fragmentRepository,
+                     final ApBodyItemRepository bodyItemRepository,
                      final RuleService ruleService,
                      final RuleFactory ruleFactory,
-                     final PartyRepository partyRepository, final ClientFactoryVO factoryVO) {
+                     final PartyRepository partyRepository,
+                     final ClientFactoryVO factoryVO) {
         this.apRepository = apRepository;
         this.nameRepository = nameRepository;
         this.descRepository = descRepository;
@@ -70,7 +78,9 @@ public class ApFactory {
         this.scopeRepository = scopeRepository;
         this.staticDataService = staticDataService;
         this.fragmentItemRepository = fragmentItemRepository;
+        this.nameItemRepository = nameItemRepository;
         this.fragmentRepository = fragmentRepository;
+        this.bodyItemRepository = bodyItemRepository;
         this.ruleService = ruleService;
         this.ruleFactory = ruleFactory;
         this.partyRepository = partyRepository;
@@ -133,6 +143,14 @@ public class ApFactory {
         return createVO(ap, desc, names, eids);
     }
 
+    public ApAccessPointVO createVO(final ApAccessPoint ap, final boolean fillForm) {
+        ApAccessPointVO apVO = createVO(ap);
+        if (fillForm) {
+            apVO.setForm(createFormVO(ap));
+        }
+        return apVO;
+    }
+
     public ApAccessPointVO createVO(final ApAccessPoint ap,
                                     final ApDescription desc,
                                     final List<ApName> names,
@@ -149,6 +167,8 @@ public class ApFactory {
         vo.setId(ap.getAccessPointId());
         vo.setInvalid(ap.getDeleteChange() != null);
         vo.setNames(namesVO);
+        vo.setErrorDescription(ap.getErrorDescription());
+        vo.setState(ap.getState() == null ? null : ApStateVO.valueOf(ap.getState().name()));
         // vo.setPartyId(partyId);
         vo.setRecord(prefName.getFullName());
         vo.setScopeId(ap.getScopeId());
@@ -218,33 +238,65 @@ public class ApFactory {
         return fragmentVO;
     }
 
+    public ApAccessPointNameVO createVO(final ApName name, final boolean fillForm) {
+        ApAccessPointNameVO nameVO = createVO(name);
+        if (fillForm) {
+            nameVO.setForm(createFormVO(name));
+        }
+        return nameVO;
+    }
+
     public ApFragmentVO createVO(final ApFragment fragment) {
         return ApFragmentVO.newInstance(fragment);
     }
 
     private ApFormVO createFormVO(final ApFragment fragment) {
+        List<ApItem> fragmentItems = new ArrayList<>(fragmentItemRepository.findValidItemsByFragment(fragment));
+        List<RulItemTypeExt> rulItemTypes = ruleService.getFragmentItemTypesInternal(fragment.getFragmentType(), fragmentItems);
+
         ApFormVO form = new ApFormVO();
-        List<ApFragmentItem> fragmentItems = fragmentItemRepository.findValidItemsByFragment(fragment);
-        List<ApItemVO> items = new ArrayList<>(fragmentItems.size());
-        form.setItems(items);
+        form.setItemTypes(createItemTypesVO(rulItemTypes));
+        form.setItems(createItemsVO(fragmentItems));
+        return form;
+    }
 
-        List<RulItemTypeExt> rulItemTypes = ruleService.getFragmentItemTypesInternal(fragment.getFragmentType(), new ArrayList<>(fragmentItems));
+    private ApFormVO createFormVO(final ApAccessPoint accessPoint) {
+        List<ApItem> bodyItems = new ArrayList<>(bodyItemRepository.findValidItemsByAccessPoint(accessPoint));
+        List<RulItemTypeExt> rulItemTypes = ruleService.getApItemTypesInternal(accessPoint.getApType(), bodyItems, ApRule.RuleType.BODY_ITEMS);
 
+        ApFormVO form = new ApFormVO();
+        form.setItemTypes(createItemTypesVO(rulItemTypes));
+        form.setItems(createItemsVO(bodyItems));
+        return form;
+    }
+
+    private ApFormVO createFormVO(final ApName name) {
+        List<ApItem> nameItems = new ArrayList<>(nameItemRepository.findValidItemsByName(name));
+        List<RulItemTypeExt> rulItemTypes = ruleService.getApItemTypesInternal(name.getAccessPoint().getApType(), nameItems, ApRule.RuleType.NAME_ITEMS);
+
+        ApFormVO form = new ApFormVO();
+        form.setItemTypes(createItemTypesVO(rulItemTypes));
+        form.setItems(createItemsVO(nameItems));
+        return form;
+    }
+
+    private List<ApItemVO> createItemsVO(final List<ApItem> apItems) {
+        List<ApItemVO> items = new ArrayList<>(apItems.size());
+        for (ApItem fragmentItem : apItems) {
+            items.add(createItem(fragmentItem));
+        }
+        fillRefEntities(items);
+        return items;
+    }
+
+    private List<ItemTypeLiteVO> createItemTypesVO(final List<RulItemTypeExt> rulItemTypes) {
         List<ItemTypeLiteVO> itemTypes = new ArrayList<>();
         for (RulItemTypeExt rulItemType : rulItemTypes) {
             if (rulItemType.getType() != RulItemType.Type.IMPOSSIBLE) {
                 itemTypes.add(ruleFactory.createVO(rulItemType));
             }
         }
-        form.setItemTypes(itemTypes);
-
-        for (ApFragmentItem fragmentItem : fragmentItems) {
-            items.add(createItem(fragmentItem));
-        }
-
-        fillRefEntities(items);
-
-        return form;
+        return itemTypes;
     }
 
     private void fillRefEntities(final List<ApItemVO> items) {

@@ -28,6 +28,7 @@ public class FragmentService {
     private final ApChangeRepository changeRepository;
     private final AccessPointGeneratorService apGeneratorService;
     private final AccessPointItemService apItemService;
+    private final AccessPointDataService apDataService;
 
     @Autowired
     public FragmentService(final ApFragmentRepository fragmentRepository,
@@ -35,13 +36,15 @@ public class FragmentService {
                            final ApFragmentItemRepository fragmentItemRepository,
                            final ApChangeRepository changeRepository,
                            final AccessPointGeneratorService apGeneratorService,
-                           final AccessPointItemService apItemService) {
+                           final AccessPointItemService apItemService,
+                           final AccessPointDataService apDataService) {
         this.fragmentRepository = fragmentRepository;
         this.fragmentTypeRepository = fragmentTypeRepository;
         this.fragmentItemRepository = fragmentItemRepository;
         this.changeRepository = changeRepository;
         this.apGeneratorService = apGeneratorService;
         this.apItemService = apItemService;
+        this.apDataService = apDataService;
     }
 
     public ApFragment createFragment(final ApFragmentType fragmentType) {
@@ -80,11 +83,11 @@ public class FragmentService {
 
         List<ApFragmentItem> itemsDb = fragmentItemRepository.findValidItemsByFragment(fragment);
 
-        apItemService.changeItems(items, new ArrayList<>(itemsDb), (RulItemType it, RulItemSpec is, ApChange c, int objectId, int position)
+        ApChange change = apDataService.createChange(ApChange.Type.FRAGMENT_CHANGE);
+        apItemService.changeItems(items, new ArrayList<>(itemsDb), change, (RulItemType it, RulItemSpec is, ApChange c, int objectId, int position)
                 -> createFragmentItem(fragment, it, is, c, objectId, position));
 
         apGeneratorService.generateAndSetResult(fragment);
-        fragmentRepository.save(fragment);
     }
 
     private ApItem createFragmentItem(final ApFragment fragment, final RulItemType it, final RulItemSpec is, final ApChange c, final int objectId, final int position) {

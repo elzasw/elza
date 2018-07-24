@@ -1,9 +1,6 @@
 package cz.tacr.elza.drools.service;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import javax.annotation.Nullable;
 
@@ -16,7 +13,10 @@ import cz.tacr.elza.drools.model.Level;
 import cz.tacr.elza.drools.model.Structured;
 import cz.tacr.elza.repository.StructuredItemRepository;
 import cz.tacr.elza.drools.model.StructObjItem;
+import cz.tacr.elza.service.vo.AccessPoint;
+import cz.tacr.elza.service.vo.Name;
 import cz.tacr.elza.service.vo.SimpleItem;
+import org.apache.commons.collections4.CollectionUtils;
 
 /**
  * Factory method for the base Drools model objects.
@@ -152,7 +152,10 @@ public class ModelFactory {
 	    return result;
     }
 
-    public static List<SimpleItem> createFragmentItems(final List<ApItem> items) {
+    public static List<SimpleItem> createApItems(final List<ApItem> items) {
+	    if (CollectionUtils.isEmpty(items)) {
+	        return Collections.emptyList();
+        }
         List<SimpleItem> result = new ArrayList<>(items.size());
         for (ApItem item : items) {
             RulItemType itemType = item.getItemType();
@@ -170,5 +173,21 @@ public class ModelFactory {
             result.add(fi);
         }
         return result;
+    }
+
+    private static Name createApName(final ApName name, final List<ApItem> items) {
+	    return new Name(name.getNameId(), name.isPreferredName(), createApItems(items));
+    }
+
+    public static AccessPoint createAp(final ApAccessPoint apAccessPoint,
+                                       final List<ApItem> apItems,
+                                       final List<ApName> apNames,
+                                       final Map<Integer, List<ApItem>> apNameItems) {
+        List<Name> names = new ArrayList<>(apNames.size());
+        for (ApName apName : apNames) {
+            names.add(createApName(apName, apNameItems.get(apName.getNameId())));
+        }
+
+        return new AccessPoint(apAccessPoint.getAccessPointId(), apAccessPoint.getUuid(), createApItems(apItems), names);
     }
 }

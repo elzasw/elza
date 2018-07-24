@@ -68,20 +68,7 @@ import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.FragmentService;
 import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.PartyService;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.*;
-
-import javax.annotation.Nullable;
-import javax.transaction.Transactional;
-import java.util.*;
-import java.util.stream.Collectors;
 
 
 /**
@@ -299,7 +286,7 @@ public class ApController {
         SysLanguage language = StringUtils.isEmpty(accessPoint.getLanguageCode()) ? null : accessPointService.getLanguage(accessPoint.getLanguageCode());
 
         ApAccessPoint createdAccessPoint = accessPointService.createStructuredAccessPoint(scope, type, language);
-        return apFactory.createVO(createdAccessPoint);
+        return apFactory.createVO(createdAccessPoint, true);
     }
 
     @Transactional
@@ -318,7 +305,7 @@ public class ApController {
         ApAccessPoint accessPoint = accessPointService.getAccessPoint(accessPointId);
 
         ApName name = accessPointService.createAccessPointStructuredName(accessPoint);
-        return apFactory.createVO(name);
+        return apFactory.createVO(name, true);
     }
 
     @Transactional
@@ -333,6 +320,13 @@ public class ApController {
         accessPointService.confirmAccessPointName(accessPoint, name);
     }
 
+    /**
+     * Úprava hodnot těla přístupového bodu. Přidání/upravení/smazání.
+     *
+     * @param accessPointId identifikátor přístupového bodu
+     * @param items         položky ke změně
+     * @return změněné jméno
+     */
     @Transactional
     @RequestMapping(value = "/{accessPointId}/items", method = RequestMethod.PUT)
     public ApAccessPointVO changeAccessPointItems(@PathVariable final Integer accessPointId,
@@ -340,9 +334,19 @@ public class ApController {
         Validate.notNull(accessPointId, "Identifikátor přístupového bodu musí být vyplněn");
         Validate.notEmpty(items, "Musí být alespoň jedna položka ke změně");
 
-        return null;
+        ApAccessPoint accessPoint = accessPointService.getAccessPoint(accessPointId);
+        accessPointService.changeApItems(accessPoint, items);
+        return apFactory.createVO(accessPoint, true);
     }
 
+    /**
+     * Úprava hodnot jména přístupového bodu. Přidání/upravení/smazání.
+     *
+     * @param accessPointId identifikátor přístupového bodu
+     * @param nameId        identifikátor jména
+     * @param items         položky ke změně
+     * @return upravné jméno
+     */
     @Transactional
     @RequestMapping(value = "/{accessPointId}/name/{nameId}/items", method = RequestMethod.PUT)
     public ApAccessPointNameVO changeNameItems(@PathVariable final Integer accessPointId,
@@ -352,7 +356,10 @@ public class ApController {
         Validate.notNull(nameId, "Identifikátor jména přístupového bodu musí být vyplněn");
         Validate.notEmpty(items, "Musí být alespoň jedna položka ke změně");
 
-        return null;
+        ApAccessPoint accessPoint = accessPointService.getAccessPoint(accessPointId);
+        ApName name = accessPointService.getName(nameId);
+        accessPointService.changeNameItems(accessPoint, name, items);
+        return apFactory.createVO(name, true);
     }
 
     /**
@@ -365,11 +372,19 @@ public class ApController {
     @RequestMapping(value = "/fragment/create/{fragmentTypeCode}", method = RequestMethod.POST)
     public ApFragmentVO createFragment(@PathVariable final String fragmentTypeCode) {
         Validate.notNull(fragmentTypeCode, "Kód typu fragmentu musí být vyplněn");
+
         ApFragmentType fragmentType = fragmentService.getFragmentType(fragmentTypeCode);
         ApFragment fragment = fragmentService.createFragment(fragmentType);
         return apFactory.createVO(fragment, true);
     }
 
+    /**
+     * Úprava hodnot fragmentu. Přidání/upravení/smazání.
+     *
+     * @param fragmentId identifikátor fragmentu
+     * @param items      položky ke změně
+     * @return upravený fragment
+     */
     @Transactional
     @RequestMapping(value = "/fragment/{fragmentId}/items", method = RequestMethod.PUT)
     public ApFragmentVO changeFragmentItems(@PathVariable final Integer fragmentId,
@@ -442,7 +457,7 @@ public class ApController {
         Assert.notNull(accessPointId, "Identifikátor rejstříkového hesla musí být vyplněn");
 
         ApAccessPoint ap = accessPointService.getAccessPoint(accessPointId);
-        ApAccessPointVO vo = apFactory.createVO(ap);
+        ApAccessPointVO vo = apFactory.createVO(ap, true);
 
         ParParty party = partyService.findParPartyByAccessPoint(ap);
         if (party != null) {
@@ -560,7 +575,7 @@ public class ApController {
                 accessPointName.getName(),
                 accessPointName.getComplement(),
                 language);
-        return ApAccessPointNameVO.newInstance(name, staticDataService.getData());
+        return apFactory.createVO(name);
     }
 
     /**
@@ -589,7 +604,26 @@ public class ApController {
                 accessPointName.getComplement(),
                 language);
 
-        return ApAccessPointNameVO.newInstance(updatedName, staticDataService.getData());
+        return apFactory.createVO(updatedName);
+    }
+
+    /**
+     * Získání jména přístupového bodu.
+     *
+     * @param accessPointId identifikátor přístupového bodu
+     * @param nameId        identifikátor jména
+     * @return jméno
+     */
+    @Transactional
+    @RequestMapping(value = "/{accessPointId}/name/{nameId}", method = RequestMethod.GET)
+    public ApAccessPointNameVO getAccessPointName(@PathVariable final Integer accessPointId,
+                                                  @PathVariable final Integer nameId) {
+        Assert.notNull(accessPointId, "Identifikátor přístupového bodu musí být vyplněn");
+        Assert.notNull(nameId, "Identifikátor jména přístupového bodu musí být vyplněn");
+
+        ApAccessPoint accessPoint = accessPointService.getAccessPoint(accessPointId);
+        ApName name = accessPointService.getName(accessPoint, nameId);
+        return apFactory.createVO(name, true);
     }
 
     /**

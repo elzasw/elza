@@ -11,3 +11,13 @@ import cz.tacr.elza.drools.model.DescItem;
 import java.util.Arrays;
 import java.util.Set;
 import cz.tacr.elza.domain.RulItemType;
+
+// Doporučení položky
+rule "Doporučené"
+no-loop
+when
+    $itemType : RulItemTypeExt(code in ("AP_DESCRIPTION"))
+then
+    $itemType.setType(RulItemType.Type.RECOMMENDED);
+    $itemType.setRepeatable(false);
+end

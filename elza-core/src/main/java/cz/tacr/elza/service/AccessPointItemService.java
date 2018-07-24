@@ -8,18 +8,13 @@ import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.*;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.repository.ApChangeRepository;
 import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.DataRepository;
-import cz.tacr.elza.security.UserDetail;
 import org.apache.commons.lang3.NotImplementedException;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -27,25 +22,22 @@ import java.util.stream.Collectors;
 @Service
 public class AccessPointItemService {
 
-    private final UserService userService;
     private final EntityManager em;
-    private final ApChangeRepository apChangeRepository;
     private final StaticDataService staticDataService;
     private final ApItemRepository itemRepository;
     private final DataRepository dataRepository;
+    private final AccessPointDataService apDataService;
 
-    public AccessPointItemService(final UserService userService,
-                                  final EntityManager em,
-                                  final ApChangeRepository apChangeRepository,
+    public AccessPointItemService(final EntityManager em,
                                   final StaticDataService staticDataService,
                                   final ApItemRepository itemRepository,
-                                  final DataRepository dataRepository) {
-        this.userService = userService;
+                                  final DataRepository dataRepository,
+                                  final AccessPointDataService apDataService) {
         this.em = em;
-        this.apChangeRepository = apChangeRepository;
         this.staticDataService = staticDataService;
         this.itemRepository = itemRepository;
         this.dataRepository = dataRepository;
+        this.apDataService = apDataService;
     }
 
     @FunctionalInterface
@@ -53,7 +45,7 @@ public class AccessPointItemService {
         ApItem apply(final RulItemType itemType, final RulItemSpec itemSpec, final ApChange change, final int objectId, final int position);
     }
 
-    public void changeItems(final List<ApUpdateItemVO> items, final List<ApItem> itemsDb, final CreateFunction create) {
+    public void changeItems(final List<ApUpdateItemVO> items, final List<ApItem> itemsDb, final ApChange change, final CreateFunction create) {
         Map<Integer, ApItem> objectIdItemMap = itemsDb.stream().collect(Collectors.toMap(ApItem::getObjectId, Function.identity()));
         Map<Integer, List<ApItem>> typeIdItemsMap = itemsDb.stream().collect(Collectors.groupingBy(ApItem::getItemTypeId));
 
@@ -78,7 +70,6 @@ public class AccessPointItemService {
             }
         }
 
-        ApChange change = createChange(ApChange.Type.FRAGMENT_CHANGE);
         deleteItems(deleteItems, typeIdItemsMap, itemsDb, objectIdItemMap, change);
         createItems(createItems, typeIdItemsMap, itemsDb, change, create);
         updateItems(updateItems, typeIdItemsMap, itemsDb, objectIdItemMap, change);
@@ -259,26 +250,6 @@ public class AccessPointItemService {
             }
         }
         return position;
-    }
-
-    public ApChange createChange(@Nullable final ApChange.Type type) {
-        return createChange(type, null);
-    }
-
-    public ApChange createChange(@Nullable final ApChange.Type type, @Nullable ApExternalSystem externalSystem) {
-        ApChange change = new ApChange();
-        UserDetail userDetail = userService.getLoggedUserDetail();
-        change.setChangeDate(LocalDateTime.now());
-
-        if (userDetail != null && userDetail.getId() != null) {
-            UsrUser user = em.getReference(UsrUser.class, userDetail.getId());
-            change.setUser(user);
-        }
-
-        change.setType(type);
-        change.setExternalSystem(externalSystem);
-
-        return apChangeRepository.save(change);
     }
 
 }

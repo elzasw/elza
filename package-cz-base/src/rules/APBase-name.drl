@@ -11,3 +11,23 @@ import cz.tacr.elza.drools.model.DescItem;
 import java.util.Arrays;
 import java.util.Set;
 import cz.tacr.elza.domain.RulItemType;
+
+// Povinné položky
+rule "Povinné"
+no-loop
+when
+    $itemType : RulItemTypeExt(code in ("AP_NAME"))
+then
+    $itemType.setType(RulItemType.Type.REQUIRED);
+    $itemType.setRepeatable(false);
+end
+
+// Doporučení položky
+rule "Doporučené"
+no-loop
+when
+    $itemType : RulItemTypeExt(code in ("AP_COMPLEMENT"))
+then
+    $itemType.setType(RulItemType.Type.RECOMMENDED);
+    $itemType.setRepeatable(false);
+end

@@ -1,6 +1,7 @@
 package cz.tacr.elza.controller.vo;
 
 import cz.tacr.elza.controller.vo.ap.ApFormVO;
+import cz.tacr.elza.controller.vo.ap.ApStateVO;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -56,6 +57,18 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
      * Seznam jmen přístupového bodu.
      */
     private Collection<ApAccessPointNameVO> names;
+
+    /**
+     * Stav přístupového bodu.
+     */
+    @Nullable
+    private ApStateVO state;
+
+    /**
+     * Chyby v přístupovém bodu.
+     */
+    @Nullable
+    private String errorDescription;
 
     /**
      * Strukturované data formuláře pro AP. Vyplněné pouze v případě, že se jedná o strukturovaný typ.
@@ -143,6 +156,24 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
 
     public void setNames(Collection<ApAccessPointNameVO> names) {
         this.names = names;
+    }
+
+    @Nullable
+    public ApStateVO getState() {
+        return state;
+    }
+
+    public void setState(@Nullable final ApStateVO state) {
+        this.state = state;
+    }
+
+    @Nullable
+    public String getErrorDescription() {
+        return errorDescription;
+    }
+
+    public void setErrorDescription(@Nullable final String errorDescription) {
+        this.errorDescription = errorDescription;
     }
 
     @Nullable

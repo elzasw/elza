@@ -49,6 +49,9 @@ public class RulesExecutor {
     @Autowired
     private FragmentItemTypesRules fragmentItemTypesRules;
 
+    @Autowired
+    private AccessPointItemTypesRules accessPointItemTypesRules;
+
     /**
      * Spustí pravidla nad typy atributů a jejich specifikacema.
      *
@@ -117,6 +120,17 @@ public class RulesExecutor {
     public List<RulItemTypeExt> executeFragmentItemTypesRules(final ApFragmentType fragmentType, final List<RulItemTypeExt> rulDescItemTypeExtList, final List<ApItem> items) {
         try {
             return fragmentItemTypesRules.execute(fragmentType, rulDescItemTypeExtList, items);
+        } catch (NoSuchFileException e) {
+            logger.warn("Neexistuje soubor pro spuštění scriptu." + e.getMessage(), e);
+            return rulDescItemTypeExtList;
+        } catch (Exception e) {
+            throw new SystemException(e);
+        }
+    }
+
+    public List<RulItemTypeExt> executeApItemTypesRules(final ApType type, final List<RulItemTypeExt> rulDescItemTypeExtList, final List<ApItem> items, final ApRule.RuleType ruleType) {
+        try {
+            return accessPointItemTypesRules.execute(type, rulDescItemTypeExtList, items, ruleType);
         } catch (NoSuchFileException e) {
             logger.warn("Neexistuje soubor pro spuštění scriptu." + e.getMessage(), e);
             return rulDescItemTypeExtList;

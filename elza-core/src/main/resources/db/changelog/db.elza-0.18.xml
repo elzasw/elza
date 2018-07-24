@@ -261,4 +261,8 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="20180724151900" author="slapa">
+        <dropNotNullConstraint tableName="ap_name" columnName="name" columnDataType="nvarchar(1000)"/>
+    </changeSet>
+
 </databaseChangeLog>

@@ -224,6 +224,14 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String USAGES_RECORD = AP_CONTROLLER_URL + "/{recordId}/usage";
     protected static final String REPLACE_RECORD = AP_CONTROLLER_URL + "/{recordId}/replace";
 
+    protected static final String CREATE_STRUCTURED_ACCESS_POINT = AP_CONTROLLER_URL + "/structured";
+    protected static final String CONFIRM_ACCESS_POINT = AP_CONTROLLER_URL + "/{accessPointId}/confirm";
+    protected static final String CREATE_STRUCTURED_NAME_ACCESS_POINT = AP_CONTROLLER_URL + "/{accessPointId}/name/structured";
+    protected static final String CONFIRM_NAME_ACCESS_POINT = AP_CONTROLLER_URL + "/{accessPointId}/name/{nameId}/confirm";
+    protected static final String CHANGE_ACCESS_POINT_ITEMS = AP_CONTROLLER_URL + "/{accessPointId}/items";
+    protected static final String CHANGE_NAME_ITEMS = AP_CONTROLLER_URL + "/{accessPointId}/name/{nameId}/items";
+    protected static final String GET_NAME = AP_CONTROLLER_URL + "/{accessPointId}/name/{nameId}";
+
     protected static final String CREATE_VARIANT_RECORD = AP_CONTROLLER_URL + "/variantRecord/";
     protected static final String UPDATE_VARIANT_RECORD = AP_CONTROLLER_URL + "/variantRecord/{variantRecordId}";
     protected static final String DELETE_VARIANT_RECORD = AP_CONTROLLER_URL + "/variantRecord/{variantRecordId}";
@@ -1793,10 +1801,10 @@ public abstract class AbstractControllerTest extends AbstractTest {
     /**
      * Vrátí jedno heslo (s variantními hesly) dle id.
      *
-     * @param recordId id požadovaného hesla
+     * @param accessPointId id požadovaného hesla
      */
-    protected ApAccessPointVO getRecord(final int recordId) {
-        return get(spec -> spec.pathParam("recordId", recordId), GET_RECORD).getBody().as(ApAccessPointVO.class);
+    protected ApAccessPointVO getAccessPoint(final int accessPointId) {
+        return get(spec -> spec.pathParam("recordId", accessPointId), GET_RECORD).getBody().as(ApAccessPointVO.class);
     }
 
     /**
@@ -3334,5 +3342,67 @@ public abstract class AbstractControllerTest extends AbstractTest {
      */
     protected List<ApFragmentTypeVO> findFragmentTypes() {
         return Arrays.asList(get(FRAGMENT_TYPES).getBody().as(ApFragmentTypeVO[].class));
+    }
+
+    protected ApAccessPointVO createStructuredAccessPoint(final ApAccessPointCreateVO accessPoint) {
+        return post(spec -> spec.body(accessPoint), CREATE_STRUCTURED_ACCESS_POINT).as(ApAccessPointVO.class);
+    }
+
+    protected void confirmStructuredAccessPoint(final Integer accessPointId) {
+        post(spec -> spec.pathParameter("accessPointId", accessPointId), CONFIRM_ACCESS_POINT);
+    }
+
+    protected ApAccessPointNameVO createAccessPointStructuredName(final Integer accessPointId) {
+        return post(spec -> spec.pathParameter("accessPointId", accessPointId),
+                CREATE_STRUCTURED_NAME_ACCESS_POINT).as(ApAccessPointNameVO.class);
+    }
+
+    protected void confirmAccessPointStructuredName(final Integer accessPointId,
+                                                    final Integer nameId) {
+        post(spec -> spec.pathParameter("accessPointId", accessPointId)
+                        .pathParameter("nameId", nameId),
+                CONFIRM_NAME_ACCESS_POINT);
+    }
+
+    /**
+     * Úprava hodnot těla přístupového bodu. Přidání/upravení/smazání.
+     *
+     * @param accessPointId identifikátor přístupového bodu
+     * @param items         položky ke změně
+     * @return změněné jméno
+     */
+    protected ApAccessPointVO changeAccessPointItems(final Integer accessPointId,
+                                                     final List<ApUpdateItemVO> items) {
+        return put(spec -> spec.pathParameter("accessPointId", accessPointId)
+                .body(items), CHANGE_ACCESS_POINT_ITEMS).as(ApAccessPointVO.class);
+    }
+
+    /**
+     * Úprava hodnot jména přístupového bodu. Přidání/upravení/smazání.
+     *
+     * @param accessPointId identifikátor přístupového bodu
+     * @param nameId        identifikátor jména
+     * @param items         položky ke změně
+     * @return upravné jméno
+     */
+    protected ApAccessPointNameVO changeNameItems(final Integer accessPointId,
+                                                  final Integer nameId,
+                                                  final List<ApUpdateItemVO> items) {
+        return put(spec -> spec.pathParameter("accessPointId", accessPointId)
+                .pathParameter("nameId", nameId)
+                .body(items), CHANGE_NAME_ITEMS).as(ApAccessPointNameVO.class);
+    }
+
+    /**
+     * Získání jména přístupového bodu.
+     *
+     * @param accessPointId identifikátor přístupového bodu
+     * @param nameId        identifikátor jména
+     * @return jméno
+     */
+    protected ApAccessPointNameVO getAccessPointName(final Integer accessPointId,
+                                                     final Integer nameId) {
+        return get(spec -> spec.pathParameter("accessPointId", accessPointId)
+                .pathParameter("nameId", nameId), GET_NAME).as(ApAccessPointNameVO.class);
     }
 }

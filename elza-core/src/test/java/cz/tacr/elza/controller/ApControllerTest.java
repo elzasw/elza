@@ -1,6 +1,7 @@
 package cz.tacr.elza.controller;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -36,6 +37,7 @@ public class ApControllerTest extends AbstractControllerTest {
      * Kód typu fragmentu pro testování.
      */
     public static final String STAT_ZASTUPCE = "STAT_ZASTUPCE";
+    public static final String STRUCT_AP_TYPE = "PERSON_BEING_STRUCT";
 
     @Test
     public void getRecordTypesTest() {
@@ -73,6 +75,62 @@ public class ApControllerTest extends AbstractControllerTest {
         scopeVO.setName("Testing2");
         scopeVO = updateScopeTest(scopeVO);
         deleteScopeTest(scopeVO.getId());
+    }
+
+    @Test
+    public void testStructureAccessPoint() {
+
+        ApTypeVO type = getApType(STRUCT_AP_TYPE);
+
+        List<ApScopeVO> scopes = getAllScopes();
+        Integer scopeId = scopes.iterator().next().getId();
+
+        ApAccessPointCreateVO ap = new ApAccessPointCreateVO();
+        ap.setTypeId(type.getId());
+        ap.setScopeId(scopeId);
+
+        ApAccessPointVO accessPoint = createStructuredAccessPoint(ap);
+        Assert.assertNotNull(accessPoint);
+        ApFormVO form = accessPoint.getForm();
+        Assert.assertNotNull(form);
+        List<ApAccessPointNameVO> names = new ArrayList<>(accessPoint.getNames());
+        ApAccessPointNameVO accessPointName = names.get(0);
+
+        accessPointName = getAccessPointName(accessPoint.getId(), accessPointName.getId());
+
+        List<ApUpdateItemVO> items = new ArrayList<>();
+        RulDescItemTypeExtVO apNameType = findDescItemTypeByCode("AP_NAME");
+        RulDescItemTypeExtVO apComplementType = findDescItemTypeByCode("AP_COMPLEMENT");
+
+        items.add(buildApItem(UpdateOp.CREATE, apNameType.getCode(), null, "Karel", null, null));
+        items.add(buildApItem(UpdateOp.CREATE, apComplementType.getCode(), null, "IV", null, null));
+        ApAccessPointNameVO accessPointNameUpdated = changeNameItems(accessPoint.getId(), accessPointName.getId(), items);
+
+        Assert.assertNotNull(accessPointNameUpdated);
+
+        // TODO: dopsat
+    }
+
+    private ApTypeVO getApType(final String structApType) {
+        List<ApTypeVO> recordTypes = getRecordTypes();
+        return findApTypeRecursive(structApType, recordTypes);
+    }
+
+    private ApTypeVO findApTypeRecursive(final String structApType, final List<ApTypeVO> recordTypes) {
+        for (ApTypeVO recordType : recordTypes) {
+            if (recordType.getCode().equalsIgnoreCase(structApType)) {
+                return recordType;
+            } else {
+                List<ApTypeVO> children = recordType.getChildren();
+                if (children != null) {
+                    ApTypeVO foundType = findApTypeRecursive(structApType, children);
+                    if (foundType != null) {
+                        return foundType;
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     @Test

@@ -2,7 +2,6 @@ package cz.tacr.elza.service;
 
 import com.google.common.collect.Lists;
 
-import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
 import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.controller.factory.ExtendedObjectsFactory;
@@ -898,5 +897,10 @@ public class RuleService {
     public List<RulItemTypeExt> getFragmentItemTypesInternal(final ApFragmentType fragmentType, final List<ApItem> items) {
         List<RulItemTypeExt> rulDescItemTypeExtList = getRulesetDescriptionItemTypes();
         return rulesExecutor.executeFragmentItemTypesRules(fragmentType, rulDescItemTypeExtList, items);
+    }
+
+    public List<RulItemTypeExt> getApItemTypesInternal(final ApType type, final List<ApItem> items, final ApRule.RuleType ruleType) {
+        List<RulItemTypeExt> rulDescItemTypeExtList = getRulesetDescriptionItemTypes();
+        return rulesExecutor.executeApItemTypesRules(type, rulDescItemTypeExtList, items, ruleType);
     }
 }
