@@ -75,6 +75,7 @@ public class AccessPointProcessor extends AccessPointEntryProcessor {
         entity.setLanguage(lang);
         entity.setName(name.getN());
         entity.setFullName(AccessPointDataService.generateFullName(name.getN(), name.getCpl()));
+        entity.setObjectId(context.nextNameObjectId());
         return entity;
     }
 }

@@ -227,10 +227,10 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String CREATE_STRUCTURED_ACCESS_POINT = AP_CONTROLLER_URL + "/structured";
     protected static final String CONFIRM_ACCESS_POINT = AP_CONTROLLER_URL + "/{accessPointId}/confirm";
     protected static final String CREATE_STRUCTURED_NAME_ACCESS_POINT = AP_CONTROLLER_URL + "/{accessPointId}/name/structured";
-    protected static final String CONFIRM_NAME_ACCESS_POINT = AP_CONTROLLER_URL + "/{accessPointId}/name/{nameId}/confirm";
+    protected static final String CONFIRM_NAME_ACCESS_POINT = AP_CONTROLLER_URL + "/{accessPointId}/name/{objectId}/confirm";
     protected static final String CHANGE_ACCESS_POINT_ITEMS = AP_CONTROLLER_URL + "/{accessPointId}/items";
-    protected static final String CHANGE_NAME_ITEMS = AP_CONTROLLER_URL + "/{accessPointId}/name/{nameId}/items";
-    protected static final String GET_NAME = AP_CONTROLLER_URL + "/{accessPointId}/name/{nameId}";
+    protected static final String CHANGE_NAME_ITEMS = AP_CONTROLLER_URL + "/{accessPointId}/name/{objectId}/items";
+    protected static final String GET_NAME = AP_CONTROLLER_URL + "/{accessPointId}/name/{objectId}";
 
     protected static final String CREATE_VARIANT_RECORD = AP_CONTROLLER_URL + "/variantRecord/";
     protected static final String UPDATE_VARIANT_RECORD = AP_CONTROLLER_URL + "/variantRecord/{variantRecordId}";
@@ -3358,9 +3358,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
     }
 
     protected void confirmAccessPointStructuredName(final Integer accessPointId,
-                                                    final Integer nameId) {
+                                                    final Integer objectId) {
         post(spec -> spec.pathParameter("accessPointId", accessPointId)
-                        .pathParameter("nameId", nameId),
+                        .pathParameter("objectId", objectId),
                 CONFIRM_NAME_ACCESS_POINT);
     }
 
@@ -3381,28 +3381,27 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * Úprava hodnot jména přístupového bodu. Přidání/upravení/smazání.
      *
      * @param accessPointId identifikátor přístupového bodu
-     * @param nameId        identifikátor jména
+     * @param objectId      identifikátor objektu jména
      * @param items         položky ke změně
-     * @return upravné jméno
      */
-    protected ApAccessPointNameVO changeNameItems(final Integer accessPointId,
-                                                  final Integer nameId,
-                                                  final List<ApUpdateItemVO> items) {
-        return put(spec -> spec.pathParameter("accessPointId", accessPointId)
-                .pathParameter("nameId", nameId)
-                .body(items), CHANGE_NAME_ITEMS).as(ApAccessPointNameVO.class);
+    protected void changeNameItems(final Integer accessPointId,
+                                   final Integer objectId,
+                                   final List<ApUpdateItemVO> items) {
+        put(spec -> spec.pathParameter("accessPointId", accessPointId)
+                .pathParameter("objectId", objectId)
+                .body(items), CHANGE_NAME_ITEMS);
     }
 
     /**
      * Získání jména přístupového bodu.
      *
      * @param accessPointId identifikátor přístupového bodu
-     * @param nameId        identifikátor jména
+     * @param objectId      identifikátor objektu jména
      * @return jméno
      */
     protected ApAccessPointNameVO getAccessPointName(final Integer accessPointId,
-                                                     final Integer nameId) {
+                                                     final Integer objectId) {
         return get(spec -> spec.pathParameter("accessPointId", accessPointId)
-                .pathParameter("nameId", nameId), GET_NAME).as(ApAccessPointNameVO.class);
+                .pathParameter("objectId", objectId), GET_NAME).as(ApAccessPointNameVO.class);
     }
 }

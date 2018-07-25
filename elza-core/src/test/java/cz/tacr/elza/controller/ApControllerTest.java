@@ -12,6 +12,7 @@ import cz.tacr.elza.controller.vo.ap.ApFormVO;
 import cz.tacr.elza.controller.vo.ap.ApFragmentTypeVO;
 import cz.tacr.elza.controller.vo.ap.ApFragmentVO;
 import cz.tacr.elza.controller.vo.ap.ApStateVO;
+import cz.tacr.elza.controller.vo.ap.item.ApItemStringVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
 import cz.tacr.elza.controller.vo.ap.item.ApUpdateItemVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
@@ -96,7 +97,7 @@ public class ApControllerTest extends AbstractControllerTest {
         List<ApAccessPointNameVO> names = new ArrayList<>(accessPoint.getNames());
         ApAccessPointNameVO accessPointName = names.get(0);
 
-        accessPointName = getAccessPointName(accessPoint.getId(), accessPointName.getId());
+        accessPointName = getAccessPointName(accessPoint.getId(), accessPointName.getObjectId());
 
         List<ApUpdateItemVO> items = new ArrayList<>();
         RulDescItemTypeExtVO apNameType = findDescItemTypeByCode("AP_NAME");
@@ -104,11 +105,28 @@ public class ApControllerTest extends AbstractControllerTest {
 
         items.add(buildApItem(UpdateOp.CREATE, apNameType.getCode(), null, "Karel", null, null));
         items.add(buildApItem(UpdateOp.CREATE, apComplementType.getCode(), null, "IV", null, null));
-        ApAccessPointNameVO accessPointNameUpdated = changeNameItems(accessPoint.getId(), accessPointName.getId(), items);
+        changeNameItems(accessPoint.getId(), accessPointName.getObjectId(), items);
 
-        Assert.assertNotNull(accessPointNameUpdated);
+        confirmStructuredAccessPoint(accessPointName.getObjectId());
 
-        // TODO: dopsat
+        accessPoint = getAccessPoint(accessPointName.getObjectId());
+        names = new ArrayList<>(accessPoint.getNames());
+        accessPointName = names.get(0);
+        accessPointName = getAccessPointName(accessPoint.getId(), accessPointName.getObjectId());
+
+        items = new ArrayList<>();
+        form = accessPointName.getForm();
+        ApItemStringVO item = (ApItemStringVO) form.getItems().get(0);
+        item.setValue("KarelX");
+        items.add(buildApItem(UpdateOp.UPDATE, item));
+        changeNameItems(accessPoint.getId(), accessPointName.getObjectId(), items);
+
+        accessPoint = getAccessPoint(accessPointName.getObjectId());
+        names = new ArrayList<>(accessPoint.getNames());
+        accessPointName = names.get(0);
+        accessPointName = getAccessPointName(accessPoint.getId(), accessPointName.getObjectId());
+
+        Assert.assertNotNull(accessPointName);
     }
 
     private ApTypeVO getApType(final String structApType) {

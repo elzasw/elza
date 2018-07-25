@@ -38,4 +38,7 @@ public interface ApNameRepository extends ElzaJpaRepository<ApName, Integer> {
 
     @Query("SELECT COUNT(n) FROM ap_name n JOIN n.accessPoint ap WHERE ap.scope = :scope AND LOWER(n.fullName) = LOWER(:fullName) AND n.deleteChangeId IS NULL")
     int countUniqueName(@Param("fullName") String fullName, @Param("scope") ApScope scope);
+
+    @Query("SELECT n FROM ap_name n WHERE n.objectId = :objectId AND n.deleteChangeId IS NULL")
+    ApName findByObjectId(@Param("objectId") Integer objectId);
 }

@@ -19,11 +19,14 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.Objects;
 
 
 /**
  * Datová třída pro přístupové body.
+ *
+ * @since 24.07.2018
  */
 @Service
 public class AccessPointDataService {
@@ -37,7 +40,11 @@ public class AccessPointDataService {
     private final ApDescriptionRepository descriptionRepository;
 
     @Autowired
-    public AccessPointDataService(final EntityManager em, final UserService userService, final ApChangeRepository apChangeRepository, final ApNameRepository apNameRepository, final ApDescriptionRepository descriptionRepository) {
+    public AccessPointDataService(final EntityManager em,
+                                  final UserService userService,
+                                  final ApChangeRepository apChangeRepository,
+                                  final ApNameRepository apNameRepository,
+                                  final ApDescriptionRepository descriptionRepository) {
         this.em = em;
         this.userService = userService;
         this.apChangeRepository = apChangeRepository;
@@ -64,10 +71,23 @@ public class AccessPointDataService {
         return sb.toString();
     }
 
+    /**
+     * Vytvoření změny daného typu.
+     *
+     * @param type typ změny
+     * @return změna
+     */
     public ApChange createChange(@Nullable final ApChange.Type type) {
         return createChange(type, null);
     }
 
+    /**
+     * Vytvoření změny s externím systémem.
+     *
+     * @param type           typ změny
+     * @param externalSystem externí systém
+     * @return změna
+     */
     public ApChange createChange(@Nullable final ApChange.Type type, @Nullable ApExternalSystem externalSystem) {
         ApChange change = new ApChange();
         UserDetail userDetail = userService.getLoggedUserDetail();
@@ -108,7 +128,7 @@ public class AccessPointDataService {
                 descriptionRepository.save(apDescription);
             } else {
                 // nic se nezakládá ani nemaže
-                logger.debug("Charakteristika přístupového bodu neexistuje a nebude ani zakladana. (accessPointId: {})", accessPoint.getAccessPointId());
+                logger.debug("Charakteristika přístupového bodu neexistuje a nebude ani zakládána. (accessPointId: {})", accessPoint.getAccessPointId());
             }
         } else {
             if (apDescription != null) {
@@ -154,24 +174,36 @@ public class AccessPointDataService {
         validationNotDeleted(accessPoint);
         validationNotDeleted(apName);
 
-        ApName apNameNew = new ApName(apName);
+        if (apName.getCreateChangeId().equals(change.getChangeId())) {
+            apName.setName(name);
+            apName.setComplement(complement);
+            apName.setFullName(fullName);
+            apName.setLanguage(language);
+            apNameRepository.save(apName);
+            if (validateUnique) {
+                validationNameUnique(accessPoint.getScope(), apName.getFullName());
+            }
+            return apName;
+        } else {
+            ApName apNameNew = new ApName(apName);
 
-        // zneplatnění původní verze jména
-        apName.setDeleteChange(change);
-        apNameRepository.save(apName);
+            // zneplatnění původní verze jména
+            apName.setDeleteChange(change);
+            apNameRepository.save(apName);
 
-        // založení nové verze jména
-        apNameNew.setCreateChange(change);
-        apNameNew.setName(name);
-        apNameNew.setComplement(complement);
-        apNameNew.setFullName(fullName);
-        apNameNew.setLanguage(language);
+            // založení nové verze jména
+            apNameNew.setCreateChange(change);
+            apNameNew.setName(name);
+            apNameNew.setComplement(complement);
+            apNameNew.setFullName(fullName);
+            apNameNew.setLanguage(language);
 
-        apNameRepository.save(apNameNew);
-        if (validateUnique) {
-            validationNameUnique(accessPoint.getScope(), apNameNew.getFullName());
+            apNameRepository.save(apNameNew);
+            if (validateUnique) {
+                validationNameUnique(accessPoint.getScope(), apNameNew.getFullName());
+            }
+            return apNameNew;
         }
-        return apNameNew;
     }
 
     /**
@@ -249,11 +281,7 @@ public class AccessPointDataService {
      * @param fullName validované jméno
      */
     public void validationNameUnique(final ApScope scope, final String fullName) {
-        Validate.notNull(scope, "Přístupový bod musí být vyplněn");
-        Validate.notNull(fullName, "Plné jméno musí být vyplněno");
-
-        long count = apNameRepository.countUniqueName(fullName, scope);
-        if (count > 1) {
+        if (!isNameUnique(scope, fullName)) {
             throw new BusinessException("Celé jméno není unikátní v rámci třídy", RegistryCode.NOT_UNIQUE_FULL_NAME)
                     .set("fullName", fullName)
                     .set("scopeId", scope.getScopeId());
@@ -261,11 +289,25 @@ public class AccessPointDataService {
     }
 
     /**
+     * Kontrola, zdali je jméno unikátní v daném scope.
+     *
+     * @param scope    třída
+     * @param fullName validované jméno
+     * @return true pokud je
+     */
+    public boolean isNameUnique(final ApScope scope, final String fullName) {
+        Validate.notNull(scope, "Přístupový bod musí být vyplněn");
+        Validate.notNull(fullName, "Plné jméno musí být vyplněno");
+        long count = apNameRepository.countUniqueName(fullName, scope);
+        return count <= 1;
+    }
+
+    /**
      * Založení popisu.
      *
      * @param accessPoint přístupový bod
      * @param description popis přístupového bodu
-     * @param change změna
+     * @param change      změna
      */
     public void createDescription(final ApAccessPoint accessPoint,
                                   final String description,
@@ -281,7 +323,6 @@ public class AccessPointDataService {
 
         descriptionRepository.save(apDescription);
     }
-
 
     /**
      * Porovnání obsahů jmen.
@@ -305,5 +346,21 @@ public class AccessPointDataService {
                 && Objects.equals(apName.getName(), name)
                 && Objects.equals(apName.getFullName(), fullName)
                 && Objects.equals(apName.getLanguageId(), languageId);
+    }
+
+    /**
+     * Validace unikátnosti jmén v daném scope.
+     * TODO: optimalizovat na jeden sql dotaz? lze to?
+     *
+     * @param scope třída
+     * @param names kontrolovaná jména
+     */
+    public void validationNamesUnique(final ApScope scope, final Collection<ApName> names) {
+        Validate.notNull(scope, "Třída musí být vyplněna");
+        Validate.notNull(names, "Kolekce musí být vyplněna");
+
+        for (ApName name : names) {
+            validationNameUnique(scope, name.getFullName());
+        }
     }
 }

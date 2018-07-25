@@ -9,6 +9,7 @@ import cz.tacr.elza.domain.*;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApItemRepository;
+import cz.tacr.elza.repository.ApNameItemRepository;
 import cz.tacr.elza.repository.DataRepository;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.Validate;
@@ -22,27 +23,61 @@ import java.util.stream.Collectors;
 @Service
 public class AccessPointItemService {
 
+    private static final String OBJECT_ID_SEQUENCE_NAME = "ap_item|object_id";
+
     private final EntityManager em;
     private final StaticDataService staticDataService;
     private final ApItemRepository itemRepository;
     private final DataRepository dataRepository;
-    private final AccessPointDataService apDataService;
+    private final ApNameItemRepository nameItemRepository;
+    private final SequenceService sequenceService;
 
     public AccessPointItemService(final EntityManager em,
                                   final StaticDataService staticDataService,
                                   final ApItemRepository itemRepository,
                                   final DataRepository dataRepository,
-                                  final AccessPointDataService apDataService) {
+                                  final ApNameItemRepository nameItemRepository,
+                                  final SequenceService sequenceService) {
         this.em = em;
         this.staticDataService = staticDataService;
         this.itemRepository = itemRepository;
         this.dataRepository = dataRepository;
-        this.apDataService = apDataService;
+        this.nameItemRepository = nameItemRepository;
+        this.sequenceService = sequenceService;
     }
 
     @FunctionalInterface
     public interface CreateFunction {
         ApItem apply(final RulItemType itemType, final RulItemSpec itemSpec, final ApChange change, final int objectId, final int position);
+    }
+
+    public List<ApItem> copyItems(final ApName nameSource, final ApName nameTarget, final ApChange change) {
+        Validate.notNull(nameSource, "Zdrojové jméno musí být vyplněno");
+        Validate.notNull(nameTarget, "Cílové jméno musí být vyplněno");
+        Validate.notNull(change, "Změna musí být vyplněna");
+
+        List<ApNameItem> items = nameItemRepository.findValidItemsByName(nameSource);
+
+        List<ApNameItem> newItems = new ArrayList<>(items.size());
+        for (ApNameItem item : items) {
+            ApNameItem newItem;
+            if (item.getCreateChange().getChangeId().equals(change.getChangeId())) {
+                // optimalizace: není třeba odverzovat item, který v této změně již byl odverzován,
+                //               pouze změníme odkazující name
+                newItem = item;
+                newItem.setName(nameTarget);
+            } else {
+                newItem = new ApNameItem(item);
+                newItem.setCreateChange(change);
+                newItem.setName(nameTarget);
+                item.setDeleteChange(change);
+            }
+            newItems.add(newItem);
+        }
+
+        items.addAll(newItems);
+        nameItemRepository.save(items);
+        return new ArrayList<>(newItems);
     }
 
     public void changeItems(final List<ApUpdateItemVO> items, final List<ApItem> itemsDb, final ApChange change, final CreateFunction create) {
@@ -70,6 +105,7 @@ public class AccessPointItemService {
             }
         }
 
+        // TODO: optimalizace při úpravě se stejným change id (bez odverzování) - pro deleteItems a updateItems
         deleteItems(deleteItems, typeIdItemsMap, itemsDb, objectIdItemMap, change);
         createItems(createItems, typeIdItemsMap, itemsDb, change, create);
         updateItems(updateItems, typeIdItemsMap, itemsDb, objectIdItemMap, change);
@@ -152,11 +188,11 @@ public class AccessPointItemService {
         }
     }
 
-    private static Random r = new Random();
-
-    private int nextObjectId() {
-        // TODO: předělat na DB sequence (ideálně přes hibernate)
-        return r.nextInt();
+    /**
+     * @return identifikátor pro nový item AP
+     */
+    private int nextItemObjectId() {
+        return sequenceService.getNext(OBJECT_ID_SEQUENCE_NAME);
     }
 
     private void createItems(final List<ApItemVO> createItems, final Map<Integer, List<ApItem>> typeIdItemsMap, final List<ApItem> itemsDb, final ApChange change, final CreateFunction create) {
@@ -184,7 +220,7 @@ public class AccessPointItemService {
             }
 
             ArrData data = createItem.createDataEntity(em);
-            ApItem itemCreated = create.apply(itemType, itemSpec, change, nextObjectId(), position);
+            ApItem itemCreated = create.apply(itemType, itemSpec, change, nextItemObjectId(), position);
             dataToSave.add(data);
             itemCreated.setData(data);
 

@@ -87,8 +87,8 @@ class ApDetailNames extends AbstractReactComponent {
                         <div className="actions">
                             {canEdit && <Button bsStyle="action" onClick={() => this.handleNameUpdate(name)}><Icon glyph="fa-pencil" /></Button>}
                             {canEdit && !name.preferredName && <span>
-                                <Button className="delete" bsStyle="action" onClick={() => this.handleDelete(name.id)}><Icon glyph="fa-trash" /></Button>
-                                <Button bsStyle="action" onClick={() => this.handleSelectPreferred(name.id)}><Icon glyph="fa-star" /></Button>
+                                <Button className="delete" bsStyle="action" onClick={() => this.handleDelete(name.objectId)}><Icon glyph="fa-trash" /></Button>
+                                <Button bsStyle="action" onClick={() => this.handleSelectPreferred(name.objectId)}><Icon glyph="fa-star" /></Button>
                             </span>}
                         </div>
                     </div>)}

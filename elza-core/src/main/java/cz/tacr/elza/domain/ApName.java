@@ -73,6 +73,9 @@ public class ApName {
     @Column(nullable = true, updatable = false, insertable = false)
     private Integer deleteChangeId;
 
+    @Column(nullable = false)
+    private Integer objectId;
+
     public ApName(){}
 
     public ApName(ApName other) {
@@ -90,6 +93,7 @@ public class ApName {
         this.createChangeId = other.createChangeId;
         this.deleteChange = other.deleteChange;
         this.deleteChangeId = other.deleteChangeId;
+        this.objectId = other.objectId;
     }
 
     public Integer getNameId() {
@@ -154,6 +158,14 @@ public class ApName {
         return createChange;
     }
 
+    public Integer getCreateChangeId() {
+        return createChangeId;
+    }
+
+    public Integer getDeleteChangeId() {
+        return deleteChangeId;
+    }
+
     public void setCreateChange(ApChange createChange) {
         this.createChange = createChange;
     }
@@ -188,6 +200,14 @@ public class ApName {
 
     public void setErrorDescription(final String errorDescription) {
         this.errorDescription = errorDescription;
+    }
+
+    public Integer getObjectId() {
+        return objectId;
+    }
+
+    public void setObjectId(final Integer objectId) {
+        this.objectId = objectId;
     }
 
     @Override

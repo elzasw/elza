@@ -483,12 +483,12 @@ export class WebApiCls {
         return AjaxUtils.ajaxPut(WebApiCls.registryUrl + '/' + accessPointId + '/name', null, data);
     }
 
-    deleteAccessPointName(accessPointId, nameId) {
-        return AjaxUtils.ajaxDelete(WebApiCls.registryUrl + '/' + accessPointId + '/name/' + nameId);
+    deleteAccessPointName(accessPointId, objectId) {
+        return AjaxUtils.ajaxDelete(WebApiCls.registryUrl + '/' + accessPointId + '/name/' + objectId);
     }
 
-    setPreferredAccessPointName(accessPointId, nameId) {
-        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/' + accessPointId + '/name/' + nameId + '/preferred');
+    setPreferredAccessPointName(accessPointId, objectId) {
+        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/' + accessPointId + '/name/' + objectId + '/preferred');
     }
 
     createRegCoordinates(data){

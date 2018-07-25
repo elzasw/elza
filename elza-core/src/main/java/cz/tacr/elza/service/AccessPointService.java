@@ -52,6 +52,7 @@ import java.util.stream.Collectors;
 public class AccessPointService {
 
     private static final Logger logger = LoggerFactory.getLogger(AccessPointService.class);
+    private static final String OBJECT_ID_SEQUENCE_NAME = "ap_name|object_id";
 
     @Autowired
     private ApAccessPointRepository apRepository;
@@ -154,6 +155,9 @@ public class AccessPointService {
 
     @Autowired
     private AccessPointGeneratorService apGeneratorService;
+
+    @Autowired
+    private SequenceService sequenceService;
 
     /**
      * Kody tříd rejstříků nastavené v konfiguraci elzy.
@@ -1049,7 +1053,12 @@ public class AccessPointService {
 
         List<ApNameItem> itemsDb = nameItemRepository.findValidItemsByName(name);
 
-        ApChange change = apDataService.createChange(ApChange.Type.NAME_UPDATE);
+        ApChange change;
+        if (name.getState() == ApState.TEMP) {
+            change = name.getCreateChange();
+        } else {
+            change = apDataService.createChange(ApChange.Type.NAME_UPDATE);
+        }
         apItemService.changeItems(items, new ArrayList<>(itemsDb), change, (RulItemType it, RulItemSpec is, ApChange c, int objectId, int position)
                 -> createNameItem(name, it, is, c, objectId, position));
 
@@ -1065,7 +1074,12 @@ public class AccessPointService {
 
         List<ApBodyItem> itemsDb = bodyItemRepository.findValidItemsByAccessPoint(accessPoint);
 
-        ApChange change = apDataService.createChange(ApChange.Type.AP_UPDATE);
+        ApChange change;
+        if (accessPoint.getState() == ApState.TEMP) {
+            change = accessPoint.getCreateChange();
+        } else {
+            change = apDataService.createChange(ApChange.Type.AP_UPDATE);
+        }
         apItemService.changeItems(items, new ArrayList<>(itemsDb), change, (RulItemType it, RulItemSpec is, ApChange c, int objectId, int position)
                 -> createBodyItem(accessPoint, it, is, c, objectId, position));
 
@@ -1119,12 +1133,7 @@ public class AccessPointService {
             preferredName.setState(ApState.INIT);
             apNameRepository.save(preferredName);
 
-            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
-                @Override
-                public void afterCommit() {
-                    // TODO: přidat do fronty pro přegenerování podle groovy
-                }
-            });
+            apGeneratorService.generateAndSetResult(accessPoint, accessPoint.getCreateChange());
         } else {
             throw new BusinessException("Nelze potvrdit přístupový bod, který není dočasný", BaseCode.INVALID_STATE);
         }
@@ -1293,25 +1302,25 @@ public class AccessPointService {
     /**
      * Získání jména.
      *
-     * @param nameId identifikátor jména
+     * @param objectId identifikátor objektu jména
      * @return jméno
      */
     @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_RD_ALL, UsrPermission.Permission.AP_SCOPE_RD})
-    public ApName getName(@AuthParam(type = AuthParam.Type.AP) final ApAccessPoint accessPoint, final Integer nameId) {
+    public ApName getName(@AuthParam(type = AuthParam.Type.AP) final ApAccessPoint accessPoint, final Integer objectId) {
         Validate.notNull(accessPoint, "Přístupový bod musí být vyplněn");
-        return getName(nameId);
+        return getName(objectId);
     }
 
     /**
      * Získání jména.
      *
-     * @param nameId identifikátor jména
+     * @param objectId identifikátor objektu jména
      * @return jméno
      */
-    public ApName getName(final Integer nameId) {
-        ApName name = apNameRepository.findOne(nameId);
+    public ApName getName(final Integer objectId) {
+        ApName name = apNameRepository.findByObjectId(objectId);
         if (name == null) {
-            throw new ObjectNotFoundException("Jméno přístupového bodu neexistuje", BaseCode.ID_NOT_EXIST).setId(nameId);
+            throw new ObjectNotFoundException("Jméno přístupového bodu neexistuje", BaseCode.ID_NOT_EXIST).setId(objectId);
         }
         return name;
     }
@@ -1442,12 +1451,12 @@ public class AccessPointService {
      * @param createChange  zakládací změna
      * @return vytvořená entita
      */
-    public static ApName createNameEntity(final ApAccessPoint accessPoint,
-                                          final boolean preferredName,
-                                          final @Nullable String name,
-                                          final @Nullable String complement,
-                                          final @Nullable SysLanguage language,
-                                          final ApChange createChange) {
+    public ApName createNameEntity(final ApAccessPoint accessPoint,
+                                   final boolean preferredName,
+                                   final @Nullable String name,
+                                   final @Nullable String complement,
+                                   final @Nullable SysLanguage language,
+                                   final ApChange createChange) {
         ApName apName = new ApName();
         apName.setName(name);
         apName.setComplement(complement);
@@ -1456,6 +1465,7 @@ public class AccessPointService {
         apName.setLanguage(language);
         apName.setAccessPoint(accessPoint);
         apName.setCreateChange(createChange);
+        apName.setObjectId(nextNameObjectId());
         return apName;
     }
 
@@ -1687,6 +1697,13 @@ public class AccessPointService {
             return apDataService.updateAccessPointName(accessPoint, existsName, name, complement, fullName, newName.getLanguage(), change.get(), false);
         }
         return existsName;
+    }
+
+    /**
+     * @return identifikátor pro nové jméno AP
+     */
+    public int nextNameObjectId() {
+        return sequenceService.getNext(OBJECT_ID_SEQUENCE_NAME);
     }
 
     /**

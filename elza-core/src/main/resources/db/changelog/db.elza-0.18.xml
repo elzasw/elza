@@ -265,4 +265,16 @@
         <dropNotNullConstraint tableName="ap_name" columnName="name" columnDataType="nvarchar(1000)"/>
     </changeSet>
 
+    <changeSet id="20180725113900" author="slapa">
+        <addColumn tableName="ap_name">
+            <column name="object_id" type="int" />
+        </addColumn>
+        <sql>UPDATE ap_name SET object_id = name_id</sql>
+        <addNotNullConstraint tableName="ap_name" columnName="object_id" columnDataType="int" />
+    </changeSet>
+
+    <changeSet id="20180725162800" author="slapa">
+        <sql>INSERT INTO db_hibernate_sequences (sequence_name, next_val) SELECT 'ap_name|object_id', COALESCE(MAX(object_id),0)+1 FROM ap_name</sql>
+    </changeSet>
+
 </databaseChangeLog>

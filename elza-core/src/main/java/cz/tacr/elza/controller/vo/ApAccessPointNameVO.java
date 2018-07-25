@@ -27,6 +27,11 @@ public class ApAccessPointNameVO {
     private Integer accessPointId;
 
     /**
+     * Identifikátor jmena (nemění se při odverování)
+     */
+    private Integer objectId;
+
+    /**
      * Název.
      */
     @Nullable
@@ -87,6 +92,14 @@ public class ApAccessPointNameVO {
 
     public void setAccessPointId(final Integer accessPointId) {
         this.accessPointId = accessPointId;
+    }
+
+    public Integer getObjectId() {
+        return objectId;
+    }
+
+    public void setObjectId(final Integer objectId) {
+        this.objectId = objectId;
     }
 
     @Nullable
@@ -169,6 +182,7 @@ public class ApAccessPointNameVO {
         vo.setComplement(src.getComplement());
         vo.setFullName(src.getFullName());
         vo.setId(src.getNameId());
+        vo.setObjectId(src.getObjectId());
         vo.setName(src.getName());
         vo.setPreferredName(src.isPreferredName());
         vo.setState(src.getState() == null ? null : ApStateVO.valueOf(src.getState().name()));
