@@ -4,13 +4,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.google.common.eventbus.Subscribe;
+import cz.tacr.elza.common.TaskExecutor;
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.domain.*;
 import cz.tacr.elza.drools.service.ModelFactory;
-import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.repository.*;
 import cz.tacr.elza.service.event.CacheInvalidateEvent;
 import cz.tacr.elza.service.vo.AccessPoint;
@@ -21,12 +20,19 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+import javax.annotation.Nullable;
+import javax.transaction.Transactional;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -53,8 +59,13 @@ public class AccessPointGeneratorService {
     private final AccessPointDataService apDataService;
     private final ApAccessPointRepository apRepository;
     private final AccessPointItemService apItemService;
+    private final ApplicationContext appCtx;
+    private final ApChangeRepository apChangeRepository;
 
     private Map<File, GroovyScriptService.GroovyScriptFile> groovyScriptMap = new HashMap<>();
+
+    private final TaskExecutor taskExecutor = new TaskExecutor(1);
+    private final BlockingQueue<ApQueueItem> queue = new LinkedBlockingQueue<>();
 
     @Autowired
     public AccessPointGeneratorService(final ApFragmentRuleRepository fragmentRuleRepository,
@@ -68,7 +79,9 @@ public class AccessPointGeneratorService {
                                        final ApFragmentRepository fragmentRepository,
                                        final AccessPointDataService apDataService,
                                        final ApAccessPointRepository apRepository,
-                                       final AccessPointItemService apItemService) {
+                                       final AccessPointItemService apItemService,
+                                       final ApplicationContext appCtx,
+                                       final ApChangeRepository apChangeRepository) {
         this.fragmentRuleRepository = fragmentRuleRepository;
         this.ruleRepository = ruleRepository;
         this.resourcePathResolver = resourcePathResolver;
@@ -81,6 +94,10 @@ public class AccessPointGeneratorService {
         this.fragmentRepository = fragmentRepository;
         this.apRepository = apRepository;
         this.apItemService = apItemService;
+        this.appCtx = appCtx;
+        this.apChangeRepository = apChangeRepository;
+        this.taskExecutor.addTask(new AccessPointGeneratorThread());
+        this.taskExecutor.start();
     }
 
     @Subscribe
@@ -88,6 +105,81 @@ public class AccessPointGeneratorService {
         if (cacheInvalidateEvent.contains(CacheInvalidateEvent.Type.GROOVY)) {
             groovyScriptMap = new HashMap<>();
         }
+    }
+
+    /**
+     * Provede revalidaci AP, které nebyly dokončeny před restartem serveru.
+     */
+    public void restartQueuedAccessPoints() {
+        Set<Integer> accessPointIds = apRepository.findInitAccessPointIds();
+        for (Integer accessPointId : accessPointIds) {
+            generateAsyncAfterCommit(accessPointId, null);
+        }
+    }
+
+    /**
+     * Třída pro zpracování požadavků pro asynchronní zpracování.
+     */
+    private class AccessPointGeneratorThread implements Runnable {
+        @Override
+        public void run() {
+            while (true) {
+                ApQueueItem item = null;
+                try {
+                    item = queue.take();
+                    appCtx.getBean(AccessPointGeneratorService.class).processAsyncGenerate(item.getAccessPointId(), item.getChangeId());
+                } catch (InterruptedException e) {
+                    logger.info("Closing generator", e);
+                    break;
+                } catch (Exception e) {
+                    logger.error("Process generate fail on accessPointId: {}", item.getAccessPointId(), e);
+                }
+            }
+        }
+    }
+
+    /**
+     * Zpracování požadavku AP.
+     *
+     * @param accessPointId identifikátor přístupového bodu
+     * @param changeId      identifikátor změny
+     */
+    @Transactional
+    public void processAsyncGenerate(final Integer accessPointId, final Integer changeId) {
+        ApAccessPoint accessPoint = apRepository.findOne(accessPointId);
+        ApChange change;
+        if (changeId == null) {
+            change = apDataService.createChange(ApChange.Type.AP_REVALIDATE);
+        } else {
+            change = apChangeRepository.findOne(changeId);
+        }
+        generateAndSetResult(accessPoint, change);
+    }
+
+    /**
+     * Provede přidání AP do fronty pro přegenerování/validaci po dokončení aktuální transakce.
+     * V případě, že ve frontě již AP je, nepřidá se.
+     *
+     * @param accessPointId identifikátor přístupového bodu
+     * @param changeId      identifikátor změny
+     */
+    public void generateAsyncAfterCommit(final Integer accessPointId,
+                                         @Nullable final Integer changeId) {
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+            @Override
+            public void afterCommit() {
+                ApQueueItem item = new ApQueueItem(accessPointId, changeId);
+                synchronized (queue) {
+                    if (!queue.contains(item)) {
+                        try {
+                            queue.put(item);
+                        } catch (InterruptedException e) {
+                            logger.error("Fail insert AP to queue", e);
+                        }
+                    }
+                }
+            }
+        });
     }
 
     public void generateAndSetResult(final ApFragment fragment) {
@@ -144,12 +236,7 @@ public class AccessPointGeneratorService {
         Map<Integer, ApName> apNameMap = apNames.stream().collect(Collectors.toMap(ApName::getNameId, Function.identity()));
         List<ApNameItem> nameItems = nameItemRepository.findValidItemsByNames(apNames);
 
-        Map<Integer, List<ApItem>> nameItemsMap = new HashMap<>();
-        for (ApNameItem nameItem : nameItems) {
-            Integer nameId = nameItem.getNameId();
-            List<ApItem> items = nameItemsMap.computeIfAbsent(nameId, k -> new ArrayList<>());
-            items.add(nameItem);
-        }
+        Map<Integer, List<ApItem>> nameItemsMap = createNameItemsMap(nameItems);
 
         ApErrorDescription apErrorDescription = new ApErrorDescription();
         ApState apStateOld = accessPoint.getState();
@@ -157,59 +244,13 @@ public class AccessPointGeneratorService {
 
         validateApItems(apErrorDescription, accessPoint, apItems);
 
-        AccessPoint result = null;
         try {
-            result = generateValue(accessPoint, apItems, apNames, nameItemsMap);
+            AccessPoint result = generateValue(accessPoint, apItems, apNames, nameItemsMap);
+            processResult(accessPoint, change, apNameMap, nameItemsMap, result);
         } catch (Exception e) {
             logger.error("Selhání groovy scriptu (accessPointId: {})", accessPoint.getAccessPointId(), e);
             apErrorDescription.setScriptFail(true);
             apState = ApState.ERROR;
-        }
-
-        if (result != null) {
-            apDataService.changeDescription(accessPoint, result.getDescription(), change);
-
-            List<NameContext> nameContexts = new ArrayList<>();
-
-            for (Name name : result.getNames()) {
-                ApName apName = apNameMap.get(name.getId());
-                List<ApItem> items = nameItemsMap.get(apName.getNameId());
-
-                if (!apDataService.equalsNames(apName, name.getName(), name.getComplement(), name.getFullName(), apName.getLanguageId())) { // TODO: jak s jazykem?
-                    ApName apNameNew = apDataService.updateAccessPointName(accessPoint, apName, name.getName(), name.getComplement(), name.getFullName(), apName.getLanguage(), change, false);
-                    if (apName != apNameNew) {
-                        items = apItemService.copyItems(apName, apNameNew, change);
-                        apName = apNameNew;
-                    }
-                }
-
-                NameErrorDescription nameErrorDescription = new NameErrorDescription();
-
-                NameContext nameContext = new NameContext(apName, apName.getState(), ApState.OK, nameErrorDescription);
-
-                validateNameItems(nameErrorDescription, apName, items);
-
-                if (CollectionUtils.isNotEmpty(nameErrorDescription.getImpossibleItemTypeIds())
-                        || CollectionUtils.isNotEmpty(nameErrorDescription.getRequiredItemTypeIds())) {
-                    nameContext.setState(ApState.ERROR);
-                }
-
-                nameContexts.add(nameContext);
-            }
-
-            for (NameContext nameContext : nameContexts) {
-                ApName name = nameContext.getName();
-                NameErrorDescription errorDescription = nameContext.getErrorDescription();
-                boolean isUnique = apDataService.isNameUnique(accessPoint.getScope(), name.getFullName());
-                if (!isUnique) {
-                    errorDescription.setDuplicateValue(true);
-                    nameContext.setState(ApState.ERROR);
-                }
-
-                name.setErrorDescription(errorDescription.asJsonString());
-                name.setState(nameContext.getStateOld() == ApState.TEMP ? ApState.TEMP : nameContext.getState());
-                apNameRepository.save(name);
-            }
         }
 
         if (CollectionUtils.isNotEmpty(apErrorDescription.getImpossibleItemTypeIds())
@@ -220,6 +261,70 @@ public class AccessPointGeneratorService {
         accessPoint.setErrorDescription(apErrorDescription.asJsonString());
         accessPoint.setState(apStateOld == ApState.TEMP ? ApState.TEMP : apState);
         apRepository.save(accessPoint);
+    }
+
+    private void processResult(final ApAccessPoint accessPoint, final ApChange change, final Map<Integer, ApName> apNameMap, final Map<Integer, List<ApItem>> nameItemsMap, final AccessPoint result) {
+
+        // zpracování změny charakteristiky
+        apDataService.changeDescription(accessPoint, result.getDescription(), change);
+
+        // zpracování jednotlivých jmen přístupového bodu
+        List<NameContext> nameContexts = createNameContextsFromResult(accessPoint, change, apNameMap, nameItemsMap, result);
+        processNameContexts(accessPoint, nameContexts);
+    }
+
+    private void processNameContexts(final ApAccessPoint accessPoint, final List<NameContext> nameContexts) {
+        for (NameContext nameContext : nameContexts) {
+            ApName name = nameContext.getName();
+            NameErrorDescription errorDescription = nameContext.getErrorDescription();
+            boolean isUnique = apDataService.isNameUnique(accessPoint.getScope(), name.getFullName());
+            if (!isUnique) {
+                errorDescription.setDuplicateValue(true);
+                nameContext.setState(ApState.ERROR);
+            }
+
+            name.setErrorDescription(errorDescription.asJsonString());
+            name.setState(nameContext.getStateOld() == ApState.TEMP ? ApState.TEMP : nameContext.getState());
+            apNameRepository.save(name);
+        }
+    }
+
+    private List<NameContext> createNameContextsFromResult(final ApAccessPoint accessPoint, final ApChange change, final Map<Integer, ApName> apNameMap, final Map<Integer, List<ApItem>> nameItemsMap, final AccessPoint result) {
+        List<NameContext> nameContexts = new ArrayList<>();
+        for (Name name : result.getNames()) {
+            ApName apName = apNameMap.get(name.getId());
+            List<ApItem> items = nameItemsMap.get(apName.getNameId());
+
+            if (!apDataService.equalsNames(apName, name.getName(), name.getComplement(), name.getFullName(), apName.getLanguageId())) { // TODO: jak s jazykem?
+                ApName apNameNew = apDataService.updateAccessPointName(accessPoint, apName, name.getName(), name.getComplement(), name.getFullName(), apName.getLanguage(), change, false);
+                if (apName != apNameNew) {
+                    items = apItemService.copyItems(apName, apNameNew, change);
+                    apName = apNameNew;
+                }
+            }
+
+            NameErrorDescription nameErrorDescription = new NameErrorDescription();
+            NameContext nameContext = new NameContext(apName, apName.getState(), ApState.OK, nameErrorDescription);
+            validateNameItems(nameErrorDescription, apName, items);
+
+            if (CollectionUtils.isNotEmpty(nameErrorDescription.getImpossibleItemTypeIds())
+                    || CollectionUtils.isNotEmpty(nameErrorDescription.getRequiredItemTypeIds())) {
+                nameContext.setState(ApState.ERROR);
+            }
+
+            nameContexts.add(nameContext);
+        }
+        return nameContexts;
+    }
+
+    private Map<Integer, List<ApItem>> createNameItemsMap(final List<ApNameItem> nameItems) {
+        Map<Integer, List<ApItem>> nameItemsMap = new HashMap<>();
+        for (ApNameItem nameItem : nameItems) {
+            Integer nameId = nameItem.getNameId();
+            List<ApItem> items = nameItemsMap.computeIfAbsent(nameId, k -> new ArrayList<>());
+            items.add(nameItem);
+        }
+        return nameItemsMap;
     }
 
     private AccessPoint generateValue(final ApAccessPoint accessPoint, final List<ApItem> apItems, final List<ApName> names, final Map<Integer, List<ApItem>> nameItems) {
@@ -433,6 +538,9 @@ public class AccessPointGeneratorService {
         }
     }
 
+    /**
+     * Pomocná třída při zpracování jména.
+     */
     private static class NameContext {
 
         private ApName name;
@@ -468,6 +576,41 @@ public class AccessPointGeneratorService {
 
         public NameErrorDescription getErrorDescription() {
             return errorDescription;
+        }
+    }
+
+    /**
+     * Položka ve frontě na zpracování.
+     */
+    private class ApQueueItem {
+
+        private Integer accessPointId;
+        private Integer changeId;
+
+        public ApQueueItem(final Integer accessPointId, final Integer changeId) {
+            this.accessPointId = accessPointId;
+            this.changeId = changeId;
+        }
+
+        public Integer getAccessPointId() {
+            return accessPointId;
+        }
+
+        public Integer getChangeId() {
+            return changeId;
+        }
+
+        @Override
+        public boolean equals(final Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            ApQueueItem that = (ApQueueItem) o;
+            return Objects.equals(accessPointId, that.accessPointId);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(accessPointId);
         }
     }
 

@@ -70,15 +70,38 @@ public class SequenceServiceImpl implements SequenceService {
             Queue<Integer> sequenceIds = cache.computeIfAbsent(sequenceName, k -> new LinkedList<>());
 
             if (sequenceIds.size() == 0) {
-                appCtx.getBean(SequenceServiceImpl.class).loadSequence(sequenceName, sequenceIds);
+                appCtx.getBean(SequenceServiceImpl.class).loadSequence(sequenceName, sequenceIds, MOUNT_SIZE);
             }
 
             return sequenceIds.poll();
         }
     }
 
+    @Override
+    public int[] getNext(final String sequenceName, final int count) {
+        Validate.notBlank(sequenceName);
+        Validate.isTrue(count > 0);
+
+        synchronized (getLock(sequenceName)) {
+
+            Queue<Integer> sequenceIds = cache.computeIfAbsent(sequenceName, k -> new LinkedList<>());
+
+            int needLoad = count - sequenceIds.size();
+
+            if (needLoad > 0) {
+                appCtx.getBean(SequenceServiceImpl.class).loadSequence(sequenceName, sequenceIds, needLoad);
+            }
+
+            int[] result = new int[count];
+            for (int i = 0; i < count; i++) {
+                result[i] = sequenceIds.poll();
+            }
+            return result;
+        }
+    }
+
     @Transactional(Transactional.TxType.REQUIRES_NEW)
-    public void loadSequence(final String sequenceName, final Queue<Integer> sequenceIds) {
+    public void loadSequence(final String sequenceName, final Queue<Integer> sequenceIds, int count) {
         int val;
         int nextVal;
         do {
@@ -91,7 +114,7 @@ public class SequenceServiceImpl implements SequenceService {
             }
             em.detach(sequence);
             val = sequence.getNextVal().intValue();
-            nextVal = val + MOUNT_SIZE;
+            nextVal = val + count;
         } while (hibernateSequenceRepository.setNextVal(sequenceName, nextVal, val) == 0);
         sequenceIds.addAll(IntStream.range(val, nextVal).boxed().collect(Collectors.toList()));
     }

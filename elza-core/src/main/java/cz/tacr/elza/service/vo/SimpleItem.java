@@ -1,15 +1,33 @@
 package cz.tacr.elza.service.vo;
 
+/**
+ * Modelový objekt pro groovy - položka popisu.
+ */
 public class SimpleItem {
 
+    /**
+     * Identifikátor.
+     */
     private Integer id;
 
+    /**
+     * Kód typu.
+     */
     private String type;
 
+    /**
+     * Kód specifikace.
+     */
     private String spec;
 
+    /**
+     * Pozice.
+     */
     private Integer position;
 
+    /**
+     * Textová reprezentace hodnoty.
+     */
     private String value;
 
     public SimpleItem(final Integer id,

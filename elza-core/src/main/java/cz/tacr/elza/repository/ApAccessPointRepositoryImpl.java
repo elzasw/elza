@@ -17,6 +17,7 @@ import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
+import cz.tacr.elza.domain.ApState;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -86,14 +87,14 @@ public class ApAccessPointRepositoryImpl implements ApAccessPointRepositoryCusto
 
     /**
      * Prepares predicate for AP search. Only necessary entities will be joined.
-     * 
+     *
      * @param searchValue if present APs with partial match in name or description are returned
      * @param apTypeIds if not empty APs with same type are returned
      * @param scopeIds APs with same scope are returned, cannot be empty
      * @param excludeInvalid if true only valid APs are returned
      * @param fromAp query root or entity join of AP
      * @param cb JPA query builder
-     * 
+     *
      * @return AP predicate which can be used as where condition.
      */
     public static Predicate prepareApSearchPredicate(final String searchValue,
@@ -106,7 +107,8 @@ public class ApAccessPointRepositoryImpl implements ApAccessPointRepositoryCusto
 
         // search only active AP
         conjunctions.add(fromAp.get(ApAccessPoint.DELETE_CHANGE_ID).isNull());
-        
+        conjunctions.add(cb.or(fromAp.get(ApAccessPoint.STATE).isNull(), cb.notEqual(fromAp.get(ApAccessPoint.STATE), ApState.TEMP)));
+
         // add text search
         String searchExp = StringUtils.trimToNull(searchValue);
         if (searchExp != null) {
@@ -141,13 +143,13 @@ public class ApAccessPointRepositoryImpl implements ApAccessPointRepositoryCusto
 
         return cb.and(conjunctions.toArray(new Predicate[0]));
     }
-    
+
     /**
      * Prepares inner join for preferred AP name (preferred name is always expected).
-     * 
+     *
      * @param fromAp query root or entity join of AP
      * @param cb JPA criteria builder
-     * 
+     *
      * @return Created preferred AP name join.
      */
     public static Join<ApAccessPoint, ApName> preparePrefNameJoin(From<?, ApAccessPoint> fromAp, CriteriaBuilder cb) {

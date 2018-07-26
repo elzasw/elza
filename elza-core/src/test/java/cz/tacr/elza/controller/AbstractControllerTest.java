@@ -57,7 +57,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     private static final RestAssuredConfig UTF8_ENCODER_CONFIG = RestAssuredConfig.newConfig().encoderConfig(
             EncoderConfig.encoderConfig().defaultContentCharset("UTF-8"));
 
-    private static final Logger logger = LoggerFactory.getLogger(AbstractControllerTest.class);
+    protected static final Logger logger = LoggerFactory.getLogger(AbstractControllerTest.class);
     protected static final String CONTENT_TYPE_HEADER = "content-type";
     protected static final String JSON_CONTENT_TYPE = "application/json";
     protected static final String WWW_FORM_CONTENT_TYPE = "application/x-www-form-urlencoded";
@@ -332,6 +332,19 @@ public abstract class AbstractControllerTest extends AbstractTest {
         requestSpecification.header(WWW_FORM_CT_HEADER).log().all().config(UTF8_ENCODER_CONFIG);
         Response response = requestSpecification.post("/login");
         cookies = response.getCookies();
+    }
+
+    private Map<String, Integer> counterMap = new HashMap<>();
+
+    protected void counter(final String text) {
+        Integer count = counterMap.get(text);
+        if (count == null) {
+            count = 1;
+            counterMap.put(text, count);
+        } else {
+            counterMap.put(text, ++count);
+        }
+        logger.info(text + ": #" + count);
     }
 
     public static Response delete(final Function<RequestSpecification, RequestSpecification> params, final String url) {
@@ -3369,12 +3382,11 @@ public abstract class AbstractControllerTest extends AbstractTest {
      *
      * @param accessPointId identifikátor přístupového bodu
      * @param items         položky ke změně
-     * @return změněné jméno
      */
-    protected ApAccessPointVO changeAccessPointItems(final Integer accessPointId,
+    protected void changeAccessPointItems(final Integer accessPointId,
                                                      final List<ApUpdateItemVO> items) {
-        return put(spec -> spec.pathParameter("accessPointId", accessPointId)
-                .body(items), CHANGE_ACCESS_POINT_ITEMS).as(ApAccessPointVO.class);
+        put(spec -> spec.pathParameter("accessPointId", accessPointId)
+                .body(items), CHANGE_ACCESS_POINT_ITEMS);
     }
 
     /**

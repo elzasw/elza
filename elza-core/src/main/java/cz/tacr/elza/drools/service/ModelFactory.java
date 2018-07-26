@@ -14,6 +14,7 @@ import cz.tacr.elza.drools.model.Structured;
 import cz.tacr.elza.repository.StructuredItemRepository;
 import cz.tacr.elza.drools.model.StructObjItem;
 import cz.tacr.elza.service.vo.AccessPoint;
+import cz.tacr.elza.service.vo.Language;
 import cz.tacr.elza.service.vo.Name;
 import cz.tacr.elza.service.vo.SimpleItem;
 import org.apache.commons.collections4.CollectionUtils;
@@ -59,7 +60,6 @@ public class ModelFactory {
      * Vytvoří hodnoty atributu.
      *
      * @param descItems hodnoty atributu
-     * @param lastVersion
      * @return seznam vo hodnot atributu
      */
     static public List<DescItem> createDescItems(@Nullable final List<ArrDescItem> descItems,
@@ -92,7 +92,7 @@ public class ModelFactory {
 
     /**
      * Create packet for Drools from corresponding object
-     * @param structureData
+     * @param structObj
      * @return
      */
     static public Structured createStructured(final ArrStructuredObject structObj, StructuredItemRepository itemRepos) {
@@ -176,7 +176,14 @@ public class ModelFactory {
     }
 
     private static Name createApName(final ApName name, final List<ApItem> items) {
-	    return new Name(name.getNameId(), name.isPreferredName(), createApItems(items));
+	    return new Name(name.getNameId(), name.isPreferredName(), createApItems(items), createApLanguage(name.getLanguage()));
+    }
+
+    private static Language createApLanguage(final SysLanguage language) {
+        if (language == null) {
+            return null;
+        }
+        return new Language(language.getLanguageId(), language.getName(), language.getCode());
     }
 
     public static AccessPoint createAp(final ApAccessPoint apAccessPoint,

@@ -2,7 +2,9 @@ package cz.tacr.elza.repository;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -17,8 +19,8 @@ import cz.tacr.elza.domain.projection.ApAccessPointInfo;
 @Repository
 public interface ApAccessPointRepository
         extends ElzaJpaRepository<ApAccessPoint, Integer>, ApAccessPointRepositoryCustom {
-    
-    @Query("select ap from ap_access_point ap " 
+
+    @Query("select ap from ap_access_point ap "
             + "join ap_external_id eid on ap.accessPointId = eid.accessPointId and eid.value=?1 and eid.externalIdTypeId=?2 and eid.deleteChangeId is null "
             + "WHERE ap.scope = ?3")
     ApAccessPoint findApAccessPointByExternalIdAndExternalSystemCodeAndScope(String eidValue, Integer eidTypeId, ApScope scope);
@@ -57,4 +59,11 @@ public interface ApAccessPointRepository
      * @return AP projection
      */
     List<ApAccessPointInfo> findInfoByUuidInAndDeleteChangeIdIsNull(Collection<String> uuids);
+
+    @Modifying
+    @Query("DELETE FROM ap_access_point ap WHERE ap.state = 'TEMP'")
+    void removeTemp();
+
+    @Query("SELECT DISTINCT ap.accessPointId FROM ap_name n JOIN n.accessPoint ap WHERE ap.state = 'INIT' OR n.state = 'INIT'")
+    Set<Integer> findInitAccessPointIds();
 }

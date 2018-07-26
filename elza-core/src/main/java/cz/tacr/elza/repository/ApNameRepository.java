@@ -41,4 +41,8 @@ public interface ApNameRepository extends ElzaJpaRepository<ApName, Integer> {
 
     @Query("SELECT n FROM ap_name n WHERE n.objectId = :objectId AND n.deleteChangeId IS NULL")
     ApName findByObjectId(@Param("objectId") Integer objectId);
+
+    @Modifying
+    @Query("DELETE FROM ap_name n WHERE n.state = 'TEMP'")
+    void removeTemp();
 }

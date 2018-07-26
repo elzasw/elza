@@ -29,8 +29,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.support.TransactionSynchronizationAdapter;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.Assert;
 
 import javax.annotation.Nullable;
@@ -248,31 +246,36 @@ public class AccessPointService {
      */
     @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
     public void deleteAccessPoint(@AuthParam(type = AuthParam.Type.AP) final int accessPointId, final boolean checkUsage) {
-        ApChange change = apDataService.createChange(ApChange.Type.AP_DELETE);
 
-        ApAccessPoint ap = apRepository.getOne(accessPointId);
-        if (checkUsage) {
-            checkDeletion(ap);
+        ApAccessPoint ap = apRepository.findOne(accessPointId);
+        apDataService.validationNotDeleted(ap);
+        if (ap.getState() == ApState.TEMP) {
+
+        } else {
+            if (checkUsage) {
+                checkDeletion(ap);
+            }
+            ApChange change = apDataService.createChange(ApChange.Type.AP_DELETE);
+            ap.setDeleteChange(change);
+            apRepository.save(ap);
+
+            List<ApName> names = apNameRepository.findByAccessPoint(ap);
+            names.forEach(name -> name.setDeleteChange(change));
+            apNameRepository.save(names);
+
+            ApDescription desc = descriptionRepository.findByAccessPoint(ap);
+            // can be without description
+            if (desc != null) {
+                desc.setDeleteChange(change);
+                descriptionRepository.save(desc);
+            }
+
+            List<ApExternalId> eids = externalIdRepository.findByAccessPoint(ap);
+            eids.forEach(eid -> eid.setDeleteChange(change));
+            externalIdRepository.save(eids);
+
+            eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.RECORD_DELETE, accessPointId));
         }
-        ap.setDeleteChange(change);
-        apRepository.save(ap);
-
-        List<ApName> names = apNameRepository.findByAccessPoint(ap);
-        names.forEach(name -> name.setDeleteChange(change));
-        apNameRepository.save(names);
-
-        ApDescription desc = descriptionRepository.findByAccessPoint(ap);
-        // can be without description
-        if (desc != null) {
-            desc.setDeleteChange(change);
-            descriptionRepository.save(desc);
-        }
-
-        List<ApExternalId> eids = externalIdRepository.findByAccessPoint(ap);
-        eids.forEach(eid -> eid.setDeleteChange(change));
-        externalIdRepository.save(eids);
-
-        eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.RECORD_DELETE, accessPointId));
     }
 
     /**
@@ -1063,6 +1066,7 @@ public class AccessPointService {
                 -> createNameItem(name, it, is, c, objectId, position));
 
         apGeneratorService.generateAndSetResult(name.getAccessPoint(), change);
+        //apGeneratorService.generateAsyncAfterCommit(name.getAccessPoint().getAccessPointId(), change.getChangeId());
     }
 
     @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
@@ -1084,6 +1088,7 @@ public class AccessPointService {
                 -> createBodyItem(accessPoint, it, is, c, objectId, position));
 
         apGeneratorService.generateAndSetResult(accessPoint, change);
+        //apGeneratorService.generateAsyncAfterCommit(accessPoint.getAccessPointId(), change.getChangeId());
     }
 
     /**
@@ -1120,6 +1125,11 @@ public class AccessPointService {
         return createStructuredName(accessPoint, false, null, null);
     }
 
+    /**
+     * Potvrzení dočasného přístupového bodu a jeho převalidování.
+     *
+     * @param accessPoint přístupový bod
+     */
     @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
     public void confirmAccessPoint(@AuthParam(type = AuthParam.Type.AP) final ApAccessPoint accessPoint) {
         Validate.notNull(accessPoint);
@@ -1134,11 +1144,18 @@ public class AccessPointService {
             apNameRepository.save(preferredName);
 
             apGeneratorService.generateAndSetResult(accessPoint, accessPoint.getCreateChange());
+            //apGeneratorService.generateAsyncAfterCommit(accessPoint.getAccessPointId(), accessPoint.getCreateChangeId());
         } else {
             throw new BusinessException("Nelze potvrdit přístupový bod, který není dočasný", BaseCode.INVALID_STATE);
         }
     }
 
+    /**
+     * Potvrzení dočasného jména a převalidování celého AP.
+     *
+     * @param accessPoint přístupový bod
+     * @param name        jméno
+     */
     @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
     public void confirmAccessPointName(@AuthParam(type = AuthParam.Type.AP) final ApAccessPoint accessPoint,
                                        final ApName name) {
@@ -1150,18 +1167,12 @@ public class AccessPointService {
         if (name.getState() == ApState.TEMP) {
             name.setState(ApState.INIT);
             apNameRepository.save(name);
-
-            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
-                @Override
-                public void afterCommit() {
-                    // TODO: přidat do fronty pro přegenerování podle groovy
-                }
-            });
+            apGeneratorService.generateAndSetResult(accessPoint, name.getCreateChange());
+            //apGeneratorService.generateAsyncAfterCommit(accessPoint.getAccessPointId(), name.getCreateChangeId());
         } else {
             throw new BusinessException("Nelze potvrdit jméno, které není dočasné", BaseCode.INVALID_STATE);
         }
     }
-
 
     /**
      * Aktualizace jména přístupového bodu - verzovaně.
@@ -1247,7 +1258,7 @@ public class AccessPointService {
      */
     @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
     public void setPreferredAccessPointName(@AuthParam(type = AuthParam.Type.AP) final ApAccessPoint accessPoint,
-                                              final ApName name) {
+                                            final ApName name) {
         Validate.notNull(accessPoint, "Přístupový bod musí být vyplněn");
         Validate.notNull(name, "Upravované jméno musí být vyplněno");
 
@@ -1259,7 +1270,7 @@ public class AccessPointService {
             return;
         }
 
-        ApChange change = apDataService.createChange(ApChange.Type.NAME_UPDATE);
+        ApChange change = apDataService.createChange(ApChange.Type.NAME_SET_PREFERRED);
         ApName preferredNameOld = apNameRepository.findPreferredNameByAccessPoint(accessPoint);
 
         // založení nové verze původního preferovaného jména (nyní nepreferované)
@@ -1282,6 +1293,11 @@ public class AccessPointService {
         name.setDeleteChange(change);
         apNameRepository.save(name);
 
+        ApType apType = accessPoint.getApType();
+        if (apType.getRuleSystem() != null) {
+            apItemService.copyItems(preferredNameOld, nameNew, change);
+            apItemService.copyItems(name, preferredNameNew, change);
+        }
     }
 
     /**
@@ -1374,6 +1390,20 @@ public class AccessPointService {
             throw new ObjectNotFoundException("Jazyk neexistuje", BaseCode.ID_NOT_EXIST).setId(languageCode);
         }
         return language;
+    }
+
+    /**
+     * Odstranění dočasných AP včetně návazných objektů.
+     */
+    public void removeTempAccessPoints() {
+        apItemService.removeTempItems();
+        descriptionRepository.removeTemp();
+        apNameRepository.removeTemp();
+        List<ApChange> tempChanges = apChangeRepository.findTempChange();
+        apRepository.removeTemp();
+        if (tempChanges.size() > 0) {
+            apChangeRepository.delete(tempChanges);
+        }
     }
 
     /**

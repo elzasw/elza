@@ -2,24 +2,51 @@ package cz.tacr.elza.service.vo;
 
 import java.util.List;
 
+/**
+ * Modelový objekt pro groovy - jméno AP.
+ */
 public class Name {
 
+    /**
+     * Identifikátor.
+     */
     private Integer id;
 
+    /**
+     * Zdali se jedná o preferované jméno.
+     */
     private boolean preferredName;
 
+    /**
+     * Seznam itemů jména.
+     */
     private List<SimpleItem> items;
 
+    /**
+     * Vygenerované jméno.
+     */
     private String name;
 
+    /**
+     * Vygenerovaný doplněk.
+     */
     private String complement;
 
+    /**
+     * Vygenerované plné jméno.
+     */
     private String fullName;
 
-    public Name(final Integer id, final boolean preferredName, final List<SimpleItem> items) {
+    /**
+     * Jazyk.
+     */
+    private Language language;
+
+    public Name(final Integer id, final boolean preferredName, final List<SimpleItem> items, final Language language) {
         this.id = id;
         this.preferredName = preferredName;
         this.items = items;
+        this.language = language;
     }
 
     public void setResult(final String name, final String complement, final String fullName) {
@@ -62,5 +89,9 @@ public class Name {
 
     public String getFullName() {
         return fullName;
+    }
+
+    public Language getLanguage() {
+        return language;
     }
 }

@@ -145,7 +145,8 @@ public class ApFactory {
 
     public ApAccessPointVO createVO(final ApAccessPoint ap, final boolean fillForm) {
         ApAccessPointVO apVO = createVO(ap);
-        if (fillForm) {
+        ApType apType = ap.getApType();
+        if (fillForm && apType.getRuleSystem() != null) {
             apVO.setForm(createFormVO(ap));
         }
         return apVO;

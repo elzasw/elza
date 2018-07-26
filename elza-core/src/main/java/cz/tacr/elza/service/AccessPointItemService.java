@@ -8,6 +8,7 @@ import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.*;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.repository.ApBodyItemRepository;
 import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApNameItemRepository;
 import cz.tacr.elza.repository.DataRepository;
@@ -30,6 +31,7 @@ public class AccessPointItemService {
     private final ApItemRepository itemRepository;
     private final DataRepository dataRepository;
     private final ApNameItemRepository nameItemRepository;
+    private final ApBodyItemRepository bodyItemRepository;
     private final SequenceService sequenceService;
 
     public AccessPointItemService(final EntityManager em,
@@ -37,13 +39,23 @@ public class AccessPointItemService {
                                   final ApItemRepository itemRepository,
                                   final DataRepository dataRepository,
                                   final ApNameItemRepository nameItemRepository,
+                                  final ApBodyItemRepository bodyItemRepository,
                                   final SequenceService sequenceService) {
         this.em = em;
         this.staticDataService = staticDataService;
         this.itemRepository = itemRepository;
         this.dataRepository = dataRepository;
         this.nameItemRepository = nameItemRepository;
+        this.bodyItemRepository = bodyItemRepository;
         this.sequenceService = sequenceService;
+    }
+
+    /**
+     * Odstranění prvůk popisů u dočasných jmen a AP.
+     */
+    public void removeTempItems() {
+        nameItemRepository.removeTempItems();
+        bodyItemRepository.removeTempItems();
     }
 
     @FunctionalInterface
@@ -51,6 +63,14 @@ public class AccessPointItemService {
         ApItem apply(final RulItemType itemType, final RulItemSpec itemSpec, final ApChange change, final int objectId, final int position);
     }
 
+    /**
+     * Zkopírování itemů mezi jmény AP.
+     *
+     * @param nameSource zdrojové jméno
+     * @param nameTarget cílové jméno
+     * @param change     změna pod kterou se provede kopírování
+     * @return nové itemy
+     */
     public List<ApItem> copyItems(final ApName nameSource, final ApName nameTarget, final ApChange change) {
         Validate.notNull(nameSource, "Zdrojové jméno musí být vyplněno");
         Validate.notNull(nameTarget, "Cílové jméno musí být vyplněno");
@@ -80,6 +100,14 @@ public class AccessPointItemService {
         return new ArrayList<>(newItems);
     }
 
+    /**
+     * Provede změnu položek.
+     *
+     * @param items   položky k úpravě
+     * @param itemsDb aktuální položky v DB
+     * @param change  změna
+     * @param create  funkce pro založené nové položky
+     */
     public void changeItems(final List<ApUpdateItemVO> items, final List<ApItem> itemsDb, final ApChange change, final CreateFunction create) {
         Map<Integer, ApItem> objectIdItemMap = itemsDb.stream().collect(Collectors.toMap(ApItem::getObjectId, Function.identity()));
         Map<Integer, List<ApItem>> typeIdItemsMap = itemsDb.stream().collect(Collectors.groupingBy(ApItem::getItemTypeId));

@@ -294,14 +294,13 @@ public class ApController {
      */
     @Transactional
     @RequestMapping(value = "/{accessPointId}/items", method = RequestMethod.PUT)
-    public ApAccessPointVO changeAccessPointItems(@PathVariable final Integer accessPointId,
+    public void changeAccessPointItems(@PathVariable final Integer accessPointId,
                                               @RequestBody final List<ApUpdateItemVO> items) {
         Validate.notNull(accessPointId, "Identifikátor přístupového bodu musí být vyplněn");
         Validate.notEmpty(items, "Musí být alespoň jedna položka ke změně");
 
         ApAccessPoint accessPoint = accessPointService.getAccessPoint(accessPointId);
         accessPointService.changeApItems(accessPoint, items);
-        return apFactory.createVO(accessPoint, true);
     }
 
     /**

@@ -1,9 +1,6 @@
 package cz.tacr.elza.controller;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -20,6 +17,7 @@ import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.UpdateOp;
 import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
+import org.apache.commons.lang.StringUtils;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -78,8 +76,8 @@ public class ApControllerTest extends AbstractControllerTest {
         deleteScopeTest(scopeVO.getId());
     }
 
-    @Test
-    public void testStructureAccessPoint() {
+    @Test/*(timeout = 60000)*/
+    public void testStructureAccessPoint() throws InterruptedException {
 
         ApTypeVO type = getApType(STRUCT_AP_TYPE);
 
@@ -109,9 +107,6 @@ public class ApControllerTest extends AbstractControllerTest {
 
         confirmStructuredAccessPoint(accessPointName.getObjectId());
 
-        accessPoint = getAccessPoint(accessPointName.getObjectId());
-        names = new ArrayList<>(accessPoint.getNames());
-        accessPointName = names.get(0);
         accessPointName = getAccessPointName(accessPoint.getId(), accessPointName.getObjectId());
 
         items = new ArrayList<>();
@@ -121,12 +116,71 @@ public class ApControllerTest extends AbstractControllerTest {
         items.add(buildApItem(UpdateOp.UPDATE, item));
         changeNameItems(accessPoint.getId(), accessPointName.getObjectId(), items);
 
-        accessPoint = getAccessPoint(accessPointName.getObjectId());
-        names = new ArrayList<>(accessPoint.getNames());
-        accessPointName = names.get(0);
-        accessPointName = getAccessPointName(accessPoint.getId(), accessPointName.getObjectId());
+        do {
+            accessPointName = getAccessPointName(accessPoint.getId(), accessPointName.getObjectId());
+            Assert.assertNotNull(accessPointName);
+            if (StringUtils.equals("KarelX", accessPointName.getName())) {
+                break;
+            }
+            counter("Čekání na validaci ap kvůli změně položek hlavního jména");
+            Thread.sleep(100);
+        } while (true);
 
-        Assert.assertNotNull(accessPointName);
+        ApAccessPointNameVO secondName = createName(accessPoint);
+        confirmAccessPointStructuredName(accessPoint.getId(), secondName.getObjectId());
+
+        do {
+            secondName = getAccessPointName(accessPoint.getId(), secondName.getObjectId());
+            Assert.assertNotNull(secondName);
+            if (StringUtils.equals("Karel", secondName.getName())
+                    && StringUtils.equals("IV", secondName.getComplement())
+                    && Objects.equals(ApStateVO.OK, secondName.getState())) {
+                break;
+            }
+            counter("Čekání na validaci ap kvůli změně položek jména");
+            Thread.sleep(100);
+        } while (true);
+
+        accessPoint = getAccessPoint(accessPoint.getId());
+        names = new ArrayList<>(accessPoint.getNames());
+        Assert.assertEquals(2, names.size());
+        //Assert.assertEquals(2, names.size());
+
+        addApItems(accessPoint);
+
+        do {
+            accessPoint = getAccessPoint(accessPoint.getId());
+            Assert.assertNotNull(accessPoint);
+            form = accessPoint.getForm();
+            Assert.assertNotNull(form);
+            List<ApItemVO> formItems = form.getItems();
+            Assert.assertNotNull(formItems);
+            if (formItems.size() == 1) {
+                break;
+            }
+            counter("Čekání na validaci ap kvůli změně položek ap");
+            Thread.sleep(100);
+        } while (true);
+
+    }
+
+    private void addApItems(final ApAccessPointVO accessPoint) {
+        List<ApUpdateItemVO> items = new ArrayList<>();
+        RulDescItemTypeExtVO apComplementType = findDescItemTypeByCode("AP_COMPLEMENT");
+        items.add(buildApItem(UpdateOp.CREATE, apComplementType.getCode(), null, "Vlastní popis ap", null, null));
+        changeAccessPointItems(accessPoint.getId(), items);
+    }
+
+    private ApAccessPointNameVO createName(final ApAccessPointVO accessPoint) {
+        ApAccessPointNameVO accessPointName = createAccessPointStructuredName(accessPoint.getId());
+        List<ApUpdateItemVO> items = new ArrayList<>();
+        RulDescItemTypeExtVO apNameType = findDescItemTypeByCode("AP_NAME");
+        RulDescItemTypeExtVO apComplementType = findDescItemTypeByCode("AP_COMPLEMENT");
+
+        items.add(buildApItem(UpdateOp.CREATE, apNameType.getCode(), null, "Karel", null, null));
+        items.add(buildApItem(UpdateOp.CREATE, apComplementType.getCode(), null, "IV", null, null));
+        changeNameItems(accessPoint.getId(), accessPointName.getObjectId(), items);
+        return accessPointName;
     }
 
     private ApTypeVO getApType(final String structApType) {

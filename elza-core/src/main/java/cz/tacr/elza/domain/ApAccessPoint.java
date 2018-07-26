@@ -23,6 +23,7 @@ public class ApAccessPoint implements IApScope {
     public static final String NAMES = "names";
     public static final String DESCRIPTIONS = "descriptions";
     public static final String DELETE_CHANGE_ID = "deleteChangeId";
+    public static final String STATE = "state";
     public static final String RULE_SYSTEM_ID = "ruleSystemId";
 
     @Id
@@ -165,6 +166,10 @@ public class ApAccessPoint implements IApScope {
 
     public ApChange getCreateChange() {
         return createChange;
+    }
+
+    public Integer getCreateChangeId() {
+        return createChangeId;
     }
 
     public void setCreateChange(ApChange createChange) {
