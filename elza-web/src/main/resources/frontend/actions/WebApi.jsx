@@ -1191,6 +1191,10 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/externalSystems');
     }
 
+    getEidTypes() {
+        return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/eidTypes');
+    }
+
     findInterpiRecords(criteria) {
         return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/interpi', null, criteria);
     }

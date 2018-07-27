@@ -156,9 +156,10 @@ class RegistryField extends AbstractReactComponent {
             className="tooltip-container"
             {...otherProps}
         >
-            <RegistryListItem 
-                {...item} 
+            <RegistryListItem
+                {...item}
                 className={classNames('item', {focus: highlighted, active: selected})}
+
             />
         </TooltipTrigger>;
     }
@@ -185,8 +186,8 @@ class RegistryField extends AbstractReactComponent {
         if (detail) {
             // if (value && userDetail.hasOne(perms.AP_SCOPE_RD_ALL, {type: perms.AP_SCOPE_RD, scopeId: value.scopeId})) {
             actions.push(
-                <div 
-                    onClick={this.handleDetail.bind(this, value ? value.id : null)} 
+                <div
+                    onClick={this.handleDetail.bind(this, value ? value.id : null)}
                     className={'btn btn-default detail'}
                 >
                     <Icon glyph={'fa-th-list'}/>

@@ -82,9 +82,9 @@ class RegistryList extends AbstractReactComponent {
 
     handleFilterRegistryType = (item) => {
         this.dispatch(registryListFilter({
-            ...this.props.registryList.filter, 
-            from: 0, 
-            itemSpecId:null, 
+            ...this.props.registryList.filter,
+            from: 0,
+            itemSpecId:null,
             registryTypeId: item ? item.id : null
         }));
     };
@@ -131,10 +131,12 @@ class RegistryList extends AbstractReactComponent {
 
     renderListItem = (props) => {
         const {item} = props;
-        return <RegistryListItem 
+        const {eidTypes} = this.props;
+        return <RegistryListItem
             {...item}
 			apTypeIdMap = {this.props.apTypeIdMap}
-            onClick={this.handleRegistryDetail.bind(this, item)} />
+            onClick={this.handleRegistryDetail.bind(this, item)}
+            eidTypes={eidTypes} />
     }
 
     /**
@@ -179,7 +181,7 @@ class RegistryList extends AbstractReactComponent {
     registryTypeDefaultValue = i18n('registry.all');
 
     render() {
-        const {registryDetail, registryList, maxSize, registryTypes, scopes} = this.props;
+        const {registryDetail, registryList, maxSize, registryTypes, scopes, eidTypes} = this.props;
 
 
         let activeIndex = null;
@@ -191,7 +193,7 @@ class RegistryList extends AbstractReactComponent {
 
         const isFetched = registryList.fetched;
 
-        if (isFetched) {
+        if (isFetched && eidTypes !== null) {
             if (registryList.rows.length > 0) {
                 list = <ListBox
                     ref='registryList'
@@ -255,7 +257,7 @@ class RegistryList extends AbstractReactComponent {
 }
 
 export default connect((state) => {
-    const {app:{registryList, registryDetail}, userDetail,  focus, refTables:{recordTypes, scopesData}} = state;
+    const {app:{registryList, registryDetail}, userDetail,  focus, refTables:{recordTypes, scopesData, eidTypes}} = state;
     return {
         focus,
         registryDetail,
@@ -264,5 +266,6 @@ export default connect((state) => {
 		apTypeIdMap: recordTypes.typeIdMap,
 		scopes: scopesData.scopes,
         userDetail,
+        eidTypes: eidTypes.data,
     }
 })(RegistryList);

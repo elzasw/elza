@@ -33,6 +33,7 @@ const initialState = {
     templates: templates(),
     externalSystems: externalSystems(),
     groups: DetailReducer(),
+    eidTypes: DetailReducer(),
 };
 
 export default function refTables(state = initialState, action = {}) {

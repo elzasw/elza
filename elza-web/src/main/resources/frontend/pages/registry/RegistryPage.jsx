@@ -26,6 +26,8 @@ import './RegistryPage.less';
 import PageLayout from "../shared/layout/PageLayout";
 import defaultKeymap from './RegistryPageKeymap.jsx';
 import {FOCUS_KEYS} from "../../constants";
+import * as eidTypes from "../../actions/refTables/eidTypes";
+
 /**
  * Stránka rejstříků.
  * Zobrazuje stranku s vyberem rejstriku a jeho detailem/editaci
@@ -90,6 +92,7 @@ class RegistryPage extends AbstractReactComponent {
 
     initData = (props = this.props) => {
         this.dispatch(refRecordTypesFetchIfNeeded());
+        this.dispatch(eidTypes.fetchIfNeeded());
         if (props.userDetail.hasOne(perms.AP_SCOPE_WR_ALL)) {
             this.dispatch(apExtSystemListFetchIfNeeded());
         }

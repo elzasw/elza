@@ -192,15 +192,16 @@ class RegistryDetail extends AbstractReactComponent {
     }
 
 	getApId = (ap) => {
+        const {eidTypes} = this.props;
 		const eids = ap.externalIds;
 		if (!eids || eids.length == 0) {
 			return ap.id;
 		}
-	
+
 		let eidArr = [];
 		eids.forEach(eid => {
-			// TODO: read eid type name from refTables by id
-			const eidTypeName =  "eid_type_name-" + eid.typeId;
+			const typeId = eid.typeId;
+            const eidTypeName = eidTypes && eidTypes[typeId] ? eidTypes[typeId].name : "eid_type_name-" + typeId;
 			eidArr.push(eidTypeName + ":" + eid.value);
 		});
 		return eidArr.join(", ");
@@ -209,7 +210,7 @@ class RegistryDetail extends AbstractReactComponent {
     renderApTypeNames = (apTypeId, delimiter) => {
 		const type = this.props.apTypeIdMap[apTypeId];
         let elements = [];
-		
+
         if (type.parents) {
 			type.parents.reverse().forEach((name, i) => {
 				elements.push(<span key={"name-" + i} className="hierarchy-level">{name.toUpperCase()}</span>);
@@ -217,7 +218,7 @@ class RegistryDetail extends AbstractReactComponent {
 			})
 		}
 		elements.push(<span key="name-main" className="hierarchy-level main">{type.name.toUpperCase()}</span>);
-        
+
 		return elements;
     }
 
@@ -253,7 +254,7 @@ class RegistryDetail extends AbstractReactComponent {
     };
 
     render() {
-        const {registryDetail, scopes} = this.props;
+        const {registryDetail, scopes, eidTypes} = this.props;
         const {data, fetched, isFetching, id} = registryDetail;
         const {activeIndexes} = this.state;
 
@@ -270,7 +271,7 @@ class RegistryDetail extends AbstractReactComponent {
             </div>;
         }
 
-        if (!fetched || (id && !data)) {
+        if (!fetched || (id && !data) || eidTypes == null) {
             return <StoreHorizontalLoader store={registryDetail}/>
         }
 
@@ -283,7 +284,7 @@ class RegistryDetail extends AbstractReactComponent {
 
         const delimiter = <Icon glyph="fa-angle-right"/>;
 		const apTypeNames = this.renderApTypeNames(data.typeId, delimiter);
-		
+
         return <div className='registry'>
             <Shortcuts name='RegistryDetail' handler={this.handleShortcuts} global>
                 <div className="registry-detail">
@@ -340,6 +341,7 @@ export default connect((state) => {
         registryDetail,
         userDetail,
         scopes: refTables.scopesData.scopes,
-		apTypeIdMap: refTables.recordTypes.typeIdMap
+		apTypeIdMap: refTables.recordTypes.typeIdMap,
+		eidTypes: refTables.eidTypes.data,
     }
 })(RegistryDetail);
