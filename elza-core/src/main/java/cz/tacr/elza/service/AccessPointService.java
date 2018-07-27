@@ -1295,6 +1295,12 @@ public class AccessPointService {
 
         ApChange change = apDataService.createChange(ApChange.Type.NAME_DELETE);
         deleteName(accessPoint, name, change);
+
+        if (accessPoint.getRuleSystem() != null) {
+            apGeneratorService.generateAndSetResult(accessPoint, change);
+            //apGeneratorService.generateAsyncAfterCommit(accessPoint.getAccessPointId(), change.getChangeId());
+        }
+        publishAccessPointUpdateEvent(accessPoint);
     }
 
     /**
@@ -1369,6 +1375,11 @@ public class AccessPointService {
         if (apType.getRuleSystem() != null) {
             apItemService.copyItems(preferredNameOld, nameNew, change);
             apItemService.copyItems(name, preferredNameNew, change);
+        }
+
+        if (accessPoint.getRuleSystem() != null) {
+            apGeneratorService.generateAndSetResult(accessPoint, change);
+            //apGeneratorService.generateAsyncAfterCommit(accessPoint.getAccessPointId(), change.getChangeId());
         }
     }
 
