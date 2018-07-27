@@ -59,6 +59,12 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
     private Collection<ApAccessPointNameVO> names;
 
     /**
+     * Kód pravidla pro AP.
+     */
+    @Nullable
+    private Integer ruleSystemId;
+
+    /**
      * Stav přístupového bodu.
      */
     @Nullable
@@ -183,5 +189,14 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
 
     public void setForm(@Nullable final ApFormVO form) {
         this.form = form;
+    }
+
+    @Nullable
+    public Integer getRuleSystemId() {
+        return ruleSystemId;
+    }
+
+    public void setRuleSystemId(@Nullable final Integer ruleSystemId) {
+        this.ruleSystemId = ruleSystemId;
     }
 }

@@ -158,6 +158,7 @@ public class ApFactory {
                                     final List<ApExternalId> eids) {
         StaticDataProvider staticData = staticDataService.getData();
         ApName prefName = names.get(0);
+        ApRuleSystem ruleSystem = ap.getRuleSystem();
         Validate.isTrue(prefName.isPreferredName());
         List<ApAccessPointNameVO> namesVO = transformList(names, n -> ApAccessPointNameVO.newInstance(n, staticData));
         // prepare external ids
@@ -169,6 +170,7 @@ public class ApFactory {
         vo.setInvalid(ap.getDeleteChange() != null);
         vo.setNames(namesVO);
         vo.setErrorDescription(ap.getErrorDescription());
+        vo.setRuleSystemId(ruleSystem == null ? null : ruleSystem.getRuleSystemId());
         vo.setState(ap.getState() == null ? null : ApStateVO.valueOf(ap.getState().name()));
         // vo.setPartyId(partyId);
         vo.setRecord(prefName.getFullName());
@@ -455,7 +457,7 @@ public class ApFactory {
             return typeVO;
         }
 
-        typeVO = ApTypeVO.newInstnace(type, staticData);
+        typeVO = ApTypeVO.newInstance(type, staticData);
         typeIdVOMap.put(typeVO.getId(), typeVO);
 
         if (type.getParentApTypeId() != null) {
