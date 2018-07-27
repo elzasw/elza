@@ -2,10 +2,19 @@ package cz.tacr.elza.controller.vo.ap.item;
 
 import cz.tacr.elza.controller.vo.nodes.descitems.UpdateOp;
 
+/**
+ * Položka změny.
+ */
 public class ApUpdateItemVO {
 
+    /**
+     * Typ změny.
+     */
     private UpdateOp updateOp;
 
+    /**
+     * Položka změny.
+     */
     private ApItemVO item;
 
     public UpdateOp getUpdateOp() {

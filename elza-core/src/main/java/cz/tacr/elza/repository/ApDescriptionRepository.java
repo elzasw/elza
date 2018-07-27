@@ -29,4 +29,8 @@ public interface ApDescriptionRepository extends ElzaJpaRepository<ApDescription
     @Modifying
     @Query("DELETE FROM ap_description dsc WHERE dsc.descriptionId IN (SELECT i.descriptionId FROM ap_description i JOIN i.accessPoint ap WHERE ap.state = 'TEMP')")
     void removeTemp();
+
+    @Modifying
+    @Query("DELETE FROM ap_description dsc WHERE dsc.descriptionId IN (SELECT i.descriptionId FROM ap_description i JOIN i.accessPoint ap WHERE ap.state = 'TEMP' AND i.accessPoint = :accessPoint)")
+    void removeTemp(@Param("accessPoint") ApAccessPoint accessPoint);
 }

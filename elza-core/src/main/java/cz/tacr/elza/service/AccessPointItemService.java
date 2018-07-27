@@ -51,11 +51,19 @@ public class AccessPointItemService {
     }
 
     /**
-     * Odstranění prvůk popisů u dočasných jmen a AP.
+     * Odstranění prvků popisů u dočasných jmen a AP.
      */
     public void removeTempItems() {
         nameItemRepository.removeTempItems();
         bodyItemRepository.removeTempItems();
+    }
+
+    /**
+     * Odstranění prvůk popisů u dočasných jmen a AP.
+     */
+    public void removeTempItems(final ApAccessPoint ap) {
+        nameItemRepository.removeTempItems(ap);
+        bodyItemRepository.removeTempItems(ap);
     }
 
     @FunctionalInterface

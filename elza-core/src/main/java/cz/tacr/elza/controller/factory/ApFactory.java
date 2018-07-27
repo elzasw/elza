@@ -471,6 +471,24 @@ public class ApFactory {
         return typeVO;
     }
 
+    public LanguageVO createVO(final SysLanguage language) {
+        if (language == null) {
+            return null;
+        }
+        LanguageVO languageVO = new LanguageVO();
+        languageVO.setId(language.getLanguageId());
+        languageVO.setCode(language.getCode());
+        languageVO.setName(language.getName());
+        return languageVO;
+    }
+
+    public ApEidTypeVO createVO(ApExternalIdType type) {
+        if (type == null) {
+            return null;
+        }
+        return new ApEidTypeVO(type.getExternalIdTypeId(), type.getCode(), type.getName());
+    }
+
     public static <S, T> List<T> transformList(List<S> src, Function<S, T> transform) {
         if (src == null) {
             return null;

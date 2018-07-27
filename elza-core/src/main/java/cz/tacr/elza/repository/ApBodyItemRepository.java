@@ -19,4 +19,8 @@ public interface ApBodyItemRepository extends JpaRepository<ApBodyItem, Integer>
     @Modifying
     @Query("DELETE FROM ApBodyItem bi WHERE bi.itemId IN (SELECT i.itemId FROM ApBodyItem i JOIN i.accessPoint ap WHERE ap.state = 'TEMP')")
     void removeTempItems();
+
+    @Modifying
+    @Query("DELETE FROM ApBodyItem bi WHERE bi.itemId IN (SELECT i.itemId FROM ApBodyItem i JOIN i.accessPoint ap WHERE ap.state = 'TEMP' AND i.accessPoint = :accessPoint)")
+    void removeTempItems(@Param("accessPoint") ApAccessPoint accessPoint);
 }

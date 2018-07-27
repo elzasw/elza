@@ -45,4 +45,8 @@ public interface ApNameRepository extends ElzaJpaRepository<ApName, Integer> {
     @Modifying
     @Query("DELETE FROM ap_name n WHERE n.state = 'TEMP'")
     void removeTemp();
+
+    @Modifying
+    @Query("DELETE FROM ap_name n WHERE n.state = 'TEMP' AND n.accessPoint = :accessPoint")
+    void removeTemp(@Param("accessPoint") ApAccessPoint accessPoint);
 }

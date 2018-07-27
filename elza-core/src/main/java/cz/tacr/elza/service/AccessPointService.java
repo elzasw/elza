@@ -250,7 +250,7 @@ public class AccessPointService {
         ApAccessPoint ap = apRepository.findOne(accessPointId);
         apDataService.validationNotDeleted(ap);
         if (ap.getState() == ApState.TEMP) {
-
+            removeTempAccessPoint(ap);
         } else {
             if (checkUsage) {
                 checkDeletion(ap);
@@ -985,6 +985,14 @@ public class AccessPointService {
         return accessPoint;
     }
 
+    /**
+     * Založení strukturovaného přístupového bodu.
+     *
+     * @param scope    třída
+     * @param type     typ přístupového bodu
+     * @param language jazyk hlavního jména
+     * @return založený strukturovaný přístupový bod
+     */
     @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
     public ApAccessPoint createStructuredAccessPoint(final ApScope scope, final ApType type, final SysLanguage language) {
         Assert.notNull(scope, "Třída musí být vyplněna");
@@ -1019,7 +1027,13 @@ public class AccessPointService {
             return accessPoint;
         }
         accessPoint.setApType(type);
-        // TODO: reakce při změně typu u strukturovaného (je třeba při strukturovaném spustit přegenerování)
+
+        if (accessPoint.getRuleSystem() != null) {
+            ApChange change = apDataService.createChange(ApChange.Type.AP_UPDATE);
+            apGeneratorService.generateAndSetResult(accessPoint, change);
+            //apGeneratorService.generateAsyncAfterCommit(accessPoint.getAccessPointId(), change.getChangeId());
+        }
+
         return apRepository.save(accessPoint);
     }
 
@@ -1044,6 +1058,13 @@ public class AccessPointService {
         return apDataService.changeDescription(accessPoint, description, null);
     }
 
+    /**
+     * Změna atributů jména.
+     *
+     * @param accessPoint přístupový bod
+     * @param name        jméno
+     * @param items       položky změny
+     */
     @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
     public void changeNameItems(@AuthParam(type = AuthParam.Type.AP) final ApAccessPoint accessPoint,
                                 final ApName name,
@@ -1069,6 +1090,12 @@ public class AccessPointService {
         //apGeneratorService.generateAsyncAfterCommit(name.getAccessPoint().getAccessPointId(), change.getChangeId());
     }
 
+    /**
+     * Změna atributů přístupového bodu.
+     *
+     * @param accessPoint přístupový bod
+     * @param items       položky změny
+     */
     @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
     public void changeApItems(@AuthParam(type = AuthParam.Type.AP) final ApAccessPoint accessPoint,
                               final List<ApUpdateItemVO> items) {
@@ -1176,6 +1203,7 @@ public class AccessPointService {
 
     /**
      * Aktualizace jména přístupového bodu - verzovaně.
+     * Použití v případě, že se nejedná o strukturovaný popis.
      *
      * @param accessPoint přístupový bod
      * @param apName      upravované jméno přístupového bodu
@@ -1204,6 +1232,37 @@ public class AccessPointService {
         ApChange change = apDataService.createChange(ApChange.Type.NAME_UPDATE);
         String fullName = AccessPointDataService.generateFullName(name, complement);
         return apDataService.updateAccessPointName(accessPoint, apName, name, complement, fullName, language, change, true);
+    }
+
+    /**
+     * Aktualizace jména přístupového bodu - verzovaně.
+     * Použití v případě, že jde o strukturovaný popis.
+     *
+     * @param accessPoint přístupový bod
+     * @param apName      upravované jméno přístupového bodu
+     * @param language    jazyk jména
+     * @return upravený jméno
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
+    public ApName updateAccessPointName(@AuthParam(type = AuthParam.Type.AP) final ApAccessPoint accessPoint,
+                                        final ApName apName,
+                                        @Nullable final SysLanguage language) {
+        Validate.notNull(accessPoint, "Přístupový bod musí být vyplněn");
+        Validate.notNull(apName, "Upravované jméno musí být vyplněno");
+        apDataService.validationNotDeleted(accessPoint);
+        apDataService.validationNotDeleted(apName);
+
+        ApType apType = accessPoint.getApType();
+        if (apType.getRuleSystem() == null) {
+            throw new BusinessException("Nelze upravovat jméno u nestrukturovaného přístupového bodu",
+                    BaseCode.INVALID_STATE);
+        }
+
+        ApChange change = apDataService.createChange(ApChange.Type.NAME_UPDATE);
+        ApName newName = apDataService.updateAccessPointName(accessPoint, apName, apName.getName(), apName.getComplement(), apName.getFullName(), language, change, true);
+        apItemService.copyItems(apName, newName, change);
+        apGeneratorService.generateAndSetResult(accessPoint, change);
+        return newName;
     }
 
     /**
@@ -1407,6 +1466,17 @@ public class AccessPointService {
     }
 
     /**
+     * Odstranění dočasných AP včetně návazných objektů u AP.
+     */
+    private void removeTempAccessPoint(final ApAccessPoint ap) {
+        apItemService.removeTempItems(ap);
+        descriptionRepository.removeTemp(ap);
+        apNameRepository.removeTemp(ap);
+        apRepository.delete(ap);
+        apChangeRepository.delete(ap.getCreateChange());
+    }
+
+    /**
      * Založení přístupového bodu.
      *
      * @param scope  třída
@@ -1419,13 +1489,20 @@ public class AccessPointService {
         return apRepository.save(accessPoint);
     }
 
+    /**
+     * Založení dočasného strukturovaného přístupového bodu.
+     *
+     * @param scope  třída
+     * @param type   typ přístupového bodu
+     * @param change změna
+     * @return založený a uložený AP
+     */
     private ApAccessPoint createStrucuredAccessPoint(final ApScope scope, final ApType type, final ApChange change) {
         ApAccessPoint accessPoint = createAccessPointEntity(scope, type, change);
         accessPoint.setRuleSystem(type.getRuleSystem());
         accessPoint.setState(ApState.TEMP);
         return apRepository.save(accessPoint);
     }
-
 
     /**
      * Založení jména.
@@ -1457,6 +1534,15 @@ public class AccessPointService {
         return apName;
     }
 
+    /**
+     * Vytvoření strukturovaného jména.
+     *
+     * @param accessPoint   přístupový bod
+     * @param preferredName zda-li se jedná o preferované jméno
+     * @param language      jazyk jména
+     * @param change        změna
+     * @return založené a uložené jméno
+     */
     private ApName createStructuredName(final ApAccessPoint accessPoint,
                                         final boolean preferredName,
                                         @Nullable final SysLanguage language,
@@ -1499,6 +1585,14 @@ public class AccessPointService {
         return apName;
     }
 
+    /**
+     * Vytvoření entity přístupového bodu.
+     *
+     * @param scope  třída
+     * @param type   typ přístupového bodu
+     * @param change změna
+     * @return vytvořená entita AP
+     */
     public static ApAccessPoint createAccessPointEntity(final ApScope scope, final ApType type, final ApChange change) {
         ApAccessPoint accessPoint = new ApAccessPoint();
         accessPoint.setUuid(UUID.randomUUID().toString());
@@ -1509,6 +1603,17 @@ public class AccessPointService {
         return accessPoint;
     }
 
+    /**
+     * Vytvoření entity hodnoty atributu jména.
+     *
+     * @param name     jméno pro který atribut tvoříme
+     * @param it       typ atributu
+     * @param is       specifikace atribututu
+     * @param c        změna
+     * @param objectId jednoznačný identifikátor položky (nemění se při odverzování)
+     * @param position pozice
+     * @return vytvořená položka
+     */
     private ApItem createNameItem(final ApName name, final RulItemType it, final RulItemSpec is, final ApChange c, final int objectId, final int position) {
         ApNameItem item = new ApNameItem();
         item.setName(name);
@@ -1520,6 +1625,17 @@ public class AccessPointService {
         return item;
     }
 
+    /**
+     * Vytvoření entity hodnoty atributu přístupového bodu.
+     *
+     * @param accessPoint přístupový bod pro který atribut tvoříme
+     * @param it          typ atributu
+     * @param is          specifikace atribututu
+     * @param c           změna
+     * @param objectId    jednoznačný identifikátor položky (nemění se při odverzování)
+     * @param position    pozice
+     * @return vytvořená položka
+     */
     private ApItem createBodyItem(final ApAccessPoint accessPoint, final RulItemType it, final RulItemSpec is, final ApChange c, final int objectId, final int position) {
         ApBodyItem item = new ApBodyItem();
         item.setAccessPoint(accessPoint);

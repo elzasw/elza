@@ -570,6 +570,30 @@ public class ApController {
     }
 
     /**
+     * Upravení jazyk strukturovaného jména přístupového bodu.
+     *
+     * @param accessPointId   identifikátor přístupového bodu
+     * @param accessPointName data jména
+     * @return upravené jméno
+     */
+    @Transactional
+    @RequestMapping(value = "/{accessPointId}/name/structured", method = RequestMethod.PUT)
+    public ApAccessPointNameVO updateAccessPointStructuredName(@PathVariable final Integer accessPointId,
+                                                               @RequestBody final ApAccessPointNameVO accessPointName) {
+        Assert.notNull(accessPointId, "Identifikátor přístupového bodu musí být vyplněn");
+        Assert.notNull(accessPointName, "Jméno přístupového bodu musí být vyplněno");
+
+        ApAccessPoint accessPoint = accessPointService.getAccessPoint(accessPointId);
+        SysLanguage language = StringUtils.isEmpty(accessPointName.getLanguageCode())
+                ? null
+                : accessPointService.getLanguage(accessPointName.getLanguageCode());
+
+        ApName name = accessPointService.getName(accessPointName.getObjectId());
+        ApName updatedName = accessPointService.updateAccessPointName(accessPoint, name, language);
+        return apFactory.createVO(updatedName);
+    }
+
+    /**
      * Získání jména přístupového bodu.
      *
      * @param accessPointId identifikátor přístupového bodu
@@ -629,9 +653,20 @@ public class ApController {
      */
     @RequestMapping(value = "/languages", method = RequestMethod.GET)
     @Transactional
-    public List<LanguageVO> getAllLanguages(){
+    public List<LanguageVO> getAllLanguages() {
         List<SysLanguage> languages = accessPointService.findAllLanguagesOrderByCode();
-        return factoryVo.createLanguages(languages);
+        return ApFactory.transformList(languages, apFactory::createVO);
+    }
+
+    /**
+     * Vrací typy externích identifikátorů.
+     */
+    @RequestMapping(value = "/eidTypes", method = RequestMethod.GET)
+    @Transactional
+    public List<ApEidTypeVO> getAllExternalIdTypes() {
+        StaticDataProvider data = staticDataService.getData();
+        List<ApExternalIdType> types = data.getApEidTypes();
+        return ApFactory.transformList(types, apFactory::createVO);
     }
 
     /**

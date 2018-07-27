@@ -295,7 +295,7 @@ public class AccessPointGeneratorService {
             ApName apName = apNameMap.get(name.getId());
             List<ApItem> items = nameItemsMap.get(apName.getNameId());
 
-            if (!apDataService.equalsNames(apName, name.getName(), name.getComplement(), name.getFullName(), apName.getLanguageId())) { // TODO: jak s jazykem?
+            if (!apDataService.equalsNames(apName, name.getName(), name.getComplement(), name.getFullName(), apName.getLanguageId())) {
                 ApName apNameNew = apDataService.updateAccessPointName(accessPoint, apName, name.getName(), name.getComplement(), name.getFullName(), apName.getLanguage(), change, false);
                 if (apName != apNameNew) {
                     items = apItemService.copyItems(apName, apNameNew, change);

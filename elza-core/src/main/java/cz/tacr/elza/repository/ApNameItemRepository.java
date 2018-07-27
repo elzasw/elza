@@ -1,5 +1,6 @@
 package cz.tacr.elza.repository;
 
+import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApName;
 import cz.tacr.elza.domain.ApNameItem;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -23,4 +24,8 @@ public interface ApNameItemRepository extends JpaRepository<ApNameItem, Integer>
     @Modifying
     @Query("DELETE FROM ApNameItem ni WHERE ni.itemId IN (SELECT i.itemId FROM ApNameItem i JOIN i.name n WHERE n.state = 'TEMP')")
     void removeTempItems();
+
+    @Modifying
+    @Query("DELETE FROM ApNameItem ni WHERE ni.itemId IN (SELECT i.itemId FROM ApNameItem i JOIN i.name n WHERE n.state = 'TEMP' AND n.accessPoint = :accessPoint)")
+    void removeTempItems(@Param("accessPoint") ApAccessPoint accessPoint);
 }

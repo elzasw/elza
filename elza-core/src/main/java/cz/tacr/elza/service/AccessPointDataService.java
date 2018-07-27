@@ -348,19 +348,4 @@ public class AccessPointDataService {
                 && Objects.equals(apName.getLanguageId(), languageId);
     }
 
-    /**
-     * Validace unikátnosti jmén v daném scope.
-     * TODO: optimalizovat na jeden sql dotaz? lze to?
-     *
-     * @param scope třída
-     * @param names kontrolovaná jména
-     */
-    public void validationNamesUnique(final ApScope scope, final Collection<ApName> names) {
-        Validate.notNull(scope, "Třída musí být vyplněna");
-        Validate.notNull(names, "Kolekce musí být vyplněna");
-
-        for (ApName name : names) {
-            validationNameUnique(scope, name.getFullName());
-        }
-    }
 }

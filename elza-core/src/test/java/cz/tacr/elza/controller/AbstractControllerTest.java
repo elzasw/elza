@@ -46,6 +46,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static com.jayway.restassured.RestAssured.given;
 
@@ -227,10 +228,13 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String CREATE_STRUCTURED_ACCESS_POINT = AP_CONTROLLER_URL + "/structured";
     protected static final String CONFIRM_ACCESS_POINT = AP_CONTROLLER_URL + "/{accessPointId}/confirm";
     protected static final String CREATE_STRUCTURED_NAME_ACCESS_POINT = AP_CONTROLLER_URL + "/{accessPointId}/name/structured";
+    protected static final String UPDATE_STRUCTURED_NAME_ACCESS_POINT = AP_CONTROLLER_URL + "/{accessPointId}/name/structured";
     protected static final String CONFIRM_NAME_ACCESS_POINT = AP_CONTROLLER_URL + "/{accessPointId}/name/{objectId}/confirm";
     protected static final String CHANGE_ACCESS_POINT_ITEMS = AP_CONTROLLER_URL + "/{accessPointId}/items";
     protected static final String CHANGE_NAME_ITEMS = AP_CONTROLLER_URL + "/{accessPointId}/name/{objectId}/items";
     protected static final String GET_NAME = AP_CONTROLLER_URL + "/{accessPointId}/name/{objectId}";
+    protected static final String GET_LANGUAGES = AP_CONTROLLER_URL + "/languages";
+    protected static final String GET_EXTERNAL_ID_TYPES = AP_CONTROLLER_URL + "/eidTypes";
 
     protected static final String CREATE_VARIANT_RECORD = AP_CONTROLLER_URL + "/variantRecord/";
     protected static final String UPDATE_VARIANT_RECORD = AP_CONTROLLER_URL + "/variantRecord/{variantRecordId}";
@@ -3415,5 +3419,34 @@ public abstract class AbstractControllerTest extends AbstractTest {
                                                      final Integer objectId) {
         return get(spec -> spec.pathParameter("accessPointId", accessPointId)
                 .pathParameter("objectId", objectId), GET_NAME).as(ApAccessPointNameVO.class);
+    }
+
+    /**
+     * Upravení jazyk strukturovaného jména přístupového bodu.
+     *
+     * @param accessPointId   identifikátor přístupového bodu
+     * @param accessPointName data jména
+     * @return upravené jméno
+     */
+    public ApAccessPointNameVO updateAccessPointStructuredName(final Integer accessPointId,
+                                                               final ApAccessPointNameVO accessPointName) {
+        return put(spec -> spec.pathParameter("accessPointId", accessPointId)
+                .body(accessPointName), UPDATE_STRUCTURED_NAME_ACCESS_POINT).as(ApAccessPointNameVO.class);
+    }
+
+    /**
+     * Vrací všechny jazyky.
+     */
+    public Map<String, LanguageVO> getAllLanguages() {
+        return Arrays.stream(get(GET_LANGUAGES).getBody().as(LanguageVO[].class))
+                .collect(Collectors.toMap(LanguageVO::getCode, Function.identity()));
+    }
+
+    /**
+     * Vrací typy externích identifikátorů.
+     */
+    public Map<String, ApEidTypeVO> getAllExternalIdTypes() {
+        return Arrays.stream(get(GET_EXTERNAL_ID_TYPES).getBody().as(ApEidTypeVO[].class))
+                .collect(Collectors.toMap(ApEidTypeVO::getCode, Function.identity()));
     }
 }

@@ -17,6 +17,8 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.controller.vo.*;
+import cz.tacr.elza.domain.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.NotImplementedException;
@@ -35,56 +37,6 @@ import cz.tacr.elza.config.rules.GroupConfiguration;
 import cz.tacr.elza.config.rules.TypeInfo;
 import cz.tacr.elza.config.rules.ViewConfiguration;
 import cz.tacr.elza.controller.StructureExtensionFundVO;
-import cz.tacr.elza.controller.vo.ApExternalSystemSimpleVO;
-import cz.tacr.elza.controller.vo.ApExternalSystemVO;
-import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
-import cz.tacr.elza.controller.vo.ArrDaoFileGroupVO;
-import cz.tacr.elza.controller.vo.ArrDaoFileVO;
-import cz.tacr.elza.controller.vo.ArrDaoLinkRequestVO;
-import cz.tacr.elza.controller.vo.ArrDaoLinkVO;
-import cz.tacr.elza.controller.vo.ArrDaoPackageVO;
-import cz.tacr.elza.controller.vo.ArrDaoRequestVO;
-import cz.tacr.elza.controller.vo.ArrDaoVO;
-import cz.tacr.elza.controller.vo.ArrDigitizationRequestVO;
-import cz.tacr.elza.controller.vo.ArrFileVO;
-import cz.tacr.elza.controller.vo.ArrFundVO;
-import cz.tacr.elza.controller.vo.ArrFundVersionVO;
-import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
-import cz.tacr.elza.controller.vo.ArrOutputDefinitionVO;
-import cz.tacr.elza.controller.vo.ArrOutputExtVO;
-import cz.tacr.elza.controller.vo.ArrOutputFileVO;
-import cz.tacr.elza.controller.vo.ArrOutputVO;
-import cz.tacr.elza.controller.vo.ArrRequestQueueItemVO;
-import cz.tacr.elza.controller.vo.ArrRequestVO;
-import cz.tacr.elza.controller.vo.ArrStructureDataVO;
-import cz.tacr.elza.controller.vo.BulkActionRunVO;
-import cz.tacr.elza.controller.vo.BulkActionVO;
-import cz.tacr.elza.controller.vo.DmsFileVO;
-import cz.tacr.elza.controller.vo.LanguageVO;
-import cz.tacr.elza.controller.vo.NodeConformityVO;
-import cz.tacr.elza.controller.vo.ParInstitutionVO;
-import cz.tacr.elza.controller.vo.ParPartyNameComplementVO;
-import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
-import cz.tacr.elza.controller.vo.ParPartyNameVO;
-import cz.tacr.elza.controller.vo.ParPartyVO;
-import cz.tacr.elza.controller.vo.ParRelationEntityVO;
-import cz.tacr.elza.controller.vo.ParRelationTypeVO;
-import cz.tacr.elza.controller.vo.ParRelationVO;
-import cz.tacr.elza.controller.vo.RulDataTypeVO;
-import cz.tacr.elza.controller.vo.RulDescItemSpecVO;
-import cz.tacr.elza.controller.vo.RulOutputTypeVO;
-import cz.tacr.elza.controller.vo.RulPolicyTypeVO;
-import cz.tacr.elza.controller.vo.RulRuleSetVO;
-import cz.tacr.elza.controller.vo.RulTemplateVO;
-import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
-import cz.tacr.elza.controller.vo.SysExternalSystemSimpleVO;
-import cz.tacr.elza.controller.vo.SysExternalSystemVO;
-import cz.tacr.elza.controller.vo.TreeItemSpecsItem;
-import cz.tacr.elza.controller.vo.TreeNodeVO;
-import cz.tacr.elza.controller.vo.UISettingsVO;
-import cz.tacr.elza.controller.vo.UsrGroupVO;
-import cz.tacr.elza.controller.vo.UsrPermissionVO;
-import cz.tacr.elza.controller.vo.UsrUserVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.ItemTypeDescItemsLiteVO;
 import cz.tacr.elza.controller.vo.nodes.ItemTypeLiteVO;
@@ -107,66 +59,6 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitidVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ItemGroupVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ItemTypeGroupVO;
-import cz.tacr.elza.domain.ApExternalSystem;
-import cz.tacr.elza.domain.ApName;
-import cz.tacr.elza.domain.ArrBulkActionRun;
-import cz.tacr.elza.domain.ArrCalendarType;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrDao;
-import cz.tacr.elza.domain.ArrDaoBatchInfo;
-import cz.tacr.elza.domain.ArrDaoFile;
-import cz.tacr.elza.domain.ArrDaoFileGroup;
-import cz.tacr.elza.domain.ArrDaoLink;
-import cz.tacr.elza.domain.ArrDaoLinkRequest;
-import cz.tacr.elza.domain.ArrDaoPackage;
-import cz.tacr.elza.domain.ArrDaoRequest;
-import cz.tacr.elza.domain.ArrDaoRequestDao;
-import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDataText;
-import cz.tacr.elza.domain.ArrDigitalRepository;
-import cz.tacr.elza.domain.ArrDigitizationRequest;
-import cz.tacr.elza.domain.ArrDigitizationRequestNode;
-import cz.tacr.elza.domain.ArrFile;
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrItem;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrNodeConformityExt;
-import cz.tacr.elza.domain.ArrNodeOutput;
-import cz.tacr.elza.domain.ArrNodeRegister;
-import cz.tacr.elza.domain.ArrOutput;
-import cz.tacr.elza.domain.ArrOutputDefinition;
-import cz.tacr.elza.domain.ArrOutputFile;
-import cz.tacr.elza.domain.ArrRequest;
-import cz.tacr.elza.domain.ArrRequestQueueItem;
-import cz.tacr.elza.domain.ArrStructuredObject;
-import cz.tacr.elza.domain.DmsFile;
-import cz.tacr.elza.domain.ParComplementType;
-import cz.tacr.elza.domain.ParInstitution;
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.ParPartyName;
-import cz.tacr.elza.domain.ParPartyNameComplement;
-import cz.tacr.elza.domain.ParPartyNameFormType;
-import cz.tacr.elza.domain.ParPartyTypeRelation;
-import cz.tacr.elza.domain.ParRelation;
-import cz.tacr.elza.domain.ParRelationEntity;
-import cz.tacr.elza.domain.ParRelationType;
-import cz.tacr.elza.domain.RulDataType;
-import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.RulItemSpecExt;
-import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.RulItemTypeExt;
-import cz.tacr.elza.domain.RulOutputType;
-import cz.tacr.elza.domain.RulPolicyType;
-import cz.tacr.elza.domain.RulRuleSet;
-import cz.tacr.elza.domain.RulStructuredTypeExtension;
-import cz.tacr.elza.domain.RulTemplate;
-import cz.tacr.elza.domain.SysExternalSystem;
-import cz.tacr.elza.domain.SysLanguage;
-import cz.tacr.elza.domain.UISettings;
-import cz.tacr.elza.domain.UsrGroup;
-import cz.tacr.elza.domain.UsrPermission;
-import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
@@ -231,7 +123,7 @@ public class ClientFactoryVO {
 
     @Autowired
     private ApAccessPointRepository apAccessPointRepository;
-    
+
     @Autowired
     private ApNameRepository apNameRepository;
 
@@ -306,7 +198,7 @@ public class ClientFactoryVO {
 
     @Autowired
     private NodeRepository nodeRepository;
-    
+
     /**
      * Vytvoření nastavení.
      *
@@ -652,9 +544,9 @@ public class ClientFactoryVO {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         ArrFundVO fundVO = mapper.map(fund, ArrFundVO.class);
         fundVO.setInstitutionId(fund.getInstitution().getInstitutionId());
-        
+
         // TODO: AP scopes on fund VO object needed/used ?
-        
+
         if (includeVersions) {
 
             List<ArrFundVersion> versions = fundVersionRepository
@@ -2204,24 +2096,6 @@ public class ClientFactoryVO {
         structureExtensionFundVO.name = structureExtension.getName();
         structureExtensionFundVO.active = false;
         return structureExtensionFundVO;
-    }
-
-    public List<LanguageVO> createLanguages(final Collection<SysLanguage> languages) {
-        if (languages == null) {
-            return null;
-        }
-        return languages.stream().map(this::createLanguage).collect(Collectors.toList());
-    }
-
-    public LanguageVO createLanguage(final SysLanguage language) {
-        if (language == null) {
-            return null;
-        }
-        LanguageVO languageVO = new LanguageVO();
-        languageVO.setId(language.getLanguageId());
-        languageVO.setCode(language.getCode());
-        languageVO.setName(language.getName());
-        return languageVO;
     }
 
     public SysExternalSystemVO createExtSystem(SysExternalSystem extSystem) {

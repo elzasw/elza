@@ -1,9 +1,5 @@
 package cz.tacr.elza.controller;
 
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
 import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.controller.vo.ap.ApFormVO;
 import cz.tacr.elza.controller.vo.ap.ApFragmentTypeVO;
@@ -19,9 +15,16 @@ import cz.tacr.elza.controller.vo.nodes.descitems.UpdateOp;
 import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -37,6 +40,7 @@ public class ApControllerTest extends AbstractControllerTest {
      */
     public static final String STAT_ZASTUPCE = "STAT_ZASTUPCE";
     public static final String STRUCT_AP_TYPE = "PERSON_BEING_STRUCT";
+    public static final String LANG_CZE = "cze";
 
     @Test
     public void getRecordTypesTest() {
@@ -76,10 +80,21 @@ public class ApControllerTest extends AbstractControllerTest {
         deleteScopeTest(scopeVO.getId());
     }
 
+    @Test
+    public void testExternalIdTypes() {
+        Map<String, ApEidTypeVO> types = getAllExternalIdTypes();
+        ApEidTypeVO eidType = types.get("INTERPI");
+        Assert.assertNotNull(eidType);
+        Assert.assertNotNull(eidType.getId());
+        Assert.assertNotNull(eidType.getCode());
+        Assert.assertNotNull(eidType.getName());
+    }
+
     @Test/*(timeout = 60000)*/
     public void testStructureAccessPoint() throws InterruptedException {
 
         ApTypeVO type = getApType(STRUCT_AP_TYPE);
+        Map<String, LanguageVO> languages = getAllLanguages();
 
         List<ApScopeVO> scopes = getAllScopes();
         Integer scopeId = scopes.iterator().next().getId();
@@ -162,6 +177,12 @@ public class ApControllerTest extends AbstractControllerTest {
             Thread.sleep(100);
         } while (true);
 
+        // změna jazyku u strukturovaného jména
+        Assert.assertNull(secondName.getLanguageCode());
+        LanguageVO langCze = languages.get(LANG_CZE);
+        secondName.setLanguageCode(langCze.getCode());
+        secondName = updateAccessPointStructuredName(accessPoint.getId(), secondName);
+        assertEquals(langCze.getCode(), secondName.getLanguageCode());
     }
 
     private void addApItems(final ApAccessPointVO accessPoint) {
