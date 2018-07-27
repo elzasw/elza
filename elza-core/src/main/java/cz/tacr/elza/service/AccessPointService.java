@@ -3,6 +3,7 @@ package cz.tacr.elza.service;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.controller.vo.ap.item.ApUpdateItemVO;
 import cz.tacr.elza.controller.vo.usage.*;
+import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
@@ -34,7 +35,6 @@ import org.springframework.util.Assert;
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
-import javax.validation.constraints.NotNull;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -274,34 +274,8 @@ public class AccessPointService {
             eids.forEach(eid -> eid.setDeleteChange(change));
             externalIdRepository.save(eids);
 
-            eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.RECORD_DELETE, accessPointId));
+            publishAccessPointDeleteEvent(ap);
         }
-    }
-
-    /**
-     * Uložení či update variantního záznamu.
-     *
-     * @param variantName variantní záznam, bez vazeb
-     * @return výslendný objekt uložený do db
-     */
-    @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
-    public ApName saveVariantName(@AuthParam(type = AuthParam.Type.SCOPE) final ApName variantName, @NotNull ApChange createChange) {
-        Assert.notNull(variantName, "Heslo musí být vyplněno");
-        Assert.notNull(createChange, "Create change musí být vyplněno");
-
-        ApAccessPoint accessPoint = variantName.getAccessPoint();
-        Assert.notNull(accessPoint, "ApAccessPoint musí být vyplněno.");
-        Integer recordId = accessPoint.getAccessPointId();
-        Assert.notNull(recordId, "ApAccessPoint nemá vyplněno ID.");
-
-        accessPoint = apRepository.findOne(recordId);
-        Assert.notNull(accessPoint, "ApAccessPoint nebylo nalezeno podle id " + recordId);
-        variantName.setAccessPoint(accessPoint);
-        variantName.setCreateChange(createChange);
-        ApName saved = apNameRepository.save(variantName);
-        eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.RECORD_UPDATE, recordId));
-
-        return saved;
     }
 
     /**
@@ -982,6 +956,7 @@ public class AccessPointService {
             apDataService.createDescription(accessPoint, description, change);
         }
 
+        publishAccessPointCreateEvent(accessPoint);
         return accessPoint;
     }
 
@@ -1026,7 +1001,12 @@ public class AccessPointService {
         if (type.getApTypeId().equals(accessPoint.getApType().getApTypeId())) {
             return accessPoint;
         }
+
         accessPoint.setApType(type);
+        if (accessPoint.getRuleSystem() != null) {
+            accessPoint.setRuleSystem(type.getRuleSystem());
+        }
+        apRepository.save(accessPoint);
 
         if (accessPoint.getRuleSystem() != null) {
             ApChange change = apDataService.createChange(ApChange.Type.AP_UPDATE);
@@ -1034,7 +1014,8 @@ public class AccessPointService {
             //apGeneratorService.generateAsyncAfterCommit(accessPoint.getAccessPointId(), change.getChangeId());
         }
 
-        return apRepository.save(accessPoint);
+        publishAccessPointUpdateEvent(accessPoint);
+        return accessPoint;
     }
 
     /**
@@ -1055,7 +1036,10 @@ public class AccessPointService {
             throw new BusinessException("Nelze upravovat charakteristiku u strukturovaného přístupového bodu",
                     BaseCode.INVALID_STATE);
         }
-        return apDataService.changeDescription(accessPoint, description, null);
+
+        apDataService.changeDescription(accessPoint, description, null);
+        publishAccessPointUpdateEvent(accessPoint);
+        return accessPoint;
     }
 
     /**
@@ -1178,6 +1162,33 @@ public class AccessPointService {
     }
 
     /**
+     * Nastaví pravidla přístupovému bodu podle typu.
+     *
+     * @param accessPoint přístupový bod
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
+    public void setRuleAccessPoint(@AuthParam(type = AuthParam.Type.AP) final ApAccessPoint accessPoint) {
+        Validate.notNull(accessPoint);
+        apDataService.validationNotDeleted(accessPoint);
+
+        if (accessPoint.getRuleSystem() != null) {
+            throw new BusinessException("Nelze AP přepnout do řízení pravidly, protože již pravidla má", BaseCode.INVALID_STATE);
+        }
+
+        ApType apType = accessPoint.getApType();
+        if (apType.getRuleSystem() == null) {
+            throw new BusinessException("Typ nemá vazbu na pravidla", BaseCode.INVALID_STATE);
+        }
+
+        accessPoint.setRuleSystem(apType.getRuleSystem());
+        apRepository.save(accessPoint);
+
+        ApChange change = apDataService.createChange(ApChange.Type.AP_UPDATE);
+        apGeneratorService.generateAndSetResult(accessPoint, change);
+        //apGeneratorService.generateAsyncAfterCommit(accessPoint.getAccessPointId(), change.getChangeId());
+    }
+
+    /**
      * Potvrzení dočasného jména a převalidování celého AP.
      *
      * @param accessPoint přístupový bod
@@ -1231,7 +1242,9 @@ public class AccessPointService {
 
         ApChange change = apDataService.createChange(ApChange.Type.NAME_UPDATE);
         String fullName = AccessPointDataService.generateFullName(name, complement);
-        return apDataService.updateAccessPointName(accessPoint, apName, name, complement, fullName, language, change, true);
+        ApName apNameNew = apDataService.updateAccessPointName(accessPoint, apName, name, complement, fullName, language, change, true);
+        publishAccessPointUpdateEvent(accessPoint);
+        return apNameNew;
     }
 
     /**
@@ -1444,7 +1457,8 @@ public class AccessPointService {
      * @return jazyk
      */
     public SysLanguage getLanguage(final String languageCode) {
-        SysLanguage language = sysLanguageRepository.findByCode(languageCode);
+        StaticDataProvider data = staticDataService.getData();
+        SysLanguage language = data.getSysLanguageByCode(languageCode);
         if (language == null) {
             throw new ObjectNotFoundException("Jazyk neexistuje", BaseCode.ID_NOT_EXIST).setId(languageCode);
         }
@@ -1685,10 +1699,12 @@ public class AccessPointService {
                 apDataService.createDescription(accessPoint, description, change);
             }
             createExternalId(accessPoint, externalIdType, externalId, change);
+            publishAccessPointCreateEvent(accessPoint);
         } else {
             accessPoint = updateAccessPoint(accessPointExists, type);
             invalidateAllNames(accessPoint, change);
             apDataService.changeDescription(accessPoint, description, change);
+            publishAccessPointUpdateEvent(accessPoint);
         }
 
         // kolekce pro kontrolu jmen vlastního přístupového bodu
@@ -1754,6 +1770,22 @@ public class AccessPointService {
         externalIdRepository.save(apExternalId);
     }
 
+    private void publishAccessPointCreateEvent(final ApAccessPoint accessPoint) {
+        publishAccessPointEvent(accessPoint, EventType.ACCESS_POINT_CREATE);
+    }
+
+    private void publishAccessPointUpdateEvent(final ApAccessPoint accessPoint) {
+        publishAccessPointEvent(accessPoint, EventType.ACCESS_POINT_UPDATE);
+    }
+
+    private void publishAccessPointDeleteEvent(final ApAccessPoint accessPoint) {
+        publishAccessPointEvent(accessPoint, EventType.ACCESS_POINT_DELETE);
+    }
+
+    private void publishAccessPointEvent(final ApAccessPoint accessPoint, final EventType type) {
+        eventNotificationService.publishEvent(EventFactory.createIdEvent(type, accessPoint.getAccessPointId()));
+    }
+
     /**
      * Synchronizace přístupového bodu.
      *
@@ -1783,6 +1815,8 @@ public class AccessPointService {
                 ApName name = namesIterator.next();
                 createName(accessPoint, false, name.getName(), name.getComplement(), name.getLanguage(), change.get(), true);
             }
+
+            publishAccessPointCreateEvent(accessPoint);
         } else {
             accessPoint = accessPointCmp;
 
@@ -1817,6 +1851,8 @@ public class AccessPointService {
             for (ApName name : newNames) {
                 apDataService.validationNameUnique(accessPoint.getScope(), name.getFullName());
             }
+
+            publishAccessPointUpdateEvent(accessPoint);
         }
 
         // sychronizace popisu

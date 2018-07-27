@@ -240,6 +240,12 @@ public class ApController {
         return byItemSpecId > 0;
     }
 
+    /**
+     * Založení strukturovaného přístupového bodu.
+     *
+     * @param accessPoint zakládaný přístupový bod
+     * @return založený strukturovaný přístupový bod
+     */
     @Transactional
     @RequestMapping(value = "/structured", method = RequestMethod.POST)
     public ApAccessPointVO createStructuredAccessPoint(@RequestBody final ApAccessPointCreateVO accessPoint) {
@@ -254,6 +260,11 @@ public class ApController {
         return apFactory.createVO(createdAccessPoint, true);
     }
 
+    /**
+     * Potvrzení dočasného přístupového bodu a jeho převalidování.
+     *
+     * @param accessPointId identifikátor přístupového bodu
+     */
     @Transactional
     @RequestMapping(value = "/{accessPointId}/confirm", method = RequestMethod.POST)
     public void confirmStructuredAccessPoint(@PathVariable final Integer accessPointId) {
@@ -262,6 +273,25 @@ public class ApController {
         accessPointService.confirmAccessPoint(accessPoint);
     }
 
+    /**
+     * Nastaví pravidla přístupovému bodu podle typu.
+     *
+     * @param accessPointId identifikátor přístupového bodu
+     */
+    @Transactional
+    @RequestMapping(value = "/{accessPointId}/setRule", method = RequestMethod.POST)
+    public void setRuleAccessPoint(@PathVariable final Integer accessPointId) {
+        Assert.notNull(accessPointId, "Identifikátor přístupového bodu musí být vyplněn");
+        ApAccessPoint accessPoint = accessPointService.getAccessPoint(accessPointId);
+        accessPointService.setRuleAccessPoint(accessPoint);
+    }
+
+    /**
+     * Založení strukturovaného jména přístupového bodu - dočasné, nutné potvrdit {@link #confirmAccessPointStructuredName}.
+     *
+     * @param accessPointId identifikátor přístupového bodu
+     * @return založené strukturované jméno
+     */
     @Transactional
     @RequestMapping(value = "/{accessPointId}/name/structured", method = RequestMethod.POST)
     public ApAccessPointNameVO createAccessPointStructuredName(@PathVariable final Integer accessPointId) {
@@ -273,6 +303,12 @@ public class ApController {
         return apFactory.createVO(name, true);
     }
 
+    /**
+     * Potvrzení dočasného jména a převalidování celého AP.
+     *
+     * @param accessPointId identifikátor přístupového bodu
+     * @param objectId      identifikátor objektu jména
+     */
     @Transactional
     @RequestMapping(value = "/{accessPointId}/name/{objectId}/confirm", method = RequestMethod.POST)
     public void confirmAccessPointStructuredName(@PathVariable final Integer accessPointId,

@@ -12,6 +12,8 @@ import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.*;
 import cz.tacr.elza.service.event.CacheInvalidateEvent;
+import cz.tacr.elza.service.eventnotification.EventFactory;
+import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.vo.AccessPoint;
 import cz.tacr.elza.service.vo.Name;
 import org.apache.commons.collections4.CollectionUtils;
@@ -61,6 +63,7 @@ public class AccessPointGeneratorService {
     private final AccessPointItemService apItemService;
     private final ApplicationContext appCtx;
     private final ApChangeRepository apChangeRepository;
+    private final IEventNotificationService eventNotificationService;
 
     private Map<File, GroovyScriptService.GroovyScriptFile> groovyScriptMap = new HashMap<>();
 
@@ -81,7 +84,8 @@ public class AccessPointGeneratorService {
                                        final ApAccessPointRepository apRepository,
                                        final AccessPointItemService apItemService,
                                        final ApplicationContext appCtx,
-                                       final ApChangeRepository apChangeRepository) {
+                                       final ApChangeRepository apChangeRepository,
+                                       final IEventNotificationService eventNotificationService) {
         this.fragmentRuleRepository = fragmentRuleRepository;
         this.ruleRepository = ruleRepository;
         this.resourcePathResolver = resourcePathResolver;
@@ -96,6 +100,7 @@ public class AccessPointGeneratorService {
         this.apItemService = apItemService;
         this.appCtx = appCtx;
         this.apChangeRepository = apChangeRepository;
+        this.eventNotificationService = eventNotificationService;
         this.taskExecutor.addTask(new AccessPointGeneratorThread());
         this.taskExecutor.start();
     }
@@ -261,6 +266,8 @@ public class AccessPointGeneratorService {
         accessPoint.setErrorDescription(apErrorDescription.asJsonString());
         accessPoint.setState(apStateOld == ApState.TEMP ? ApState.TEMP : apState);
         apRepository.save(accessPoint);
+
+        eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.ACCESS_POINT_UPDATE, accessPoint.getAccessPointId()));
     }
 
     private void processResult(final ApAccessPoint accessPoint, final ApChange change, final Map<Integer, ApName> apNameMap, final Map<Integer, List<ApItem>> nameItemsMap, final AccessPoint result) {
