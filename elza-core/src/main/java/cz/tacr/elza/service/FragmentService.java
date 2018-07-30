@@ -90,6 +90,21 @@ public class FragmentService {
         apGeneratorService.generateAndSetResult(fragment);
     }
 
+    /**
+     * Smazání hodnot fragmentu podle typu.
+     *
+     * @param fragment fragment
+     * @param itemType typu atributu
+     */
+    public void deleteFragmentItemsByType(final ApFragment fragment, final RulItemType itemType) {
+        Validate.notNull(fragment, "Fragment musí být vyplněn");
+        Validate.notNull(itemType, "Typ musí být vyplněn");
+        ApChange change = apDataService.createChange(ApChange.Type.FRAGMENT_CHANGE);
+
+        apItemService.deleteItemsByType(fragmentItemRepository, fragment, itemType, change);
+        apGeneratorService.generateAndSetResult(fragment);
+    }
+
     private ApItem createFragmentItem(final ApFragment fragment, final RulItemType it, final RulItemSpec is, final ApChange c, final int objectId, final int position) {
         ApFragmentItem item = new ApFragmentItem();
         item.setFragment(fragment);

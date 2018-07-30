@@ -7,6 +7,7 @@ import cz.tacr.elza.controller.vo.ap.ApFragmentTypeVO;
 import cz.tacr.elza.controller.vo.ap.ApFragmentVO;
 import cz.tacr.elza.controller.vo.ap.item.ApUpdateItemVO;
 import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
+import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.*;
@@ -340,6 +341,25 @@ public class ApController {
     }
 
     /**
+     * Smazání hodnot fragmentu podle typu.
+     *
+     * @param accessPointId identifikátor identifikátor přístupového bodu
+     * @param itemTypeId    identifikátor typu atributu
+     */
+    @Transactional
+    @RequestMapping(value = "/{accessPointId}/type/{itemTypeId}", method = RequestMethod.DELETE)
+    public void deleteAccessPointItemsByType(@PathVariable final Integer accessPointId,
+                                       @PathVariable final Integer itemTypeId) {
+        Validate.notNull(accessPointId, "Identifikátor přístupového bodu musí být vyplněn");
+        Validate.notNull(itemTypeId, "Identifikátor typu musí být vyplněn");
+
+        ApAccessPoint accessPoint = accessPointService.getAccessPoint(accessPointId);
+        StaticDataProvider data = staticDataService.getData();
+        ItemType type = data.getItemTypeById(itemTypeId);
+        accessPointService.deleteApItemsByType(accessPoint, type.getEntity());
+    }
+
+    /**
      * Úprava hodnot jména přístupového bodu. Přidání/upravení/smazání.
      *
      * @param accessPointId identifikátor přístupového bodu
@@ -358,6 +378,29 @@ public class ApController {
         ApAccessPoint accessPoint = accessPointService.getAccessPoint(accessPointId);
         ApName name = accessPointService.getName(objectId);
         accessPointService.changeNameItems(accessPoint, name, items);
+    }
+
+    /**
+     * Smazání hodnot jména podle typu.
+     *
+     * @param accessPointId identifikátor identifikátor přístupového bodu
+     * @param objectId      identifikátor objektu jména
+     * @param itemTypeId    identifikátor typu atributu
+     */
+    @Transactional
+    @RequestMapping(value = "/{accessPointId}/name/{objectId}/type/{itemTypeId}", method = RequestMethod.DELETE)
+    public void deleteNameItemsByType(@PathVariable final Integer accessPointId,
+                                      @PathVariable final Integer objectId,
+                                      @PathVariable final Integer itemTypeId) {
+        Validate.notNull(accessPointId, "Identifikátor přístupového bodu musí být vyplněn");
+        Validate.notNull(objectId, "Identifikátor objektu jména přístupového bodu musí být vyplněn");
+        Validate.notNull(itemTypeId, "Identifikátor typu musí být vyplněn");
+
+        ApAccessPoint accessPoint = accessPointService.getAccessPoint(accessPointId);
+        ApName name = accessPointService.getName(objectId);
+        StaticDataProvider data = staticDataService.getData();
+        ItemType type = data.getItemTypeById(itemTypeId);
+        accessPointService.deleteNameItemsByType(accessPoint, name, type.getEntity());
     }
 
     /**
@@ -391,6 +434,26 @@ public class ApController {
 
         ApFragment fragment = fragmentService.getFragment(fragmentId);
         fragmentService.changeFragmentItems(fragment, items);
+        return apFactory.createVO(fragment, true);
+    }
+
+    /**
+     * Smazání hodnot fragmentu podle typu.
+     *
+     * @param fragmentId identifikátor fragmentu
+     * @param itemTypeId identifikátor typu atributu
+     */
+    @Transactional
+    @RequestMapping(value = "/fragment/{fragmentId}/type/{itemTypeId}", method = RequestMethod.DELETE)
+    public ApFragmentVO deleteFragmentItemsByType(@PathVariable final Integer fragmentId,
+                                          @PathVariable final Integer itemTypeId) {
+        Validate.notNull(fragmentId, "Identifikátor fragmentu musí být vyplněn");
+        Validate.notNull(itemTypeId, "Identifikátor typu musí být vyplněn");
+
+        ApFragment fragment = fragmentService.getFragment(fragmentId);
+        StaticDataProvider data = staticDataService.getData();
+        ItemType type = data.getItemTypeById(itemTypeId);
+        fragmentService.deleteFragmentItemsByType(fragment, type.getEntity());
         return apFactory.createVO(fragment, true);
     }
 

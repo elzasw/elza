@@ -231,7 +231,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String UPDATE_STRUCTURED_NAME_ACCESS_POINT = AP_CONTROLLER_URL + "/{accessPointId}/name/structured";
     protected static final String CONFIRM_NAME_ACCESS_POINT = AP_CONTROLLER_URL + "/{accessPointId}/name/{objectId}/confirm";
     protected static final String CHANGE_ACCESS_POINT_ITEMS = AP_CONTROLLER_URL + "/{accessPointId}/items";
+    protected static final String DELETE_ACCESS_POINT_ITEMS_BY_TYPE = AP_CONTROLLER_URL + "/{accessPointId}/type/{itemTypeId}";
     protected static final String CHANGE_NAME_ITEMS = AP_CONTROLLER_URL + "/{accessPointId}/name/{objectId}/items";
+    protected static final String DELETE_NAME_ITEMS_BY_TYPE = AP_CONTROLLER_URL + "/{accessPointId}/name/{objectId}/type/{itemTypeId}";
     protected static final String GET_NAME = AP_CONTROLLER_URL + "/{accessPointId}/name/{objectId}";
     protected static final String GET_LANGUAGES = AP_CONTROLLER_URL + "/languages";
     protected static final String GET_EXTERNAL_ID_TYPES = AP_CONTROLLER_URL + "/eidTypes";
@@ -246,6 +248,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String FRAGMENT_TYPES = AP_CONTROLLER_URL + "/fragment/types";
     protected static final String GET_FRAGMENT = AP_CONTROLLER_URL + "/fragment/{fragmentId}";
     protected static final String DELETE_FRAGMENT = AP_CONTROLLER_URL + "/fragment/{fragmentId}";
+    protected static final String DELETE_FRAGMENT_ITEMS_BY_TYPE = AP_CONTROLLER_URL + "/fragment/{fragmentId}/type/{itemTypeId}";
     protected static final String CONFIRM_FRAGMENT = AP_CONTROLLER_URL + "/fragment/{fragmentId}/confirm";
     protected static final String CHANGE_FRAGMENT_ITEMS = AP_CONTROLLER_URL + "/fragment/{fragmentId}/items";
     protected static final String CREATE_FRAGMENT = AP_CONTROLLER_URL + "/fragment/create/{fragmentTypeCode}";
@@ -3448,5 +3451,45 @@ public abstract class AbstractControllerTest extends AbstractTest {
     public Map<String, ApEidTypeVO> getAllExternalIdTypes() {
         return Arrays.stream(get(GET_EXTERNAL_ID_TYPES).getBody().as(ApEidTypeVO[].class))
                 .collect(Collectors.toMap(ApEidTypeVO::getCode, Function.identity()));
+    }
+
+    /**
+     * Smazání hodnot fragmentu podle typu.
+     *
+     * @param accessPointId identifikátor identifikátor přístupového bodu
+     * @param itemTypeId    identifikátor typu atributu
+     */
+    public void deleteAccessPointItemsByType(final Integer accessPointId,
+                                             final Integer itemTypeId) {
+        delete(spec -> spec.pathParameter("accessPointId", accessPointId)
+                .pathParameter("itemTypeId", itemTypeId), DELETE_ACCESS_POINT_ITEMS_BY_TYPE);
+    }
+
+    /**
+     * Smazání hodnot jména podle typu.
+     *
+     * @param accessPointId identifikátor identifikátor přístupového bodu
+     * @param objectId      identifikátor objektu jména
+     * @param itemTypeId    identifikátor typu atributu
+     */
+    public void deleteNameItemsByType(final Integer accessPointId,
+                                      final Integer objectId,
+                                      final Integer itemTypeId) {
+        delete(spec -> spec.pathParameter("accessPointId", accessPointId)
+                .pathParameter("objectId", objectId)
+                .pathParameter("itemTypeId", itemTypeId), DELETE_NAME_ITEMS_BY_TYPE);
+    }
+
+    /**
+     * Smazání hodnot fragmentu podle typu.
+     *
+     * @param fragmentId identifikátor fragmentu
+     * @param itemTypeId identifikátor typu atributu
+     */
+    public ApFragmentVO deleteFragmentItemsByType(final Integer fragmentId,
+                                                  final Integer itemTypeId) {
+        return delete(spec -> spec.pathParameter("fragmentId", fragmentId)
+                .pathParameter("itemTypeId", itemTypeId), DELETE_FRAGMENT_ITEMS_BY_TYPE)
+                .as(ApFragmentVO.class);
     }
 }

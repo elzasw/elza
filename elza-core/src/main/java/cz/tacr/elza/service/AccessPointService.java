@@ -1075,6 +1075,35 @@ public class AccessPointService {
     }
 
     /**
+     * Změna atributů jména přístupového bodu.
+     *
+     * @param accessPoint přístupový bod
+     * @param name        jméno ap
+     * @param itemType    typ atributu
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
+    public void deleteNameItemsByType(@AuthParam(type = AuthParam.Type.AP) final ApAccessPoint accessPoint,
+                                      final ApName name,
+                                      final RulItemType itemType) {
+        Validate.notNull(accessPoint, "Přístupový bod musí být vyplněn");
+        Validate.notNull(name, "Jméno musí být vyplněno");
+        Validate.notNull(itemType, "Typ musí být vyplněn");
+        apDataService.validationNotDeleted(accessPoint);
+        apDataService.validationNotDeleted(name);
+
+        ApChange change;
+        if (accessPoint.getState() == ApState.TEMP) {
+            change = accessPoint.getCreateChange();
+        } else {
+            change = apDataService.createChange(ApChange.Type.AP_UPDATE);
+        }
+        apItemService.deleteItemsByType(nameItemRepository, name, itemType, change);
+
+        apGeneratorService.generateAndSetResult(accessPoint, change);
+        //apGeneratorService.generateAsyncAfterCommit(accessPoint.getAccessPointId(), change.getChangeId());
+    }
+
+    /**
      * Změna atributů přístupového bodu.
      *
      * @param accessPoint přístupový bod
@@ -1097,6 +1126,31 @@ public class AccessPointService {
         }
         apItemService.changeItems(items, new ArrayList<>(itemsDb), change, (RulItemType it, RulItemSpec is, ApChange c, int objectId, int position)
                 -> createBodyItem(accessPoint, it, is, c, objectId, position));
+
+        apGeneratorService.generateAndSetResult(accessPoint, change);
+        //apGeneratorService.generateAsyncAfterCommit(accessPoint.getAccessPointId(), change.getChangeId());
+    }
+
+    /**
+     * Smazání hodnot ap podle typu.
+     *
+     * @param accessPoint přístupový bod
+     * @param itemType    typ atributu
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
+    public void deleteApItemsByType(@AuthParam(type = AuthParam.Type.AP) final ApAccessPoint accessPoint,
+                                    final RulItemType itemType) {
+        Validate.notNull(accessPoint, "Přístupový bod musí být vyplněn");
+        Validate.notNull(itemType, "Typ musí být vyplněn");
+        apDataService.validationNotDeleted(accessPoint);
+
+        ApChange change;
+        if (accessPoint.getState() == ApState.TEMP) {
+            change = accessPoint.getCreateChange();
+        } else {
+            change = apDataService.createChange(ApChange.Type.AP_UPDATE);
+        }
+        apItemService.deleteItemsByType(bodyItemRepository, accessPoint, itemType, change);
 
         apGeneratorService.generateAndSetResult(accessPoint, change);
         //apGeneratorService.generateAsyncAfterCommit(accessPoint.getAccessPointId(), change.getChangeId());

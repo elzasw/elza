@@ -294,6 +294,11 @@ public class ApControllerTest extends AbstractControllerTest {
         Assert.assertEquals(fragmentItems.get(3).getObjectId(), fragmentUpdatedItems.get(4).getObjectId());
         Assert.assertEquals(fragmentItems.get(4).getObjectId(), fragmentUpdatedItems.get(5).getObjectId());
         Assert.assertEquals(fragmentItems.get(5).getObjectId(), fragmentUpdatedItems.get(3).getObjectId());
+
+        fragmentUpdated = deleteFragmentItemsByType(fragment.getId(), nadType.getId());
+        fragmentUpdatedForm = fragmentUpdated.getForm();
+        fragmentUpdatedItems = fragmentUpdatedForm.getItems();
+        Assert.assertEquals(2, fragmentUpdatedItems.size());
     }
 
     @Test

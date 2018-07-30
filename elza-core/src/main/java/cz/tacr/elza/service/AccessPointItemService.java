@@ -149,6 +149,23 @@ public class AccessPointItemService {
         itemRepository.save(itemsDb);
     }
 
+    /**
+     * Provede odstranění všech aktivních položek podle typu.
+     *
+     * @param repository repository pro nalezení platný položek
+     * @param joinItem   vazební položka (podle které se vyhledávají položky)
+     * @param itemType   typ
+     * @param change     změna
+     * @param <T>        generický typ vazební položky
+     */
+    public <T> void deleteItemsByType(ByType<T> repository, T joinItem, RulItemType itemType, ApChange change) {
+        List<ApItem> items = repository.findValidItemsByType(joinItem, itemType);
+        for (ApItem item : items) {
+            item.setDeleteChange(change);
+        }
+        itemRepository.save(items);
+    }
+
     private void updateItems(final List<ApItemVO> updateItems,
                              final Map<Integer, List<ApItem>> typeIdItemsMap,
                              final List<ApItem> itemsDb,
