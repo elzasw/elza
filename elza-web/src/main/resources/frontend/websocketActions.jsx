@@ -50,7 +50,7 @@ import {
     userChange
 } from 'actions/global/change.jsx';
 
-import Stomp from 'stompjs';
+import {Stomp} from 'stompjs';
 import URLParse from "url-parse";
 
 import {reloadUserDetail} from 'actions/user/userDetail';
@@ -64,7 +64,7 @@ const url = new URLParse(serverContextPath + '/stomp');
 const wsProtocol = url.protocol === "https:" ? "wss:" : "ws:";
 
 const wsUrl = wsProtocol+ "//" + url.host + url.pathname;
-console.log("Websocekt URL", wsUrl)
+console.log("Websocekt URL", wsUrl);
 
 class websocket{
     constructor(url, eventMap) {

@@ -7,7 +7,6 @@ import {splitterResize} from 'actions/global/splitter.jsx';
 
 import rootReducer from './reducers.jsx'
 import reduxFormUtils from './app/form/reduxFormUtils.jsx'
-import defaultImport from './defaultImport.jsx'
 
 //import devTools from 'remote-redux-devtools';
 
@@ -441,7 +440,7 @@ let createStoreWithMiddleware;
 
 if (typeof __DEVTOOLS__ !== 'undefined' && __DEVTOOLS__) {
     const { persistState } = require('redux-devtools');
-    const DevTools = defaultImport(require('../DevTools'));
+    const DevTools = require('../DevTools').default;
     createStoreWithMiddleware = compose(
         applyMiddleware(
             // enforceImmutableMiddleware,
@@ -474,7 +473,7 @@ export const store = function configureStore(initialState) {
     if (module.hot) {
         // Enable Webpack hot module replacement for reducers
         module.hot.accept('./reducers.jsx', () => {
-            const nextRootReducer = defaultImport(require('./reducers.jsx'));
+            const nextRootReducer = require('./reducers.jsx').default;
 
             state.replaceReducer(nextRootReducer)
         })

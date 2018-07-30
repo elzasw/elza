@@ -3,21 +3,21 @@
  */
 
 import React from 'react';
+import {hot} from 'react-hot-loader'
 import { Provider } from 'react-redux'
-import defaultImport from 'stores/defaultImport.jsx'
 
 
 import Layout from 'pages/Layout.jsx';
 import {Route} from "react-router";
 import {BrowserRouter} from "react-router-dom";
 
-export default class Root extends React.Component {
+class Root extends React.Component {
 
     devTools() {
         const elements = [];
         if (typeof __DEVTOOLS__ !== 'undefined' && __DEVTOOLS__) {
             /*eslint-disable*/
-            const DevTools = defaultImport(require('./DevTools'));
+            const DevTools = require('./DevTools').default;
             /*eslint-enable*/
             elements.push(<DevTools key="devtools" />)
         }
@@ -39,4 +39,5 @@ export default class Root extends React.Component {
 
 
 
+export default hot(module)(Root)
 
