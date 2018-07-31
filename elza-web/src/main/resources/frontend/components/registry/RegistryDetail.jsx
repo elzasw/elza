@@ -303,6 +303,16 @@ class RegistryDetail extends AbstractReactComponent {
         this.props.dispatch(modalDialogShow(this, i18n('subNodeForm.descItemType.title.add'), <AddDescItemTypeForm descItemTypes={descItemTypes} onSubmitForm={submit} onSubmit2={submit}/>));
     };
 
+    renderActions = () => {
+        return <div className="form-actions-container">
+            <div className="form-actions">
+                <div className="section">
+                    <NoFocusButton onClick={this.add}><Icon glyph="fa-plus-circle"/>{i18n('subNodeForm.section.item')}</NoFocusButton>
+                </div>
+            </div>
+        </div>
+    };
+
     render() {
         const {registryDetail, scopes, eidTypes, ap, refTables} = this.props;
         const {data, fetched, isFetching, id} = registryDetail;
@@ -368,29 +378,32 @@ class RegistryDetail extends AbstractReactComponent {
                         </span>}
                     </div>
                     <CollapsablePanel tabIndex={0} key={"NAMES"} isOpen={activeIndexes && activeIndexes["NAMES"] === true} header={i18n("accesspoint.detail.formNames")} eventKey={"NAMES"} onPin={this.handlePinToggle} onSelect={this.handleToggleActive}>
-                        <ApDetailNames accessPoint={data} canEdit={!disableEdit} refreshParty={this.refreshData}  />
+                        <div className={"cp-15"}>
+                            <ApDetailNames accessPoint={data} canEdit={!disableEdit} refreshParty={this.refreshData}  />
+                        </div>
                     </CollapsablePanel>
                     <CollapsablePanel tabIndex={0} key={"DESCRIPTION"} isOpen={activeIndexes && activeIndexes["DESCRIPTION"] === true} header={i18n("accesspoint.detail.description")} eventKey={"DESCRIPTION"} onPin={this.handlePinToggle} onSelect={this.handleToggleActive}>
-                        {data.ruleSystemId == null ? <div className="elements-container">
-                            <div className={"el-12"}>
-                                <label>{i18n('registry.detail.characteristics')} <Button onClick={this.editDescription}><Icon glyph="fa-pencil" /></Button></label>
-                                <div>{data.characteristics}</div>
+                        {ap.form.fetched && this.renderActions()}
+                        <div className={"cp-15"}>
+                            <div className="elements-container">
+                                <div className={"el-12"}>
+                                    <label>{i18n('registry.detail.characteristics')} {data.ruleSystemId == null && <Button onClick={this.editDescription}><Icon glyph="fa-pencil" /></Button>}</label>
+                                    <div>{data.characteristics}</div>
+                                </div>
                             </div>
-                        </div> : (ap.form.fetched && <div>
-                            <Button onClick={this.add} >ADD</Button>
-                        <AccessPointForm
-                            versionId={null}
-                            fundId={null}
-                            selectedSubNodeId={ap.id}
-                            rulDataTypes={refTables.rulDataTypes.items}
-                            calendarTypes={refTables.calendarTypes.items}
-                            descItemTypes={refTables.descItemTypes.items}
-                            subNodeForm={ap.form}
-                            closed={false}
-                            focus={null}
-                            readMode={false}
-                        />
-                        </div>)}
+                            {ap.form.fetched && <AccessPointForm
+                                versionId={null}
+                                fundId={null}
+                                selectedSubNodeId={ap.id}
+                                rulDataTypes={refTables.rulDataTypes.items}
+                                calendarTypes={refTables.calendarTypes.items}
+                                descItemTypes={refTables.descItemTypes.items}
+                                subNodeForm={ap.form}
+                                closed={false}
+                                focus={null}
+                                readMode={false}
+                            />}
+                        </div>
                     </CollapsablePanel>
                 </div>
             </Shortcuts>

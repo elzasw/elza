@@ -21,3 +21,23 @@ then
     $itemType.setType(RulItemType.Type.RECOMMENDED);
     $itemType.setRepeatable(false);
 end
+
+// Možné položky
+rule "Možné - opakující"
+no-loop
+when
+    $itemType : RulItemTypeExt(code in ("VZTAH_STAT_ZASTUPCE"))
+then
+    $itemType.setType(RulItemType.Type.POSSIBLE);
+    $itemType.setRepeatable(true);
+end
+
+// Možné položky
+rule "Možné - neopakující"
+no-loop
+when
+    $itemType : RulItemTypeExt(code in ("AP_NAME", "ZP2015_WEIGHT", "ZP2015_SIZE_UNITS", "ZP2015_SIZE_DEPTH", "ZP2015_INV_CISLO"))
+then
+    $itemType.setType(RulItemType.Type.POSSIBLE);
+    $itemType.setRepeatable(false);
+end

@@ -284,10 +284,16 @@ public class AccessPointGeneratorService {
         for (NameContext nameContext : nameContexts) {
             ApName name = nameContext.getName();
             NameErrorDescription errorDescription = nameContext.getErrorDescription();
-            boolean isUnique = apDataService.isNameUnique(accessPoint.getScope(), name.getFullName());
-            if (!isUnique) {
-                errorDescription.setDuplicateValue(true);
+
+            if (StringUtils.isEmpty(name.getFullName())) {
+                errorDescription.setEmptyValue(true);
                 nameContext.setState(ApState.ERROR);
+            } else {
+                boolean isUnique = apDataService.isNameUnique(accessPoint.getScope(), name.getFullName());
+                if (!isUnique) {
+                    errorDescription.setDuplicateValue(true);
+                    nameContext.setState(ApState.ERROR);
+                }
             }
 
             name.setErrorDescription(errorDescription.asJsonString());
@@ -300,7 +306,7 @@ public class AccessPointGeneratorService {
         List<NameContext> nameContexts = new ArrayList<>();
         for (Name name : result.getNames()) {
             ApName apName = apNameMap.get(name.getId());
-            List<ApItem> items = nameItemsMap.get(apName.getNameId());
+            List<ApItem> items = nameItemsMap.getOrDefault(apName.getNameId(), Collections.emptyList());
 
             if (!apDataService.equalsNames(apName, name.getName(), name.getComplement(), name.getFullName(), apName.getLanguageId())) {
                 ApName apNameNew = apDataService.updateAccessPointName(accessPoint, apName, name.getName(), name.getComplement(), name.getFullName(), apName.getLanguage(), change, false);
