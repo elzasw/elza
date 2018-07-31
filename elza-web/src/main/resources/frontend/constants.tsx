@@ -35,6 +35,12 @@ export enum ActionState {
     OUTDATED = 'OUTDATED'
 }
 
+export enum ApState {
+    OK = 'OK',
+    ERROR = 'ERROR',
+    TEMP = 'TEMP',
+    INIT = 'INIT'
+}
 
 export const FOCUS_KEYS = {
     NONE: null,

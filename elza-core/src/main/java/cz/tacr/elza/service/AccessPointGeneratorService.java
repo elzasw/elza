@@ -251,7 +251,10 @@ public class AccessPointGeneratorService {
 
         try {
             AccessPoint result = generateValue(accessPoint, apItems, apNames, nameItemsMap);
-            processResult(accessPoint, change, apNameMap, nameItemsMap, result);
+            boolean hasError = processResult(accessPoint, change, apNameMap, nameItemsMap, result);
+            if (hasError) {
+                apState = ApState.ERROR;
+            }
         } catch (Exception e) {
             logger.error("Selhání groovy scriptu (accessPointId: {})", accessPoint.getAccessPointId(), e);
             apErrorDescription.setScriptFail(true);
@@ -270,17 +273,18 @@ public class AccessPointGeneratorService {
         eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.ACCESS_POINT_UPDATE, accessPoint.getAccessPointId()));
     }
 
-    private void processResult(final ApAccessPoint accessPoint, final ApChange change, final Map<Integer, ApName> apNameMap, final Map<Integer, List<ApItem>> nameItemsMap, final AccessPoint result) {
+    private boolean processResult(final ApAccessPoint accessPoint, final ApChange change, final Map<Integer, ApName> apNameMap, final Map<Integer, List<ApItem>> nameItemsMap, final AccessPoint result) {
 
         // zpracování změny charakteristiky
         apDataService.changeDescription(accessPoint, result.getDescription(), change);
 
         // zpracování jednotlivých jmen přístupového bodu
         List<NameContext> nameContexts = createNameContextsFromResult(accessPoint, change, apNameMap, nameItemsMap, result);
-        processNameContexts(accessPoint, nameContexts);
+        return processNameContexts(accessPoint, nameContexts);
     }
 
-    private void processNameContexts(final ApAccessPoint accessPoint, final List<NameContext> nameContexts) {
+    private boolean processNameContexts(final ApAccessPoint accessPoint, final List<NameContext> nameContexts) {
+        boolean error = false;
         for (NameContext nameContext : nameContexts) {
             ApName name = nameContext.getName();
             NameErrorDescription errorDescription = nameContext.getErrorDescription();
@@ -298,8 +302,12 @@ public class AccessPointGeneratorService {
 
             name.setErrorDescription(errorDescription.asJsonString());
             name.setState(nameContext.getStateOld() == ApState.TEMP ? ApState.TEMP : nameContext.getState());
+            if (name.getState() == ApState.ERROR) {
+                error = true;
+            }
             apNameRepository.save(name);
         }
+        return error;
     }
 
     private List<NameContext> createNameContextsFromResult(final ApAccessPoint accessPoint, final ApChange change, final Map<Integer, ApName> apNameMap, final Map<Integer, List<ApItem>> nameItemsMap, final AccessPoint result) {

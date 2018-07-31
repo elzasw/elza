@@ -41,7 +41,7 @@ import EditRegistryForm from "./EditRegistryForm";
 import RegistryDetailVariantRecords from "./RegistryDetailVariantRecords";
 import RegistryDetailCoordinates from "./RegistryDetailCoordinates";
 import {requestScopesIfNeeded} from "../../actions/refTables/scopesData";
-import {FOCUS_KEYS} from "../../constants.tsx";
+import {FOCUS_KEYS, ApState} from "../../constants.tsx";
 import ApChangeDescriptionForm from "./ApChangeDescriptionForm";
 import ApDetailNames from './ApDetailNames.jsx'
 import {WebApi} from "../../actions/WebApi";
@@ -51,6 +51,7 @@ import {descItemTypesFetchIfNeeded} from "../../actions/refTables/descItemTypes"
 import {getDescItemsAddTree} from "../arr/ArrUtils";
 import AddDescItemTypeForm from "../arr/nodeForm/AddDescItemTypeForm";
 import {accessPointFormActions} from "../accesspoint/AccessPointFormActions";
+import TooltipTrigger from "../shared/tooltip/TooltipTrigger";
 
 
 class RegistryDetail extends AbstractReactComponent {
@@ -313,6 +314,97 @@ class RegistryDetail extends AbstractReactComponent {
         </div>
     };
 
+    renderTooltip = (icon, content) => {
+        return <TooltipTrigger
+            content={content}
+            holdOnHover
+            placement="auto"
+            tooltipClass="error-message"
+            className="status btn"
+            showDelay={50}
+            hideDelay={0}
+        >
+            <Icon glyph={icon} />
+        </TooltipTrigger>
+    };
+
+    renderApError = (state, errorDescription) => {
+        if (state === ApState.ERROR) {
+            const error = JSON.parse(errorDescription) || {};
+            let content;
+            if (error.scriptFail) {
+                content = <div>{i18n("ap.error.script")}</div>
+            }
+            return this.renderTooltip("fa-exclamation-circle", content);
+        }
+    };
+
+    renderApItemsError = (data) => {
+        const {ap} = this.props;
+        const subNodeForm = ap.form;
+        const {state, errorDescription} = data;
+
+        if (state === ApState.ERROR) {
+            const error = JSON.parse(errorDescription) || {};
+            let content = [];
+
+            if(error.emptyValue){
+                content.push(<div className="error-item">{i18n("ap.error.emptyValue")}</div>);
+            }
+            if(error.duplicateValue){
+                content.push(<div className="error-item">{i18n("ap.error.duplicateValue")}</div>);
+            }
+            if(error.impossibleItemTypeIds && error.impossibleItemTypeIds.length > 0){
+                const items = [];
+                error.impossibleItemTypeIds.map((id)=>{
+                    const type = subNodeForm.refTypesMap.get(id);
+                    items.push(<li>{type.name}</li>);
+                });
+                content.push(
+                    <div className="error-list error-item">
+                        <div>{i18n("ap.error.impossibleItemTypeIds")}</div>
+                        <ul>{items}</ul>
+                    </div>
+                );
+            }
+            if(error.requiredItemTypeIds && error.requiredItemTypeIds.length > 0){
+                const items = [];
+                error.requiredItemTypeIds.map((id)=>{
+                    const type = subNodeForm.refTypesMap.get(id);
+                    items.push(<li>{type.name}</li>);
+                });
+                content.push(
+                    <div className="error-list error-item">
+                        <div>{i18n("ap.error.requiredItemTypeIds")}</div>
+                        <ul>{items}</ul>
+                    </div>
+                );
+            }
+
+
+
+            if (content.length > 0) {
+                return <span className={"pull-right"}>{this.renderTooltip("fa-exclamation-circle", <div>{content}</div>)}</span>
+            }
+        }
+    };
+
+    renderApNamesError = (names) => {
+
+        let showError = false;
+        for (let i = 0; i < names.length; i++) {
+            const name = names[i];
+            if (name.state === ApState.ERROR) {
+                showError = true;
+                break;
+            }
+        }
+
+        if (showError) {
+            return <span className={"pull-right"}>{this.renderTooltip("fa-exclamation-circle", null)}</span>
+        }
+    };
+
     render() {
         const {registryDetail, scopes, eidTypes, ap, refTables} = this.props;
         const {data, fetched, isFetching, id} = registryDetail;
@@ -358,6 +450,7 @@ class RegistryDetail extends AbstractReactComponent {
                                     <div className="title">{data.record} {data.invalid && "(Neplatné)"}</div>
                                 </div>
                                 <div>
+                                    {this.renderApError(data.state, data.errorDescription)}
                                     <NoFocusButton disabled={disableEdit} className="registry-record-edit btn-action" onClick={this.handleRecordUpdate}>
                                         <Icon glyph='fa-pencil'/>
                                     </NoFocusButton>
@@ -377,12 +470,12 @@ class RegistryDetail extends AbstractReactComponent {
                             {scopes && this.getScopeLabel(data.scopeId, scopes)}
                         </span>}
                     </div>
-                    <CollapsablePanel tabIndex={0} key={"NAMES"} isOpen={activeIndexes && activeIndexes["NAMES"] === true} header={i18n("accesspoint.detail.formNames")} eventKey={"NAMES"} onPin={this.handlePinToggle} onSelect={this.handleToggleActive}>
+                    <CollapsablePanel tabIndex={0} key={"NAMES"} isOpen={activeIndexes && activeIndexes["NAMES"] === true} header={<div>{i18n("accesspoint.detail.formNames")}{this.renderApNamesError(data.names)}</div>} eventKey={"NAMES"} onPin={this.handlePinToggle} onSelect={this.handleToggleActive}>
                         <div className={"cp-15"}>
                             <ApDetailNames accessPoint={data} canEdit={!disableEdit} refreshParty={this.refreshData}  />
                         </div>
                     </CollapsablePanel>
-                    <CollapsablePanel tabIndex={0} key={"DESCRIPTION"} isOpen={activeIndexes && activeIndexes["DESCRIPTION"] === true} header={i18n("accesspoint.detail.description")} eventKey={"DESCRIPTION"} onPin={this.handlePinToggle} onSelect={this.handleToggleActive}>
+                    <CollapsablePanel tabIndex={0} key={"DESCRIPTION"} isOpen={activeIndexes && activeIndexes["DESCRIPTION"] === true} header={<div>{i18n("accesspoint.detail.description")}{this.renderApItemsError(data)}</div>} eventKey={"DESCRIPTION"} onPin={this.handlePinToggle} onSelect={this.handleToggleActive}>
                         {ap.form.fetched && this.renderActions()}
                         <div className={"cp-15"}>
                             <div className="elements-container">

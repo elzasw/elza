@@ -884,6 +884,12 @@ var messages = {
     "registryField.noItemsFound": "Záznamy nebyly nalezeny.",
     "registryField.visibleCount": "Zobrazeno {0} z {1} záznamů",
 
+    "ap.error.script": "Selhání groovy scriptu",
+    "ap.error.impossibleItemTypeIds": "Nepovolené prvky popisu:",
+    "ap.error.requiredItemTypeIds":"Nevyplněné povinné prvky popisu:",
+    "ap.error.emptyValue": "Prázdná hodnota přístupového bodu",
+    "ap.error.duplicateValue": "Hodnota již existuje",
+
     "party.noSelection.title": "Není vybrána osoba",
     "party.noSelection.message": "Prosím vyberte osobu ze seznamu nebo vytvořte novou.",
     "party.detail.ui.unknownRelation" : "Neznámý typ relace",
