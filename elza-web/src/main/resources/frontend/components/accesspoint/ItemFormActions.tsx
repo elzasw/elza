@@ -166,10 +166,10 @@ export abstract class ItemFormActions {
     }
 
     /** Metoda pro volání API. */
-    abstract _callUpdateDescItem(parentVersionId, parentId, descItem) : Promise<any>;
+    abstract _callUpdateDescItem(parentId, descItem) : Promise<any>;
 
     /** Metoda pro volání API. */
-    abstract _callCreateDescItem(parentId, parentVersionId, descItemTypeId, descItem) : Promise<any>;
+    abstract _callCreateDescItem(parentId, descItemTypeId, descItem) : Promise<any>;
 
     /**
      * Odeslání hodnoty atributu na server - buď vytvoření nebo aktualizace.
@@ -187,8 +187,7 @@ export abstract class ItemFormActions {
         const refTables = state.refTables;
 
         let item = overrideDescItem || loc!!.item!!;
-        const parentVersionId = subNodeForm.data.parent.version;
-        const parentId = subNodeForm.data.parent.id;
+        const parentId = subNodeForm.data!!.parent.id;
 
         // pokud se jedná o číslo a zároveň se zobrazuje v HH:mm:ss je třeba ho převést
         if (refType.dataType.code === 'INT' && refType.viewDefinition === DisplayType.DURATION) {
@@ -201,11 +200,9 @@ export abstract class ItemFormActions {
         if (this.descItemNeedStore(item, refType) || overrideDescItem) {
             dispatch(statusSaving());
 
-            // Umělé navýšení verze o 1 - aby mohla pozitivně projít případná další update operace
-            dispatch(increaseNodeVersion(parentId, parentVersionId));
             // Reálné provedení operace
             if (typeof item.id !== 'undefined') {
-                this._callUpdateDescItem(parentVersionId, parentId, item)
+                this._callUpdateDescItem(parentId, item)
                     .then(json => {
                         // if(this.area === OutputFormActions.AREA || this.area === StructureFormActions.AREA || this.area === AccessPointFormActions.AREA){
                             dispatch(this._fundSubNodeFormDescItemResponse(valueLocation, json, 'UPDATE'));
@@ -216,7 +213,7 @@ export abstract class ItemFormActions {
             } else {
                 if (!loc!!.item!!.saving) {
                     dispatch(this._fundSubNodeFormDescItemCreate(valueLocation));
-                    this._callCreateDescItem(subNodeForm.data.parent.id, subNodeForm.data.parent.version, loc!!.itemType.id, item)
+                    this._callCreateDescItem(subNodeForm.data!!.parent.id, loc!!.itemType.id, item)
                         .then(json => {
                             console.log("formValueStore - id undefined",json);
                             dispatch(this._fundSubNodeFormDescItemResponse(valueLocation, json, 'CREATE'));
@@ -260,12 +257,11 @@ export abstract class ItemFormActions {
 
             const state = getState();
             const subNodeForm = this._getItemFormStore(state);
-            const parentVersionId = subNodeForm.data.parent.version;
 
             if (!undef) {
                 this._formValueStore(dispatch, getState, valueLocation, descItem);
             } else {
-                this._callDeleteDescItem(parentVersionId, descItem, subNodeForm.data.parent.id);
+                this._callDeleteDescItem(subNodeForm.data!!.parent.id, descItem,);
             }
         };
     }
@@ -334,7 +330,7 @@ export abstract class ItemFormActions {
 
                 const descItem = {...loc!!.item, position: index + 1};
 
-                this._callUpdateDescItem(subNodeForm.data.parent.version, subNodeForm.data.parent.id, descItem)
+                this._callUpdateDescItem(subNodeForm.data!!.parent.id, descItem)
                     .then(json => {
                         const newValueLocation = {...valueLocation, descItemIndex: index};
                         dispatch(this._fundSubNodeFormDescItemResponse(newValueLocation, json, 'UPDATE'));
@@ -443,7 +439,7 @@ export abstract class ItemFormActions {
     }
 
     /** Metoda pro volání API. */
-    abstract _callDeleteDescItem(parentVersionId, descItem, parentId);
+    abstract _callDeleteDescItem(parentId, descItem);
 
     /**
      * Smazání hodnoty atributu.
@@ -462,7 +458,7 @@ export abstract class ItemFormActions {
             });
 
             if (typeof loc!!.item!!.id !== 'undefined') {
-                this._callDeleteDescItem(subNodeForm.data.parent.version, loc!!.item, subNodeForm.data.parent.id)
+                this._callDeleteDescItem(subNodeForm.data!!.parent.id, loc!!.item)
                     .then(json => {
                         dispatch(this._fundSubNodeFormDescItemResponse(valueLocation, json, 'DELETE'));
                     })
@@ -500,13 +496,13 @@ export abstract class ItemFormActions {
     }
 
     /** Metoda pro volání API. */
-    abstract _callDeleteDescItemType(parentId, parentVersionId, descItemTypeId);
+    abstract _callDeleteDescItemType(parentId, descItemTypeId);
 
     /** Metoda pro volání API. */
-    abstract _callSetNotIdentifiedDescItem(elementId, parentNodeVersion, itemTypeId, itemSpecId, itemObjectId);
+    abstract _callSetNotIdentifiedDescItem(elementId, itemTypeId, itemSpecId, itemObjectId);
 
     /** Metoda pro volání API. */
-    abstract _callUnsetNotIdentifiedDescItem(elementId, parentNodeVersion, itemTypeId, itemSpecId, itemObjectId);
+    abstract _callUnsetNotIdentifiedDescItem(elementId, itemTypeId, itemSpecId, itemObjectId);
 
     /**
      * Přidání PP (který je počítaný a ještě ve formuláři není) do formuláře
@@ -561,7 +557,7 @@ export abstract class ItemFormActions {
             dispatch(this._fundSubNodeFormDescItemTypeDeleteInStore(valueLocation, false));
 
             if (hasDescItemsForDelete) {
-                this._callDeleteDescItemType(subNodeForm.data.parent.id, subNodeForm.data.parent.version, loc!!.itemType.id)
+                this._callDeleteDescItemType(subNodeForm.data!!.parent.id, loc!!.itemType.id)
                     .then(json => {
                         dispatch(this._fundSubNodeFormDescItemResponse(valueLocation, json, 'DELETE_DESC_ITEM_TYPE'));
                     })

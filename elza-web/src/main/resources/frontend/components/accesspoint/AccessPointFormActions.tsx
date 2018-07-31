@@ -39,31 +39,31 @@ export class AccessPointFormActions extends ItemFormActions {
     }
 
     // @Override
-    _callCreateDescItem(parentId, nodeVersionId, descItemTypeId, item) {
+    _callCreateDescItem(parentId, descItemTypeId, item) {
         return WebApi.changeAccessPointItems(parentId, [{updateOp: "CREATE", item}])
     }
 
     // @Override
-    _callUpdateDescItem(parentVersionId, parentId, item) {
+    _callUpdateDescItem(parentId, item) {
         return WebApi.changeAccessPointItems(parentId, [{updateOp: "UPDATE", item}]);
     }
 
     // @Override
-    _callDeleteDescItem(parentVersionId, item, parentId) {
+    _callDeleteDescItem(item, parentId) {
         return WebApi.changeAccessPointItems(parentId, [{updateOp: "DELETE", item}]);
     }
 
     // @Override
-    _callDeleteDescItemType(parentId, parentVersionId, descItemTypeId) {
+    _callDeleteDescItemType(parentId, descItemTypeId) {
         return WebApi.deleteStructureItemsByType(parentId, descItemTypeId);
     }
 
     // @Override
-    _callSetNotIdentifiedDescItem(parentNodeVersion, descItemTypeId, descItemSpecId, descItemObjectId) {
+    _callSetNotIdentifiedDescItem(descItemTypeId, descItemSpecId, descItemObjectId) {
         // Not implemented
     }
 
-    _callUnsetNotIdentifiedDescItem(parentNodeVersion, outputItemTypeId, outputItemSpecId, outputItemObjectId) {
+    _callUnsetNotIdentifiedDescItem(outputItemTypeId, outputItemSpecId, outputItemObjectId) {
         // Not implemented
     }
 

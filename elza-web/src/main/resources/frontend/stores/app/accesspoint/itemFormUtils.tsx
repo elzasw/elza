@@ -6,7 +6,7 @@ import {
     ApItemExt,
     ApItemVO,
     IFormData,
-    IItemFormState,
+    IItemFormState, ItemData,
     ItemTypeExt,
     ItemTypeLiteVO,
     RefType,
@@ -223,7 +223,7 @@ function mergeDescItems(state: IItemFormState, resultDescItemType: ItemTypeExt, 
     const refType = state.refTypesMap!!.get(resultDescItemType.id)!!;
     const forceVisibility = infoType.type == ItemAvailability.REQUIRED || infoType.type == ItemAvailability.RECOMMENDED;
 
-
+    console.warn(prevType, newType, forceVisibility);
     if (!prevType) {    // ještě ji na formuláři nemáme
         if (!newType) { // není ani v DB, přidáme ji pouze pokud je nastaveno forceVisibility
             if (forceVisibility) {  // přidáme ji pouze pokud je nastaveno forceVisibility
@@ -233,7 +233,9 @@ function mergeDescItems(state: IItemFormState, resultDescItemType: ItemTypeExt, 
                 return true;
             }
         } else {    // je v db a není předchozí, dáme ji do formuláře bez merge
+            console.warn(newType);
             newType.items.forEach(descItem => {
+                console.warn(createItemFromDb(resultDescItemType, descItem));
                 resultDescItemType.items.push(createItemFromDb(resultDescItemType, descItem))
             });
             // Upravení a opravení seznamu hodnot, případně přidání rázdných
@@ -888,22 +890,25 @@ function merge(state : IItemFormState) {
     // Načten data map pro aktuální data, která jsou ve store - co klient zobrazuje (nemusí být, pokud se poprvé zobrazuje formulář)
     const dataMap = createDataMap(state.formData!!);
 
-    const idTypeToItemsMap = new Map<number, ApItemExt<any>[]>();
-    state.data.items && state.data.items.forEach(item => {
-        if (!idTypeToItemsMap.has(item.itemTypeId)) {
-            idTypeToItemsMap.set(item.itemTypeId, []);
+    const data = state.data!!;
+
+    const idTypeToItemsMap = new Map<number, ApItemVO<any>[]>();
+    data.items && data.items.forEach(item => {
+        if (!idTypeToItemsMap.has(item.typeId!!)) {
+            idTypeToItemsMap.set(item.typeId!!, []);
         }
-        idTypeToItemsMap.get(item.itemTypeId)!!.push(item);
+        idTypeToItemsMap.get(item.typeId!!)!!.push(item);
     });
 
 
     // Mapa db id descItemType na descItemType
     const dbItemTypesMap = new Map<number, ItemTypeExt>();
-    state.data.itemTypes.forEach(type => {
+    data.itemTypes.forEach(type => {
         if (idTypeToItemsMap.has(type.id) || type.type > 1) {
+            console.warn(idTypeToItemsMap);
             const xtype = {
                 ...type,
-                items: idTypeToItemsMap.get(type.id) || []
+                items: (idTypeToItemsMap.get(type.id) as any as ApItemExt<any>[]) || []
             };
             dbItemTypesMap.set(type.id, xtype);
         }
@@ -940,18 +945,17 @@ function merge(state : IItemFormState) {
 
 
 // refTypesMap - mapa id info typu na typ, je doplněné o dataType objekt - obecný číselník
-export function updateFormData(state : IItemFormState, data: {items: ApItemVO<any>[], itemTypes: RefType[], parent:{version?: number}}, refTypesMap: Map<any, RefType>, dirty, updatedItem?: ApItemVO<any>) : IItemFormState {
+export function updateFormData(state : IItemFormState, data: ItemData, refTypesMap: Map<any, RefType>, dirty, updatedItem?: ApItemVO<any>) : IItemFormState {
     // Přechozí a nová verze node
-    const currentNodeVersionId = state.data ? state.data.parent.version : -1;
-    const newNodeVersionId = data.parent.version ? data.parent.version : currentNodeVersionId + 1; // TODO @compel chceme ?
+    // const currentNodeVersionId = state.data ? state.data.parent.version : -1;
+    // const newNodeVersionId = data.parent.version ? data.parent.version : currentNodeVersionId + 1; // TODO @compel chceme ?
     // ##
     // # Vytvoření formuláře se všemi povinnými a doporučenými položkami, které jsou doplněné reálnými daty ze serveru
     // # Případně promítnutí merge.
     // ##
-    if (currentNodeVersionId <= newNodeVersionId || dirty) {// rovno musí být, protože i když mám danou verzi, nemusím mít nově přidané povinné položky (nastává i v případě umělého klientského zvednutí nodeVersionId po zápisové operaci) na základě aktuálně upravené mnou
+    if (true || dirty) {// rovno musí být, protože i když mám danou verzi, nemusím mít nově přidané povinné položky (nastává i v případě umělého klientského zvednutí nodeVersionId po zápisové operaci) na základě aktuálně upravené mnou
         const newState = {
             ...state,
-            infoTypes: data.itemTypes,
             infoTypesMap: new Map<number, RefTypeExt>(),// mapa id descItemTypeInfo na descItemTypeInfo
             unusedItemTypeIds: null,
             refTypesMap,// Mapa číselníku decsItemType
@@ -1000,7 +1004,7 @@ export function updateFormData(state : IItemFormState, data: {items: ApItemVO<an
                 descItemSpecsMap: getMapFromList(finalItemSpecs),
             };
 
-            const resultItemType = {
+            const resultItemType : RefTypeExt = {
                 cal: 0,
                 calSt: 0,
                 descItemSpecsMap: {},

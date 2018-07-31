@@ -140,6 +140,12 @@ export interface IFormData {
     itemTypes: ItemTypeExt[];
 }
 
+export interface ItemData {
+    items: ApItemVO<any>[],
+    itemTypes: ItemTypeLiteVO[],
+    parent: { id: number }
+}
+
 export interface IItemFormState {
     formData?: IFormData;
     isFetching: boolean;
@@ -149,7 +155,7 @@ export interface IItemFormState {
     needClean: boolean;   // pokud je true, přenačtou se data a vymaže se aktuální editace - obdoba jako nové zobrazení formuláře
     versionId?: number;
     nodeId?: number;
-    data: any;
+    data?: ItemData;
     infoTypes?: RefType[];
     infoTypesMap?: Map<any, RefTypeExt>;
     refTypesMap?: Map<any, RefType>;
@@ -166,7 +172,7 @@ const initialState : IItemFormState = {
     versionId: undefined,
     nodeId: undefined,
     formData: undefined,
-    data: null,
+    data: undefined,
     infoTypesMap: undefined,
     refTypesMap: undefined,
     updatedItem: undefined,
@@ -381,7 +387,6 @@ export enum types {
     FUND_INVALID = "FUND_INVALID",
     ITEM_FORM_DESC_ITEM_TYPE_COPY_FROM_PREV_RESPONSE = "ITEM_FORM_DESC_ITEM_TYPE_COPY_FROM_PREV_RESPONSE",
     ITEM_FORM_OUTPUT_CALC_SWITCH = "ITEM_FORM_OUTPUT_CALC_SWITCH",
-    FUND_NODE_INCREASE_VERSION = "FUND_NODE_INCREASE_VERSION",
     ITEM_FORM_VALUE_RESPONSE = "ITEM_FORM_VALUE_RESPONSE",
     ITEM_FORM_TEMPLATE_USE = "ITEM_FORM_TEMPLATE_USE",
     ITEM_FORM_DESC_ITEM_TYPE_ADD = "ITEM_FORM_DESC_ITEM_TYPE_ADD",
@@ -390,7 +395,6 @@ export enum types {
     ITEM_FORM_REQUEST = "ITEM_FORM_REQUEST",
     ITEM_FORM_RECEIVE = "ITEM_FORM_RECEIVE",
     FUND_SUBNODE_UPDATE = "FUND_SUBNODE_UPDATE",
-    CHANGE_FUND_RECORD = "CHANGE_FUND_RECORD",
 }
 
 enum ActionOperation {
@@ -842,22 +846,6 @@ export function itemForm(state: IItemFormState = initialState, action: IAction =
             } else {
                 return state;
             }
-        case types.FUND_NODE_INCREASE_VERSION:
-            if (state.data === null || state.data.parent.id !== action.nodeId || state.data.parent.version !== action.nodeVersionId) { // není pro nás nebo již bylo zavoláno
-                return state;
-            }
-
-            return {
-                ...state,
-                data: {
-                    ...state.data,
-                    parent: {
-                        id: action.nodeId,
-                        version: action.nodeVersionId + 1,
-                    }
-                }
-            }
-
             // tuhle funkcionalitu nechceme
         /*case types.ITEM_FORM_TEMPLATE_USE: {
             console.warn("ITEM_FORM_TEMPLATE_USE", action, state);
@@ -949,7 +937,7 @@ export function itemForm(state: IItemFormState = initialState, action: IAction =
 
             // Pokud je vyžadován reset formuláře, nastavíme předchozí data na null a tím se vše znovu nainicializuje
             if (action.needClean) {
-                result.data = null;
+                result.data = undefined;
                 result.formData = undefined;
             }
             return updateFormData(result, action.data, refTypesMap, state.dirty);
@@ -975,18 +963,6 @@ export function itemForm(state: IItemFormState = initialState, action: IAction =
             mergeAfterUpdate(resultUpdate, action.data, action.refTables); // merges result with data from action
 
             return resultUpdate;
-
-        case types.CHANGE_FUND_RECORD:
-            return {
-                ...state,
-                data: {
-                    ...state.data,
-                    node: {
-                        ...state.data.node,
-                        version: action.version
-                    }
-                }
-            }
         default:
             return state
     }
