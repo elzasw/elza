@@ -3,7 +3,7 @@
  */
 
 
-import {DEFAULT_LIST_SIZE} from 'constants.jsx'
+import {DEFAULT_LIST_SIZE} from '../../constants.tsx'
 
 import {SimpleListActions} from 'shared/list'
 import {WebApi} from "../../actions/WebApi";

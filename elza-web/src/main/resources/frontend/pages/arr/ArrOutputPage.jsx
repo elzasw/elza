@@ -22,7 +22,7 @@ import {
     RunActionForm,
     FormInput,
     ArrFundPanel
-} from 'components/index.jsx';
+} from '../../components/index.jsx';
 import {
     ListBox,
     Loading,
@@ -50,7 +50,7 @@ import {
     fundOutputRevert,
     fundOutputClone,
     fundOutputFilterByState
-} from 'actions/arr/fundOutput.jsx'
+} from '../../actions/arr/fundOutput.jsx'
 import {fundOutputActionRun} from 'actions/arr/fundOutputFunctions.jsx'
 import * as perms from 'actions/user/Permission.jsx';
 import {fundActionFormShow, fundActionFormChange} from 'actions/arr/fundAction.jsx'
@@ -68,7 +68,7 @@ import defaultKeymap from './ArrOutputPageKeymap.jsx';
 
 import {Shortcuts} from 'react-shortcuts';
 import TemplateSettingsForm from "../../components/arr/TemplateSettingsForm";
-import {FOCUS_KEYS} from "../../constants";
+import {FOCUS_KEYS} from "../../constants.tsx";
 
 let _selectedTab = 0
 
@@ -621,7 +621,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
 };
 
 function mapStateToProps(state) {
-    const {splitter, arrRegion, refTables, focus, userDetail} = state
+    const {splitter, arrRegion, refTables, focus, userDetail} = state;
     return {
         splitter,
         arrRegion,

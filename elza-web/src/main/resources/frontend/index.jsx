@@ -114,7 +114,7 @@ SplitToggle.defaultProps = {
 
 // Pokud dostane focus body, chceme jej změnit na implcitiní focus pro ribbon
 import {setFocus} from 'actions/global/focus.jsx';
-import {FOCUS_KEYS} from "./constants";
+import {FOCUS_KEYS} from "./constants.tsx";
 {
     const testBodyfocus = () => {
         if (document.activeElement === document.body) { // focus je na body, nastavíme ho podle aktuálně přepnuté oblasti

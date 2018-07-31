@@ -57,7 +57,7 @@ import {reloadUserDetail} from 'actions/user/userDetail';
 import {fundTreeFetch} from "./actions/arr/fundTree";
 import * as types from "./actions/constants/ActionTypes";
 import {fundNodeSubNodeFulltextSearch} from "./actions/arr/node";
-import {PERSISTENT_SORT_CODE, ZP2015_INTRO_VYPOCET_EJ} from "./constants";
+import {PERSISTENT_SORT_CODE, ZP2015_INTRO_VYPOCET_EJ} from "./constants.tsx";
 
 const url = new URLParse(serverContextPath + '/stomp');
 

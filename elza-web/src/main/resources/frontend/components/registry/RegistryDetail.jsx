@@ -14,15 +14,14 @@ import {
     NoFocusButton,
     StoreHorizontalLoader,
     Utils
-} from 'components/shared';
+} from '../../components/shared';
 import {Form, Button} from 'react-bootstrap';
-import {AppActions} from 'stores/index.jsx';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx';
 import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
 import {partyUpdate} from 'actions/party/party.jsx'
 import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx'
-import {registryDetailFetchIfNeeded, registryUpdate, registryDetailInvalidate} from 'actions/registry/registry.jsx'
+import {registryDetailFetchIfNeeded, registryUpdate, registryDetailInvalidate} from '../../actions/registry/registry.jsx'
 import {objectById, indexById} from 'stores/app/utils.jsx';
 import {setInputFocus, dateTimeToString} from 'components/Utils.jsx'
 import {Shortcuts} from 'react-shortcuts';
@@ -32,8 +31,6 @@ import * as perms from 'actions/user/Permission.jsx';
 import {initForm} from "actions/form/inlineForm.jsx"
 import {getMapFromList} from 'stores/app/utils.jsx'
 import {setFocus} from 'actions/global/focus.jsx'
-import {addToastrWarning} from 'components/shared/toastr/ToastrActions.jsx'
-
 
 import {routerNavigate} from 'actions/router.jsx'
 import {partyDetailFetchIfNeeded} from 'actions/party/party.jsx'
@@ -44,18 +41,26 @@ import EditRegistryForm from "./EditRegistryForm";
 import RegistryDetailVariantRecords from "./RegistryDetailVariantRecords";
 import RegistryDetailCoordinates from "./RegistryDetailCoordinates";
 import {requestScopesIfNeeded} from "../../actions/refTables/scopesData";
-import {FOCUS_KEYS} from "../../constants";
+import {FOCUS_KEYS} from "../../constants.tsx";
 import ApChangeDescriptionForm from "./ApChangeDescriptionForm";
 import ApDetailNames from './ApDetailNames.jsx'
 import {WebApi} from "../../actions/WebApi";
+import AccessPointForm from "../accesspoint/AccessPointForm";
+import {refRulDataTypesFetchIfNeeded} from "../../actions/refTables/rulDataTypes";
+import {descItemTypesFetchIfNeeded} from "../../actions/refTables/descItemTypes";
+import {getDescItemsAddTree} from "../arr/ArrUtils";
+import AddDescItemTypeForm from "../arr/nodeForm/AddDescItemTypeForm";
+import {accessPointFormActions} from "../accesspoint/AccessPointFormActions";
 
 
 class RegistryDetail extends AbstractReactComponent {
     static contextTypes = { shortcuts: PropTypes.object };
     static childContextTypes = { shortcuts: PropTypes.object.isRequired };
-    componentWillMount(){
+
+    componentWillMount() {
         Utils.addShortcutManager(this,defaultKeymap);
     }
+
     getChildContext() {
         return { shortcuts: this.shortcutManager };
     }
@@ -66,11 +71,7 @@ class RegistryDetail extends AbstractReactComponent {
 
     componentDidMount() {
         this.trySetFocus();
-        this.fetchIfNeeded().then(data => {
-            if (data && data.invalid) {
-                this.props.dispatch(addToastrWarning(i18n("registry.invalid.warning")));
-            }
-        });
+        this.fetchIfNeeded();
     }
 
     componentWillReceiveProps(nextProps) {
@@ -85,18 +86,18 @@ class RegistryDetail extends AbstractReactComponent {
     }
 
     fetchIfNeeded = (props = this.props) => {
-        return new Promise((resolve, reject) => {
-            const {registryDetail: {id}} = props;
-            this.dispatch(refPartyTypesFetchIfNeeded());    // nacteni typu osob (osoba, rod, událost, ...)
-            this.dispatch(calendarTypesFetchIfNeeded());    // načtení typů kalendářů (gregoriánský, juliánský, ...)
-            this.dispatch(requestScopesIfNeeded());
-
-            if (id) {
-                resolve(this.dispatch(registryDetailFetchIfNeeded(id)));
-        } else {
-            return Promise.resolve(null);
+        const {registryDetail: {id, fetched}, dispatch} = props;
+        dispatch(refPartyTypesFetchIfNeeded());    // nacteni typu osob (osoba, rod, událost, ...)
+        dispatch(calendarTypesFetchIfNeeded());    // načtení typů kalendářů (gregoriánský, juliánský, ...)
+        dispatch(descItemTypesFetchIfNeeded());
+        dispatch(refRulDataTypesFetchIfNeeded());
+        dispatch(requestScopesIfNeeded());
+        if (id) {
+            dispatch(registryDetailFetchIfNeeded(id));
+            if (fetched) {
+                dispatch(accessPointFormActions.fundSubNodeFormFetchIfNeeded())
             }
-        });
+        }
     };
 
     trySetFocus = (props = this.props) => {
@@ -115,7 +116,7 @@ class RegistryDetail extends AbstractReactComponent {
 
     handleGoToParty = () => {
         this.dispatch(partyDetailFetchIfNeeded(this.props.registryDetail.data.partyId));
-        if(!this.props.goToPartyPerson){
+        if (!this.props.goToPartyPerson) {
             this.dispatch(routerNavigate('party'));
         } else {
             this.props.goToPartyPerson();
@@ -244,17 +245,66 @@ class RegistryDetail extends AbstractReactComponent {
                     initialValues={{description: data.characteristics}}
                     onSubmit={(result) => {
                         return WebApi.changeDescription(data.id, result).then(() => {
-                            this.dispatch(registryDetailInvalidate());
-                            this.dispatch(modalDialogHide())
+                            this.props.dispatch(registryDetailInvalidate());
+                            this.props.dispatch(modalDialogHide())
                         });
                     }}
                 />
             )
         );
     };
+    add = ( ) => {
+        const {ap} = this.props;
+        const subNodeForm = ap.form;
+
+
+        const formData = subNodeForm.formData;
+        const itemTypes = [];
+        const strictMode = true;
+
+        // let infoTypesMap = {...subNodeForm.infoTypesMap};
+        //
+        // subNodeForm.data.itemTypes.forEach(descItemType => {
+        //     delete infoTypesMap[descItemType.id];
+        // });
+        // console.log(subNodeForm.data.itemTypes, infoTypesMap, subNodeForm.infoTypesMap);
+
+        subNodeForm.refTypesMap.forEach(refType => {
+            // const itemType = infoTypesMap[refType.id];
+            // if (!itemType) {    // ještě ji na formuláři nemáme
+                // v nestriktním modu přidáváme všechny jinak jen možné
+            console.log(!strictMode || refType.type !== 'IMPOSSIBLE');
+                if (!strictMode || refType.type !== 'IMPOSSIBLE') {
+                    // nový item type na základě původního z refTables
+                    itemTypes.push(refType);
+                }
+            // }
+        });
+
+        const descItemTypes = [
+            {
+                groupItem: true,
+                id: "DEFAULT",
+                name: i18n("subNodeForm.descItemGroup.default"),
+                children: itemTypes
+            }
+        ];
+
+
+        // getDescItemsAddTree(formData.descItemGroups, subNodeForm.infoTypesMap, subNodeForm.refTypesMap, subNodeForm.infoGroups, false);
+
+
+        const submit = (data) => {
+            this.props.dispatch(modalDialogHide());
+            this.props.dispatch(accessPointFormActions.fundSubNodeFormDescItemTypeAdd(data.descItemTypeId.id));
+        };
+
+        // Modální dialog
+        this.props.dispatch(modalDialogShow(this, i18n('subNodeForm.descItemType.title.add'), <AddDescItemTypeForm descItemTypes={descItemTypes} onSubmitForm={submit} onSubmit2={submit}/>));
+    };
 
     render() {
-        const {registryDetail, scopes, eidTypes} = this.props;
+        const {registryDetail, scopes, eidTypes, ap, refTables} = this.props;
         const {data, fetched, isFetching, id} = registryDetail;
         const {activeIndexes} = this.state;
 
@@ -321,12 +371,26 @@ class RegistryDetail extends AbstractReactComponent {
                         <ApDetailNames accessPoint={data} canEdit={!disableEdit} refreshParty={this.refreshData}  />
                     </CollapsablePanel>
                     <CollapsablePanel tabIndex={0} key={"DESCRIPTION"} isOpen={activeIndexes && activeIndexes["DESCRIPTION"] === true} header={i18n("accesspoint.detail.description")} eventKey={"DESCRIPTION"} onPin={this.handlePinToggle} onSelect={this.handleToggleActive}>
-                        <div className="elements-container">
+                        {data.ruleSystemId == null ? <div className="elements-container">
                             <div className={"el-12"}>
                                 <label>{i18n('registry.detail.characteristics')} <Button onClick={this.editDescription}><Icon glyph="fa-pencil" /></Button></label>
                                 <div>{data.characteristics}</div>
                             </div>
-                        </div>
+                        </div> : (ap.form.fetched && <div>
+                            <Button onClick={this.add} >ADD</Button>
+                        <AccessPointForm
+                            versionId={null}
+                            fundId={null}
+                            selectedSubNodeId={ap.id}
+                            rulDataTypes={refTables.rulDataTypes.items}
+                            calendarTypes={refTables.calendarTypes.items}
+                            descItemTypes={refTables.descItemTypes.items}
+                            subNodeForm={ap.form}
+                            closed={false}
+                            focus={null}
+                            readMode={false}
+                        />
+                        </div>)}
                     </CollapsablePanel>
                 </div>
             </Shortcuts>
@@ -335,13 +399,15 @@ class RegistryDetail extends AbstractReactComponent {
 }
 
 export default connect((state) => {
-    const {app: {registryDetail}, userDetail, focus, refTables} = state;
+    const {app: {registryDetail}, userDetail, focus, refTables, ap} = state;
     return {
+        ap,
         focus,
         registryDetail,
         userDetail,
         scopes: refTables.scopesData.scopes,
 		apTypeIdMap: refTables.recordTypes.typeIdMap,
 		eidTypes: refTables.eidTypes.data,
+        refTables
     }
 })(RegistryDetail);

@@ -13,7 +13,7 @@ import {Autocomplete} from "../shared";
 import {connect} from 'react-redux'
 import {WebApi} from "../../actions/WebApi";
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx'
-import {PERSISTENT_SORT_CODE} from "../../constants";
+import {PERSISTENT_SORT_CODE} from "../../constants.tsx";
 import {modalDialogHide} from "../../actions/global/modalDialog";
 import {refRulDataTypesFetchIfNeeded} from "../../actions/refTables/rulDataTypes";
 

@@ -10,7 +10,7 @@ import * as perms from 'actions/user/Permission.jsx';
 import {partyDetailFetchIfNeeded, partyAdd, RELATION_CLASS_CODES, partyListFilter} from 'actions/party/party.jsx'
 import {routerNavigate} from 'actions/router.jsx'
 import {indexById} from 'stores/app/utils.jsx'
-import {DEFAULT_LIST_SIZE, MODAL_DIALOG_VARIANT} from 'constants.jsx'
+import {DEFAULT_LIST_SIZE, MODAL_DIALOG_VARIANT} from '../../constants.tsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {debounce} from 'shared/utils'
 import classNames from 'classnames';

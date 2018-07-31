@@ -1,8 +1,7 @@
-import * as types from 'actions/constants/ActionTypes.js';
+import * as types from '../../../actions/constants/ActionTypes.js';
 import subNodeForm from './subNodeForm.jsx'
-import {outputFormActions} from 'actions/arr/subNodeForm.jsx'
-import {consolidateState} from 'components/Utils.jsx'
-import {indexById} from 'stores/app/utils.jsx';
+import {outputFormActions} from '../../../actions/arr/subNodeForm.jsx'
+import {consolidateState} from '../../../components/Utils.jsx'
 
 const initialState = {
     id: null,
@@ -10,11 +9,11 @@ const initialState = {
     fetching: false,
     currentDataKey: '',
     subNodeForm: subNodeForm()
-}
+};
 
 export default function fundOutputDetail(state = initialState, action = {}) {
     if (outputFormActions.isSubNodeFormAction(action)) {
-        var result = {
+        const result = {
             ...state,
             subNodeForm: subNodeForm(state.subNodeForm, action),
         };

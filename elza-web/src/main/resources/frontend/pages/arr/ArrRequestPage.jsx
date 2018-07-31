@@ -73,7 +73,7 @@ const classNames = require('classnames');
 import {Shortcuts} from 'react-shortcuts';
 
 import "./ArrRequestPage.less";
-import {FOCUS_KEYS} from "../../constants";
+import {FOCUS_KEYS} from "../../constants.tsx";
 
 class ArrRequestPage extends ArrParentPage {
     constructor(props) {

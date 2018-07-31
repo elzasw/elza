@@ -10,7 +10,7 @@ import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
 import {extSystemDetailFetchIfNeeded} from 'actions/admin/extSystem.jsx'
 import {routerNavigate} from 'actions/router.jsx'
 import {extSystemListFetchIfNeeded} from 'actions/admin/extSystem.jsx';
-import {AP_EXT_SYSTEM_TYPE} from 'constants.jsx';
+import {AP_EXT_SYSTEM_TYPE} from '../../constants.tsx';
 import i18n from "../i18n";
 import AbstractReactComponent from "../AbstractReactComponent";
 import {FormInput} from "../shared/index";

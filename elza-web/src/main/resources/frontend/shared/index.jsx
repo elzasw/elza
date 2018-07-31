@@ -1,3 +1,3 @@
-export detail from './detail'
-export list from './list'
-export utils from './utils'
+export * as detail from './detail'
+export * as list from './list'
+export * as utils from './utils'

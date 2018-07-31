@@ -12,7 +12,7 @@ import {getRegistryRecordTypesIfNeeded} from 'actions/registry/registryRecordTyp
 import {requestScopesIfNeeded} from 'actions/refTables/scopesData.jsx'
 import {submitForm} from 'components/form/FormUtils.jsx'
 import {getTreeItemById} from "./../../components/registry/registryUtils";
-import {PARTY_TYPE_CODES} from 'constants.jsx'
+import {PARTY_TYPE_CODES} from '../../constants.tsx'
 
 import DatationField from './DatationField';
 

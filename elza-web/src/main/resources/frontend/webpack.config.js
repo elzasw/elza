@@ -9,6 +9,7 @@ process.env.NODE_ENV = 'development';
 // Default config
 const defaultConfig = {
     hot: false,
+    parallelism: 6,
     circularDependencyCheck: true,
     sourceMap: 'eval-source-map',
     devTools: false,
@@ -39,7 +40,7 @@ const webpackAndPolyfillEntries = [
 ];
 
 if (config.hot) {
-    webpackAndPolyfillEntries.splice(1, 0, ['webpack/hot/only-dev-server'])
+    webpackAndPolyfillEntries.splice(1, 0, 'webpack/hot/only-dev-server')
 }
 
 const reactHotEntry = ['react-hot-loader/patch'];
@@ -103,7 +104,7 @@ module.exports = {
         defaultPlugins
     ),
     resolve: {
-        extensions: ['.js', '.jsx'],
+        extensions: ['.tsx', '.ts', '.jsx', '.js'],
         modules: [
             path.resolve(__dirname),
             path.resolve(__dirname, "node_modules")
@@ -112,8 +113,14 @@ module.exports = {
             'stompjs': path.resolve(__dirname, "node_modules") + '/stompjs/lib/stomp.js',
         }
     },
+    parallelism: config.parallelism,
     module: {
         rules: [
+            {
+                test: /\.tsx?$/,
+                use: 'ts-loader',
+                exclude: /node_modules/
+            },
             {
                 test: /\.jsx?$/,
                 exclude: /node_modules/,

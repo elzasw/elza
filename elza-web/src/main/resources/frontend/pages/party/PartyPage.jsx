@@ -22,7 +22,7 @@ import './PartyPage.less';
 import {apExtSystemListFetchIfNeeded} from 'actions/registry/apExtSystemList';
 import PageLayout from "../shared/layout/PageLayout";
 import {PropTypes} from 'prop-types';
-import {FOCUS_KEYS} from "../../constants";
+import {FOCUS_KEYS} from "../../constants.tsx";
 
 /**
  * PARTY PAGE

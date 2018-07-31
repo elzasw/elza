@@ -18,7 +18,7 @@ import './RegistryList.less';
 import RegistryListItem from "./RegistryListItem";
 import ListPager from "../shared/listPager/ListPager";
 import * as perms from "../../actions/user/Permission";
-import {FOCUS_KEYS} from "../../constants";
+import {FOCUS_KEYS} from "../../constants.tsx";
 import {requestScopesIfNeeded} from "../../actions/refTables/scopesData";
 
 class RegistryList extends AbstractReactComponent {

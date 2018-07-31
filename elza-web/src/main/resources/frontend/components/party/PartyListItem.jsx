@@ -1,6 +1,6 @@
 import React from 'react';
 import {AbstractReactComponent, i18n, Icon} from 'components/shared';
-import {PARTY_TYPE_CODES, RELATION_CLASS_CODES} from 'constants.jsx'
+import {PARTY_TYPE_CODES, RELATION_CLASS_CODES} from '../../constants.tsx'
 import classNames from 'classnames';
 
 import './PartyListItem.less';

@@ -1,7 +1,6 @@
 import React from 'react';
 import {connect} from 'react-redux'
 import {ListBox, AbstractReactComponent, SearchWithGoto, i18n, ArrPanel, StoreHorizontalLoader, Icon, FormInput} from 'components/shared';
-import {AppActions} from 'stores/index.jsx';
 import {indexById} from 'stores/app/utils.jsx'
 import {partyListFetchIfNeeded, partyListFilter, partyListInvalidate, partyDetailFetchIfNeeded, partyArrReset, PARTY_TYPE_CODES, RELATION_CLASS_CODES, DEFAULT_PARTY_LIST_MAX_SIZE} from 'actions/party/party.jsx'
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
@@ -12,7 +11,7 @@ import PartyListItem from "./PartyListItem";
 import Autocomplete from "../shared/autocomplete/Autocomplete";
 import ListPager from "../shared/listPager/ListPager";
 import * as perms from "../../actions/user/Permission";
-import {FOCUS_KEYS} from "../../constants";
+import {FOCUS_KEYS} from "../../constants.tsx";
 import {requestScopesIfNeeded} from "../../actions/refTables/scopesData";
 
 /**
@@ -123,9 +122,9 @@ class PartyList extends AbstractReactComponent {
 
     renderListItem = (props) => {
         const {item} = props;
-        return <PartyListItem 
-            {...item} 
-            onClick={this.handlePartyDetail.bind(this, item)} 
+        return <PartyListItem
+            {...item}
+            onClick={this.handlePartyDetail.bind(this, item)}
             relationTypesForClass={this.props.relationTypesForClass} />
     };
 

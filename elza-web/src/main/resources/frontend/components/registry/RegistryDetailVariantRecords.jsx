@@ -22,7 +22,7 @@ import {PropTypes} from 'prop-types';
 import {setFocus} from 'actions/global/focus.jsx'
 import RegistryLabel from "./RegistryLabel";
 import defaultKeymap from './RegistryDetailVariantRecordsKeymap.jsx';
-import {FOCUS_KEYS} from "../../constants";
+import {FOCUS_KEYS} from "../../constants.tsx";
 
 /**
  * @deprecated

@@ -65,7 +65,7 @@ import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx'
 import {PropTypes} from 'prop-types';
 import defaultKeymap from './ArrPageKeymap.jsx';
 import NodeSettingsForm from "../../components/arr/NodeSettingsForm";
-import {FOCUS_KEYS} from "../../constants";
+import {FOCUS_KEYS} from "../../constants.tsx";
 import ArrStructurePanel from "../../components/arr/ArrStructurePanel";
 import {structureTypesFetchIfNeeded} from "../../actions/refTables/structureTypes";
 import objectById from "../../shared/utils/objectById";

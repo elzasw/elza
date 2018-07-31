@@ -1,5 +1,5 @@
 import AjaxUtils from "../components/AjaxUtils";
-import {DEFAULT_LIST_SIZE} from 'constants.jsx'
+import {DEFAULT_LIST_SIZE} from '../constants.tsx'
 
 function getData(data, timeout = 1000) {
     return new Promise(function (resolve, reject) {
@@ -405,6 +405,26 @@ export class WebApiCls {
             scopeId,
             typeId
         });
+    }
+
+    createStructuredAccessPoint(name, complement, languageCode, description, typeId, scopeId) {
+        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/structured', null, {
+            '@class': 'cz.tacr.elza.controller.vo.ApAccessPointCreateVO',
+            name,
+            description,
+            complement,
+            languageCode,
+            // local: false,
+            scopeId,
+            typeId
+        });
+    }
+
+    confirmStructuredAccessPoint(accessPointId) {
+        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/'+ accessPointId + '/confirm', null, null);
+    }
+    changeAccessPointItems(accessPointId, items) {
+        return AjaxUtils.ajaxPut(WebApiCls.registryUrl + '/'+ accessPointId + '/items', null, items);
     }
 
     findRegistry(search = null, registryParent = null, apTypeId = null, versionId = null, itemSpecId = null, from = 0, count = DEFAULT_LIST_SIZE, scopeId = null, excludeInvalid = true) {

@@ -4,28 +4,28 @@ import ReactDOM from 'react-dom';
 import classNames from 'classnames';
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {connect} from 'react-redux'
-import {AbstractReactComponent, RibbonGroup, ModalDialog, i18n, Loading, NodeTabs, Icon, Utils} from 'components/shared';
-import Ribbon from 'components/page/Ribbon'
-import ImportForm from 'components/form/ImportForm'
-import ExtImportForm from 'components/form/ExtImportForm'
-import RegistryDetail from 'components/registry/RegistryDetail'
-import RegistryList from 'components/registry/RegistryList'
-import {addToastrWarning} from 'components/shared/toastr/ToastrActions.jsx'
+import {AbstractReactComponent, RibbonGroup, ModalDialog, i18n, Loading, NodeTabs, Icon, Utils} from '../../components/shared';
+import Ribbon from '../../components/page/Ribbon'
+import ImportForm from '../../components/form/ImportForm'
+import ExtImportForm from '../../components/form/ExtImportForm'
+import RegistryDetail from '../../components/registry/RegistryDetail'
+import RegistryList from '../../components/registry/RegistryList'
+import {addToastrWarning} from '../../components/shared/toastr/ToastrActions.jsx'
 import {Button} from 'react-bootstrap';
-import {indexById} from 'stores/app/utils.jsx'
-import {registryMoveStart, registryMove, registryMoveCancel, registryDelete, registryDetailFetchIfNeeded, registryAdd, registryListInvalidate} from 'actions/registry/registry.jsx'
-import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
-import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes.jsx'
+import {indexById} from '../../stores/app/utils.jsx'
+import {registryMoveStart, registryMove, registryMoveCancel, registryDelete, registryDetailFetchIfNeeded, registryAdd, registryListInvalidate} from '../../actions/registry/registry.jsx'
+import {modalDialogShow, modalDialogHide} from '../../actions/global/modalDialog.jsx'
+import {refRecordTypesFetchIfNeeded} from '../../actions/refTables/recordTypes.jsx'
 import {Shortcuts} from 'react-shortcuts';
-import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
-import {setFocus} from 'actions/global/focus.jsx'
-import * as perms from 'actions/user/Permission.jsx';
-import {apExtSystemListFetchIfNeeded} from 'actions/registry/apExtSystemList';
+import {canSetFocus, focusWasSet, isFocusFor} from '../../actions/global/focus.jsx'
+import {setFocus} from '../../actions/global/focus.jsx'
+import * as perms from '../../actions/user/Permission.jsx';
+import {apExtSystemListFetchIfNeeded} from '../../actions/registry/apExtSystemList';
 import {PropTypes} from 'prop-types';
 import './RegistryPage.less';
 import PageLayout from "../shared/layout/PageLayout";
 import defaultKeymap from './RegistryPageKeymap.jsx';
-import {FOCUS_KEYS} from "../../constants";
+import {FOCUS_KEYS} from "../../constants.tsx";
 import * as eidTypes from "../../actions/refTables/eidTypes";
 
 /**
@@ -91,10 +91,10 @@ class RegistryPage extends AbstractReactComponent {
     };
 
     initData = (props = this.props) => {
-        this.dispatch(refRecordTypesFetchIfNeeded());
-        this.dispatch(eidTypes.fetchIfNeeded());
+        props.dispatch(refRecordTypesFetchIfNeeded());
+        props.dispatch(eidTypes.fetchIfNeeded());
         if (props.userDetail.hasOne(perms.AP_SCOPE_WR_ALL)) {
-            this.dispatch(apExtSystemListFetchIfNeeded());
+            props.dispatch(apExtSystemListFetchIfNeeded());
         }
 
         this.trySetFocus(props)
@@ -159,44 +159,44 @@ class RegistryPage extends AbstractReactComponent {
             parentName = parents[parentIndex].name;
         }
 
-        this.dispatch(registryAdd(registryParentId, versionId === null ? -1 : versionId, this.handleCallAddRegistry, parentName, false));
+        this.props.dispatch(registryAdd(registryParentId, versionId === null ? -1 : versionId, this.handleCallAddRegistry, parentName, false));
     };
 
     handleCallAddRegistry = (data) => {
-        this.dispatch(registryDetailFetchIfNeeded(data.id));
-        this.dispatch(registryListInvalidate());
+        this.props.dispatch(registryDetailFetchIfNeeded(data.id));
+        this.props.dispatch(registryListInvalidate());
     };
 
     handleDeleteRegistry = () => {
         if (confirm(i18n('registry.deleteRegistryQuestion'))) {
             const {registryDetail:{data:{id}}} = this.props;
-            this.dispatch(registryDelete(id));
+            this.props.dispatch(registryDelete(id));
         }
     };
 
     /* MCV-45365
     handleSetValidParty = () => {
-        confirm(i18n('party.setValid.confirm')) && this.dispatch(setValidRegistry(this.props.registryDetail.data.id));
+        confirm(i18n('party.setValid.confirm')) && this.props.dispatch(setValidRegistry(this.props.registryDetail.data.id));
     };
     */
 
     handleRegistryMoveStart = () => {
         const {registryDetail:{data}} = this.props;
-        this.dispatch(registryMoveStart(data));
+        this.props.dispatch(registryMoveStart(data));
     };
 
     handleRegistryMoveConfirm = () => {
         const {registryList: {filter: {registryParentId}}} = this.props;
-        this.dispatch(registryMove(registryParentId));
+        this.props.dispatch(registryMove(registryParentId));
     };
 
     handleRegistryMoveCancel = () => {
-        this.dispatch(registryMoveCancel());
+        this.props.dispatch(registryMoveCancel());
     };
 
 
     handleRegistryImport = () => {
-       this.dispatch(
+       this.props.dispatch(
            modalDialogShow(this,
                i18n('import.title.registry'),
                <ImportForm record/>
@@ -205,9 +205,9 @@ class RegistryPage extends AbstractReactComponent {
     };
 
     handleExtImport = () => {
-        this.dispatch(modalDialogShow(this, i18n('extImport.title'), <ExtImportForm isParty={false} onSubmitForm={(data) => {
-            this.dispatch(registryDetailFetchIfNeeded(data.id));
-            this.dispatch(registryListInvalidate());
+        this.props.dispatch(modalDialogShow(this, i18n('extImport.title'), <ExtImportForm isParty={false} onSubmitForm={(data) => {
+            this.props.dispatch(registryDetailFetchIfNeeded(data.id));
+            this.props.dispatch(registryListInvalidate());
         }}/>, "dialog-lg"));
     };
 

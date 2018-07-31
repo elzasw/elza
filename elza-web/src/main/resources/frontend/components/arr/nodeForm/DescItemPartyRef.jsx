@@ -15,7 +15,7 @@ import {storeFromArea, objectById} from 'shared/utils'
 import {partyDetailFetchIfNeeded, partyListFilter, partyDetailClear, AREA_PARTY_LIST} from 'actions/party/party.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import classNames from 'classnames'
-import {MODAL_DIALOG_VARIANT} from 'constants.jsx'
+import {MODAL_DIALOG_VARIANT} from '../../../constants.tsx'
 
 
 import './DescItemPartyRef.less'

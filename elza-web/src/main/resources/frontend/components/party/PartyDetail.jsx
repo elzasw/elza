@@ -17,7 +17,6 @@ import {
     CollapsablePanel
 } from 'components/shared';
 import {Form, Button} from 'react-bootstrap';
-import {AppActions} from 'stores/index.jsx';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx';
 import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
@@ -34,7 +33,7 @@ import * as perms from 'actions/user/Permission.jsx';
 import {initForm} from "actions/form/inlineForm.jsx"
 import {getMapFromList} from 'stores/app/utils.jsx'
 import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes.jsx'
-import {PARTY_TYPE_CODES} from 'constants.jsx'
+import {PARTY_TYPE_CODES} from '../../constants.tsx'
 import {PropTypes} from 'prop-types';
 import defaultKeymap from './PartyDetailKeymap.jsx';
 import './PartyDetail.less';

@@ -23,7 +23,7 @@ import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import {setFocus} from 'actions/global/focus.jsx'
 import {downloadFile} from "../../actions/global/download";
 import RegistryCoordinate from "./RegistryCoordinate";
-import {FOCUS_KEYS} from "../../constants";
+import {FOCUS_KEYS} from "../../constants.tsx";
 
 
 

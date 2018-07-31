@@ -10,13 +10,13 @@ import {addToastrWarning} from 'components/shared/toastr/ToastrActions.jsx'
 import {storeFromArea, indexById, objectById} from 'shared/utils'
 
 
-import {DEFAULT_LIST_SIZE, MODAL_DIALOG_VARIANT} from 'constants.jsx'
+import {DEFAULT_LIST_SIZE, MODAL_DIALOG_VARIANT} from '../../constants.tsx'
 
 import {SimpleListActions} from 'shared/list'
 import {DetailActions} from 'shared/detail'
 import AddPartyForm from "../../components/party/AddPartyForm";
 
-import {PARTY_TYPE_CODES} from 'constants.jsx'
+import {PARTY_TYPE_CODES} from '../../constants.tsx'
 
 export const AREA_PARTY_LIST = 'partyList';
 export const AREA_PARTY_DETAIL = 'partyDetail';

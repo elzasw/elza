@@ -6,14 +6,14 @@ import {SimpleListActions} from 'shared/list'
 import {DetailActions} from 'shared/detail'
 import {storeFromArea, indexById} from 'shared/utils'
 
-import {DEFAULT_LIST_SIZE, MODAL_DIALOG_VARIANT} from 'constants.jsx'
+import {DEFAULT_LIST_SIZE, MODAL_DIALOG_VARIANT} from '../../constants.tsx'
 export const DEFAULT_REGISTRY_LIST_MAX_SIZE = DEFAULT_LIST_SIZE;
 export const AREA_REGISTRY_LIST = "registryList";
 import * as types from 'actions/constants/ActionTypes.js';
 import {savingApiWrapper} from 'actions/global/status.jsx';
 import {i18n} from 'components/shared';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
-import {addToastrSuccess,addToastrDanger} from 'components/shared/toastr/ToastrActions.jsx'
+import {addToastrSuccess,addToastrDanger, addToastrWarning} from '../../components/shared/toastr/ToastrActions.jsx'
 import AddRegistryForm from "../../components/registry/AddRegistryForm";
 
 
@@ -103,8 +103,13 @@ export const AREA_REGISTRY_DETAIL = "registryDetail";
 
 export function registryDetailFetchIfNeeded(id) {
     return (dispatch, getState) => {
-        return dispatch(DetailActions.fetchIfNeeded(AREA_REGISTRY_DETAIL, id, () => {
-            return WebApi.getAccessPoint(id).catch(() => dispatch(registryDetailClear()));
+        dispatch(DetailActions.fetchIfNeeded(AREA_REGISTRY_DETAIL, id, () => {
+            return WebApi.getAccessPoint(id).then((data) => {
+                if (data && data.invalid) {
+                    dispatch(addToastrWarning(i18n("registry.invalid.warning")));
+                }
+                return data;
+            }).catch(() => dispatch(registryDetailClear()));
         }));
     }
 }
@@ -136,7 +141,11 @@ export function registryAdd(parentId, versionId, callback, parentName = '', show
 
 function registryRecordCreate(parentId, callback, data, submitType) {
     return (dispatch, getState) => {
-        savingApiWrapper(dispatch, WebApi.createAccessPoint(data.name, data.complement, data.langaugeCode, data.description, data.typeId, data.scopeId)).then(json => {
+        savingApiWrapper(dispatch, (
+            data.structured ?
+                WebApi.createStructuredAccessPoint(data.name, data.complement, data.langaugeCode, data.description, data.typeId, data.scopeId).then((res) => WebApi.confirmStructuredAccessPoint(res.id).then(() => res)) :
+                WebApi.createAccessPoint(data.name, data.complement, data.langaugeCode, data.description, data.typeId, data.scopeId)
+        )).then(json => {
             dispatch(modalDialogHide());
             callback && callback(json, submitType);
         });

@@ -20,7 +20,7 @@ import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx'
 import {WebApi} from 'actions/index.jsx';
 import './SubNodeForm.less'
 import {downloadFile} from "../../actions/global/download";
-import {FOCUS_KEYS} from "../../constants";
+import {FOCUS_KEYS} from "../../constants.tsx";
 
 const classNames = require('classnames');
 
