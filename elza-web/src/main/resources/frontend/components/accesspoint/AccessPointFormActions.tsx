@@ -4,6 +4,9 @@ import {i18n} from '../shared';
 import {ItemFormActions} from "./ItemFormActions";
 import {WebApi} from '../../actions/index.jsx';
 import * as types from '../../actions/constants/ActionTypes.js';
+import {storeFromArea} from '../../shared/utils'
+import {AREA_REGISTRY_DETAIL} from '../../actions/registry/registry';
+
 
 interface BaseAction {
     area: string;
@@ -22,10 +25,13 @@ export class AccessPointFormActions extends ItemFormActions {
     //@Override
     _getItemFormData(getState, dispatch, versionId) {
         // není podpora kešování
-        return new Promise((resolve) => {
+        const state = getState();
+        return WebApi.getAccessPoint(state.app.registryDetail.id).then(data => ({...data.form, parent: {id: data.id}}));
+        /*new Promise((resolve) => {
             const state = getState();
+
             resolve({...state.app.registryDetail.data.form, parent: {id: state.app.registryDetail.data.id}})
-        });
+        });*/
     }
 
     // @Override
@@ -35,7 +41,7 @@ export class AccessPointFormActions extends ItemFormActions {
 
     // @Override
     _getParentObjStore(state) {
-        return state.ap
+        return storeFromArea(state, AREA_REGISTRY_DETAIL);
     }
 
     // @Override
@@ -55,7 +61,7 @@ export class AccessPointFormActions extends ItemFormActions {
 
     // @Override
     _callDeleteDescItemType(parentId, descItemTypeId) {
-        return WebApi.deleteStructureItemsByType(parentId, descItemTypeId);
+        return WebApi.deleteAccessPointItemsByType(parentId, descItemTypeId);
     }
 
     // @Override

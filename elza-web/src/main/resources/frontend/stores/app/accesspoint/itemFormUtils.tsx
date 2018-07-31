@@ -4,14 +4,14 @@ import {DisplayType} from "../../../constants";
 import {toDuration} from "../../../components/validate";
 import {
     ApItemExt,
-    ApItemVO,
-    IFormData,
+    ApItemVO, IFormData,
     IItemFormState, ItemData,
     ItemTypeExt,
     ItemTypeLiteVO,
     RefType,
     RefTypeExt
 } from "./itemForm";
+import {DataTypeCode} from "./itemFormInterfaces";
 
 export enum ItemAvailability {
     REQUIRED= "REQUIRED",
@@ -1064,38 +1064,37 @@ export function createItem(descItemType: ItemTypeLiteVO, refType: RefType, added
     return result;
 }
 
-// TODO enum
 export function getItemClass(dataType) {
     switch (dataType.code) {
-        case 'TEXT':
+        case DataTypeCode.TEXT:
             return '.ApItemTextVO';
-        case 'STRING':
+        case DataTypeCode.STRING:
             return '.ApItemStringVO';
-        case 'INT':
+        case DataTypeCode.INT:
             return '.ApItemIntVO';
-        case 'COORDINATES':
+        case DataTypeCode.COORDINATES:
             return '.ApItemCoordinatesVO';
-        case 'DECIMAL':
+        case DataTypeCode.DECIMAL:
             return '.ApItemDecimalVO';
-        case 'PARTY_REF':
+        case DataTypeCode.PARTY_REF:
             return '.ApItemPartyRefVO';
-        case 'FILE_REF':
+        case DataTypeCode.FILE_REF:
             return '.ApItemFileRefVO';
-        case 'RECORD_REF':
+        case DataTypeCode.RECORD_REF:
             return '.ApItemRecordRefVO';
-        case 'STRUCTURED':
+        case DataTypeCode.STRUCTURED:
             return '.ApItemStructureVO';
-        case 'JSON_TABLE':
+        case DataTypeCode.JSON_TABLE:
             return '.ApItemJsonTableVO';
-        case 'ENUM':
+        case DataTypeCode.ENUM:
             return '.ApItemEnumVO';
-        case 'FORMATTED_TEXT':
+        case DataTypeCode.FORMATTED_TEXT:
             return '.ApItemFormattedTextVO';
-        case 'UNITDATE':
+        case DataTypeCode.UNITDATE:
             return '.ApItemUnitdateVO';
-        case 'UNITID':
+        case DataTypeCode.UNITID:
             return '.ApItemUnitidVO';
-        case 'DATE':
+        case DataTypeCode.DATE:
             return '.ApItemDateVO';
         default:
             console.error("Unsupported data type", dataType);

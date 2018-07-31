@@ -1,16 +1,12 @@
 //import * as types from '../../../actions/constants/ActionTypes.js';
 import {i18n} from '../../../components/shared';
-import {getMapFromList, indexById, objectById} from '../utils2'
-import {
-    consolidateDescItems,
-    createDescItem,
-    createDescItemFromDb,
-    mergeAfterUpdate
-} from '../arr/subNodeFormUtils'
-import {validateCoordinatePoint, validateDouble, validateInt, validateDuration} from '../../../components/validate'
+import {getMapFromList, objectById} from '../utils2'
+import {consolidateDescItems, createDescItem, createDescItemFromDb, mergeAfterUpdate} from '../arr/subNodeFormUtils'
+import {validateCoordinatePoint, validateDouble, validateDuration, validateInt} from '../../../components/validate'
 import {valuesEquals} from '../../../components/Utils'
 import {DisplayType} from "../../../constants";
 import {ItemAvailability, updateFormData} from "./itemFormUtils";
+import {DataTypeCode} from "./itemFormInterfaces";
 
 export interface ILocation {
     itemType: ItemTypeExt;
@@ -154,7 +150,7 @@ export interface IItemFormState {
     dirty: boolean;
     needClean: boolean;   // pokud je true, přenačtou se data a vymaže se aktuální editace - obdoba jako nové zobrazení formuláře
     versionId?: number;
-    nodeId?: number;
+    id?: number;
     data?: ItemData;
     infoTypes?: RefType[];
     infoTypesMap?: Map<any, RefTypeExt>;
@@ -170,7 +166,7 @@ const initialState : IItemFormState = {
     dirty: false,
     needClean: false,   // pokud je true, přenačtou se data a vymaže se aktuální editace - obdoba jako nové zobrazení formuláře
     versionId: undefined,
-    nodeId: undefined,
+    id: undefined,
     formData: undefined,
     data: undefined,
     infoTypesMap: undefined,
@@ -208,25 +204,6 @@ interface IValidationError {
     calendarType?: string
     hasError: boolean
 }
-
-export enum DataTypeCode {
-    FILE_REF = "FILE_REF",
-    PARTY_REF = "PARTY_REF",
-    RECORD_REF = "RECORD_REF",
-    STRUCTURED = "STRUCTURED",
-    JSON_TABLE = "JSON_TABLE",
-    ENUM = "ENUM",
-    UNITDATE = "UNITDATE",
-    UNITID = "UNITID",
-    FORMATTED_TEXT = "FORMATTED_TEXT",
-    TEXT = "TEXT",
-    STRING = "STRING",
-    INT = "INT",
-    COORDINATES = "COORDINATES",
-    DECIMAL = "DECIMAL",
-    DATE = "DATE",
-}
-
 
 export function validate(item: ApItemVO<any>, refType: RefType, valueServerError?: string) : IValidationError {
     const error :IValidationError = {hasError: false};
@@ -395,6 +372,7 @@ export enum types {
     ITEM_FORM_REQUEST = "ITEM_FORM_REQUEST",
     ITEM_FORM_RECEIVE = "ITEM_FORM_RECEIVE",
     FUND_SUBNODE_UPDATE = "FUND_SUBNODE_UPDATE",
+    CHANGE_ACCESS_POINT= "CHANGE_ACCESS_POINT"
 }
 
 enum ActionOperation {
@@ -557,13 +535,6 @@ export function itemForm(state: IItemFormState = initialState, action: IAction =
                             ]
                         }
                     };
-                case types.CHANGE_NODES:
-                case types.OUTPUT_CHANGES_DETAIL:
-                case types.OUTPUT_CHANGES:
-                case types.CHANGE_OUTPUTS:
-                case types.CHANGE_STRUCTURE:
-                case types.FUND_INVALID:
-                    return {...state, dirty: true};
                 /*case types.ITEM_FORM_DESC_ITEM_TYPE_COPY_FROM_PREV_RESPONSE:// TODO Asi nemáme
                     state.data.parent = action.copySiblingResult.node;
 
@@ -611,7 +582,7 @@ export function itemForm(state: IItemFormState = initialState, action: IAction =
                         case ActionOperation.DELETE:
                             // Aktualizace position
                             // loc.itemType.descItems.forEach((descItem, index) => {descItem.position = index + 1});
-                            return {
+                            /*return {
                                 ...newState,
                                 formData: {
                                     ...newState.formData,
@@ -624,7 +595,9 @@ export function itemForm(state: IItemFormState = initialState, action: IAction =
                                         ...state.formData!!.itemTypes.slice(action.valueLocation.itemTypeIndex+1),
                                     ]
                                 }
-                            };
+                            };*/
+                            // Aktualizuje nám to websocket
+                            return state;
                         case ActionOperation.UPDATE:
                             // loc.item!!.objectId = action.descItemResult.item ? action.descItemResult.item.objectId : null;
                             // loc.item!!.prevValue = action.descItemResult.item ? action.descItemResult.item.value : null;
@@ -635,7 +608,7 @@ export function itemForm(state: IItemFormState = initialState, action: IAction =
                             //     loc.item!!.prevCalendarTypeId = action.descItemResult.item.calendarTypeId;
                             // }
                             // loc.item!!.touched = false;
-                            const updateItem = state.formData!!.itemTypes[action.valueLocation.itemTypeIndex].items[action.valueLocation.itemIndex!!];
+                            /*const updateItem = state.formData!!.itemTypes[action.valueLocation.itemTypeIndex].items[action.valueLocation.itemIndex!!];
                             return {
                                 ...newState,
                                 formData: {
@@ -660,7 +633,9 @@ export function itemForm(state: IItemFormState = initialState, action: IAction =
                                         ...state.formData!!.itemTypes.slice(action.valueLocation.itemTypeIndex+1),
                                     ]
                                 }
-                            };
+                            };*/
+                            // Aktualizuje nám to websocket
+                            return state;
                         case ActionOperation.CREATE:
                             // loc.item!!.objectId = action.descItemResult.item.objectId;
                             // loc.item!!.id = action.descItemResult.item.id;
@@ -677,7 +652,7 @@ export function itemForm(state: IItemFormState = initialState, action: IAction =
                             // loc.item!!.touched = false;
                             // Aktualizace position - pokud by create byl na první hodnotě a za ní již nějaké uživatel uložil, musí se vše aktualizovat
                             // loc.itemType.descItems.forEach((descItem, index) => {descItem.position = index + 1});
-                            const createItem = state.formData!!.itemTypes[action.valueLocation.itemTypeIndex].items[action.valueLocation.itemIndex!!];
+                            /*const createItem = state.formData!!.itemTypes[action.valueLocation.itemTypeIndex].items[action.valueLocation.itemIndex!!];
 
                             const createItems = [
                                 ...state.formData!!.itemTypes[action.valueLocation.itemTypeIndex].items.slice(0, action.valueLocation.itemIndex!!),
@@ -709,10 +684,12 @@ export function itemForm(state: IItemFormState = initialState, action: IAction =
                                         ...state.formData!!.itemTypes.slice(action.valueLocation.itemTypeIndex+1),
                                     ]
                                 }
-                            };
+                            };*/
+                            // Aktualizuje nám to websocket
+                            return state;
                         case ActionOperation.DELETE_DESC_ITEM_TYPE:
-                            // nic dalšího není potřeba, node se ak tualizuje výše
-                            break;
+                            // Aktualizuje nám to websocket
+                            return state;
                     }
 
                     return state;
@@ -837,6 +814,8 @@ export function itemForm(state: IItemFormState = initialState, action: IAction =
     }
 
     switch (action.type) {
+        case types.CHANGE_ACCESS_POINT:
+            return {...state, dirty: true};
         case types.ITEM_FORM_CHANGE_READ_MODE:
             if (action.readMode) {  // změna na read mode - musíme vyresetovat všechny změny ve formuláři
                 return {
@@ -900,13 +879,17 @@ export function itemForm(state: IItemFormState = initialState, action: IAction =
         case types.ITEM_FORM_REQUEST:
             return {
                 ...state,
-                fetchingId: action.nodeId,
+                id: action.id,
+                fetchingId: action.id,
                 isFetching: true,
             };
         case types.ITEM_FORM_RECEIVE:
             // ##
             // # Inicializace dat
             // ##
+            if (action.id !== state.id) {
+                return state;
+            }
 
             // Doplnění descItemTypes o rulDataType a další data
             const dataTypeMap = getMapFromList(action.rulDataTypes.items);
@@ -931,7 +914,7 @@ export function itemForm(state: IItemFormState = initialState, action: IAction =
                 fetched: true,
                 dirty: false,
                 versionId: action.versionId,
-                nodeId: action.nodeId,
+                id: action.id,
                 needClean: false,
             };
 
@@ -945,7 +928,7 @@ export function itemForm(state: IItemFormState = initialState, action: IAction =
             var {node, parent} = action.data;
             let nodeId = (node && node.id) || (parent && parent.id);
 
-            if (nodeId != state.nodeId){
+            if (nodeId != state.id){
                 // not the right node
                 return state;
             }

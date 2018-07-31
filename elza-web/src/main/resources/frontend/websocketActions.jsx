@@ -47,8 +47,9 @@ import {
     nodesDelete,
     structureChange,
     updateExtSystem,
-    userChange
-} from 'actions/global/change.jsx';
+    userChange,
+    changeAccessPoint
+} from './actions/global/change.jsx';
 
 import {Stomp} from 'stompjs';
 import URLParse from "url-parse";
@@ -247,7 +248,8 @@ let eventMap = {
     'REQUEST_ITEM_QUEUE_CHANGE': changeRequestItemQueueChange,
     'DELETE_NODES': deleteNodes,
     'FUND_EXTENSION_CHANGE': fundExtensionChange,
-    'STRUCTURE_DATA_CHANGE': structureDataChange
+    'STRUCTURE_DATA_CHANGE': structureDataChange,
+    'ACCESS_POINT_UPDATE':accessPointUpdate
 }
 
 if (!window.ws) {
@@ -519,6 +521,11 @@ function extSystemUpdate(value){
 function extSystemDelete(value){
     store.dispatch(deleteExtSystem(value.ids[0]));
 }
+
+function accessPointUpdate(value) {
+    store.dispatch(changeAccessPoint(value.ids));
+}
+
 /**
  * Zpracování validací.
  *

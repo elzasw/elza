@@ -426,6 +426,9 @@ export class WebApiCls {
     changeAccessPointItems(accessPointId, items) {
         return AjaxUtils.ajaxPut(WebApiCls.registryUrl + '/'+ accessPointId + '/items', null, items);
     }
+    deleteAccessPointItemsByType(accessPointId, itemTypeId) {
+        return AjaxUtils.ajaxDelete(WebApiCls.registryUrl + '/'+ accessPointId + '/type/' + itemTypeId, null, null);
+    }
 
     findRegistry(search = null, registryParent = null, apTypeId = null, versionId = null, itemSpecId = null, from = 0, count = DEFAULT_LIST_SIZE, scopeId = null, excludeInvalid = true) {
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/', {

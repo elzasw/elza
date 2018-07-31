@@ -32,6 +32,7 @@ import {
 } from 'actions/registry/registry.jsx'
 import {refExternalSystemListInvalidate} from 'actions/refTables/externalSystems'
 import {structureTypeInvalidate} from "../arr/structureType";
+import {AccessPointFormActions, accessPointFormActions} from "../../components/accesspoint/AccessPointFormActions";
 
 export function isFundChangeAction(action) {
     switch (action.type) {
@@ -451,6 +452,19 @@ export function structureChange(data) {
                     })
                 }
             }
+        }
+    }
+}
+
+export function changeAccessPoint(ids) {
+    return (dispatch, getState) => {
+        const store = getState();
+        if (ids.indexOf(store.ap.form.id) !== -1) {
+            dispatch({
+                type: "CHANGE_ACCESS_POINT",
+                id: store.ap.form.id,
+                area: AccessPointFormActions.AREA
+            })
         }
     }
 }

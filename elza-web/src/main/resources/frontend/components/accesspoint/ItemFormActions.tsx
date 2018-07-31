@@ -55,6 +55,7 @@ export abstract class ItemFormActions {
                 case types.ITEM_FORM_VALUE_RESPONSE:
                 case types.ITEM_FORM_DESC_ITEM_TYPE_COPY_FROM_PREV_RESPONSE:
                 case types.ITEM_FORM_OUTPUT_CALC_SWITCH:
+                case types.CHANGE_ACCESS_POINT:
                     return true;
                 default:
                     return false
@@ -146,7 +147,7 @@ export abstract class ItemFormActions {
      * @param {Object} state globální store
      * @return store
      */
-    abstract _getParentObjStore(state): {parentId?: number};
+    abstract _getParentObjStore(state): {id: number};
 
     /**
      * Nové načtení dat.
@@ -156,11 +157,13 @@ export abstract class ItemFormActions {
      */
     _fundSubNodeFormFetch(needClean, showChildren, showParents) {
         return (dispatch, getState) => {
-            dispatch(this.fundSubNodeFormRequest());
+            const parent = this._getParentObjStore(getState());
+            dispatch(this.fundSubNodeFormRequest(parent.id));
             this._getItemFormData(getState, dispatch, showChildren, showParents)
                 .then(json => {
                     const state = getState();
-                    dispatch(this.fundSubNodeFormReceive(json, state.refTables.rulDataTypes, state.refTables.descItemTypes, state.refTables.groups.data, needClean))
+                    const parent = this._getParentObjStore(state);
+                    dispatch(this.fundSubNodeFormReceive(parent.id, json, state.refTables.rulDataTypes, state.refTables.descItemTypes, state.refTables.groups.data, needClean))
                 })
         }
     }
@@ -548,11 +551,11 @@ export abstract class ItemFormActions {
             const loc = subNodeForm.getLoc(subNodeForm, valueLocation);
 
             let hasDescItemsForDelete = false;
-            /*loc!!.itemType.descItems.forEach(descItem => {
+            loc!!.itemType.items.forEach(descItem => {
                 if (typeof descItem.id !== 'undefined') {
                     hasDescItemsForDelete = true;
                 }
-            });*/
+            });
 
             dispatch(this._fundSubNodeFormDescItemTypeDeleteInStore(valueLocation, false));
 
@@ -617,17 +620,19 @@ export abstract class ItemFormActions {
 
     /**
      * Nová data byla načtena.
+     * @param {number} id parentu
      * @param {Object} json objekt s daty
      * @param {Object} rulDataTypes store - datové typy pro atributy
      * @param {Object} descItemTypes store - obecný předpis atributů - ref
      * @param {Object} groups store - skupiny pro typy atributů
      * @param {bool} needClean má se formulář reinicializovat a vymazat cšechna editace? - jako nové načtení formuláře
      */
-    fundSubNodeFormReceive(json, rulDataTypes, descItemTypes, groups, needClean): AnyAction {
+    fundSubNodeFormReceive(id, json, rulDataTypes, descItemTypes, groups, needClean): AnyAction {
         return {
             type: types.ITEM_FORM_RECEIVE,
             area: this.area,
             data: json,
+            id,
             rulDataTypes,
             refDescItemTypes: descItemTypes,
             groups,
@@ -638,11 +643,13 @@ export abstract class ItemFormActions {
 
     /**
      * Bylo zahájeno nové načítání dat.
+     * @param {number} id parentu
      */
-    fundSubNodeFormRequest(): AnyAction {
+    fundSubNodeFormRequest(id): AnyAction {
         return {
             type: types.ITEM_FORM_REQUEST,
             area: this.area,
+            id
         }
     }
 }

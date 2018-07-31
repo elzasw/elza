@@ -12,7 +12,7 @@ import DescItemPartyRef from '../arr/nodeForm/DescItemPartyRef.jsx';
 // import DescItemRecordRef from '../arr/nodeForm/DescItemRecordRef.jsx';
 import DescItemJsonTable from '../arr/nodeForm/DescItemJsonTable.jsx';
 import DescItemDate from '../arr/nodeForm/DescItemDate.jsx';
-import {DataTypeCode} from "../../stores/app/accesspoint/itemForm";
+import {DataTypeCode} from "../../stores/app/accesspoint/itemFormInterfaces";
 import {ItemFactoryInterface} from "./ItemFactoryInterface";
 
 export class ItemFactory implements ItemFactoryInterface {
