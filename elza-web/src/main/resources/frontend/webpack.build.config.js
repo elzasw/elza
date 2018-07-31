@@ -31,7 +31,7 @@ module.exports = {
         sourceMapFilename: "[name].js.map",
     },
     resolve: {
-        extensions: ['.js', '.jsx'],
+        extensions: ['.tsx', '.ts', '.jsx', '.js'],
         modules: [
             path.resolve(__dirname),
             path.resolve(__dirname, "node_modules")
@@ -42,6 +42,11 @@ module.exports = {
     },
     module: {
         rules: [
+            {
+                test: /\.tsx?$/,
+                use: 'ts-loader',
+                exclude: /node_modules/
+            },
             {
                 test: /\.jsx?$/,
                 exclude: /node_modules/,
@@ -54,7 +59,12 @@ module.exports = {
                 test: /\.less$/, use: [
                     styleLoader,
                     {loader: cssLoader, options: {sourceMap: true}},
-                    {loader: lessLoader, options: {sourceMap: true}}
+                    {loader: lessLoader, options: {
+                        sourceMap: true,
+                        paths: [
+                            path.resolve(__dirname)
+                        ]
+                    }}
                 ]
             },
             {

@@ -10,7 +10,7 @@
         //"noUnusedLocals": true,
         "strictNullChecks": true,
         "sourceMap": true,
-        "declaration": true
+        "declaration": false
     },
     "include": [
         "**/*"
