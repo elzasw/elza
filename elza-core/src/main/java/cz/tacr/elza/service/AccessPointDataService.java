@@ -169,7 +169,6 @@ public class AccessPointDataService {
                                         final boolean validateUnique) {
         Validate.notNull(accessPoint, "Přístupový bod musí být vyplněn");
         Validate.notNull(apName, "Upravované jméno musí být vyplněno");
-        Validate.notNull(name, "Nové jméno musí být vyplněno");
         Validate.notNull(change, "Změna musí být vyplněna");
         validationNotDeleted(accessPoint);
         validationNotDeleted(apName);
