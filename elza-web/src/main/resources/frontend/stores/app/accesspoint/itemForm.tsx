@@ -1,11 +1,10 @@
 //import * as types from '../../../actions/constants/ActionTypes.js';
 import {i18n} from '../../../components/shared';
 import {getMapFromList, objectById} from '../utils2'
-import {consolidateDescItems, createDescItem, createDescItemFromDb, mergeAfterUpdate} from '../arr/subNodeFormUtils'
 import {validateCoordinatePoint, validateDouble, validateDuration, validateInt} from '../../../components/validate'
 import {valuesEquals} from '../../../components/Utils'
 import {DisplayType} from "../../../constants";
-import {ItemAvailability, updateFormData} from "./itemFormUtils";
+import {ItemAvailability, updateFormData, consolidateDescItems, createItem, createItemFromDb, mergeAfterUpdate} from "./itemFormUtils";
 import {DataTypeCode} from "./itemFormInterfaces";
 
 export interface ILocation {
@@ -47,7 +46,6 @@ export interface ApItemVO<V> {
     value: V;
     error: any;
     prevValue: V | null;
-    descItemSpecId?: number;
     prevDescItemSpecId?: number;
     calendarTypeId?: number;
     prevCalendarTypeId?: number;
@@ -125,7 +123,9 @@ export interface RefTypeExt extends RefType {
     rep: number,
     specs: any[],
     type: ItemAvailability,
-    width: number,
+
+    // nad míru objektu
+    hasFocus?: any;
 }
 
 export interface ItemTypeExt extends ItemTypeLiteVO {
@@ -136,9 +136,13 @@ export interface IFormData {
     itemTypes: ItemTypeExt[];
 }
 
-export interface ItemData {
+export interface ApFormVO {
     items: ApItemVO<any>[],
     itemTypes: ItemTypeLiteVO[],
+    parent: { id: number }
+}
+
+export interface ItemData extends ApFormVO {
     parent: { id: number }
 }
 
@@ -210,7 +214,7 @@ export function validate(item: ApItemVO<any>, refType: RefType, valueServerError
 
     // Specifikace
     if (refType.useSpecification) {
-        if (typeof item.descItemSpecId === 'undefined') {// || item.descItemSpecId === ''
+        if (typeof item.specId === 'undefined') {// || item.descItemSpecId === ''
             error.spec = i18n('subNodeForm.validate.spec.required');
         }
     }
@@ -467,8 +471,8 @@ export function itemForm(state: IItemFormState = initialState, action: IAction =
                         }
                     };
                 case types.ITEM_FORM_VALUE_CHANGE_SPEC:
-                    if (loc.item!!.descItemSpecId !== action.value) {
-                        loc.item!!.descItemSpecId = action.value;
+                    if (loc.item!!.specId !== action.value) {
+                        loc.item!!.specId = action.value;
                         loc.item!!.touched = true;
                         loc.item!!.error = validate(loc.item!!, refType);
 
@@ -513,7 +517,7 @@ export function itemForm(state: IItemFormState = initialState, action: IAction =
                         }
                     };
                 case types.ITEM_FORM_VALUE_ADD:
-                    const item = createDescItem(loc.itemType, refType, true);
+                    const item = createItem(loc.itemType, refType, true);
                     item.position = loc.itemType.items.length + 1;
                     //loc.itemType.items = [...loc.itemType.descItems, descItem];
 
@@ -762,50 +766,6 @@ export function itemForm(state: IItemFormState = initialState, action: IAction =
                             ]
                         }
                     };
-                case types.ITEM_FORM_DESC_ITEM_TYPE_ADD:
-                    // Dohledání skupiny a desc item type
-                    // var addGroup, addItemType;
-                    // state.infoGroups.forEach(group => {
-                    //     group.types.forEach(type => {
-                    //         if (type.id == action.descItemTypeId) {
-                    //             addGroup = group;
-                    //             addItemType = type;
-                    //         }
-                    //     });
-                    // });
-                    const addItemType = objectById(state.formData!!.itemTypes, action.descItemTypeId);
-
-                    // ##
-                    // # Přidání do formuláře
-                    // ##
-
-                    // Dohledání skupiny, pokud existuje
-
-
-                    // Přidání prvku do skupiny a seřazení prvků podle position
-                    // var descItemType = {...addItemType, descItems: []};
-                    // descItemGroup.descItemTypes.push(descItemType);
-                    // Musíme ponechat prázdnou hodnotu
-                    // var infoType = state.infoTypesMap[descItemType.id]
-
-                    // TODO consolidace
-                    // Upravení a opravení seznamu hodnot, případně přidání prázdných
-                    // consolidateDescItems(descItemType, infoType, refType, true)
-
-
-
-                    // descItemGroup.descItemTypes.sort((a, b) => {
-                    //     return state.refTypesMap[a.id].viewOrder - state.refTypesMap[b.id].viewOrder
-                    //     return a.viewOrder - b.viewOrder
-                    // });
-
-
-                    return {
-                        ...state,
-                        formData: {
-                            ...state.formData
-                        }
-                    };
             }
 
         }
@@ -814,6 +774,56 @@ export function itemForm(state: IItemFormState = initialState, action: IAction =
     }
 
     switch (action.type) {
+        case types.ITEM_FORM_DESC_ITEM_TYPE_ADD:
+            // Dohledání skupiny a desc item type
+            // var addGroup, addItemType;
+            // state.infoGroups.forEach(group => {
+            //     group.types.forEach(type => {
+            //         if (type.id == action.descItemTypeId) {
+            //             addGroup = group;
+            //             addItemType = type;
+            //         }
+            //     });
+            // });
+
+
+
+            const addItemType = objectById(state.data!!.itemTypes, action.descItemTypeId) as ItemTypeExt;
+
+            // ##
+            // # Přidání do formuláře
+            // ##
+
+            // Dohledání skupiny, pokud existuje
+
+
+            // Přidání prvku do skupiny a seřazení prvků podle position
+            const descItemType = {...addItemType, items: []};
+            // Musíme ponechat prázdnou hodnotu
+            const infoType = state.infoTypesMap!!.get(descItemType!!.id)!!;
+            const refType = state.refTypesMap!!.get(descItemType!!.id)!!;
+
+            // TODO consolidace
+            // Upravení a opravení seznamu hodnot, případně přidání prázdných
+            consolidateDescItems(descItemType, infoType, refType, true);
+
+
+            const itemTypes = [
+                ...state.formData!!.itemTypes,
+                descItemType
+            ];
+
+            itemTypes.sort((a, b) => {
+                return state.refTypesMap!!.get(a.id)!!.viewOrder - state.refTypesMap!!.get(b.id)!!.viewOrder
+            });
+
+            return {
+                ...state,
+                formData: {
+                    ...state.formData,
+                    itemTypes,
+                }
+            };
         case types.CHANGE_ACCESS_POINT:
             return {...state, dirty: true};
         case types.ITEM_FORM_CHANGE_READ_MODE:

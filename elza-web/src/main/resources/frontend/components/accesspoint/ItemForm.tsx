@@ -587,7 +587,11 @@ class ItemFormClass extends React.Component<DispatchProps & Props, ItemFormClass
             <div className='node-form'>
                 {unusedGeneratedItems}
                 <div ref='nodeForm' className='desc-item-groups'>
-                    {nodes}
+                    <div className='desc-item-group'>
+                        <div className='desc-item-types'>
+                            {nodes}
+                        </div>
+                    </div>
                 </div>
             </div>
         )

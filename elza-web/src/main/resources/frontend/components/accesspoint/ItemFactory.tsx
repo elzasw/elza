@@ -14,6 +14,7 @@ import DescItemJsonTable from '../arr/nodeForm/DescItemJsonTable.jsx';
 import DescItemDate from '../arr/nodeForm/DescItemDate.jsx';
 import {DataTypeCode} from "../../stores/app/accesspoint/itemFormInterfaces";
 import {ItemFactoryInterface} from "./ItemFactoryInterface";
+import ItemFragmentRef from "./ItemFragmentRef";
 
 export class ItemFactory implements ItemFactoryInterface {
     static typeComponentMap = {
@@ -30,7 +31,8 @@ export class ItemFactory implements ItemFactoryInterface {
         [DataTypeCode.DECIMAL]: DescItemDecimal,
         [DataTypeCode.INT]: DescItemInt,
         [DataTypeCode.COORDINATES]: DescItemCoordinates,
-        [DataTypeCode.DATE]: DescItemDate
+        [DataTypeCode.DATE]: DescItemDate,
+        [DataTypeCode.APFRAG_REF]: ItemFragmentRef,
     };
 
     static createItem(type: DataTypeCode, props) {

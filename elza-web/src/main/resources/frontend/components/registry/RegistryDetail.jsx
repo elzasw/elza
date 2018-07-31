@@ -262,23 +262,23 @@ class RegistryDetail extends AbstractReactComponent {
         const itemTypes = [];
         const strictMode = true;
 
-        // let infoTypesMap = {...subNodeForm.infoTypesMap};
-        //
-        // subNodeForm.data.itemTypes.forEach(descItemType => {
-        //     delete infoTypesMap[descItemType.id];
-        // });
-        // console.log(subNodeForm.data.itemTypes, infoTypesMap, subNodeForm.infoTypesMap);
+        let infoTypesMap = new Map(subNodeForm.infoTypesMap);
+
+        console.warn(subNodeForm.infoTypesMap, infoTypesMap, subNodeForm.data.itemTypes);
+        subNodeForm.formData.itemTypes.forEach(descItemType => {
+            infoTypesMap.delete(descItemType.id);
+        });
+        console.warn(subNodeForm.data.itemTypes, infoTypesMap, subNodeForm.infoTypesMap);
 
         subNodeForm.refTypesMap.forEach(refType => {
-            // const itemType = infoTypesMap[refType.id];
-            // if (!itemType) {    // ještě ji na formuláři nemáme
+             if (infoTypesMap.has(refType.id)) {    // ještě ji na formuláři nemáme
+                 const infoType = infoTypesMap.get(refType.id);
                 // v nestriktním modu přidáváme všechny jinak jen možné
-            console.log(!strictMode || refType.type !== 'IMPOSSIBLE');
-                if (!strictMode || refType.type !== 'IMPOSSIBLE') {
+                if (!strictMode || infoType.type !== 'IMPOSSIBLE') {
                     // nový item type na základě původního z refTables
                     itemTypes.push(refType);
                 }
-            // }
+            }
         });
 
         const descItemTypes = [

@@ -62,8 +62,6 @@ class AddDescItemTypeForm extends AbstractReactComponent {
         const {fields: {descItemTypeId}, handleSubmit, onClose, descItemTypes,submitting} = this.props;
         const {possibleItemTypes} = this.state;
 
-        console.log(descItemTypes);
-
         return <Form onSubmit={handleSubmit(this.submitReduxForm)}>
                 <Modal.Body>
                     <div>

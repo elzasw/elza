@@ -18,7 +18,7 @@ import {hasDescItemTypeValue} from '../arr/ArrUtils'
 import {indexById} from '../../stores/app/utils'
 import classNames from 'classnames';
 import {Shortcuts} from 'react-shortcuts';
-import DescItemTypeSpec from "../arr/nodeForm/DescItemTypeSpec";
+import DescItemTypeSpec from "./ItemTypeSpec.jsx";
 import {PropTypes} from 'prop-types';
 import defaultKeymap from '../arr/nodeForm/DescItemTypeKeymap.jsx';
 import '../arr/nodeForm/AbstractDescItem.less';
@@ -35,6 +35,7 @@ import {WebApi} from '../../actions/index.jsx';
 import {objectById} from '../../stores/app/utils2';
 import {Dispatch} from "../../typings/globals";
 import {ItemFactoryInterface} from "./ItemFactoryInterface";
+import {DataTypeCode} from "../../stores/app/accesspoint/itemFormInterfaces";
 
 const placeholder = document.createElement("div");
 placeholder.className = "placeholder";
@@ -596,43 +597,46 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
         }
 
         const additionalProps = {
-            "PARTY_REF":{
+            [DataTypeCode.PARTY_REF]:{
                 itemName: refType.shortcut,
                 specName: specName,
                 // singleDescItemTypeEdit: singleDescItemTypeEdit,
                 onDetail: (value)=>{this.handleDetailParty(descItemIndex, value);},
                 onCreateParty: (value)=>{this.handleCreateParty(descItemIndex, value);}
             },
-            "RECORD_REF": {
+            [DataTypeCode.RECORD_REF]: {
                 itemName: refType.shortcut,
                 specName: specName,
                 // singleDescItemTypeEdit: singleDescItemTypeEdit,
                 onDetail: (value)=>{this.handleDetailRecord(descItemIndex, value);},
                 onCreateRecord: (value)=>{this.handleCreateRecord(descItemIndex);},
             },
-            "STRUCTURED":{
+            [DataTypeCode.STRUCTURED]:{
                 // singleDescItemTypeEdit: singleDescItemTypeEdit,
                 structureTypeCode: structureType ? structureType.code : null,
                 structureTypeName: structureType ? structureType.name : null,
             },
-            "FILE_REF": {
+            [DataTypeCode.FILE_REF]: {
                 // onCreateFile: (value)=>{this.handleCreateFile(descItemIndex);},
                 // onFundFiles: (value)=>{this.handleFundFiles(descItemIndex);}
             },
-            "UNITDATE":{
+            [DataTypeCode.UNITDATE]:{
                 calendarTypes: calendarTypes
             },
-            "JSON_TABLE":{
+            [DataTypeCode.JSON_TABLE]:{
                 refType,
                 // onDownload: (value)=>{this.props.onJsonTableDownload(descItem.descItemObjectId, value);},
                 onUpload: this.handleJsonTableUploadUpload
             },
-            "COORDINATES":{
+            [DataTypeCode.COORDINATES]:{
                 onUpload: this.handleCoordinatesUpload,
                 // onDownload: (value)=>{this.props.onCoordinatesDownload(descItem.descItemObjectId, value);}
             },
-            "INT":{
+            [DataTypeCode.INT]:{
                 refType
+            },
+            [DataTypeCode.APFRAG_REF]:{
+
             }
         };
 
