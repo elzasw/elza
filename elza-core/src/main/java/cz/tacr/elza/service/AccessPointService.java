@@ -1465,6 +1465,20 @@ public class AccessPointService {
     }
 
     /**
+     * Získání přístupového bodu pro úpravu.
+     *
+     * @param accessPointId identifikátor přístupového bodu
+     * @return přístupový bod
+     */
+    public ApAccessPoint getAccessPointInternalWithLock(@AuthParam(type = AuthParam.Type.AP) final Integer accessPointId) {
+        ApAccessPoint accessPoint = apRepository.findOneWithLock(accessPointId);
+        if (accessPoint == null) {
+            throw new ObjectNotFoundException("Přístupový bod neexistuje", BaseCode.ID_NOT_EXIST).setId(accessPointId);
+        }
+        return accessPoint;
+    }
+
+    /**
      * Získání jména.
      *
      * @param objectId identifikátor objektu jména

@@ -4,14 +4,19 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.boot.context.embedded.LocalServerPort;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.projection.ApAccessPointInfo;
+
+import javax.persistence.LockModeType;
 
 /**
  * Repository záznamy v rejstříku.
@@ -66,4 +71,8 @@ public interface ApAccessPointRepository
 
     @Query("SELECT DISTINCT ap.accessPointId FROM ap_name n JOIN n.accessPoint ap WHERE ap.state = 'INIT' OR n.state = 'INIT'")
     Set<Integer> findInitAccessPointIds();
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT ap FROM ap_access_point ap where ap.accessPointId = :accessPointId")
+    ApAccessPoint findOneWithLock(@Param("accessPointId") Integer accessPointId);
 }
