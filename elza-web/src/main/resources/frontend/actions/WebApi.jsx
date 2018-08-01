@@ -426,9 +426,31 @@ export class WebApiCls {
     changeAccessPointItems(accessPointId, items) {
         return AjaxUtils.ajaxPut(WebApiCls.registryUrl + '/'+ accessPointId + '/items', null, items);
     }
+
     deleteAccessPointItemsByType(accessPointId, itemTypeId) {
         return AjaxUtils.ajaxDelete(WebApiCls.registryUrl + '/'+ accessPointId + '/type/' + itemTypeId, null, null);
     }
+
+    deleteAccessPoint(accessPointId) {
+        return AjaxUtils.ajaxDelete(WebApiCls.registryUrl + '/' + accessPointId);
+    }
+
+    createAccessPointStructuredName(accessPointId) {
+        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/'+ accessPointId + '/name/structured', null);
+    }
+
+    changeNameItems(accessPointId, objectId, items) {
+        return AjaxUtils.ajaxPut(WebApiCls.registryUrl + '/'+ accessPointId + '/name/' + objectId + '/items', null, items);
+    }
+
+    deleteNameItemsByType(accessPointId, objectId, itemTypeId) {
+        return AjaxUtils.ajaxDelete(WebApiCls.registryUrl + '/'+ accessPointId + '/name/' + objectId + '/type/' + itemTypeId, null, null);
+    }
+
+    getAccessPointName(accessPointId, objectId) {
+        return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/' + accessPointId + '/name/' + objectId);
+    }
+
 
     findRegistry(search = null, registryParent = null, apTypeId = null, versionId = null, itemSpecId = null, from = 0, count = DEFAULT_LIST_SIZE, scopeId = null, excludeInvalid = true) {
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/', {
@@ -508,6 +530,10 @@ export class WebApiCls {
 
     deleteAccessPointName(accessPointId, objectId) {
         return AjaxUtils.ajaxDelete(WebApiCls.registryUrl + '/' + accessPointId + '/name/' + objectId);
+    }
+
+    confirmAccessPointStructuredName(accessPointId, objectId) {
+        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/' + accessPointId + '/name/' + objectId + '/confirm', null, null);
     }
 
     setPreferredAccessPointName(accessPointId, objectId) {

@@ -154,7 +154,6 @@ export function consolidateDescItems(resultDescItemType: ItemTypeExt, infoType, 
 
     // Přidáme jednu hodnotu - chceme i u opakovatelného, pokud žádnou nemá (nebyla hodnota přidána vynucením specifikací)
     if (resultDescItemType.items.length === 0) {
-        console.log(resultDescItemType, refType, addedByUser);
         resultDescItemType.items.push(createImplicitItem(resultDescItemType, refType, addedByUser));
     }
 

@@ -143,7 +143,7 @@ function registryRecordCreate(parentId, callback, data, submitType) {
     return (dispatch, getState) => {
         savingApiWrapper(dispatch, (
             data.structured ?
-                WebApi.createStructuredAccessPoint(data.name, data.complement, data.langaugeCode, data.description, data.typeId, data.scopeId).then((res) => WebApi.confirmStructuredAccessPoint(res.id).then(() => res)) :
+                WebApi.confirmStructuredAccessPoint(data.id).then(() => data.structuredObj) :
                 WebApi.createAccessPoint(data.name, data.complement, data.langaugeCode, data.description, data.typeId, data.scopeId)
         )).then(json => {
             dispatch(modalDialogHide());

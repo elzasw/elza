@@ -151,28 +151,27 @@ export abstract class ItemFormActions {
 
     /**
      * Nové načtení dat.
+     * @param {object} parent
      * @param {bool} needClean má se formulář reinicializovat a vymazat cšechna editace? - jako nové načtení formuláře
      * @param showChildren zobrazovat potomky?
      * @param showParents zobrazovat předky ke kořeni?
      */
-    _fundSubNodeFormFetch(needClean, showChildren, showParents) {
+    _fundSubNodeFormFetch(parent, needClean, showChildren, showParents) {
         return (dispatch, getState) => {
-            const parent = this._getParentObjStore(getState());
-            dispatch(this.fundSubNodeFormRequest(parent.id));
+            dispatch(this.fundSubNodeFormRequest(parent));
             this._getItemFormData(getState, dispatch, showChildren, showParents)
                 .then(json => {
                     const state = getState();
-                    const parent = this._getParentObjStore(state);
-                    dispatch(this.fundSubNodeFormReceive(parent.id, json, state.refTables.rulDataTypes, state.refTables.descItemTypes, state.refTables.groups.data, needClean))
+                    dispatch(this.fundSubNodeFormReceive(parent, json, state.refTables.rulDataTypes, state.refTables.descItemTypes, state.refTables.groups.data, needClean))
                 })
         }
     }
 
     /** Metoda pro volání API. */
-    abstract _callUpdateDescItem(parentId, descItem) : Promise<any>;
+    abstract _callUpdateDescItem(parent, descItem) : Promise<any>;
 
     /** Metoda pro volání API. */
-    abstract _callCreateDescItem(parentId, descItemTypeId, descItem) : Promise<any>;
+    abstract _callCreateDescItem(parent, descItemTypeId, descItem) : Promise<any>;
 
     /**
      * Odeslání hodnoty atributu na server - buď vytvoření nebo aktualizace.
@@ -190,7 +189,7 @@ export abstract class ItemFormActions {
         const refTables = state.refTables;
 
         let item = overrideDescItem || loc!!.item!!;
-        const parentId = subNodeForm.data!!.parent.id;
+        const parent = subNodeForm.data!!.parent;
 
         // pokud se jedná o číslo a zároveň se zobrazuje v HH:mm:ss je třeba ho převést
         if (refType.dataType.code === 'INT' && refType.viewDefinition === DisplayType.DURATION) {
@@ -205,7 +204,7 @@ export abstract class ItemFormActions {
 
             // Reálné provedení operace
             if (typeof item.id !== 'undefined') {
-                this._callUpdateDescItem(parentId, item)
+                this._callUpdateDescItem(parent, item)
                     .then(json => {
                         // if(this.area === OutputFormActions.AREA || this.area === StructureFormActions.AREA || this.area === AccessPointFormActions.AREA){
                             dispatch(this._fundSubNodeFormDescItemResponse(valueLocation, json, 'UPDATE'));
@@ -216,7 +215,7 @@ export abstract class ItemFormActions {
             } else {
                 if (!loc!!.item!!.saving) {
                     dispatch(this._fundSubNodeFormDescItemCreate(valueLocation));
-                    this._callCreateDescItem(subNodeForm.data!!.parent.id, loc!!.itemType.id, item)
+                    this._callCreateDescItem(subNodeForm.data!!.parent, loc!!.itemType.id, item)
                         .then(json => {
                             console.log("formValueStore - id undefined",json);
                             dispatch(this._fundSubNodeFormDescItemResponse(valueLocation, json, 'CREATE'));
@@ -264,7 +263,7 @@ export abstract class ItemFormActions {
             if (!undef) {
                 this._formValueStore(dispatch, getState, valueLocation, descItem);
             } else {
-                this._callDeleteDescItem(subNodeForm.data!!.parent.id, descItem,);
+                this._callDeleteDescItem(subNodeForm.data!!.parent, descItem,);
             }
         };
     }
@@ -333,7 +332,7 @@ export abstract class ItemFormActions {
 
                 const descItem = {...loc!!.item, position: index + 1};
 
-                this._callUpdateDescItem(subNodeForm.data!!.parent.id, descItem)
+                this._callUpdateDescItem(subNodeForm.data!!.parent, descItem)
                     .then(json => {
                         const newValueLocation = {...valueLocation, descItemIndex: index};
                         dispatch(this._fundSubNodeFormDescItemResponse(newValueLocation, json, 'UPDATE'));
@@ -442,7 +441,7 @@ export abstract class ItemFormActions {
     }
 
     /** Metoda pro volání API. */
-    abstract _callDeleteDescItem(parentId, descItem);
+    abstract _callDeleteDescItem(parent, descItem);
 
     /**
      * Smazání hodnoty atributu.
@@ -461,7 +460,7 @@ export abstract class ItemFormActions {
             });
 
             if (typeof loc!!.item!!.id !== 'undefined') {
-                this._callDeleteDescItem(subNodeForm.data!!.parent.id, loc!!.item)
+                this._callDeleteDescItem(subNodeForm.data!!.parent, loc!!.item)
                     .then(json => {
                         dispatch(this._fundSubNodeFormDescItemResponse(valueLocation, json, 'DELETE'));
                     })
@@ -499,7 +498,7 @@ export abstract class ItemFormActions {
     }
 
     /** Metoda pro volání API. */
-    abstract _callDeleteDescItemType(parentId, descItemTypeId);
+    abstract _callDeleteDescItemType(parent, descItemTypeId);
 
     /** Metoda pro volání API. */
     abstract _callSetNotIdentifiedDescItem(elementId, itemTypeId, itemSpecId, itemObjectId);
@@ -560,7 +559,7 @@ export abstract class ItemFormActions {
             dispatch(this._fundSubNodeFormDescItemTypeDeleteInStore(valueLocation, false));
 
             if (hasDescItemsForDelete) {
-                this._callDeleteDescItemType(subNodeForm.data!!.parent.id, loc!!.itemType.id)
+                this._callDeleteDescItemType(subNodeForm.data!!.parent, loc!!.itemType.id)
                     .then(json => {
                         dispatch(this._fundSubNodeFormDescItemResponse(valueLocation, json, 'DELETE_DESC_ITEM_TYPE'));
                     })
@@ -596,11 +595,12 @@ export abstract class ItemFormActions {
 
     /**
      * Vyžádání dat - aby byla ve store k dispozici.
+     * @param {object} parent
      * @param {boolean} needClean
      * @param {boolean} showChildren
      * @param {boolean} showParents
      */
-    fundSubNodeFormFetchIfNeeded(needClean : boolean = false, showChildren : boolean = false, showParents: boolean = false) {
+    fundSubNodeFormFetchIfNeeded(parent: any, needClean : boolean = false, showChildren : boolean = false, showParents: boolean = false) {
         return (dispatch, getState) => {
             const state = getState();
 
@@ -611,8 +611,8 @@ export abstract class ItemFormActions {
                 !state.refTables.descItemTypes.isFetching && state.refTables.descItemTypes.fetched
             ) {
                 const subNodeForm = this._getItemFormStore(state);
-                if ((!subNodeForm.fetched || subNodeForm.dirty || subNodeForm.needClean || needClean) && !subNodeForm.isFetching) {
-                    dispatch(this._fundSubNodeFormFetch(subNodeForm.needClean || needClean, showChildren, showParents));
+                if (JSON.stringify(parent) !== JSON.stringify(subNodeForm.parent) || (!subNodeForm.fetched || subNodeForm.dirty || subNodeForm.needClean || needClean) && !subNodeForm.isFetching) {
+                    dispatch(this._fundSubNodeFormFetch(parent, subNodeForm.needClean || needClean, showChildren, showParents));
                 }
             }
         }
@@ -620,19 +620,19 @@ export abstract class ItemFormActions {
 
     /**
      * Nová data byla načtena.
-     * @param {number} id parentu
+     * @param {any} parent parentu
      * @param {Object} json objekt s daty
      * @param {Object} rulDataTypes store - datové typy pro atributy
      * @param {Object} descItemTypes store - obecný předpis atributů - ref
      * @param {Object} groups store - skupiny pro typy atributů
      * @param {bool} needClean má se formulář reinicializovat a vymazat cšechna editace? - jako nové načtení formuláře
      */
-    fundSubNodeFormReceive(id, json, rulDataTypes, descItemTypes, groups, needClean): AnyAction {
+    fundSubNodeFormReceive(parent, json, rulDataTypes, descItemTypes, groups, needClean): AnyAction {
         return {
             type: types.ITEM_FORM_RECEIVE,
             area: this.area,
             data: json,
-            id,
+            parent,
             rulDataTypes,
             refDescItemTypes: descItemTypes,
             groups,
@@ -643,13 +643,13 @@ export abstract class ItemFormActions {
 
     /**
      * Bylo zahájeno nové načítání dat.
-     * @param {number} id parentu
+     * @param {object} parent parentu
      */
-    fundSubNodeFormRequest(id): AnyAction {
+    fundSubNodeFormRequest(parent): AnyAction {
         return {
             type: types.ITEM_FORM_REQUEST,
             area: this.area,
-            id
+            parent
         }
     }
 }

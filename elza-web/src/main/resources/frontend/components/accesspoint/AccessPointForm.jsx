@@ -10,7 +10,6 @@ import {connect} from 'react-redux'
 
 import '../arr/NodeSubNodeForm.less';
 import { ItemForm } from "./ItemForm";
-import objectById from "../../shared/utils/objectById";
 import {accessPointFormActions} from "./AccessPointFormActions";
 import {ItemFactory} from "./ItemFactory";
 
@@ -20,8 +19,6 @@ import {ItemFactory} from "./ItemFactory";
 class AccessPointForm extends AbstractReactComponent {
 
     static PropTypes = {
-        versionId: React.PropTypes.number.isRequired,
-        fundId: React.PropTypes.number.isRequired,
         selectedSubNodeId: React.PropTypes.number.isRequired,
         rulDataTypes: React.PropTypes.object.isRequired,
         calendarTypes: React.PropTypes.object.isRequired,
@@ -38,17 +35,13 @@ class AccessPointForm extends AbstractReactComponent {
     };
 
     render() {
-        const {versionId, focus, closed, fundId, rulDataTypes, calendarTypes, structureTypes, descItemTypes, subNodeForm, readMode} = this.props;
+        const {focus, closed, rulDataTypes, calendarTypes, structureTypes, descItemTypes, subNodeForm, readMode} = this.props;
 
         return (
             <div className="output-item-form-container">
                 <ItemForm
                     ref="subNodeForm"
                     typePrefix="accesspoint"
-                    versionId={versionId}
-                    fundId={fundId}
-                    routingKey={null}
-                    nodeSetting={null}
                     rulDataTypes={rulDataTypes}
                     calendarTypes={calendarTypes}
                     structureTypes={structureTypes}
@@ -74,18 +67,10 @@ class AccessPointForm extends AbstractReactComponent {
 }
 
 function mapStateToProps(state) {
-    const {arrRegion, focus, refTables} = state;
-    let fund = null;
-    let structureTypes = null;
-    if (arrRegion.activeIndex != null) {
-        fund = arrRegion.funds[arrRegion.activeIndex];
-        structureTypes = objectById(refTables.structureTypes.data, fund.versionId, "versionId");
-    }
+    const {focus} = state;
 
     return {
-        fund,
         focus,
-        structureTypes
     }
 }
 

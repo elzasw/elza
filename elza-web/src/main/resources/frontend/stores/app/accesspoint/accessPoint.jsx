@@ -2,13 +2,15 @@ import * as types from '../../../actions/constants/ActionTypes.js';
 import {consolidateState} from '../../../components/Utils.jsx'
 import {accessPointFormActions} from "../../../components/accesspoint/AccessPointFormActions";
 import {itemForm} from "./itemForm";
+import {apNameFormActions} from "../../../components/accesspoint/ApNameFormActions";
 
 const initialState = {
     id: null,
     fetched: false,
     fetching: false,
     currentDataKey: '',
-    form: itemForm()
+    form: itemForm(),
+    nameItemForm: itemForm()
 };
 
 export default function accessPoint(state = initialState, action = {}) {
@@ -16,6 +18,12 @@ export default function accessPoint(state = initialState, action = {}) {
         const result = {
             ...state,
             form: itemForm(state.form, action),
+        };
+        return consolidateState(state, result);
+    } else if (apNameFormActions.isSubNodeFormAction(action)) {
+        const result = {
+            ...state,
+            nameItemForm: itemForm(state.nameItemForm, action),
         };
         return consolidateState(state, result);
     }

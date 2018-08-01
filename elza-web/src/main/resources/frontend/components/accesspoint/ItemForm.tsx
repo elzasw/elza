@@ -6,7 +6,7 @@ import {Panel, Accordion} from 'react-bootstrap'
 import {indexById} from '../../stores/app/utils'
 import DescItemType from '../arr/nodeForm/DescItemType.jsx'
 import {partyDetailFetchIfNeeded, partyAdd} from '../../actions/party/party'
-import {registryDetailFetchIfNeeded, registryAdd} from '../../actions/registry/registry'
+// import {registryDetailFetchIfNeeded, registryAdd} from '../../actions/registry/registry'
 import {routerNavigate} from '../../actions/router'
 import {setInputFocus} from '../Utils'
 import {setFocus, canSetFocus, focusWasSet, isFocusFor} from '../../actions/global/focus'
@@ -48,7 +48,9 @@ interface Props {
     closed: boolean;
     readMode: boolean;
     descItemFactory: ItemFactoryInterface;
+    descItemTypes: any;
     structureTypes: any;
+    focus: any;
     rulDataTypes: any;
     calendarTypes: any;
     conformityInfo: {missings: any[], errors: any[]};
@@ -273,7 +275,7 @@ class ItemFormClass extends React.Component<DispatchProps & Props, ItemFormClass
             itemTypeIndex,
             itemIndex
         };
-        this.props.dispatch(registryAdd(null, null, this.handleCreatedRecord.bind(this, valueLocation), '', true));
+        // this.props.dispatch(registryAdd(null, null, this.handleCreatedRecord.bind(this, valueLocation), '', true));
     }
 
     /**
@@ -291,8 +293,8 @@ class ItemFormClass extends React.Component<DispatchProps & Props, ItemFormClass
 
         // Akce po vytvoření
         if (submitType === 'storeAndViewDetail') {  // přesměrování na detail
-            this.props.dispatch(registryDetailFetchIfNeeded(data.id));
-            this.props.dispatch(routerNavigate('registry'));
+            // this.props.dispatch(registryDetailFetchIfNeeded(data.id));
+            // this.props.dispatch(routerNavigate('registry'));
         } else {    // nastavení focus zpět na prvek
             const formData = subNodeForm.formData;
             const descItemType = formData!!.itemTypes[valueLocation.itemTypeIndex];
@@ -308,8 +310,8 @@ class ItemFormClass extends React.Component<DispatchProps & Props, ItemFormClass
      * @param recordId {number} identifikátor rejstříku
      */
     handleDetailRecord(itemTypeIndex, itemIndex, recordId) {
-        this.props.dispatch(registryDetailFetchIfNeeded(recordId));
-        this.props.dispatch(routerNavigate('registry'));
+        // this.props.dispatch(registryDetailFetchIfNeeded(recordId));
+        // this.props.dispatch(routerNavigate('registry'));
     }
 
 
@@ -599,7 +601,7 @@ class ItemFormClass extends React.Component<DispatchProps & Props, ItemFormClass
 }
 
 
-export const ItemForm = connect((state: {userDetail, arrRegion}) => {
+export const ItemForm = connect((state: {userDetail, arrRegion}, props: Props) => {
     const {userDetail, arrRegion} = state;
 
     return {

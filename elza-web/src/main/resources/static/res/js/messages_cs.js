@@ -49,6 +49,8 @@ var messages = {
     "global.action.download": "Stáhnout",
     "global.action.downloadAll": "Stáhnout vše",
     "global.action.run": "Spustit",
+    "global.action.back": "Zpět",
+    "global.action.next": "Dále",
 
     "download.allreadyDownloading" : "Požadavek na stažení souboru již byl odeslán",
     "download.error.title": "Chyba stahování",

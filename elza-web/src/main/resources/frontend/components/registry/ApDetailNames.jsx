@@ -9,12 +9,15 @@ import {normalizeNameObject} from 'actions/party/party.jsx'
 import ApNameForm from './ApNameForm.jsx'
 import {WebApi as WebApi} from "../../actions/WebApi";
 import './ApDetailNames.less'
+import NewApItemNameFormModal from "../accesspoint/NewApItemNameFormModal";
+import UpdateApItemNameFormModal from "../accesspoint/UpdateApItemNameFormModal";
 
 class ApDetailNames extends AbstractReactComponent {
 
     static PropTypes = {
         canEdit: React.PropTypes.bool.isRequired,
         accessPoint: React.PropTypes.object.isRequired,
+        type: React.PropTypes.object.isRequired,
         refreshParty: React.PropTypes.func.isRequired,
     };
 
@@ -26,7 +29,7 @@ class ApDetailNames extends AbstractReactComponent {
         const {accessPoint} = this.props;
         WebApi.createAccessPointName(accessPoint.id, data).then(() => {
             this.props.refreshParty();
-            this.dispatch(modalDialogHide());
+            this.props.dispatch(modalDialogHide());
         });
     };
 
@@ -34,7 +37,7 @@ class ApDetailNames extends AbstractReactComponent {
         const {accessPoint} = this.props;
         WebApi.updateAccessPointName(accessPoint.id, {...name, ...data}).then(() => {
             this.props.refreshParty();
-            this.dispatch(modalDialogHide());
+            this.props.dispatch(modalDialogHide());
         });
     };
 
@@ -53,11 +56,24 @@ class ApDetailNames extends AbstractReactComponent {
     };
 
     handleNameAdd = () => {
-        this.dispatch(modalDialogShow(this, i18n('accesspoint.detail.name.new'), <ApNameForm onSubmit={this.nameAdd} />, "dialog-lg"));
+        const {type} = this.props;
+        if (type.ruleSystemId != null) {
+            const accessPointId = this.props.accessPoint.id;
+            WebApi.createAccessPointStructuredName(accessPointId).then(data => {
+                this.props.dispatch(modalDialogShow(this, i18n('accesspoint.detail.name.new'), <NewApItemNameFormModal objectId={data.objectId} accessPointId={accessPointId} onSubmit={this.props.refreshParty} />, "dialog-lg"));
+            })
+        } else {
+            this.props.dispatch(modalDialogShow(this, i18n('accesspoint.detail.name.new'), <ApNameForm onSubmit={this.nameAdd} />, "dialog-lg"));
+        }
     };
 
     handleNameUpdate = (name) => {
-        this.dispatch(modalDialogShow(this, i18n('accesspoint.detail.name.update'), <ApNameForm initialValues={name} onSubmit={this.nameUpdate.bind(this, name)} />, "dialog-lg"));
+        const {type} = this.props;
+        if (type.ruleSystemId != null) {
+            this.props.dispatch(modalDialogShow(this, i18n('accesspoint.detail.name.new'), <UpdateApItemNameFormModal objectId={name.objectId} accessPointId={this.props.accessPoint.id} onSubmit={this.props.refreshParty} />, "dialog-lg"));
+        } else {
+            this.props.dispatch(modalDialogShow(this, i18n('accesspoint.detail.name.update'), <ApNameForm initialValues={name} onSubmit={this.nameUpdate.bind(this, name)}/>, "dialog-lg"));
+        }
     };
 
     handleDelete = (id) => {
@@ -67,7 +83,7 @@ class ApDetailNames extends AbstractReactComponent {
     };
 
     handleSelectPreferred = (id) => {
-        if (confirm(i18n('accesspoint.detail.name.setPrefferedNameAlert'))) {
+        if (confirm(i18n('accesspoint.detail.name.setPreferredNameAlert'))) {
             this.nameSetPreffered(id);
         }
     };

@@ -6,9 +6,7 @@ import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {
     AbstractReactComponent,
-    Search,
     i18n,
-    FormInput,
     Icon,
     CollapsablePanel,
     NoFocusButton,
@@ -38,8 +36,6 @@ import {PropTypes} from 'prop-types';
 import defaultKeymap from './RegistryDetailKeymap.jsx';
 import './RegistryDetail.less';
 import EditRegistryForm from "./EditRegistryForm";
-import RegistryDetailVariantRecords from "./RegistryDetailVariantRecords";
-import RegistryDetailCoordinates from "./RegistryDetailCoordinates";
 import {requestScopesIfNeeded} from "../../actions/refTables/scopesData";
 import {FOCUS_KEYS, ApState} from "../../constants.tsx";
 import ApChangeDescriptionForm from "./ApChangeDescriptionForm";
@@ -48,7 +44,6 @@ import {WebApi} from "../../actions/WebApi";
 import AccessPointForm from "../accesspoint/AccessPointForm";
 import {refRulDataTypesFetchIfNeeded} from "../../actions/refTables/rulDataTypes";
 import {descItemTypesFetchIfNeeded} from "../../actions/refTables/descItemTypes";
-import {getDescItemsAddTree} from "../arr/ArrUtils";
 import AddDescItemTypeForm from "../arr/nodeForm/AddDescItemTypeForm";
 import {accessPointFormActions} from "../accesspoint/AccessPointFormActions";
 import TooltipTrigger from "../shared/tooltip/TooltipTrigger";
@@ -96,7 +91,7 @@ class RegistryDetail extends AbstractReactComponent {
         if (id) {
             dispatch(registryDetailFetchIfNeeded(id));
             if (fetched) {
-                dispatch(accessPointFormActions.fundSubNodeFormFetchIfNeeded())
+                dispatch(accessPointFormActions.fundSubNodeFormFetchIfNeeded({id}))
             }
         }
     };
@@ -116,9 +111,9 @@ class RegistryDetail extends AbstractReactComponent {
     };
 
     handleGoToParty = () => {
-        this.dispatch(partyDetailFetchIfNeeded(this.props.registryDetail.data.partyId));
+        this.props.dispatch(partyDetailFetchIfNeeded(this.props.registryDetail.data.partyId));
         if (!this.props.goToPartyPerson) {
-            this.dispatch(routerNavigate('party'));
+            this.props.dispatch(routerNavigate('party'));
         } else {
             this.props.goToPartyPerson();
         }
@@ -141,7 +136,7 @@ class RegistryDetail extends AbstractReactComponent {
 
     handleRecordUpdate = () => {
         const {registryDetail:{data}} = this.props;
-        this.dispatch(
+        this.props.dispatch(
             modalDialogShow(
                 this,
                 i18n('registry.update.title'),
@@ -160,9 +155,9 @@ class RegistryDetail extends AbstractReactComponent {
     handleRecordUpdateCall = (value) => {
         const {registryDetail:{data}} = this.props;
 
-        return this.dispatch(registryUpdate(data.id, value.typeId, () => {
+        return this.props.dispatch(registryUpdate(data.id, value.typeId, () => {
             // Nastavení focus
-            this.dispatch(setFocus(FOCUS_KEYS.REGISTRY, 2))
+            this.props.dispatch(setFocus(FOCUS_KEYS.REGISTRY, 2))
         }));
 
     };
@@ -233,12 +228,12 @@ class RegistryDetail extends AbstractReactComponent {
     };
 
     refreshData = () => {
-        this.dispatch(registryDetailInvalidate());
+        this.props.dispatch(registryDetailInvalidate());
     }
 
     editDescription = () => {
         const {registryDetail:{data}} = this.props;
-        this.dispatch(
+        this.props.dispatch(
             modalDialogShow(
                 this,
                 i18n('accesspoint.update.description'),
@@ -265,11 +260,9 @@ class RegistryDetail extends AbstractReactComponent {
 
         let infoTypesMap = new Map(subNodeForm.infoTypesMap);
 
-        console.warn(subNodeForm.infoTypesMap, infoTypesMap, subNodeForm.data.itemTypes);
-        subNodeForm.formData.itemTypes.forEach(descItemType => {
+        formData.itemTypes.forEach(descItemType => {
             infoTypesMap.delete(descItemType.id);
         });
-        console.warn(subNodeForm.data.itemTypes, infoTypesMap, subNodeForm.infoTypesMap);
 
         subNodeForm.refTypesMap.forEach(refType => {
              if (infoTypesMap.has(refType.id)) {    // ještě ji na formuláři nemáme
@@ -290,10 +283,6 @@ class RegistryDetail extends AbstractReactComponent {
                 children: itemTypes
             }
         ];
-
-
-        // getDescItemsAddTree(formData.descItemGroups, subNodeForm.infoTypesMap, subNodeForm.refTypesMap, subNodeForm.infoGroups, false);
-
 
         const submit = (data) => {
             this.props.dispatch(modalDialogHide());
@@ -406,7 +395,7 @@ class RegistryDetail extends AbstractReactComponent {
     };
 
     render() {
-        const {registryDetail, scopes, eidTypes, ap, refTables} = this.props;
+        const {registryDetail, scopes, eidTypes, ap, refTables, apTypeIdMap} = this.props;
         const {data, fetched, isFetching, id} = registryDetail;
         const {activeIndexes} = this.state;
 
@@ -472,7 +461,7 @@ class RegistryDetail extends AbstractReactComponent {
                     </div>
                     <CollapsablePanel tabIndex={0} key={"NAMES"} isOpen={activeIndexes && activeIndexes["NAMES"] === true} header={<div>{i18n("accesspoint.detail.formNames")}{this.renderApNamesError(data.names)}</div>} eventKey={"NAMES"} onPin={this.handlePinToggle} onSelect={this.handleToggleActive}>
                         <div className={"cp-15"}>
-                            <ApDetailNames accessPoint={data} canEdit={!disableEdit} refreshParty={this.refreshData}  />
+                            <ApDetailNames accessPoint={data} type={apTypeIdMap[data.typeId]} canEdit={!disableEdit} refreshParty={this.refreshData}  />
                         </div>
                     </CollapsablePanel>
                     <CollapsablePanel tabIndex={0} key={"DESCRIPTION"} isOpen={activeIndexes && activeIndexes["DESCRIPTION"] === true} header={<div>{i18n("accesspoint.detail.description")}{this.renderApItemsError(data)}</div>} eventKey={"DESCRIPTION"} onPin={this.handlePinToggle} onSelect={this.handleToggleActive}>
@@ -484,7 +473,7 @@ class RegistryDetail extends AbstractReactComponent {
                                     <div>{data.characteristics}</div>
                                 </div>
                             </div>
-                            {ap.form.fetched && <AccessPointForm
+                            {apTypeIdMap[data.typeId].ruleSystemId && ap.form.fetched && <AccessPointForm
                                 versionId={null}
                                 fundId={null}
                                 selectedSubNodeId={ap.id}

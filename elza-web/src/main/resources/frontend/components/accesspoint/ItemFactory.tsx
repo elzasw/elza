@@ -6,9 +6,9 @@ import DescItemInt from '../arr/nodeForm/DescItemInt.jsx';
 import DescItemDecimal from '../arr/nodeForm/DescItemDecimal.jsx';
 import DescItemCoordinates from '../arr/nodeForm/DescItemCoordinates.jsx';
 import DescItemUnitdate from '../arr/nodeForm/DescItemUnitdate.jsx';
-import DescItemStructureRef from '../arr/nodeForm/DescItemStructureRef.jsx';
+// import DescItemStructureRef from '../arr/nodeForm/DescItemStructureRef.jsx';
 import DescItemFileRef from '../arr/nodeForm/DescItemFileRef.jsx';
-import DescItemPartyRef from '../arr/nodeForm/DescItemPartyRef.jsx';
+// import DescItemPartyRef from '../arr/nodeForm/DescItemPartyRef.jsx';
 // import DescItemRecordRef from '../arr/nodeForm/DescItemRecordRef.jsx';
 import DescItemJsonTable from '../arr/nodeForm/DescItemJsonTable.jsx';
 import DescItemDate from '../arr/nodeForm/DescItemDate.jsx';
@@ -18,9 +18,9 @@ import ItemFragmentRef from "./ItemFragmentRef";
 
 export class ItemFactory implements ItemFactoryInterface {
     static typeComponentMap = {
-        [DataTypeCode.PARTY_REF]: DescItemPartyRef,
+        // [DataTypeCode.PARTY_REF]: DescItemPartyRef,
         // [DataTypeCode.RECORD_REF]: DescItemRecordRef,
-        [DataTypeCode.STRUCTURED]: DescItemStructureRef,
+        // [DataTypeCode.STRUCTURED]: DescItemStructureRef,
         [DataTypeCode.FILE_REF]: DescItemFileRef,
         [DataTypeCode.UNITDATE]: DescItemUnitdate,
         [DataTypeCode.UNITID]: DescItemUnitid,

@@ -139,7 +139,6 @@ export interface IFormData {
 export interface ApFormVO {
     items: ApItemVO<any>[],
     itemTypes: ItemTypeLiteVO[],
-    parent: { id: number }
 }
 
 export interface ItemData extends ApFormVO {
@@ -154,7 +153,7 @@ export interface IItemFormState {
     dirty: boolean;
     needClean: boolean;   // pokud je true, přenačtou se data a vymaže se aktuální editace - obdoba jako nové zobrazení formuláře
     versionId?: number;
-    id?: number;
+    parent?: {id: number, [key: string]: any};
     data?: ItemData;
     infoTypes?: RefType[];
     infoTypesMap?: Map<any, RefTypeExt>;
@@ -170,7 +169,7 @@ const initialState : IItemFormState = {
     dirty: false,
     needClean: false,   // pokud je true, přenačtou se data a vymaže se aktuální editace - obdoba jako nové zobrazení formuláře
     versionId: undefined,
-    id: undefined,
+    parent: undefined,
     formData: undefined,
     data: undefined,
     infoTypesMap: undefined,
@@ -889,15 +888,15 @@ export function itemForm(state: IItemFormState = initialState, action: IAction =
         case types.ITEM_FORM_REQUEST:
             return {
                 ...state,
-                id: action.id,
-                fetchingId: action.id,
+                parent: action.parent,
+                fetchingId: action.parent.id,
                 isFetching: true,
             };
         case types.ITEM_FORM_RECEIVE:
             // ##
             // # Inicializace dat
             // ##
-            if (action.id !== state.id) {
+            if (action.parent.id !== state.parent!!.id) {
                 return state;
             }
 
@@ -938,7 +937,7 @@ export function itemForm(state: IItemFormState = initialState, action: IAction =
             var {node, parent} = action.data;
             let nodeId = (node && node.id) || (parent && parent.id);
 
-            if (nodeId != state.id){
+            if (nodeId != state.parent!!.id){
                 // not the right node
                 return state;
             }
