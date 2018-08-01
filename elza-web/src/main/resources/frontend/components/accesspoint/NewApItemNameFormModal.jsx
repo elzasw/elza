@@ -59,7 +59,7 @@ class NewApItemNameFormModal extends AbstractReactComponent {
         ];
 
         const submit = (data) => {
-            this.props.dispatch(modalDialogHide());
+            //this.props.dispatch(modalDialogHide());
             this.props.dispatch(accessPointFormActions.fundSubNodeFormDescItemTypeAdd(data.descItemTypeId.id));
         };
 

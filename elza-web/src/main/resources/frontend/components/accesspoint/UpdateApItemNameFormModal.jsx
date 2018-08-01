@@ -8,7 +8,7 @@ import {decorateFormField, submitReduxFormWithProp} from 'components/form/FormUt
 import {getRegistryRecordTypesIfNeeded} from 'actions/registry/registryRecordTypes.jsx'
 import {WebApi} from 'actions/index.jsx';
 import ApItemNameForm from "../accesspoint/ApItemNameForm";
-import {accessPointFormActions} from "../accesspoint/AccessPointFormActions";
+import {apNameFormActions} from "../accesspoint/ApNameFormActions";
 import {modalDialogHide, modalDialogShow} from "../../actions/global/modalDialog";
 import AddDescItemTypeForm from "../arr/nodeForm/AddDescItemTypeForm";
 
@@ -59,8 +59,8 @@ class UpdateApItemNameFormModal extends AbstractReactComponent {
         ];
 
         const submit = (data) => {
-            this.props.dispatch(modalDialogHide());
-            this.props.dispatch(accessPointFormActions.fundSubNodeFormDescItemTypeAdd(data.descItemTypeId.id));
+            //this.props.dispatch(modalDialogHide());
+            this.props.dispatch(apNameFormActions.fundSubNodeFormDescItemTypeAdd(data.descItemTypeId.id));
         };
 
         // Modální dialog
@@ -83,7 +83,7 @@ class UpdateApItemNameFormModal extends AbstractReactComponent {
                     <ApItemNameForm parent={{id:objectId, accessPointId}} />
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button bsStyle="link" onClick={this.onClose}>{i18n('global.action.ok')}</Button>
+                    <Button bsStyle="link" onClick={this.onClose}>{i18n('global.action.close')}</Button>
                 </Modal.Footer>
             </div>
         )

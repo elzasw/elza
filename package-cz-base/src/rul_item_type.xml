@@ -515,8 +515,8 @@
         <use-specification>false</use-specification>
     </item-type>
     <item-type code="ZP2015_UNIT_COUNT_ITEM" data-type="INT">
-        <name>Počet EJ</name>
-        <shortcut>EJ</shortcut>
+        <name>Vypočtené EJ</name>
+        <shortcut>Vypočtené EJ</shortcut>
         <description>Počet EJ</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
@@ -797,7 +797,7 @@
     </item-type>
     <item-type code="AP_NAME" data-type="STRING">
         <name>Hlavní část</name>
-        <shortcut>Hl. číst</shortcut>
+        <shortcut>Hl. část</shortcut>
         <description>Hlavní část jména</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>

@@ -184,6 +184,7 @@ var messages = {
     "exception.reg.PARTY_NOT_EXIST": "Osoba neexistuje",
     "exception.reg.FOREIGN_ENTITY_INVALID_SUBTYPE": "Navázaná entita musí mít typ rejstříku nebo podtyp, který je navázaný na roli entity",
     "exception.reg.FOREIGN_ENTITY_INVALID_SCOPE": "Navázaná entita musí mít stejnou třídu rejstříkového hesla jako osoba, ke které entitu navazujeme",
+    "exception.reg.NOT_UNIQUE_FULL_NAME": "Celé jméno není unikátní v rámci třídy",
 
     "exception.usr.USER_DELETE_ERROR": "Osobu nelze smazat, kvůli navázaným uživatelům",
     "exception.usr.USER_NOT_FOUND": "Uživatel s ID={id} neexistuje",
