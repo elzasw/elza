@@ -17,6 +17,8 @@ import '../arr/nodeForm/AbstractDescItem.less';
 import {WebApi} from '../../actions/index.jsx';
 import {Dispatch} from "../../typings/globals";
 import {ItemFragmentRefVO} from "../../stores/app/accesspoint/itemFormInterfaces";
+import FragmentFormModal from "./FragmentFormModal";
+import {modalDialogHide, modalDialogShow} from '../../actions/global/modalDialog'
 
 interface FromState {
 }
@@ -42,11 +44,16 @@ interface ItemFormClassState {
  */
 export class ItemFragmentRefClass extends React.Component<DispatchProps & Props, ItemFormClassState>  {
 
-
+    handleNameAdd = () => {
+        //
+        WebApi.createFragment("TEST").then(data => {
+            this.props.dispatch(modalDialogShow(this, i18n('accesspoint.detail.name.new'), <FragmentFormModal fragmentId={data.frragmentId} onSubmit={(data) => console.warn(data)} />, "dialog-lg"));
+        })
+    };
 
     render() {
         const {descItem, locked, readMode, cal, typePrefix, ...otherProps} = this.props;
-
+console.warn(descItem, otherProps)
         return <div className='desc-item-value desc-item-value-parts'>
             <h4>{descItem.fragment && descItem.fragment.value}</h4>
         </div>

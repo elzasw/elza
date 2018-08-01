@@ -544,6 +544,10 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/fragment/' + fragmentId);
     }
 
+    createFragment(fragmentTypeCode) {
+        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/fragment/create/' + fragmentTypeCode);
+    }
+
     deleteFragment(fragmentId) {
         return AjaxUtils.ajaxDelete(WebApiCls.registryUrl + '/fragment/' + fragmentId, null, null);
     }

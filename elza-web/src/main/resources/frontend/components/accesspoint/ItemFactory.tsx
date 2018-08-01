@@ -9,17 +9,18 @@ import DescItemUnitdate from '../arr/nodeForm/DescItemUnitdate.jsx';
 // import DescItemStructureRef from '../arr/nodeForm/DescItemStructureRef.jsx';
 import DescItemFileRef from '../arr/nodeForm/DescItemFileRef.jsx';
 // import DescItemPartyRef from '../arr/nodeForm/DescItemPartyRef.jsx';
-// import DescItemRecordRef from '../arr/nodeForm/DescItemRecordRef.jsx';
+import DescItemRecordRef from '../arr/nodeForm/DescItemRecordRef.jsx';
 import DescItemJsonTable from '../arr/nodeForm/DescItemJsonTable.jsx';
 import DescItemDate from '../arr/nodeForm/DescItemDate.jsx';
 import {DataTypeCode} from "../../stores/app/accesspoint/itemFormInterfaces";
 import {ItemFactoryInterface} from "./ItemFactoryInterface";
-import ItemFragmentRef from "./ItemFragmentRef";
+// import ItemFragmentRef from "./ItemFragmentRef";
+import ItemFragmentRef from '../arr/nodeForm/DescItemFragmentRef.jsx';
 
 export class ItemFactory implements ItemFactoryInterface {
     static typeComponentMap = {
         // [DataTypeCode.PARTY_REF]: DescItemPartyRef,
-        // [DataTypeCode.RECORD_REF]: DescItemRecordRef,
+        [DataTypeCode.RECORD_REF]: DescItemRecordRef,
         // [DataTypeCode.STRUCTURED]: DescItemStructureRef,
         [DataTypeCode.FILE_REF]: DescItemFileRef,
         [DataTypeCode.UNITDATE]: DescItemUnitdate,

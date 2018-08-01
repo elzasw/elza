@@ -16,7 +16,7 @@ public class ArrDataApFragRef extends ArrData {
     public static final String FRAGMENT = "fragment";
 
     @RestResource(exported = false)
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApAccessPoint.class)
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApFragment.class)
     @JoinColumn(name = "fragmentId", nullable = false)
     private ApFragment fragment;
 

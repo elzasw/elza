@@ -33,6 +33,7 @@ import {
 import {refExternalSystemListInvalidate} from 'actions/refTables/externalSystems'
 import {structureTypeInvalidate} from "../arr/structureType";
 import {AccessPointFormActions, accessPointFormActions} from "../../components/accesspoint/AccessPointFormActions";
+import {ApNameFormActions} from "../../components/accesspoint/ApNameFormActions";
 
 export function isFundChangeAction(action) {
     switch (action.type) {
@@ -459,12 +460,23 @@ export function structureChange(data) {
 export function changeAccessPoint(ids) {
     return (dispatch, getState) => {
         const store = getState();
-        if (ids.indexOf(store.ap.form.id) !== -1) {
+        const parentAp = store.ap.form.parent;
+        if (parentAp && ids.indexOf(parentAp.id) !== -1) {
             dispatch({
                 type: "CHANGE_ACCESS_POINT",
-                id: store.ap.form.id,
+                id: parentAp.id,
                 area: AccessPointFormActions.AREA
             })
         }
+
+        const parentName = store.ap.nameItemForm.parent;
+        if (parentName && ids.indexOf(parentName.accessPointId) !== -1) {
+            dispatch({
+                type: "CHANGE_ACCESS_POINT",
+                id: parentName.id,
+                area: ApNameFormActions.AREA
+            })
+        }
     }
+
 }

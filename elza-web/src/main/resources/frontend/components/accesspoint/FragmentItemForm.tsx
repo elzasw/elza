@@ -9,7 +9,6 @@ import {
 import {connect} from 'react-redux'
 import '../arr/NodeSubNodeForm.less';
 import { ItemForm } from "./ItemForm";
-import {apNameFormActions} from "./ApNameFormActions";
 import {ItemFactory} from "./ItemFactory";
 import {ItemFactoryInterface} from "./ItemFactoryInterface";
 import {Dispatch} from "../../typings/globals";
@@ -63,10 +62,10 @@ class FragmentItemForm extends React.Component<Props & DispatchProps, State> {
     };
 
     componentDidMount() {
-        this.props.dispatch(apNameFormActions.fundSubNodeFormFetchIfNeeded(this.props.parent))
+        this.props.dispatch(fragmentItemFormActions.fundSubNodeFormFetchIfNeeded(this.props.parent))
     }
     componentWillReceiveProps(nextProps) {
-        nextProps.dispatch(apNameFormActions.fundSubNodeFormFetchIfNeeded(this.props.parent))
+        nextProps.dispatch(fragmentItemFormActions.fundSubNodeFormFetchIfNeeded(this.props.parent))
     }
 
     initFocus = () => {

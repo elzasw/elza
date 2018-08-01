@@ -14,7 +14,13 @@ import {savingApiWrapper} from 'actions/global/status.jsx';
 import {i18n} from 'components/shared';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {addToastrSuccess,addToastrDanger, addToastrWarning} from '../../components/shared/toastr/ToastrActions.jsx'
-import AddRegistryForm from "../../components/registry/AddRegistryForm";
+
+
+let AddRegistryForm;
+import('../../components/registry/AddRegistryForm').then((a) => {
+    AddRegistryForm = a.default;
+});
+//import AddRegistryForm from "../../components/registry/AddRegistryForm";
 
 
 

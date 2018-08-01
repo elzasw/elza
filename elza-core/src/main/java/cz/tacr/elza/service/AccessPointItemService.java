@@ -3,6 +3,7 @@ package cz.tacr.elza.service;
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
 import cz.tacr.elza.controller.vo.ap.item.ApUpdateItemVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.UpdateOp;
+import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.*;
@@ -171,6 +172,7 @@ public class AccessPointItemService {
                              final List<ApItem> itemsDb,
                              final Map<Integer, ApItem> objectIdItemMap,
                              final ApChange change) {
+        StaticDataProvider sdp = staticDataService.getData();
         List<ArrData> dataToSave = new ArrayList<>();
         for (ApItemVO updateItem : updateItems) {
             Integer objectId = updateItem.getObjectId();
@@ -183,8 +185,10 @@ public class AccessPointItemService {
             ArrData data = updateItem.createDataEntity(em);
             ApItem newItem = item.copy();
             item.setDeleteChange(change);
+
             newItem.setCreateChange(change);
             newItem.setData(data);
+            newItem.setItemSpec(updateItem.getSpecId() == null ? null : sdp.getItemSpecById(updateItem.getSpecId()));
 
             dataToSave.add(data);
 

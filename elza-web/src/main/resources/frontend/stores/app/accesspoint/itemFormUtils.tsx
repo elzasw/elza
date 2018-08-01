@@ -1076,7 +1076,7 @@ export function getItemClass(dataType) {
         case DataTypeCode.FILE_REF:
             return '.ApItemFileRefVO';
         case DataTypeCode.RECORD_REF:
-            return '.ApItemRecordRefVO';
+            return '.ApItemAccessPointRefVO';
         case DataTypeCode.STRUCTURED:
             return '.ApItemStructureVO';
         case DataTypeCode.JSON_TABLE:
@@ -1091,6 +1091,8 @@ export function getItemClass(dataType) {
             return '.ApItemUnitidVO';
         case DataTypeCode.DATE:
             return '.ApItemDateVO';
+        case DataTypeCode.APFRAG_REF:
+            return '.ApItemAPFragmentRefVO';
         default:
             console.error("Unsupported data type", dataType);
             return null;

@@ -222,6 +222,7 @@ export function validate(item: ApItemVO<any>, refType: RefType, valueServerError
     switch (refType.dataType.code) {
         case DataTypeCode.PARTY_REF:
         case DataTypeCode.RECORD_REF:
+        case DataTypeCode.APFRAG_REF:
             if (!item.value || typeof item.value !== 'number') {
                 error.value = i18n('subNodeForm.validate.value.notEmpty');
             }
