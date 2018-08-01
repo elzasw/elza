@@ -19,6 +19,7 @@ class ApDetailNames extends AbstractReactComponent {
         accessPoint: React.PropTypes.object.isRequired,
         type: React.PropTypes.object.isRequired,
         refreshParty: React.PropTypes.func.isRequired,
+        renderError: React.PropTypes.func.isRequired,
     };
 
     getName = (name) => {
@@ -89,7 +90,7 @@ class ApDetailNames extends AbstractReactComponent {
     };
 
     render() {
-        const {accessPoint, canEdit} = this.props;
+        const {accessPoint, canEdit, renderError} = this.props;
 
         return <div className="accesspoint-detail-names">
             <div>
@@ -101,6 +102,7 @@ class ApDetailNames extends AbstractReactComponent {
                     <div key={name.id} className={name.preferredName ? "preffered value-group" : "value-group"}>
                         <div className="value">{this.getName(name)}</div>
                         <div className="actions">
+                            {renderError(name)}
                             {canEdit && <Button bsStyle="action" onClick={() => this.handleNameUpdate(name)}><Icon glyph="fa-pencil" /></Button>}
                             {canEdit && !name.preferredName && <span>
                                 <Button className="delete" bsStyle="action" onClick={() => this.handleDelete(name.objectId)}><Icon glyph="fa-trash" /></Button>

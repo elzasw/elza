@@ -370,10 +370,61 @@ class RegistryDetail extends AbstractReactComponent {
                 );
             }
 
-
-
             if (content.length > 0) {
                 return <span className={"pull-right"}>{this.renderTooltip("fa-exclamation-circle", <div>{content}</div>)}</span>
+            }
+        }
+    };
+
+    renderApNameItemsError = (data) => {
+        const {ap, refTables} = this.props;
+
+        const itemTypes = refTables.descItemTypes.items;
+        if (!refTables.descItemTypes.fetched) {
+            return;
+        }
+
+        const {state, errorDescription} = data;
+
+        if (state === ApState.ERROR) {
+            const error = JSON.parse(errorDescription) || {};
+            let content = [];
+
+            if(error.emptyValue){
+                content.push(<div className="error-item">{i18n("ap.error.emptyValue")}</div>);
+            }
+            if(error.duplicateValue){
+                content.push(<div className="error-item">{i18n("ap.error.duplicateValue")}</div>);
+            }
+            if(error.impossibleItemTypeIds && error.impossibleItemTypeIds.length > 0){
+                const items = [];
+                error.impossibleItemTypeIds.map((id)=>{
+                    const type = objectById(itemTypes, id);
+                    items.push(<li>{type.name}</li>);
+                });
+                content.push(
+                    <div className="error-list error-item">
+                        <div>{i18n("ap.error.impossibleItemTypeIds")}</div>
+                        <ul>{items}</ul>
+                    </div>
+                );
+            }
+            if(error.requiredItemTypeIds && error.requiredItemTypeIds.length > 0){
+                const items = [];
+                error.requiredItemTypeIds.map((id)=>{
+                    const type = objectById(itemTypes, id);
+                    items.push(<li>{type.name}</li>);
+                });
+                content.push(
+                    <div className="error-list error-item">
+                        <div>{i18n("ap.error.requiredItemTypeIds")}</div>
+                        <ul>{items}</ul>
+                    </div>
+                );
+            }
+
+            if (content.length > 0) {
+                return <span>{this.renderTooltip("fa-exclamation-circle", <div>{content}</div>)}</span>
             }
         }
     };
@@ -467,7 +518,7 @@ class RegistryDetail extends AbstractReactComponent {
                     </div>
                     <CollapsablePanel tabIndex={0} key={"NAMES"} isOpen={activeIndexes && activeIndexes["NAMES"] === true} header={<div>{i18n("accesspoint.detail.formNames")}{this.renderApNamesError(data.names)}</div>} eventKey={"NAMES"} onPin={this.handlePinToggle} onSelect={this.handleToggleActive}>
                         <div className={"cp-15"}>
-                            <ApDetailNames accessPoint={data} type={apTypeIdMap[data.typeId]} canEdit={!disableEdit} refreshParty={this.refreshData}  />
+                            <ApDetailNames accessPoint={data} type={apTypeIdMap[data.typeId]} canEdit={!disableEdit} refreshParty={this.refreshData} renderError={this.renderApNameItemsError}  />
                         </div>
                     </CollapsablePanel>
                     <CollapsablePanel tabIndex={0} key={"DESCRIPTION"} isOpen={activeIndexes && activeIndexes["DESCRIPTION"] === true} header={<div>{i18n("accesspoint.detail.description")}{this.renderApItemsError(data)}</div>} eventKey={"DESCRIPTION"} onPin={this.handlePinToggle} onSelect={this.handleToggleActive}>
