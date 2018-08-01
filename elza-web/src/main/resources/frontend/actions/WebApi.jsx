@@ -540,6 +540,27 @@ export class WebApiCls {
         return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/' + accessPointId + '/name/' + objectId + '/preferred');
     }
 
+    getFragment(fragmentId) {
+        return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/fragment/' + fragmentId);
+    }
+
+    deleteFragment(fragmentId) {
+        return AjaxUtils.ajaxDelete(WebApiCls.registryUrl + '/fragment/' + fragmentId, null, null);
+    }
+
+    confirmFragment(fragmentId) {
+        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/fragment/' + fragmentId + '/confirm', null, null);
+    }
+
+    changeFragmentItems(fragmentId, items) {
+        return AjaxUtils.ajaxPut(WebApiCls.registryUrl + '/fragment/' + fragmentId + '/items', null, items);
+    }
+
+    deleteFragmentItemsByType(fragmentId, itemTypeId) {
+        return AjaxUtils.ajaxDelete(WebApiCls.registryUrl + '/fragment/' + fragmentId + '/type/' + itemTypeId, null, null);
+
+    }
+
     createRegCoordinates(data){
         return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/regCoordinates', null, data);
     }

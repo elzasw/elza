@@ -3,6 +3,7 @@ import {consolidateState} from '../../../components/Utils.jsx'
 import {accessPointFormActions} from "../../../components/accesspoint/AccessPointFormActions";
 import {itemForm} from "./itemForm";
 import {apNameFormActions} from "../../../components/accesspoint/ApNameFormActions";
+import {fragmentItemFormActions} from "../../../components/accesspoint/FragmentItemFormActions";
 
 const initialState = {
     id: null,
@@ -10,7 +11,8 @@ const initialState = {
     fetching: false,
     currentDataKey: '',
     form: itemForm(),
-    nameItemForm: itemForm()
+    nameItemForm: itemForm(),
+    fragmentItemForm: itemForm()
 };
 
 export default function accessPoint(state = initialState, action = {}) {
@@ -24,6 +26,12 @@ export default function accessPoint(state = initialState, action = {}) {
         const result = {
             ...state,
             nameItemForm: itemForm(state.nameItemForm, action),
+        };
+        return consolidateState(state, result);
+    } else if (fragmentItemFormActions.isSubNodeFormAction(action)) {
+        const result = {
+            ...state,
+            fragmentItemForm: itemForm(state.fragmentItemForm, action),
         };
         return consolidateState(state, result);
     }
