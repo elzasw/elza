@@ -141,7 +141,7 @@ export function exportFund(fundId, transformationName) {
         transformationName:transformationName
     }
     return dispatch => {
-        dispatch(downloadAjaxFile("/api/export/create", "elza-data.xml", "POST", requestData));
+        dispatch(downloadAjaxFile(UrlFactory.exportFund(), "elza-data.xml", "POST", requestData));
     }
 }
 
