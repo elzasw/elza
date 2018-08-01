@@ -48,7 +48,8 @@ import {
     structureChange,
     updateExtSystem,
     userChange,
-    changeAccessPoint
+    changeAccessPoint,
+    changeFragment
 } from './actions/global/change.jsx';
 
 import {Stomp} from 'stompjs';
@@ -249,7 +250,8 @@ let eventMap = {
     'DELETE_NODES': deleteNodes,
     'FUND_EXTENSION_CHANGE': fundExtensionChange,
     'STRUCTURE_DATA_CHANGE': structureDataChange,
-    'ACCESS_POINT_UPDATE':accessPointUpdate
+    'ACCESS_POINT_UPDATE':accessPointUpdate,
+    'FRAGMENT_UPDATE': fragmentUpdate
 }
 
 if (!window.ws) {
@@ -524,6 +526,10 @@ function extSystemDelete(value){
 
 function accessPointUpdate(value) {
     store.dispatch(changeAccessPoint(value.ids));
+}
+
+function fragmentUpdate(value) {
+    store.dispatch(changeFragment(value.ids));
 }
 
 /**

@@ -22,11 +22,14 @@ import AddDescItemTypeForm from "../arr/nodeForm/AddDescItemTypeForm";
 class AddRegistryForm extends AbstractReactComponent {
     static validate = (values, props) => {
         const errors = {};
-        if (!values.name) {
-            errors.name = i18n('global.validation.required');
-        }
-        if (!values.description) {
-            errors.description = i18n('global.validation.required');
+        const structured = props.fields.structured && props.fields.structured.value;
+        if (!structured) {
+            if (!values.name) {
+                errors.name = i18n('global.validation.required');
+            }
+            if (!values.description) {
+                errors.description = i18n('global.validation.required');
+            }
         }
         if (!values.scopeId) {
             errors.scopeId = i18n('global.validation.required');
@@ -207,6 +210,8 @@ class AddRegistryForm extends AbstractReactComponent {
 
         const value = getTreeItemById(typeId ? typeId.value : "", items);
 
+        const isStructured = structured && structured.value;
+
         return (
             <div key={this.props.key}>
                 <Form onSubmit={handleSubmit(okSubmitForm)}>
@@ -231,10 +236,10 @@ class AddRegistryForm extends AbstractReactComponent {
                             value={value}
                             disabled={this.state.disabled}
                             />
-                        <FormInput type="text" label={i18n('registry.name')} {...name} {...decorateFormField(name)}/>
-                        <FormInput type="text" label={i18n('accesspoint.complement')} {...complement} {...decorateFormField(complement)}/>
+                        {!isStructured && <FormInput type="text" label={i18n('registry.name')} {...name} {...decorateFormField(name)}/>}
+                        {!isStructured && <FormInput type="text" label={i18n('accesspoint.complement')} {...complement} {...decorateFormField(complement)}/>}
                         <LanguageCodeField label={i18n('accesspoint.languageCode')} {...languageCode} {...decorateFormField(languageCode)} />
-                        <FormInput componentClass="textarea" label={i18n('accesspoint.description')} {...description} {...decorateFormField(description)} />
+                        {!isStructured && <FormInput componentClass="textarea" label={i18n('accesspoint.description')} {...description} {...decorateFormField(description)} />}
                     </Modal.Body>}
                     {this.state.step === 2 && <Modal.Body>
                         <NoFocusButton onClick={this.add}><Icon glyph="fa-plus-circle"/>{i18n('subNodeForm.section.item')}</NoFocusButton>

@@ -36,6 +36,8 @@ public enum EventType {
     ACCESS_POINT_DELETE(EventId.class),
     ACCESS_POINT_UPDATE(EventId.class),
 
+    FRAGMENT_UPDATE(EventId.class),
+
     COPY_OLDER_SIBLING_ATTRIBUTE(EventIdInVersion.class),
 
     NODES_CHANGE(EventIdsInVersion.class),

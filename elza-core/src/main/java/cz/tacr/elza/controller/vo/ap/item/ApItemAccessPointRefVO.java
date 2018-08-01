@@ -50,10 +50,6 @@ public class ApItemAccessPointRefVO extends ApItemVO {
     public ArrData createDataEntity(EntityManager em) {
         ArrDataRecordRef data = new ArrDataRecordRef();
 
-        if (accessPoint != null) {
-            throw new BusinessException("Inconsistent data, accessPoint is not null", BaseCode.PROPERTY_IS_INVALID);
-        }
-
         // try to map accessPoint
         ApAccessPoint accessPoint = null;
         if (this.value != null) {

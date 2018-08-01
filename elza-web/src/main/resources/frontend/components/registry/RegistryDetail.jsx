@@ -394,6 +394,12 @@ class RegistryDetail extends AbstractReactComponent {
         }
     };
 
+    showForm = () => {
+        const {registryDetail, ap, apTypeIdMap} = this.props;
+        const {data} = registryDetail;
+        return apTypeIdMap[data.typeId].ruleSystemId && ap.form.fetched;
+    };
+
     render() {
         const {registryDetail, scopes, eidTypes, ap, refTables, apTypeIdMap} = this.props;
         const {data, fetched, isFetching, id} = registryDetail;
@@ -465,7 +471,7 @@ class RegistryDetail extends AbstractReactComponent {
                         </div>
                     </CollapsablePanel>
                     <CollapsablePanel tabIndex={0} key={"DESCRIPTION"} isOpen={activeIndexes && activeIndexes["DESCRIPTION"] === true} header={<div>{i18n("accesspoint.detail.description")}{this.renderApItemsError(data)}</div>} eventKey={"DESCRIPTION"} onPin={this.handlePinToggle} onSelect={this.handleToggleActive}>
-                        {ap.form.fetched && this.renderActions()}
+                        {this.showForm() && this.renderActions()}
                         <div className={"cp-15"}>
                             <div className="elements-container">
                                 <div className={"el-12"}>
@@ -473,7 +479,7 @@ class RegistryDetail extends AbstractReactComponent {
                                     <div>{data.characteristics}</div>
                                 </div>
                             </div>
-                            {apTypeIdMap[data.typeId].ruleSystemId && ap.form.fetched && <AccessPointForm
+                            {this.showForm() && <AccessPointForm
                                 versionId={null}
                                 fundId={null}
                                 selectedSubNodeId={ap.id}

@@ -216,6 +216,8 @@ public class AccessPointGeneratorService {
         fragment.setErrorDescription(fragmentErrorDescription.asJsonString());
         fragment.setState(stateOld == ApState.TEMP ? ApState.TEMP : state);
         fragmentRepository.save(fragment);
+
+        eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.FRAGMENT_UPDATE, fragment.getFragmentId()));
     }
 
     private String generateValue(final ApFragment fragment, final List<ApItem> items) {
@@ -235,6 +237,12 @@ public class AccessPointGeneratorService {
     }
 
     public void generateAndSetResult(final ApAccessPoint accessPoint, final ApChange change) {
+
+        if (accessPoint.getRuleSystem() == null) {
+            logger.warn("Přístupový bod {} nemá vazbu na pravidla a nebude se provádět script", accessPoint.getAccessPointId());
+            eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.ACCESS_POINT_UPDATE, accessPoint.getAccessPointId()));
+            return;
+        }
 
         List<ApItem> apItems = new ArrayList<>(bodyItemRepository.findValidItemsByAccessPoint(accessPoint));
         List<ApName> apNames = apNameRepository.findByAccessPoint(accessPoint);
