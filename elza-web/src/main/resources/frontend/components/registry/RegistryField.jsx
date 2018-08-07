@@ -96,8 +96,8 @@ class RegistryField extends AbstractReactComponent {
         } else if (onDetail) {
             onDetail(id);
         } else {
-            this.dispatch(registryDetailFetchIfNeeded(id));
-            this.dispatch(routerNavigate('registry'));
+            this.props.dispatch(registryDetailFetchIfNeeded(id));
+            this.props.dispatch(routerNavigate('registry'));
         }
     };
 
@@ -105,7 +105,7 @@ class RegistryField extends AbstractReactComponent {
     handleImport = () => {
         const {versionId} = this.props;
         this.refs.autocomplete.closeMenu();
-        this.dispatch(modalDialogShow(this, i18n('extImport.title'), <ExtImportForm isParty={false} versionId={versionId}/>, "dialog-lg"));
+        this.props.dispatch(modalDialogShow(this, i18n('extImport.title'), <ExtImportForm isParty={false} versionId={versionId}/>, "dialog-lg"));
     };
 
     handleCreateRecord = () => {
@@ -148,6 +148,7 @@ class RegistryField extends AbstractReactComponent {
 
     renderRecord = (props) => {
         const {item, highlighted, selected, ...otherProps} = props;
+        const {apTypeIdMap, eidTypes} = this.props;
 
         return <TooltipTrigger
             content={item.characteristics}
@@ -158,11 +159,12 @@ class RegistryField extends AbstractReactComponent {
         >
             <RegistryListItem
                 {...item}
+                eidTypes={eidTypes}
+                apTypeIdMap={apTypeIdMap}
                 className={classNames('item', {focus: highlighted, active: selected})}
-
             />
         </TooltipTrigger>;
-    }
+    };
 
 
     normalizeValue = (obj) => {
@@ -184,16 +186,14 @@ class RegistryField extends AbstractReactComponent {
 
         let actions = [];
         if (detail) {
-            // if (value && userDetail.hasOne(perms.AP_SCOPE_RD_ALL, {type: perms.AP_SCOPE_RD, scopeId: value.scopeId})) {
             actions.push(
                 <div
                     onClick={this.handleDetail.bind(this, value ? value.id : null)}
-                    className={'btn btn-default detail'}
+                    className='btn btn-default detail'
                 >
-                    <Icon glyph={'fa-th-list'}/>
+                    <Icon glyph='fa-th-list' />
                 </div>
             );
-            // }
         }
 
         let tmpVal = '';
@@ -220,4 +220,9 @@ class RegistryField extends AbstractReactComponent {
     }
 }
 
-export default connect(({userDetail}) => ({userDetail}), null, null, { withRef: true })(RegistryField);
+export default connect(
+    ({userDetail, refTables: {recordTypes, eidTypes}}) => ({userDetail, apTypeIdMap: recordTypes.typeIdMap, eidTypes: eidTypes.data}),
+    null,
+    null,
+    { withRef: true }
+)(RegistryField);

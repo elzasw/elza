@@ -58,7 +58,6 @@ class FragmentFormModal extends AbstractReactComponent {
         ];
 
         const submit = (data) => {
-            //this.props.dispatch(modalDialogHide());
             this.props.dispatch(fragmentItemFormActions.fundSubNodeFormDescItemTypeAdd(data.descItemTypeId.id));
         };
 
@@ -68,8 +67,8 @@ class FragmentFormModal extends AbstractReactComponent {
 
     onClose = () => {
         const {onClose, onSubmit} = this.props;
-        onClose && onClose();
         onSubmit && onSubmit();
+        onClose && onClose();
     };
 
     render() {

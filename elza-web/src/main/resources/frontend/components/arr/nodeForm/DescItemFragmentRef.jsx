@@ -4,17 +4,12 @@ import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 
 import {Icon, i18n, AbstractReactComponent, Autocomplete} from 'components/shared';
-import {decorateAutocompleteValue} from './DescItemUtils.jsx'
-import {Button} from 'react-bootstrap';
-import DescItemLabel from './DescItemLabel.jsx'
 
 import './DescItemFileRef.less'
-import ItemTooltipWrapper from "./ItemTooltipWrapper.jsx";
 import {modalDialogShow} from "../../../actions/global/modalDialog";
 import {WebApi} from "../../../actions/WebApi";
-import {registryDetailInvalidate} from "../../../actions/registry/registry";
 import {AccessPointFormActions} from "../../accesspoint/AccessPointFormActions";
-import {ApNameFormActions} from "../../accesspoint/ApNameFormActions";
+import {Button} from "react-bootstrap";
 
 let FragmentFormModal;
 import("../../accesspoint/FragmentFormModal").then((a) => {
@@ -34,7 +29,7 @@ class DescItemFragmentRef extends AbstractReactComponent {
     };
 
     focus = () => {
-        //this.refs.autocomplete.focus()
+        // No focus
     };
 
     changeAccessPoint = () => {
@@ -50,6 +45,7 @@ class DescItemFragmentRef extends AbstractReactComponent {
     };
 
     handleFragmentCreate = () => {
+        // TODO nutno zjisti propojení fragmentů a accesspoint
         WebApi.createFragment("STAT_ZASTUPCE").then(data => {
             this.props.dispatch(modalDialogShow(this, i18n('accesspoint.detail.name.new'), <FragmentFormModal fragmentId={data.id} onSubmit={() => {
                 WebApi.confirmFragment(data.id).then(() => {
@@ -69,9 +65,10 @@ class DescItemFragmentRef extends AbstractReactComponent {
 
     render() {
         const {descItem, locked, readMode, cal, typePrefix, ...otherProps} = this.props;
-        return <div className='desc-item-value desc-item-value-parts' onClick={descItem.value != null ? this.handleFragmentEdit : () => {}}>
-            {descItem.value == null && <div onClick={this.handleFragmentCreate}><Icon glyph="fa-plus-circle"/></div>}
-            <h4>{descItem.fragment && descItem.fragment.value}</h4>
+        return <div className='desc-item-value desc-item-value-parts'>
+            {!locked && descItem.value == null && <Button bsStyle="action" block ref="button" onClick={this.handleFragmentCreate}><Icon glyph="fa-plus-circle"/></Button>}
+            {descItem.value !== null && <span>{descItem.fragment && descItem.fragment.value}</span>}
+            {!locked && descItem.fragment && <Button bsStyle="action" ref="button" onClick={this.handleFragmentEdit}><Icon glyph="fa-pencil"/></Button>}
         </div>
     }
 }

@@ -1,7 +1,7 @@
 {
     "compilerOptions": {
         "jsx": "react",
-        "module": "es2015",
+        "module": "esnext",
         "target": "es2017",
         "moduleResolution": "node",
         //"noImplicitAny": true,

@@ -49,12 +49,6 @@ class RegistryListItem extends AbstractReactComponent {
     render() {
         const {className, isActive, id, record, invalid} = this.props;
 
-        const iconName = 'fa-file-o';
-        const clsItem = 'registry-list-icon-list';
-
-        //let doubleClick = this.handleDoubleClick.bind(this, item);
-        const doubleClick = false;
-
         const cls = classNames(className, 'registry-list-item', {
             active: isActive,
             invalid: invalid
@@ -63,9 +57,9 @@ class RegistryListItem extends AbstractReactComponent {
 		const typeNames = this.getApTypeNames().join(' | ');
 		const displayId = this.getDisplayIds().join(', ');
 
-		return <div key={'record-id-' + id} className={cls} onDoubleClick={doubleClick}>
+		return <div key={'record-id-' + id} className={cls}>
 			<div>
-				<Icon glyph={iconName} />
+				<Icon glyph='fa-file-o' />
 				<span className="name" title={record}>{record}</span>
 			</div>
 			<div>

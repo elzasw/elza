@@ -131,12 +131,13 @@ class RegistryList extends AbstractReactComponent {
 
     renderListItem = (props) => {
         const {item} = props;
-        const {eidTypes} = this.props;
+        const {eidTypes, apTypeIdMap} = this.props;
         return <RegistryListItem
             {...item}
-			apTypeIdMap = {this.props.apTypeIdMap}
-            onClick={this.handleRegistryDetail.bind(this, item)}
-            eidTypes={eidTypes} />
+             onClick={this.handleRegistryDetail.bind(this, item)}
+            eidTypes={eidTypes}
+            apTypeIdMap={apTypeIdMap}
+        />
     }
 
     /**

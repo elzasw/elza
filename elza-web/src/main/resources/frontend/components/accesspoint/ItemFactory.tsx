@@ -17,11 +17,14 @@ import {ItemFactoryInterface} from "./ItemFactoryInterface";
 // import ItemFragmentRef from "./ItemFragmentRef";
 import ItemFragmentRef from '../arr/nodeForm/DescItemFragmentRef.jsx';
 
+import('../arr/nodeForm/DescItemPartyRef.jsx').then(x => ItemFactory.typeComponentMap[DataTypeCode.PARTY_REF] = x);
+import('../arr/nodeForm/DescItemStructureRef.jsx').then(x => ItemFactory.typeComponentMap[DataTypeCode.STRUCTURED] = x);
+
 export class ItemFactory implements ItemFactoryInterface {
     static typeComponentMap = {
-        // [DataTypeCode.PARTY_REF]: DescItemPartyRef,
+        [DataTypeCode.PARTY_REF]: null,//DescItemPartyRef,
         [DataTypeCode.RECORD_REF]: DescItemRecordRef,
-        // [DataTypeCode.STRUCTURED]: DescItemStructureRef,
+        [DataTypeCode.STRUCTURED]: null,//DescItemStructureRef,
         [DataTypeCode.FILE_REF]: DescItemFileRef,
         [DataTypeCode.UNITDATE]: DescItemUnitdate,
         [DataTypeCode.UNITID]: DescItemUnitid,
