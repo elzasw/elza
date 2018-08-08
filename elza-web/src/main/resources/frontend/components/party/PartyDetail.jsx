@@ -459,7 +459,7 @@ class PartyDetail extends AbstractReactComponent {
             </div>
         }
 
-        return <Shortcuts name='PartyDetail' handler={this.handleShortcuts}>
+        return <Shortcuts name='PartyDetail' handler={this.handleShortcuts} className="party-detail-wrapper">
             <StoreHorizontalLoader store={partyDetail} />
             {content}
         </Shortcuts>;

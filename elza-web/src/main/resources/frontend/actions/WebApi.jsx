@@ -1303,10 +1303,8 @@ export class UrlFactory {
         return serverContextPath + WebApiCls.ruleUrl + '/exportPackage/' + code;
     }
 
-    static exportFund(versionId, transformationName) {
-        transformationName = transformationName || "";
-
-        return serverContextPath + WebApiCls.exportUrl + '/fund/' + versionId + '?transformationName=' + encodeURIComponent(transformationName);
+    static exportFund() {
+        return serverContextPath + WebApiCls.exportUrl + '/create';
     }
 
     static exportRegCoordinate(objectId) {

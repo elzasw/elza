@@ -31,7 +31,7 @@ class ModalDialogWrapper extends React.Component {
     onHide = (e) => {
         const {onHide} = this.props;
         if (!this.hide) {
-            onHide(e);
+            onHide && onHide(e);
             this.hide = true;
         }
     };
