@@ -47,6 +47,7 @@ import {descItemTypesFetchIfNeeded} from "../../actions/refTables/descItemTypes"
 import AddDescItemTypeForm from "../arr/nodeForm/AddDescItemTypeForm";
 import {accessPointFormActions} from "../accesspoint/AccessPointFormActions";
 import TooltipTrigger from "../shared/tooltip/TooltipTrigger";
+import * as fragmentTypesActions from '../../actions/refTables/fragmentTypes';
 
 
 class RegistryDetail extends AbstractReactComponent {
@@ -88,6 +89,7 @@ class RegistryDetail extends AbstractReactComponent {
         dispatch(descItemTypesFetchIfNeeded());
         dispatch(refRulDataTypesFetchIfNeeded());
         dispatch(requestScopesIfNeeded());
+        dispatch(fragmentTypesActions.fetchIfNeeded());
         if (id) {
             dispatch(registryDetailFetchIfNeeded(id));
             if (fetched) {
@@ -202,7 +204,7 @@ class RegistryDetail extends AbstractReactComponent {
 			eidArr.push(eidTypeName + ":" + eid.value);
 		});
 		return eidArr.join(", ");
-    }
+    };
 
     renderApTypeNames = (apTypeId, delimiter) => {
 		const type = this.props.apTypeIdMap[apTypeId];
@@ -217,7 +219,7 @@ class RegistryDetail extends AbstractReactComponent {
 		elements.push(<span key="name-main" className="hierarchy-level main">{type.name.toUpperCase()}</span>);
 
 		return elements;
-    }
+    };
 
     getScopeLabel = (scopeId, scopes) => {
         return scopeId && scopes[0].scopes.find(scope => (scope.id === scopeId)).name.toUpperCase();
@@ -229,7 +231,7 @@ class RegistryDetail extends AbstractReactComponent {
 
     refreshData = () => {
         this.props.dispatch(registryDetailInvalidate());
-    }
+    };
 
     editDescription = () => {
         const {registryDetail:{data}} = this.props;

@@ -1,4 +1,4 @@
-import {ApItemVO, IItemFormState, types} from "../../stores/app/accesspoint/itemForm";
+import {ApItemVO, IItemFormState} from "../../stores/app/accesspoint/itemForm";
 import {valuesEquals} from '../Utils';
 import {i18n} from '../shared';
 import {fromDuration} from "../../components/validate";
@@ -11,6 +11,7 @@ import {getFocusDescItemLocation} from '../../stores/app/arr/subNodeFormUtils'
 import {findByRoutingKeyInGlobalState, getMapFromList, getRoutingKeyType, indexById} from '../../stores/app/utils'
 import {ThunkAction} from "redux-thunk";
 import {AnyAction} from "redux";
+import * as types from '../../actions/constants/ActionTypes.js'
 type ThunkResult<R> = ThunkAction<R, {
     refTables: {
         rulDataTypes: {},

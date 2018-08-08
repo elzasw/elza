@@ -4,7 +4,6 @@ import {Icon, i18n, AbstractReactComponent, NoFocusButton } from '../../componen
 import {connect} from 'react-redux'
 import {Panel, Accordion} from 'react-bootstrap'
 import {indexById} from '../../stores/app/utils'
-import DescItemType from '../arr/nodeForm/DescItemType.jsx'
 import {partyDetailFetchIfNeeded, partyAdd} from '../../actions/party/party'
 // import {registryDetailFetchIfNeeded, registryAdd} from '../../actions/registry/registry'
 import {routerNavigate} from '../../actions/router'
@@ -59,6 +58,13 @@ interface Props {
 interface ReactWrappedComponent<P> extends React.ReactElement<P> {
     getWrappedInstance: Function;
 }
+
+let registryDetailFetchIfNeeded, registryAdd;
+
+import('../../actions/registry/registry').then(imported => {
+    registryDetailFetchIfNeeded = imported.registryDetailFetchIfNeeded;
+    registryAdd = imported.registryAdd;
+})
 
 /**
  * Formulář detailu a editace jedné JP - jednoho NODE v konkrétní verzi.
@@ -218,24 +224,6 @@ class ItemFormClass extends React.Component<DispatchProps & Props, ItemFormClass
         // this.props.dispatch(setFocusFunc())
     }
 
-
-    getFlatDescItemTypes(onlyNotLocked) {
-        const {subNodeForm: {formData}} = this.props;
-
-        let nodeSetting;
-        if (onlyNotLocked) {
-            // nodeSetting = this.props.nodeSetting;
-        }
-
-        const result: any[] = [];
-
-        formData!!.itemTypes.forEach(type => {
-            result.push(type)
-        });
-
-        return result
-    }
-
     /**
      * Přidání nové hodnoty vícehodnotového atributu.
      * @param itemTypeIndex {number} index atributu v seznamu
@@ -275,7 +263,7 @@ class ItemFormClass extends React.Component<DispatchProps & Props, ItemFormClass
             itemTypeIndex,
             itemIndex
         };
-        // this.props.dispatch(registryAdd(null, null, this.handleCreatedRecord.bind(this, valueLocation), '', true));
+        this.props.dispatch(registryAdd(null, null, this.handleCreatedRecord.bind(this, valueLocation), '', true));
     }
 
     /**
@@ -440,15 +428,6 @@ class ItemFormClass extends React.Component<DispatchProps & Props, ItemFormClass
         this.props.dispatch(this.props.formActions.fundSubNodeFormValueChangeSpec(valueLocation, value));
     }
 
-    handleCoordinatesDownload(objectId) {
-        this.props.dispatch(downloadFile(UrlFactory.exportArrCoordinate(objectId, null)));
-    }
-
-    handleJsonTableDownload(objectId) {
-        const {typePrefix} = this.props;
-        this.props.dispatch(downloadFile(UrlFactory.exportItemCsvExport(objectId, typePrefix)));
-    }
-
 
     /**
      * Renderování atributu.
@@ -497,21 +476,14 @@ class ItemFormClass extends React.Component<DispatchProps & Props, ItemFormClass
             onDetailParty={this.handleDetailParty.bind(this, itemTypeIndex)}
             onCreateRecord={this.handleCreateRecord.bind(this, itemTypeIndex)}
             onDetailRecord={this.handleDetailRecord.bind(this, itemTypeIndex)}
-            //onCreateFile={this.handleCreateFile.bind(this, itemTypeIndex)}
-            //onCoordinatesDownload={this.handleCoordinatesDownload.bind(this)}
-            //onJsonTableDownload={this.handleJsonTableDownload.bind(this)}
-            //                  onFundFiles={this.handleFundFiles.bind(this, itemTypeIndex)}
-                             onDescItemAdd={this.handleDescItemAdd.bind(this, itemTypeIndex)}
-                             // onCoordinatesUpload={this.handleCoordinatesUpload.bind(this, descItemType.id)}
-                             // onJsonTableUpload={this.handleJsonTableUpload.bind(this, descItemType.id)}
-                             onDescItemRemove={this.handleDescItemRemove.bind(this, itemTypeIndex)}
+            onDescItemAdd={this.handleDescItemAdd.bind(this, itemTypeIndex)}
+            onDescItemRemove={this.handleDescItemRemove.bind(this, itemTypeIndex)}
             onChange={this.handleChange.bind(this, itemTypeIndex)}
             onChangePosition={this.handleChangePosition.bind(this, itemTypeIndex)}
             onChangeSpec={this.handleChangeSpec.bind(this, itemTypeIndex)}
             onBlur={this.handleBlur.bind(this, itemTypeIndex)}
             onFocus={this.handleFocus.bind(this, itemTypeIndex)}
             onDescItemTypeRemove={this.handleDescItemTypeRemove.bind(this, itemTypeIndex)}
-            // onSwitchCalculating={this.handleSwitchCalculating.bind(this, itemTypeIndex)}
             onDescItemTypeLock={() => {}}
             onDescItemTypeCopy={() => {}}
             onDescItemTypeCopyFromPrev={() => {}}

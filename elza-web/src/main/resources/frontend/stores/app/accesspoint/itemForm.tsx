@@ -1,4 +1,3 @@
-//import * as types from '../../../actions/constants/ActionTypes.js';
 import {i18n} from '../../../components/shared';
 import {getMapFromList, objectById} from '../utils2'
 import {validateCoordinatePoint, validateDouble, validateDuration, validateInt} from '../../../components/validate'
@@ -6,6 +5,7 @@ import {valuesEquals} from '../../../components/Utils'
 import {DisplayType} from "../../../constants";
 import {ItemAvailability, updateFormData, consolidateDescItems, createItem, createItemFromDb, mergeAfterUpdate} from "./itemFormUtils";
 import {DataTypeCode} from "./itemFormInterfaces";
+import * as types from '../../../actions/constants/ActionTypes.js'
 
 export interface ILocation {
     itemType: ItemTypeExt;
@@ -102,17 +102,17 @@ export interface RefType {
     isValueUnique: boolean;
     canBeOrdered: boolean;
     viewOrder: number;
-    // @Deprecated
-    // private RulItemType.Type type;
-    // @Deprecated
-    // private Boolean repeatable;
-    // private Object viewDefinition;
-    // private List<TreeItemSpecsItem> itemSpecsTree;
     width: number;
     structureTypeId: number;
     fragmentTypeId: number;
-    descItemSpecs: ItemSpec[]; //List<RulDescItemSpecExtVO> ;
+    descItemSpecs: ItemSpec[];
 
+}
+
+export interface FragmentTypeVO {
+    id: number;
+    code: string;
+    name: string;
 }
 
 export interface RefTypeExt extends RefType {
@@ -151,7 +151,7 @@ export interface IItemFormState {
     fetchingId?: number;
     fetched: boolean;
     dirty: boolean;
-    needClean: boolean;   // pokud je true, přenačtou se data a vymaže se aktuální editace - obdoba jako nové zobrazení formuláře
+    needClean: boolean;
     versionId?: number;
     parent?: {id: number, [key: string]: any};
     data?: ItemData;
@@ -346,37 +346,6 @@ export function convertValue(value, descItem, type) {
     } else {
         return dataTypeMap["DEFAULT"](value);
     }
-}
-
-export enum types {
-    ITEM_FORM_CHANGE_READ_MODE = "ITEM_FORM_CHANGE_READ_MODE",
-    ITEM_FORM_VALUE_VALIDATE_RESULT = "ITEM_FORM_VALUE_VALIDATE_RESULT",
-    ITEM_FORM_FORM_VALUE_CHANGE_POSITION = "ITEM_FORM_FORM_VALUE_CHANGE_POSITION",
-    ITEM_FORM_VALUE_CHANGE = "ITEM_FORM_VALUE_CHANGE",
-    ITEM_FORM_VALUE_CHANGE_PARTY = "ITEM_FORM_VALUE_CHANGE_PARTY",
-    ITEM_FORM_VALUE_CHANGE_RECORD = "ITEM_FORM_VALUE_CHANGE_RECORD",
-    ITEM_FORM_VALUE_CHANGE_SPEC = "ITEM_FORM_VALUE_CHANGE_SPEC",
-    ITEM_FORM_VALUE_BLUR = "ITEM_FORM_VALUE_BLUR",
-    ITEM_FORM_VALUE_FOCUS = "ITEM_FORM_VALUE_FOCUS",
-    ITEM_FORM_VALUE_CREATE = "ITEM_FORM_VALUE_CREATE",
-    ITEM_FORM_VALUE_ADD = "ITEM_FORM_VALUE_ADD",
-    CHANGE_NODES = "CHANGE_NODES",
-    OUTPUT_CHANGES_DETAIL = "OUTPUT_CHANGES_DETAIL",
-    OUTPUT_CHANGES = "OUTPUT_CHANGES",
-    CHANGE_OUTPUTS = "CHANGE_OUTPUTS",
-    CHANGE_STRUCTURE = "CHANGE_STRUCTURE",
-    FUND_INVALID = "FUND_INVALID",
-    ITEM_FORM_DESC_ITEM_TYPE_COPY_FROM_PREV_RESPONSE = "ITEM_FORM_DESC_ITEM_TYPE_COPY_FROM_PREV_RESPONSE",
-    ITEM_FORM_OUTPUT_CALC_SWITCH = "ITEM_FORM_OUTPUT_CALC_SWITCH",
-    ITEM_FORM_VALUE_RESPONSE = "ITEM_FORM_VALUE_RESPONSE",
-    ITEM_FORM_TEMPLATE_USE = "ITEM_FORM_TEMPLATE_USE",
-    ITEM_FORM_DESC_ITEM_TYPE_ADD = "ITEM_FORM_DESC_ITEM_TYPE_ADD",
-    ITEM_FORM_DESC_ITEM_TYPE_DELETE = "ITEM_FORM_DESC_ITEM_TYPE_DELETE",
-    ITEM_FORM_VALUE_DELETE = "ITEM_FORM_VALUE_DELETE",
-    ITEM_FORM_REQUEST = "ITEM_FORM_REQUEST",
-    ITEM_FORM_RECEIVE = "ITEM_FORM_RECEIVE",
-    FUND_SUBNODE_UPDATE = "FUND_SUBNODE_UPDATE",
-    CHANGE_ACCESS_POINT= "CHANGE_ACCESS_POINT"
 }
 
 enum ActionOperation {

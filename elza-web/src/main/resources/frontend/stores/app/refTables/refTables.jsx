@@ -34,6 +34,7 @@ const initialState = {
     externalSystems: externalSystems(),
     groups: DetailReducer(),
     eidTypes: DetailReducer(),
+    fragmentTypes: DetailReducer(),
 };
 
 export default function refTables(state = initialState, action = {}) {

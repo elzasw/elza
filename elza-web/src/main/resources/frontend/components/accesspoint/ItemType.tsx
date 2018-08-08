@@ -28,7 +28,8 @@ import {
     ItemTypeExt,
     RefType,
     RefTypeExt,
-    DataType
+    DataType,
+    FragmentTypeVO
 } from '../../stores/app/accesspoint/itemForm';
 import {valuesEquals} from '../Utils';
 import {WebApi} from '../../actions/index.jsx';
@@ -45,8 +46,8 @@ interface FromState {
 
 interface DispatchProps {
     dispatch: Dispatch<FromState>;
-    userDetail: any
-
+    userDetail: any;
+    fragmentTypes: FragmentTypeVO[];
 }
 
 export interface Props {
@@ -247,7 +248,7 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
      * Unitdate server validation
      */
     validateUnitdate = (value, descItemIndex)=>{
-        return ()=>{
+        return () => {
             WebApi.validateUnitdate(value).then((result)=>{
                 const {refType} = this.props;
                 let newDescItemType = this.state.descItemType;
@@ -292,11 +293,11 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
             touched
         };
         // Unitdate server validation
-        if(rulDataType.code === "UNITDATE"){
+        if (rulDataType.code === "UNITDATE") {
             // debouncing validation request
             if (newDescItem.validateTimer) {
                 clearTimeout(descItem.validateTimer);
-    }
+            }
             newDescItem.validateTimer = setTimeout(this.validateUnitdate(newDescItem.value, descItemIndex), 250);
         }
         // newDescItem validation
@@ -452,7 +453,7 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
         //this.dragged.style.display = "block";
         this.dragged.style.display = this.prevDraggedStyleDisplay;
 
-        this.removePlaceholder()
+        this.removePlaceholder();
 
         if (!this.over || !this.dragged) {
             return
@@ -467,10 +468,6 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
         if (from !== to) {
             this.props.onChangePosition(from, to);
         }
-    }
-
-    hasClass(elem, klass) {
-        return (" " + elem.className + " ").indexOf(" " + klass + " ") > -1;
     }
 
     isUnderContainer(el, container) {
@@ -548,43 +545,11 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
         }
     }
 
-    handleCoordinatesUploadButtonClick() {
-        (ReactDOM.findDOMNode((this.refs.uploadInput as any).refs.input) as any).click();
-    }
-
-    handleJsonTableUploadButtonClick() {
-        (ReactDOM.findDOMNode((this.refs.uploadInput as any).refs.input) as any).click();
-    }
-
-    handleCoordinatesUpload(e) {
-        const fileList = e.target.files;
-
-        if (fileList.length != 1) {
-            return;
-        }
-        const file = fileList[0];
-
-        // this.props.onCoordinatesUpload(file);
-        e.target.value = null;
-    }
-
-    handleJsonTableUploadUpload(e) {
-        const fileList = e.target.files;
-
-        if (fileList.length != 1) {
-            return;
-        }
-        const file = fileList[0];
-
-        // this.props.onJsonTableUpload(file);
-        e.target.value = null;
-    }
-
     /**
      * Renders the value of the descItem
      */
     renderDescItemValue(descItem, descItemIndex, locked) {
-        const {refType, structureTypes, calendarTypes, rulDataType, descItemFactory, readMode, infoType, typePrefix} = this.props;
+        const {refType, structureTypes, calendarTypes, rulDataType, descItemFactory, readMode, infoType, typePrefix, fragmentTypes} = this.props;
 
         let specName = null;
         if (descItem.descItemSpecId) {
@@ -596,48 +561,41 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
             structureType = objectById(structureTypes.data, refType.structureTypeId);
         }
 
+        let fragmentType;
+        if (refType.fragmentTypeId) {
+            fragmentType = objectById(fragmentTypes, refType.fragmentTypeId);
+        }
+
         const additionalProps = {
             [DataTypeCode.PARTY_REF]:{
                 itemName: refType.shortcut,
                 specName: specName,
-                // singleDescItemTypeEdit: singleDescItemTypeEdit,
                 onDetail: (value)=>{this.handleDetailParty(descItemIndex, value);},
                 onCreateParty: (value)=>{this.handleCreateParty(descItemIndex, value);}
             },
             [DataTypeCode.RECORD_REF]: {
                 itemName: refType.shortcut,
                 specName: specName,
-                // singleDescItemTypeEdit: singleDescItemTypeEdit,
                 onDetail: (value)=>{this.handleDetailRecord(descItemIndex, value);},
                 onCreateRecord: (value)=>{this.handleCreateRecord(descItemIndex);},
             },
             [DataTypeCode.STRUCTURED]:{
-                // singleDescItemTypeEdit: singleDescItemTypeEdit,
                 structureTypeCode: structureType ? structureType.code : null,
                 structureTypeName: structureType ? structureType.name : null,
             },
-            [DataTypeCode.FILE_REF]: {
-                // onCreateFile: (value)=>{this.handleCreateFile(descItemIndex);},
-                // onFundFiles: (value)=>{this.handleFundFiles(descItemIndex);}
-            },
             [DataTypeCode.UNITDATE]:{
                 calendarTypes: calendarTypes
-            },
-            [DataTypeCode.JSON_TABLE]:{
-                refType,
-                // onDownload: (value)=>{this.props.onJsonTableDownload(descItem.descItemObjectId, value);},
-                onUpload: this.handleJsonTableUploadUpload
-            },
-            [DataTypeCode.COORDINATES]:{
-                onUpload: this.handleCoordinatesUpload,
-                // onDownload: (value)=>{this.props.onCoordinatesDownload(descItem.descItemObjectId, value);}
             },
             [DataTypeCode.INT]:{
                 refType
             },
             [DataTypeCode.APFRAG_REF]:{
-
-            }
+                fragmentType
+            },
+            // Neimplmentované typy
+            // [DataTypeCode.FILE_REF]: {},
+            // [DataTypeCode.JSON_TABLE]:{refType,},
+            // [DataTypeCode.COORDINATES]:{}
         };
 
         const key = descItem.formKey;
@@ -766,21 +724,6 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
             }
         }
 
-        // ##
-        // # Má se zobrazovat ikona mazání z hlediska typu atributu?
-        // ##
-        /*if (infoType.type == 'REQUIRED' || infoType.type == 'RECOMMENDED') {    // můžeme smazat pouze, pokud má nějakou hodnotu, kterou lze smazat
-         var haveDBValue = false
-         descItemType.items.forEach(descItem => {
-         if (typeof descItem.id !== 'undefined') {   // je v db
-         haveDBValue = true
-         }
-         })
-         if (!haveDBValue) {
-         return false
-         }
-         }*/
-
         return true
     }
 
@@ -865,19 +808,6 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
             </TooltipTrigger>);
         }
 
-        if (infoType.cal === 1) {
-            // const title = infoType.calSt ? i18n('subNodeForm.calculate-user') : i18n('subNodeForm.calculate-auto');
-            // actions.push(<NoFocusButton onClick={this.handleSwitchCalculating} key="calculate" title={title}
-            //                             className="alwaysVisible">
-            //     {infoType.calSt ?
-                    {/*<span className='fa-stack'>*/}
-                      {/*<Icon glyph='fa-calculator fa-stack-1x'/>*/}
-                      {/*<Icon glyph='fa-ban fa-stack-2x'/>*/}
-                    // </span> : <Icon glyph='fa-calculator'/>
-                // }
-            // </NoFocusButton>);
-        }
-
         let titleText = descItemType.name;
         if (refType.description && refType.description.length > 0) {
             if (refType.description != titleText) {
@@ -892,33 +822,9 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
 
         if (infoType.rep === 1 && !(locked || closed || readMode)) {
             const {onDescItemAdd} = this.props;
-            if (this.props.rulDataType.code === "COORDINATES") {
-                actions.push(
-                    <NoFocusButton key="add" onClick={onDescItemAdd}
-                                   title={i18n('subNodeForm.descItemType.title.add')}><Icon
-                        glyph="fa-plus"/></NoFocusButton>,
-                    <NoFocusButton key="upload" onClick={this.handleCoordinatesUploadButtonClick}
-                                   title={i18n('subNodeForm.descItemType.title.add')}><Icon
-                        glyph="fa-upload"/></NoFocusButton>,
-                    <FormInput key="upload-field" className="hidden" accept="application/vnd.google-earth.kml+xml"
-                               type="file" ref='uploadInput' onChange={this.handleCoordinatesUpload}/>
-                );
-            } else if (this.props.rulDataType.code === "JSON_TABLE") {
-                actions.push(
-                    <NoFocusButton key="add" onClick={onDescItemAdd}
-                                   title={i18n('subNodeForm.descItemType.title.add')}><Icon
-                        glyph="fa-plus"/></NoFocusButton>,
-                    <NoFocusButton key="upload" onClick={this.handleJsonTableUploadButtonClick}
-                                   title={i18n('subNodeForm.descItem.jsonTable.action.upload')}><Icon
-                        glyph="fa-upload"/></NoFocusButton>,
-                    <FormInput key="upload-field" className="hidden" accept="text/csv" type="file" ref='uploadInput'
-                               onChange={this.handleJsonTableUploadUpload}/>
-                );
-            } else {
-                actions.push(<NoFocusButton key="add" onClick={onDescItemAdd}
-                                            title={i18n('subNodeForm.descItemType.title.add')}><Icon
-                    glyph="fa-plus"/></NoFocusButton>);
-            }
+            actions.push(<NoFocusButton key="add" onClick={onDescItemAdd} title={i18n('subNodeForm.descItemType.title.add')}>
+                <Icon glyph="fa-plus"/>
+            </NoFocusButton>);
         }
 
         if (!closed && !readMode && !infoType.rep && infoType.ind && rulDataType.code !== 'ENUM') {
@@ -1038,10 +944,11 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
 }
 
 function mapStateToProps(state, ownProps: Props) {
-    const {userDetail} = state;
+    const {userDetail, refTables:{fragmentTypes}} = state;
 
     return {
         userDetail,
+        fragmentTypes: fragmentTypes.data
     }
 }
 
