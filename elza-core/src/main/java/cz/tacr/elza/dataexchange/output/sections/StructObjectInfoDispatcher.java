@@ -4,8 +4,9 @@ import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.dataexchange.output.loaders.BaseLoadDispatcher;
 import cz.tacr.elza.dataexchange.output.writer.SectionOutputStream;
+import cz.tacr.elza.dataexchange.output.writer.StructObjectInfo;
 
-public class StructObjectInfoDispatcher extends BaseLoadDispatcher<StructObjectInfo> {
+public class StructObjectInfoDispatcher extends BaseLoadDispatcher<StructObjectInfoImpl> {
 
     private final SectionOutputStream os;
 
@@ -16,7 +17,7 @@ public class StructObjectInfoDispatcher extends BaseLoadDispatcher<StructObjectI
     }
 
     @Override
-    public void onLoad(StructObjectInfo result) {
+    public void onLoad(StructObjectInfoImpl result) {
         Validate.isTrue(structObjectInfo == null);
         this.structObjectInfo = result;
     }

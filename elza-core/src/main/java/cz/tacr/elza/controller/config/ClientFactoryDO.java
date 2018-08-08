@@ -1,10 +1,13 @@
 package cz.tacr.elza.controller.config;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -16,6 +19,7 @@ import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,9 +29,6 @@ import org.springframework.util.Assert;
 
 import cz.tacr.elza.FilterTools;
 import cz.tacr.elza.bulkaction.generator.PersistentSortRunConfig;
-import cz.tacr.elza.controller.vo.ApRecordVO;
-import cz.tacr.elza.controller.vo.ApScopeVO;
-import cz.tacr.elza.controller.vo.ApVariantRecordVO;
 import cz.tacr.elza.controller.vo.ArrFileVO;
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
@@ -47,9 +48,7 @@ import cz.tacr.elza.controller.vo.filter.ValuesTypes;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.core.data.CalendarType;
-import cz.tacr.elza.domain.ApRecord;
-import cz.tacr.elza.domain.ApScope;
-import cz.tacr.elza.domain.ApVariantRecord;
+import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataUnitdate;
@@ -67,6 +66,7 @@ import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyName;
 import cz.tacr.elza.domain.ParRelation;
 import cz.tacr.elza.domain.ParRelationEntity;
+import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.UISettings;
@@ -102,22 +102,13 @@ import cz.tacr.elza.filter.condition.SubsetDescItemCondition;
 import cz.tacr.elza.filter.condition.UndefinedDescItemCondition;
 import cz.tacr.elza.filter.condition.UnselectedSpecificationsDescItemEnumCondition;
 import cz.tacr.elza.filter.condition.UnselectedValuesDescItemEnumCondition;
-import cz.tacr.elza.repository.ApRecordRepository;
+import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.CalendarTypeRepository;
-import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MapperFactory;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang3.Validate;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
 
 /**
  * Továrna na vytváření DO objektů z VO objektů.
@@ -139,7 +130,7 @@ public class ClientFactoryDO {
     private ItemSpecRepository itemSpecRepository;
 
     @Autowired
-    private ApRecordRepository apRecordRepository;
+    private ApAccessPointRepository apAccessPointRepository;
 
     @Autowired
     private InstitutionRepository institutionRepository;
@@ -203,29 +194,6 @@ public class ClientFactoryDO {
         }
 
         return party;
-    }
-
-
-    /**
-     * Vytvoření rejstříkového hesla.
-     *
-     * @param apRecordVO VO rejstříkové heslo
-     * @return DO rejstříkové heslo
-     */
-    public ApRecord createApRecord(final ApRecordVO apRecordVO) {
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        return mapper.map(apRecordVO, ApRecord.class);
-    }
-
-    /**
-     * Vytvoření variantního rejstříkového hesla.
-     *
-     * @param apVariantRecord VO variantní rejstříkové heslo
-     * @return DO variantní rejstříkové heslo
-     */
-    public ApVariantRecord createApVariantRecord(final ApVariantRecordVO apVariantRecord) {
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        return mapper.map(apVariantRecord, ApVariantRecord.class);
     }
 
     /**
@@ -374,39 +342,6 @@ public class ClientFactoryDO {
     }
 
     /**
-     * Vytvoří třídu rejstříku.
-     *
-     * @param scopeVO třída rejstříku
-     * @return třída rejstříku
-     */
-    public ApScope createScope(final ApScopeVO scopeVO) {
-        Assert.notNull(scopeVO, "Scope musí být vyplněn");
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        return mapper.map(scopeVO, ApScope.class);
-    }
-
-
-    /**
-     * Vytvoří seznam rejstříků
-     *
-     * @param scopeVOs seznam VO rejstříků
-     * @return seznam DO
-     */
-    public List<ApScope> createScopeList(@Nullable final Collection<ApScopeVO> scopeVOs) {
-        if (scopeVOs == null) {
-            return new ArrayList<>();
-        }
-
-        List<ApScope> result = new ArrayList<>(scopeVOs.size());
-
-        for (ApScopeVO scopeVO : scopeVOs) {
-            result.add(createScope(scopeVO));
-        }
-
-        return result;
-    }
-
-    /**
      * Vytvoří DO archivní pomůcky
      *
      * @param fundVO VO archivní pomůcka
@@ -427,7 +362,7 @@ public class ClientFactoryDO {
         ArrNodeRegister nodeRegister = mapper.map(nodeRegisterVO, ArrNodeRegister.class);
 
         if (nodeRegisterVO.getValue() != null) {
-            nodeRegister.setRecord(apRecordRepository.findOne(nodeRegisterVO.getValue()));
+            nodeRegister.setRecord(apAccessPointRepository.findOne(nodeRegisterVO.getValue()));
         }
 
         return nodeRegister;
@@ -477,7 +412,9 @@ public class ClientFactoryDO {
         List<DescItemCondition> conditions = new LinkedList<>();
         Condition conditionType = filter.getConditionType();
         if (conditionType != null && conditionType != Condition.NONE) {
-            conditionType.checkSupport(descItemType.getDataType().getCode());
+            RulDataType rulDataType = descItemType.getDataType();
+            conditionType.checkSupport(rulDataType.getCode());
+            DataType dataType = DataType.fromId(rulDataType.getDataTypeId());
 
             DescItemCondition condition;
             switch (conditionType) {
@@ -501,43 +438,57 @@ public class ClientFactoryDO {
                     break;
                 }
                 case EQ: {
-                    if (descItemType.getDataType().getCode().equals("UNITDATE")) {
+                    if (dataType == DataType.UNITDATE) {
                         Interval<Long> conditionValue = getConditionValueIntervalLong(filter.getCondition());
                         condition = new EqIntervalDesCitemCondition<>(conditionValue,
                                 ArrDescItem.NORMALIZED_FROM_ATT,
                                 ArrDescItem.NORMALIZED_TO_ATT);
+                    } else if (dataType == DataType.DATE) {
+                        Date conditionValue = getConditionValueDate(filter.getCondition());
+                        condition = new EqDescItemCondition<>(conditionValue, ArrDescItem.DATE_ATT);
                     } else {
                         String conditionValue = getConditionValueString(filter.getCondition());
                         condition = new EqDescItemCondition<>(conditionValue, ArrDescItem.FULLTEXT_ATT);
                     }
-
                     break;
                 }
                 case GE: {
-                    if (descItemType.getDataType().getCode().equals("INT")) {
+                    if (dataType == DataType.INT) {
                         Integer conditionValue = getConditionValueInteger(filter.getCondition());
                         String attributeName = ArrDescItem.INTGER_ATT;
                         condition = new GeDescItemCondition<>(conditionValue, attributeName);
-                    } else {
+                    } else if (dataType == DataType.DECIMAL) {
                         Double conditionValue = getConditionValueDouble(filter.getCondition());
                         String attributeName = ArrDescItem.DECIMAL_ATT;
                         condition = new GeDescItemCondition<>(conditionValue, attributeName);
+                    } else if (dataType == DataType.DATE) {
+                        Date conditionValue = getConditionValueDate(filter.getCondition());
+                        String attributeName = ArrDescItem.DATE_ATT;
+                        condition = new GeDescItemCondition<>(conditionValue, attributeName);
+                    } else {
+                        throw new NotImplementedException("Neimplementovaný typ: " + dataType.getCode());
                     }
                     break;
                 }
                 case GT: {
-                    if (descItemType.getDataType().getCode().equals("UNITDATE")) {
+                    if (dataType == DataType.UNITDATE) {
                         ArrDataUnitdate unitDate = getConditionValueUnitdate(filter.getCondition());
                         String attributeName = ArrDescItem.NORMALIZED_FROM_ATT;
                         condition = new GtDescItemCondition<>(unitDate.getNormalizedTo(), attributeName);
-                    } else if (descItemType.getDataType().getCode().equals("INT")) {
+                    } else if (dataType == DataType.INT) {
                         Integer conditionValue = getConditionValueInteger(filter.getCondition());
                         String attributeName = ArrDescItem.INTGER_ATT;
                         condition = new GtDescItemCondition<>(conditionValue, attributeName);
-                    } else {
+                    } else if (dataType == DataType.DECIMAL) {
                         Double conditionValue = getConditionValueDouble(filter.getCondition());
                         String attributeName = ArrDescItem.DECIMAL_ATT;
                         condition = new GtDescItemCondition<>(conditionValue, attributeName);
+                    } else if (dataType == DataType.DATE) {
+                        Date conditionValue = getConditionValueDate(filter.getCondition());
+                        String attributeName = ArrDescItem.DATE_ATT;
+                        condition = new GtDescItemCondition<>(conditionValue, attributeName);
+                    } else {
+                        throw new NotImplementedException("Neimplementovaný typ: " + dataType.getCode());
                     }
                     break;
                 }
@@ -549,54 +500,78 @@ public class ClientFactoryDO {
                     break;
                 }
                 case INTERVAL: {
-                    if (descItemType.getDataType().getCode().equals("INT")) {
+                    if (dataType == DataType.INT) {
                         Interval<Integer> conditionValue = getConditionValueIntervalInteger(filter.getCondition());
                         String attributeName = ArrDescItem.INTGER_ATT;
                         condition = new IntervalDescItemCondition<>(conditionValue, attributeName);
-                    } else {
+                    } else if (dataType == DataType.DECIMAL) {
                         Interval<Double> conditionValue = getConditionValueIntervalDouble(filter.getCondition());
                         String attributeName = ArrDescItem.DECIMAL_ATT;
                         condition = new IntervalDescItemCondition<>(conditionValue, attributeName);
+                    } else if (dataType == DataType.DATE) {
+                        Interval<Date> conditionValue = getConditionValueIntervalDate(filter.getCondition());
+                        String attributeName = ArrDescItem.DATE_ATT;
+                        condition = new IntervalDescItemCondition<>(conditionValue, attributeName);
+                    } else {
+                        throw new NotImplementedException("Neimplementovaný typ: " + dataType.getCode());
                     }
                     break;
                 }
                 case LE: {
-                    if (descItemType.getDataType().getCode().equals("INT")) {
+                    if (dataType == DataType.INT) {
                         Integer conditionValue = getConditionValueInteger(filter.getCondition());
                         String attributeName = ArrDescItem.INTGER_ATT;
                         condition = new LeDescItemCondition<>(conditionValue, attributeName);
-                    } else {
+                    } else if (dataType == DataType.DECIMAL) {
                         Double conditionValue = getConditionValueDouble(filter.getCondition());
                         String attributeName = ArrDescItem.DECIMAL_ATT;
                         condition = new LeDescItemCondition<>(conditionValue, attributeName);
+                    } else if (dataType == DataType.DATE) {
+                        Date conditionValue = getConditionValueDate(filter.getCondition());
+                        String attributeName = ArrDescItem.DATE_ATT;
+                        condition = new LeDescItemCondition<>(conditionValue, attributeName);
+                    } else {
+                        throw new NotImplementedException("Neimplementovaný typ: " + dataType.getCode());
                     }
                     break;
                 }
                 case LT: {
-                    if (descItemType.getDataType().getCode().equals("UNITDATE")) {
+                    if (dataType == DataType.UNITDATE) {
                         ArrDataUnitdate unitDate = getConditionValueUnitdate(filter.getCondition());
                         String attributeName = ArrDescItem.NORMALIZED_TO_ATT;
                         condition = new LtDescItemCondition<>(unitDate.getNormalizedFrom(), attributeName);
-                    } else if (descItemType.getDataType().getCode().equals("INT")) {
+                    } else if (dataType == DataType.INT) {
                         Integer conditionValue = getConditionValueInteger(filter.getCondition());
                         String attributeName = ArrDescItem.INTGER_ATT;
                         condition = new LtDescItemCondition<>(conditionValue, attributeName);
-                    } else {
+                    } else if (dataType == DataType.DECIMAL) {
                         Double conditionValue = getConditionValueDouble(filter.getCondition());
                         String attributeName = ArrDescItem.DECIMAL_ATT;
                         condition = new LtDescItemCondition<>(conditionValue, attributeName);
+                    } else if (dataType == DataType.DATE) {
+                        Date conditionValue = getConditionValueDate(filter.getCondition());
+                        String attributeName = ArrDescItem.DATE_ATT;
+                        condition = new LtDescItemCondition<>(conditionValue, attributeName);
+                    } else {
+                        throw new NotImplementedException("Neimplementovaný typ: " + dataType.getCode());
                     }
                     break;
                 }
                 case NE: {
-                    if (descItemType.getDataType().getCode().equals("INT")) {
+                    if (dataType == DataType.INT) {
                         Integer conditionValue = getConditionValueInteger(filter.getCondition());
                         String attributeName = ArrDescItem.INTGER_ATT;
                         condition = new NeDescItemCondition<>(conditionValue, attributeName);
-                    } else {
+                    } else if (dataType == DataType.DECIMAL) {
                         Double conditionValue = getConditionValueDouble(filter.getCondition());
                         String attributeName = ArrDescItem.DECIMAL_ATT;
                         condition = new NeDescItemCondition<>(conditionValue, attributeName);
+                    } else if (dataType == DataType.DATE) {
+                        Date conditionValue = getConditionValueDate(filter.getCondition());
+                        String attributeName = ArrDescItem.DATE_ATT;
+                        condition = new NeDescItemCondition<>(conditionValue, attributeName);
+                    } else {
+                        throw new NotImplementedException("Neimplementovaný typ: " + dataType.getCode());
                     }
                     break;
                 }
@@ -612,14 +587,20 @@ public class ClientFactoryDO {
                     condition = new UndefinedDescItemCondition();
                     break;
                 case NOT_INTERVAL: {
-                    if (descItemType.getDataType().getCode().equals("INT")) {
+                    if (dataType == DataType.INT) {
                         Interval<Integer> conditionValue = getConditionValueIntervalInteger(filter.getCondition());
                         String attributeName = ArrDescItem.INTGER_ATT;
                         condition = new NotIntervalDescItemCondition<>(conditionValue, attributeName);
-                    } else {
+                    } else if (dataType == DataType.DECIMAL) {
                         Interval<Double> conditionValue = getConditionValueIntervalDouble(filter.getCondition());
                         String attributeName = ArrDescItem.DECIMAL_ATT;
                         condition = new NotIntervalDescItemCondition<>(conditionValue, attributeName);
+                    } else if (dataType == DataType.DATE) {
+                        Interval<Date> conditionValue = getConditionValueIntervalDate(filter.getCondition());
+                        String attributeName = ArrDescItem.DECIMAL_ATT;
+                        condition = new NotIntervalDescItemCondition<>(conditionValue, attributeName);
+                    } else {
+                        throw new NotImplementedException("Neimplementovaný typ: " + dataType.getCode());
                     }
                     break;
                 }
@@ -685,6 +666,8 @@ public class ClientFactoryDO {
             result = (T) Long.valueOf(value);
         } else if (ArrDataUnitdate.class.equals(cls)) {
             result = (T) createUnitdate(value);
+        } else if (Date.class.equals(cls)) {
+            result = (T) Date.from(LocalDate.parse(value, DateTimeFormatter.ISO_LOCAL_DATE).atStartOfDay(ZoneId.systemDefault()).toInstant());
         } else { // String
             result = (T) value.toLowerCase();
         }
@@ -734,6 +717,10 @@ public class ClientFactoryDO {
         return getConditionValue(conditions, Double.class);
     }
 
+    private Date getConditionValueDate(final List<String> conditions) {
+        return getConditionValue(conditions, Date.class);
+    }
+
     private Interval<Double> getConditionValueIntervalDouble(final List<String> conditions) {
         return getConditionValueInterval(conditions, Double.class);
     }
@@ -765,6 +752,10 @@ public class ClientFactoryDO {
         ArrDataUnitdate unitdate = getConditionValueUnitdate(conditions);
 
         return new Interval<>(unitdate.getNormalizedFrom(), unitdate.getNormalizedTo());
+    }
+
+    private Interval<Date> getConditionValueIntervalDate(final List<String> conditions) {
+        return new Interval<>(getConditionValue(conditions.get(0), Date.class), getConditionValue(conditions.get(1), Date.class));
     }
 
     /**

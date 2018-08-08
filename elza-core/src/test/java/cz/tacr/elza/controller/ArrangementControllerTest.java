@@ -3,25 +3,9 @@ package cz.tacr.elza.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import cz.tacr.elza.controller.ArrangementController.CopySiblingResult;
 import cz.tacr.elza.controller.ArrangementController.DescFormDataNewVO;
-import cz.tacr.elza.controller.vo.ApRecordVO;
-import cz.tacr.elza.controller.vo.ApScopeVO;
+import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.controller.vo.ApTypeVO;
-import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
-import cz.tacr.elza.controller.vo.ArrFundVO;
-import cz.tacr.elza.controller.vo.ArrFundVersionVO;
-import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
-import cz.tacr.elza.controller.vo.ArrOutputDefinitionVO;
-import cz.tacr.elza.controller.vo.ArrOutputExtVO;
-import cz.tacr.elza.controller.vo.CopyNodesParams;
-import cz.tacr.elza.controller.vo.CopyNodesValidate;
-import cz.tacr.elza.controller.vo.CopyNodesValidateResult;
-import cz.tacr.elza.controller.vo.FilterNode;
-import cz.tacr.elza.controller.vo.FilterNodePosition;
-import cz.tacr.elza.controller.vo.NodeItemWithParent;
-import cz.tacr.elza.controller.vo.OutputSettingsVO;
-import cz.tacr.elza.controller.vo.RulOutputTypeVO;
-import cz.tacr.elza.controller.vo.TreeData;
-import cz.tacr.elza.controller.vo.TreeNodeVO;
+import cz.tacr.elza.controller.vo.ApScopeVO;
 import cz.tacr.elza.controller.vo.filter.Filters;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.NodeDataParam;
@@ -54,6 +38,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -146,7 +131,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         ChangesResult changesAll = findChanges(fundVersion.getId(), MAX_SIZE, 0, null, null);
         assertNotNull(changesAll);
         assertNotNull(changesAll.getChanges());
-        assertTrue(changesAll.getTotalCount().equals(changesAll.getChanges().size()) && changesAll.getChanges().size() == 28);
+        assertTrue(changesAll.getTotalCount().equals(changesAll.getChanges().size()) && changesAll.getChanges().size() == 29);
         assertTrue(!changesAll.getOutdated());
 
         ChangesResult changesByNode = findChanges(fundVersion.getId(), MAX_SIZE, 0, null, nodes.get(0).getId());
@@ -173,7 +158,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
             e.printStackTrace();
         }
 
-        assertTrue(changesByDate.getTotalCount().equals(changesByDate.getChanges().size()) && changesByDate.getChanges().size() == 28);
+        assertTrue(changesByDate.getTotalCount().equals(changesByDate.getChanges().size()) && changesByDate.getChanges().size() == 29);
         assertTrue(!changesByDate.getOutdated());
 
         // obdoba revertChanges s fail očekáváním
@@ -545,6 +530,12 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         descItemResult = createDescItem(descItem, fundVersion, node, type);
         node = descItemResult.getParent();
 
+        LocalDate dateNow = LocalDate.now();
+        type = findDescItemTypeByCode("SRD_SIMPLE_DATE");
+        descItem = buildDescItem(type.getCode(), null, dateNow, 1, null);
+        descItemResult = createDescItem(descItem, fundVersion, node, type);
+        node = descItemResult.getParent();
+
         type = findDescItemTypeByCode("SRD_LEGEND");
         descItem = buildDescItem(type.getCode(), null, "legenda", 1, null);
         descItemResult = createDescItem(descItem, fundVersion, node, type);
@@ -890,23 +881,16 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         List<ApScopeVO> scopes = getAllScopes();
         Integer scopeId = scopes.iterator().next().getId();
 
-        ApRecordVO record = new ApRecordVO();
-
-        record.setApTypeId(getNonHierarchicalApType(types, false).getId());
-
-        record.setCharacteristics("Ja jsem apRecordA");
-
-        record.setRecord("ApRecordA");
-
-        record.setScopeId(scopeId);
-
-        record.setAddRecord(true);
-
-        record = createRecord(record);
+        ApAccessPointCreateVO ap = new ApAccessPointCreateVO();
+        ap.setTypeId(getNonHierarchicalApType(types, false).getId());
+        ap.setName("ApRecordA name");
+        ap.setComplement("ApRecordA complement");
+        ap.setScopeId(scopeId);
+        ApAccessPointVO accessPointCreated = createAccessPoint(ap);
 
         ArrNodeRegisterVO nodeRegister = new ArrNodeRegisterVO();
 
-        nodeRegister.setValue(record.getId());
+        nodeRegister.setValue(accessPointCreated.getId());
         nodeRegister.setNodeId(rootNode.getId());
         nodeRegister.setNode(rootNode);
 

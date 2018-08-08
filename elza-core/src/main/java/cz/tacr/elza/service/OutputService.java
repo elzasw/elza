@@ -30,8 +30,8 @@ import cz.tacr.elza.bulkaction.BulkActionService;
 import cz.tacr.elza.bulkaction.generator.result.ActionResult;
 import cz.tacr.elza.bulkaction.generator.result.Result;
 import cz.tacr.elza.controller.vo.OutputSettingsVO;
-import cz.tacr.elza.core.data.RuleSystem;
-import cz.tacr.elza.core.data.RuleSystemItemType;
+import cz.tacr.elza.core.data.ItemType;
+import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
@@ -486,7 +486,7 @@ public class OutputService {
 
         checkFund(fundVersion, outputDefinition);
 
-        // get current live nodes 
+        // get current live nodes
         List<ArrNodeOutput> outputNodes = nodeOutputRepository.findByOutputDefinitionAndDeleteChangeIsNull(outputDefinition);
 
         // mark nodes as deleted
@@ -598,10 +598,10 @@ public class OutputService {
     /**
      * Přidání uzlů do výstupu.
      *
-     * @param fundVersion verze AS
-     * @param output      pojmenovaný výstup
-     * @param nodeIds     seznam identifikátorů přidávaných uzlů
-     * @param change      změna
+     * @param fundVersion    verze AS
+     * @param output         pojmenovaný výstup
+     * @param connectNodeIds seznam identifikátorů přidávaných uzlů
+     * @param change         změna
      */
     private void addNodesNamedOutput(final ArrFundVersion fundVersion, final ArrOutput output,
                                      final List<Integer> connectNodeIds, final ArrChange change) {
@@ -679,7 +679,6 @@ public class OutputService {
     private void updateCalculatedItems(final ArrFundVersion fundVersion, final ArrChange change,
                                           final Collection<Integer> nodeIds,
                                           final ArrOutputDefinition outputDefinition) {
-
         // nalezeni automaticky vypoctenych hodnot a jejich vymazani
 
         // get recommended actions -> calculated item type
@@ -692,7 +691,6 @@ public class OutputService {
         Set<Integer> preserveItemTypeIds = itemSettings.stream()
                 .filter(is -> Boolean.TRUE.equals(is.getBlockActionResult())).map(is -> is.getItemTypeId())
                 .collect(Collectors.toSet());
-
         // delete item types
         for (RulItemTypeAction ria : itemTypeLinks) {
             Integer itemTypeId = ria.getItemTypeId();
@@ -705,16 +703,10 @@ public class OutputService {
         if (nodeIds.size() == 0) {
             return;
         }
-
-        // create item connector
-        OutputItemConnector connector = outputServiceInternal.createItemConnector(fundVersion, outputDefinition);
-        connector.setChangeSupplier(() -> change);
-
-        storeResults(fundVersion, nodeIds, outputDefinition, connector);
     }
 
     /**
-     * 
+     *
      * @param fundVersion
      * @param nodes
      * @param outputDefinition
@@ -894,9 +886,9 @@ public class OutputService {
     /**
      * Vytvoření hodnoty atributu pro výstup.
      *
-     * @param outputItem hodnota atributu
-     * @param version    verze AS
-     * @param change     změna
+     * @param outputItem  hodnota atributu
+     * @param fundVersion verze AS
+     * @param change      změna
      * @return vytvořená hodnota atributu
      */
     private ArrOutputItem createOutputItem(final ArrOutputItem outputItem,
@@ -911,8 +903,8 @@ public class OutputService {
         }
 
         // kontrola validity typu a specifikace
-        RuleSystem ruleSystem = staticDataService.getData().getRuleSystems().getByRuleSetId(fundVersion.getRuleSetId());
-        itemService.checkValidTypeAndSpec(ruleSystem, outputItem);
+        StaticDataProvider sdp = staticDataService.getData();
+        itemService.checkValidTypeAndSpec(sdp, outputItem);
 
         int maxPosition = outputItemRepository.findMaxItemPosition(outputItem.getItemType(), outputItem.getOutputDefinition());
 
@@ -1031,7 +1023,6 @@ public class OutputService {
      * @param outputItem              hodnota atributu
      * @param outputDefinitionVersion verze outputu
      * @param fundVersionId           identifikátor verze fondu
-     * @param createNewVersion        vytvořit novou?
      * @return upravená hodnota atributu
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_OUTPUT_WR_ALL, UsrPermission.Permission.FUND_OUTPUT_WR})
@@ -1086,7 +1077,6 @@ public class OutputService {
      * @param outputItemDB     hodnota atributu z DB
      * @param version          verze AS
      * @param change           změna pro úpravu
-     * @param createNewVersion odverzovat?
      * @return upravená hodnota
      */
     public ArrOutputItem updateOutputItem(final ArrOutputItem outputItem,
@@ -1264,8 +1254,8 @@ public class OutputService {
         ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
         Validate.notNull(fundVersion, "Verze archivní pomůcky neexistuje");
 
-        RuleSystem ruleSystem = staticDataService.getData().getRuleSystems().getByRuleSetId(fundVersion.getRuleSetId());
-        RuleSystemItemType itemType = ruleSystem.getItemTypeById(itemTypeId);
+        StaticDataProvider sdp = staticDataService.getData();
+        ItemType itemType = sdp.getItemTypeById(itemTypeId);
 
         Validate.notNull(itemType, "Typ atributu neexistuje");
 
@@ -1341,7 +1331,7 @@ public class OutputService {
             itemSettingsRepository.delete(itemSettings);
             // delete old items
             outputServiceInternal.deleteOutputItemsByType(fundVersion, outputDefinition, itemType.getItemTypeId(), change);
-            
+
             // get current nodes for output
             List<ArrNodeOutput> nodes = nodeOutputRepository.findByOutputDefinitionAndDeleteChangeIsNull(outputDefinition);
             boolean changed = false;
@@ -1474,8 +1464,8 @@ public class OutputService {
             throw new ObjectNotFoundException("Nebyla nalezena verze AS s ID=" + fundVersionId, ArrangementCode.FUND_VERSION_NOT_FOUND).set("id", fundVersionId);
         }
 
-        RuleSystem ruleSystem = staticDataService.getData().getRuleSystems().getByRuleSetId(fundVersion.getRuleSetId());
-        RuleSystemItemType itemType = ruleSystem.getItemTypeById(outputItemTypeId);
+        StaticDataProvider sdp = staticDataService.getData();
+        ItemType itemType = sdp.getItemTypeById(outputItemTypeId);
         if (itemType == null) {
             throw new ObjectNotFoundException("Nebyla nalezen typ atributu s ID=" + outputItemTypeId, ArrangementCode.ITEM_TYPE_NOT_FOUND).set("id", outputItemTypeId);
         }

@@ -24,6 +24,9 @@ import RegistryLabel from "./RegistryLabel";
 import defaultKeymap from './RegistryDetailVariantRecordsKeymap.jsx';
 import {FOCUS_KEYS} from "../../constants";
 
+/**
+ * @deprecated
+ */
 class RegistryDetailVariantRecords extends AbstractReactComponent {
     static contextTypes = { shortcuts: PropTypes.object };
     static childContextTypes = { shortcuts: PropTypes.object.isRequired };
@@ -36,7 +39,7 @@ class RegistryDetailVariantRecords extends AbstractReactComponent {
 
     static PropTypes = {
         value: React.PropTypes.array.isRequired,
-        apRecordId: React.PropTypes.number.isRequired
+        regRecordId: React.PropTypes.number.isRequired
     };
 
     componentDidMount() {
@@ -76,8 +79,8 @@ class RegistryDetailVariantRecords extends AbstractReactComponent {
         if (!element.target.value) {
             return false;
         }
-        const {apRecordId} = this.props;
-        const data = {record: element.target.value, apRecordId: apRecordId};
+        const {regRecordId} = this.props;
+        const data = {record: element.target.value, regRecordId};
         this.dispatch(registryVariantCreate(data, item.variantRecordInternalId));
     };
 
@@ -85,11 +88,11 @@ class RegistryDetailVariantRecords extends AbstractReactComponent {
         if (!element.target.value) {
             return false;
         }
-        const {apRecordId} = this.props;
+        const {regRecordId} = this.props;
 
         this.dispatch(registryVariantUpdate({
             id: item.id,
-            apRecordId: apRecordId,
+            regRecordId,
             record: element.target.value,
             version: item.version
         }));

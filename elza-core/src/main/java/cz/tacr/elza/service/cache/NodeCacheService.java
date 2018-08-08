@@ -2,6 +2,7 @@ package cz.tacr.elza.service.cache;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -31,19 +32,44 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.introspect.AnnotatedMethod;
 import com.fasterxml.jackson.databind.introspect.VisibilityChecker;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.collect.Lists;
+
 import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.common.db.HibernateUtils;
-import cz.tacr.elza.core.data.*;
-import cz.tacr.elza.domain.*;
+import cz.tacr.elza.core.data.CalendarType;
+import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.core.data.ItemType;
+import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ArrCachedNode;
+import cz.tacr.elza.domain.ArrDao;
+import cz.tacr.elza.domain.ArrDaoLink;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataFileRef;
+import cz.tacr.elza.domain.ArrDataPartyRef;
+import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrDataStructureRef;
+import cz.tacr.elza.domain.ArrDataUnitdate;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFile;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrNodeRegister;
+import cz.tacr.elza.domain.ArrStructuredObject;
+import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.ParPartyName;
+import cz.tacr.elza.domain.ParPartyNameComplement;
+import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.repository.ApRecordRepository;
+import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.CachedNodeRepository;
 import cz.tacr.elza.repository.DaoLinkRepository;
 import cz.tacr.elza.repository.DaoRepository;
@@ -96,7 +122,7 @@ public class NodeCacheService {
     private PartyRepository partyRepository;
 
     @Autowired
-    private ApRecordRepository apRecordRepository;
+    private ApAccessPointRepository apAccessPointRepository;
 
     @Autowired
     private FundFileRepository fundFileRepository;
@@ -124,8 +150,11 @@ public class NodeCacheService {
 
     public NodeCacheService() {
         mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+        mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
         mapper.setVisibility(new InterfaceVisibilityChecker(NodeCacheSerializable.class,
-                String.class, Number.class, Boolean.class, Iterable.class));
+                String.class, Number.class, Boolean.class, Iterable.class,
+                LocalDate.class));
     }
 
     /**
@@ -478,7 +507,6 @@ public class NodeCacheService {
 	private void reloadCachedNodes(final Collection<RestoredNode> cachedNodes) {
 
 		StaticDataProvider sdp = staticDataService.getData();
-		RuleSystemProvider rsp = sdp.getRuleSystems();
 
         Map<ArrDescItem, Integer> itemStructureDataMap = new HashMap<>();
         Map<ArrDescItem, Integer> itemPartiesMap = new HashMap<>();
@@ -494,7 +522,7 @@ public class NodeCacheService {
 					// set node
 					descItem.setNode(node);
 
-					loadDescItemType(descItem, rsp);
+					loadDescItemType(descItem, sdp);
 
 					ArrData data = descItem.getData();
 					if (data != null) {
@@ -535,13 +563,12 @@ public class NodeCacheService {
 
 	/**
 	 * Load description item type from rule system provider
-	 *
-	 * @param descItem
-	 * @param rsp
-	 */
-	private void loadDescItemType(ArrDescItem descItem, RuleSystemProvider rsp) {
+	 *  @param descItem
+	 * @param sdp
+     */
+	private void loadDescItemType(ArrDescItem descItem, StaticDataProvider sdp) {
 		Validate.notNull(descItem.getItemTypeId());
-		RuleSystemItemType itemType = rsp.getItemType(descItem.getItemTypeId());
+		ItemType itemType = sdp.getItemTypeById(descItem.getItemTypeId());
 		Validate.notNull(itemType);
 
 		descItem.setItemType(itemType.getEntity());
@@ -567,7 +594,7 @@ public class NodeCacheService {
 	 * @param data
 	 * @param itemType
 	 */
-	private void loadDataType(ArrData data, RuleSystemItemType itemType) {
+	private void loadDataType(ArrData data, ItemType itemType) {
 		DataType dataType = itemType.getDataType();
 		// check that item type match
         if (dataType.getId() != data.getDataTypeId()) {
@@ -598,7 +625,7 @@ public class NodeCacheService {
 	}
 
     /**
-     * Vyplnění návazných entity {@link ApRecord}.
+     * Vyplnění návazných entity {@link ApAccessPoint}.
      *
      * @param nodeRegistersMap mapa entit k vyplnění
      */
@@ -606,10 +633,10 @@ public class NodeCacheService {
         if (nodeRegistersMap.size() == 0) {
             return;
         }
-        List<ApRecord> records = apRecordRepository.findAll(nodeRegistersMap.values());
-        Map<Integer, ApRecord> recordsMapFound = new HashMap<>();
-        for (ApRecord record : records) {
-            recordsMapFound.put(record.getRecordId(), record);
+        List<ApAccessPoint> records = apAccessPointRepository.findAll(nodeRegistersMap.values());
+        Map<Integer, ApAccessPoint> recordsMapFound = new HashMap<>();
+        for (ApAccessPoint record : records) {
+            recordsMapFound.put(record.getAccessPointId(), record);
         }
 
         for (Map.Entry<ArrNodeRegister, Integer> entry : nodeRegistersMap.entrySet()) {
@@ -662,7 +689,7 @@ public class NodeCacheService {
 
 
     /**
-     * Vyplnění návazných entity {@link ApRecord}.
+     * Vyplnění návazných entity {@link ApAccessPoint}.
      *
      * @param itemRecordsMap mapa entit k vyplnění
      */
@@ -670,10 +697,10 @@ public class NodeCacheService {
         if (itemRecordsMap.size() == 0) {
             return;
         }
-        List<ApRecord> records = apRecordRepository.findAll(itemRecordsMap.values());
-        Map<Integer, ApRecord> recordsMapFound = new HashMap<>();
-        for (ApRecord record : records) {
-            recordsMapFound.put(record.getRecordId(), record);
+        List<ApAccessPoint> records = apAccessPointRepository.findAll(itemRecordsMap.values());
+        Map<Integer, ApAccessPoint> recordsMapFound = new HashMap<>();
+        for (ApAccessPoint record : records) {
+            recordsMapFound.put(record.getAccessPointId(), record);
         }
 
         for (Map.Entry<ArrDescItem, Integer> entry : itemRecordsMap.entrySet()) {
@@ -810,8 +837,7 @@ public class NodeCacheService {
     /**
 	 * Deserializace objektu.
 	 *
-	 * @param cachedNode.getData()
-	 *            serializovaný objekt
+	 * @param cachedNode serializovaný objekt
 	 * @return sestavený objekt
 	 */
 	private RestoredNode deserialize(final ArrCachedNode cachedNode) {
@@ -881,8 +907,7 @@ public class NodeCacheService {
 	/**
 	 * Založení nových záznamů v cache pro JP.
 	 *
-	 * @param cachedNodes
-	 *            seznam zakládaných objektů
+	 * @param nodes seznam zakládaných objektů
 	 */
 	private void createEmptyNodes(final Collection<ArrNode> nodes) {
 		List<ArrCachedNode> records = new ArrayList<>(nodes.size());

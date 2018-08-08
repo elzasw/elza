@@ -171,12 +171,12 @@ public class StructureControllerTest extends AbstractControllerTest {
     }
 
     private void structureTypesAndExtensions(final ArrFundVersionVO fundVersion) {
-        List<RulStructureTypeVO> structureTypes = findStructureTypes(fundVersion.getId());
+        List<RulStructureTypeVO> structureTypes = findStructureTypes();
         assertNotNull(structureTypes);
-        assertEquals(1, structureTypes.size());
+        assertEquals(2, structureTypes.size()); // ZP2015_PACKET + SRD_PACKET
 
-        RulStructureTypeVO structureType = structureTypes.get(0);
-        assertTrue(STRUCTURE_TYPE_CODE.equals(structureType.code));
+        RulStructureTypeVO structureType = structureTypes.get(1);
+        assertEquals(STRUCTURE_TYPE_CODE, structureType.code);
         assertNotNull(structureType.id);
         assertNotNull(structureType.name);
 
@@ -206,11 +206,11 @@ public class StructureControllerTest extends AbstractControllerTest {
         assertNotNull(structureData);
         assertNotNull(structureData.id);
         assertNotNull(structureData.assignable);
-        assertTrue(structureData.state == ArrStructuredObject.State.TEMP);
+        assertSame(structureData.state, ArrStructuredObject.State.TEMP);
 
         ArrStructureDataVO structureDataConfirmed = confirmStructureData(fundVersion.getId(), structureData.id);
         assertTrue(Objects.equals(structureDataConfirmed.id, structureDataConfirmed.id));
-        assertTrue(structureDataConfirmed.state == ArrStructuredObject.State.ERROR);
+        assertSame(structureDataConfirmed.state, ArrStructuredObject.State.ERROR);
         assertNotNull(structureDataConfirmed.value);
         assertNotNull(structureDataConfirmed.errorDescription);
 

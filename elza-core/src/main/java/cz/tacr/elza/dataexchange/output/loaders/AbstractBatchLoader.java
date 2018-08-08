@@ -48,7 +48,7 @@ public abstract class AbstractBatchLoader<REQ, RES> implements Loader<REQ, RES> 
     }
 
     /**
-     * Process all batch entries and sets results through {@link BatchEntry#addResult(Object)}.
+     * Process all batch entries and sets results through {@link BatchEntry#setResult(Object)}.
      *
      * @param entries not-empty
      */
@@ -80,7 +80,7 @@ public abstract class AbstractBatchLoader<REQ, RES> implements Loader<REQ, RES> 
             return request;
         }
 
-        public void addResult(RES result) {
+        public void setResult(RES result) {
             Validate.notNull(result);
 
             dispatcher.onLoad(result);

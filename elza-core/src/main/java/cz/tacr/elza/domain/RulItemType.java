@@ -17,6 +17,8 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
 
+import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.domain.integer.DisplayType;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.hibernate.annotations.Cache;
@@ -45,6 +47,10 @@ import cz.tacr.elza.domain.table.ElzaColumn;
 public class RulItemType {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
+
+    public static final TypeReference<List<ElzaColumn>> ELZA_COLUMNS = new TypeReference<List<ElzaColumn>>(){};
+
+    public static final TypeReference<DisplayType> DISPLAY_TYPE = new TypeReference<DisplayType>(){};
 
     @Id
     @GeneratedValue
@@ -87,7 +93,7 @@ public class RulItemType {
     private Integer viewOrder;
 
     @Column
-    private String columnsDefinition;
+    private String viewDefinition;
 
 	// Note: Consider to remove all transient fields from this
 	// class. Should be probably placed in RulItemTypeExt
@@ -109,10 +115,6 @@ public class RulItemType {
 
     @Transient
     private Boolean indefinable;
-
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulRuleSet.class)
-    @JoinColumn(name = "ruleSetId", nullable = false)
-    private RulRuleSet ruleSet;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulPackage.class)
     @JoinColumn(name = "packageId", nullable = false)
@@ -138,28 +140,27 @@ public class RulItemType {
 	 * @param src
 	 */
 	protected RulItemType(RulItemType src) {
-		itemTypeId = src.itemTypeId;
-		dataTypeId = src.dataTypeId;
-		dataType = src.dataType;
-		code = src.code;
-		name = src.name;
-		shortcut = src.shortcut;
-		description = src.description;
-		isValueUnique = src.isValueUnique;
-		canBeOrdered = src.canBeOrdered;
-		useSpecification = src.useSpecification;
-		viewOrder = src.viewOrder;
-		columnsDefinition = src.columnsDefinition;
-		type = src.type;
-		repeatable = src.repeatable;
-		calculable = src.calculable;
-		calculableState = src.calculableState;
-		policyTypeCode = src.policyTypeCode;
-		indefinable = src.indefinable;
-		ruleSet = src.ruleSet;
-		rulPackage = src.rulPackage;
-		structuredType = src.structuredType;
-		structuredTypeId = src.structuredTypeId;
+		itemTypeId = src.getItemTypeId();
+		dataTypeId = src.getDataTypeId();
+		dataType = src.getDataType();
+		code = src.getCode();
+		name = src.getName();
+		shortcut = src.getShortcut();
+		description = src.getDescription();
+		isValueUnique = src.getIsValueUnique();
+		canBeOrdered = src.getCanBeOrdered();
+		useSpecification = src.getUseSpecification();
+		viewOrder = src.getViewOrder();
+		setViewDefinition(src.getViewDefinition());
+		type = src.getType();
+		repeatable = src.getRepeatable();
+		calculable = src.getCalculable();
+		calculableState = src.getCalculableState();
+		policyTypeCode = src.getPolicyTypeCode();
+		indefinable = src.getIndefinable();
+		rulPackage = src.getRulPackage();
+		structuredType = src.getStructuredType();
+		structuredTypeId = src.getStructuredTypeId();
 	}
 
 	public Integer getItemTypeId() {
@@ -382,20 +383,6 @@ public class RulItemType {
     }
 
     /**
-     * @return pravidla
-     */
-    public RulRuleSet getRuleSet() {
-        return ruleSet;
-    }
-
-    /**
-     * @param ruleSet pravidla
-     */
-    public void setRuleSet(final RulRuleSet ruleSet) {
-        this.ruleSet = ruleSet;
-    }
-
-    /**
      * @return id strukturovaného typu
      */
     public Integer getStructuredTypeId() {
@@ -431,20 +418,39 @@ public class RulItemType {
         this.policyTypeCode = policyTypeCode;
     }
 
-    public List<ElzaColumn> getColumnsDefinition() {
-        if (columnsDefinition == null) {
+    public Object getViewDefinition(TypeReference<?> typeReference) {
+        if (viewDefinition == null) {
             return null;
         }
         try {
-            return objectMapper.readValue(columnsDefinition, new TypeReference<List<ElzaColumn>>(){});
+            return objectMapper.readValue(viewDefinition, typeReference);
         } catch (IOException e) {
             throw new IllegalArgumentException("Problém při generování JSON", e);
         }
     }
 
-    public void setColumnsDefinition(final List<ElzaColumn> columns) {
+    public Object getViewDefinition() {
+        if (viewDefinition == null) {
+            return null;
+        }
         try {
-            columnsDefinition = objectMapper.writeValueAsString(columns);
+            DataType dataType = DataType.fromId(getDataType().getDataTypeId());
+            if (dataType == DataType.JSON_TABLE) {
+                return objectMapper.readValue(viewDefinition, ELZA_COLUMNS);
+            } else if (dataType == DataType.INT) {
+                Object result = objectMapper.readValue(viewDefinition, DISPLAY_TYPE);
+                return result == null ? DisplayType.NUMBER : result;
+            } else {
+                return null;
+            }
+        } catch (IOException e) {
+            throw new IllegalArgumentException("Problém při generování JSON", e);
+        }
+    }
+
+    public void setViewDefinition(final Object viewDefinition) {
+        try {
+            this.viewDefinition = objectMapper.writeValueAsString(viewDefinition);
         } catch (JsonProcessingException e) {
             throw new IllegalArgumentException("Problém při parsování JSON", e);
         }

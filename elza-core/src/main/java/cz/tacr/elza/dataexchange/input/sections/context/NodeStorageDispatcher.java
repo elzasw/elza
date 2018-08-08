@@ -57,7 +57,7 @@ public class NodeStorageDispatcher {
     public void addNodeRegister(ArrNodeRegisterWrapper nodeRegister, int depth) {
         NodeDepthBatch batch = getBatch(depth);
         if (batch.addNodeRegister(nodeRegister)) {
-            batch.storeNodeRegistry();
+            batch.storeNodeRegistry(true);
         }
     }
 
@@ -65,14 +65,14 @@ public class NodeStorageDispatcher {
         NodeDepthBatch batch = getBatch(depth);
         if (batch.addLevel(level)) {
             dispatch(depth, NodeDepthBatch::storeNodes);
-            batch.storeLevels();
+            batch.storeLevels(true);
         }
     }
 
     public void addDescItem(ArrDescItemWrapper descItem, int depth) {
         NodeDepthBatch batch = getBatch(depth);
         if (batch.addDescItem(descItem)) {
-            batch.storeDescItems();
+            batch.storeDescItems(true);
         }
     }
 
@@ -153,7 +153,7 @@ public class NodeStorageDispatcher {
         }
 
         /**
-         * @return True when desc. item batch is full.
+         * @return True when DescItem batch is full.
          */
         public boolean addDescItem(ArrDescItemWrapper descItem) {
             descItems.add(descItem);
@@ -175,45 +175,51 @@ public class NodeStorageDispatcher {
 
         public void storeAll() {
             storeNodes();
-            storeNodeRegistry();
-            storeLevels();
+            storeNodeRegistry(false);
+            storeLevels(false);
             storeData();
-            storeDescItems();
+            storeDescItems(false);
         }
 
         public void storeNodes() {
             if (nodes.isEmpty()) {
                 return;
             }
-            storageManager.saveSectionNodes(nodes);
+            storageManager.storeGeneric(nodes);
             nodes.clear();
         }
 
-        public void storeNodeRegistry() {
+        public void storeNodeRegistry(boolean storeReferenced) {
             if (nodeRegistery.isEmpty()) {
                 return;
             }
-            storeNodes();
-            storageManager.saveSectionNodeRegistry(nodeRegistery);
+            if (storeReferenced) {
+                storeNodes();
+            }
+            storageManager.storeGeneric(nodeRegistery);
             nodeRegistery.clear();
         }
 
-        public void storeLevels() {
+        public void storeLevels(boolean storeReferenced) {
             if (levels.isEmpty()) {
                 return;
             }
-            storeNodes();
-            storageManager.saveSectionLevels(levels);
+            if (storeReferenced) {
+                storeNodes();
+            }
+            storageManager.storeGeneric(levels);
             levels.clear();
         }
 
-        public void storeDescItems() {
+        public void storeDescItems(boolean storeReferenced) {
             if (descItems.isEmpty()) {
                 return;
             }
-            storeNodes();
-            storeData();
-            storageManager.saveSectionDescItems(descItems);
+            if (storeReferenced) {
+                storeNodes();
+                storeData();
+            }
+            storageManager.storeGeneric(descItems);
             descItems.clear();
         }
 
@@ -222,7 +228,7 @@ public class NodeStorageDispatcher {
             if (group.isEmpty()) {
                 return;
             }
-            storageManager.saveData(group);
+            storageManager.storeGeneric(group);
             group.clear();
         }
 

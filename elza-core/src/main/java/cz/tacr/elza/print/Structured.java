@@ -6,7 +6,6 @@ import java.util.List;
 
 import org.apache.commons.lang3.Validate;
 
-import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.domain.ArrStructuredObject;
 
 /**
@@ -53,8 +52,7 @@ public class Structured {
         nodeIds.add(nodeId);
     }
 
-    public static Structured newInstance(ArrStructuredObject structObj,
-            RuleSystem ruleSystem, NodeLoader nodeLoader) {
+    public static Structured newInstance(ArrStructuredObject structObj, NodeLoader nodeLoader) {
         Structured result = new Structured(nodeLoader);
         result.setValue(structObj.getValue());
         return result;

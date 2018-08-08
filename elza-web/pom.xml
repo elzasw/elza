@@ -5,7 +5,7 @@
     <parent>
         <artifactId>elza</artifactId>
         <groupId>cz.tacr.elza</groupId>
-        <version>0.16.0-SNAPSHOT</version>
+        <version>0.17.0-SNAPSHOT</version>
     </parent>
     <artifactId>elza-web</artifactId>
     <name>ELZA Web</name>
@@ -38,7 +38,7 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-messaging</artifactId>
-        </dependency>          
+        </dependency>
         <!-- END - Spring boot dependencies -->
     </dependencies>
 
@@ -98,7 +98,7 @@
                                 </goals>
                                 <configuration>
                                     <outputDirectory>${project.build.directory}/classes/static/res/js</outputDirectory>
-                                    <resources>          
+                                    <resources>
                                         <resource>
                                             <filtering>false</filtering>
                                             <directory>${project.build.directory}/react-dist</directory>
@@ -106,14 +106,14 @@
                                                 <include>*.*</include>
                                             </includes>
                                         </resource>
-                                    </resources>              
-                                </configuration>            
+                                    </resources>
+                                </configuration>
                             </execution>
-                        </executions>                
+                        </executions>
                     </plugin>
                 </plugins>
             </build>
-        </profile>        
+        </profile>
         <profile>
             <id>exec2</id>
             <build>
@@ -160,10 +160,10 @@
                                 </goals>
                             </execution>
                         </executions>
-                    </plugin>                    
+                    </plugin>
                 </plugins>
             </build>
-        </profile>        
+        </profile>
         <profile>
             <id>npm-install</id>
             <build>
@@ -188,10 +188,10 @@
                                 </goals>
                             </execution>
                         </executions>
-                    </plugin>                    
+                    </plugin>
                 </plugins>
             </build>
-        </profile>        
+        </profile>
     </profiles>
 
     <build>

@@ -7,7 +7,6 @@ import javax.transaction.Transactional;
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrBulkActionRun;
@@ -40,7 +39,7 @@ public abstract class BulkAction {
 
     @Autowired
     protected DescriptionItemService descriptionItemService;
-    
+
 	@Autowired
 	protected StaticDataService staticDataService;
 
@@ -59,8 +58,6 @@ public abstract class BulkAction {
 	 */
 	protected ArrBulkActionRun bulkActionRun;
 
-	protected RuleSystem ruleSystem;
-
 	/**
 	 * Změna
 	 */
@@ -70,7 +67,7 @@ public abstract class BulkAction {
 
 	/**
 	 * Init method, this method prepare ruleSystem and other fields.
-	 * 
+	 *
 	 * Method can be specialized in each implementation.
 	 */
 	protected void init(ArrBulkActionRun bulkActionRun) {
@@ -81,24 +78,20 @@ public abstract class BulkAction {
 		checkVersion(version);
 
 		staticDataProvider = staticDataService.getData();
-		ruleSystem = staticDataProvider.getRuleSystems().getByRuleSetId(version.getRuleSetId());
-		Validate.notNull(ruleSystem, "Rule system not available, id: {}", version.getRuleSetId());
 	}
 
     /**
      * Abstrakní metoda pro spuštění hromadné akce.
      *
-     * @param inputNodeIds      seznam vstupních uzlů (podstromů AS)
-     * @param bulkActionConfig  nastavení hromadné akce
-     * @param bulkActionRun     stav hromadné akce
+     * @param runContext
      */
 	abstract public void run(ActionRunContext runContext);
 
 	/**
 	 * Return name of bulkaction
-	 * 
+	 *
 	 * Value is used to log result, etc.
-	 * 
+	 *
 	 * @return
 	 */
 	abstract public String getName();

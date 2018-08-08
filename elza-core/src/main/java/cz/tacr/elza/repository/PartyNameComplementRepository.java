@@ -11,11 +11,11 @@ import org.springframework.stereotype.Repository;
 import java.util.Collection;
 import java.util.List;
 
-
 /**
  * Repozitory pro {@link ParPartyNameComplement}.
  *
- * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
+ * @author Tomáš Kubový
+ *         [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 04.01.2016
  */
 @Repository
@@ -24,7 +24,8 @@ public interface PartyNameComplementRepository extends JpaRepository<ParPartyNam
     /**
      * Najde seznam doplňků jména podle jména.
      *
-     * @param partyName jméno
+     * @param partyName
+     *            jméno
      * @return seznam doplňků jména
      */
     List<ParPartyNameComplement> findByPartyName(ParPartyName partyName);
@@ -39,7 +40,7 @@ public interface PartyNameComplementRepository extends JpaRepository<ParPartyNam
     void deleteByPartyName(ParPartyName partyName);
 
     @Modifying
-	int deleteByPartyNameIn(Collection<ParPartyName> partyNames);
+    void deleteByPartyNameIdIn(Collection<Integer> partyNameIds);
 
     @Query("SELECT pnc FROM par_party_name_complement pnc JOIN FETCH pnc.complementType ct WHERE pnc.partyName.partyNameId IN :partyNameIds")
     List<ParPartyNameComplement> findByPartyNameIds(@Param("partyNameIds") Iterable<Integer> partyNameIds);

@@ -8,8 +8,11 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.servlet.ServletOutputStream;
@@ -19,6 +22,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
+import org.apache.commons.lang3.StringUtils;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
@@ -40,6 +44,8 @@ import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 
+import cz.tacr.elza.controller.vo.FilterNode;
+import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataCoordinates;
@@ -52,6 +58,10 @@ import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.table.ElzaColumn;
 import cz.tacr.elza.domain.table.ElzaRow;
 import cz.tacr.elza.domain.table.ElzaTable;
+import cz.tacr.elza.domain.vo.DescItemValue;
+import cz.tacr.elza.domain.vo.DescItemValues;
+import cz.tacr.elza.domain.vo.JsonTableTitleValue;
+import cz.tacr.elza.domain.vo.TitleValue;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
@@ -96,6 +106,12 @@ public class ArrIOService {
     @Autowired
     private ItemRepository itemRepository;
 
+    @Autowired
+    private FilterTreeService filterTreeService;
+
+    @Autowired
+    private RuleService ruleService;
+
     /**
      * CSV konfigurace pro CZ Excel.
      */
@@ -118,7 +134,7 @@ public class ArrIOService {
      */
     public <T extends ArrItem> void csvExport(final T item, final OutputStream os) throws IOException {
         RulItemType descItemType = item.getItemType();
-        List<String> columNames = descItemType.getColumnsDefinition()
+        List<String> columNames = ((List<ElzaColumn>) descItemType.getViewDefinition())
                 .stream()
                 .map(ElzaColumn::getCode)
                 .collect(Collectors.toList());
@@ -131,7 +147,7 @@ public class ArrIOService {
 
             for (ElzaRow elzaRow : table.getRows()) {
                 Map<String, String> values = elzaRow.getValues();
-                List<Object> rowValues = descItemType.getColumnsDefinition()
+                List<Object> rowValues = ((List<ElzaColumn>) descItemType.getViewDefinition())
                         .stream()
                         .map(elzaColumn -> values.get(elzaColumn.getCode()))
                         .collect(Collectors.toList());
@@ -222,7 +238,7 @@ public class ArrIOService {
         Iterable<CSVRecord> records = CSV_EXCEL_FORMAT.withFirstRecordAsHeader().parse(in);
         for (CSVRecord record : records) {
             ElzaRow row = new ElzaRow();
-            for (ElzaColumn elzaColumn : descItemType.getColumnsDefinition()) {
+            for (ElzaColumn elzaColumn : (List<ElzaColumn>) descItemType.getViewDefinition()) {
                 row.setValue(elzaColumn.getCode(), record.get(elzaColumn.getCode()));
             }
             table.addRow(row);
@@ -231,7 +247,7 @@ public class ArrIOService {
         jsonTable.setValue(table);
 
         // kontrola datových typů tabulky
-        itemService.checkJsonTableData(table, descItemType.getColumnsDefinition());
+        itemService.checkJsonTableData(table, (List<ElzaColumn>) descItemType.getViewDefinition());
 
         return item;
     }
@@ -402,5 +418,144 @@ public class ArrIOService {
         features.add(featureBuilder.buildFeature("1"));
 
         encoder.encode(features, KML.kml, out);
+    }
+
+    public void dataGridDataExport(final HttpServletResponse response,
+                                   final Integer versionId,
+                                   final List<Integer> rulItemTypeIds) throws IOException {
+        Map<Integer, RulItemType> rulItemTypes = ruleService.findItemTypesByIdsOrdered(rulItemTypeIds).stream().
+            collect(Collectors.toMap(RulItemType::getItemTypeId, Function.identity()));
+
+        List<String> columNames = new LinkedList<>();
+        columNames.add("Číslo záznamu");
+        columNames.add("Číslo JP");
+        columNames.add("Atribut");
+        columNames.add("Specifikace");
+        columNames.add("Hodnota");
+        columNames.add("ID entity");
+
+        ArrFundVersion version = fundVersionRepository.getOneCheckExist(versionId);
+        response.setHeader("Content-Disposition", "attachment;filename=" + version.getFund().getInternalCode() + "-data.csv");
+
+        ArrayList<Integer> filteredIds = filterTreeService.getFilteredIds(versionId);
+        int page = 0;
+        int pageSize = 100;
+        try (ServletOutputStream os = response.getOutputStream();
+             OutputStreamWriter out = new OutputStreamWriter(os, CSV_EXCEL_ENCODING);
+             CSVPrinter csvp = CSV_EXCEL_FORMAT.withHeader(columNames.toArray(new String[columNames.size()])).print(out);
+        ) {
+            List<FilterNode> filteredData;
+            int i = 0;
+            do {
+                filteredData = filterTreeService.getFilteredData(version, page, pageSize, rulItemTypeIds, true,
+                        filteredIds);
+                for (FilterNode node : filteredData) {
+                    ++i;
+                    for (Map.Entry<Integer, DescItemValues> entry : node.getValuesMap().entrySet()) {
+                        RulItemType rulItemType = rulItemTypes.get(entry.getKey());
+                        DescItemValues descItemValues = entry.getValue();
+                        if (descItemValues != null && !descItemValues.getValues().isEmpty()) {
+                            for (DescItemValue v : descItemValues.getValues()) {
+                                List<Object> rowValues = new ArrayList<>(columNames.size());
+                                rowValues.add(i);
+                                rowValues.add(StringUtils.join(node.getReferenceMark()));
+                                rowValues.add(rulItemType.getName());
+
+                                String specname = null;
+                                Integer entityId = null;
+                                if (v instanceof TitleValue) {
+                                    TitleValue tv = (TitleValue)  v;
+                                    if (DataType.fromId(rulItemType.getDataTypeId()) != DataType.ENUM) {
+                                        specname = tv.getSpecName();
+                                    }
+                                    entityId = tv.getEntityId();
+                                }
+
+                                String value;
+                                if (v instanceof JsonTableTitleValue) {
+                                    JsonTableTitleValue tableValue = (JsonTableTitleValue) v;
+                                    value = "Tabulka 2x" + tableValue.getRows();
+                                } else {
+                                    value = v.getValue();
+                                }
+
+                                rowValues.add(specname);
+                                rowValues.add(value);
+                                rowValues.add(entityId);
+                                csvp.printRecord(rowValues);
+                            }
+                        }
+                    }
+                }
+                csvp.flush();
+                page++;
+            } while (filteredData.size() == 100);
+        }
+    }
+
+    public void dataGridTableExport(final HttpServletResponse response,
+                                   final Integer versionId,
+                                   final List<Integer> rulItemTypeIds) throws IOException {
+        List<RulItemType> orderedItemTypes = ruleService.findItemTypesByIdsOrdered(rulItemTypeIds);
+
+        Map<Integer, RulItemType> orderedItemTypeMap = new LinkedHashMap<>(orderedItemTypes.size());
+        for (RulItemType rulItemType : orderedItemTypes) {
+            orderedItemTypeMap.put(rulItemType.getItemTypeId(), rulItemType);
+        }
+        List<String> columNames = new ArrayList<>(orderedItemTypeMap.size() + 2);
+        columNames.add("Číslo záznamu");
+        columNames.add("Číslo JP");
+        for (RulItemType rulItemType : orderedItemTypeMap.values()) {
+            if (rulItemType != null) {
+                columNames.add(rulItemType.getName());
+            }
+        }
+
+        ArrFundVersion version = fundVersionRepository.getOneCheckExist(versionId);
+        response.setHeader("Content-Disposition", "attachment;filename=" + version.getFund().getInternalCode() + "-table.csv");
+        ArrayList<Integer> filteredIds = filterTreeService.getFilteredIds(versionId);
+        int page = 0;
+        int pageSize = 100;
+        try (ServletOutputStream os = response.getOutputStream();
+             OutputStreamWriter out = new OutputStreamWriter(os, CSV_EXCEL_ENCODING);
+             CSVPrinter csvp = CSV_EXCEL_FORMAT.withHeader(columNames.toArray(new String[columNames.size()])).print(out);
+        ) {
+            List<FilterNode> filteredData;
+            int i = 1;
+            do {
+                filteredData = filterTreeService.getFilteredData(version, page, pageSize, rulItemTypeIds, true,
+                        filteredIds);
+                for (FilterNode node : filteredData) {
+                    List<Object> rowValues = new ArrayList<>(orderedItemTypeMap.size());
+                    rowValues.add(i++);
+                    rowValues.add(StringUtils.join(node.getReferenceMark()));
+
+                    Map<Integer, DescItemValues> valuesMap = node.getValuesMap();
+                    for (RulItemType rulItemType : orderedItemTypeMap.values()) {
+                        DescItemValues descItemValues = valuesMap.get(rulItemType.getItemTypeId());
+                        String value = null;
+                        if (descItemValues != null && !descItemValues.getValues().isEmpty()) {
+                            value = descItemValues.getValues().stream().map(v -> {
+                                if (DataType.fromId(rulItemType.getDataTypeId()) != DataType.ENUM
+                                        && rulItemType.getUseSpecification()
+                                        && v instanceof TitleValue) {
+                                    TitleValue tv = (TitleValue)  v;
+                                    return tv.getSpecName() + "|" + StringUtils.trimToEmpty(v.getValue());
+                                } else if (v instanceof JsonTableTitleValue) {
+                                    JsonTableTitleValue tableValue = (JsonTableTitleValue) v;
+                                    return "Tabulka 2x" + tableValue.getRows();
+                                } else {
+                                    return StringUtils.trimToNull(v.getValue());
+                                }
+                            }).collect(Collectors.joining("\n"));
+                        }
+                        rowValues.add(value);
+                    }
+                    csvp.printRecord(rowValues);
+                }
+                csvp.flush();
+                page++;
+            } while (filteredData.size() == 100);
+        }
     }
 }

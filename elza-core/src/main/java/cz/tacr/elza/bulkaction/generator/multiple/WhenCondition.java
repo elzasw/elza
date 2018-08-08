@@ -4,15 +4,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import cz.tacr.elza.bulkaction.generator.LevelWithItems;
-import cz.tacr.elza.core.data.RuleSystem;
-import cz.tacr.elza.core.data.RuleSystemItemType;
+import cz.tacr.elza.core.data.ItemType;
+import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.RulItemSpec;
 import liquibase.util.Validate;
 
 public class WhenCondition {
 
-	RuleSystemItemType itemType;
+	ItemType itemType;
 
 	RulItemSpec itemSpec;
 
@@ -33,16 +33,16 @@ public class WhenCondition {
 
 	final WhenConditionConfig config;
 
-	public WhenCondition(WhenConditionConfig whenConfig, RuleSystem ruleSystem) {
+	public WhenCondition(WhenConditionConfig whenConfig, StaticDataProvider sdp) {
 		this.config = whenConfig;
-		init(ruleSystem);
+		init(sdp);
 	}
 
 	// Prepare when condition from configuration
-	private void init(RuleSystem ruleSystem) {
+	private void init(StaticDataProvider sdp) {
 		String itemTypeCode = config.getItemType();
 		if (itemTypeCode != null) {
-			itemType = ruleSystem.getItemTypeByCode(itemTypeCode);
+			itemType = sdp.getItemTypeByCode(itemTypeCode);
 			Validate.notNull(itemType, "Cannot find type with code: " + itemTypeCode);
 
 			String itemSpecCode = config.getItemSpec();
@@ -55,23 +55,23 @@ public class WhenCondition {
 		// prepare someOf
 		List<WhenConditionConfig> someOfConfigs = config.getSomeOf();
 		if (someOfConfigs != null) {
-			initSomeOfs(someOfConfigs, ruleSystem);
+			initSomeOfs(someOfConfigs, sdp);
 		}
 
 		// prepare all
 		List<WhenConditionConfig> allConfigs = config.getAll();
 		if (allConfigs != null) {
-			initAll(allConfigs, ruleSystem);
+			initAll(allConfigs, sdp);
 		}
 
 		// prepare parent condition
 		WhenConditionConfig parentCondConfig = config.getParent();
 		if (parentCondConfig != null) {
-			parentCond = new WhenCondition(parentCondConfig, ruleSystem);
+			parentCond = new WhenCondition(parentCondConfig, sdp);
 		}
 	}
 
-	private void initAll(List<WhenConditionConfig> allConfigs, RuleSystem ruleSystem) {
+	private void initAll(List<WhenConditionConfig> allConfigs, StaticDataProvider ruleSystem) {
 		all = new ArrayList<>(allConfigs.size());
 
 		for (WhenConditionConfig singleConfig : allConfigs) {
@@ -81,15 +81,15 @@ public class WhenCondition {
 
 	}
 
-	private void initSomeOfs(List<WhenConditionConfig> someOfConfigs, RuleSystem ruleSystem) {
+	private void initSomeOfs(List<WhenConditionConfig> someOfConfigs, StaticDataProvider ruleSystem) {
 		someOf = new ArrayList<>(someOfConfigs.size());
 
-		for (WhenConditionConfig someOfConfig : someOfConfigs) 
+		for (WhenConditionConfig someOfConfig : someOfConfigs)
 		{
 			WhenCondition cond = new WhenCondition(someOfConfig, ruleSystem);
 			someOf.add(cond);
 		}
-		
+
 	}
 
 	public boolean isTrue(LevelWithItems level) {

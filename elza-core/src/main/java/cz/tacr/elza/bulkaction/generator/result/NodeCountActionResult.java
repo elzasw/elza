@@ -1,6 +1,6 @@
 package cz.tacr.elza.bulkaction.generator.result;
 
-import cz.tacr.elza.core.data.RuleSystemItemType;
+import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.service.OutputItemConnector;
 
 /**
@@ -33,7 +33,7 @@ public class NodeCountActionResult extends ActionResult {
         if (count == null) {
             return;
         }
-        RuleSystemItemType rsit = connector.getRuleSystem().getItemTypeByCode(itemType);
+        ItemType rsit = connector.getItemTypeByCode(itemType);
         connector.addIntItem(count.intValue(), rsit, null);
     }
 }

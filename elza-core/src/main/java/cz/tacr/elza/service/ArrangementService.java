@@ -21,8 +21,6 @@ import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
 import javax.transaction.Transactional;
-import javax.transaction.Transactional.TxType;
-
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -97,36 +95,6 @@ import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventFund;
 import cz.tacr.elza.service.eventnotification.events.EventType;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-
-import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
-import javax.persistence.LockModeType;
-import javax.persistence.Query;
-import javax.transaction.Transactional;
-import javax.transaction.Transactional.TxType;
-import java.text.Normalizer;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 /**
  * Main arrangement service.
@@ -181,7 +149,7 @@ public class ArrangementService {
     @Autowired
     private DescItemRepository descItemRepository;
     @Autowired
-    private ApService apService;
+    private AccessPointService accessPointService;
 
 	@Autowired
 	DescriptionItemServiceInternal arrangementInternal;
@@ -263,14 +231,6 @@ public class ArrangementService {
 
         fundRepository.save(originalFund);
 
-        for (ApScope scope : scopes) {
-            if (scope.getScopeId() == null) {
-                scope.setCode(StringUtils.upperCase(Normalizer.normalize(StringUtils.replace(StringUtils.substring(scope.getName(), 0, 50).trim(), " ", "_"), Normalizer.Form.NFD)));
-                scopeRepository.save(scope);
-            }
-        }
-
-
         ArrFundVersion openVersion = getOpenVersionByFundId(originalFund.getFundId());
         if (!ruleSet.equals(openVersion.getRuleSet())) {
             openVersion.setRuleSet(ruleSet);
@@ -279,7 +239,16 @@ public class ArrangementService {
             ruleService.conformityInfoAll(openVersion);
         }
 
-        synchApScopes(originalFund, scopes);
+        if (scopes != null) {
+            for (ApScope scope : scopes) {
+                if (scope.getScopeId() == null) {
+                    scope.setCode(StringUtils.upperCase(Normalizer.normalize(StringUtils
+                            .replace(StringUtils.substring(scope.getName(), 0, 50).trim(), " ", "_"), Normalizer.Form.NFD)));
+                    scopeRepository.save(scope);
+                }
+            }
+            synchApScopes(originalFund, scopes);
+        }
 
         eventNotificationService
                 .publishEvent(EventFactory.createIdEvent(EventType.FUND_UPDATE, originalFund.getFundId()));
@@ -335,7 +304,7 @@ public class ArrangementService {
 
         ArrFund fund = createFund(name, ruleSet, change, generateUuid(), internalCode, institution, dateRange);
 
-        List<ApScope> defaultScopes = apService.findDefaultScopes();
+        List<ApScope> defaultScopes = accessPointService.findDefaultScopes();
         if (!defaultScopes.isEmpty()) {
             addScopeToFund(fund, defaultScopes.get(0));
         }
@@ -903,7 +872,7 @@ public class ArrangementService {
     /**
      * Finds level for fund version by node. Node will be locked during transaction.
      */
-    @Transactional(TxType.REQUIRED)
+    @Transactional(Transactional.TxType.REQUIRED)
     public ArrLevel lockLevel(ArrNodeVO nodeVO, ArrFundVersion fundVersion) {
         Integer nodeId = nodeVO.getId();
         Assert.notNull(nodeId, "Node id must be set");

@@ -157,9 +157,9 @@ class PartyPage extends AbstractReactComponent {
 
         const itemActions = [...parts.itemActions];
         if (isSelected && partyDetail.fetched && !partyDetail.isFetching) {
-            if (userDetail.hasOne(perms.AP_SCOPE_WR_ALL, {type: perms.AP_SCOPE_WR, scopeId: partyDetail.data.record.scopeId})) {
+            if (userDetail.hasOne(perms.AP_SCOPE_WR_ALL, {type: perms.AP_SCOPE_WR, scopeId: partyDetail.data.accessPoint.scopeId})) {
                 itemActions.push(
-                    <Button disabled={ partyDetail.data.record.invalid } key='delete-party' onClick={this.handleDeleteParty}><Icon glyph="fa-trash"/>
+                    <Button disabled={ partyDetail.data.accessPoint.invalid } key='delete-party' onClick={this.handleDeleteParty}><Icon glyph="fa-trash"/>
                         <div><span className="btnText">{i18n('party.delete.button')}</span></div>
                     </Button>
                 );
@@ -173,7 +173,7 @@ class PartyPage extends AbstractReactComponent {
 
                /* MCV-45365
                 partyDetail && itemActions.push(
-                    <Button disabled={ !partyDetail.data.record.invalid} key='partySetValid' onClick={ this.handleSetValidParty }>
+                    <Button disabled={ !partyDetail.data.accessPoint.invalid} key='partySetValid' onClick={ this.handleSetValidParty }>
                         <Icon glyph="fa-check"/>
                         <div><span className="btnText">{i18n("party.setValid.button")}</span></div>
                     </Button>

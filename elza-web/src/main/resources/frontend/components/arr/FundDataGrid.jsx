@@ -62,6 +62,10 @@ import {COL_DEFAULT_WIDTH, COL_REFERENCE_MARK} from "./FundDataGridConst";
 import './FundDataGrid.less'
 import {getPagesCount} from "../shared/datagrid/DataGridPagination";
 import {FILTER_NULL_VALUE} from 'actions/arr/fundDataGrid.jsx'
+import {toDuration} from "../validate";
+import {DisplayType} from "../../constants";
+import Moment from 'moment';
+import * as groups from "../../actions/refTables/groups"
 
 class FundDataGrid extends AbstractReactComponent {
     static PropTypes = {
@@ -111,6 +115,7 @@ class FundDataGrid extends AbstractReactComponent {
     fetchData(props) {
         const {fundDataGrid, descItemTypes, fund, versionId, ruleSet} = props;
         this.dispatch(descItemTypesFetchIfNeeded());
+        this.dispatch(groups.fetchIfNeeded(this.props.versionId));
         this.dispatch(refRulDataTypesFetchIfNeeded());
         this.dispatch(fundDataGridFetchFilterIfNeeded(versionId));
         this.dispatch(fundDataGridFetchDataIfNeeded(versionId, fundDataGrid.pageIndex, fundDataGrid.pageSize));
@@ -203,15 +208,26 @@ class FundDataGrid extends AbstractReactComponent {
                                         disabled>{value.geomType}</Button> {i18n('subNodeForm.countOfCoordinates', value.value)}</span>
                                     break
                             }
-                            break
+                            break;
                         case 'UNITDATE':
                             itemValue = this.state.calendarTypesMap[value.calendarTypeId].name.charAt(0) + ": " + value.value
-                            break
+                            break;
                         case 'JSON_TABLE':
-                            itemValue = i18n("arr.fund.jsonTable.cell.title", col.refType.columnsDefinition.length, value.rows);
-                            break
+                            itemValue = i18n("arr.fund.jsonTable.cell.title", col.refType.viewDefinition.length, value.rows);
+                            break;
+                        case 'INT':
+                            const refType = col.refType;
+                            if (refType.viewDefinition === DisplayType.DURATION) {
+                                itemValue = toDuration(value.value);
+                            } else {
+                                itemValue = value.value;
+                            }
+                            break;
+                        case 'DATE':
+                            itemValue = Moment(value.value).format('l');
+                            break;
                         default:
-                            itemValue = value.value
+                            itemValue = value.value;
                             break
                     }
                 }
@@ -429,9 +445,7 @@ class FundDataGrid extends AbstractReactComponent {
 
         let itemTypes = [];
         descItemTypes.items.forEach(item => {
-            if (rule.itemTypeCodes.indexOf(item.code) >= 0) {
-                itemTypes.push(item);
-            }
+            itemTypes.push(item);
         });
 
         const refTypesMap = getMapFromList(itemTypes);

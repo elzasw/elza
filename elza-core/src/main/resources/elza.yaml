@@ -21,6 +21,9 @@ spring:
       base-uri: /rest
   app:
       buildType: REL
+  jackson:
+      serialization:
+          WRITE_DATES_AS_TIMESTAMPS: false
   jpa:
     #pametova databaze automaticky zapina hibernate.ddl-auto: create
     hibernate.ddl-auto: none
@@ -29,11 +32,11 @@ spring:
     #show-sql: true
     properties:
         net.sf.ehcache.configurationResourceName: /ehcache.xml
-        hibernate:       
+        hibernate:
             cache:
               use_second_level_cache: true
               region.factory_class: org.hibernate.cache.ehcache.EhCacheRegionFactory
-                   
+
             search:
                 lucene_version: LUCENE_CURRENT
                 default:

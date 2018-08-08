@@ -1,5 +1,6 @@
 package cz.tacr.elza.bulkaction.generator.multiple;
 
+import cz.tacr.elza.core.data.StaticDataProvider;
 import org.apache.commons.lang.Validate;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -8,8 +9,7 @@ import cz.tacr.elza.bulkaction.generator.LevelWithItems;
 import cz.tacr.elza.bulkaction.generator.result.ActionResult;
 import cz.tacr.elza.bulkaction.generator.result.NodeCountActionResult;
 import cz.tacr.elza.core.data.DataType;
-import cz.tacr.elza.core.data.RuleSystem;
-import cz.tacr.elza.core.data.RuleSystemItemType;
+import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 
 /**
@@ -23,7 +23,7 @@ public class NodeCountAction extends Action {
     /**
      * Výstupní atribut
      */
-	private RuleSystemItemType outputItemType;
+	private ItemType outputItemType;
 
     /**
      * Počet procházených uzlů
@@ -39,7 +39,7 @@ public class NodeCountAction extends Action {
 
     @Override
 	public void init(ArrBulkActionRun bulkActionRun) {
-		RuleSystem ruleSystem = getRuleSystem(bulkActionRun);
+		StaticDataProvider ruleSystem = getStaticDataProvider();
 
 		String outputType = config.getOutputType();
 		outputItemType = ruleSystem.getItemTypeByCode(outputType);

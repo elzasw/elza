@@ -57,7 +57,7 @@ import {reloadUserDetail} from 'actions/user/userDetail';
 import {fundTreeFetch} from "./actions/arr/fundTree";
 import * as types from "./actions/constants/ActionTypes";
 import {fundNodeSubNodeFulltextSearch} from "./actions/arr/node";
-import {PERSISTENT_SORT_CODE} from "./constants";
+import {PERSISTENT_SORT_CODE, ZP2015_INTRO_VYPOCET_EJ} from "./constants";
 
 const url = new URLParse(serverContextPath + '/stomp');
 
@@ -444,14 +444,15 @@ function fundActionActionChange(value) {
     //speciální handling eventu pro hromadnou akci "PERZISTENTNI_RAZENI"
     if (value.code === PERSISTENT_SORT_CODE) {
         processPersistentSort(value);
+    } else if (value.code === ZP2015_INTRO_VYPOCET_EJ) {
+        processVisualizeEJ(value);
     }
     store.dispatch(changeFundAction(value.versionId, value.entityId));
 }
 
 function processPersistentSort(value) {
     if (value.state === "FINISHED") {
-        let state = store.getState();
-        const fund = state.arrRegion.activeIndex != null ? state.arrRegion.funds[state.arrRegion.activeIndex] : null;
+        const fund = getFund();
 
         if (fund) {
             store.dispatch(fundTreeFetch(types.FUND_TREE_AREA_MAIN, fund.versionId, null, fund.fundTree.expandedIds));
@@ -464,6 +465,27 @@ function processPersistentSort(value) {
     } else if (value.state === "FAILED") {
         store.dispatch(addToastrDanger(i18n("arr.functions.persistentSort.sortFailed")));
     }
+}
+
+function processVisualizeEJ(value) {
+    if (value.state === "FINISHED") {
+        const fund = getFund();
+        if (fund) {
+            store.dispatch(fundTreeFetch(types.FUND_TREE_AREA_MAIN, fund.versionId, null, fund.fundTree.expandedIds));
+            //Přenačtení nodeForm
+            store.dispatch(fundNodeSubNodeFulltextSearch(undefined));
+        }
+        store.dispatch(addToastrSuccess(i18n("arr.functions.computeAndVizualizeEJ.success")));
+    } else if (value.state === "INTERRUPTED") {
+        store.dispatch(addToastrDanger(i18n("arr.functions.computeAndVizualizeEJ.interrupted")));
+    } else if (value.state === "FAILED") {
+        store.dispatch(addToastrDanger(i18n("arr.functions.computeAndVizualizeEJ.error")));
+    }
+}
+
+function getFund() {
+    let state = store.getState();
+    return state.arrRegion.activeIndex != null ? state.arrRegion.funds[state.arrRegion.activeIndex] : null;
 }
 
 function partyUpdate(value){

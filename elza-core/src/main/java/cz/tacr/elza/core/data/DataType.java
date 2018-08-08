@@ -24,7 +24,8 @@ public enum DataType {
     STRUCTURED,
     ENUM,
     FILE_REF,
-    JSON_TABLE(Integer.MAX_VALUE);
+    JSON_TABLE(Integer.MAX_VALUE),
+    DATE;
 
     private static Map<Integer, DataType> entityIdMap;
 

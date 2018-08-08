@@ -1,19 +1,12 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.common.ObjectListIterator;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.RulItemType;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.springframework.util.Assert;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
@@ -24,28 +17,30 @@ import javax.persistence.criteria.Join;
 import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
+
+import cz.tacr.elza.common.ObjectListIterator;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemType;
 
 
 /**
  * Rozšířený repozitář pro {@link DescItemRepository}.
- *
- * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
- * @since 2.12.2015
  */
 @Component
 public class DescItemRepositoryImpl implements DescItemRepositoryCustom {
 
-    private Log logger = LogFactory.getLog(this.getClass());
-
-    @Autowired
-    private DescItemRepository descItemRepository;
+    private static final Logger logger = LoggerFactory.getLogger(DescItemRepositoryImpl.class);
 
     @Autowired
     private EntityManager entityManager;
@@ -143,35 +138,30 @@ public class DescItemRepositoryImpl implements DescItemRepositoryCustom {
     }
 
     @Override
-    public List<ArrDescItem> findDescItemsByNodeIds(final Set<Integer> nodeIds, final Set<RulItemType> itemTypes, final ArrFundVersion version) {
-        return findDescItemsByNodeIds(nodeIds, itemTypes, version.getLockChange() == null ? null : version.getLockChange().getChangeId());
-    }
-
-    @Override
-    public List<ArrDescItem> findDescItemsByNodeIds(final Set<Integer> nodeIds, final Set<RulItemType> itemTypes, final Integer changeId) {
-        String hql = "SELECT di FROM arr_item di JOIN FETCH di.node n JOIN FETCH di.itemType dit LEFT JOIN FETCH di.itemSpec dis " +
+    public List<ArrDescItem> findDescItemsByNodeIds(final Collection<Integer> nodeIds, final Collection<RulItemType> itemTypes, final Integer changeId) {
+        String jpql = "SELECT di FROM arr_item di JOIN FETCH di.node n JOIN FETCH di.itemType dit LEFT JOIN FETCH di.itemSpec dis " +
                 "LEFT JOIN FETCH di.data d " +
                 "LEFT JOIN FETCH d.record drr " +
                 "LEFT JOIN FETCH d.party dpr " +
                 "LEFT JOIN FETCH d.structuredObject dso " +
                 "WHERE ";
         if (changeId == null) {
-            hql += "di.deleteChange IS NULL ";
+            jpql += "di.deleteChange IS NULL ";
         } else {
-            hql += "di.createChange.changeId <= :changeId AND (di.deleteChange IS NULL OR di.deleteChange.changeId >= :changeId) ";
+            jpql += "di.createChange.changeId <= :changeId AND (di.deleteChange IS NULL OR di.deleteChange.changeId >= :changeId) ";
         }
 
-        hql += "AND n.nodeId IN (:nodeIds)";
+        jpql += "AND n.nodeId IN (:nodeIds)";
 
         if (CollectionUtils.isNotEmpty(itemTypes)) {
-            hql += " AND di.itemType IN (:itemTypes)";
+            jpql += " AND di.itemType IN (:itemTypes)";
         }
 
         List<ArrDescItem> result = new LinkedList<>();
         ObjectListIterator<Integer> nodeIdsIterator = new ObjectListIterator<>(nodeIds);
         while (nodeIdsIterator.hasNext()) {
 
-            Query query = entityManager.createQuery(hql);
+            Query query = entityManager.createQuery(jpql);
             if (changeId != null) {
                 query.setParameter("changeId", changeId);
             }

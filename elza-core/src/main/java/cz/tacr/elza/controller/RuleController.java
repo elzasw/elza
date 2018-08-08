@@ -15,9 +15,7 @@ import cz.tacr.elza.controller.vo.RulRuleSetVO;
 import cz.tacr.elza.controller.vo.RulTemplateVO;
 import cz.tacr.elza.controller.vo.TypeInfoVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
-import cz.tacr.elza.core.data.RuleSystem;
-import cz.tacr.elza.core.data.RuleSystemItemType;
-import cz.tacr.elza.core.data.RuleSystemProvider;
+import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -38,6 +36,8 @@ import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.service.PolicyService;
 import cz.tacr.elza.service.RuleService;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -73,6 +73,8 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/rule")
 public class RuleController {
+
+    private final Logger logger = LoggerFactory.getLogger(RuleController.class);
 
     @Autowired
     private ClientFactoryVO factoryVo;
@@ -216,18 +218,20 @@ public class RuleController {
 
         List<GroupVO> result = new ArrayList<>();
         StaticDataProvider sdp = staticDataService.getData();
-        RuleSystemProvider rsp = sdp.getRuleSystems();
-        RuleSystem rs = rsp.getByRuleSetCode(ruleCode);
 
-        List<RuleSystemItemType> ruleSystemItemTypes = new ArrayList<>(rs.getItemTypes());
+        List<ItemType> ruleSystemItemTypes = new ArrayList<>(sdp.getItemTypes());
         for (GroupConfiguration configuration : viewConfig.getGroups()) {
             GroupVO group = new GroupVO(configuration.getCode(), configuration.getName());
             List<TypeInfoVO> typeInfos = new ArrayList<>(configuration.getTypes().size());
             for (TypeInfo typeInfo : configuration.getTypes()) {
                 String code = typeInfo.getCode();
-                RuleSystemItemType itemType = rs.getItemTypeByCode(code);
-                ruleSystemItemTypes.remove(itemType);
-                typeInfos.add(new TypeInfoVO(itemType.getItemTypeId(), typeInfo.getWidth()));
+                ItemType itemType = sdp.getItemTypeByCode(code);
+                if (itemType != null) {
+                    ruleSystemItemTypes.remove(itemType);
+                    typeInfos.add(new TypeInfoVO(itemType.getItemTypeId(), typeInfo.getWidth()));
+                } else {
+                    logger.warn("Nebyl nalezen RuleSystemItemType podle kódu {}", code);
+                }
             }
             group.setItemTypes(typeInfos);
             result.add(group);
@@ -235,9 +239,9 @@ public class RuleController {
 
         GroupVO defaultGroup = new GroupVO("DEFAULT", "Bez skupiny");
         List<TypeInfoVO> typeInfos = new ArrayList<>();
-        for (RuleSystemItemType ruleSystemItemType : ruleSystemItemTypes) {
+        for (ItemType ruleSystemItemType : ruleSystemItemTypes) {
             String code = ruleSystemItemType.getCode();
-            RuleSystemItemType itemType = rs.getItemTypeByCode(code);
+            ItemType itemType = sdp.getItemTypeByCode(code);
             typeInfos.add(new TypeInfoVO(itemType.getItemTypeId(), 1));
         }
         defaultGroup.setItemTypes(typeInfos);

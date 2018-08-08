@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import cz.tacr.elza.bulkaction.generator.result.SerialNumberResult;
-import cz.tacr.elza.core.data.RuleSystemItemType;
+import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataInteger;
@@ -60,7 +60,7 @@ public class SerialNumberBulkAction extends BulkActionDFS {
 		super.init(bulkActionRun);
 
 		// prepare item type
-		RuleSystemItemType itemType = ruleSystem.getItemTypeByCode(config.getItemType());
+		ItemType itemType = staticDataProvider.getItemTypeByCode(config.getItemType());
 		Validate.notNull(itemType);
 
 		// check if supported type
@@ -176,7 +176,7 @@ public class SerialNumberBulkAction extends BulkActionDFS {
 
 			int pos = minLength;
 
-			// 
+			//
 			while (pos > 0) {
 				char c = lastNumber.charAt(pos - 1);
 				if (c < '0' || c > '9') {

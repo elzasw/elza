@@ -22,7 +22,7 @@ import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
 import {partyUpdate} from 'actions/party/party.jsx'
 import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx'
-import {registryDetailFetchIfNeeded, registryUpdate} from 'actions/registry/registry.jsx'
+import {registryDetailFetchIfNeeded, registryUpdate, registryDetailInvalidate} from 'actions/registry/registry.jsx'
 import {objectById, indexById} from 'stores/app/utils.jsx';
 import {setInputFocus, dateTimeToString} from 'components/Utils.jsx'
 import {Shortcuts} from 'react-shortcuts';
@@ -45,6 +45,9 @@ import RegistryDetailVariantRecords from "./RegistryDetailVariantRecords";
 import RegistryDetailCoordinates from "./RegistryDetailCoordinates";
 import {requestScopesIfNeeded} from "../../actions/refTables/scopesData";
 import {FOCUS_KEYS} from "../../constants";
+import ApChangeDescriptionForm from "./ApChangeDescriptionForm";
+import ApDetailNames from './ApDetailNames.jsx'
+import {WebApi} from "../../actions/WebApi";
 
 
 class RegistryDetail extends AbstractReactComponent {
@@ -57,7 +60,9 @@ class RegistryDetail extends AbstractReactComponent {
         return { shortcuts: this.shortcutManager };
     }
 
-    state = {}
+    state = {
+        activeIndexes: {},
+    };
 
     componentDidMount() {
         this.trySetFocus();
@@ -153,10 +158,7 @@ class RegistryDetail extends AbstractReactComponent {
     handleRecordUpdateCall = (value) => {
         const {registryDetail:{data}} = this.props;
 
-        return this.dispatch(registryUpdate({
-            ...data,
-            ...value
-        }, () => {
+        return this.dispatch(registryUpdate(data.id, value.typeId, () => {
             // Nastavení focus
             this.dispatch(setFocus(FOCUS_KEYS.REGISTRY, 2))
         }));
@@ -189,17 +191,75 @@ class RegistryDetail extends AbstractReactComponent {
         }
     }
 
+	getApId = (ap) => {
+		const eids = ap.externalIds;
+		if (!eids || eids.length == 0) {
+			return ap.id;
+		}
+	
+		let eidArr = [];
+		eids.forEach(eid => {
+			// TODO: read eid type name from refTables by id
+			const eidTypeName =  "eid_type_name-" + eid.typeId;
+			eidArr.push(eidTypeName + ":" + eid.value);
+		});
+		return eidArr.join(", ");
+    }
+
+    renderApTypeNames = (apTypeId, delimiter) => {
+		const type = this.props.apTypeIdMap[apTypeId];
+        let elements = [];
+		
+        if (type.parents) {
+			type.parents.reverse().forEach((name, i) => {
+				elements.push(<span key={"name-" + i} className="hierarchy-level">{name.toUpperCase()}</span>);
+				elements.push(<span key={"delimiter-" + i} className="hierarchy-delimiter">{delimiter}</span>);
+			})
+		}
+		elements.push(<span key="name-main" className="hierarchy-level main">{type.name.toUpperCase()}</span>);
+        
+		return elements;
+    }
+
     getScopeLabel = (scopeId, scopes) => {
         return scopeId && scopes[0].scopes.find(scope => (scope.id === scopeId)).name.toUpperCase();
+    };
+
+    handleToggleActive = (identificator) => {
+        this.setState({activeIndexes:{...this.state.activeIndexes, [identificator]: !this.state.activeIndexes[identificator]}});
+    };
+
+    refreshData = () => {
+        this.dispatch(registryDetailInvalidate());
+    }
+
+    editDescription = () => {
+        const {registryDetail:{data}} = this.props;
+        this.dispatch(
+            modalDialogShow(
+                this,
+                i18n('accesspoint.update.description'),
+                <ApChangeDescriptionForm
+                    initialValues={{description: data.characteristics}}
+                    onSubmit={(result) => {
+                        return WebApi.changeDescription(data.id, result).then(() => {
+                            this.dispatch(registryDetailInvalidate());
+                            this.dispatch(modalDialogHide())
+                        });
+                    }}
+                />
+            )
+        );
     };
 
     render() {
         const {registryDetail, scopes} = this.props;
         const {data, fetched, isFetching, id} = registryDetail;
+        const {activeIndexes} = this.state;
 
         let icon = 'fa-folder';
 
-        if (registryDetail.data) {
+        if (data) {
             icon = 'fa-file-o';
         }
 
@@ -221,6 +281,9 @@ class RegistryDetail extends AbstractReactComponent {
             headerCls += " invalid";
         }
 
+        const delimiter = <Icon glyph="fa-angle-right"/>;
+		const apTypeNames = this.renderApTypeNames(data.typeId, delimiter);
+		
         return <div className='registry'>
             <Shortcuts name='RegistryDetail' handler={this.handleShortcuts} global>
                 <div className="registry-detail">
@@ -243,30 +306,27 @@ class RegistryDetail extends AbstractReactComponent {
                                 </div>
                             </div>
                             <div>
-                                <div className="description">{this.getRecordId(data)}</div>
-                                <div>{dateTimeToString(new Date(data.lastUpdate))}</div>
+                                <div className="description">{this.getApId(data)}</div>
                             </div>
                         </div>
                     </div>
                     <div className="registry-type">
+						{apTypeNames}
                         {data.scopeId && <span className="scope-label">
                             {scopes && this.getScopeLabel(data.scopeId, scopes)}
                         </span>}
                     </div>
-                    <div ref='registryTitle' className="registry-title" tabIndex={0}>
-                        <div className='registry-content'>
-
-                            <div className='line charakteristik'>
-                                <label>{i18n('registry.detail.characteristics')}</label>
+                    <CollapsablePanel tabIndex={0} key={"NAMES"} isOpen={activeIndexes && activeIndexes["NAMES"] === true} header={i18n("accesspoint.detail.formNames")} eventKey={"NAMES"} onPin={this.handlePinToggle} onSelect={this.handleToggleActive}>
+                        <ApDetailNames accessPoint={data} canEdit={!disableEdit} refreshParty={this.refreshData}  />
+                    </CollapsablePanel>
+                    <CollapsablePanel tabIndex={0} key={"DESCRIPTION"} isOpen={activeIndexes && activeIndexes["DESCRIPTION"] === true} header={i18n("accesspoint.detail.description")} eventKey={"DESCRIPTION"} onPin={this.handlePinToggle} onSelect={this.handleToggleActive}>
+                        <div className="elements-container">
+                            <div className={"el-12"}>
+                                <label>{i18n('registry.detail.characteristics')} <Button onClick={this.editDescription}><Icon glyph="fa-pencil" /></Button></label>
                                 <div>{data.characteristics}</div>
                             </div>
-
-                            <div className='line variant-name'>
-                                <label>{i18n('registry.detail.variantRegistry')}</label>
-                                <RegistryDetailVariantRecords value={data.variantRecords ? data.variantRecords : []} regRecordId={data.id} disabled={disableEdit} />
-                            </div>
                         </div>
-                    </div>
+                    </CollapsablePanel>
                 </div>
             </Shortcuts>
         </div>
@@ -279,6 +339,7 @@ export default connect((state) => {
         focus,
         registryDetail,
         userDetail,
-        scopes: refTables.scopesData.scopes
+        scopes: refTables.scopesData.scopes,
+		apTypeIdMap: refTables.recordTypes.typeIdMap
     }
 })(RegistryDetail);

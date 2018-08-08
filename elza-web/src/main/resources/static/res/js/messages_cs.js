@@ -66,6 +66,7 @@ var messages = {
     "dataType.partyRef.format": null,
     "dataType.recordRef.format": null,
     "dataType.string.format": null,
+    "dataType.date.format": null,
     "dataType.text.format": null,
     "dataType.unitdate.format": "<div><b>Formát datace</b><br />Století: 20. st. <i>nebo</i> 20.st. <i>nebo</i> 20st<br />Rok: 1968<br />Měsíc.rok: 8.1968<br />Datum: 21.8.1698<br />Datum a čas: 21.8.1968 8:23 <i>nebo</i> 21.8.1968 8:23:31<br /><b>Intervaly</b><br />Jednotlivá hodnota: 1968<br />Interval: 21.8.1968 0:00-27.6.1989<br /><b>Odhad</b><br />Definuje se uzavřením hodnoty do kulatých nebo hranatých závorek: [16.8.1977]<br />Při použití znaku \"/\" pro oddělení intervalu jsou od i do chápány jako odhad.</div>",
     "dataType.unitid.format": null,
@@ -235,6 +236,7 @@ var messages = {
     "ribbon.action.arr.output": "Výstupy",
     "ribbon.action.arr.arr": "Pořádání",
     "ribbon.action.arr.dataGrid": "Tabulkové zobrazení",
+    "ribbon.action.arr.dataGrid.export": "Export",
     "ribbon.action.arr.movements": "Přesuny",
     "ribbon.action.arr.output.add": "Nový výstup",
     "ribbon.action.arr.output.generate": "Generovat výstup",
@@ -1016,7 +1018,7 @@ var messages = {
     "admin.extSystem.sendNotification": "Zasílání upozornění",
     "admin.extSystem.sendNotification.true": "Ano",
     "admin.extSystem.sendNotification.false": "Ne",
-    "admin.extSystem.class.RegExternalSystemVO": "Externí systém pro rejstříky/osoby",
+    "admin.extSystem.class.ApExternalSystemVO": "Externí systém pro rejstříky/osoby",
     "admin.extSystem.class.ArrDigitalRepositoryVO": "Uložiště digitalizátů",
     "admin.extSystem.class.ArrDigitizationFrontdeskVO": "Digitalizační linka",
     "admin.extSystem.noSelection.title": "Není vybrán externí systém",
@@ -1225,6 +1227,8 @@ var messages = {
     "validate.validateInt.outOfRange": "Zadané číslo je mimo rozsah celého čísla typu INT",
     "validate.validateDouble.outOfRange": "Zadané číslo je mimo rozsah desetinného čísla typu Decimal(18,6)",
 
+    "validate.validateDuration.outOfRange": "Zadaná doba trvání je mimo rozsah intervalu <00:00:00,596523:14:07>",
+
     "login.form.title": "Přihlášení uživatele",
     "login.field.username": "Uživatelské jméno",
     "login.field.password": "Heslo",
@@ -1291,6 +1295,11 @@ var messages = {
     "arr.functions.persistentSort.sortError": "Prezistetntní řazení selhalo",
     "arr.functions.persistentSort.sortInterrupted": "Prezistetntní řazení bylo přerušeno",
 
+    "arr.functions.computeAndVizualizeEJ": "Výpočet a vizualizace EJ ",
+    "arr.functions.computeAndVizualizeEJ.success": "Výpočet a vizualizace EJ proběhlo úspěšně",
+    "arr.functions.computeAndVizualizeEJ.interrupted": "Výpočet a vizualizace EJ bylo přerušeno",
+    "arr.functions.computeAndVizualizeEJ.error": "Výpočet a vizualizace EJ selhalo",
+
     "requestQueue.title.requestQueue": "Požadavky ve frontě",
     "requestQueue.title.create": "Vytvořeno",
     "requestQueue.title.attemptToSend": "Poslední pokud o odeslání",
@@ -1299,6 +1308,26 @@ var messages = {
     "requestQueue.title.description": "Popis",
     "requestQueue.title.type": "Typ",
     "requestQueue.delete.confirm": "Opravdu chcete zmazat položku z fronty?",
+
+    "dataGrid.export.exportType.table" : "Tabulka",
+    "dataGrid.export.exportType.data" : "Data",
+    "dataGrid.export.exportType.noSelection.item" : "Není vybrán prvek",
+    "dataGrid.export.title" : "Export tabulkového zobrazení",
+
+    "accesspoint.name.name": "Jméno",
+    "accesspoint.name.complement": "Komplement",
+    "accesspoint.name.languageCode": "Jazyk",
+
+    "accesspoint.detail.name.new": "Nový",
+    "accesspoint.detail.name.update": "Upravit",
+    "accesspoint.detail.name.delete": "Opravdu chcete smazat jméno?",
+    "accesspoint.detail.name.setPreferredNameAlert": "Opravdu chcete nastavit jméno jako preferované?",
+    "accesspoint.detail.formNames": "Formy jména",
+    "accesspoint.detail.description": "Popis",
+    "accesspoint.complement": "Komplement",
+    "accesspoint.languageCode": "Jazyk",
+    "accesspoint.description": "Popis",
+    "accesspoint.update.description": "Úprava popisu",
 
     "____": ""
 };

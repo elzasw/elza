@@ -611,8 +611,8 @@ class DataGrid extends AbstractReactComponent {
         }
 
         var ret = (
-            <Shortcuts name="DataGrid" handler={this.handleShortcuts} tabIndex={0} className={cls}>
-                <div ref="dataGrid" className={cls} onFocus={(e)=>this.handleFocus(e)} onBlur={onBlur}>
+            <Shortcuts name="DataGrid" handler={this.handleShortcuts} contenteditable="true" className={cls}>
+                <div ref="dataGrid" className={cls} onFocus={(e)=>this.handleFocus(e)} tabIndex={0} onBlur={onBlur}>
                     <div ref='header' key="header" className='header-container'>
                         <table className="header-table" style={headerStyle}>
                             <thead>
@@ -629,6 +629,7 @@ class DataGrid extends AbstractReactComponent {
                             <tbody>
                                 {rows.map((row, rowIndex) => <DataGridRow
                                     ref={`row-${rowIndex}`}
+                                    key={`row-${rowIndex}`}
                                     checked={selectedIds[row.id] === true}
                                     rowIndex={rowIndex}
                                     hasFocus={focus.row === rowIndex}

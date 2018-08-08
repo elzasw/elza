@@ -20,9 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.xml.sax.SAXException;
 
-import cz.tacr.elza.repository.ApRecordRepository;
 import cz.tacr.elza.service.ArrIOService;
-import cz.tacr.elza.service.ApService;
 
 /**
  * Controller pro import a export KML souborů

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+
+    <changeSet id="20180604102300" author="slapa">
+        <renameColumn tableName="rul_item_type" oldColumnName="columns_definition" newColumnName="view_definition" columnDataType="${type.text}" />
+    </changeSet>
+
+    <changeSet id="20180601083200" author="slapa">
+        <createTable tableName="arr_data_date">
+            <column name="data_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="value" type="date">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint constraintName="fk_dataDate_data"
+                                 baseTableName="arr_data_date"
+                                 baseColumnNames="data_id"
+                                 referencedTableName="arr_data"
+                                 referencedColumnNames="data_id"
+                                 onDelete="NO ACTION"/>
+
+        <insert tableName="rul_data_type">
+            <column name="data_type_id" value="16"/>
+            <column name="code" value="DATE"/>
+            <column name="name" value="Datum"/>
+            <column name="description" value="Datový typ prvku popisu (Date) pro zadání běžného občanského data"/>
+            <column name="regexp_use" value="false"/>
+            <column name="text_length_limit_use" value="false"/>
+            <column name="storage_table" value="arr_data_date"/>
+        </insert>
+
+        <update tableName="db_hibernate_sequences">
+            <column name="next_val" value="17"/>
+            <where>sequence_name = 'rul_data_type|data_type_id'</where>
+        </update>
+    </changeSet>
+
+    <changeSet id="20180619072700" author="slapa">
+        <dropColumn tableName="rul_item_type" columnName="rule_set_id" />
+        <dropColumn tableName="rul_structured_type" columnName="rule_set_id" />
+    </changeSet>
+
+    <changeSet id="20180717095200" author="slapa">
+        <addColumn tableName="ap_external_id_type">
+            <column name="package_id" type="int" />
+        </addColumn>
+        <sql>UPDATE ap_external_id_type SET package_id = (SELECT package_id FROM rul_package WHERE code = 'CZ_BASE')</sql>
+        <addNotNullConstraint tableName="ap_external_id_type" columnName="package_id" columnDataType="int" />
+    </changeSet>
+
+</databaseChangeLog>

@@ -60,6 +60,7 @@ import cz.tacr.elza.repository.StructureDefinitionRepository;
 import cz.tacr.elza.repository.StructureExtensionDefinitionRepository;
 import cz.tacr.elza.repository.StructuredItemRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
+import cz.tacr.elza.service.GroovyScriptService.GroovyScriptFile;
 import cz.tacr.elza.service.event.CacheInvalidateEvent;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventStructureDataChange;
@@ -70,7 +71,7 @@ import cz.tacr.elza.service.eventnotification.events.EventStructureDataChange;
  *
  * Pokud je do fronty zařazen smazaný uzel, tak se použije
  * pouze k validaci duplicit.
- * 
+ *
  * @since 13.11.2017
  */
 @Service
@@ -238,7 +239,7 @@ public class StructObjService {
      *
      * @param structObj
      *            hodnota struktovaného datového typu
-     * 
+     *
      */
     @Transactional
     public void generateAndValidate(final ArrStructuredObject structObj) {
@@ -260,7 +261,7 @@ public class StructObjService {
             return;
         }
 
-        // Method is called also after ext update etc -> can be called 
+        // Method is called also after ext update etc -> can be called
         // with same values
 
         if (StringUtils.isNotEmpty(oldValue)) {
@@ -277,14 +278,14 @@ public class StructObjService {
 
     /**
      * Recheck struct objects for duplicates
-     * 
+     *
      * @param checkedValue
      *            Value to be check
      * @param srcStructObj
      *            Object which caused / requested this check
      *            Source object is not notified.
      */
-    private void recheckDuplicates(String checkedValue, 
+    private void recheckDuplicates(String checkedValue,
                                    ArrStructuredObject srcStructObj) {
 
         // check duplicates - if not empty
@@ -335,7 +336,7 @@ public class StructObjService {
                     null,
                     Collections.singletonList(structObjId),
                     null));
-        }        
+        }
     }
 
     private void setDuplicatedState(ArrStructuredObject so, boolean duplicated) {
@@ -370,14 +371,14 @@ public class StructObjService {
 
     /**
      * Internal method to generate value and save it.
-     * 
+     *
      * Method will only check if value is empty.
-     * 
+     *
      * @param structObj
      * @return Return generated value. Return null if failed
      */
     private String generateValue(ArrStructuredObject structObj) {
-        // generate value 
+        // generate value
         ArrStructuredObject.State state = ArrStructuredObject.State.OK;
         ValidationErrorDescription validationErrorDescription = new ValidationErrorDescription();
 
@@ -459,15 +460,10 @@ public class StructObjService {
         RulStructuredType structureType = structureData.getStructuredType();
         File groovyFile = findGroovyFile(structureType, structureData.getFund());
 
-        GroovyScriptService.GroovyScriptFile groovyScriptFile;
-        try {
-            groovyScriptFile = groovyScriptMap.get(groovyFile);
-            if (groovyScriptFile == null) {
-                groovyScriptFile = GroovyScriptService.GroovyScriptFile.createFromFile(groovyFile);
-                groovyScriptMap.put(groovyFile, groovyScriptFile);
-            }
-        } catch (IOException e) {
-            throw new SystemException("Problém při zpracování groovy scriptu", e);
+        GroovyScriptService.GroovyScriptFile groovyScriptFile = groovyScriptMap.get(groovyFile);
+        if (groovyScriptFile == null) {
+            groovyScriptFile = new GroovyScriptFile(groovyFile);
+            groovyScriptMap.put(groovyFile, groovyScriptFile);
         }
 
         Map<String, Object> input = new HashMap<>();
@@ -530,7 +526,7 @@ public class StructObjService {
             }
         }
 
-        return resourcePathResolver.getGroovyDir(rulPackage, structureType.getRuleSet())
+        return resourcePathResolver.getGroovyDir(rulPackage)
                 .resolve(component.getFilename())
                 .toFile();
     }

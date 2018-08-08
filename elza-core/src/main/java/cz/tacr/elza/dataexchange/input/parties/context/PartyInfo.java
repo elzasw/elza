@@ -7,11 +7,10 @@ import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.PartyType;
 import cz.tacr.elza.dataexchange.input.aps.context.AccessPointInfo;
 import cz.tacr.elza.dataexchange.input.context.EntityIdHolder;
-import cz.tacr.elza.dataexchange.input.context.PersistMethod;
+import cz.tacr.elza.dataexchange.input.storage.SaveMethod;
 import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.ApRecord;
 
-public class PartyInfo extends EntityIdHolder<ParParty> {
+public class PartyInfo implements EntityIdHolder<ParParty> {
 
     private final String importId;
 
@@ -19,16 +18,37 @@ public class PartyInfo extends EntityIdHolder<ParParty> {
 
     private final PartyType partyType;
 
-    public PartyInfo(String importId, AccessPointInfo apInfo, PartyType partyType) {
-        super(partyType.getDomainClass());
-        this.importId = Validate.notNull(importId);
-        this.apInfo = Validate.notNull(apInfo);
-        this.partyType = Validate.notNull(partyType);
+    private final PartiesContext context;
+
+    private Integer entityId;
+
+    private int queuedEntityCount;
+
+    private boolean processed;
+
+    public PartyInfo(String importId, AccessPointInfo apInfo, PartyType partyType, PartiesContext context) {
+        this.importId = importId;
+        this.apInfo = apInfo;
+        this.partyType = partyType;
+        this.context = context;
     }
 
     @Override
     public Integer getEntityId() {
-        return (Integer) super.getEntityId();
+        Validate.notNull(entityId);
+
+        return entityId;
+    }
+
+    void setEntityId(Integer entityId) {
+        this.entityId = entityId;
+    }
+
+    @Override
+    public ParParty getEntityRef(Session session) {
+        Validate.notNull(entityId);
+
+        return HibernateUtils.getEntityRef(entityId, ParParty.class, session, false);
     }
 
     public String getImportId() {
@@ -39,36 +59,34 @@ public class PartyInfo extends EntityIdHolder<ParParty> {
         return partyType;
     }
 
-    public String getAPName() {
-        return apInfo.getName();
+    public SaveMethod getSaveMethod() {
+        return apInfo.getSaveMethod();
     }
 
-    public void setAPName(String apName) {
-        apInfo.setName(apName);
+    public AccessPointInfo getApInfo() {
+        return apInfo;
     }
 
-    public boolean isIgnored() {
-        return apInfo.isIgnored();
+    public void onProcessed() {
+        Validate.isTrue(!processed);
+        processed = true;
+        // notify context when all entity are persist
+        if (queuedEntityCount == 0) {
+            context.onPartyFinished(this);
+        }
     }
 
-    public PersistMethod getPersistMethod() {
-        return apInfo.getPersistMethod();
+    public void onEntityQueued() {
+        Validate.isTrue(!processed);
+        queuedEntityCount++;
     }
 
-    public Integer getAPId() {
-        return apInfo.getEntityId();
-    }
-
-    public ApRecord getAPReference(Session session) {
-        return apInfo.getEntityReference(session);
-    }
-
-    public ApRecord getUpdatableAPReference(Session session) {
-        return HibernateUtils.getEntityReference(apInfo.getEntityId(), apInfo.getEntityClass(), session, true);
-    }
-
-    @Override
-    protected boolean isReferenceInitOnDemand() {
-        return true;
+    public void onEntityPersist() {
+        Validate.isTrue(queuedEntityCount > 0);
+        queuedEntityCount--;
+        // notify context when processed and all entity are persist
+        if (processed && queuedEntityCount == 0) {
+            context.onPartyFinished(this);
+        }
     }
 }

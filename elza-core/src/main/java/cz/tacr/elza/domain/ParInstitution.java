@@ -38,7 +38,7 @@ public class ParInstitution {
     @JoinColumn(name = "partyId", nullable = false)
     private ParParty party;
 
-    @Column(name = "partyId", updatable = false, insertable = false)
+    @Column(updatable = false, insertable = false, nullable = false)
     private Integer partyId;
 
     /**

@@ -2,7 +2,7 @@
  * Akce pro formulář JP.
  */
 
-import {FOCUS_KEYS} from "../../constants";
+import {DisplayType, FOCUS_KEYS} from "../../constants";
 import {WebApi} from 'actions/index.jsx';
 import {findByRoutingKeyInGlobalState, getMapFromList, getRoutingKeyType, indexById} from 'stores/app/utils.jsx'
 import {getFocusDescItemLocation} from 'stores/app/arr/subNodeFormUtils.jsx'
@@ -17,6 +17,7 @@ import {debounce} from "shared/utils";
 import {fundNodeInfoReceive} from './nodeInfo.jsx';
 import NodeRequestController from "websocketController.jsx";
 import {fundSubNodeInfoReceive} from "./subNodeInfo";
+import {fromDuration} from "../../components/validate";
 
 // Konfigurace velikosti cache dat pro formulář
 const CACHE_SIZE = 20;
@@ -262,9 +263,17 @@ class ItemFormActions {
         const refType = subNodeForm.refTypesMap[loc.descItemType.id];
         const refTables = state.refTables;
 
-        const descItem = overrideDescItem || loc.descItem;
+        let descItem = overrideDescItem || loc.descItem;
         const parentVersionId = subNodeForm.data.parent.version;
         const parentId = subNodeForm.data.parent.id;
+
+        // pokud se jedná o číslo a zároveň se zobrazuje v HH:mm:ss je třeba ho převést
+        if (refType.dataType.code === 'INT' && refType.viewDefinition === DisplayType.DURATION) {
+            descItem = {
+                ...descItem,
+                value: fromDuration(descItem.value)
+            };
+        }
 
         if (this.descItemNeedStore(descItem, refType) || overrideDescItem) {
             dispatch(statusSaving());

@@ -6,14 +6,6 @@ public class UnitCountConfig implements ActionConfig {
 
 	protected String outputType;
 
-	public String getOutputType() {
-		return outputType;
-	}
-
-	public void setOutputType(String outputType) {
-		this.outputType = outputType;
-	}
-
 	/**
 	 * Name of column where to store Unit type
 	 */
@@ -24,7 +16,17 @@ public class UnitCountConfig implements ActionConfig {
 	 */
 	private String outputColumnUnitCount;
 
+	private boolean local;
+
 	private List<UnitCounterConfig> aggegators;
+
+	public String getOutputType() {
+		return outputType;
+	}
+
+	public void setOutputType(String outputType) {
+		this.outputType = outputType;
+	}
 
 	public List<UnitCounterConfig> getAggegators() {
 		return aggegators;
@@ -48,6 +50,14 @@ public class UnitCountConfig implements ActionConfig {
 
 	public void setOutputColumnUnitCount(String outputColumnUnitCount) {
 		this.outputColumnUnitCount = outputColumnUnitCount;
+	}
+
+	public boolean isLocal() {
+		return local;
+	}
+
+	public void setLocal(boolean local) {
+		this.local = local;
 	}
 
 	@Override

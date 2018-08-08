@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import cz.tacr.elza.domain.ParComplementType;
 import cz.tacr.elza.domain.ParPartyTypeComplementType;
-import cz.tacr.elza.domain.projection.PartyTypeComplementTypeInfo;
+import cz.tacr.elza.domain.projection.PartyTypeCmplTypeInfo;
 
 
 /**
@@ -19,5 +19,5 @@ public interface PartyTypeComplementTypeRepository extends JpaRepository<ParPart
 
     void deleteByComplementType(ParComplementType parComplementType);
 
-    List<PartyTypeComplementTypeInfo> findInfoByPartyTypeCode(String partyTypeCode);
+    List<PartyTypeCmplTypeInfo> findInfoByPartyTypeCode(String partyTypeCode);
 }

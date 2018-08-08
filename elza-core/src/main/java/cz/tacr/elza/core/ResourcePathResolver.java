@@ -12,7 +12,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import cz.tacr.elza.common.db.HibernateUtils;
-import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.RulAction;
@@ -126,9 +125,9 @@ public class ResourcePathResolver {
     public Path getTemplatesDir(int packageId, int ruleSetId) {
         StaticDataProvider staticData = staticDataService.getData();
         RulPackage rulPackage = staticData.getPackageById(packageId);
-        RuleSystem ruleSystem = staticData.getRuleSystems().getByRuleSetId(ruleSetId);
+        RulRuleSet ruleSet = staticData.getRuleSetById(ruleSetId);
 
-        Path path = getTemplatesDir(rulPackage, ruleSystem.getRuleSet());
+        Path path = getTemplatesDir(rulPackage, ruleSet);
 
         return path;
     }
@@ -197,8 +196,7 @@ public class ResourcePathResolver {
      */
     @Transactional(TxType.MANDATORY)
     public Path getDroolsFile(RulStructureDefinition structureDefinition) {
-        Path droolsDir = getDroolsDir(structureDefinition.getRulPackage().getPackageId(),
-                structureDefinition.getStructuredType().getRuleSet().getRuleSetId());
+        Path droolsDir = getDroolsDir(structureDefinition.getRulPackage().getPackageId());
         String droolFile = structureDefinition.getComponent().getFilename();
 
         Path path = droolsDir.resolve(droolFile);
@@ -211,8 +209,7 @@ public class ResourcePathResolver {
      */
     @Transactional(TxType.MANDATORY)
     public Path getDroolsFile(RulStructureExtensionDefinition structureExtensionDefinition) {
-        Path droolsDir = getDroolsDir(structureExtensionDefinition.getRulPackage().getPackageId(),
-                structureExtensionDefinition.getStructuredTypeExtension().getStructuredType().getRuleSet().getRuleSetId());
+        Path droolsDir = getDroolsDir(structureExtensionDefinition.getRulPackage().getPackageId());
         String droolFile = structureExtensionDefinition.getComponent().getFilename();
 
         Path path = droolsDir.resolve(droolFile);
@@ -227,9 +224,22 @@ public class ResourcePathResolver {
     public Path getDroolsDir(int packageId, int ruleSetId) {
         StaticDataProvider staticData = staticDataService.getData();
         RulPackage rulPackage = staticData.getPackageById(packageId);
-        RuleSystem ruleSystem = staticData.getRuleSystems().getByRuleSetId(ruleSetId);
+        RulRuleSet ruleSet = staticData.getRuleSetById(ruleSetId);
 
-        Path path = getDroolsDir(rulPackage, ruleSystem.getRuleSet());
+        Path path = getDroolsDir(rulPackage, ruleSet);
+
+        return path;
+    }
+
+    /**
+     * @return Path to rule set drools directory (may not exist).
+     */
+    @Transactional
+    public Path getDroolsDir(int packageId) {
+        StaticDataProvider staticData = staticDataService.getData();
+        RulPackage rulPackage = staticData.getPackageById(packageId);
+
+        Path path = getDroolsDir(rulPackage);
 
         return path;
     }
@@ -240,6 +250,18 @@ public class ResourcePathResolver {
     @Transactional(TxType.MANDATORY)
     public Path getDroolsDir(RulPackage rulPackage, RulRuleSet ruleSet) {
         Path ruleSetPath = getRuleSetDir(rulPackage, ruleSet);
+
+        Path path = ruleSetPath.resolve(RULESET_DROOLS);
+
+        return path;
+    }
+
+    /**
+     * @return Path to rule set drools directory (may not exist).
+     */
+    @Transactional(TxType.MANDATORY)
+    public Path getDroolsDir(RulPackage rulPackage) {
+        Path ruleSetPath = getPackageDir(rulPackage);
 
         Path path = ruleSetPath.resolve(RULESET_DROOLS);
 
@@ -263,9 +285,19 @@ public class ResourcePathResolver {
     public Path getGroovyDir(int packageId, int ruleSetId) {
         StaticDataProvider staticData = staticDataService.getData();
         RulPackage rulPackage = staticData.getPackageById(packageId);
-        RuleSystem ruleSystem = staticData.getRuleSystems().getByRuleSetId(ruleSetId);
+        RulRuleSet ruleSet = staticData.getRuleSetById(ruleSetId);
 
-        Path path = getGroovyDir(rulPackage, ruleSystem.getRuleSet());
+        Path path = getGroovyDir(rulPackage, ruleSet);
+
+        return path;
+    }
+
+    @Transactional
+    public Path getGroovyDir(int packageId) {
+        StaticDataProvider staticData = staticDataService.getData();
+        RulPackage rulPackage = staticData.getPackageById(packageId);
+
+        Path path = getGroovyDir(rulPackage);
 
         return path;
     }
@@ -283,15 +315,27 @@ public class ResourcePathResolver {
     }
 
     /**
+     * @return Path to groovy directory (may not exist).
+     */
+    @Transactional(TxType.MANDATORY)
+    public Path getGroovyDir(RulPackage rulPackage) {
+        Path ruleSetPath = getPackageDir(rulPackage);
+
+        Path path = ruleSetPath.resolve(RULESET_SCRIPTS);
+
+        return path;
+    }
+
+    /**
      * @return Path to rule set functions directory (may not exist).
      */
     @Transactional
     public Path getFunctionsDir(int packageId, int ruleSetId) {
         StaticDataProvider staticData = staticDataService.getData();
         RulPackage rulPackage = staticData.getPackageById(packageId);
-        RuleSystem ruleSystem = staticData.getRuleSystems().getByRuleSetId(ruleSetId);
+        RulRuleSet ruleSet = staticData.getRuleSetById(ruleSetId);
 
-        Path path = getFunctionsDir(rulPackage, ruleSystem.getRuleSet());
+        Path path = getFunctionsDir(rulPackage, ruleSet);
 
         return path;
     }

@@ -42,11 +42,10 @@ public class PackageUtils {
      * @return hash
      */
     public static String sha256File(final File file) {
-        byte[] buffer= new byte[8192];
+        byte[] buffer = new byte[8192];
         int count;
-        try {
+        try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file))) {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file));
             while ((count = bis.read(buffer)) > 0) {
                 digest.update(buffer, 0, count);
             }

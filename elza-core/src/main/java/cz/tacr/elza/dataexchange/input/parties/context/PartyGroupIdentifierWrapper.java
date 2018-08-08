@@ -4,26 +4,25 @@ import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
 
 import cz.tacr.elza.dataexchange.input.context.EntityIdHolder;
-import cz.tacr.elza.dataexchange.input.context.PersistMethod;
-import cz.tacr.elza.dataexchange.input.storage.EntityMetrics;
 import cz.tacr.elza.dataexchange.input.storage.EntityWrapper;
+import cz.tacr.elza.dataexchange.input.storage.SaveMethod;
 import cz.tacr.elza.domain.ParPartyGroup;
 import cz.tacr.elza.domain.ParPartyGroupIdentifier;
 import cz.tacr.elza.domain.ParUnitdate;
 
-public class PartyGroupIdentifierWrapper implements EntityWrapper, EntityMetrics {
+public class PartyGroupIdentifierWrapper implements EntityWrapper {
 
     private final ParPartyGroupIdentifier entity;
 
-    private final PartyInfo partyGroupInfo;
+    private final PartyInfo partyInfo;
 
     private EntityIdHolder<ParUnitdate> validFromIdHolder;
 
     private EntityIdHolder<ParUnitdate> validToIdHolder;
 
-    PartyGroupIdentifierWrapper(ParPartyGroupIdentifier entity, PartyInfo partyGroupInfo) {
+    PartyGroupIdentifierWrapper(ParPartyGroupIdentifier entity, PartyInfo partyInfo) {
         this.entity = Validate.notNull(entity);
-        this.partyGroupInfo = Validate.notNull(partyGroupInfo);
+        this.partyInfo = Validate.notNull(partyInfo);
     }
 
     public void setValidFrom(EntityIdHolder<ParUnitdate> validFromIdHolder) {
@@ -35,34 +34,37 @@ public class PartyGroupIdentifierWrapper implements EntityWrapper, EntityMetrics
     }
 
     @Override
-    public PersistMethod getPersistMethod() {
-        return partyGroupInfo.isIgnored() ? PersistMethod.NONE : PersistMethod.CREATE;
+    public SaveMethod getSaveMethod() {
+        SaveMethod sm = partyInfo.getSaveMethod();
+        // group identifier is never updated and old must be invalidate by storage
+        return sm.equals(SaveMethod.IGNORE) ? sm : SaveMethod.CREATE;
     }
 
     @Override
-    public ParPartyGroupIdentifier getEntity() {
+    public Object getEntity() {
         return entity;
     }
 
     @Override
-    public long getMemoryScore() {
-        return 1;
+    public void beforeEntitySave(Session session) {
+        // prepare party reference
+        Validate.isTrue(entity.getPartyGroup() == null);
+        entity.setPartyGroup((ParPartyGroup) partyInfo.getEntityRef(session));
+        // prepare from reference
+        Validate.isTrue(entity.getFrom() == null);
+        if (validFromIdHolder != null) {
+            entity.setFrom(validFromIdHolder.getEntityRef(session));
+        }
+        // prepare to reference
+        Validate.isTrue(entity.getTo() == null);
+        if (validToIdHolder != null) {
+            entity.setTo(validToIdHolder.getEntityRef(session));
+        }
     }
 
     @Override
-    public void beforeEntityPersist(Session session) {
-        // party group relation
-        Validate.isTrue(entity.getPartyGroup() == null);
-        entity.setPartyGroup((ParPartyGroup) partyGroupInfo.getEntityReference(session));
-        // valid from relation
-        Validate.isTrue(entity.getFrom() == null);
-        if (validFromIdHolder != null) {
-            entity.setFrom(validFromIdHolder.getEntityReference(session));
-        }
-        // valid to relation
-        Validate.isTrue(entity.getTo() == null);
-        if (validToIdHolder != null) {
-            entity.setTo(validToIdHolder.getEntityReference(session));
-        }
+    public void afterEntitySave() {
+        // update party info
+        partyInfo.onEntityPersist();
     }
 }

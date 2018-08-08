@@ -11,7 +11,7 @@ import cz.tacr.elza.bulkaction.ActionRunContext;
 import cz.tacr.elza.bulkaction.BulkAction;
 import cz.tacr.elza.bulkaction.generator.result.Result;
 import cz.tacr.elza.bulkaction.generator.result.UnitIdResult;
-import cz.tacr.elza.core.data.RuleSystemItemType;
+import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrBulkActionRun.State;
 import cz.tacr.elza.domain.ArrChange;
@@ -110,14 +110,14 @@ public class UnitIdBulkAction extends BulkAction {
 		// read item type for UnitId
 		String unitIdCode = config.getItemType();
 		Validate.notNull(unitIdCode);
-		RuleSystemItemType itemTypeWrapper = ruleSystem.getItemTypeByCode(unitIdCode);
+		ItemType itemTypeWrapper = staticDataProvider.getItemTypeByCode(unitIdCode);
 		Validate.notNull(itemTypeWrapper);
 		descItemType = itemTypeWrapper.getEntity();
 
 		// read level type
 		String levelTypeCode = config.getLevelTypeCode();
 		Validate.notNull(levelTypeCode);
-		RuleSystemItemType levelTypeWrapper = ruleSystem.getItemTypeByCode(levelTypeCode);
+		ItemType levelTypeWrapper = staticDataProvider.getItemTypeByCode(levelTypeCode);
 		Validate.notNull(levelTypeWrapper);
 		descItemLevelType = levelTypeWrapper.getEntity();
 
@@ -131,7 +131,7 @@ public class UnitIdBulkAction extends BulkAction {
 		// item for previous value
 		String previousIdCode = config.getPreviousIdCode();
 		Validate.notNull(previousIdCode);
-		RuleSystemItemType previousIdTypeWrapper = ruleSystem.getItemTypeByCode(previousIdCode);
+		ItemType previousIdTypeWrapper = staticDataProvider.getItemTypeByCode(previousIdCode);
 		Validate.notNull(previousIdTypeWrapper);
 		descItemPreviousType = previousIdTypeWrapper.getEntity();
 

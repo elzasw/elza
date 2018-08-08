@@ -24,11 +24,14 @@ import cz.tacr.elza.repository.PackageRepository;
 import cz.tacr.elza.repository.PartyNameFormTypeRepository;
 import cz.tacr.elza.repository.PartyTypeComplementTypeRepository;
 import cz.tacr.elza.repository.PartyTypeRepository;
+import cz.tacr.elza.repository.RegistryRoleRepository;
+import cz.tacr.elza.repository.ApExternalIdTypeRepository;
 import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRoleTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.repository.StructuredTypeRepository;
+import cz.tacr.elza.repository.SysLanguageRepository;
 
 /**
  * Service for static data
@@ -55,6 +58,8 @@ public class StaticDataService {
 
     private final EntityManager em;
 
+    /* repository with package visibility for initialization */
+    
     final RuleSetRepository ruleSetRepository;
 
     final ItemTypeRepository itemTypeRepository;
@@ -82,6 +87,12 @@ public class StaticDataService {
     final RelationTypeRepository relationTypeRepository;
 
     final RelationTypeRoleTypeRepository relationTypeRoleTypeRepository;
+    
+    final ApExternalIdTypeRepository apEidTypeRepository;
+
+    final SysLanguageRepository sysLanguageRepository;
+
+    final RegistryRoleRepository registryRoleRepository;
 
     @Autowired
     public StaticDataService(EntityManager em,
@@ -98,7 +109,10 @@ public class StaticDataService {
                              PartyTypeComplementTypeRepository partyTypeComplementTypeRepository,
                              ApTypeRepository apTypeRepository,
                              RelationTypeRepository relationTypeRepository,
-                             RelationTypeRoleTypeRepository relationTypeRoleTypeRepository) {
+                             RelationTypeRoleTypeRepository relationTypeRoleTypeRepository,
+                             ApExternalIdTypeRepository apEidTypeRepository,
+                             SysLanguageRepository sysLanguageRepository,
+                             RegistryRoleRepository registryRoleRepository) {
         this.em = em;
         this.ruleSetRepository = ruleSetRepository;
         this.itemTypeRepository = itemTypeRepository;
@@ -114,6 +128,9 @@ public class StaticDataService {
         this.apTypeRepository = apTypeRepository;
         this.relationTypeRepository = relationTypeRepository;
         this.relationTypeRoleTypeRepository = relationTypeRoleTypeRepository;
+        this.apEidTypeRepository = apEidTypeRepository;
+        this.sysLanguageRepository = sysLanguageRepository;
+        this.registryRoleRepository = registryRoleRepository;
     }
 
     /**

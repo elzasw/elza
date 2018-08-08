@@ -4,8 +4,8 @@ import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
 
 import cz.tacr.elza.dataexchange.input.context.EntityIdHolder;
-import cz.tacr.elza.dataexchange.input.context.PersistMethod;
 import cz.tacr.elza.dataexchange.input.storage.EntityWrapper;
+import cz.tacr.elza.dataexchange.input.storage.SaveMethod;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.ArrStructuredObject;
@@ -28,23 +28,24 @@ public class ArrStructItemWrapper implements EntityWrapper {
     }
 
     @Override
-    public PersistMethod getPersistMethod() {
-        return PersistMethod.CREATE;
-    }
-
-    @Override
-    public ArrStructuredItem getEntity() {
+    public Object getEntity() {
         return entity;
     }
 
     @Override
-    public void beforeEntityPersist(Session session) {
+    public SaveMethod getSaveMethod() {
+        return SaveMethod.CREATE;
+    }
+
+    @Override
+    public void beforeEntitySave(Session session) {
+        // prepare structured object reference
         Validate.isTrue(entity.getStructuredObject() == null);
-        entity.setStructuredObject(structObjectIdHolder.getEntityReference(session));
-        // set data reference if exist
+        entity.setStructuredObject(structObjectIdHolder.getEntityRef(session));
+        // prepare data reference
         Validate.isTrue(entity.isUndefined());
         if (dataIdHolder != null) {
-            entity.setData(dataIdHolder.getEntityReference(session));
+            entity.setData(dataIdHolder.getEntityRef(session));
         }
     }
 }

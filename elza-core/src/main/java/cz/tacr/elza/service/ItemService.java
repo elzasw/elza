@@ -1,9 +1,9 @@
 package cz.tacr.elza.service;
 
 import cz.tacr.elza.core.data.DataType;
-import cz.tacr.elza.core.data.RuleSystem;
-import cz.tacr.elza.core.data.RuleSystemItemType;
-import cz.tacr.elza.domain.ApRecord;
+import cz.tacr.elza.core.data.ItemType;
+import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataFileRef;
@@ -25,7 +25,7 @@ import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.RegistryCode;
-import cz.tacr.elza.repository.ApRecordRepository;
+import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.FundFileRepository;
 import cz.tacr.elza.repository.ItemRepository;
@@ -71,7 +71,7 @@ public class ItemService {
     private FundFileRepository fundFileRepository;
 
     @Autowired
-    private ApRecordRepository recordRepository;
+    private ApAccessPointRepository recordRepository;
 
     @Autowired
     private ItemSpecRegisterRepository itemSpecRegisterRepository;
@@ -133,7 +133,7 @@ public class ItemService {
 
         if (data != null) {
             if (data instanceof ArrDataJsonTable) {
-                checkJsonTableData(((ArrDataJsonTable) data).getValue(), item.getItemType().getColumnsDefinition());
+                checkJsonTableData(((ArrDataJsonTable) data).getValue(), (List<ElzaColumn>) item.getItemType().getViewDefinition());
         }
 
             ArrData dataNew = ArrData.makeCopyWithoutId(data);
@@ -170,11 +170,12 @@ public class ItemService {
     /**
      * Kontrola typu a specifikace.
      *
-     * @param item hodnota atributu
+     * @param sdp
+     * @param descItem hodnota atributu
      */
     @Transactional(TxType.MANDATORY)
-    public void checkValidTypeAndSpec(final RuleSystem ruleSystem, final ArrItem descItem) {
-        RuleSystemItemType descItemType = ruleSystem.getItemTypeById(descItem.getItemTypeId());
+    public void checkValidTypeAndSpec(final StaticDataProvider sdp, final ArrItem descItem) {
+        ItemType descItemType = sdp.getItemTypeById(descItem.getItemTypeId());
         Validate.notNull(descItemType, "Invalid description item type");
 
         Integer descItemSpecId = descItem.getItemSpecId();
@@ -244,8 +245,8 @@ public class ItemService {
                     ArrFile file = ((ArrDataFileRef) data).getFile();
                     fileMap.put(file.getFileId(), (ArrDataFileRef) data);
                 } else if (data instanceof ArrDataRecordRef) {
-                    ApRecord record = ((ArrDataRecordRef) data).getRecord();
-                    recordMap.put(record.getRecordId(), (ArrDataRecordRef) data);
+                    ApAccessPoint record = ((ArrDataRecordRef) data).getRecord();
+                    recordMap.put(record.getAccessPointId(), (ArrDataRecordRef) data);
                 }
             }
         }
@@ -272,9 +273,9 @@ public class ItemService {
         }
 
         Set<Integer> recordIds = recordMap.keySet();
-        List<ApRecord> recordEntities = recordRepository.findAll(recordIds);
-        for (ApRecord recordEntity : recordEntities) {
-            recordMap.get(recordEntity.getRecordId()).setRecord(recordEntity);
+        List<ApAccessPoint> recordEntities = recordRepository.findAll(recordIds);
+        for (ApAccessPoint recordEntity : recordEntities) {
+            recordMap.get(recordEntity.getAccessPointId()).setRecord(recordEntity);
         }
     }
 }

@@ -4,100 +4,63 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.apache.commons.lang3.Validate;
+import org.apache.commons.lang.Validate;
 import org.hibernate.Session;
 
-/**
- * Stores entity wrappers in batches.
- */
-class EntityStorage<T extends EntityWrapper> {
+import cz.tacr.elza.common.db.HibernateUtils;
+
+public class EntityStorage<T extends EntityWrapper> {
 
     protected final Session session;
 
-    private final StorageListener storageListener;
+    protected final StoredEntityCallback storedEntityCallback;
 
-    public EntityStorage(Session session, StorageListener storageListener) {
-        this.session = Validate.notNull(session);
-        this.storageListener = storageListener;
+    public EntityStorage(Session session, StoredEntityCallback storedEntityCallback) {
+        this.session = session;
+        this.storedEntityCallback = storedEntityCallback;
     }
 
-    /**
-     * Store batch to persistent context.
-     */
-    public void save(Collection<T> items) {
-        if (items.isEmpty()) {
-            return;
-        }
-        List<T> creates = new ArrayList<>(items.size());
-        List<T> updates = new ArrayList<>(items.size());
-
-        for (T item : items) {
-            switch (item.getPersistMethod()) {
-                case CREATE:
-                    creates.add(item);
-                    break;
-                case UPDATE:
-                    updates.add(item);
-                    break;
-                default:
-                    // ignored entity
+    public void store(Collection<T> ews) {
+        List<T> merges = new ArrayList<>();
+        for (T ew : ews) {
+            switch (ew.getSaveMethod()) {
+            case IGNORE:
+                continue;
+            case CREATE:
+                persistEntity(ew);
+                continue;
+            case UPDATE:
+                merges.add(ew);
             }
         }
-        // add to persistent context
-        if (creates.size() > 0) {
-            create(creates);
-        }
-        if (updates.size() > 0) {
-            update(updates);
-        }
+        mergeEntities(merges);
+        // flush all changes
+        session.flush();
     }
 
-    protected void create(List<T> items) {
-        for (T item : items) {
-            // notify wrapper before save
-            item.beforeEntityPersist(session);
-
-            create(item, session);
-        }
+    protected void persistEntity(T ew) {
+        ew.beforeEntitySave(session);
+        session.persist(ew.getEntity());
+        ew.afterEntitySave();
+        storedEntityCallback.onStoredEntity(ew);
     }
 
-    protected void update(Collection<T> items) {
-        for (T item : items) {
-            // notify wrapper before save
-            item.beforeEntityPersist(session);
+    protected void mergeEntity(T ew) {
+        Object entity = ew.getEntity();
+        Validate.isTrue(HibernateUtils.isInitialized(entity));
 
-            update(item, session);
-        }
+        ew.beforeEntitySave(session);
+        // note: returned entity is in most cases same as input
+        // !!! do not store return value of merge, we have to use same 
+        // entity when calling evict as firstly obtained reference !!! 
+        session.merge(entity);
+        ew.afterEntitySave();
+        storedEntityCallback.onStoredEntity(ew);
     }
 
-    protected void create(T item, Session session) {
-        Object entity = item.getEntity();
-        session.persist(entity);
-        fireEntityPersist(item);
-    }
-
-    protected void update(T item, Session session) {
-        Object entity = item.getEntity();
-
-        // note: returned entity is in most cases
-        //       same as input
-        // !!! do not store resultEntity back into wrapper
-        //     wrapper have to use same entity when calling evict 
-        //     as firstly obtained reference !!!                
-        Object resultEntity = session.merge(entity);
-        
-        /*System.out.println("updateEntity input = " + entity.getClass() + " (" + System.identityHashCode(entity)
-                + "), output = " + resultEntity.getClass() + " (" + System.identityHashCode(resultEntity) + ")");
-                */
-        fireEntityPersist(item);
-    }
-
-    private void fireEntityPersist(T item) {
-        // notify wrapper after save
-        item.afterEntityPersist();
-
-        if (storageListener != null) {
-            storageListener.onEntityPersist(item);
+    protected void mergeEntities(Collection<T> ews) {
+        for (T ew : ews) {
+            mergeEntity(ew);
         }
     }
 }

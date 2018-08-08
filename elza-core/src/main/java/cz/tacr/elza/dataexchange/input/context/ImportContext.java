@@ -38,18 +38,17 @@ public class ImportContext implements ObservableImport {
     private ImportPhase currentPhase = ImportPhase.INIT;
 
     public ImportContext(Session session,
-                         StaticDataProvider staticData,
-                         AccessPointsContext accessPoints,
-                         PartiesContext parties,
-                         InstitutionsContext institutions,
-                         SectionsContext sections) {
+            StaticDataProvider staticData,
+            AccessPointsContext accessPoints,
+            PartiesContext parties,
+            InstitutionsContext institutions,
+            SectionsContext sections) {
         this.session = session;
         this.staticData = staticData;
         this.accessPoints = accessPoints;
         this.parties = parties;
         this.institutions = institutions;
         this.sections = sections;
-        initAllContexts();
     }
 
     public Session getSession() {
@@ -99,7 +98,7 @@ public class ImportContext implements ObservableImport {
         phaseChangeListeners.add(phaseChangeListener);
     }
 
-    private void initAllContexts() {
+    public void initSubContexts() {
         accessPoints.init(this);
         parties.init(this);
         institutions.init(this);

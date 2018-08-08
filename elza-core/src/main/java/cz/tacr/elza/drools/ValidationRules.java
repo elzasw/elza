@@ -15,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import cz.tacr.elza.core.ResourcePathResolver;
-import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -114,7 +113,6 @@ public class ValidationRules extends Rules {
 	public void finalizeValidationResults(final List<DataValidationResult> validationResults, Integer ruleSetId) {
 
 		StaticDataProvider sdp = staticDataService.getData();
-		RuleSystem ruleSystem = sdp.getRuleSystems().getByRuleSetId(ruleSetId);
 
 		Map<String, RulPolicyType> policyTypesMap = getPolicyTypesMap();
 
@@ -142,7 +140,7 @@ public class ValidationRules extends Rules {
 					throw new SystemException("Neni vyplnen kod chybejiciho typu.", BaseCode.PROPERTY_NOT_EXIST)
 					        .set("property", "typeCode");
 				}
-				validationResult.setType(ruleSystem.getItemTypeByCode(missingTypeCode).getEntity());
+				validationResult.setType(sdp.getItemTypeByCode(missingTypeCode).getEntity());
 				break;
 			case ERROR:
 				Integer descItemId = validationResult.getDescItemId();

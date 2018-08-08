@@ -1,6 +1,6 @@
 package cz.tacr.elza.controller;
 
-import cz.tacr.elza.controller.vo.ApRecordVO;
+import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.controller.vo.ApScopeVO;
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.TreeData;
@@ -106,9 +106,9 @@ public class KmlControllerTest extends AbstractControllerTest {
         importXmlFile(null, allScopes.get(0).getId(), getFile(ALL_IN_ONE_XML));
 
 
-        List<ApRecordVO> records = findRecord(null, 0, 10, null, null, null);
+        List<ApAccessPointVO> records = findRecord(null, 0, 10, null, null, null);
         Assert.assertTrue(!records.isEmpty());
-        ApRecordVO record = records.iterator().next();
+        ApAccessPointVO record = records.iterator().next();
 
         HashMap<String, Object> params = new HashMap<>();
         params.put("apRecordId", record.getId());

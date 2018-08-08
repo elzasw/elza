@@ -24,6 +24,7 @@ import org.yaml.snakeyaml.TypeDescription;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 
+import cz.tacr.elza.bulkaction.generator.DeleteItemConfig;
 import cz.tacr.elza.bulkaction.generator.FundValidationConfig;
 import cz.tacr.elza.bulkaction.generator.MoveDescItemConfig;
 import cz.tacr.elza.bulkaction.generator.MultiActionConfig;
@@ -178,6 +179,7 @@ public class BulkActionConfigManager {
         yamlCtor.addTypeDescription(new TypeDescription(UnitCountConfig.class, "!UnitCount"));
         yamlCtor.addTypeDescription(new TypeDescription(MoveDescItemConfig.class, "!MoveDescItem"));
         yamlCtor.addTypeDescription(new TypeDescription(PersistentSortConfig.class, "!PersistentSort"));
+        yamlCtor.addTypeDescription(new TypeDescription(DeleteItemConfig.class, "!DeleteItem"));
 
         return new Yaml(yamlCtor);
     }

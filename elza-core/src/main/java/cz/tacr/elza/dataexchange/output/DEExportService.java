@@ -27,9 +27,9 @@ import cz.tacr.elza.dataexchange.output.writer.ExportBuilder;
 import cz.tacr.elza.dataexchange.output.writer.xml.XmlExportBuilder;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
-import cz.tacr.elza.repository.ApRecordRepository;
 import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.cache.NodeCacheService;
 
@@ -47,14 +47,14 @@ public class DEExportService {
 
     @Autowired
     public DEExportService(EntityManager em,
-                           StaticDataService staticDataService,
-                           FundVersionRepository fundVersionRepository,
-                           UserService userService,
-                           LevelRepository levelRepository,
-                           NodeCacheService nodeCacheService,
-                           ApRecordRepository recordRepository,
-                           ResourcePathResolver resourcePathResolver) {
-        this.initHelper = new ExportInitHelper(em, userService, levelRepository, nodeCacheService, recordRepository,
+            StaticDataService staticDataService,
+            FundVersionRepository fundVersionRepository,
+            UserService userService,
+            LevelRepository levelRepository,
+            NodeCacheService nodeCacheService,
+            ApAccessPointRepository apRepository,
+            ResourcePathResolver resourcePathResolver) {
+        this.initHelper = new ExportInitHelper(em, userService, levelRepository, nodeCacheService, apRepository,
                 fundVersionRepository);
         this.staticDataService = staticDataService;
         this.resourcePathResolver = resourcePathResolver;
@@ -75,8 +75,10 @@ public class DEExportService {
     /**
      * Exports data as XML to specified output stream.
      *
-     * @param os generated XML
-     * @param params export configuration
+     * @param os
+     *            generated XML
+     * @param params
+     *            export configuration
      */
     @Transactional(isolation = Isolation.SERIALIZABLE, readOnly = true)
     @AuthMethod(permission = { UsrPermission.Permission.FUND_ADMIN })
@@ -89,7 +91,7 @@ public class DEExportService {
         ExportContext context = new ExportContext(builder, staticDataService.getData(), 1000);
         context.setFundsSections(params.getFundsSections());
         if (params.getApIds() != null) {
-            params.getApIds().forEach(context::addAPId);
+            params.getApIds().forEach(context::addApId);
         }
         if (params.getPartyIds() != null) {
             params.getPartyIds().forEach(context::addPartyId);

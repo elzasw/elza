@@ -1,5 +1,7 @@
 import {getMapFromList, indexById} from 'stores/app/utils.jsx'
 import {hasDescItemTypeValue} from 'components/arr/ArrUtils.jsx'
+import {DisplayType} from "../../../constants";
+import {toDuration} from "../../../components/validate";
 
 const availability = {
     REQUIRED : "REQUIRED",
@@ -159,6 +161,17 @@ export function consolidateDescItems(resultDescItemType, infoType, refType, adde
     // Přidáme jednu hodnotu - chceme i u opakovatelného, pokud žádnou nemá (nebyla hodnota přifána vynucením specifikací)
     if (resultDescItemType.descItems.length === 0) {
         resultDescItemType.descItems.push(createImplicitDescItem(resultDescItemType, refType, addedByUser));
+    }
+
+    if (refType.dataType.code === 'INT' && refType.viewDefinition === DisplayType.DURATION) {
+        resultDescItemType.descItems.forEach(descItem => {
+            if (!isNaN(descItem.prevValue)) {
+                descItem.prevValue = toDuration(descItem.prevValue);
+            }
+            if (!isNaN(descItem.value)) {
+                descItem.value = toDuration(descItem.value);
+            }
+        });
     }
 
     resultDescItemType.descItems.forEach((descItem, index) => {descItem.position = index + 1});
@@ -1133,6 +1146,8 @@ export function getItemClass(dataType) {
             return '.ArrItemUnitdateVO';
         case 'UNITID':
             return '.ArrItemUnitidVO';
+        case 'DATE':
+            return '.ArrItemDateVO';
         default:
             console.error("Unsupported data type", dataType);
             return null;

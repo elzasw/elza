@@ -63,8 +63,7 @@ public interface ApTypeRepository extends JpaRepository<ApType, Integer>, ApType
      * @param partyType typ osoby
      * @return seznam typů
      */
-    @Query("SELECT t FROM ap_type t WHERE t.partyType = ?1 AND t.addRecord = true ORDER BY t.name ASC")
-    List<ApType> findByPartyTypeEnableAdding(ParPartyType partyType);
+    List<ApType> findByPartyTypeAndReadOnlyFalseOrderByName(ParPartyType partyType);
 
 
     /**
@@ -72,8 +71,7 @@ public interface ApTypeRepository extends JpaRepository<ApType, Integer>, ApType
      *
      * @return seznam typů
      */
-    @Query("SELECT t FROM ap_type t WHERE t.partyType IS NULL AND t.addRecord = true ORDER BY t.name ASC")
-    List<ApType> findNullPartyTypeEnableAdding();
+    List<ApType> findByPartyTypeIsNullAndReadOnlyFalseOrderByName();
 
 
     /**

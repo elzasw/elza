@@ -77,7 +77,7 @@ public class RulDescItemTypeVO {
     @Deprecated
     private Boolean repeatable;
 
-    private List<ElzaColumn> columnsDefinition;
+    private Object viewDefinition;
 
     /**
      * Kategorie specifikací.
@@ -198,12 +198,12 @@ public class RulDescItemTypeVO {
         this.width = width;
     }
 
-    public List<ElzaColumn> getColumnsDefinition() {
-        return columnsDefinition;
+    public Object getViewDefinition() {
+        return viewDefinition;
     }
 
-    public void setColumnsDefinition(final List<ElzaColumn> columnsDefinition) {
-        this.columnsDefinition = columnsDefinition;
+    public void setViewDefinition(final Object viewDefinition) {
+        this.viewDefinition = viewDefinition;
     }
 
     public List<TreeItemSpecsItem> getItemSpecsTree() {

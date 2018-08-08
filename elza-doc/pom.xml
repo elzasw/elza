@@ -5,7 +5,7 @@
     <parent>
         <artifactId>elza</artifactId>
         <groupId>cz.tacr.elza</groupId>
-        <version>0.16.0-SNAPSHOT</version>
+        <version>0.17.0-SNAPSHOT</version>
     </parent>
     <artifactId>elza-doc</artifactId>
     <name>ELZA Doc</name>
@@ -17,7 +17,7 @@
             <version>${project.parent.version}</version>
         </dependency>
     </dependencies>
-<!-- 
+<!--
     <build>
         <plugins>
             <plugin>

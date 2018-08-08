@@ -5,7 +5,6 @@ import java.util.List;
 
 import cz.tacr.elza.dataexchange.output.loaders.LoadDispatcher;
 import cz.tacr.elza.dataexchange.output.loaders.NestedLoadDispatcher;
-import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyGroup;
 import cz.tacr.elza.domain.ParPartyGroupIdentifier;
 
@@ -15,8 +14,9 @@ public class PartyGroupIdentifierDispatcher extends NestedLoadDispatcher<ParPart
 
     private final ParPartyGroup partyGroup;
 
-    public PartyGroupIdentifierDispatcher(ParPartyGroup partyGroup, LoadDispatcher<ParParty> partyDispatcher) {
-        super(partyDispatcher);
+    public PartyGroupIdentifierDispatcher(ParPartyGroup partyGroup,
+            LoadDispatcher<PartyInfoImpl> partyInfoDispatcher) {
+        super(partyInfoDispatcher);
         this.partyGroup = partyGroup;
     }
 

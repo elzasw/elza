@@ -1,9 +1,10 @@
 package cz.tacr.elza.domain.vo;
 
+import cz.tacr.elza.domain.ApAccessPoint;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import cz.tacr.elza.domain.ApRecord;
 
 /**
  * Zapouzdření kolekce vracených záznamů rejstříku a jejich celkového počtu za danou vyhledávací podmínku.
@@ -15,7 +16,7 @@ public class ApRecordWithCount {
     /**
      * Seznam osob.
      */
-    private List<ApRecord> recordList = new ArrayList<>();
+    private List<ApAccessPoint> recordList = new ArrayList<>();
 
     /**
      * Celkový počet dle užitého filtru. Nikoliv aktuální vracený.
@@ -35,7 +36,7 @@ public class ApRecordWithCount {
      * @param recordList    list záznamů
      * @param count         počet celkem za minulý dotaz
      */
-    public ApRecordWithCount(final List<ApRecord> recordList, final Long count) {
+    public ApRecordWithCount(final List<ApAccessPoint> recordList, final Long count) {
         this.recordList = recordList;
         this.count = count;
     }
@@ -44,7 +45,7 @@ public class ApRecordWithCount {
      * List záznamů.
      * @param recordList list záznamů
      */
-    public void setRecordList(final List<ApRecord> recordList) {
+    public void setRecordList(final List<ApAccessPoint> recordList) {
         this.recordList = recordList;
     }
 
@@ -52,7 +53,7 @@ public class ApRecordWithCount {
      * List záznamů.
      * @return  list záznamů
      */
-    public List<ApRecord> getRecordList() {
+    public List<ApAccessPoint> getRecordList() {
         return recordList;
     }
 

@@ -1,24 +1,49 @@
 package cz.tacr.elza.service;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.NotImplementedException;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
+
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.controller.ArrangementController;
 import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.core.data.CalendarType;
-import cz.tacr.elza.core.data.RuleSystem;
-import cz.tacr.elza.core.data.RuleSystemItemType;
+import cz.tacr.elza.core.data.ItemType;
+import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
-import cz.tacr.elza.domain.ApRecord;
+import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataCoordinates;
 import cz.tacr.elza.domain.ArrDataDecimal;
 import cz.tacr.elza.domain.ArrDataInteger;
-import cz.tacr.elza.domain.ArrDataJsonTable;
 import cz.tacr.elza.domain.ArrDataNull;
 import cz.tacr.elza.domain.ArrDataPartyRef;
 import cz.tacr.elza.domain.ArrDataRecordRef;
@@ -32,21 +57,17 @@ import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrStructuredObject;
-import cz.tacr.elza.domain.ParUnitdate;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.*;
 import cz.tacr.elza.domain.convertor.CalendarConverter;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.domain.factory.DescItemFactory;
-import cz.tacr.elza.domain.vo.CoordinatesTitleValue;
-import cz.tacr.elza.domain.vo.JsonTableTitleValue;
 import cz.tacr.elza.domain.vo.NodeTypeOperation;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.domain.vo.TitleValue;
 import cz.tacr.elza.domain.vo.TitleValues;
-import cz.tacr.elza.domain.vo.UnitdateTitleValue;
 import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.drools.RulesExecutor;
 import cz.tacr.elza.exception.BusinessException;
@@ -54,8 +75,7 @@ import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.repository.ApRecordRepository;
-import cz.tacr.elza.repository.ApTypeRepository;
+import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DescItemRepository;
@@ -66,28 +86,8 @@ import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventChangeDescItem;
 import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.BooleanUtils;
-import org.apache.commons.lang3.NotImplementedException;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Validate;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-
-import javax.annotation.Nullable;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -107,7 +107,7 @@ public class DescriptionItemService {
     private DescItemRepository descItemRepository;
 
     @Autowired
-    private ApRecordRepository apRecordRepository;
+    private ApAccessPointRepository apAccessPointRepository;
 
     @Autowired
     private FundVersionRepository fundVersionRepository;
@@ -143,13 +143,15 @@ public class DescriptionItemService {
     private EventNotificationService eventNotificationService;
 
     @Autowired
-    private ApTypeRepository apTypeRepository;
+    private ItemService itemService;
 
     @Autowired
-    ItemService itemService;
+    private StaticDataService staticDataService;
 
     @Autowired
-    StaticDataService staticDataService;
+    private DescriptionItemServiceInternal serviceInternal;
+
+    private static final Logger logger = LoggerFactory.getLogger(DescriptionItemService.class);
 
     /**
      * Kontrola otevřené verze.
@@ -241,8 +243,8 @@ public class DescriptionItemService {
         ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
         Validate.notNull(fundVersion, "Verze archivní pomůcky neexistuje");
 
-        RuleSystem ruleSystem = staticDataService.getData().getRuleSystems().getByRuleSetId(fundVersion.getRuleSetId());
-        RuleSystemItemType descItemType = ruleSystem.getItemTypeById(descItemTypeId);
+        StaticDataProvider sdp = staticDataService.getData();
+        ItemType descItemType = sdp.getItemTypeById(descItemTypeId);
         Validate.notNull(descItemType, "Typ hodnoty atributu neexistuje");
 
         ArrNode node = nodeRepository.findOne(nodeId);
@@ -295,8 +297,8 @@ public class DescriptionItemService {
         ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
         Validate.notNull(fundVersion, "Verze archivní pomůcky neexistuje");
 
-        RuleSystem ruleSystem = staticDataService.getData().getRuleSystems().getByRuleSetId(fundVersion.getRuleSetId());
-        RuleSystemItemType descItemType = ruleSystem.getItemTypeById(descItemTypeId);
+        StaticDataProvider sdp = staticDataService.getData();
+        ItemType descItemType = sdp.getItemTypeById(descItemTypeId);
         Validate.notNull(descItemType, "Typ hodnoty atributu neexistuje");
 
         ArrNode node = nodeRepository.findOne(nodeId);
@@ -503,9 +505,9 @@ public class DescriptionItemService {
         // pro vytváření musí být verze otevřená
         checkFundVersionLock(fundVersion);
 
-        RuleSystem ruleSystem = staticDataService.getData().getRuleSystems().getByRuleSetId(fundVersion.getRuleSetId());
+        StaticDataProvider sdp = staticDataService.getData();
         // kontrola validity typu a specifikace
-        itemService.checkValidTypeAndSpec(ruleSystem, descItem);
+        itemService.checkValidTypeAndSpec(sdp, descItem);
 
         int maxPosition = getMaxPosition(descItem);
 
@@ -751,7 +753,7 @@ public class DescriptionItemService {
 	 *
 	 * Function will save created data in repository
 	 *
-	 * @param descItemFrom
+	 * @param itemFrom
 	 *            z hodnoty atributu
 	 * @return Return object with data copy. If data are not defined in source
 	 *         item method will return null.
@@ -997,14 +999,15 @@ public class DescriptionItemService {
     private ArrDescItem updateValue(final ArrFundVersion fundVersion, ArrDescItem descItemDB, RulItemSpec itemSpec,
 	        ArrData data) {
 
-        RuleSystem ruleSystem = staticDataService.getData().getRuleSystems().getByRuleSetId(fundVersion.getRuleSetId());
 
-		// set data and specification
+        StaticDataProvider sdp = staticDataService.getData();
+
+        // set data and specification
 		descItemDB.setData(data);
 		descItemDB.setItemSpec(itemSpec);
 		ArrDescItem result = descItemRepository.save(descItemDB);
 
-        itemService.checkValidTypeAndSpec(ruleSystem, result);
+        itemService.checkValidTypeAndSpec(sdp, result);
 
 		// update value in node cache
 		arrangementCacheService.changeDescItem(result.getNodeId(), result, false);
@@ -1067,281 +1070,83 @@ public class DescriptionItemService {
 
 	}
 
-    public Map<Integer, Map<String, TitleValues>> createNodeValuesMap(final Set<Integer> subtreeNodeIds,
-                                                                      @Nullable final TreeNode subtreeRoot,
-                                                                      final Set<RulItemType> descItemTypes,
-                                                                      final ArrFundVersion version) {
-        Map<Integer, Map<String, TitleValues>> valueMap = new HashMap<>();
-
-        if (descItemTypes.isEmpty()) {
-            return valueMap;
+    public Map<Integer, Map<Integer, TitleValues>> createNodeValuesByItemTypeIdMap(final Collection<Integer> nodeIds,
+                                                                                   final Collection<RulItemType> descItemTypes,
+                                                                                   final Integer changeId,
+                                                                                   @Nullable final TreeNode subtreeRoot,
+                                                                                   final boolean dataExport) {
+        if (nodeIds.isEmpty() || descItemTypes.isEmpty()) {
+            return Collections.emptyMap();
         }
 
-        //chceme nalézt atributy i pro rodiče podstromu
-        Set<Integer> nodeIds = new HashSet<>(subtreeNodeIds);
+        Set<Integer> nodeIdSet = new HashSet<>(nodeIds);
+
+        // chceme nalézt atributy i pro rodiče podstromu
         TreeNode rootParent = subtreeRoot;
         while (rootParent != null) {
-            nodeIds.add(rootParent.getId());
+            nodeIdSet.add(rootParent.getId());
             rootParent = rootParent.getParent();
         }
 
-        List<ArrDescItem> descItemList = descItemRepository.findDescItemsByNodeIds(nodeIds, descItemTypes, version);
+        List<ArrDescItem> descItems = descItemRepository.findDescItemsByNodeIds(nodeIdSet, descItemTypes, changeId);
 
-        for (ArrDescItem descItem : descItemList) {
-
-            TitleValue value = null;
-            String code = descItem.getItemType().getCode();
-            String specCode = descItem.getItemSpec() == null ? null : descItem.getItemSpec()
-                    .getCode();
+        Map<Integer, Map<Integer, TitleValues>> nodeIdMap = new HashMap<>();
+        for (ArrDescItem descItem : descItems) {
+            TitleValue titleValue = serviceInternal.createTitleValue(descItem, dataExport);
             Integer nodeId = descItem.getNodeId();
-            Integer position = descItem.getPosition();
-
-            ArrData data = descItem.getData();
-
-            if (data == null) { // undefined item
-                value = new TitleValue(ArrangementService.UNDEFINED);
-            } else if (data.getDataType().getCode().equals("ENUM")) {
-                value = new TitleValue(descItem.getItemSpec().getName());
-            } else if (data.getDataType().getCode().equals("PARTY_REF")) {
-                ArrDataPartyRef partyData = (ArrDataPartyRef) data;
-                value = new TitleValue(partyData.getParty().getRecord().getRecord());
-            } else if (data.getDataType().getCode().equals("RECORD_REF")) {
-                ArrDataRecordRef recordData = (ArrDataRecordRef) data;
-                value = new TitleValue(recordData.getRecord().getRecord());
-            } else if (data.getDataType().getCode().equals("STRUCTURED")) {
-                ArrStructuredObject structureData = ((ArrDataStructureRef) data).getStructuredObject();
-                value = new TitleValue(structureData.getValue());
-            } else if (data.getDataType().getCode().equals("UNITDATE")) {
-                ArrDataUnitdate unitDate = (ArrDataUnitdate) data;
-
-                ParUnitdate parUnitdate = new ParUnitdate();
-                parUnitdate.setCalendarType(unitDate.getCalendarType());
-                parUnitdate.setFormat(unitDate.getFormat());
-                parUnitdate.setValueFrom(unitDate.getValueFrom());
-                parUnitdate.setValueFromEstimated(unitDate.getValueFromEstimated());
-                parUnitdate.setValueTo(unitDate.getValueTo());
-                parUnitdate.setValueToEstimated(unitDate.getValueToEstimated());
-
-                value = new UnitdateTitleValue(UnitDateConvertor.convertToString(parUnitdate),
-                        unitDate.getCalendarType().getCalendarTypeId());
-            } else if (data.getDataType().getCode().equals("STRING")) {
-                ArrDataString stringtData = (ArrDataString) data;
-                value = new TitleValue(stringtData.getValue());
-            } else if (data.getDataType().getCode().equals("TEXT") || data.getDataType().getCode().equals("FORMATTED_TEXT")) {
-                ArrDataText textData = (ArrDataText) data;
-                value = new TitleValue(textData.getValue());
-            } else if (data.getDataType().getCode().equals("UNITID")) {
-                ArrDataUnitid unitId = (ArrDataUnitid) data;
-                value = new TitleValue(unitId.getValue());
-            } else if (data.getDataType().getCode().equals("INT")) {
-                ArrDataInteger intData = (ArrDataInteger) data;
-                value = new TitleValue(intData.getValue().toString());
-            } else if (data.getDataType().getCode().equals("DECIMAL")) {
-                ArrDataDecimal decimalData = (ArrDataDecimal) data;
-                value = new TitleValue(decimalData.getValue().toPlainString());
-            } else if (data.getDataType().getCode().equals("COORDINATES")) {
-                ArrDataCoordinates coordinates = (ArrDataCoordinates) data;
-                value = new CoordinatesTitleValue(coordinates.getValue());
-            } else if (data.getDataType().getCode().equals("JSON_TABLE")) {
-                ArrDataJsonTable table = (ArrDataJsonTable) data;
-                value = new JsonTableTitleValue(table.getFulltextValue(), table.getValue().getRows().size());
-            }
-
-            if (value != null) {
-                String iconValue = getIconValue(descItem);
-                addValuesToMap(valueMap, value, code, specCode, nodeId, iconValue, position);
-            }
+            Integer itemTypeId = descItem.getItemTypeId();
+            addTitleValueToMap(titleValue, nodeId, itemTypeId, nodeIdMap);
         }
-
-        return valueMap;
+        return nodeIdMap;
     }
 
-    /**
-     * Vytvoření mapy popisků JP.
-     *
-     * @param subtreeNodeIds seznam identifikátorů JP
-     * @param descItemTypes  seznam typů atributů
-     * @param changeId       identifikátor změny, vůči které sestavujeme popisky
-     * @return mapa popisků
-     */
-    public Map<Integer, Map<String, TitleValues>> createNodeValuesMap(final Set<Integer> subtreeNodeIds,
-                                                                      final Set<RulItemType> descItemTypes,
-                                                                      final Integer changeId) {
-        Map<Integer, Map<String, TitleValues>> valueMap = new HashMap<>();
-
-        if (descItemTypes.isEmpty()) {
-            return valueMap;
+    // TODO: this method should be replaced by createNodeValuesByItemTypeIdMap
+    public Map<Integer, Map<String, TitleValues>> createNodeValuesByItemTypeCodeMap(final Collection<Integer> nodeIds,
+                                                                                    final Collection<RulItemType> descItemTypes,
+                                                                                    final Integer changeId,
+                                                                                    @Nullable final TreeNode subtreeRoot) {
+        if (nodeIds.isEmpty() || descItemTypes.isEmpty()) {
+            return Collections.emptyMap();
         }
 
-        //chceme nalézt atributy i pro rodiče podstromu
-        Set<Integer> nodeIds = new HashSet<>(subtreeNodeIds);
+        Set<Integer> nodeIdSet = new HashSet<>(nodeIds);
 
-        List<ArrDescItem> descItemList = descItemRepository.findDescItemsByNodeIds(nodeIds, descItemTypes, changeId);
+        // chceme nalézt atributy i pro rodiče podstromu
+        TreeNode rootParent = subtreeRoot;
+        while (rootParent != null) {
+            nodeIdSet.add(rootParent.getId());
+            rootParent = rootParent.getParent();
+        }
 
-        for (ArrDescItem descItem : descItemList) {
+        List<ArrDescItem> descItems = descItemRepository.findDescItemsByNodeIds(nodeIdSet, descItemTypes, changeId);
 
-            TitleValue value = null;
-            String code = descItem.getItemType().getCode();
-            String specCode = descItem.getItemSpec() == null ? null : descItem.getItemSpec().getCode();
+        Map<Integer, Map<String, TitleValues>> nodeIdMap = new HashMap<>();
+        StaticDataProvider staticData = staticDataService.getData();
+        for (ArrDescItem descItem : descItems) {
+            TitleValue titleValue = serviceInternal.createTitleValue(descItem, false);
             Integer nodeId = descItem.getNodeId();
-            Integer position = descItem.getPosition();
-
-            ArrData data = descItem.getData();
-
-            if (data == null) {
-                continue;
-            }
-
-            if (data.getDataType().getCode().equals("ENUM")) {
-                value = new TitleValue(descItem.getItemSpec().getName());
-            } else if (data.getDataType().getCode().equals("PARTY_REF")) {
-                ArrDataPartyRef partyData = (ArrDataPartyRef) data;
-                value = new TitleValue(partyData.getParty().getRecord().getRecord());
-            } else if (data.getDataType().getCode().equals("RECORD_REF")) {
-                ArrDataRecordRef recordData = (ArrDataRecordRef) data;
-                value = new TitleValue(recordData.getRecord().getRecord());
-            } else if (data.getDataType().getCode().equals("STRUCTURED")) {
-                ArrStructuredObject structureData = ((ArrDataStructureRef) data).getStructuredObject();
-                value = new TitleValue(structureData.getValue());
-            } else if (data.getDataType().getCode().equals("UNITDATE")) {
-                ArrDataUnitdate unitDate = (ArrDataUnitdate) data;
-
-                ParUnitdate parUnitdate = new ParUnitdate();
-                parUnitdate.setCalendarType(unitDate.getCalendarType());
-                parUnitdate.setFormat(unitDate.getFormat());
-                parUnitdate.setValueFrom(unitDate.getValueFrom());
-                parUnitdate.setValueFromEstimated(unitDate.getValueFromEstimated());
-                parUnitdate.setValueTo(unitDate.getValueTo());
-                parUnitdate.setValueToEstimated(unitDate.getValueToEstimated());
-
-                value = new UnitdateTitleValue(UnitDateConvertor.convertToString(parUnitdate),
-                        unitDate.getCalendarType().getCalendarTypeId());
-            } else if (data.getDataType().getCode().equals("STRING")) {
-                ArrDataString stringtData = (ArrDataString) data;
-                value = new TitleValue(stringtData.getValue());
-            } else if (data.getDataType().getCode().equals("TEXT") || data.getDataType().getCode().equals("FORMATTED_TEXT")) {
-                ArrDataText textData = (ArrDataText) data;
-                value = new TitleValue(textData.getValue());
-            } else if (data.getDataType().getCode().equals("UNITID")) {
-                ArrDataUnitid unitId = (ArrDataUnitid) data;
-                value = new TitleValue(unitId.getValue());
-            } else if (data.getDataType().getCode().equals("INT")) {
-                ArrDataInteger intData = (ArrDataInteger) data;
-                value = new TitleValue(intData.getValue().toString());
-            } else if (data.getDataType().getCode().equals("DECIMAL")) {
-                ArrDataDecimal decimalData = (ArrDataDecimal) data;
-                value = new TitleValue(decimalData.getValue().toPlainString());
-            } else if (data.getDataType().getCode().equals("COORDINATES")) {
-                ArrDataCoordinates coordinates = (ArrDataCoordinates) data;
-                value = new CoordinatesTitleValue(coordinates.getValue());
-            } else if (data.getDataType().getCode().equals("JSON_TABLE")) {
-                ArrDataJsonTable table = (ArrDataJsonTable) data;
-                value = new JsonTableTitleValue(table.getFulltextValue(), table.getValue().getRows().size());
-            }
-
-            if (value != null) {
-                String iconValue = getIconValue(descItem);
-                addValuesToMap(valueMap, value, code, specCode, nodeId, iconValue, position);
-            }
+            String itemTypeCode = staticData.getItemTypeById(descItem.getItemTypeId()).getCode();
+            addTitleValueToMap(titleValue, nodeId, itemTypeCode, nodeIdMap);
         }
-
-        /*List<ArrData> enumData = dataRepository.findByDataIdsAndVersionFetchSpecification(enumDataIds, descItemTypes, changeId);
-        for (ArrData data : enumData) {
-            TitleValue value = new TitleValue(data.getItem().getItemSpec().getName());
-            String iconValue = getIconValue(data);
-            String code = data.getItem().getItemType().getCode();
-            String specCode = data.getItem().getItemSpec() == null ? null : data.getItem().getItemSpec()
-                    .getCode();
-            Integer nodeId = data.getItem().getNodeId();
-            Integer position = data.getItem().getPosition();
-
-            addValuesToMap(valueMap, value, code, specCode, nodeId, iconValue, position);
-        }
-
-        List<ArrDataPartyRef> partyData = dataPartyRefRepository.findByDataIdsAndVersionFetchPartyRecord(partyRefDataIds, descItemTypes, changeId);
-        for (ArrDataPartyRef data : partyData) {
-            TitleValue value = new TitleValue(data.getParty().getRecord().getRecord());
-            String iconValue = getIconValue(data);
-            String code = data.getItem().getItemType().getCode();
-            String specCode = data.getItem().getItemSpec() == null ? null : data.getItem().getItemSpec()
-                    .getCode();
-            Integer nodeId = data.getItem().getNodeId();
-            Integer position = data.getItem().getPosition();
-
-            addValuesToMap(valueMap, value, code, specCode, nodeId, iconValue, position);
-        }
-
-        List<ArrDataRecordRef> recordData = dataRecordRefRepository.findByDataIdsAndVersionFetchRecord(recordRefDataIds, descItemTypes, changeId);
-        for (ArrDataRecordRef data : recordData) {
-            TitleValue value = new TitleValue(data.getRecord().getRecord());
-            String iconValue = getIconValue(data);
-            String code = data.getItem().getItemType().getCode();
-            String specCode = data.getItem().getItemSpec() == null ? null : data.getItem().getItemSpec()
-                    .getCode();
-            Integer nodeId = data.getItem().getNodeId();
-            Integer position = data.getItem().getPosition();
-
-            addValuesToMap(valueMap, value, code, specCode, nodeId, iconValue, position);
-        }
-
-        List<ArrDataPacketRef> packetData = dataPacketRefRepository.findByDataIdsAndVersionFetchPacket(packetRefDataIds, descItemTypes, changeId);
-        for (ArrDataPacketRef data : packetData) {
-            ArrPacket packet = data.getPacket();
-            RulPacketType packetType = packet.getPacketType();
-            TitleValue value;
-            if (packetType == null) {
-                value = new TitleValue(packet.getStorageNumber());
-            } else {
-                value = new TitleValue(packetType.getName() + ": " + packet.getStorageNumber());
-            }
-            String iconValue = getIconValue(data);
-            String code = data.getItem().getItemType().getCode();
-            String specCode = data.getItem().getItemSpec() == null ? null : data.getItem().getItemSpec()
-                    .getCode();
-            Integer nodeId = data.getItem().getNodeId();
-            Integer position = data.getItem().getPosition();
-
-            addValuesToMap(valueMap, value, code, specCode, nodeId, iconValue, position);
-        }*/
-
-        return valueMap;
+        return nodeIdMap;
     }
 
-    private void addValuesToMap(final Map<Integer, Map<String, TitleValues>> valueMap, final TitleValue titleValue, final String code,
-                                final String specCode, final Integer nodeId, final String iconValue, final Integer position) {
-
-        if (titleValue == null && iconValue == null) {
-            return;
+    private <T> void addTitleValueToMap(final TitleValue value,
+                                        final Integer nodeId,
+                                        final T itemTypeKey,
+                                        final Map<Integer, Map<T, TitleValues>> nodeIdMap) {
+        Map<T, TitleValues> itemTypeMap = nodeIdMap.get(nodeId);
+        if (itemTypeMap == null) {
+            itemTypeMap = new HashMap<>();
+            nodeIdMap.put(nodeId, itemTypeMap);
         }
-
-        Map<String, TitleValues> descItemCodeToValueMap = valueMap.get(nodeId);
-        if (descItemCodeToValueMap == null) {
-            descItemCodeToValueMap = new HashMap<>();
-            valueMap.put(nodeId, descItemCodeToValueMap);
-        }
-
-        TitleValues titleValues = descItemCodeToValueMap.get(code);
+        TitleValues titleValues = itemTypeMap.get(itemTypeKey);
         if (titleValues == null) {
             titleValues = new TitleValues();
-            descItemCodeToValueMap.put(code, titleValues);
+            itemTypeMap.put(itemTypeKey, titleValues);
         }
-
-
-        titleValue.setIconValue(iconValue);
-        titleValue.setSpecCode(specCode);
-        titleValue.setPosition(position);
-
-        titleValues.addValue(titleValue);
+        titleValues.addValue(value);
     }
-
-
-    private String getIconValue(final ArrDescItem data) {
-        if (data.getItemSpec() != null) {
-            return data.getItemSpec().getCode();
-        }
-        return null;
-    }
-
 
     /**
      * Nahrazení textu v hodnotách textových atributů.
@@ -1405,6 +1210,8 @@ public class DescriptionItemService {
             case "TEXT":
             case "FORMATTED_TEXT":
                 return ArrDataText.class;
+            case "DATE":
+                return ArrDataDate.class;
             case "UNITDATE":
                 return ArrDataUnitdate.class;
             case "UNITID":
@@ -1533,7 +1340,7 @@ public class DescriptionItemService {
                     break;
                 case "RECORD_REF":
                     ArrDataRecordRef itemRecordRef = new ArrDataRecordRef();
-                    ApRecord record = apRecordRepository.getOneCheckExist(Integer.valueOf(text));
+                    ApAccessPoint record = apAccessPointRepository.getOneCheckExist(Integer.valueOf(text));
                     itemRecordRef.setRecord(record);
                     data = itemRecordRef;
                     break;
@@ -1834,8 +1641,8 @@ public class DescriptionItemService {
                     .set("id", nodeId);
         }
 
-        RuleSystem ruleSystem = staticDataService.getData().getRuleSystems().getByRuleSetId(fundVersion.getRuleSetId());
-        RuleSystemItemType descItemType = ruleSystem.getItemTypeById(descItemTypeId);
+        StaticDataProvider sdp = staticDataService.getData();
+        ItemType descItemType = sdp.getItemTypeById(descItemTypeId);
         Validate.notNull(descItemType, "Typ hodnoty atributu neexistuje");
 
         RulItemSpec descItemSpec = null;

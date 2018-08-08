@@ -3,14 +3,13 @@ package cz.tacr.elza.repository;
 import java.util.Collection;
 import java.util.List;
 
-import cz.tacr.elza.domain.ApRecord;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.stereotype.Repository;
-
+import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeRegister;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
 
 
 /**
@@ -46,7 +45,7 @@ public interface NodeRegisterRepository extends JpaRepository<ArrNodeRegister, I
      * @return          množina vazeb, nebo prázdná
      */
     @Query("SELECT nr FROM arr_node_register nr WHERE nr.record = ?1")
-    List<ArrNodeRegister> findByRecordId(ApRecord record);
+    List<ArrNodeRegister> findByRecordId(ApAccessPoint record);
 
     /**
      * Počet vazeb uzlu na heslo.
@@ -54,12 +53,12 @@ public interface NodeRegisterRepository extends JpaRepository<ArrNodeRegister, I
      * @return          počet vazeb
      */
     @Query("SELECT COUNT(nr) FROM arr_node_register nr WHERE nr.record = ?1")
-    long countByRecordId(ApRecord record);
+    long countByRecordId(ApAccessPoint record);
 
     //List<ArrNodeRegister> findByNode(ArrNode node);
 
     @Query("SELECT record FROM arr_node_register nr WHERE nr.node = ?1")
-    List<ApRecord> findRecordsByNode(ArrNode node);
+    List<ApAccessPoint> findRecordsByNode(ArrNode node);
 
     List<ArrNodeRegister> findByNodeIdInAndDeleteChangeIsNull(Collection<Integer> nodeIds);
 
@@ -69,7 +68,7 @@ public interface NodeRegisterRepository extends JpaRepository<ArrNodeRegister, I
      * @return seznam Node registrů v otevřené verzi
      */
     @Query("SELECT nr FROM arr_node_register nr JOIN FETCH nr.record WHERE nr.deleteChange IS NULL AND nr.record = ?1")
-    List<ArrNodeRegister> findByRecordAndDeleteChangeIsNull(ApRecord record);
+    List<ArrNodeRegister> findByRecordAndDeleteChangeIsNull(ApAccessPoint record);
 
     /**
      * Hledá počet v otevřené verzi pomocí rejstříku
@@ -77,7 +76,7 @@ public interface NodeRegisterRepository extends JpaRepository<ArrNodeRegister, I
      * @return počet Node registrů v otevřené verzi
      */
     @Query("SELECT COUNT(nr) FROM arr_node_register nr WHERE nr.deleteChange IS NULL AND nr.record = ?1")
-    long countByRecordAndDeleteChangeIsNull(ApRecord record);
+    long countByRecordAndDeleteChangeIsNull(ApAccessPoint record);
 
     void deleteByNodeFund(ArrFund fund);
 }

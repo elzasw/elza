@@ -633,6 +633,9 @@ class DescItemType extends AbstractReactComponent {
             "COORDINATES":{
                 onUpload: this.handleCoordinatesUpload,
                 onDownload: (value)=>{this.props.onCoordinatesDownload(descItem.descItemObjectId, value);}
+            },
+            "INT":{
+                refType
             }
         };
 

@@ -35,18 +35,18 @@ public interface UserRepository extends ElzaJpaRepository<UsrUser, Integer>, Use
 
 	/**
 	 * Return user with fetched party and record
-	 * 
+	 *
 	 * @param userId
 	 *            User to be fetched from DB
 	 * @return
 	 */
-	@Query("select u from usr_user u join fetch u.party p join fetch p.record r where u.userId = :userId")
+	@Query("select u from usr_user u join fetch u.party p join fetch p.accessPoint r where u.userId = :userId")
 	UsrUser findOneWithDetail(@Param("userId") Integer userId);
 
 	/**
 	 * Return list of usr_permission which grant user rights to manage other
 	 * users and groups
-	 * 
+	 *
 	 * @return
 	 */
 	@Query("select distinct p.permissionId from usr_permission p " +
@@ -62,7 +62,7 @@ public interface UserRepository extends ElzaJpaRepository<UsrUser, Integer>, Use
 
 	/**
 	 * Return list of usr_permission which grant user rights to manage (anyhow) the group
-	 * 
+	 *
 	 * @return
 	 */
 	@Query("select distinct p.permissionId from usr_permission p " +

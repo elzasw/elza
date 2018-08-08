@@ -1,64 +1,54 @@
 @import "/variables.less";
 
 .registry-list-item {
-    padding: 5px;
-    border-bottom: 1px solid #EEEEEE;
+	padding: 5px;
+	border-bottom: 1px solid #EEEEEE;
+	display: flex;
+	flex-shrink: 0;
+	flex-grow: 1;
+	flex-direction: column;
 
     > div {
-        display: inline-block;
-        white-space: nowrap;
+        display: flex;
+		white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
         vertical-align: middle;
+		
+		.icon {
+			flex-shrink: 0;
+			padding: 3px 5px 3px 0;
+		}
+		.name, .ids, .types {
+			white-space: nowrap;
+			text-overflow: ellipsis;
+			overflow: hidden;
+		}
+		.name {
+			font-size: 1em;
+			flex: 1;
+		}
+		.types {
+			font-size: 0.8em;
+			color: @color-link;
+			flex-grow: 1;
+			flex-shrink: 1;
+			max-width: 98%;
+		}
+		.ids {
+			font-size: 0.8em;
+			text-align: right;
+			flex-grow: 0;
+			flex-shrink: 3;
+			padding-left: 10px;
+			min-width: 20px;
+		}
     }
 
     .registry-list-icon-record, .registry-list-icon-list {
         padding-left: 5px;
         width: calc(~'100% - 15px');
     }
-
-    .path {
-        font-size: 0.8em;
-        color: @color-link;
-        width: 100%;
-    }
-}
-.registry-list-item {
-  padding: 5px;
-  border-bottom: 1px solid #EEEEEE;
-  flex-shrink: 0;
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-  > div {
-    display: flex;
-    .icon {
-      flex-shrink: 0;
-      padding: 3px 5px 3px 0;
-    }
-    .name, .date, .description {
-      font-size: 0.8em;
-      white-space: nowrap;
-    }
-    .name {
-      flex: 1;
-      text-overflow: ellipsis;
-      overflow: hidden;
-      font-size: 1em;
-    }
-    .date {
-      flex-grow: 1;
-      flex-shrink: 1;
-      text-overflow: ellipsis;
-      overflow: hidden;
-      min-width: 0;
-    }
-    .description {
-      float: right;
-      flex: 0 1 auto;
-      text-align: right;
-    }
-  }
 }
 
 .listbox-item {

@@ -14,6 +14,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.repository.ApAccessPointRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.castor.core.util.Assert;
 import org.slf4j.Logger;
@@ -65,7 +66,6 @@ import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.PartyRepository;
-import cz.tacr.elza.repository.ApRecordRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.DmsService;
@@ -130,7 +130,7 @@ public class ImportProcess {
     private NodeCacheService nodeCacheService;
 
     @Autowired
-    private ApRecordRepository apRecordRepository;
+    private ApAccessPointRepository apAccessPointRepository;
 
     @Autowired
     private ItemTypeRepository itemTypeRepository;
@@ -401,7 +401,7 @@ public class ImportProcess {
             ((ArrDataPartyRef) data).setParty(partyRepository.getOne(((ItemPartyRef) item).getPartyId()));
         } else if (item instanceof ItemRecordRef) {
             data = new ArrDataRecordRef();
-            ((ArrDataRecordRef) data).setRecord(apRecordRepository.getOne(((ItemRecordRef) item).getRecordId()));
+            ((ArrDataRecordRef) data).setRecord(apAccessPointRepository.getOne(((ItemRecordRef) item).getRecordId()));
         } else {
             //descItem.setUndefined(true);
             data = null;
@@ -422,7 +422,7 @@ public class ImportProcess {
                 ArrNodeRegister nodeRegister = new ArrNodeRegister();
                 nodeRegister.setCreateChange(change);
                 nodeRegister.setNode(node);
-                nodeRegister.setRecord(apRecordRepository.getOne(register.getRecordId()));
+                nodeRegister.setRecord(apAccessPointRepository.getOne(register.getRecordId()));
                 nodeRegisters.add(nodeRegister);
             }
         }
