@@ -175,7 +175,7 @@ public class StructureControllerTest extends AbstractControllerTest {
         assertNotNull(structureTypes);
         assertEquals(1, structureTypes.size()); // SRD_PACKET
 
-        RulStructureTypeVO structureType = structureTypes.get(1);
+        RulStructureTypeVO structureType = structureTypes.get(0);
         assertEquals(STRUCTURE_TYPE_CODE, structureType.code);
         assertNotNull(structureType.id);
         assertNotNull(structureType.name);
