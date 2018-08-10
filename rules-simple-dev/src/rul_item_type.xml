@@ -208,7 +208,7 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
-    <item-type code="SRD_NAD" data-type="STRING">
+    <item-type code="SRD_NAD" data-type="INT">
         <name>Číslo NAD</name>
         <shortcut>Číslo NAD</shortcut>
         <description>Číslo v evidenci NAD</description>

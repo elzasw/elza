@@ -262,7 +262,7 @@ public class ApControllerTest extends AbstractControllerTest {
         Assert.assertEquals(ApStateVO.OK, fragmentConfirmed.getState());
 
         items = new ArrayList<>();
-        RulDescItemTypeExtVO nadType = findDescItemTypeByCode("ZP2015_NAD");
+        RulDescItemTypeExtVO nadType = findDescItemTypeByCode("SRD_NAD");
         items.add(buildApItem(UpdateOp.CREATE, nadType.getCode(), null, 1, null, null));
         items.add(buildApItem(UpdateOp.CREATE, nadType.getCode(), null, 2, null, null));
         items.add(buildApItem(UpdateOp.CREATE, nadType.getCode(), null, 3, 1, null));
