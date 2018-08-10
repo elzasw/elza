@@ -694,7 +694,7 @@ public class ApController {
         Assert.notNull(accessPointId, "Identifikátor přístupového bodu musí být vyplněn");
         Assert.notNull(objectId, "Identifikátor jména přístupového bodu musí být vyplněn");
 
-        ApAccessPoint accessPoint = accessPointService.getAccessPointInternalWithLock(accessPointId);
+        ApAccessPoint accessPoint = accessPointService.getAccessPoint(accessPointId);
         ApName name = accessPointService.getName(accessPoint, objectId);
         return apFactory.createVO(name, true);
     }

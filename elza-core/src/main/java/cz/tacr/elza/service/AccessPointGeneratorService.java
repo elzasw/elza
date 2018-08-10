@@ -168,7 +168,6 @@ public class AccessPointGeneratorService {
         logger.info("Asynchronní zpracování AP={} ApChache={}", accessPointId, change.getChangeId());
         generateAndSetResult(accessPoint, change);
         logger.info("Asynchronní zpracování AP={} ApChache={} - END - State={}", accessPointId, change.getChangeId(), accessPoint.getState());
-        em.clear();
     }
 
     /**
