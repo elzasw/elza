@@ -36,7 +36,7 @@ end
 rule "Možné"
 no-loop
 when
-    $itemType : RulItemTypeExt(code in ("AP_DESCRIPTION", "ZP2015_WEIGHT", "ZP2015_SIZE_UNITS", "ZP2015_SIZE_DEPTH", "ZP2015_INV_CISLO"))
+    $itemType : RulItemTypeExt(code in ("AP_DESCRIPTION"))
 then
     $itemType.setType(RulItemType.Type.POSSIBLE);
     $itemType.setRepeatable(false);

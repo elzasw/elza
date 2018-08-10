@@ -173,7 +173,7 @@ public class StructureControllerTest extends AbstractControllerTest {
     private void structureTypesAndExtensions(final ArrFundVersionVO fundVersion) {
         List<RulStructureTypeVO> structureTypes = findStructureTypes();
         assertNotNull(structureTypes);
-        assertEquals(2, structureTypes.size()); // ZP2015_PACKET + SRD_PACKET
+        assertEquals(1, structureTypes.size()); // SRD_PACKET
 
         RulStructureTypeVO structureType = structureTypes.get(1);
         assertEquals(STRUCTURE_TYPE_CODE, structureType.code);
