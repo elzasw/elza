@@ -1317,8 +1317,8 @@ export class WebApiCls {
         return AjaxUtils.ajaxPut(WebApiCls.structureUrl + '/extension/' + fundVersionId + '/' + structureTypeCode, null, structureExtensionCodes);
     }
 
-    findRulStructureTypes() {
-        return AjaxUtils.ajaxGet(WebApiCls.structureUrl + '/type');
+    findRulStructureTypes(fundVersionId) {
+        return AjaxUtils.ajaxGet(WebApiCls.structureUrl + '/type', {fundVersionId});
     }
 
     getStructureData(fundVersionId, structureDataId) {

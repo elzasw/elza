@@ -1,60 +1,32 @@
 package cz.tacr.elza.service;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-
-import org.apache.commons.collections4.CollectionUtils;
-import org.castor.core.util.Assert;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.Lists;
-
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDataInteger;
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrFundStructureExtension;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrItem;
-import cz.tacr.elza.domain.ArrStructuredItem;
-import cz.tacr.elza.domain.ArrStructuredObject;
-import cz.tacr.elza.domain.RulDataType;
-import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.RulStructuredType;
-import cz.tacr.elza.domain.RulStructuredTypeExtension;
-import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.*;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.Level;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.repository.ChangeRepository;
-import cz.tacr.elza.repository.DataRepository;
-import cz.tacr.elza.repository.FilteredResult;
-import cz.tacr.elza.repository.FundStructureExtensionRepository;
-import cz.tacr.elza.repository.ItemTypeRepository;
-import cz.tacr.elza.repository.StructuredItemRepository;
-import cz.tacr.elza.repository.StructuredObjectRepository;
-import cz.tacr.elza.repository.StructuredTypeExtensionRepository;
-import cz.tacr.elza.repository.StructuredTypeRepository;
+import cz.tacr.elza.packageimport.PackageService;
+import cz.tacr.elza.packageimport.xml.SettingStructureTypes;
+import cz.tacr.elza.repository.*;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventStructureDataChange;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.Validate;
+import org.castor.core.util.Assert;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Servisní třída pro práci se strukturovanými datovými typy.
@@ -76,6 +48,7 @@ public class StructureService {
     private final ItemTypeRepository itemTypeRepository;
     private final ChangeRepository changeRepository;
     private final EventNotificationService notificationService;
+    private final SettingsService settingsService;
 
     @Autowired
     public StructureService(final StructuredItemRepository structureItemRepository,
@@ -89,7 +62,8 @@ public class StructureService {
                             final StructObjService structureDataService,
                             final ItemTypeRepository itemTypeRepository,
                             final ChangeRepository changeRepository,
-                            final EventNotificationService notificationService) {
+                            final EventNotificationService notificationService,
+                            final SettingsService settingsService) {
         this.structureItemRepository = structureItemRepository;
         this.structureExtensionRepository = structureExtensionRepository;
         this.structObjRepository = structureDataRepository;
@@ -102,6 +76,7 @@ public class StructureService {
         this.itemTypeRepository = itemTypeRepository;
         this.changeRepository = changeRepository;
         this.notificationService = notificationService;
+        this.settingsService = settingsService;
     }
 
     /**
@@ -764,6 +739,41 @@ public class StructureService {
      */
     public List<RulStructuredType> findStructureTypes() {
         return structureTypeRepository.findAll();
+    }
+
+    /**
+     * Vyhledání povolených strukturovaných typů ve verzi AS.
+     *
+     * @param fundVersion verze AS
+     * @return povolené entity
+     */
+    public List<RulStructuredType> findStructureTypes(final ArrFundVersion fundVersion) {
+        Validate.notNull(fundVersion);
+
+        List<UISettings> settings = settingsService.getGlobalSettings(UISettings.SettingsType.STRUCTURE_TYPES, UISettings.EntityType.RULE);
+        UISettings settingsUse = null;
+        for (UISettings setting : settings) {
+            if (fundVersion.getRuleSetId().equals(setting.getEntityId())) {
+                settingsUse = setting;
+                break;
+            }
+        }
+
+        if (settingsUse == null) {
+            return Collections.emptyList();
+        } else {
+            SettingStructureTypes structureTypes = (SettingStructureTypes) PackageService.convertSetting(settingsUse, null);
+            Set<String> typeCodes = structureTypes.getItems().stream()
+                    .map(SettingStructureTypes.Type::getCode)
+                    .collect(Collectors.toSet());
+            List<RulStructuredType> result = new ArrayList<>();
+            for (RulStructuredType structureType : findStructureTypes()) {
+                if (typeCodes.contains(structureType.getCode())) {
+                    result.add(structureType);
+                }
+            }
+            return result;
+        }
     }
 
     /**

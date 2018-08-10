@@ -3048,6 +3048,8 @@ public class PackageService {
             entity = settingFavoriteItemSpecs;
         } else if (Objects.equals(uiSettings.getSettingsType(), UISettings.SettingsType.RECORD)) {
             entity = new SettingRecord();
+        } else if (Objects.equals(uiSettings.getSettingsType(), UISettings.SettingsType.STRUCTURE_TYPES)) {
+            entity = new SettingStructureTypes();
         } else if (Objects.equals(uiSettings.getSettingsType(), UISettings.SettingsType.GRID_VIEW)) {
             entity = new SettingGridView();
         } else {

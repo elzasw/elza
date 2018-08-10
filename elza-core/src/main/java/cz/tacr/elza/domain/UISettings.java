@@ -193,6 +193,11 @@ public class UISettings {
         TYPE_GROUPS(false, EntityType.RULE),
 
         /**
+         * Zobrazení skupin typů atributů v archivním souboru.
+         */
+        STRUCTURE_TYPES(false, EntityType.RULE),
+
+        /**
          * Výchozí nastavení pro rejstříky.
          */
         RECORD,

@@ -327,8 +327,14 @@ public class StructureController {
      */
     @Transactional
     @RequestMapping(value = "/type", method = RequestMethod.GET)
-    public List<RulStructureTypeVO> findStructureTypes() {
-        List<RulStructuredType> structureTypes = structureService.findStructureTypes();
+    public List<RulStructureTypeVO> findStructureTypes(@RequestParam(value = "fundVersionId", required = false) final Integer fundVersionId) {
+        List<RulStructuredType> structureTypes;
+        if (fundVersionId == null) {
+            structureTypes = structureService.findStructureTypes();
+        } else {
+            ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
+            structureTypes = structureService.findStructureTypes(fundVersion);
+        }
         return factoryVO.createSimpleEntity(structureTypes, RulStructureTypeVO.class);
     }
 

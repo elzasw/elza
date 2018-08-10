@@ -21,6 +21,7 @@ import java.util.List;
 public class Settings {
 
     @XmlElements({
+            @XmlElement(name = "allow-structure-types", type = SettingStructureTypes.class),
             @XmlElement(name = "fund-views", type = SettingFundViews.class),
             @XmlElement(name = "type-groups", type = SettingTypeGroups.class),
             @XmlElement(name = "setting-base", type = SettingBase.class),
