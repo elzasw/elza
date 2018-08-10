@@ -12,7 +12,6 @@ import com.jayway.restassured.specification.RequestSpecification;
 import cz.tacr.elza.AbstractTest;
 import cz.tacr.elza.controller.ArrangementController.FaFilteredFulltextParam;
 import cz.tacr.elza.controller.vo.*;
-import cz.tacr.elza.controller.vo.ap.ApFragmentTypeVO;
 import cz.tacr.elza.controller.vo.ap.ApFragmentVO;
 import cz.tacr.elza.controller.vo.ap.item.*;
 import cz.tacr.elza.controller.vo.filter.Filters;
@@ -3353,15 +3352,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
      */
     protected void deleteFragment(final Integer fragmentId) {
         delete(spec -> spec.pathParameter("fragmentId", fragmentId), DELETE_FRAGMENT);
-    }
-
-    /**
-     * Získání všech typů fragmentů, které jsou k dispozici.
-     *
-     * @return typy fragmentů
-     */
-    protected List<ApFragmentTypeVO> findFragmentTypes() {
-        return Arrays.asList(get(FRAGMENT_TYPES).getBody().as(ApFragmentTypeVO[].class));
     }
 
     protected ApAccessPointVO createStructuredAccessPoint(final ApAccessPointCreateVO accessPoint) {

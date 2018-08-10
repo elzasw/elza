@@ -370,15 +370,15 @@ public class ItemTypeUpdater {
             }
         }
 
-        ApFragmentType apFragmentType = null;
+        RulStructuredType apFragmentType = null;
         if (DataType.APFRAG_REF == DataType.fromCode(itemType.getDataType())) {
-            List<ApFragmentType> findFragmentTypes = puc.getFragmentTypes().stream()
+            List<RulStructuredType> findStructureTypes = puc.getStructuredTypes().stream()
                     .filter((r) -> r.getCode().equals(itemType.getFragmentType()))
                     .collect(Collectors.toList());
-            if (findFragmentTypes.size() > 0) {
-                apFragmentType = findFragmentTypes.get(0);
+            if (findStructureTypes.size() > 0) {
+                apFragmentType = findStructureTypes.get(0);
             } else {
-                throw new SystemException("Kód " + itemType.getFragmentType() + " neexistuje v ApFragmentType", BaseCode.ID_NOT_EXIST);
+                throw new SystemException("Kód " + itemType.getFragmentType() + " neexistuje v RulStructureType", BaseCode.ID_NOT_EXIST);
             }
         }
 

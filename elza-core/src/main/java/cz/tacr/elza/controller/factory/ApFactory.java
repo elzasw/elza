@@ -3,7 +3,6 @@ package cz.tacr.elza.controller.factory;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.controller.vo.ap.ApFormVO;
-import cz.tacr.elza.controller.vo.ap.ApFragmentTypeVO;
 import cz.tacr.elza.controller.vo.ap.ApFragmentVO;
 import cz.tacr.elza.controller.vo.ap.ApStateVO;
 import cz.tacr.elza.controller.vo.ap.item.*;
@@ -229,10 +228,6 @@ public class ApFactory {
         return ApAccessPointNameVO.newInstance(name, staticData);
     }
 
-    public ApFragmentTypeVO createVO(ApFragmentType type) {
-        return new ApFragmentTypeVO(type.getFragmentTypeId(), type.getCode(), type.getName());
-    }
-
     public ApFragmentVO createVO(final ApFragment fragment, final boolean fillForm) {
         ApFragmentVO fragmentVO = createVO(fragment);
         if (fillForm) {
@@ -283,7 +278,7 @@ public class ApFactory {
         return form;
     }
 
-    private List<ApItemVO> createItemsVO(final List<ApItem> apItems) {
+    public List<ApItemVO> createItemsVO(final List<ApItem> apItems) {
         List<ApItemVO> items = new ArrayList<>(apItems.size());
         for (ApItem fragmentItem : apItems) {
             items.add(createItem(fragmentItem));

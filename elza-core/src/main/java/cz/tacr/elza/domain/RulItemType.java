@@ -127,9 +127,9 @@ public class RulItemType {
     @Column(updatable = false, insertable = false)
     private Integer structuredTypeId;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApFragmentType.class)
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulStructuredType.class)
     @JoinColumn(name = "fragmentTypeId")
-    private ApFragmentType fragmentType;
+    private RulStructuredType fragmentType;
 
     @Column(updatable = false, insertable = false)
     private Integer fragmentTypeId;
@@ -413,13 +413,13 @@ public class RulItemType {
         this.structuredTypeId = structuredType != null ? structuredType.getStructuredTypeId() : null;
     }
 
-    public ApFragmentType getFragmentType() {
+    public RulStructuredType getFragmentType() {
         return fragmentType;
     }
 
-    public void setFragmentType(final ApFragmentType fragmentType) {
+    public void setFragmentType(final RulStructuredType fragmentType) {
         this.fragmentType = fragmentType;
-        this.fragmentTypeId = fragmentType == null ? null : fragmentType.getFragmentTypeId();
+        this.fragmentTypeId = fragmentType == null ? null : fragmentType.getStructuredTypeId();
     }
 
     public Integer getFragmentTypeId() {

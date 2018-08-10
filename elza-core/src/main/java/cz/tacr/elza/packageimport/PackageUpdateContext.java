@@ -30,8 +30,6 @@ public class PackageUpdateContext {
 
 	private List<RulStructuredType> structuredTypes;
 
-	private List<ApFragmentType> fragmentTypes;
-
 	public PackageUpdateContext(ResourcePathResolver resourcePathResolver, Map<String, ByteArrayInputStream> byteStreams) {
 		this.resourcePathResolver = resourcePathResolver;
 		this.byteStreams = byteStreams;
@@ -147,17 +145,6 @@ public class PackageUpdateContext {
 		}
 	}
 
-	public File getDir(ApFragmentRule fragmentRule) {
-		switch (fragmentRule.getRuleType()) {
-			case FRAGMENT_ITEMS:
-				return dirRules;
-			case TEXT_GENERATOR:
-				return dirGroovies;
-			default:
-				throw new NotImplementedException("Rule type: " + fragmentRule.getRuleType());
-		}
-	}
-
 	public File getDir(ApRule apRule) {
 		switch (apRule.getRuleType()) {
 			case BODY_ITEMS:
@@ -189,11 +176,4 @@ public class PackageUpdateContext {
 		this.structuredTypes = structuredTypes;
 	}
 
-	public List<ApFragmentType> getFragmentTypes() {
-		return fragmentTypes;
-	}
-
-	public void setFragmentTypes(final List<ApFragmentType> fragmentTypes) {
-		this.fragmentTypes = fragmentTypes;
-	}
 }

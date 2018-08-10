@@ -131,7 +131,7 @@ class DescItemRecordRef extends AbstractReactComponent {
 
 export default connect((state, props) => {
     let fundName = null, nodeName = null;
-    if (props.typePrefix != "output") {
+    if (props.typePrefix != "output" && props.typePrefix != "accesspoint" && props.typePrefix != "ap-name") {
         const {arrRegion:{activeIndex,funds}} = state;
         const fund = funds[activeIndex];
         const {nodes} = fund;

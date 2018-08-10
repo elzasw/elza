@@ -540,10 +540,6 @@ export class WebApiCls {
         return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/' + accessPointId + '/name/' + objectId + '/preferred');
     }
 
-    findFragmentTypes() {
-        return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/fragment/types');
-    }
-
     getFragment(fragmentId) {
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/fragment/' + fragmentId);
     }

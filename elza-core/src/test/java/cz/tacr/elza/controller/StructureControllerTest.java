@@ -173,12 +173,12 @@ public class StructureControllerTest extends AbstractControllerTest {
     private void structureTypesAndExtensions(final ArrFundVersionVO fundVersion) {
         List<RulStructureTypeVO> structureTypes = findStructureTypes();
         assertNotNull(structureTypes);
-        assertEquals(1, structureTypes.size()); // SRD_PACKET
+        assertEquals(2, structureTypes.size()); // SRD_PACKET, STAT_ZASTUPCE
 
         RulStructureTypeVO structureType = structureTypes.get(0);
-        assertEquals(STRUCTURE_TYPE_CODE, structureType.code);
-        assertNotNull(structureType.id);
-        assertNotNull(structureType.name);
+        assertEquals(STRUCTURE_TYPE_CODE, structureType.getCode());
+        assertNotNull(structureType.getId());
+        assertNotNull(structureType.getName());
 
         List<StructureExtensionFundVO> fundStructureExtension = findFundStructureExtension(fundVersion.getId(), STRUCTURE_TYPE_CODE);
         assertNotNull(fundStructureExtension);

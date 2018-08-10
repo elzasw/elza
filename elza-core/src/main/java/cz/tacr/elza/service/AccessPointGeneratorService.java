@@ -49,7 +49,6 @@ public class AccessPointGeneratorService {
     public static final String ITEMS = "ITEMS";
     public static final String AP = "AP";
 
-    private final ApFragmentRuleRepository fragmentRuleRepository;
     private final ApRuleRepository ruleRepository;
     private final ResourcePathResolver resourcePathResolver;
     private final ApFragmentItemRepository fragmentItemRepository;
@@ -64,6 +63,8 @@ public class AccessPointGeneratorService {
     private final ApplicationContext appCtx;
     private final ApChangeRepository apChangeRepository;
     private final IEventNotificationService eventNotificationService;
+    private final StructureExtensionDefinitionRepository structureExtensionDefinitionRepository;
+    private final StructureDefinitionRepository structureDefinitionRepository;
 
     private Map<File, GroovyScriptService.GroovyScriptFile> groovyScriptMap = new HashMap<>();
 
@@ -71,8 +72,7 @@ public class AccessPointGeneratorService {
     private final BlockingQueue<ApQueueItem> queue = new LinkedBlockingQueue<>();
 
     @Autowired
-    public AccessPointGeneratorService(final ApFragmentRuleRepository fragmentRuleRepository,
-                                       final ApRuleRepository ruleRepository,
+    public AccessPointGeneratorService(final ApRuleRepository ruleRepository,
                                        final ResourcePathResolver resourcePathResolver,
                                        final ApFragmentItemRepository fragmentItemRepository,
                                        final ApNameItemRepository nameItemRepository,
@@ -85,8 +85,9 @@ public class AccessPointGeneratorService {
                                        final AccessPointItemService apItemService,
                                        final ApplicationContext appCtx,
                                        final ApChangeRepository apChangeRepository,
-                                       final IEventNotificationService eventNotificationService) {
-        this.fragmentRuleRepository = fragmentRuleRepository;
+                                       final IEventNotificationService eventNotificationService,
+                                       final StructureExtensionDefinitionRepository structureExtensionDefinitionRepository,
+                                       final StructureDefinitionRepository structureDefinitionRepository) {
         this.ruleRepository = ruleRepository;
         this.resourcePathResolver = resourcePathResolver;
         this.fragmentItemRepository = fragmentItemRepository;
@@ -101,6 +102,8 @@ public class AccessPointGeneratorService {
         this.appCtx = appCtx;
         this.apChangeRepository = apChangeRepository;
         this.eventNotificationService = eventNotificationService;
+        this.structureExtensionDefinitionRepository = structureExtensionDefinitionRepository;
+        this.structureDefinitionRepository = structureDefinitionRepository;
         this.taskExecutor.addTask(new AccessPointGeneratorThread());
         this.taskExecutor.start();
     }
@@ -373,13 +376,28 @@ public class AccessPointGeneratorService {
     }
 
     private File findGroovyFile(final ApFragment fragment) {
-        ApFragmentType fragmentType = fragment.getFragmentType();
-        ApFragmentRule rule = fragmentRuleRepository.findByFragmentTypeAndRuleType(fragmentType, ApFragmentRule.RuleType.TEXT_GENERATOR);
-        if (rule == null) {
-            throw new SystemException("Nebyly nalezeny pravidla generování pro typ fragmentu", BaseCode.SYSTEM_ERROR);
+        RulStructuredType structureType = fragment.getFragmentType();
+        List<RulStructureExtensionDefinition> structureExtensionDefinitions = structureExtensionDefinitionRepository
+                .findByStructureTypeAndDefTypeOrderByPriority(structureType, RulStructureExtensionDefinition.DefType.SERIALIZED_VALUE);
+        RulComponent component;
+        RulPackage rulPackage;
+        if (structureExtensionDefinitions.size() > 0) {
+            RulStructureExtensionDefinition structureExtensionDefinition = structureExtensionDefinitions.get(structureExtensionDefinitions.size() - 1);
+            component = structureExtensionDefinition.getComponent();
+            rulPackage = structureExtensionDefinition.getRulPackage();
+        } else {
+            List<RulStructureDefinition> structureDefinitions = structureDefinitionRepository
+                    .findByStructuredTypeAndDefTypeOrderByPriority(structureType, RulStructureDefinition.DefType.SERIALIZED_VALUE);
+            if (structureDefinitions.size() > 0) {
+                RulStructureDefinition structureDefinition = structureDefinitions.get(structureDefinitions.size() - 1);
+                component = structureDefinition.getComponent();
+                rulPackage = structureDefinition.getRulPackage();
+            } else {
+                throw new SystemException("Strukturovaný typ '" + structureType.getCode() + "' nemá žádný script pro výpočet hodnoty", BaseCode.INVALID_STATE);
+            }
         }
-        RulComponent component = rule.getComponent();
-        return resourcePathResolver.getGroovyDir(fragmentType.getRulPackage())
+
+        return resourcePathResolver.getGroovyDir(rulPackage)
                 .resolve(component.getFilename())
                 .toFile();
     }

@@ -1,10 +1,9 @@
 package cz.tacr.elza.controller;
 
-import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.factory.ApFactory;
 import cz.tacr.elza.controller.vo.*;
-import cz.tacr.elza.controller.vo.ap.ApFragmentTypeVO;
 import cz.tacr.elza.controller.vo.ap.ApFragmentVO;
+import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
 import cz.tacr.elza.controller.vo.ap.item.ApUpdateItemVO;
 import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
 import cz.tacr.elza.core.data.ItemType;
@@ -17,10 +16,7 @@ import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.interpi.service.InterpiService;
 import cz.tacr.elza.interpi.service.vo.ExternalRecordVO;
 import cz.tacr.elza.repository.*;
-import cz.tacr.elza.service.AccessPointService;
-import cz.tacr.elza.service.ExternalSystemService;
-import cz.tacr.elza.service.FragmentService;
-import cz.tacr.elza.service.PartyService;
+import cz.tacr.elza.service.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -62,9 +58,6 @@ public class ApController {
     private PartyService partyService;
 
     @Autowired
-    private ClientFactoryVO factoryVo;
-
-    @Autowired
     private FundVersionRepository fundVersionRepository;
 
     @Autowired
@@ -96,6 +89,9 @@ public class ApController {
 
     @Autowired
     private FragmentService fragmentService;
+
+    @Autowired
+    private StructureService structureService;
 
     /**
      * Nalezne takové záznamy rejstříku, které mají daný typ a jejich textová pole (heslo, popis, poznámka),
@@ -331,13 +327,14 @@ public class ApController {
      */
     @Transactional
     @RequestMapping(value = "/{accessPointId}/items", method = RequestMethod.PUT)
-    public void changeAccessPointItems(@PathVariable final Integer accessPointId,
+    public List<ApItemVO> changeAccessPointItems(@PathVariable final Integer accessPointId,
                                               @RequestBody final List<ApUpdateItemVO> items) {
         Validate.notNull(accessPointId, "Identifikátor přístupového bodu musí být vyplněn");
         Validate.notEmpty(items, "Musí být alespoň jedna položka ke změně");
 
         ApAccessPoint accessPoint = accessPointService.getAccessPointInternalWithLock(accessPointId);
-        accessPointService.changeApItems(accessPoint, items);
+        List<ApItem> itemsCreated = accessPointService.changeApItems(accessPoint, items);
+        return apFactory.createItemsVO(itemsCreated);
     }
 
     /**
@@ -365,19 +362,21 @@ public class ApController {
      * @param accessPointId identifikátor přístupového bodu
      * @param objectId      identifikátor objektu jména
      * @param items         položky ke změně
+     * @return nové položky, které ze vytvořili při změně
      */
     @Transactional
     @RequestMapping(value = "/{accessPointId}/name/{objectId}/items", method = RequestMethod.PUT)
-    public void changeNameItems(@PathVariable final Integer accessPointId,
-                                @PathVariable final Integer objectId,
-                                @RequestBody final List<ApUpdateItemVO> items) {
+    public List<ApItemVO> changeNameItems(@PathVariable final Integer accessPointId,
+                                          @PathVariable final Integer objectId,
+                                          @RequestBody final List<ApUpdateItemVO> items) {
         Validate.notNull(accessPointId, "Identifikátor přístupového bodu musí být vyplněn");
         Validate.notNull(objectId, "Identifikátor objektu jména přístupového bodu musí být vyplněn");
         Validate.notEmpty(items, "Musí být alespoň jedna položka ke změně");
 
         ApAccessPoint accessPoint = accessPointService.getAccessPointInternalWithLock(accessPointId);
         ApName name = accessPointService.getName(objectId);
-        accessPointService.changeNameItems(accessPoint, name, items);
+        List<ApItem> itemsCreated = accessPointService.changeNameItems(accessPoint, name, items);
+        return apFactory.createItemsVO(itemsCreated);
     }
 
     /**
@@ -414,7 +413,7 @@ public class ApController {
     public ApFragmentVO createFragment(@PathVariable final String fragmentTypeCode) {
         Validate.notNull(fragmentTypeCode, "Kód typu fragmentu musí být vyplněn");
 
-        ApFragmentType fragmentType = fragmentService.getFragmentType(fragmentTypeCode);
+        RulStructuredType fragmentType = structureService.getStructureTypeByCode(fragmentTypeCode);
         ApFragment fragment = fragmentService.createFragment(fragmentType);
         return apFactory.createVO(fragment, true);
     }
@@ -494,17 +493,6 @@ public class ApController {
         Validate.notNull(fragmentId, "Identifikátor fragmentu musí být vyplněn");
         ApFragment fragment = fragmentService.getFragment(fragmentId);
         fragmentService.deleteFragment(fragment);
-    }
-
-    /**
-     * Získání všech typů fragmentů, které jsou k dispozici.
-     *
-     * @return typy fragmentů
-     */
-    @RequestMapping(value = "/fragment/types", method = RequestMethod.GET)
-    public List<ApFragmentTypeVO> findFragmentTypes() {
-        List<ApFragmentType> fragmentTypes = fragmentService.findFragmentTypes();
-        return ApFactory.transformList(fragmentTypes, apFactory::createVO);
     }
 
     /**

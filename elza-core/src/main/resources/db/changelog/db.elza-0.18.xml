@@ -198,54 +198,12 @@
         </createTable>
     </changeSet>
 
-    <changeSet id="20180718123300" author="slapa">
-
-        <createTable tableName="ap_fragment_type">
-            <column name="fragment_type_id" type="int">
-                <constraints primaryKey="true"/>
-            </column>
-            <column name="code" type="nvarchar(50)">
-                <constraints nullable="false" unique="true"/>
-            </column>
-            <column name="name" type="nvarchar(250)">
-                <constraints nullable="false" />
-            </column>
-            <column name="package_id" type="int">
-                <constraints nullable="false"
-                             foreignKeyName="fk_ap_fragment_type_package"
-                             referencedTableName="rul_package"
-                             referencedColumnNames="package_id"/>
-            </column>
-        </createTable>
-
-        <createTable tableName="ap_fragment_rule">
-            <column name="fragment_rule_id" type="int">
-                <constraints primaryKey="true"/>
-            </column>
-            <column name="fragment_type_id" type="int">
-                <constraints nullable="false"
-                             foreignKeyName="fk_ap_fragment_rule_fragment_type"
-                             referencedTableName="ap_fragment_type"
-                             referencedColumnNames="fragment_type_id"/>
-            </column>
-            <column name="component_id" type="int">
-                <constraints nullable="false"
-                             foreignKeyName="fk_ap_fragment_rule_component"
-                             referencedTableName="rul_component"
-                             referencedColumnNames="component_id"/>
-            </column>
-            <column name="rule_type" type="nvarchar(50)">
-                <constraints nullable="false"/>
-            </column>
-        </createTable>
-    </changeSet>
-
     <changeSet id="20180718125300" author="slapa">
         <addColumn tableName="rul_item_type">
             <column name="fragment_type_id" type="int">
                 <constraints foreignKeyName="fk_rul_item_type_fragment_type"
-                             referencedTableName="ap_fragment_type"
-                             referencedColumnNames="fragment_type_id"/>
+                             referencedTableName="rul_structured_type"
+                             referencedColumnNames="structured_type_id"/>
             </column>
         </addColumn>
     </changeSet>
@@ -255,8 +213,8 @@
             <column name="fragment_type_id" type="int">
                 <constraints nullable="false"
                              foreignKeyName="fk_ap_fragment_fragment_type"
-                             referencedTableName="ap_fragment_type"
-                             referencedColumnNames="fragment_type_id"/>
+                             referencedTableName="rul_structured_type"
+                             referencedColumnNames="structured_type_id"/>
             </column>
         </addColumn>
     </changeSet>

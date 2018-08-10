@@ -117,7 +117,7 @@ public class RulesExecutor {
         }
     }
 
-    public List<RulItemTypeExt> executeFragmentItemTypesRules(final ApFragmentType fragmentType, final List<RulItemTypeExt> rulDescItemTypeExtList, final List<ApItem> items) {
+    public List<RulItemTypeExt> executeFragmentItemTypesRules(final RulStructuredType fragmentType, final List<RulItemTypeExt> rulDescItemTypeExtList, final List<ApItem> items) {
         try {
             return fragmentItemTypesRules.execute(fragmentType, rulDescItemTypeExtList, items);
         } catch (NoSuchFileException e) {

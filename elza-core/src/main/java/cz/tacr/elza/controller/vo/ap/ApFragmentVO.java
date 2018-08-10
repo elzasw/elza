@@ -97,7 +97,7 @@ public class ApFragmentVO {
         ApFragmentVO vo = new ApFragmentVO();
         vo.setId(src.getFragmentId());
         vo.setValue(src.getValue());
-        vo.setTypeId(src.getFragmentType().getFragmentTypeId());
+        vo.setTypeId(src.getFragmentType().getStructuredTypeId());
         vo.setState(ApStateVO.valueOf(src.getState().name()));
         vo.setErrorDescription(src.getErrorDescription());
         return vo;

@@ -47,8 +47,7 @@ import {descItemTypesFetchIfNeeded} from "../../actions/refTables/descItemTypes"
 import AddDescItemTypeForm from "../arr/nodeForm/AddDescItemTypeForm";
 import {accessPointFormActions} from "../accesspoint/AccessPointFormActions";
 import TooltipTrigger from "../shared/tooltip/TooltipTrigger";
-import * as fragmentTypesActions from '../../actions/refTables/fragmentTypes';
-
+import {structureTypesFetchIfNeeded} from "../../actions/refTables/structureTypes";
 
 class RegistryDetail extends AbstractReactComponent {
     static contextTypes = { shortcuts: PropTypes.object };
@@ -89,7 +88,7 @@ class RegistryDetail extends AbstractReactComponent {
         dispatch(descItemTypesFetchIfNeeded());
         dispatch(refRulDataTypesFetchIfNeeded());
         dispatch(requestScopesIfNeeded());
-        dispatch(fragmentTypesActions.fetchIfNeeded());
+        dispatch(structureTypesFetchIfNeeded());
         if (id) {
             dispatch(registryDetailFetchIfNeeded(id));
             if (fetched) {
@@ -539,6 +538,7 @@ class RegistryDetail extends AbstractReactComponent {
                                 rulDataTypes={refTables.rulDataTypes.items}
                                 calendarTypes={refTables.calendarTypes.items}
                                 descItemTypes={refTables.descItemTypes.items}
+                                structureTypes={objectById(refTables.structureTypes.data, null, 'versionId')}
                                 subNodeForm={ap.form}
                                 closed={false}
                                 focus={null}

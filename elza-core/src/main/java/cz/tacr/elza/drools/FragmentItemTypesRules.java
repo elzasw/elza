@@ -1,14 +1,13 @@
 package cz.tacr.elza.drools;
 
 import cz.tacr.elza.core.ResourcePathResolver;
-import cz.tacr.elza.domain.ApFragmentRule;
-import cz.tacr.elza.domain.ApFragmentType;
-import cz.tacr.elza.domain.ApItem;
-import cz.tacr.elza.domain.RulItemTypeExt;
+import cz.tacr.elza.domain.*;
 import cz.tacr.elza.drools.service.ModelFactory;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.repository.ApFragmentRuleRepository;
+import cz.tacr.elza.repository.StructureDefinitionRepository;
+import cz.tacr.elza.repository.StructureExtensionDefinitionRepository;
+import cz.tacr.elza.repository.StructuredTypeRepository;
 import org.kie.api.runtime.StatelessKieSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -16,6 +15,7 @@ import org.springframework.stereotype.Component;
 import java.nio.file.Path;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 /**
@@ -30,7 +30,10 @@ public class FragmentItemTypesRules extends Rules {
     private ResourcePathResolver resourcePathResolver;
 
     @Autowired
-    private ApFragmentRuleRepository fragmentRuleRepository;
+    private StructureDefinitionRepository structureDefinitionRepository;
+
+    @Autowired
+    private StructureExtensionDefinitionRepository structureExtensionDefinitionRepository;
 
     /**
      * Spuštění zpracování pravidel.
@@ -38,21 +41,42 @@ public class FragmentItemTypesRules extends Rules {
      * @param rulDescItemTypeExtList seznam všech atributů
      * @return seznam typů atributů odpovídající pravidlům
      */
-    public synchronized List<RulItemTypeExt> execute(final ApFragmentType fragmentType,
+    public synchronized List<RulItemTypeExt> execute(final RulStructuredType fragmentType,
                                                      final List<RulItemTypeExt> rulDescItemTypeExtList,
                                                      final List<ApItem> items) throws Exception {
         LinkedList<Object> facts = new LinkedList<>();
         facts.addAll(ModelFactory.createApItems(items));
         facts.addAll(rulDescItemTypeExtList);
-        ApFragmentRule fragmentRule = fragmentRuleRepository.findByFragmentTypeAndRuleType(fragmentType, ApFragmentRule.RuleType.FRAGMENT_ITEMS);
 
-        if (fragmentRule == null) {
-            throw new ObjectNotFoundException("Nebyly nalezeny pravidla pro typ fragmentu: " + fragmentType.getCode(), BaseCode.INVALID_STATE);
+        List<RulStructureDefinition> rulStructureDefinitions = structureDefinitionRepository
+                .findByStructuredTypeAndDefTypeOrderByPriority(fragmentType, RulStructureDefinition.DefType.ATTRIBUTE_TYPES);
+
+        for (RulStructureDefinition rulStructureDefinition : rulStructureDefinitions) {
+            // TODO: Consider using structureType in getDroolsFile?
+            Path path = resourcePathResolver.getDroolsFile(rulStructureDefinition);
+
+            StatelessKieSession session = createNewStatelessKieSession(path);
+            session.execute(facts);
         }
 
-        Path path = resourcePathResolver.getDroolsFile(fragmentRule);
-        StatelessKieSession session = createNewStatelessKieSession(path);
-        session.execute(facts);
+        List<RulStructureExtensionDefinition> rulStructureExtensionDefinitions = structureExtensionDefinitionRepository
+                .findByStructureTypeAndDefTypeOrderByPriority(fragmentType, RulStructureExtensionDefinition.DefType.ATTRIBUTE_TYPES);
+
+        List<RulPackage> rulPackages = rulStructureExtensionDefinitions.stream()
+                .map(RulStructureExtensionDefinition::getRulPackage).collect(Collectors.toList());
+
+        List<RulPackage> sortedPackages = getSortedPackages(rulPackages);
+
+        sortDefinitionByPackages(rulStructureExtensionDefinitions, sortedPackages);
+
+        for (RulStructureExtensionDefinition rulStructureExtensionDefinition : rulStructureExtensionDefinitions) {
+            // TODO: Consider using structureType in getDroolsFile?
+            Path path = resourcePathResolver.getDroolsFile(rulStructureExtensionDefinition);
+
+            StatelessKieSession session = createNewStatelessKieSession(path);
+            session.execute(facts);
+        }
+
         return rulDescItemTypeExtList;
     }
 

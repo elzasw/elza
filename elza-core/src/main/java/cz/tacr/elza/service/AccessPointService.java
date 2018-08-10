@@ -1048,11 +1048,12 @@ public class AccessPointService {
      * @param accessPoint přístupový bod
      * @param name        jméno
      * @param items       položky změny
+     * @return nové položky, které ze vytvořili při změně
      */
     @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
-    public void changeNameItems(@AuthParam(type = AuthParam.Type.AP) final ApAccessPoint accessPoint,
-                                final ApName name,
-                                final List<ApUpdateItemVO> items) {
+    public List<ApItem> changeNameItems(@AuthParam(type = AuthParam.Type.AP) final ApAccessPoint accessPoint,
+                                        final ApName name,
+                                        final List<ApUpdateItemVO> items) {
         Validate.notNull(accessPoint, "Přístupový bod musí být vyplněn");
         Validate.notNull(name, "Jméno musí být vyplněno");
         Validate.notEmpty(items, "Musí být alespoň jedna položka ke změně");
@@ -1067,11 +1068,13 @@ public class AccessPointService {
         } else {
             change = apDataService.createChange(ApChange.Type.NAME_UPDATE);
         }
-        apItemService.changeItems(items, new ArrayList<>(itemsDb), change, (RulItemType it, RulItemSpec is, ApChange c, int objectId, int position)
+        List<ApItem> itemsCreated = apItemService.changeItems(items, new ArrayList<>(itemsDb), change, (RulItemType it, RulItemSpec is, ApChange c, int objectId, int position)
                 -> createNameItem(name, it, is, c, objectId, position));
 
         apGeneratorService.generateAndSetResult(name.getAccessPoint(), change);
         //apGeneratorService.generateAsyncAfterCommit(name.getAccessPoint().getAccessPointId(), change.getChangeId());
+
+        return itemsCreated;
     }
 
     /**
@@ -1108,10 +1111,11 @@ public class AccessPointService {
      *
      * @param accessPoint přístupový bod
      * @param items       položky změny
+     * @return nové položky, které ze vytvořili při změně
      */
     @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
-    public void changeApItems(@AuthParam(type = AuthParam.Type.AP) final ApAccessPoint accessPoint,
-                              final List<ApUpdateItemVO> items) {
+    public List<ApItem> changeApItems(@AuthParam(type = AuthParam.Type.AP) final ApAccessPoint accessPoint,
+                                      final List<ApUpdateItemVO> items) {
         Validate.notNull(accessPoint, "Přístupový bod musí být vyplněn");
         Validate.notEmpty(items, "Musí být alespoň jedna položka ke změně");
         apDataService.validationNotDeleted(accessPoint);
@@ -1124,11 +1128,13 @@ public class AccessPointService {
         } else {
             change = apDataService.createChange(ApChange.Type.AP_UPDATE);
         }
-        apItemService.changeItems(items, new ArrayList<>(itemsDb), change, (RulItemType it, RulItemSpec is, ApChange c, int objectId, int position)
+        List<ApItem> itemsCreated = apItemService.changeItems(items, new ArrayList<>(itemsDb), change, (RulItemType it, RulItemSpec is, ApChange c, int objectId, int position)
                 -> createBodyItem(accessPoint, it, is, c, objectId, position));
 
         apGeneratorService.generateAndSetResult(accessPoint, change);
         //apGeneratorService.generateAsyncAfterCommit(accessPoint.getAccessPointId(), change.getChangeId());
+
+        return itemsCreated;
     }
 
     /**

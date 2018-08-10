@@ -8,7 +8,6 @@ import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApChangeRepository;
 import cz.tacr.elza.repository.ApFragmentItemRepository;
 import cz.tacr.elza.repository.ApFragmentRepository;
-import cz.tacr.elza.repository.ApFragmentTypeRepository;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +22,6 @@ import java.util.Set;
 public class FragmentService {
 
     private final ApFragmentRepository fragmentRepository;
-    private final ApFragmentTypeRepository fragmentTypeRepository;
     private final ApFragmentItemRepository fragmentItemRepository;
     private final ApChangeRepository changeRepository;
     private final AccessPointGeneratorService apGeneratorService;
@@ -32,14 +30,12 @@ public class FragmentService {
 
     @Autowired
     public FragmentService(final ApFragmentRepository fragmentRepository,
-                           final ApFragmentTypeRepository fragmentTypeRepository,
                            final ApFragmentItemRepository fragmentItemRepository,
                            final ApChangeRepository changeRepository,
                            final AccessPointGeneratorService apGeneratorService,
                            final AccessPointItemService apItemService,
                            final AccessPointDataService apDataService) {
         this.fragmentRepository = fragmentRepository;
-        this.fragmentTypeRepository = fragmentTypeRepository;
         this.fragmentItemRepository = fragmentItemRepository;
         this.changeRepository = changeRepository;
         this.apGeneratorService = apGeneratorService;
@@ -47,7 +43,7 @@ public class FragmentService {
         this.apDataService = apDataService;
     }
 
-    public ApFragment createFragment(final ApFragmentType fragmentType) {
+    public ApFragment createFragment(final RulStructuredType fragmentType) {
         Validate.notNull(fragmentType, "Typ fragmentu musí být vyplněn");
 
         ApFragment fragment = new ApFragment();
@@ -55,16 +51,6 @@ public class FragmentService {
         fragment.setState(ApState.TEMP);
 
         return fragmentRepository.save(fragment);
-    }
-
-    public ApFragmentType getFragmentType(final String fragmentTypeCode) {
-        Validate.notNull(fragmentTypeCode);
-        ApFragmentType fragmentType = fragmentTypeRepository.findByCode(fragmentTypeCode);
-        if (fragmentType == null) {
-            throw new ObjectNotFoundException("Typ fragmentu nenalezen", BaseCode.ID_NOT_EXIST)
-                    .setId(fragmentTypeCode);
-        }
-        return fragmentType;
     }
 
     public ApFragment getFragment(final Integer fragmentId) {
@@ -142,7 +128,4 @@ public class FragmentService {
         }
     }
 
-    public List<ApFragmentType> findFragmentTypes() {
-        return fragmentTypeRepository.findAll();
-    }
 }

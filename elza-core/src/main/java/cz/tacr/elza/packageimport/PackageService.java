@@ -318,12 +318,6 @@ public class PackageService {
     private StructuredTypeRepository structureTypeRepository;
 
     @Autowired
-    private ApFragmentTypeRepository fragmentTypeRepository;
-
-    @Autowired
-    private ApFragmentRuleRepository fragmentRuleRepository;
-
-    @Autowired
     private ApRuleSystemRepository ruleSystemRepository;
 
     @Autowired
@@ -388,7 +382,6 @@ public class PackageService {
             oldPackageDir = puc.getOldPackageDir();
             RulPackage rulPackage = puc.getPackage();
 
-            List<ApFragmentType> apFragmentTypes = processFragmentTypes(puc);
             List<ApRuleSystem> apRuleSystems = processRuleSystems(puc);
 
             // OSOBY ---------------------------------------------------------------------------------------------------
@@ -687,115 +680,6 @@ public class PackageService {
         apRuleSystem.setRulPackage(rulPackage);
     }
 
-    private List<ApFragmentType> processFragmentTypes(final PackageUpdateContext puc) throws IOException {
-        FragmentTypes structureTypes = PackageUtils.convertXmlStreamToObject(FragmentTypes.class,
-                puc.getByteStream(FRAGMENT_TYPE_XML));
-
-        List<ApFragmentType> apFragmentTypes = fragmentTypeRepository.findByRulPackage(puc.getPackage());
-        Map<Integer, List<ApFragmentRule>> typeRules = apFragmentTypes.isEmpty()
-                ? Collections.emptyMap()
-                : fragmentRuleRepository.findByFragmentTypeIn(apFragmentTypes).stream()
-                .collect(Collectors.groupingBy(ApFragmentRule::getFragmentTypeId));
-
-        List<ApFragmentType> apFragmentTypesNew = new ArrayList<>();
-        List<ApFragmentRule> apFragmentRulesNew = new ArrayList<>();
-
-        if (structureTypes != null && !CollectionUtils.isEmpty(structureTypes.getFragmentTypes())) {
-            for (FragmentType fragmentType : structureTypes.getFragmentTypes()) {
-                ApFragmentType item = findEntity(apFragmentTypes, fragmentType.getCode(), ApFragmentType::getCode);
-                if (item == null) {
-                    item = new ApFragmentType();
-                }
-                convertApFragmentType(puc.getPackage(), fragmentType, item);
-                fragmentTypeRepository.save(item);
-                List<ApFragmentRule> apFragmentRules = typeRules.get(item.getFragmentTypeId());
-                apFragmentRules = mergeApFragmentRules(apFragmentRules == null ? new ArrayList<>() : apFragmentRules, fragmentType.getRules(), item, puc);
-                apFragmentRulesNew.addAll(apFragmentRules);
-                apFragmentTypesNew.add(item);
-            }
-
-        }
-
-        List<ApFragmentType> apFragmentTypesDelete = new ArrayList<>(apFragmentTypes);
-        apFragmentTypesDelete.removeAll(apFragmentTypesNew);
-
-        List<RulComponent> componentsDelete = new ArrayList<>();
-        List<ApFragmentRule> fragmentRulesDelete = new ArrayList<>();
-        for (ApFragmentType apFragmentType : apFragmentTypesDelete) {
-            List<ApFragmentRule> apFragmentRules = typeRules.get(apFragmentType.getFragmentTypeId());
-            for (ApFragmentRule apFragmentRule : apFragmentRules) {
-                RulComponent component = apFragmentRule.getComponent();
-                componentsDelete.add(component);
-                deleteFile(puc.getDir(apFragmentRule), component.getFilename());
-            }
-            fragmentRulesDelete.addAll(apFragmentRules);
-        }
-        fragmentRuleRepository.delete(fragmentRulesDelete);
-        componentRepository.delete(componentsDelete);
-        fragmentTypeRepository.delete(apFragmentTypesDelete);
-
-        try {
-            for (ApFragmentRule apFragmentRule : apFragmentRulesNew) {
-                RulComponent component = apFragmentRule.getComponent();
-                updateComponentHash(puc, component, puc.getDir(apFragmentRule), getZipDir(apFragmentRule));
-            }
-        } catch (IOException e) {
-            throw new SystemException(e);
-        }
-
-        apFragmentTypes.addAll(apFragmentTypesNew);
-        puc.setFragmentTypes(apFragmentTypes);
-        return apFragmentTypes;
-    }
-
-    private List<ApFragmentRule> mergeApFragmentRules(final List<ApFragmentRule> apFragmentRules,
-                                                      final List<FragmentRule> fragmentRules,
-                                                      final ApFragmentType apFragmentType,
-                                                      final PackageUpdateContext puc) throws IOException {
-        Validate.notEmpty(fragmentRules);
-        Validate.notNull(apFragmentRules);
-        List<ApFragmentRule> apFragmentRulesNew = new ArrayList<>();
-        for (FragmentRule fragmentRule : fragmentRules) {
-            ApFragmentRule apFragmentRule = findEntity(apFragmentRules, fragmentRule.getRuleType(), ApFragmentRule::getRuleType);
-            if (apFragmentRule == null) {
-                apFragmentRule = new ApFragmentRule();
-                RulComponent component = new RulComponent();
-                component.setFilename(fragmentRule.getFilename());
-                apFragmentRule.setComponent(component);
-            } else {
-                RulComponent component = apFragmentRule.getComponent();
-                component.setFilename(fragmentRule.getFilename());
-            }
-            apFragmentRule.setFragmentType(apFragmentType);
-            apFragmentRule.setRuleType(fragmentRule.getRuleType());
-            apFragmentRulesNew.add(apFragmentRule);
-        }
-
-        List<ApFragmentRule> apFragmentRulesDelete = new ArrayList<>(apFragmentRules);
-        apFragmentRulesDelete.removeAll(apFragmentRulesNew);
-        for (ApFragmentRule apFragmentRule : apFragmentRulesDelete) {
-            deleteFile(puc.getDir(apFragmentRule), apFragmentRule.getComponent().getFilename());
-        }
-        List<RulComponent> componentsDelete = apFragmentRulesDelete.stream().map(ApFragmentRule::getComponent).collect(Collectors.toList());
-
-        fragmentRuleRepository.delete(apFragmentRulesDelete);
-        componentRepository.delete(componentsDelete);
-
-        List<RulComponent> components = apFragmentRulesNew.stream().map(ApFragmentRule::getComponent).collect(Collectors.toList());
-        componentRepository.save(components);
-
-        return fragmentRuleRepository.save(apFragmentRulesNew);
-    }
-
-
-    private void convertApFragmentType(final RulPackage rulPackage,
-                                       final FragmentType fragmentType,
-                                       final ApFragmentType apFragmentType) {
-        apFragmentType.setCode(fragmentType.getCode());
-        apFragmentType.setName(fragmentType.getName());
-        apFragmentType.setRulPackage(rulPackage);
-    }
-
     /**
      * Provede synchronizaci typů externích identifikátorů.
      *
@@ -916,17 +800,6 @@ public class PackageService {
                 return ZIP_DIR_SCRIPTS;
             default:
                 throw new NotImplementedException("Def type: " + definition.getDefType());
-        }
-    }
-
-    public String getZipDir(final ApFragmentRule fragmentRule) {
-        switch (fragmentRule.getRuleType()) {
-            case FRAGMENT_ITEMS:
-                return ZIP_DIR_RULES;
-            case TEXT_GENERATOR:
-                return ZIP_DIR_SCRIPTS;
-            default:
-                throw new NotImplementedException("Rule type: " + fragmentRule.getRuleType());
         }
     }
 
@@ -2814,8 +2687,6 @@ public class PackageService {
         partyNameFormTypeRepository.deleteByRulPackage(rulPackage);
         relationRoleTypeRepository.deleteByRulPackage(rulPackage);
         settingsRepository.deleteByRulPackage(rulPackage);
-        fragmentRuleRepository.deleteByRulPackage(rulPackage);
-        fragmentTypeRepository.deleteByRulPackage(rulPackage);
         ruleRepository.deleteByRulPackage(rulPackage);
         ruleSystemRepository.deleteByRulPackage(rulPackage);
         packageRepository.delete(rulPackage);

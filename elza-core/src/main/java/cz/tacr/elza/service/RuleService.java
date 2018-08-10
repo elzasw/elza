@@ -894,7 +894,7 @@ public class RuleService {
                 collect(Collectors.toList());
     }
 
-    public List<RulItemTypeExt> getFragmentItemTypesInternal(final ApFragmentType fragmentType, final List<ApItem> items) {
+    public List<RulItemTypeExt> getFragmentItemTypesInternal(final RulStructuredType fragmentType, final List<ApItem> items) {
         List<RulItemTypeExt> rulDescItemTypeExtList = getRulesetDescriptionItemTypes();
         return rulesExecutor.executeFragmentItemTypesRules(fragmentType, rulDescItemTypeExtList, items);
     }

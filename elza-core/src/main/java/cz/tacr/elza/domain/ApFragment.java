@@ -36,9 +36,9 @@ public class ApFragment {
     @Type(type = "org.hibernate.type.TextType")
     private String errorDescription;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApFragmentType.class)
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulStructuredType.class)
     @JoinColumn(name = "fragmentTypeId", nullable = false)
-    private ApFragmentType fragmentType;
+    private RulStructuredType fragmentType;
 
     public Integer getFragmentId() {
         return fragmentId;
@@ -72,11 +72,11 @@ public class ApFragment {
         this.errorDescription = errorDescription;
     }
 
-    public ApFragmentType getFragmentType() {
+    public RulStructuredType getFragmentType() {
         return fragmentType;
     }
 
-    public void setFragmentType(final ApFragmentType fragmentType) {
+    public void setFragmentType(final RulStructuredType fragmentType) {
         this.fragmentType = fragmentType;
     }
 

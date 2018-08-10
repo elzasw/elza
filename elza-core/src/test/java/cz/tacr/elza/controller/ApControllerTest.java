@@ -2,7 +2,6 @@ package cz.tacr.elza.controller;
 
 import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.controller.vo.ap.ApFormVO;
-import cz.tacr.elza.controller.vo.ap.ApFragmentTypeVO;
 import cz.tacr.elza.controller.vo.ap.ApFragmentVO;
 import cz.tacr.elza.controller.vo.ap.ApStateVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemStringVO;
@@ -228,9 +227,9 @@ public class ApControllerTest extends AbstractControllerTest {
 
     @Test
     public void testFragment() {
-        Map<String, ApFragmentTypeVO> fragmentTypes = findFragmentTypesMap();
+        Map<String, RulStructureTypeVO> fragmentTypes = findFragmentTypesMap();
 
-        ApFragmentTypeVO fragmentType = fragmentTypes.get(STAT_ZASTUPCE);
+        RulStructureTypeVO fragmentType = fragmentTypes.get(STAT_ZASTUPCE);
         Assert.assertNotNull(fragmentType);
         List<ApTypeVO> types = getRecordTypes();
         List<ApScopeVO> scopes = getAllScopes();
@@ -303,16 +302,16 @@ public class ApControllerTest extends AbstractControllerTest {
 
     @Test
     public void testTempFragment() {
-        Map<String, ApFragmentTypeVO> fragmentTypes = findFragmentTypesMap();
-        ApFragmentTypeVO fragmentType = fragmentTypes.get(STAT_ZASTUPCE);
+        Map<String, RulStructureTypeVO> fragmentTypes = findFragmentTypesMap();
+        RulStructureTypeVO fragmentType = fragmentTypes.get(STAT_ZASTUPCE);
         Assert.assertNotNull(fragmentType);
 
         ApFragmentVO fragment = createFragment(fragmentType.getCode());
         deleteFragment(fragment.getId());
     }
 
-    private Map<String, ApFragmentTypeVO> findFragmentTypesMap() {
-        return findFragmentTypes().stream().collect(Collectors.toMap(ApFragmentTypeVO::getCode, Function.identity()));
+    private Map<String, RulStructureTypeVO> findFragmentTypesMap() {
+        return findStructureTypes().stream().collect(Collectors.toMap(RulStructureTypeVO::getCode, Function.identity()));
     }
 
     /**

@@ -3,7 +3,6 @@ package cz.tacr.elza.service;
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
 import cz.tacr.elza.controller.vo.ap.item.ApUpdateItemVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.UpdateOp;
-import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.*;
@@ -116,8 +115,9 @@ public class AccessPointItemService {
      * @param itemsDb aktuální položky v DB
      * @param change  změna
      * @param create  funkce pro založené nové položky
+     * @return nové položky, které ze vytvořili při změně
      */
-    public void changeItems(final List<ApUpdateItemVO> items, final List<ApItem> itemsDb, final ApChange change, final CreateFunction create) {
+    public List<ApItem> changeItems(final List<ApUpdateItemVO> items, final List<ApItem> itemsDb, final ApChange change, final CreateFunction create) {
         Map<Integer, ApItem> objectIdItemMap = itemsDb.stream().collect(Collectors.toMap(ApItem::getObjectId, Function.identity()));
         Map<Integer, List<ApItem>> typeIdItemsMap = itemsDb.stream().collect(Collectors.groupingBy(ApItem::getItemTypeId));
 
@@ -144,10 +144,12 @@ public class AccessPointItemService {
 
         // TODO: optimalizace při úpravě se stejným change id (bez odverzování) - pro deleteItems a updateItems
         deleteItems(deleteItems, typeIdItemsMap, itemsDb, objectIdItemMap, change);
-        createItems(createItems, typeIdItemsMap, itemsDb, change, create);
+        List<ApItem> itemsCreated = createItems(createItems, typeIdItemsMap, itemsDb, change, create);
         updateItems(updateItems, typeIdItemsMap, itemsDb, objectIdItemMap, change);
 
         itemRepository.save(itemsDb);
+
+        return itemsCreated;
     }
 
     /**
@@ -252,9 +254,10 @@ public class AccessPointItemService {
         return sequenceService.getNext(OBJECT_ID_SEQUENCE_NAME);
     }
 
-    private void createItems(final List<ApItemVO> createItems, final Map<Integer, List<ApItem>> typeIdItemsMap, final List<ApItem> itemsDb, final ApChange change, final CreateFunction create) {
+    private List<ApItem> createItems(final List<ApItemVO> createItems, final Map<Integer, List<ApItem>> typeIdItemsMap, final List<ApItem> itemsDb, final ApChange change, final CreateFunction create) {
         StaticDataProvider sdp = staticDataService.getData();
         List<ArrData> dataToSave = new ArrayList<>(createItems.size());
+        List<ApItem> itemsCreated = new ArrayList<>();
         for (ApItemVO createItem : createItems) {
             RulItemType itemType = sdp.getItemTypeById(createItem.getTypeId()).getEntity();
             RulItemSpec itemSpec = createItem.getSpecId() == null ? null : sdp.getItemSpecById(createItem.getSpecId());
@@ -280,11 +283,13 @@ public class AccessPointItemService {
             ApItem itemCreated = create.apply(itemType, itemSpec, change, nextItemObjectId(), position);
             dataToSave.add(data);
             itemCreated.setData(data);
+            itemsCreated.add(itemCreated);
 
             itemsDb.add(itemCreated);
             existsItems.add(itemCreated);
         }
         dataRepository.save(dataToSave);
+        return itemsCreated;
     }
 
     private List<ApItem> shiftItems(final List<ApItem> items, final int diff, final ApChange change) {

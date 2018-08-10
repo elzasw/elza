@@ -549,7 +549,7 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
      * Renders the value of the descItem
      */
     renderDescItemValue(descItem, descItemIndex, locked) {
-        const {refType, structureTypes, calendarTypes, rulDataType, descItemFactory, readMode, infoType, typePrefix, fragmentTypes} = this.props;
+        const {refType, structureTypes, calendarTypes, rulDataType, descItemFactory, readMode, infoType, typePrefix} = this.props;
 
         let specName = null;
         if (descItem.descItemSpecId) {
@@ -563,7 +563,7 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
 
         let fragmentType;
         if (refType.fragmentTypeId) {
-            fragmentType = objectById(fragmentTypes, refType.fragmentTypeId);
+            fragmentType = objectById(structureTypes.data, refType.fragmentTypeId);
         }
 
         const additionalProps = {
@@ -944,11 +944,10 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
 }
 
 function mapStateToProps(state, ownProps: Props) {
-    const {userDetail, refTables:{fragmentTypes}} = state;
+    const {userDetail} = state;
 
     return {
-        userDetail,
-        fragmentTypes: fragmentTypes.data
+        userDetail
     }
 }
 
