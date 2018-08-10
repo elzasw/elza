@@ -237,7 +237,7 @@ public class ApControllerTest extends AbstractControllerTest {
         Integer scopeId = scopes.iterator().next().getId();
 
         ApAccessPointCreateVO ap = new ApAccessPointCreateVO();
-        ap.setTypeId(getNonHierarchicalApType(types, false).getId());
+        ap.setTypeId(getNonHierarchicalApType(types, false, false).getId());
         ap.setName("Petr Novák");
         ap.setComplement("1920-1986");
         ap.setScopeId(scopeId);
@@ -362,7 +362,7 @@ public class ApControllerTest extends AbstractControllerTest {
 
         // Vytvoření replace
         ApAccessPointCreateVO replacedRecord = new ApAccessPointCreateVO();
-        replacedRecord.setTypeId(getNonHierarchicalApType(types, false).getId());
+        replacedRecord.setTypeId(getNonHierarchicalApType(types, false, false).getId());
         replacedRecord.setName("ApRecordA name");
         replacedRecord.setComplement("ApRecordA complement");
         replacedRecord.setScopeId(scopeId);
@@ -396,7 +396,7 @@ public class ApControllerTest extends AbstractControllerTest {
 
         // Vytvoření replacement
         ApAccessPointCreateVO replacementRecord = new ApAccessPointCreateVO();
-        replacementRecord.setTypeId(getNonHierarchicalApType(types, false).getId());
+        replacementRecord.setTypeId(getNonHierarchicalApType(types, false, false).getId());
         replacementRecord.setName("ApRecordB name");
         replacementRecord.setComplement("ApRecordB complement");
         replacementRecord.setScopeId(scopeId);
@@ -414,17 +414,17 @@ public class ApControllerTest extends AbstractControllerTest {
         Assert.assertTrue(usageAfterReplace.funds == null || usageAfterReplace.funds.isEmpty());
     }
 
-    private ApTypeVO getNonHierarchicalApType(final List<ApTypeVO> list, final boolean hasPartyType) {
+    private ApTypeVO getNonHierarchicalApType(final List<ApTypeVO> list, final boolean hasPartyType, final boolean hasRuleSystem) {
         for (ApTypeVO type : list) {
-            if (type.getAddRecord() && ((!hasPartyType && type.getPartyTypeId() == null) || (hasPartyType && type.getPartyTypeId() != null))) {
+            if (type.getAddRecord() && (type.getRuleSystemId() == null && !hasRuleSystem || type.getRuleSystemId() != null && hasRuleSystem) && ((!hasPartyType && type.getPartyTypeId() == null) || (hasPartyType && type.getPartyTypeId() != null))) {
                 return type;
             }
         }
 
         for (ApTypeVO type : list) {
             if (type.getChildren() != null) {
-                ApTypeVO res = getNonHierarchicalApType(type.getChildren(), hasPartyType);
-                if (res != null) {
+                ApTypeVO res = getNonHierarchicalApType(type.getChildren(), hasPartyType, false);
+                if (res != null && (res.getRuleSystemId() == null && !hasRuleSystem || res.getRuleSystemId() != null && hasRuleSystem)) {
                     return res;
                 }
             }
