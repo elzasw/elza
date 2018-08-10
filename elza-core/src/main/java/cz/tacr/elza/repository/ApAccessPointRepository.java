@@ -8,6 +8,7 @@ import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
@@ -17,6 +18,7 @@ import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.projection.ApAccessPointInfo;
 
 import javax.persistence.LockModeType;
+import javax.persistence.QueryHint;
 
 /**
  * Repository záznamy v rejstříku.
@@ -73,6 +75,7 @@ public interface ApAccessPointRepository
     Set<Integer> findInitAccessPointIds();
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @QueryHints({@QueryHint(name = "javax.persistence.lock.timeout", value = "15000")})
     @Query("SELECT ap FROM ap_access_point ap where ap.accessPointId = :accessPointId")
     ApAccessPoint findOneWithLock(@Param("accessPointId") Integer accessPointId);
 }

@@ -89,7 +89,7 @@ public class ApControllerTest extends AbstractControllerTest {
         Assert.assertNotNull(eidType.getName());
     }
 
-    @Test/*(timeout = 60000)*/
+    @Test(timeout = 60000)
     public void testStructureAccessPoint() throws InterruptedException {
 
         ApTypeVO type = getApType(STRUCT_AP_TYPE);

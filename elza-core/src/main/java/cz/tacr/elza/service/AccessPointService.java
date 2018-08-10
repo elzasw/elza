@@ -1010,8 +1010,8 @@ public class AccessPointService {
 
         if (accessPoint.getRuleSystem() != null) {
             ApChange change = apDataService.createChange(ApChange.Type.AP_UPDATE);
-            apGeneratorService.generateAndSetResult(accessPoint, change);
-            //apGeneratorService.generateAsyncAfterCommit(accessPoint.getAccessPointId(), change.getChangeId());
+            //apGeneratorService.generateAndSetResult(accessPoint, change);
+            apGeneratorService.generateAsyncAfterCommit(accessPoint.getAccessPointId(), change.getChangeId());
         }
 
         publishAccessPointUpdateEvent(accessPoint);
@@ -1071,8 +1071,8 @@ public class AccessPointService {
         List<ApItem> itemsCreated = apItemService.changeItems(items, new ArrayList<>(itemsDb), change, (RulItemType it, RulItemSpec is, ApChange c, int objectId, int position)
                 -> createNameItem(name, it, is, c, objectId, position));
 
-        apGeneratorService.generateAndSetResult(name.getAccessPoint(), change);
-        //apGeneratorService.generateAsyncAfterCommit(name.getAccessPoint().getAccessPointId(), change.getChangeId());
+        //apGeneratorService.generateAndSetResult(name.getAccessPoint(), change);
+        apGeneratorService.generateAsyncAfterCommit(name.getAccessPoint().getAccessPointId(), change.getChangeId());
 
         return itemsCreated;
     }
@@ -1102,8 +1102,8 @@ public class AccessPointService {
         }
         apItemService.deleteItemsByType(nameItemRepository, name, itemType, change);
 
-        apGeneratorService.generateAndSetResult(accessPoint, change);
-        //apGeneratorService.generateAsyncAfterCommit(accessPoint.getAccessPointId(), change.getChangeId());
+        //apGeneratorService.generateAndSetResult(accessPoint, change);
+        apGeneratorService.generateAsyncAfterCommit(accessPoint.getAccessPointId(), change.getChangeId());
     }
 
     /**
@@ -1131,8 +1131,8 @@ public class AccessPointService {
         List<ApItem> itemsCreated = apItemService.changeItems(items, new ArrayList<>(itemsDb), change, (RulItemType it, RulItemSpec is, ApChange c, int objectId, int position)
                 -> createBodyItem(accessPoint, it, is, c, objectId, position));
 
-        apGeneratorService.generateAndSetResult(accessPoint, change);
-        //apGeneratorService.generateAsyncAfterCommit(accessPoint.getAccessPointId(), change.getChangeId());
+        //apGeneratorService.generateAndSetResult(accessPoint, change);
+        apGeneratorService.generateAsyncAfterCommit(accessPoint.getAccessPointId(), change.getChangeId());
 
         return itemsCreated;
     }
@@ -1158,8 +1158,8 @@ public class AccessPointService {
         }
         apItemService.deleteItemsByType(bodyItemRepository, accessPoint, itemType, change);
 
-        apGeneratorService.generateAndSetResult(accessPoint, change);
-        //apGeneratorService.generateAsyncAfterCommit(accessPoint.getAccessPointId(), change.getChangeId());
+        //apGeneratorService.generateAndSetResult(accessPoint, change);
+        apGeneratorService.generateAsyncAfterCommit(accessPoint.getAccessPointId(), change.getChangeId());
     }
 
     /**
@@ -1214,8 +1214,8 @@ public class AccessPointService {
             preferredName.setState(ApState.INIT);
             apNameRepository.save(preferredName);
 
-            apGeneratorService.generateAndSetResult(accessPoint, accessPoint.getCreateChange());
-            //apGeneratorService.generateAsyncAfterCommit(accessPoint.getAccessPointId(), accessPoint.getCreateChangeId());
+            //apGeneratorService.generateAndSetResult(accessPoint, accessPoint.getCreateChange());
+            apGeneratorService.generateAsyncAfterCommit(accessPoint.getAccessPointId(), accessPoint.getCreateChangeId());
         } else {
             throw new BusinessException("Nelze potvrdit přístupový bod, který není dočasný", BaseCode.INVALID_STATE);
         }
@@ -1244,8 +1244,8 @@ public class AccessPointService {
         apRepository.save(accessPoint);
 
         ApChange change = apDataService.createChange(ApChange.Type.AP_UPDATE);
-        apGeneratorService.generateAndSetResult(accessPoint, change);
-        //apGeneratorService.generateAsyncAfterCommit(accessPoint.getAccessPointId(), change.getChangeId());
+        //apGeneratorService.generateAndSetResult(accessPoint, change);
+        apGeneratorService.generateAsyncAfterCommit(accessPoint.getAccessPointId(), change.getChangeId());
     }
 
     /**
@@ -1265,8 +1265,8 @@ public class AccessPointService {
         if (name.getState() == ApState.TEMP) {
             name.setState(ApState.INIT);
             apNameRepository.save(name);
-            apGeneratorService.generateAndSetResult(accessPoint, name.getCreateChange());
-            //apGeneratorService.generateAsyncAfterCommit(accessPoint.getAccessPointId(), name.getCreateChangeId());
+            //apGeneratorService.generateAndSetResult(accessPoint, name.getCreateChange());
+            apGeneratorService.generateAsyncAfterCommit(accessPoint.getAccessPointId(), name.getCreateChangeId());
         } else {
             throw new BusinessException("Nelze potvrdit jméno, které není dočasné", BaseCode.INVALID_STATE);
         }
@@ -1334,7 +1334,8 @@ public class AccessPointService {
         ApChange change = apDataService.createChange(ApChange.Type.NAME_UPDATE);
         ApName newName = apDataService.updateAccessPointName(accessPoint, apName, apName.getName(), apName.getComplement(), apName.getFullName(), language, change, true);
         apItemService.copyItems(apName, newName, change);
-        apGeneratorService.generateAndSetResult(accessPoint, change);
+        //apGeneratorService.generateAndSetResult(accessPoint, change);
+        apGeneratorService.generateAsyncAfterCommit(accessPoint.getAccessPointId(), change.getChangeId());
         return newName;
     }
 
@@ -1357,8 +1358,8 @@ public class AccessPointService {
         deleteName(accessPoint, name, change);
 
         if (accessPoint.getRuleSystem() != null) {
-            apGeneratorService.generateAndSetResult(accessPoint, change);
-            //apGeneratorService.generateAsyncAfterCommit(accessPoint.getAccessPointId(), change.getChangeId());
+            //apGeneratorService.generateAndSetResult(accessPoint, change);
+            apGeneratorService.generateAsyncAfterCommit(accessPoint.getAccessPointId(), change.getChangeId());
         }
         publishAccessPointUpdateEvent(accessPoint);
     }
@@ -1438,8 +1439,8 @@ public class AccessPointService {
         }
 
         if (accessPoint.getRuleSystem() != null) {
-            apGeneratorService.generateAndSetResult(accessPoint, change);
-            //apGeneratorService.generateAsyncAfterCommit(accessPoint.getAccessPointId(), change.getChangeId());
+            //apGeneratorService.generateAndSetResult(accessPoint, change);
+            apGeneratorService.generateAsyncAfterCommit(accessPoint.getAccessPointId(), change.getChangeId());
         }
     }
 

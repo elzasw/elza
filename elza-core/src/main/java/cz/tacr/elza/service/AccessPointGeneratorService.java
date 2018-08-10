@@ -29,6 +29,7 @@ import org.springframework.transaction.support.TransactionSynchronizationAdapter
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import javax.annotation.Nullable;
+import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import java.io.File;
 import java.io.IOException;
@@ -65,6 +66,7 @@ public class AccessPointGeneratorService {
     private final IEventNotificationService eventNotificationService;
     private final StructureExtensionDefinitionRepository structureExtensionDefinitionRepository;
     private final StructureDefinitionRepository structureDefinitionRepository;
+    private final EntityManager em;
 
     private Map<File, GroovyScriptService.GroovyScriptFile> groovyScriptMap = new HashMap<>();
 
@@ -87,7 +89,8 @@ public class AccessPointGeneratorService {
                                        final ApChangeRepository apChangeRepository,
                                        final IEventNotificationService eventNotificationService,
                                        final StructureExtensionDefinitionRepository structureExtensionDefinitionRepository,
-                                       final StructureDefinitionRepository structureDefinitionRepository) {
+                                       final StructureDefinitionRepository structureDefinitionRepository,
+                                       final EntityManager em) {
         this.ruleRepository = ruleRepository;
         this.resourcePathResolver = resourcePathResolver;
         this.fragmentItemRepository = fragmentItemRepository;
@@ -104,6 +107,7 @@ public class AccessPointGeneratorService {
         this.eventNotificationService = eventNotificationService;
         this.structureExtensionDefinitionRepository = structureExtensionDefinitionRepository;
         this.structureDefinitionRepository = structureDefinitionRepository;
+        this.em = em;
         this.taskExecutor.addTask(new AccessPointGeneratorThread());
         this.taskExecutor.start();
     }
@@ -154,14 +158,17 @@ public class AccessPointGeneratorService {
      */
     @Transactional
     public void processAsyncGenerate(final Integer accessPointId, final Integer changeId) {
-        ApAccessPoint accessPoint = apRepository.findOne(accessPointId);
+        ApAccessPoint accessPoint = apRepository.findOneWithLock(accessPointId);
         ApChange change;
         if (changeId == null) {
             change = apDataService.createChange(ApChange.Type.AP_REVALIDATE);
         } else {
             change = apChangeRepository.findOne(changeId);
         }
+        logger.info("Asynchronní zpracování AP={} ApChache={}", accessPointId, change.getChangeId());
         generateAndSetResult(accessPoint, change);
+        logger.info("Asynchronní zpracování AP={} ApChache={} - END - State={}", accessPointId, change.getChangeId(), accessPoint.getState());
+        em.clear();
     }
 
     /**
