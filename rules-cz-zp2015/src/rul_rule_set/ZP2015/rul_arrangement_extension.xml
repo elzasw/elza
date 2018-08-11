@@ -8,4 +8,7 @@
   <arrangement-extension code="ZP2015_TechZaznStrukturovana">
     <name>Technika záznamu struktrurovaně (ZP5.2.8)</name>
   </arrangement-extension>
+  <arrangement-extension code="ZP2015_PoradiUlozeni">
+    <name>Pořadí uložení</name>
+  </arrangement-extension>
 </arrangement-extensions>
