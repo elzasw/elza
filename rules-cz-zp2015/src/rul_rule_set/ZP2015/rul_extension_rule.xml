@@ -12,4 +12,8 @@
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
+    <extension-rule filename="ItemOrder.drl" arrangement-extension="ZP2015_PoradiUlozeni">
+        <rule-type>ATTRIBUTE_TYPES</rule-type>
+        <priority>100</priority>
+    </extension-rule>
 </extension-rules>
