@@ -11,7 +11,7 @@ public class TextAggregationConfig implements ActionConfig {
 	/**
 	 * Ignorovat duplikáty?
 	 */
-	protected boolean ignoreDuplicated;
+    protected boolean ignoreDuplicated = true;
 
 	/**
 	 * Flag if text item should be created for empty result

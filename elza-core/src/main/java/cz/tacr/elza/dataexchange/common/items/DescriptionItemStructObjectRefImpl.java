@@ -24,7 +24,7 @@ public class DescriptionItemStructObjectRefImpl extends DescriptionItemStructObj
         ArrDataStructureRef data = new ArrDataStructureRef();
         data.setStructuredObject(cso.getIdHolder().getEntityReference(context.getSession()));
 
-        return new ImportableItemData(data);
+        return new ImportableItemData(data, null);
     }
 
 }
