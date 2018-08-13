@@ -293,7 +293,7 @@ public class DateRangeAction extends Action {
                 && (dateMax == null || datePosteriorMax.getNormalizedTo() > dateMax.getNormalizedTo())) {
             sb.append(" (");
             // add only end of interval
-            sb.append(UnitDateConvertor.beginToString(datePosteriorMax));
+            sb.append(UnitDateConvertor.endToString(datePosteriorMax));
             //appendTimeInterval(sb, posteriorMinAsDateMax ? null : datePosteriorMin, datePosteriorMax);
             sb.append(")");
         }
