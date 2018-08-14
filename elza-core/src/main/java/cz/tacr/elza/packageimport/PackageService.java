@@ -2531,10 +2531,6 @@ public class PackageService {
         partyNameFormTypeRepository.deleteByRulPackage(rulPackage);
         relationRoleTypeRepository.deleteByRulPackage(rulPackage);
         settingsRepository.deleteByRulPackage(rulPackage);
-        fragmentRuleRepository.deleteByRulPackage(rulPackage);
-        fragmentTypeRepository.deleteByRulPackage(rulPackage);
-        ruleRepository.deleteByRulPackage(rulPackage);
-        ruleSystemRepository.deleteByRulPackage(rulPackage);
         packageRepository.delete(rulPackage);
 
         entityManager.flush();

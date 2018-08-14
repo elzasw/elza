@@ -882,7 +882,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         Integer scopeId = scopes.iterator().next().getId();
 
         ApAccessPointCreateVO ap = new ApAccessPointCreateVO();
-        ap.setTypeId(getNonHierarchicalApType(types, false, false).getId());
+        ap.setTypeId(getNonHierarchicalApType(types, false).getId());
         ap.setName("ApRecordA name");
         ap.setComplement("ApRecordA complement");
         ap.setScopeId(scopeId);
@@ -916,17 +916,17 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         assertTrue(updatedLink.getId().equals(deletedLink.getId()));
     }
 
-    private ApTypeVO getNonHierarchicalApType(final List<ApTypeVO> list, final boolean hasPartyType, final boolean hasRuleSystem) {
+    private ApTypeVO getNonHierarchicalApType(final List<ApTypeVO> list, final boolean hasPartyType) {
         for (ApTypeVO type : list) {
-            if (type.getAddRecord() && (type.getRuleSystemId() == null && !hasRuleSystem || type.getRuleSystemId() != null && hasRuleSystem) && ((!hasPartyType && type.getPartyTypeId() == null) || (hasPartyType && type.getPartyTypeId() != null))) {
+            if (type.getAddRecord() ) {
                 return type;
             }
         }
 
         for (ApTypeVO type : list) {
             if (type.getChildren() != null) {
-                ApTypeVO res = getNonHierarchicalApType(type.getChildren(), hasPartyType, hasRuleSystem);
-                if (res != null && (type.getRuleSystemId() == null && !hasRuleSystem || type.getRuleSystemId() != null && hasRuleSystem)) {
+                ApTypeVO res = getNonHierarchicalApType(type.getChildren(), hasPartyType);
+                if (res != null ) {
                     return res;
                 }
             }
