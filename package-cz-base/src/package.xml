@@ -1,10 +1,6 @@
 <package>
   <code>CZ_BASE</code>
   <name>Nastavení pro ČR</name>
-<<<<<<< HEAD
-  <version>18</version>
-=======
-  <version>22</version>
->>>>>>> 19f4f61d3... ELZA-1632 - ELZA MT10 Strukturovaný popis přístupového bodu a jmen přístupového bodu - přesun souborů pravidel
+  <version>16</version>
   <description>Výchozí nastavení implementace v ČR</description>
 </package>
