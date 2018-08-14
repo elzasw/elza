@@ -34,7 +34,9 @@ public class LevelWithItems {
 	public LevelWithItems(final ArrLevel level, final LevelWithItems parentLevel, final List<ArrDescItem> items) {
     	this.level = level;
 		this.parent = parentLevel;
-		descItems.addAll(items);
+        if (items != null) {
+            descItems.addAll(items);
+        }
 	}
 
 	public LevelWithItems getParent()

@@ -277,7 +277,9 @@ public class DateRangeAction extends Action {
         if (datePriorMin != null
                 && (dateMin == null || datePriorMin.getNormalizedFrom() < dateMin.getNormalizedFrom())) {
             sb.append("(");
-            appendTimeInterval(sb, datePriorMin, priorMaxAsDateMin ? null : datePriorMax);
+            // add only start of interval
+            sb.append(UnitDateConvertor.beginToString(datePriorMin));
+            //appendTimeInterval(sb, datePriorMin, priorMaxAsDateMin ? null : datePriorMax);
             sb.append(") ");
         }
 
@@ -290,7 +292,9 @@ public class DateRangeAction extends Action {
         if (datePosteriorMax != null
                 && (dateMax == null || datePosteriorMax.getNormalizedTo() > dateMax.getNormalizedTo())) {
             sb.append(" (");
-            appendTimeInterval(sb, posteriorMinAsDateMax ? null : datePosteriorMin, datePosteriorMax);
+            // add only end of interval
+            sb.append(UnitDateConvertor.endToString(datePosteriorMax));
+            //appendTimeInterval(sb, posteriorMinAsDateMax ? null : datePosteriorMin, datePosteriorMax);
             sb.append(")");
         }
 
