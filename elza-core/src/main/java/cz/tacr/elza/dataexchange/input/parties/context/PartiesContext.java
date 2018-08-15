@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.hibernate.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -158,13 +159,24 @@ public class PartiesContext {
     }
 
     public void onPartyFinished(PartyInfo partyInfo) {
-        updatePartyAp(partyInfo);
-        // AP is now processed
-        partyInfo.getApInfo().onProcessed();
     }
 
     private void updatePartyAp(PartyInfo partyInfo) {
-        ParParty entity = partyInfo.getEntityRef(storageManager.getSession());
+    	// TODO: 
+    	// Prepare new async implementation of Party->AP generator
+    	
+    	// We have to load current party
+    	// Party from partyInfo cannot be used because
+    	// it could be only partially initialized
+    	// 
+        
+    	// Get entity from party info
+    	Session session = storageManager.getSession();
+    	ParParty entity = partyInfo.getEntityRef(session);
+    	    	
+    	// Force to refresh -> get live object
+    	session.refresh(entity);    	
+    	
         // get supported complement types
         String partyTypeCode = partyInfo.getPartyType().getCode();
         PartyTypeCmplTypes cmplTypes = staticData.getCmplTypesByPartyTypeCode(partyTypeCode);
@@ -191,6 +203,19 @@ public class PartiesContext {
         storeNames(false);
         storeNameComplements(false);
         storePreferredNames(false);
+        
+        prepareAps();
+    }
+    
+    /**
+     * Prepare acess points for parties
+     */
+    private void prepareAps() {
+    	for(PartyInfo partyInfo : importIdPartyInfoMap.values()) {
+            updatePartyAp(partyInfo);
+            // AP is now processed
+            partyInfo.getApInfo().onProcessed();    		
+    	}
     }
 
     private void storeParties() {
