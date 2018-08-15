@@ -2161,4 +2161,16 @@
         <description>Fascikl</description>
         <shortcut></shortcut>
     </item-spec>
+    <item-spec code="VZTAH_TYP_PRIMATOR" item-type="VZTAH_TYP">
+        <name>Primátor</name>
+        <description>Primátor</description>
+        <shortcut>Prim.</shortcut>
+        <view-order>1</view-order>
+    </item-spec>
+    <item-spec code="VZTAH_TYP_TAJEMNIK" item-type="VZTAH_TYP">
+        <name>Tajemník magistrátu</name>
+        <description>Tajemník magistrátu</description>
+        <shortcut>Taj. mag.</shortcut>
+        <view-order>2</view-order>
+    </item-spec>
 </item-specs>
