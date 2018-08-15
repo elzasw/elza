@@ -1,0 +1,7 @@
+!MultiAction
+name: Smazání vypočtených EJ
+fastAction: true
+
+actions:
+    - !DeleteItem
+        inputType: ZP2015_UNIT_COUNT_ITEM
