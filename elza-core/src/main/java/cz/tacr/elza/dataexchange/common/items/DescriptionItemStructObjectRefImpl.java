@@ -25,7 +25,7 @@ public class DescriptionItemStructObjectRefImpl extends DescriptionItemStructObj
         data.setStructuredObject(cso.getIdHolder().getEntityRef(context.getSession()));
         data.setDataType(dataType.getEntity());
 
-        return new ImportableItemData(data);
+        return new ImportableItemData(data, null);
     }
 
 }

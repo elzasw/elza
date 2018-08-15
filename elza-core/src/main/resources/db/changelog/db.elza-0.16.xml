@@ -283,30 +283,11 @@
         <sql>
             update db_hibernate_sequences set next_val = (select coalesce(max(description_id),0)+1 from ap_description) where sequence_name = 'ap_description|description_id';
         </sql>
+
+        <dropColumn tableName="ap_record" columnName="characteristics"/>
     </changeSet>
 
-    <changeSet id="20180226123500" author="fric">
-        <!--migrace acess_point-->
-        <renameTable oldTableName="ap_record" newTableName="ap_access_point"/>
-        <dropColumn tableName="ap_access_point" columnName="record"/>
-        <dropColumn tableName="ap_access_point" columnName="characteristics"/>
-        <dropColumn tableName="ap_access_point" columnName="external_id"/>
-        <dropColumn tableName="ap_access_point" columnName="version"/>
-        <dropColumn tableName="ap_access_point" columnName="last_update"/>
-        <dropColumn tableName="ap_access_point" columnName="external_system_id"/>
-        <renameColumn newColumnName="access_point_id" oldColumnName="record_id" tableName="ap_access_point"/>
-        <renameColumn newColumnName="access_point_id" oldColumnName="record_id" tableName="par_party"/>
-
-        <update tableName="db_hibernate_sequences">
-            <column name="sequence_name" value="reg_record|record_id" />
-            <where>sequence_name = 'ap_access_point|access_point_id'</where>
-        </update>
-
-        <sql>
-            update db_hibernate_sequences set next_val = (select coalesce(max(access_point_id),0)+1 from ap_access_point) where sequence_name = 'ap_access_point|access_point_id';
-        </sql>
-    </changeSet>
-
+    <!-- Create tables for external id -->
     <changeSet id="20180226153500" author="fric">
         <createTable tableName="ap_external_id_type">
             <column name="external_id_type_id" type="int">
@@ -329,9 +310,52 @@
                 <constraints nullable="true" foreignKeyName="fk_external_id_type" references="ap_external_id_type(external_id_type_id)"/>
             </column>
             <column name="access_point_id" type="int">
-                <constraints nullable="false" foreignKeyName="fk_external_id_access_point_id" references="ap_access_point(access_point_id)"/>
+                <constraints nullable="false" foreignKeyName="fk_external_id_access_point_id" references="ap_record(record_id)"/>
             </column>
         </createTable>
+
+        <insert tableName="db_hibernate_sequences">
+            <column name="sequence_name" value="ap_external_id|external_id"/>
+            <column name="next_val" value="1"/>
+        </insert>
+
+        <!-- Insert record for INTERPI -->
+        <insert tableName="ap_external_id_type">
+            <column name="external_id_type_id" value="1"/>
+            <column name="code" value="INTERPI"/>
+            <column name="name" value="Interpi"/>
+        </insert>
+
+        <!-- Migrate current external ids -->
+        <sql>INSERT INTO ap_external_id (external_id, value, external_id_type_id, access_point_id)
+            SELECT record_id, external_id, 1, record_id
+            FROM ap_record WHERE external_id is not null
+        </sql>
+        <sql>
+            update db_hibernate_sequences set next_val = (select coalesce(max(external_id),0)+1 from ap_external_id) where sequence_name = 'ap_external_id|external_id';
+        </sql>
+
+        <dropColumn tableName="ap_record" columnName="external_id"/>
+        <dropColumn tableName="ap_record" columnName="external_system_id"/>
+    </changeSet>
+
+    <changeSet id="20180226123500" author="fric">
+        <!--migrace acess_point-->
+        <renameTable oldTableName="ap_record" newTableName="ap_access_point"/>
+        <dropColumn tableName="ap_access_point" columnName="record"/>
+        <dropColumn tableName="ap_access_point" columnName="version"/>
+        <dropColumn tableName="ap_access_point" columnName="last_update"/>
+        <renameColumn newColumnName="access_point_id" oldColumnName="record_id" tableName="ap_access_point"/>
+        <renameColumn newColumnName="access_point_id" oldColumnName="record_id" tableName="par_party"/>
+
+        <update tableName="db_hibernate_sequences">
+            <column name="sequence_name" value="reg_record|record_id" />
+            <where>sequence_name = 'ap_access_point|access_point_id'</where>
+        </update>
+
+        <sql>
+            update db_hibernate_sequences set next_val = (select coalesce(max(access_point_id),0)+1 from ap_access_point) where sequence_name = 'ap_access_point|access_point_id';
+        </sql>
     </changeSet>
 
     <changeSet id="20180301113700" author="fric">
