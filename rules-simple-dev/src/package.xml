@@ -4,6 +4,6 @@
   <version>16</version>
   <description>Simplified rules for ELZA developers</description>
   <dependencies>
-    <dependency code="CZ_BASE" min-version="22" />
+    <dependency code="CZ_BASE" min-version="16" />
   </dependencies>
 </package>
