@@ -19,7 +19,7 @@ pipeline {
         }
         stage('Image') {
             when {
-                 branch 'elza-0.17'
+                 branch 'elza-0.18'
              }
             steps {
                 sh "cp distrib/elza-war/target/elza-*.war distrib/elza-docker/elza.war"
