@@ -26,6 +26,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.Sort;
@@ -998,6 +999,7 @@ public class AccessPointService {
         Assert.notNull(accessPoint, "Přístupový bod musí být vyplněn");
         Assert.notNull(type, "Typ musí být vyplněn");
         apDataService.validationNotDeleted(accessPoint);
+        apDataService.validationNotParty(accessPoint);
         if (type.getApTypeId().equals(accessPoint.getApType().getApTypeId())) {
             return accessPoint;
         }
@@ -1031,6 +1033,7 @@ public class AccessPointService {
                                            @Nullable final String description) {
         Validate.notNull(accessPoint, "Přístupový bod musí být vyplněn");
         apDataService.validationNotDeleted(accessPoint);
+        apDataService.validationNotParty(accessPoint);
 
         if (accessPoint.getRuleSystem() != null) {
             throw new BusinessException("Nelze upravovat charakteristiku u strukturovaného přístupového bodu",
@@ -1294,6 +1297,7 @@ public class AccessPointService {
         Validate.notNull(name, "Nové jméno musí být vyplněno");
         apDataService.validationNotDeleted(accessPoint);
         apDataService.validationNotDeleted(apName);
+        apDataService.validationNotParty(accessPoint);
 
         if (accessPoint.getRuleSystem() != null) {
             throw new BusinessException("Nelze upravovat jméno u strukturovaného přístupového bodu",

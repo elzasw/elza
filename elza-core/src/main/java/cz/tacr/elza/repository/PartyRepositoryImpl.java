@@ -48,7 +48,7 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
         CriteriaQuery<ParParty> query = builder.createQuery(ParParty.class);
         Root<ParParty> party = query.from(ParParty.class);
 
-        Predicate condition = preparePartyApSearchPredicate(searchRecord, partyTypeId, apTypeIds, scopeIds, party, builder);
+        Predicate condition = preparePartyApSearchPredicate(searchRecord, partyTypeId, apTypeIds, scopeIds, party, builder, query, false);
 
         query.select(party);
         if (condition != null) {
@@ -79,7 +79,7 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
         CriteriaQuery<Long> query = builder.createQuery(Long.class);
         Root<ParParty> party = query.from(ParParty.class);
 
-        Predicate condition = preparePartyApSearchPredicate(searchRecord, partyTypeId, apTypeIds, scopeIds, party, builder);
+        Predicate condition = preparePartyApSearchPredicate(searchRecord, partyTypeId, apTypeIds, scopeIds, party, builder, query, true);
 
         query.select(builder.countDistinct(party));
         if (condition != null) {
@@ -98,29 +98,30 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
     
     /**
      * Připraví dotaz pro nalezení rejstříkových záznamů.
-     * 
+     *
      * @param searchValue
      *            hledaný řetězec, může být null
      * @param partyTypeId
      *            typ záznamu
-     * @param cb
-     *            buider pro vytváření podmínek
      * @param scopeIds
      *            seznam tříd rejstříků, ve kterých se vyhledává
+     * @param cb
+     *            buider pro vytváření podmínek
      * @param query
-     * @param excludeInvalid
      * @return výsledné podmínky pro dotaz, nebo null pokud není za co filtrovat
      */
     private static Predicate preparePartyApSearchPredicate(final String searchValue,
-                                                    final Integer partyTypeId,
-                                                    final Set<Integer> apTypeIds,
-                                                    final Set<Integer> scopeIds,
-                                                    final Root<ParParty> partyRoot,
-                                                    final CriteriaBuilder cb) {
+                                                           final Integer partyTypeId,
+                                                           final Set<Integer> apTypeIds,
+                                                           final Set<Integer> scopeIds,
+                                                           final Root<ParParty> partyRoot,
+                                                           final CriteriaBuilder cb,
+                                                           final CriteriaQuery<?> query,
+                                                           final boolean count) {
         // join AP which must always exists
         Join<ParParty, ApAccessPoint> apJoin = partyRoot.join(ParParty.RECORD, JoinType.INNER);
 
-        Predicate cond = ApAccessPointRepositoryImpl.prepareApSearchPredicate(searchValue, apTypeIds, scopeIds, apJoin, cb);
+        Predicate cond = ApAccessPointRepositoryImpl.prepareApSearchPredicate(searchValue, apTypeIds, scopeIds, apJoin, cb, query, count);
         // add party type condition
         if (partyTypeId != null) {
             Predicate typeCond = cb.equal(partyRoot.get(ParParty.PARTY_TYPE_ID), partyTypeId);
