@@ -104,11 +104,6 @@ public class ApAccessPointRepositoryImpl implements ApAccessPointRepositoryCusto
         conjunctions.add(fromAp.get(ApAccessPoint.DELETE_CHANGE_ID).isNull());
         conjunctions.add(cb.or(fromAp.get(ApAccessPoint.STATE).isNull(), cb.notEqual(fromAp.get(ApAccessPoint.STATE), ApState.TEMP)));
 
-        // add text search
-        String searchExp = StringUtils.trimToNull(searchValue);
-        if (searchExp != null) {
-            searchExp = '%' + searchExp.toLowerCase() + '%';
-
         // add name join
         Join<ApAccessPoint, ApName> nameJoin = fromAp.join(ApAccessPoint.NAMES, JoinType.LEFT);
         Predicate nameFkCond = cb.equal(fromAp.get(ApAccessPoint.ACCESS_POINT_ID),

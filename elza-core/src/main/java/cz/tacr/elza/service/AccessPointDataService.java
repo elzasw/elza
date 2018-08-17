@@ -19,7 +19,6 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 import java.time.LocalDateTime;
-import java.util.Collection;
 import java.util.Objects;
 
 
@@ -38,18 +37,21 @@ public class AccessPointDataService {
     private final ApChangeRepository apChangeRepository;
     private final ApNameRepository apNameRepository;
     private final ApDescriptionRepository descriptionRepository;
+    private final PartyService partyService;
 
     @Autowired
     public AccessPointDataService(final EntityManager em,
                                   final UserService userService,
                                   final ApChangeRepository apChangeRepository,
                                   final ApNameRepository apNameRepository,
-                                  final ApDescriptionRepository descriptionRepository) {
+                                  final ApDescriptionRepository descriptionRepository,
+                                  final PartyService partyService) {
         this.em = em;
         this.userService = userService;
         this.apChangeRepository = apChangeRepository;
         this.apNameRepository = apNameRepository;
         this.descriptionRepository = descriptionRepository;
+        this.partyService = partyService;
     }
 
     /**
@@ -227,6 +229,18 @@ public class AccessPointDataService {
         if (name.getDeleteChange() != null) {
             throw new BusinessException("Nelze upravit jméno přístupového bodu", RegistryCode.CANT_CHANGE_DELETED_NAME)
                     .set("nameId", name.getNameId());
+        }
+    }
+
+    /**
+     * Validace přístupového bodu, že nemá vazbu na osobu.
+     *
+     * @param accessPoint přístupový bod
+     */
+    public void validationNotParty(final ApAccessPoint accessPoint) {
+        ParParty parParty = partyService.findParPartyByAccessPoint(accessPoint);
+        if (parParty != null) {
+            throw new BusinessException("Existuje vazba z osoby, nelze měnit přístupový bod", RegistryCode.EXIST_FOREIGN_PARTY);
         }
     }
 
