@@ -159,6 +159,7 @@ public class PartiesContext {
     }
 
     public void onPartyFinished(PartyInfo partyInfo) {
+    	// TODO: remove this and PartyInfo logic for sub-entity tracking
     }
 
     private void updatePartyAp(PartyInfo partyInfo) {
@@ -203,14 +204,12 @@ public class PartiesContext {
         storeNames(false);
         storeNameComplements(false);
         storePreferredNames(false);
-        
-        prepareAps();
     }
     
     /**
      * Prepare acess points for parties
      */
-    private void prepareAps() {
+    public void prepareAps() {
     	for(PartyInfo partyInfo : importIdPartyInfoMap.values()) {
             updatePartyAp(partyInfo);
             // AP is now processed
@@ -288,6 +287,10 @@ public class PartiesContext {
                 // store remaining APs and parties
                 context.getAccessPoints().storeAll();
                 context.getParties().storeAll();
+            }
+            if (lastPartyModifiablePhase) {
+            	// TODO: temporary solution
+            	context.getParties().prepareAps();
             }
             return true;
         }
