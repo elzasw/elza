@@ -61,7 +61,7 @@ class RegistryDetail extends AbstractReactComponent {
     }
 
     state = {
-        activeIndexes: {},
+        activeIndexes: {"NAMES": true, "DESCRIPTION": true},
     };
 
     componentDidMount() {
