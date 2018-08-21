@@ -61,7 +61,7 @@ class RegistryDetail extends AbstractReactComponent {
     }
 
     state = {
-        activeIndexes: {},
+        activeIndexes: {"NAMES": true, "DESCRIPTION": true},
     };
 
     componentDidMount() {
@@ -322,7 +322,7 @@ class RegistryDetail extends AbstractReactComponent {
                     <CollapsablePanel tabIndex={0} key={"DESCRIPTION"} isOpen={activeIndexes && activeIndexes["DESCRIPTION"] === true} header={i18n("accesspoint.detail.description")} eventKey={"DESCRIPTION"} onPin={this.handlePinToggle} onSelect={this.handleToggleActive}>
                         <div className="elements-container">
                             <div className={"el-12"}>
-                                <label>{i18n('registry.detail.characteristics')} <Button onClick={this.editDescription}><Icon glyph="fa-pencil" /></Button></label>
+                                <label>{i18n('registry.detail.characteristics')} {!disableEdit && <Button onClick={this.editDescription}><Icon glyph="fa-pencil" /></Button>}</label>
                                 <div>{data.characteristics}</div>
                             </div>
                         </div>
