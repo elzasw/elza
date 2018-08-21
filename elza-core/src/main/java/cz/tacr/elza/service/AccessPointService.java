@@ -26,6 +26,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.Sort;
@@ -60,9 +61,6 @@ public class AccessPointService {
 
     @Autowired
     private ApTypeRepository apTypeRepository;
-
-    @Autowired
-    private PartyService partyService;
 
     @Autowired
     private DataRecordRefRepository dataRecordRefRepository;
@@ -209,33 +207,30 @@ public class AccessPointService {
     }
 
     /**
-     * Kontrola, jestli je používáno rejstříkové heslo v navázaných tabulkách.
+     * Kontrola, jestli je používán přístupový bod v navázaných tabulkách.
      *
-     * @param record rejstříkové heslo
+     * @param accessPoint přístupový bod
      *
      * @throws BusinessException napojení na jinou tabulku
      */
-    public void checkDeletion(final ApAccessPoint record) {
-        ParParty parParty = partyService.findParPartyByAccessPoint(record);
-        if (parParty != null) {
-            throw new BusinessException("Existuje vazba z osoby, nelze smazat.", RegistryCode.EXIST_FOREIGN_PARTY);
-        }
+    public void checkDeletion(final ApAccessPoint accessPoint) {
+        apDataService.validationNotParty(accessPoint);
 
-        long countDataRecordRef = dataRecordRefRepository.countAllByRecord(record);
+        long countDataRecordRef = dataRecordRefRepository.countAllByRecord(accessPoint);
         if (countDataRecordRef > 0) {
-            throw new BusinessException("Nalezeno použití hesla v tabulce ArrDataRecordRef.", RegistryCode.EXIST_FOREIGN_DATA).set("table", "ArrDataRecordRef");
+            throw new BusinessException("Nalezeno použití AP v tabulce ArrDataRecordRef.", RegistryCode.EXIST_FOREIGN_DATA).set("table", "ArrDataRecordRef");
         }
 
-        long countNodeRegister = nodeRegisterRepository.countByRecordAndDeleteChangeIsNull(record);
+        long countNodeRegister = nodeRegisterRepository.countByRecordAndDeleteChangeIsNull(accessPoint);
         if (countNodeRegister > 0) {
-            throw new BusinessException("Nalezeno použití hesla v tabulce ArrNodeRegister.", RegistryCode.EXIST_FOREIGN_DATA).set("table", "ArrNodeRegister");
+            throw new BusinessException("Nalezeno použití AP v tabulce ArrNodeRegister.", RegistryCode.EXIST_FOREIGN_DATA).set("table", "ArrNodeRegister");
         }
 
         // vztah osoby par_relation_entity
-        List<ParRelationEntity> relationEntities = relationEntityRepository.findActiveByRecord(record);
+        List<ParRelationEntity> relationEntities = relationEntityRepository.findActiveByRecord(accessPoint);
         if (CollectionUtils.isNotEmpty(relationEntities)) {
-            throw new BusinessException("Nelze smazat/zneplatnit rejstříkové heslo na kterou mají vazbu jiné aktivní osoby v relacích.", RegistryCode.EXIST_FOREIGN_DATA)
-                    .set("recordId", record.getAccessPointId())
+            throw new BusinessException("Nelze smazat/zneplatnit AP na který mají vazbu jiné aktivní osoby v relacích.", RegistryCode.EXIST_FOREIGN_DATA)
+                    .set("recordId", accessPoint.getAccessPointId())
                     .set("relationEntities", relationEntities.stream().map(ParRelationEntity::getRelationEntityId).collect(Collectors.toList()))
                     .set("partyIds", relationEntities.stream().map(ParRelationEntity::getRelation).map(ParRelation::getParty).map(ParParty::getPartyId).collect(Collectors.toList()));
         }
@@ -998,6 +993,7 @@ public class AccessPointService {
         Assert.notNull(accessPoint, "Přístupový bod musí být vyplněn");
         Assert.notNull(type, "Typ musí být vyplněn");
         apDataService.validationNotDeleted(accessPoint);
+        apDataService.validationNotParty(accessPoint);
         if (type.getApTypeId().equals(accessPoint.getApType().getApTypeId())) {
             return accessPoint;
         }
@@ -1031,6 +1027,7 @@ public class AccessPointService {
                                            @Nullable final String description) {
         Validate.notNull(accessPoint, "Přístupový bod musí být vyplněn");
         apDataService.validationNotDeleted(accessPoint);
+        apDataService.validationNotParty(accessPoint);
 
         if (accessPoint.getRuleSystem() != null) {
             throw new BusinessException("Nelze upravovat charakteristiku u strukturovaného přístupového bodu",
@@ -1294,6 +1291,7 @@ public class AccessPointService {
         Validate.notNull(name, "Nové jméno musí být vyplněno");
         apDataService.validationNotDeleted(accessPoint);
         apDataService.validationNotDeleted(apName);
+        apDataService.validationNotParty(accessPoint);
 
         if (accessPoint.getRuleSystem() != null) {
             throw new BusinessException("Nelze upravovat jméno u strukturovaného přístupového bodu",

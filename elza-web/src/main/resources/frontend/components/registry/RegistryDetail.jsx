@@ -62,7 +62,7 @@ class RegistryDetail extends AbstractReactComponent {
     }
 
     state = {
-        activeIndexes: {},
+        activeIndexes: {"NAMES": true, "DESCRIPTION": true},
     };
 
     componentDidMount() {
@@ -527,7 +527,7 @@ class RegistryDetail extends AbstractReactComponent {
                         <div className={"cp-15"}>
                             <div className="elements-container">
                                 <div className={"el-12"}>
-                                    <label>{i18n('registry.detail.characteristics')} {data.ruleSystemId == null && <Button onClick={this.editDescription}><Icon glyph="fa-pencil" /></Button>}</label>
+                                    <label>{i18n('registry.detail.characteristics')} {data.ruleSystemId == null && !disableEdit && <Button onClick={this.editDescription}><Icon glyph="fa-pencil" /></Button>}</label>
                                     <div>{data.characteristics}</div>
                                 </div>
                             </div>
