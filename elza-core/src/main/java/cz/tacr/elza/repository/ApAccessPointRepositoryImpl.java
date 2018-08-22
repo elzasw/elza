@@ -9,13 +9,7 @@ import java.util.Set;
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.From;
-import javax.persistence.criteria.Join;
-import javax.persistence.criteria.JoinType;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+import javax.persistence.criteria.*;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -49,9 +43,9 @@ public class ApAccessPointRepositoryImpl implements ApAccessPointRepositoryCusto
         CriteriaQuery<ApAccessPoint> query = builder.createQuery(ApAccessPoint.class);
         Root<ApAccessPoint> record = query.from(ApAccessPoint.class);
 
-        Predicate condition = prepareApSearchPredicate(searchRecord, apTypeIds, scopeIdsForSearch, record, builder);
+        Predicate condition = prepareApSearchPredicate(searchRecord, apTypeIds, scopeIdsForSearch, record, builder, query, false);
 
-        query.select(record).distinct(true);
+        query.select(record);
         if (condition != null) {
             query.where(condition);
         }
@@ -74,7 +68,7 @@ public class ApAccessPointRepositoryImpl implements ApAccessPointRepositoryCusto
         CriteriaQuery<Long> query = builder.createQuery(Long.class);
         Root<ApAccessPoint> record = query.from(ApAccessPoint.class);
 
-        Predicate condition = prepareApSearchPredicate(searchRecord, apTypeIds, scopeIds, record, builder);
+        Predicate condition = prepareApSearchPredicate(searchRecord, apTypeIds, scopeIds, record, builder, query, true);
 
         query.select(builder.countDistinct(record));
         if (condition != null) {
@@ -86,38 +80,44 @@ public class ApAccessPointRepositoryImpl implements ApAccessPointRepositoryCusto
 
     /**
      * Prepares predicate for AP search. Only necessary entities will be joined.
-     * 
+     *
      * @param searchValue if present APs with partial match in name or description are returned
      * @param apTypeIds if not empty APs with same type are returned
      * @param scopeIds APs with same scope are returned, cannot be empty
-     * @param excludeInvalid if true only valid APs are returned
      * @param fromAp query root or entity join of AP
      * @param cb JPA query builder
-     * 
+     *
+     * @param query
      * @return AP predicate which can be used as where condition.
      */
     public static Predicate prepareApSearchPredicate(final String searchValue,
                                                      final Collection<Integer> apTypeIds,
                                                      final Collection<Integer> scopeIds,
                                                      final From<?, ApAccessPoint> fromAp,
-                                                     final CriteriaBuilder cb) {
+                                                     final CriteriaBuilder cb,
+                                                     final CriteriaQuery<?> query,
+                                                     final boolean count) {
         // prepare conjunction list
         List<Predicate> conjunctions = new ArrayList<>();
 
         // search only active AP
         conjunctions.add(fromAp.get(ApAccessPoint.DELETE_CHANGE_ID).isNull());
-        
+
+        // add name join
+        Join<ApAccessPoint, ApName> nameJoin = fromAp.join(ApAccessPoint.NAMES, JoinType.LEFT);
+        Predicate nameFkCond = cb.equal(fromAp.get(ApAccessPoint.ACCESS_POINT_ID),
+                nameJoin.get(ApName.ACCESS_POINT_ID));
+        Predicate activeNameCond = nameJoin.get(ApName.DELETE_CHANGE_ID).isNull();
+        nameJoin.on(cb.and(nameFkCond, activeNameCond));
+
+        if (!count) {
+            query.orderBy(cb.asc(nameJoin.get(ApName.NAME)));
+        }
+
         // add text search
         String searchExp = StringUtils.trimToNull(searchValue);
         if (searchExp != null) {
             searchExp = '%' + searchExp.toLowerCase() + '%';
-
-            // add name join
-            Join<ApAccessPoint, ApName> nameJoin = fromAp.join(ApAccessPoint.NAMES, JoinType.LEFT);
-            Predicate nameFkCond = cb.equal(fromAp.get(ApAccessPoint.ACCESS_POINT_ID),
-                                            nameJoin.get(ApName.ACCESS_POINT_ID));
-            Predicate activeNameCond = nameJoin.get(ApName.DELETE_CHANGE_ID).isNull();
-            nameJoin.on(cb.and(nameFkCond, activeNameCond));
 
             // add description join
             // Join<ApAccessPoint, ApDescription> descJoin = apJoin.join(ApAccessPoint.DESCRIPTIONS, JoinType.LEFT);

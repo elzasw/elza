@@ -23,6 +23,7 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.vo.ImportAccessPoint;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.Sort;
@@ -990,6 +991,7 @@ public class AccessPointService {
         Assert.notNull(accessPoint, "Přístupový bod musí být vyplněn");
         Assert.notNull(type, "Typ musí být vyplněn");
         validationNotDeleted(accessPoint);
+        validationNotParty(accessPoint);
         if (type.getApTypeId().equals(accessPoint.getApType().getApTypeId())) {
             return accessPoint;
         }
@@ -1008,6 +1010,8 @@ public class AccessPointService {
     @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
     public ApAccessPoint changeDescription(@AuthParam(type = AuthParam.Type.AP) final ApAccessPoint accessPoint,
                                            @Nullable final String description) {
+        Validate.notNull(accessPoint, "Přístupový bod musí být vyplněn");
+        validationNotParty(accessPoint);
         return changeDescription(accessPoint, description, null);
     }
 
@@ -1093,6 +1097,7 @@ public class AccessPointService {
         Assert.notNull(name, "Nové jméno musí být vyplněno");
         validationNotDeleted(accessPoint);
         validationNotDeleted(apName);
+        validationNotParty(accessPoint);
 
         ApChange change = createChange(ApChange.Type.NAME_UPDATE);
         return updateAccessPointName(accessPoint, apName, name, complement, language, change);
@@ -1432,6 +1437,18 @@ public class AccessPointService {
             throw new BusinessException("Nelze upravit přístupový bod", RegistryCode.CANT_CHANGE_DELETED_AP)
                     .set("accessPointId", accessPoint.getAccessPointId())
                     .set("uuid", accessPoint.getUuid());
+        }
+    }
+
+    /**
+     * Validace přístupového bodu, že nemá vazbu na osobu.
+     *
+     * @param accessPoint přístupový bod
+     */
+    private void validationNotParty(final ApAccessPoint accessPoint) {
+        ParParty parParty = partyService.findParPartyByAccessPoint(accessPoint);
+        if (parParty != null) {
+            throw new BusinessException("Existuje vazba z osoby, nelze měnit přístupový bod", RegistryCode.EXIST_FOREIGN_PARTY);
         }
     }
 
