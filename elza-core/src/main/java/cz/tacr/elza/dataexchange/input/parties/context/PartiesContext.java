@@ -282,15 +282,16 @@ public class PartiesContext {
 
         @Override
         public boolean onPhaseChange(ImportPhase previousPhase, ImportPhase nextPhase, ImportContext context) {
-            boolean lastPartyModifiablePhase = ImportPhase.RELATIONS.isSubsequent(nextPhase);
-            if (lastPartyModifiablePhase || previousPhase == ImportPhase.PARTIES) {
-                // store remaining APs and parties
-                context.getAccessPoints().storeAll();
-                context.getParties().storeAll();
-            }
-            if (lastPartyModifiablePhase) {
-            	// TODO: temporary solution
+        	if (previousPhase == ImportPhase.PARTIES) {
+        		context.getAccessPoints().storeAll();
+        		context.getParties().storeAll();
+        	}
+            // after last party related phase
+            if (ImportPhase.RELATIONS.isSubsequent(nextPhase)) {
+            	// temporary solution
+            	// TODO: groovy script after commit (outside import)
             	context.getParties().prepareAps();
+            	context.getAccessPoints().storeAll();
             }
             return true;
         }
