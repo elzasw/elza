@@ -183,8 +183,8 @@ public class DEImportService {
             // read XML
             reader.readDocument();
 
-            // set final phase
-            context.setCurrentPhase(ImportPhase.FINISHED);
+            // finish import
+            context.finish();
 
             // sync node cache with all new nodes
             nodeCacheService.syncCache();
@@ -250,7 +250,7 @@ public class DEImportService {
         // get static data for current transaction
         StaticDataProvider staticData = staticDataService.getData();
 
-        // initialize contexts
+        // initialize phase contexts
         AccessPointsContext apContext = new AccessPointsContext(storageManager, params.getBatchSize(), importScope,
                 apChangeHolder, staticData, initHelper);
         PartiesContext partiesContext = new PartiesContext(storageManager, params.getBatchSize(), apContext, staticData,
@@ -258,13 +258,11 @@ public class DEImportService {
         InstitutionsContext institutionsContext = new InstitutionsContext(storageManager, params.getBatchSize(),
                 initHelper);
         SectionsContext sectionsContext = initSectionsContext(storageManager, params, importScope, staticData);
-
+        
+        // initialize context
         ImportContext context = new ImportContext(session, staticData, apContext, partiesContext, institutionsContext,
-                sectionsContext);
-        context.initSubContexts();
-
-        // register listeners
-        params.getImportPhaseChangeListeners().forEach(context::registerPhaseChangeListener);
+                sectionsContext, storageManager);
+        context.init(params.getImportPhaseChangeListeners());
 
         return context;
     }
