@@ -889,7 +889,7 @@ public class ArrangementController {
 					String name = packetResolveType.name();
 					return ConflictResolve.valueOf(name);
 				} else {
-					return ConflictResolve.USE_TARGET;
+                    return ConflictResolve.COPY_AND_RENAME;
 				}
             }
         }, targetFundVersion, targetStaticNode, targetStaticParentNode, copyNodesParams.getSelectedDirection());

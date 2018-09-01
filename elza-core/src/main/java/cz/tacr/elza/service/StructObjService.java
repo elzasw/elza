@@ -318,7 +318,7 @@ public class StructObjService {
         // TODO: call notifications
     }
 
-    private void sendNotification(ArrStructuredObject structObj) {
+    public void sendNotification(ArrStructuredObject structObj) {
         Integer structObjId = structObj.getStructuredObjectId();
         // send notifications
         if (structObj.getState() == ArrStructuredObject.State.TEMP) {
