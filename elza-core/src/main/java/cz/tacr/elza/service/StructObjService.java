@@ -539,10 +539,36 @@ public class StructObjService {
      * Provede smazání dočasných hodnot strukt. typu.
      */
     public void removeTempStructureData() {
+        // Quick fix: change state to error for connected temp struct objs
+        // TODO: Find why it is happening and fix cause of this issue
+        List<ArrStructuredObject> connTempObjs = structObjRepository.findConnectedTempObjs();
+        if (CollectionUtils.isNotEmpty(connTempObjs)) {
+            // Exists inconsistent objects -> change state
+            logger.error("Found inconsistent structured objects, count: " + connTempObjs.size());
+
+            for (ArrStructuredObject so : connTempObjs) {
+                logger.error("Updating object with id: " + so.getStructuredObjectId());
+                so.setState(State.ERROR);
+                structObjRepository.save(so);
+            }
+            //structObjRepository.
+            logger.info("Inconsistencies in structured objects fixed");
+        }
+
+        // Delete remaining temp objects
         List<ArrChange> changes = structObjRepository.findTempChange();
         structureItemRepository.deleteByStructuredObjectStateTemp();
         structObjRepository.deleteByStateTemp();
-        changeRepository.delete(changes);
+        // Changes cannot be easily deleted
+        // We cannot be sure how many time is change used
+        // changeRepository.delete(changes);
+
+        // Update state for changed objects
+        if (CollectionUtils.isNotEmpty(connTempObjs)) {
+            for (ArrStructuredObject so : connTempObjs) {
+                generateAndValidate(so);
+            }
+        }
     }
 
     public static class ValidationErrorDescription {
