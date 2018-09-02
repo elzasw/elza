@@ -473,7 +473,7 @@
     <item-spec code="ZP2015_OTHERID_SIG_ORIG" item-type="ZP2015_OTHER_ID">
         <name>Signatura přidělená původcem</name>
         <description>Signatura přidělená původcem</description>
-        <shortcut>sign.pův.</shortcut>
+        <shortcut>sign. pův.</shortcut>
     </item-spec>
     <item-spec code="ZP2015_OTHERID_SIG" item-type="ZP2015_OTHER_ID">
         <name>Signatura přidělená při zpracování archiválie</name>
@@ -483,12 +483,12 @@
     <item-spec code="ZP2015_OTHERID_STORAGE_ID" item-type="ZP2015_OTHER_ID">
         <name>Ukládací znak</name>
         <description>Ukládací znak</description>
-        <shortcut>ukl.znak</shortcut>
+        <shortcut>ukl. znak</shortcut>
     </item-spec>
     <item-spec code="ZP2015_OTHERID_CJ" item-type="ZP2015_OTHER_ID">
         <name>Číslo jednací</name>
         <description>Číslo jednací</description>
-        <shortcut>č.j.</shortcut>
+        <shortcut>č. j.</shortcut>
     </item-spec>
     <item-spec code="ZP2015_OTHERID_DOCID" item-type="ZP2015_OTHER_ID">
         <name>Značka spisu</name>
