@@ -127,7 +127,7 @@ public class StructuredObjectRepositoryImpl implements StructuredObjectRepositor
 
                 .addSqlPart("SELECT d.data_id FROM arr_item i JOIN arr_data d ON d.data_id = i.data_id ")
                 .addSqlPart("JOIN arr_desc_item di ON di.item_id = i.item_id ")
-                .addSqlPart("WHERE i.delete_change_id IS NULL AND d.data_type_id = 11 AND di.node_id IN (")
+                .addSqlPart("WHERE i.delete_change_id IS NULL AND d.data_type_id = 15 AND di.node_id IN (")
 
                 .addSqlPart(
                         "WITH RECURSIVE treeData(level_id, create_change_id, delete_change_id, node_id, node_id_parent, position) AS ")
