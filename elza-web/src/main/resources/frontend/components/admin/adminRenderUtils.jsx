@@ -29,9 +29,9 @@ export function getUsername(user){
     if(user.preferredName){
         // if user has preferredName defined
         return user.preferredName + " (" + user.username + ")";
-    } else if (user.party && user.party.record && user.party.record.record) {
+    } else if (user.party && user.party.accessPoint && user.party.accessPoint.record) {
         // if user has record name
-        return user.party.record.record + " (" + user.username + ")";
+        return user.party.accessPoint.record + " (" + user.username + ")";
     } else {
         return user.username;
     }
