@@ -54,4 +54,37 @@
         <addNotNullConstraint tableName="ap_external_id_type" columnName="package_id" columnDataType="int" />
     </changeSet>
 
+    <!-- Column for sort_value in arr_structured_object -->
+    <changeSet id="20180903234900" author="ppyt">
+        <addColumn tableName="arr_structured_object">
+            <column name="sort_value" type="nvarchar(1000)" />
+        </addColumn>
+        <createIndex tableName="arr_structured_object" indexName="arr_structured_object_sort_idx">
+          <column name="sort_value" />
+        </createIndex>
+        <sql>UPDATE arr_structured_object SET sort_value = value</sql>
+    </changeSet>
+    
+    <!-- New table for structured object queue (value generator) -->
+    <changeSet id="20180903234901" author="ppyt">
+        <createTable tableName="arr_sobj_vrequest">
+            <column name="sobj_vrequest_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="structured_object_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint constraintName="fk_arr_sobj_vrequest_structured_object"
+                                 baseTableName="arr_sobj_vrequest"
+                                 baseColumnNames="structured_object_id"
+                                 referencedTableName="arr_structured_object"
+                                 referencedColumnNames="structured_object_id"
+                                 onDelete="NO ACTION"/>
+        <insert tableName="db_hibernate_sequences">
+            <column name="sequence_name" value="arr_sobj_vrequest|sobj_vrequest_id"/>
+            <column name="next_val" value="1"/>
+        </insert>
+    </changeSet>
+
 </databaseChangeLog>

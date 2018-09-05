@@ -18,7 +18,7 @@ import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.RulStructuredType;
 import cz.tacr.elza.service.ArrangementService;
-import cz.tacr.elza.service.StructObjService;
+import cz.tacr.elza.service.StructObjValueService;
 
 /**
  * Represents single imported fund or subtree for specified node.
@@ -41,7 +41,7 @@ public class SectionContext {
 
     private final ArrangementService arrangementService;
 
-    private final StructObjService structObjService;
+    private final StructObjValueService structObjService;
 
     private RulStructuredType processingStructType;
 

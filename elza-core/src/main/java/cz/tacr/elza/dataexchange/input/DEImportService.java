@@ -73,7 +73,7 @@ import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.GroovyScriptService;
 import cz.tacr.elza.service.LevelTreeCacheService;
-import cz.tacr.elza.service.StructObjService;
+import cz.tacr.elza.service.StructObjValueService;
 import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.cache.NodeCacheService;
 
@@ -126,7 +126,7 @@ public class DEImportService {
             FundVersionRepository fundVersionRepository,
             LevelRepository levelRepository,
             LevelTreeCacheService levelTreeCacheService,
-            StructObjService structObjService,
+            StructObjValueService structObjService,
             AccessPointService accessPointService,
             ResourcePathResolver resourcePathResolver) {
         this.initHelper = new ImportInitHelper(groovyScriptService, institutionRepository, institutionTypeRepository,

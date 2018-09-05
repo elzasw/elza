@@ -15,7 +15,7 @@ import cz.tacr.elza.repository.UnitdateRepository;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.GroovyScriptService;
-import cz.tacr.elza.service.StructObjService;
+import cz.tacr.elza.service.StructObjValueService;
 
 public class ImportInitHelper {
 
@@ -47,7 +47,7 @@ public class ImportInitHelper {
 
     private final UnitdateRepository unitdateRepository;
 
-    private final StructObjService structObjService;
+    private final StructObjValueService structObjService;
 
     private final AccessPointService accessPointService;
 
@@ -65,7 +65,7 @@ public class ImportInitHelper {
             PartyNameComplementRepository nameComplementRepository,
             PartyGroupIdentifierRepository groupIdentifierRepository,
             UnitdateRepository unitdateRepository,
-            StructObjService structObjService,
+            StructObjValueService structObjService,
             AccessPointService accessPointService) {
         this.groovyScriptService = groovyScriptService;
         this.institutionRepository = institutionRepository;
@@ -141,7 +141,7 @@ public class ImportInitHelper {
         return unitdateRepository;
     }
 
-    public StructObjService getStructObjService() {
+    public StructObjValueService getStructObjService() {
         return structObjService;
     }
 

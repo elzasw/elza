@@ -87,7 +87,7 @@ public class StructuredObjectRepositoryImpl implements StructuredObjectRepositor
         Predicate cond = createStructObjSearchCond(root, search, structureTypeId, fundId, assignable);
 
         cq.where(cond);
-        cq.orderBy(cb.asc(root.get("value")));
+        cq.orderBy(cb.asc(root.get("sortValue")));
 
         TypedQuery<ArrStructuredObject> q = em.createQuery(cq);
         q.setFirstResult(firstResult);
@@ -104,8 +104,9 @@ public class StructuredObjectRepositoryImpl implements StructuredObjectRepositor
                                                               final int firstResult,
                                                               final int maxResults) {
         TypedQuery<Long> countQuery = createStructObjCountQuery(search, structuredTypeId, fundId, assignable);
-        TypedQuery<ArrStructuredObject> objQuery = createStructObjSearchQuery(search, structuredTypeId, fundId, assignable, firstResult,
-                maxResults);
+        TypedQuery<ArrStructuredObject> objQuery = createStructObjSearchQuery(search, structuredTypeId, 
+                                                                              fundId, assignable, firstResult,
+                                                                              maxResults);
         int count = countQuery.getSingleResult().intValue();
         List<ArrStructuredObject> objList = objQuery.getResultList();
         return new FilteredResult<>(firstResult, maxResults, count, objList);

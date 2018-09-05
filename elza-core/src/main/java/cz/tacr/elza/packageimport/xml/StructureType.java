@@ -21,6 +21,9 @@ public class StructureType {
     @XmlElement(name = "name", required = true)
     private String name;
 
+    @XmlAttribute(name = "validValueFromVersion", required = false)
+    private String validValueFromVersion;
+
     public String getCode() {
         return code;
     }
@@ -35,5 +38,13 @@ public class StructureType {
 
     public void setName(final String name) {
         this.name = name;
+    }
+
+    public String getValidValueFromVersion() {
+        return validValueFromVersion;
+    }
+
+    public void setValidValueFromVersion(String validValueFromVersion) {
+        this.validValueFromVersion = validValueFromVersion;
     }
 }

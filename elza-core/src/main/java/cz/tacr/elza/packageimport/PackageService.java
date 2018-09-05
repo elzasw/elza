@@ -1,36 +1,36 @@
 package cz.tacr.elza.packageimport;
 
-import cz.tacr.elza.api.UseUnitdateEnum;
-import cz.tacr.elza.api.enums.ParRelationClassTypeRepeatabilityEnum;
-import cz.tacr.elza.api.enums.UIPartyGroupTypeEnum;
-import cz.tacr.elza.bulkaction.BulkActionConfigManager;
-import cz.tacr.elza.core.AppContext;
-import cz.tacr.elza.core.ResourcePathResolver;
-import cz.tacr.elza.core.data.DataType;
-import cz.tacr.elza.core.data.StaticDataProvider;
-import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.core.security.AuthMethod;
-import cz.tacr.elza.domain.*;
-import cz.tacr.elza.domain.ArrOutputDefinition.OutputState;
-import cz.tacr.elza.domain.RulTemplate.Engine;
-import cz.tacr.elza.domain.UISettings.EntityType;
-import cz.tacr.elza.domain.integer.DisplayType;
-import cz.tacr.elza.domain.table.ElzaColumn;
-import cz.tacr.elza.exception.AbstractException;
-import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.ObjectNotFoundException;
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.exception.codes.PackageCode;
-import cz.tacr.elza.interpi.service.InterpiService;
-import cz.tacr.elza.packageimport.xml.*;
-import cz.tacr.elza.repository.*;
-import cz.tacr.elza.service.CacheService;
-import cz.tacr.elza.service.StructureService;
-import cz.tacr.elza.service.event.CacheInvalidateEvent;
-import cz.tacr.elza.service.eventnotification.EventNotificationService;
-import cz.tacr.elza.service.eventnotification.events.ActionEvent;
-import cz.tacr.elza.service.eventnotification.events.EventType;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+
+import javax.annotation.Nullable;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.validation.constraints.NotNull;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.Marshaller;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
@@ -47,22 +47,172 @@ import org.springframework.transaction.support.TransactionSynchronizationAdapter
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.FileSystemUtils;
 
-import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.validation.constraints.NotNull;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Marshaller;
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
-import java.util.*;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
-import java.util.zip.ZipOutputStream;
+import cz.tacr.elza.api.UseUnitdateEnum;
+import cz.tacr.elza.api.enums.ParRelationClassTypeRepeatabilityEnum;
+import cz.tacr.elza.api.enums.UIPartyGroupTypeEnum;
+import cz.tacr.elza.bulkaction.BulkActionConfigManager;
+import cz.tacr.elza.core.AppContext;
+import cz.tacr.elza.core.ResourcePathResolver;
+import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.core.security.AuthMethod;
+import cz.tacr.elza.domain.ApExternalIdType;
+import cz.tacr.elza.domain.ApType;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrOutputDefinition;
+import cz.tacr.elza.domain.ArrOutputDefinition.OutputState;
+import cz.tacr.elza.domain.ParComplementType;
+import cz.tacr.elza.domain.ParPartyNameFormType;
+import cz.tacr.elza.domain.ParPartyType;
+import cz.tacr.elza.domain.ParPartyTypeComplementType;
+import cz.tacr.elza.domain.ParPartyTypeRelation;
+import cz.tacr.elza.domain.ParRegistryRole;
+import cz.tacr.elza.domain.ParRelationClassType;
+import cz.tacr.elza.domain.ParRelationRoleType;
+import cz.tacr.elza.domain.ParRelationType;
+import cz.tacr.elza.domain.ParRelationTypeRoleType;
+import cz.tacr.elza.domain.RulAction;
+import cz.tacr.elza.domain.RulActionRecommended;
+import cz.tacr.elza.domain.RulArrangementExtension;
+import cz.tacr.elza.domain.RulArrangementRule;
+import cz.tacr.elza.domain.RulComponent;
+import cz.tacr.elza.domain.RulDataType;
+import cz.tacr.elza.domain.RulExtensionRule;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemSpecRegister;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulItemTypeAction;
+import cz.tacr.elza.domain.RulOutputType;
+import cz.tacr.elza.domain.RulPackage;
+import cz.tacr.elza.domain.RulPackageDependency;
+import cz.tacr.elza.domain.RulPolicyType;
+import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.RulStructureDefinition;
+import cz.tacr.elza.domain.RulStructureExtensionDefinition;
+import cz.tacr.elza.domain.RulStructuredType;
+import cz.tacr.elza.domain.RulTemplate;
+import cz.tacr.elza.domain.RulTemplate.Engine;
+import cz.tacr.elza.domain.UIPartyGroup;
+import cz.tacr.elza.domain.UISettings;
+import cz.tacr.elza.domain.UISettings.EntityType;
+import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.integer.DisplayType;
+import cz.tacr.elza.domain.table.ElzaColumn;
+import cz.tacr.elza.exception.AbstractException;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.exception.codes.PackageCode;
+import cz.tacr.elza.interpi.service.InterpiService;
+import cz.tacr.elza.packageimport.xml.ActionItemType;
+import cz.tacr.elza.packageimport.xml.ActionRecommended;
+import cz.tacr.elza.packageimport.xml.ArrangementExtension;
+import cz.tacr.elza.packageimport.xml.ArrangementExtensions;
+import cz.tacr.elza.packageimport.xml.ArrangementRule;
+import cz.tacr.elza.packageimport.xml.ArrangementRules;
+import cz.tacr.elza.packageimport.xml.Category;
+import cz.tacr.elza.packageimport.xml.Column;
+import cz.tacr.elza.packageimport.xml.ComplementType;
+import cz.tacr.elza.packageimport.xml.ComplementTypes;
+import cz.tacr.elza.packageimport.xml.ExtensionRule;
+import cz.tacr.elza.packageimport.xml.ExtensionRules;
+import cz.tacr.elza.packageimport.xml.ExternalIdType;
+import cz.tacr.elza.packageimport.xml.ExternalIdTypes;
+import cz.tacr.elza.packageimport.xml.ItemSpec;
+import cz.tacr.elza.packageimport.xml.ItemSpecRegister;
+import cz.tacr.elza.packageimport.xml.ItemSpecs;
+import cz.tacr.elza.packageimport.xml.ItemType;
+import cz.tacr.elza.packageimport.xml.ItemTypes;
+import cz.tacr.elza.packageimport.xml.OutputType;
+import cz.tacr.elza.packageimport.xml.OutputTypes;
+import cz.tacr.elza.packageimport.xml.PackageAction;
+import cz.tacr.elza.packageimport.xml.PackageActions;
+import cz.tacr.elza.packageimport.xml.PackageDependency;
+import cz.tacr.elza.packageimport.xml.PackageInfo;
+import cz.tacr.elza.packageimport.xml.PartyGroup;
+import cz.tacr.elza.packageimport.xml.PartyGroups;
+import cz.tacr.elza.packageimport.xml.PartyNameFormType;
+import cz.tacr.elza.packageimport.xml.PartyNameFormTypes;
+import cz.tacr.elza.packageimport.xml.PartyTypeComplementType;
+import cz.tacr.elza.packageimport.xml.PartyTypeComplementTypes;
+import cz.tacr.elza.packageimport.xml.PartyTypeRelation;
+import cz.tacr.elza.packageimport.xml.PartyTypeRelations;
+import cz.tacr.elza.packageimport.xml.PolicyType;
+import cz.tacr.elza.packageimport.xml.PolicyTypes;
+import cz.tacr.elza.packageimport.xml.RegisterType;
+import cz.tacr.elza.packageimport.xml.RegisterTypes;
+import cz.tacr.elza.packageimport.xml.RegistryRole;
+import cz.tacr.elza.packageimport.xml.RegistryRoles;
+import cz.tacr.elza.packageimport.xml.RelationClassType;
+import cz.tacr.elza.packageimport.xml.RelationClassTypes;
+import cz.tacr.elza.packageimport.xml.RelationRoleType;
+import cz.tacr.elza.packageimport.xml.RelationRoleTypes;
+import cz.tacr.elza.packageimport.xml.RelationType;
+import cz.tacr.elza.packageimport.xml.RelationTypeRoleType;
+import cz.tacr.elza.packageimport.xml.RelationTypeRoleTypes;
+import cz.tacr.elza.packageimport.xml.RelationTypes;
+import cz.tacr.elza.packageimport.xml.RuleSet;
+import cz.tacr.elza.packageimport.xml.RuleSets;
+import cz.tacr.elza.packageimport.xml.Setting;
+import cz.tacr.elza.packageimport.xml.SettingBase;
+import cz.tacr.elza.packageimport.xml.SettingFavoriteItemSpecs;
+import cz.tacr.elza.packageimport.xml.SettingFundViews;
+import cz.tacr.elza.packageimport.xml.SettingGridView;
+import cz.tacr.elza.packageimport.xml.SettingRecord;
+import cz.tacr.elza.packageimport.xml.SettingTypeGroups;
+import cz.tacr.elza.packageimport.xml.Settings;
+import cz.tacr.elza.packageimport.xml.StructureDefinition;
+import cz.tacr.elza.packageimport.xml.StructureDefinitions;
+import cz.tacr.elza.packageimport.xml.StructureType;
+import cz.tacr.elza.packageimport.xml.StructureTypes;
+import cz.tacr.elza.packageimport.xml.Template;
+import cz.tacr.elza.packageimport.xml.Templates;
+import cz.tacr.elza.repository.ActionRecommendedRepository;
+import cz.tacr.elza.repository.ActionRepository;
+import cz.tacr.elza.repository.ApExternalIdTypeRepository;
+import cz.tacr.elza.repository.ApTypeRepository;
+import cz.tacr.elza.repository.ArrangementExtensionRepository;
+import cz.tacr.elza.repository.ArrangementRuleRepository;
+import cz.tacr.elza.repository.ComplementTypeRepository;
+import cz.tacr.elza.repository.ComponentRepository;
+import cz.tacr.elza.repository.DataTypeRepository;
+import cz.tacr.elza.repository.ExtensionRuleRepository;
+import cz.tacr.elza.repository.ItemSpecRegisterRepository;
+import cz.tacr.elza.repository.ItemSpecRepository;
+import cz.tacr.elza.repository.ItemTypeActionRepository;
+import cz.tacr.elza.repository.ItemTypeRepository;
+import cz.tacr.elza.repository.OutputDefinitionRepository;
+import cz.tacr.elza.repository.OutputTypeRepository;
+import cz.tacr.elza.repository.PackageDependencyRepository;
+import cz.tacr.elza.repository.PackageRepository;
+import cz.tacr.elza.repository.Packaging;
+import cz.tacr.elza.repository.PartyNameFormTypeRepository;
+import cz.tacr.elza.repository.PartyRelationClassTypeRepository;
+import cz.tacr.elza.repository.PartyTypeComplementTypeRepository;
+import cz.tacr.elza.repository.PartyTypeRelationRepository;
+import cz.tacr.elza.repository.PartyTypeRepository;
+import cz.tacr.elza.repository.PolicyTypeRepository;
+import cz.tacr.elza.repository.RegistryRoleRepository;
+import cz.tacr.elza.repository.RelationRoleTypeRepository;
+import cz.tacr.elza.repository.RelationTypeRepository;
+import cz.tacr.elza.repository.RelationTypeRoleTypeRepository;
+import cz.tacr.elza.repository.RuleSetRepository;
+import cz.tacr.elza.repository.SettingsRepository;
+import cz.tacr.elza.repository.StructureDefinitionRepository;
+import cz.tacr.elza.repository.StructureExtensionDefinitionRepository;
+import cz.tacr.elza.repository.StructuredTypeExtensionRepository;
+import cz.tacr.elza.repository.StructuredTypeRepository;
+import cz.tacr.elza.repository.TemplateRepository;
+import cz.tacr.elza.repository.UIPartyGroupRepository;
+import cz.tacr.elza.service.CacheService;
+import cz.tacr.elza.service.StructObjService;
+import cz.tacr.elza.service.StructObjValueService;
+import cz.tacr.elza.service.event.CacheInvalidateEvent;
+import cz.tacr.elza.service.eventnotification.EventNotificationService;
+import cz.tacr.elza.service.eventnotification.events.ActionEvent;
+import cz.tacr.elza.service.eventnotification.events.EventType;
 
 
 /**
@@ -77,11 +227,6 @@ public class PackageService {
 
     @Value("${elza.package.testing:false}")
     private Boolean testing;
-
-    /**
-     * hlavní soubor v zipu
-     */
-    public static final String PACKAGE_XML = "package.xml";
 
     /**
      * pravidla v zipu
@@ -317,237 +462,280 @@ public class PackageService {
     private StructureExtensionDefinitionRepository structureExtensionDefinitionRepository;
 
     @Autowired
-    private StructureService structureService;
+    private StructObjService structureService;
+
+    @Autowired
+    private StructObjValueService structObjValueService;
 
     private List<RulTemplate> newRultemplates = new ArrayList<>();
 
     /**
      * Provede import balíčku.
      *
-     * @param file soubor balíčku
+     * @param file
+     *            soubor balíčku
+     * 
+     *            Note: only one package can be imported at a time
      */
     @Transactional
 	@AuthMethod(permission = { UsrPermission.Permission.ADMIN })
-    public void importPackage(final File file) {
+    synchronized public void importPackage(final File file) {
         importPackageInternal(file);
     }
 
     @Transactional
     public void importPackageInternal(final File file) {
 
-        ZipFile zipFile = null;
+        // read package and do basic checks
+        PackageContext pkgCtx = new PackageContext(resourcePathResolver);
+
+        File oldPackageDir = null;
+        File packageDir = null;
+        try {
+            pkgCtx.init(file);
+
+            // stop services and prepare update
+            preImportPackage();
+
+            processRulPackage(pkgCtx);
+            packageDir = pkgCtx.preparePackageDir();
+
+            // do import
+            importPackageInternal(pkgCtx);
+
+            // get old package dir as last step - delete only when success
+            oldPackageDir = pkgCtx.getOldPackageDir();
+        } catch (Exception e) {
+            logger.error("Failed to import package", e);
+
+            // drop new package dir
+            if (packageDir != null) {
+                FileSystemUtils.deleteRecursively(packageDir);
+            }
+
+            if (e instanceof AbstractException) {
+                throw (AbstractException) e;
+            } else {
+                throw new SystemException(e);
+            }
+        }
+        finally {
+            if (pkgCtx != null) {
+                // start services after import
+                postImportPackage(pkgCtx);
+
+                pkgCtx.close();
+                pkgCtx = null;
+            }
+        }
+
+        if (oldPackageDir != null) {
+            FileSystemUtils.deleteRecursively(oldPackageDir);
+        }
+
+    }
+
+    private void preImportPackage() {
+        structObjValueService.stopGenerator();
+        // odebrání používaných groovy scritpů
+        cacheService.resetCache(CacheInvalidateEvent.Type.GROOVY);
+    }
+
+    private void postImportPackage(PackageContext pkgCtx) {
+        // add request to regenerate structObjs
+        Set<String> codes = pkgCtx.getRegenerateStructureTypes();
+        List<RulStructuredType> revalidateStructureTypes = new ArrayList<>(codes.size());
+        for (String code : codes) {
+            RulStructuredType structType = this.structureTypeRepository.findByCode(code);
+            revalidateStructureTypes.add(structType);
+        }
+
+        structObjValueService.addToValidateByTypes(revalidateStructureTypes);
+
+        structObjValueService.startGenerator();
+    }
+
+    public void importPackageInternal(final PackageContext pkgCtx) {
+
         List<RulAction> rulPackageActions = new ArrayList<>();
         List<RulArrangementRule> rulArrangementRules = new ArrayList<>();
         List<RulExtensionRule> rulExtensionRules = new ArrayList<>();
-        List<RulStructureDefinition> rulStructureDefinitions = new ArrayList<>();
 
-        // odebrání používaných groovy scritpů
-        cacheService.resetCache(CacheInvalidateEvent.Type.GROOVY);
+        RulPackage rulPackage = pkgCtx.getPackage();
 
-        File packageDir = null;
-        File oldPackageDir = null;
-        try {
+        // OSOBY ---------------------------------------------------------------------------------------------------
 
-            zipFile = new ZipFile(file);
+        List<ParPartyType> parPartyTypes = partyTypeRepository.findAll();
 
-            Enumeration<? extends ZipEntry> entries = zipFile.entries();
+        RelationRoleTypes relationRoleTypes = pkgCtx.convertXmlStreamToObject(RelationRoleTypes.class,
+                                                                              RELATION_ROLE_TYPE_XML);
+        List<ParRelationRoleType> parRelationRoleTypes = processRelationRoleTypes(relationRoleTypes, rulPackage);
 
-            Map<String, ByteArrayInputStream> mapEntry = PackageUtils.createStreamsMap(zipFile, entries);
+        PartyNameFormTypes partyNameFormTypes = pkgCtx.convertXmlStreamToObject(PartyNameFormTypes.class,
+                                                                                PARTY_NAME_FORM_TYPE_XML);
+        processPartyNameFormTypes(partyNameFormTypes, rulPackage);
 
-            // načtení info o importu
-            PackageInfo packageInfo = PackageUtils.convertXmlStreamToObject(PackageInfo.class, mapEntry.get(PACKAGE_XML));
-            if (packageInfo == null) {
-                throw new BusinessException("Soubor " + PACKAGE_XML + " nenalezen", PackageCode.FILE_NOT_FOUND).set("file", PACKAGE_XML);
-            }
+        RelationClassTypes relationClassTypes = pkgCtx.convertXmlStreamToObject(RelationClassTypes.class,
+                                                                                RELATION_CLASS_TYPE_XML);
+        List<ParRelationClassType> parRelationClassTypes = processRelationClassTypes(relationClassTypes, rulPackage);
 
-            PackageUpdateContext puc = processRulPackage(packageInfo, mapEntry);
-            packageDir = puc.preparePackageDir();
-            // get old packageDir
-            oldPackageDir = puc.getOldPackageDir();
-            RulPackage rulPackage = puc.getPackage();
+        ComplementTypes complementTypes = pkgCtx.convertXmlStreamToObject(ComplementTypes.class,
+                                                                          COMPLEMENT_TYPE_XML);
+        List<ParComplementType> parComplementTypes = processComplementTypes(complementTypes, rulPackage);
 
-            // OSOBY ---------------------------------------------------------------------------------------------------
+        PartyGroups partyGroups = pkgCtx.convertXmlStreamToObject(PartyGroups.class, PARTY_GROUP_XML);
+        processPartyGroups(partyGroups, rulPackage, parPartyTypes);
 
-            List<ParPartyType> parPartyTypes = partyTypeRepository.findAll();
+        PartyTypeComplementTypes partyTypeComplementTypes = pkgCtx
+                .convertXmlStreamToObject(PartyTypeComplementTypes.class, PARTY_TYPE_COMPLEMENT_TYPE_XML);
+        processPartyTypeComplementTypes(partyTypeComplementTypes, rulPackage, parComplementTypes, parPartyTypes);
 
-            RelationRoleTypes relationRoleTypes = PackageUtils.convertXmlStreamToObject(RelationRoleTypes.class, mapEntry.get(RELATION_ROLE_TYPE_XML));
-            List<ParRelationRoleType> parRelationRoleTypes = processRelationRoleTypes(relationRoleTypes, rulPackage);
+        RelationTypes relationTypes = pkgCtx.convertXmlStreamToObject(RelationTypes.class,
+                                                                      RELATION_TYPE_XML);
+        List<ParRelationType> parRelationTypes = processRelationTypes(relationTypes, rulPackage, parRelationClassTypes);
 
-            PartyNameFormTypes partyNameFormTypes = PackageUtils.convertXmlStreamToObject(PartyNameFormTypes.class, mapEntry.get(PARTY_NAME_FORM_TYPE_XML));
-            processPartyNameFormTypes(partyNameFormTypes, rulPackage);
+        PartyTypeRelations partyTypeRelations = pkgCtx.convertXmlStreamToObject(PartyTypeRelations.class,
+                                                                                PARTY_TYPE_RELATION_XML);
+        processPartyTypeRelations(partyTypeRelations, rulPackage, parRelationTypes, parPartyTypes);
 
-            RelationClassTypes relationClassTypes = PackageUtils.convertXmlStreamToObject(RelationClassTypes.class, mapEntry.get(RELATION_CLASS_TYPE_XML));
-            List<ParRelationClassType> parRelationClassTypes = processRelationClassTypes(relationClassTypes, rulPackage);
+        RelationTypeRoleTypes relationTypeRoleTypes = pkgCtx
+                .convertXmlStreamToObject(RelationTypeRoleTypes.class, RELATION_TYPE_ROLE_TYPE_XML);
+        processRelationTypeRoleTypes(relationTypeRoleTypes, rulPackage, parRelationRoleTypes, parRelationTypes);
 
-            ComplementTypes complementTypes = PackageUtils.convertXmlStreamToObject(ComplementTypes.class, mapEntry.get(COMPLEMENT_TYPE_XML));
-            List<ParComplementType> parComplementTypes = processComplementTypes(complementTypes, rulPackage);
+        RegisterTypes registerTypes = pkgCtx.convertXmlStreamToObject(RegisterTypes.class,
+                                                                      REGISTER_TYPE_XML);
+        List<ApType> apTypes = processApTypes(registerTypes, rulPackage, parPartyTypes);
 
-            PartyGroups partyGroups = PackageUtils.convertXmlStreamToObject(PartyGroups.class, mapEntry.get(PARTY_GROUP_XML));
-            processPartyGroups(partyGroups, rulPackage, parPartyTypes);
+        RegistryRoles registryRoles = pkgCtx.convertXmlStreamToObject(RegistryRoles.class,
+                                                                      REGISTRY_ROLE_XML);
+        processRegistryRoles(registryRoles, rulPackage, parRelationRoleTypes, apTypes);
 
-            PartyTypeComplementTypes partyTypeComplementTypes = PackageUtils.convertXmlStreamToObject(PartyTypeComplementTypes.class, mapEntry.get(PARTY_TYPE_COMPLEMENT_TYPE_XML));
-            processPartyTypeComplementTypes(partyTypeComplementTypes, rulPackage, parComplementTypes, parPartyTypes);
+        // END OSOBY -----------------------------------------------------------------------------------------------
 
-            RelationTypes relationTypes = PackageUtils.convertXmlStreamToObject(RelationTypes.class, mapEntry.get(RELATION_TYPE_XML));
-            List<ParRelationType> parRelationTypes = processRelationTypes(relationTypes, rulPackage, parRelationClassTypes);
+        Map<String, String> rulePaths = PackageUtils.findRulePaths(ZIP_DIR_RULE_SET, pkgCtx.getByteStreamKeys());
 
-            PartyTypeRelations partyTypeRelations = PackageUtils.convertXmlStreamToObject(PartyTypeRelations.class, mapEntry.get(PARTY_TYPE_RELATION_XML));
-            processPartyTypeRelations(partyTypeRelations, rulPackage, parRelationTypes, parPartyTypes);
+        RuleSets ruleSets = pkgCtx.convertXmlStreamToObject(RuleSets.class, RULE_SET_XML);
 
-            RelationTypeRoleTypes relationTypeRoleTypes = PackageUtils.convertXmlStreamToObject(RelationTypeRoleTypes.class, mapEntry.get(RELATION_TYPE_ROLE_TYPE_XML));
-            processRelationTypeRoleTypes(relationTypeRoleTypes, rulPackage, parRelationRoleTypes, parRelationTypes);
+        List<RulRuleSet> rulRuleSetsDelete = new ArrayList<>();
+        List<UISettings> uiSettings = new ArrayList<>();
 
-            RegisterTypes registerTypes = PackageUtils.convertXmlStreamToObject(RegisterTypes.class, mapEntry.get(REGISTER_TYPE_XML));
-            List<ApType> apTypes = processApTypes(registerTypes, rulPackage, parPartyTypes);
-
-            RegistryRoles registryRoles = PackageUtils.convertXmlStreamToObject(RegistryRoles.class, mapEntry.get(REGISTRY_ROLE_XML));
-            processRegistryRoles(registryRoles, rulPackage, parRelationRoleTypes, apTypes);
-
-            // END OSOBY -----------------------------------------------------------------------------------------------
-
-            Map<String, String> rulePaths = PackageUtils.findRulePaths(ZIP_DIR_RULE_SET, mapEntry.keySet());
-
-            RuleSets ruleSets = PackageUtils.convertXmlStreamToObject(RuleSets.class, mapEntry.get(RULE_SET_XML));
-
-            List<RulRuleSet> rulRuleSetsDelete = new ArrayList<>();
-            List<UISettings> uiSettings = new ArrayList<>();
-
-            List<RulRuleSet> rulRuleSets = processRuleSets(ruleSets, rulPackage, rulRuleSetsDelete);
-            for (RulRuleSet rulRuleSet : rulRuleSetsDelete) {
-                rulePaths.put(rulRuleSet.getCode(), ZIP_DIR_RULE_SET + "/" + rulRuleSet.getCode() + "/");
-            }
-            for (RulRuleSet rulRuleSet : rulRuleSets) {
-                rulePaths.put(rulRuleSet.getCode(), ZIP_DIR_RULE_SET + "/" + rulRuleSet.getCode() + "/");
-            }
-
-            ItemSpecs itemSpecs = PackageUtils.convertXmlStreamToObject(ItemSpecs.class, mapEntry.get(ITEM_SPEC_XML));
-            ItemTypes itemTypes = PackageUtils.convertXmlStreamToObject(ItemTypes.class, mapEntry.get(ITEM_TYPE_XML));
-            StructureDefinitions structureDefinitions = PackageUtils.convertXmlStreamToObject(StructureDefinitions.class, mapEntry.get(STRUCTURE_DEFINITION_XML));
-
-            List<RulStructuredType> rulStructuredTypes = processStructureTypes(puc);
-            processStructureDefinitions(structureDefinitions, mapEntry, puc, rulStructuredTypes);
-
-            List<RulItemType> rulDescItemTypes = processItemTypes(itemTypes, itemSpecs, puc);
-            rulDescItemTypes.addAll(itemTypeRepository.findAll());
-
-            for (Map.Entry<String, String> ruleEntry : rulePaths.entrySet()) {
-                String ruleDirPath = ruleEntry.getValue();
-                String ruleCode = ruleEntry.getKey();
-                RulRuleSet rulRuleSet = rulRuleSets.stream().filter(rs -> rs.getCode().equalsIgnoreCase(ruleCode))
-                        .findFirst()
-                        .orElse(ruleSetRepository.findByCode(ruleCode));
-                if (rulRuleSet == null) {
-                    throw new BusinessException("RulRuleSet s code=" + ruleCode + " nenalezen", PackageCode.CODE_NOT_FOUND).set("code", ruleCode).set("file", RULE_SET_XML);
-                }
-
-                RuleUpdateContext ruc = new RuleUpdateContext(rulPackage, rulRuleSet, resourcePathResolver,
-                		ruleDirPath);
-                ruc.init();
-
-                PolicyTypes policyTypes = PackageUtils.convertXmlStreamToObject(PolicyTypes.class, mapEntry.get(ruleDirPath + POLICY_TYPE_XML));
-
-                PackageActions packageActions = PackageUtils.convertXmlStreamToObject(PackageActions.class, mapEntry.get(ruleDirPath + PACKAGE_ACTIONS_XML));
-                ArrangementRules arrangementRules = PackageUtils.convertXmlStreamToObject(ArrangementRules.class, mapEntry.get(ruleDirPath + ARRANGEMENT_RULE_XML));
-                OutputTypes outputTypes = PackageUtils.convertXmlStreamToObject(OutputTypes.class, mapEntry.get(ruleDirPath + OUTPUT_TYPE_XML));
-                Templates templates = PackageUtils.convertXmlStreamToObject(Templates.class, mapEntry.get(ruleDirPath + TEMPLATE_XML));
-                Settings settings = PackageUtils.convertXmlStreamToObject(Settings.class, mapEntry.get(ruleDirPath + SETTING_XML));
-                ArrangementExtensions arrangementExtensions = PackageUtils.convertXmlStreamToObject(ArrangementExtensions.class, mapEntry.get(ruleDirPath + ARRANGEMENT_EXTENSION_XML));
-                ExtensionRules extensionRules = PackageUtils.convertXmlStreamToObject(ExtensionRules.class, mapEntry.get(ruleDirPath + EXTENSION_RULE_XML));
-
-
-                StructTypeExtensionUpdater steu = new StructTypeExtensionUpdater(this.structureExtensionRepository,
-                		this.structureExtensionDefinitionRepository,
-                		this.componentRepository,
-                		this.structureService);
-                steu.run(puc);
-
-                List<RulArrangementRule> rulArrangementRuleList = processArrangementRules(arrangementRules, ruc, mapEntry);
-                rulArrangementRules.addAll(rulArrangementRuleList);
-
-                List<RulArrangementExtension> rulArrangementExtensions = processArrangementExtensions(arrangementExtensions, rulPackage, rulRuleSet);
-                List<RulExtensionRule> rulExtensionRuleList = processExtensionRules(extensionRules, ruc, rulArrangementExtensions, mapEntry);
-                rulExtensionRules.addAll(rulExtensionRuleList);
-
-                List<RulOutputType> rulOutputTypes = processOutputTypes(outputTypes, templates, ruc, mapEntry);
-
-                checkUniqueFilename(rulArrangementRuleList, rulExtensionRuleList, rulOutputTypes);
-
-                processPolicyTypes(policyTypes, rulPackage, rulRuleSet);
-                List<RulAction> rulActions = processPackageActions(packageActions, ruc, mapEntry);
-                rulPackageActions.addAll(rulActions);
-
-                List<UISettings> ruleSettings = createUISettings(settings, rulPackage, rulRuleSet, rulDescItemTypes);
-                uiSettings.addAll(ruleSettings);
-            }
-
-            deleteRuleSets(rulRuleSetsDelete);
-
-            // NASTAVENÍ -----------------------------------------------------------------------------------------------
-
-            Settings settings = PackageUtils.convertXmlStreamToObject(Settings.class, mapEntry.get(SETTING_XML));
-            List<UISettings> globalSettings = createUISettings(settings, rulPackage, null, null);
-            uiSettings.addAll(globalSettings);
-
-            processSettings(uiSettings, rulPackage);
-
-            // END NASTAVENÍ -------------------------------------------------------------------------------------------
-
-            // AP ------------------------------------------------------------------------------------------------------
-
-            ExternalIdTypes externalIdTypes = PackageUtils.convertXmlStreamToObject(ExternalIdTypes.class, mapEntry.get(EXTERNAL_ID_TYPE_XML));
-            processExternalIdTypes(externalIdTypes, rulPackage);
-
-            // END AP --------------------------------------------------------------------------------------------------
-
-            entityManager.flush();
-
-            staticDataService.reloadOnCommit();
-            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
-                @Override
-                public void afterCommit() {
-                    staticDataService.refreshForCurrentThread();
-
-                    cacheService.resetCache(CacheInvalidateEvent.Type.ALL);
-
-                    // Try to reload all actions
-                    // Note: static data have to be reloaded before bulk actions
-                    //       can be loaded
-                    bulkActionConfigManager.load();
-                }
-            });
-
-
-            eventNotificationService.publishEvent(new ActionEvent(EventType.PACKAGE));
-
-        } catch (Exception e) {
-            try {
-                logger.error("Chyba během importu balíčku", e);
-
-                // drop new package dir
-                if(packageDir!=null) {
-                	FileSystemUtils.deleteRecursively(packageDir);
-                }
-                if (e instanceof AbstractException) {
-                    throw e;
-                } else {
-                    throw new SystemException(e);
-                }
-            } catch (IOException e1) {
-                throw new SystemException(e);
-            }
-        } finally {
-            if (zipFile != null) {
-                try {
-                    zipFile.close();
-                } catch (IOException e) {
-                    // ok
-                }
-            }
+        List<RulRuleSet> rulRuleSets = processRuleSets(ruleSets, rulPackage, rulRuleSetsDelete);
+        for (RulRuleSet rulRuleSet : rulRuleSetsDelete) {
+            rulePaths.put(rulRuleSet.getCode(), ZIP_DIR_RULE_SET + "/" + rulRuleSet.getCode() + "/");
+        }
+        for (RulRuleSet rulRuleSet : rulRuleSets) {
+            rulePaths.put(rulRuleSet.getCode(), ZIP_DIR_RULE_SET + "/" + rulRuleSet.getCode() + "/");
         }
 
-        if(oldPackageDir!=null) {
-        	FileSystemUtils.deleteRecursively(oldPackageDir);
+        ItemSpecs itemSpecs = pkgCtx.convertXmlStreamToObject(ItemSpecs.class, ITEM_SPEC_XML);
+        ItemTypes itemTypes = pkgCtx.convertXmlStreamToObject(ItemTypes.class, ITEM_TYPE_XML);
+        StructureDefinitions structureDefinitions = pkgCtx.convertXmlStreamToObject(StructureDefinitions.class,
+                                                                                    STRUCTURE_DEFINITION_XML);
+
+        List<RulStructuredType> rulStructuredTypes = processStructureTypes(pkgCtx);
+        processStructureDefinitions(structureDefinitions, pkgCtx, rulStructuredTypes);
+
+        List<RulItemType> rulDescItemTypes = processItemTypes(itemTypes, itemSpecs, pkgCtx);
+        rulDescItemTypes.addAll(itemTypeRepository.findAll());
+
+        for (Map.Entry<String, String> ruleEntry : rulePaths.entrySet()) {
+            String ruleDirPath = ruleEntry.getValue();
+            String ruleCode = ruleEntry.getKey();
+            RulRuleSet rulRuleSet = rulRuleSets.stream().filter(rs -> rs.getCode().equalsIgnoreCase(ruleCode))
+                    .findFirst()
+                    .orElse(ruleSetRepository.findByCode(ruleCode));
+            if (rulRuleSet == null) {
+                throw new BusinessException("RulRuleSet s code=" + ruleCode + " nenalezen", PackageCode.CODE_NOT_FOUND)
+                        .set("code", ruleCode).set("file", RULE_SET_XML);
+            }
+
+            RuleUpdateContext ruc = new RuleUpdateContext(pkgCtx, rulPackage, rulRuleSet, resourcePathResolver,
+                    ruleDirPath);
+            ruc.init();
+
+            PolicyTypes policyTypes = pkgCtx.convertXmlStreamToObject(PolicyTypes.class,
+                                                                      ruleDirPath + POLICY_TYPE_XML);
+
+            PackageActions packageActions = pkgCtx
+                    .convertXmlStreamToObject(PackageActions.class, ruleDirPath + PACKAGE_ACTIONS_XML);
+            ArrangementRules arrangementRules = pkgCtx
+                    .convertXmlStreamToObject(ArrangementRules.class, ruleDirPath + ARRANGEMENT_RULE_XML);
+            OutputTypes outputTypes = pkgCtx.convertXmlStreamToObject(OutputTypes.class,
+                                                                      ruleDirPath + OUTPUT_TYPE_XML);
+            Templates templates = pkgCtx.convertXmlStreamToObject(Templates.class,
+                                                                  ruleDirPath + TEMPLATE_XML);
+            Settings settings = pkgCtx.convertXmlStreamToObject(Settings.class, ruleDirPath + SETTING_XML);
+            ArrangementExtensions arrangementExtensions = pkgCtx
+                    .convertXmlStreamToObject(ArrangementExtensions.class, ruleDirPath + ARRANGEMENT_EXTENSION_XML);
+            ExtensionRules extensionRules = pkgCtx
+                    .convertXmlStreamToObject(ExtensionRules.class, ruleDirPath + EXTENSION_RULE_XML);
+
+            StructTypeExtensionUpdater steu = new StructTypeExtensionUpdater(this.structureExtensionRepository,
+                    this.structureExtensionDefinitionRepository,
+                    this.componentRepository,
+                    this.structureService);
+            steu.run(pkgCtx);
+
+            List<RulArrangementRule> rulArrangementRuleList = processArrangementRules(arrangementRules, ruc);
+            rulArrangementRules.addAll(rulArrangementRuleList);
+
+            List<RulArrangementExtension> rulArrangementExtensions = processArrangementExtensions(arrangementExtensions,
+                                                                                                  rulPackage,
+                                                                                                  rulRuleSet);
+            List<RulExtensionRule> rulExtensionRuleList = processExtensionRules(extensionRules, ruc,
+                                                                                rulArrangementExtensions);
+            rulExtensionRules.addAll(rulExtensionRuleList);
+
+            List<RulOutputType> rulOutputTypes = processOutputTypes(outputTypes, templates, ruc);
+
+            checkUniqueFilename(rulArrangementRuleList, rulExtensionRuleList, rulOutputTypes);
+
+            processPolicyTypes(policyTypes, rulPackage, rulRuleSet);
+            List<RulAction> rulActions = processPackageActions(packageActions, ruc);
+            rulPackageActions.addAll(rulActions);
+
+            List<UISettings> ruleSettings = createUISettings(settings, rulPackage, rulRuleSet, rulDescItemTypes);
+            uiSettings.addAll(ruleSettings);
         }
+
+        deleteRuleSets(rulRuleSetsDelete);
+
+        // NASTAVENÍ -----------------------------------------------------------------------------------------------
+
+        Settings settings = pkgCtx.convertXmlStreamToObject(Settings.class, SETTING_XML);
+        List<UISettings> globalSettings = createUISettings(settings, rulPackage, null, null);
+        uiSettings.addAll(globalSettings);
+
+        processSettings(uiSettings, rulPackage);
+
+        // END NASTAVENÍ -------------------------------------------------------------------------------------------
+
+        // AP ------------------------------------------------------------------------------------------------------
+
+        ExternalIdTypes externalIdTypes = pkgCtx.convertXmlStreamToObject(ExternalIdTypes.class,
+                                                                          EXTERNAL_ID_TYPE_XML);
+        processExternalIdTypes(externalIdTypes, rulPackage);
+
+        // END AP --------------------------------------------------------------------------------------------------
+
+        entityManager.flush();
+
+        staticDataService.reloadOnCommit();
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+            @Override
+            public void afterCommit() {
+                staticDataService.refreshForCurrentThread();
+
+                cacheService.resetCache(CacheInvalidateEvent.Type.ALL);
+
+                // Try to reload all actions
+                // Note: static data have to be reloaded before bulk actions
+                //       can be loaded
+                bulkActionConfigManager.load();
+            }
+        });
+
+        eventNotificationService.publishEvent(new ActionEvent(EventType.PACKAGE));
 
     }
 
@@ -597,8 +785,7 @@ public class PackageService {
     }
 
     private List<RulStructureDefinition> processStructureDefinitions(final StructureDefinitions structureDefinitions,
-                                                                     final Map<String, ByteArrayInputStream> mapEntry,
-                                                                     final PackageUpdateContext puc,
+                                                                     final PackageContext puc,
                                                                      final List<RulStructuredType> rulStructureTypes) {
         List<RulStructureDefinition> rulStructureDefinitions = rulStructureTypes.size() == 0 ? Collections.emptyList() :
                 structureDefinitionRepository.findByRulPackageAndStructuredTypeIn(puc.getPackage(), rulStructureTypes);
@@ -641,7 +828,7 @@ public class PackageService {
             }
 
             for (RulStructureDefinition definition : rulStructureDefinitionsNew) {
-                File file = saveFile(mapEntry, puc.getDir(definition),
+                File file = puc.saveFile(puc.getDir(definition),
                 		getZipDir(definition),
                 		definition.getComponent().getFilename());
                 if (definition.getDefType() == RulStructureDefinition.DefType.SERIALIZED_VALUE) {
@@ -658,7 +845,6 @@ public class PackageService {
         } catch (IOException e) {
             throw new SystemException(e);
         }
-        structureService.revalidateStructureTypes(revalidateStructureTypes);
 
         return rulStructureDefinitionsNew;
     }
@@ -705,35 +891,46 @@ public class PackageService {
         }
     }
 
-    private List<RulStructuredType> processStructureTypes(final PackageUpdateContext puc) {
+    private List<RulStructuredType> processStructureTypes(final PackageContext puc) {
+        // read from XML
     	StructureTypes structureTypes = PackageUtils.convertXmlStreamToObject(StructureTypes.class,
     			puc.getByteStream(STRUCTURE_TYPE_XML));
 
-        List<RulStructuredType> rulStructureTypes = structureTypeRepository.findByRulPackage(puc.getPackage());
-        List<RulStructuredType> rulStructureTypesNew = new ArrayList<>();
+        // get current types
+        List<RulStructuredType> currStructTypes = structureTypeRepository.findByRulPackage(puc.getPackage());
+        List<RulStructuredType> newStructTypes = new ArrayList<>();
 
         if (structureTypes != null && !CollectionUtils.isEmpty(structureTypes.getStructureTypes())) {
             for (StructureType structureType : structureTypes.getStructureTypes()) {
-                RulStructuredType item = rulStructureTypes.stream().filter(
-                        (r) -> r.getCode().equals(structureType.getCode())).findFirst().orElse(null);
-                if (item == null) {
-                    item = new RulStructuredType();
-                }
+                // find existing or create new type
+                RulStructuredType item = currStructTypes.stream().filter(
+                                                                         (r) -> r.getCode()
+                                                                                 .equals(structureType.getCode()))
+                        .findFirst()
+                        .orElse(new RulStructuredType());
 
                 convertRulStructureType(puc.getPackage(), structureType, item);
-                rulStructureTypesNew.add(item);
+                newStructTypes.add(item);
+                // check compatibility
+                if (structureType.getValidValueFromVersion() != null) {
+                    int validFromVersion = Integer.parseInt(structureType.getValidValueFromVersion());
+                    if (puc.getOldPackageVersion() != null
+                            && validFromVersion > puc.getOldPackageVersion().intValue()) {
+                        puc.addRegenerateStructureType(structureType.getCode());
+                    }
+                }
             }
         }
 
-        rulStructureTypesNew = structureTypeRepository.save(rulStructureTypesNew);
+        newStructTypes = structureTypeRepository.save(newStructTypes);
 
-        List<RulStructuredType> rulRuleDelete = new ArrayList<>(rulStructureTypes);
-        rulRuleDelete.removeAll(rulStructureTypesNew);
+        List<RulStructuredType> rulRuleDelete = new ArrayList<>(currStructTypes);
+        rulRuleDelete.removeAll(newStructTypes);
         structureTypeRepository.delete(rulRuleDelete);
 
-        rulStructureTypes.addAll(rulStructureTypesNew);
-        puc.setStructureTypes(rulStructureTypes);
-        return rulStructureTypes;
+        currStructTypes.addAll(newStructTypes);
+        puc.setStructureTypes(currStructTypes);
+        return currStructTypes;
     }
 
     private void convertRulStructureType(final RulPackage rulPackage,
@@ -1593,12 +1790,10 @@ public class PackageService {
      * Zpracování řídících pravidel.
      *
      * @param packageRules   importovaných seznam pravidel
-     * @param mapEntry       mapa streamů souborů v ZIP
      * @return seznam pravidel
      */
     private List<RulArrangementRule> processArrangementRules(final ArrangementRules packageRules,
-                                              final RuleUpdateContext ruc,
-                                              final Map<String, ByteArrayInputStream> mapEntry)
+                                                             final RuleUpdateContext ruc)
     {
 
         List<RulArrangementRule> rulPackageRules = arrangementRuleRepository.findByRulPackageAndRuleSet(ruc.getRulPackage(),
@@ -1632,7 +1827,9 @@ public class PackageService {
 
         try {
             for (RulArrangementRule rule : rulRuleNew) {
-                saveFile(mapEntry, ruc.getRulesDir(), ZIP_DIR_RULE_SET + "/" + ruc.getRulSetCode() + "/" + ZIP_DIR_RULES, rule.getComponent().getFilename());
+                ruc.getPackageUpdateContext().saveFile(ruc.getRulesDir(),
+                         ZIP_DIR_RULE_SET + "/" + ruc.getRulSetCode() + "/" + ZIP_DIR_RULES,
+                         rule.getComponent().getFilename());
             }
         } catch (IOException e) {
             throw new SystemException(e);
@@ -1686,12 +1883,10 @@ public class PackageService {
      *
      * @param extensionRules           importované řídící pravidla
      * @param rulArrangementExtensions definice rozšíření
-     * @param mapEntry
      */
     private List<RulExtensionRule> processExtensionRules(final ExtensionRules extensionRules,
                                                          final RuleUpdateContext ruc,
-                                                         final List<RulArrangementExtension> rulArrangementExtensions,
-                                                         final Map<String, ByteArrayInputStream> mapEntry
+                                                         final List<RulArrangementExtension> rulArrangementExtensions
                                                          ) {
         List<RulExtensionRule> rulExtensionRules = rulArrangementExtensions.size() == 0 ? Collections.emptyList() :
                 extensionRuleRepository.findByRulPackageAndArrangementExtensionIn(ruc.getRulPackage(),
@@ -1727,7 +1922,9 @@ public class PackageService {
 
         try {
             for (RulExtensionRule rule : rulExtensionRulesNew) {
-                saveFile(mapEntry, ruc.getRulesDir(), ZIP_DIR_RULE_SET + "/" + ruc.getRulSetCode() + "/" + ZIP_DIR_RULES, rule.getComponent().getFilename());
+                ruc.getPackageUpdateContext().saveFile(ruc.getRulesDir(),
+                         ZIP_DIR_RULE_SET + "/" + ruc.getRulSetCode() + "/" + ZIP_DIR_RULES,
+                         rule.getComponent().getFilename());
             }
 
             bulkActionConfigManager.load();
@@ -1828,12 +2025,13 @@ public class PackageService {
     /**
      * Zpracování hromadných akcí.
      *
-     *  @param packageActions   importovaných seznam hromadných akcí
-     * @param mapEntry         mapa streamů souborů v ZIP
+     * @param packageActions
+     *            importovaných seznam hromadných akcí
+     * @param packageImport
+     *            mapa streamů souborů v ZIP
      */
     private List<RulAction> processPackageActions(final PackageActions packageActions,
-                                                  final RuleUpdateContext ruc,
-                                                  final Map<String, ByteArrayInputStream> mapEntry
+                                                  final RuleUpdateContext ruc
                                                   )
     {
 
@@ -1950,7 +2148,8 @@ public class PackageService {
         // odstranění/vytvoření definičních souborů pro hromadné akce
         try {
             for (RulAction action : rulPackageActionsNew) {
-                saveFile(mapEntry, ruc.getActionsDir(), ZIP_DIR_RULE_SET + "/" + ruc.getRulSetCode() + "/" + ZIP_DIR_ACTIONS, action.getFilename());
+                ruc.getPackageUpdateContext().saveFile(ruc.getActionsDir(),
+                         ZIP_DIR_RULE_SET + "/" + ruc.getRulSetCode() + "/" + ZIP_DIR_ACTIONS, action.getFilename());
             }
 
         } catch (IOException e) {
@@ -2014,53 +2213,6 @@ public class PackageService {
         }
     }
 
-    /**
-     * Uložení souboru.
-     *
-     * @param mapEntry mapa streamů souborů v ZIP
-     * @param dir      adresář
-     * @param zipDir   adresář v ZIP
-     * @param filename název souboru
-     */
-    private File saveFile(final Map<String, ByteArrayInputStream> mapEntry,
-                          final File dir,
-                          final String zipDir,
-                          final String filename) throws IOException {
-
-        File file = new File(dir.getPath() + File.separator + filename);
-
-        if (file.exists()) {
-            File fileMove = new File(dir.getPath() + File.separator + filename + ".bck");
-            // Allow to replace existing backup files
-            Files.move(file.toPath(), fileMove.toPath(), StandardCopyOption.REPLACE_EXISTING);
-        }
-
-        // BufferedWriter output = null;
-        try (FileOutputStream bw = new FileOutputStream(file)) {
-            // output = new BufferedWriter(new FileWriter(file));
-            ByteArrayInputStream byteArrayInputStream = mapEntry.get(zipDir + "/" + filename);
-
-            if (byteArrayInputStream == null) {
-                throw new IllegalStateException("Soubor " + zipDir + "/" + filename + " neexistuje v zip");
-            }
-
-
-
-            byte[] buf = new byte[8192];
-            for (; ; ) {
-                int nread = byteArrayInputStream.read(buf, 0, buf.length);
-                if (nread <= 0) {
-                    break;
-                }
-                bw.write(buf, 0, nread);
-            }
-
-            bw.close();
-        }
-
-        return file;
-    }
-
 
     /**
      * Převod VO na DAO hromadné akce.
@@ -2088,7 +2240,7 @@ public class PackageService {
      */
     private List<RulItemType> processItemTypes(final ItemTypes itemTypes,
                                                final ItemSpecs itemSpecs,
-                                               final PackageUpdateContext puc) {
+                                               final PackageContext puc) {
         List<RulDataType> rulDataTypes = dataTypeRepository.findAll();
 
         ItemTypeUpdater updater = AppContext.getBean(ItemTypeUpdater.class);
@@ -2105,8 +2257,7 @@ public class PackageService {
      */
     private List<RulOutputType> processOutputTypes(final OutputTypes outputTypes,
                                                    final Templates templates,
-                                                   final RuleUpdateContext ruc,
-                                                   final Map<String, ByteArrayInputStream> mapEntry
+                                                   final RuleUpdateContext ruc
                                                    ) {
 
         List<RulOutputType> rulOutputTypes = outputTypeRepository.findByRulPackageAndRuleSet(ruc.getRulPackage(),
@@ -2131,7 +2282,7 @@ public class PackageService {
 
         rulOutputTypesNew = outputTypeRepository.save(rulOutputTypesNew);
 
-        List<RulTemplate> newTemplates = processTemplates(templates, ruc, rulOutputTypesNew, mapEntry);
+        List<RulTemplate> newTemplates = processTemplates(templates, ruc, rulOutputTypesNew);
         newRultemplates.addAll(newTemplates);
 
         List<RulOutputType> rulOutputTypesDelete = new ArrayList<>(rulOutputTypes);
@@ -2152,7 +2303,9 @@ public class PackageService {
             for (RulOutputType outputType : rulOutputTypesNew) {
                 RulComponent component = outputType.getComponent();
                 if (component != null && component.getFilename() != null) {
-                    saveFile(mapEntry, ruc.getRulesDir(), ZIP_DIR_RULE_SET + "/" + ruc.getRulSetCode() + "/" + ZIP_DIR_RULES, component.getFilename());
+                    ruc.getPackageUpdateContext().saveFile(ruc.getRulesDir(),
+                             ZIP_DIR_RULE_SET + "/" + ruc.getRulSetCode() + "/" + ZIP_DIR_RULES,
+                             component.getFilename());
                 }
             }
         } catch (IOException e) {
@@ -2170,8 +2323,7 @@ public class PackageService {
     private List<RulTemplate> processTemplates(
             final Templates templates,
             final RuleUpdateContext ruc,
-            final List<RulOutputType> rulOutputTypes,
-            final Map<String, ByteArrayInputStream> mapEntry)
+                                               final List<RulOutputType> rulOutputTypes)
     {
         List<RulTemplate> rulTemplate = templateRepository.findByRulPackage(ruc.getRulPackage());
         List<RulTemplate> rulTemplateNew = new ArrayList<>();
@@ -2222,7 +2374,7 @@ public class PackageService {
         }
 
         try {
-            importTemplatesFiles(mapEntry, ruc.getTemplatesDir(), rulTemplateNew, ruc.getRulSet());
+            importTemplatesFiles(ruc, ruc.getTemplatesDir(), rulTemplateNew, ruc.getRulSet());
 
             return rulTemplateNew;
         } catch (IOException e) {
@@ -2230,27 +2382,27 @@ public class PackageService {
         }
     }
 
-    private void importTemplatesFiles(final Map<String, ByteArrayInputStream> mapEntry,
+    private void importTemplatesFiles(final RuleUpdateContext ruc,
                                       final File dirTemplates,
                                       final List<RulTemplate> rulTemplateActual,
                                       final RulRuleSet rulRuleSet) throws IOException {
         for (RulTemplate template : rulTemplateActual) {
             final String templateDir = ZIP_DIR_RULE_SET + "/" + rulRuleSet.getCode() + "/" + ZIP_DIR_TEMPLATES + "/" + template.getDirectory();
             final String templateZipKeyDir = templateDir + "/";
-            Set<String> templateFileKeys = mapEntry.keySet()
+            List<String> templateFileKeys = ruc.getPackageUpdateContext().getByteStreamKeys()
                     .stream()
                     .filter(key -> key.startsWith(templateZipKeyDir) && !key.equals(templateZipKeyDir))
                     .map(key -> key.replace(templateZipKeyDir, ""))
-                    .collect(Collectors.toSet());
+                    .collect(Collectors.toList());
             File dirFile = new File(dirTemplates + File.separator + template.getDirectory());
             if (!dirFile.exists() && !dirFile.mkdirs()) {
                 throw new IOException("Nepodařilo se vytvořit složku.");
             }
             for (String file : templateFileKeys) {
-                saveFile(mapEntry, dirFile, templateDir, file);
+                ruc.getPackageUpdateContext().saveFile(dirFile, templateDir, file);
             }
             }
-            }
+    }
 
 
     /**
@@ -2355,9 +2507,9 @@ public class PackageService {
      * @param packageInfo VO importovaného balíčku
      * @param mapEntry
      */
-    private PackageUpdateContext processRulPackage(final PackageInfo packageInfo,
-                                                   final Map<String, ByteArrayInputStream> mapEntry) {
-    	PackageUpdateContext puc = new PackageUpdateContext(this.resourcePathResolver, mapEntry);
+    private void processRulPackage(PackageContext puc) {
+
+        PackageInfo packageInfo = puc.getPackageInfo();
 
         RulPackage rulPackage = packageRepository.findTopByCode(packageInfo.getCode());
 
@@ -2383,7 +2535,6 @@ public class PackageService {
         processRulPackageDependencies(packageInfo, rulPackage);
 
         detectCyclicDependencies();
-        return puc;
     }
 
     /**
@@ -2473,10 +2624,16 @@ public class PackageService {
 
     /**
      * Smazání importovaného balíčku podle kódu.
+     * 
+     * Note: only one package can be imported at a time
      *
-     * @param code kód balíčku
+     * @param code
+     *            kód balíčku
+     * 
      */
-    public void deletePackage(final String code) {
+    @Transactional
+    @AuthMethod(permission = { UsrPermission.Permission.ADMIN })
+    synchronized public void deletePackage(final String code) {
         RulPackage rulPackage = packageRepository.findTopByCode(code);
 
         if (rulPackage == null) {
@@ -2639,12 +2796,15 @@ public class PackageService {
 
     /**
      * Provede export balíčku s konfigurací.
+     * 
+     * Note: only one package can be imported at a time
      *
-     * @param code kód balíčku
+     * @param code
+     *            kód balíčku
      * @return výsledný soubor
      */
     @Transactional(readOnly = true)
-    public File exportPackage(final String code) {
+    synchronized public File exportPackage(final String code) {
         RulPackage rulPackage = packageRepository.findTopByCode(code);
 
         if (rulPackage == null) {
@@ -3306,7 +3466,7 @@ public class PackageService {
                     return pd;
                 }).collect(Collectors.toList()));
 
-        addObjectToZipFile(packageInfo, zos, PACKAGE_XML);
+        addObjectToZipFile(packageInfo, zos, PackageContext.PACKAGE_XML);
     }
 
     /**
@@ -3681,5 +3841,7 @@ public class PackageService {
     public void setTesting(final Boolean testing) {
         this.testing = testing;
     }
+
+
 }
 

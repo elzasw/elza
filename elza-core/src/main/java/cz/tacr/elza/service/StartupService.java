@@ -9,8 +9,6 @@ import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
-import cz.tacr.elza.domain.ArrDataPartyRef;
-import cz.tacr.elza.domain.ArrDataRecordRef;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +22,8 @@ import cz.tacr.elza.common.db.DatabaseType;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ApFulltextProviderImpl;
 import cz.tacr.elza.domain.ArrBulkActionRun;
+import cz.tacr.elza.domain.ArrDataPartyRef;
+import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.repository.ApNameRepository;
@@ -90,7 +90,7 @@ public class StartupService implements SmartLifecycle {
     }
 
     @Autowired
-    private StructObjService structureDataService;
+    private StructObjValueService structureDataService;
 
     @Override
     @Transactional(value = TxType.REQUIRES_NEW)
@@ -109,6 +109,7 @@ public class StartupService implements SmartLifecycle {
     @Override
     public void stop() {
         logger.info("Elza stopping ...");
+        structureDataService.stopGenerator();
         // TODO: stop async processes
         running = false;
     }
@@ -146,6 +147,7 @@ public class StartupService implements SmartLifecycle {
         bulkActionConfigManager.load();
         syncNodeCacheService();
         startNodeValidation();
+        structureDataService.startGenerator();
         runQueuedRequests();
     }
 

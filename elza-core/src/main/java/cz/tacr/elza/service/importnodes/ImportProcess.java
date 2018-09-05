@@ -14,7 +14,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import cz.tacr.elza.repository.ApAccessPointRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 import org.castor.core.util.Assert;
@@ -59,6 +58,7 @@ import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.domain.vo.NodeTypeOperation;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DescItemRepository;
@@ -76,7 +76,7 @@ import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.IEventNotificationService;
 import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.service.RuleService;
-import cz.tacr.elza.service.StructObjService;
+import cz.tacr.elza.service.StructObjValueService;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
@@ -155,7 +155,7 @@ public class ImportProcess {
     private FundFileRepository fundFileRepository;
 
     @Autowired
-    private StructObjService structObjService;
+    private StructObjValueService structObjService;
 
     @Autowired
     private StructuredObjectRepository structureDataRepository;
@@ -653,10 +653,7 @@ public class ImportProcess {
         }
 
         // generate
-        structObjService.generateAndValidate(so);
-
-        // send notification
-        structObjService.sendNotification(so);
+        structObjService.addToValidate(so);
 
         return so;
     }
