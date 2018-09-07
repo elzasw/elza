@@ -87,8 +87,6 @@ class PersistentSortForm extends AbstractReactComponent {
                 label={i18n('arr.fund.bulkModifications.descItemType')}
                 {...itemType}
                 items={filteredDescItems}
-                getItemRenderClass={item => item.groupItem ? null : ' type-' + item.type.toLowerCase()}
-                allowSelectItem={(id, item) => !item.groupItem}
                 onBlur={() => {}}
             />
 
