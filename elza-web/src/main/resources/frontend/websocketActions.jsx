@@ -513,10 +513,6 @@ function extSystemCreate(value){
 }
 
 function extSystemUpdate(value){
-    store.dispatch(createExtSystem(value.ids[0]));
-}
-
-function extSystemUpdate(value){
     store.dispatch(updateExtSystem(value.ids[0]));
 }
 
