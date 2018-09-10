@@ -209,7 +209,7 @@ export abstract class ItemFormActions {
                     .then(json => {
                         let descItemResult = {};
                         if (json && Array.isArray(json) && json.length > 0) {
-                            descItemResult = json[0];
+                            descItemResult = {item: json[0]};
                         }
                         // if(this.area === OutputFormActions.AREA || this.area === StructureFormActions.AREA || this.area === AccessPointFormActions.AREA){
                             dispatch(this._fundSubNodeFormDescItemResponse(valueLocation, descItemResult, 'UPDATE'));
@@ -224,7 +224,7 @@ export abstract class ItemFormActions {
                         .then(json => {
                             let descItemResult = {};
                             if (json && Array.isArray(json) && json.length > 0) {
-                                descItemResult = json[0];
+                                descItemResult = {item: json[0]};
                             }
                             console.log("formValueStore - id undefined",json);
                             dispatch(this._fundSubNodeFormDescItemResponse(valueLocation, descItemResult, 'CREATE'));
@@ -345,7 +345,7 @@ export abstract class ItemFormActions {
                     .then(json => {
                         let descItemResult = {};
                         if (json && Array.isArray(json) && json.length > 0) {
-                            descItemResult = json[0];
+                            descItemResult = {item: json[0]};
                         }
                         const newValueLocation = {...valueLocation, descItemIndex: index};
                         dispatch(this._fundSubNodeFormDescItemResponse(newValueLocation, descItemResult, 'UPDATE'));
