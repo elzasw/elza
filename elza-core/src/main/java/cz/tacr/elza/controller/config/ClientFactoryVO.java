@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.controller.factory.ApFactory;
 import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.domain.*;
 import org.apache.commons.collections4.CollectionUtils;
@@ -123,7 +124,7 @@ public class ClientFactoryVO {
 
     @Autowired
     private ApAccessPointRepository apAccessPointRepository;
-
+    
     @Autowired
     private ApNameRepository apNameRepository;
 
@@ -198,6 +199,9 @@ public class ClientFactoryVO {
 
     @Autowired
     private NodeRepository nodeRepository;
+
+    @Autowired
+    private ApFactory apFactory;
 
     /**
      * Vytvoření nastavení.
@@ -544,9 +548,9 @@ public class ClientFactoryVO {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         ArrFundVO fundVO = mapper.map(fund, ArrFundVO.class);
         fundVO.setInstitutionId(fund.getInstitution().getInstitutionId());
-
+        
         // TODO: AP scopes on fund VO object needed/used ?
-
+        
         if (includeVersions) {
 
             List<ArrFundVersion> versions = fundVersionRepository
@@ -774,8 +778,26 @@ public class ClientFactoryVO {
             return null;
         }
         List<ArrItemVO> result = new ArrayList<>(items.size());
+        List<ApAccessPoint> apList = new ArrayList<>();
         for (T item : items) {
-            result.add(createItem(item));
+            ArrData data = item.getData();
+            if (data instanceof ArrDataRecordRef) {
+                ApAccessPoint ap = ((ArrDataRecordRef) data).getRecord();
+                apList.add(ap);
+            }
+        }
+
+        List<ApAccessPointVO> apListVO = apFactory.createVO(apList);
+        Map<Integer, ApAccessPointVO> apMapVO = apListVO.stream()
+                .collect(Collectors.toMap(ApAccessPointVO::getId, Function.identity()));
+
+        for (T item : items) {
+            ArrItemVO itemVO = createItem(item);
+            ArrData data = item.getData();
+            if (data instanceof ArrDataRecordRef) {
+                ((ArrItemRecordRefVO) itemVO).setRecord(apMapVO.get(((ArrDataRecordRef) data).getRecord().getAccessPointId()));
+            }
+            result.add(itemVO);
         }
         return result;
     }
