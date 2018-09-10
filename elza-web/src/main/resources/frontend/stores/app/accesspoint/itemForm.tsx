@@ -366,6 +366,9 @@ interface IAction {
     index?: number,
     value?: any,
     operationType?: ActionOperation,
+    descItemResult?: {
+        item?: ApItemVO<any>
+    },
     [extraProps: string]: any
 }
 
@@ -581,35 +584,38 @@ export function itemForm(state: IItemFormState = initialState, action: IAction =
                             //     loc.item!!.prevCalendarTypeId = action.descItemResult.item.calendarTypeId;
                             // }
                             // loc.item!!.touched = false;
-                            /*const updateItem = state.formData!!.itemTypes[action.valueLocation.itemTypeIndex].items[action.valueLocation.itemIndex!!];
-                            return {
-                                ...newState,
-                                formData: {
-                                    ...newState.formData,
-                                    itemTypes: [
-                                        ...state.formData!!.itemTypes.slice(0, action.valueLocation.itemTypeIndex),
-                                        {
-                                            ...state.formData!!.itemTypes[action.valueLocation.itemTypeIndex],
-                                            items: [
-                                                ...state.formData!!.itemTypes[action.valueLocation.itemTypeIndex].items.slice(0, action.valueLocation.itemIndex!!),
-                                                {
-                                                    ...updateItem,
-                                                    objectId: action.descItemResult.item ? action.descItemResult.item.objectId : null,
-                                                    prevValue: action.descItemResult.item ? action.descItemResult.item.value : null,
-                                                    prevDescItemSpecId: action.descItemResult.item && loc.itemType.useSpecification ? action.descItemResult.item.descItemSpecId : updateItem.prevDescItemSpecId,
-                                                    prevCalendarTypeId: action.descItemResult.item && action.descItemResult.prevCalendarTypeId ? action.descItemResult.item.prevCalendarTypeId : updateItem.prevCalendarTypeId,
-                                                    touched: false
-                                                },
-                                                ...state.formData!!.itemTypes[action.valueLocation.itemTypeIndex].items.slice(action.valueLocation.itemIndex!!+1)
-                                            ]
-                                        },
-                                        ...state.formData!!.itemTypes.slice(action.valueLocation.itemTypeIndex+1),
-                                    ]
-                                }
-                            };*/
+                            if (action.descItemResult) {
+                                const updateItem = state.formData!!.itemTypes[action.valueLocation.itemTypeIndex].items[action.valueLocation.itemIndex!!];
+                                return {
+                                    ...newState,
+                                    formData: {
+                                        ...newState.formData,
+                                        itemTypes: [
+                                            ...state.formData!!.itemTypes.slice(0, action.valueLocation.itemTypeIndex),
+                                            {
+                                                ...state.formData!!.itemTypes[action.valueLocation.itemTypeIndex],
+                                                items: [
+                                                    ...state.formData!!.itemTypes[action.valueLocation.itemTypeIndex].items.slice(0, action.valueLocation.itemIndex!!),
+                                                    {
+                                                        ...updateItem,
+                                                        objectId: action.descItemResult.item ? action.descItemResult.item.objectId : null,
+                                                        prevValue: action.descItemResult.item ? action.descItemResult.item.value : null,
+                                                        //prevDescItemSpecId: action.descItemResult.item && loc.itemType.useSpecification ? action.descItemResult.item.descItemSpecId : updateItem.prevDescItemSpecId,
+                                                        //prevCalendarTypeId: action.descItemResult.item && action.descItemResult.prevCalendarTypeId ? action.descItemResult.item.prevCalendarTypeId : updateItem.prevCalendarTypeId,
+                                                        touched: false
+                                                    },
+                                                    ...state.formData!!.itemTypes[action.valueLocation.itemTypeIndex].items.slice(action.valueLocation.itemIndex!!+1)
+                                                ]
+                                            },
+                                            ...state.formData!!.itemTypes.slice(action.valueLocation.itemTypeIndex+1),
+                                        ]
+                                    }
+                                };
+                            }
                             // Aktualizuje nám to websocket
                             return state;
                         case ActionOperation.CREATE:
+                            // TODO nutno zkontrolovat
                             // loc.item!!.objectId = action.descItemResult.item.objectId;
                             // loc.item!!.id = action.descItemResult.item.id;
                             // loc.item!!.prevValue = action.descItemResult.item.value;

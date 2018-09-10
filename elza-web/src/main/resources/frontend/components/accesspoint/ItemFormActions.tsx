@@ -207,8 +207,12 @@ export abstract class ItemFormActions {
             if (typeof item.id !== 'undefined') {
                 this._callUpdateDescItem(parent, item)
                     .then(json => {
+                        let descItemResult = {};
+                        if (json && Array.isArray(json) && json.length > 0) {
+                            descItemResult = json[0];
+                        }
                         // if(this.area === OutputFormActions.AREA || this.area === StructureFormActions.AREA || this.area === AccessPointFormActions.AREA){
-                            dispatch(this._fundSubNodeFormDescItemResponse(valueLocation, json, 'UPDATE'));
+                            dispatch(this._fundSubNodeFormDescItemResponse(valueLocation, descItemResult, 'UPDATE'));
                         // }
                         dispatch(this._fundSubNodeUpdate(refTables, json));
                         dispatch(statusSaved());
@@ -218,8 +222,12 @@ export abstract class ItemFormActions {
                     dispatch(this._fundSubNodeFormDescItemCreate(valueLocation));
                     this._callCreateDescItem(subNodeForm.data!!.parent, loc!!.itemType.id, item)
                         .then(json => {
+                            let descItemResult = {};
+                            if (json && Array.isArray(json) && json.length > 0) {
+                                descItemResult = json[0];
+                            }
                             console.log("formValueStore - id undefined",json);
-                            dispatch(this._fundSubNodeFormDescItemResponse(valueLocation, json, 'CREATE'));
+                            dispatch(this._fundSubNodeFormDescItemResponse(valueLocation, descItemResult, 'CREATE'));
                             dispatch(statusSaved());
                         })
                 }
@@ -327,7 +335,7 @@ export abstract class ItemFormActions {
                 dispatch({
                     type: types.ITEM_FORM_FORM_VALUE_CHANGE_POSITION,
                     area: this.area,
-                                    valueLocation,
+                    valueLocation,
                     index,
                 });
 
@@ -335,8 +343,12 @@ export abstract class ItemFormActions {
 
                 this._callUpdateDescItem(subNodeForm.data!!.parent, descItem)
                     .then(json => {
+                        let descItemResult = {};
+                        if (json && Array.isArray(json) && json.length > 0) {
+                            descItemResult = json[0];
+                        }
                         const newValueLocation = {...valueLocation, descItemIndex: index};
-                        dispatch(this._fundSubNodeFormDescItemResponse(newValueLocation, json, 'UPDATE'));
+                        dispatch(this._fundSubNodeFormDescItemResponse(newValueLocation, descItemResult, 'UPDATE'));
                     })
             }
         }
