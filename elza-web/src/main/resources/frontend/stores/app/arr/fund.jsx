@@ -245,13 +245,14 @@ export function fund(state, action) {
                 reducer: fund,
             };
         case types.STORE_SAVE:
-            const {id, versionId, name, lockDate, activeVersion} = state;
+            const {id, versionId, name, lockDate, activeVersion, lastUseTemplateName} = state;
             return {
                 id,
                 activeVersion,
                 versionId,
                 name,
                 lockDate,
+                lastUseTemplateName,
                 fundTree: fundTree(state.fundTree, action),
                 fundTreeMovementsLeft: fundTree(state.fundTreeMovementsLeft, action),
                 fundTreeMovementsRight: fundTree(state.fundTreeMovementsRight, action),
@@ -279,6 +280,12 @@ export function fund(state, action) {
                 fundOutput: fundOutput(state.fundOutput, action),
             };
             return consolidateState(state, result);
+        }
+        case types.FUND_TEMPLATE_USE: {
+            return {
+                ...state,
+                lastUseTemplateName: action.template.name
+            }
         }
         case types.CHANGE_FUND_ACTION: {
             const result = {

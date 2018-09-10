@@ -700,6 +700,13 @@ export class ItemFormActions {
                 replaceValues,
                 groups: state.refTables.groups.data
             });
+            dispatch({
+                type: types.FUND_TEMPLATE_USE,
+                area: this.area,
+                versionId,
+                routingKey,
+                template
+            });
         }
     }
 
