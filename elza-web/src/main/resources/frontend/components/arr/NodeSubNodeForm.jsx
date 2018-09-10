@@ -334,7 +334,8 @@ class NodeSubNodeForm extends AbstractReactComponent {
         const fundTemplates = getOneSettings(settings, 'FUND_TEMPLATES', 'FUND', fund.id);
 
         const initialValues = {
-            replaceValues: false
+            replaceValues: false,
+            name: templates.indexOf(fund.lastUseTemplateName) >= 0 ? fund.lastUseTemplateName : null
         };
 
         const templates = fundTemplates.value ? JSON.parse(fundTemplates.value).map(template => template.name) : [];
