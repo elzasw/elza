@@ -67,7 +67,7 @@ class ApDetailNames extends AbstractReactComponent {
     };
 
     handleSelectPreferred = (id) => {
-        if (confirm(i18n('accesspoint.detail.name.setPrefferedNameAlert'))) {
+        if (confirm(i18n('accesspoint.detail.name.setPreferredNameAlert'))) {
             this.nameSetPreffered(id);
         }
     };
