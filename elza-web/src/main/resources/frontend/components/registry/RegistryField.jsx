@@ -18,6 +18,7 @@ import {DEFAULT_LIST_SIZE, MODAL_DIALOG_VARIANT} from 'constants.jsx'
 import './RegistryField.less'
 import RegistryListItem from "./RegistryListItem";
 import ExtImportForm from "../form/ExtImportForm";
+import {refRecordTypesFetchIfNeeded} from "../../actions/refTables/recordTypes";
 
 const AUTOCOMPLETE_REGISTRY_LIST_SIZE = DEFAULT_LIST_SIZE;
 
@@ -55,6 +56,9 @@ class RegistryField extends AbstractReactComponent {
 
     state = {registryList: [], count: null, searchText: null};
 
+    componentDidMount() {
+        this.dispatch(refRecordTypesFetchIfNeeded());
+    }
 
     focus = () => {
         this.refs.autocomplete.focus()
@@ -157,7 +161,8 @@ class RegistryField extends AbstractReactComponent {
             {...otherProps}
         >
             <RegistryListItem 
-                {...item} 
+                {...item}
+                apTypeIdMap = {this.props.apTypeIdMap}
                 className={classNames('item', {focus: highlighted, active: selected})}
             />
         </TooltipTrigger>;
@@ -219,4 +224,11 @@ class RegistryField extends AbstractReactComponent {
     }
 }
 
-export default connect(({userDetail}) => ({userDetail}), null, null, { withRef: true })(RegistryField);
+export default connect(
+    (state) => {
+        const {userDetail, refTables: {recordTypes}} = state;
+        return {
+            apTypeIdMap: recordTypes.typeIdMap,
+            userDetail,
+        }
+    }, null, null, { withRef: true })(RegistryField);

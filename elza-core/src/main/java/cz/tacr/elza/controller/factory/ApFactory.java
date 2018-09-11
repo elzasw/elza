@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
@@ -111,15 +112,23 @@ public class ApFactory {
      * Creates value object from AP. Party Id is not set.
      */
     public ApAccessPointVO createVO(ApAccessPoint ap) {
-        StaticDataProvider staticData = staticDataService.getData();
         ApDescription desc = descRepository.findByAccessPoint(ap);
         // prepare names
         List<ApName> names = nameRepository.findByAccessPoint(ap);
+        // prepare external ids
+        List<ApExternalId> eids = eidRepository.findByAccessPoint(ap);
+        return createVO(ap, desc, names, eids);
+    }
+
+    public ApAccessPointVO createVO(final ApAccessPoint ap,
+                                    final ApDescription desc,
+                                    final List<ApName> names,
+                                    final List<ApExternalId> eids) {
+        StaticDataProvider staticData = staticDataService.getData();
         ApName prefName = names.get(0);
         Validate.isTrue(prefName.isPreferredName());
         List<ApAccessPointNameVO> namesVO = transformList(names, n -> ApAccessPointNameVO.newInstance(n, staticData));
         // prepare external ids
-        List<ApExternalId> eids = eidRepository.findByAccessPoint(ap);
         List<ApExternalIdVO> eidsVO = transformList(eids, ApExternalIdVO::newInstance);
         // create VO
         ApAccessPointVO vo = new ApAccessPointVO();
@@ -148,6 +157,35 @@ public class ApFactory {
         //result.setLastUpdate(findLastUpdate(accessPointData));
 
         return vo;
+    }
+
+    public List<ApAccessPointVO> createVO(final Collection<ApAccessPoint> accessPoints) {
+        if (accessPoints == null) {
+            return null;
+        }
+
+        if (accessPoints.size() == 0) {
+            return Collections.emptyList();
+        }
+
+        List<ApAccessPointVO> result = new ArrayList<>(accessPoints.size());
+
+        Map<Integer, List<ApExternalId>> apEidsMap = eidRepository.findByAccessPoints(accessPoints).stream()
+                .collect(Collectors.groupingBy(ApExternalId::getAccessPointId));
+        Map<Integer, ApDescription> apDescriptionMap = descRepository.findByAccessPoints(accessPoints).stream()
+                .collect(Collectors.toMap(ApDescription::getAccessPointId, Function.identity()));
+        Map<Integer, List<ApName>> apNamesMap = nameRepository.findByAccessPoints(accessPoints).stream()
+                .collect(Collectors.groupingBy(ApName::getAccessPointId));
+
+        for (ApAccessPoint accessPoint : accessPoints) {
+            Integer id = accessPoint.getAccessPointId();
+            List<ApExternalId> apExternalIds = apEidsMap.getOrDefault(id, Collections.emptyList());
+            ApDescription apDescription = apDescriptionMap.get(id);
+            List<ApName> apNames = apNamesMap.getOrDefault(id, Collections.emptyList());
+            result.add(createVO(accessPoint, apDescription, apNames, apExternalIds));
+        }
+
+        return result;
     }
 
     /**

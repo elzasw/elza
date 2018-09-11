@@ -10,11 +10,15 @@ import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApExternalId;
 import cz.tacr.elza.domain.projection.ApExternalIdInfo;
+import org.springframework.data.repository.query.Param;
 
 public interface ApExternalIdRepository extends ElzaJpaRepository<ApExternalId, Integer> {
 
     @Query("SELECT eid FROM ap_external_id eid WHERE eid.accessPoint = ?1 and eid.deleteChangeId is null")
     List<ApExternalId> findByAccessPoint(ApAccessPoint accessPoint);
+
+    @Query("SELECT eid FROM ap_external_id eid WHERE eid.accessPoint IN :accessPoints and eid.deleteChangeId IS NULL")
+    List<ApExternalId> findByAccessPoints(@Param("accessPoints") Collection<ApAccessPoint> accessPoints);
 
     /**
      * Searches external ids and its APs by type code and values.
