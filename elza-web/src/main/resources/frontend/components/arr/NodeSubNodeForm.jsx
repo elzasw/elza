@@ -333,12 +333,12 @@ class NodeSubNodeForm extends AbstractReactComponent {
 
         const fundTemplates = getOneSettings(settings, 'FUND_TEMPLATES', 'FUND', fund.id);
 
+        const templates = fundTemplates.value ? JSON.parse(fundTemplates.value).map(template => template.name) : [];
+
         const initialValues = {
             replaceValues: false,
             name: templates.indexOf(fund.lastUseTemplateName) >= 0 ? fund.lastUseTemplateName : null
         };
-
-        const templates = fundTemplates.value ? JSON.parse(fundTemplates.value).map(template => template.name) : [];
 
         this.props.dispatch(modalDialogShow(this, i18n('arr.fund.useTemplate.title'), <TemplateUseForm initialValues={initialValues} templates={templates} onSubmitForm={(data) => {
             const value = JSON.parse(fundTemplates.value);
