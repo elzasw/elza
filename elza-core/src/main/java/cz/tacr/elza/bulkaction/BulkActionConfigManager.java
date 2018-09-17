@@ -29,9 +29,10 @@ import cz.tacr.elza.bulkaction.generator.FundValidationConfig;
 import cz.tacr.elza.bulkaction.generator.MoveDescItemConfig;
 import cz.tacr.elza.bulkaction.generator.MultiActionConfig;
 import cz.tacr.elza.bulkaction.generator.PersistentSortConfig;
+import cz.tacr.elza.bulkaction.generator.SealUnitIdConfig;
 import cz.tacr.elza.bulkaction.generator.SerialNumberConfig;
 import cz.tacr.elza.bulkaction.generator.TestDataConfig;
-import cz.tacr.elza.bulkaction.generator.UnitIdConfig;
+import cz.tacr.elza.bulkaction.generator.GenerateUnitIdConfig;
 import cz.tacr.elza.bulkaction.generator.multiple.CopyConfig;
 import cz.tacr.elza.bulkaction.generator.multiple.DateRangeConfig;
 import cz.tacr.elza.bulkaction.generator.multiple.NodeCountConfig;
@@ -169,7 +170,8 @@ public class BulkActionConfigManager {
         // Register type descriptors
         yamlCtor.addTypeDescription(new TypeDescription(FundValidationConfig.class, "!FundValidation"));
         yamlCtor.addTypeDescription(new TypeDescription(SerialNumberConfig.class, "!SerialNumberGenerator"));
-        yamlCtor.addTypeDescription(new TypeDescription(UnitIdConfig.class, "!UnitIdGenerator"));
+        yamlCtor.addTypeDescription(new TypeDescription(GenerateUnitIdConfig.class, "!UnitIdGenerator"));
+        yamlCtor.addTypeDescription(new TypeDescription(SealUnitIdConfig.class, "!SealUnitId"));
         yamlCtor.addTypeDescription(new TypeDescription(TestDataConfig.class, "!TestDataGenerator"));
         yamlCtor.addTypeDescription(new TypeDescription(MultiActionConfig.class, "!MultiAction"));
         yamlCtor.addTypeDescription(new TypeDescription(DateRangeConfig.class, "!DateRange"));

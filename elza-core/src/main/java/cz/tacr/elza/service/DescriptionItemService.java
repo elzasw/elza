@@ -21,6 +21,8 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -42,6 +44,7 @@ import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataCoordinates;
+import cz.tacr.elza.domain.ArrDataDate;
 import cz.tacr.elza.domain.ArrDataDecimal;
 import cz.tacr.elza.domain.ArrDataInteger;
 import cz.tacr.elza.domain.ArrDataNull;
@@ -60,7 +63,6 @@ import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.UsrPermission;
-import cz.tacr.elza.domain.*;
 import cz.tacr.elza.domain.convertor.CalendarConverter;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.domain.factory.DescItemFactory;
@@ -86,8 +88,6 @@ import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventChangeDescItem;
 import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 
 /**
@@ -582,6 +582,8 @@ public class DescriptionItemService {
         descItem.setDeleteChange(change);
 
         ArrDescItem retDescItem = descItemRepository.save(descItem);
+
+        arrangementCacheService.deleteDescItem(descItem.getNodeId(), descItem.getDescItemObjectId());
 
         // sockety
         publishChangeDescItem(version, retDescItem);

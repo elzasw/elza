@@ -11,7 +11,6 @@ public class BrokenActionConfig extends BaseActionConfig {
         this.innerException = innerException;
         this.name = "Broken action";
         this.description = "Broken action, reload newer version of source package";
-        this.codeTypeBulkAction = "";
     }
 
     @Override

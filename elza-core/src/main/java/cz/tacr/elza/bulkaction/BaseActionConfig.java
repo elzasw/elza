@@ -12,8 +12,6 @@ public abstract class BaseActionConfig implements BulkActionConfig {
 
 	protected String description;
 
-	protected String codeTypeBulkAction;
-
 	protected boolean fastAction = false;
 
 	public String getName() {
@@ -30,14 +28,6 @@ public abstract class BaseActionConfig implements BulkActionConfig {
 
 	public void setDescription(String description) {
 		this.description = description;
-	}
-
-	public String getCodeTypeBulkAction() {
-		return codeTypeBulkAction;
-	}
-
-	public void setCodeTypeBulkAction(String codeTypeBulkAction) {
-		this.codeTypeBulkAction = codeTypeBulkAction;
 	}
 
 	/**

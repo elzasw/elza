@@ -97,7 +97,7 @@ public class ArrLevelWithExtraNode {
 
     /**
      * Cílová úroveň.
-     * @param level cílová úroveň
+     * @param parentLevel cílová úroveň
      */
     public void setLevelTarget(final ArrLevel levelTarget) {
         this.levelTarget = levelTarget;
