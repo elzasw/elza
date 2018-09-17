@@ -23,6 +23,9 @@ public interface ApNameRepository extends ElzaJpaRepository<ApName, Integer> {
     @Query("SELECT name FROM ap_name name WHERE name.accessPoint = ?1 and name.deleteChangeId is null ORDER BY name.preferredName DESC")
     List<ApName> findByAccessPoint(ApAccessPoint accessPoint);
 
+    @Query("SELECT name FROM ap_name name WHERE name.accessPoint IN :accessPoints and name.deleteChangeId IS NULL ORDER BY name.preferredName DESC")
+    List<ApName> findByAccessPoints(@Param("accessPoints") Collection<ApAccessPoint> accessPoints);
+
     @Query("SELECT name FROM ap_name name WHERE name.accessPoint = ?1 and name.preferredName = true and name.deleteChangeId is null")
     ApName findPreferredNameByAccessPoint(ApAccessPoint accessPoint);
 
