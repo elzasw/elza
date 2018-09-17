@@ -192,11 +192,23 @@ public class UnitIdPart
         return result;
     }
 
+    /**
+     * Return lower value
+     * 
+     * If value == 1 -> return null
+     * 
+     * @return
+     */
     public UnitIdPart getLower() {
-        UnitIdPart result = new UnitIdPart(this);
-        // decrement last item
-        result.decrease();
-        return result;
+        if (parts.size() == 1 && parts.get(0) == 1) {
+            return null;
+        } else {
+            UnitIdPart result = new UnitIdPart(this);
+
+            // decrement last item
+            result.decrease();
+            return result;
+        }
     }
 
     public UnitIdPart getHigherBase() {
@@ -211,6 +223,8 @@ public class UnitIdPart
         value--;
         if (value == 0) {
             value = -1;
+
+            Validate.isTrue(parts.size() > 1);
         }
         parts.set(pos, value);
     }

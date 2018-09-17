@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.TreeSet;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.bulkaction.generator.unitid.SealedUnitId.LevelType;
@@ -149,14 +150,22 @@ public class LevelGenerator {
         TreeSet<UnitIdPart> fixedUnitIds = findFixedUnitIds(nodes);
 
         // find subtree for this level
-        PartSealedUnitId parentSealedUnitId = params.getSealedTree().find(prefix);
-        Validate.notNull(parentSealedUnitId);
+        SealedUnitIdTree sealedTree = params.getSealedTree();
+        SealedUnitId sealedSubTree;
+        if(StringUtils.isNotEmpty(prefix)) {
+            PartSealedUnitId parentSealedUnitId = sealedTree.find(prefix);
+            Validate.notNull(parentSealedUnitId);
+            
+            sealedSubTree = parentSealedUnitId;
+        } else {
+            sealedSubTree = sealedTree;
+        }
 
         // generators for child nodes
-        return generate(fixedUnitIds, parentSealedUnitId);
+        return generate(fixedUnitIds, sealedSubTree);
     }
 
-    private List<LevelGenerator> generate(TreeSet<UnitIdPart> fixedUnitIds, PartSealedUnitId parentSealedUnitId) {
+    private List<LevelGenerator> generate(TreeSet<UnitIdPart> fixedUnitIds, SealedUnitId sealedSubTree) {
 
         // final collection of subsequent generators
         List<LevelGenerator> generators = new ArrayList<>(nodes.size());
@@ -164,11 +173,51 @@ public class LevelGenerator {
         UnitIdPart loBorder = null;
         UnitIdPart hiBorder = null;
         Iterator<UnitIdPart> it = fixedUnitIds.iterator();
+
+        // handle nodes before first fixed unit id separately
+        int position = 0;
         if (it.hasNext()) {
-            hiBorder = it.next();
+            // prepare future loBoarder
+            loBorder = it.next();
+            hiBorder = loBorder;
+
+            // Find position of first fixed node            
+            for (Node n : nodes) {
+                // Check if node is fixed
+                PartSealedUnitId sealedUnitId = n.getSealedUnitId();
+                if (sealedUnitId != null && fixedUnitIds.contains(sealedUnitId.getPart())) {
+                    // stop at fixed node
+                    break;
+                }
+                position++;
+            }
+            // iterate from position back to the beginning
+            for (int i = position - 1; i >= 0; i--) {
+                Node n = nodes.get(i);
+
+                // item without fixed value, loBarder has no limit
+                String unitIdValue = generateNode(n, null, hiBorder, sealedSubTree);
+                // move hiBoarder
+                hiBorder = n.getSealedUnitId().getPart();
+
+                // prepare subgenerators
+                LevelGenerator lg = new LevelGenerator(n.getLevel(), n.getLevelSpec(), params, unitIdValue);
+                generators.add(lg);
+
+            }
+            // set boarders from next element
+            if (it.hasNext()) {
+                hiBorder = it.next();
+            } else {
+                hiBorder = null;
+            }
+            // move to next element
+            position++;
         }
 
-        for (Node n : nodes) {
+        // handle rest of nodes
+        for (; position < nodes.size(); position++) {
+            Node n = nodes.get(position);
 
             String unitIdValue;
 
@@ -188,7 +237,9 @@ public class LevelGenerator {
                 }
             } else {
                 // item without fixed value
-                unitIdValue = generateNode(n, loBorder, hiBorder, parentSealedUnitId);
+                unitIdValue = generateNode(n, loBorder, hiBorder, sealedSubTree);
+                // move loBoarder
+                loBorder = n.getSealedUnitId().getPart();
             }
 
             // prepare subgenerators
@@ -206,16 +257,18 @@ public class LevelGenerator {
      * @param n
      * @param loBorder
      * @param hiBorder
-     * @param parentSealedUnitId
+     * @param sealedSubTree
      * @return Return generated unitId
      */
-    private String generateNode(Node n, UnitIdPart loBorder, UnitIdPart hiBorder, PartSealedUnitId parentSealedUnitId) {
+    private String generateNode(Node n, UnitIdPart loBorder, UnitIdPart hiBorder, SealedUnitId sealedSubTree) {
 
         LevelType levelType = n.isExtraSlashBefore() ? LevelType.SLASHED : LevelType.DEFAULT;
-        SealedLevel parentSealedLevel = parentSealedUnitId.getLevel(levelType);
+        SealedLevel parentSealedLevel = sealedSubTree.getLevel(levelType);
 
         // Try to find greater value
         PartSealedUnitId sealedUnitId = parentSealedLevel.createSealed(loBorder, hiBorder);
+        Validate.notNull(sealedUnitId);
+        n.setSealedUnitId(sealedUnitId);
 
         // prepare text value
         String value = sealedUnitId.getValue();
@@ -392,7 +445,10 @@ public class LevelGenerator {
             n.setSealedUnitId(sealedUnitId);
             n.setOldValue(itemUnidId, value);
 
-            StringBuilder expectedPrefix = new StringBuilder().append(prefix).append('/');
+            StringBuilder expectedPrefix = new StringBuilder();
+            if (prefix.length() > 0) {
+                expectedPrefix.append(prefix).append('/');
+            }
             
             // check if extra slash sublevel
             if (isExtraSlashBoundary(nodeLevelSpec)) {

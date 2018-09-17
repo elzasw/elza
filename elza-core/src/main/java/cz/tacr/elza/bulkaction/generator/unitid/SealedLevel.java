@@ -239,38 +239,43 @@ public class SealedLevel {
     private UnitIdPart findFreeLower(UnitIdPart hiBorder) {
         Validate.notNull(hiBorder);
 
-        // try to find base value 1, 2..n
-        UnitIdPart candidate = UnitIdPart.getLowest();
-        while (candidate.compareTo(hiBorder) < 0) {
+        // try to find base value hiBoarder-1, ..., 2, 1 
+        // or xx+y, xx+(y-1)....xx+(y-n)
+        // or xx-y, xx-(y-1)....xx-(y-n)
+        UnitIdPart candidate = hiBorder.getLower();
+        while (candidate != null) {
             // check if sealed
             if (!isSealed(candidate)) {
                 return candidate;
             }
             // increment candidate
-            candidate = candidate.getGreater();
+            candidate = candidate.getLower();
         }
 
-        // nobase value -> we can try 1+...
-        candidate = UnitIdPart.getLowest().getWithAdditionalParticle(1);
-        while (candidate.compareTo(hiBorder) < 0) {
-            // check if sealed
-            if (!isSealed(candidate)) {
-                return candidate;
-            }
-            // increment candidate
-            candidate = candidate.getGreater();
-        }
-
-        // nobase value -> we can try 1-...
-        candidate = UnitIdPart.getLowest().getWithAdditionalParticle(-1);
-        while (true) {
-            if (candidate.compareTo(hiBorder) < 0) {
+        // nobase value -> we can try (hiBoarder-1)+...
+        candidate = hiBorder.getLower();
+        if (candidate != null) {
+            // such value has to exists
+            candidate = candidate.getWithAdditionalParticle(1);
+            while (true) {
+                // check if sealed
                 if (!isSealed(candidate)) {
                     return candidate;
                 }
+                // increment candidate
+                candidate = candidate.getGreater();
             }
-            // decrement candidate
-            candidate = candidate.getLower();
+        } else {
+            // value cannot be decremented and was not decremented befoure -> hiBoarder is 1
+            // -> we have to find free 1-...xx
+            candidate = UnitIdPart.getLowest().getWithAdditionalParticle(-1);
+            while (true) {
+                if (!isSealed(candidate)) {
+                    return candidate;
+                }
+                // decrement candidate
+                candidate = candidate.getLower();
+            }
         }
     }
 

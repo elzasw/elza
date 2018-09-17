@@ -569,11 +569,11 @@ public class UnitIdTest {
     }
 
     // test hiBorder
+    // ? "1" -> "1-1" "1"
     @Test
     public void testCreateSealed6() {
         SealedUnitIdTree root = new SealedUnitIdTree();
         try {
-            //root.addSealedValue("1");
             UnitIdPart part1 = UnitIdPart.parse("1");
 
             SealedLevel level = root.getLevel(LevelType.DEFAULT);
@@ -658,6 +658,7 @@ public class UnitIdTest {
             root.addSealedValue("1");
             root.addSealedValue("1+1");
             root.addSealedValue("2");
+            root.addSealedValue("2+1");
             root.addSealedValue("3");
 
             UnitIdPart part3 = UnitIdPart.parse("3");
@@ -667,7 +668,45 @@ public class UnitIdTest {
             assertNotNull(sealed);
             UnitIdPart part = sealed.getPart();
             assertNotNull(part);
-            assertTrue(part.equals(UnitIdPart.parse("1+2")));
+            assertTrue(part.equals(UnitIdPart.parse("2+2")));
+        } catch (UnitIdException e) {
+            fail(e.getMessage());
+        }
+    }
+
+    // test hiBorder
+    @Test
+    public void testCreateSealed7_5() {
+        SealedUnitIdTree root = new SealedUnitIdTree();
+        try {
+            UnitIdPart part3 = UnitIdPart.parse("3");
+
+            SealedLevel level = root.getLevel(LevelType.DEFAULT);
+            PartSealedUnitId sealed = level.createSealed(null, part3);
+            assertNotNull(sealed);
+            UnitIdPart part = sealed.getPart();
+            assertNotNull(part);
+            assertTrue(part.equals(UnitIdPart.parse("2")));
+        } catch (UnitIdException e) {
+            fail(e.getMessage());
+        }
+    }
+
+    // test hiBorder
+    @Test
+    public void testCreateSealed7_6() {
+        SealedUnitIdTree root = new SealedUnitIdTree();
+        try {
+            root.addSealedValue("1-1");
+
+            UnitIdPart part1_m1 = UnitIdPart.parse("1");
+
+            SealedLevel level = root.getLevel(LevelType.DEFAULT);
+            PartSealedUnitId sealed = level.createSealed(null, part1_m1);
+            assertNotNull(sealed);
+            UnitIdPart part = sealed.getPart();
+            assertNotNull(part);
+            assertTrue(part.equals(UnitIdPart.parse("1-2")));
         } catch (UnitIdException e) {
             fail(e.getMessage());
         }

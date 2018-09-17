@@ -3,6 +3,7 @@ package cz.tacr.elza.repository;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -20,4 +21,9 @@ public interface UsedValueRepository extends JpaRepository<ArrUsedValue, Integer
             + "and uv.itemType = :itemType and value like :prefix")
     List<String> findByFundAndItemTypeAndPrefix(@Param("fund") ArrFund fund, @Param("itemType") RulItemType itemType,
                                                 @Param("prefix") String prefix);
+
+    @Modifying
+    @Query("DELETE FROM arr_used_value uv WHERE uv.fund = :fund "
+            + "AND uv.createChange.changeId >= :changeId")
+    void deleteToChange(@Param("fund") ArrFund fund, @Param("changeId") Integer changeId);
 }
