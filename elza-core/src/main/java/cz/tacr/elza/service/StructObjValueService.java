@@ -167,7 +167,7 @@ public class StructObjValueService {
             return sobjQueue;
         }).iterator();
 
-        sobjVrequestRepository.save(() -> it);
+        sobjVrequestRepository.save((Iterable<ArrSobjVrequest>) (() -> it));
 
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
             @Override
@@ -192,7 +192,7 @@ public class StructObjValueService {
             return sobjQueue;
         }).iterator();
 
-        sobjVrequestRepository.save(() -> it);
+        sobjVrequestRepository.save((Iterable<ArrSobjVrequest>) (() -> it));
 
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
             @Override
