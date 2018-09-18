@@ -1,6 +1,8 @@
 package cz.tacr.elza.bulkaction.generator;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -115,9 +117,8 @@ public class MoveDescItem extends BulkActionDFS {
 			/*ArrDescItem trgItem = */
 			descriptionItemService.createDescriptionItem(descItem, currNode, version, getChange());
 			// delete old one
-			descriptionItemService.deleteDescriptionItem(srcDescItem, version, getChange(), true);
-
-			arrangementCacheService.deleteDescItem(currNode.getNodeId(), srcDescItem.getDescItemObjectId());
+            List<ArrDescItem> items = Collections.singletonList(srcDescItem);
+            descriptionItemService.deleteDescriptionItems(items, currNode, version, getChange(), true);
 
 			// validace uzlu
 			ruleService.conformityInfo(version.getFundVersionId(), Arrays.asList(descItem.getNode().getNodeId()),

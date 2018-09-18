@@ -21,6 +21,7 @@ import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
 import javax.transaction.Transactional;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -32,6 +33,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import com.google.common.collect.Iterables;
+
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
 import cz.tacr.elza.bulkaction.BulkActionService;
@@ -680,16 +682,12 @@ public class ArrangementService {
         List<ArrDescItem> siblingDescItems = descItemRepository.findOpenByNodeAndTypes(olderSibling.getNode(), typeSet);
 
         // Delete old values for these items
+        // ? Can we use descriptionItemService.deleteDescriptionItemsByType
         List<ArrDescItem> nodeDescItems = descItemRepository.findOpenByNodeAndTypes(level.getNode(), typeSet);
-        List<ArrDescItem> deletedDescItems = new ArrayList<>();
+        List<ArrDescItem> deletedDescItems = null;
         if (CollectionUtils.isNotEmpty(nodeDescItems)) {
-            List<Integer> descItemObjectIdsDeleted = new ArrayList<>(nodeDescItems.size());
-            for (ArrDescItem nodeDescItem : nodeDescItems) {
-             	ArrDescItem deletedItem = descriptionItemService.deleteDescriptionItem(nodeDescItem, version, change, false);
-                descItemObjectIdsDeleted.add(deletedItem.getDescItemObjectId());
-                deletedDescItems.add(deletedItem);
-            }
-            arrangementCacheService.deleteDescItems(nodeDescItems.get(0).getNodeId(), descItemObjectIdsDeleted);
+            deletedDescItems = descriptionItemService.deleteDescriptionItems(nodeDescItems, level.getNode(), version,
+                                                                             change, false);
         }
 
         final List<ArrDescItem> newDescItems = descriptionItemService

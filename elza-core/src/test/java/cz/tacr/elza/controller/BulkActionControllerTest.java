@@ -1,5 +1,16 @@
 package cz.tacr.elza.controller;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import cz.tacr.elza.controller.vo.ApScopeVO;
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.BulkActionRunVO;
@@ -7,16 +18,6 @@ import cz.tacr.elza.controller.vo.BulkActionVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.domain.ArrBulkActionRun.State;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 
 
 /**
@@ -176,7 +177,7 @@ public class BulkActionControllerTest extends AbstractControllerTest {
                     if (state.getState().equals(State.FINISHED)) {
                         hasResult = true;
                     } else if (state.getState().equals(State.ERROR)) {
-                        Assert.fail("Hromadná akce skončila chybou");
+                        Assert.fail("Bulk action failed, code: " + code + " error: " + state.getError());
                     }
                 }
             } else {

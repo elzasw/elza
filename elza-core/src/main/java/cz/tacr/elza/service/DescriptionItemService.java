@@ -552,13 +552,23 @@ public class DescriptionItemService {
      * Smaže hodnotu atributu.
      *
      * Funkce současně posílá notifikaci přes WS
-     * @param descItem  hodnota atributu
-     * @param version   verze archivní pomůcky
-     * @param change    změna operace
-     * @param moveAfter posunout hodnoty po?
+     * 
+     * Function do not synchronize nodeCache !!!! Have to be synchronized manually
+     * !!!
+     * 
+     * @param descItem
+     *            hodnota atributu
+     * @param version
+     *            verze archivní pomůcky
+     * @param change
+     *            změna operace
+     * @param moveAfter
+     *            posunout hodnoty po?
      * @return smazaná hodnota atributu
      */
-    public ArrDescItem deleteDescriptionItem(final ArrDescItem descItem,
+    //
+    // Consider/TODO: Function should not sent WS events if nodeCache is not also synchronized?
+    private ArrDescItem deleteDescriptionItem(final ArrDescItem descItem,
                                              final ArrFundVersion version,
                                              final ArrChange change,
                                              final boolean moveAfter) {
@@ -571,6 +581,7 @@ public class DescriptionItemService {
 
         if (moveAfter) {
             // načtení hodnot, které je potřeba přesunout výš
+            // TODO: This functionality should be after item is deleted?
             List<ArrDescItem> descItems = descItemRepository.findOpenDescItemsAfterPosition(
                     descItem.getItemType(),
                     descItem.getNode(),
@@ -583,8 +594,6 @@ public class DescriptionItemService {
 
         ArrDescItem retDescItem = descItemRepository.save(descItem);
 
-        arrangementCacheService.deleteDescItem(descItem.getNodeId(), descItem.getDescItemObjectId());
-
         // sockety
         publishChangeDescItem(version, retDescItem);
 
@@ -594,16 +603,24 @@ public class DescriptionItemService {
     /**
      * Odstraní požadované hodnoty atributů.
      *
-     * @param descItemsToDelete hodnoty atributů k ostranění
+     * @param descItemsToDelete
+     *            hodnoty atributů k ostranění
      * @param node
-     * @param fundVersion       verze AS
-     * @param change            změna
+     * @param fundVersion
+     *            verze AS
+     * @param change
+     *            změna
+     * @param moveAfter
+     *            Flag to recalculate position of subsequent items
+     *            If all items of same type are deleted position does
+     *            not have to be recalculated
      * @return smazané hodnoty atributů
      */
     public List<ArrDescItem> deleteDescriptionItems(final List<ArrDescItem> descItemsToDelete,
                                                     final ArrNode node,
                                                     final ArrFundVersion fundVersion,
-                                                    final ArrChange change) {
+                                                    final ArrChange change,
+                                                    final boolean moveAfter) {
         Validate.notEmpty(descItemsToDelete);
         Validate.notNull(fundVersion);
         Validate.notNull(change);
@@ -613,18 +630,11 @@ public class DescriptionItemService {
 
         List<ArrDescItem> results = new ArrayList<>();
         for (ArrDescItem deleteDescItem : deleteDescItems) {
-            List<ArrDescItem> descItems = descItemRepository.findOpenDescItemsAfterPosition(
-                    deleteDescItem.getItemType(),
-                    deleteDescItem.getNode(),
-                    deleteDescItem.getPosition());
+            ArrDescItem deletedItem = deleteDescriptionItem(deleteDescItem, fundVersion, change, moveAfter);
 
-            //copyDescItemsWithData(change, descItems, -1, fundVersion);
-
-            deleteDescItem.setDeleteChange(change);
-
-            results.add(descItemRepository.save(deleteDescItem));
-            descItemRepository.flush();
+            results.add(deletedItem);
         }
+        descItemRepository.flush();
 
         arrangementCacheService.deleteDescItems(node.getNodeId(), itemObjectIds);
 

@@ -1,5 +1,21 @@
 package cz.tacr.elza.controller;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.StringUtils;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
 import cz.tacr.elza.controller.vo.ArrStructureDataVO;
@@ -10,15 +26,7 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemIntVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStringVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.domain.ArrStructuredObject;
-import org.junit.Test;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
-import static org.junit.Assert.*;
+import cz.tacr.elza.repository.SobjVrequestRepository;
 
 
 /**
@@ -38,6 +46,9 @@ public class StructureControllerTest extends AbstractControllerTest {
     private static final String PREFIX_VALUE = "AA_";
     private static final String POSTFIX_VALUE = "r";
 
+    @Autowired
+    protected SobjVrequestRepository sobjVrequestRepository;
+
     @Test
     public void structureTest() {
         ArrFundVO fund = createFund(NAME_AS, CODE_AS);
@@ -46,6 +57,14 @@ public class StructureControllerTest extends AbstractControllerTest {
         structureTypesAndExtensions(fundVersion);
         structureDataTest(fundVersion);
         structureItemTest(fundVersion);
+
+        // wait to process whole queue
+        while (sobjVrequestRepository.count() > 0) {
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException e) {
+            }
+        }
     }
 
     @Test
@@ -85,6 +104,14 @@ public class StructureControllerTest extends AbstractControllerTest {
         data.setItems(items);
         data.setAutoincrementItemTypeIds(Collections.singletonList(typeNumber.getId()));
         updateStructureDataBatch(fundVersion.getId(), STRUCTURE_TYPE_CODE, data);
+
+        // wait to process whole queue
+        while (sobjVrequestRepository.count() > 0) {
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException e) {
+            }
+        }
     }
 
     private void structureItemTest(final ArrFundVersionVO fundVersion) {
@@ -171,15 +198,18 @@ public class StructureControllerTest extends AbstractControllerTest {
     }
 
     private void structureTypesAndExtensions(final ArrFundVersionVO fundVersion) {
+        // find structure types
         List<RulStructureTypeVO> structureTypes = findStructureTypes();
         assertNotNull(structureTypes);
         assertEquals(2, structureTypes.size()); // SRD_PACKET, STAT_ZASTUPCE
 
+        // check name and id
         RulStructureTypeVO structureType = structureTypes.get(0);
         assertEquals(STRUCTURE_TYPE_CODE, structureType.getCode());
         assertNotNull(structureType.getId());
         assertNotNull(structureType.getName());
 
+        // check extensions
         List<StructureExtensionFundVO> fundStructureExtension = findFundStructureExtension(fundVersion.getId(), STRUCTURE_TYPE_CODE);
         assertNotNull(fundStructureExtension);
         assertEquals(1, fundStructureExtension.size());
@@ -202,6 +232,7 @@ public class StructureControllerTest extends AbstractControllerTest {
     }
 
     private void structureDataTest(final ArrFundVersionVO fundVersion) {
+        // create data type
         ArrStructureDataVO structureData = createStructureData(fundVersion);
         assertNotNull(structureData);
         assertNotNull(structureData.id);
@@ -209,14 +240,21 @@ public class StructureControllerTest extends AbstractControllerTest {
         assertSame(structureData.state, ArrStructuredObject.State.TEMP);
 
         ArrStructureDataVO structureDataConfirmed = confirmStructureData(fundVersion.getId(), structureData.id);
+        // check id of returned type
         assertTrue(Objects.equals(structureDataConfirmed.id, structureDataConfirmed.id));
-        assertSame(structureDataConfirmed.state, ArrStructuredObject.State.ERROR);
-        assertNotNull(structureDataConfirmed.value);
-        assertNotNull(structureDataConfirmed.errorDescription);
-
+        
+        // wait to process whole queue
+        while (sobjVrequestRepository.count() > 0) {
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException e) {
+            }
+        }
         ArrStructureDataVO structureDataGet = getStructureData(fundVersion.getId(), structureData.id);
-        assertEquals(structureDataConfirmed, structureDataGet);
-
+        assertSame(structureDataGet.state, ArrStructuredObject.State.ERROR);
+        assertTrue(StringUtils.isEmpty(structureDataGet.value));
+        assertTrue(StringUtils.isEmpty(structureDataConfirmed.errorDescription));
+        
         FilteredResultVO<ArrStructureDataVO> structureDataResult1 = findStructureData(STRUCTURE_TYPE_CODE, fundVersion.getId(), null, null, null, null);
         assertEquals(1, structureDataResult1.getCount());
         assertEquals(1, structureDataResult1.getRows().size());

@@ -1,5 +1,6 @@
 package cz.tacr.elza.bulkaction;
 
+import java.util.Collections;
 import java.util.List;
 
 import javax.transaction.Transactional;
@@ -202,6 +203,8 @@ public abstract class BulkAction {
     }
 
     public void deleteDescItem(ArrDescItem oldDescItem) {
-        descriptionItemService.deleteDescriptionItem(oldDescItem, getFundVersion(), getChange(), true);
+        List<ArrDescItem> items = Collections.singletonList(oldDescItem);
+        descriptionItemService.deleteDescriptionItems(items, oldDescItem.getNode(), getFundVersion(), getChange(),
+                                                      true);
     }
 }

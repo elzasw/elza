@@ -3,7 +3,7 @@
         <def-type>ATTRIBUTE_TYPES</def-type>
         <priority>1</priority>
     </structure-definition>
-    <structure-definition structure-type="SRD_PACKET" filename="SRD_PACKET.groovy">
+    <structure-definition structure-type="SRD_PACKET" filename="Packet.groovy">
         <def-type>SERIALIZED_VALUE</def-type>
         <priority>1</priority>
     </structure-definition>

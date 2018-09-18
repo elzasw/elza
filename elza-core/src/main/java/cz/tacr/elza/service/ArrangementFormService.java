@@ -255,7 +255,7 @@ public class ArrangementFormService {
 		List<ArrDescItem> deletedItems = null;
 
 		if (CollectionUtils.isNotEmpty(deleteItems)) {
-			deletedItems = descriptionItemService.deleteDescriptionItems(deleteItems, node, fundVersion, change);
+            deletedItems = descriptionItemService.deleteDescriptionItems(deleteItems, node, fundVersion, change, true);
 			result.addAll(deletedItems);
 		}
 

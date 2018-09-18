@@ -1,8 +1,8 @@
 package cz.tacr.elza.bulkaction.generator.multiple;
 
+import java.util.Collections;
 import java.util.List;
 
-import cz.tacr.elza.service.ArrangementCacheService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +20,7 @@ import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.service.ArrangementCacheService;
 import cz.tacr.elza.service.DescriptionItemService;
 
 /**
@@ -69,11 +70,13 @@ public class DeleteItemAction extends Action {
         for (ArrItem item : descItems) {
             if (item instanceof ArrDescItem) {
                 ArrDescItem arrDescItem = descItemRepository.getOne(item.getItemId());
-                descriptionItemService.deleteDescriptionItem(arrDescItem,
-                        fundVersion,
-                        change,
-                        false);
-                arrangementCacheService.deleteDescItem(arrDescItem.getNodeId(), arrDescItem.getDescItemObjectId());
+
+                List<ArrDescItem> items = Collections.singletonList(arrDescItem);
+                descriptionItemService.deleteDescriptionItems(items,
+                                                              arrDescItem.getNode(),
+                                                              fundVersion,
+                                                              change,
+                                                              true);
             }
         }
     }
