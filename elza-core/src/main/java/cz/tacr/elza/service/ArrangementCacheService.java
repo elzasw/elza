@@ -219,7 +219,10 @@ public class ArrangementCacheService {
             }
         }
 
-        throw new ObjectNotFoundException("Záznam nebyl nalezen v seznamu objektů uložených v cache", BaseCode.ID_NOT_EXIST);
+        throw new ObjectNotFoundException("Záznam nebyl nalezen v seznamu objektů uložených v cache",
+                BaseCode.ID_NOT_EXIST)
+                        .set("nodeId", nodeId)
+                        .set("descItemObjectIdsToRemove", descItemObjectIdsToRemove);
     }
 
     /**
