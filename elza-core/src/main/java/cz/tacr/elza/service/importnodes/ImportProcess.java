@@ -14,8 +14,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import cz.tacr.elza.repository.ApAccessPointRepository;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.Validate;
 import org.castor.core.util.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,6 +49,7 @@ import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeRegister;
+import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
@@ -57,6 +58,7 @@ import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.domain.vo.NodeTypeOperation;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DescItemRepository;
@@ -66,6 +68,7 @@ import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.PartyRepository;
+import cz.tacr.elza.repository.StructuredItemRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.DmsService;
@@ -73,6 +76,7 @@ import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.IEventNotificationService;
 import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.service.RuleService;
+import cz.tacr.elza.service.StructObjValueService;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
@@ -109,7 +113,7 @@ public class ImportProcess {
     /**
      * Logger.
      */
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private static final Logger logger = LoggerFactory.getLogger(ImportProcess.class);
 
     @Autowired
     private ArrangementService arrangementService;
@@ -151,7 +155,13 @@ public class ImportProcess {
     private FundFileRepository fundFileRepository;
 
     @Autowired
+    private StructObjValueService structObjService;
+
+    @Autowired
     private StructuredObjectRepository structureDataRepository;
+
+    @Autowired
+    private StructuredItemRepository structItemRepository;
 
     @Autowired
     private PartyRepository partyRepository;
@@ -258,7 +268,7 @@ public class ImportProcess {
         logger.info("Zahájení importu do AS");
 
         Map<String, ArrFile> filesMapper = resolveFileConflict();
-		Map<Integer, ArrStructuredObject> structureDataMapper = resolveStructureDataConflict();
+		Map<Integer, ArrStructuredObject> structureDataMapper = prepareStructObjs();
 
         Stack<DeepData> stack = new Stack<>();
         while (source.hasNext()) {
@@ -337,7 +347,8 @@ public class ImportProcess {
      * @param item          zdrojový item
      * @param descItem      vazební item   @return vytvořená data
      */
-	private ArrData createArrData(final Map<String, ArrFile> filesMapper, final Map<Integer, ArrStructuredObject> structureDataMapper,
+    private ArrData createArrData(final Map<String, ArrFile> filesMapper,
+                                  final Map<Integer, ArrStructuredObject> structureDataMapper,
 	        final Item item, final ArrDescItem descItem) {
         ArrData data;
         if (item instanceof ItemInt) {
@@ -395,6 +406,10 @@ public class ImportProcess {
             ArrStructuredObject structureData = structureDataRepository
                     .findOne(((ItemStructureRef) item).getStructureDataId());
             ArrStructuredObject structureDataNew = structureDataMapper.get(structureData.getStructuredObjectId());
+
+            // mapping should exists -> if mapping not found then whole item should not be imported? 
+            Validate.notNull(structureDataNew);
+
             ((ArrDataStructureRef) data).setStructuredObject(structureDataNew);
         } else if (item instanceof ItemPartyRef) {
             data = new ArrDataPartyRef();
@@ -403,7 +418,6 @@ public class ImportProcess {
             data = new ArrDataRecordRef();
             ((ArrDataRecordRef) data).setRecord(apAccessPointRepository.getOne(((ItemRecordRef) item).getRecordId()));
         } else {
-            //descItem.setUndefined(true);
             data = null;
         }
         return data;
@@ -545,7 +559,7 @@ public class ImportProcess {
      *
      * @return výsledná mapa pro provazování
      */
-	private Map<Integer, ArrStructuredObject> resolveStructureDataConflict() {
+	private Map<Integer, ArrStructuredObject> prepareStructObjs() {
 		// get current packets
 		Map<String, ArrStructuredObject> fundPacketsMapName = structureDataRepository
                 .findByFundAndDeleteChangeIsNull(targetFundVersion.getFund())
@@ -561,35 +575,101 @@ public class ImportProcess {
             ArrStructuredObject structuredObject = null;
 			// switch
             switch (params.getStructuredConflictResolve()) {
-			case USE_TARGET:
-				String srcPacketKey = sourcePacket.getValue();
+            /*
+               This option is not anymore supported, structured object can be only copied
+            case USE_TARGET:            	
                 structuredObject = fundPacketsMapName.get(srcPacketKey);
                 if (structuredObject == null) {
                     throw new IllegalStateException("Not implemented");
                     // TODO:
                     //structuredObject = copyStrcutureDataFromSource(sourcePacket, fundPacketsMapName);
-				}
-				break;
-			/*case COPY_AND_RENAME:
-				packet = copyStrcutureDataFromSource(sourceStructureds, fundPacketsMapName);
-				break;*/
+            	}
+            	break;
+            	*/
+            case COPY_AND_RENAME:
+                //String srcPacketKey = sourcePacket.getValue();
+                structuredObject = copyStructObjFromSource(sourcePacket, fundPacketsMapName);
+                break;
+            case USE_TARGET:
 			default:
 				throw new SystemException("Neplatné vyřešení konfliktu: " + params.getFileConflictResolve(),
 				        BaseCode.INVALID_STATE);
             }
+            // store result
+            result.put(sourcePacket.getStructuredObjectId(), structuredObject);
 		}
 
         return result;
     }
 
     /**
-	 * Zkopírovat obaly ze zdroje do AS.
-	 *
-     * @param sourceStructureds zdorové obaly [typ/value -> zdrojový obal]
-     * @param structureDataMapper převodní mapa [typ/value -> obal v AS]
-     * @param structuredSource  typ/number obalu
-     * @param existsStructureds existující typ/number obaly v AS
-	 */
+     * Zkopíruje vybraný obal do AS.
+     *
+     * @param sourceObj
+     *            zdrojový objekt
+     * @param soNameMap
+     *            mapa současných strukt.obj
+     */
+    private ArrStructuredObject copyStructObjFromSource(ArrStructuredObject sourceObj,
+                                                        Map<String, ArrStructuredObject> soNameMap) {
+        // prepare new obj
+        ArrStructuredObject so = new ArrStructuredObject();
+        so.setAssignable(Boolean.TRUE);
+        so.setState(sourceObj.getState());
+        so.setCreateChange(this.change);
+        so.setErrorDescription(sourceObj.getErrorDescription());
+        so.setStructuredType(sourceObj.getStructuredType());
+        so.setValue(sourceObj.getValue());
+        so.setFund(targetFundVersion.getFund());
+        so = structureDataRepository.save(so);
+
+        Validate.notNull(so.getStructuredObjectId());
+
+        // preapare items and data
+        List<ArrStructuredItem> srcItems = structItemRepository
+                .findByStructuredObjectAndDeleteChangeIsNullFetchData(sourceObj);
+        for (ArrStructuredItem srcItem : srcItems) {
+            // make data copy
+            ArrData srcData = srcItem.getData();
+            ArrData trgData = null;
+            if (srcData != null) {
+                trgData = ArrData.makeCopyWithoutId(srcData);
+                dataRepository.save(trgData);
+
+                Validate.notNull(trgData.getDataId());
+            }
+
+            // prepare struct.obj item
+            ArrStructuredItem trgItem = new ArrStructuredItem();
+            trgItem.setCreateChange(this.change);
+            trgItem.setData(trgData);
+            trgItem.setDescItemObjectId(arrangementService.getNextDescItemObjectId());
+            trgItem.setItemSpec(srcItem.getItemSpec());
+            trgItem.setItemType(srcItem.getItemType());
+            trgItem.setPosition(srcItem.getPosition());
+            trgItem.setStructuredObject(so);
+
+            structItemRepository.save(trgItem);
+        }
+
+        // generate
+        structObjService.addToValidate(so);
+
+        return so;
+    }
+
+    /**
+     * Zkopírovat obaly ze zdroje do AS.
+     *
+     * @param sourceStructureds
+     *            zdorové obaly [typ/value -> zdrojový obal]
+     * @param structureDataMapper
+     *            převodní mapa [typ/value -> obal v AS]
+     * @param structuredSource
+     *            typ/number obalu
+     * @param existsStructureds
+     *            existující typ/number obaly v AS
+     */
     /*private void copyStrcutureDataFromSource(final Map<Pair<String, String>, Structured> sourceStructureds,
                                              final Map<Pair<String, String>, ArrStructureData> structureDataMapper,
                                              final Pair<String, String> structuredSource,

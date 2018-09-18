@@ -983,6 +983,61 @@ function merge(state) {
     };
 }
 
+/**
+ * Doplní v přijatých datech ze serveru nemožné typy atributů.
+ *
+ * @param data data přijatá ze serveru
+ * @param refTypesMap
+ * @returns {*}
+ */
+function fillImpossibleTypes(data, refTypesMap) {
+
+    const dataItemTypeMap = getMapFromList(data.itemTypes);
+
+    Object.keys(refTypesMap).forEach(itemTypeId => {
+        if (!data.itemTypes[itemTypeId]) {
+            const itemType = refTypesMap[itemTypeId];
+            const itemSpecs = itemType.descItemSpecs;
+
+            const dataItemType = dataItemTypeMap[itemTypeId] || {};
+            const dataItemSpecs = dataItemType.specs || [];
+
+            const finalItemSpecs = itemSpecs.map(spec => {
+                const specIndex = indexById(dataItemSpecs, spec.id);
+                if (specIndex == null) {
+                    return {
+                        id: spec.id,
+                        type: 0,
+                        rep: 0
+                    }
+                } else {
+                    return dataItemSpecs[specIndex];
+                }
+            });
+
+            const finalItemType = {
+                ...dataItemType,
+                specs: finalItemSpecs
+            };
+
+            const resultItemType = {
+                id: itemType.id,
+                type: 0,
+                rep: 0,
+                cal: 0,
+                calSt: 0,
+                favoriteSpecIds: [],
+                ind: 0,
+                specs: [],
+                width: 1,
+                ...finalItemType
+            };
+            data.itemTypes[resultItemType.id] = resultItemType;
+        }
+    });
+
+    return data;
+}
 
 // refTypesMap - mapa id info typu na typ, je doplněné o dataType objekt - obecný číselník
 export function updateFormData(state, data, refTypesMap, groups, updatedItem, dirty) {
@@ -995,7 +1050,7 @@ export function updateFormData(state, data, refTypesMap, groups, updatedItem, di
     // ##
     if (currentNodeVersionId <= newNodeVersionId || dirty) { // rovno musí být, protože i když mám danou verzi, nemusím mít nově přidané povinné položky (nastává i v případě umělého klientského zvednutí nodeVersionId po zápisové operaci) na základě aktuálně upravené mnou
         // Data přijatá ze serveru
-        state.data = data;
+        state.data = fillImpossibleTypes(data, refTypesMap);
 
         if(updatedItem){
             state.updatedItem = updatedItem;

@@ -271,13 +271,20 @@ export function node(state = nodeInitialState, action) {
                 subNodeFormCache: subNodeFormCache(state.subNodeFormCache, action),
             };
 
-            for (let nodeId of action.nodeIds) {
-                if (indexById(result.childNodes, nodeId) !== null) {
-                    result.changeParent = true;
-                    break;
+            if (action.nodeIds) {
+                for (let nodeId of action.nodeIds) {
+                    if (indexById(result.childNodes, nodeId) !== null) {
+                        result.changeParent = true;
+                        break;
+                    }
                 }
             }
 
+            if (action.nodeId) {
+                if (indexById(result.childNodes, action.nodeId) !== null) {
+                    result.changeParent = true;
+                }
+            }
 
             return consolidateState(state, result);
         case types.FUND_SUBNODE_UPDATE:

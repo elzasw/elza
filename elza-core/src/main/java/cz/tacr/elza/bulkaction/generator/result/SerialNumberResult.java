@@ -1,7 +1,7 @@
 package cz.tacr.elza.bulkaction.generator.result;
 
 /**
- * Výsledek z hromadné akce {@link cz.tacr.elza.bulkaction.generator.UnitIdBulkAction}
+ * Výsledek z hromadné akce {@link cz.tacr.elza.bulkaction.generator.GenerateUnitId}
  *
  * @author Martin Šlapa
  * @since 29.06.2016

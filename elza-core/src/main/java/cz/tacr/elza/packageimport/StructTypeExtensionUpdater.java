@@ -28,7 +28,7 @@ import cz.tacr.elza.packageimport.xml.StructureExtensions;
 import cz.tacr.elza.repository.ComponentRepository;
 import cz.tacr.elza.repository.StructureExtensionDefinitionRepository;
 import cz.tacr.elza.repository.StructuredTypeExtensionRepository;
-import cz.tacr.elza.service.StructureService;
+import cz.tacr.elza.service.StructObjService;
 
 /**
  * Update extensions for structured types
@@ -43,7 +43,7 @@ public class StructTypeExtensionUpdater
 
 	final private ComponentRepository componentRepository;
 
-	private StructureService structureService;
+	private StructObjService structureService;
 
 	/**
 	 * Updated and new structured extensions
@@ -71,7 +71,7 @@ public class StructTypeExtensionUpdater
 
     public StructTypeExtensionUpdater(StructuredTypeExtensionRepository structureExtensionRepository,
     		StructureExtensionDefinitionRepository structureExtensionDefinitionRepository, ComponentRepository componentRepository,
-    		StructureService structureService
+    		StructObjService structureService
     		) {
     	this.structureExtensionRepository = structureExtensionRepository;
     	this.structureExtensionDefinitionRepository = structureExtensionDefinitionRepository;
@@ -85,7 +85,7 @@ public class StructTypeExtensionUpdater
      * @param puc
      * @return
      */
-    private void procExtDefs(final StructureExtensionDefinitions extDefs, final PackageUpdateContext puc) {
+    private void procExtDefs(final StructureExtensionDefinitions extDefs, final PackageContext puc) {
 	    // get current definitions
         List<RulStructureExtensionDefinition> rulStructureExtensionDefinitions = this.origStructExts.size() == 0
 				? Collections.emptyList()
@@ -244,7 +244,7 @@ public class StructTypeExtensionUpdater
         this.rulStructureExtensionsDelete = rulStructureExtensionsDelete;
     }
 
-	public void run(PackageUpdateContext ruc) {
+	public void run(PackageContext ruc) {
         StructureExtensions xmlExtensions = PackageUtils.convertXmlStreamToObject(StructureExtensions.class,
         		ruc.getByteStream(PackageService.STRUCTURE_EXTENSION_XML));
         StructureExtensionDefinitions xmlExtDefs = PackageUtils.convertXmlStreamToObject(StructureExtensionDefinitions.class,

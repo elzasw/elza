@@ -58,14 +58,9 @@ public class StorageManager implements StoredEntityCallback {
         if (currentMemoryScore <= memoryScoreLimit) {
             return;
         }
-        // flush & clear when overflowed the limit
+		// flush & clear when overflowed the limit
         session.flush();
-        for (EntityWrapper pw : persistedWrappers) {
-            //logger.debug("Evicting wrapper, class = {}", ew.getClass());
-            pw.evictFrom(session);
-        }
-        persistedWrappers.clear();
-        currentMemoryScore = 0;
+        clear();
     }
 
     public void storeRefUpdates(Collection<? extends RefUpdateWrapper> ruws) {
@@ -109,4 +104,13 @@ public class StorageManager implements StoredEntityCallback {
         ParPartyStorage storage = new ParPartyStorage(session, this, initHelper);
         storage.store(pws);
     }
+
+	public void clear() {
+        for (EntityWrapper pw : persistedWrappers) {
+            //logger.debug("Evicting wrapper, class = {}", ew.getClass());
+            pw.evictFrom(session);
+        }
+        persistedWrappers.clear();
+        currentMemoryScore = 0;
+	}
 }

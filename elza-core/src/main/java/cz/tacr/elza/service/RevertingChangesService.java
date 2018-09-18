@@ -34,8 +34,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
-import com.google.common.collect.Sets;
-
 import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
 import cz.tacr.elza.config.ConfigView;
 import cz.tacr.elza.domain.ArrBulkActionRun;
@@ -57,6 +55,7 @@ import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
+import cz.tacr.elza.repository.UsedValueRepository;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.eventnotification.events.EventFunds;
 import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
@@ -107,6 +106,9 @@ public class RevertingChangesService {
 
     @Autowired
     private DataRepository dataRepository;
+
+    @Autowired
+    private UsedValueRepository usedValueRepository;
 
     /**
      * Vyhledání provedení změn nad AS, případně nad konkrétní JP z AS.
@@ -272,6 +274,9 @@ public class RevertingChangesService {
 
         deleteEntityQuery = createConformityDeleteEntityQuery(fund, node/*, toChange*/);
         deleteEntityQuery.executeUpdate();
+
+        // drop used/fixed values
+        usedValueRepository.deleteToChange(fund, toChange.getChangeId());
 
         updateEntityQuery = createSimpleUpdateEntityQuery(fund, node, "deleteChange", "arr_level", toChange);
         deleteEntityQuery = createSimpleDeleteEntityQuery(fund, node, "createChange", "arr_level", toChange);

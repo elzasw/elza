@@ -1,31 +1,18 @@
 package cz.tacr.elza.packageimport;
 
-import java.io.BufferedWriter;
-import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.lang3.NotImplementedException;
 
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.RulRuleSet;
-import cz.tacr.elza.domain.RulStructureDefinition;
-import cz.tacr.elza.domain.RulStructureExtensionDefinition;
-import cz.tacr.elza.domain.RulStructuredType;
-import cz.tacr.elza.repository.StructuredTypeRepository;
 
 /**
  * Context and basic infrastructure for rule update.
  *
  */
 public class RuleUpdateContext {
+
+    private final PackageContext puc;
 
 	private final ResourcePathResolver resourcePathResolver;
 
@@ -48,7 +35,9 @@ public class RuleUpdateContext {
 	 */
 	private final String keyDirPath;
 
-	public RuleUpdateContext(RulPackage rulPackage, RulRuleSet rulRuleSet, ResourcePathResolver resourcePathResolver, String ruleDirPath) {
+    public RuleUpdateContext(PackageContext puc, RulPackage rulPackage, RulRuleSet rulRuleSet,
+            ResourcePathResolver resourcePathResolver, String ruleDirPath) {
+        this.puc = puc;
 		this.rulPackage = rulPackage;
 		this.rulRuleSet = rulRuleSet;
 		this.resourcePathResolver = resourcePathResolver;
@@ -81,6 +70,10 @@ public class RuleUpdateContext {
 		}
 
 	}
+
+    public PackageContext getPackageUpdateContext() {
+        return puc;
+    }
 
 	public File getRulesDir() {
 		return dirRules;

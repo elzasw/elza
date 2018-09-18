@@ -203,11 +203,6 @@ public class UISettings {
         RECORD,
 
         /**
-         * Počet nul před - obaly
-         */
-        PACKET_LEADING_ZEROS,
-
-        /**
          * Nastavení sloupců / atributů pro zobrazení v gridu
          */
         GRID_VIEW(false, EntityType.RULE);

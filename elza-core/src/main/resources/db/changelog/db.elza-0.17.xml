@@ -54,4 +54,87 @@
         <addNotNullConstraint tableName="ap_external_id_type" columnName="package_id" columnDataType="int" />
     </changeSet>
 
+    <!-- Column for sort_value in arr_structured_object -->
+    <changeSet id="20180903234900" author="ppyt">
+        <addColumn tableName="arr_structured_object">
+            <column name="sort_value" type="nvarchar(1000)" />
+        </addColumn>
+        <createIndex tableName="arr_structured_object" indexName="arr_structured_object_sort_idx">
+          <column name="sort_value" />
+        </createIndex>
+        <sql>UPDATE arr_structured_object SET sort_value = value</sql>
+    </changeSet>
+    
+    <!-- New table for structured object queue (value generator) -->
+    <changeSet id="20180903234901" author="ppyt">
+        <createTable tableName="arr_sobj_vrequest">
+            <column name="sobj_vrequest_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="structured_object_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint constraintName="fk_arr_sobj_vrequest_structured_object"
+                                 baseTableName="arr_sobj_vrequest"
+                                 baseColumnNames="structured_object_id"
+                                 referencedTableName="arr_structured_object"
+                                 referencedColumnNames="structured_object_id"
+                                 onDelete="NO ACTION"/>
+        <insert tableName="db_hibernate_sequences">
+            <column name="sequence_name" value="arr_sobj_vrequest|sobj_vrequest_id"/>
+            <column name="next_val" value="1"/>
+        </insert>
+    </changeSet>
+
+    <!-- New table for used values (ref. ozn) -->
+    <changeSet id="20180903234902" author="ppyt">
+        <createTable tableName="arr_used_value">
+            <column name="used_value_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="fund_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="item_type_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="create_change_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="value" type="nvarchar(1000)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint constraintName="fk_arr_used_value_fund"
+                                 baseTableName="arr_used_value"
+                                 baseColumnNames="fund_id"
+                                 referencedTableName="arr_fund"
+                                 referencedColumnNames="fund_id"
+                                 onDelete="NO ACTION"/>
+        <addForeignKeyConstraint constraintName="fk_arr_used_value_item_type"
+                                 baseTableName="arr_used_value"
+                                 baseColumnNames="item_type_id"
+                                 referencedTableName="rul_item_type"
+                                 referencedColumnNames="item_type_id"
+                                 onDelete="NO ACTION"/>
+        <addForeignKeyConstraint constraintName="fk_arr_used_value_create_change"
+                                 baseTableName="arr_used_value"
+                                 baseColumnNames="create_change_id"
+                                 referencedTableName="arr_change"
+                                 referencedColumnNames="change_id"
+                                 onDelete="NO ACTION"/>
+        <!-- Index pro vyhledavani zaznamu -->
+        <createIndex tableName="arr_used_value" indexName="arr_used_value_lookup_idx">
+          <column name="fund_id" />
+          <column name="item_type_id" />
+          <column name="value" />
+        </createIndex>
+
+        <insert tableName="db_hibernate_sequences">
+            <column name="sequence_name" value="arr_used_value|used_value_id"/>
+            <column name="next_val" value="1"/>
+        </insert>
+    </changeSet>
+
 </databaseChangeLog>

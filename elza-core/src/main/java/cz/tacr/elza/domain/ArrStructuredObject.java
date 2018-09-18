@@ -81,6 +81,9 @@ public class ArrStructuredObject implements IArrFund, Structured {
     @Column(length = StringLength.LENGTH_1000)
     private String value;
 
+    @Column(length = StringLength.LENGTH_1000)
+    private String sortValue;
+
     @Column(nullable = false)
     private Boolean assignable;
 
@@ -123,22 +126,38 @@ public class ArrStructuredObject implements IArrFund, Structured {
     }
 
     /**
-     * @return priorita vykonávání
+     * @return User visible value
      */
     public String getValue() {
         return value;
     }
 
-    @Override
-    public String getStructureTypeCode() {
-        return structuredType == null ? null : structuredType.getCode();
-    }
-
     /**
-     * @param value priorita vykonávání
+     * @param value User visible value 
      */
     public void setValue(final String value) {
         this.value = value;
+    }
+    
+    /**
+     * Return value used for sorting
+     * @return
+     */
+    public String getSortValue() {
+		return sortValue;
+	}
+
+    /**
+     * Set sort value
+     * @param sortValue
+     */
+	public void setSortValue(String sortValue) {
+		this.sortValue = sortValue;
+	}
+
+	@Override
+    public String getStructureTypeCode() {
+        return structuredType == null ? null : structuredType.getCode();
     }
 
     /**

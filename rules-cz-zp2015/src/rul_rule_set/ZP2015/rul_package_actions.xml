@@ -23,6 +23,7 @@
             <action-recommended output-type="ZP2015_INVENTAR" />
         </action-recommendeds>
     </package-action>
+    <package-action filename="ZMRAZENI_REF_OZN.yaml" />
     <!-- Agregace uvodu -->
     <package-action filename="ZP2015_INTRO.yaml">
         <action-item-types>

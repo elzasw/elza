@@ -1,20 +1,45 @@
 package cz.tacr.elza.packageimport;
 
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipException;
+import java.util.zip.ZipFile;
 
-import cz.tacr.elza.domain.*;
 import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.FileSystemUtils;
 
 import cz.tacr.elza.core.ResourcePathResolver;
+import cz.tacr.elza.domain.ApRule;
+import cz.tacr.elza.domain.RulPackage;
+import cz.tacr.elza.domain.RulStructureDefinition;
+import cz.tacr.elza.domain.RulStructureExtensionDefinition;
+import cz.tacr.elza.domain.RulStructuredType;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.PackageCode;
+import cz.tacr.elza.packageimport.xml.PackageInfo;
 
-public class PackageUpdateContext {
+public class PackageContext {
 
-	private static Logger logger = LoggerFactory.getLogger(PackageUpdateContext.class);
+    /**
+     * hlavní soubor v zipu
+     */
+    public static final String PACKAGE_XML = "package.xml";
+
+	private static Logger logger = LoggerFactory.getLogger(PackageContext.class);
+
+    ZipFile zipFile = null;
 
 	Integer oldVersion;
 
@@ -26,14 +51,53 @@ public class PackageUpdateContext {
 
 	private ResourcePathResolver resourcePathResolver;
 
-	private final Map<String, ByteArrayInputStream> byteStreams;
+    private Map<String, ByteArrayInputStream> byteStreams;
 
 	private List<RulStructuredType> structuredTypes;
 
-	public PackageUpdateContext(ResourcePathResolver resourcePathResolver, Map<String, ByteArrayInputStream> byteStreams) {
+    PackageInfo packageInfo;
+
+    /**
+     * Set of structured types to be regenerated
+     */
+    private Set<String> regenerateStructTypes = new HashSet<>();
+
+    public PackageContext(ResourcePathResolver resourcePathResolver) {
 		this.resourcePathResolver = resourcePathResolver;
-		this.byteStreams = byteStreams;
 	}
+
+    /**
+     * Initialize package import from file
+     * 
+     * @param file
+     *            ZIP file to be imported
+     * @throws IOException
+     * @throws ZipException
+     */
+    public void init(File file) throws ZipException, IOException {
+        zipFile = new ZipFile(file);
+
+        Enumeration<? extends ZipEntry> entries = zipFile.entries();
+
+        byteStreams = PackageUtils.createStreamsMap(zipFile, entries);
+
+        // read package info
+        // načtení info o importu
+        packageInfo = convertXmlStreamToObject(PackageInfo.class, PACKAGE_XML);
+        if (packageInfo == null) {
+            throw new BusinessException("Soubor " + PACKAGE_XML + " nenalezen", PackageCode.FILE_NOT_FOUND)
+                    .set("file", PACKAGE_XML);
+        }
+    }
+
+    public <T> T convertXmlStreamToObject(final Class<T> classObject, final String fileName) {
+        ByteArrayInputStream inputStream = byteStreams.get(fileName);
+        if (inputStream == null) {
+            return null;
+        }
+
+        return PackageUtils.convertXmlStreamToObject(classObject, inputStream);
+    }
 
 	Integer getOldPackageVersion() {
 		return oldVersion;
@@ -91,6 +155,16 @@ public class PackageUpdateContext {
 		}
 	}
 
+    /**
+     * Uložení souboru.
+     *
+     * @param dir
+     *            adresář
+     * @param zipDir
+     *            adresář v ZIP
+     * @param filename
+     *            název souboru
+     */
 	public File saveFile(File dir, String zipDir, String filename) throws IOException {
 
 		File file = new File(dir.getPath() + File.separator + filename);
@@ -176,4 +250,33 @@ public class PackageUpdateContext {
 		this.structuredTypes = structuredTypes;
 	}
 
+    public void addRegenerateStructureType(String code) {
+        regenerateStructTypes.add(code);
+    }
+
+    public Set<String> getByteStreamKeys() {
+        return byteStreams.keySet();
+    }
+
+    public PackageInfo getPackageInfo() {
+        return packageInfo;
+    }
+
+    public void close() {
+        if (byteStreams != null) {
+            byteStreams = null;
+        }
+        if (zipFile != null) {
+            try {
+                zipFile.close();
+            } catch (IOException e) {
+                // ok
+            }
+            zipFile = null;
+        }
+    }
+
+    public Set<String> getRegenerateStructureTypes() {
+        return regenerateStructTypes;
+    }
 }

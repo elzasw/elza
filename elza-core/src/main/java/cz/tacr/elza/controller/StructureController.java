@@ -36,7 +36,7 @@ import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.FilteredResult;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.RuleService;
-import cz.tacr.elza.service.StructureService;
+import cz.tacr.elza.service.StructObjService;
 
 
 /**
@@ -50,14 +50,14 @@ import cz.tacr.elza.service.StructureService;
         produces = MediaType.APPLICATION_JSON_VALUE)
 public class StructureController {
 
-    private final StructureService structureService;
+    private final StructObjService structureService;
     private final ArrangementService arrangementService;
     private final RuleService ruleService;
     private final ClientFactoryDO factoryDO;
     private final ClientFactoryVO factoryVO;
 
     @Autowired
-    public StructureController(final StructureService structureService,
+    public StructureController(final StructObjService structureService,
                                final ArrangementService arrangementService,
                                final RuleService ruleService,
                                final ClientFactoryDO factoryDO,

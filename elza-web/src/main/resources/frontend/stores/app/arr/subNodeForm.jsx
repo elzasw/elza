@@ -414,8 +414,6 @@ export default function subNodeForm(state = initialState, action = {}) {
             return {...state};
 
         case types.FUND_SUB_NODE_FORM_TEMPLATE_USE: {
-            console.warn("FUND_SUB_NODE_FORM_TEMPLATE_USE", action, state);
-
             const groups = action.groups;
             const template = action.template;
             const formData = template.formData;

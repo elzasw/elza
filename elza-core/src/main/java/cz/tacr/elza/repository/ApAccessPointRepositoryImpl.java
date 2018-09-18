@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
@@ -51,10 +52,12 @@ public class ApAccessPointRepositoryImpl implements ApAccessPointRepositoryCusto
             query.where(condition);
         }
 
-        return entityManager.createQuery(query)
+        List<ApAccessPoint> resultList = entityManager.createQuery(query)
                 .setFirstResult(firstResult)
                 .setMaxResults(maxResults)
                 .getResultList();
+
+        return resultList.stream().distinct().collect(Collectors.toList());
     }
 
     @Override

@@ -159,7 +159,7 @@ public class ItemTypeUpdater {
 	public List<RulItemType> update(final List<RulDataType> rulDataTypes,
                                     final ItemTypes itemTypes,
                                     final ItemSpecs itemSpecs,
-                                    final PackageUpdateContext puc) {
+                                    final PackageContext puc) {
 		this.rulDataTypes = rulDataTypes;
 
 		prepareForUpdate(puc);
@@ -248,7 +248,7 @@ public class ItemTypeUpdater {
      * @param puc
      * @return Return new list of active item types
 	 */
-    private List<RulItemType> updateItemTypes(List<RulItemType> rulItemTypesOrig, List<ItemType> itemTypes, PackageUpdateContext puc) {
+    private List<RulItemType> updateItemTypes(List<RulItemType> rulItemTypesOrig, List<ItemType> itemTypes, PackageContext puc) {
     	List<RulItemType> rulItemTypesUpdated = new ArrayList<>();
     	int lastUsedViewOrder = -1;
 		for (ItemType itemType : itemTypes) {
@@ -341,7 +341,7 @@ public class ItemTypeUpdater {
     private void convertRulDescItemType(final ItemType itemType,
                                         final RulItemType rulDescItemType,
                                         final List<RulDataType> rulDataTypes,
-                                        PackageUpdateContext puc) {
+                                        PackageContext puc) {
 
         rulDescItemType.setCode(itemType.getCode());
         rulDescItemType.setName(itemType.getName());
@@ -547,7 +547,7 @@ public class ItemTypeUpdater {
 	 * Prepare item types to be updated
      * @param rulPackage
      */
-    private void prepareForUpdate(final PackageUpdateContext rulPackage) {
+    private void prepareForUpdate(final PackageContext rulPackage) {
 
         // read current items types from DB
         rulItemTypesOrig = itemTypeRepository.findByRulPackage(rulPackage.getPackage());
