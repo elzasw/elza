@@ -11,12 +11,12 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import cz.tacr.elza.controller.vo.ApScopeVO;
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.BulkActionRunVO;
 import cz.tacr.elza.controller.vo.BulkActionVO;
-import cz.tacr.elza.controller.vo.RegScopeVO;
 import cz.tacr.elza.controller.vo.TreeData;
-import cz.tacr.elza.controller.vo.TreeNodeClient;
+import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.domain.ArrBulkActionRun.State;
 
 
@@ -52,7 +52,7 @@ public class BulkActionControllerTest extends AbstractControllerTest {
 
     @After
     public void cleanUp() {
-        for (RegScopeVO scope : getAllScopes()) {
+        for (ApScopeVO scope : getAllScopes()) {
             if (scope.getName().equals(IMPORT_SCOPE)) {
                 deleteScope(scope.getId());
                 break;
@@ -113,10 +113,10 @@ public class BulkActionControllerTest extends AbstractControllerTest {
         ArrangementController.FaTreeParam faTreeParam = new ArrangementController.FaTreeParam();
         faTreeParam.setVersionId(fundVersionId);
         TreeData fundTree = getFundTree(faTreeParam);
-        Collection<TreeNodeClient> nodes = fundTree.getNodes();
+        Collection<TreeNodeVO> nodes = fundTree.getNodes();
         Assert.assertNotNull(nodes);
         Assert.assertFalse(nodes.isEmpty());
-        TreeNodeClient next = nodes.iterator().next();
+        TreeNodeVO next = nodes.iterator().next();
 
         post((spec) -> spec.pathParameter("versionId", fundVersionId).pathParam("code", BULK_ACTION_SERIAL_NUMBER_GENERATOR).body(Collections.singletonList(next.getId())), BULK_ACTION_QUEUE);
 
@@ -177,7 +177,7 @@ public class BulkActionControllerTest extends AbstractControllerTest {
                     if (state.getState().equals(State.FINISHED)) {
                         hasResult = true;
                     } else if (state.getState().equals(State.ERROR)) {
-                        Assert.fail("Hromadná akce skončila chybou");
+                        Assert.fail("Bulk action failed, code: " + code + " error: " + state.getError());
                     }
                 }
             } else {

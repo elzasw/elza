@@ -22,7 +22,7 @@ class RelationForm extends AbstractReactComponent {
 
     static PropTypes = {
         relationType: React.PropTypes.object.isRequired,
-        registerTypesMap: React.PropTypes.object.isRequired,
+        apTypesMap: React.PropTypes.object.isRequired,
         partyId: React.PropTypes.number
     };
 
@@ -83,7 +83,7 @@ class RelationForm extends AbstractReactComponent {
     submitReduxForm = (values, dispatch) => submitForm(RelationForm.validate,values,this.props,this.props.onSubmitForm,dispatch);
 
     render() {
-        const {relationType, onClose, handleSubmit, fields: {from, to, relationEntities, note, source}, partyId, registerTypesMap, submitting} = this.props;
+        const {relationType, onClose, handleSubmit, fields: {from, to, relationEntities, note, source}, partyId, apTypesMap, submitting} = this.props;
         const {relationRoleTypes} = relationType;
         const roleTypesList = relationRoleTypes ? relationRoleTypes : null;
         const usedRoles = relationEntities.map(i => parseInt(i.roleType.id.value));
@@ -102,9 +102,9 @@ class RelationForm extends AbstractReactComponent {
                                             {roleTypesList && roleTypesList.filter(t => t.id == i.roleType.id.value || t.repeatable || usedRoles.indexOf(t.id) === -1).map(v => {
                                                 let disabled = false;
 
-                                                if (i.record != null && i.record.value != null && i.record.value.registerTypeId != null) {
-                                                    let registerTypeId = i.record.value.registerTypeId;
-                                                    if (registerTypesMap[registerTypeId] == null || registerTypesMap[registerTypeId].indexOf(v.id) === -1) {
+                                                if (i.record != null && i.record.value != null && i.record.value.apTypeId != null) {
+                                                    let apTypeId = i.record.value.apTypeId;
+                                                    if (apTypesMap[apTypeId] == null || apTypesMap[apTypeId].indexOf(v.id) === -1) {
                                                         disabled = true;
                                                     }
                                                 }

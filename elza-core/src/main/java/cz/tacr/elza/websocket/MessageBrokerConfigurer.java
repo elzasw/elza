@@ -37,6 +37,8 @@ public class MessageBrokerConfigurer extends AbstractSecurityWebSocketMessageBro
     @Override
     public void configureWebSocketTransport(final WebSocketTransportRegistration registration) {
         registration.addDecoratorFactory(delegate -> new ExecutorWebSocketHandlerDecorator(delegate, clientInboundChannelExecutor));
+        registration.setSendBufferSizeLimit(512 * 1024);
+        registration.setMessageSizeLimit(512 * 1024);
         super.configureWebSocketTransport(registration);
     }
 

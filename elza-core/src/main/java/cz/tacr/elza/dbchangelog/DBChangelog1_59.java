@@ -7,7 +7,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
-import cz.tacr.elza.domain.RegRecord;
+import cz.tacr.elza.domain.ApAccessPoint;
 import liquibase.change.custom.CustomSqlChange;
 import liquibase.database.Database;
 import liquibase.database.jvm.JdbcConnection;
@@ -38,7 +38,7 @@ public class DBChangelog1_59 implements CustomSqlChange {
             while (resultSet.next()) {
                 int recordId = resultSet.getInt(1);
                 UpdateStatement updateStatement = new UpdateStatement(null, null, "reg_record");
-                updateStatement.addNewColumnValue(RegRecord.UUID, UUID.randomUUID().toString());
+                updateStatement.addNewColumnValue(ApAccessPoint.UUID, UUID.randomUUID().toString());
                 updateStatement.setWhereClause("record_id = " + recordId);
 
                 statements.add(updateStatement);

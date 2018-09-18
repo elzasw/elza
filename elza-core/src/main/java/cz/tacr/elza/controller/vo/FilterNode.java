@@ -1,9 +1,9 @@
 package cz.tacr.elza.controller.vo;
 
-import java.util.Map;
-
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.domain.vo.DescItemValues;
+
+import java.util.Map;
 
 
 /**
@@ -14,9 +14,9 @@ import cz.tacr.elza.domain.vo.DescItemValues;
  */
 public class FilterNode {
 
-
     private ArrNodeVO node;
-    private TreeNodeClient parentNode;
+
+    private TreeNodeVO parentNode;
 
     /**
      * Mapa hodnot atributů na uzlu (typ atributu -> hodnota)
@@ -28,7 +28,9 @@ public class FilterNode {
     public FilterNode() {
     }
 
-    public FilterNode(final ArrNodeVO node, final TreeNodeClient parentNode, final Map<Integer, DescItemValues> valuesMap,
+    public FilterNode(final ArrNodeVO node, 
+                      final TreeNodeVO parentNode, 
+                      final Map<Integer, DescItemValues> valuesMap,
                       final String[] referenceMark) {
         this.node = node;
         this.parentNode = parentNode;
@@ -44,11 +46,11 @@ public class FilterNode {
         this.node = node;
     }
 
-    public TreeNodeClient getParentNode() {
+    public TreeNodeVO getParentNode() {
         return parentNode;
     }
 
-    public void setParentNode(final TreeNodeClient parentNode) {
+    public void setParentNode(final TreeNodeVO parentNode) {
         this.parentNode = parentNode;
     }
 

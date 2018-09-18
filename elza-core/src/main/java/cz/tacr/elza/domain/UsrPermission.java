@@ -76,9 +76,9 @@ public class UsrPermission {
     @Column(name = "fundId", updatable = false, insertable = false, nullable = false)
     private Integer fundId;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RegScope.class)
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApScope.class)
     @JoinColumn(name = "scopeId")
-    private RegScope scope;
+    private ApScope scope;
 
     /** Slouží jen pro čtení. */
     @Column(name = "scopeId", updatable = false, insertable = false, nullable = false)
@@ -185,14 +185,14 @@ public class UsrPermission {
     /**
      * @return scope, ke kterému se oprávnění vztahuje
      */
-    public RegScope getScope() {
+    public ApScope getScope() {
         return scope;
     }
 
     /**
      * @param scope scope, ke kterému se oprávnění vztahuje
      */
-    public void setScope(final RegScope scope) {
+    public void setScope(final ApScope scope) {
         this.scope = scope;
         this.scopeId = scope == null ? null : scope.getScopeId();
     }
@@ -278,7 +278,7 @@ public class UsrPermission {
      * - RW - read/write
      *
      * - FUND - Archivní soubor
-     * - REG - Rejstříky
+     * - AP - Rejstříky
      *
      */
     public enum Permission {
@@ -346,16 +346,16 @@ public class UsrPermission {
          * - přístup do části rejstříků včetně osob
          * - může jen pasivně číst rejstříková hesla z vybraného scope
          */
-        REG_SCOPE_RD(PermissionType.SCOPE),
+        AP_SCOPE_RD(PermissionType.SCOPE),
 
         /**
          * čtení všech scope rejstříků
          * - obdobně jako výše jen pro všechna rejstříková hesla
          */
-        REG_SCOPE_RD_ALL {
+        AP_SCOPE_RD_ALL {
             @Override
             public boolean isEqualOrHigher(Permission permission) {
-                if (permission == REG_SCOPE_RD_ALL || permission == REG_SCOPE_RD) {
+                if (permission == AP_SCOPE_RD_ALL || permission == AP_SCOPE_RD) {
                     return true;
                 }
                 return false;
@@ -366,16 +366,16 @@ public class UsrPermission {
          * zápis/úprava vybraného scope rejstříku
          * - obdobně jako výše, ale může hesla upravovat, přidávat, rušit, ale jen pro přiřazený scope
          */
-        REG_SCOPE_WR(PermissionType.SCOPE),
+        AP_SCOPE_WR(PermissionType.SCOPE),
 
         /**
          * zápis/úprava všech scope rejstříků
          * - obdboně jako výše pro všechna rejstříková hesla
          */
-        REG_SCOPE_WR_ALL {
+        AP_SCOPE_WR_ALL {
             @Override
             public boolean isEqualOrHigher(Permission permission) {
-                if (permission == REG_SCOPE_WR_ALL || permission == REG_SCOPE_WR) {
+                if (permission == AP_SCOPE_WR_ALL || permission == AP_SCOPE_WR) {
                     return true;
                 }
                 return false;
@@ -551,7 +551,7 @@ public class UsrPermission {
 
         /**
          * Check if this permission is equal or higher then given permission
-         * 
+         *
          * @param permission
          *            Permission to be checked
          * @return Return true if this permission is same or higher then given
@@ -559,10 +559,10 @@ public class UsrPermission {
          */
         public boolean isEqualOrHigher(Permission permission)
         {
-            if(this==permission) { 
-                return true; 
+            if(this==permission) {
+                return true;
             } // if permission is global
             return false;
-        }
+    }
     }
 }

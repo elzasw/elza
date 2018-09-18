@@ -17,8 +17,9 @@ import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 import javax.validation.constraints.NotNull;
 
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.repository.ApNameRepository;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.Validate;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,8 +43,7 @@ import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.core.security.Authorization;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.domain.RegScope;
+import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.UsrGroup;
 import cz.tacr.elza.domain.UsrGroupUser;
 import cz.tacr.elza.domain.UsrPermission;
@@ -100,6 +100,9 @@ public class UserService {
 
     @Autowired
     private ScopeRepository scopeRepository;
+
+    @Autowired
+    private ApNameRepository apNameRepository;
 
     @Value("${elza.security.salt:kdFss=+4Df_%}")
     private String SALT;
@@ -288,14 +291,14 @@ public class UserService {
      */
     private void checkPermission(final List<UsrPermission> permissions) {
         UserDetail userDetail = getLoggedUserDetail();
-        if(userDetail.hasPermission(UsrPermission.Permission.USR_PERM)) 
+        if(userDetail.hasPermission(UsrPermission.Permission.USR_PERM))
             return;
-        
+
         // Check new permissions
         for (UsrPermission usrPermission : permissions) {
             if(!userDetail.hasPermission(usrPermission)) {
                 throw Authorization.createAccessDeniedException(usrPermission.getPermission())
-                    .level(Level.WARNING);                
+                    .level(Level.WARNING);
             }
         }
 
@@ -329,7 +332,7 @@ public class UserService {
      */
     private void setScopeRelation(final UsrPermission permission, final Integer scopeId) {
         if (scopeId != null) {
-            RegScope scope = scopeRepository.findOne(scopeId);
+            ApScope scope = scopeRepository.findOne(scopeId);
             if (scope == null) {
                 throw new SystemException("Neplatný scope", BaseCode.ID_NOT_EXIST);
             }
@@ -603,10 +606,10 @@ public class UserService {
             throw new BusinessException("User '" + user.getUsername() + "' is not memeber of the group '" + group.getName() + "'",
                     UserCode.NOT_IN_GROUP).set("user", user.getUsername()).set("group", group.getName());
         }
-        
+
         // delete all relations
       	groupUserRepository.delete(items);
-        
+
         invalidateCache(user);
         changeUserEvent(user);
         changeGroupEvent(group);
@@ -988,14 +991,12 @@ public class UserService {
      * Hledání uživatelů na základě podmínek, kteří mají přiřazené nebo zděděné oprávnění na zakládání nových AS.
      *
      * @param search      hledaný text
-     * @param active      aktivní uživatelé
-     * @param disabled    zakázaní uživatelé
      * @param firstResult od jakého záznamu
      * @param maxResults  maximální počet vrácených záznamů, pokud je -1 neomezuje se
      * @return výsledky hledání
      */
 	@Transactional
-	@AuthMethod(permission={UsrPermission.Permission.FUND_ADMIN, UsrPermission.Permission.FUND_CREATE, 
+	@AuthMethod(permission={UsrPermission.Permission.FUND_ADMIN, UsrPermission.Permission.FUND_CREATE,
 			UsrPermission.Permission.USR_PERM})
 	public FilteredResult<UsrUser> findUserWithFundCreate(final String search, final Integer firstResult, final Integer maxResults) {
 		// get current user
@@ -1007,9 +1008,9 @@ public class UserService {
 			// find in all users
 			return this.findUser(search, true, false, firstResult, maxResults, null);
 		}
-		
-		// only create permission -> have to return himself + or any controlled user    	
-        return userRepository.findUserByTextAndStateCount(search, true, false, firstResult, maxResults, null, 
+
+		// only create permission -> have to return himself + or any controlled user
+        return userRepository.findUserByTextAndStateCount(search, true, false, firstResult, maxResults, null,
                 userDetail.getId(), true);
     }
 
@@ -1036,10 +1037,10 @@ public class UserService {
      * @return výsledky hledání
      */
     @Transactional
-    @AuthMethod(permission={UsrPermission.Permission.FUND_ADMIN, UsrPermission.Permission.FUND_CREATE, 
-            UsrPermission.Permission.USR_PERM})    
+    @AuthMethod(permission={UsrPermission.Permission.FUND_ADMIN, UsrPermission.Permission.FUND_CREATE,
+            UsrPermission.Permission.USR_PERM})
     public FilteredResult<UsrGroup> findGroupWithFundCreate(final String search, final Integer firstResult, final Integer maxResults) {
-        
+
         // get current user
         UserDetail userDetail = getLoggedUserDetail();
         // if has admin rights -> we can find any group
@@ -1049,7 +1050,7 @@ public class UserService {
             // find in all users
             return groupRepository.findGroupByTextCount(search, firstResult, maxResults, null);
         }
-        
+
         // only create permission -> have to return list of controlled group
         return groupRepository.findGroupByTextCount(search, firstResult, maxResults, userDetail.getId());
     }
@@ -1210,7 +1211,7 @@ public class UserService {
 	/**
      * Event změněného uživatele.
      *
-     * @param user uživatel
+     * @param groups
      */
 	private List<UsrGroup> filterGroupsByAdminPermission(List<UsrGroup> groups) {
 		// check permissions
@@ -1318,7 +1319,7 @@ public class UserService {
     }
 
     /**
-     * Vrátí id scope na které ma uživatel právo. Nebere v úvahu právo {@link UsrPermission.Permission#REG_SCOPE_RD_ALL}.
+     * Vrátí id scope na které ma uživatel právo. Nebere v úvahu právo {@link UsrPermission.Permission#AP_SCOPE_RD_ALL}.
      *
      * @return množina id scope na které ma uživatel právo
      */
@@ -1326,7 +1327,7 @@ public class UserService {
     public Set<Integer> getUserScopeIds() {
         return getUserPermission()
                 .stream()
-                .filter(p -> p.getPermission() == UsrPermission.Permission.REG_SCOPE_RD)
+                .filter(p -> p.getPermission() == UsrPermission.Permission.AP_SCOPE_RD)
                 .findFirst()
                 .map(p -> new HashSet<>(p.getScopeIds()))
                 .orElse(new HashSet<>());
@@ -1366,8 +1367,8 @@ public class UserService {
 			UsrUser user = userRepository.findOneWithDetail(userId);
 			Validate.notNull(user, "Failed to get user: {}", userId);
 
-			RegRecord record = user.getParty().getRecord();
-			preferredName = record.getRecord();
+			ApAccessPoint record = user.getParty().getAccessPoint();
+			preferredName = apNameRepository.findPreferredNameByAccessPoint(record).getName();
 		}
 
 		return UserInfoVO.newInstance(userDetail, preferredName);
@@ -1407,18 +1408,18 @@ public class UserService {
 
         // check if user is same as logged user
         UserDetail userDetail = getLoggedUserDetail();
-		
+
 		boolean hasPermission = false;
         if (userDetail.hasPermission(UsrPermission.Permission.FUND_ADMIN)
                 || userDetail.hasPermission(UsrPermission.Permission.USR_PERM)
                 || userDetail.hasPermission(UsrPermission.Permission.FUND_CREATE)
                 ) {
             hasPermission = true;
-        } else 
-        if (userId!=null && userDetail.isControllsUser(userId)) 
+        } else
+        if (userId!=null && userDetail.isControllsUser(userId))
         {
             hasPermission = true;
-        } else 
+        } else
         if(groupId!=null && userDetail.isControllsGroup(groupId)) {
             hasPermission = true;
         }

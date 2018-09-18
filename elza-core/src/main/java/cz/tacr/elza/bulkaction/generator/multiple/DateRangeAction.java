@@ -3,6 +3,7 @@ package cz.tacr.elza.bulkaction.generator.multiple;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+import cz.tacr.elza.core.data.StaticDataProvider;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.context.annotation.Scope;
@@ -12,8 +13,7 @@ import cz.tacr.elza.bulkaction.generator.LevelWithItems;
 import cz.tacr.elza.bulkaction.generator.result.ActionResult;
 import cz.tacr.elza.bulkaction.generator.result.DateRangeActionResult;
 import cz.tacr.elza.core.data.DataType;
-import cz.tacr.elza.core.data.RuleSystem;
-import cz.tacr.elza.core.data.RuleSystemItemType;
+import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDescItem;
@@ -36,17 +36,17 @@ public class DateRangeAction extends Action {
     /**
      * Vstupní atributy datace.
      */
-	private RuleSystemItemType inputItemType;
+	private ItemType inputItemType;
 
     /**
      * Vlastní rozsah fondu.
      */
-    private RuleSystemItemType bulkRangeType;
+    private ItemType bulkRangeType;
 
     /**
      * Výstupní atribut
      */
-	private RuleSystemItemType outputItemType;
+	private ItemType outputItemType;
 
     /**
      * Minimální čas prior
@@ -85,7 +85,7 @@ public class DateRangeAction extends Action {
 
     @Override
 	public void init(ArrBulkActionRun bulkActionRun) {
-		RuleSystem ruleSystem = this.getRuleSystem(bulkActionRun);
+		StaticDataProvider ruleSystem = this.getStaticDataProvider();
 
 		// prepare output type
 		String outputType = config.getOutputType();
@@ -173,7 +173,7 @@ public class DateRangeAction extends Action {
 
     /**
      * Compare unit date with bulk interval
-     * 
+     *
      * @param unitDate
      * @param bulkFrom
      * @param bulkTo
@@ -250,9 +250,9 @@ public class DateRangeAction extends Action {
 
     /**
      * Process unit date as main date
-     * 
+     *
      * Method does not compare prior and posterior dates
-     * 
+     *
      * @param unitDate
      */
     private void processMainUnitDate(ArrDataUnitdate unitDate) {
@@ -305,7 +305,7 @@ public class DateRangeAction extends Action {
 
     /**
      * Any bounder might be null
-     * 
+     *
      * @param sb
      * @param datePriorMin
      * @param datePriorMax

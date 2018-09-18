@@ -3,7 +3,7 @@
  */
 
 import {WebApi} from 'actions/index.jsx';
-import {indexById, findByRoutingKeyInGlobalState} from 'stores/app/utils.jsx'
+import {findByRoutingKeyInGlobalState, indexById} from 'stores/app/utils.jsx'
 import {barrier} from 'components/Utils.jsx'
 import {isFundRootId} from 'components/arr/ArrUtils.jsx'
 import * as types from 'actions/constants/ActionTypes.js';
@@ -39,8 +39,8 @@ function getNode(state, versionId, routingKey) {
  */
 export function fundNodeInfoFetchIfNeeded(versionId, nodeId, routingKey, showParents) {
     return (dispatch, getState) => {
-        var state = getState();
-        var node = getNode(state, versionId, routingKey);
+        const state = getState();
+        const node = getNode(state, versionId, routingKey);
         //console.log("FETCH_NODE",node);
         if (node != null && (!node.nodeInfoFetched || node.nodeInfoDirty ) && !node.isNodeInfoFetching) {
             //console.log("FETCHING_NODE_INFO");
@@ -57,38 +57,17 @@ export function fundNodeInfoFetch(versionId, nodeId, routingKey, showParents) {
         dispatch(fundNodeInfoRequest(versionId, nodeId, routingKey));
 
         const isRoot = isFundRootId(nodeId);
-        let getFundTree;
-
+        let request;
         if (isRoot) {
-            // sends nodeId as null, because root doesn't have valid id
-            getFundTree = WebApi.getFundTree(versionId, null)
-                .then(json => {
-                    return {nodes: [json.nodes[0]]};
-                });
+            request = WebApi.getNodeData(versionId, null, false, false, true);
         } else {
-            getFundTree = WebApi.getFundTree(versionId, nodeId);
+            request = WebApi.getNodeData(versionId, nodeId, false, true, true);
         }
-
-        let getNodeParents;
-
-        if (showParents && !isRoot) {
-            getNodeParents = WebApi.getNodeParents(versionId, nodeId);
-        } else {
-            getNodeParents = new Promise(function (resolve, reject) {
-                // empty response when parents are not needed
-                resolve([]); 
-            });
-        }
-
-        return barrier(
-            getFundTree,
-            getNodeParents
-        )
-        .then(data => {
+        request.then(data => {
             return {
-                childNodes: data[0].data.nodes,
-                parentNodes: data[1].data
-            };
+                childNodes: data.children ? data.children : [],
+                parentNodes: data.parents ? data.parents : []
+            }
         })
         .then(json => dispatch(fundNodeInfoReceive(versionId, nodeId, routingKey, json)));
     };
@@ -98,15 +77,18 @@ export function fundNodeInfoFetch(versionId, nodeId, routingKey, showParents) {
  * Nová data byla načtena.
  * @param {Object} json objekt s daty
  */
-export function fundNodeInfoReceive(versionId, nodeId, routingKey, json) {
+export function fundNodeInfoReceive(versionId, nodeId, routingKey, json, viewStartIndexInvalidate = false) {
     return {
         type: types.FUND_NODE_INFO_RECEIVE,
         versionId,
         nodeId,
         routingKey,
         childNodes: json.childNodes,
+        nodeIndex: json.nodeIndex,
+        nodeCount: json.nodeCount,
         parentNodes: json.parentNodes,
-        receivedAt: Date.now()
+        receivedAt: Date.now(),
+        viewStartIndexInvalidate
     }
 }
 

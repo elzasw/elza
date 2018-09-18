@@ -1,8 +1,8 @@
 package cz.tacr.elza.controller.vo;
 
-import java.util.List;
-
 import cz.tacr.elza.domain.ArrDigitizationRequest;
+
+import java.util.List;
 
 /**
  * Value objekt {@link ArrDigitizationRequest}
@@ -18,7 +18,7 @@ public class ArrDigitizationRequestVO extends ArrRequestVO {
 
     private Integer digitizationFrontdeskId;
 
-    private List<TreeNodeClient> nodes;
+    private List<TreeNodeVO> nodes;
 
     public String getDescription() {
         return description;
@@ -36,11 +36,11 @@ public class ArrDigitizationRequestVO extends ArrRequestVO {
         this.nodesCount = nodesCount;
     }
 
-    public List<TreeNodeClient> getNodes() {
+    public List<TreeNodeVO> getNodes() {
         return nodes;
     }
 
-    public void setNodes(final List<TreeNodeClient> nodes) {
+    public void setNodes(final List<TreeNodeVO> nodes) {
         this.nodes = nodes;
     }
 

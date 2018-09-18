@@ -7,15 +7,16 @@ import './NodeTabs.less';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {AbstractReactComponent, Tabs, i18n} from 'components/shared';
+import {AbstractReactComponent, i18n, Tabs} from 'components/shared';
 import {AppActions} from 'stores/index.jsx';
-import {fundSelectNodeTab, fundCloseNodeTab} from 'actions/arr/nodes.jsx'
+import {fundCloseNodeTab, fundSelectNodeTab} from 'actions/arr/nodes.jsx'
 import {nodesFetchIfNeeded} from 'actions/arr/node.jsx'
 import {propsEquals} from 'components/Utils.jsx'
 import {createReferenceMarkString, getGlyph} from 'components/arr/ArrUtils.jsx'
-import {setFocus, canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
+import {canSetFocus, focusWasSet, isFocusFor, setFocus} from 'actions/global/focus.jsx'
 import NodePanel from "./NodePanel";
 import {FOCUS_KEYS} from "../../constants";
+import * as groups from "../../actions/refTables/groups"
 
 class NodeTabs extends AbstractReactComponent {
     constructor(props) {
@@ -26,11 +27,13 @@ class NodeTabs extends AbstractReactComponent {
 
     componentDidMount() {
         this.dispatch(nodesFetchIfNeeded(this.props.versionId));
+        this.dispatch(groups.fetchIfNeeded(this.props.versionId));
         this.trySetFocus(this.props)
     }
 
     componentWillReceiveProps(nextProps) {
         this.dispatch(nodesFetchIfNeeded(nextProps.versionId));
+        this.dispatch(groups.fetchIfNeeded(nextProps.versionId));
         this.trySetFocus(nextProps)
     }
 

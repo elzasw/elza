@@ -1,22 +1,43 @@
 package cz.tacr.elza.dataexchange.input.aps;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 import org.apache.commons.lang3.StringUtils;
 
-import cz.tacr.elza.common.XmlUtils;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.dataexchange.input.DEImportException;
 import cz.tacr.elza.dataexchange.input.aps.context.AccessPointInfo;
 import cz.tacr.elza.dataexchange.input.aps.context.AccessPointsContext;
 import cz.tacr.elza.dataexchange.input.context.ImportContext;
 import cz.tacr.elza.dataexchange.input.reader.ItemProcessor;
-import cz.tacr.elza.domain.RegExternalSystem;
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.domain.RegRegisterType;
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApExternalId;
+import cz.tacr.elza.domain.ApExternalIdType;
+import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.schema.v2.AccessPointEntry;
 import cz.tacr.elza.schema.v2.ExternalId;
 
 /**
- * Processing access point entries for access points or parties. Implementation is not thread-safe.
+ * Processing access point entries for access points or parties. Implementation
+ * is not thread-safe.
+ * 
+ * When AP storage updates persist type: <br>
+ * 1) CREATE -> all sub entities (also party) will be created <br>
+ * 2) UPDATE -> <br>
+ * AP: <br>
+ * - existing AP was paired by UUID or external id <br>
+ * - storage will ignore AP entity (update not needed) <br>
+ * - persist type in AP info will be set to UPDATE <br>
+ * - all sub entities will be invalidate (set deleteChangeId) <br>
+ * - all imported sub entities will be created <br>
+ * PARTY: <br>
+ * - party will read UPDATE type from AP info <br>
+ * - party entity must be updated <br>
+ * - all current sub entities must be deleted <br>
+ * - all imported sub entities will be created <br>
+ * 3) NONE -> all AP related entities (party included) will be ignored
  */
 public class AccessPointEntryProcessor implements ItemProcessor {
 
@@ -26,11 +47,9 @@ public class AccessPointEntryProcessor implements ItemProcessor {
 
     protected final boolean partyRelated;
 
-    private RegRegisterType registerType;
+    protected String entryId;
 
-    private RegExternalSystem externalSystem;
-
-    private AccessPointInfo parentAPInfo;
+    protected AccessPointInfo info;
 
     public AccessPointEntryProcessor(ImportContext context, boolean partyRelated) {
         this.context = context.getAccessPoints();
@@ -40,86 +59,69 @@ public class AccessPointEntryProcessor implements ItemProcessor {
 
     @Override
     public void process(Object item) {
-        AccessPointEntry entry = (AccessPointEntry) item;
-        prepareCachedReferences(entry);
-        validateAccessPointEntry(entry);
-        RegRecord ap = createAP(entry);
-        AccessPointInfo apInfo = addAccessPoint(ap, entry.getId());
-        processSubEntities(apInfo);
+        processEntry((AccessPointEntry) item);
     }
 
-    protected void prepareCachedReferences(AccessPointEntry item) {
-        registerType = staticData.getRegisterTypeByCode(item.getT());
-        if (item.getEid() != null) {
-            externalSystem = context.getExternalSystemByCode(item.getEid().getEsc());
-        }
-        if (StringUtils.isNotEmpty(item.getPid())) {
-            parentAPInfo = context.getAccessPointInfo(item.getPid());
-        }
+    protected void processEntry(AccessPointEntry entry) {
+        entryId = entry.getId();
+        // create AP and prepare AP info
+        ApAccessPoint entity = createEntity(entry);
+        List<ApExternalId> eids = createExternalIds(entry.getEid());
+        info = context.addAccessPoint(entity, entry.getId(), eids);
     }
 
-    protected void validateAccessPointEntry(AccessPointEntry item) {
-        if (StringUtils.isEmpty(item.getId())) {
-            throw new DEImportException("AccessPointEntry id is empty");
+    private List<ApExternalId> createExternalIds(Collection<ExternalId> eids) {
+        if (eids.isEmpty()) {
+            return null;
         }
-        if (item.getT() == null) {
-            throw new DEImportException("AccessPointEntry type is not set, apeId:" + item.getId());
-        }
-        if (registerType == null) {
-            throw new DEImportException("AccessPointEntry has invalid type, apeId:" + item.getId());
-        }
-        if (registerType.getAddRecord() == null || !registerType.getAddRecord()) {
-            throw new DEImportException("AccessPointEntry type is not addable, apeId:" + item.getId());
-        }
-        if (partyRelated ? registerType.getPartyType() == null : registerType.getPartyType() != null) {
-            throw new DEImportException(
-                    "Registry type with defined party type " + (partyRelated ? "must be used" : "can be used only")
-                            + " for party related AccessPointEntry, apeId:" + item.getId());
-        }
-
-        // validate AP parent
-        if (StringUtils.isNotEmpty(item.getPid())) {
-            if (partyRelated) {
-                throw new DEImportException("Party related AccessPointEntry cannot be hierarchical, apeId:" + item.getId());
+        List<ApExternalId> entities = new ArrayList<>(eids.size());
+        for (ExternalId eid : eids) {
+            if (StringUtils.isEmpty(eid.getT())) {
+                throw new DEImportException("External id type is not set, apeId=" + entryId);
             }
-            if (parentAPInfo == null) {
-                throw new DEImportException("AccessPointEntry parent not found, apeId:" + item.getId());
+            if (StringUtils.isEmpty(eid.getV())) {
+                throw new DEImportException("External id without value, apeId=" + entryId);
             }
-            if (registerType != parentAPInfo.getRegisterType()) {
-                throw new DEImportException("AccessPointEntry parent type does not match, apeId:" + item.getId());
+            ApExternalIdType eidType = context.getEidType(eid.getT());
+            if (eidType == null) {
+                throw new DEImportException("External id type not found, apEid=" + eid.getV() + ", code=" + eid.getT());
             }
+            // create external id
+            ApExternalId entity = new ApExternalId();
+            entity.setCreateChange(context.getCreateChange());
+            entity.setValue(eid.getT());
+            entity.setExternalIdType(eidType);
+            entities.add(entity);
         }
-
-        // validate external system
-        ExternalId eid = item.getEid();
-        if (eid != null) {
-            if (StringUtils.isEmpty(eid.getId())) {
-                throw new DEImportException("AccessPointEntry external id is not valid, apeId:" + item.getId());
-            }
-            if (externalSystem == null) {
-                throw new DEImportException("External system not found, apeId:" + item.getId());
-            }
-        }
+        return entities;
     }
 
-    protected RegRecord createAP(AccessPointEntry item) {
-        RegRecord entity = new RegRecord();
-        entity.setLastUpdate(XmlUtils.convertXmlDate(item.getUpd()));
-        entity.setRegisterType(registerType);
-        entity.setScope(context.getImportScope());
-        entity.setUuid(StringUtils.trimToNull(item.getUuid()));
-        entity.setRecord("{import_in_progress}");
-        if (externalSystem != null) {
-            entity.setExternalId(item.getEid().getId());
-            entity.setExternalSystem(externalSystem);
+    private ApAccessPoint createEntity(AccessPointEntry entry) {
+        if (StringUtils.isEmpty(entry.getId())) {
+            throw new DEImportException("AP entry id is empty");
         }
+        // resolve AP type
+        if (entry.getT() == null) {
+            throw new DEImportException("AP type is not set, apeId:" + entry.getId());
+        }
+        ApType apType = staticData.getApTypeByCode(entry.getT());
+        if (apType == null) {
+            throw new DEImportException("AP has invalid type, apeId:" + entry.getId());
+        }
+        if (apType.isReadOnly()) {
+            throw new DEImportException("AP type is read only, apeId:" + entry.getId());
+        }
+        if (partyRelated ? apType.getPartyType() == null : apType.getPartyType() != null) {
+            throw new DEImportException("AP type with defined party type " 
+                            + (partyRelated ? "must be used" : "can be used only")
+                            + " for party related AP entry, apeId:" + entry.getId());
+        }
+        // create AP
+        ApAccessPoint entity = new ApAccessPoint();
+        entity.setApType(apType);
+        entity.setScope(context.getScope());
+        entity.setCreateChange(context.getCreateChange());
+        entity.setUuid(StringUtils.trimToNull(entry.getUuid()));
         return entity;
-    }
-
-    protected AccessPointInfo addAccessPoint(RegRecord ap, String entryId) {
-        return context.addAccessPoint(ap, entryId, parentAPInfo);
-    }
-
-    protected void processSubEntities(AccessPointInfo apInfo) {
     }
 }

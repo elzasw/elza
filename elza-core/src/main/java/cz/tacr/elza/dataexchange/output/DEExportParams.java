@@ -2,7 +2,7 @@ package cz.tacr.elza.dataexchange.output;
 
 import java.util.Collection;
 
-import cz.tacr.elza.dataexchange.output.sections.ExportLevelInfoListener;
+import cz.tacr.elza.dataexchange.output.sections.LevelInfoListener;
 
 /**
  * Parameters for data-exchange export.
@@ -51,7 +51,7 @@ public class DEExportParams {
 
         private Collection<Integer> rootNodeIds;
 
-        private ExportLevelInfoListener levelInfoListener;
+        private LevelInfoListener levelInfoListener;
 
         public int getFundVersionId() {
             return fundVersionId;
@@ -80,11 +80,11 @@ public class DEExportParams {
             this.rootNodeIds = rootNodeIds;
         }
 
-        public ExportLevelInfoListener getLevelInfoListener() {
+        public LevelInfoListener getLevelInfoListener() {
             return levelInfoListener;
         }
 
-        public void setLevelInfoListener(ExportLevelInfoListener levelInfoListener) {
+        public void setLevelInfoListener(LevelInfoListener levelInfoListener) {
             this.levelInfoListener = levelInfoListener;
         }
     }

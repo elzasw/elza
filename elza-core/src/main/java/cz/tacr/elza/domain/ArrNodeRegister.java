@@ -42,9 +42,9 @@ public class ArrNodeRegister implements NodeRegister {
     private Integer nodeId;
 
     @RestResource(exported = false)
-	@ManyToOne(fetch=FetchType.LAZY, targetEntity = RegRecord.class)
+	@ManyToOne(fetch=FetchType.LAZY, targetEntity = ApAccessPoint.class)
     @JoinColumn(name = "recordId", nullable = false)
-    private RegRecord record;
+    private ApAccessPoint record;
 
     @Column(name = "recordId", updatable = false, insertable = false)
     private Integer recordId;
@@ -82,13 +82,13 @@ public class ArrNodeRegister implements NodeRegister {
         this.nodeId = node != null ? node.getNodeId() : null;
     }
 
-    public RegRecord getRecord() {
+    public ApAccessPoint getRecord() {
         return record;
     }
 
-    public void setRecord(final RegRecord record) {
+    public void setRecord(final ApAccessPoint record) {
         this.record = record;
-        this.recordId = record != null ? record.getRecordId() : null;
+        this.recordId = record != null ? record.getAccessPointId() : null;
     }
 
     public ArrChange getCreateChange() {

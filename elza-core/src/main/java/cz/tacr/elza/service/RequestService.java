@@ -1,23 +1,5 @@
 package cz.tacr.elza.service;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-
-import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.domain.ArrChange;
@@ -26,7 +8,6 @@ import cz.tacr.elza.domain.ArrDaoLinkRequest;
 import cz.tacr.elza.domain.ArrDaoLinkRequest.Type;
 import cz.tacr.elza.domain.ArrDaoRequest;
 import cz.tacr.elza.domain.ArrDaoRequestDao;
-import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrDigitizationFrontdesk;
 import cz.tacr.elza.domain.ArrDigitizationRequest;
 import cz.tacr.elza.domain.ArrDigitizationRequestNode;
@@ -34,6 +15,7 @@ import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrRequest;
+import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.repository.DaoLinkRequestRepository;
@@ -46,6 +28,21 @@ import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventIdDaoIdInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventIdNodeIdInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * Servisní třída pro obsluhu a správu požadavků
@@ -396,6 +393,9 @@ public class RequestService {
     }
 
     public Map<Integer, Set<ArrDigitizationRequest>> findDigitizationRequest(final Set<Integer> nodeIds, final ArrRequest.State state) {
+        if (nodeIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
         List<ArrDigitizationRequestNode> digitizationRequestNodes = digitizationRequestNodeRepository.findByNodeIds(nodeIds, state);
 
         Map<Integer, Set<ArrDigitizationRequest>> result = new HashMap<>();

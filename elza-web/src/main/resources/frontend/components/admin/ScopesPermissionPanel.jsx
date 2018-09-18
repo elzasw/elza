@@ -34,13 +34,13 @@ class ScopesPermissionPanel extends AbstractReactComponent {
     }
 
     static permCodesMap = {
-        [perms.REG_SCOPE_RD_ALL]: perms.REG_SCOPE_RD,
-        [perms.REG_SCOPE_WR_ALL]: perms.REG_SCOPE_WR,
+        [perms.AP_SCOPE_RD_ALL]: perms.AP_SCOPE_RD,
+        [perms.AP_SCOPE_WR_ALL]: perms.AP_SCOPE_WR,
     };
 
     static permCodesMapRev = {
-        [perms.REG_SCOPE_RD]: perms.REG_SCOPE_RD_ALL,
-        [perms.REG_SCOPE_WR]: perms.REG_SCOPE_WR_ALL,
+        [perms.AP_SCOPE_RD]: perms.AP_SCOPE_RD_ALL,
+        [perms.AP_SCOPE_WR]: perms.AP_SCOPE_WR_ALL,
     };
 
     static ALL_ID = "ALL_ID";
@@ -90,13 +90,13 @@ class ScopesPermissionPanel extends AbstractReactComponent {
                 let id = null;
                 let permissionCode;
                 switch (p.permission) {
-                    case perms.REG_SCOPE_RD_ALL:
-                    case perms.REG_SCOPE_WR_ALL:
+                    case perms.AP_SCOPE_RD_ALL:
+                    case perms.AP_SCOPE_WR_ALL:
                         id = ScopesPermissionPanel.ALL_ID;
                         permissionCode = ScopesPermissionPanel.permCodesMap[p.permission];
                         break;
-                    case perms.REG_SCOPE_RD:
-                    case perms.REG_SCOPE_WR:
+                    case perms.AP_SCOPE_RD:
+                    case perms.AP_SCOPE_WR:
                         id = p.scope.id;
                         permissionCode = p.permission;
                         break;
@@ -301,7 +301,7 @@ class ScopesPermissionPanel extends AbstractReactComponent {
                             id: newSelectedId,
                             index: newIndex
                         }
-                    } 
+                    }
 
                     this.setState({
                         permissions: newPermissions,

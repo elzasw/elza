@@ -16,7 +16,7 @@ import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrStructuredObject;
-import cz.tacr.elza.domain.RegScope;
+import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.repository.FundFileRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
@@ -64,7 +64,7 @@ public class ImportNodesFromSource {
         // zjištění podporovaných scope cílového archivního souboru
         Set<String> scopeCodesFund = scopeRepository.findCodesByFund(targetFundVersion.getFund());
         // zjištění používaných scope v podstromech vybraných JP
-		for (RegScope scope : source.getScopes()) {
+		for (ApScope scope : source.getScopes()) {
 			if (!scopeCodesFund.contains(scope.getCode())) {
 				result.addMissingScope(scope.getCode());
 			}

@@ -21,13 +21,13 @@ public abstract class AbstractPartyElementHandler<T extends Party> extends JaxbE
 
     @Override
     protected final void handleJaxbElement(JAXBElement<T> element) {
-        handlePartyAccessPointEntry(element.getValue());
+        handlePartyApEntry(element.getValue());
         handlePartyElement(element);
     }
 
     protected abstract void handlePartyElement(JAXBElement<T> element);
 
-    private void handlePartyAccessPointEntry(T party) {
+    private void handlePartyApEntry(T party) {
         AccessPointEntry entry = party.getApe();
         if (entry == null) {
             throw new DEImportException("Party AccessPointEntry is not set, partyId:" + party.getId());

@@ -1,57 +1,102 @@
 package cz.tacr.elza.dataexchange.input.aps.context;
 
 import org.apache.commons.lang3.Validate;
+import org.hibernate.Session;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.dataexchange.input.context.EntityIdHolder;
-import cz.tacr.elza.dataexchange.input.context.PersistMethod;
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.domain.RegRegisterType;
+import cz.tacr.elza.dataexchange.input.storage.SaveMethod;
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApType;
 
 /**
- * Access point import info which primarily stores id and result of record pairing.
+ * Access point import info which primarily stores id and result of record
+ * pairing.
  */
-public class AccessPointInfo extends EntityIdHolder<RegRecord> {
+public class AccessPointInfo implements EntityIdHolder<ApAccessPoint> {
 
-    private final String entryId;
+    private static final Logger logger = LoggerFactory.getLogger(AccessPointInfo.class);
 
-    private final RegRegisterType registerType;
+    private final ApType apType;
 
-    private PersistMethod persistMethod;
+    private Integer entityId;
 
-    private String name;
+    private SaveMethod saveMethod;
 
-    AccessPointInfo(String entryId, RegRegisterType registerType) {
-        super(RegRecord.class);
-        this.entryId = Validate.notNull(entryId);
-        this.registerType = Validate.notNull(registerType);
+    private String fulltext;
+
+    private int queuedEntityCount;
+
+    private boolean processed;
+
+    public AccessPointInfo(ApType apType) {
+        this.apType = apType;
     }
 
-    public String getEntryId() {
-        return entryId;
+    @Override
+    public Integer getEntityId() {
+        Validate.notNull(entityId);
+
+        return entityId;
     }
 
-    public RegRegisterType getRegisterType() {
-        return registerType;
+    void setEntityId(Integer entityId) {
+        this.entityId = entityId;
     }
 
-    public String getName() {
-        return name;
+    @Override
+    public ApAccessPoint getEntityRef(Session session) {
+        Validate.notNull(entityId);
+
+        return HibernateUtils.getEntityRef(entityId, ApAccessPoint.class, session, false);
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public ApType getApType() {
+        return apType;
     }
 
-    public boolean isIgnored() {
-        Validate.notNull(persistMethod);
-        return persistMethod == PersistMethod.NONE;
+    public SaveMethod getSaveMethod() {
+        return saveMethod;
     }
 
-    public PersistMethod getPersistMethod() {
-        return persistMethod;
+    void setSaveMethod(SaveMethod saveMethod) {
+        this.saveMethod = saveMethod;
     }
 
-    void setPersistMethod(PersistMethod persistMethod) {
-        this.persistMethod = persistMethod;
+    public String getFulltext() {
+        return fulltext;
+    }
+
+    void setFulltext(String fulltext) {
+        this.fulltext = fulltext;
+    }
+
+    public void onProcessed() {
+        Validate.isTrue(!processed);
+        processed = true;
+        // AP is finished when all entity are persist
+        if (queuedEntityCount == 0) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("AP fninished, entityId={}, fulltext={}", entityId, fulltext);
+            }
+        }
+    }
+
+    public void onEntityQueued() {
+        Validate.isTrue(!processed);
+        queuedEntityCount++;
+    }
+
+    public void onEntityPersist() {
+        Validate.isTrue(queuedEntityCount > 0);
+        queuedEntityCount--;
+        // AP is finished when processed and all entity are persist
+        if (processed && queuedEntityCount == 0) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("AP fninished, entityId={}, fulltext={}", entityId, fulltext);
+            }
+        }
     }
 }

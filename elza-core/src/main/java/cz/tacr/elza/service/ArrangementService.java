@@ -21,7 +21,6 @@ import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
 import javax.transaction.Transactional;
-import javax.transaction.Transactional.TxType;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -44,12 +43,13 @@ import cz.tacr.elza.controller.ArrangementController.TreeNodeFulltext;
 import cz.tacr.elza.controller.ArrangementController.VersionValidationItem;
 import cz.tacr.elza.controller.vo.NodeItemWithParent;
 import cz.tacr.elza.controller.vo.TreeNode;
-import cz.tacr.elza.controller.vo.TreeNodeClient;
+import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.controller.vo.filter.SearchParam;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.core.security.AuthParam.Type;
+import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFund;
@@ -62,7 +62,6 @@ import cz.tacr.elza.domain.ArrNodeConformity.State;
 import cz.tacr.elza.domain.ArrNodeConformityError;
 import cz.tacr.elza.domain.ArrNodeConformityMissing;
 import cz.tacr.elza.domain.ParInstitution;
-import cz.tacr.elza.domain.RegScope;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.UIVisiblePolicy;
@@ -152,7 +151,7 @@ public class ArrangementService {
     @Autowired
     private DescItemRepository descItemRepository;
     @Autowired
-    private RegistryService registryService;
+    private AccessPointService accessPointService;
 
 	@Autowired
 	DescriptionItemServiceInternal arrangementInternal;
@@ -221,7 +220,7 @@ public class ArrangementService {
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN, UsrPermission.Permission.FUND_VER_WR})
     public ArrFund updateFund(@AuthParam(type = AuthParam.Type.FUND) final ArrFund fund,
                               final RulRuleSet ruleSet,
-                              final List<RegScope> scopes) {
+                              final List<ApScope> scopes) {
         Assert.notNull(fund, "AS musí být vyplněn");
         Assert.notNull(ruleSet, "Pravidla musí být vyplněna");
 
@@ -234,14 +233,6 @@ public class ArrangementService {
 
         fundRepository.save(originalFund);
 
-        for (RegScope scope : scopes) {
-            if (scope.getScopeId() == null) {
-                scope.setCode(StringUtils.upperCase(Normalizer.normalize(StringUtils.replace(StringUtils.substring(scope.getName(), 0, 50).trim(), " ", "_"), Normalizer.Form.NFD)));
-                scopeRepository.save(scope);
-            }
-        }
-
-
         ArrFundVersion openVersion = getOpenVersionByFundId(originalFund.getFundId());
         if (!ruleSet.equals(openVersion.getRuleSet())) {
             openVersion.setRuleSet(ruleSet);
@@ -250,7 +241,16 @@ public class ArrangementService {
             ruleService.conformityInfoAll(openVersion);
         }
 
-        synchRegScopes(originalFund, scopes);
+        if (scopes != null) {
+            for (ApScope scope : scopes) {
+                if (scope.getScopeId() == null) {
+                    scope.setCode(StringUtils.upperCase(Normalizer.normalize(StringUtils
+                            .replace(StringUtils.substring(scope.getName(), 0, 50).trim(), " ", "_"), Normalizer.Form.NFD)));
+                    scopeRepository.save(scope);
+                }
+            }
+            synchApScopes(originalFund, scopes);
+        }
 
         eventNotificationService
                 .publishEvent(EventFactory.createIdEvent(EventType.FUND_UPDATE, originalFund.getFundId()));
@@ -261,15 +261,15 @@ public class ArrangementService {
     /**
      * Pokud se jedná o typ osoby group, dojde k synchronizaci identifikátorů osoby. CRUD.
      */
-    private void synchRegScopes(final ArrFund fund,
-                                final Collection<RegScope> newRegScopes) {
+    private void synchApScopes(final ArrFund fund,
+                               final Collection<ApScope> newApScopes) {
         Assert.notNull(fund, "AS musí být vyplněn");
 
 		Map<Integer, ArrFundRegisterScope> dbIdentifiersMap = ElzaTools
 				.createEntityMap(faRegisterRepository.findByFund(fund), i -> i.getScope().getScopeId());
         Set<ArrFundRegisterScope> removeScopes = new HashSet<>(dbIdentifiersMap.values());
 
-        for (RegScope newScope : newRegScopes) {
+        for (ApScope newScope : newApScopes) {
             ArrFundRegisterScope oldScope = dbIdentifiersMap.get(newScope.getScopeId());
 
             if (oldScope == null) {
@@ -306,7 +306,7 @@ public class ArrangementService {
 
         ArrFund fund = createFund(name, ruleSet, change, generateUuid(), internalCode, institution, dateRange);
 
-        List<RegScope> defaultScopes = registryService.findDefaultScopes();
+        List<ApScope> defaultScopes = accessPointService.findDefaultScopes();
         if (!defaultScopes.isEmpty()) {
             addScopeToFund(fund, defaultScopes.get(0));
         }
@@ -682,16 +682,12 @@ public class ArrangementService {
         List<ArrDescItem> siblingDescItems = descItemRepository.findOpenByNodeAndTypes(olderSibling.getNode(), typeSet);
 
         // Delete old values for these items
+        // ? Can we use descriptionItemService.deleteDescriptionItemsByType
         List<ArrDescItem> nodeDescItems = descItemRepository.findOpenByNodeAndTypes(level.getNode(), typeSet);
-        List<ArrDescItem> deletedDescItems = new ArrayList<>();
+        List<ArrDescItem> deletedDescItems = null;
         if (CollectionUtils.isNotEmpty(nodeDescItems)) {
-            List<Integer> descItemObjectIdsDeleted = new ArrayList<>(nodeDescItems.size());
-            for (ArrDescItem nodeDescItem : nodeDescItems) {
-             	ArrDescItem deletedItem = descriptionItemService.deleteDescriptionItem(nodeDescItem, version, change, false);
-                descItemObjectIdsDeleted.add(deletedItem.getDescItemObjectId());
-                deletedDescItems.add(deletedItem);
-            }
-            arrangementCacheService.deleteDescItems(nodeDescItems.get(0).getNodeId(), descItemObjectIdsDeleted);
+            deletedDescItems = descriptionItemService.deleteDescriptionItems(nodeDescItems, level.getNode(), version,
+                                                                             change, false);
         }
 
         final List<ArrDescItem> newDescItems = descriptionItemService
@@ -874,7 +870,7 @@ public class ArrangementService {
     /**
      * Finds level for fund version by node. Node will be locked during transaction.
      */
-    @Transactional(TxType.REQUIRED)
+    @Transactional(Transactional.TxType.REQUIRED)
     public ArrLevel lockLevel(ArrNodeVO nodeVO, ArrFundVersion fundVersion) {
         Integer nodeId = nodeVO.getId();
         Assert.notNull(nodeId, "Node id must be set");
@@ -962,7 +958,7 @@ public class ArrangementService {
         Assert.notNull(nodeIds, "Musí být vyplněno");
         Assert.notNull(version, "Verze AS musí být vyplněna");
 
-        Map<Integer, TreeNodeClient> parentIdTreeNodeClientMap = levelTreeCacheService.findParentsWithTitles(nodeIds, version);
+        Map<Integer, TreeNodeVO> parentIdTreeNodeClientMap = levelTreeCacheService.findParentsWithTitles(nodeIds, version);
 
         List<Integer> sortedNodeIds = levelTreeCacheService.sortNodesByTreePosition(nodeIds, version);
 
@@ -1002,7 +998,7 @@ public class ArrangementService {
             validations.put(conformity.getNode().getNodeId(), description);
         }
 
-        Map<Integer, TreeNodeClient> parentIdTreeNodeClientMap = levelTreeCacheService.findParentsWithTitles(validations.keySet(), version);
+        Map<Integer, TreeNodeVO> parentIdTreeNodeClientMap = levelTreeCacheService.findParentsWithTitles(validations.keySet(), version);
 
         List<VersionValidationItem> versionValidationItems = new ArrayList<>(validations.size());
         for (Integer nodeId : validations.keySet()) {
@@ -1018,9 +1014,9 @@ public class ArrangementService {
         return versionValidationItems;
     }
 
-    @AuthMethod(permission = {UsrPermission.Permission.REG_SCOPE_WR_ALL, UsrPermission.Permission.REG_SCOPE_WR})
+    @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
     public ArrFundRegisterScope addScopeToFund(final ArrFund fund,
-                                               @AuthParam(type = AuthParam.Type.SCOPE) final RegScope scope) {
+                                               @AuthParam(type = AuthParam.Type.SCOPE) final ApScope scope) {
         Assert.notNull(fund, "AS musí být vyplněn");
         Assert.notNull(scope, "Scope musí být vyplněn");
 

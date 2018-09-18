@@ -1,5 +1,5 @@
 export const DEFAULT_LIST_SIZE = 200;
-export const REG_EXT_SYSTEM_TYPE = {
+export const AP_EXT_SYSTEM_TYPE = {
     INTERPI: 'INTERPI'
 };
 
@@ -47,3 +47,16 @@ export const FOCUS_KEYS = {
     FUND_REQUEST: 'fund-request',
     ADMIN_EXT_SYSTEM: 'admin-extSystem',
 };
+
+/**
+ * Formát pro zobrazení typu Integer.
+ * @type {{NUMBER: string, DURATION: string}}
+ */
+export const DisplayType = {
+    NUMBER: 'NUMBER',
+    DURATION: 'DURATION',
+};
+
+//konkrétrní kód akce pro perzistentní řazení v balíčku ZP2015
+export const PERSISTENT_SORT_CODE = "PERZISTENTNI_RAZENI";
+export const ZP2015_INTRO_VYPOCET_EJ = "ZP2015_INTRO_VYPOCET_EJ";

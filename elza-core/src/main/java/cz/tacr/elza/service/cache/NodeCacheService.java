@@ -2,6 +2,7 @@ package cz.tacr.elza.service.cache;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -10,7 +11,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -29,17 +32,20 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.introspect.AnnotatedMethod;
 import com.fasterxml.jackson.databind.introspect.VisibilityChecker;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.collect.Lists;
 
+import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.CalendarType;
 import cz.tacr.elza.core.data.DataType;
-import cz.tacr.elza.core.data.RuleSystemItemType;
-import cz.tacr.elza.core.data.RuleSystemProvider;
+import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ArrCachedNode;
 import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDaoLink;
@@ -55,13 +61,15 @@ import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.RegRecord;
+import cz.tacr.elza.domain.ParPartyName;
+import cz.tacr.elza.domain.ParPartyNameComplement;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.CachedNodeRepository;
 import cz.tacr.elza.repository.DaoLinkRepository;
 import cz.tacr.elza.repository.DaoRepository;
@@ -69,8 +77,9 @@ import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.FundFileRepository;
 import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.repository.PartyNameComplementRepository;
+import cz.tacr.elza.repository.PartyNameRepository;
 import cz.tacr.elza.repository.PartyRepository;
-import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
 
 /**
@@ -113,7 +122,7 @@ public class NodeCacheService {
     private PartyRepository partyRepository;
 
     @Autowired
-    private RegRecordRepository regRecordRepository;
+    private ApAccessPointRepository apAccessPointRepository;
 
     @Autowired
     private FundFileRepository fundFileRepository;
@@ -133,10 +142,19 @@ public class NodeCacheService {
     @Autowired
 	private StaticDataService staticDataService;
 
+    @Autowired
+    private PartyNameComplementRepository partyNameComplementRepository;
+
+    @Autowired
+    private PartyNameRepository partyNameRepository;
+
     public NodeCacheService() {
         mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+        mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
         mapper.setVisibility(new InterfaceVisibilityChecker(NodeCacheSerializable.class,
-                String.class, Number.class, Boolean.class, Iterable.class));
+                String.class, Number.class, Boolean.class, Iterable.class,
+                LocalDate.class));
     }
 
     /**
@@ -489,7 +507,6 @@ public class NodeCacheService {
 	private void reloadCachedNodes(final Collection<RestoredNode> cachedNodes) {
 
 		StaticDataProvider sdp = staticDataService.getData();
-		RuleSystemProvider rsp = sdp.getRuleSystems();
 
         Map<ArrDescItem, Integer> itemStructureDataMap = new HashMap<>();
         Map<ArrDescItem, Integer> itemPartiesMap = new HashMap<>();
@@ -505,7 +522,7 @@ public class NodeCacheService {
 					// set node
 					descItem.setNode(node);
 
-					loadDescItemType(descItem, rsp);
+					loadDescItemType(descItem, sdp);
 
 					ArrData data = descItem.getData();
 					if (data != null) {
@@ -538,7 +555,7 @@ public class NodeCacheService {
 
         fillArrStructureData(itemStructureDataMap);
         fillParParties(itemPartiesMap);
-        fillRegRecords(itemRecordsMap);
+        fillApRecords(itemRecordsMap);
         fillArrFiles(itemFilesMap);
         fillArrDaoLinks(daoLinksMap);
         fillArrNodeRegisters(nodeRegistersMap);
@@ -546,13 +563,12 @@ public class NodeCacheService {
 
 	/**
 	 * Load description item type from rule system provider
-	 *
-	 * @param descItem
-	 * @param rsp
-	 */
-	private void loadDescItemType(ArrDescItem descItem, RuleSystemProvider rsp) {
+	 *  @param descItem
+	 * @param sdp
+     */
+	private void loadDescItemType(ArrDescItem descItem, StaticDataProvider sdp) {
 		Validate.notNull(descItem.getItemTypeId());
-		RuleSystemItemType itemType = rsp.getItemType(descItem.getItemTypeId());
+		ItemType itemType = sdp.getItemTypeById(descItem.getItemTypeId());
 		Validate.notNull(itemType);
 
 		descItem.setItemType(itemType.getEntity());
@@ -578,7 +594,7 @@ public class NodeCacheService {
 	 * @param data
 	 * @param itemType
 	 */
-	private void loadDataType(ArrData data, RuleSystemItemType itemType) {
+	private void loadDataType(ArrData data, ItemType itemType) {
 		DataType dataType = itemType.getDataType();
 		// check that item type match
         if (dataType.getId() != data.getDataTypeId()) {
@@ -609,7 +625,7 @@ public class NodeCacheService {
 	}
 
     /**
-     * Vyplnění návazných entity {@link RegRecord}.
+     * Vyplnění návazných entity {@link ApAccessPoint}.
      *
      * @param nodeRegistersMap mapa entit k vyplnění
      */
@@ -617,10 +633,10 @@ public class NodeCacheService {
         if (nodeRegistersMap.size() == 0) {
             return;
         }
-        List<RegRecord> records = regRecordRepository.findAll(nodeRegistersMap.values());
-        Map<Integer, RegRecord> recordsMapFound = new HashMap<>();
-        for (RegRecord record : records) {
-            recordsMapFound.put(record.getRecordId(), record);
+        List<ApAccessPoint> records = apAccessPointRepository.findAll(nodeRegistersMap.values());
+        Map<Integer, ApAccessPoint> recordsMapFound = new HashMap<>();
+        for (ApAccessPoint record : records) {
+            recordsMapFound.put(record.getAccessPointId(), record);
         }
 
         for (Map.Entry<ArrNodeRegister, Integer> entry : nodeRegistersMap.entrySet()) {
@@ -673,18 +689,18 @@ public class NodeCacheService {
 
 
     /**
-     * Vyplnění návazných entity {@link RegRecord}.
+     * Vyplnění návazných entity {@link ApAccessPoint}.
      *
      * @param itemRecordsMap mapa entit k vyplnění
      */
-    private void fillRegRecords(final Map<ArrDescItem, Integer> itemRecordsMap) {
+    private void fillApRecords(final Map<ArrDescItem, Integer> itemRecordsMap) {
         if (itemRecordsMap.size() == 0) {
             return;
         }
-        List<RegRecord> records = regRecordRepository.findAll(itemRecordsMap.values());
-        Map<Integer, RegRecord> recordsMapFound = new HashMap<>();
-        for (RegRecord record : records) {
-            recordsMapFound.put(record.getRecordId(), record);
+        List<ApAccessPoint> records = apAccessPointRepository.findAll(itemRecordsMap.values());
+        Map<Integer, ApAccessPoint> recordsMapFound = new HashMap<>();
+        for (ApAccessPoint record : records) {
+            recordsMapFound.put(record.getAccessPointId(), record);
         }
 
         for (Map.Entry<ArrDescItem, Integer> entry : itemRecordsMap.entrySet()) {
@@ -702,10 +718,52 @@ public class NodeCacheService {
         if (itemPartiesMap.size() == 0) {
             return;
         }
-        List<ParParty> parties = partyRepository.findAll(itemPartiesMap.values());
+        ObjectListIterator<Integer> iterator = new ObjectListIterator<>(itemPartiesMap.values());
         Map<Integer, ParParty> partiesMapFound = new HashMap<>();
-        for (ParParty party : parties) {
-            partiesMapFound.put(party.getPartyId(), party);
+        List<ParPartyName> partyNames = new ArrayList<>();
+        while (iterator.hasNext()) {
+            List<Integer> next = iterator.next();
+            List<ParParty> parties = partyRepository.findAllFetch(next);
+            partyNames.addAll(partyNameRepository.findByPartyIds(next));
+            for (ParParty party : parties) {
+                partiesMapFound.put(party.getPartyId(), party);
+            }
+        }
+
+        Map<Integer, List<ParPartyName>> partyNamesMap = partyNames.stream().collect(Collectors.groupingBy(s -> s.getParty().getPartyId()));
+
+        Set<Integer> preferredNameIds = new HashSet<>();
+        for (ParParty party : partiesMapFound.values()) {
+            CollectionUtils.addIgnoreNull(preferredNameIds, party.getPreferredNameId());
+        }
+
+        iterator = new ObjectListIterator<>(preferredNameIds);
+        Map<Integer, List<ParPartyNameComplement>> preferredNameIdComplementsMap = new HashMap<>();
+        while (iterator.hasNext()) {
+            List<ParPartyNameComplement> partyNameComplements = partyNameComplementRepository.findByPartyNameIds(iterator.next());
+            Map<Integer, List<ParPartyNameComplement>> map = partyNameComplements.stream().collect(Collectors.groupingBy(s -> s.getPartyName().getPartyNameId()));
+            map.forEach((k, v) -> preferredNameIdComplementsMap.merge(k, v, (v1, v2) -> {
+                Set<ParPartyNameComplement> set = new TreeSet<>(v1);
+                set.addAll(v2);
+                return new ArrayList<>(set);
+            }));
+        }
+
+        for (ParParty party : partiesMapFound.values()) {
+            if (party.getPreferredNameId() != null) {
+                List<ParPartyNameComplement> partyNameComplements = preferredNameIdComplementsMap.get(party.getPreferredNameId());
+                if (partyNameComplements != null) {
+                    party.getPreferredName().setPartyNameComplements(partyNameComplements);
+                } else {
+                    party.getPreferredName().setPartyNameComplements(Collections.emptyList());
+                }
+            }
+            List<ParPartyName> parPartyNames = partyNamesMap.get(party.getPartyId());
+            if (parPartyNames != null) {
+                party.setPartyNames(parPartyNames);
+            } else {
+                party.setPartyNames(Collections.emptyList());
+            }
         }
 
         for (Map.Entry<ArrDescItem, Integer> entry : itemPartiesMap.entrySet()) {
@@ -779,8 +837,7 @@ public class NodeCacheService {
     /**
 	 * Deserializace objektu.
 	 *
-	 * @param cachedNode.getData()
-	 *            serializovaný objekt
+	 * @param cachedNode serializovaný objekt
 	 * @return sestavený objekt
 	 */
 	private RestoredNode deserialize(final ArrCachedNode cachedNode) {
@@ -850,8 +907,7 @@ public class NodeCacheService {
 	/**
 	 * Založení nových záznamů v cache pro JP.
 	 *
-	 * @param cachedNodes
-	 *            seznam zakládaných objektů
+	 * @param nodes seznam zakládaných objektů
 	 */
 	private void createEmptyNodes(final Collection<ArrNode> nodes) {
 		List<ArrCachedNode> records = new ArrayList<>(nodes.size());

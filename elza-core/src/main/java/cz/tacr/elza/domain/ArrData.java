@@ -26,6 +26,9 @@ import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.service.cache.NodeCacheSerializable;
 
+import java.time.LocalDate;
+import java.util.Date;
+
 
 /**
  * Tabulka pro evidenci hodnot atributů archivního popisu.
@@ -53,7 +56,7 @@ public abstract class ArrData implements NodeCacheSerializable {
 
 	/**
 	 * Default constructor
-	 * 
+	 *
 	 */
 	protected ArrData() {
 
@@ -61,7 +64,7 @@ public abstract class ArrData implements NodeCacheSerializable {
 
 	/**
 	 * Copy constructor
-	 * 
+	 *
 	 * @param src
 	 */
 	protected ArrData(ArrData src) {
@@ -158,28 +161,34 @@ public abstract class ArrData implements NodeCacheSerializable {
     public Long getNormalizedTo() {
         return null;
     }
-    
+
+    @JsonIgnore
+    @Transient
+    public Date getDate() {
+        return null;
+    }
+
     /**
      * Compare values
-     * 
+     *
      * Method is comparing only values without IDs
-     * 
+     *
      * @param srcData
      * @return
      */
     public boolean isEqualValue(ArrData srcData) {
         // we can compare only real objects
         srcData = HibernateUtils.unproxyInitialized(srcData);
-        
+
         // check data type
         Validate.isTrue(srcData.dataTypeId==this.dataTypeId);
-        
+
         return isEqualValueInternal(srcData);
     }
-    
+
     /**
      * Internal implementation of value comparator
-     * 
+     *
      * @param srcData
      * @return
      */
@@ -187,10 +196,10 @@ public abstract class ArrData implements NodeCacheSerializable {
 
 	/**
 	 * Prepare copy of the data object
-	 * 
+	 *
 	 * Method returns pure data copy of the source object without saving it to
 	 * the DB
-	 * 
+	 *
 	 * @return Return copy of the object
 	 */
 	abstract public ArrData makeCopy();
@@ -198,14 +207,14 @@ public abstract class ArrData implements NodeCacheSerializable {
     /**
      * Merge data from source object
      *
-     * Method is called from merge method and 
+     * Method is called from merge method and
      * data type is already checked.
      */
     abstract protected void mergeInternal(final ArrData srcData);
 
     /**
      * Merge values from source.
-     * 
+     *
      * dataType of source have to match dataType of this object
      *
      * @param srcData
@@ -217,10 +226,10 @@ public abstract class ArrData implements NodeCacheSerializable {
 
 	/**
 	 * Make copy of the source data object and set id to null
-	 * 
+	 *
 	 * Method returns pure data copy of the source object without saving it to
 	 * the DB
-	 * 
+	 *
 	 * @param src
 	 *            Source object
 	 * @return Return copy of the data object

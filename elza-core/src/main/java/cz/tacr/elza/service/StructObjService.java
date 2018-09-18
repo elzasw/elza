@@ -1,645 +1,1090 @@
 package cz.tacr.elza.service;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.InvalidPropertiesFormatException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.transaction.Transactional;
+import javax.annotation.Nullable;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.Validate;
-import org.apache.commons.lang3.BooleanUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.castor.core.util.Assert;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
-import org.springframework.scheduling.annotation.Async;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.support.TransactionSynchronizationAdapter;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
-import com.google.common.eventbus.Subscribe;
+import com.google.common.collect.Lists;
 
-import cz.tacr.elza.EventBusListener;
-import cz.tacr.elza.core.ResourcePathResolver;
+import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.core.security.AuthMethod;
+import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataInteger;
 import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundStructureExtension;
 import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.ArrStructuredObject;
-import cz.tacr.elza.domain.ArrStructuredObject.State;
-import cz.tacr.elza.domain.RulComponent;
+import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.RulItemTypeExt;
-import cz.tacr.elza.domain.RulPackage;
-import cz.tacr.elza.domain.RulStructureDefinition;
-import cz.tacr.elza.domain.RulStructureExtensionDefinition;
 import cz.tacr.elza.domain.RulStructuredType;
-import cz.tacr.elza.domain.UISettings;
+import cz.tacr.elza.domain.RulStructuredTypeExtension;
+import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.Level;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ChangeRepository;
-import cz.tacr.elza.repository.FundVersionRepository;
-import cz.tacr.elza.repository.SettingsRepository;
-import cz.tacr.elza.repository.StructureDefinitionRepository;
-import cz.tacr.elza.repository.StructureExtensionDefinitionRepository;
+import cz.tacr.elza.repository.DataRepository;
+import cz.tacr.elza.repository.FilteredResult;
+import cz.tacr.elza.repository.FundStructureExtensionRepository;
+import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.StructuredItemRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
-import cz.tacr.elza.service.event.CacheInvalidateEvent;
+import cz.tacr.elza.repository.StructuredTypeExtensionRepository;
+import cz.tacr.elza.repository.StructuredTypeRepository;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventStructureDataChange;
 
 /**
- * Servisní třída pro aktualizaci hodnot strukturovaných objektů.
+ * Servisní třída pro práci se strukturovanými datovými typy.
  *
- *
- * Pokud je do fronty zařazen smazaný uzel, tak se použije
- * pouze k validaci duplicit.
- * 
- * @since 13.11.2017
+ * @since 06.11.2017
  */
 @Service
-@EventBusListener
 public class StructObjService {
 
-    private static final Logger logger = LoggerFactory.getLogger(StructObjService.class);
-
     private final StructuredItemRepository structureItemRepository;
-    private final StructureExtensionDefinitionRepository structureExtensionDefinitionRepository;
-    private final StructureDefinitionRepository structureDefinitionRepository;
+    private final StructuredTypeExtensionRepository structureExtensionRepository;
     private final StructuredObjectRepository structObjRepository;
-    private final FundVersionRepository fundVersionRepository;
+    private final StructuredTypeRepository structureTypeRepository;
+    private final ArrangementService arrangementService;
+    private final DataRepository dataRepository;
     private final RuleService ruleService;
-    private final ApplicationContext applicationContext;
+    private final FundStructureExtensionRepository fundStructureExtensionRepository;
+    private final StructObjValueService structObjService;
+    private final ItemTypeRepository itemTypeRepository;
     private final ChangeRepository changeRepository;
     private final EventNotificationService notificationService;
-    private final SettingsRepository settingsRepository;
-    private final ResourcePathResolver resourcePathResolver;
-
-    private Queue<Integer> queueObjIds = new ConcurrentLinkedQueue<>();
-    private final Object lock = new Object();
-
-    private Map<File, GroovyScriptService.GroovyScriptFile> groovyScriptMap = new HashMap<>();
-
-    @Subscribe
-    public synchronized void invalidateCache(final CacheInvalidateEvent cacheInvalidateEvent) {
-        if (cacheInvalidateEvent.contains(CacheInvalidateEvent.Type.GROOVY)) {
-            groovyScriptMap = new HashMap<>();
-        }
-    }
 
     @Autowired
     public StructObjService(final StructuredItemRepository structureItemRepository,
-                                final StructureExtensionDefinitionRepository structureExtensionDefinitionRepository,
-                                final StructureDefinitionRepository structureDefinitionRepository,
-                                final StructuredObjectRepository structureDataRepository,
-                                final FundVersionRepository fundVersionRepository,
-                                final RuleService ruleService,
-                                final ApplicationContext applicationContext,
-                                final ChangeRepository changeRepository,
-                                final EventNotificationService notificationService,
-                                final SettingsRepository settingsRepository,
-                                final ResourcePathResolver resourcePathResolver) {
+                            final StructuredTypeExtensionRepository structureExtensionRepository,
+                            final StructuredObjectRepository structureDataRepository,
+                            final StructuredTypeRepository structureTypeRepository,
+                            final ArrangementService arrangementService,
+                            final DataRepository dataRepository,
+                            final RuleService ruleService,
+                            final FundStructureExtensionRepository fundStructureExtensionRepository,
+                            final StructObjValueService structureDataService,
+                            final ItemTypeRepository itemTypeRepository,
+                            final ChangeRepository changeRepository,
+                            final EventNotificationService notificationService) {
         this.structureItemRepository = structureItemRepository;
-        this.structureExtensionDefinitionRepository = structureExtensionDefinitionRepository;
-        this.structureDefinitionRepository = structureDefinitionRepository;
+        this.structureExtensionRepository = structureExtensionRepository;
         this.structObjRepository = structureDataRepository;
-        this.fundVersionRepository = fundVersionRepository;
+        this.structureTypeRepository = structureTypeRepository;
+        this.arrangementService = arrangementService;
+        this.dataRepository = dataRepository;
         this.ruleService = ruleService;
-        this.applicationContext = applicationContext;
+        this.fundStructureExtensionRepository = fundStructureExtensionRepository;
+        this.structObjService = structureDataService;
+        this.itemTypeRepository = itemTypeRepository;
         this.changeRepository = changeRepository;
         this.notificationService = notificationService;
-        this.settingsRepository = settingsRepository;
-        this.resourcePathResolver = resourcePathResolver;
     }
 
     /**
-     * Přidání hodnoty k validaci.
-     *
-     * @param structureData hodnota
-     */
-    public void addToValidate(final ArrStructuredObject structureData) {
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
-            @Override
-            public void afterCommit() {
-                runValidator(Collections.singletonList(structureData.getStructuredObjectId()));
-            }
-        });
-    }
-
-    /**
-     * Přidání hodnot k validaci.
-     *
-     * @param structureDataList seznam hodnot
-     */
-    public void addToValidate(final List<ArrStructuredObject> structureDataList) {
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
-            @Override
-            public void afterCommit() {
-                List<Integer> structureDataIds = structureDataList.stream()
-                        .map(ArrStructuredObject::getStructuredObjectId).collect(Collectors.toList());
-                runValidator(structureDataIds);
-            }
-        });
-    }
-
-    /**
-     * Přidání hodnot k validaci.
-     *
-     * @param structureDataIds seznam identifikátorů hodnot
-     */
-    public void addIdsToValidate(final List<Integer> structureDataIds) {
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
-            @Override
-            public void afterCommit() {
-                runValidator(structureDataIds);
-            }
-        });
-    }
-
-    /**
-     * Přidání položek k validaci, případně založení vlákna pro asynchronní chod.
-     *
-     * @param structObjIds identifikátory hodnot
-     */
-    private void runValidator(final List<Integer> structObjIds) {
-        if (structObjIds.isEmpty()) {
-            return;
-        }
-        synchronized (lock) {
-            boolean createThread = queueObjIds.size() == 0;
-            queueObjIds.addAll(structObjIds);
-            if (createThread) {
-                StructObjService structureDataService = applicationContext.getBean(StructObjService.class);
-                structureDataService.run();
-            }
-        }
-    }
-
-    /**
-     * Běh validace. NEVOLAT NA PŘÍMO!!!
-     */
-    @Async
-    public void run() {
-        boolean hasNext = true;
-        while (hasNext) {
-            final Integer structureDataId = queueObjIds.poll();
-            try {
-                applicationContext.getBean(StructObjService.class).generateAndValidate(structureDataId);
-            } catch (Exception e) {
-                logger.error("Nastala chyba při validaci hodnoty strukturovaného typu -> structureDataId=" + structureDataId, e);
-            }
-            synchronized (lock) {
-                hasNext = !queueObjIds.isEmpty();
-            }
-        }
-    }
-
-    /**
-     * Valiadce hodnoty strukt. typu podle id.
-     *
-     * @param structObjId identifikátor hodnoty strukt. datového typu
-     */
-    @Transactional
-    public void generateAndValidate(final Integer structObjId) {
-        ArrStructuredObject structObj = structObjRepository.findOne(structObjId);
-        if (structObj == null) {
-            throw new ObjectNotFoundException("Nenalezena hodnota strukturovaného typu", BaseCode.ID_NOT_EXIST).setId(structObjId);
-        }
-        generateAndValidate(structObj);
-        // do not send notification for deleted items
-        if (structObj.getDeleteChangeId() != null) {
-            return;
-        }
-        sendNotification(structObj);
-    }
-
-    /**
-     * Uložení hodnoty strukturovaného datového typu.
-     * <ul>
-     * <li>vygenerování textové hodnoty
-     * <li>kontrola duplicity
-     * <li>validace položek hodnoty
-     *
-     * @param structObj
-     *            hodnota struktovaného datového typu
-     * 
-     */
-    @Transactional
-    public void generateAndValidate(final ArrStructuredObject structObj) {
-        // get old value (skip for temp items)
-        String oldValue = null;
-        if (structObj.getState().equals(ArrStructuredObject.State.OK)
-                || structObj.getState().equals(ArrStructuredObject.State.ERROR)) {
-            // get last value (if object was ok)
-            oldValue = structObj.getValue();
-        }
-        String newValue = null;
-        if (structObj.getDeleteChange() == null) {
-            // generate value
-            newValue = generateValue(structObj);
-        }
-
-        // do not check duplicates for temp objects
-        if (structObj.getState() == ArrStructuredObject.State.TEMP) {
-            return;
-        }
-
-        // Method is called also after ext update etc -> can be called 
-        // with same values
-
-        if (StringUtils.isNotEmpty(oldValue)) {
-            recheckDuplicates(oldValue, structObj);
-        }
-
-        if (StringUtils.isNotEmpty(newValue)) {
-            // same values -> do only one check
-            if (!newValue.equals(oldValue)) {
-                recheckDuplicates(newValue, structObj);
-            }
-        }
-    }
-
-    /**
-     * Recheck struct objects for duplicates
-     * 
-     * @param checkedValue
-     *            Value to be check
-     * @param srcStructObj
-     *            Object which caused / requested this check
-     *            Source object is not notified.
-     */
-    private void recheckDuplicates(String checkedValue, 
-                                   ArrStructuredObject srcStructObj) {
-
-        // check duplicates - if not empty
-        if (StringUtils.isEmpty(checkedValue)) {
-            return;
-        }
-
-        // read current structObjs
-        List<ArrStructuredObject> validStructureDataList = structObjRepository
-                .findValidByStructureTypeAndFund(srcStructObj.getStructuredType(), srcStructObj.getFund(),
-                                                 checkedValue);
-        int cnt = validStructureDataList.size();
-        //validStructureDataList.remove(structObj);
-        if (cnt == 1) {
-            ArrStructuredObject so = validStructureDataList.get(0);
-            // reset duplicated state
-            setDuplicatedState(so, false);
-            if (!Objects.equals(so.getStructuredObjectId(),
-                               srcStructObj.getStructuredObjectId())) {
-                sendNotification(so);
-            }
-        } else if (cnt > 1) {
-            // set state and send notifications
-            for (ArrStructuredObject so : validStructureDataList) {
-                setDuplicatedState(so, true);
-                if (!Objects.equals(so.getStructuredObjectId(), srcStructObj.getStructuredObjectId())) {
-                    sendNotification(so);
-                }
-            }
-        }
-        // TODO: call notifications
-    }
-
-    public void sendNotification(ArrStructuredObject structObj) {
-        Integer structObjId = structObj.getStructuredObjectId();
-        // send notifications
-        if (structObj.getState() == ArrStructuredObject.State.TEMP) {
-            notificationService.publishEvent(new EventStructureDataChange(structObj.getFundId(),
-                    structObj.getStructuredType().getCode(),
-                    Collections.singletonList(structObjId),
-                    null,
-                    null,
-                    null));
-        } else {
-            notificationService.publishEvent(new EventStructureDataChange(structObj.getFundId(),
-                    structObj.getStructuredType().getCode(),
-                    null,
-                    null,
-                    Collections.singletonList(structObjId),
-                    null));
-        }        
-    }
-
-    private void setDuplicatedState(ArrStructuredObject so, boolean duplicated) {
-
-        // Do not check duplicates on TEMP items
-        Validate.isTrue(so.getState() != State.TEMP);
-
-        String errorDescr = so.getErrorDescription();
-
-        ValidationErrorDescription ved = new ValidationErrorDescription();
-        if (StringUtils.isNotBlank(errorDescr)) {
-            try {
-                ValidationErrorDescription parsed = ValidationErrorDescription.fromJson(errorDescr);
-                ved = parsed;
-            } catch (Exception e) {
-                logger.error("Failed to parse JSON: " + errorDescr, e);
-            }
-        }
-        ved.setDuplicateValue(duplicated);
-
-        ved.setDuplicateValue(duplicated);
-        String value = ved.asJsonString();
-        if (value != null) {
-            so.setState(State.ERROR);
-        } else {
-            so.setState(State.OK);
-        }
-        so.setErrorDescription(value);
-
-        structObjRepository.save(so);
-    }
-
-    /**
-     * Internal method to generate value and save it.
-     * 
-     * Method will only check if value is empty.
-     * 
-     * @param structObj
-     * @return Return generated value. Return null if failed
-     */
-    private String generateValue(ArrStructuredObject structObj) {
-        // generate value 
-        ArrStructuredObject.State state = ArrStructuredObject.State.OK;
-        ValidationErrorDescription validationErrorDescription = new ValidationErrorDescription();
-
-        List<ArrStructuredItem> structureItems = structureItemRepository
-                .findByStructuredObjectAndDeleteChangeIsNullFetchData(structObj);
-
-        validateStructureItems(validationErrorDescription, structObj, structureItems);
-
-        String value = generateValue(structObj, structureItems);
-        if (StringUtils.isEmpty(value)) {
-            state = ArrStructuredObject.State.ERROR;
-            validationErrorDescription.setEmptyValue(true);
-        }
-
-        // pokud se jedná o tempová data, stav se nenastavuje
-        state = structObj.getState() == ArrStructuredObject.State.TEMP ? ArrStructuredObject.State.TEMP : state;
-
-        structObj.setValue(value);
-        structObj.setState(state);
-        structObj.setErrorDescription(validationErrorDescription.asJsonString());
-
-        structObjRepository.save(structObj);
-        return value;
-    }
-
-    /**
-     * Validace položek pro strukturovaný datový typ.
-     *
-     * @param validationErrorDescription
-     *            objekt pro výsledky validace
-     * @param structureData
-     *            hodnota struktovaného datového typu
-     * @param structureItems
-     *            validované položky
-     */
-    private void validateStructureItems(final ValidationErrorDescription validationErrorDescription,
-                                        final ArrStructuredObject structureData,
-                                        final List<ArrStructuredItem> structureItems) {
-        ArrFundVersion fundVersion = fundVersionRepository.findByFundIdAndLockChangeIsNull(structureData.getFundId());
-        List<RulItemTypeExt> structureItemTypes = ruleService.getStructureItemTypesInternal(structureData.getStructuredType(), fundVersion, structureItems);
-        List<RulItemTypeExt> requiredItemTypes = structureItemTypes.stream().filter(itemType -> RulItemType.Type.REQUIRED == itemType.getType()).collect(Collectors.toList());
-        List<RulItemTypeExt> impossibleItemTypes = structureItemTypes.stream().filter(itemType -> RulItemType.Type.IMPOSSIBLE == itemType.getType()).collect(Collectors.toList());
-
-        for (RulItemTypeExt requiredItemType : requiredItemTypes) {
-            boolean add = true;
-            for (ArrStructuredItem structureItem : structureItems) {
-                if (structureItem.getItemType().getCode().equals(requiredItemType.getCode())) {
-                    add = false;
-                    break;
-                }
-            }
-            if (add) {
-                validationErrorDescription.getRequiredItemTypeIds().add(requiredItemType.getItemTypeId());
-            }
-        }
-
-        for (RulItemTypeExt impossibleItemType : impossibleItemTypes) {
-            boolean add = false;
-            for (ArrStructuredItem structureItem : structureItems) {
-                if (structureItem.getItemType().getCode().equals(impossibleItemType.getCode())) {
-                    add = true;
-                    break;
-                }
-            }
-            if (add) {
-                validationErrorDescription.getImpossibleItemTypeIds().add(impossibleItemType.getItemTypeId());
-            }
-        }
-    }
-
-    /**
-     * Vygenerování hodnoty pro hodnotu strukt. datového typu.
+     * Vyhledá platné položky k hodnotě strukt. datového typu.
      *
      * @param structureData hodnota struktovaného datového typu
-     * @return hodnota
+     * @return nalezené položky
      */
-    private String generateValue(final ArrStructuredObject structureData, final List<ArrStructuredItem> structureItems) {
-
-        RulStructuredType structureType = structureData.getStructuredType();
-        File groovyFile = findGroovyFile(structureType, structureData.getFund());
-
-        GroovyScriptService.GroovyScriptFile groovyScriptFile;
-        try {
-            groovyScriptFile = groovyScriptMap.get(groovyFile);
-            if (groovyScriptFile == null) {
-                groovyScriptFile = GroovyScriptService.GroovyScriptFile.createFromFile(groovyFile);
-                groovyScriptMap.put(groovyFile, groovyScriptFile);
-            }
-        } catch (IOException e) {
-            throw new SystemException("Problém při zpracování groovy scriptu", e);
-        }
-
-        Map<String, Object> input = new HashMap<>();
-        input.put("ITEMS", structureItems);
-        input.put("PACKET_LEADING_ZEROS", getPacketLeadingZeros());
-
-        return (String) groovyScriptFile.evaluate(input);
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    public List<ArrStructuredItem> findStructureItems(@AuthParam(type = AuthParam.Type.FUND) final ArrStructuredObject structureData) {
+        return structureItemRepository.findByStructuredObjectAndDeleteChangeIsNullFetchData(structureData);
     }
 
     /**
-     * Získání počtu předřadných nul v názvu obalu.
+     * Vyhledá platné položky k hodnotám strukt. datového typu.
      *
-     * @return počet předřadných nul
+     * @param structureDataList hodnoty struktovaného datového typu
+     * @return hodnota strukt. datového typu -> nalezené položky
      */
-    private int getPacketLeadingZeros() {
-        List<UISettings> uiSettingsList = settingsRepository.findBySettingsType(UISettings.SettingsType.PACKET_LEADING_ZEROS);
-        if (CollectionUtils.isNotEmpty(uiSettingsList)) {
-            if (uiSettingsList.size() > 1) {
-                logger.warn("Existuje více nastavení PACKET_LEADING_ZEROS, používá se první nalezená!");
-            }
-            UISettings uiSettings = uiSettingsList.get(0);
-            try {
-                int result = Integer.parseInt(uiSettings.getValue());
-                if (result < 1) {
-                    throw new InvalidPropertiesFormatException("Hodnota musí být kladné číslo");
-                }
-                return result;
-            } catch (InvalidPropertiesFormatException | NumberFormatException e) {
-                logger.warn("Hodnota nastavení PACKET_LEADING_ZEROS není platné číslo: " + uiSettings.getValue() + ", je použita výchozí hodnota", e);
-            }
+    public Map<ArrStructuredObject, List<ArrStructuredItem>> findStructureItems(final List<ArrStructuredObject> structureDataList) {
+        List<List<ArrStructuredObject>> parts = Lists.partition(structureDataList, 1000);
+        List<ArrStructuredItem> structureItems = new ArrayList<>();
+        for (List<ArrStructuredObject> part : parts) {
+            structureItems.addAll(structureItemRepository.findByStructuredObjectListAndDeleteChangeIsNullFetchData(part));
         }
-        return 4; // výchozí hodnota
+        return structureItems.stream().collect(Collectors.groupingBy(ArrStructuredItem::getStructuredObject));
     }
 
     /**
-     * Vyhledání groovy scriptu podle strukturovaného typu k AS.
+     * Vytvoření strukturovaných dat.
+     *
+     * @param fund          archivní soubor
+     * @param structureType strukturovaný typ
+     * @return vytvořená entita
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    public ArrStructuredObject createStructObj(@AuthParam(type = AuthParam.Type.FUND) final ArrFund fund,
+                                                   final RulStructuredType structureType,
+                                                   final ArrStructuredObject.State state) {
+        ArrChange change = arrangementService.createChange(ArrChange.Type.ADD_STRUCTURE_DATA);
+        ArrStructuredObject structureData = new ArrStructuredObject();
+        structureData.setAssignable(true);
+        structureData.setCreateChange(change);
+        structureData.setFund(fund);
+        structureData.setStructuredType(structureType);
+        structureData.setState(state);
+
+        ArrStructuredObject createStructureData = structObjRepository.save(structureData);
+        if (state == ArrStructuredObject.State.TEMP) {
+            notificationService.publishEvent(new EventStructureDataChange(fund.getFundId(),
+                    structureType.getCode(),
+                    Collections.singletonList(createStructureData.getStructuredObjectId()),
+                    null,
+                    null,
+                    null));
+        } else {
+            notificationService.publishEvent(new EventStructureDataChange(fund.getFundId(),
+                    structureType.getCode(),
+                    null,
+                    Collections.singletonList(createStructureData.getStructuredObjectId()),
+                    null,
+                    null));
+        }
+        return createStructureData;
+    }
+
+    /**
+     * Hromadné vytvoření strukturovaných dat.
+     *
+     * @param fund          archivní soubor
+     * @param structureType strukturovaný typ
+     * @param state         stav
+     * @param change        změna
+     * @param count         počet vytvářených položek
+     * @return vytvořené entity
+     */
+    private List<ArrStructuredObject> createStructObjList(final ArrFund fund,
+                                                              final RulStructuredType structureType,
+                                                              final ArrStructuredObject.State state,
+                                                              final ArrChange change,
+                                                              int count) {
+        List<ArrStructuredObject> result = new ArrayList<>(count);
+        for (int i = 0; i < count; i++) {
+            ArrStructuredObject structureData = new ArrStructuredObject();
+            structureData.setAssignable(true);
+            structureData.setCreateChange(change);
+            structureData.setFund(fund);
+            structureData.setStructuredType(structureType);
+            structureData.setState(state);
+            result.add(structureData);
+        }
+        return structObjRepository.save(result);
+    }
+
+    /**
+     * Smazání hodnoty strukturovaného datového typu.
+     *
+     * @param structObj
+     *            hodnota struktovaného datového typu
+     *
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    public void deleteStructObj(@AuthParam(type = AuthParam.Type.FUND) final ArrStructuredObject structObj) {
+        if (structObj.getDeleteChange() != null) {
+            throw new BusinessException("Nelze odstranit již smazaná strukturovaná data", BaseCode.INVALID_STATE);
+        }
+
+        if (structObj.getState() == ArrStructuredObject.State.TEMP) {
+
+            // remove temporary object
+            structureItemRepository.deleteByStructuredObject(structObj);
+            dataRepository.deleteByStructuredObject(structObj);
+            ArrChange change = structObjRepository.findTempChangeByStructuredObject(structObj);
+            structObjRepository.delete(structObj);
+            changeRepository.delete(change);
+
+        } else {
+
+            // drop permanent object
+
+            // check usage
+            Integer count = structureItemRepository.countItemsByStructuredObject(structObj);
+            if (count > 0) {
+                throw new BusinessException("Existují návazné entity, položka nelze smazat", ArrangementCode.STRUCTURE_DATA_DELETE_ERROR)
+                        .level(Level.WARNING)
+                        .set("count", count)
+                                .set("id", structObj.getStructuredObjectId());
+            }
+
+            ArrChange change = arrangementService.createChange(ArrChange.Type.DELETE_STRUCTURE_DATA);
+            structObj.setDeleteChange(change);
+
+            structObjRepository.save(structObj);
+
+            // check duplicates for deleted item
+            structObjService.addToValidate(structObj);
+
+            notificationService.publishEvent(new EventStructureDataChange(structObj.getFundId(),
+                    structObj.getStructuredType().getCode(),
+                    null,
+                    null,
+                    null,
+                    Collections.singletonList(structObj.getStructuredObjectId())));
+        }
+    }
+
+    /**
+     * Nastavení přiřaditelnosti.
+     *
+     * @param fund              archivní soubor
+     * @param structureDataList hodnoty strukturovaného datového typu
+     * @param assignable        přiřaditelný
+     * @return upravené entity
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    public List<ArrStructuredObject> setAssignableStructureDataList(@AuthParam(type = AuthParam.Type.FUND) final ArrFund fund,
+                                                                    final List<ArrStructuredObject> structureDataList,
+                                                                    final boolean assignable) {
+        if (structureDataList.size() == 0) {
+            return Collections.emptyList();
+        }
+        for (ArrStructuredObject structureData : structureDataList) {
+            if (structureData.getDeleteChange() != null) {
+                throw new BusinessException("Nelze změnit již smazaná strukturovaná data", BaseCode.INVALID_STATE);
+            }
+            structureData.setAssignable(assignable);
+        }
+
+        notificationService.publishEvent(new EventStructureDataChange(fund.getFundId(),
+                structureDataList.get(0).getStructuredType().getCode(),
+                null,
+                null,
+                structureDataList.stream().map(ArrStructuredObject::getStructuredObjectId).collect(Collectors.toList()),
+                null));
+        return structObjRepository.save(structureDataList);
+    }
+
+    /**
+     * Vytvoření položky k hodnotě strukt. datového typu.
+     *
+     * @param structureItem   položka
+     * @param structureDataId identifikátor hodnoty strukt. datového typu
+     * @param fundVersionId   identifikátor verze AS
+     * @return vytvořená entita
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    public ArrStructuredItem createStructureItem(final ArrStructuredItem structureItem,
+                                                 final Integer structureDataId,
+                                                 @AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId) {
+
+        ArrStructuredObject structObj = getStructObjById(structureDataId);
+        ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
+
+        ArrChange change = structObj.getState() == ArrStructuredObject.State.TEMP ? structObj.getCreateChange()
+                : arrangementService.createChange(ArrChange.Type.ADD_STRUCTURE_ITEM);
+
+        int nextPosition = findNextPosition(structObj, structureItem.getItemType());
+        Integer position;
+
+        if (structureItem.getPosition() == null) {
+            position = nextPosition;
+        } else {
+            position = structureItem.getPosition();
+
+            if (position <= 0) {
+                throw new SystemException("Neplatný formát dat", BaseCode.PROPERTY_IS_INVALID).set("property", "position");
+            }
+
+            // pokud je požadovaná pozice menší než další volná, bude potřeba posunou níž položky
+            if (position < nextPosition) {
+                List<ArrStructuredItem> structureItemsToMove = structureItemRepository.findOpenItemsAfterPositionFetchData(structureItem.getItemType(),
+                                                             structObj, position - 1, null);
+
+                nextVersionStructureItems(1, structureItemsToMove, change, true);
+            }
+
+            // pokud je požadovaná pozice větší než další volná, použije se další volná
+            if (position > nextPosition) {
+                position = nextPosition;
+            }
+
+        }
+
+        ArrData data = createData(structureItem.getData(), structureItem.getItemType().getDataType());
+
+        ArrStructuredItem createStructureItem = new ArrStructuredItem();
+        createStructureItem.setData(data);
+        createStructureItem.setCreateChange(change);
+        createStructureItem.setPosition(position);
+        createStructureItem.setStructuredObject(structObj);
+        createStructureItem.setDescItemObjectId(arrangementService.getNextDescItemObjectId());
+        createStructureItem.setItemType(structureItem.getItemType());
+        createStructureItem.setItemSpec(structureItem.getItemSpec());
+
+        ArrStructuredItem save = structureItemRepository.save(createStructureItem);
+        structObjService.addToValidate(structObj);
+        return save;
+    }
+
+    /**
+     * Odverzování položek.
+     *
+     * @param moveDiff             pokud je různé od 0, provede změnu pozic
+     * @param structureItems       položky, které odverzováváme
+     * @param change               změna, pod kterou se odverzovává
+     * @param createNewDataVersion true - provede se odverzování i návazných dat
+     * @return nově odverzované položky
+     */
+    private List<ArrStructuredItem> nextVersionStructureItems(final int moveDiff,
+                                                              final List<ArrStructuredItem> structureItems,
+                                                              final ArrChange change,
+                                                              final boolean createNewDataVersion) {
+        if (structureItems.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<ArrStructuredItem> resultStructureItems = new ArrayList<>(structureItems.size());
+
+        for (ArrStructuredItem structureItem : structureItems) {
+            // make copy without data and item_id
+            ArrStructuredItem newStructureItem = structureItem.makeCopy();
+            newStructureItem.setData(null);
+            newStructureItem.setItemId(null);
+
+            structureItem.setDeleteChange(change);
+            newStructureItem.setCreateChange(change);
+            if (moveDiff != 0) {
+                newStructureItem.setPosition(newStructureItem.getPosition() + moveDiff);
+            }
+
+            resultStructureItems.add(newStructureItem);
+        }
+
+        structureItemRepository.save(structureItems); // uložení změny deleteChange
+
+        if (createNewDataVersion) {
+            List<ArrData> resultDataList = new ArrayList<>(resultStructureItems.size());
+            for (ArrStructuredItem newStructureItem : resultStructureItems) {
+                ArrData newData = ArrData.makeCopyWithoutId(newStructureItem.getData());
+                newStructureItem.setData(newData);
+                resultDataList.add(newData);
+            }
+            dataRepository.save(resultDataList);
+        }
+
+        return structureItemRepository.save(resultStructureItems);
+    }
+
+    /**
+     * Vyhledá volnou pozici pro typ atributu.
+     *
+     * @param structureData hodnota struktovaného datového typu
+     * @param itemType      typ atributu
+     * @return pozice pro další položku
+     */
+    private int findNextPosition(final ArrStructuredObject structureData, final RulItemType itemType) {
+        List<ArrStructuredItem> structureItems = structureItemRepository.findOpenItemsAfterPosition(itemType,
+                structureData, 0, new PageRequest(0, 1, Sort.Direction.DESC, ArrItem.POSITION));
+        if (structureItems.size() == 0) {
+            return 1;
+        } else {
+            return structureItems.get(0).getPosition() + 1;
+        }
+    }
+
+    /**
+     * Úprava položky k hodnotě strukt. datového typu.
+     *
+     * @param structureItem    položka
+     * @param fundVersionId    identifikátor verze AS
+     * @param createNewVersion true - verzovaná změna
+     * @return upravená entita
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    public ArrStructuredItem updateStructureItem(final ArrStructuredItem structureItem,
+                                                 @AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId,
+                                                 final boolean createNewVersion) {
+        ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
+
+        ArrStructuredItem structureItemDB = structureItemRepository.findOpenItemFetchData(structureItem.getDescItemObjectId());
+        if (structureItemDB == null) {
+            throw new ObjectNotFoundException("Neexistuje položka s OID: " + structureItem.getDescItemObjectId(), BaseCode.ID_NOT_EXIST).setId(structureItem.getDescItemObjectId());
+        }
+
+        ArrStructuredObject structObj = structureItemDB.getStructuredObject();
+        ArrChange change = structObj.getState() == ArrStructuredObject.State.TEMP ? structObj.getCreateChange() : arrangementService.createChange(ArrChange.Type.UPDATE_STRUCTURE_ITEM);
+
+        ArrStructuredItem updateStructureItem;
+
+        if (createNewVersion) {
+
+            structureItemDB.setDeleteChange(change);
+            structureItemRepository.save(structureItemDB);
+
+            Integer positionDB = structureItemDB.getPosition();
+            Integer positionChange = structureItem.getPosition();
+
+            Integer position;
+            if (positionDB.equals(positionChange)) {
+                position = positionDB;
+            } else {
+                int nextPosition = findNextPosition(structureItemDB.getStructuredObject(), structureItemDB.getItemType());
+
+                if (positionChange == null || (positionChange > nextPosition - 1)) {
+                    positionChange = nextPosition;
+                }
+
+                List<ArrStructuredItem> structureItemsToMove;
+                Integer moveDiff;
+
+                if (positionChange < positionDB) {
+                    moveDiff = 1;
+                    structureItemsToMove = structureItemRepository.findOpenItemsBetweenPositions(structureItemDB.getItemType(), structureItemDB.getStructuredObject(), positionChange, positionDB - 1);
+                } else {
+                    moveDiff = -1;
+                    structureItemsToMove = structureItemRepository.findOpenItemsBetweenPositions(structureItemDB.getItemType(), structureItemDB.getStructuredObject(), positionDB + 1, positionChange);
+                }
+
+                nextVersionStructureItems(moveDiff, structureItemsToMove, change, false);
+
+                position = positionChange;
+            }
+
+
+            ArrData updateData = updateData(structureItem.getData(), structureItemDB.getItemType().getDataType());
+
+            updateStructureItem = new ArrStructuredItem();
+            updateStructureItem.setData(updateData);
+            updateStructureItem.setCreateChange(change);
+            updateStructureItem.setPosition(position);
+            updateStructureItem.setStructuredObject(structureItemDB.getStructuredObject());
+            updateStructureItem.setDescItemObjectId(structureItemDB.getDescItemObjectId());
+            updateStructureItem.setItemType(structureItemDB.getItemType());
+            updateStructureItem.setItemSpec(structureItem.getItemSpec());
+        } else {
+            updateStructureItem = structureItemDB;
+            updateStructureItem.setItemSpec(structureItem.getItemSpec());
+            // db data item
+            ArrData updateData = updateStructureItem.getData();
+            // prepare dataToDb
+            updateData.merge(structureItem.getData());
+            dataRepository.save(updateData);
+        }
+
+        ArrStructuredItem save = structureItemRepository.save(updateStructureItem);
+        structObjService.addToValidate(structObj);
+
+        return save;
+    }
+
+    /**
+     * Smazání položky k hodnotě strukt. datového typu.
+     *
+     * @param structureItem položka
+     * @param fundVersionId identifikátor verze AS
+     * @return smazaná položka
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    public ArrStructuredItem deleteStructureItem(final ArrStructuredItem structureItem,
+                                                 @AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId) {
+        ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
+
+        ArrStructuredItem structureItemDB = structureItemRepository.findOpenItemFetchData(structureItem.getDescItemObjectId());
+        if (structureItemDB == null) {
+            throw new ObjectNotFoundException("Neexistuje položka s OID: " + structureItem.getDescItemObjectId(), BaseCode.ID_NOT_EXIST).setId(structureItem.getDescItemObjectId());
+        }
+
+        ArrStructuredObject structObj = structureItemDB.getStructuredObject();
+        ArrChange change = structObj.getState() == ArrStructuredObject.State.TEMP ? structObj.getCreateChange() : arrangementService.createChange(ArrChange.Type.DELETE_STRUCTURE_ITEM);
+
+        structureItemDB.setDeleteChange(change);
+
+        ArrStructuredItem save = structureItemRepository.save(structureItemDB);
+        structObjService.addToValidate(structObj);
+
+        return save;
+    }
+
+    /**
+     * Vytvoření dat. Provede kopii z předlohy a založení v DB.
+     *
+     * @param data     předloha dat
+     * @param dataType datový typ dat
+     * @return vytvořená data
+     */
+    private ArrData createData(final ArrData data, final RulDataType dataType) {
+        ArrData copy = ArrData.makeCopyWithoutId(data);
+        copy.setDataType(dataType);
+        return dataRepository.save(copy);
+    }
+
+    /**
+     * Úprava dat. Provede uložení změněných dat, popřípadně založení kopie.
+     *
+     * @param data             ukládaná data
+     * @param dataType         datový typ dat
+     * @return uložená / nová data
+     */
+    private ArrData updateData(final ArrData data, final RulDataType dataType) {
+        ArrData copy = ArrData.makeCopyWithoutId(data);
+        copy.setDataType(dataType);
+        return dataRepository.save(copy);
+    }
+
+    /**
+     * Provede revalidaci předaných hodnot strukturovaného typu.
+     *
+     * @param structureDataList strukturovaný typ
+     */
+    private List<ArrStructuredObject> revalidateStructureData(final List<ArrStructuredObject> structureDataList) {
+        Assert.notNull(structureDataList, "Musí být vyplněn list hodnot strukt. typu");
+
+        for (ArrStructuredObject structureData : structureDataList) {
+            structureData.setValue(null);
+            structureData.setErrorDescription(null);
+        }
+        structObjRepository.save(structureDataList);
+        structObjService.addToValidate(structureDataList);
+        return structureDataList;
+    }
+
+    private void revalidateStructObjs(RulStructuredType structuredType, ArrFund fund) {
+        List<Integer> structureDataIds = structObjRepository.findStructuredObjectIdByStructureTypeFund(structuredType,
+                                                                                                       fund);
+        structObjService.addIdsToValidate(structureDataIds);
+    }
+
+    /**
+     * Provede revalidaci podle rozšíření strukt. typu.
+     *
+     * @param structureExtensions revalidované typy
+     */
+    public void revalidateStructureExtensions(final Collection<RulStructuredTypeExtension> structureExtensions) {
+        if (structureExtensions.isEmpty()) {
+            return;
+        }
+        List<Integer> structureDataIds = structObjRepository.findStructuredObjectIdByActiveStructureExtensions(structureExtensions);
+        structObjService.addIdsToValidate(structureDataIds);
+    }
+
+    /**
+     * Vrátí strukt. typ podle kódu.
+     *
+     * @param structureTypeCode kód strukt. typu
+     * @return entita
+     */
+    public RulStructuredType getStructureTypeByCode(final String structureTypeCode) {
+        RulStructuredType structureType = structureTypeRepository.findByCode(structureTypeCode);
+        if (structureType == null) {
+            throw new ObjectNotFoundException("Strukturovaný typ neexistuje: " + structureTypeCode, BaseCode.ID_NOT_EXIST).setId(structureTypeCode);
+        }
+        return structureType;
+    }
+
+    /**
+     * Vrátí strukt. data podle identifikátoru včetně načtených návazných entit.
+     *
+     * @param structureDataId identifikátor hodnoty strukt. datového typu
+     * @return entita
+     */
+    public ArrStructuredObject getStructObjById(final Integer structureDataId) {
+        ArrStructuredObject structureData = structObjRepository.findOneFetch(structureDataId);
+        if (structureData == null) {
+            throw new ObjectNotFoundException("Strukturovaná data neexistují: " + structureDataId, BaseCode.ID_NOT_EXIST).setId(structureDataId);
+        }
+        return structureData;
+    }
+
+    /**
+     * Vrátí strukt. data podle identifikátorů včetně načtených návazných entit.
+     *
+     * @param structureDataIds identifikátory hodnoty strukt. datového typu
+     * @return entity
+     */
+    public List<ArrStructuredObject> getStructObjByIds(final List<Integer> structureDataIds) {
+        List<List<Integer>> idsParts = Lists.partition(structureDataIds, 1000);
+        List<ArrStructuredObject> structureDataList = new ArrayList<>();
+        for (List<Integer> idsPart : idsParts) {
+            structureDataList.addAll(structObjRepository.findByIdsFetch(idsPart));
+        }
+        if (structureDataList.size() != structureDataIds.size()) {
+            throw new ObjectNotFoundException("Nenalezeny všechny rozšíření", BaseCode.ID_NOT_EXIST).setId(structureDataIds);
+        }
+        return structureDataList;
+    }
+
+    /**
+     * Vrátí strukt. data podle identifikátoru včetně načtených návazných entit.
+     *
+     * @param structureDataId identifikátor hodnoty strukt. datového typu
+     * @param fundVersion     verze AS
+     * @return entita
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    public ArrStructuredObject getStructObjById(final Integer structureDataId,
+                                                    @AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion) {
+        return getStructObjById(structureDataId);
+    }
+
+    /**
+     * Odstranění položek u strukt. dato podle typu atributu.
+     *
+     * @param fundVersionId   identifikátor verze AS
+     * @param structureDataId identifikátor hodnoty strukt. datového typu
+     * @param itemTypeId      identifikátor typu atributu
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    public ArrStructuredObject deleteStructureItemsByType(@AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId,
+                                                          final Integer structureDataId,
+                                                          final Integer itemTypeId) {
+        ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
+        ArrStructuredObject structObj = getStructObjById(structureDataId);
+        RulItemType type = ruleService.getItemTypeById(itemTypeId);
+        List<ArrStructuredItem> structureItems = structureItemRepository.findOpenItems(type, structObj);
+
+        ArrChange change = structObj.getState() == ArrStructuredObject.State.TEMP ? structObj.getCreateChange() : arrangementService.createChange(ArrChange.Type.DELETE_STRUCTURE_ITEM);
+        for (ArrStructuredItem structureItem : structureItems) {
+            structureItem.setDeleteChange(change);
+        }
+
+        structureItemRepository.save(structureItems);
+
+        structObjService.addToValidate(structObj);
+
+        return structObj;
+    }
+
+    /**
+     * Potvrzení hodnoty strukt. datového typu.
+     *
+     * @param fund          archivní soubor
+     * @param structureData hodnota struktovaného datového typu
+     * @return entita
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    public ArrStructuredObject confirmStructureData(@AuthParam(type = AuthParam.Type.FUND) final ArrFund fund,
+                                                    final ArrStructuredObject structureData) {
+        return confirmInternal(fund, structureData);
+    }
+
+    /**
+     * Potvrzení hodnoty strukt. datového typu.
+     *
+     * @param fund          archivní soubor
+     * @param structureData hodnota struktovaného datového typu
+     * @return entita
+     */
+    private ArrStructuredObject confirmInternal(final ArrFund fund,
+                                                     final ArrStructuredObject structureData) {
+        if (structureData.getDeleteChange() != null) {
+            throw new BusinessException("Nelze potvrdit smazaná strukturovaná data", BaseCode.INVALID_STATE);
+        }
+        if (!structureData.getState().equals(ArrStructuredObject.State.TEMP)) {
+            throw new BusinessException("Strukturovaná data nemají dočasný stav", BaseCode.INVALID_STATE);
+        }
+        // reset temporary value -> final have to be calculated
+        structureData.setValue(null);
+        structureData.setState(ArrStructuredObject.State.OK);
+        ArrStructuredObject savedStructObj = structObjRepository.save(structureData);
+        structObjService.addToValidate(savedStructObj);
+        return savedStructObj;
+    }
+
+    /**
+     * Vyhledání všech strukturovaných typů.
+     *
+     * @return nalezené entity
+     */
+    public List<RulStructuredType> findStructureTypes() {
+        return structureTypeRepository.findAll();
+    }
+
+    /**
+     * Vyhledání hodnot struktovaného datového typu.
      *
      * @param structureType strukturovaný typ
      * @param fund          archivní soubor
-     * @return nalezený groovy soubor
+     * @param search        fulltext (může být prázdná)
+     * @param assignable    hodnota je přiřaditelná (pokud je null, není bráno v potaz)
+     * @param from          od položky
+     * @param count         maximální počet položek
+     * @return nalezené položky
      */
-    private File findGroovyFile(final RulStructuredType structureType, final ArrFund fund) {
-        List<RulStructureExtensionDefinition> structureExtensionDefinitions = structureExtensionDefinitionRepository
-                .findByStructureTypeAndDefTypeAndFundOrderByPriority(structureType, RulStructureExtensionDefinition.DefType.SERIALIZED_VALUE, fund);
-        RulComponent component;
-        RulPackage rulPackage;
-        if (structureExtensionDefinitions.size() > 0) {
-            RulStructureExtensionDefinition structureExtensionDefinition = structureExtensionDefinitions.get(structureExtensionDefinitions.size() - 1);
-            component = structureExtensionDefinition.getComponent();
-            rulPackage = structureExtensionDefinition.getRulPackage();
-        } else {
-            List<RulStructureDefinition> structureDefinitions = structureDefinitionRepository
-                    .findByStructuredTypeAndDefTypeOrderByPriority(structureType, RulStructureDefinition.DefType.SERIALIZED_VALUE);
-            if (structureDefinitions.size() > 0) {
-                RulStructureDefinition structureDefinition = structureDefinitions.get(structureDefinitions.size() - 1);
-                component = structureDefinition.getComponent();
-                rulPackage = structureDefinition.getRulPackage();
-            } else {
-                throw new SystemException("Strukturovaný typ '" + structureType.getCode() + "' nemá žádný script pro výpočet hodnoty", BaseCode.INVALID_STATE);
-            }
-        }
-
-        return resourcePathResolver.getGroovyDir(rulPackage, structureType.getRuleSet())
-                .resolve(component.getFilename())
-                .toFile();
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    public FilteredResult<ArrStructuredObject> findStructureData(final RulStructuredType structureType,
+                                                                 @AuthParam(type = AuthParam.Type.FUND) final ArrFund fund,
+                                                                 @Nullable final String search,
+                                                                 @Nullable final Boolean assignable,
+                                                                 final int from,
+                                                                 final int count) {
+        return structObjRepository.findStructureData(structureType.getStructuredTypeId(), 
+                                                     fund.getFundId(), search, assignable, from, count);
     }
 
     /**
-     * Provede smazání dočasných hodnot strukt. typu.
+     * Nastaví konkrétní rozšíření na AS.
+     *
+     * @param fundVersion         verze AS
+     * @param structureType       strukturovaný typ
+     * @param structureExtensions seznam rozšíření, které mají být aktivovány na AS
      */
-    public void removeTempStructureData() {
-        // Quick fix: change state to error for connected temp struct objs
-        // TODO: Find why it is happening and fix cause of this issue
-        List<ArrStructuredObject> connTempObjs = structObjRepository.findConnectedTempObjs();
-        if (CollectionUtils.isNotEmpty(connTempObjs)) {
-            // Exists inconsistent objects -> change state
-            logger.error("Found inconsistent structured objects, count: " + connTempObjs.size());
-
-            for (ArrStructuredObject so : connTempObjs) {
-                logger.error("Updating object with id: " + so.getStructuredObjectId());
-                so.setState(State.ERROR);
-                structObjRepository.save(so);
-            }
-            //structObjRepository.
-            logger.info("Inconsistencies in structured objects fixed");
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN, UsrPermission.Permission.FUND_VER_WR})
+    public void setFundStructureExtensions(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
+                                           final RulStructuredType structureType,
+                                           final List<RulStructuredTypeExtension> structureExtensions) {
+        for (RulStructuredTypeExtension se : structureExtensions) {
+            validateFundStructureExtension(fundVersion, structureType, se);
         }
 
-        // Delete remaining temp objects
-        List<ArrChange> changes = structObjRepository.findTempChange();
-        structureItemRepository.deleteByStructuredObjectStateTemp();
-        structObjRepository.deleteByStateTemp();
-        // Changes cannot be easily deleted
-        // We cannot be sure how many time is change used
-        // changeRepository.delete(changes);
+        List<ArrFundStructureExtension> fundStructureExtensions = fundStructureExtensionRepository.findByFundAndDeleteChangeIsNull(fundVersion.getFund());
 
-        // Update state for changed objects
-        if (CollectionUtils.isNotEmpty(connTempObjs)) {
-            for (ArrStructuredObject so : connTempObjs) {
-                generateAndValidate(so);
+        List<ArrFundStructureExtension> fundStructureExtensionsDelete = new ArrayList<>(fundStructureExtensions);
+        fundStructureExtensionsDelete.removeIf(fundStructureExtension -> structureExtensions.contains(fundStructureExtension.getStructuredTypeExtension()));
+
+        List<ArrFundStructureExtension> fundStructureExtensionsCreate = new ArrayList<>();
+
+        for (RulStructuredTypeExtension structureExtension : structureExtensions) {
+            boolean exists = false;
+            for (ArrFundStructureExtension fundStructureExtension : fundStructureExtensions) {
+                if (structureExtension.equals(fundStructureExtension.getStructuredTypeExtension())) {
+                    exists = true;
+                    break;
+                }
             }
+            if (!exists) {
+                ArrFundStructureExtension fundStructureExtensionCreate = new ArrFundStructureExtension();
+                fundStructureExtensionCreate.setFund(fundVersion.getFund());
+                fundStructureExtensionCreate.setStructuredTypeExtension(structureExtension);
+                fundStructureExtensionsCreate.add(fundStructureExtensionCreate);
+            }
+        }
+
+        if (fundStructureExtensionsCreate.size() > 0 || fundStructureExtensionsDelete.size() > 0) {
+            final ArrChange change = arrangementService.createChange(ArrChange.Type.SET_FUND_STRUCTURE_EXT);
+            fundStructureExtensionsCreate.forEach(fse -> fse.setCreateChange(change));
+            fundStructureExtensionsDelete.forEach(fse -> fse.setDeleteChange(change));
+            fundStructureExtensionRepository.save(fundStructureExtensionsCreate);
+            fundStructureExtensionRepository.save(fundStructureExtensionsDelete);
+
+            revalidateStructObjs(structureType, fundVersion.getFund());
         }
     }
 
-    public static class ValidationErrorDescription {
+    /**
+     * Validace AS a rozšíření strukt. typu.
+     *
+     * @param fundVersion        verze AS
+     * @param structureType      strukturovaný typ
+     * @param structureExtension rozšížení strukt. typu
+     */
+    private void validateFundStructureExtension(final ArrFundVersion fundVersion, final RulStructuredType structureType, final RulStructuredTypeExtension structureExtension) {
+        if (!structureType.equals(structureExtension.getStructuredType())) {
+            throw new BusinessException("Rozšíření nespadá pod strukt. typ", BaseCode.INVALID_STATE);
+        }
+    }
 
-        private static final ObjectMapper objectMapper = Jackson2ObjectMapperBuilder.json().build();
+    /**
+     * Vrací rozšíření strukt. typu podle kódu.
+     *
+     * @param structureExtensionCodes kódy rozšíření strukt. typu
+     * @return entita
+     */
+    public List<RulStructuredTypeExtension> findStructureExtensionByCodes(final List<String> structureExtensionCodes) {
+        List<RulStructuredTypeExtension> structureExtensions = structureExtensionRepository.findByCodeIn(structureExtensionCodes);
+        if (structureExtensions.size() != structureExtensionCodes.size()) {
+            throw new ObjectNotFoundException("Nenalezeny všechny rozšíření", BaseCode.ID_NOT_EXIST).setId(structureExtensionCodes);
+        }
+        return structureExtensions;
+    }
 
-        private Boolean emptyValue;
-        private Boolean duplicateValue;
-        private List<Integer> requiredItemTypeIds;
-        private List<Integer> impossibleItemTypeIds;
+    /**
+     * Nalezne všechny dostupné rozšížení pro strukturovaný typ.
+     *
+     * @param structureType strukturovaný typ
+     * @return nalezené entity
+     */
+    public List<RulStructuredTypeExtension> findAllStructureExtensions(final RulStructuredType structureType) {
+        return structureExtensionRepository.findByStructureType(structureType);
+    }
 
-        public ValidationErrorDescription() {
-            emptyValue = false;
-            duplicateValue = false;
-            requiredItemTypeIds = new ArrayList<>();
-            impossibleItemTypeIds = new ArrayList<>();
+    /**
+     * Nalezne aktivní rozšíření pro strukturovaný typ.
+     *
+     * @param fund          AS
+     * @param structureType strukturovaný typ
+     * @return nalezené entity
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    public List<RulStructuredTypeExtension> findStructureExtensions(@AuthParam(type = AuthParam.Type.FUND) final ArrFund fund,
+                                                                    final RulStructuredType structureType) {
+        return structureExtensionRepository.findActiveByFundAndStructureType(fund, structureType);
+    }
+
+    /**
+     * Založení duplikátů strukturovaného datového typu a autoinkrementační.
+     * Předloha musí být ve stavu {@link ArrStructuredObject.State#TEMP}.
+     * Předloha je validována hned, nové hodnoty asynchronně.
+     *
+     * @param fundVersion   verze AS
+     * @param structureData hodnota struktovaného datového typu, ze které se vychází
+     * @param count         počet položek, které se budou budou vytvářet (včetně zdrojové hodnoty strukt. typu)
+     * @param itemTypeIds   identifikátory typů, které se mají autoincrementovat
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    public void duplicateStructureDataBatch(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
+                                            final ArrStructuredObject structureData,
+                                            final int count,
+                                            final List<Integer> itemTypeIds) {
+        if (count <= 0) {
+            throw new BusinessException("Počet vytvářených položek musí být kladný", BaseCode.INVALID_STATE);
+        }
+        if (structureData.getState() != ArrStructuredObject.State.TEMP) {
+            throw new BusinessException("Neplatný stav hodnoty strukt. typu: " + structureData.getState(), BaseCode.INVALID_STATE);
         }
 
-        static public ValidationErrorDescription fromJson(String json) {
-            ObjectReader reader = objectMapper.readerFor(ValidationErrorDescription.class);
-            try {
-                return reader.readValue(json);
-            } catch (IOException e) {
-                throw new SystemException("Failed to deserialize value").set("json", json);
-            }
-        }
+        List<RulItemType> itemTypes = findAndValidateIntItemTypes(fundVersion, itemTypeIds);
+        List<ArrStructuredItem> structureItems = findStructureItems(structureData);
 
-        public String asJsonString() {
-            if (BooleanUtils.isTrue(emptyValue)
-                    || BooleanUtils.isTrue(duplicateValue)
-                    || CollectionUtils.isNotEmpty(requiredItemTypeIds)
-                    || CollectionUtils.isNotEmpty(impossibleItemTypeIds)) {
-                try {
-                    return objectMapper.writeValueAsString(this);
-                } catch (JsonProcessingException e) {
-                    throw new SystemException("Nepodařilo se serializovat data");
+        validateStructureItems(itemTypes, structureItems);
+
+        ArrChange change = arrangementService.createChange(ArrChange.Type.ADD_STRUCTURE_DATA_BATCH);
+        List<ArrStructuredObject> structureDataList = createStructObjList(fundVersion.getFund(),
+                structureData.getStructuredType(), ArrStructuredObject.State.OK, change, count - 1);
+
+        int countItems = structureDataList.size() * structureItems.size();
+        if (countItems > 0) {
+            List<ArrStructuredItem> newStructureItems = new ArrayList<>();
+            List<ArrData> newDataList = new ArrayList<>();
+
+            Map<RulItemType, Integer> autoincrementMap = createAutoincrementMap(structureItems, itemTypes);
+            for (ArrStructuredObject newStructureData : structureDataList) {
+                for (ArrStructuredItem structureItem : structureItems) {
+                    ArrStructuredItem copyStructureItem = new ArrStructuredItem();
+                    ArrData newData = ArrData.makeCopyWithoutId(structureItem.getData());
+                    Integer val = autoincrementMap.get(structureItem.getItemType());
+                    if (val != null) {
+                        val++;
+                        ((ArrDataInteger) newData).setValue(val);
+                        autoincrementMap.put(structureItem.getItemType(), val);
+                    }
+                    newDataList.add(newData);
+                    copyStructureItem.setData(newData);
+                    copyStructureItem.setCreateChange(change);
+                    copyStructureItem.setPosition(structureItem.getPosition());
+                    copyStructureItem.setStructuredObject(newStructureData);
+                    copyStructureItem.setDescItemObjectId(arrangementService.getNextDescItemObjectId());
+                    copyStructureItem.setItemType(structureItem.getItemType());
+                    copyStructureItem.setItemSpec(structureItem.getItemSpec());
+                    newStructureItems.add(copyStructureItem);
                 }
             }
-            return null;
+            dataRepository.save(newDataList);
+            structureItemRepository.save(newStructureItems);
         }
 
-        public Boolean getEmptyValue() {
-            return emptyValue;
+        ArrStructuredObject confirmStructureData = confirmInternal(fundVersion.getFund(), structureData);
+        structureDataList = revalidateStructureData(structureDataList);
+
+        List<Integer> structureDataIds = structureDataList.stream().map(ArrStructuredObject::getStructuredObjectId).collect(Collectors.toList());
+        structureDataIds.add(confirmStructureData.getStructuredObjectId());
+        notificationService.publishEvent(new EventStructureDataChange(fundVersion.getFundId(),
+                structureData.getStructuredType().getCode(),
+                null,
+                structureDataIds,
+                null,
+                null));
+    }
+
+    /**
+     * Sestavení mapy pro autoincrement hodnot.
+     *
+     * @param structureItems položky hodnoty strukt. typu
+     * @param itemTypes      typy atributů, které vyžadujeme mezi hodnotami
+     * @return výsledná mapa
+     */
+    private Map<RulItemType, Integer> createAutoincrementMap(final List<ArrStructuredItem> structureItems,
+                                                             final List<RulItemType> itemTypes) {
+        Map<RulItemType, Integer> result = new HashMap<>(itemTypes.size());
+        for (RulItemType itemType : itemTypes) {
+            for (ArrStructuredItem structureItem : structureItems) {
+                if (structureItem.getItemType().equals(itemType)) {
+                    result.put(itemType, structureItem.getData().getValueInt());
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Provede validaci položek předlohy strukt. typu.
+     *
+     * @param itemTypes      typy atributů, které vyžadujeme mezi hodnotami
+     * @param structureItems položky hodnoty strukt. typu
+     */
+    private void validateStructureItems(final List<RulItemType> itemTypes, final List<ArrStructuredItem> structureItems) {
+        List<RulItemType> itemTypesRequired = new ArrayList<>(itemTypes);
+        for (ArrStructuredItem structureItem : structureItems) {
+            itemTypesRequired.remove(structureItem.getItemType());
+        }
+        if (!itemTypesRequired.isEmpty()) {
+            throw new BusinessException("Hodnota strukt. typu předlohy neobsahuje položky pro autoincrement", BaseCode.INVALID_STATE)
+                    .set("codes", itemTypesRequired.stream().map(RulItemType::getCode).collect(Collectors.toList()));
+        }
+    }
+
+    /**
+     * Vyhledá a zvaliduje typy atributů. Validují se položky, že patří pod stejná pravidla. Kontrolují se typy, že jsou
+     * datového typu {@link DataType#INT}.
+     *
+     * @param fundVersion verze AS
+     * @param itemTypeIds identifikátory typů, které se mají autoincrementovat
+     * @return nalezené a zvalidované entity
+     */
+    private List<RulItemType> findAndValidateIntItemTypes(final ArrFundVersion fundVersion, final List<Integer> itemTypeIds) {
+        if (CollectionUtils.isEmpty(itemTypeIds)) {
+            throw new BusinessException("Autoincrementující typ musí být alespoň jeden", BaseCode.INVALID_STATE);
         }
 
-        public void setEmptyValue(final Boolean emptyValue) {
-            this.emptyValue = emptyValue;
+        List<RulItemType> itemTypes = itemTypeRepository.findAll(itemTypeIds);
+        if (itemTypes.size() != itemTypeIds.size()) {
+            throw new BusinessException("Některý z typů atributů neexistuje", BaseCode.INVALID_STATE);
         }
-
-        public Boolean getDuplicateValue() {
-            return duplicateValue;
+        for (RulItemType itemType : itemTypes) {
+            if (DataType.fromId(itemType.getDataTypeId()) != DataType.INT) {
+                throw new BusinessException("Typ atributu " + itemType.getCode() + " není číselného typu", BaseCode.INVALID_STATE);
+            }
         }
+        return itemTypes;
+    }
 
-        public void setDuplicateValue(final Boolean duplicateValue) {
-            this.duplicateValue = duplicateValue;
+    /**
+     * Hromadná úprava položek/hodnot strukt. typu.
+     *
+     * @param fundVersion              verze AS
+     * @param structureType            strukturovaný typ
+     * @param structureDataIds         identifikátory hodnoty strukt. datového typu
+     * @param sourceStructureItems     nastavované položky
+     * @param autoincrementItemTypeIds identifikátory typů, které se mají autoincrementovat
+     * @param deleteItemTypeIds        identifikátory typů, které se mají odstranit
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    public void updateStructObjBatch(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
+                                         final RulStructuredType structureType,
+                                         final List<Integer> structureDataIds,
+                                         final List<ArrStructuredItem> sourceStructureItems,
+                                         final List<Integer> autoincrementItemTypeIds,
+                                         final List<Integer> deleteItemTypeIds) {
+        List<ArrStructuredObject> structureDataList = getStructObjByIds(structureDataIds);
+        validateStructObj(fundVersion, structureType, structureDataList);
+
+        List<RulItemType> autoincrementItemTypes = autoincrementItemTypeIds.isEmpty() ? Collections.emptyList() : findAndValidateIntItemTypes(fundVersion, autoincrementItemTypeIds);
+        validateStructureItems(autoincrementItemTypes, sourceStructureItems);
+
+        Map<ArrStructuredObject, List<ArrStructuredItem>> structureDataStructureItems = findStructureItems(structureDataList);
+        ArrChange change = arrangementService.createChange(ArrChange.Type.UPDATE_STRUCT_DATA_BATCH);
+
+        Set<Integer> allDeleteItemTypeIds = new HashSet<>(deleteItemTypeIds);
+        allDeleteItemTypeIds.addAll(sourceStructureItems.stream().map(ArrStructuredItem::getItemTypeId).collect(Collectors.toList()));
+
+        List<ArrStructuredItem> deleteStructureItems = new ArrayList<>();
+        Map<RulItemType, Integer> autoincrementMap = createAutoincrementMap(sourceStructureItems, autoincrementItemTypes);
+
+        List<ArrStructuredItem> newStructureItems = new ArrayList<>();
+        List<ArrData> newDataList = new ArrayList<>();
+        for (ArrStructuredObject structureData : structureDataList) {
+            List<ArrStructuredItem> structureItems = structureDataStructureItems.get(structureData);
+            if (CollectionUtils.isNotEmpty(structureItems)) {
+                for (ArrStructuredItem structureItem : structureItems) {
+                    if (allDeleteItemTypeIds.contains(structureItem.getItemTypeId())) {
+                        structureItem.setDeleteChange(change);
+                        deleteStructureItems.add(structureItem);
+                    }
+                }
+            }
+
+            Map<RulItemType, Integer> itemTypePositionMap = new HashMap<>();
+            for (ArrStructuredItem structureItem : sourceStructureItems) {
+                Integer position = itemTypePositionMap.computeIfAbsent(structureItem.getItemType(), k -> 0);
+                position++;
+                itemTypePositionMap.put(structureItem.getItemType(), position);
+
+                ArrStructuredItem copyStructureItem = new ArrStructuredItem();
+                ArrData newData = ArrData.makeCopyWithoutId(structureItem.getData());
+                newData.setDataType(structureItem.getItemType().getDataType());
+                Integer val = autoincrementMap.get(structureItem.getItemType());
+                if (val != null) {
+                    ((ArrDataInteger) newData).setValue(val);
+                    // Increment for next item
+                    val++;
+                    autoincrementMap.put(structureItem.getItemType(), val);
+                }
+                newDataList.add(newData);
+                copyStructureItem.setData(newData);
+                copyStructureItem.setCreateChange(change);
+                copyStructureItem.setPosition(position);
+                copyStructureItem.setStructuredObject(structureData);
+                copyStructureItem.setDescItemObjectId(arrangementService.getNextDescItemObjectId());
+                copyStructureItem.setItemType(structureItem.getItemType());
+                copyStructureItem.setItemSpec(structureItem.getItemSpec());
+                newStructureItems.add(copyStructureItem);
+            }
         }
+        structureItemRepository.save(deleteStructureItems);
+        dataRepository.save(newDataList);
+        structureItemRepository.save(newStructureItems);
 
-        public List<Integer> getRequiredItemTypeIds() {
-            return requiredItemTypeIds;
+        revalidateStructureData(structureDataList);
+
+        notificationService.publishEvent(new EventStructureDataChange(fundVersion.getFundId(),
+                structureType.getCode(),
+                null,
+                structureDataIds,
+                null,
+                null));
+    }
+
+    /**
+     * Validace hodnot strukt. typu.
+     *
+     * @param fundVersion       verze AS
+     * @param structureType     strukturovaný typ
+     * @param StructObjList hodnoty strukturovaného datového typu
+     */
+    private void validateStructObj(final ArrFundVersion fundVersion,
+                                       final RulStructuredType structureType,
+                                       final List<ArrStructuredObject> StructObjList) {
+        if (CollectionUtils.isEmpty(StructObjList)) {
+            throw new BusinessException("Musí být upravována alespoň jedna hodnota strukt. typu", BaseCode.INVALID_STATE);
         }
-
-        public void setRequiredItemTypeIds(final List<Integer> requiredItemTypeIds) {
-            this.requiredItemTypeIds = requiredItemTypeIds;
-        }
-
-        public List<Integer> getImpossibleItemTypeIds() {
-            return impossibleItemTypeIds;
-        }
-
-        public void setImpossibleItemTypeIds(final List<Integer> impossibleItemTypeIds) {
-            this.impossibleItemTypeIds = impossibleItemTypeIds;
+        for (ArrStructuredObject structObj : StructObjList) {
+            if (structObj.getDeleteChange() != null) {
+                throw new BusinessException("Nelze upravit již smazaná strukturovaná data", BaseCode.INVALID_STATE)
+                        .set("id", structObj.getStructuredObjectId());
+            }
+            if (!structObj.getFund().equals(fundVersion.getFund())) {
+                throw new BusinessException("Strukturovaná data nepatří pod AS", BaseCode.INVALID_STATE)
+                        .set("id", structObj.getStructuredObjectId());
+            }
+            if (!structObj.getStructuredType().equals(structureType)) {
+                throw new BusinessException("Strukturovaná data jsou jiného strukt. datového typu", BaseCode.INVALID_STATE)
+                        .set("id", structObj.getStructuredObjectId());
+            }
         }
     }
 }

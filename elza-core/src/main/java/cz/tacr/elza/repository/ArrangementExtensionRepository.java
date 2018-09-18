@@ -26,7 +26,7 @@ public interface ArrangementExtensionRepository extends JpaRepository<RulArrange
 
     List<RulArrangementExtension> findByRulPackageAndRuleSet(RulPackage rulPackage, RulRuleSet ruleSet);
 
-    void deleteByRulPackage(RulArrangementExtension rulPackage);
+    void deleteByRulPackage(RulPackage rulPackage);
 
     @Query("SELECT ae FROM arr_node_extension ne JOIN ne.arrangementExtension ae WHERE ne.node = :node AND ne.deleteChange IS NULL ORDER BY ae.name")
     List<RulArrangementExtension> findByNode(@Param("node") ArrNode node);

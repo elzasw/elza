@@ -193,6 +193,33 @@ export class WebApiCls {
         // return AjaxUtils.ajaxPut(WebApi.arrangementUrl + '/descItems/' + versionId + '/' + nodeVersionId + '/update/true', null,  descItem);
     }
 
+    updateDescItems(fundVersionId, nodeId, nodeVersionId, createDescItem = [], updateDescItem = [], deleteDescItem = []) {
+        const changeItems = [];
+
+        createDescItem.forEach(item => {
+            changeItems.push({
+                updateOp: "CREATE",
+                item: item
+            });
+        });
+
+        updateDescItem.forEach(item => {
+            changeItems.push({
+                updateOp: "UPDATE",
+                item: item
+            });
+        });
+
+        deleteDescItem.forEach(item => {
+            changeItems.push({
+                updateOp: "DELETE",
+                item: item
+            });
+        });
+
+        return callWS('/arrangement/descItems/' + fundVersionId + '/' + nodeId + '/' + nodeVersionId + '/update/bulk', changeItems, true);
+    }
+
     setNotIdentifiedDescItem(versionId, nodeId, parentNodeVersion, descItemTypeId, descItemSpecId, descItemObjectId) {
         // return callWS('/arrangement/descItems/' + versionId + '/' + nodeId + '/' + parentNodeVersion + '/notUndefined/set?descItemTypeId=' + descItemTypeId + '&descItemSpecId=' + descItemSpecId + '&descItemObjectId=' + descItemObjectId, null);
 
@@ -249,14 +276,15 @@ export class WebApiCls {
         return AjaxUtils.ajaxPut(WebApiCls.arrangementUrl + '/output/' + outputId + "/settings", null, {...outputSettings});
     }
 
-    addNode(node, parentNode, versionId, direction, descItemCopyTypes, scenarioName) {
+    addNode(node, parentNode, versionId, direction, descItemCopyTypes, scenarioName, createItems) {
         const data = {
             versionId,
             direction,
             staticNodeParent: parentNode,
             staticNode: node,
             descItemCopyTypes,
-            scenarioName
+            scenarioName,
+            createItems
         };
 
         return callWS('/arrangement/levels/add', data);
@@ -344,6 +372,10 @@ export class WebApiCls {
         return AjaxUtils.ajaxPost(WebApiCls.actionUrl + '/queue/' + versionId + '/' + code, null, nodeIds);
     }
 
+    queuePersistentSortByIds(versionId, code, nodeIds, config) {
+        return AjaxUtils.ajaxPost(WebApiCls.actionUrl + '/queue/persistentSort/' + versionId + '/' + code, null, {nodeIds, ...config});
+    }
+
     versionValidate(versionId, showAll = false) {
         return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/validateVersion/' + versionId + '/' + showAll, null)
     }
@@ -362,26 +394,27 @@ export class WebApiCls {
     }
 
     /// Registry
-    createRecord(record, characteristics, registerTypeId, parentId, scopeId) {
+    createAccessPoint(name, complement, languageCode, description, typeId, scopeId) {
         return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/', null, {
-            '@class': 'cz.tacr.elza.controller.vo.RegRecordVO',
-            record,
-            characteristics,
-            local: false,
+            '@class': 'cz.tacr.elza.controller.vo.ApAccessPointCreateVO',
+            name,
+            description,
+            complement,
+            languageCode,
+            // local: false,
             scopeId,
-            parentRecordId: parentId,
-            registerTypeId
+            typeId
         });
     }
 
-    findRegistry(search = null, registryParent = null, registerTypeId = null, versionId = null, itemSpecId = null, from = 0, count = DEFAULT_LIST_SIZE, scopeId = null, excludeInvalid = true) {
+    findRegistry(search = null, registryParent = null, apTypeId = null, versionId = null, itemSpecId = null, from = 0, count = DEFAULT_LIST_SIZE, scopeId = null, excludeInvalid = true) {
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/', {
             search,
             from,
             count,
             itemSpecId,
             parentRecordId: registryParent,
-            registerTypeId: registerTypeId,
+            apTypeId,
             versionId,
             scopeId,
             excludeInvalid
@@ -402,12 +435,16 @@ export class WebApiCls {
         });
     }
 
-    getRegistry(registryId) {
-        return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/' + registryId);
+    getAccessPoint(accessPointId) {
+        return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/' + accessPointId);
     }
 
-    updateRegistry(record) {
-        return AjaxUtils.ajaxPut(WebApiCls.registryUrl + '/' + record.id, null, record);
+    updateAccessPoint(accessPointId, data) {
+        return AjaxUtils.ajaxPut(WebApiCls.registryUrl + '/' + accessPointId, null, data);
+    }
+
+    changeDescription(accessPointId, data) {
+        return AjaxUtils.ajaxPut(WebApiCls.registryUrl + '/' + accessPointId + '/description', null, data);
     }
 
     replaceRegistry(recordReplaceId, recordReplacementId) {
@@ -418,8 +455,8 @@ export class WebApiCls {
         return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/' + registryId +'/valid', null);
     }
 
-    deleteRegistry(recordId) {
-        return AjaxUtils.ajaxDelete(WebApiCls.registryUrl + '/' + recordId);
+    deleteAccessPoint(accessPointId) {
+        return AjaxUtils.ajaxDelete(WebApiCls.registryUrl + '/' + accessPointId);
     }
 
     getScopes(versionId = null) {
@@ -430,20 +467,28 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/scopes', null);
     }
 
+    getAllLanguages() {
+        return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/languages', null);
+    }
+
     getRecordTypesForAdd(partyTypeId = null){
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/recordTypesForPartyType', {partyTypeId});
     }
 
-    addRegistryVariant(data) {
-        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/variantRecord/', null, data);
+    createAccessPointName(accessPointId, data) {
+        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/' + accessPointId + '/name', null, data);
     }
 
-    editRegistryVariant(variantRecord) {
-        return AjaxUtils.ajaxPut(WebApiCls.registryUrl + '/variantRecord/' + variantRecord.id, null, variantRecord);
+    updateAccessPointName(accessPointId, data) {
+        return AjaxUtils.ajaxPut(WebApiCls.registryUrl + '/' + accessPointId + '/name', null, data);
     }
 
-    deleteVariantRecord(variantRecordId) {
-        return AjaxUtils.ajaxDelete(WebApiCls.registryUrl + '/variantRecord/' + variantRecordId);
+    deleteAccessPointName(accessPointId, nameId) {
+        return AjaxUtils.ajaxDelete(WebApiCls.registryUrl + '/' + accessPointId + '/name/' + nameId);
+    }
+
+    setPreferredAccessPointName(accessPointId, nameId) {
+        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/' + accessPointId + '/name/' + nameId + '/preferred');
     }
 
     createRegCoordinates(data){
@@ -543,6 +588,10 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.ruleUrl + '/descItemTypes')
     }
 
+    getGroups(fundVersionId) {
+        return AjaxUtils.ajaxGet(WebApiCls.ruleUrl + '/groups/' + fundVersionId);
+    }
+
     getCalendarTypes(versionId, nodeId) {
         return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/calendarTypes');
     }
@@ -572,10 +621,6 @@ export class WebApiCls {
             }
         };
         return getData(data, 1);
-    }
-
-    getNodeParents(versionId, nodeId) {
-        return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/nodeParents', {versionId, nodeId});
     }
 
     getRequestsInQueue() {
@@ -658,6 +703,22 @@ export class WebApiCls {
             }
         }
         return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/fundTree', null, data);
+    }
+
+    getNodeData(fundVersionId, nodeParam, resultParam = {}) {
+        const data = {
+            fundVersionId: fundVersionId,
+            nodeId: nodeParam.nodeId,
+            nodeIndex: nodeParam.nodeIndex,
+            parentNodeId: nodeParam.parentNodeId,
+            formData: resultParam.formData,
+            siblingsFrom: resultParam.siblingsFrom,
+            siblingsMaxCount: resultParam.siblingsMaxCount,
+            siblingsFilter: resultParam.siblingsFilter,
+            parents: resultParam.parents,
+            children: resultParam.children,
+        };
+        return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/nodeData', null, data);
     }
 
     getFundTreeNodes(versionId, nodeIds) {
@@ -1126,7 +1187,7 @@ export class WebApiCls {
         return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/output/' + versionId + '/' + outputId + '/clone');
     }
 
-    getRegExternalSystems() {
+    getApExternalSystems() {
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/externalSystems');
     }
 
@@ -1178,8 +1239,8 @@ export class WebApiCls {
         return AjaxUtils.ajaxPut(WebApiCls.structureUrl + '/extension/' + fundVersionId + '/' + structureTypeCode, null, structureExtensionCodes);
     }
 
-    findRulStructureTypes(fundVersionId) {
-        return AjaxUtils.ajaxGet(WebApiCls.structureUrl + '/type/' + fundVersionId);
+    findRulStructureTypes() {
+        return AjaxUtils.ajaxGet(WebApiCls.structureUrl + '/type');
     }
 
     getStructureData(fundVersionId, structureDataId) {

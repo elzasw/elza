@@ -6,6 +6,7 @@ import org.apache.commons.lang.Validate;
 
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 
 /**
@@ -30,11 +31,30 @@ public class ActionRunContext {
 		return bulkActionRun;
 	}
 
+    /**
+     * Return fund version
+     * 
+     * @return
+     */
 	public ArrFundVersion getFundVersion() {
 		ArrFundVersion fundVersion = bulkActionRun.getFundVersion();
 		Validate.notNull(fundVersion);
 		return fundVersion;
 	}
+
+    /**
+     * Return fund
+     * 
+     * @return
+     */
+    public ArrFund getFund() {
+        ArrFundVersion fundVersion = bulkActionRun.getFundVersion();
+        Validate.notNull(fundVersion);
+        ArrFund fund = fundVersion.getFund();
+        Validate.notNull(fund);
+        return fund;
+
+    }
 
 	public ArrChange getChange() {
 		ArrChange arrChange = bulkActionRun.getChange();

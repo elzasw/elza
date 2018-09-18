@@ -2,12 +2,12 @@ package cz.tacr.elza.dataexchange.output.items;
 
 import java.util.Map;
 
+import cz.tacr.elza.core.data.StaticDataProvider;
 import org.apache.commons.lang.Validate;
 
 import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.DataType;
-import cz.tacr.elza.core.data.RuleSystem;
-import cz.tacr.elza.core.data.RuleSystemItemType;
+import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.RulItemSpec;
@@ -19,12 +19,12 @@ import cz.tacr.elza.schema.v2.DescriptionItemUndefined;
  */
 public class ItemConvertor {
 
-    private final RuleSystem ruleSystem;
+    private final StaticDataProvider staticDataProvider;
 
     private final Map<DataType, ItemDataConvertor> dataConvertors;
 
-    public ItemConvertor(RuleSystem ruleSystem, ItemDataConvertorFactory convertorFactory) {
-        this.ruleSystem = ruleSystem;
+    public ItemConvertor(StaticDataProvider staticDataProvider, ItemDataConvertorFactory convertorFactory) {
+        this.staticDataProvider = staticDataProvider;
         this.dataConvertors = convertorFactory.createAll();
     }
 
@@ -37,7 +37,7 @@ public class ItemConvertor {
     public final DescriptionItem convert(ArrItem item) {
         DescriptionItem converted = convert(item.getData());
 
-        RuleSystemItemType itemType = ruleSystem.getItemTypeById(item.getItemTypeId());
+        ItemType itemType = staticDataProvider.getItemTypeById(item.getItemTypeId());
         converted.setT(itemType.getCode());
         if (item.getItemSpecId() != null) {
             RulItemSpec itemSpec = itemType.getItemSpecById(item.getItemSpecId());

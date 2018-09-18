@@ -11,7 +11,7 @@ export default function storeFromArea(store, area, showErrors=true) {
     let st;
 
     if (area.indexOf("shared.") === 0) {
-        const useArea = area.substring("shared.".length);
+        let useArea = area.substring("shared.".length);
         if (!store.app.shared) {
             if (showErrors) {
                 console.error(`Store shared is not defined in`, store.app);
@@ -27,6 +27,17 @@ export default function storeFromArea(store, area, showErrors=true) {
             } else {
                 st = useStore;
             }
+        }
+    } else if (area.indexOf("refTables.") === 0) {
+        let useArea = area.substring("refTables.".length);
+        let useStore = store.refTables[useArea];
+        if (!useStore) {
+            if (showErrors) {
+                console.error(`Store refTables[${useArea}] is not defined in`, store.refTables);
+            }
+            return null;
+        } else {
+            st = useStore;
         }
     } else {
         const areaItems = area.split(".");

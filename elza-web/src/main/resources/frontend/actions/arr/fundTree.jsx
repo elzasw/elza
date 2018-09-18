@@ -330,11 +330,11 @@ export function fundTreeNodeExpand(area, node) {
         var nodeId = node.id;
         var expandedIds = {...fundTree.expandedIds, [nodeId]: true}
         if(activeNode && activeNode.selectedSubNodeId === nodeId){
-            let json = {
+            /*let json = {
                 nodes:[...activeNode.subNodeInfo.childNodes],
                 expandedIdsExtension:[]
             };
-            console.log("skip fundTree", activeNode, json)
+            console.log("skip fundTree", activeNode, json)*/
             //return dispatch(fundTreeReceive(area, versionId, nodeId, expandedIds, [], json));
         }
         return WebApi.getFundTree(versionId, nodeId, expandedIds)

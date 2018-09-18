@@ -1,6 +1,7 @@
 package cz.tacr.elza.dataexchange.input.context;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -13,6 +14,7 @@ import cz.tacr.elza.dataexchange.input.aps.context.AccessPointsContext;
 import cz.tacr.elza.dataexchange.input.institutions.context.InstitutionsContext;
 import cz.tacr.elza.dataexchange.input.parties.context.PartiesContext;
 import cz.tacr.elza.dataexchange.input.sections.context.SectionsContext;
+import cz.tacr.elza.dataexchange.input.storage.StorageManager;
 
 /**
  * Context for single import execution.
@@ -35,21 +37,24 @@ public class ImportContext implements ObservableImport {
 
     private final StaticDataProvider staticData;
 
+    private final StorageManager storageManager;
+    
     private ImportPhase currentPhase = ImportPhase.INIT;
 
     public ImportContext(Session session,
-                         StaticDataProvider staticData,
-                         AccessPointsContext accessPoints,
-                         PartiesContext parties,
-                         InstitutionsContext institutions,
-                         SectionsContext sections) {
+            StaticDataProvider staticData,
+            AccessPointsContext accessPoints,
+            PartiesContext parties,
+            InstitutionsContext institutions,
+            SectionsContext sections, 
+            StorageManager storageManager) {
         this.session = session;
         this.staticData = staticData;
         this.accessPoints = accessPoints;
         this.parties = parties;
         this.institutions = institutions;
         this.sections = sections;
-        initAllContexts();
+        this.storageManager = storageManager;
     }
 
     public Session getSession() {
@@ -99,10 +104,19 @@ public class ImportContext implements ObservableImport {
         phaseChangeListeners.add(phaseChangeListener);
     }
 
-    private void initAllContexts() {
+    public void init(Collection<ImportPhaseChangeListener> listeners) {
         accessPoints.init(this);
         parties.init(this);
         institutions.init(this);
         sections.init(this);
+        
+        if (listeners != null) {
+        	listeners.forEach(phaseChangeListeners::add);
+        }
     }
+
+	public void finish() {
+		setCurrentPhase(ImportPhase.FINISHED);
+		storageManager.clear();
+	}
 }

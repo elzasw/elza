@@ -19,7 +19,7 @@ import {setFocus} from 'actions/global/focus.jsx'
 import * as perms from 'actions/user/Permission.jsx';
 import defaultKeymap from './PartyPageKeymap.jsx';
 import './PartyPage.less';
-import {regExtSystemListFetchIfNeeded} from 'actions/registry/regExtSystemList';
+import {apExtSystemListFetchIfNeeded} from 'actions/registry/apExtSystemList';
 import PageLayout from "../shared/layout/PageLayout";
 import {PropTypes} from 'prop-types';
 import {FOCUS_KEYS} from "../../constants";
@@ -48,15 +48,15 @@ class PartyPage extends AbstractReactComponent {
 
     componentDidMount() {
         this.dispatch(refPartyTypesFetchIfNeeded());         // načtení osob pro autory osoby
-        if (this.props.userDetail.hasOne(perms.REG_SCOPE_WR_ALL)) {
-            this.props.dispatch(regExtSystemListFetchIfNeeded());
+        if (this.props.userDetail.hasOne(perms.AP_SCOPE_WR_ALL)) {
+            this.props.dispatch(apExtSystemListFetchIfNeeded());
         }
     }
 
     componentWillReceiveProps(nextProps) {
         this.dispatch(refPartyTypesFetchIfNeeded());         // načtení osob pro autory osoby
-        if (nextProps.userDetail.hasOne(perms.REG_SCOPE_WR_ALL)) {
-            this.props.dispatch(regExtSystemListFetchIfNeeded());
+        if (nextProps.userDetail.hasOne(perms.AP_SCOPE_WR_ALL)) {
+            this.props.dispatch(apExtSystemListFetchIfNeeded());
         }
     }
 
@@ -137,7 +137,7 @@ class PartyPage extends AbstractReactComponent {
 
         const isSelected = partyDetail.id !== null;
         const altActions = [...parts.altActions];
-        if (userDetail.hasOne(perms.REG_SCOPE_WR_ALL)) {
+        if (userDetail.hasOne(perms.AP_SCOPE_WR_ALL)) {
             altActions.push(
                 <ControllableDropdownButton key='add-party' ref='addParty' id='add-party' title={<span className="dropContent"><Icon glyph='fa-download fa-fw' /><div><span className="btnText">{i18n('party.addParty')}</span></div></span>}>
                     {partyTypes.items.map(type => <MenuItem key={type.id} eventKey={type.id} onClick={this.handleAddParty.bind(this, type.id)}>{type.name}</MenuItem>)}
@@ -157,9 +157,9 @@ class PartyPage extends AbstractReactComponent {
 
         const itemActions = [...parts.itemActions];
         if (isSelected && partyDetail.fetched && !partyDetail.isFetching) {
-            if (userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_WR, scopeId: partyDetail.data.record.scopeId})) {
+            if (userDetail.hasOne(perms.AP_SCOPE_WR_ALL, {type: perms.AP_SCOPE_WR, scopeId: partyDetail.data.accessPoint.scopeId})) {
                 itemActions.push(
-                    <Button disabled={ partyDetail.data.record.invalid } key='delete-party' onClick={this.handleDeleteParty}><Icon glyph="fa-trash"/>
+                    <Button disabled={ partyDetail.data.accessPoint.invalid } key='delete-party' onClick={this.handleDeleteParty}><Icon glyph="fa-trash"/>
                         <div><span className="btnText">{i18n('party.delete.button')}</span></div>
                     </Button>
                 );
@@ -173,7 +173,7 @@ class PartyPage extends AbstractReactComponent {
 
                /* MCV-45365
                 partyDetail && itemActions.push(
-                    <Button disabled={ !partyDetail.data.record.invalid} key='partySetValid' onClick={ this.handleSetValidParty }>
+                    <Button disabled={ !partyDetail.data.accessPoint.invalid} key='partySetValid' onClick={ this.handleSetValidParty }>
                         <Icon glyph="fa-check"/>
                         <div><span className="btnText">{i18n("party.setValid.button")}</span></div>
                     </Button>
@@ -222,10 +222,10 @@ class PartyPage extends AbstractReactComponent {
 
 
 function mapStateToProps(state) {
-    const {app:{partyList, partyDetail, regExtSystemList}, splitter, refTables, userDetail, focus} = state;
+    const {app:{partyList, partyDetail, apExtSystemList}, splitter, refTables, userDetail, focus} = state;
 
     return {
-        extSystems: regExtSystemList.fetched ? regExtSystemList.rows : null,
+        extSystems: apExtSystemList.fetched ? apExtSystemList.rows : null,
         partyList,
         partyDetail,
         splitter,

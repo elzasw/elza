@@ -8,11 +8,12 @@ import javax.persistence.EntityManager;
 import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.common.db.HibernateUtils;
-import cz.tacr.elza.core.data.RuleSystem;
+import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.dataexchange.output.context.ExportContext;
 import cz.tacr.elza.dataexchange.output.writer.SectionOutputStream;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.service.cache.NodeCacheService;
 
 public class SectionContext {
@@ -23,7 +24,7 @@ public class SectionContext {
 
     private final ExportContext context;
 
-    private final RuleSystem ruleSystem;
+    private final StaticDataProvider staticData;
 
     private final LevelInfoLoader levelInfoLoader;
 
@@ -36,7 +37,7 @@ public class SectionContext {
      */
     private final boolean multipleSections;
 
-    private final ExportLevelInfoListener levelInfoListener;
+    private final LevelInfoListener levelInfoListener;
 
     private final EntityManager em;
 
@@ -45,13 +46,13 @@ public class SectionContext {
     SectionContext(ArrFundVersion fundVersion,
                    ExportContext context,
                    boolean multipleSections,
-                   ExportLevelInfoListener levelInfoListener,
+                   LevelInfoListener levelInfoListener,
                    NodeCacheService nodeCacheService,
                    EntityManager em) {
         this.context = Validate.notNull(context);
-        this.ruleSystem = context.getStaticData().getRuleSystems().getByRuleSetId(fundVersion.getRuleSetId());
+        this.staticData = context.getStaticData();
         this.levelInfoLoader = new LevelInfoLoader(context.getBatchSize(), nodeCacheService);
-        this.structObjLoader = new StructObjectInfoLoader(em, context.getBatchSize(), ruleSystem);
+        this.structObjLoader = new StructObjectInfoLoader(em, context.getBatchSize(), this.staticData);
         this.fundVersion = Validate.notNull(fundVersion);
         this.multipleSections = multipleSections;
         this.levelInfoListener = levelInfoListener;
@@ -62,8 +63,12 @@ public class SectionContext {
         return context;
     }
 
-    public RuleSystem getRuleSystem() {
-        return ruleSystem;
+    public StaticDataProvider getStaticData() {
+        return staticData;
+    }
+    
+    public RulRuleSet getRuleSet() {
+        return staticData.getRuleSetById(fundVersion.getRuleSetId());
     }
 
     public String getInstitutionCode() {

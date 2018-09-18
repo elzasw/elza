@@ -2,23 +2,20 @@ package cz.tacr.elza.service;
 
 import java.util.List;
 
+import cz.tacr.elza.domain.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import cz.tacr.elza.core.security.AuthMethod;
-import cz.tacr.elza.domain.ArrDigitalRepository;
-import cz.tacr.elza.domain.ArrDigitizationFrontdesk;
-import cz.tacr.elza.domain.RegExternalSystem;
-import cz.tacr.elza.domain.SysExternalSystem;
-import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.DigitalRepositoryRepository;
 import cz.tacr.elza.repository.DigitizationFrontdeskRepository;
 import cz.tacr.elza.repository.ExternalSystemRepository;
-import cz.tacr.elza.repository.RegExternalSystemRepository;
+import cz.tacr.elza.repository.ApExternalSystemRepository;
 import cz.tacr.elza.service.eventnotification.events.EventId;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 
@@ -35,7 +32,7 @@ public class ExternalSystemService {
     private ExternalSystemRepository externalSystemRepository;
 
     @Autowired
-    private RegExternalSystemRepository regExternalSystemRepository;
+    private ApExternalSystemRepository apExternalSystemRepository;
 
     @Autowired
     private DigitizationFrontdeskRepository digitizationFrontdeskRepository;
@@ -62,8 +59,8 @@ public class ExternalSystemService {
      *
      * @return seznam externích systémů
      */
-    public List<RegExternalSystem> findAllRegSystem() {
-        return regExternalSystemRepository.findAll();
+    public List<ApExternalSystem> findAllApSystem() {
+        return apExternalSystemRepository.findAll();
     }
 
     /**

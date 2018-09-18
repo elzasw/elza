@@ -4,13 +4,14 @@ import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
 
 import cz.tacr.elza.dataexchange.input.context.EntityIdHolder;
-import cz.tacr.elza.dataexchange.input.context.PersistMethod;
+import cz.tacr.elza.dataexchange.input.context.SimpleIdHolder;
 import cz.tacr.elza.dataexchange.input.storage.EntityWrapper;
+import cz.tacr.elza.dataexchange.input.storage.SaveMethod;
 import cz.tacr.elza.domain.ArrNode;
 
 public class ArrNodeWrapper implements EntityWrapper {
 
-    private final EntityIdHolder<ArrNode> idHolder = new EntityIdHolder<>(ArrNode.class);
+    private final SimpleIdHolder<ArrNode> idHolder = new SimpleIdHolder<>(ArrNode.class);
 
     protected final ArrNode entity;
 
@@ -23,22 +24,22 @@ public class ArrNodeWrapper implements EntityWrapper {
     }
 
     @Override
-    public PersistMethod getPersistMethod() {
-        return PersistMethod.CREATE;
-    }
-
-    @Override
-    public ArrNode getEntity() {
+    public Object getEntity() {
         return entity;
     }
 
     @Override
-    public void beforeEntityPersist(Session session) {
-        // NOP
+    public SaveMethod getSaveMethod() {
+        return SaveMethod.CREATE;
     }
 
     @Override
-    public void afterEntityPersist() {
+    public void beforeEntitySave(Session session) {
+        // NOP   
+    }
+
+    @Override
+    public void afterEntitySave() {
         idHolder.setEntityId(entity.getNodeId());
     }
 }

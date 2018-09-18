@@ -20,7 +20,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 
 /**
- * Vazební tabulka mezi entitami {@link RegRegisterType} a {@link RulItemSpec}.
+ * Vazební tabulka mezi entitami {@link ApType} a {@link RulItemSpec}.
  *
  * @author Martin Kužel [<a href="mailto:martin.kuzel@marbes.cz">martin.kuzel@marbes.cz</a>]
  * @since 21.10.2015
@@ -37,9 +37,9 @@ public class RulItemSpecRegister {
     private Integer itemSpecRegisterId;
 
     @RestResource(exported = false)
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RegRegisterType.class)
-    @JoinColumn(name = "registerTypeId", nullable = true)
-    private RegRegisterType registerType;
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApType.class)
+    @JoinColumn(name = "apTypeId", nullable = true)
+    private ApType apType;
 
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulItemSpec.class)
@@ -54,12 +54,12 @@ public class RulItemSpecRegister {
         this.itemSpecRegisterId = descItemSpecRegisterId;
     }
 
-    public RegRegisterType getRegisterType() {
-        return registerType;
+    public ApType getApType() {
+        return apType;
     }
 
-    public void setRegisterType(final RegRegisterType registerType) {
-        this.registerType = registerType;
+    public void setApType(final ApType apType) {
+        this.apType = apType;
     }
 
     public RulItemSpec getItemSpec() {

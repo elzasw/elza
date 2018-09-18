@@ -1,9 +1,9 @@
 package cz.tacr.elza.print.item.convertors;
 
+import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.print.File;
 import cz.tacr.elza.print.Record;
 import cz.tacr.elza.print.Structured;
@@ -17,7 +17,7 @@ public interface ItemConvertorContext {
 
     ItemSpec getItemSpecById(Integer id);
 
-    Record getRecord(RegRecord record);
+    Record getRecord(ApAccessPoint record);
 
     Party getParty(ParParty party);
 

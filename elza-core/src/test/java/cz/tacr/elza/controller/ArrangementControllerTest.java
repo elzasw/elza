@@ -1,67 +1,19 @@
 package cz.tacr.elza.controller;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.csv.CSVRecord;
-import org.junit.Assert;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import cz.tacr.elza.controller.ArrangementController.CopySiblingResult;
 import cz.tacr.elza.controller.ArrangementController.DescFormDataNewVO;
-import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
-import cz.tacr.elza.controller.vo.ArrFundVO;
-import cz.tacr.elza.controller.vo.ArrFundVersionVO;
-import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
-import cz.tacr.elza.controller.vo.ArrOutputDefinitionVO;
-import cz.tacr.elza.controller.vo.ArrOutputExtVO;
-import cz.tacr.elza.controller.vo.CopyNodesParams;
-import cz.tacr.elza.controller.vo.CopyNodesValidate;
-import cz.tacr.elza.controller.vo.CopyNodesValidateResult;
-import cz.tacr.elza.controller.vo.FilterNode;
-import cz.tacr.elza.controller.vo.FilterNodePosition;
-import cz.tacr.elza.controller.vo.NodeItemWithParent;
-import cz.tacr.elza.controller.vo.OutputSettingsVO;
-import cz.tacr.elza.controller.vo.RegRecordVO;
-import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
-import cz.tacr.elza.controller.vo.RegScopeVO;
-import cz.tacr.elza.controller.vo.RulOutputTypeVO;
-import cz.tacr.elza.controller.vo.TreeData;
-import cz.tacr.elza.controller.vo.TreeNodeClient;
+import cz.tacr.elza.controller.vo.*;
+import cz.tacr.elza.controller.vo.ApTypeVO;
+import cz.tacr.elza.controller.vo.ApScopeVO;
 import cz.tacr.elza.controller.vo.filter.Filters;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
-import cz.tacr.elza.controller.vo.nodes.ItemTypeDescItemsLiteVO;
+import cz.tacr.elza.controller.vo.nodes.NodeDataParam;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStringVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemTextVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ItemGroupVO;
 import cz.tacr.elza.domain.ArrDataText;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrOutputDefinition;
@@ -72,6 +24,35 @@ import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.service.ArrIOService;
 import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.vo.ChangesResult;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.csv.CSVRecord;
+import org.junit.Assert;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
+import static org.junit.Assert.*;
 
 public class ArrangementControllerTest extends AbstractControllerTest {
 
@@ -150,7 +131,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         ChangesResult changesAll = findChanges(fundVersion.getId(), MAX_SIZE, 0, null, null);
         assertNotNull(changesAll);
         assertNotNull(changesAll.getChanges());
-        assertTrue(changesAll.getTotalCount().equals(changesAll.getChanges().size()) && changesAll.getChanges().size() == 28);
+        assertTrue(changesAll.getTotalCount().equals(changesAll.getChanges().size()) && changesAll.getChanges().size() == 29);
         assertTrue(!changesAll.getOutdated());
 
         ChangesResult changesByNode = findChanges(fundVersion.getId(), MAX_SIZE, 0, null, nodes.get(0).getId());
@@ -177,7 +158,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
             e.printStackTrace();
         }
 
-        assertTrue(changesByDate.getTotalCount().equals(changesByDate.getChanges().size()) && changesByDate.getChanges().size() == 28);
+        assertTrue(changesByDate.getTotalCount().equals(changesByDate.getChanges().size()) && changesByDate.getChanges().size() == 29);
         assertTrue(!changesByDate.getOutdated());
 
         // obdoba revertChanges s fail očekáváním
@@ -304,7 +285,6 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         ArrangementController.OutputFormDataNewVO outputFormData = getOutputFormData(outputItem.getParent().getId(), fundVersion.getId());
 
         assertNotNull(outputFormData.getParent());
-        assertTrue(outputFormData.getGroups().size() == 1);
 
         outputItem = deleteOutputItem(itemCreated, fundVersion.getId(), outputItem.getParent().getVersion());
         ArrOutputDefinitionVO parent = outputItem.getParent();
@@ -388,17 +368,20 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         ArrangementController.FaTreeNodesParam inputFa = new ArrangementController.FaTreeNodesParam();
         inputFa.setVersionId(fundVersion.getId());
         inputFa.setNodeIds(Arrays.asList(rootNode.getId()));
-        List<TreeNodeClient> faTreeNodes = getFundTreeNodes(inputFa);
+        List<TreeNodeVO> faTreeNodes = getFundTreeNodes(inputFa);
         assertTrue(CollectionUtils.isNotEmpty(faTreeNodes));
 
-        List<TreeNodeClient> nodeParents = getNodeParents(rootNode.getId(), fundVersion.getId());
+        NodeDataParam ndp = new NodeDataParam();
+        ndp.setNodeId(rootNode.getId());
+        ndp.setFundVersionId(fundVersion.getId());
+        ndp.setParents(true);
+
+        Collection<TreeNodeVO> nodeParents = getNodeData(ndp).getParents();
         assertNotNull(nodeParents);
 
         ArrangementController.DescFormDataNewVO nodeFormData = getNodeFormData(rootNode.getId(),
                 fundVersion.getId());
         assertNotNull(nodeFormData.getParent());
-        assertTrue(CollectionUtils.isNotEmpty(nodeFormData.getGroups()));
-        assertTrue(CollectionUtils.isNotEmpty(nodeFormData.getTypeGroups()));
 
         ArrangementController.NodeFormsDataVO nodeFormsData = getNodeFormsData(fundVersion.getId(), rootNode.getId());
         assertTrue(nodeFormsData.getForms().size()>0);
@@ -409,7 +392,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         ArrangementController.IdsParam idsParamNodes = new ArrangementController.IdsParam();
         idsParamNodes.setVersionId(fundVersion.getId());
         idsParamNodes.setIds(Arrays.asList(nodes.get(1).getId()));
-        List<TreeNodeClient> treeNodeClients = getNodes(idsParamNodes);
+        List<TreeNodeVO> treeNodeClients = getNodes(idsParamNodes);
         assertTrue(treeNodeClients.size()>0);
 
         ArrangementController.IdsParam idsParamFa = new ArrangementController.IdsParam();
@@ -547,6 +530,12 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         descItemResult = createDescItem(descItem, fundVersion, node, type);
         node = descItemResult.getParent();
 
+        LocalDate dateNow = LocalDate.now();
+        type = findDescItemTypeByCode("SRD_SIMPLE_DATE");
+        descItem = buildDescItem(type.getCode(), null, dateNow, 1, null);
+        descItemResult = createDescItem(descItem, fundVersion, node, type);
+        node = descItemResult.getParent();
+
         type = findDescItemTypeByCode("SRD_LEGEND");
         descItem = buildDescItem(type.getCode(), null, "legenda", 1, null);
         descItemResult = createDescItem(descItem, fundVersion, node, type);
@@ -615,7 +604,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
     private void moveAndDeleteLevels(final List<ArrNodeVO> nodes,
                                      final ArrFundVersionVO fundVersion) {
         ArrNodeVO rootNode = nodes.get(0);
-        TreeNodeClient parentNode;
+        TreeNodeVO parentNode;
         // přesun druhého uzlu před první
         moveLevelBefore(fundVersion, nodes.get(1), rootNode, Arrays.asList(nodes.get(2)), rootNode);
 
@@ -700,14 +689,14 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         ArrangementController.FaTreeParam input = new ArrangementController.FaTreeParam();
         input.setVersionId(fundVersion.getId());
         TreeData treeData = getFundTree(input);
-        TreeNodeClient parentNode;
+        TreeNodeVO parentNode;
 
         // Musí existovat root node
         assertNotNull(treeData.getNodes());
         // Musí existovat pouze root node
         assertTrue(treeData.getNodes().size() == 1);
 
-        TreeNodeClient rootTreeNodeClient = treeData.getNodes().iterator().next();
+        TreeNodeVO rootTreeNodeClient = treeData.getNodes().iterator().next();
         ArrNodeVO rootNode = convertTreeNode(rootTreeNodeClient);
 
         // přidání prvního levelu pod root
@@ -768,11 +757,11 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         treeData = getFundTree(input);
 
         // Kontrola pořadí uzlů
-        Iterator<TreeNodeClient> nodeClientIterator = treeData.getNodes().iterator();
-        TreeNodeClient node1 = nodeClientIterator.next();
-        TreeNodeClient node2 = nodeClientIterator.next();
-        TreeNodeClient node3 = nodeClientIterator.next();
-        TreeNodeClient node4 = nodeClientIterator.next();
+        Iterator<TreeNodeVO> nodeClientIterator = treeData.getNodes().iterator();
+        TreeNodeVO node1 = nodeClientIterator.next();
+        TreeNodeVO node2 = nodeClientIterator.next();
+        TreeNodeVO node3 = nodeClientIterator.next();
+        TreeNodeVO node4 = nodeClientIterator.next();
         assertTrue(node1.getId().equals(newLevel3.getNode().getId()));
         assertTrue(node2.getId().equals(newLevel4.getNode().getId()));
         assertTrue(node3.getId().equals(newLevel1.getNode().getId()));
@@ -888,27 +877,20 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         List<ArrNodeVO> nodes = convertTreeNodes(treeData.getNodes());
         ArrNodeVO rootNode = nodes.get(0);
 
-        List<RegRegisterTypeVO> types = getRecordTypes();
-        List<RegScopeVO> scopes = getAllScopes();
+        List<ApTypeVO> types = getRecordTypes();
+        List<ApScopeVO> scopes = getAllScopes();
         Integer scopeId = scopes.iterator().next().getId();
 
-        RegRecordVO record = new RegRecordVO();
-
-        record.setRegisterTypeId(getNonHierarchicalRegRegisterType(types, false).getId());
-
-        record.setCharacteristics("Ja jsem regRecordA");
-
-        record.setRecord("RegRecordA");
-
-        record.setScopeId(scopeId);
-
-        record.setAddRecord(true);
-
-        record = createRecord(record);
+        ApAccessPointCreateVO ap = new ApAccessPointCreateVO();
+        ap.setTypeId(getNonHierarchicalApType(types, false).getId());
+        ap.setName("ApRecordA name");
+        ap.setComplement("ApRecordA complement");
+        ap.setScopeId(scopeId);
+        ApAccessPointVO accessPointCreated = createAccessPoint(ap);
 
         ArrNodeRegisterVO nodeRegister = new ArrNodeRegisterVO();
 
-        nodeRegister.setValue(record.getId());
+        nodeRegister.setValue(accessPointCreated.getId());
         nodeRegister.setNodeId(rootNode.getId());
         nodeRegister.setNode(rootNode);
 
@@ -934,17 +916,17 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         assertTrue(updatedLink.getId().equals(deletedLink.getId()));
     }
 
-    private RegRegisterTypeVO getNonHierarchicalRegRegisterType(final List<RegRegisterTypeVO> list, final boolean hasPartyType) {
-        for (RegRegisterTypeVO type : list) {
-            if (type.getAddRecord() && ((!hasPartyType && type.getPartyTypeId() == null) || (hasPartyType && type.getPartyTypeId() != null))) {
+    private ApTypeVO getNonHierarchicalApType(final List<ApTypeVO> list, final boolean hasPartyType) {
+        for (ApTypeVO type : list) {
+            if (type.getAddRecord() ) {
                 return type;
             }
         }
 
-        for (RegRegisterTypeVO type : list) {
+        for (ApTypeVO type : list) {
             if (type.getChildren() != null) {
-                RegRegisterTypeVO res = getNonHierarchicalRegRegisterType(type.getChildren(), hasPartyType);
-                if (res != null) {
+                ApTypeVO res = getNonHierarchicalApType(type.getChildren(), hasPartyType);
+                if (res != null ) {
                     return res;
                 }
             }
@@ -1094,17 +1076,8 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         assertNotNull(copyResult);
 
         // read from server
-        List<ArrItemVO> items = new ArrayList<>();
         DescFormDataNewVO formData = getNodeFormData(node2.getId(), fundVersion.getId());
-    	List<ItemGroupVO> groups = formData.getGroups();
-    	for(ItemGroupVO group: groups) {
-    		List<ItemTypeDescItemsLiteVO> voItems = group.getTypes();
-    		for(ItemTypeDescItemsLiteVO voItem: voItems) {
-    			if(voItem.getId().equals(type.getId())) {
-    				items.addAll(voItem.getDescItems());
-    			}
-    		}
-    	}
+        List<ArrItemVO> items = formData.getDescItems();
     	assertTrue(items.size()==1);
     	ArrItemVO result = items.get(0);
     	ArrItemTextVO textVo = (ArrItemTextVO)result;

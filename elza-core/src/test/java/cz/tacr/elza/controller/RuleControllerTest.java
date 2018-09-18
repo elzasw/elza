@@ -1,27 +1,25 @@
 package cz.tacr.elza.controller;
 
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-
-import cz.tacr.elza.domain.RulArrangementExtension;
-import cz.tacr.elza.domain.RulRuleSet;
-import cz.tacr.elza.repository.ArrangementExtensionRepository;
-import cz.tacr.elza.repository.NodeExtensionRepository;
-import cz.tacr.elza.repository.PackageRepository;
-import cz.tacr.elza.repository.RuleSetRepository;
-import org.junit.Assert;
-import org.junit.Test;
-
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
 import cz.tacr.elza.controller.vo.RulPolicyTypeVO;
 import cz.tacr.elza.controller.vo.TreeData;
-import cz.tacr.elza.controller.vo.TreeNodeClient;
+import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.domain.RulArrangementExtension;
+import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.repository.ArrangementExtensionRepository;
+import cz.tacr.elza.repository.NodeExtensionRepository;
+import cz.tacr.elza.repository.RuleSetRepository;
+import org.junit.Assert;
+import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -71,7 +69,7 @@ public class RuleControllerTest extends AbstractControllerTest {
         input.setVersionId(fundVersion.getId());
         TreeData treeData = getFundTree(input);
 
-        TreeNodeClient rootTreeNodeClient = treeData.getNodes().iterator().next();
+        TreeNodeVO rootTreeNodeClient = treeData.getNodes().iterator().next();
         ArrNodeVO rootNode = convertTreeNode(rootTreeNodeClient);
 
         List<RulPolicyTypeVO> policyAllTypes = getAllPolicyTypes();

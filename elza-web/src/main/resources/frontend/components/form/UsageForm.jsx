@@ -206,8 +206,8 @@ class RegistryUsageForm extends React.Component {
         }
 
         if (selectedReplacementNode && detail.id !== selectedReplacementNode.id) {
-            return userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {
-                type: perms.REG_SCOPE_WR,
+            return userDetail.hasOne(perms.AP_SCOPE_WR_ALL, {
+                type: perms.AP_SCOPE_WR,
                 scopeId: selectedReplacementNode.scopeId
             });
         }

@@ -2,7 +2,6 @@ package cz.tacr.elza.repository;
 
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.RulPackage;
-import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.RulStructuredTypeExtension;
 import cz.tacr.elza.domain.RulStructuredType;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -25,9 +24,6 @@ public interface StructuredTypeExtensionRepository extends JpaRepository<RulStru
     RulStructuredTypeExtension findByCode(String structureExtensionCode);
 
     List<RulStructuredTypeExtension> findByCodeIn(List<String> structureExtensionCodes);
-
-    @Query("SELECT se FROM rul_structured_type_extension se JOIN se.structuredType st JOIN st.ruleSet rs WHERE rs = :ruleSet")
-    List<RulStructuredTypeExtension> findByRuleSet(@Param("ruleSet") RulRuleSet ruleSet);
 
     @Query("SELECT se FROM arr_fund_structure_extension fse JOIN fse.structuredTypeExtension se WHERE se.structuredType = :structuredType AND fse.fund = :fund AND fse.deleteChange IS NULL")
     List<RulStructuredTypeExtension> findActiveByFundAndStructureType(@Param("fund") ArrFund fund,

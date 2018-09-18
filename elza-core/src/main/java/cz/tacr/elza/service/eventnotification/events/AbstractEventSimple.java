@@ -3,6 +3,7 @@ package cz.tacr.elza.service.eventnotification.events;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 
+
 /**
  * Předek událostí, které jsou odesílány klientům.
  *
@@ -16,6 +17,14 @@ public abstract class AbstractEventSimple {
      * Typ události.
      */
     private EventType eventType;
+    /**
+     * Stav události
+     */
+    private String state;
+    /**
+     * Kód
+     */
+    private String code;
 
     public AbstractEventSimple(final EventType eventType) {
         this.eventType = eventType;
@@ -25,10 +34,32 @@ public abstract class AbstractEventSimple {
         return eventType;
     }
 
+    public String getState() {
+        return state;
+    }
+
+    public void setState(String state) {
+        this.state = state;
+    }
+
+    public void setEventType(EventType eventType) {
+        this.eventType = eventType;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
     @Override
     public String toString() {
         return "AbstractEventSimple{" +
                 "eventType=" + eventType +
+                ",state=" + state +
+                ",code=" + code +
                 '}';
     }
 }

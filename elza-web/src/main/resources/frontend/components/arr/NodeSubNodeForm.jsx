@@ -2,30 +2,38 @@
  * Formulář detailu a editace jedné JP - jednoho NODE v konkrétní verzi.
  */
 
-import objectById from "../../shared/utils/objectById";
-
-require('./NodeSubNodeForm.less');
-
+import {notEmpty, objectById} from "../../shared/utils";
+import * as factory from "../../shared/factory";
 import React from 'react';
 import SubNodeForm from "./SubNodeForm";
-import ReactDOM from 'react-dom';
-import {Icon, i18n, AbstractReactComponent, NoFocusButton} from 'components/shared';
+import {AbstractReactComponent, i18n, Icon, NoFocusButton} from 'components/shared';
+
 import {connect} from 'react-redux'
-import {lockDescItemType, unlockDescItemType, unlockAllDescItemType,
-    copyDescItemType, nocopyDescItemType} from 'actions/arr/nodeSetting.jsx'
-import {addNode,deleteNode} from '../../actions/arr/node.jsx'
+import {
+    copyDescItemType,
+    lockDescItemType,
+    nocopyDescItemType,
+    unlockAllDescItemType,
+    unlockDescItemType
+} from 'actions/arr/nodeSetting.jsx'
+import {deleteNode} from '../../actions/arr/node.jsx'
 import {createFundRoot, isFundRootId} from './ArrUtils.jsx'
 import * as perms from 'actions/user/Permission.jsx';
 import {nodeFormActions} from 'actions/arr/subNodeForm.jsx'
-import {getOneSettings} from 'components/arr/ArrUtils.jsx';
+import {getOneSettings, setSettings} from 'components/arr/ArrUtils.jsx';
 import ArrHistoryForm from 'components/arr/ArrHistoryForm.jsx'
-import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
+import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog.jsx'
 import {WebApi} from 'actions/index.jsx';
-import {getMapFromList} from 'stores/app/utils.jsx'
-import {indexById} from 'stores/app/utils.jsx'
+import {getMapFromList, indexById} from 'stores/app/utils.jsx'
 import {fundSelectSubNode} from 'actions/arr/node.jsx';
-import {addToastrSuccess, addToastr} from 'components/shared/toastr/ToastrActions.jsx';
+import {addToastr, addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx';
+import {DropdownButton, MenuItem} from 'react-bootstrap';
+import TemplateForm, {EXISTS_TEMPLATE, NEW_TEMPLATE} from "./TemplateForm";
+import TemplateUseForm from "./TemplateUseForm";
+import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx'
 import DescItemFactory from "components/arr/nodeForm/DescItemFactory.jsx";
+
+require('./NodeSubNodeForm.less');
 
 class NodeSubNodeForm extends AbstractReactComponent {
     constructor(props) {
@@ -145,13 +153,13 @@ class NodeSubNodeForm extends AbstractReactComponent {
             }
         } else {
             if (prevIndex === 0){ //Pokud je smazaná JP první, bude jako další vybrána následující JP
-                newNodeId = outdatedParent.childNodes[prevIndex + 1].id;
-            } else { //Bude vybrána předcházející JP
-                newNodeId = outdatedParent.childNodes[prevIndex - 1].id;
-            }
-            this.dispatch(fundSelectSubNode(versionId, newNodeId, outdatedParent));
-            callback(false);
+            newNodeId = outdatedParent.childNodes[prevIndex + 1].id;
+        } else { //Bude vybrána předcházející JP
+            newNodeId = outdatedParent.childNodes[prevIndex - 1].id;
         }
+        this.dispatch(fundSelectSubNode(versionId, newNodeId, outdatedParent));
+            callback(false);
+    }
     }
     /**
      * Funkce zavolána po skončení smazání JP
@@ -229,10 +237,271 @@ class NodeSubNodeForm extends AbstractReactComponent {
                             {i18n("subNodeForm.digitizationRequest")}
                         </NoFocusButton>
                     </div>
+                    <div className='section'>
+                        <DropdownButton bsStyle="default" title={<Icon glyph="fa-ellipsis-h" />} noCaret id="arr-structure-panel-add">
+                            <MenuItem eventKey="1" onClick={this.handleCreateTemplate}>{i18n("subNodeForm.section.createTemplate")}</MenuItem>
+                            <MenuItem eventKey="2" onClick={this.handleUseTemplate}>{i18n("subNodeForm.section.useTemplate")}</MenuItem>
+                        </DropdownButton>
+                    </div>
                 </div>
             </div>
         )
     }
+
+    handleCreateTemplate = () => {
+
+        const {userDetail, fund} = this.props;
+
+        let settings = userDetail.settings;
+
+        const fundTemplates = getOneSettings(settings, 'FUND_TEMPLATES', 'FUND', fund.id);
+
+        const initialValues = {
+            type: NEW_TEMPLATE,
+            withValues: true
+        };
+
+        const templates = fundTemplates.value ? JSON.parse(fundTemplates.value).map(template => template.name) : [];
+
+        this.props.dispatch(modalDialogShow(this, i18n('arr.fund.addTemplate.create'), <TemplateForm initialValues={initialValues} templates={templates} onSubmitForm={(data) => {
+
+            const template = this.createTemplate(data.name, data.withValues);
+
+            switch (data.type) {
+                case NEW_TEMPLATE: {
+                    const value = fundTemplates.value ? [...JSON.parse(fundTemplates.value), template] : [template];
+                    value.sort((a, b) => {
+                        return a.name.localeCompare(b.name);
+                    });
+                    fundTemplates.value = JSON.stringify(value);
+                    settings = setSettings(settings, fundTemplates.id, fundTemplates);
+                    this.props.dispatch(userDetailsSaveSettings(settings));
+                    return this.dispatch(modalDialogHide());
+                }
+                case EXISTS_TEMPLATE: {
+                    const value = JSON.parse(fundTemplates.value);
+                    const index = indexById(value, data.name, 'name');
+
+                    if (index == null) {
+                        console.error("Nebyla nalezena šablona s názvem: " + data.name);
+                    } else {
+                        value[index] = template;
+                        fundTemplates.value = JSON.stringify(value);
+                        settings = setSettings(settings, fundTemplates.id, fundTemplates);
+                        this.props.dispatch(userDetailsSaveSettings(settings));
+                    }
+
+                    return this.dispatch(modalDialogHide());
+                }
+            }
+        }} />));
+    };
+
+    createTemplate = (name, withValues) => {
+        const {subNodeForm} = this.props;
+
+        let formData = {};
+        subNodeForm.formData.descItemGroups.forEach(group => {
+            group.descItemTypes.forEach(type => {
+                if (type.descItems.length > 0) {
+
+                    const items = [];
+                    type.descItems.forEach(item => {
+                        const itemCls = factory.createClass(item);
+                        const newItem = itemCls.copyItem(withValues);
+                        newItem.strValue = itemCls.toSimpleString();
+                        items.push(newItem);
+                    });
+
+                    formData[type.id] = items;
+                }
+            });
+
+        });
+        let template = {
+            name: name,
+            withValues: withValues,
+            formData: formData
+        };
+        return template;
+    };
+
+    handleUseTemplate = () => {
+        const {userDetail, fund, routingKey, selectedSubNode, subNodeForm} = this.props;
+
+        let settings = userDetail.settings;
+
+        const fundTemplates = getOneSettings(settings, 'FUND_TEMPLATES', 'FUND', fund.id);
+
+        const templates = fundTemplates.value ? JSON.parse(fundTemplates.value).map(template => template.name) : [];
+
+        const initialValues = {
+            replaceValues: false,
+            name: templates.indexOf(fund.lastUseTemplateName) >= 0 ? fund.lastUseTemplateName : null
+        };
+
+        this.props.dispatch(modalDialogShow(this, i18n('arr.fund.useTemplate.title'), <TemplateUseForm initialValues={initialValues} templates={templates} onSubmitForm={(data) => {
+            const value = JSON.parse(fundTemplates.value);
+            const index = indexById(value, data.name, 'name');
+
+            if (index == null) {
+                console.error("Nebyla nalezena šablona s názvem: " + data.name);
+            } else {
+                const template = value[index];
+                console.debug("Apply template", template);
+
+                const formData = template.formData;
+                let createItems = [];
+                let updateItems = [];
+                let deleteItems = [];
+                let deleteItemsAdded = {};
+
+                const actualFormData = this.createFormData(subNodeForm);
+
+                Object.keys(formData).map(itemTypeId => {
+                    this.processItemType(formData, itemTypeId, actualFormData, data, deleteItemsAdded, deleteItems, updateItems, createItems);
+                });
+
+                Object.keys(deleteItemsAdded).map(itemObjectId => {
+                    let updateItemsTemp = [];
+                    for (let i = 0; i < updateItems.length; i++) {
+                        const updateItem = updateItems[i];
+                        if (itemObjectId === updateItem.descItemObjectId) {
+                            createItems.push({
+                                ...updateItem,
+                                descItemObjectId: null
+                            });
+                        } else {
+                            updateItemsTemp.push(updateItem);
+                        }
+                    }
+                    updateItems = updateItemsTemp;
+                });
+
+                if (createItems.length > 0 || updateItems.length > 0 || deleteItems.length > 0) {
+                    return WebApi.updateDescItems(fund.versionId, selectedSubNode.id, selectedSubNode.version, createItems, updateItems, deleteItems).then(() => {
+                        this.dispatch(nodeFormActions.fundSubNodeFormTemplateUse(fund.versionId, routingKey, template, data.replaceValues));
+                        return this.dispatch(modalDialogHide());
+                    });
+                } else {
+                    this.dispatch(nodeFormActions.fundSubNodeFormTemplateUse(fund.versionId, routingKey, template, data.replaceValues));
+                    return this.dispatch(modalDialogHide());
+                }
+            }
+        }} />));
+
+    };
+
+    processItemType = (formData, itemTypeId, actualFormData, data, deleteItemsAdded, deleteItems, updateItems, createItems) => {
+        const items = formData[itemTypeId];
+        items.forEach(item => {
+            const newItem = {
+                ...item,
+                itemTypeId: itemTypeId
+            };
+
+            if (notEmpty(newItem.value) || (newItem['@class'] === '.ArrItemEnumVO' && notEmpty(item.descItemSpecId))) {
+                if (actualFormData[itemTypeId]) { // pokud existuje
+                    this.processExistsItemType(itemTypeId, actualFormData, data, deleteItemsAdded, deleteItems, item, updateItems, createItems, newItem);
+                } else { // pokud neexistuje, zakládáme nový
+                    createItems.push(newItem);
+                }
+            }
+        });
+    };
+
+    processExistsItemType = (itemTypeId, actualFormData, data, deleteItemsAdded, deleteItems, item, updateItems, createItems, newItem) => {
+        const itemType = this.findItemType(itemTypeId);
+        if (itemType.rep) { // je opakovatelný
+            const existsItems = actualFormData[itemTypeId];
+            if (data.replaceValues) {
+                this.processItemsToDelete(existsItems, deleteItemsAdded, deleteItems);
+            } else {
+                const addAsNew = this.processRepetitiveItemsToUpdate(existsItems, item, itemTypeId, updateItems);
+                if (addAsNew) {
+                    createItems.push(newItem);
+                }
+            }
+        } else { // není opakovatelný, pouze aktualizujeme hodnotu
+            if (data.replaceValues) { // pouze pokud chceme existující hodnoty nahradit
+                const itemOrig = actualFormData[itemTypeId][0];
+                if (itemOrig.value !== item.value || itemOrig.descItemSpecId !== item.descItemSpecId) { // pouze pokud jsou odlišené
+                    const updateItem = {
+                        ...item,
+                        descItemObjectId: itemOrig.descItemObjectId,
+                        itemTypeId: itemTypeId
+                    };
+                    updateItems.push(updateItem);
+                }
+            }
+        }
+    };
+
+    processItemsToDelete = (existsItems, deleteItemsAdded, deleteItems) => {
+        for (let i = 0; i < existsItems.length; i++) {
+            const existsItem = existsItems[i];
+            const itemObjectId = existsItem.descItemObjectId;
+            if (itemObjectId && !deleteItemsAdded[itemObjectId]) {
+                deleteItemsAdded[itemObjectId] = true;
+                deleteItems.push(existsItem);
+            }
+        }
+    };
+
+    processRepetitiveItemsToUpdate = (existsItems, item, itemTypeId, updateItems) => {
+        let addAsNew = true;
+        for (let i = 0; i < existsItems.length; i++) {
+            const existsItem = existsItems[i];
+            const changeValue = existsItem.value !== item.value || existsItem.undefined !== item.undefined; // pokud se liší hodnota (nebo nedefinovanost)
+
+            if (existsItem.descItemSpecId === item.descItemSpecId) { // pokud je stejná specifikace
+                if (!changeValue) {
+                    addAsNew = false;
+                }
+            } else {
+                const updateItem = {
+                    ...item,
+                    descItemObjectId: existsItem.descItemObjectId,
+                    itemTypeId: itemTypeId
+                };
+                updateItems.push(updateItem);
+            }
+        }
+        return addAsNew;
+    };
+
+    /**
+     * Sestaví mapu typů atributů s hodnotami - pouze uložené.
+     *
+     * @param subNodeForm formulář
+     */
+    createFormData = (subNodeForm) => {
+        const actualFormData = {};
+        subNodeForm.formData.descItemGroups.forEach(group => {
+            group.descItemTypes.forEach(type => {
+                if (type.descItems.length > 0) {
+                    let adding = false;
+                    type.descItems.forEach(item => {
+                        if (item.descItemObjectId) {
+                            adding = true;
+                        }
+                    });
+                    if (adding) {
+                        actualFormData[type.id] = type.descItems;
+                    }
+                }
+            });
+        });
+        return actualFormData;
+    };
+
+    findItemType = (itemTypeId) => {
+        const {subNodeForm, groups} = this.props;
+        const groupCode = groups.reverse[itemTypeId];
+        const group = objectById(subNodeForm.formData.descItemGroups, groupCode, 'code');
+        return objectById(group.types, itemTypeId);
+
+    };
 
     initFocus() {
         this.refs.subNodeForm.getWrappedInstance().initFocus();
@@ -299,6 +568,7 @@ function mapStateToProps(state) {
         fund,
         focus,
         userDetail,
+        groups: refTables.groups.data
     }
 }
 

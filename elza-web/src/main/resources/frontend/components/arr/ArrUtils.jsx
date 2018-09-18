@@ -1,10 +1,9 @@
 /**
  * Utility pro pořádání.
  */
-import {indexById} from 'stores/app/utils.jsx'
+import {getSetFromIdsList, indexById} from 'stores/app/utils.jsx'
 import React from 'react';
-import {dateToString, dateTimeToString} from 'components/Utils.jsx'
-import {getSetFromIdsList} from 'stores/app/utils.jsx'
+import {dateTimeToString, dateToString} from 'components/Utils.jsx'
 import {i18n} from 'components/shared';
 
 /**
@@ -19,7 +18,8 @@ import {i18n} from 'components/shared';
  */
 export function getDescItemsAddTree(descItemGroups, infoTypesMapInput, refTypesMapInput, infoGroups, strictMode = false) {
     // Pro přidání chceme jen ty, které zatím ještě nemáme
-    var infoTypesMap = {...infoTypesMapInput};
+    let infoTypesMap = {...infoTypesMapInput};
+
     descItemGroups.forEach(group => {
         group.descItemTypes.forEach(descItemType => {
             delete infoTypesMap[descItemType.id];
@@ -27,7 +27,7 @@ export function getDescItemsAddTree(descItemGroups, infoTypesMapInput, refTypesM
     });
 
     // Sestavení seznamu včetně skupin
-    var descItemTypes = [];
+    let descItemTypes = [];
     infoGroups.forEach(infoGroup => {
         const itemTypes = [];
         infoGroup.types.forEach(infoType => {
@@ -431,6 +431,7 @@ export function hasDescItemTypeValue(dataType) {
         case 'TEXT':
         case 'STRING':
         case 'INT':
+        case 'DATE':
         case 'COORDINATES':
         case 'DECIMAL':
         case 'PARTY_REF':

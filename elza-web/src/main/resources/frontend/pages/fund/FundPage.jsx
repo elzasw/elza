@@ -67,8 +67,8 @@ class FundPage extends AbstractReactComponent {
             initData.fundAdmins = [{id:"default", user:userDetail}];
         }
         this.dispatch(modalDialogShow(this, i18n('arr.fund.title.add'),
-            <FundForm 
-                create 
+            <FundForm
+                create
                 initData={initData}
                 onSubmitForm={(data) => {return this.dispatch(createFund(data))}}
             />));
@@ -159,7 +159,7 @@ class FundPage extends AbstractReactComponent {
                     institutionId: fundDetail.institutionId,
                     internalCode: fundDetail.internalCode,
                     ruleSetId: fundDetail.activeVersion.ruleSetId,
-                    regScopes: json.scopes
+                    apScopes: json.scopes
                 };
                 that.dispatch(modalDialogShow(that, i18n('arr.fund.title.update'),
                     <FundForm update initData={data} scopeList={json.scopeList}

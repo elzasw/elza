@@ -38,7 +38,7 @@ var DescItemJsonTable = class DescItemJsonTable extends AbstractReactComponent {
 
         // Sloupce
         var cols = []
-        refType.columnsDefinition.forEach(colDef => {
+        refType.viewDefinition.forEach(colDef => {
             cols.push({
                 title: colDef.name,
                 desc: colDef.name,

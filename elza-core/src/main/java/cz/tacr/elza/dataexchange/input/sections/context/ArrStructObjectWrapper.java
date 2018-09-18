@@ -4,13 +4,14 @@ import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
 
 import cz.tacr.elza.dataexchange.input.context.EntityIdHolder;
-import cz.tacr.elza.dataexchange.input.context.PersistMethod;
+import cz.tacr.elza.dataexchange.input.context.SimpleIdHolder;
 import cz.tacr.elza.dataexchange.input.storage.EntityWrapper;
+import cz.tacr.elza.dataexchange.input.storage.SaveMethod;
 import cz.tacr.elza.domain.ArrStructuredObject;
 
 public class ArrStructObjectWrapper implements EntityWrapper {
 
-    private final EntityIdHolder<ArrStructuredObject> idHolder = new EntityIdHolder<>(ArrStructuredObject.class);
+    private final SimpleIdHolder<ArrStructuredObject> idHolder = new SimpleIdHolder<>(ArrStructuredObject.class);
 
     private final ArrStructuredObject entity;
 
@@ -30,22 +31,22 @@ public class ArrStructObjectWrapper implements EntityWrapper {
     }
 
     @Override
-    public PersistMethod getPersistMethod() {
-        return PersistMethod.CREATE;
-    }
-
-    @Override
-    public ArrStructuredObject getEntity() {
+    public Object getEntity() {
         return entity;
     }
 
     @Override
-    public void beforeEntityPersist(Session session) {
+    public SaveMethod getSaveMethod() {
+        return SaveMethod.CREATE;
+    }
+
+    @Override
+    public void beforeEntitySave(Session session) {
         // NOP
     }
 
     @Override
-    public void afterEntityPersist() {
+    public void afterEntitySave() {
         idHolder.setEntityId(entity.getStructuredObjectId());
     }
 }

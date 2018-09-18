@@ -24,6 +24,8 @@ export function nodeInitState(node, prevNodesNode) {
         nodeInfoFetched: false,
         nodeInfoDirty: false,
         childNodes: [],
+        nodeCount: 0,
+        nodeIndex: 0,
         parentNodes: [],
         viewStartIndex: 0,
         pageSize: _pageSize,
@@ -64,10 +66,13 @@ export function nodeInitState(node, prevNodesNode) {
         result.nodeInfoFetched = prevNodesNode.nodeInfoFetched;
         result.nodeInfoDirty = prevNodesNode.nodeInfoDirty;
         result.childNodes = prevNodesNode.childNodes;
+        result.nodeCount = prevNodesNode.nodeCount;
+        result.nodeIndex = prevNodesNode.nodeIndex;
         result.parentNodes = prevNodesNode.parentNodes;
         result.selectedSubNodeId = prevNodesNode.selectedSubNodeId;
         result.filterText = prevNodesNode.filterText;
         result.searchedIds = prevNodesNode.searchedIds;
+        result.changeParent = false;
     } else {
 //        result.nodeInfo = nodeInfo(undefined, {type:''});
         result.dirty = false;
@@ -76,26 +81,29 @@ export function nodeInitState(node, prevNodesNode) {
         result.nodeInfoFetched = false;
         result.nodeInfoDirty = false;
         result.childNodes = [];
+        result.nodeCount = 0;
+        result.nodeIndex = 0;
         result.parentNodes = [];
         result.selectedSubNodeId = null;
         result.filterText = '';
         result.searchedIds = {};
         result.subNodeFormCache = subNodeFormCache(undefined, {type:''})
+        result.changeParent = true;
     }
 
     return result;
 }
 
 function getViewStartIndex(state, selectedId) {
-    const {pageSize, viewStartIndex, childNodes} = state;
-    const index = indexById(childNodes, selectedId);
-    if (index !== null) {   // null může být, pokud nejsou data seznamu položek accordionu (childNodes) ještě načtena
+    const {pageSize, viewStartIndex, nodeIndex} = state;
+    const index = nodeIndex;
+    if (index >= 0) {   // -1 může být, pokud nejsou data seznamu položek accordionu (childNodes) ještě načtena
         if (index < viewStartIndex || index >= viewStartIndex + pageSize) {
             let newIndex = index - Math.floor(pageSize / 2);
-            let lastPageIndex = childNodes.length - pageSize;
+            /*let lastPageIndex = childNodeIds.length - pageSize;
             if(newIndex > lastPageIndex){
                 newIndex = lastPageIndex;
-            }
+            }*/
             return Math.max(newIndex, 0)
         }
     }
@@ -116,7 +124,10 @@ const nodeInitialState = {
     nodeInfoFetched: false,
     nodeInfoDirty: false,
     childNodes: [],
+    nodeCount: 0,
+    nodeIndex: 0,
     parentNodes: [],
+    changeParent: true,
     developerScenarios: {
         isFetching: false,
         isDirty: true,
@@ -179,6 +190,8 @@ export function node(state = nodeInitialState, action) {
                 nodeInfoFetched: false,
                 nodeInfoDirty: false,
                 childNodes: [],
+                nodeCount: 0,
+                nodeIndex: 0,
                 parentNodes: [],
                 pageSize: _pageSize,
                 subNodeForm: subNodeForm(undefined, {type:''}),
@@ -187,6 +200,7 @@ export function node(state = nodeInitialState, action) {
                 subNodeDaos: subNodeDaos(),
                 subNodeInfo: subNodeInfo(undefined, {type:''}),
                 routingKey: _routingKeyAreaPrefix + _nextRoutingKey++,
+                changeParent: true,
                 developerScenarios: {
                     isFetching: false,
                     isDirty: true,
@@ -249,13 +263,29 @@ export function node(state = nodeInitialState, action) {
             return consolidateState(state, result);
         case types.CHANGE_NODES:
         case types.CHANGE_FUND_RECORD:
-            var result = {
+            let result = {
                 ...state,
                 subNodeForm: subNodeForm(state.subNodeForm, action),
                 subNodeRegister: subNodeRegister(state.subNodeRegister, action),
                 subNodeDaos: subNodeDaos(state.subNodeDaos, action),
                 subNodeFormCache: subNodeFormCache(state.subNodeFormCache, action),
+            };
+
+            if (action.nodeIds) {
+                for (let nodeId of action.nodeIds) {
+                    if (indexById(result.childNodes, nodeId) !== null) {
+                        result.changeParent = true;
+                        break;
+                    }
+                }
             }
+
+            if (action.nodeId) {
+                if (indexById(result.childNodes, action.nodeId) !== null) {
+                    result.changeParent = true;
+                }
+            }
+
             return consolidateState(state, result);
         case types.FUND_SUBNODE_UPDATE:
             console.log("UPDATE_CHILD",state,action);
@@ -288,10 +318,10 @@ export function node(state = nodeInitialState, action) {
             }
             return consolidateState(state, result);
         case types.FUND_FUND_SUBNODES_NEXT:
-            if ((state.viewStartIndex + state.pageSize/2) < state.childNodes.length) {
+            if ((state.viewStartIndex + state.pageSize/2) < state.nodeCount) {
                 return {
                     ...state,
-                    viewStartIndex: state.viewStartIndex + state.pageSize/2
+                    viewStartIndex: state.viewStartIndex + state.pageSize/2,
                 }
             } else {
                 return state;
@@ -306,7 +336,7 @@ export function node(state = nodeInitialState, action) {
                 return state;
             }
         case types.FUND_FUND_SUBNODES_NEXT_PAGE:
-            if ((state.viewStartIndex + state.pageSize) < state.childNodes.length) {
+            if ((state.viewStartIndex + state.pageSize) < state.nodeCount) {
                 return {
                     ...state,
                     viewStartIndex: state.viewStartIndex + state.pageSize
@@ -365,39 +395,48 @@ export function node(state = nodeInitialState, action) {
                 ...state,
                 isNodeInfoFetching: true,
             }
-        case types.FUND_NODE_INFO_RECEIVE:
-            var result = {
+        case types.FUND_NODE_INFO_RECEIVE: {
+            let result = {
                 ...state,
                 isNodeInfoFetching: false,
                 nodeInfoFetched: true,
                 nodeInfoDirty: false,
-                childNodes: action.childNodes,
-                parentNodes: action.parentNodes,
+                changeParent: false,
+                childNodes: action.childNodes === null ? state.childNodes : action.childNodes,
+                nodeCount: action.nodeCount,
+                nodeIndex: action.nodeIndex,
+                parentNodes: action.parentNodes === null ? state.parentNodes : action.parentNodes,
                 lastUpdated: action.receivedAt
-            }
+            };
 
             // Změna view tak, aby byla daná položka vidět
-            if (state.selectedSubNodeId !== null) {
+            if (state.selectedSubNodeId !== null && !action.viewStartIndexInvalidate) {
                 result.viewStartIndex = getViewStartIndex(result, state.selectedSubNodeId);
             }
 
             return result;
-        case types.FUND_NODE_INFO_INVALIDATE:
+        }
+        case types.FUND_NODE_INFO_INVALIDATE: {
             let result = {
                 ...state,
+                dirty: true,
+                changeParent: true,
                 nodeInfoDirty: true
             };
             return result;
+        }
 
         case types.FUND_FUND_SELECT_SUBNODE:
             if (state.selectedSubNodeId === action.subNodeId) {
                 return state;
             }
 
+
             var result = {
                 ...state,
-                selectedSubNodeId: action.subNodeId
-            }
+                selectedSubNodeId: action.subNodeId,
+                nodeIndex: action.subNodeIndex
+            };
 
             // Pokud daná položka není ve filtrovaných položkách, zrušíme filtr
             if (action.subNodeId !== null && indexById(state.childNodes, action.subNodeId) === null) {
@@ -428,7 +467,7 @@ export function node(state = nodeInitialState, action) {
             return Object.assign({}, state, { nodeInfoDirty: true });
 
         case types.CHANGE_ADD_LEVEL:
-            return Object.assign({}, state, { dirty: true });
+            return Object.assign({}, state, { dirty: true, changeParent: true });
 
         case types.FUND_NODE_CHANGE:
             switch (action.action) {

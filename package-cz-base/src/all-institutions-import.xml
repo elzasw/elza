@@ -2,1489 +2,1489 @@
 <ns2:edx xmlns:ns2="http://elza.tacr.cz/schema/v2">
     <pars>
         <pg id="p000000010">
-            <ape id="r000000010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Achivní správa Ministerstva vnitra České republiky</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>AS MV ČR</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r000000010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p100000010">
-            <ape id="r100000010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Národní archiv</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>Národní archiv</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r100000010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p211000010">
-            <ape id="r211000010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní oblastní archiv v Praze</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOA v Praze</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r211000010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p212000010">
-            <ape id="r212000010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní oblastní archiv v Třeboni</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOA v Třeboni</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r212000010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p213000010">
-            <ape id="r213000010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní oblastní archiv v Plzni</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOA v Plzni</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r213000010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p214000010">
-            <ape id="r214000010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní oblastní archiv v Litoměřicích</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOA v Litoměřicích</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r214000010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p215000010">
-            <ape id="r215000010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní oblastní archiv v Zámrsku</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOA v Zámrsku</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r215000010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p216000010">
-            <ape id="r216000010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Moravský zemský archiv v Brně</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>MZA v Brně</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r216000010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p217000010">
-            <ape id="r217000010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Zemský archiv v Opavě</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>ZA v Opavě</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r217000010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p321100010">
-            <ape id="r321100010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Archiv hlavního města Prahy</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>AHMP</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r321100010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p323103010">
-            <ape id="r323103010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Archiv města Plzně</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>AM Plzně</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r323103010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p324107010">
-            <ape id="r324107010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Archiv města Ústí nad Labem</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>AM Ústí nad Labem</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r324107010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p326202010">
-            <ape id="r326202010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Archiv města Brna</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>AM Brna</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r326202010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p327206010">
-            <ape id="r327206010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Archiv města Ostravy</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>AM Ostravy</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r327206010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p221201010">
-            <ape id="r221201010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Benešov</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Benešov</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r221201010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p221202010">
-            <ape id="r221202010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Beroun</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Beroun</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r221202010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p221203010">
-            <ape id="r221203010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Kladno</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Kladno</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r221203010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p221204010">
-            <ape id="r221204010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Kolín</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Kolín</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r221204010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p221205010">
-            <ape id="r221205010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Kutná Hora</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Kutná Hora</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r221205010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p221206010">
-            <ape id="r221206010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Mělník</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Mělník</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r221206010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p221207010">
-            <ape id="r221207010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Mladá Boleslav</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Mladá Boleslav</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r221207010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p221208010">
-            <ape id="r221208010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Nymburk se sídlem v Lysé nad Labem</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Nymburk</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r221208010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p221209010">
-            <ape id="r221209010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Praha-východ se sídlem v Přemyšlení</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Praha-východ</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r221209010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p221210010">
-            <ape id="r221210010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Praha-západ se sídlem v Dobřichovicích</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Praha-západ</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r221210010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p221211010">
-            <ape id="r221211010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Příbram</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Příbram</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r221211010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p221212010">
-            <ape id="r221212010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Rakovník</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Rakovník</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r221212010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p222101010">
-            <ape id="r222101010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv České Budějovice</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Čes. Budějovice</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r222101010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p222102010">
-            <ape id="r222102010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Český Krumlov</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Český Krumlov</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r222102010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p222103010">
-            <ape id="r222103010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Jindřichův Hradec</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Jindřichův Hradec</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r222103010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p222104010">
-            <ape id="r222104010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Písek</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Písek</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r222104010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p222105010">
-            <ape id="r222105010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Prachatice</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Prachatice</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r222105010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p222106010">
-            <ape id="r222106010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Strakonice</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Strakonice</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r222106010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p222107010">
-            <ape id="r222107010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Tábor</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Tábor</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r222107010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p223101010">
-            <ape id="r223101010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Domažlice se sídlem v Horšovském Týně</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Domažlice</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r223101010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p223201010">
-            <ape id="r223201010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Cheb</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Cheb</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r223201010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p223202010">
-            <ape id="r223202010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Karlovy Vary</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Karlovy Vary</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r223202010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p223102010">
-            <ape id="r223102010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Klatovy</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Klatovy</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r223102010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p223104010">
-            <ape id="r223104010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Plzeň-jih se sídlem v Blovicích</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Plzeň-jih</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r223104010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p223105010">
-            <ape id="r223105010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Plzeň-sever se sídlem v Plasích</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Plzeň-sever</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r223105010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p223106010">
-            <ape id="r223106010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Rokycany</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Rokycany</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r223106010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p223203010">
-            <ape id="r223203010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Sokolov se sídlem v Jindřichovicích</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Sokolov</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r223203010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p223107010">
-            <ape id="r223107010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Tachov</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Tachov</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r223107010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p224201010">
-            <ape id="r224201010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Česká Lípa</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Česká Lípa</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r224201010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p224101010">
-            <ape id="r224101010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Děčín</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Děčín</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r224101010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p224102010">
-            <ape id="r224102010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Chomutov se sídlem v Kadani</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Chomutov</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r224102010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p224202010">
-            <ape id="r224202010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Jablonec nad Nisou</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Jablonec nad N.</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r224202010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p224203010">
-            <ape id="r224203010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Liberec</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Liberec</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r224203010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p224103010">
-            <ape id="r224103010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Litoměřice se sídlem v Lovosicích</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Litoměřice</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r224103010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p224104010">
-            <ape id="r224104010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Louny</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Louny</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r224104010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p224105010">
-            <ape id="r224105010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Most</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Most</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r224105010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p224106010">
-            <ape id="r224106010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Teplice</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Teplice</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r224106010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p225101010">
-            <ape id="r225101010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Hradec Králové</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Hradec Králové</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r225101010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p225201010">
-            <ape id="r225201010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Chrudim</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Chrudim</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r225201010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p225102010">
-            <ape id="r225102010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Jičín</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Jičín</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r225102010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p225103010">
-            <ape id="r225103010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Náchod</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Náchod</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r225103010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p225202010">
-            <ape id="r225202010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Pardubice</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Pardubice</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r225202010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p225104010">
-            <ape id="r225104010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Rychnov nad Kněžnou</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Rychnov nad Kn.</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r225104010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p225203010">
-            <ape id="r225203010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Svitavy se sídlem v Litomyšli</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Svitavy</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r225203010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p225105010">
-            <ape id="r225105010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Trutnov</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Trutnov</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r225105010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p225204010">
-            <ape id="r225204010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Ústí nad Orlicí</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Ústí nad Orlicí</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r225204010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p226201010">
-            <ape id="r226201010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Blansko</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Blansko</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r226201010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p226203010">
-            <ape id="r226203010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Brno-venkov se sídlem v Rajhradě</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Brno-venkov</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r226203010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p226204010">
-            <ape id="r226204010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Břeclav se sídlem v Mikulově</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Břeclav</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r226204010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p226304010">
-            <ape id="r226304010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Zlín</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Zlín</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r226304010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p226205010">
-            <ape id="r226205010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Hodonín</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Hodonín</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r226205010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p226102010">
-            <ape id="r226102010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Jihlava</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Jihlava</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r226102010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p226301010">
-            <ape id="r226301010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Kroměříž</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Kroměříž</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r226301010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p226104010">
-            <ape id="r226104010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Třebíč</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Třebíč</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r226104010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p226302010">
-            <ape id="r226302010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Uherské Hradiště</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Uherské Hradiště</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r226302010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p226206010">
-            <ape id="r226206010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Vyškov se sídlem ve Slavkově u Brna</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Vyškov</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r226206010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p226207010">
-            <ape id="r226207010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Znojmo</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Znojmo</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r226207010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p226105010">
-            <ape id="r226105010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Žďár nad Sázavou</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Žďár nad Sázavou</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r226105010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p227201010">
-            <ape id="r227201010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Bruntál se sídlem v Krnově</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Bruntál</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r227201010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p227202010">
-            <ape id="r227202010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Frýdek-Místek</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Frýdek-Místek</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r227202010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p227203010">
-            <ape id="r227203010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Karviná</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Karviná</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r227203010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p227204010">
-            <ape id="r227204010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Nový Jičín</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Nový Jičín</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r227204010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p227102010">
-            <ape id="r227102010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Olomouc</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Olomouc</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r227102010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p227205010">
-            <ape id="r227205010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Opava</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Opava</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r227205010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p227104010">
-            <ape id="r227104010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Přerov</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Přerov</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r227104010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p227105010">
-            <ape id="r227105010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Šumperk</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Šumperk</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r227105010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p227101010">
-            <ape id="r227101010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Jeseník</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Jeseník</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r227101010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p610000010">
-            <ape id="r610000010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Archiv Kanceláře prezidenta republiky</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>Archiv KPR</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r610000010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p610000020">
-            <ape id="r610000020" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Archiv Pražského hradu</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>Archiv Pražského hradu</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r610000020" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p610000030">
-            <ape id="r610000030" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Odbor administrativy a zpracování informací MZV - Archiv MZV</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>Archiv MZV Praha</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r610000030" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p610000040">
-            <ape id="r610000040" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Vojenský historický archiv</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>VHA Praha</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r610000040" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p610000050">
-            <ape id="r610000050" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Archiv Českého rozhlasu</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>Archiv ČRO</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r610000050" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p610000060">
-            <ape id="r610000060" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Archiv České televize</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>Archiv České televize</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r610000060" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p610000070">
-            <ape id="r610000070" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Archiv Akademie věd České republiky</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>Archiv AV ČR</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r610000070" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p610000080">
-            <ape id="r610000080" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Archiv Poslanecké sněmovny</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>Archiv PS</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r610000080" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p620000010">
-            <ape id="r620000010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Ústav dějin Univerzity Karlovy – Archiv Univerzity Karlovy</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>Archiv UK Praha</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r620000010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p620000020">
-            <ape id="r620000020" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Archiv Českého vysokého učení technického v Praze</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>Archiv ČVUT Praha</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r620000020" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p630000010">
-            <ape id="r630000010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Archiv Národního muzea</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>ANM</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r630000010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p630000020">
-            <ape id="r630000020" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Literární archiv Památníku národního písemnictví</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>LA PNP Praha</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r630000020" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p610000110">
-            <ape id="r610000110" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Ústřední archiv zeměměřictví a katastru</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>ÚA ZAK Praha</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r610000110" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p610000130">
-            <ape id="r610000130" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Národní filmový archiv</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>NFA Praha</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r610000130" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p620000030">
-            <ape id="r620000030" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Archiv Masarykovy univerzity v Brně</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>Archiv AMU Brno</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r620000030" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p620000040">
-            <ape id="r620000040" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Archiv Vysokého učení technického v Brně</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>Archiv VUT Brno</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r620000040" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p630000040">
-            <ape id="r630000040" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Archiv Národní galerie</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>Archiv NG Praha</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r630000040" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p630000050">
-            <ape id="r630000050" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Archiv Národní knihovny</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>Archiv NK Praha</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r630000050" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p640000010">
-            <ape id="r640000010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Archiv DIAMO</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>Archiv DIAMO</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r640000010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p700000020">
-            <ape id="r700000020" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Archiv Bezpečnostní informační služby</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>Archiv BIS</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r700000020" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p521100010">
-            <ape id="r521100010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Všeodborový archiv Českomoravské konfederace odborových svazů</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>Všeodborový archiv</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r521100010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p630000060">
-            <ape id="r630000060" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Archiv Národního technického muzea</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>Archiv NTM v Praze</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r630000060" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p521100030">
-            <ape id="r521100030" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Archiv Židovského muzea v Praze</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>Archiv ŽM v Praze</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r521100030" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p610000100">
-            <ape id="r610000100" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Archiv České národní banky</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>Archiv ČNB</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r610000100" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p226103010">
-            <ape id="r226103010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Pelhřimov</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Pelhřimov</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r226103010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p226101010">
-            <ape id="r226101010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Havlíčkův Brod</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Havlíčkův Brod</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r226101010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p226303010">
-            <ape id="r226303010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Vsetín</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Vsetín</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r226303010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p224204010">
-            <ape id="r224204010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Semily</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Semily</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r224204010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p227103010">
-            <ape id="r227103010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Státní okresní archiv Prostějov</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>SOkA Prostějov</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r227103010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p610000090">
-            <ape id="r610000090" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Archiv Senátu</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>Archiv Senátu</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r610000090" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p700000030">
-            <ape id="r700000030" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Archiv Úřadu pro zahraniční styky a informace</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>Archiv ÚZI</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r700000030" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p521100020">
-            <ape id="r521100020" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Archiv České strany sociálně demokratické</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>Archiv ČSSD</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r521100020" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p700000040">
-            <ape id="r700000040" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Archiv Národního bezpečnostního úřadu</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>Archiv NBÚ</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r700000040" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p620000050">
-            <ape id="r620000050" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Archiv Univerzity Hradec Králové</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>Archiv UHK</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r620000050" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p513103010">
-            <ape id="r513103010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Archiv společnosti Plzeňský Prazdroj, a.s.</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>Plzeňský Prazdroj</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r513103010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p620000060">
-            <ape id="r620000060" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Archiv Univerzity Palackého v Olomouci</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>Archiv UP Olomouc</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r620000060" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p517206010">
-            <ape id="r517206010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Archiv OKD a. s. , Ostrava</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>Archiv OKD</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r517206010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p517206020">
-            <ape id="r517206020" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Archiv Vítkovice, a.s.</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>Archiv Vítkovice</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r517206020" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p517206040">
-            <ape id="r517206040" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Archiv ArcelorMittal Ostrava a. s.</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>Archiv ArcelorMittal</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r517206040" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p620000070">
-            <ape id="r620000070" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Archiv Akademie výtvarných umění v Praze</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>Archiv AVU Praha</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r620000070" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p630000070">
-            <ape id="r630000070" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Archiv Moravské galerie v Brně</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>Archiv MG v Brně</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r630000070" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p511207010">
-            <ape id="r511207010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Archiv společnosti Škoda Auto</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>Archiv Škoda Auto</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r511207010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p526101010">
-            <ape id="r526101010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Archiv Centra hasičského hnutí Přibyslav</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>Archiv CHH Přibyslav</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r526101010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p513203010">
-            <ape id="r513203010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Archiv společnosti Sokolovská uhelná a. s.</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>Arch. Sokolovská uhel.</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r513203010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p620000080">
-            <ape id="r620000080" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Archiv Vysoké školy báňské - Technické univerzity Ostrava</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>Archiv VŠB Ostrava</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r620000080" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p620000090">
-            <ape id="r620000090" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Archiv Slezské univerzity v Opavě</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>Archiv SU v Opavě</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r620000090" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p100000020">
-            <ape id="r100000020" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Archiv bezpečnostních složek</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>ABS</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r100000020" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p620000100">
-            <ape id="r620000100" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Archiv Mendelovy univerzity v Brně</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>Archiv MENDELU</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r620000100" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p700000050">
-            <ape id="r700000050" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Bezpečnostní archiv Vojenského zpravodajství</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>BA Vojen.zpravodajství</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r700000050" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p700000060">
-            <ape id="r700000060" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Archiv Policie České republiky</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>BAP ČR</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r700000060" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p536000010">
-            <ape id="r536000010" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Archiv Biskupství brněnského</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>ABB</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r536000010" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p700000070">
-            <ape id="r700000070" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Archiv Ministerstva vnitra ČR</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>Archiv MV</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r700000070" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p610000140">
-            <ape id="r610000140" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Archiv Národního bezpečnostního úřadu - specializovaný</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>ANBU-S</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r610000140" t="HEALTH_AND_EDU"/>
         </pg>
         <pg id="p620000110">
-            <ape id="r620000110" t="HEALTH_AND_EDU"/>
-            <name ft="LEGAL">
+            <nms>
+            <nm ft="LEGAL">
                 <main>Archiv Veterinární a farmaceutické univerzity Brno</main>
-            </name>
-            <vnms>
-                <vnm ft="ABBRV">
+            </nm>
+                <nm ft="ABBRV">
                     <main>AVFU Brno</main>
-                </vnm>
-            </vnms>
+                </nm>
+            </nms>
+            <ape id="r620000110" t="HEALTH_AND_EDU"/>
         </pg>
     </pars>
     <inss>

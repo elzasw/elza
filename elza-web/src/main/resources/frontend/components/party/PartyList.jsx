@@ -106,7 +106,7 @@ class PartyList extends AbstractReactComponent {
 
     filterScopes(scopes) {
         const { userDetail } = this.props;
-        return scopes.filter((scope) => userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_RD,scopeId: scope.id}));
+        return scopes.filter((scope) => userDetail.hasOne(perms.AP_SCOPE_WR_ALL, {type: perms.AP_SCOPE_WR,scopeId: scope.id}));
     }
 
     getScopesWithAll(scopes) {

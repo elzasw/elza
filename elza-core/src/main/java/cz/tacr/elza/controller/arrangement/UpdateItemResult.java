@@ -1,12 +1,12 @@
 package cz.tacr.elza.controller.arrangement;
 
-import java.util.List;
-
-import cz.tacr.elza.controller.vo.TreeNodeClient;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.controller.vo.nodes.ItemTypeLiteVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ItemTypeGroupVO;
 import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.service.LevelTreeCacheService;
+
+import java.util.List;
 
 /**
  * Result of update operation
@@ -28,23 +28,20 @@ public class UpdateItemResult {
 	 */
 	protected final ArrItemVO item;
 
-	/**
-	 * Groups of items in the form
-	 */
-	protected final List<ItemTypeGroupVO> groups;
-
 	protected final NodeTreeInfo treeInfo;
 
 	protected final NodeFormTitle formTitle;
 
-	public UpdateItemResult(ArrDescItem descItem, ArrItemVO descItemVo,
-	        List<ItemTypeGroupVO> descItemTypeGroupsVO, TreeNodeClient tnc) {
+    protected final List<ItemTypeLiteVO> itemTypes;
+
+    public UpdateItemResult(ArrDescItem descItem, ArrItemVO descItemVo,
+                            List<ItemTypeLiteVO> itemTypes, LevelTreeCacheService.Node node) {
 		this.changeId = descItem.getCreateChangeId();
 		this.node = ArrNodeVO.valueOf(descItem.getNode());
 		this.item = descItemVo;
-		this.groups = descItemTypeGroupsVO;
-		this.treeInfo = new NodeTreeInfo(tnc.getIcon(), tnc.getName());
-		this.formTitle = new NodeFormTitle(tnc.getAccordionLeft(), tnc.getAccordionRight());
+		this.itemTypes = itemTypes;
+		this.treeInfo = new NodeTreeInfo(node.getIcon(), node.getName());
+		this.formTitle = new NodeFormTitle(node.getAccordionLeft(), node.getAccordionRight());
 	}
 
 	public int getChangeId() {
@@ -59,11 +56,11 @@ public class UpdateItemResult {
 		return item;
 	}
 
-	public List<ItemTypeGroupVO> getGroups() {
-		return groups;
-	}
+    public List<ItemTypeLiteVO> getItemTypes() {
+        return itemTypes;
+    }
 
-	public NodeTreeInfo getTreeInfo() {
+    public NodeTreeInfo getTreeInfo() {
 		return treeInfo;
 	}
 

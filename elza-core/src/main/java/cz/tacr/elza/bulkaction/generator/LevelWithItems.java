@@ -3,7 +3,7 @@ package cz.tacr.elza.bulkaction.generator;
 import java.util.ArrayList;
 import java.util.List;
 
-import cz.tacr.elza.core.data.RuleSystemItemType;
+import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
@@ -62,7 +62,7 @@ public class LevelWithItems {
 	 * @param itemSpec
 	 * @return Return null if such itema does not exists
 	 */
-	public List<ArrDescItem> getDescItems(RuleSystemItemType itemType, RulItemSpec itemSpec) {
+	public List<ArrDescItem> getDescItems(ItemType itemType, RulItemSpec itemSpec) {
 		List<ArrDescItem> result = null;
 
 		for (ArrDescItem item : descItems) {
@@ -91,7 +91,7 @@ public class LevelWithItems {
      * @param bulkRangeType
      * @return
      */
-    public List<ArrDescItem> getInheritedDescItems(RuleSystemItemType itemType) {
+    public List<ArrDescItem> getInheritedDescItems(ItemType itemType) {
         List<ArrDescItem> result = null;
 
         for (ArrDescItem item : descItems) {

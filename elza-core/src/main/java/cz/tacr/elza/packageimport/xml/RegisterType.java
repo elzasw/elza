@@ -29,8 +29,8 @@ public class RegisterType {
     @XmlElement(name = "name", required = true)
     private String name;
 
-    @XmlElement(name = "add-record")
-    private Boolean addRecord;
+    @XmlElement(name = "read-only", required = true)
+    private boolean readOnly;
 
     public String getCode() {
         return code;
@@ -64,11 +64,11 @@ public class RegisterType {
         this.name = name;
     }
 
-    public Boolean getAddRecord() {
-        return addRecord;
+    public boolean isReadOnly() {
+        return readOnly;
     }
 
-    public void setAddRecord(final Boolean addRecord) {
-        this.addRecord = addRecord;
+    public void setReadOnly(final boolean readOnly) {
+        this.readOnly = readOnly;
     }
 }

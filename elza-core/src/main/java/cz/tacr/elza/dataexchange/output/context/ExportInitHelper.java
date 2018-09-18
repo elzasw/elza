@@ -2,9 +2,9 @@ package cz.tacr.elza.dataexchange.output.context;
 
 import javax.persistence.EntityManager;
 
+import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
-import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.cache.NodeCacheService;
 
@@ -18,25 +18,25 @@ public class ExportInitHelper {
 
     private final NodeCacheService nodeCacheService;
 
-    private final RegRecordRepository recordRepository;
+    private final ApAccessPointRepository apRepository;
 
     private final FundVersionRepository fundVersionRepository;
 
     public ExportInitHelper(EntityManager em,
-                            UserService userService,
-                            LevelRepository levelRepository,
-                            NodeCacheService nodeCacheService,
-                            RegRecordRepository recordRepository,
-                            FundVersionRepository fundVersionRepository) {
+            UserService userService,
+            LevelRepository levelRepository,
+            NodeCacheService nodeCacheService,
+            ApAccessPointRepository apRepository,
+            FundVersionRepository fundVersionRepository) {
         this.em = em;
         this.userService = userService;
         this.levelRepository = levelRepository;
         this.nodeCacheService = nodeCacheService;
-        this.recordRepository = recordRepository;
+        this.apRepository = apRepository;
         this.fundVersionRepository = fundVersionRepository;
     }
 
-    public EntityManager getEntityManager() {
+    public EntityManager getEm() {
         return em;
     }
 
@@ -52,8 +52,8 @@ public class ExportInitHelper {
         return nodeCacheService;
     }
 
-    public RegRecordRepository getRecordRepository() {
-        return recordRepository;
+    public ApAccessPointRepository getApRepository() {
+        return apRepository;
     }
 
     public FundVersionRepository getFundVersionRepository() {

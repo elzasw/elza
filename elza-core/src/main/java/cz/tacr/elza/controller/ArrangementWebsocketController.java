@@ -1,13 +1,24 @@
 package cz.tacr.elza.controller;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-
-import javax.transaction.Transactional;
-
+import cz.tacr.elza.controller.config.ClientFactoryDO;
+import cz.tacr.elza.controller.vo.AddLevelParam;
+import cz.tacr.elza.controller.vo.TreeNodeVO;
+import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrUpdateItemVO;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.repository.FundVersionRepository;
+import cz.tacr.elza.repository.ItemTypeRepository;
+import cz.tacr.elza.service.ArrangementFormService;
+import cz.tacr.elza.service.FundLevelService;
+import cz.tacr.elza.service.LevelTreeCacheService;
+import cz.tacr.elza.service.vo.UpdateDescItemsParam;
+import cz.tacr.elza.websocket.WebSocketAwareController;
+import cz.tacr.elza.websocket.service.WebScoketStompService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang3.Validate;
@@ -23,21 +34,14 @@ import org.springframework.security.core.context.SecurityContextImpl;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.Assert;
 
-import cz.tacr.elza.controller.config.ClientFactoryDO;
-import cz.tacr.elza.controller.vo.TreeNodeClient;
-import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.repository.FundVersionRepository;
-import cz.tacr.elza.repository.ItemTypeRepository;
-import cz.tacr.elza.service.FundLevelService;
-import cz.tacr.elza.service.ArrangementFormService;
-import cz.tacr.elza.service.LevelTreeCacheService;
-import cz.tacr.elza.websocket.WebSocketAwareController;
-import cz.tacr.elza.websocket.service.WebScoketStompService;
+import javax.transaction.Transactional;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Kontroler pro zpracování websocket požadavků pro některé kritické modifikace v pořádíní.
@@ -87,6 +91,45 @@ public class ArrangementWebsocketController {
 		        requestHeaders);
 	}
 
+    @MessageMapping("/arrangement/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/update/bulk")
+    public void updateDescItems(@Payload final ArrUpdateItemVO[] changeItems,
+                                @DestinationVariable(value = "fundVersionId") final Integer fundVersionId,
+                                @DestinationVariable(value = "nodeId") final Integer nodeId,
+                                @DestinationVariable(value = "nodeVersion") final Integer nodeVersion,
+                                final StompHeaderAccessor requestHeaders) {
+        Validate.notEmpty(changeItems);
+        Validate.notNull(nodeId);
+        Validate.notNull(nodeVersion);
+        Validate.notNull(fundVersionId);
+
+        List<ArrItemVO> createItems = new ArrayList<>();
+        List<ArrItemVO> updateItems = new ArrayList<>();
+        List<ArrItemVO> deleteItems = new ArrayList<>();
+        for (ArrUpdateItemVO changeItem : changeItems) {
+            ArrItemVO item = changeItem.getItem();
+            switch (changeItem.getUpdateOp()) {
+                case CREATE:
+                    createItems.add(item);
+                    break;
+                case DELETE:
+                    deleteItems.add(item);
+                    break;
+                case UPDATE:
+                    updateItems.add(item);
+                    break;
+                default:
+                    throw new SystemException("Neimplementovaný typ operace: " + changeItem.getUpdateOp());
+            }
+        }
+
+        UpdateDescItemsParam params = new UpdateDescItemsParam(nodeId,
+                nodeVersion,
+                createItems,
+                updateItems,
+                deleteItems);
+        arrangementFormService.updateDescItems(fundVersionId, params, requestHeaders);
+    }
+
     /**
      * Přidání uzlu do stromu.
      *
@@ -95,7 +138,7 @@ public class ArrangementWebsocketController {
      */
     @Transactional
     @MessageMapping("/arrangement/levels/add")
-    public void addLevel(@Payload final ArrangementController.AddLevelParam addLevelParam,
+    public void addLevel(@Payload final AddLevelParam addLevelParam,
                          final StompHeaderAccessor requestHeaders) {
 
         Assert.notNull(addLevelParam, "Parametry musí být vyplněny");
@@ -118,7 +161,16 @@ public class ArrangementWebsocketController {
                 addLevelParam.getDirection(), addLevelParam.getScenarioName(),
                 descItemCopyTypes);
 
-        Collection<TreeNodeClient> nodeClients = levelTreeCacheService
+        if (CollectionUtils.isNotEmpty(addLevelParam.getCreateItems())) {
+            UpdateDescItemsParam params = new UpdateDescItemsParam(newLevel.getNodeId(),
+                    newLevel.getNode().getVersion(),
+                    addLevelParam.getCreateItems(),
+                    Collections.emptyList(),
+                    Collections.emptyList());
+            arrangementFormService.updateDescItems(version.getFundVersionId(), params, null);
+        }
+
+        Collection<TreeNodeVO> nodeClients = levelTreeCacheService
                 .getNodesByIds(Collections.singletonList(newLevel.getNodeParent().getNodeId()), version.getFundVersionId());
         Assert.notEmpty(nodeClients, "Kolekce JP nesmí být prázdná");
         final ArrangementController.NodeWithParent result = new ArrangementController.NodeWithParent(ArrNodeVO.valueOf(newLevel.getNode()), nodeClients.iterator().next());
@@ -147,7 +199,7 @@ public class ArrangementWebsocketController {
 
         ArrLevel deleteLevel = moveLevelService.deleteLevel(version, deleteNode, deleteParent);
 
-        Collection<TreeNodeClient> nodeClients = levelTreeCacheService
+        Collection<TreeNodeVO> nodeClients = levelTreeCacheService
                 .getNodesByIds(Arrays.asList(deleteLevel.getNodeParent().getNodeId()),
                         version.getFundVersionId());
         Assert.notEmpty(nodeClients, "Kolekce JP nesmí být prázdná");

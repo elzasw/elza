@@ -36,9 +36,9 @@ public class ArrFundRegisterScope {
     @JoinColumn(name = "fundId", nullable = false)
     private ArrFund fund;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RegScope.class)
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApScope.class)
     @JoinColumn(name = "scopeId", nullable = false)
-    private RegScope scope;
+    private ApScope scope;
 
     public Integer getFundRegisterScopeId() {
         return fundRegisterScopeId;
@@ -56,11 +56,11 @@ public class ArrFundRegisterScope {
         this.fund = fund;
     }
 
-    public RegScope getScope() {
+    public ApScope getScope() {
         return scope;
     }
 
-    public void setScope(final RegScope scope) {
+    public void setScope(final ApScope scope) {
         this.scope = scope;
     }
 

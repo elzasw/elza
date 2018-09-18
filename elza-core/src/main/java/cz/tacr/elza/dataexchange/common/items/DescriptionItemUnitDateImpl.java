@@ -17,7 +17,8 @@ public class DescriptionItemUnitDateImpl extends DescriptionItemUnitDate {
         }
 
         ArrDataUnitdate data = new ArrDataUnitdate();
-
+        data.setDataType(dataType.getEntity());
+        
         // time interval conversion
         TimeInterval it = TimeInterval.create(getD());
         data.setCalendarType(it.getCalendarType().getEntity());

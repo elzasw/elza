@@ -3,48 +3,51 @@ package cz.tacr.elza.dataexchange.input.parties.context;
 import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
 
-import cz.tacr.elza.dataexchange.input.context.PersistMethod;
-import cz.tacr.elza.dataexchange.input.storage.EntityMetrics;
+import cz.tacr.elza.dataexchange.input.context.EntityIdHolder;
+import cz.tacr.elza.dataexchange.input.context.SimpleIdHolder;
 import cz.tacr.elza.dataexchange.input.storage.EntityWrapper;
+import cz.tacr.elza.dataexchange.input.storage.SaveMethod;
 import cz.tacr.elza.domain.ParUnitdate;
 
-public class PartyUnitDateWrapper implements EntityWrapper, EntityMetrics {
+public class PartyUnitDateWrapper implements EntityWrapper {
+
+    private final SimpleIdHolder<ParUnitdate> idHolder = new SimpleIdHolder<>(ParUnitdate.class, false);
 
     private final ParUnitdate entity;
 
-    private final PartyRelatedIdHolder<ParUnitdate> idHolder;
+    private final PartyInfo partyInfo;
 
     PartyUnitDateWrapper(ParUnitdate entity, PartyInfo partyInfo) {
         this.entity = Validate.notNull(entity);
-        this.idHolder = new PartyRelatedIdHolder<>(ParUnitdate.class, partyInfo);
+        this.partyInfo = Validate.notNull(partyInfo);
     }
 
-    public PartyRelatedIdHolder<ParUnitdate> getIdHolder() {
+    public EntityIdHolder<ParUnitdate> getIdHolder() {
         return idHolder;
     }
 
     @Override
-    public PersistMethod getPersistMethod() {
-        return idHolder.getPartyInfo().isIgnored() ? PersistMethod.NONE : PersistMethod.CREATE;
+    public SaveMethod getSaveMethod() {
+        SaveMethod sm = partyInfo.getSaveMethod();
+        // unit date is never updated and old must be invalidate by storage
+        return sm.equals(SaveMethod.IGNORE) ? sm : SaveMethod.CREATE;
     }
 
     @Override
-    public ParUnitdate getEntity() {
+    public Object getEntity() {
         return entity;
     }
 
     @Override
-    public long getMemoryScore() {
-        return 1;
+    public void beforeEntitySave(Session session) {
+        // NOP   
     }
 
     @Override
-    public void beforeEntityPersist(Session session) {
-        // NOP
-    }
-
-    @Override
-    public void afterEntityPersist() {
+    public void afterEntitySave() {
+        // init id holder
         idHolder.setEntityId(entity.getUnitdateId());
+        // update party info
+        partyInfo.onEntityPersist();
     }
 }

@@ -58,6 +58,7 @@ import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.domain.vo.NodeTypeOperation;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DescItemRepository;
@@ -67,7 +68,6 @@ import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.PartyRepository;
-import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.StructuredItemRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
 import cz.tacr.elza.service.ArrangementService;
@@ -76,7 +76,7 @@ import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.IEventNotificationService;
 import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.service.RuleService;
-import cz.tacr.elza.service.StructObjService;
+import cz.tacr.elza.service.StructObjValueService;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
@@ -134,7 +134,7 @@ public class ImportProcess {
     private NodeCacheService nodeCacheService;
 
     @Autowired
-    private RegRecordRepository regRecordRepository;
+    private ApAccessPointRepository apAccessPointRepository;
 
     @Autowired
     private ItemTypeRepository itemTypeRepository;
@@ -155,7 +155,7 @@ public class ImportProcess {
     private FundFileRepository fundFileRepository;
 
     @Autowired
-    private StructObjService structObjService;
+    private StructObjValueService structObjService;
 
     @Autowired
     private StructuredObjectRepository structureDataRepository;
@@ -416,7 +416,7 @@ public class ImportProcess {
             ((ArrDataPartyRef) data).setParty(partyRepository.getOne(((ItemPartyRef) item).getPartyId()));
         } else if (item instanceof ItemRecordRef) {
             data = new ArrDataRecordRef();
-            ((ArrDataRecordRef) data).setRecord(regRecordRepository.getOne(((ItemRecordRef) item).getRecordId()));
+            ((ArrDataRecordRef) data).setRecord(apAccessPointRepository.getOne(((ItemRecordRef) item).getRecordId()));
         } else {
             data = null;
         }
@@ -436,7 +436,7 @@ public class ImportProcess {
                 ArrNodeRegister nodeRegister = new ArrNodeRegister();
                 nodeRegister.setCreateChange(change);
                 nodeRegister.setNode(node);
-                nodeRegister.setRecord(regRecordRepository.getOne(register.getRecordId()));
+                nodeRegister.setRecord(apAccessPointRepository.getOne(register.getRecordId()));
                 nodeRegisters.add(nodeRegister);
             }
         }
@@ -653,10 +653,7 @@ public class ImportProcess {
         }
 
         // generate
-        structObjService.generateAndValidate(so);
-
-        // send notification
-        structObjService.sendNotification(so);
+        structObjService.addToValidate(so);
 
         return so;
     }

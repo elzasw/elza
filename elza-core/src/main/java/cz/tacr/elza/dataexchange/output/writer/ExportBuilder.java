@@ -13,7 +13,7 @@ public interface ExportBuilder {
 
     SectionOutputStream openSectionOutputStream(SectionContext sectionContext);
 
-    AccessPointsOutputStream openAccessPointsOutputStream();
+    ApOutputStream openAccessPointsOutputStream();
 
     PartiesOutputStream openPartiesOutputStream();
 

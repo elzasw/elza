@@ -1,34 +1,14 @@
 package cz.tacr.elza.print;
 
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.apache.commons.lang.NotImplementedException;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Validate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
-
 import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.PartyType;
-import cz.tacr.elza.core.data.RuleSystem;
-import cz.tacr.elza.core.data.RuleSystemItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.fund.FundTree;
 import cz.tacr.elza.core.fund.FundTreeProvider;
 import cz.tacr.elza.core.fund.TreeNode;
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrFund;
@@ -49,8 +29,6 @@ import cz.tacr.elza.domain.ParRelationClassType;
 import cz.tacr.elza.domain.ParRelationEntity;
 import cz.tacr.elza.domain.ParRelationRoleType;
 import cz.tacr.elza.domain.ParRelationType;
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulOutputType;
@@ -75,11 +53,33 @@ import cz.tacr.elza.print.party.Relation;
 import cz.tacr.elza.print.party.RelationTo;
 import cz.tacr.elza.print.party.RelationToType;
 import cz.tacr.elza.print.party.RelationType;
+import cz.tacr.elza.repository.ApDescriptionRepository;
+import cz.tacr.elza.repository.ApExternalIdRepository;
+import cz.tacr.elza.repository.ApNameRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.service.cache.CachedNode;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.cache.RestoredNode;
 import cz.tacr.elza.service.output.OutputParams;
+import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
@@ -90,8 +90,6 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
     private ArrFundVersion fundVersion;
 
     private StaticDataProvider staticData;
-
-    private RuleSystem ruleSystem;
 
     /* general description */
 
@@ -143,11 +141,26 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
     private final InstitutionRepository institutionRepository;
 
-    public OutputModel(StaticDataService staticDataService, FundTreeProvider fundTreeProvider, NodeCacheService nodeCacheService, InstitutionRepository institutionRepository) {
+    private final ApDescriptionRepository apDescRepository;
+
+    private final ApNameRepository apNameRepository;
+
+    private final ApExternalIdRepository apEidRepository;
+
+    public OutputModel(StaticDataService staticDataService,
+                       FundTreeProvider fundTreeProvider,
+                       NodeCacheService nodeCacheService,
+                       InstitutionRepository institutionRepository,
+                       ApDescriptionRepository apDescRepository,
+                       ApNameRepository apNameRepository,
+                       ApExternalIdRepository apEidRepository) {
         this.staticDataService = staticDataService;
         this.fundTreeProvider = fundTreeProvider;
         this.nodeCacheService = nodeCacheService;
         this.institutionRepository = institutionRepository;
+        this.apDescRepository = apDescRepository;
+        this.apNameRepository = apNameRepository;
+        this.apEidRepository = apEidRepository;
     }
 
     public boolean isInitialized() {
@@ -361,7 +374,6 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         // prepare internal fields
         this.fundVersion = params.getFundVersion();
         this.staticData = staticDataService.getData();
-        this.ruleSystem = staticData.getRuleSystems().getByRuleSetId(fundVersion.getRuleSetId());
 
         // init general description
         ArrOutputDefinition definition = params.getDefinition();
@@ -482,22 +494,21 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
     /* factory methods */
 
-    // TODO: record variants should be fetched
     @Override
-    public Record getRecord(RegRecord record) {
+    public Record getRecord(ApAccessPoint ap) {
         // id without fetch -> access type property
-        Record ap = apIdMap.get(record.getRecordId());
-        if (ap != null) {
-            return ap;
+        Record record = apIdMap.get(ap.getAccessPointId());
+        if (record != null) {
+            return record;
         }
 
-        RecordType apType = getAPType(record.getRegisterTypeId());
-        ap = Record.newInstance(record, apType);
+        RecordType type = getAPType(ap.getApTypeId());
+        record = new Record(ap, type, staticData, apDescRepository, apNameRepository, apEidRepository);
 
         // add to lookup
-        apIdMap.put(record.getRecordId(), ap);
+        apIdMap.put(ap.getAccessPointId(), record);
 
-        return ap;
+        return record;
     }
 
     private RecordType getAPType(Integer apTypeId) {
@@ -508,15 +519,15 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
             return type;
         }
 
-        RegRegisterType regType = staticData.getRegisterTypeById(apTypeId);
+        ApType apType = staticData.getApTypeById(apTypeId);
 
-        // get parent type
+        // add to lookup
         RecordType parentType = null;
-        Integer apParentTypeId = regType.getParentRegisterTypeId();
+        Integer apParentTypeId = apType.getParentApTypeId();
         if (apParentTypeId != null) {
             parentType = getAPType(apParentTypeId);
         }
-        type = RecordType.newInstance(parentType, regType);
+        type = RecordType.newInstance(parentType, apType);
 
         // add to lookup
         apTypeIdMap.put(apTypeId, type);
@@ -533,7 +544,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
             return party;
         }
 
-        Record partyAP = getRecord(parParty.getRecord());
+        Record partyAP = getRecord(parParty.getAccessPoint());
         PartyInitHelper initHelper = new PartyInitHelper(partyAP);
 
         // init all party names
@@ -576,7 +587,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         for (ParRelationEntity entity : entities) {
             // create relation to
             RelationToType roleType = getRelationRoleType(entity.getRoleTypeId(), staticRelationType);
-            Record entityAP = getRecord(entity.getRecord());
+            Record entityAP = getRecord(entity.getAccessPoint());
             RelationTo relationTo = new RelationTo(entity, roleType, entityAP);
             relationsTo.add(relationTo);
         }
@@ -669,8 +680,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
             return itemType;
         }
 
-        RuleSystemItemType staticItemType = ruleSystem.getItemTypeById(id);
-        RulItemType rulItemType = staticItemType.getEntity();
+        RulItemType rulItemType = staticData.getItemTypeById(id).getEntity();
         itemType = new ItemType(rulItemType);
 
         // add to lookup
@@ -686,7 +696,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
             return itemSpec;
         }
 
-        RulItemSpec rulItemSpec = staticData.getRuleSystems().getItemSpec(id);
+        RulItemSpec rulItemSpec = staticData.getItemSpecById(id);
         itemSpec = new ItemSpec(rulItemSpec);
 
         // add to lookup
@@ -701,7 +711,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
         Structured result = structObjIdMap.get(structObj.getStructuredObjectId());
         if (result == null) {
-            result = Structured.newInstance(structObj, ruleSystem, this);
+            result = Structured.newInstance(structObj, this);
 
             // add to lookup
             structObjIdMap.put(structObj.getStructuredObjectId(), result);

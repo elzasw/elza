@@ -1,13 +1,14 @@
 package cz.tacr.elza.bulkaction;
 
+import java.util.Collections;
 import java.util.List;
 
 import javax.transaction.Transactional;
 
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 
-import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrBulkActionRun;
@@ -15,8 +16,13 @@ import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRepository;
@@ -40,7 +46,13 @@ public abstract class BulkAction {
 
     @Autowired
     protected DescriptionItemService descriptionItemService;
-    
+
+    @Autowired
+    protected DescItemRepository descItemRepository;
+
+    @Autowired
+    protected ApplicationContext appCtx;
+
 	@Autowired
 	protected StaticDataService staticDataService;
 
@@ -59,18 +71,24 @@ public abstract class BulkAction {
 	 */
 	protected ArrBulkActionRun bulkActionRun;
 
-	protected RuleSystem ruleSystem;
-
 	/**
 	 * Změna
 	 */
-	protected ArrChange getChange() {
+    public ArrChange getChange() {
 		return bulkActionRun.getChange();
 	}
 
+    public ArrFundVersion getFundVersion() {
+        return version;
+    }
+
+    public StaticDataProvider getStaticDataProvider() {
+        return staticDataProvider;
+    }
+
 	/**
 	 * Init method, this method prepare ruleSystem and other fields.
-	 * 
+	 *
 	 * Method can be specialized in each implementation.
 	 */
 	protected void init(ArrBulkActionRun bulkActionRun) {
@@ -81,24 +99,20 @@ public abstract class BulkAction {
 		checkVersion(version);
 
 		staticDataProvider = staticDataService.getData();
-		ruleSystem = staticDataProvider.getRuleSystems().getByRuleSetId(version.getRuleSetId());
-		Validate.notNull(ruleSystem, "Rule system not available, id: {}", version.getRuleSetId());
 	}
 
     /**
      * Abstrakní metoda pro spuštění hromadné akce.
      *
-     * @param inputNodeIds      seznam vstupních uzlů (podstromů AS)
-     * @param bulkActionConfig  nastavení hromadné akce
-     * @param bulkActionRun     stav hromadné akce
+     * @param runContext
      */
 	abstract public void run(ActionRunContext runContext);
 
 	/**
 	 * Return name of bulkaction
-	 * 
+	 *
 	 * Value is used to log result, etc.
-	 * 
+	 *
 	 * @return
 	 */
 	abstract public String getName();
@@ -107,17 +121,13 @@ public abstract class BulkAction {
      * Uložení nového/existující atributu.
      *
      * @param descItem ukládaný atribut
-     * @param version  verze archivní pomůcky
-     * @param change   změna
      * @return finální atribut
      */
-    protected ArrDescItem saveDescItem(final ArrDescItem descItem,
-                                       final ArrFundVersion version,
-                                       final ArrChange change) {
+    public ArrDescItem saveDescItem(final ArrDescItem descItem) {
         if (descItem.getDescItemObjectId() == null) {
-            return descriptionItemService.createDescriptionItem(descItem, descItem.getNode(), version, change);
+            return descriptionItemService.createDescriptionItem(descItem, descItem.getNode(), version, getChange());
         } else {
-            return descriptionItemService.updateDescriptionItem(descItem, version, change, true);
+            return descriptionItemService.updateDescriptionItem(descItem, version, getChange(), true);
         }
     }
 
@@ -142,7 +152,7 @@ public abstract class BulkAction {
      * @param level rodičovský uzel
      * @return nalezený potomci
      */
-    protected List<ArrLevel> getChildren(final ArrLevel level) {
+    public List<ArrLevel> getChildren(final ArrLevel level) {
         return levelRepository.findByParentNodeAndDeleteChangeIsNullOrderByPositionAsc(level.getNode());
     }
 
@@ -168,4 +178,33 @@ public abstract class BulkAction {
 		run(runContext);
 
 	}
+
+    /**
+     * Načtení požadovaného atributu
+     *
+     * @param node
+     *            uzel
+     * @return nalezený atribut
+     */
+    public ArrDescItem loadSingleDescItem(final ArrNode node, RulItemType descItemType) {
+        List<ArrDescItem> descItems = descItemRepository.findByNodeAndDeleteChangeIsNullAndItemTypeId(
+                                                                                                      node, descItemType
+                                                                                                              .getItemTypeId());
+        if (descItems.size() == 0) {
+            return null;
+        }
+        if (descItems.size() > 1) {
+            throw new SystemException(
+                    descItemType.getCode() + " nemuže být více než jeden (" + descItems.size() + ")",
+                    BaseCode.DB_INTEGRITY_PROBLEM)
+                            .set("nodeId", node.getNodeId());
+        }
+        return descItems.get(0);
+    }
+
+    public void deleteDescItem(ArrDescItem oldDescItem) {
+        List<ArrDescItem> items = Collections.singletonList(oldDescItem);
+        descriptionItemService.deleteDescriptionItems(items, oldDescItem.getNode(), getFundVersion(), getChange(),
+                                                      true);
+    }
 }

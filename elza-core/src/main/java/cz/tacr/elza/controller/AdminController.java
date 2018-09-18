@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
+import cz.tacr.elza.controller.factory.ApFactory;
 import cz.tacr.elza.controller.vo.SysExternalSystemSimpleVO;
 import cz.tacr.elza.controller.vo.SysExternalSystemVO;
 import cz.tacr.elza.domain.SysExternalSystem;
@@ -38,9 +38,6 @@ public class AdminController {
 
     @Autowired
     private ExternalSystemService externalSystemService;
-
-    @Autowired
-    private ClientFactoryDO factoryDo;
 
     @Autowired
     private ClientFactoryVO factoryVo;
@@ -74,7 +71,8 @@ public class AdminController {
     @RequestMapping(value = "/externalSystems", method = RequestMethod.GET)
 	@Transactional
     public List<SysExternalSystemVO> findAllExternalSystems() {
-        return factoryVo.createSimpleEntity(externalSystemService.findAll(), SysExternalSystemVO.class);
+        List<SysExternalSystem> extSystems = externalSystemService.findAll();
+        return ApFactory.transformList(extSystems, factoryVo::createExtSystem);
     }
 
     /**
@@ -87,7 +85,9 @@ public class AdminController {
     @Transactional
     public SysExternalSystemVO createExternalSystem(@RequestBody final SysExternalSystemVO externalSystemVO) {
         SysExternalSystem externalSystem = externalSystemVO.createEntity();
-        return factoryVo.createSimpleEntity(externalSystemService.create(externalSystem), SysExternalSystemVO.class);
+        // TODO: zvážit vytvoření specializovaných  metod pro konkrétní typy external system
+        externalSystem = externalSystemService.create(externalSystem);
+        return factoryVo.createExtSystem(externalSystem);
     }
 
     /**
@@ -99,7 +99,8 @@ public class AdminController {
     @RequestMapping(value = "/externalSystems/{externalSystemId}", method = RequestMethod.GET)
 	@Transactional
     public SysExternalSystemVO findExternalSystemById(@PathVariable("externalSystemId") final Integer externalSystemId) {
-        return factoryVo.createSimpleEntity(externalSystemService.findOne(externalSystemId), SysExternalSystemVO.class);
+        SysExternalSystem extSystem = externalSystemService.findOne(externalSystemId);
+        return factoryVo.createExtSystem(extSystem);
     }
 
     /**
@@ -112,8 +113,8 @@ public class AdminController {
     @Transactional
     public SysExternalSystemVO updateExternalSystem(@RequestBody final SysExternalSystemVO externalSystemVO) {
         SysExternalSystem externalSystem = externalSystemVO.createEntity();
-
-        return factoryVo.createSimpleEntity(externalSystemService.update(externalSystem), SysExternalSystemVO.class);
+        externalSystem = externalSystemService.update(externalSystem);
+        return factoryVo.createExtSystem(externalSystem);
     }
 
     /**
@@ -135,6 +136,7 @@ public class AdminController {
     @RequestMapping(value = "/externalSystems/simple", method = RequestMethod.GET)
 	@Transactional
     public List<SysExternalSystemSimpleVO> findAllExternalSystemsSimple() {
-        return factoryVo.createSimpleEntity(externalSystemService.findAllWithoutPermission(), SysExternalSystemSimpleVO.class);
+        List<SysExternalSystem> extSystems = externalSystemService.findAllWithoutPermission();
+        return ApFactory.transformList(extSystems, factoryVo::createExtSystemSimple);
     }
 }

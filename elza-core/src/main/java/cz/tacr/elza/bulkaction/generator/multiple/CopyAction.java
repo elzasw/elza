@@ -12,8 +12,8 @@ import org.springframework.stereotype.Component;
 import cz.tacr.elza.bulkaction.generator.LevelWithItems;
 import cz.tacr.elza.bulkaction.generator.result.ActionResult;
 import cz.tacr.elza.bulkaction.generator.result.CopyActionResult;
-import cz.tacr.elza.core.data.RuleSystem;
-import cz.tacr.elza.core.data.RuleSystemItemType;
+import cz.tacr.elza.core.data.ItemType;
+import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDescItem;
@@ -31,12 +31,12 @@ public class CopyAction extends Action {
     /**
      * Vstupní atributy
      */
-	private RuleSystemItemType inputItemType;
+	private ItemType inputItemType;
 
     /**
      * Výstupní atribut
      */
-	private RuleSystemItemType outputItemType;
+	private ItemType outputItemType;
 
     /**
 	 * Zkopírované hodnoty, výsledek
@@ -52,9 +52,9 @@ public class CopyAction extends Action {
 
     @Override
 	public void init(ArrBulkActionRun bulkActionRun) {
-		RuleSystem ruleSystem = getRuleSystem(bulkActionRun);
+        StaticDataProvider sdp = getStaticDataProvider();
 
-        inputItemType = ruleSystem.getItemTypeByCode(config.getInputType());
+        inputItemType = sdp.getItemTypeByCode(config.getInputType());
         Validate.notNull(inputItemType);
 
         String outputType = config.getOutputType();
@@ -63,7 +63,7 @@ public class CopyAction extends Action {
             return;
         }
 
-        outputItemType = ruleSystem.getItemTypeByCode(outputType);
+        outputItemType = sdp.getItemTypeByCode(outputType);
         // check if input and output have same data type
         if (inputItemType.getDataType() != outputItemType.getDataType()) {
             throw new BusinessException("Item " + config.getInputType() + " and " + outputType + " have different data type",
@@ -74,7 +74,7 @@ public class CopyAction extends Action {
 	/**
 	 * Check if item is used in output
 	 *
-	 * @param itemSpecId
+	 * @param item
 	 * @return
 	 */
     private boolean isInResult(ArrDescItem item) {

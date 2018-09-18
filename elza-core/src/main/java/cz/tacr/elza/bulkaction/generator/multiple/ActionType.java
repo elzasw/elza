@@ -36,6 +36,11 @@ public enum  ActionType {
     /**
      * Počet EJ
      */
-    UNIT_COUNT
+    UNIT_COUNT,
+
+    /**
+     * Odstranění hodnot
+     */
+    DELETE_ITEM,
 
 }

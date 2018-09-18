@@ -12,6 +12,7 @@ import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
+import cz.tacr.elza.core.data.StaticDataProvider;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +25,6 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 
 import cz.tacr.elza.common.TaskExecutor;
 import cz.tacr.elza.core.ResourcePathResolver;
-import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.Authorization;
 import cz.tacr.elza.domain.ArrBulkActionRun;
@@ -393,9 +393,8 @@ public class OutputServiceInternal {
                     ArrangementCode.VERSION_ALREADY_CLOSED);
         }
 
-        RuleSystem ruleSystem = this.staticDataService.getData().getRuleSystems()
-                .getByRuleSetId(fundVersion.getRuleSetId());
-        itemService.checkValidTypeAndSpec(ruleSystem, outputItem);
+        StaticDataProvider sdp = this.staticDataService.getData();
+        itemService.checkValidTypeAndSpec(sdp, outputItem);
 
         int maxPosition = outputItemRepository.findMaxItemPosition(outputItem.getItemType(), outputItem.getOutputDefinition());
 

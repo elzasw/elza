@@ -277,7 +277,7 @@ paths:
           description: Count of results
           required: true
           type: integer
-        - name: registerTypeId
+        - name: apTypeId
           in: query
           description: register type ID
           required: false
@@ -305,7 +305,7 @@ paths:
               rows:
                 type: array
                 items:
-                  $ref: '#/definitions/RegRecordSimple'
+                  $ref: '#/definitions/ApRecordSimple'
         default:
           description: Unexpected error
           schema:
@@ -345,7 +345,7 @@ paths:
         200:
           description: Record
           schema:
-            $ref: '#/definitions/RegRecordVO'
+            $ref: '#/definitions/ApRecordVO'
         default:
           description: Unexpected error
           schema:
@@ -363,14 +363,14 @@ paths:
           description: Record
           required: true
           schema:
-            $ref: '#/definitions/RegRecordVO'
+            $ref: '#/definitions/ApRecordVO'
       tags:
         - Registry
       responses:
         200:
           description: Record
           schema:
-            $ref: '#/definitions/RegRecordVO'
+            $ref: '#/definitions/ApRecordVO'
         default:
           description: Unexpected error
           schema:
@@ -434,7 +434,7 @@ paths:
               rows:
                 type: array
                 items:
-                  $ref: '#/definitions/RegRecordSimple'
+                  $ref: '#/definitions/ApRecordSimple'
         default:
           description: Unexpected error
           schema:
@@ -450,7 +450,7 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/definitions/RegScopeVO'
+              $ref: '#/definitions/ApScopeVO'
         default:
           description: Unexpected error
           schema:
@@ -463,14 +463,14 @@ paths:
           description: Scope
           required: true
           schema:
-            $ref: '#/definitions/RegScopeVO'
+            $ref: '#/definitions/ApScopeVO'
       tags:
         - Party
       responses:
         200:
           description: Created object
           schema:
-            $ref: '#/definitions/RegScopeVO'
+            $ref: '#/definitions/ApScopeVO'
         default:
           description: Unexpected error
           schema:
@@ -489,14 +489,14 @@ paths:
           description: Scope
           required: true
           schema:
-            $ref: '#/definitions/RegScopeVO'
+            $ref: '#/definitions/ApScopeVO'
       tags:
         - Registry
       responses:
         200:
           description: Scope
           schema:
-            $ref: '#/definitions/RegScopeVO'
+            $ref: '#/definitions/ApScopeVO'
         default:
           description: Unexpected error
           schema:
@@ -535,7 +535,7 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/definitions/RegScopeVO'
+              $ref: '#/definitions/ApScopeVO'
         default:
           description: Unexpected error
           schema:
@@ -551,7 +551,7 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/definitions/RegRegisterTypeVO'
+              $ref: '#/definitions/ApTypeVO'
         default:
           description: Unexpected error
           schema:
@@ -573,7 +573,7 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/definitions/RegRegisterTypeVO'
+              $ref: '#/definitions/ApTypeVO'
         default:
           description: Unexpected error
           schema:
@@ -587,14 +587,14 @@ paths:
           description: Variant record
           required: true
           schema:
-            $ref: '#/definitions/RegVariantRecordVO'
+            $ref: '#/definitions/ApVariantRecordVO'
       tags:
         - Registry
       responses:
         200:
           description: Created object
           schema:
-            $ref: '#/definitions/RegVariantRecordVO'
+            $ref: '#/definitions/ApVariantRecordVO'
         default:
           description: Unexpected error
           schema:
@@ -613,14 +613,14 @@ paths:
           description: Record
           required: true
           schema:
-            $ref: '#/definitions/RegVariantRecordVO'
+            $ref: '#/definitions/ApVariantRecordVO'
       tags:
         - Registry
       responses:
         200:
           description: Record
           schema:
-            $ref: '#/definitions/RegVariantRecordVO'
+            $ref: '#/definitions/ApVariantRecordVO'
         default:
           description: Unexpected error
           schema:
@@ -739,7 +739,7 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/definitions/RegExternalSystemVO'
+              $ref: '#/definitions/ApExternalSystemVO'
         default:
           description: Unexpected error
           schema:
@@ -783,7 +783,7 @@ paths:
         200:
           description: Imported record
           schema:
-            $ref: '#/definitions/RegRecordVO'
+            $ref: '#/definitions/ApRecordVO'
         default:
           description: Unexpected error
           schema:
@@ -857,15 +857,15 @@ definitions:
         type: string
       version:
         type: integer
-  RegVariantRecordVO:
+  ApVariantRecordVO:
     type: object
-  RegRecordSimple:
+  ApRecordSimple:
     type: object
-  RegRecordVO:
+  ApRecordVO:
     type: object
-  RegCoordinatesVO:
+  ApCoordinatesVO:
     type: object
-  RegRegisterTypeVO:
+  ApRegisterTypeVO:
     type: object
   InterpiSearchVO:
     type: object
@@ -875,11 +875,11 @@ definitions:
     type: object
   InterpiMappingVO:
     type: object
-  RegScopeVO:
+  ApScopeVO:
     type: object
   RecordImportVO:
     type: object
-  RegExternalSystemVO:
+  ApExternalSystemVO:
     type: object
   Error:
     type: object

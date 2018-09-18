@@ -4,6 +4,7 @@ import java.util.List;
 
 import javax.net.ssl.TrustManager;
 
+import cz.tacr.elza.domain.ApExternalSystem;
 import org.apache.cxf.configuration.jsse.TLSClientParameters;
 import org.apache.cxf.endpoint.Client;
 import org.apache.cxf.frontend.ClientProxy;
@@ -18,7 +19,6 @@ import org.springframework.stereotype.Service;
 
 import cz.tacr.elza.common.XmlUtils;
 import cz.tacr.elza.common.security.NoCheckTrustManager;
-import cz.tacr.elza.domain.RegExternalSystem;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ExternalCode;
 import cz.tacr.elza.interpi.ws.WssoapSoap;
@@ -43,14 +43,14 @@ public class InterpiClient {
     /** Prefix pro chybovou hlášku. */
     private static final String ERROR_PREFIX = "ERR";
 
-    public List<EntitaTyp> findRecords(final String query, final Integer count, final RegExternalSystem regExternalSystem) {
-        WssoapSoap client = createClient(regExternalSystem);
+    public List<EntitaTyp> findRecords(final String query, final Integer count, final ApExternalSystem apExternalSystem) {
+        WssoapSoap client = createClient(apExternalSystem);
 
         Integer maxCount = count == null ? Integer.valueOf(TO) : count;
 
         logger.info("Vyhledávání v interpi: " + query);
         long start = System.currentTimeMillis();
-        String searchResult = client.findData(query, null, FROM, maxCount.toString(), regExternalSystem.getUsername(), regExternalSystem.getPassword());
+        String searchResult = client.findData(query, null, FROM, maxCount.toString(), apExternalSystem.getUsername(), apExternalSystem.getPassword());
         long end = System.currentTimeMillis();
         logger.debug("Dotaz do INTERPI trval " + (end - start) + " ms.");
 
@@ -62,29 +62,29 @@ public class InterpiClient {
         return records.subList(0, searchResultCount); // INTERPI neumí stránkovat
     }
 
-    public EntitaTyp findOneRecord(final String id, final RegExternalSystem regExternalSystem) {
-        WssoapSoap client = createClient(regExternalSystem);
+    public EntitaTyp findOneRecord(final String id, final ApExternalSystem apExternalSystem) {
+        WssoapSoap client = createClient(apExternalSystem);
 
         logger.info("Načítání záznamu s identifikátorem " + id + " z interpi.");
         long start = System.currentTimeMillis();
-        String oneRecord = client.getOneRecord(id, regExternalSystem.getUsername(), regExternalSystem.getPassword());
+        String oneRecord = client.getOneRecord(id, apExternalSystem.getUsername(), apExternalSystem.getPassword());
         long end = System.currentTimeMillis();
         logger.debug("Dotaz do INTERPI trval " + (end - start) + " ms.");
 
         if (oneRecord.startsWith(ERROR_PREFIX)) {
-             throw new SystemException("Nastala chyba " + oneRecord + " při hledání záznamu s identifikátorem " + id + " v systému " + regExternalSystem, ExternalCode.EXTERNAL_SYSTEM_ERROR);
+             throw new SystemException("Nastala chyba " + oneRecord + " při hledání záznamu s identifikátorem " + id + " v systému " + apExternalSystem, ExternalCode.EXTERNAL_SYSTEM_ERROR);
         }
         SetTyp setTyp = unmarshall(oneRecord);
 
         if (setTyp.getEntita().isEmpty()) {
-            throw new SystemException("Záznam s identifikátorem " + id + " nebyl nalezen v systému " + regExternalSystem);
+            throw new SystemException("Záznam s identifikátorem " + id + " nebyl nalezen v systému " + apExternalSystem);
         }
 
         return setTyp.getEntita().iterator().next();
     }
 
-    private WssoapSoap createClient(final RegExternalSystem regExternalSystem) {
-        return createClient(regExternalSystem.getUrl(), WssoapSoap.class);
+    private WssoapSoap createClient(final ApExternalSystem apExternalSystem) {
+        return createClient(apExternalSystem.getUrl(), WssoapSoap.class);
     }
 
     private SetTyp unmarshall(final String oneRecord) {

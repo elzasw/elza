@@ -110,7 +110,7 @@ class PartyField extends AbstractReactComponent {
         const {refTables, footerButtons, userDetail} = this.props;
         const {count} = this.state;
 
-        const buttons = footerButtons && userDetail.hasOne(perms.REG_SCOPE_WR_ALL, perms.REG_SCOPE_WR);
+        const buttons = footerButtons && userDetail.hasOne(perms.AP_SCOPE_WR_ALL, perms.AP_SCOPE_WR);
         const hasCount = count !== null && (count > AUTOCOMPLETE_PARTY_LIST_SIZE || count === 0);
 
         return hasCount || buttons ? <div>
@@ -168,9 +168,9 @@ class PartyField extends AbstractReactComponent {
 
         const actions = [];
         if (detail) {
-            // if (userDetail.hasOne(perms.REG_SCOPE_RD_ALL, {type: perms.REG_SCOPE_RD, scopeId: value.record.scopeId})) {
+            // if (userDetail.hasOne(perms.AP_SCOPE_RD_ALL, {type: perms.AP_SCOPE_RD, scopeId: value.record.scopeId})) {
             actions.push(
-                <div 
+                <div
                     onClick={this.handleDetail.bind(this, value ? value.id : null)}
                     className={'btn btn-default detail'}
                 >
@@ -192,7 +192,7 @@ class PartyField extends AbstractReactComponent {
             footer={footerRender}
             items={this.state.partyList}
             getItemId={(item) => item ? item.id : null}
-            getItemName={(item) => item && item.record ? item.record.record : tmpVal}
+            getItemName={(item) => item && item.accessPoint ? item.accessPoint.record : tmpVal}
             onSearchChange={this.handleSearchChange}
             renderItem={this.renderParty}
             actions={[actions]}

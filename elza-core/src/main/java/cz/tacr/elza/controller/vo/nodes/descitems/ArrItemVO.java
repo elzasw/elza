@@ -1,11 +1,10 @@
 package cz.tacr.elza.controller.vo.nodes.descitems;
 
-import javax.persistence.EntityManager;
-
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDescItem;
+
+import javax.persistence.EntityManager;
 
 
 /**
@@ -34,6 +33,11 @@ public abstract class ArrItemVO {
      * nezjištěný (bez hodnoty)
      */
     private Boolean undefined;
+
+    /**
+     * typ atributu
+     */
+    private Integer itemTypeId;
 
     /**
      * specifikace atributu
@@ -72,6 +76,14 @@ public abstract class ArrItemVO {
         this.descItemSpecId = descItemSpecId;
     }
 
+    public Integer getItemTypeId() {
+        return itemTypeId;
+    }
+
+    public void setItemTypeId(final Integer itemTypeId) {
+        this.itemTypeId = itemTypeId;
+    }
+
     public Boolean getUndefined() {
         return undefined;
     }
@@ -82,7 +94,7 @@ public abstract class ArrItemVO {
 
 	/**
 	 * Fill correspoding ArrDescItem with values from this object
-	 * 
+	 *
 	 * @param descItem
 	 *            target item to be filled
 	 */
@@ -96,7 +108,7 @@ public abstract class ArrItemVO {
 
     /**
      * Create data entity from value object
-     * 
+     *
      * @return
      */
     public abstract ArrData createDataEntity(EntityManager em);

@@ -32,9 +32,9 @@ public class ParRegistryRole {
     @Access(AccessType.PROPERTY) // required to read id without fetch from db
     private Integer registryRoleId;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RegRegisterType.class)
-    @JoinColumn(name = "registerTypeId", nullable = false)
-    private RegRegisterType registerType;
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApType.class)
+    @JoinColumn(name = "apTypeId", nullable = false)
+    private ApType apType;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ParRelationRoleType.class)
     @JoinColumn(name = "roleTypeId", nullable = false)
@@ -52,12 +52,12 @@ public class ParRegistryRole {
         this.registryRoleId = registryRoleId;
     }
 
-    public RegRegisterType getRegisterType() {
-        return registerType;
+    public ApType getApType() {
+        return apType;
     }
 
-    public void setRegisterType(final RegRegisterType registerType) {
-        this.registerType = registerType;
+    public void setApType(final ApType apType) {
+        this.apType = apType;
     }
 
     public ParRelationRoleType getRoleType() {
@@ -104,7 +104,7 @@ public class ParRegistryRole {
     public String toString() {
         return "ParRegistryRole{" +
                 "registryRoleId=" + registryRoleId +
-                ", registerType=" + registerType +
+                ", apType=" + apType +
                 ", roleType=" + roleType +
                 '}';
     }

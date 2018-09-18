@@ -1,32 +1,19 @@
 package cz.tacr.elza.domain.vo;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.springframework.util.Assert;
-
+import java.util.Collection;
 
 /**
- * Obalovací třída pro více hodnot atributů (kvůli opakovatelným)
- *
- * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
- * @since 11.04.2016
+ * Obalovací třída pro více hodnot atributů (kvůli opakovatelným).
  */
 public class DescItemValues {
 
-    List<DescItemValue> values = new ArrayList<>();
+    private Collection<DescItemValue> values;
 
-    public List<DescItemValue> getValues() {
+    public Collection<DescItemValue> getValues() {
         return values;
     }
 
-    public void setValues(final List<DescItemValue> values) {
+    public void setValues(Collection<DescItemValue> values) {
         this.values = values;
-    }
-
-    public void addValue(final DescItemValue value) {
-        Assert.notNull(value, "Hodnota musí být vyplněna");
-
-        values.add(value);
     }
 }

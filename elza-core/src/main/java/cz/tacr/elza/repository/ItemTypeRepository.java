@@ -9,7 +9,6 @@ import org.springframework.stereotype.Repository;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulPackage;
-import cz.tacr.elza.domain.RulRuleSet;
 
 
 /**
@@ -46,8 +45,6 @@ public interface ItemTypeRepository extends ElzaJpaRepository<RulItemType, Integ
 
     List<RulItemType> findByRulPackage(RulPackage rulPackage);
 
-    List<RulItemType> findByRuleSet(RulRuleSet ruleSet);
-
     List<RulItemType> findByRulPackageOrderByViewOrderAsc(RulPackage rulPackage);
 
     /**
@@ -65,5 +62,4 @@ public interface ItemTypeRepository extends ElzaJpaRepository<RulItemType, Integ
     @Query(value = "SELECT t FROM rul_item_type t  WHERE t.code in (?1)")
     Set<RulItemType> findByCode(Set<String> descItemTypeCodes);
 
-    List<RulItemType> findByRulPackageAndRuleSet(RulPackage rulPackage, RulRuleSet rulRuleSet);
 }

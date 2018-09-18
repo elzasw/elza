@@ -2,17 +2,17 @@ package cz.tacr.elza.dataexchange.input.sections;
 
 import java.util.Collection;
 
+import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.dataexchange.common.items.ImportableItemData;
+import cz.tacr.elza.dataexchange.input.sections.context.SectionContext;
+import cz.tacr.elza.dataexchange.input.sections.context.StructObjContext;
 import org.apache.commons.lang3.StringUtils;
 
 import cz.tacr.elza.core.data.DataType;
-import cz.tacr.elza.core.data.RuleSystem;
-import cz.tacr.elza.core.data.RuleSystemItemType;
-import cz.tacr.elza.dataexchange.common.items.ImportableItem.ImportableItemData;
+import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.dataexchange.input.DEImportException;
 import cz.tacr.elza.dataexchange.input.context.ImportContext;
 import cz.tacr.elza.dataexchange.input.reader.ItemProcessor;
-import cz.tacr.elza.dataexchange.input.sections.context.ContextSection;
-import cz.tacr.elza.dataexchange.input.sections.context.ContextStructObject;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.ArrStructuredObject;
@@ -26,7 +26,7 @@ public class StructObjectProcessor implements ItemProcessor {
     private final ImportContext context;
 
     // current section context
-    private final ContextSection section;
+    private final SectionContext section;
 
     public StructObjectProcessor(ImportContext context) {
         this.context = context;
@@ -37,8 +37,8 @@ public class StructObjectProcessor implements ItemProcessor {
     public void process(Object item) {
         StructuredObject object = (StructuredObject) item;
         validateObject(object);
-        ContextStructObject cso = processObject(object);
-        processItems(object.getDeOrDiOrDd(), cso);
+        StructObjContext cso = processObject(object);
+        processItems(object.getDdOrDoOrDp(), cso);
     }
 
     private void validateObject(StructuredObject item) {
@@ -47,7 +47,7 @@ public class StructObjectProcessor implements ItemProcessor {
         }
     }
 
-    private ContextStructObject processObject(StructuredObject item) {
+    private StructObjContext processObject(StructuredObject item) {
     	ArrStructuredObject so = new ArrStructuredObject();
         so.setCreateChange(section.getCreateChange());
         so.setFund(section.getFund());
@@ -57,12 +57,12 @@ public class StructObjectProcessor implements ItemProcessor {
         return section.addStructObject(so, item.getId());
     }
 
-    private void processItems(Collection<DescriptionItem> descItems, ContextStructObject cso) {
-        RuleSystem rs = section.getRuleSystem();
+    private void processItems(Collection<DescriptionItem> descItems, StructObjContext cso) {
+        StaticDataProvider rs = section.getStaticData();
 
         for (DescriptionItem descItem : descItems) {
             // resolve item type
-            RuleSystemItemType rsit = rs.getItemTypeByCode(descItem.getT());
+            ItemType rsit = rs.getItemTypeByCode(descItem.getT());
             if (rsit == null) {
                 throw new DEImportException("Description item type not found, code:" + descItem.getT());
             }
@@ -71,11 +71,11 @@ public class StructObjectProcessor implements ItemProcessor {
             if (descItem instanceof DescriptionItemStructObjectRef) {
                 DescriptionItemStructObjectRef refItem = (DescriptionItemStructObjectRef) descItem;
                 // check if referenced structured object already processed
-                ContextStructObject refCso = section.getContextStructObject(refItem.getSoid());
+                StructObjContext refCso = section.getStructObject(refItem.getSoid());
                 if (refCso == null) {
                     // not yet processed (cannot call processData directly)
                     ArrStructuredItem structItem = createStructItem(rsit, descItem.getS());
-                    cso.addStructItem(structItem, refItem.getSoid());
+                    cso.addStructObjRef(structItem, refItem.getSoid());
                     continue;
                 }
             }
@@ -83,7 +83,7 @@ public class StructObjectProcessor implements ItemProcessor {
         }
     }
 
-    private void processData(DescriptionItem descItem, RuleSystemItemType rsit, ContextStructObject cso) {
+    private void processData(DescriptionItem descItem, ItemType rsit, StructObjContext cso) {
         // create data
         DataType dataType = rsit.getDataType();
         ImportableItemData itemData = descItem.createData(context, dataType);
@@ -99,7 +99,7 @@ public class StructObjectProcessor implements ItemProcessor {
         cso.addStructItem(structItem, data);
     }
 
-    private ArrStructuredItem createStructItem(RuleSystemItemType rsit, String specCode) {
+    private ArrStructuredItem createStructItem(ItemType rsit, String specCode) {
         ArrStructuredItem structItem = new ArrStructuredItem();
         structItem.setCreateChange(section.getCreateChange());
         structItem.setDescItemObjectId(section.generateDescItemObjectId());

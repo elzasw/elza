@@ -5,14 +5,12 @@ import javax.xml.stream.XMLEventReader;
 import cz.tacr.elza.dataexchange.input.context.ImportContext;
 import cz.tacr.elza.dataexchange.input.context.ImportPhase;
 import cz.tacr.elza.dataexchange.input.reader.XmlElementHandler;
-import cz.tacr.elza.dataexchange.input.sections.context.ContextSection;
+import cz.tacr.elza.dataexchange.input.sections.context.SectionContext;
 import cz.tacr.elza.dataexchange.input.sections.context.SectionsContext;
 
 /**
- * When all structured objects are read this class
- * will fire validation and generation of values
- * 
- *
+ * When all structured objects are read this class will fire validation and
+ * generation of values.
  */
 public class StructTypesHandler extends ContextAwareElementHandler implements XmlElementHandler {
 
@@ -29,9 +27,8 @@ public class StructTypesHandler extends ContextAwareElementHandler implements Xm
         // all structuredObjects are read
         // store them in DB
         SectionsContext ssCtx = context.getSections();
-        ContextSection secCtx = ssCtx.getCurrentSection();
+        SectionContext secCtx = ssCtx.getCurrentSection();
 
         secCtx.structObjsFinished();
     }
-
 }

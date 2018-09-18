@@ -156,7 +156,7 @@ class UserDetail extends AbstractReactComponent {
             {userDetail.fetched && <AdminRightsContainer
                 header={<DetailHeader
                         icon={<Icon glyph="fa-user"/>}
-                        title={userDetail.party.record.record}
+                        title={userDetail.party.accessPoint.record}
                         rowFlagColor={userDetail.active ? "success" : "warning"}
                         flagLeft={userDetail.active ? i18n("admin.user.title.active") : i18n("admin.user.title.nonactive")}
                         subtitle={userDetail.username}

@@ -43,9 +43,12 @@ import * as perms from 'actions/user/Permission.jsx';
 import {getOneSettings} from 'components/arr/ArrUtils.jsx';
 import {canSetFocus, setFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import {ActionState} from 'constants.jsx'
-import {actionStateTranslation} from "../../actions/arr/fundAction";
+import {actionStateTranslation, fundActionActionReceive} from "../../actions/arr/fundAction";
 import {PropTypes} from 'prop-types';
 import defaultKeymap from './FundActionPageKeymap.jsx';
+import PersistentSortForm from "../../components/arr/PersistentSortForm";
+import {PERSISTENT_SORT_CODE} from "../../constants";
+import {descItemTypesFetchIfNeeded} from "../../actions/refTables/descItemTypes";
 
 class FundActionPage extends ArrParentPage {
     static contextTypes = { shortcuts: PropTypes.object };
@@ -77,6 +80,8 @@ class FundActionPage extends ArrParentPage {
     }
 
     componentDidMount() {
+        this.props.dispatch(descItemTypesFetchIfNeeded());
+
         const fund = this.getActiveFund(this.props);
         if (fund) {
             this.dispatch(fundActionFetchListIfNeeded(fund.versionId));
@@ -86,6 +91,8 @@ class FundActionPage extends ArrParentPage {
     }
 
     componentWillReceiveProps(nextProps) {
+        this.props.dispatch(descItemTypesFetchIfNeeded());
+
         const fund = this.getActiveFund(nextProps);
         if(fund) {
             this.dispatch(fundActionFetchListIfNeeded(fund.versionId));
@@ -128,10 +135,20 @@ class FundActionPage extends ArrParentPage {
     handleRibbonCreateAction() {
         const fund = this.getActiveFund(this.props);
         const {fundAction: {form}, versionId} = fund;
+
         if (form.code !== '' && form.nodes && form.nodes.length > 0) {
-            this.dispatch(fundActionFormSubmit(versionId))
+            if (form.code === PERSISTENT_SORT_CODE) {
+                //zavolá metodu FundActionPage#submitPersistentSortForm
+                this.refs.persistentSortForm.getWrappedInstance().submit();
+            } else {
+                this.dispatch(fundActionFormSubmit(versionId, form.code))
+            }
         }
     }
+
+    submitPersistentSortForm = (versionId, values) => {
+        return this.dispatch(fundActionFormSubmit(versionId, PERSISTENT_SORT_CODE, values))
+    };
 
     handleRibbonInterruptAction() {
         const fund = this.getActiveFund(this.props);
@@ -388,6 +405,14 @@ class FundActionPage extends ArrParentPage {
                         onAddNode={this.handleFormNodesAdd}
                         onDeleteNode={this.handleFormNodeDelete}
                     />
+                    {form.code === PERSISTENT_SORT_CODE && [
+                    <h2>{i18n("arr.functions.configuration")}</h2>,
+                    <PersistentSortForm
+                        initialValues={detail.data && detail.data.config && JSON.parse(detail.data.config)}
+                        onSubmit={this.submitPersistentSortForm}
+                        ref={"persistentSortForm"}
+                        versionId={versionId}
+                    />]}
                 </div>}
             </div>
         }

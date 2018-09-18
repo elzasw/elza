@@ -12,7 +12,7 @@ public abstract class BaseActionConfig implements BulkActionConfig {
 
 	protected String description;
 
-	protected String codeTypeBulkAction;
+	protected boolean fastAction = false;
 
 	public String getName() {
 		return name;
@@ -30,14 +30,6 @@ public abstract class BaseActionConfig implements BulkActionConfig {
 		this.description = description;
 	}
 
-	public String getCodeTypeBulkAction() {
-		return codeTypeBulkAction;
-	}
-
-	public void setCodeTypeBulkAction(String codeTypeBulkAction) {
-		this.codeTypeBulkAction = codeTypeBulkAction;
-	}
-
 	/**
 	 * Vrací kód hromadné akce.
 	 *
@@ -49,6 +41,15 @@ public abstract class BaseActionConfig implements BulkActionConfig {
 
 	public void setCode(String code) {
 		this.code = code;
+	}
+
+	@Override
+	public boolean isFastAction() {
+		return fastAction;
+	}
+
+	public void setFastAction(boolean fastAction) {
+		this.fastAction = fastAction;
 	}
 
 	@Override

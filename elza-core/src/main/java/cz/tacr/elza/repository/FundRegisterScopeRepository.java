@@ -1,8 +1,8 @@
 package cz.tacr.elza.repository;
 
+import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ArrFundRegisterScope;
 import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.RegScope;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -24,7 +24,7 @@ public interface FundRegisterScopeRepository extends JpaRepository<ArrFundRegist
      * @param scope třída
      * @return seznam napojení
      */
-    List<ArrFundRegisterScope> findByScope(RegScope scope);
+    List<ArrFundRegisterScope> findByScope(ApScope scope);
 
     /**
      * Najde spojení na FA podle třídy.
@@ -34,5 +34,5 @@ public interface FundRegisterScopeRepository extends JpaRepository<ArrFundRegist
      */
     List<ArrFundRegisterScope> findByFund(ArrFund fund);
 
-    ArrFundRegisterScope findByFundAndScope(ArrFund fund, RegScope scope);
+    ArrFundRegisterScope findByFundAndScope(ArrFund fund, ApScope scope);
 }

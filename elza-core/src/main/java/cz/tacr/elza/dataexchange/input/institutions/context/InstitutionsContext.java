@@ -5,12 +5,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.Validate;
+
 import cz.tacr.elza.dataexchange.input.context.ImportContext;
 import cz.tacr.elza.dataexchange.input.context.ImportInitHelper;
 import cz.tacr.elza.dataexchange.input.context.ImportPhase;
 import cz.tacr.elza.dataexchange.input.context.ImportPhaseChangeListener;
 import cz.tacr.elza.dataexchange.input.context.ObservableImport;
 import cz.tacr.elza.dataexchange.input.parties.context.PartyInfo;
+import cz.tacr.elza.dataexchange.input.storage.SaveMethod;
 import cz.tacr.elza.dataexchange.input.storage.StorageManager;
 import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.ParInstitutionType;
@@ -22,48 +25,48 @@ public class InstitutionsContext {
 
     private final int batchSize;
 
-    private final InstitutionUpdateProcessor mergeProcessor;
+    private final InstitutionWrapperBuilder wrapperBuilder;
 
-    private final Map<String, ParInstitutionType> institutionTypeCodeMap;
+    private final Map<String, ParInstitutionType> instTypeCodeMap;
 
-    private final List<InstitutionWrapper> institutionQueue = new ArrayList<>();
+    private final List<InstitutionWrapper> instQueue = new ArrayList<>();
 
-    public InstitutionsContext(StorageManager storageManager,
-                               int batchSize,
-                               ImportInitHelper initHelper) {
+    public InstitutionsContext(StorageManager storageManager, int batchSize, ImportInitHelper initHelper) {
         this.storageManager = storageManager;
         this.batchSize = batchSize;
-        this.mergeProcessor = new InstitutionUpdateProcessor(batchSize, initHelper.getInstitutionRepository());
-        this.institutionTypeCodeMap = loadInstitutionTypeCodeMap(initHelper.getInstitutionTypeRepository());
+        this.wrapperBuilder = new InstitutionWrapperBuilder(batchSize, initHelper.getInstitutionRepository());
+        this.instTypeCodeMap = loadInstitutionTypeCodeMap(initHelper.getInstitutionTypeRepository());
     }
 
     public void init(ObservableImport observableImport) {
-        observableImport.registerPhaseChangeListener(mergeProcessor);
+        observableImport.registerPhaseChangeListener(wrapperBuilder);
         observableImport.registerPhaseChangeListener(new InstitutionsPhaseEndListener());
     }
 
     public ParInstitutionType getInstitutionTypeByCode(String code) {
-        return institutionTypeCodeMap.get(code);
+        return instTypeCodeMap.get(code);
     }
 
     public void addInstitution(ParInstitution entity, PartyInfo partyInfo) {
-        InstitutionWrapper wrapper = mergeProcessor.createWrapper(entity, partyInfo);
-        institutionQueue.add(wrapper);
-        if (institutionQueue.size() >= batchSize) {
-            storeInstitutions();
+        Validate.isTrue(partyInfo.getSaveMethod() != SaveMethod.IGNORE);
+
+        InstitutionWrapper wrapper = wrapperBuilder.build(entity, partyInfo);
+        instQueue.add(wrapper);
+        if (instQueue.size() >= batchSize) {
+            store();
         }
     }
 
-    private void storeInstitutions() {
-        storageManager.saveInstitutions(institutionQueue);
-        institutionQueue.clear();
+    private void store() {
+        storageManager.storeGeneric(instQueue);
+        instQueue.clear();
     }
 
-    private static Map<String, ParInstitutionType> loadInstitutionTypeCodeMap(InstitutionTypeRepository institutionTypeRepository) {
-        List<ParInstitutionType> institutionTypes = institutionTypeRepository.findAll();
-        Map<String, ParInstitutionType> institutionTypesCodeMap = new HashMap<>(institutionTypes.size());
-        institutionTypes.forEach(it -> institutionTypesCodeMap.put(it.getCode(), it));
-        return institutionTypesCodeMap;
+    private static Map<String, ParInstitutionType> loadInstitutionTypeCodeMap(InstitutionTypeRepository instTypeRepository) {
+        List<ParInstitutionType> instTypes = instTypeRepository.findAll();
+        Map<String, ParInstitutionType> instTypeCodeMap = new HashMap<>(instTypes.size());
+        instTypes.forEach(it -> instTypeCodeMap.put(it.getCode(), it));
+        return instTypeCodeMap;
     }
 
     /**
@@ -74,7 +77,7 @@ public class InstitutionsContext {
         @Override
         public boolean onPhaseChange(ImportPhase previousPhase, ImportPhase nextPhase, ImportContext context) {
             if (previousPhase == ImportPhase.INSTITUTIONS) {
-                context.getInstitutions().storeInstitutions();
+                context.getInstitutions().store();
                 return false;
             }
             return !ImportPhase.INSTITUTIONS.isSubsequent(nextPhase);

@@ -4,7 +4,8 @@ const initialState = {
     isFetching: false,
     fetched: false,
     dirty: false,
-    items: []
+    items: [],
+	typeIdMap: {}
 };
 
 export default function recordTypes(state = initialState, action = {}) {
@@ -16,6 +17,8 @@ export default function recordTypes(state = initialState, action = {}) {
             }
         }
         case types.REF_RECORD_TYPES_RECEIVE:{
+			prepareApTypeIdMap(action.items, state.typeIdMap);
+		
             return {
                 ...state,
                 isFetching: false,
@@ -28,4 +31,20 @@ export default function recordTypes(state = initialState, action = {}) {
         default:
             return state
     }
+}
+
+function prepareApTypeIdMap(types, map) {
+	if (!types) {
+		return;
+	}
+	types.forEach(type => {
+		if (map[type.id]) {
+			throw "Unable to create AP type map, duplicate id=" + type.id;
+		}
+		map[type.id] = type;
+		// call recursive on childern
+		if (type.children) {
+			prepareApTypeIdMap(type.children, map);	
+		}
+	})
 }

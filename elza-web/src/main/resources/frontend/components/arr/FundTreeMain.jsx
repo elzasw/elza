@@ -19,6 +19,8 @@ import {propsEquals} from 'components/Utils.jsx'
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {FOCUS_KEYS} from "../../constants";
+import PersistentSortDialog from "./PersisetntSortDialog";
+import {WebApi} from "../../actions/WebApi";
 
 class FundTreeMain extends AbstractReactComponent {
     constructor(props) {
@@ -82,12 +84,15 @@ return true
      * @param e {Object} event
      */
     handleContextMenu(node, e) {
+        const {readMode} = this.props;
         e.preventDefault();
         e.stopPropagation();
 
         var menu = (
             <ul className="dropdown-menu">
                 <MenuItem onClick={this.handleSelectInNewTab.bind(this, node)}>{i18n('fundTree.action.openInNewTab')}</MenuItem>
+                {!readMode && <MenuItem onClick={() => this.handleOpenPersistentSortDialog(node)}>{i18n('arr.functions.persistentSort')}</MenuItem>}
+                {!readMode && <MenuItem onClick={() => this.computeAndVizualizeEJ(node)}>{i18n('arr.functions.computeAndVizualizeEJ')}</MenuItem>}
             </ul>
         )
 
@@ -104,6 +109,20 @@ return true
 
         this.callFundSelectSubNode(node, true, false);
     }
+
+    handleOpenPersistentSortDialog = (node) => {
+        const {fund} = this.props;
+        this.dispatch(contextMenuHide());
+
+        this.props.dispatch(modalDialogShow(this, i18n("arr.functions.persistentSort"), <PersistentSortDialog versionId={fund.versionId} node={node}/>));
+    };
+
+    computeAndVizualizeEJ = (node) => {
+        const {fund} = this.props;
+        this.dispatch(contextMenuHide());
+
+        WebApi.queueBulkActionWithIds(fund.versionId, "ZP2015_INTRO_VYPOCET_EJ", [node.id]);
+    };
 
     /**
      * Otevření uzlu v záložce.

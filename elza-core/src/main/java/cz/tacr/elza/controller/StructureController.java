@@ -21,9 +21,8 @@ import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.ArrStructureDataVO;
 import cz.tacr.elza.controller.vo.FilteredResultVO;
 import cz.tacr.elza.controller.vo.RulStructureTypeVO;
+import cz.tacr.elza.controller.vo.nodes.ItemTypeLiteVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ItemGroupVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ItemTypeGroupVO;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.ArrStructuredObject;
@@ -37,7 +36,7 @@ import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.FilteredResult;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.RuleService;
-import cz.tacr.elza.service.StructureService;
+import cz.tacr.elza.service.StructObjService;
 
 
 /**
@@ -51,14 +50,14 @@ import cz.tacr.elza.service.StructureService;
         produces = MediaType.APPLICATION_JSON_VALUE)
 public class StructureController {
 
-    private final StructureService structureService;
+    private final StructObjService structureService;
     private final ArrangementService arrangementService;
     private final RuleService ruleService;
     private final ClientFactoryDO factoryDO;
     private final ClientFactoryVO factoryVO;
 
     @Autowired
-    public StructureController(final StructureService structureService,
+    public StructureController(final StructObjService structureService,
                                final ArrangementService arrangementService,
                                final RuleService ruleService,
                                final ClientFactoryDO factoryDO,
@@ -84,7 +83,6 @@ public class StructureController {
 
         ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
         RulStructuredType structureType = structureService.getStructureTypeByCode(structureTypeCode);
-        validateRuleSet(fundVersion, structureType);
         ArrStructuredObject createStructureData = structureService.createStructObj(fundVersion.getFund(), structureType, ArrStructuredObject.State.TEMP);
         return factoryVO.createStructureData(createStructureData);
     }
@@ -128,7 +126,6 @@ public class StructureController {
                                          @RequestBody final StructureDataBatchUpdate structureDataBatchUpdate) {
         ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
         RulStructuredType structureType = structureService.getStructureTypeByCode(structureTypeCode);
-        validateRuleSet(fundVersion, structureType);
 
         Assert.notNull(structureDataBatchUpdate.autoincrementItemTypeIds, "Identifikátory typů atributu pro autoincrement nesmí být null");
         Assert.notNull(structureDataBatchUpdate.deleteItemTypeIds, "Identifikátory typů atributu pro odstranění nesmí být null");
@@ -157,7 +154,6 @@ public class StructureController {
                                                    @PathVariable(value = "structureDataId") final Integer structureDataId) {
         ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
         ArrStructuredObject structureData = structureService.getStructObjById(structureDataId);
-        validateRuleSet(fundVersion, structureData.getStructuredType());
         ArrStructuredObject createStructureData = structureService.confirmStructureData(fundVersion.getFund(), structureData);
         return factoryVO.createStructureData(createStructureData);
     }
@@ -176,9 +172,6 @@ public class StructureController {
                                                @RequestBody List<Integer> structureDataIds) {
         ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
         List<ArrStructuredObject> structureDataList = structureService.getStructObjByIds(structureDataIds);
-        for (ArrStructuredObject structureData : structureDataList) {
-            validateRuleSet(fundVersion, structureData.getStructuredType());
-        }
         structureService.setAssignableStructureDataList(fundVersion.getFund(), structureDataList, assignable);
     }
 
@@ -195,7 +188,6 @@ public class StructureController {
                                                   @PathVariable(value = "structureDataId") final Integer structureDataId) {
         ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
         ArrStructuredObject structObj = structureService.getStructObjById(structureDataId);
-        validateRuleSet(fundVersion, structObj.getStructuredType());
         structureService.deleteStructObj(structObj);
         return factoryVO.createStructureData(structObj);
     }
@@ -264,7 +256,7 @@ public class StructureController {
         ArrStructuredItem structureItem = factoryDO.createStructureItem(itemVO, itemTypeId);
         ArrStructuredItem createStructureItem = structureService.createStructureItem(structureItem, structureDataId, fundVersionId);
         StructureItemResult result = new StructureItemResult();
-        result.setItem(factoryVO.createDescItem(createStructureItem));
+        result.setItem(factoryVO.createItem(createStructureItem));
         result.setParent(factoryVO.createStructureData(createStructureItem.getStructuredObject()));
         return result;
     }
@@ -285,7 +277,7 @@ public class StructureController {
         ArrStructuredItem structureItem = factoryDO.createStructureItem(itemVO);
         ArrStructuredItem updateStructureItem = structureService.updateStructureItem(structureItem, fundVersionId, createNewVersion);
         StructureItemResult result = new StructureItemResult();
-        result.setItem(factoryVO.createDescItem(updateStructureItem));
+        result.setItem(factoryVO.createItem(updateStructureItem));
         result.setParent(factoryVO.createStructureData(updateStructureItem.getStructuredObject()));
         return result;
     }
@@ -304,7 +296,7 @@ public class StructureController {
         ArrStructuredItem structureItem = factoryDO.createStructureItem(itemVO);
         ArrStructuredItem deleteStructureItem = structureService.deleteStructureItem(structureItem, fundVersionId);
         StructureItemResult result = new StructureItemResult();
-        result.setItem(factoryVO.createDescItem(deleteStructureItem));
+        result.setItem(factoryVO.createItem(deleteStructureItem));
         result.setParent(factoryVO.createStructureData(deleteStructureItem.getStructuredObject()));
         return result;
     }
@@ -331,14 +323,12 @@ public class StructureController {
     /**
      * Vyhledá možné typy strukt. datových typů, které lze v AS používat.
      *
-     * @param fundVersionId identifikátor verze AS
      * @return nalezené entity
      */
     @Transactional
-    @RequestMapping(value = "/type/{fundVersionId}", method = RequestMethod.GET)
-    public List<RulStructureTypeVO> findStructureTypes(@PathVariable(value = "fundVersionId") final Integer fundVersionId) {
-        ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
-        List<RulStructuredType> structureTypes = structureService.findStructureTypes(fundVersion);
+    @RequestMapping(value = "/type", method = RequestMethod.GET)
+    public List<RulStructureTypeVO> findStructureTypes() {
+        List<RulStructuredType> structureTypes = structureService.findStructureTypes();
         return factoryVO.createSimpleEntity(structureTypes, RulStructureTypeVO.class);
     }
 
@@ -356,8 +346,6 @@ public class StructureController {
         ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
         ArrStructuredObject structureData = structureService.getStructObjById(structureDataId);
 
-        validateRuleSet(fundVersion, structureData.getStructuredType());
-
         List<ArrStructuredItem> structureItems = structureService.findStructureItems(structureData);
         List<RulItemTypeExt> structureItemTypes = ruleService.getStructureItemTypes(structureData.getStructuredType(), fundVersion, structureItems);
 
@@ -365,9 +353,9 @@ public class StructureController {
         String ruleCode = fundVersion.getRuleSet().getCode();
 
         ArrStructureDataVO structureDataVO = factoryVO.createStructureData(structureData);
-        List<ItemGroupVO> itemGroupsVO = factoryVO.createItemGroupsNew(ruleCode, fundId, structureItems);
-        List<ItemTypeGroupVO> itemTypeGroupsVO = factoryVO.createItemTypeGroupsNew(ruleCode, fundId, structureItemTypes);
-        return new StructureDataFormDataVO(structureDataVO, itemGroupsVO, itemTypeGroupsVO);
+        List<ArrItemVO> descItems = factoryVO.createItems(structureItems);
+        List<ItemTypeLiteVO> itemTypeLites = factoryVO.createItemTypes(ruleCode, fundId, structureItemTypes);
+        return new StructureDataFormDataVO(structureDataVO, descItems, itemTypeLites);
     }
 
     /**
@@ -382,7 +370,6 @@ public class StructureController {
                                                                      @PathVariable(value = "structureTypeCode") final String structureTypeCode) {
         ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
         RulStructuredType structureType = structureService.getStructureTypeByCode(structureTypeCode);
-        validateRuleSet(fundVersion, structureType);
         List<RulStructuredTypeExtension> allStructureExtensions = structureService.findAllStructureExtensions(structureType);
         List<RulStructuredTypeExtension> structureExtensions = structureService.findStructureExtensions(fundVersion.getFund(), structureType);
         return factoryVO.createStructureExtensionFund(allStructureExtensions, structureExtensions);
@@ -401,21 +388,8 @@ public class StructureController {
                                            @RequestBody final List<String> structureExtensionCodes) {
         ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
         RulStructuredType structureType = structureService.getStructureTypeByCode(structureTypeCode);
-        validateRuleSet(fundVersion, structureType);
         List<RulStructuredTypeExtension> structureExtensions = structureService.findStructureExtensionByCodes(structureExtensionCodes);
         structureService.setFundStructureExtensions(fundVersion, structureType, structureExtensions);
-    }
-
-    /**
-     * Validace pravidel.
-     *
-     * @param fundVersion   verze AS
-     * @param structureType strukturovaný typ
-     */
-    private void validateRuleSet(final ArrFundVersion fundVersion, final RulStructuredType structureType) {
-        if (!structureType.getRuleSet().equals(fundVersion.getRuleSet())) {
-            throw new BusinessException("Pravidla z AS se neshodují s pravidly ze strukturovaného typu", ArrangementCode.INVALID_RULE);
-        }
     }
 
     public static class StructureDataFormDataVO extends ArrangementController.FormDataNewVO<ArrStructureDataVO> {
@@ -424,8 +398,8 @@ public class StructureController {
         public StructureDataFormDataVO() {
         }
 
-        public StructureDataFormDataVO(final ArrStructureDataVO parent, final List<ItemGroupVO> groups, final List<ItemTypeGroupVO> typeGroups) {
-            super(parent, groups, typeGroups);
+        public StructureDataFormDataVO(final ArrStructureDataVO parent, final List<ArrItemVO> descItems, final List<ItemTypeLiteVO> itemTypeLites) {
+            super(parent, descItems, itemTypeLites);
             this.parent = parent;
         }
 

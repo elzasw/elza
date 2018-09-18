@@ -210,6 +210,7 @@ export default function arrRegion(state = initialState, action) {
         case types.FUND_NODES_RECEIVE:
         case types.FUND_NODES_REQUEST:
         case types.FUND_FUND_CHANGE_READ_MODE:
+        case types.FUND_TEMPLATE_USE:
         case types.CHANGE_NODES:
         case types.FUND_SUBNODE_UPDATE:
         case types.CHANGE_OUTPUTS:

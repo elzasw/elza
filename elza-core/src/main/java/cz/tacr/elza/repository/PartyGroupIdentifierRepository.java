@@ -9,12 +9,13 @@ import org.springframework.stereotype.Repository;
 
 import cz.tacr.elza.domain.ParPartyGroup;
 import cz.tacr.elza.domain.ParPartyGroupIdentifier;
-
+import cz.tacr.elza.domain.projection.ParPartyGroupIdentifierInfo;
 
 /**
  * Repozitory pro {@link ParPartyGroupIdentifier}.
  *
- * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
+ * @author Tomáš Kubový
+ *         [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 04.01.2016
  */
 @Repository
@@ -23,23 +24,23 @@ public interface PartyGroupIdentifierRepository extends JpaRepository<ParPartyGr
     /**
      * Najde seznam identifikací.
      *
-     * @param party group party
+     * @param party
+     *            group party
      * @return seznam identifikací group party
      */
     List<ParPartyGroupIdentifier> findByPartyGroup(ParPartyGroup party);
 
     /**
      * Vrátí identifikátor korporace/skupiny osoby.
-     * @param partyGroup skupina osob
-     * @return  identifikace korporace/skupiny
+     * 
+     * @param partyGroup
+     *            skupina osob
+     * @return identifikace korporace/skupiny
      */
     @Query("SELECT pi FROM par_party_group_identifier pi WHERE pi.partyGroup = ?1")
     List<ParPartyGroupIdentifier> findByParty(ParPartyGroup partyGroup);
 
-    /**
-     * Najde identifikátory pro dané korporace/skupiny osob.
-     * @param partyGroups skupiny osob
-     * @return identifikátory korporací/skupin
-     */
-	List<ParPartyGroupIdentifier> findByPartyGroupIn(Collection<ParPartyGroup> partyGroups);
+    List<ParPartyGroupIdentifierInfo> findInfoByPartyGroupIn(Collection<ParPartyGroup> partyGroups);
+
+    int deleteByPartyGroupIdentifierIdIn(Collection<Integer> groupIdentifierIds);
 }

@@ -5,10 +5,8 @@ import java.util.List;
 import com.vividsolutions.jts.util.Assert;
 
 import cz.tacr.elza.dataexchange.input.DEImportParams.ImportDirection;
-import cz.tacr.elza.dataexchange.input.context.EntityIdHolder;
+import cz.tacr.elza.dataexchange.input.context.SimpleIdHolder;
 import cz.tacr.elza.dataexchange.input.context.ImportInitHelper;
-import cz.tacr.elza.dataexchange.input.sections.context.ContextSection.SectionRootAdapter;
-import cz.tacr.elza.dataexchange.input.sections.context.SectionsContext.ImportPosition;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrLevel;
@@ -90,13 +88,13 @@ class SubsectionRootAdapter implements SectionRootAdapter {
     }
 
 	@Override
-	public ContextNode createRoot(ContextSection contextSection, ArrNode rootNode, String importNodeId) {
+	public NodeContext createRoot(SectionContext contextSection, ArrNode rootNode, String importNodeId) {
 		ArrNodeWrapper nodeWrapper = new ArrNodeWrapper(rootNode);
 
 		// set existing node from importPosition as parent 
-		EntityIdHolder<ArrNode> parentNodeIdHolder = new EntityIdHolder<>(ArrNode.class);
+		SimpleIdHolder<ArrNode> parentNodeIdHolder = new SimpleIdHolder<>(ArrNode.class);
 		parentNodeIdHolder.setEntityId(importPosition.getParentLevel().getNodeId());
-		ArrLevelWrapper levelWrapper = ContextNode.createLevelWrapper(nodeWrapper.getIdHolder(), parentNodeIdHolder,
+		ArrLevelWrapper levelWrapper = NodeContext.createLevelWrapper(nodeWrapper.getIdHolder(), parentNodeIdHolder,
 		        getNextLevelPosition(), createChange);
 
 		return contextSection.addNode(nodeWrapper, levelWrapper, importNodeId, 0);

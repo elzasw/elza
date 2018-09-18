@@ -24,12 +24,15 @@ import org.yaml.snakeyaml.TypeDescription;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 
+import cz.tacr.elza.bulkaction.generator.DeleteItemConfig;
 import cz.tacr.elza.bulkaction.generator.FundValidationConfig;
 import cz.tacr.elza.bulkaction.generator.MoveDescItemConfig;
 import cz.tacr.elza.bulkaction.generator.MultiActionConfig;
+import cz.tacr.elza.bulkaction.generator.PersistentSortConfig;
+import cz.tacr.elza.bulkaction.generator.SealUnitIdConfig;
 import cz.tacr.elza.bulkaction.generator.SerialNumberConfig;
 import cz.tacr.elza.bulkaction.generator.TestDataConfig;
-import cz.tacr.elza.bulkaction.generator.UnitIdConfig;
+import cz.tacr.elza.bulkaction.generator.GenerateUnitIdConfig;
 import cz.tacr.elza.bulkaction.generator.multiple.CopyConfig;
 import cz.tacr.elza.bulkaction.generator.multiple.DateRangeConfig;
 import cz.tacr.elza.bulkaction.generator.multiple.NodeCountConfig;
@@ -65,9 +68,9 @@ public class BulkActionConfigManager {
 
     /**
      * Načtení hromadných akcí z adresáře.
-     * 
+     *
      * Function can is used also to reload configuration.
-     * 
+     *
      * @param resourcePathResolver
      */
     @Transactional(TxType.MANDATORY)
@@ -136,7 +139,7 @@ public class BulkActionConfigManager {
 
     /**
      * Load configuration of single action
-     * 
+     *
      * @param action
      * @param configFile
      * @param yamlLoader
@@ -158,7 +161,7 @@ public class BulkActionConfigManager {
 
     /**
      * Create yaml loader
-     * 
+     *
      * @return
      */
     private static Yaml prepareYamlLoader() {
@@ -167,7 +170,8 @@ public class BulkActionConfigManager {
         // Register type descriptors
         yamlCtor.addTypeDescription(new TypeDescription(FundValidationConfig.class, "!FundValidation"));
         yamlCtor.addTypeDescription(new TypeDescription(SerialNumberConfig.class, "!SerialNumberGenerator"));
-        yamlCtor.addTypeDescription(new TypeDescription(UnitIdConfig.class, "!UnitIdGenerator"));
+        yamlCtor.addTypeDescription(new TypeDescription(GenerateUnitIdConfig.class, "!UnitIdGenerator"));
+        yamlCtor.addTypeDescription(new TypeDescription(SealUnitIdConfig.class, "!SealUnitId"));
         yamlCtor.addTypeDescription(new TypeDescription(TestDataConfig.class, "!TestDataGenerator"));
         yamlCtor.addTypeDescription(new TypeDescription(MultiActionConfig.class, "!MultiAction"));
         yamlCtor.addTypeDescription(new TypeDescription(DateRangeConfig.class, "!DateRange"));
@@ -176,6 +180,8 @@ public class BulkActionConfigManager {
         yamlCtor.addTypeDescription(new TypeDescription(NodeCountConfig.class, "!NodeCount"));
         yamlCtor.addTypeDescription(new TypeDescription(UnitCountConfig.class, "!UnitCount"));
         yamlCtor.addTypeDescription(new TypeDescription(MoveDescItemConfig.class, "!MoveDescItem"));
+        yamlCtor.addTypeDescription(new TypeDescription(PersistentSortConfig.class, "!PersistentSort"));
+        yamlCtor.addTypeDescription(new TypeDescription(DeleteItemConfig.class, "!DeleteItem"));
 
         return new Yaml(yamlCtor);
     }

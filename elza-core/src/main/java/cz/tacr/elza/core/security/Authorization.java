@@ -17,8 +17,8 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
+import cz.tacr.elza.api.interfaces.IApScope;
 import cz.tacr.elza.api.interfaces.IArrFund;
-import cz.tacr.elza.api.interfaces.IRegScope;
 import cz.tacr.elza.core.security.AuthParam.Type;
 import cz.tacr.elza.core.security.Authorization.MethodParamBasedAccess.PermissionResult;
 import cz.tacr.elza.domain.UsrGroup;
@@ -27,9 +27,9 @@ import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.AccessDeniedException;
 import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.PartyRepository;
-import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.UserRepository;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.UserService;
@@ -79,7 +79,7 @@ public class Authorization {
 	 *
 	 */
 	interface MethodParamBasedAccess {
-		
+
 		enum PermissionResult {
 			/**
 			 * Used when permission cannot be checked with this parameter
@@ -109,7 +109,7 @@ public class Authorization {
     private FundVersionRepository fundVersionRepository;
 
     @Autowired
-    private RegRecordRepository recordRepository;
+    private ApAccessPointRepository accessPointRepository;
 
     @Autowired
     private PartyRepository partyRepository;
@@ -169,10 +169,10 @@ public class Authorization {
      */
     private boolean hasPermission(MethodInfo methodInfo, MethodParamBasedAccess methodChecker) {
         Parameter[] params = methodInfo.getParameters();
-       
+
         // number of applied parameters
         int appliedParams = 0;
-        
+
         // permssions for fund
         for (int i = 0; i < params.length; i++) {
             Parameter parameter = params[i];
@@ -192,7 +192,7 @@ public class Authorization {
                 }
             }
         }
-        
+
         // check if permissions where checked with at least one parameter
         if(appliedParams==0) {
         	throw new SystemException("Failed to check permissions, incorrect configuration, method: "
@@ -314,22 +314,22 @@ public class Authorization {
 		case SCOPE:
 			if (value instanceof Integer) {
 				return (Integer) value;
-			} else if (value instanceof IRegScope) {
-				return ((IRegScope) value).getRegScope().getScopeId();
+			} else if (value instanceof IApScope) {
+				return ((IApScope) value).getScopeId();
 			}
 			break;
 		case PARTY:
 			if (value instanceof Integer) {
-				return partyRepository.getOneCheckExist((Integer) value).getRegScope().getScopeId();
-			} else if (value instanceof IRegScope) {
-				return ((IRegScope) value).getRegScope().getScopeId();
+				return partyRepository.getOneCheckExist((Integer) value).getScopeId();
+			} else if (value instanceof IApScope) {
+				return ((IApScope) value).getScopeId();
 			}
 			break;
-		case REGISTRY:
+		case AP:
 			if (value instanceof Integer) {
-				return recordRepository.getOneCheckExist((Integer) value).getRegScope().getScopeId();
-			} else if (value instanceof IRegScope) {
-				return ((IRegScope) value).getRegScope().getScopeId();
+				return accessPointRepository.getOneCheckExist((Integer) value).getScopeId();
+			} else if (value instanceof IApScope) {
+				return ((IApScope) value).getScopeId();
 			}
 			break;
 		}

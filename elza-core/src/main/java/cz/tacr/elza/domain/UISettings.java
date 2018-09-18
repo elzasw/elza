@@ -1,8 +1,6 @@
 package cz.tacr.elza.domain;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;
@@ -15,8 +13,9 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Uživatelské nastavení.
@@ -169,6 +168,11 @@ public class UISettings {
         FUND_STRICT_MODE(true, EntityType.FUND),
 
         /**
+         * uživatelské šablony JP
+         */
+        FUND_TEMPLATES(true, EntityType.FUND),
+
+        /**
          * oblíbené specifikace u typu atributu
          */
         FAVORITE_ITEM_SPECS(false, EntityType.ITEM_TYPE),
@@ -192,11 +196,6 @@ public class UISettings {
          * Výchozí nastavení pro rejstříky.
          */
         RECORD,
-
-        /**
-         * Počet nul před - obaly
-         */
-        PACKET_LEADING_ZEROS,
 
         /**
          * Nastavení sloupců / atributů pro zobrazení v gridu

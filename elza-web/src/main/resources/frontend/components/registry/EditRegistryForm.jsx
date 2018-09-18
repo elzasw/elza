@@ -16,17 +16,8 @@ class EditRegistryForm extends AbstractReactComponent {
     static validate = (values, props) => {
         const errors = {};
 
-        if (!values.record) {
-            errors.record = i18n('global.validation.required');
-        }
-
-        if (!values.characteristics) {
-            errors.characteristics = i18n('global.validation.required');
-        }
-
-
-        if (!values.registerTypeId) {
-            errors.registerTypeId = i18n('global.validation.required');
+        if (!values.typeId) {
+            errors.typeId = i18n('global.validation.required');
         }
         return errors;
     };
@@ -47,12 +38,11 @@ class EditRegistryForm extends AbstractReactComponent {
     submitReduxForm = (values, dispatch) => submitForm(EditRegistryForm.validate,values,this.props,this.props.onSubmitForm,dispatch);
 
     render() {
-        const {fields: { record, characteristics, registerTypeId}, handleSubmit, onClose, initData, registryRegionRecordTypes, submitting} = this.props;
+        const {fields: {typeId}, handleSubmit, onClose, registryRegionRecordTypes, submitting} = this.props;
 
         const items = registryRegionRecordTypes.item != null ? registryRegionRecordTypes.item : [];
-        const registerTypesIdValue = initData.registerTypeId && !registerTypeId.value ? initData.registerTypeId : registerTypeId.value;
 
-        const value = getTreeItemById(registerTypeId ? registerTypeId.value : "", items);
+        const value = getTreeItemById(typeId ? typeId.value : "", items);
 
         return <Form onSubmit={handleSubmit(this.submitReduxForm)}>
             <Modal.Body>
@@ -62,15 +52,13 @@ class EditRegistryForm extends AbstractReactComponent {
                     tree
                     alwaysExpanded
                     allowSelectItem={(item) => item.addRecord}
-                    {...registerTypeId}
-                    {...decorateFormField(registerTypeId)}
-                    onChange={item => registerTypeId.onChange(item ? item.id : null)}
-                    onBlur={item => registerTypeId.onBlur(item ? item.id : null)}
+                    {...typeId}
+                    {...decorateFormField(typeId)}
+                    onChange={item => typeId.onChange(item ? item.id : null)}
+                    onBlur={item => typeId.onBlur(item ? item.id : null)}
                     value={value}
                     disabled={false}
                 />
-                <FormInput type="text" label={i18n('registry.name')} {...record} {...decorateFormField(record)}/>
-                <FormInput componentClass="textarea" label={i18n('registry.characteristics')} {...characteristics} {...decorateFormField(characteristics)}/>
             </Modal.Body>
             <Modal.Footer>
                 <Button type="submit" disabled={submitting}>{i18n('global.action.store')}</Button>
@@ -82,7 +70,7 @@ class EditRegistryForm extends AbstractReactComponent {
 
 export default reduxForm({
         form: 'editRegistryForm',
-        fields: ['record', 'characteristics', 'registerTypeId']
+        fields: ['typeId']
     },state => ({
         initialValues: state.form.editRegistryForm.initialValues,
         refTables: state.refTables,

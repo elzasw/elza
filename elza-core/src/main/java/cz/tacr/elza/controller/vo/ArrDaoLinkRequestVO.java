@@ -16,7 +16,7 @@ public class ArrDaoLinkRequestVO extends ArrRequestVO {
 
     private String didCode;
 
-    private TreeNodeClient node;
+    private TreeNodeVO node;
 
     private Integer digitalRepositoryId;
 
@@ -44,11 +44,11 @@ public class ArrDaoLinkRequestVO extends ArrRequestVO {
         this.didCode = didCode;
     }
 
-    public TreeNodeClient getNode() {
+    public TreeNodeVO getNode() {
         return node;
     }
 
-    public void setNode(final TreeNodeClient node) {
+    public void setNode(final TreeNodeVO node) {
         this.node = node;
     }
 

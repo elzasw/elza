@@ -3,8 +3,12 @@ package cz.tacr.elza.dataexchange.output.parties;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang.Validate;
+
+import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.dataexchange.output.loaders.LoadDispatcher;
 import cz.tacr.elza.dataexchange.output.loaders.NestedLoadDispatcher;
+import cz.tacr.elza.domain.ParComplementType;
 import cz.tacr.elza.domain.ParPartyName;
 import cz.tacr.elza.domain.ParPartyNameComplement;
 
@@ -14,13 +18,22 @@ public class NameComplementDispatcher extends NestedLoadDispatcher<ParPartyNameC
 
     private final ParPartyName name;
 
-    public NameComplementDispatcher(ParPartyName name, LoadDispatcher<ParPartyName> nameDispatcher) {
+    private final StaticDataProvider staticData;
+
+    public NameComplementDispatcher(ParPartyName name, LoadDispatcher<ParPartyName> nameDispatcher,
+            StaticDataProvider staticData) {
         super(nameDispatcher);
         this.name = name;
+        this.staticData = staticData;
     }
 
     @Override
     public void onLoad(ParPartyNameComplement result) {
+        // init complement type
+        ParComplementType cmplType = staticData.getCmplTypeById(result.getComplementTypeId());
+        Validate.notNull(cmplType);
+        result.setComplementType(cmplType);
+        // init references
         nameComplements.add(result);
     }
 

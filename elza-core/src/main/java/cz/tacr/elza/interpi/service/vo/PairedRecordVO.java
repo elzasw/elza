@@ -1,6 +1,6 @@
 package cz.tacr.elza.interpi.service.vo;
 
-import cz.tacr.elza.controller.vo.RegScopeVO;
+import cz.tacr.elza.controller.vo.ApScopeVO;
 
 /**
  * Informace o existujícím rejstříku.
@@ -11,7 +11,7 @@ import cz.tacr.elza.controller.vo.RegScopeVO;
 public class PairedRecordVO {
 
     /** Scope ve kterém se rejstřík nachází. */
-    private RegScopeVO scope;
+    private ApScopeVO scope;
 
     /** Id rejstříku. */
     private Integer recordId;
@@ -19,13 +19,13 @@ public class PairedRecordVO {
     /** Id osoby. */
     private Integer partyId;
 
-    public PairedRecordVO(final RegScopeVO scope, final Integer recordId, final Integer partyId) {
+    public PairedRecordVO(final ApScopeVO scope, final Integer recordId, final Integer partyId) {
         this.scope = scope;
         this.recordId = recordId;
         this.partyId = partyId;
     }
 
-    public RegScopeVO getScope() {
+    public ApScopeVO getScope() {
         return scope;
     }
 

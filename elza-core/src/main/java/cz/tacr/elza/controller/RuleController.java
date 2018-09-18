@@ -17,6 +17,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 
 import org.apache.tomcat.util.http.fileupload.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,7 +29,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import cz.tacr.elza.config.ConfigRules;
+import cz.tacr.elza.config.rules.GroupConfiguration;
+import cz.tacr.elza.config.rules.TypeInfo;
+import cz.tacr.elza.config.rules.ViewConfiguration;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
+import cz.tacr.elza.controller.vo.GroupVO;
 import cz.tacr.elza.controller.vo.PackageDependencyVO;
 import cz.tacr.elza.controller.vo.PackageVO;
 import cz.tacr.elza.controller.vo.RulArrangementExtensionVO;
@@ -35,7 +42,11 @@ import cz.tacr.elza.controller.vo.RulDataTypeVO;
 import cz.tacr.elza.controller.vo.RulPolicyTypeVO;
 import cz.tacr.elza.controller.vo.RulRuleSetVO;
 import cz.tacr.elza.controller.vo.RulTemplateVO;
+import cz.tacr.elza.controller.vo.TypeInfoVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
+import cz.tacr.elza.core.data.ItemType;
+import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulArrangementExtension;
@@ -65,6 +76,8 @@ import cz.tacr.elza.service.RuleService;
 @RequestMapping("/api/rule")
 public class RuleController {
 
+    private final Logger logger = LoggerFactory.getLogger(RuleController.class);
+
     @Autowired
     private ClientFactoryVO factoryVo;
 
@@ -88,6 +101,12 @@ public class RuleController {
 
     @Autowired
     private NodeRepository nodeRepository;
+
+    @Autowired
+    private ConfigRules elzaRules;
+
+    @Autowired
+    private StaticDataService staticDataService;
 
     @RequestMapping(value = "/getRuleSets", method = RequestMethod.GET)
     public List<RulRuleSetVO> getRuleSets() {
@@ -145,7 +164,6 @@ public class RuleController {
     }
 
     @RequestMapping(value = "/deletePackage/{code}", method = RequestMethod.GET)
-    @Transactional
     public void deletePackage(@PathVariable(value = "code") final String code) {
         Assert.notNull(code, "Kód musí být vyplněn");
         packageService.deletePackage(code);
@@ -183,6 +201,54 @@ public class RuleController {
 
         List<RulPolicyType> policyTypes = policyService.getPolicyTypes(fundVersion);
         return factoryVo.createPolicyTypes(policyTypes);
+    }
+
+    /**
+     * Získání skupin pro AS.
+     *
+     * @param fundVersionId identifikátor verze AS
+     * @return seznam skupin
+     */
+    @RequestMapping(value = "/groups/{fundVersionId}", method = RequestMethod.GET)
+    public List<GroupVO> getGroups(@PathVariable(value = "fundVersionId") final Integer fundVersionId) {
+        ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
+        Integer fundId = fundVersion.getFundId();
+
+        String ruleCode = fundVersion.getRuleSet().getCode();
+        ViewConfiguration viewConfig = elzaRules.getViewConfiguration(ruleCode, fundId);
+
+        List<GroupVO> result = new ArrayList<>();
+        StaticDataProvider sdp = staticDataService.getData();
+
+        List<ItemType> ruleSystemItemTypes = new ArrayList<>(sdp.getItemTypes());
+        for (GroupConfiguration configuration : viewConfig.getGroups()) {
+            GroupVO group = new GroupVO(configuration.getCode(), configuration.getName());
+            List<TypeInfoVO> typeInfos = new ArrayList<>(configuration.getTypes().size());
+            for (TypeInfo typeInfo : configuration.getTypes()) {
+                String code = typeInfo.getCode();
+                ItemType itemType = sdp.getItemTypeByCode(code);
+                if (itemType != null) {
+                    ruleSystemItemTypes.remove(itemType);
+                    typeInfos.add(new TypeInfoVO(itemType.getItemTypeId(), typeInfo.getWidth()));
+                } else {
+                    logger.warn("Nebyl nalezen RuleSystemItemType podle kódu {}", code);
+                }
+            }
+            group.setItemTypes(typeInfos);
+            result.add(group);
+        }
+
+        GroupVO defaultGroup = new GroupVO("DEFAULT", "Bez skupiny");
+        List<TypeInfoVO> typeInfos = new ArrayList<>();
+        for (ItemType ruleSystemItemType : ruleSystemItemTypes) {
+            String code = ruleSystemItemType.getCode();
+            ItemType itemType = sdp.getItemTypeByCode(code);
+            typeInfos.add(new TypeInfoVO(itemType.getItemTypeId(), 1));
+        }
+        defaultGroup.setItemTypes(typeInfos);
+        result.add(defaultGroup);
+
+        return result;
     }
 
     /**

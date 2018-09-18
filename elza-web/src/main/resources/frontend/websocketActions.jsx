@@ -1,61 +1,63 @@
 import React from 'react';
 
-import {EmailSettingsActions, ApplicationActions} from 'actions/index.jsx';
+import {ApplicationActions, EmailSettingsActions} from 'actions/index.jsx';
 import {webSocketConnect, webSocketDisconnect} from 'actions/global/webSocket.jsx';
 import * as arrRequestActions from 'actions/arr/arrRequestActions';
 import * as daoActions from 'actions/arr/daoActions';
 import {store} from 'stores/index.jsx';
-import {addToastrDanger} from 'components/shared/toastr/ToastrActions.jsx';
+import {addToastrDanger, addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx';
 import {i18n} from "components/shared";
 import {checkUserLogged} from "actions/global/login.jsx";
 
 import {
-    changeConformityInfo,
-    changeIndexingFinished,
-    changePackage,
-    changeFiles,
-    changePackets,
-    changeNodes,
-    changeNodeRequests,
-    changeOutputs,
-    changeDeleteLevel,
     changeAddLevel,
     changeApproveVersion,
+    changeConformityInfo,
+    changeDeleteLevel,
+    changeFiles,
+    changeFund,
+    changeFundAction,
+    changeFundRecord,
+    changeIndexingFinished,
+    changeInstitution,
+    changeMoveLevel,
+    changeNodeRequests,
+    changeNodes,
+    changeOutputs,
+    changePackage,
     changeParty,
     changePartyCreate,
     changePartyDelete,
-    createExtSystem,
-    updateExtSystem,
-    deleteExtSystem,
-    changeMoveLevel,
     changeRegistry,
-    changeFund,
-    deleteFund,
-    changeFundRecord,
-    changeInstitution,
+    changeRequestItemQueue,
     changeVisiblePolicy,
+    createExtSystem,
+    createRequest,
+    createRequestItemQueue,
+    deleteExtSystem,
+    deleteFund,
+    deleteRequest,
+    fundInvalidChanges,
     fundOutputChanges,
     fundOutputChangesDetail,
-    changeFundAction,
     fundOutputStateChange,
     fundOutputStateChangeToastr,
-    userChange,
     groupChange,
     groupDelete,
-    fundInvalidChanges,
-    createRequest,
-    deleteRequest,
-    changeRequestItemQueue,
-    createRequestItemQueue,
     nodesDelete,
-    structureChange
+    structureChange,
+    updateExtSystem,
+    userChange
 } from 'actions/global/change.jsx';
 
 import Stomp from 'stompjs';
 import URLParse from "url-parse";
 
 import {reloadUserDetail} from 'actions/user/userDetail';
-import {shouldSkipNodeEvent} from "websocketController.jsx";
+import {fundTreeFetch} from "./actions/arr/fundTree";
+import * as types from "./actions/constants/ActionTypes";
+import {fundNodeSubNodeFulltextSearch} from "./actions/arr/node";
+import {PERSISTENT_SORT_CODE, ZP2015_INTRO_VYPOCET_EJ} from "./constants";
 
 const url = new URLParse(serverContextPath + '/stomp');
 
@@ -83,10 +85,10 @@ class websocket{
         console.info("Websocket connecting to " + url);
         this.stompClient.connect({}, this.onConnect, this.onError);
     }
-    
+
     disconnect = (error=false) => {
         if (this.stompClient && this.stompClient.ws.readyState < 3) {
-            // When ready state is not CLOSING(2) or CLOSED(3) and stompClient exists 
+            // When ready state is not CLOSING(2) or CLOSED(3) and stompClient exists
             console.log("Websocket disconnected");
             this.stompClient.disconnect();
             this.stompClient = null;
@@ -98,7 +100,7 @@ class websocket{
         this.disconnect();
         this.connect();
     }
-    
+
     send = (url, data, onSuccess, onError) => {
         const headers = {};
 
@@ -133,14 +135,14 @@ class websocket{
             if(logged){
         if (command === "ERROR" && headers) {
             // Error message received from server
-            
+
             this.disconnect(true);
                     let message = headers.message || "";
 
                     if(body){
             const bodyObj = JSON.parse(body);
                         message = bodyObj.message;
-                    } 
+                    }
 
                     store.dispatch(addToastrDanger(i18n('global.error.ws'), message));
                 } else {
@@ -423,9 +425,9 @@ function filesChangeEvent(value) {
 }
 
 function nodesChange(value) {
-    shouldSkipNodeEvent(value.entityIds,()=>{
+    //shouldSkipNodeEvent(value.entityIds,()=>{
     store.dispatch(changeNodes(value.versionId, value.entityIds));
-    });
+    //});
 }
 function outputItemChange(value) {
     store.dispatch(changeOutputs(value.versionId, [value.outputDefinitionId]));
@@ -439,7 +441,51 @@ function deleteLevelChange(value) {
  * Změna hromadných akcí.
  */
 function fundActionActionChange(value) {
+    //speciální handling eventu pro hromadnou akci "PERZISTENTNI_RAZENI"
+    if (value.code === PERSISTENT_SORT_CODE) {
+        processPersistentSort(value);
+    } else if (value.code === ZP2015_INTRO_VYPOCET_EJ) {
+        processVisualizeEJ(value);
+    }
     store.dispatch(changeFundAction(value.versionId, value.entityId));
+}
+
+function processPersistentSort(value) {
+    if (value.state === "FINISHED") {
+        const fund = getFund();
+
+        if (fund) {
+            store.dispatch(fundTreeFetch(types.FUND_TREE_AREA_MAIN, fund.versionId, null, fund.fundTree.expandedIds));
+            //Přenačtení nodeForm
+            store.dispatch(fundNodeSubNodeFulltextSearch(undefined));
+        }
+        store.dispatch(addToastrSuccess(i18n("arr.functions.persistentSort.sortSuccess")));
+    } else if (value.state === "INTERRUPTED") {
+        store.dispatch(addToastrDanger(i18n("arr.functions.persistentSort.sortInterrupted")));
+    } else if (value.state === "FAILED") {
+        store.dispatch(addToastrDanger(i18n("arr.functions.persistentSort.sortFailed")));
+    }
+}
+
+function processVisualizeEJ(value) {
+    if (value.state === "FINISHED") {
+        const fund = getFund();
+        if (fund) {
+            store.dispatch(fundTreeFetch(types.FUND_TREE_AREA_MAIN, fund.versionId, null, fund.fundTree.expandedIds));
+            //Přenačtení nodeForm
+            store.dispatch(fundNodeSubNodeFulltextSearch(undefined));
+        }
+        store.dispatch(addToastrSuccess(i18n("arr.functions.computeAndVizualizeEJ.success")));
+    } else if (value.state === "INTERRUPTED") {
+        store.dispatch(addToastrDanger(i18n("arr.functions.computeAndVizualizeEJ.interrupted")));
+    } else if (value.state === "FAILED") {
+        store.dispatch(addToastrDanger(i18n("arr.functions.computeAndVizualizeEJ.error")));
+    }
+}
+
+function getFund() {
+    let state = store.getState();
+    return state.arrRegion.activeIndex != null ? state.arrRegion.funds[state.arrRegion.activeIndex] : null;
 }
 
 function partyUpdate(value){

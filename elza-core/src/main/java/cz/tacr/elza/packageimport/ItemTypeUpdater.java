@@ -1,13 +1,14 @@
 package cz.tacr.elza.packageimport;
 
-import static cz.tacr.elza.packageimport.PackageService.ITEM_TYPE_XML;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
+import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.table.ElzaColumn;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.exception.codes.PackageCode;
+import cz.tacr.elza.packageimport.xml.*;
+import cz.tacr.elza.repository.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,34 +16,13 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
-import cz.tacr.elza.core.data.DataType;
-import cz.tacr.elza.domain.RegRegisterType;
-import cz.tacr.elza.domain.RulDataType;
-import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.RulItemSpecRegister;
-import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.RulPackage;
-import cz.tacr.elza.domain.RulPackageDependency;
-import cz.tacr.elza.domain.RulStructuredType;
-import cz.tacr.elza.domain.table.ElzaColumn;
-import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.exception.codes.PackageCode;
-import cz.tacr.elza.packageimport.xml.Category;
-import cz.tacr.elza.packageimport.xml.Column;
-import cz.tacr.elza.packageimport.xml.ItemSpec;
-import cz.tacr.elza.packageimport.xml.ItemSpecRegister;
-import cz.tacr.elza.packageimport.xml.ItemSpecs;
-import cz.tacr.elza.packageimport.xml.ItemType;
-import cz.tacr.elza.packageimport.xml.ItemTypes;
-import cz.tacr.elza.repository.DescItemRepository;
-import cz.tacr.elza.repository.ItemSpecRegisterRepository;
-import cz.tacr.elza.repository.ItemSpecRepository;
-import cz.tacr.elza.repository.ItemTypeRepository;
-import cz.tacr.elza.repository.PackageDependencyRepository;
-import cz.tacr.elza.repository.PackageRepository;
-import cz.tacr.elza.repository.RegisterTypeRepository;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import static cz.tacr.elza.packageimport.PackageService.ITEM_TYPE_XML;
 
 /**
  * Class to update item types in DB
@@ -75,7 +55,7 @@ public class ItemTypeUpdater {
     private ItemSpecRegisterRepository itemSpecRegisterRepository;
 
     @Autowired
-	private RegisterTypeRepository registerTypeRepository;
+	private ApTypeRepository apTypeRepository;
 
     @Autowired
     private PackageRepository packageRepository;
@@ -89,8 +69,6 @@ public class ItemTypeUpdater {
      * Max used view order
      */
     int maxViewOrderPos = 0;
-
-	private RuleUpdateContext ruc;
 
 	public ItemTypeUpdater() {
 	}
@@ -122,16 +100,16 @@ public class ItemTypeUpdater {
 
     /**
      * Zpracování specifikací atributů.
-     * @param rulRuleSet		rules
-     * @param itemSpecs       	seznam importovaných specifikací
+     * @param itemSpecs        seznam importovaných specifikací
      * @param rulDescItemTypes  seznam typů atributů
+     * @param rulPackage
      */
     private void processDescItemSpecs(
-    								  final ItemSpecs itemSpecs,
-                                      final List<RulItemType> rulDescItemTypes) 
+            final ItemSpecs itemSpecs,
+            final List<RulItemType> rulDescItemTypes, RulPackage rulPackage)
     {
 
-        List<RulItemSpec> rulDescItemSpecs = itemSpecRepository.findByRulPackageAndRuleSet(ruc.getRulPackage(), ruc.getRulSet());
+        List<RulItemSpec> rulDescItemSpecs = itemSpecRepository.findByRulPackage(rulPackage);
         List<RulItemSpec> rulDescItemSpecsNew = new ArrayList<>();
 
         // item type code -> local view order
@@ -149,7 +127,7 @@ public class ItemTypeUpdater {
                     item = new RulItemSpec();
                 }
 
-                convertRulDescItemSpec(ruc.getRulPackage(), itemSpec, item, rulDescItemTypes);
+                convertRulDescItemSpec(rulPackage, itemSpec, item, rulDescItemTypes);
 
                 Integer nextViewOrder = viewOrderMap.computeIfAbsent(item.getItemType().getCode(), next -> 1);
                 item.setViewOrder(nextViewOrder);
@@ -175,35 +153,33 @@ public class ItemTypeUpdater {
 	 * Do the update
 	 * @param itemTypes
 	 * @param itemSpecs
-	 * @param rulRuleSet
+     * @param puc
      * @return return list of updated types
 	 */
 	public List<RulItemType> update(final List<RulDataType> rulDataTypes,
-                                    RuleUpdateContext ruc,
                                     final ItemTypes itemTypes,
-                                    final ItemSpecs itemSpecs
-                                    ) {
+                                    final ItemSpecs itemSpecs,
+                                    final PackageContext puc) {
 		this.rulDataTypes = rulDataTypes;
-		this.ruc = ruc;
 
-		prepareForUpdate();
+		prepareForUpdate(puc);
 
         List<RulItemType> rulItemTypesUpdated = new ArrayList<>();
         if (itemTypes != null) {
             // prepare list of updated/new items
             List<ItemType> itemTypesList = itemTypes.getItemTypes();
             if (!CollectionUtils.isEmpty(itemTypesList)) {
-                rulItemTypesUpdated = updateItemTypes(rulItemTypesOrig, itemTypesList);
+                rulItemTypesUpdated = updateItemTypes(rulItemTypesOrig, itemTypesList, puc);
                 // try to save updated items
                 rulItemTypesUpdated = itemTypeRepository.save(rulItemTypesUpdated);
             }
 
         }
         List<RulItemType> rulItemTypesAllByRules = new ArrayList<>(rulItemTypesUpdated);
-        rulItemTypesAllByRules.addAll(itemTypeRepository.findByRuleSet(ruc.getRulSet()));
+        rulItemTypesAllByRules.addAll(itemTypeRepository.findByRulPackage(puc.getPackage()));
 
         // update specifications
-        processDescItemSpecs(itemSpecs, rulItemTypesAllByRules);
+        processDescItemSpecs(itemSpecs, rulItemTypesAllByRules, puc.getPackage());
         postSpecsOrder();
 
 		// delete unused item types
@@ -269,10 +245,10 @@ public class ItemTypeUpdater {
 	 * Update items types
 	 * @param rulItemTypesOrig
 	 * @param itemTypes
-	 * @param rulRuleSet
+     * @param puc
      * @return Return new list of active item types
 	 */
-    private List<RulItemType> updateItemTypes(List<RulItemType> rulItemTypesOrig, List<ItemType> itemTypes) {
+    private List<RulItemType> updateItemTypes(List<RulItemType> rulItemTypesOrig, List<ItemType> itemTypes, PackageContext puc) {
     	List<RulItemType> rulItemTypesUpdated = new ArrayList<>();
     	int lastUsedViewOrder = -1;
 		for (ItemType itemType : itemTypes) {
@@ -290,14 +266,22 @@ public class ItemTypeUpdater {
 					}
 				}
 
-				if (dbItemType.getColumnsDefinition() != null
-						&& !equalsColumns(dbItemType.getColumnsDefinition(), itemType.getColumnsDefinition())) {
-					Long countDescItems = descItemRepository.getCountByType(dbItemType);
-					if (countDescItems != null && countDescItems > 0) {
-						throw new SystemException("Nelze změnit definici sloupců (datový typ a kód) u typu "
-								+ dbItemType.getCode() + ", protože existují záznamy, které typ využívají");
-					}
-				}
+                Object viewDefinition = dbItemType.getViewDefinition();
+                if (viewDefinition != null) {
+                    DataType dataType = DataType.fromId(dbItemType.getDataTypeId());
+                    switch (dataType) {
+                        case JSON_TABLE: {
+                            if (!equalsColumns((List<ElzaColumn>) viewDefinition, itemType.getColumnsDefinition())) {
+                                Long countDescItems = descItemRepository.getCountByType(dbItemType);
+                                if (countDescItems != null && countDescItems > 0) {
+                                    throw new SystemException("Nelze změnit definici sloupců (datový typ a kód) u typu "
+                                            + dbItemType.getCode() + ", protože existují záznamy, které typ využívají");
+                                }
+                            }
+                            break;
+                        }
+                    }
+                }
 
 				// update view order
 				int i = dbItemType.getViewOrder();
@@ -312,7 +296,7 @@ public class ItemTypeUpdater {
 				lastUsedViewOrder = getNextViewOrderPos();
 			}
 
-			convertRulDescItemType(itemType, dbItemType, rulDataTypes);
+			convertRulDescItemType(itemType, dbItemType, rulDataTypes, puc);
 
 			// update view order
 			dbItemType.setViewOrder(lastUsedViewOrder);
@@ -350,14 +334,14 @@ public class ItemTypeUpdater {
 
 	/**
      * Převod VO na DAO typu atributu.
-     *  @param rulPackage      balíček
      * @param itemType    VO typu
      * @param rulDescItemType DAO typy
+     * @param puc      balíček
      */
     private void convertRulDescItemType(final ItemType itemType,
                                         final RulItemType rulDescItemType,
-                                        final List<RulDataType> rulDataTypes
-                                        ) {
+                                        final List<RulDataType> rulDataTypes,
+                                        PackageContext puc) {
 
         rulDescItemType.setCode(itemType.getCode());
         rulDescItemType.setName(itemType.getName());
@@ -376,7 +360,7 @@ public class ItemTypeUpdater {
 
         RulStructuredType rulStructureType = null;
         if (DataType.STRUCTURED == DataType.fromCode(itemType.getDataType())) {
-            List<RulStructuredType> findStructureTypes = ruc.getStructureTypes().stream()
+            List<RulStructuredType> findStructureTypes = puc.getStructuredTypes().stream()
                     .filter((r) -> r.getCode().equals(itemType.getStructureType()))
                     .collect(Collectors.toList());
             if (findStructureTypes.size() > 0) {
@@ -405,11 +389,15 @@ public class ItemTypeUpdater {
                 elzaColumns.add(elzaColumn);
             }
 
-            rulDescItemType.setColumnsDefinition(elzaColumns);
+            rulDescItemType.setViewDefinition(elzaColumns);
         }
 
-        rulDescItemType.setRulPackage(ruc.getRulPackage());
-        rulDescItemType.setRuleSet(ruc.getRulSet());
+        DisplayType displayType = itemType.getDisplayType();
+        if (displayType != null) {
+            rulDescItemType.setViewDefinition(cz.tacr.elza.domain.integer.DisplayType.valueOf(displayType.name()));
+        }
+
+        rulDescItemType.setRulPackage(puc.getPackage());
     }
 
     /**
@@ -456,7 +444,7 @@ public class ItemTypeUpdater {
 
 
     /**
-     * Zpracování napojení specifikací na reg.
+     * Zpracování napojení specifikací na ap.
      *
      * @param itemSpecs    seznam importovaných specifikací
      * @param rulDescItemSpecs seznam specifikací atributů
@@ -464,7 +452,7 @@ public class ItemTypeUpdater {
     private void processDescItemSpecsRegister(final ItemSpecs itemSpecs,
                                               final List<RulItemSpec> rulDescItemSpecs) {
 
-        List<RegRegisterType> regRegisterTypes = registerTypeRepository.findAll();
+        List<ApType> apTypes = apTypeRepository.findAll();
 
         for (RulItemSpec rulDescItemSpec : rulDescItemSpecs) {
             List<ItemSpec> findItemsSpec = itemSpecs.getItemSpecs().stream().filter(
@@ -483,7 +471,7 @@ public class ItemTypeUpdater {
             if (!CollectionUtils.isEmpty(item.getItemSpecRegisters())) {
                 for (ItemSpecRegister itemSpecRegister : item.getItemSpecRegisters()) {
                     List<RulItemSpecRegister> findItems = rulItemSpecRegisters.stream()
-                            .filter((r) -> r.getRegisterType().getCode().equals(
+                            .filter((r) -> r.getApType().getCode().equals(
                                     itemSpecRegister.getRegisterType())).collect(Collectors.toList());
                     RulItemSpecRegister itemRegister;
                     if (findItems.size() > 0) {
@@ -492,7 +480,7 @@ public class ItemTypeUpdater {
                         itemRegister = new RulItemSpecRegister();
                     }
 
-                    convertRulDescItemSpecsRegister(rulDescItemSpec, itemRegister, regRegisterTypes,
+                    convertRulDescItemSpecsRegister(rulDescItemSpec, itemRegister, apTypes,
                             itemSpecRegister);
 
                     rulItemSpecRegistersNew.add(itemRegister);
@@ -511,53 +499,52 @@ public class ItemTypeUpdater {
 
 
     /**
-     * Převod VO na DAO napojení specifikací na reg.
+     * Převod VO na DAO napojení specifikací na ap.
      *
      * @param rulDescItemSpec         seznam specifikací
      * @param rulItemSpecRegister seznam DAO napojení
-     * @param regRegisterTypes        seznam typů reg.
+     * @param apTypes        seznam typů ap.
      * @param itemSpecRegister    seznam VO napojení
      */
     private void convertRulDescItemSpecsRegister(final RulItemSpec rulDescItemSpec,
                                                  final RulItemSpecRegister rulItemSpecRegister,
-                                                 final List<RegRegisterType> regRegisterTypes,
+                                                 final List<ApType> apTypes,
                                                  final ItemSpecRegister itemSpecRegister) {
 
         rulItemSpecRegister.setItemSpec(rulDescItemSpec);
 
-        List<RegRegisterType> findItems = regRegisterTypes.stream()
+        List<ApType> findItems = apTypes.stream()
                 .filter((r) -> r.getCode().equals(itemSpecRegister.getRegisterType()))
                 .collect(Collectors.toList());
 
-        RegRegisterType item;
+        ApType item;
 
         if (findItems.size() > 0) {
             item = findItems.get(0);
         } else {
             throw new SystemException(
-                    "Kód " + itemSpecRegister.getRegisterType() + " neexistuje v RegRegisterType", BaseCode.ID_NOT_EXIST);
+                    "Kód " + itemSpecRegister.getRegisterType() + " neexistuje v ApType", BaseCode.ID_NOT_EXIST);
         }
 
-        rulItemSpecRegister.setRegisterType(item);
+        rulItemSpecRegister.setApType(item);
 
     }
 
     /**
 	 * Prepare item types to be updated
+     * @param rulPackage
+     */
+    private void prepareForUpdate(final PackageContext rulPackage) {
 
-     * @param rulRuleSet rule set
-	 */
-	private void prepareForUpdate() {
+        // read current items types from DB
+        rulItemTypesOrig = itemTypeRepository.findByRulPackage(rulPackage.getPackage());
 
-		// read current items types from DB
-		rulItemTypesOrig = itemTypeRepository.findByRulPackageAndRuleSet(ruc.getRulPackage(), ruc.getRulSet());
-
-		// read first free view-order id
-		RulItemType itemTypeHighest = itemTypeRepository.findFirstByOrderByViewOrderDesc();
-		if(itemTypeHighest!=null) {
-			Integer maxValue = itemTypeHighest.getViewOrder();
-			maxViewOrderPos = maxValue!=null?maxValue.intValue():0;
-		}
-	}
+        // read first free view-order id
+        RulItemType itemTypeHighest = itemTypeRepository.findFirstByOrderByViewOrderDesc();
+        if (itemTypeHighest != null) {
+            Integer maxValue = itemTypeHighest.getViewOrder();
+            maxViewOrderPos = maxValue != null ? maxValue.intValue() : 0;
+        }
+    }
 
 }

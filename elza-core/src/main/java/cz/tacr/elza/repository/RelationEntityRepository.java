@@ -2,12 +2,12 @@ package cz.tacr.elza.repository;
 
 import java.util.List;
 
+import cz.tacr.elza.domain.ApAccessPoint;
 import org.springframework.data.jpa.repository.Query;
 
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParRelation;
 import cz.tacr.elza.domain.ParRelationEntity;
-import cz.tacr.elza.domain.RegRecord;
 
 
 /**
@@ -42,8 +42,8 @@ public interface RelationEntityRepository extends ElzaJpaRepository<ParRelationE
      * @param record rejstřík
      * @return seznam aktivních vazeb
      */
-    @Query("SELECT re FROM par_relation_entity re JOIN FETCH re.relation r JOIN FETCH r.party p WHERE re.record = ?1")
-	List<ParRelationEntity> findByRecord(RegRecord record);
+    @Query("SELECT re FROM par_relation_entity re JOIN FETCH re.relation r JOIN FETCH r.party p WHERE re.accessPoint = ?1")
+	List<ParRelationEntity> findByAccessPoint(ApAccessPoint record);
 
 
     /**
@@ -51,13 +51,13 @@ public interface RelationEntityRepository extends ElzaJpaRepository<ParRelationE
      * @param record rejstřík
      * @return počet vazeb
      */
-    long countAllByRecord(RegRecord record);
+    long countAllByAccessPoint(ApAccessPoint record);
 
     /**
      * Najde vazby které aktivní a jsou vázané na předaný rejstřík
      * @param record rejstřík
      * @return seznam aktivních vazeb
      */
-    @Query("SELECT re FROM par_relation_entity re JOIN FETCH re.relation r JOIN FETCH r.party p WHERE re.record = ?1 AND p.record.invalid = false")
-	List<ParRelationEntity> findActiveByRecord(RegRecord record);
+    @Query("SELECT re FROM par_relation_entity re JOIN FETCH re.relation r JOIN FETCH r.party p WHERE re.accessPoint = ?1 AND p.accessPoint.deleteChangeId IS NULL")
+	List<ParRelationEntity> findActiveByRecord(ApAccessPoint record);
 }

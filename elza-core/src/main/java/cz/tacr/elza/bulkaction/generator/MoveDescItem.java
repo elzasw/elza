@@ -1,6 +1,8 @@
 package cz.tacr.elza.bulkaction.generator;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,7 +10,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import cz.tacr.elza.core.data.DataType;
-import cz.tacr.elza.core.data.RuleSystemItemType;
+import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrDataString;
 import cz.tacr.elza.domain.ArrDescItem;
@@ -52,7 +54,7 @@ public class MoveDescItem extends BulkActionDFS {
 		super.init(bulkActionRun);
 
 		// prepare item type
-		RuleSystemItemType srcItemType = ruleSystem.getItemTypeByCode(config.getSource().getItemType());
+		ItemType srcItemType = staticDataProvider.getItemTypeByCode(config.getSource().getItemType());
 		Validate.notNull(srcItemType);
 
 		// check if supported source data type
@@ -65,7 +67,7 @@ public class MoveDescItem extends BulkActionDFS {
 		this.srcItemType = srcItemType.getEntity();
 
 		// prepare target type
-		RuleSystemItemType trgItemType = ruleSystem.getItemTypeByCode(config.getTarget().getItemType());
+		ItemType trgItemType = staticDataProvider.getItemTypeByCode(config.getTarget().getItemType());
 		Validate.notNull(trgItemType);
 		if (trgItemType.getDataType() != DataType.STRING) {
 			throw new SystemException(
@@ -86,7 +88,7 @@ public class MoveDescItem extends BulkActionDFS {
 			if (Boolean.TRUE.equals(this.trgItemType.getUseSpecification())) {
 				throw new SystemException(
 				        "Hromadná akce " + getName() + " je nakonfigurována bez určení specifikace:",
-				        BaseCode.SYSTEM_ERROR).set("itemTypeCode", trgItemType.getCode());				
+				        BaseCode.SYSTEM_ERROR).set("itemTypeCode", trgItemType.getCode());
 			}
 		}
 	}
@@ -115,9 +117,8 @@ public class MoveDescItem extends BulkActionDFS {
 			/*ArrDescItem trgItem = */
 			descriptionItemService.createDescriptionItem(descItem, currNode, version, getChange());
 			// delete old one
-			descriptionItemService.deleteDescriptionItem(srcDescItem, version, getChange(), true);
-
-			arrangementCacheService.deleteDescItem(currNode.getNodeId(), srcDescItem.getDescItemObjectId());
+            List<ArrDescItem> items = Collections.singletonList(srcDescItem);
+            descriptionItemService.deleteDescriptionItems(items, currNode, version, getChange(), true);
 
 			// validace uzlu
 			ruleService.conformityInfo(version.getFundVersionId(), Arrays.asList(descItem.getNode().getNodeId()),

@@ -27,13 +27,13 @@ import {storeFromArea} from 'shared/utils'
 import './AdminExtSystemDetail.less';
 
 const EXT_SYSTEM_CLASS = {
-    RegExternalSystem: ".RegExternalSystemVO",
+    ApExternalSystem: ".ApExternalSystemVO",
     ArrDigitalRepository: ".ArrDigitalRepositoryVO",
     ArrDigitizationFrontdesk: ".ArrDigitizationFrontdeskVO"
 };
 
 const EXT_SYSTEM_CLASS_LABEL = {
-    [EXT_SYSTEM_CLASS.RegExternalSystem]: i18n("admin.extSystem.class.RegExternalSystemVO"),
+    [EXT_SYSTEM_CLASS.ApExternalSystem]: i18n("admin.extSystem.class.ApExternalSystemVO"),
     [EXT_SYSTEM_CLASS.ArrDigitalRepository]: i18n("admin.extSystem.class.ArrDigitalRepositoryVO"),
     [EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk]: i18n("admin.extSystem.class.ArrDigitizationFrontdeskVO"),
 };
@@ -73,9 +73,9 @@ class AdminExtSystemDetail extends AbstractReactComponent {
         if (extSystemDetail.fetched) {
             const classJ = extSystem["@class"];
             content = <div className="ext-system-detail">
-                {classJ == EXT_SYSTEM_CLASS.RegExternalSystem && <div>
+                {classJ == EXT_SYSTEM_CLASS.ApExternalSystem && <div>
                     <h4>{i18n('admin.extSystem.class')}</h4>
-                    <span>{EXT_SYSTEM_CLASS_LABEL[EXT_SYSTEM_CLASS.RegExternalSystem]}</span>
+                    <span>{EXT_SYSTEM_CLASS_LABEL[EXT_SYSTEM_CLASS.ApExternalSystem]}</span>
 
                     <h4>{i18n('admin.extSystem.type')}</h4>
                     <span>{extSystem.type}</span>

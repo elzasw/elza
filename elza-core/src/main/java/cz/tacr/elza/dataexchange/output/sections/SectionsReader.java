@@ -42,7 +42,7 @@ public class SectionsReader implements ExportReader {
         this.nodeCacheService = initHelper.getNodeCacheService();
         this.fundVersionRepository = initHelper.getFundVersionRepository();
         this.userService = initHelper.getUserService();
-        this.em = initHelper.getEntityManager();
+        this.em = initHelper.getEm();
     }
 
     /**
@@ -89,7 +89,7 @@ public class SectionsReader implements ExportReader {
     }
 
     private void readMergedSections(ArrFundVersion fundVersion,
-                                    ExportLevelInfoListener levelInfoListener,
+                                    LevelInfoListener levelInfoListener,
                                     Collection<Integer> rootNodeIds) {
         ArrChange lockChange = fundVersion.getLockChange();
         SectionContext sectionContext = new SectionContext(fundVersion, context, true, levelInfoListener, nodeCacheService, em);
@@ -108,7 +108,7 @@ public class SectionsReader implements ExportReader {
         }
     }
 
-    private void readSection(ArrFundVersion fundVersion, ExportLevelInfoListener levelInfoListener, int rootNodeId) {
+    private void readSection(ArrFundVersion fundVersion, LevelInfoListener levelInfoListener, int rootNodeId) {
         ArrChange lockChange = fundVersion.getLockChange();
         SectionContext sectionContext = new SectionContext(fundVersion, context, false, levelInfoListener, nodeCacheService, em);
         try {

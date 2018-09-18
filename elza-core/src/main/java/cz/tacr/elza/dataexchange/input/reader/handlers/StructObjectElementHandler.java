@@ -5,7 +5,7 @@ import javax.xml.bind.JAXBElement;
 import cz.tacr.elza.dataexchange.input.context.ImportContext;
 import cz.tacr.elza.dataexchange.input.context.ImportPhase;
 import cz.tacr.elza.dataexchange.input.reader.ItemProcessor;
-import cz.tacr.elza.dataexchange.input.sections.StructObjectProcessor;
+import cz.tacr.elza.dataexchange.input.sections.StructObjProcessor;
 import cz.tacr.elza.schema.v2.StructuredObject;
 
 public class StructObjectElementHandler extends JaxbElementHandler<StructuredObject> {
@@ -21,7 +21,7 @@ public class StructObjectElementHandler extends JaxbElementHandler<StructuredObj
 
     @Override
     protected void handleJaxbElement(JAXBElement<StructuredObject> element) {
-         ItemProcessor processor = new StructObjectProcessor(context);
+         ItemProcessor processor = new StructObjProcessor(context);
          processor.process(element.getValue());
     }
 }

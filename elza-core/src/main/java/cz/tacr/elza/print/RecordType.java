@@ -1,6 +1,6 @@
 package cz.tacr.elza.print;
 
-import cz.tacr.elza.domain.RegRegisterType;
+import cz.tacr.elza.domain.ApType;
 
 /**
  * Class to hold Record type info
@@ -35,11 +35,11 @@ public class RecordType {
     /**
      * Return new instance of RecordType
      *
-     * @param registerType
+     * @param dbApType
      * @return
      */
-    public static RecordType newInstance(RecordType parentType, RegRegisterType dbRegisterType) {
-        RecordType recordType = new RecordType(parentType, dbRegisterType.getCode(), dbRegisterType.getName());
+    public static RecordType newInstance(RecordType parentType, ApType dbApType) {
+        RecordType recordType = new RecordType(parentType, dbApType.getCode(), dbApType.getName());
         return recordType;
     }
 }

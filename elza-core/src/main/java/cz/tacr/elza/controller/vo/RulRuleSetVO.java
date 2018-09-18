@@ -24,11 +24,6 @@ public class RulRuleSetVO {
     /** Kódy atributů pro zobrazení v gridu hromadných úprav */
     private List<GridView> gridViews;
 
-    /**
-     * Všechny kódy atributů.
-     */
-    private List<String> itemTypeCodes;
-
     public Integer getId() {
         return id;
     }
@@ -66,14 +61,6 @@ public class RulRuleSetVO {
     @Override
     public String toString() {
         return ToStringBuilder.reflectionToString(this);
-    }
-
-    public List<String> getItemTypeCodes() {
-        return itemTypeCodes;
-    }
-
-    public void setItemTypeCodes(final List<String> itemTypeCodes) {
-        this.itemTypeCodes = itemTypeCodes;
     }
 
     public List<GridView> getGridViews() {

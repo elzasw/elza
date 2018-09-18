@@ -8,6 +8,7 @@ import java.util.TreeMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.core.data.StaticDataProvider;
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -17,15 +18,22 @@ import cz.tacr.elza.bulkaction.generator.LevelWithItems;
 import cz.tacr.elza.bulkaction.generator.result.ActionResult;
 import cz.tacr.elza.bulkaction.generator.result.UnitCountActionResult;
 import cz.tacr.elza.core.data.DataType;
-import cz.tacr.elza.core.data.RuleSystem;
-import cz.tacr.elza.core.data.RuleSystemItemType;
+import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.domain.ArrBulkActionRun;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDataInteger;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.table.ElzaColumn;
 import cz.tacr.elza.domain.table.ElzaRow;
 import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.StructuredItemRepository;
+import cz.tacr.elza.service.DescriptionItemService;
 
 /**
  * Unit count action
@@ -38,7 +46,7 @@ public class UnitCountAction extends Action {
     /**
      * Výstupní atribut
      */
-	private RuleSystemItemType outputItemType;
+	private ItemType outputItemType;
 
 	/**
 	 * Skip subtree
@@ -60,38 +68,48 @@ public class UnitCountAction extends Action {
     @Autowired
     StructuredItemRepository structureItemRepository;
 
+    @Autowired
+    private DescriptionItemService descriptionItemService;
+
 	final UnitCountConfig config;
 
+	private ArrFundVersion fundVersion;
+	private ArrChange change;
 
-    @Autowired
+	@Autowired
     UnitCountAction(final UnitCountConfig config) {
 		Validate.notNull(config);
 
 		this.config = config;
-        // this.structureItemRepository = structureItemRepository;
     }
 
     @Override
 	public void init(ArrBulkActionRun bulkActionRun) {
         Validate.notNull(structureItemRepository);
 
-		RuleSystem ruleSystem = getRuleSystem(bulkActionRun);
+		StaticDataProvider ruleSystem = getStaticDataProvider();
 
 		String outputType = config.getOutputType();
 		outputItemType = ruleSystem.getItemTypeByCode(outputType);
-		checkValidDataType(outputItemType, DataType.JSON_TABLE);
+		fundVersion = bulkActionRun.getFundVersion();
+		change = bulkActionRun.getChange();
+		if (isLocal()) {
+			checkValidDataType(outputItemType, DataType.INT);
+		} else {
+			checkValidDataType(outputItemType, DataType.JSON_TABLE);
 
-		// validate column names
-		Validate.notBlank(config.getOutputColumnUnitName());
-		Validate.notBlank(config.getOutputColumnUnitCount());
+			// validate column names
+			Validate.notBlank(config.getOutputColumnUnitName());
+			Validate.notBlank(config.getOutputColumnUnitCount());
 
-		// validate column definitions
-		List<ElzaColumn> columnsDefinition = outputItemType.getEntity().getColumnsDefinition();
-		Map<String, ElzaColumn> outputColumns = columnsDefinition.stream()
-		        .collect(Collectors.toMap(ElzaColumn::getCode, Function.identity()));
+			// validate column definitions
+			List<ElzaColumn> columnsDefinition = (List<ElzaColumn>) outputItemType.getEntity().getViewDefinition();
+			Map<String, ElzaColumn> outputColumns = columnsDefinition.stream()
+					.collect(Collectors.toMap(ElzaColumn::getCode, Function.identity()));
 
-		validateColumn(config.getOutputColumnUnitName(), ElzaColumn.DataType.TEXT, outputColumns);
-		validateColumn(config.getOutputColumnUnitCount(), ElzaColumn.DataType.INTEGER, outputColumns);
+			validateColumn(config.getOutputColumnUnitName(), ElzaColumn.DataType.TEXT, outputColumns);
+			validateColumn(config.getOutputColumnUnitCount(), ElzaColumn.DataType.INTEGER, outputColumns);
+		}
 
 		// initialize counters
 		for (UnitCounterConfig counterCfg : config.getAggegators()) {
@@ -161,6 +179,10 @@ public class UnitCountAction extends Action {
     @Override
     public ActionResult getResult() {
         UnitCountActionResult result = new UnitCountActionResult();
+        if (isLocal()) {
+        	return result;
+		}
+
         result.setItemType(outputItemType.getCode());
         ElzaTable table = new ElzaTable();
 
@@ -184,7 +206,7 @@ public class UnitCountAction extends Action {
 	 * Add value to the result
 	 *
 	 * @param value
-	 * @param count
+	 * @param inc
 	 */
 	public void addValue(String value, int inc) {
 		Validate.isTrue(inc >= 0, "Číslo nemůže být záporné");
@@ -197,4 +219,29 @@ public class UnitCountAction extends Action {
 		}
 	}
 
+	/**
+	 * @return příznak zda se mají hodnoty ukládat lokálně
+	 */
+	public boolean isLocal() {
+		return config.isLocal();
+	}
+
+	public void createDescItem(ArrNode node, String value, int count) {
+		ArrDataInteger arrDataInteger = new ArrDataInteger();
+		arrDataInteger.setValue(count);
+
+		ArrDescItem descItem = new ArrDescItem();
+		descItem.setData(arrDataInteger);
+		descItem.setItemType(outputItemType.getEntity());
+		descItem.setCreateChange(change);
+
+		if (outputItemType.getEntity().getUseSpecification()) {
+            RulItemSpec rulItemSpec = outputItemType.getItemSpecs().stream().
+                    filter(s -> s.getCode().equalsIgnoreCase(value)).
+                    findFirst().
+                    orElseThrow(() -> new SystemException("Nenalezena specifikace.").set("code", value));
+            descItem.setItemSpec(rulItemSpec);
+        }
+		descriptionItemService.createDescriptionItem(descItem, node, fundVersion, change);
+	}
 }

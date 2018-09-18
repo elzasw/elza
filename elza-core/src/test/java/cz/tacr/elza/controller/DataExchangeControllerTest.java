@@ -18,15 +18,14 @@ import com.jayway.restassured.response.Response;
 
 import cz.tacr.elza.controller.ArrangementController.FaTreeParam;
 import cz.tacr.elza.controller.DEExportController.DEExportParamsVO;
+import cz.tacr.elza.controller.vo.ApScopeVO;
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
 import cz.tacr.elza.controller.vo.ArrStructureDataVO;
 import cz.tacr.elza.controller.vo.FilteredResultVO;
-import cz.tacr.elza.controller.vo.RegScopeVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.core.data.DataType;
-import cz.tacr.elza.core.data.RuleSystem;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.dataexchange.output.DEExportParams.FundSections;
@@ -61,8 +60,8 @@ public class DataExchangeControllerTest extends AbstractControllerTest {
 
         // import initial data
         File file = getResourceFile(ALL_IN_ONE_XML);
-        List<RegScopeVO> scopes = getAllScopes();
-        RegScopeVO scope = scopes.iterator().next();
+        List<ApScopeVO> scopes = getAllScopes();
+        ApScopeVO scope = scopes.iterator().next();
         requestImport(file, scope);
 
         checkData();
@@ -82,7 +81,7 @@ public class DataExchangeControllerTest extends AbstractControllerTest {
         checkData();
     }
 
-    private void requestImport(final File importFile, final RegScopeVO scope) {
+    private void requestImport(final File importFile, final ApScopeVO scope) {
         importXmlFile(null, scope.getId(), importFile);
     }
 
@@ -114,8 +113,7 @@ public class DataExchangeControllerTest extends AbstractControllerTest {
         // get last fund version and rule system
         ArrFundVO fund = funds.iterator().next();
         ArrFundVersionVO fVersion = getOpenVersion(fund);
-        RuleSystem rs = staticData.getRuleSystems().getByRuleSetId(fVersion.getRuleSetId());
-
+        
         // check node count
         FaTreeParam treeParam = new FaTreeParam();
         treeParam.setVersionId(fVersion.getId());
@@ -133,7 +131,7 @@ public class DataExchangeControllerTest extends AbstractControllerTest {
         Assert.assertTrue(structItems.size() == 2);
 
         // check structured object item data
-        RulItemSpec so1Item1Spec = rs.getItemTypeByCode(STRUCT_OBJ_1_ITEM_1_TYPE).getItemSpecByCode(STRUCT_OBJ_1_ITEM_1_SPEC);
+        RulItemSpec so1Item1Spec = staticData.getItemTypeByCode(STRUCT_OBJ_1_ITEM_1_TYPE).getItemSpecByCode(STRUCT_OBJ_1_ITEM_1_SPEC);
         ArrDataInteger so1Item2Data = new ArrDataInteger();
         so1Item2Data.setValue(STRUCT_OBJ_1_ITEM_2_VALUE);
         so1Item2Data.setDataType(DataType.INT.getEntity());

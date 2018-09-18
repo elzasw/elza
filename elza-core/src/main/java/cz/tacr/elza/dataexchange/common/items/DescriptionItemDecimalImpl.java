@@ -19,6 +19,7 @@ public class DescriptionItemDecimalImpl extends DescriptionItemDecimal {
         }
         ArrDataDecimal data = new ArrDataDecimal();
         data.setValue(getV());
+        data.setDataType(dataType.getEntity());
 
         return new ImportableItemData(data);
     }

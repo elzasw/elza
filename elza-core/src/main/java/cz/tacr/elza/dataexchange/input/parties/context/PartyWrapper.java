@@ -3,15 +3,11 @@ package cz.tacr.elza.dataexchange.input.parties.context;
 import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
 
-import cz.tacr.elza.dataexchange.input.context.PersistMethod;
-import cz.tacr.elza.dataexchange.input.storage.EntityMetrics;
 import cz.tacr.elza.dataexchange.input.storage.EntityWrapper;
+import cz.tacr.elza.dataexchange.input.storage.SaveMethod;
 import cz.tacr.elza.domain.ParParty;
 
-/**
- * Created by todtj on 12.06.2017.
- */
-public class PartyWrapper implements EntityWrapper, EntityMetrics {
+public class PartyWrapper implements EntityWrapper {
 
     private final ParParty entity;
 
@@ -27,8 +23,8 @@ public class PartyWrapper implements EntityWrapper, EntityMetrics {
     }
 
     @Override
-    public PersistMethod getPersistMethod() {
-        return partyInfo.getPersistMethod();
+    public SaveMethod getSaveMethod() {
+        return partyInfo.getSaveMethod();
     }
 
     @Override
@@ -37,18 +33,16 @@ public class PartyWrapper implements EntityWrapper, EntityMetrics {
     }
 
     @Override
-    public long getMemoryScore() {
-        return 1;
+    public void beforeEntitySave(Session session) {
+        // prepare AP reference
+        Validate.isTrue(entity.getAccessPoint() == null);
+        entity.setAccessPoint(partyInfo.getApInfo().getEntityRef(session));
     }
 
     @Override
-    public void beforeEntityPersist(Session session) {
-        Validate.isTrue(entity.getRecord() == null);
-        entity.setRecord(partyInfo.getAPReference(session));
-    }
-
-    @Override
-    public void afterEntityPersist() {
+    public void afterEntitySave() {
+        // update party info
         partyInfo.setEntityId(entity.getPartyId());
+        partyInfo.onEntityPersist();
     }
 }

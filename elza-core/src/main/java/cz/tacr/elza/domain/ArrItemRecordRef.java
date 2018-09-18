@@ -11,17 +11,17 @@ import java.util.Objects;
 @Deprecated
 public class ArrItemRecordRef extends ArrItemData {
 
-    private RegRecord record;
+    private ApAccessPoint accessPoint;
 
     private Integer recordId;
 
-    public RegRecord getRecord() {
-        return record;
+    public ApAccessPoint getAccessPoint() {
+        return accessPoint;
     }
 
-    public void setRecord(final RegRecord record) {
-        this.record = record;
-        this.recordId = record == null ? null : record.getRecordId();
+    public void setAccessPoint(final ApAccessPoint accessPoint) {
+        this.accessPoint = accessPoint;
+        this.recordId = accessPoint == null ? null : accessPoint.getAccessPointId();
     }
 
     public Integer getRecordId() {
@@ -34,7 +34,8 @@ public class ArrItemRecordRef extends ArrItemData {
 
     @Override
     public String toString() {
-        return (record != null ) ? record.getRecord() : null;
+        //nahrazeno za toString aby bylo mozne prelozit program
+        return (accessPoint != null ) ? accessPoint.toString() : null;
     }
 
     @Override
@@ -43,11 +44,11 @@ public class ArrItemRecordRef extends ArrItemData {
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         ArrItemRecordRef that = (ArrItemRecordRef) o;
-        return Objects.equals(record, that.record);
+        return Objects.equals(accessPoint, that.accessPoint);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), record);
+        return Objects.hash(super.hashCode(), accessPoint);
     }
 }

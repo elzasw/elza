@@ -19,7 +19,7 @@ public class BulkActionRunVO {
 
     private State state;
 
-    private List<TreeNodeClient> nodes;
+    private List<TreeNodeVO> nodes;
 
     private Date datePlanned;
 
@@ -28,6 +28,8 @@ public class BulkActionRunVO {
     private Date dateFinished;
 
     private String error;
+
+    private String config;
 
     public Integer getId() {
         return id;
@@ -53,11 +55,11 @@ public class BulkActionRunVO {
         this.state = state;
     }
 
-    public List<TreeNodeClient> getNodes() {
+    public List<TreeNodeVO> getNodes() {
         return nodes;
     }
 
-    public void setNodes(final List<TreeNodeClient> nodes) {
+    public void setNodes(final List<TreeNodeVO> nodes) {
         this.nodes = nodes;
     }
 
@@ -91,5 +93,13 @@ public class BulkActionRunVO {
 
     public void setError(final String error) {
         this.error = error;
+    }
+
+    public String getConfig() {
+        return config;
+    }
+
+    public void setConfig(String config) {
+        this.config = config;
     }
 }

@@ -43,17 +43,22 @@ import cz.tacr.elza.dataexchange.input.reader.handlers.InstitutionElementHandler
 import cz.tacr.elza.dataexchange.input.reader.handlers.PartyGroupElementHandler;
 import cz.tacr.elza.dataexchange.input.reader.handlers.PersonElementHandler;
 import cz.tacr.elza.dataexchange.input.reader.handlers.SectionElementHandler;
+import cz.tacr.elza.dataexchange.input.sections.context.ImportPosition;
 import cz.tacr.elza.dataexchange.input.sections.context.SectionsContext;
-import cz.tacr.elza.dataexchange.input.sections.context.SectionsContext.ImportPosition;
 import cz.tacr.elza.dataexchange.input.storage.StorageManager;
+import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrChange.Type;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.domain.RegScope;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.repository.ApAccessPointRepository;
+import cz.tacr.elza.repository.ApDescriptionRepository;
+import cz.tacr.elza.repository.ApExternalIdRepository;
+import cz.tacr.elza.repository.ApExternalSystemRepository;
+import cz.tacr.elza.repository.ApNameRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.InstitutionTypeRepository;
@@ -62,15 +67,13 @@ import cz.tacr.elza.repository.PartyGroupIdentifierRepository;
 import cz.tacr.elza.repository.PartyNameComplementRepository;
 import cz.tacr.elza.repository.PartyNameRepository;
 import cz.tacr.elza.repository.PartyRepository;
-import cz.tacr.elza.repository.RegExternalSystemRepository;
-import cz.tacr.elza.repository.RegRecordRepository;
-import cz.tacr.elza.repository.RegVariantRecordRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.UnitdateRepository;
+import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.GroovyScriptService;
 import cz.tacr.elza.service.LevelTreeCacheService;
-import cz.tacr.elza.service.StructObjService;
+import cz.tacr.elza.service.StructObjValueService;
 import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.cache.NodeCacheService;
 
@@ -96,35 +99,40 @@ public class DEImportService {
 
     private final LevelTreeCacheService levelTreeCacheService;
 
+    private final AccessPointService accessPointService;
+
     private final ResourcePathResolver resourcePathResolver;
 
     @Autowired
     public DEImportService(EntityManager em,
-                           RegRecordRepository recordRepository,
-                           ArrangementService arrangementService,
-                           RegVariantRecordRepository variantRecordRepository,
-                           PartyRepository partyRepository,
-                           PartyNameRepository nameRepository,
-                           PartyNameComplementRepository nameComplementRepository,
-                           PartyGroupIdentifierRepository groupIdentifierRepository,
-                           UnitdateRepository unitdateRepository,
-                           InstitutionRepository institutionRepository,
-                           UserService userService,
-                           StaticDataService staticDataService,
-                           NodeCacheService nodeCacheService,
-                           RegExternalSystemRepository externalSystemRepository,
-                           InstitutionTypeRepository institutionTypeRepository,
-                           GroovyScriptService groovyScriptService,
-                           ScopeRepository scopeRepository,
-                           FundVersionRepository fundVersionRepository,
-                           LevelRepository levelRepository,
-                           LevelTreeCacheService levelTreeCacheService,
-                           ResourcePathResolver resourcePathResolver, StructObjService structObjService) {
-
-        this.initHelper = new ImportInitHelper(externalSystemRepository, groovyScriptService, institutionRepository,
-                institutionTypeRepository, arrangementService, levelRepository, recordRepository,
-                variantRecordRepository, partyRepository, nameRepository, nameComplementRepository, groupIdentifierRepository,
-                unitdateRepository, structObjService);
+            ApAccessPointRepository apRepository,
+            ArrangementService arrangementService,
+            ApNameRepository apNameRepository,
+            ApDescriptionRepository apDescRepository,
+            ApExternalIdRepository apEidRepository,
+            PartyRepository partyRepository,
+            PartyNameRepository nameRepository,
+            PartyNameComplementRepository nameComplementRepository,
+            PartyGroupIdentifierRepository groupIdentifierRepository,
+            UnitdateRepository unitdateRepository,
+            InstitutionRepository institutionRepository,
+            UserService userService,
+            StaticDataService staticDataService,
+            NodeCacheService nodeCacheService,
+            ApExternalSystemRepository externalSystemRepository,
+            InstitutionTypeRepository institutionTypeRepository,
+            GroovyScriptService groovyScriptService,
+            ScopeRepository scopeRepository,
+            FundVersionRepository fundVersionRepository,
+            LevelRepository levelRepository,
+            LevelTreeCacheService levelTreeCacheService,
+            StructObjValueService structObjService,
+            AccessPointService accessPointService,
+            ResourcePathResolver resourcePathResolver) {
+        this.initHelper = new ImportInitHelper(groovyScriptService, institutionRepository, institutionTypeRepository,
+                arrangementService, levelRepository, apRepository, apNameRepository, apDescRepository, apEidRepository,
+                partyRepository, nameRepository, nameComplementRepository, groupIdentifierRepository,
+                unitdateRepository, structObjService, accessPointService);
         this.em = em;
         this.userService = userService;
         this.staticDataService = staticDataService;
@@ -132,6 +140,7 @@ public class DEImportService {
         this.scopeRepository = scopeRepository;
         this.fundVersionRepository = fundVersionRepository;
         this.levelTreeCacheService = levelTreeCacheService;
+        this.accessPointService = accessPointService;
         this.resourcePathResolver = resourcePathResolver;
     }
 
@@ -168,19 +177,19 @@ public class DEImportService {
 
         Session session = HibernateUtils.getCurrentSession(em);
         ImportContext context = initContext(params, session);
-		XmlElementReader reader = prepareReader(is, context, params.isIgnoreRootNodes());
+        XmlElementReader reader = prepareReader(is, context, params.isIgnoreRootNodes());
         FlushMode origFlushMode = configureBatchSession(session, params.getBatchSize());
         try {
-			// read XML
+            // read XML
             reader.readDocument();
 
-			// set final phase
-            context.setCurrentPhase(ImportPhase.FINISHED);
+            // finish import
+            context.finish();
 
-			// sync node cache with all new nodes
+            // sync node cache with all new nodes
             nodeCacheService.syncCache();
 
-			// clear level tree cache if imported to existing fund
+            // clear level tree cache if imported to existing fund
             ImportPosition importPosition = context.getSections().getImportPostition();
             if (importPosition != null) {
                 levelTreeCacheService.invalidateFundVersion(importPosition.getFundVersion());
@@ -196,40 +205,44 @@ public class DEImportService {
         if (userService.hasPermission(Permission.ADMIN)) {
             return;
         }
-        if (userService.hasPermission(Permission.REG_SCOPE_WR, importScopeId)) {
+        if (userService.hasPermission(Permission.AP_SCOPE_WR, importScopeId)) {
             return;
         }
-        throw Authorization.createAccessDeniedException(Permission.REG_SCOPE_WR);
+        throw Authorization.createAccessDeniedException(Permission.AP_SCOPE_WR);
     }
 
-	/**
-	 * Check if all parameters are logically consistent
-	 *
-	 * @param params
-	 */
+    /**
+     * Check if all parameters are logically consistent
+     *
+     * @param params
+     */
     private void checkParameters(DEImportParams params) {
         Validate.isTrue(params.getBatchSize() > 0, "Import batch size must be greater than 0");
         Validate.isTrue(params.getMemoryScoreLimit() > 0, "Import memory score limit must be greater than 0");
-		// to ignore root nodes, position have to be set
-		if (params.isIgnoreRootNodes()) {
-			ImportPositionParams posParams = params.getPositionParams();
-			Validate.notNull(posParams);
-		}
+        // to ignore root nodes, position have to be set
+        if (params.isIgnoreRootNodes()) {
+            ImportPositionParams posParams = params.getPositionParams();
+            Validate.notNull(posParams);
+        }
     }
 
-	/**
-	 * Prepare ImportContext object
-	 *
-	 * @param params
-	 * @param session
-	 * @return
-	 */
+    /**
+     * Prepare ImportContext object
+     *
+     * @param params
+     * @param session
+     * @return
+     */
     private ImportContext initContext(DEImportParams params, Session session) {
+        // create AP change holder
+        ApChangeHolder apChangeHolder = new ApChangeHolder(accessPointService);
+
         // init storage manager
-        StorageManager storageManager = new StorageManager(params.getMemoryScoreLimit(), session, initHelper);
+        StorageManager storageManager = new StorageManager(params.getMemoryScoreLimit(), session, apChangeHolder,
+                initHelper);
 
         // find import scope
-        RegScope importScope = scopeRepository.findOne(params.getScopeId());
+        ApScope importScope = scopeRepository.findOne(params.getScopeId());
         if (importScope == null) {
             throw new SystemException("Import scope not found, id:" + params.getScopeId());
         }
@@ -237,24 +250,26 @@ public class DEImportService {
         // get static data for current transaction
         StaticDataProvider staticData = staticDataService.getData();
 
-        // initialize contexts
-        AccessPointsContext apContext = new AccessPointsContext(storageManager, params.getBatchSize(), importScope, initHelper);
-        PartiesContext partiesContext = new PartiesContext(storageManager, params.getBatchSize(), apContext, session, initHelper);
-        InstitutionsContext institutionsContext = new InstitutionsContext(storageManager, params.getBatchSize(), initHelper);
+        // initialize phase contexts
+        AccessPointsContext apContext = new AccessPointsContext(storageManager, params.getBatchSize(), importScope,
+                apChangeHolder, staticData, initHelper);
+        PartiesContext partiesContext = new PartiesContext(storageManager, params.getBatchSize(), apContext, staticData,
+                initHelper);
+        InstitutionsContext institutionsContext = new InstitutionsContext(storageManager, params.getBatchSize(),
+                initHelper);
         SectionsContext sectionsContext = initSectionsContext(storageManager, params, importScope, staticData);
-
+        
+        // initialize context
         ImportContext context = new ImportContext(session, staticData, apContext, partiesContext, institutionsContext,
-                sectionsContext);
-
-        // register listeners
-        params.getImportPhaseChangeListeners().forEach(context::registerPhaseChangeListener);
+                sectionsContext, storageManager);
+        context.init(params.getImportPhaseChangeListeners());
 
         return context;
     }
 
     private SectionsContext initSectionsContext(StorageManager storageManager,
                                                 DEImportParams params,
-                                                RegScope importScope,
+                                                ApScope importScope,
                                                 StaticDataProvider staticData) {
         ArrangementService arrangementService = initHelper.getArrangementService();
 
@@ -277,10 +292,11 @@ public class DEImportService {
             pos = new ImportPosition(fundVersion, parentLevel, targetLevel, posParams.getDirection());
         }
 
-        return new SectionsContext(storageManager, params.getBatchSize(), createChange, importScope, pos, staticData, initHelper);
+        return new SectionsContext(storageManager, params.getBatchSize(), createChange, importScope, pos, staticData,
+                initHelper);
     }
 
-	private static XmlElementReader prepareReader(InputStream is, ImportContext context, boolean ignoreRootNodes) {
+    private static XmlElementReader prepareReader(InputStream is, ImportContext context, boolean ignoreRootNodes) {
         XmlElementReader reader;
         try {
             reader = XmlElementReader.create(is);
@@ -293,7 +309,7 @@ public class DEImportService {
         reader.addElementHandler("/edx/pars/pg", new PartyGroupElementHandler(context));
         reader.addElementHandler("/edx/pars/evnt", new EventElementHandler(context));
         reader.addElementHandler("/edx/inss/inst", new InstitutionElementHandler(context));
-		reader.addElementHandler("/edx/fs/s", new SectionElementHandler(context, reader, ignoreRootNodes));
+        reader.addElementHandler("/edx/fs/s", new SectionElementHandler(context, reader, ignoreRootNodes));
         return reader;
     }
 
@@ -308,5 +324,4 @@ public class DEImportService {
         session.setHibernateFlushMode(origFlushMode);
         session.setJdbcBatchSize(null);
     }
-
 }

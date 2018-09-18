@@ -1,17 +1,24 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {TooltipTrigger, Autocomplete, Utils, Icon, i18n, AbstractReactComponent, NoFocusButton, FormInput} from 'components/shared';
-import {Tooltip, OverlayTrigger} from 'react-bootstrap';
+import {
+    AbstractReactComponent,
+    Autocomplete,
+    FormInput,
+    i18n,
+    Icon,
+    NoFocusButton,
+    TooltipTrigger,
+    Utils
+} from 'components/shared';
 import {addToastrDanger} from 'components/shared/toastr/ToastrActions.jsx'
 import {connect} from 'react-redux'
 import {propsEquals} from 'components/Utils.jsx'
 import {nodeFormActions} from 'actions/arr/subNodeForm.jsx'
 import {hasDescItemTypeValue} from 'components/arr/ArrUtils.jsx'
-import {indexById} from 'stores/app/utils.jsx'
+import {getSetFromIdsList, indexById} from 'stores/app/utils.jsx'
 import classNames from 'classnames';
 import * as perms from 'actions/user/Permission.jsx';
 import {Shortcuts} from 'react-shortcuts';
-import {getSetFromIdsList} from "stores/app/utils.jsx";
 import DescItemTypeSpec from "./DescItemTypeSpec";
 import {PropTypes} from 'prop-types';
 import defaultKeymap from './DescItemTypeKeymap.jsx';
@@ -626,6 +633,9 @@ class DescItemType extends AbstractReactComponent {
             "COORDINATES":{
                 onUpload: this.handleCoordinatesUpload,
                 onDownload: (value)=>{this.props.onCoordinatesDownload(descItem.descItemObjectId, value);}
+            },
+            "INT":{
+                refType
             }
         };
 
@@ -1103,7 +1113,7 @@ DescItemType.propTypes = {
     userDetail: PropTypes.object.isRequired,
     showNodeAddons: PropTypes.bool.isRequired,
     strictMode: PropTypes.bool.isRequired,
-    descItemType: PropTypes.object.isRequired
+    descItemFactory: PropTypes.object.isRequired
 };
 
 export default connect(mapStateToProps, null, null, {withRef: true})(DescItemType);

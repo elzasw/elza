@@ -48,6 +48,7 @@ import {Shortcuts} from 'react-shortcuts';
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import * as perms from 'actions/user/Permission.jsx';
 import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx'
+import DataGridExportDialog from "../../components/arr/DataGridExportDialog";
 
 const ArrDataGridPage = class ArrDataGridPage extends ArrParentPage {
     constructor(props) {
@@ -76,6 +77,11 @@ const ArrDataGridPage = class ArrDataGridPage extends ArrParentPage {
         var altActions = [];
 
         var itemActions = [];
+        itemActions.push(
+            <Button key="export-dataGrid" onClick={() => {this.handleDataGridExport(activeFund.versionId)}}><Icon glyph="fa-download"/>
+                <div><span className="btnText">{i18n('ribbon.action.arr.dataGrid.export')}</span></div>
+            </Button>
+        )
 
         var altSection;
         if (altActions.length > 0) {
@@ -90,6 +96,11 @@ const ArrDataGridPage = class ArrDataGridPage extends ArrParentPage {
         return (
             <Ribbon arr subMenu fundId={activeFund ? activeFund.id : null} altSection={altSection} itemSection={itemSection}/>
         )
+    }
+
+    handleDataGridExport(versionId) {
+        const fund = this.getActiveFund(this.props);
+        this.dispatch(modalDialogShow(this, i18n("dataGrid.export.title"), <DataGridExportDialog versionId={versionId} fundDataGrid={fund.fundDataGrid} />));
     }
 
     hasPageShowRights(userDetail, activeFund) {

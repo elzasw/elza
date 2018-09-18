@@ -8,7 +8,6 @@ import java.util.Map.Entry;
 
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 
 import cz.tacr.elza.bulkaction.ActionRunContext;
 import cz.tacr.elza.bulkaction.BulkAction;
@@ -49,8 +48,6 @@ public class MultipleBulkAction extends BulkAction {
 
 	MultiActionConfig config;
 
-	@Autowired
-	ApplicationContext appCtx;
 
 	public MultipleBulkAction(MultiActionConfig multiActionConfig) {
 		this.config = multiActionConfig;
@@ -180,7 +177,7 @@ public class MultipleBulkAction extends BulkAction {
      * Rekurzivní metody pro procházení JP ve stromu.
      *
      * @param node
-     * @param level procházený uzel
+     * @param parentLevel procházený uzel
      * @param parentNodeDescItems data předků
      */
     void generate(final LevelWithItems levelWithItems) {

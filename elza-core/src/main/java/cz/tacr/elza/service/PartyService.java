@@ -1,104 +1,38 @@
 package cz.tacr.elza.service;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
-import javax.transaction.Transactional;
-import javax.transaction.Transactional.TxType;
-
-import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
-import cz.tacr.elza.domain.ArrCalendarType;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrDataPartyRef;
-import cz.tacr.elza.domain.ArrDataRecordRef;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrItem;
-import cz.tacr.elza.domain.ArrNodeRegister;
-import cz.tacr.elza.domain.ParComplementType;
-import cz.tacr.elza.domain.ParCreator;
-import cz.tacr.elza.domain.ParInstitution;
-import cz.tacr.elza.domain.ParInstitutionType;
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.ParPartyGroup;
-import cz.tacr.elza.domain.ParPartyGroupIdentifier;
-import cz.tacr.elza.domain.ParPartyName;
-import cz.tacr.elza.domain.ParPartyNameComplement;
-import cz.tacr.elza.domain.ParPartyNameFormType;
-import cz.tacr.elza.domain.ParPartyType;
-import cz.tacr.elza.domain.ParRelation;
-import cz.tacr.elza.domain.ParRelationEntity;
-import cz.tacr.elza.domain.ParRelationRoleType;
-import cz.tacr.elza.domain.ParRelationType;
-import cz.tacr.elza.domain.ParUnitdate;
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.domain.RegRegisterType;
-import cz.tacr.elza.domain.RegScope;
-import cz.tacr.elza.domain.RegVariantRecord;
-import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.*;
 import cz.tacr.elza.domain.UsrPermission.Permission;
-import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.Level;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.RegistryCode;
-import cz.tacr.elza.repository.CalendarTypeRepository;
-import cz.tacr.elza.repository.ComplementTypeRepository;
-import cz.tacr.elza.repository.DataPartyRefRepository;
-import cz.tacr.elza.repository.DataRecordRefRepository;
-import cz.tacr.elza.repository.DescItemRepository;
-import cz.tacr.elza.repository.InstitutionRepository;
-import cz.tacr.elza.repository.ItemSpecRegisterRepository;
-import cz.tacr.elza.repository.ItemSpecRepository;
-import cz.tacr.elza.repository.NodeRegisterRepository;
-import cz.tacr.elza.repository.PartyCreatorRepository;
-import cz.tacr.elza.repository.PartyGroupIdentifierRepository;
-import cz.tacr.elza.repository.PartyGroupRepository;
-import cz.tacr.elza.repository.PartyNameComplementRepository;
-import cz.tacr.elza.repository.PartyNameFormTypeRepository;
-import cz.tacr.elza.repository.PartyNameRepository;
-import cz.tacr.elza.repository.PartyRelationRepository;
-import cz.tacr.elza.repository.PartyRepository;
-import cz.tacr.elza.repository.PartyTypeRepository;
-import cz.tacr.elza.repository.RegRecordRepository;
-import cz.tacr.elza.repository.RegVariantRecordRepository;
-import cz.tacr.elza.repository.RegisterTypeRepository;
-import cz.tacr.elza.repository.RelationEntityRepository;
-import cz.tacr.elza.repository.RelationRepository;
-import cz.tacr.elza.repository.RelationRoleTypeRepository;
-import cz.tacr.elza.repository.RelationTypeRepository;
-import cz.tacr.elza.repository.ScopeRepository;
-import cz.tacr.elza.repository.UnitdateRepository;
-import cz.tacr.elza.repository.UserRepository;
+import cz.tacr.elza.repository.*;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.ActionEvent;
 import cz.tacr.elza.service.eventnotification.events.EventId;
 import cz.tacr.elza.service.eventnotification.events.EventType;
+import cz.tacr.elza.service.party.ApConvResult;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.NotImplementedException;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
+import javax.annotation.Nullable;
+import javax.persistence.EntityManager;
+import javax.transaction.Transactional;
+import javax.transaction.Transactional.TxType;
+import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 
 /**
@@ -114,7 +48,7 @@ public class PartyService {
     private PartyRepository partyRepository;
 
     @Autowired
-    private RegRecordRepository recordRepository;
+    private ApAccessPointRepository recordRepository;
 
     @Autowired
     private CalendarTypeRepository calendarTypeRepository;
@@ -166,13 +100,10 @@ public class PartyService {
     private PartyTypeRepository partyTypeRepository;
 
     @Autowired
-    private RegistryService registryService;
+    private AccessPointService accessPointService;
 
     @Autowired
     private EntityManager entityManager;
-
-    @Autowired
-    private RegVariantRecordRepository variantRecordRepository;
 
     @Autowired
     private GroovyScriptService groovyScriptService;
@@ -181,7 +112,7 @@ public class PartyService {
     private EventNotificationService eventNotificationService;
 
     @Autowired
-    private RegisterTypeRepository registerTypeRepository;
+    private ApTypeRepository apTypeRepository;
 
     @Autowired
     private InstitutionRepository institutionRepository;
@@ -202,9 +133,6 @@ public class PartyService {
     private DescItemRepository descItemRepository;
 
     @Autowired
-    private ApplicationContext applicationContext;
-
-    @Autowired
     private UserRepository userRepository;
 
     @Autowired
@@ -219,12 +147,10 @@ public class PartyService {
      * @param record rejstříkové heslo
      * @return osoba s daným rejstříkovým heslem nebo null
      */
-    public ParParty findParPartyByRecord(final RegRecord record) {
+    public ParParty findParPartyByAccessPoint(final ApAccessPoint record) {
         Assert.notNull(record, "Rejstříkové heslo musí být vyplněno");
 
-
-        List<ParParty> recordParties = partyRepository.findParPartyByRecordId(record.getRecordId());
-        return recordParties.isEmpty() ? null : recordParties.get(0);
+        return partyRepository.findParPartyByAccessPointId(record.getAccessPointId());
     }
 
     /**
@@ -234,12 +160,12 @@ public class PartyService {
      *
      * @return mapa id rejstříku -> id osoby
      */
-    public Map<Integer, Integer> findParPartyIdsByRecords(final Collection<RegRecord> records) {
+    public Map<Integer, Integer> findParPartyIdsByRecords(final Collection<ApAccessPoint> records) {
         if (CollectionUtils.isEmpty(records)) {
             return Collections.emptyMap();
         }
 
-        List<Object[]> recordIdsAndPartyIds = partyRepository.findRecordIdAndPartyIdByRecords(records);
+        List<Object[]> recordIdsAndPartyIds = partyRepository.findAccessPointIdAndPartyIdByAccessPoints(records);
         Map<Integer, Integer> recordIdPartyIdMap = new HashMap<>(recordIdsAndPartyIds.size());
         for (Object[] row : recordIdsAndPartyIds) {
             recordIdPartyIdMap.put((Integer) row[1], (Integer) row[0]);
@@ -266,26 +192,26 @@ public class PartyService {
                                                  final Integer firstResult,
                                                  final Integer maxResults,
                                                  @Nullable final ArrFund fund,
-                                                 @Nullable final Integer scopeId, Boolean excludeInvalid) {
-        Set<Integer> scopeIdsForSearch = registryService.getScopeIdsForSearch(fund, scopeId);
+                                                 @Nullable final Integer scopeId) {
+        Set<Integer> scopeIdsForSearch = accessPointService.getScopeIdsForSearch(fund, scopeId);
 
-        Set<Integer> registerTypesIds = null;
+        Set<Integer> apTypesIds = null;
         if (itemSpecId != null) {
-            registerTypesIds = this.find(itemSpecId);
+            apTypesIds = this.find(itemSpecId);
         }
 
-        return partyRepository.findPartyByTextAndType(searchRecord, partyTypeId, registerTypesIds, firstResult,
-                maxResults, scopeIdsForSearch, true);
+        return partyRepository.findPartyByTextAndType(searchRecord, partyTypeId, apTypesIds, firstResult,
+                maxResults, scopeIdsForSearch);
     }
 
     private Set<Integer> find(final Integer itemSpecId) {
 
-        Set<Integer> registerTypeIds = new HashSet<>();
+        Set<Integer> apTypeIds = new HashSet<>();
         if (itemSpecId != null) {
             RulItemSpec spec = itemSpecRepository.getOneCheckExist(itemSpecId);
-            registerTypeIds.addAll(itemSpecRegisterRepository.findIdsByItemSpecId(spec));
+            apTypeIds.addAll(itemSpecRegisterRepository.findIdsByItemSpecId(spec));
         }
-        return registerTypeRepository.findSubtreeIds(registerTypeIds);
+        return apTypeRepository.findSubtreeIds(apTypeIds);
     }
 
     /**
@@ -304,22 +230,23 @@ public class PartyService {
                                             final Integer partyTypeId,
                                             final Integer itemSpecId,
                                             @Nullable final ArrFund fund,
-                                            @Nullable final Integer scopeId,
-                                            @Nullable final Boolean excludeInvalid){
-        Set<Integer> scopeIdsForSearch = registryService.getScopeIdsForSearch(fund, scopeId);
+                                            @Nullable final Integer scopeId){
+        Set<Integer> scopeIdsForSearch = accessPointService.getScopeIdsForSearch(fund, scopeId);
 
 
-        Set<Integer> registerTypesIds = null;
+        Set<Integer> apTypesIds = null;
         if (itemSpecId != null) {
-            registerTypesIds = this.find(itemSpecId);
+            apTypesIds = this.find(itemSpecId);
         }
 
-        return partyRepository.findPartyByTextAndTypeCount(searchRecord, partyTypeId, registerTypesIds,
-                scopeIdsForSearch, excludeInvalid);
+        return partyRepository.findPartyByTextAndTypeCount(searchRecord, partyTypeId, apTypesIds,
+                scopeIdsForSearch);
     }
 
     /**
      * Uložení osoby a všech navázaných dat, která musejí být při ukládání vyplněna.
+     * Relace se neukládají.
+     *
      * @param newParty nová osoba s navázanými daty
      * @return uložená osoba
      */
@@ -340,6 +267,7 @@ public class PartyService {
             saveParty = partyRepository.findOne(newParty.getPartyId());
             Assert.notNull(saveParty, "Osoba neexistuje");
 
+            // TODO: prepracovat - kopirovat rucne
             BeanUtils.copyProperties(newParty, saveParty, "partyGroupIdentifiers", "record",
                     "preferredName", "from", "to", "partyNames", "partyCreators", "relations");
         }
@@ -381,10 +309,10 @@ public class PartyService {
     private void synchRecord(final ParParty party) {
         Assert.notNull(party, "Osoba nesmí být prázdná");
 
-        Assert.notNull(party.getRecord(), "Osoba nemá zadané rejstříkové heslo.");
-        Assert.notNull(party.getRecord().getRegisterType(), "Není vyplněný typ rejstříkového hesla.");
-        Assert.notNull(party.getRecord().getScope(), "Není nastavena třída rejstříkového hesla");
-        Assert.notNull(party.getRecord().getScope().getScopeId(), "Není nastaveno id třídy rejstříkového hesla");
+        ApAccessPoint accessPoint = party.getAccessPoint();
+        Assert.notNull(accessPoint, "Osoba nemá zadané rejstříkové heslo.");
+        Assert.notNull(accessPoint.getApType(), "Není vyplněný typ rejstříkového hesla.");
+        Assert.notNull(accessPoint.getScope(), "Není nastavena třída rejstříkového hesla");
 
         if (party.getRelations() != null) {
             party.getRelations().sort(new ParRelation.ParRelationComparator());
@@ -392,29 +320,13 @@ public class PartyService {
 
         //vytvoření rejstříkového hesla v groovy
         List<ParComplementType> complementTypes = complementTypeRepository.findByPartyType(party.getPartyType());
-        RegRecord recordFromGroovy = groovyScriptService.getRecordFromGroovy(party, complementTypes);
-        List<RegVariantRecord> variantRecords = new ArrayList<>(recordFromGroovy.getVariantRecordList());
+        ApConvResult convResult = groovyScriptService.convertPartyToAp(party, complementTypes);
 
-        //uložení hesla
-        if (party.getPartyId() != null) {
-            ParParty dbParty = partyRepository.findOne(party.getPartyId());
-            recordFromGroovy.setRecordId(dbParty.getRecord().getRecordId());
-            recordFromGroovy.setVersion(dbParty.getRecord().getVersion());
-            recordFromGroovy.setUuid(dbParty.getRecord().getUuid());
-        }
-        recordFromGroovy.setExternalId(party.getRecord().getExternalId());
-        recordFromGroovy.setExternalSystem(party.getRecord().getExternalSystem());
-        RegRecord savedRecord = registryService.saveRecord(recordFromGroovy, true);
-        party.setRecord(savedRecord);
+        List<ApName> names = convResult.createNames();
+        ApDescription description = convResult.createDesc();
 
-        //smazání a uložení nových variantních hesel
-        List<RegVariantRecord> oldVariants = variantRecordRepository.findByRegRecordId(savedRecord.getRecordId());
-        variantRecordRepository.delete(oldVariants);
-
-        for (RegVariantRecord variantRecord : variantRecords) {
-            variantRecord.setRegRecord(savedRecord);
-            registryService.saveVariantRecord(variantRecord);
-        }
+        accessPoint = accessPointService.syncAccessPoint(accessPoint, names, description);
+        party.setAccessPoint(accessPoint);
     }
 
 
@@ -689,11 +601,14 @@ public class PartyService {
 
             eventNotificationService.publishEvent(new EventId(EventType.PARTY_DELETE, party.getPartyId()));
             partyRepository.delete(party);
-            registryService.deleteRecord(party.getRecord(), false);
+            accessPointService.deleteAccessPoint(party.getAccessPointId(), false);
         } else {
-            final RegRecord record = party.getRecord();
+            // TODO: nepouzivat slozite nacitani a synch metodu pro nastaveni delete change
+            throw new NotImplementedException("nepouzivat slozite nacitani a synch metodu pro nastaveni delete change");
+            /* final ApAccessPoint record = party.getAccessPoint();
+            ApAccessPointData accessPointData = accessPointDataService.findAccessPointData(record);
             record.setInvalid(true);
-            registryService.saveRecord(record, true);
+            accessPointService.saveAccessPoint(accessPointData, false); */
         }
     }
 
@@ -701,7 +616,7 @@ public class PartyService {
         // rejstřík AS nebo arch. popis v otevřené verzi.(arr_node_register nebo arr_data_party_ref nebo arr_data_record_ref)
 
         // arr_node_register
-        List<ArrNodeRegister> nodeRegisters = nodeRegisterRepository.findByRecordAndDeleteChangeIsNull(party.getRecord());
+        List<ArrNodeRegister> nodeRegisters = nodeRegisterRepository.findByRecordAndDeleteChangeIsNull(party.getAccessPoint());
         if (CollectionUtils.isNotEmpty(nodeRegisters)) {
             throw new BusinessException("Nelze smazat/zneplatnit osobu, která má přiřazení rejstříkového hesla k jednotce archivního popisu.", RegistryCode.EXIST_FOREIGN_DATA)
                     .set("partyId", party.getPartyId())
@@ -717,7 +632,7 @@ public class PartyService {
                     .set("fundIds", arrPartyItems.stream().map(ArrItem::getFundId).collect(Collectors.toList()));
         }
         // arr_data_record_ref
-        List<ArrDescItem> arrRecordItems = descItemRepository.findArrItemByRecord(party.getRecord());
+        List<ArrDescItem> arrRecordItems = descItemRepository.findArrItemByRecord(party.getAccessPoint());
         if (CollectionUtils.isNotEmpty(arrRecordItems)) {
             throw new BusinessException("Nelze smazat/zneplatnit osobu, která má hodnotu osoby v jednotce archivního popisu.", RegistryCode.EXIST_FOREIGN_DATA)
                     .set("partyId", party.getPartyId())
@@ -747,7 +662,7 @@ public class PartyService {
                     .set("partyIds", creators.stream().map(ParCreator::getParty).map(ParParty::getPartyId).collect(Collectors.toList()));
         }
         // vztah osoby par_relation_entity
-        List<ParRelationEntity> relationEntities = relationEntityRepository.findByRecord(party.getRecord());
+        List<ParRelationEntity> relationEntities = relationEntityRepository.findByAccessPoint(party.getAccessPoint());
         if (CollectionUtils.isNotEmpty(relationEntities)) {
             throw new BusinessException("Nelze smazat/zneplatnit osobu na kterou mají vazbu jiné osoby v relacích.", RegistryCode.EXIST_FOREIGN_DATA)
                     .set("partyId", party.getPartyId())
@@ -755,7 +670,7 @@ public class PartyService {
                     .set("partyIds", relationEntities.stream().map(ParRelationEntity::getRelation).map(ParRelation::getParty).map(ParParty::getPartyId).collect(Collectors.toList()));
         }
 
-        return registryService.canBeDeleted(party.getRecord(), false) &&
+        return accessPointService.canBeDeleted(party.getAccessPoint()) &&
                 CollectionUtils.isEmpty(dataPartyRefRepository.findByParty(party));
     }
 
@@ -936,10 +851,10 @@ public class PartyService {
                     .findOne(newRelationEntity.getRoleType().getRoleTypeId());
             saveEntity.setRoleType(relationRoleType);
 
-            Assert.notNull(newRelationEntity.getRecord(), "Musí být nenulové");
-            Assert.notNull(newRelationEntity.getRecord().getRecordId(), "Musí být nenulové");
-            RegRecord record = recordRepository.findOne(newRelationEntity.getRecord().getRecordId());
-            saveEntity.setRecord(record);
+            Assert.notNull(newRelationEntity.getAccessPoint(), "Musí být nenulové");
+            Assert.notNull(newRelationEntity.getAccessPoint().getAccessPointId(), "Musí být nenulové");
+            ApAccessPoint record = recordRepository.findOne(newRelationEntity.getAccessPoint().getAccessPointId());
+            saveEntity.setAccessPoint(record);
 
             saveEntity.setRelation(relation);
             checkRelationEntitySave(saveEntity);
@@ -964,7 +879,7 @@ public class PartyService {
         Assert.notNull(relationEntity, "Musí být nenulové");
         Assert.notNull(relationEntity.getRoleType(), "Musí být nenulové");
         Assert.notNull(relationEntity.getRelation(), "Musí být nenulové");
-        Assert.notNull(relationEntity.getRecord(), "Musí být nenulové");
+        Assert.notNull(relationEntity.getAccessPoint(), "Musí být nenulové");
 
         //typ role entity odpovídající typu vztahu dle par_relation_type_role_type
         ParRelationRoleType roleType = relationEntity.getRoleType();
@@ -977,25 +892,25 @@ public class PartyService {
 
 
         //navázaná entita stejné scope jako osoba sama
-        RegScope entityScope = relationEntity.getRecord().getScope();
-        if (!relationEntity.getRelation().getParty().getRecord().getScope().equals(entityScope)) {
+        ApScope entityScope = relationEntity.getAccessPoint().getScope();
+        if (!relationEntity.getRelation().getParty().getAccessPoint().getScope().equals(entityScope)) {
             throw new BusinessException(
                     "Navázaná entita musí mít stejnou třídu rejstříkového hesla jako osoba, ke které entitu navazujeme.",
                     RegistryCode.FOREIGN_ENTITY_INVALID_SCOPE).level(Level.WARNING)
             .set("recordScope", entityScope.getCode())
-            .set("entityScope", relationEntity.getRelation().getParty().getRecord().getScope().getCode());
+            .set("entityScope", relationEntity.getRelation().getParty().getAccessPoint().getScope().getCode());
         }
 
         //navázaná entita povoleného typu rejstříku dle par_registry_role (mělo by to ideálně i dědit)
-        RegRegisterType entityRegisterType = relationEntity.getRecord().getRegisterType();
-        Set<Integer> registerTypeIds = registerTypeRepository.findByRelationRoleType(roleType)
-                .stream().map(RegRegisterType::getRegisterTypeId).collect(Collectors.toSet());
-        registerTypeIds = registerTypeRepository.findSubtreeIds(registerTypeIds);
-        if (!registerTypeIds.contains(entityRegisterType.getRegisterTypeId())) {
+        ApType entityApType = relationEntity.getAccessPoint().getApType();
+        Set<Integer> apTypeIds = apTypeRepository.findByRelationRoleType(roleType)
+                .stream().map(ApType::getApTypeId).collect(Collectors.toSet());
+        apTypeIds = apTypeRepository.findSubtreeIds(apTypeIds);
+        if (!apTypeIds.contains(entityApType.getApTypeId())) {
             throw new BusinessException(
                     "Navázaná entita musí mít typ rejstříku nebo podtyp, který je navázaný na roli entity.",
                     RegistryCode.FOREIGN_ENTITY_INVALID_SUBTYPE).level(Level.WARNING)
-            .set("entityRegisterType", entityRegisterType.getCode())
+            .set("entityApType", entityApType.getCode())
             .set("roleType", roleType.getCode());
         }
 
@@ -1012,12 +927,12 @@ public class PartyService {
             throw new SystemException("Nalezeno použití party v tabulce ArrDataPartyRef.");
         }
 
-        List<ArrDataRecordRef> dataRecordRefList = dataRecordRefRepository.findByRecord(party.getRecord());
+        List<ArrDataRecordRef> dataRecordRefList = dataRecordRefRepository.findByRecord(party.getAccessPoint());
         if (CollectionUtils.isNotEmpty(dataRecordRefList)) {
             throw new SystemException("Nalezeno použití hesla v tabulce ArrDataRecordRef.");
         }
 
-        List<ArrNodeRegister> nodeRegisterList = nodeRegisterRepository.findByRecordId(party.getRecord());
+        List<ArrNodeRegister> nodeRegisterList = nodeRegisterRepository.findByRecordId(party.getAccessPoint());
         if (CollectionUtils.isNotEmpty(nodeRegisterList)) {
             throw new SystemException("Nalezeno použití hesla v tabulce ArrDataRecordRef.");
         }
@@ -1070,7 +985,7 @@ public class PartyService {
         return institutionRepository.save(institution);
     }
 
-    @AuthMethod(permission = {UsrPermission.Permission.REG_SCOPE_RD_ALL, UsrPermission.Permission.REG_SCOPE_RD})
+    @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_RD_ALL, UsrPermission.Permission.AP_SCOPE_RD})
     public ParParty getParty(@AuthParam(type = AuthParam.Type.PARTY) final Integer partyId) {
         Assert.notNull(partyId, "Identifikátor osoby musí být vyplněna");
         return partyRepository.findOne(partyId);
@@ -1126,10 +1041,10 @@ public class PartyService {
                     throw new SystemException("Pro AS neexistují žádné scope.", BaseCode.INVALID_STATE)
                             .set("fundId", fundId);
                 } else {
-                    if (!fundScopes.contains(replacement.getRegScope().getScopeId())) {
+                    if (!fundScopes.contains(replacement.getScopeId())) {
                         throw new BusinessException("Nelze nahradit osobu v AS jelikož AS nemá scope osoby pomcí které nahrazujeme.", BaseCode.INVALID_STATE)
                                 .set("fundId", fundId)
-                                .set("scopeId", replacement.getRegScope().getScopeId());
+                                .set("scopeId", replacement.getScopeId());
                     }
                 }
                 descriptionItemService.updateDescriptionItem(im, fundVersions.get(i.getFundId()), change, true);
@@ -1137,10 +1052,10 @@ public class PartyService {
         }
 
         // Registry replace
-        registryService.replace(replaced.getRecord(), replacement.getRecord());
+        accessPointService.replace(replaced.getAccessPoint(), replacement.getAccessPoint());
 
         // we have to replace relations
-        replaceRecordInRelations(replaced.getRecord(), replacement.getRecord());
+        replaceRecordInRelations(replaced.getAccessPoint(), replacement.getAccessPoint());
     }
 
     /**
@@ -1148,10 +1063,10 @@ public class PartyService {
      * @param replacedRecord
      * @param newRecord
      */
-    private void replaceRecordInRelations(RegRecord replacedRecord, RegRecord newRecord) {
+    private void replaceRecordInRelations(ApAccessPoint replacedRecord, ApAccessPoint newRecord) {
         UserDetail userDetail = userService.getLoggedUserDetail();
 
-        final List<ParRelationEntity> byRecord = relationEntityRepository.findByRecord(replacedRecord);
+        final List<ParRelationEntity> byRecord = relationEntityRepository.findByAccessPoint(replacedRecord);
         HashMap<Integer, ParParty> modifiedParties = new HashMap<>();
         // set of scopes accessible by user
         Set<Integer> accessibleScopes = new HashSet<>();
@@ -1160,8 +1075,8 @@ public class PartyService {
             Integer scopeId = party.getRegScopeId();
             // check permissions for scope
             if (!accessibleScopes.contains(scopeId)) {
-                if (!userDetail.hasPermission(Permission.REG_SCOPE_WR_ALL)
-                        && !userDetail.hasPermission(Permission.REG_SCOPE_WR, scopeId)) {
+                if (!userDetail.hasPermission(Permission.AP_SCOPE_WR_ALL)
+                        && !userDetail.hasPermission(Permission.AP_SCOPE_WR, scopeId)) {
                     throw new SystemException("Uživatel nemá oprávnění na scope.", BaseCode.INSUFFICIENT_PERMISSIONS)
                             .set("scopeId", scopeId);
                 }
@@ -1169,12 +1084,12 @@ public class PartyService {
             }
 
             // update record
-            re.setRecord(newRecord);
+            re.setAccessPoint(newRecord);
             relationEntityRepository.save(re);
 
             modifiedParties.putIfAbsent(party.getPartyId(), party);
         });
-        
+
         // synchronize modified parties
         modifiedParties.forEach((id, party) -> this.synchRecord(party));
     }

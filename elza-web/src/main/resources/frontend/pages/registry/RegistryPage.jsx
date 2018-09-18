@@ -20,7 +20,7 @@ import {Shortcuts} from 'react-shortcuts';
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import {setFocus} from 'actions/global/focus.jsx'
 import * as perms from 'actions/user/Permission.jsx';
-import {regExtSystemListFetchIfNeeded} from 'actions/registry/regExtSystemList';
+import {apExtSystemListFetchIfNeeded} from 'actions/registry/apExtSystemList';
 import {PropTypes} from 'prop-types';
 import './RegistryPage.less';
 import PageLayout from "../shared/layout/PageLayout";
@@ -90,8 +90,8 @@ class RegistryPage extends AbstractReactComponent {
 
     initData = (props = this.props) => {
         this.dispatch(refRecordTypesFetchIfNeeded());
-        if (props.userDetail.hasOne(perms.REG_SCOPE_WR_ALL)) {
-            this.dispatch(regExtSystemListFetchIfNeeded());
+        if (props.userDetail.hasOne(perms.AP_SCOPE_WR_ALL)) {
+            this.dispatch(apExtSystemListFetchIfNeeded());
         }
 
         this.trySetFocus(props)
@@ -215,7 +215,7 @@ class RegistryPage extends AbstractReactComponent {
 
         const altActions = [...parts.altActions];
 
-        if (userDetail.hasOne(perms.REG_SCOPE_WR_ALL)) {
+        if (userDetail.hasOne(perms.AP_SCOPE_WR_ALL)) {
             altActions.push(
                 <Button key='addRegistry' onClick={this.handleAddRegistry}>
                     <Icon glyph="fa-download"/>
@@ -240,7 +240,7 @@ class RegistryPage extends AbstractReactComponent {
 
         const itemActions = [...parts.itemActions];
         if (this.canDeleteRegistry()) {
-            if (userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_WR, scopeId: data ? data.scopeId : null})) {
+            if (userDetail.hasOne(perms.AP_SCOPE_WR_ALL, {type: perms.AP_SCOPE_WR, scopeId: data ? data.scopeId : null})) {
                 itemActions.push(
                     <Button disabled={data.invalid && data.partyId} key='registryRemove' onClick={this.handleDeleteRegistry}>
                         <Icon glyph="fa-trash"/>
@@ -258,7 +258,7 @@ class RegistryPage extends AbstractReactComponent {
 
             /*
             MCV-45365
-            if (userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_WR, scopeId: data ? data.scopeId : null})) {
+            if (userDetail.hasOne(perms.AP_SCOPE_WR_ALL, {type: perms.AP_SCOPE_WR, scopeId: data ? data.scopeId : null})) {
                 itemActions.push(
                     <Button disabled={!data.invalid && data.partyId} key='registrySetValid'
                             onClick={() => this.handleSetValidParty()}>
@@ -270,7 +270,7 @@ class RegistryPage extends AbstractReactComponent {
         }
 
         if (this.canMoveRegistry()) {
-            if (userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_WR, scopeId: data ? data.scopeId : null})) {
+            if (userDetail.hasOne(perms.AP_SCOPE_WR_ALL, {type: perms.AP_SCOPE_WR, scopeId: data ? data.scopeId : null})) {
                 itemActions.push(
                     <Button key='registryMove' onClick={this.handleRegistryMoveStart}>
                         <Icon glyph="fa-share"/>
@@ -280,7 +280,7 @@ class RegistryPage extends AbstractReactComponent {
             }
         }
         if (this.canMoveApplyCancelRegistry()) {
-            if (userDetail.hasOne(perms.REG_SCOPE_WR_ALL, {type: perms.REG_SCOPE_WR, scopeId: data ? data.scopeId : null})) {
+            if (userDetail.hasOne(perms.AP_SCOPE_WR_ALL, {type: perms.AP_SCOPE_WR, scopeId: data ? data.scopeId : null})) {
                 itemActions.push(
                     <Button key='registryMoveApply' onClick={this.handleRegistryMoveConfirm}>
                         <Icon glyph="fa-check-circle"/>
@@ -332,9 +332,9 @@ class RegistryPage extends AbstractReactComponent {
 
 
 export default connect((state) => {
-    const {app:{regExtSystemList, registryDetail, registryList},splitter, refTables, focus, userDetail} = state;
+    const {app:{apExtSystemList, registryDetail, registryList},splitter, refTables, focus, userDetail} = state;
     return {
-        extSystems: regExtSystemList.fetched ? regExtSystemList.rows : null,
+        extSystems: apExtSystemList.fetched ? apExtSystemList.rows : null,
         splitter,
         registryDetail,
         registryList,

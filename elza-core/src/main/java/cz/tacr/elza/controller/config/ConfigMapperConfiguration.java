@@ -1,5 +1,6 @@
 package cz.tacr.elza.controller.config;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -8,13 +9,6 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
-import cz.tacr.elza.controller.vo.RulArrangementExtensionVO;
-import cz.tacr.elza.controller.vo.RulStructureTypeVO;
-import cz.tacr.elza.domain.ArrDataStructureRef;
-import cz.tacr.elza.domain.RulArrangementExtension;
-import cz.tacr.elza.service.attachment.AttachmentService;
-import cz.tacr.elza.domain.RulStructuredType;
-import cz.tacr.elza.repository.StructuredObjectRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +19,11 @@ import org.springframework.util.Assert;
 import com.vividsolutions.jts.geom.Geometry;
 
 import cz.tacr.elza.bulkaction.BulkActionConfig;
+import cz.tacr.elza.bulkaction.generator.PersistentSortRunConfig;
 import cz.tacr.elza.common.GeometryConvertor;
+import cz.tacr.elza.controller.factory.ApFactory;
+import cz.tacr.elza.controller.vo.ApAccessPointVO;
+import cz.tacr.elza.controller.vo.ApScopeVO;
 import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
 import cz.tacr.elza.controller.vo.ArrChangeVO;
 import cz.tacr.elza.controller.vo.ArrDaoFileGroupVO;
@@ -68,18 +66,14 @@ import cz.tacr.elza.controller.vo.ParRelationRoleTypeVO;
 import cz.tacr.elza.controller.vo.ParRelationTypeVO;
 import cz.tacr.elza.controller.vo.ParRelationVO;
 import cz.tacr.elza.controller.vo.ParUnitdateVO;
-import cz.tacr.elza.controller.vo.RegExternalSystemSimpleVO;
-import cz.tacr.elza.controller.vo.RegExternalSystemVO;
-import cz.tacr.elza.controller.vo.RegRecordSimple;
-import cz.tacr.elza.controller.vo.RegRecordVO;
-import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
-import cz.tacr.elza.controller.vo.RegScopeVO;
-import cz.tacr.elza.controller.vo.RegVariantRecordVO;
+import cz.tacr.elza.controller.vo.PersistentSortConfigVO;
+import cz.tacr.elza.controller.vo.RulArrangementExtensionVO;
 import cz.tacr.elza.controller.vo.RulDataTypeVO;
 import cz.tacr.elza.controller.vo.RulDescItemSpecVO;
 import cz.tacr.elza.controller.vo.RulOutputTypeVO;
 import cz.tacr.elza.controller.vo.RulPolicyTypeVO;
 import cz.tacr.elza.controller.vo.RulRuleSetVO;
+import cz.tacr.elza.controller.vo.RulStructureTypeVO;
 import cz.tacr.elza.controller.vo.RulTemplateVO;
 import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
 import cz.tacr.elza.controller.vo.UIPartyGroupVO;
@@ -95,20 +89,24 @@ import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeDescItemsVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemCoordinatesVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemDateVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemDecimalVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemEnumVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemFileRefVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemFormattedTextVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemIntVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemJsonTableVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStructureVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemPartyRefVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemRecordRefVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStringVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStructureVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemTextVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitdateVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitidVO;
 import cz.tacr.elza.core.data.CalendarType;
+import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
@@ -116,6 +114,7 @@ import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDaoFile;
 import cz.tacr.elza.domain.ArrDaoFileGroup;
 import cz.tacr.elza.domain.ArrDataCoordinates;
+import cz.tacr.elza.domain.ArrDataDate;
 import cz.tacr.elza.domain.ArrDataDecimal;
 import cz.tacr.elza.domain.ArrDataFileRef;
 import cz.tacr.elza.domain.ArrDataInteger;
@@ -124,6 +123,7 @@ import cz.tacr.elza.domain.ArrDataNull;
 import cz.tacr.elza.domain.ArrDataPartyRef;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ArrDataString;
+import cz.tacr.elza.domain.ArrDataStructureRef;
 import cz.tacr.elza.domain.ArrDataText;
 import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDataUnitid;
@@ -133,16 +133,17 @@ import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrItemCoordinates;
+import cz.tacr.elza.domain.ArrItemDate;
 import cz.tacr.elza.domain.ArrItemDecimal;
 import cz.tacr.elza.domain.ArrItemEnum;
 import cz.tacr.elza.domain.ArrItemFileRef;
 import cz.tacr.elza.domain.ArrItemFormattedText;
 import cz.tacr.elza.domain.ArrItemInt;
 import cz.tacr.elza.domain.ArrItemJsonTable;
-import cz.tacr.elza.domain.ArrItemStructureRef;
 import cz.tacr.elza.domain.ArrItemPartyRef;
 import cz.tacr.elza.domain.ArrItemRecordRef;
 import cz.tacr.elza.domain.ArrItemString;
+import cz.tacr.elza.domain.ArrItemStructureRef;
 import cz.tacr.elza.domain.ArrItemText;
 import cz.tacr.elza.domain.ArrItemUnitdate;
 import cz.tacr.elza.domain.ArrItemUnitid;
@@ -176,11 +177,7 @@ import cz.tacr.elza.domain.ParRelationEntity;
 import cz.tacr.elza.domain.ParRelationRoleType;
 import cz.tacr.elza.domain.ParRelationType;
 import cz.tacr.elza.domain.ParUnitdate;
-import cz.tacr.elza.domain.RegExternalSystem;
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.domain.RegRegisterType;
-import cz.tacr.elza.domain.RegScope;
-import cz.tacr.elza.domain.RegVariantRecord;
+import cz.tacr.elza.domain.RulArrangementExtension;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemSpecExt;
@@ -189,6 +186,7 @@ import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.domain.RulPolicyType;
 import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.RulStructuredType;
 import cz.tacr.elza.domain.RulTemplate;
 import cz.tacr.elza.domain.UIPartyGroup;
 import cz.tacr.elza.domain.UISettings;
@@ -199,13 +197,15 @@ import cz.tacr.elza.domain.convertor.CalendarConverter;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.packageimport.xml.SettingGridView;
+import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.FundFileRepository;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.OutputResultRepository;
 import cz.tacr.elza.repository.PartyRepository;
-import cz.tacr.elza.repository.RegRecordRepository;
+import cz.tacr.elza.repository.StructuredObjectRepository;
 import cz.tacr.elza.service.RuleService;
+import cz.tacr.elza.service.attachment.AttachmentService;
 import ma.glasnost.orika.CustomMapper;
 import ma.glasnost.orika.MapperFactory;
 import ma.glasnost.orika.MappingContext;
@@ -238,12 +238,16 @@ public class ConfigMapperConfiguration {
     @Autowired
     private PartyRepository partyRepository;
     @Autowired
-    private RegRecordRepository recordRepository;
+    private ApAccessPointRepository apAccessPointRepository;
     @Autowired
     private RuleService ruleService;
     @Autowired
     private AttachmentService attachmentService;
-
+    @Autowired
+    private ApFactory apFactory;
+    @Autowired
+    private StaticDataService staticDataService;
+    
     /**
      * @return Tovární třída.
      */
@@ -253,6 +257,7 @@ public class ConfigMapperConfiguration {
         initSimpleVO(mapperFactory);
 
         mapperFactory.getConverterFactory().registerConverter(new LocalDateTimeConverter());
+        mapperFactory.getConverterFactory().registerConverter(new LocalDateConverter());
         mapperFactory.getConverterFactory().registerConverter(new DescItemTypeEnumConverter());
         mapperFactory.getConverterFactory().registerConverter(new DescItemSpecEnumConverter());
 
@@ -338,6 +343,7 @@ public class ConfigMapperConfiguration {
          mapperFactory.classMap(ArrItemInt.class, ArrItemIntVO.class).byDefault().register();
          mapperFactory.classMap(ArrItemJsonTable.class, ArrItemJsonTableVO.class).byDefault().register();
          mapperFactory.classMap(ArrItemText.class, ArrItemTextVO.class).byDefault().register();
+         mapperFactory.classMap(ArrItemDate.class, ArrItemDateVO.class).byDefault().register();
          mapperFactory.classMap(ArrItemDecimal.class, ArrItemDecimalVO.class).byDefault().register();
          mapperFactory.classMap(ArrItemUnitid.class, ArrItemUnitidVO.class).byDefault().register();
          mapperFactory.classMap(ArrItemUnitdate.class, ArrItemUnitdateVO.class).customize(
@@ -427,7 +433,7 @@ public class ConfigMapperConfiguration {
                                         final ArrItemRecordRefVO recordRefVO,
                                         final MappingContext context) {
                         super.mapAtoB(recordRef, recordRefVO, context);
-                        recordRefVO.setValue(recordRef == null || recordRef.getRecord() == null ? null : recordRef.getRecord().getRecordId());
+                        recordRefVO.setValue(recordRef == null || recordRef.getAccessPoint() == null ? null : recordRef.getAccessPoint().getAccessPointId());
                     }
 
                     @Override
@@ -435,13 +441,29 @@ public class ConfigMapperConfiguration {
                                         final ArrItemRecordRef recordRef,
                                         final MappingContext context) {
                         super.mapBtoA(recordRefVO, recordRef, context);
-                        recordRef.setRecord(recordRefVO.getValue() == null ? null : recordRepository.findOne(recordRefVO.getValue()));
+                        recordRef.setAccessPoint(recordRefVO.getValue() == null ? null : apAccessPointRepository.findOne(recordRefVO.getValue()));
                     }
                 }).byDefault().register();
         mapperFactory.classMap(ArrItemString.class, ArrItemStringVO.class).byDefault().register();
 
-        mapperFactory.classMap(ArrNodeRegister.class, ArrNodeRegisterVO.class).byDefault().field(
-                "nodeRegisterId", "id").register();
+        mapperFactory.classMap(ArrNodeRegister.class, ArrNodeRegisterVO.class)
+            .field("nodeRegisterId", "id")
+            .exclude(ArrNodeRegister.RECORD)
+            .customize(new CustomMapper<ArrNodeRegister, ArrNodeRegisterVO>() {
+                @Override
+                public void mapAtoB(ArrNodeRegister a, ArrNodeRegisterVO b, MappingContext context) {
+                    ApAccessPointVO apVO = apFactory.createVO(a.getRecord());
+                    b.setRecord(apVO);
+                }
+                @Override
+                public void mapBtoA(ArrNodeRegisterVO b, ArrNodeRegister a, MappingContext context) {
+                    ApAccessPointVO apVO = b.getRecord();
+                    if (apVO != null) {
+                        a.setRecord(apFactory.create(apVO));
+                    }
+                }
+            })
+            .byDefault().register();
 
         mapperFactory.classMap(ArrNode.class, ArrNodeVO.class).byDefault().field("nodeId", "id").register();
 
@@ -454,6 +476,7 @@ public class ConfigMapperConfiguration {
                                         final MappingContext context) {
 				        bulkActionVO.setName(bulkActionConfig.getName());
 				        bulkActionVO.setDescription(bulkActionConfig.getDescription());
+                        bulkActionVO.setFastAction(bulkActionConfig.isFastAction());
                     }
                 }
         ).byDefault().register();
@@ -498,14 +521,20 @@ public class ConfigMapperConfiguration {
                 .exclude("partyNames")
                 .exclude("partyCreators")
                 .exclude("relations")
+                .exclude(ParParty.RECORD)
                 .customize(new CustomMapper<ParParty, ParPartyVO>() {
-
+                    @Override
+                    public void mapAtoB(ParParty a, ParPartyVO b, MappingContext context) {
+                        ApAccessPointVO apVO = apFactory.createVO(a.getAccessPoint());
+                        b.setAccessPoint(apVO);
+                    }
                     @Override
                     public void mapBtoA(final ParPartyVO parPartyVO,
                                         final ParParty party,
                                         final MappingContext context) {
-
-
+                        ApAccessPoint ap = apFactory.create(parPartyVO.getAccessPoint());
+                        party.setAccessPoint(ap);
+                        
                         if (CollectionUtils.isNotEmpty(parPartyVO.getCreators())) {
                             List<ParCreator> creators = new ArrayList<>(parPartyVO.getCreators().size());
                             for (ParPartyVO creator : parPartyVO.getCreators()) {
@@ -527,11 +556,6 @@ public class ConfigMapperConfiguration {
                 .field("institutionId", "id").register();
         mapperFactory.classMap(ParInstitutionType.class, ParInstitutionTypeVO.class).byDefault()
                 .field("institutionTypeId", "id").register();
-
-        mapperFactory.classMap(RegRecord.class, RegRecord.class)
-                .exclude(RegRecord.RECORD_ID)
-            .byDefault().register();
-
 
         mapperFactory.classMap(ParPartyGroup.class, ParPartyGroupVO.class).byDefault().register();
         mapperFactory.classMap(ParPartyGroupIdentifier.class, ParPartyGroupIdentifierVO.class)
@@ -633,6 +657,9 @@ public class ConfigMapperConfiguration {
                                         final MappingContext context) {
                         ParRelation relation = parRelationEntity.getRelation();
                         parRelationEntityVO.setRelationId(relation.getRelationId());
+                        
+                        ApAccessPointVO apVO = apFactory.createVO(parRelationEntity.getAccessPoint());
+                        parRelationEntityVO.setRecord(apVO);
                     }
 
                     @Override
@@ -647,9 +674,9 @@ public class ConfigMapperConfiguration {
                         }
 
                         if (relationEntityVO.getRecord() != null) {
-                            RegRecord record = new RegRecord();
-                            record.setRecordId(relationEntityVO.getRecord().getId());
-                            parRelationEntity.setRecord(record);
+                            ApAccessPoint record = new ApAccessPoint();
+                            record.setAccessPointId(relationEntityVO.getRecord().getId());
+                            parRelationEntity.setAccessPoint(record);
                         }
                     }
                 }).byDefault().register();
@@ -683,93 +710,32 @@ public class ConfigMapperConfiguration {
                 }
             }).byDefault().register();
 
-        mapperFactory.classMap(RegRecord.class, RegRecordVO.class)
-                .exclude("registerType")
-                .exclude("scope")
-                .exclude("variantRecordList")
-                .field("recordId", "id")
-                .customize(new CustomMapper<RegRecord, RegRecordVO>() {
-                    @Override
-                    public void mapAtoB(final RegRecord regRecord,
-                                        final RegRecordVO regRecordVO,
-                                        final MappingContext context) {
-                        regRecordVO.setRegisterTypeId(regRecord.getRegisterType().getRegisterTypeId());
-                        regRecordVO.setAddRecord(regRecord.getRegisterType().getAddRecord());
-                        regRecordVO.setScopeId(regRecord.getScope().getScopeId());
-                        regRecordVO.setInvalid(regRecord.isInvalid());
-                    }
-
-                    @Override
-                    public void mapBtoA(final RegRecordVO regRecordVO,
-                                        final RegRecord regRecord,
-                                        final MappingContext context) {
-
-                        if (regRecordVO.getRegisterTypeId() != null) {
-                            RegRegisterType regRegisterType = new RegRegisterType();
-                            regRegisterType.setRegisterTypeId(regRecordVO.getRegisterTypeId());
-                            regRecord.setRegisterType(regRegisterType);
-                        }
-
-                        if (regRecordVO.getScopeId() != null) {
-                            RegScope scope = new RegScope();
-                            scope.setScopeId(regRecordVO.getScopeId());
-                            regRecord.setScope(scope);
-                        }
-                    }
-                }).byDefault().register();
-        mapperFactory.classMap(RegRecord.class, RegRecordSimple.class).field("recordId", "id").byDefault().register();
-
-        mapperFactory.classMap(RegExternalSystem.class, RegExternalSystemVO.class).field("externalSystemId", "id").byDefault().register();
         mapperFactory.classMap(ArrDigitizationFrontdesk.class, ArrDigitizationFrontdeskVO.class).field("externalSystemId", "id").byDefault().register();
         mapperFactory.classMap(ArrDigitalRepository.class, ArrDigitalRepositoryVO.class).field("externalSystemId", "id").byDefault().register();
 
-        mapperFactory.classMap(RegExternalSystem.class, RegExternalSystemSimpleVO.class).field("externalSystemId", "id").byDefault().register();
         mapperFactory.classMap(ArrDigitizationFrontdesk.class, ArrDigitizationFrontdeskSimpleVO.class).field("externalSystemId", "id").byDefault().register();
         mapperFactory.classMap(ArrDigitalRepository.class, ArrDigitalRepositorySimpleVO.class).field("externalSystemId", "id").byDefault().register();
-
-
-        mapperFactory.classMap(RegRegisterType.class, RegRegisterTypeVO.class).customize(
-                new CustomMapper<RegRegisterType, RegRegisterTypeVO>() {
-                    @Override
-                    public void mapAtoB(final RegRegisterType regRegisterType,
-                                        final RegRegisterTypeVO regRegisterTypeVO,
-                                        final MappingContext context) {
-                        RegRegisterType parentType = regRegisterType.getParentRegisterType();
-                        if (parentType != null) {
-                            regRegisterTypeVO.setParentRegisterTypeId(parentType.getRegisterTypeId());
-                        }
-
-                        if (regRegisterType.getPartyType() != null) {
-                            regRegisterTypeVO.setPartyTypeId(regRegisterType.getPartyType().getPartyTypeId());
-                        }
-                    }
-
-                    @Override
-                    public void mapBtoA(final RegRegisterTypeVO registerTypeVO,
-                                        final RegRegisterType regRegisterType,
-                                        final MappingContext context) {
-                        if (registerTypeVO.getPartyTypeId() != null) {
-                            ParPartyType partyType = new ParPartyType();
-                            partyType.setPartyTypeId(registerTypeVO.getPartyTypeId());
-                            regRegisterType.setPartyType(partyType);
-                        }
-                    }
-                }).field("registerTypeId", "id").byDefault()
-                .register();
-        mapperFactory.classMap(RegScope.class, RegScopeVO.class).field("scopeId", "id").byDefault().register();
+        
         mapperFactory.classMap(RulDataType.class, RulDataTypeVO.class).byDefault().field("dataTypeId", "id").register();
-
-
         mapperFactory.classMap(RulItemType.class, RulDescItemTypeDescItemsVO.class).byDefault().field(
                 "itemTypeId",
                 "id").register();
         mapperFactory.classMap(RulItemType.class, ItemTypeDescItemsLiteVO.class).byDefault()
                 .field("itemTypeId", "id")
                 .register();
-        mapperFactory.classMap(RulItemTypeExt.class, RulDescItemTypeExtVO.class).byDefault()
+        mapperFactory.classMap(RulItemTypeExt.class, RulDescItemTypeExtVO.class)
                 .field("itemTypeId", "id")
                 .field("rulItemSpecList", "descItemSpecs")
                 .field("structuredTypeId", "structureTypeId")
+                .exclude("viewDefinition")
+                .byDefault()
+                .customize(new CustomMapper<RulItemTypeExt, RulDescItemTypeExtVO>() {
+                    @Override
+                    public void mapAtoB(RulItemTypeExt rulItemTypeExt, RulDescItemTypeExtVO rulDescItemTypeExtVO, MappingContext context) {
+                        super.mapAtoB(rulItemTypeExt, rulDescItemTypeExtVO, context);
+                        rulDescItemTypeExtVO.setViewDefinition(rulItemTypeExt.getViewDefinition());
+                    }
+                })
                 .register();
         mapperFactory.classMap(RulItemTypeExt.class, ItemTypeLiteVO.class).byDefault()
                 .field("itemTypeId", "id")
@@ -824,7 +790,6 @@ public class ConfigMapperConfiguration {
                             }
                             rulRuleSetVO.setGridViews(gridViews);
                         }
-                        rulRuleSetVO.setItemTypeCodes(ruleService.getItemTypeCodesByRuleSet(rulRuleSet));
                     }
                 })
                 .register();
@@ -882,30 +847,6 @@ public class ConfigMapperConfiguration {
         mapperFactory.classMap(ArrOutput.class, ArrOutputVO.class).byDefault().field("outputId", "id").register();
         mapperFactory.getConverterFactory().registerConverter(new PassThroughConverter(LocalDateTime.class));
 
-        mapperFactory.classMap(RegVariantRecord.class, RegVariantRecordVO.class)
-                .field("variantRecordId", "id")
-                .customize(
-                new CustomMapper<RegVariantRecord, RegVariantRecordVO>() {
-                    @Override
-                    public void mapAtoB(final RegVariantRecord regVariantRecord,
-                                        final RegVariantRecordVO regVariantRecordVO,
-                                        final MappingContext context) {
-                        RegRecord regRecord = regVariantRecord.getRegRecord();
-                        regVariantRecordVO.setRegRecordId(regRecord.getRecordId());
-                    }
-
-                    @Override
-                    public void mapBtoA(final RegVariantRecordVO regVariantRecordVO,
-                                        final RegVariantRecord regVariantRecord,
-                                        final MappingContext context) {
-                        if (regVariantRecordVO.getRegRecordId() != null) {
-                            RegRecord regRecord = new RegRecord();
-                            regRecord.setRecordId(regVariantRecordVO.getRegRecordId());
-                            regVariantRecord.setRegRecord(regRecord);
-                        }
-                    }
-                }).byDefault().register();
-
         mapperFactory.classMap(UsrUser.class, UsrUserVO.class)
                 .byDefault()
                 .field("userId", "id")
@@ -920,7 +861,7 @@ public class ConfigMapperConfiguration {
                 .customize(new CustomMapper<UsrPermission, UsrPermissionVO>() {
                     @Override
                     public void mapAtoB(final UsrPermission usrPermission, final UsrPermissionVO usrPermissionVO, final MappingContext context) {
-                        Class targetEntity = (Class) context.getProperty("targetEntity");
+                        Class<?> targetEntity = (Class<?>) context.getProperty("targetEntity");
                         final boolean inherited;
                         if (targetEntity == UsrUser.class) {
                             inherited = usrPermission.getGroup() != null;
@@ -932,6 +873,18 @@ public class ConfigMapperConfiguration {
                         usrPermissionVO.setInherited(inherited);
                         if (inherited) {
                             usrPermissionVO.setGroupId(usrPermission.getGroup().getGroupId());
+                        }
+                        // create scope VO
+                        ApScope apScope = usrPermission.getScope();
+                        if (apScope != null) {
+                            usrPermissionVO.setScope(ApScopeVO.newInstance(apScope, staticDataService.getData()));    
+                        }
+                    }
+                    @Override
+                    public void mapBtoA(UsrPermissionVO usrPermissionVO, UsrPermission usrPermission, MappingContext context) {
+                        ApScopeVO apScopeVO = usrPermissionVO.getScope();
+                        if (apScopeVO != null) {
+                            usrPermission.setScope(apScopeVO.createEntity(staticDataService.getData()));
                         }
                     }
                 })
@@ -1003,6 +956,7 @@ public class ConfigMapperConfiguration {
                 }).exclude("value").byDefault().register();
         mapperFactory.classMap(ArrDataNull.class, ArrItemEnumVO.class).byDefault().register();
         mapperFactory.classMap(ArrDataInteger.class, ArrItemIntVO.class).byDefault().register();
+        mapperFactory.classMap(ArrDataDate.class, ArrItemDateVO.class).byDefault().register();
         mapperFactory.classMap(ArrDataJsonTable.class, ArrItemJsonTableVO.class).byDefault().register();
         mapperFactory.classMap(ArrDataDecimal.class, ArrItemDecimalVO.class).byDefault().register();
         mapperFactory.classMap(ArrDataUnitid.class, ArrItemUnitidVO.class).byDefault().register();
@@ -1121,7 +1075,7 @@ public class ConfigMapperConfiguration {
                                         final ArrItemRecordRefVO recordRefVO,
                                         final MappingContext context) {
                         super.mapAtoB(recordRef, recordRefVO, context);
-                        recordRefVO.setValue(recordRef == null || recordRef.getRecord() == null ? null : recordRef.getRecord().getRecordId());
+                        recordRefVO.setValue(recordRef == null || recordRef.getRecord() == null ? null : recordRef.getRecord().getAccessPointId());
                     }
 
                     @Override
@@ -1129,7 +1083,7 @@ public class ConfigMapperConfiguration {
                                         final ArrDataRecordRef recordRef,
                                         final MappingContext context) {
                         super.mapBtoA(recordRefVO, recordRef, context);
-                        recordRef.setRecord(recordRefVO.getValue() == null ? null : recordRepository.findOne(recordRefVO.getValue()));
+                        recordRef.setRecord(recordRefVO.getValue() == null ? null : apAccessPointRepository.findOne(recordRefVO.getValue()));
                     }
                 }).byDefault().register();
         mapperFactory.classMap(ArrDataString.class, ArrItemStringVO.class).byDefault().register();
@@ -1166,6 +1120,10 @@ public class ConfigMapperConfiguration {
         mapperFactory.classMap(ArrDataText.class, ArrItemTextVO.class).byDefault().register();
         mapperFactory.classMap(ArrDataText.class, ArrItemFormattedTextVO.class).byDefault().register();
 
+        mapperFactory.classMap(PersistentSortRunConfig.class, PersistentSortConfigVO.class).
+                byDefault().
+                exclude("nodeIds").
+                register();
     }
 
     /**
@@ -1182,6 +1140,20 @@ public class ConfigMapperConfiguration {
         public LocalDateTime convertFrom(final Date date, final Type<LocalDateTime> type) {
             return LocalDateTime.from(LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault()));
         }
+    }
+
+    public class LocalDateConverter extends BidirectionalConverter<LocalDate, LocalDate> {
+
+        @Override
+        public LocalDate convertTo(LocalDate source, Type<LocalDate> destinationType) {
+            return (LocalDate.from(source));
+        }
+
+        @Override
+        public LocalDate convertFrom(LocalDate source, Type<LocalDate> destinationType) {
+            return (LocalDate.from(source));
+        }
+
     }
 
     public class DescItemTypeEnumConverter extends BidirectionalConverter<RulItemType.Type, Integer> {

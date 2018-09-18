@@ -19,45 +19,38 @@ class RegistryListItem extends AbstractReactComponent {
         invalid: React.PropTypes.bool
     };
 
-    getRecordId = (data) => {
-        if(data.externalId) {
-            if(data.externalSystem && data.externalSystem.name){
-                return data.externalSystem.name + ':' + data.externalId;
-            } else {
-                return 'UNKNOWN:' + data.externalId;
-            }
-        } else  {
-            return data.id;
-        }
+    getDisplayIds = () => {
+		const eids = this.props.externalIds;
+		if (!eids || eids.length == 0) {
+			return [this.props.id];
+		}
+	
+		let eidArr = [];
+		eids.forEach(eid => {
+			// TODO: read eid type name from refTables by id
+			const eidTypeName =  "eid_type_name-" + eid.typeId;
+			eidArr.push(eidTypeName + ":" + eid.value);
+		});
+		return eidArr;
     }
 
+	getApTypeNames = () => {
+        const type = this.props.apTypeIdMap[this.props.typeId];
+        
+		let names = [type.name];
+        if (type.parents) {
+			type.parents.forEach(name => names.push(name));
+		}
+		return names;
+    }
+	
     render() {
-        const {className, parents, typesToRoot, isActive, id, record, registryParentId, registryTypesId, externalId, externalSystem, invalid, ...otherProps} = this.props;
-
-        const parentsShown = [];
-        const parentsTypeShown = [];
-        if (parents && parents.length > 0) {
-            parents.map((val) => {
-                parentsShown.push(val.id);
-            });
-        }
-
-        var data = {
-            externalId:externalId,
-            externalSystem:externalSystem,
-            id:id
-        };
-
-        if (typesToRoot) {
-            typesToRoot.map((val) => {
-                parentsTypeShown.push(val.id);
-            });
-        }
-
-        //let doubleClick = this.handleDoubleClick.bind(this, item);
+        const {className, isActive, id, record, invalid} = this.props;
+		
         const iconName = 'fa-file-o';
         const clsItem = 'registry-list-icon-list';
-
+		
+        //let doubleClick = this.handleDoubleClick.bind(this, item);
         const doubleClick = false;
 
         const cls = classNames(className, 'registry-list-item', {
@@ -65,43 +58,19 @@ class RegistryListItem extends AbstractReactComponent {
             invalid: invalid
         });
 
+		const typeNames = this.getApTypeNames().join(' | ');
+		const displayId = this.getDisplayIds().join(', ');
 
-        // výsledky z vyhledávání
-        if (!registryParentId) {
-            const path = [];
-            if (parents) {
-                parents.map((val) => {
-                    if (parentsShown.indexOf(val.id) === -1) {
-                        path.push(val.name);
-                    }
-                });
-            }
-
-            if (typesToRoot) {
-                typesToRoot.map((val) => {
-                    if (registryTypesId !== val.id) {
-                        path.push(val.name);
-                    }
-                });
-            }
-
-            return <div key={'record-id-' + id} title={path} className={cls} onDoubleClick={doubleClick}>
-                <div>
-                    <Icon glyph={iconName} />
-                    <span className="name">{record}</span>
-                </div>
-                <div>
-                    <span className="path date">{path.join(' | ')}</span>
-                    <span className="description">{this.getRecordId(data)}</span>
-                </div>
-            </div>;
-        }  else {
-            // jednořádkový výsledek
-            return <div key={'record-id-' + id} className={cls} onDoubleClick={doubleClick} {...otherProps}>
-                <div><Icon glyph={iconName} key={id} /></div>
-                <div key={'record-' + id + '-name'} title={record} className={clsItem}>{record}</div>
-            </div>;
-        }
+		return <div key={'record-id-' + id} className={cls} onDoubleClick={doubleClick}>
+			<div>
+				<Icon glyph={iconName} />
+				<span className="name" title={record}>{record}</span>
+			</div>
+			<div>
+				<span className="types" title={typeNames}>{typeNames}</span>
+				<span className="ids" title={displayId}>{displayId}</span>
+			</div>
+		</div>;
     };
 }
 

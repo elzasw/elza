@@ -5,38 +5,20 @@
  * @since 26.8.2016
  */
 import React from 'react';
-import ReactDOM from 'react-dom';
-import { connect } from 'react-redux';
-import {
-    Modal,
-    Button,
-    Radio,
-    FormGroup,
-    ControlLabel,
-    Form,
-    Col,
-    Row,
-    Grid,
-    FormControl,
-    Checkbox
-} from 'react-bootstrap';
-import { WebApi } from 'actions/index.jsx';
-import { addNode } from 'actions/arr/node.jsx';
-import {
-    AbstractReactComponent,
-    i18n,
-    FormInput,
-    HorizontalLoader,
-    Autocomplete
-} from 'components/shared';
-import { isFundRootId, getOneSettings } from 'components/arr/ArrUtils.jsx';
-import { indexById } from 'stores/app/utils.jsx';
+import {connect} from 'react-redux';
+import {Button, Checkbox, Col, ControlLabel, Form, FormControl, FormGroup, Modal, Radio, Row} from 'react-bootstrap';
+import {WebApi} from 'actions/index.jsx';
+import {addNode} from 'actions/arr/node.jsx';
+import {AbstractReactComponent, Autocomplete, FormInput, HorizontalLoader, i18n} from 'components/shared';
+import {getOneSettings, isFundRootId} from 'components/arr/ArrUtils.jsx';
+import {getSetFromIdsList, indexById} from 'stores/app/utils.jsx';
 import './AddNodeForm.less';
-import { getSetFromIdsList } from 'stores/app/utils.jsx';
 
 import FundTreeCopy from '../FundTreeCopy';
 import FundField from '../../admin/FundField';
-import { FUND_TREE_AREA_COPY } from '../../../actions/constants/ActionTypes';
+import {FUND_TREE_AREA_COPY} from '../../../actions/constants/ActionTypes';
+
+const TEMPLATE_SCENARIOS = 'TEMPLATE_SCENARIOS';
 
 class AddNodeForm extends AbstractReactComponent {
     static PropTypes = {
@@ -58,6 +40,7 @@ class AddNodeForm extends AbstractReactComponent {
     state = {
         // initial states
         scenarios: undefined,
+        template: '',
         loading: false,
         selectedDirection: this.props.initDirection,
         selectedScenario: undefined,
@@ -177,6 +160,10 @@ class AddNodeForm extends AbstractReactComponent {
         this.setState({ selectedScenario: e.target.value });
     };
 
+    handleTemplateChange = e => {
+        this.setState({ template: e.target.value });
+    };
+
     /**
      * Vrátí prvky popisu ke zkopírování na základě proměnné props.nodeSettings
      */
@@ -194,6 +181,10 @@ class AddNodeForm extends AbstractReactComponent {
         return itemsToCopy;
     };
 
+    notEmpty = (value) => {
+        return value != null && value !== "";
+    };
+
     /**
      * Zprostředkuje přidání nové JP, dle aktuálně vyplněných dat ve formuláři
      * resp. dat uložených ve state 'selectedDirection', 'selectedScenario'
@@ -205,10 +196,12 @@ class AddNodeForm extends AbstractReactComponent {
             node,
             parentNode,
             versionId,
+            activeFund,
+            userDetail,
             initDirection,
             globalFundTree: { fundTreeCopy }
         } = this.props;
-        const { selectedDirection, selectedScenario } = this.state;
+        const { selectedDirection, selectedScenario, template } = this.state;
 
         // nastavi odpovidajiciho rodice a direction pro dotaz
         const dataServ = this.formatDataForServer(
@@ -224,8 +217,43 @@ class AddNodeForm extends AbstractReactComponent {
                 versionId: versionId,
                 direction: dataServ.direction,
                 descItemCopyTypes: this.getDescItemTypeCopyIds(),
-                scenarioName: selectedScenario
+                scenarioName: selectedScenario === TEMPLATE_SCENARIOS ? null : selectedScenario
             };
+
+            if (selectedScenario === TEMPLATE_SCENARIOS) {
+                if (activeFund) {
+                    let settings = userDetail.settings;
+                    const fundTemplates = getOneSettings(settings, 'FUND_TEMPLATES', 'FUND', activeFund.id);
+
+                    const value = JSON.parse(fundTemplates.value);
+                    const index = indexById(value, template, 'name');
+
+                    if (index == null) {
+                        console.error("Nebyla nalezena šablona s názvem: " + template);
+                    } else {
+                        const template = value[index];
+                        if (template.withValues) {
+                            const formData = template.formData;
+                            const createItems = [];
+                            Object.keys(formData).map(itemTypeId => {
+                                const items = formData[itemTypeId];
+                                items.forEach(item => {
+                                    if (this.notEmpty(item.value) || (item['@class'] === '.ArrItemEnumVO' && this.notEmpty(item.descItemSpecId))) {
+                                        const newItem = {
+                                            ...item,
+                                            itemTypeId: itemTypeId
+                                        };
+                                        createItems.push(newItem);
+                                    }
+                                });
+                            });
+                            if (createItems.length > 0) {
+                                submitData.createItems = createItems;
+                            }
+                        }
+                    }
+                }
+            }
 
             onSubmit(submitData, 'NEW');
         } else if (this.state.selectedSourceAS === 'FILE') {
@@ -251,7 +279,7 @@ class AddNodeForm extends AbstractReactComponent {
                 importPositionParams.direction = selectedDirection;
             }
             submitData.importPositionParams = new Blob([JSON.stringify(importPositionParams)],{type:"application/json"});
-            
+
             onSubmit(submitData, 'FILE');
         } else if (this.state.selectedSourceAS === 'OTHER') {
             const newNode = {
@@ -320,7 +348,7 @@ class AddNodeForm extends AbstractReactComponent {
         } = this.props;
         const { scenarios, loading, submitting, valid } = this.state;
         const notRoot = !isFundRootId(parentNode.id);
-         
+
         // Položky v select na směr
         const allowedDirectionsMap = getSetFromIdsList(allowedDirections);
         const directions = {
@@ -442,11 +470,12 @@ class AddNodeForm extends AbstractReactComponent {
 
     renderCreateNew() {
         const {arrRegion, userDetail} = this.props;
-        const {scenarios, loading, selectedScenario} = this.state;
+        const {scenarios, loading, submitting, selectedScenario, template} = this.state;
 
-        var scnRadios = [];
+        let templates = [];
+        let scnRadios = [];
         if (!loading) {
-            var i = 0;
+            let i = 0;
             if (scenarios) {
                 for (i; i < scenarios.length; i++) {
                     scnRadios.push(
@@ -470,7 +499,13 @@ class AddNodeForm extends AbstractReactComponent {
                 arrRegion.activeIndex != null
                     ? arrRegion.funds[arrRegion.activeIndex]
                     : null;
+
+            const settings = userDetail.settings;
+
             if (fund) {
+                const fundTemplates = getOneSettings(settings, 'FUND_TEMPLATES', 'FUND', fund.id);
+                templates = fundTemplates.value ? JSON.parse(fundTemplates.value).map(template => template.name) : [];
+
                 strictMode = fund.activeVersion.strictMode;
 
                 let userStrictMode = getOneSettings(
@@ -498,7 +533,23 @@ class AddNodeForm extends AbstractReactComponent {
                         {i18n('subNodeForm.add.noScenario')}
                     </Radio>
                 );
+                i++;
             }
+
+            scnRadios.push(
+                <Radio
+                    key={'tmpl'}
+                    defaultChecked={i === 0}
+                    autoFocus={i === 0}
+                    name="scns"
+                    onChange={this.handleScenarioChange}
+                    value={TEMPLATE_SCENARIOS}
+                    checked={selectedScenario === TEMPLATE_SCENARIOS}
+                >
+                    {i18n('subNodeForm.add.fromTemplate')}
+                </Radio>
+            );
+
         } else {
             scnRadios.push(
                 <div>
@@ -515,9 +566,26 @@ class AddNodeForm extends AbstractReactComponent {
                     </ControlLabel>
                     {loading
                         ? <HorizontalLoader />
-                        : <FormGroup key="Scenarios">
-                              {scnRadios}
-                          </FormGroup>}
+                        : <div>
+                            <FormGroup key="Scenarios">
+                                {scnRadios}
+                            </FormGroup>
+                            {selectedScenario === TEMPLATE_SCENARIOS &&
+                                <FormInput
+                                    ref="select"
+                                    key={"tmpl-select"}
+                                    componentClass="select"
+                                    name={"template"}
+                                    disabled={loading || submitting}
+                                    label={""}
+                                    onChange={this.handleTemplateChange}
+                                    defaultValue={""}
+                                >
+                                    <option value={""} key="no-select">{i18n('global.action.select')}</option>
+                                    {templates.map(tmp => <option value={tmp} selected={tmp === template} key={tmp}>{tmp}</option>)}
+                                </FormInput>
+                            }
+                        </div>}
                 </FormGroup>
             </div>
         );
@@ -619,11 +687,11 @@ class AddNodeForm extends AbstractReactComponent {
                 />
             </FormGroup>,
             <FormGroup>
-                <FormControl 
-                    disabled={submitting} 
-                    name="soubor" 
-                    type="file" 
-                    onChange={this.handleFileChange} 
+                <FormControl
+                    disabled={submitting}
+                    name="soubor"
+                    type="file"
+                    onChange={this.handleFileChange}
                 />
             </FormGroup>
         ];
@@ -688,6 +756,7 @@ function mapStateToProps(state) {
 
     return {
         fund: arrRegion.globalFundTree.fund,
+        activeFund: arrRegion.activeIndex != null ? arrRegion.funds[arrRegion.activeIndex] : null,
         fundTreeCopy: arrRegion.globalFundTree.fundTreeCopy,
         globalFundTree: arrRegion.globalFundTree,
         nodeSettings: arrRegion.nodeSettings,

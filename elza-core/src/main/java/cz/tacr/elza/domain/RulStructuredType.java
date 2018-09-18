@@ -41,10 +41,6 @@ public class RulStructuredType {
     @JoinColumn(name = "packageId", nullable = false)
     private RulPackage rulPackage;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulRuleSet.class)
-    @JoinColumn(name = "ruleSetId", nullable = false)
-    private RulRuleSet ruleSet;
-
     public Integer getStructuredTypeId() {
         return structuredTypeId;
     }
@@ -77,11 +73,4 @@ public class RulStructuredType {
         this.rulPackage = rulPackage;
     }
 
-    public RulRuleSet getRuleSet() {
-        return ruleSet;
-    }
-
-    public void setRuleSet(final RulRuleSet ruleSet) {
-        this.ruleSet = ruleSet;
-    }
 }

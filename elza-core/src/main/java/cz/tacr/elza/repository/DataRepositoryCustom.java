@@ -1,51 +1,16 @@
 package cz.tacr.elza.repository;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
 import javax.annotation.Nullable;
 
-import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemType;
 
-
-/**
- * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
- * @since 03.02.2016
- */
 public interface DataRepositoryCustom {
-
-    @Deprecated
-    List<ArrData> findDescItemsByNodeIds(Set<Integer> nodeIds,
-                                         Set<RulItemType> descItemTypes,
-                                         ArrFundVersion version);
-
-    @Deprecated
-    List<ArrData> findDescItemsByNodeIds(Set<Integer> nodeIds,
-                                         Set<RulItemType> itemTypes,
-                                         Integer changeId);
-
-    @Deprecated
-    List<ArrData> findByDataIdsAndVersionFetchSpecification(Set<Integer> nodeIds,
-            Set<RulItemType> descItemTypes,
-            ArrFundVersion version);
-
-    List<ArrData> findByDataIdsAndVersionFetchSpecification(Set<Integer> nodeIds,
-                                                            Set<RulItemType> itemTypes,
-                                                            Integer changeId);
-
-    /**
-     * Najde seznam hodnot atributů obsahujících hledaný text.
-     * @param <T>
-     * @param nodes seznam uzlů, ve kterých hledáme
-     * @param descItemType typ atributu
-     * @param specifications seznam specifikací (pokud se jedná o typ atributu se specifikací)
-     *@param text hledaný text  @return seznam hodnot atributů
-     */
-    @Deprecated
-    <T extends ArrData> List<T> findByNodesContainingText(Collection<ArrNode> nodes, RulItemType descItemType,
-                                                          final Set<RulItemSpec> specifications, String text);
 
     /**
      * Provede načtení unikátních hodnot atributů.

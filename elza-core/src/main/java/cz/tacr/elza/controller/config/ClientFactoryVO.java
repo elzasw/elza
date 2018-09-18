@@ -4,7 +4,6 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -18,13 +17,13 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.controller.factory.ApFactory;
+import cz.tacr.elza.controller.vo.*;
+import cz.tacr.elza.domain.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.NotImplementedException;
-import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -39,56 +38,6 @@ import cz.tacr.elza.config.rules.GroupConfiguration;
 import cz.tacr.elza.config.rules.TypeInfo;
 import cz.tacr.elza.config.rules.ViewConfiguration;
 import cz.tacr.elza.controller.StructureExtensionFundVO;
-import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
-import cz.tacr.elza.controller.vo.ArrDaoFileGroupVO;
-import cz.tacr.elza.controller.vo.ArrDaoFileVO;
-import cz.tacr.elza.controller.vo.ArrDaoLinkRequestVO;
-import cz.tacr.elza.controller.vo.ArrDaoLinkVO;
-import cz.tacr.elza.controller.vo.ArrDaoPackageVO;
-import cz.tacr.elza.controller.vo.ArrDaoRequestVO;
-import cz.tacr.elza.controller.vo.ArrDaoVO;
-import cz.tacr.elza.controller.vo.ArrDigitizationRequestVO;
-import cz.tacr.elza.controller.vo.ArrFileVO;
-import cz.tacr.elza.controller.vo.ArrFundVO;
-import cz.tacr.elza.controller.vo.ArrFundVersionVO;
-import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
-import cz.tacr.elza.controller.vo.ArrOutputDefinitionVO;
-import cz.tacr.elza.controller.vo.ArrOutputExtVO;
-import cz.tacr.elza.controller.vo.ArrOutputFileVO;
-import cz.tacr.elza.controller.vo.ArrOutputVO;
-import cz.tacr.elza.controller.vo.ArrRequestQueueItemVO;
-import cz.tacr.elza.controller.vo.ArrRequestVO;
-import cz.tacr.elza.controller.vo.ArrStructureDataVO;
-import cz.tacr.elza.controller.vo.BulkActionRunVO;
-import cz.tacr.elza.controller.vo.BulkActionVO;
-import cz.tacr.elza.controller.vo.DmsFileVO;
-import cz.tacr.elza.controller.vo.NodeConformityVO;
-import cz.tacr.elza.controller.vo.ParInstitutionVO;
-import cz.tacr.elza.controller.vo.ParPartyNameComplementVO;
-import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
-import cz.tacr.elza.controller.vo.ParPartyNameVO;
-import cz.tacr.elza.controller.vo.ParPartyVO;
-import cz.tacr.elza.controller.vo.ParRelationEntityVO;
-import cz.tacr.elza.controller.vo.ParRelationTypeVO;
-import cz.tacr.elza.controller.vo.ParRelationVO;
-import cz.tacr.elza.controller.vo.RegRecordSimple;
-import cz.tacr.elza.controller.vo.RegRecordVO;
-import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
-import cz.tacr.elza.controller.vo.RegScopeVO;
-import cz.tacr.elza.controller.vo.RegVariantRecordVO;
-import cz.tacr.elza.controller.vo.RulDataTypeVO;
-import cz.tacr.elza.controller.vo.RulDescItemSpecVO;
-import cz.tacr.elza.controller.vo.RulOutputTypeVO;
-import cz.tacr.elza.controller.vo.RulPolicyTypeVO;
-import cz.tacr.elza.controller.vo.RulRuleSetVO;
-import cz.tacr.elza.controller.vo.RulTemplateVO;
-import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
-import cz.tacr.elza.controller.vo.TreeItemSpecsItem;
-import cz.tacr.elza.controller.vo.TreeNodeClient;
-import cz.tacr.elza.controller.vo.UISettingsVO;
-import cz.tacr.elza.controller.vo.UsrGroupVO;
-import cz.tacr.elza.controller.vo.UsrPermissionVO;
-import cz.tacr.elza.controller.vo.UsrUserVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.ItemTypeDescItemsLiteVO;
 import cz.tacr.elza.controller.vo.nodes.ItemTypeLiteVO;
@@ -111,69 +60,6 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitidVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ItemGroupVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ItemTypeGroupVO;
-import cz.tacr.elza.domain.ArrBulkActionRun;
-import cz.tacr.elza.domain.ArrCalendarType;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrDao;
-import cz.tacr.elza.domain.ArrDaoBatchInfo;
-import cz.tacr.elza.domain.ArrDaoFile;
-import cz.tacr.elza.domain.ArrDaoFileGroup;
-import cz.tacr.elza.domain.ArrDaoLink;
-import cz.tacr.elza.domain.ArrDaoLinkRequest;
-import cz.tacr.elza.domain.ArrDaoPackage;
-import cz.tacr.elza.domain.ArrDaoRequest;
-import cz.tacr.elza.domain.ArrDaoRequestDao;
-import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDataText;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrDigitalRepository;
-import cz.tacr.elza.domain.ArrDigitizationRequest;
-import cz.tacr.elza.domain.ArrDigitizationRequestNode;
-import cz.tacr.elza.domain.ArrFile;
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrItem;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrNodeConformityExt;
-import cz.tacr.elza.domain.ArrNodeOutput;
-import cz.tacr.elza.domain.ArrNodeRegister;
-import cz.tacr.elza.domain.ArrOutput;
-import cz.tacr.elza.domain.ArrOutputDefinition;
-import cz.tacr.elza.domain.ArrOutputFile;
-import cz.tacr.elza.domain.ArrRequest;
-import cz.tacr.elza.domain.ArrRequestQueueItem;
-import cz.tacr.elza.domain.ArrStructuredObject;
-import cz.tacr.elza.domain.DmsFile;
-import cz.tacr.elza.domain.ParComplementType;
-import cz.tacr.elza.domain.ParInstitution;
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.ParPartyName;
-import cz.tacr.elza.domain.ParPartyNameComplement;
-import cz.tacr.elza.domain.ParPartyNameFormType;
-import cz.tacr.elza.domain.ParPartyType;
-import cz.tacr.elza.domain.ParPartyTypeRelation;
-import cz.tacr.elza.domain.ParRegistryRole;
-import cz.tacr.elza.domain.ParRelation;
-import cz.tacr.elza.domain.ParRelationEntity;
-import cz.tacr.elza.domain.ParRelationType;
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.domain.RegRegisterType;
-import cz.tacr.elza.domain.RegScope;
-import cz.tacr.elza.domain.RegVariantRecord;
-import cz.tacr.elza.domain.RulDataType;
-import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.RulItemSpecExt;
-import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.RulItemTypeExt;
-import cz.tacr.elza.domain.RulOutputType;
-import cz.tacr.elza.domain.RulPolicyType;
-import cz.tacr.elza.domain.RulRuleSet;
-import cz.tacr.elza.domain.RulStructuredTypeExtension;
-import cz.tacr.elza.domain.RulTemplate;
-import cz.tacr.elza.domain.UISettings;
-import cz.tacr.elza.domain.UsrGroup;
-import cz.tacr.elza.domain.UsrPermission;
-import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
@@ -181,6 +67,8 @@ import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.packageimport.ItemTypeUpdater;
 import cz.tacr.elza.packageimport.PackageService;
 import cz.tacr.elza.packageimport.xml.SettingFavoriteItemSpecs;
+import cz.tacr.elza.repository.ApAccessPointRepository;
+import cz.tacr.elza.repository.ApNameRepository;
 import cz.tacr.elza.repository.BulkActionNodeRepository;
 import cz.tacr.elza.repository.ComplementTypeRepository;
 import cz.tacr.elza.repository.DaoFileGroupRepository;
@@ -198,9 +86,6 @@ import cz.tacr.elza.repository.OutputDefinitionRepository;
 import cz.tacr.elza.repository.PartyNameRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.PermissionRepository;
-import cz.tacr.elza.repository.RegRecordRepository;
-import cz.tacr.elza.repository.RegisterTypeRepository;
-import cz.tacr.elza.repository.RegistryRoleRepository;
 import cz.tacr.elza.repository.RelationEntityRepository;
 import cz.tacr.elza.repository.RelationRepository;
 import cz.tacr.elza.repository.RequestQueueItemRepository;
@@ -221,17 +106,12 @@ import ma.glasnost.orika.MappingContext;
 @Service
 public class ClientFactoryVO {
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
-
     @Autowired
     @Qualifier("configVOMapper")
     private MapperFactory mapperFactory;
 
     @Autowired
     private DaoService daoService;
-
-    @Autowired
-    private RegistryRoleRepository registryRoleRepository;
 
     @Autowired
     private PartyNameRepository partyNameRepository;
@@ -243,7 +123,10 @@ public class ClientFactoryVO {
     private RelationEntityRepository relationEntityRepository;
 
     @Autowired
-    private RegRecordRepository recordRepository;
+    private ApAccessPointRepository apAccessPointRepository;
+    
+    @Autowired
+    private ApNameRepository apNameRepository;
 
     @Autowired
     private PermissionRepository permissionRepository;
@@ -262,9 +145,6 @@ public class ClientFactoryVO {
 
     @Autowired
     private FundVersionRepository fundVersionRepository;
-
-    @Autowired
-    private RegisterTypeRepository registerTypeRepository;
 
     @Autowired
     private ConfigRules elzaRules;
@@ -320,7 +200,9 @@ public class ClientFactoryVO {
     @Autowired
     private NodeRepository nodeRepository;
 
-
+    @Autowired
+    private ApFactory apFactory;
+    
     /**
      * Vytvoření nastavení.
      *
@@ -472,7 +354,7 @@ public class ClientFactoryVO {
         //načtení dat do session
         unitdateRepository.findForFromPartyNameByParties(parties);
         unitdateRepository.findForToPartyNameByParties(parties);
-        recordRepository.findByParties(parties);
+        apAccessPointRepository.findByParties(parties);
 
         List<ParPartyName> allPartyNames = partyNameRepository.findByPartyIn(parties);
         Map<Integer, List<ParPartyName>> partyNameMap = ElzaTools
@@ -550,8 +432,6 @@ public class ClientFactoryVO {
             relationVOMap.put(relation.getRelationId(), mapper.map(relation, ParRelationVO.class));
         }
 
-        //načtení objektů regrecord do session
-        recordRepository.findByPartyRelations(party);
         List<ParRelationEntity> partyRelations = relationEntityRepository.findByParty(party);
         List<ParRelationEntityVO> partyRelationsVo = createList(partyRelations, ParRelationEntityVO.class, null);
 
@@ -580,122 +460,6 @@ public class ClientFactoryVO {
         return relationVO;
     }
 
-
-    /**
-     * Vytvoření seznamu RegRecordVo.
-     *
-     * @param records            seznam rejstříkových hesel
-     * @param recordIdPartyIdMap mapa id rejstříkových hesel na osobu
-     * @param fillParents        příznak zda se mají načíst rodiče rejstříku
-     * @return seznam rejstříkových hesel
-     */
-    public List<RegRecordVO> createRegRecords(final List<RegRecord> records,
-                                              final Map<Integer, Integer> recordIdPartyIdMap,
-                                              final boolean fillParents) {
-        List<RegRecordVO> result = new ArrayList<>(records.size());
-        for (final RegRecord record : records) {
-            Integer partyId = recordIdPartyIdMap.get(record.getRecordId());
-            result.add(createRegRecord(record, partyId, fillParents));
-        }
-
-        return result;
-    }
-
-    /**
-     * Vytvoří rejstříkové heslo.
-     *
-     * @param regRecord   rejstříkové heslo
-     * @param partyId     id osoby
-     * @param fillParents příznak zda se mají načíst rodiče rejstříku
-     * @return rejstříkové heslo
-     */
-    public RegRecordVO createRegRecord(final RegRecord regRecord, @Nullable final Integer partyId, final boolean fillParents) {
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        RegRecordVO result = mapper.map(regRecord, RegRecordVO.class);
-        result.setPartyId(partyId);
-        return result;
-    }
-
-    /**
-     * Pro heslo vytvoří seznam typů až po kořen typů nebo po typ v seznamu.
-     *  @param record        heslo
-     */
-    public void fillRegisterTypeNamesToParents(final RegRecordVO record) {
-
-        List<RegRecordVO.RecordParent> parentTypeNames = new ArrayList<>();
-
-        RegRegisterType recordType = registerTypeRepository.findOne(record.getRegisterTypeId());
-        parentTypeNames.add(new RegRecordVO.RecordParent(recordType.getRegisterTypeId(), recordType.getName()));
-        record.setTypesToRoot(parentTypeNames);
-
-
-        RegRegisterType parentType = recordType.getParentRegisterType();
-        while (parentType != null) {
-            parentTypeNames.add(new RegRecordVO.RecordParent(parentType.getRegisterTypeId(), parentType.getName()));
-            parentType = parentType.getParentRegisterType();
-        }
-
-    }
-
-    /**
-     * Vytvoří seznam jedhoduchých rejstříkových hesel.
-     *
-     * @param records seznam rej. hesel
-     * @return seznam jednoduchých rejs. hesel
-     */
-    public List<RegRecordSimple> createRegRecordsSimple(final Collection<RegRecord> records) {
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        List<RegRecordSimple> result = new ArrayList<>(records.size());
-
-        for (RegRecord record : records) {
-            result.add(mapper.map(record, RegRecordSimple.class));
-        }
-
-        return result;
-    }
-
-    /**
-     * Vytvoření variantního rejstříkového hesla.
-     *
-     * @param regVariantRecord variantní rejstříkové heslo
-     * @return VO variantní rejstříkové heslo
-     */
-    public RegVariantRecordVO createRegVariantRecord(final RegVariantRecord regVariantRecord) {
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        return mapper.map(regVariantRecord, RegVariantRecordVO.class);
-    }
-
-    /**
-     * Vytvoření seznamu variantních rejstříkových hesel.
-     *
-     * @param variantRecords seznam variantních rejstříkových hesel
-     * @return seznam VO variantních hesel
-     */
-    public List<RegVariantRecordVO> createRegVariantRecords(@Nullable final List<RegVariantRecord> variantRecords) {
-        if (variantRecords == null) {
-            return null;
-        }
-
-        List<RegVariantRecordVO> result = new ArrayList<>(variantRecords.size());
-        variantRecords.forEach((variantRecord) ->
-                        result.add(createRegVariantRecord(variantRecord))
-        );
-
-        return result;
-    }
-
-    /**
-     * Vytvoří ty rejstříkového hesla.
-     *
-     * @param registerType typ rejstříkového hesla
-     * @return VO
-     */
-    public RegRegisterTypeVO createRegRegisterType(final RegRegisterType registerType) {
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        return mapper.map(registerType, RegRegisterTypeVO.class);
-    }
-
-
     /**
      * Vytvoří seznam typů formy jména.
      *
@@ -714,123 +478,6 @@ public class ClientFactoryVO {
 
         return result;
     }
-
-    /**
-     * Vytváří stromovou strukturu pro všechny typy rejstříků.
-     *
-     * @param allTypes všechny typy rejstříků
-     * @param checkPartyType true -> bude nastaven parametr addRecord podle toho, jestli se partytype rovná typu osoby v rejstříku
-     * @param  partyType typ osoby, který musí mít nastaven typ rejstříku, jinak nelze vkládat nové záznamy
-     * @return seznam kořenových typů rejstříků
-     */
-    public List<RegRegisterTypeVO> createRegisterTypesTree(final List<RegRegisterType> allTypes,
-                                                           final boolean checkPartyType,
-                                                           @Nullable final ParPartyType partyType) {
-        if (CollectionUtils.isEmpty(allTypes)) {
-            return Collections.emptyList();
-        }
-
-        Map<Integer, List<Integer>> registryRolesMap = new HashMap<>();
-
-        List<ParRegistryRole> registryRoles = registryRoleRepository.findAll();
-
-        for (ParRegistryRole registryRole : registryRoles) {
-            Integer registerTypeId = registryRole.getRegisterType().getRegisterTypeId();
-            List<Integer> roles = registryRolesMap.get(registerTypeId);
-            if (roles == null) {
-                roles = new ArrayList<>();
-                registryRolesMap.put(registerTypeId, roles);
-            }
-            roles.add(registryRole.getRoleType().getRoleTypeId());
-        }
-
-        Map<Integer, RegRegisterTypeVO> typeMap = new HashMap<>();
-        List<RegRegisterTypeVO> roots = new LinkedList<>();
-        for (final RegRegisterType registerType : allTypes) {
-            if (checkPartyType) {
-                createRegisterTypeTreeForPartyType(registerType, partyType, typeMap, roots, registryRolesMap);
-            }else{
-                createRegisterTypeTree(registerType, typeMap, roots, registryRolesMap);
-            }
-        }
-
-        return roots.stream().sorted(Comparator.comparing(RegRegisterTypeVO::getId)).collect(Collectors.toList());
-    }
-
-    /**
-     * Vytvoří typ rejstříkového hesla a vloží jeje do mapy všech hesel.
-     *
-     * @param registerType typ hesla
-     * @param typeMap      mapa všech typů (id typu ->typ)
-     * @param roots     kořeny stromu
-     * @param registryRolesMap
-     * @return typ rejstříkového hesla
-     */
-    private RegRegisterTypeVO createRegisterTypeTree(final RegRegisterType registerType,
-                                                     final Map<Integer, RegRegisterTypeVO> typeMap,
-                                                     final List<RegRegisterTypeVO> roots, final Map<Integer, List<Integer>> registryRolesMap) {
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-
-        RegRegisterTypeVO result = typeMap.get(registerType.getRegisterTypeId());
-        if (result != null) {
-            return result;
-        }
-
-        result = mapper.map(registerType, RegRegisterTypeVO.class);
-        result.setRelationRoleTypIds(registryRolesMap.get(registerType.getRegisterTypeId()));
-        typeMap.put(result.getId(), result);
-        if (registerType.getParentRegisterType() == null) {
-            roots.add(result);
-        }else{
-            RegRegisterTypeVO parent = createRegisterTypeTree(registerType.getParentRegisterType(), typeMap, roots, registryRolesMap);
-            parent.addChild(result);
-            result.addParent(parent.getName());
-            result.addParents(parent.getParents());
-        }
-
-        return result;
-    }
-
-    /**
-     * Vytvoří typ rejstříkového hesla a vloží jeje do mapy všech hesel.
-     *
-     * @param registerType typ hesla
-     * @param parPartyType typ osoby, který musí mít nastaven typ rejstříku, jinak nelze vkládat nové záznamy
-     * @param typeMap      mapa všech typů (id typu ->typ)
-     * @param roots        kořeny stromu
-     * @param registryRolesMap
-     * @return typ rejstříkového hesla
-     */
-    private RegRegisterTypeVO createRegisterTypeTreeForPartyType(final RegRegisterType registerType,
-                                                                 @Nullable final ParPartyType parPartyType,
-                                                                 final Map<Integer, RegRegisterTypeVO> typeMap,
-                                                                 final List<RegRegisterTypeVO> roots, final Map<Integer, List<Integer>> registryRolesMap) {
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-
-        RegRegisterTypeVO result = typeMap.get(registerType.getRegisterTypeId());
-        if (result != null) {
-            return result;
-        }
-        boolean addRecord = registerType.getAddRecord() && ObjectUtils.equals(registerType.getPartyType(), parPartyType);
-        result = mapper.map(registerType, RegRegisterTypeVO.class);
-        result.setAddRecord(addRecord);
-        result.setRelationRoleTypIds(registryRolesMap.get(registerType.getRegisterTypeId()));
-
-        typeMap.put(result.getId(), result);
-        if (registerType.getParentRegisterType() == null) {
-            roots.add(result);
-        }else{
-            RegRegisterTypeVO parent = createRegisterTypeTreeForPartyType(registerType.getParentRegisterType(),
-                    parPartyType, typeMap, roots, registryRolesMap);
-            parent.addChild(result);
-
-            result.addParent(parent.getName());
-            result.addParents(parent.getParents());
-        }
-
-        return result;
-    }
-
 
     /**
      * Vytvoří seznam VO objektů z objektů.
@@ -901,6 +548,9 @@ public class ClientFactoryVO {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         ArrFundVO fundVO = mapper.map(fund, ArrFundVO.class);
         fundVO.setInstitutionId(fund.getInstitution().getInstitutionId());
+        
+        // TODO: AP scopes on fund VO object needed/used ?
+        
         if (includeVersions) {
 
             List<ArrFundVersion> versions = fundVersionRepository
@@ -1062,7 +712,7 @@ public class ClientFactoryVO {
      * @param item hodnota atributu
      * @return VO hodnota atributu
      */
-    public <T extends ArrItem> ArrItemVO createDescItem(final T item) {
+    public <T extends ArrItem> ArrItemVO createItem(final T item) {
         Assert.notNull(item, "Hodnota musí být vyplněna");
         MapperFacade mapper = mapperFactory.getMapperFacade();
 
@@ -1112,19 +762,42 @@ public class ClientFactoryVO {
 
         Integer specId = (item.getItemSpec() == null) ? null : item.getItemSpec().getItemSpecId();
         itemVO.setDescItemSpecId(specId);
+        itemVO.setItemTypeId(item.getItemTypeId());
+
         return itemVO;
     }
 
     /**
      * Vytvoří seznam atributů.
      *
-     * @param descItems seznam DO atributů
+     * @param items seznam DO atributů
      * @return seznam VO atributů
      */
-    public List<ArrItemVO> createDescItems(final List<ArrDescItem> descItems) {
-        List<ArrItemVO> result = new ArrayList<>(descItems.size());
-        for (ArrDescItem descItem : descItems) {
-            result.add(createDescItem(descItem));
+    public <T extends ArrItem> List<ArrItemVO> createItems(final List<T> items) {
+        if (items == null) {
+            return null;
+        }
+        List<ArrItemVO> result = new ArrayList<>(items.size());
+        List<ApAccessPoint> apList = new ArrayList<>();
+        for (T item : items) {
+            ArrData data = item.getData();
+            if (data instanceof ArrDataRecordRef) {
+                ApAccessPoint ap = ((ArrDataRecordRef) data).getRecord();
+                apList.add(ap);
+            }
+        }
+
+        List<ApAccessPointVO> apListVO = apFactory.createVO(apList);
+        Map<Integer, ApAccessPointVO> apMapVO = apListVO.stream()
+                .collect(Collectors.toMap(ApAccessPointVO::getId, Function.identity()));
+
+        for (T item : items) {
+            ArrItemVO itemVO = createItem(item);
+            ArrData data = item.getData();
+            if (data instanceof ArrDataRecordRef) {
+                ((ArrItemRecordRefVO) itemVO).setRecord(apMapVO.get(((ArrDataRecordRef) data).getRecord().getAccessPointId()));
+            }
+            result.add(itemVO);
         }
         return result;
     }
@@ -1140,14 +813,8 @@ public class ClientFactoryVO {
 		if (items != null) {
         // vytvoření VO hodnot atributů
 			for (T item : items) {
-				List<ArrItemVO> itemList = itemByType.get(item.getItemType());
-
-				if (itemList == null) {
-					itemList = new ArrayList<>();
-                itemByType.put(item.getItemType(), itemList);
-				}
-
-				itemList.add(createDescItem(item));
+                List<ArrItemVO> itemList = itemByType.computeIfAbsent(item.getItemType(), k -> new ArrayList<>());
+                itemList.add(createItem(item));
 			}
         }
 
@@ -1255,12 +922,14 @@ public class ClientFactoryVO {
     }
 
     /**
-     * Vytvoření seznamu rozšířených typů hodnot atributů se specifikacemi ve skupinách.
+     * Vytvoření seznamu rozšířených typů, ignoruje nemožné typy.
      *
+     * @param fundId    identifikátor AS
+     * @param ruleCode  kód pravidel
      * @param itemTypes seznam typů hodnot atributů
      * @return seznam skupin s typy hodnot atributů
      */
-    public List<ItemTypeGroupVO> createItemTypeGroupsNew(final String ruleCode, final Integer fundId, final List<RulItemTypeExt> itemTypes) {
+    public List<ItemTypeLiteVO> createItemTypes(final String ruleCode, final Integer fundId, final List<RulItemTypeExt> itemTypes) {
 
         List<ItemTypeLiteVO> itemTypeExtList = createList(itemTypes, ItemTypeLiteVO.class, this::createItemTypeLite);
 
@@ -1290,22 +959,18 @@ public class ClientFactoryVO {
         // Prepare list of groups
         ViewConfiguration viewConfig = elzaRules.getViewConfiguration(ruleCode, fundId);
         Map<GroupConfiguration, ItemTypeGroupVO> itemTypeGroupVOMap = new HashMap<>();
-        List<ItemTypeGroupVO> result = new ArrayList<>();
+
         // prepare empty groups
-        if(viewConfig!=null)
-        {
-        	for(GroupConfiguration groupConfig: viewConfig.getGroups())
-        	{
-        		ItemTypeGroupVO groupVo = new ItemTypeGroupVO(groupConfig.getCode(), groupConfig.getName());
-        		groupVo.setTypes(new ArrayList<>()); // should be removed after moving logic into ItemTypeGroupVO
-        		result.add(groupVo);
-        		itemTypeGroupVOMap.put(groupConfig, groupVo);
-        	}
+        if (viewConfig != null) {
+            for (GroupConfiguration groupConfig : viewConfig.getGroups()) {
+                ItemTypeGroupVO groupVo = new ItemTypeGroupVO(groupConfig.getCode(), groupConfig.getName());
+                groupVo.setTypes(new ArrayList<>()); // should be removed after moving logic into ItemTypeGroupVO
+                itemTypeGroupVOMap.put(groupConfig, groupVo);
+            }
         }
         // prepare default group for all other items
         ItemTypeGroupVO defaultGroupVo = new ItemTypeGroupVO(elzaRules.getDefaultGroupConfigurationCode(), null);
         defaultGroupVo.setTypes(new ArrayList<>()); // should be removed after moving logic into ItemTypeGroupVO
-        result.add(defaultGroupVo);
 
         for (ItemTypeLiteVO itemTypeVO : itemTypeExtList) {
 
@@ -1318,23 +983,23 @@ public class ClientFactoryVO {
 
             String itemTypeCode = codeToId.get(itemTypeVO.getId());
             GroupConfiguration groupConfig = null;
-            if(viewConfig!=null) {
-            	groupConfig = viewConfig.getGroupForType(itemTypeCode);
+            if (viewConfig != null) {
+                groupConfig = viewConfig.getGroupForType(itemTypeCode);
             }
-            if(groupConfig!=null) {
-            	itemTypeGroupVO = itemTypeGroupVOMap.get(groupConfig);
-            	// get type info
-            	typeInfo = groupConfig.getTypeInfo(itemTypeCode);
+            if (groupConfig != null) {
+                itemTypeGroupVO = itemTypeGroupVOMap.get(groupConfig);
+                // get type info
+                typeInfo = groupConfig.getTypeInfo(itemTypeCode);
             } else {
-            	itemTypeGroupVO = defaultGroupVo;
+                itemTypeGroupVO = defaultGroupVo;
             }
 
             // set width from type info
             Integer width = 1;
             if(typeInfo != null && typeInfo.getWidth() != null) {
             	width = typeInfo.getWidth();
-            }            
-            
+            }
+
             itemTypeVO.setWidth(width);
 
             List<ItemTypeLiteVO> itemTypeList = itemTypeGroupVO.getTypes();
@@ -1342,7 +1007,9 @@ public class ClientFactoryVO {
         }
 
         // remove empty groups and return result
-        return result.stream().filter(g -> g.getTypes().size()>0 ).collect(Collectors.toList());
+        return itemTypeExtList.stream()
+                .filter(s -> s.getType() > 0) // ignorují se nemožné
+                .collect(Collectors.toList());
     }
 
     private ItemTypeLiteVO createItemTypeLite(final RulItemTypeExt itemTypeExt) {
@@ -1516,27 +1183,6 @@ public class ClientFactoryVO {
     }
 
     /**
-     * Vytvoří třídu rejstříku.
-     *
-     * @param scope třída rejstříku
-     * @return třída rejstříku
-     */
-    public RegScopeVO createScope(final RegScope scope) {
-        Assert.notNull(scope, "Scope musí být vyplněn");
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        return mapper.map(scope, RegScopeVO.class);
-    }
-
-    public List<RegScopeVO> createScopes(final Collection<RegScope> scopes) {
-        Assert.notNull(scopes, "Scopes musí být vyplněny");
-        List<RegScopeVO> result = new ArrayList<>(scopes.size());
-        scopes.forEach(s -> result.add(createScope(s)));
-
-        return result;
-    }
-
-
-    /**
      * Vytvoření seznamu hromadných akcí
      *
      * @param bulkActions seznam DO hromadných akcí
@@ -1581,7 +1227,7 @@ public class ClientFactoryVO {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         ArrNodeRegisterVO nodeRegisterVO = mapper.map(nodeRegister, ArrNodeRegisterVO.class);
         nodeRegisterVO.setNodeId(nodeRegister.getNode().getNodeId());
-        nodeRegisterVO.setValue(nodeRegister.getRecord().getRecordId());
+        nodeRegisterVO.setValue(nodeRegister.getRecord().getAccessPointId());
         return nodeRegisterVO;
     }
 
@@ -1651,8 +1297,9 @@ public class ClientFactoryVO {
         Assert.notNull(institution, "Instituce musí být vyplněny");
         MapperFacade mapper = mapperFactory.getMapperFacade();
         ParInstitutionVO institutionVO = mapper.map(institution, ParInstitutionVO.class);
-        institutionVO.setName(institution.getParty().getRecord().getRecord());
-        institutionVO.setPartyId(institution.getParty().getPartyId());
+        institutionVO.setPartyId(institution.getPartyId());
+        ApName prefName = apNameRepository.findPreferredNameByPartyId(institution.getPartyId());
+        institutionVO.setName(prefName.getFullName());
         return institutionVO;
     }
 
@@ -1764,7 +1411,7 @@ public class ClientFactoryVO {
      * @param permissions vstupní seznam oprávnění
      * @return seznam VO
      */
-    public List<UsrPermissionVO> createPermissionList(final List<UsrPermission> permissions, Class targetEntity) {
+    public List<UsrPermissionVO> createPermissionList(final List<UsrPermission> permissions, Class<?> targetEntity) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         Map<Object, Object> map = new HashMap<>();
         map.put("targetEntity", targetEntity);
@@ -1943,7 +1590,7 @@ public class ClientFactoryVO {
         }
 
         Map<ArrDigitizationRequest, Integer> countNodesRequestMap = Collections.emptyMap();
-        Map<ArrDigitizationRequest, List<TreeNodeClient>> nodesRequestMap = new HashMap<>();
+        Map<ArrDigitizationRequest, List<TreeNodeVO>> nodesRequestMap = new HashMap<>();
 
         if (requestForNodes.size() > 0) {
             if (detail) {
@@ -1964,7 +1611,7 @@ public class ClientFactoryVO {
             }
         }
 
-        Map<String, TreeNodeClient> codeTreeNodeClientMap = Collections.emptyMap();
+        Map<String, TreeNodeVO> codeTreeNodeClientMap = Collections.emptyMap();
         if (requestForDaoLinks.size() > 0) {
             if (detail) {
                 codeTreeNodeClientMap = fillDaoLinkDetailParams(fundVersion, requestForDaoLinks);
@@ -1991,7 +1638,7 @@ public class ClientFactoryVO {
         prepareRequest(requestForNodes, requestForDaos, requestForDaoLinks, request);
 
         Map<ArrDigitizationRequest, Integer> countNodesRequestMap = Collections.emptyMap();
-        Map<ArrDigitizationRequest, List<TreeNodeClient>> nodesRequestMap = new HashMap<>();
+        Map<ArrDigitizationRequest, List<TreeNodeVO>> nodesRequestMap = new HashMap<>();
 
         if (requestForNodes.size() > 0) {
             if (detail) {
@@ -2012,7 +1659,7 @@ public class ClientFactoryVO {
             }
         }
 
-        Map<String, TreeNodeClient> codeTreeNodeClientMap = Collections.emptyMap();
+        Map<String, TreeNodeVO> codeTreeNodeClientMap = Collections.emptyMap();
         if (requestForDaoLinks.size() > 0) {
             if (detail) {
                 codeTreeNodeClientMap = fillDaoLinkDetailParams(fundVersion, requestForDaoLinks);
@@ -2026,8 +1673,8 @@ public class ClientFactoryVO {
         return requestVO;
     }
 
-    private Map<String, TreeNodeClient> fillDaoLinkDetailParams(final ArrFundVersion fundVersion, final Set<ArrDaoLinkRequest> requestForDaoLinks) {
-        Map<String, TreeNodeClient> result = new HashMap<>();
+    private Map<String, TreeNodeVO> fillDaoLinkDetailParams(final ArrFundVersion fundVersion, final Set<ArrDaoLinkRequest> requestForDaoLinks) {
+        Map<String, TreeNodeVO> result = new HashMap<>();
 
         Set<String> didCodes = new HashSet<>();
         for (ArrDaoLinkRequest requestForDaoLink : requestForDaoLinks) {
@@ -2039,7 +1686,7 @@ public class ClientFactoryVO {
         for (ArrNode node : nodes) {
             nodeIds.add(node.getNodeId());
         }
-        Map<Integer, TreeNodeClient> treeNodeClientMap = levelTreeCacheService.getNodesByIds(nodeIds, fundVersion.getFundVersionId()).stream().collect(Collectors.toMap(TreeNodeClient::getId, Function.identity()));
+        Map<Integer, TreeNodeVO> treeNodeClientMap = levelTreeCacheService.getNodesByIds(nodeIds, fundVersion.getFundVersionId()).stream().collect(Collectors.toMap(TreeNodeVO::getId, Function.identity()));
 
         for (ArrNode node : nodes) {
             result.put(node.getUuid(), treeNodeClientMap.get(node.getNodeId()));
@@ -2082,7 +1729,7 @@ public class ClientFactoryVO {
         return countDaosRequestMap;
     }
 
-    private Map<ArrDigitizationRequest, Integer> fillDigitizationDetailParams(final ArrFundVersion fundVersion, final Set<ArrDigitizationRequest> requestForNodes, final Map<ArrDigitizationRequest, List<TreeNodeClient>> nodesRequestMap) {
+    private Map<ArrDigitizationRequest, Integer> fillDigitizationDetailParams(final ArrFundVersion fundVersion, final Set<ArrDigitizationRequest> requestForNodes, final Map<ArrDigitizationRequest, List<TreeNodeVO>> nodesRequestMap) {
         Map<ArrDigitizationRequest, Integer> countNodesRequestMap;
         countNodesRequestMap = new HashMap<>();
         List<ArrDigitizationRequestNode> digitizationRequestNodes = digitizationRequestNodeRepository.findByDigitizationRequest(requestForNodes);
@@ -2092,20 +1739,20 @@ public class ClientFactoryVO {
             nodeIds.add(digitizationRequestNode.getNode().getNodeId());
         }
 
-        Map<Integer, TreeNodeClient> treeNodeClientMap = levelTreeCacheService.getNodesByIds(nodeIds, fundVersion.getFundVersionId()).stream().collect(Collectors.toMap(TreeNodeClient::getId, Function.identity()));
+        Map<Integer, TreeNodeVO> treeNodeClientMap = levelTreeCacheService.getNodesByIds(nodeIds, fundVersion.getFundVersionId()).stream().collect(Collectors.toMap(TreeNodeVO::getId, Function.identity()));
 
         for (ArrDigitizationRequestNode digitizationRequestNode : digitizationRequestNodes) {
             ArrNode node = digitizationRequestNode.getNode();
             nodeIds.add(node.getNodeId());
-            List<TreeNodeClient> treeNodeClients = nodesRequestMap.get(digitizationRequestNode.getDigitizationRequest());
+            List<TreeNodeVO> treeNodeClients = nodesRequestMap.get(digitizationRequestNode.getDigitizationRequest());
             if (treeNodeClients == null) {
                 treeNodeClients = new ArrayList<>();
                 nodesRequestMap.put(digitizationRequestNode.getDigitizationRequest(), treeNodeClients);
             }
 
-            TreeNodeClient treeNodeClient = treeNodeClientMap.get(node.getNodeId());
+            TreeNodeVO treeNodeClient = treeNodeClientMap.get(node.getNodeId());
             if (treeNodeClient == null) {
-                treeNodeClient = new TreeNodeClient();
+                treeNodeClient = new TreeNodeVO();
                 treeNodeClient.setId(node.getNodeId());
                 treeNodeClient.setName(node.getUuid());
                 treeNodeClient.setReferenceMark(new String[0]);
@@ -2115,7 +1762,7 @@ public class ClientFactoryVO {
             treeNodeClients.add(treeNodeClient);
         }
 
-        for (Map.Entry<ArrDigitizationRequest, List<TreeNodeClient>> entry : nodesRequestMap.entrySet()) {
+        for (Map.Entry<ArrDigitizationRequest, List<TreeNodeVO>> entry : nodesRequestMap.entrySet()) {
             countNodesRequestMap.put(entry.getKey(), entry.getValue().size());
         }
         return countNodesRequestMap;
@@ -2141,10 +1788,10 @@ public class ClientFactoryVO {
     }
 
     private ArrRequestVO createRequestVO(final Map<ArrDigitizationRequest, Integer> countNodesRequestMap,
-                                         final Map<ArrDigitizationRequest, List<TreeNodeClient>> nodesRequestMap,
+                                         final Map<ArrDigitizationRequest, List<TreeNodeVO>> nodesRequestMap,
                                          final Map<ArrDaoRequest, Integer> countDaosRequestMap,
                                          final Map<ArrDaoRequest, List<ArrDao>> daosRequestMap,
-                                         final Map<String, TreeNodeClient> codeTreeNodeClientMap,
+                                         final Map<String, TreeNodeVO> codeTreeNodeClientMap,
                                          final ArrRequest request,
                                          final boolean detail,
                                          final ArrFundVersion fundVersion) {
@@ -2204,7 +1851,7 @@ public class ClientFactoryVO {
                                        final ArrDaoLinkRequestVO requestVO,
                                        final boolean detail,
                                        final ArrFundVersion fundVersion,
-                                       final Map<String, TreeNodeClient> codeTreeNodeClientMap) {
+                                       final Map<String, TreeNodeVO> codeTreeNodeClientMap) {
         requestVO.setDidCode(request.getDidCode());
         requestVO.setDigitalRepositoryId(request.getDigitalRepository().getExternalSystemId());
         requestVO.setType(request.getType());
@@ -2230,7 +1877,7 @@ public class ClientFactoryVO {
     private void convertDigitizationRequest(final ArrDigitizationRequest request,
                                             final ArrDigitizationRequestVO requestVO,
                                             final Integer nodeCount,
-                                            final List<TreeNodeClient> treeNodeClients) {
+                                            final List<TreeNodeVO> treeNodeClients) {
         requestVO.setDescription(request.getDescription());
         requestVO.setNodesCount(nodeCount);
         requestVO.setDigitizationFrontdeskId(request.getDigitizationFrontdesk().getExternalSystemId());
@@ -2372,7 +2019,7 @@ public class ClientFactoryVO {
 
             ArrDaoLinkVO daoLinkVo = new ArrDaoLinkVO();
             daoLinkVo.setId(daoLink.getDaoLinkId());
-            final List<TreeNodeClient> nodesByIds = levelTreeCacheService.getNodesByIds(Collections.singletonList(daoLink.getNode().getNodeId()), version.getFundVersionId());
+            final List<TreeNodeVO> nodesByIds = levelTreeCacheService.getNodesByIds(Collections.singletonList(daoLink.getNode().getNodeId()), version.getFundVersionId());
             daoLinkVo.setTreeNodeClient(nodesByIds.iterator().next());
 
             vo.setDaoLink(daoLinkVo);
@@ -2471,5 +2118,39 @@ public class ClientFactoryVO {
         structureExtensionFundVO.name = structureExtension.getName();
         structureExtensionFundVO.active = false;
         return structureExtensionFundVO;
+    }
+
+    public List<LanguageVO> createLanguages(final Collection<SysLanguage> languages) {
+        if (languages == null) {
+            return null;
+        }
+        return languages.stream().map(this::createLanguage).collect(Collectors.toList());
+    }
+
+    public LanguageVO createLanguage(final SysLanguage language) {
+        if (language == null) {
+            return null;
+        }
+        LanguageVO languageVO = new LanguageVO();
+        languageVO.setId(language.getLanguageId());
+        languageVO.setCode(language.getCode());
+        languageVO.setName(language.getName());
+        return languageVO;
+    }
+
+    public SysExternalSystemVO createExtSystem(SysExternalSystem extSystem) {
+        // AP external system is newly created through factory without mapper
+        if (extSystem instanceof ApExternalSystem) {
+            return ApExternalSystemVO.newInstance((ApExternalSystem) extSystem);
+        }
+        return createSimpleEntity(extSystem, SysExternalSystemVO.class);
+    }
+
+    public SysExternalSystemSimpleVO createExtSystemSimple(SysExternalSystem extSystem) {
+        // AP external system is newly created through factory without mapper
+        if (extSystem instanceof ApExternalSystem) {
+            return ApExternalSystemSimpleVO.newInstance((ApExternalSystem) extSystem);
+        }
+        return createSimpleEntity(extSystem, SysExternalSystemSimpleVO.class);
     }
 }

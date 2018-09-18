@@ -93,6 +93,7 @@ public enum EventType {
 
     BULK_ACTION_STATE_CHANGE(EventStringInVersion.class);
 
+
     private Class<? extends AbstractEventSimple> eventClass;
 
     EventType(final Class<? extends AbstractEventSimple> eventClass) {

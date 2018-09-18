@@ -2,25 +2,26 @@
  * Akce pro formulář JP.
  */
 
-import {FOCUS_KEYS} from "../../constants";
-
-// Konfigurace velikosti cache dat pro formulář
-const CACHE_SIZE = 20;
-const CACHE_SIZE2 = CACHE_SIZE/2;
-
+import {DisplayType, FOCUS_KEYS} from "../../constants";
 import {WebApi} from 'actions/index.jsx';
-import {getMapFromList, indexById, findByRoutingKeyInGlobalState} from 'stores/app/utils.jsx'
+import {findByRoutingKeyInGlobalState, getMapFromList, getRoutingKeyType, indexById} from 'stores/app/utils.jsx'
 import {getFocusDescItemLocation} from 'stores/app/arr/subNodeFormUtils.jsx'
 import {valuesEquals} from 'components/Utils.jsx'
 import {setFocus} from 'actions/global/focus.jsx'
 import {increaseNodeVersion} from 'actions/arr/node.jsx'
-import {getRoutingKeyType} from 'stores/app/utils.jsx'
 import * as types from 'actions/constants/ActionTypes.js';
-import {addToastrSuccess,addToastrDanger} from 'components/shared/toastr/ToastrActions.jsx'
+import {addToastrDanger, addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
 import {i18n} from 'components/shared';
-import {statusSaving, statusSaved} from 'actions/global/status.jsx';
+import {statusSaved, statusSaving} from 'actions/global/status.jsx';
 import {debounce} from "shared/utils";
+import {fundNodeInfoReceive} from './nodeInfo.jsx';
 import NodeRequestController from "websocketController.jsx";
+import {fundSubNodeInfoReceive} from "./subNodeInfo";
+import {fromDuration} from "../../components/validate";
+
+// Konfigurace velikosti cache dat pro formulář
+const CACHE_SIZE = 20;
+const CACHE_SIZE2 = CACHE_SIZE/2;
 
 class ItemFormActions {
     constructor(area) {
@@ -64,6 +65,7 @@ class ItemFormActions {
                 case types.FUND_SUB_NODE_FORM_VALUE_DELETE:
                 case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_DELETE:
                 case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_ADD:
+                case types.FUND_SUB_NODE_FORM_TEMPLATE_USE:
                 case types.FUND_SUB_NODE_FORM_VALUE_RESPONSE:
                 case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_COPY_FROM_PREV_RESPONSE:
                 case types.FUND_SUB_NODE_FORM_OUTPUT_CALC_SWITCH:
@@ -162,7 +164,7 @@ class ItemFormActions {
      * @return {Object} promise pro vrácení nových dat
      */
     // @Abstract
-    _getItemFormData(getState, dispatch, versionId, nodeId, routingKey) {}
+    _getItemFormData(getState, dispatch, versionId, nodeId, routingKey, showChildren, showParents) {}
 
     /**
      * Bylo zahájeno nové načítání dat.
@@ -220,16 +222,18 @@ class ItemFormActions {
      * @param {int} nodeId id node záložky, které se to týká
      * @param {int} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
      * @param {bool} needClean má se formulář reinicializovat a vymazat cšechna editace? - jako nové načtení formuláře
+     * @param showChildren zobrazovat potomky?
+     * @param showParents zobrazovat předky ke kořeni?
      */
-    _fundSubNodeFormFetch(versionId, nodeId, routingKey, needClean) {
+    _fundSubNodeFormFetch(versionId, nodeId, routingKey, needClean, showChildren, showParents) {
         return (dispatch, getState) => {
             dispatch(this.fundSubNodeFormRequest(versionId, nodeId, routingKey));
-            this._getItemFormData(getState, dispatch, versionId, nodeId, routingKey)
+            this._getItemFormData(getState, dispatch, versionId, nodeId, routingKey, showChildren, showParents)
                 .then(json => {
                     const state = getState();
                     const subNodeForm = this._getItemFormStore(state, versionId, routingKey);
                     if (subNodeForm.fetchingId == nodeId) {
-                        dispatch(this.fundSubNodeFormReceive(versionId, nodeId, routingKey, json, state.refTables.rulDataTypes, state.refTables.descItemTypes, needClean, state.refTables))
+                        dispatch(this.fundSubNodeFormReceive(versionId, nodeId, routingKey, json, state.refTables.rulDataTypes, state.refTables.descItemTypes, state.refTables.groups.data, needClean))
                     }
                 })
         }
@@ -259,9 +263,17 @@ class ItemFormActions {
         const refType = subNodeForm.refTypesMap[loc.descItemType.id];
         const refTables = state.refTables;
 
-        const descItem = overrideDescItem || loc.descItem;
+        let descItem = overrideDescItem || loc.descItem;
         const parentVersionId = subNodeForm.data.parent.version;
         const parentId = subNodeForm.data.parent.id;
+
+        // pokud se jedná o číslo a zároveň se zobrazuje v HH:mm:ss je třeba ho převést
+        if (refType.dataType.code === 'INT' && refType.viewDefinition === DisplayType.DURATION) {
+            descItem = {
+                ...descItem,
+                value: fromDuration(descItem.value)
+            };
+        }
 
         if (this.descItemNeedStore(descItem, refType) || overrideDescItem) {
             dispatch(statusSaving());
@@ -426,12 +438,12 @@ class ItemFormActions {
 
             // only when loc exists
             if(loc){
-                WebApi.validateUnitdate(loc.descItem.value)
-                    .then(json => {
-                        dispatch(this._fundSubNodeFormValueValidateResult(versionId, routingKey, valueLocation, json));
-                    })
-            }
+            WebApi.validateUnitdate(loc.descItem.value)
+                .then(json => {
+                    dispatch(this._fundSubNodeFormValueValidateResult(versionId, routingKey, valueLocation, json));
+                })
         }
+    }
     }
 
     /**
@@ -676,6 +688,28 @@ class ItemFormActions {
         }
     }
 
+    fundSubNodeFormTemplateUse(versionId, routingKey, template, replaceValues) {
+        return (dispatch, getState) => {
+            const state = getState();
+            dispatch({
+                type: types.FUND_SUB_NODE_FORM_TEMPLATE_USE,
+                area: this.area,
+                versionId,
+                routingKey,
+                template,
+                replaceValues,
+                groups: state.refTables.groups.data
+            });
+            dispatch({
+                type: types.FUND_TEMPLATE_USE,
+                area: this.area,
+                versionId,
+                routingKey,
+                template
+            });
+        }
+    }
+
     /** Metoda pro volání API. */
     // @Abstract
     _callDeleteDescItemType(versionId, parentId, parentVersionId, descItemTypeId) {}
@@ -803,8 +837,9 @@ class ItemFormActions {
      * Vyžádání dat - aby byla ve store k dispozici.
      * @param {int} versionId verze AS
      * @param {int} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
+     * @param needClean
      */
-    fundSubNodeFormFetchIfNeeded(versionId, routingKey, needClean) {
+    fundSubNodeFormFetchIfNeeded(versionId, routingKey, needClean = false, showChildren, showParents) {
         return (dispatch, getState) => {
             const state = getState();
 
@@ -818,7 +853,7 @@ class ItemFormActions {
                 const parentObjStore = this._getParentObjStore(state, versionId, routingKey);
                 if ((!subNodeForm.fetched || subNodeForm.dirty || subNodeForm.needClean || needClean) && !subNodeForm.isFetching) {
                     const parentObjIdInfo = this._getParentObjIdInfo(parentObjStore, routingKey);
-                    dispatch(this._fundSubNodeFormFetch(versionId, parentObjIdInfo.parentId, routingKey, subNodeForm.needClean || needClean));
+                    dispatch(this._fundSubNodeFormFetch(versionId, parentObjIdInfo.parentId, routingKey, subNodeForm.needClean || needClean, showChildren, showParents));
                 }
             }
         }
@@ -832,9 +867,10 @@ class ItemFormActions {
      * @param {Object} json objekt s daty
      * @param {Object} rulDataTypes store - datové typy pro atributy
      * @param {Object} descItemTypes store - obecný předpis atributů - ref
+     * @param {Object} groups store - skupiny pro typy atributů
      * @param {bool} needClean má se formulář reinicializovat a vymazat cšechna editace? - jako nové načtení formuláře
      */
-    fundSubNodeFormReceive(versionId, nodeId, routingKey, json, rulDataTypes, descItemTypes, needClean, refTables) {
+    fundSubNodeFormReceive(versionId, nodeId, routingKey, json, rulDataTypes, descItemTypes, groups, needClean) {
         return {
             type: types.FUND_SUB_NODE_FORM_RECEIVE,
             area: this.area,
@@ -844,6 +880,7 @@ class ItemFormActions {
             data: json,
             rulDataTypes,
             refDescItemTypes: descItemTypes,
+            groups,
             receivedAt: Date.now(),
             needClean
         }
@@ -865,7 +902,7 @@ class ItemFormActions {
         }
     }
 }
-var debouncedGetFundNodeForm = debounce(WebApi.getFundNodeForm,200);
+//var debouncedGetFundNodeForm = debounce(WebApi.getFundNodeForm,200);
 class NodeFormActions extends ItemFormActions {
 
     static AREA = "NODE";
@@ -898,7 +935,7 @@ class NodeFormActions extends ItemFormActions {
      * Odpovídá volání WebApi.getFundNodeForm, jen dále zajišťuje cache.
      */
     //@Override
-    _getItemFormData(getState, dispatch, versionId, nodeId, routingKey) {
+    _getItemFormData(getState, dispatch, versionId, nodeId, routingKey, showChildren, showParents) {
         const type = getRoutingKeyType(routingKey);
         switch (type) {
             case 'NODE':    // podpora kešování
@@ -955,7 +992,34 @@ class NodeFormActions extends ItemFormActions {
                     // ##
                     // # Data požadovaného formuláře
                     // ##
-                    return WebApi.getFundNodeForm(versionId, nodeId)
+                    let indexFrom = null;
+
+                    if (node.changeParent || indexById(node.childNodes, nodeId) == null) {
+                        indexFrom = node.viewStartIndex - node.viewStartIndex % (node.pageSize / 2);
+                    }
+
+                    const nodeParam = {nodeId};
+                    const resultParam = {
+                        formData: true,
+                        parents: showParents && node.changeParent,
+                        children: showChildren,
+                        siblingsFrom: indexFrom,
+                        siblingsMaxCount: node.pageSize,
+                        siblingsFilter: node.filterText
+                    };
+                    return WebApi.getNodeData(versionId, nodeParam, resultParam).then(json => {
+
+                        dispatch(fundNodeInfoReceive(versionId, nodeId, routingKey, {
+                            childNodes: json.siblings ? json.siblings : null,
+                            nodeCount: json.nodeCount,
+                            nodeIndex: json.nodeIndex,
+                            parentNodes: json.parents ? json.parents : null,
+                        }));
+
+                        dispatch(fundSubNodeInfoReceive(versionId, nodeId, routingKey, {nodes: json.children}));
+
+                        return json.formData;
+                    });
                 } else {    // je v cache, vrátíme ji
                     //console.log('### USE_CACHE')
                     return new Promise(function (resolve, reject) {
@@ -963,7 +1027,11 @@ class NodeFormActions extends ItemFormActions {
                     })
                 }
             case 'DATA_GRID':   // není podpora kešování
-                return WebApi.getFundNodeForm(versionId, nodeId)
+                const nodeParam = {nodeId};
+                const resultParam = {
+                    formData: true
+                };
+                return WebApi.getNodeData(versionId, nodeParam, resultParam).then(json => json.formData);
         }
     }
 

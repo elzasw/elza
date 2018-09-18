@@ -45,7 +45,12 @@ export function registryListInvalidate() {
 }
 
 
-
+/**
+ * TODO Rejstříky ve verzi 16 nemají žádnou možnost pro move (hierarchie)
+ *
+ * @param parentRecordId
+ * @returns {Function}
+ */
 export function registryMove(parentRecordId) {
     return (dispatch, getState) => {
         const store = getState();
@@ -55,8 +60,9 @@ export function registryMove(parentRecordId) {
             return;
         }
 
-        WebApi.getRegistry(list.recordForMove.id).then((data) => {
-            savingApiWrapper(dispatch, WebApi.updateRegistry({...data, parentRecordId})).then(json => {
+        WebApi.getAccessPoint(list.recordForMove.id).then((data) => {
+            // TODO compel AP
+            savingApiWrapper(dispatch, WebApi.updateAccessPoint(list.recordForMove.id, {...data, parentRecordId})).then(json => {
                 dispatch(registryMoveFinish());
                 dispatch(registryListInvalidate());
             });
@@ -98,7 +104,7 @@ export const AREA_REGISTRY_DETAIL = "registryDetail";
 export function registryDetailFetchIfNeeded(id) {
     return (dispatch, getState) => {
         return dispatch(DetailActions.fetchIfNeeded(AREA_REGISTRY_DETAIL, id, () => {
-            return WebApi.getRegistry(id).catch(() => dispatch(registryDetailClear()));
+            return WebApi.getAccessPoint(id).catch(() => dispatch(registryDetailClear()));
         }));
     }
 }
@@ -130,26 +136,26 @@ export function registryAdd(parentId, versionId, callback, parentName = '', show
 
 function registryRecordCreate(parentId, callback, data, submitType) {
     return (dispatch, getState) => {
-        savingApiWrapper(dispatch, WebApi.createRecord(data.record, data.characteristics, data.registerTypeId, parentId, data.scopeId)).then(json => {
+        savingApiWrapper(dispatch, WebApi.createAccessPoint(data.name, data.complement, data.langaugeCode, data.description, data.typeId, data.scopeId)).then(json => {
             dispatch(modalDialogHide());
             callback && callback(json, submitType);
         });
     }
 }
 
-export function registryUpdate(data, callback = null) {
+export function registryUpdate(id, typeId, callback = null) {
     return (dispatch, getState) => {
-        return savingApiWrapper(dispatch, WebApi.updateRegistry(data)).then(json => {
+        return savingApiWrapper(dispatch, WebApi.updateAccessPoint(id, {typeId})).then(json => {
             const store = getState();
             const detail = storeFromArea(store, AREA_REGISTRY_DETAIL);
 
             const list = storeFromArea(store, AREA_REGISTRY_LIST);
 
-            if (detail.id == data.id) {
+            if (detail.id == id) {
                 dispatch(registryDetailInvalidate());
             }
 
-            if (list.filteredRows && indexById(list.filteredRows, data.id) !== null) {
+            if (list.filteredRows && indexById(list.filteredRows, id) !== null) {
                 dispatch(registryListInvalidate())
             }
 
@@ -162,7 +168,7 @@ export function registryUpdate(data, callback = null) {
 
 export function registryDelete(id) {
     return (dispatch, getState) => {
-        WebApi.deleteRegistry(id).then(() => {
+        WebApi.deleteAccessPoint(id).then(() => {
             const store = getState();
             const detail = storeFromArea(store, AREA_REGISTRY_DETAIL);
             const list = storeFromArea(store, AREA_REGISTRY_LIST);
@@ -196,7 +202,7 @@ export function setValidRegistry(id) {
 */
 export function registrySetFolder(recordId) {
     return (dispatch, getState) => {
-        return WebApi.getRegistry(recordId).then(item => {
+        return WebApi.getAccessPoint(recordId).then(item => {
             const store = getState();
             const list = storeFromArea(store, AREA_REGISTRY_LIST);
 
@@ -218,18 +224,23 @@ export function registrySetFolder(recordId) {
 /// Variant registry
 
 
+/**
+ * @deprecated
+ * @param data
+ * @returns {Function}
+ */
 export function registryVariantUpdate(data) {
     return (dispatch, getState) => {
         const store = getState();
         const detail = storeFromArea(store, AREA_REGISTRY_DETAIL);
         let needFetch = false;
-        detail.data.variantRecords.map(variant => {
+        detail.data.names.map(variant => {
             if (variant.id == data.id && variant.record !== data.record) {
                 needFetch = true;
             }
         });
         if (needFetch === true) {
-            return savingApiWrapper(dispatch, WebApi.editRegistryVariant(data)).then(json => {
+            return savingApiWrapper(dispatch, WebApi.updateAccessPointName(-1, data)).then(json => {
                 dispatch(receiveRegistryVariantRecord(json));
             });
         }
@@ -251,9 +262,12 @@ export function registryVariantAddRow() {
     }
 }
 
+/**
+ * @deprecated
+ */
 export function registryVariantCreate(data, variantRecordInternalId) {
     return (dispatch) => {
-        savingApiWrapper(dispatch, WebApi.addRegistryVariant(data)).then(json => {
+        savingApiWrapper(dispatch, WebApi.createAccessPointName(-1 ,data)).then(json => {
             dispatch(registryVariantCreated(json, variantRecordInternalId));
         });
     }
@@ -268,9 +282,12 @@ export function registryVariantCreated(json, variantRecordInternalId) {
     }
 }
 
+/**
+ * @deprecated
+ */
 export function registryVariantDelete(variantRecordId){
     return (dispatch) => {
-        WebApi.deleteVariantRecord(variantRecordId).then(json => {
+        WebApi.deleteAccessPointName(-1, variantRecordId).then(json => {
             dispatch(registryVariantDeleted(variantRecordId));
         });
     }
@@ -366,11 +383,11 @@ export function registryCoordinatesChange(item) {
     }
 }
 
-export function registryCoordinatesUpload(file, regRecordId) {
+export function registryCoordinatesUpload(file, apRecordId) {
     return (dispatch) => {
         const formData = new FormData();
         formData.append('file', file);
-        formData.append('regRecordId', regRecordId);
+        formData.append('apRecordId', apRecordId);
         savingApiWrapper(dispatch, WebApi.regCoordinatesImport(formData)).then(() => {
             dispatch(addToastrSuccess(i18n('import.toast.success'), i18n('import.toast.successCoordinates')));
         }).catch(() => {

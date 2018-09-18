@@ -1,19 +1,20 @@
-import {indexById} from 'stores/app/utils.jsx'
+import {getMapFromList, indexById} from 'stores/app/utils.jsx'
 import {hasDescItemTypeValue} from 'components/arr/ArrUtils.jsx'
-import {getMapFromList} from 'stores/app/utils.jsx'
+import {DisplayType} from "../../../constants";
+import {toDuration} from "../../../components/validate";
 
 const availability = {
     REQUIRED : "REQUIRED",
     RECOMMENDED : "RECOMMENDED",
     POSSIBLE : "POSSIBLE",
     IMPOSSIBLE : "IMPOSSIBLE"
-}
+};
 
-var typesNumToStrMap = {}
-typesNumToStrMap[3] = availability.REQUIRED
-typesNumToStrMap[2] = availability.RECOMMENDED
-typesNumToStrMap[1] = availability.POSSIBLE
-typesNumToStrMap[0] = availability.IMPOSSIBLE
+const typesNumToStrMap = {};
+typesNumToStrMap[3] = availability.REQUIRED;
+typesNumToStrMap[2] = availability.RECOMMENDED;
+typesNumToStrMap[1] = availability.POSSIBLE;
+typesNumToStrMap[0] = availability.IMPOSSIBLE;
 
 function getDbItemTypesMap(data) {
     // Mapa id descItemType na descItemType
@@ -34,9 +35,9 @@ function getDbItemTypesMap(data) {
  * itemMap - mapa item.descItemObjectId na item
  */
 function createDataMap(formData) {
-    var groupMap = {}
-    var typeMap = {}
-    var itemMap = {}
+    let groupMap = {};
+    let typeMap = {};
+    let itemMap = {};
 
     if (formData) { // nějaká data již existují
         formData.descItemGroups.forEach(group => {
@@ -52,20 +53,20 @@ function createDataMap(formData) {
         })
     }
 
-    var get = (ths, key) => {
+    const get = (ths, key) => {
         return ths[key]
-    }
+    };
 
-    var find = (ths, key) => {
+    const find = (ths, key) => {
         return typeof ths[key] !== 'undefined' ? ths[key] : {}
-    }
+    };
 
-    groupMap.get = get.bind(null, groupMap)
-    typeMap.get = get.bind(null, typeMap)
-    itemMap.get = get.bind(null, itemMap)
-    groupMap.find = find.bind(null, groupMap)
-    typeMap.find = find.bind(null, typeMap)
-    itemMap.find = find.bind(null, itemMap)
+    groupMap.get = get.bind(null, groupMap);
+    typeMap.get = get.bind(null, typeMap);
+    itemMap.get = get.bind(null, itemMap);
+    groupMap.find = find.bind(null, groupMap);
+    typeMap.find = find.bind(null, typeMap);
+    itemMap.find = find.bind(null, itemMap);
 
     return {
         groupMap,
@@ -75,22 +76,22 @@ function createDataMap(formData) {
 }
 
 export function createImplicitDescItem(descItemType, refType, addedByUser=false) {
-    var descItem = createDescItem(descItemType, refType, addedByUser);
+    let descItem = createDescItem(descItemType, refType, addedByUser);
     descItem.position = 1;
     return descItem;
 }
 
 export function getFocusDescItemLocation(subNodeFormStore) {
-    const formData = subNodeFormStore.formData
+    const formData = subNodeFormStore.formData;
 
-    for (var g=0; g<formData.descItemGroups.length; g++) {
-        const group = formData.descItemGroups[g]
+    for (let g=0; g<formData.descItemGroups.length; g++) {
+        const group = formData.descItemGroups[g];
         if (group.hasFocus) {
-            for (var dit=0; dit<group.descItemTypes.length; dit++) {
-                const descItemType = group.descItemTypes[dit]
+            for (let dit=0; dit<group.descItemTypes.length; dit++) {
+                const descItemType = group.descItemTypes[dit];
                 if (descItemType.hasFocus) {
-                    for (var di=0; di<descItemType.descItems.length; di++) {
-                        const descItem = descItemType.descItems[di]
+                    for (let di=0; di<descItemType.descItems.length; di++) {
+                        const descItem = descItemType.descItems[di];
                         if (descItem.hasFocus) {
                             return {
                                 descItemGroupIndex: g,
@@ -108,17 +109,17 @@ export function getFocusDescItemLocation(subNodeFormStore) {
 }
 
 export function createDescItemFromDb(descItemType, descItem) {
-    var result = {
+    const result = {
         ...descItem,
         prevDescItemSpecId: descItem.descItemSpecId,
         prevValue: descItem.value,
         hasFocus: false,
         touched: false,
         visited: false,
-        error: {hasError:false}
-    }
+        error: {hasError: false}
+    };
 
-    initFormKey(descItemType, result)
+    initFormKey(descItemType, result);
 
     return result
 }
@@ -160,6 +161,17 @@ export function consolidateDescItems(resultDescItemType, infoType, refType, adde
     // Přidáme jednu hodnotu - chceme i u opakovatelného, pokud žádnou nemá (nebyla hodnota přifána vynucením specifikací)
     if (resultDescItemType.descItems.length === 0) {
         resultDescItemType.descItems.push(createImplicitDescItem(resultDescItemType, refType, addedByUser));
+    }
+
+    if (refType.dataType.code === 'INT' && refType.viewDefinition === DisplayType.DURATION) {
+        resultDescItemType.descItems.forEach(descItem => {
+            if (!isNaN(descItem.prevValue)) {
+                descItem.prevValue = toDuration(descItem.prevValue);
+            }
+            if (!isNaN(descItem.value)) {
+                descItem.value = toDuration(descItem.value);
+            }
+        });
     }
 
     resultDescItemType.descItems.forEach((descItem, index) => {descItem.position = index + 1});
@@ -785,9 +797,27 @@ class FlatFormData{
         if(data.descItemGroups){
             this._getGroupsMap(data.descItemGroups);
         }
-        if(data.groups){
-            this._getGroupsMap(data.groups);
+        if(data.itemTypes){
+            const refGroups = this.refTables.groups.data;
+            const itemTypeMap = getMapFromList(data.itemTypes);
+            const groups = refGroups.ids.map(id => {
+                const group = refGroups[id];
+                const types = group.itemTypes.map(it => {
+                    const dataItemType = itemTypeMap[it.id] || {};
+                    return {
+                        ...it,
+                        ...dataItemType
+                    }
+                });
+                return {
+                    code: group.code,
+                    name: group.name,
+                    types: types
+                }
+            });
+            this._getGroupsMap(groups);
         }
+
         if(data.typeGroups){
             this._getGroupsMap(data.typeGroups);
         }
@@ -887,21 +917,36 @@ function replaceIdsWithString(items, map){
 
 function merge(state) {
     // Načten data map pro aktuální data, která jsou ve store - co klient zobrazuje (nemusí být, pokud se poprvé zobrazuje formulář)
-    var dataMap = createDataMap(state.formData);
+    const dataMap = createDataMap(state.formData);
+
+    let descItemsByType = {};
+    state.data.descItems && state.data.descItems.forEach(item => {
+
+        let items = descItemsByType[item.itemTypeId];
+        if (!items) {
+            items = [];
+            descItemsByType[item.itemTypeId] = items;
+        }
+        items.push(item);
+    });
 
     // Mapa db id descItemType na descItemType
-    var dbItemTypesMap = {}
-    state.data.groups.forEach(group => {
-        group.types.forEach(type => {
-            dbItemTypesMap[type.id] = type
-        })
-    })
+    let dbItemTypesMap = {};
+    state.data.itemTypes.forEach(type => {
+        if (descItemsByType[type.id] || type.type > 1) {
+            const xtype = {
+                ...type,
+                descItems: descItemsByType[type.id] || []
+            };
+            dbItemTypesMap[type.id] = xtype;
+        }
+    });
 
     // Procházíme všechny skupiny, které mohou být na formuláři - nikoli hodnoty z db, ty pouze připojujeme
     // Všechny procházíme z toho důvodu, že některé mohou být vynuceny na zobrazení - forceVisible a klient je musí zobrazit
-    var descItemGroups = [];
+    let descItemGroups = [];
     state.infoGroups.forEach(group => {
-        var resultGroup = {
+        const resultGroup = {
             hasFocus: false,
             ...dataMap.groupMap.find(group.code),       // připojení skupiny již na klientovi, pokud existuje
             ...group,                                   // přepsání novými daty ze serveru
@@ -910,18 +955,18 @@ function merge(state) {
 
         // Merge descItemType
         group.types.forEach(descItemType => {
-            var resultDescItemType = {
+            const resultDescItemType = {
                 hasFocus: false,
                 ...dataMap.typeMap.find(descItemType.id),   // připojení atributu již na klientovi, pokud existuje
                 ...descItemType,                            // přepsání novými daty ze serveru
                 descItems: []
-            }
+            };
 
             // Merge descItems
             // - DB verze
             // - původní verze descItem - data, která jsou aktuálně ve store
-            var prevDescItemType = dataMap.typeMap.get(descItemType.id);    // verze na klientovi, pokud existuje
-            var newDescItemType = dbItemTypesMap[descItemType.id];          // verze z db, pokud existuje
+            const prevDescItemType = dataMap.typeMap.get(descItemType.id);    // verze na klientovi, pokud existuje
+            const newDescItemType = dbItemTypesMap[descItemType.id];          // verze z db, pokud existuje
 
             if (mergeDescItems(state, resultDescItemType, prevDescItemType, newDescItemType)) {
                 resultGroup.descItemTypes.push(resultDescItemType);
@@ -931,28 +976,81 @@ function merge(state) {
         if (resultGroup.descItemTypes.length > 0) { // skupinu budeme uvádět pouze pokud má nějaké atributy k zobrazení (povinné nebo doporučené)
             descItemGroups.push(resultGroup);
         }
-    })
+    });
 
-    var formData = {
+    return {
         descItemGroups: descItemGroups
-    }
-
-    return formData;
+    };
 }
 
+/**
+ * Doplní v přijatých datech ze serveru nemožné typy atributů.
+ *
+ * @param data data přijatá ze serveru
+ * @param refTypesMap
+ * @returns {*}
+ */
+function fillImpossibleTypes(data, refTypesMap) {
+
+    const dataItemTypeMap = getMapFromList(data.itemTypes);
+
+    Object.keys(refTypesMap).forEach(itemTypeId => {
+        if (!data.itemTypes[itemTypeId]) {
+            const itemType = refTypesMap[itemTypeId];
+            const itemSpecs = itemType.descItemSpecs;
+
+            const dataItemType = dataItemTypeMap[itemTypeId] || {};
+            const dataItemSpecs = dataItemType.specs || [];
+
+            const finalItemSpecs = itemSpecs.map(spec => {
+                const specIndex = indexById(dataItemSpecs, spec.id);
+                if (specIndex == null) {
+                    return {
+                        id: spec.id,
+                        type: 0,
+                        rep: 0
+                    }
+                } else {
+                    return dataItemSpecs[specIndex];
+                }
+            });
+
+            const finalItemType = {
+                ...dataItemType,
+                specs: finalItemSpecs
+            };
+
+            const resultItemType = {
+                id: itemType.id,
+                type: 0,
+                rep: 0,
+                cal: 0,
+                calSt: 0,
+                favoriteSpecIds: [],
+                ind: 0,
+                specs: [],
+                width: 1,
+                ...finalItemType
+            };
+            data.itemTypes[resultItemType.id] = resultItemType;
+        }
+    });
+
+    return data;
+}
 
 // refTypesMap - mapa id info typu na typ, je doplněné o dataType objekt - obecný číselník
-export function updateFormData(state, data, refTypesMap, updatedItem, dirty) {
+export function updateFormData(state, data, refTypesMap, groups, updatedItem, dirty) {
     // Přechozí a nová verze node
-    var currentNodeVersionId = state.data ? state.data.parent.version : -1;
-    var newNodeVersionId = data.parent.version;
+    const currentNodeVersionId = state.data ? state.data.parent.version : -1;
+    const newNodeVersionId = data.parent.version;
     // ##
     // # Vytvoření formuláře se všemi povinnými a doporučenými položkami, které jsou doplněné reálnými daty ze serveru
     // # Případně promítnutí merge.
     // ##
     if (currentNodeVersionId <= newNodeVersionId || dirty) { // rovno musí být, protože i když mám danou verzi, nemusím mít nově přidané povinné položky (nastává i v případě umělého klientského zvednutí nodeVersionId po zápisové operaci) na základě aktuálně upravené mnou
         // Data přijatá ze serveru
-        state.data = data
+        state.data = fillImpossibleTypes(data, refTypesMap);
 
         if(updatedItem){
             state.updatedItem = updatedItem;
@@ -961,49 +1059,82 @@ export function updateFormData(state, data, refTypesMap, updatedItem, dirty) {
         // Překopírování seznam id nepoužitých PP pro výstupy
         state.unusedItemTypeIds = data.unusedItemTypeIds;
 
+        const dataItemTypeMap = getMapFromList(data.itemTypes);
+
         // Info skupiny - ty, které jsou jako celek definované pro konkrétní JP - obsahují všechny atributy včetně např. typu - POSSIBLE atp.
         // Změna číselného typu na řetězec
         // Přidání do info skupin position
-        state.infoGroupsMap = {}
-        state.infoTypesMap = {}                     // mapa id descItemTypeInfo na descItemTypeInfo
-        state.infoGroups = data.typeGroups.map((group, index) => {
-            var resultGroup = {
-                ...group,
-                position: index,
-                types: group.types.map(type => {
-                    var specs = type.specs.map(spec => {
-                        var resultSpec = {
-                            ...spec,
-                            type: typesNumToStrMap[spec.type]
+        state.infoGroupsMap = {};
+        state.infoTypesMap = {};                     // mapa id descItemTypeInfo na descItemTypeInfo
+
+        state.infoGroups = groups.ids.map((groupId, index) => {
+            const group = groups[groupId];
+            const resultGroup = {
+                code: group.code,
+                name: group.name,
+                position: index + 1,
+                types: group.itemTypes.map(it => {
+                    const itemType = refTypesMap[it.id];
+                    const itemSpecs = itemType.descItemSpecs;
+
+                    const dataItemType = dataItemTypeMap[it.id] || {};
+                    const dataItemSpecs = dataItemType.specs || [];
+
+                    const finalItemSpecs = itemSpecs.map(spec => {
+                        const specIndex = indexById(dataItemSpecs, spec.id);
+                        if (specIndex == null) {
+                            return {
+                                id: spec.id,
+                                type: "IMPOSSIBLE",
+                                rep: 0
+                            }
+                        } else {
+                            const dataSpec = dataItemSpecs[specIndex];
+                            return {
+                                ...dataSpec,
+                                type: typesNumToStrMap[dataSpec.type]
+                            }
                         }
-                        return resultSpec
-                    })
+                    });
 
-                    var resultType = {
-                        ...type,
-                        type: typesNumToStrMap[type.type],
-                        specs: specs,
-                        descItemSpecsMap: getMapFromList(specs),
-                    }
+                    const finalItemType = {
+                        ...dataItemType,
+                        type: dataItemType.type ? typesNumToStrMap[dataItemType.type] : "IMPOSSIBLE",
+                        specs: finalItemSpecs,
+                        descItemSpecsMap: getMapFromList(finalItemSpecs),
+                    };
 
-                    state.infoTypesMap[resultType.id] = resultType
+                    const resultItemType = {
+                        cal: 0,
+                        calSt: 0,
+                        descItemSpecsMap: {},
+                        favoriteSpecIds: [],
+                        id: itemType.id,
+                        ind: 0,
+                        rep: 0,
+                        specs: [],
+                        type: "IMPOSSIBLE",
+                        width: 1,
+                        ...finalItemType
+                    };
+                    state.infoTypesMap[resultItemType.id] = resultItemType;
 
-                    return resultType
-                })
-            }
+                    return resultItemType;
+                }),
+            };
 
-            state.infoGroupsMap[resultGroup.code] = resultGroup
+            state.infoGroupsMap[resultGroup.code] = resultGroup;
 
             return resultGroup
-        })
+        });
 
         // Mapa číselníku decsItemType
-        state.refTypesMap = refTypesMap
+        state.refTypesMap = refTypesMap;
 
         // Mapa id descItemType na descItemType - existujících dat ze serveru
-        var dbItemTypesMap = getDbItemTypesMap(data)
+        //var dbItemTypesMap = getDbItemTypesMap(data)
 
-        var newFormData = merge(state);
+        const newFormData = merge(state);
         state.formData = newFormData;
     }
 }
@@ -1070,6 +1201,8 @@ export function getItemClass(dataType) {
             return '.ArrItemUnitdateVO';
         case 'UNITID':
             return '.ArrItemUnitidVO';
+        case 'DATE':
+            return '.ArrItemDateVO';
         default:
             console.error("Unsupported data type", dataType);
             return null;

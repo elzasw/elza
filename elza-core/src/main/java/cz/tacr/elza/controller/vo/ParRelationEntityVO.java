@@ -15,7 +15,7 @@ public class ParRelationEntityVO {
     /**
      * Rejstříkové heslo.
      */
-    private RegRecordVO record;
+    private ApAccessPointVO record;
 
     /**
      * Typ vztahu.
@@ -40,11 +40,11 @@ public class ParRelationEntityVO {
         this.relationId = relationId;
     }
 
-    public RegRecordVO getRecord() {
+    public ApAccessPointVO getRecord() {
         return record;
     }
 
-    public void setRecord(final RegRecordVO record) {
+    public void setRecord(final ApAccessPointVO record) {
         this.record = record;
     }
 

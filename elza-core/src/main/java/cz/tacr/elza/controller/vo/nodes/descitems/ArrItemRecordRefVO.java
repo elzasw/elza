@@ -1,15 +1,15 @@
 package cz.tacr.elza.controller.vo.nodes.descitems;
 
 
-import javax.persistence.EntityManager;
-
-import cz.tacr.elza.controller.vo.RegRecordVO;
+import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataRecordRef;
-import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
+
+import javax.persistence.EntityManager;
 
 
 /**
@@ -23,15 +23,15 @@ public class ArrItemRecordRefVO extends ArrItemVO {
     /**
      * rejstřík
      */
-    private RegRecordVO record;
+    private ApAccessPointVO record;
 
     private Integer value;
 
-    public RegRecordVO getRecord() {
+    public ApAccessPointVO getRecord() {
         return record;
     }
 
-    public void setRecord(final RegRecordVO record) {
+    public void setRecord(final ApAccessPointVO record) {
         this.record = record;
     }
 
@@ -53,9 +53,9 @@ public class ArrItemRecordRefVO extends ArrItemVO {
         }
 
         // try to map record
-        RegRecord record = null;
+        ApAccessPoint record = null;
         if (this.value != null) {
-            record = em.getReference(RegRecord.class, value);
+            record = em.getReference(ApAccessPoint.class, value);
         }
         data.setRecord(record);
 

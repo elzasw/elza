@@ -1,9 +1,5 @@
 package cz.tacr.elza.print;
 
-import cz.tacr.elza.print.item.Item;
-import cz.tacr.elza.print.party.Party;
-
-import javax.validation.constraints.NotNull;
 import java.util.Collection;
 import java.util.List;
 

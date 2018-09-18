@@ -13,6 +13,10 @@ import java.util.zip.ZipOutputStream;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
+import cz.tacr.elza.repository.ApAccessPointRepository;
+import cz.tacr.elza.repository.ApDescriptionRepository;
+import cz.tacr.elza.repository.ApExternalIdRepository;
+import cz.tacr.elza.repository.ApNameRepository;
 import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,9 +66,7 @@ import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.PartyTypeComplementTypeRepository;
 import cz.tacr.elza.repository.PartyTypeRelationRepository;
 import cz.tacr.elza.repository.PermissionRepository;
-import cz.tacr.elza.repository.RegRecordRepository;
-import cz.tacr.elza.repository.RegVariantRecordRepository;
-import cz.tacr.elza.repository.RegisterTypeRepository;
+import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.RelationEntityRepository;
 import cz.tacr.elza.repository.RelationRepository;
 import cz.tacr.elza.repository.RelationRoleTypeRepository;
@@ -125,11 +127,11 @@ public class HelperTestService {
     @Autowired
     private OutputRepository outputRepository;
     @Autowired
-    private RegVariantRecordRepository variantRecordRepository;
+    private ApNameRepository apNameRepository;
     @Autowired
     private PartyNameComplementRepository partyNameComplementRepository;
     @Autowired
-    protected RegisterTypeRepository registerTypeRepository;
+    protected ApTypeRepository apTypeRepository;
     @Autowired
     protected PartyRepository partyRepository;
     @Autowired
@@ -159,7 +161,7 @@ public class HelperTestService {
     @Autowired
     protected PartyNameFormTypeRepository partyNameFormTypeRepository;
     @Autowired
-    protected RegRecordRepository recordRepository;
+    protected ApAccessPointRepository apRepository;
     @Autowired
     protected PartyNameRepository partyNameRepository;
     @Autowired
@@ -182,6 +184,10 @@ public class HelperTestService {
     private StructuredObjectRepository structureDataRepository;
     @Autowired
     private FundStructureExtensionRepository fundStructureExtensionRepository;
+    @Autowired
+    private ApDescriptionRepository apDescRepository;
+    @Autowired
+    private ApExternalIdRepository apEidRepository;
 
     @Autowired
     private PackageService packageService;
@@ -237,7 +243,7 @@ public class HelperTestService {
         partyGroupIdentifierRepository.deleteAll();
         partyCreatorRepository.deleteAll();
         partyNameRepository.deleteAll();
-        variantRecordRepository.deleteAll();
+        apNameRepository.deleteAll();
         nodeRegisterRepository.deleteAll();
         fundVersionRepository.deleteAll();
         fundRegisterScopeRepository.deleteAll();
@@ -252,7 +258,9 @@ public class HelperTestService {
         fundRepository.deleteAll();
         institutionRepository.deleteAll();
         partyRepository.deleteAll();
-        recordRepository.deleteAll();
+        apDescRepository.deleteAll();
+        apEidRepository.deleteAll();
+        apRepository.deleteAll();
         externalSystemRepository.deleteAll();
 
         logger.info("All tables cleaned.");
