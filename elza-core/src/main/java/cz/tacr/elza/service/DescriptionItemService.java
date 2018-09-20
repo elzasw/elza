@@ -1343,7 +1343,7 @@ public class DescriptionItemService {
                     break;
                 case "UNITID":
                     ArrDataUnitid itemUnitid = new ArrDataUnitid();
-                    itemUnitid.setValue(text);
+                itemUnitid.setUnitId(text);
                     data = itemUnitid;
                     break;
                 case "UNITDATE":
@@ -1527,7 +1527,7 @@ public class DescriptionItemService {
 			dt.setValue(getReplacedDataValue(dt.getValue(), searchString, replaceString));
 		} else if (dataNew instanceof ArrDataUnitid) {
             ArrDataUnitid dt = (ArrDataUnitid) dataNew;
-            dt.setValue(getReplacedDataValue(dt.getValue(), searchString, replaceString));
+            dt.setUnitId(getReplacedDataValue(dt.getUnitId(), searchString, replaceString));
         } else {
 			throw new IllegalStateException(
 			        "Zatím není implementováno pro kod " + descItem.getItemType().getCode());

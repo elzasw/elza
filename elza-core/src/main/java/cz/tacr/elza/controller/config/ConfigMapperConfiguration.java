@@ -959,7 +959,26 @@ public class ConfigMapperConfiguration {
         mapperFactory.classMap(ArrDataDate.class, ArrItemDateVO.class).byDefault().register();
         mapperFactory.classMap(ArrDataJsonTable.class, ArrItemJsonTableVO.class).byDefault().register();
         mapperFactory.classMap(ArrDataDecimal.class, ArrItemDecimalVO.class).byDefault().register();
-        mapperFactory.classMap(ArrDataUnitid.class, ArrItemUnitidVO.class).byDefault().register();
+        mapperFactory.classMap(ArrDataUnitid.class, ArrItemUnitidVO.class).customize(
+                                                                                     new CustomMapper<ArrDataUnitid, ArrItemUnitidVO>() {
+                                                                                         @Override
+                                                                                         public void mapAtoB(final ArrDataUnitid unitId,
+                                                                                                             final ArrItemUnitidVO unitIdVo,
+                                                                                                             final MappingContext context) {
+                                                                                             unitIdVo.setValue(unitId
+                                                                                                     .getUnitId());
+                                                                                         }
+
+                                                                                         @Override
+                                                                                         public void mapBtoA(final ArrItemUnitidVO unitIdVo,
+                                                                                                             final ArrDataUnitid unitId,
+                                                                                                             final MappingContext context) {
+                                                                                             unitId.setUnitId(unitIdVo
+                                                                                                     .getValue());
+                                                                                         }
+
+                                                                                     })
+                .byDefault().register();
         mapperFactory.classMap(ArrDataUnitdate.class, ArrItemUnitdateVO.class).customize(
                 new CustomMapper<ArrDataUnitdate, ArrItemUnitdateVO>() {
                     @Override

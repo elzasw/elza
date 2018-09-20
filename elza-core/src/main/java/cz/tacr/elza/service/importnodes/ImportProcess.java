@@ -370,7 +370,7 @@ public class ImportProcess {
             ((ArrDataDecimal) data).setValue(((ItemDecimal) item).getValue());
         } else if (item instanceof ItemUnitid) {
             data = new ArrDataUnitid();
-            ((ArrDataUnitid) data).setValue(((ItemUnitid) item).getValue());
+            ((ArrDataUnitid) data).setUnitId(((ItemUnitid) item).getValue());
         } else if (item instanceof ItemUnitdate) {
             data = new ArrDataUnitdate();
             String value = ((ItemUnitdate) item).getValue();

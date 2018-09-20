@@ -13,6 +13,13 @@ public class PartSealedUnitId extends SealedUnitId
      */
     boolean sealed = false;
 
+    /**
+     * Seal validator.
+     * 
+     * Validator is optional.
+     */
+    private SealValidator sealValidator = null;
+
     public PartSealedUnitId(UnitIdPart part, SealedLevel level) {
         Validate.notNull(level);
         Validate.notNull(part);
@@ -25,8 +32,14 @@ public class PartSealedUnitId extends SealedUnitId
         return part;
     }
 
-    public void setSealed(boolean b) {
+    /**
+     * Set if item is sealed
+     * 
+     * @param b
+     */
+    public void setSealed(final boolean b, final SealValidator validator) {
         sealed = b;
+        this.sealValidator = validator;
     }
 
     public boolean isSealed() {
@@ -48,6 +61,14 @@ public class PartSealedUnitId extends SealedUnitId
     public void printValue(StringBuilder sb) {
         level.printValue(sb);
         sb.append(part.toString());
+    }
+
+    public void setSealValidator(final SealValidator validator) {
+        this.sealValidator = validator;
+    }
+
+    public SealValidator getSealValidator() {
+        return sealValidator;
     }
 
 }

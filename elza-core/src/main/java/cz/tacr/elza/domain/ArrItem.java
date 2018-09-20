@@ -263,10 +263,6 @@ public abstract class ArrItem implements NodeCacheSerializable {
 
     public abstract ArrOutputDefinition getOutputDefinition();
 
-    public abstract ArrStructuredObject getStructuredObject();
-
-    public abstract Integer getStructuredObjectId();
-
     public void setCreateChangeId(final Integer createChangeId) {
         this.createChangeId = createChangeId;
     }

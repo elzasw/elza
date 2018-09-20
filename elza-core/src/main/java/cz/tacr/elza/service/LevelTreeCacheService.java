@@ -21,13 +21,10 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import cz.tacr.elza.core.data.StaticDataProvider;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.Validate;
 import org.apache.commons.lang3.BooleanUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,6 +51,7 @@ import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.controller.vo.nodes.NodeData;
 import cz.tacr.elza.controller.vo.nodes.NodeDataParam;
 import cz.tacr.elza.core.data.ItemType;
+import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrDigitizationRequest;
@@ -74,7 +72,13 @@ import cz.tacr.elza.repository.LevelRepositoryCustom;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.service.event.CacheInvalidateEvent;
 import cz.tacr.elza.service.eventnotification.EventChangeMessage;
-import cz.tacr.elza.service.eventnotification.events.*;
+import cz.tacr.elza.service.eventnotification.events.AbstractEventSimple;
+import cz.tacr.elza.service.eventnotification.events.EventAddNode;
+import cz.tacr.elza.service.eventnotification.events.EventDeleteNode;
+import cz.tacr.elza.service.eventnotification.events.EventIdInVersion;
+import cz.tacr.elza.service.eventnotification.events.EventNodeMove;
+import cz.tacr.elza.service.eventnotification.events.EventType;
+import cz.tacr.elza.service.eventnotification.events.EventVersion;
 
 
 /**
@@ -1244,6 +1248,11 @@ public class LevelTreeCacheService {
             node = parentNode.getChilds().get(param.getNodeIndex());
         } else {
             throw new SystemException("Není zvolen identifikátor JP nebo její index", BaseCode.INVALID_STATE);
+        }
+
+        if (node == null) {
+            throw new SystemException("Node does not exist", BaseCode.ID_NOT_EXIST)
+                    .set("nodeId", param.getNodeId());
         }
 
         NodeData result = new NodeData();

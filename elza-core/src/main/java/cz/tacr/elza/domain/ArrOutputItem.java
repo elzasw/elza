@@ -45,16 +45,6 @@ public class ArrOutputItem extends ArrItem {
         return outputDefinition;
     }
 
-    @Override
-    public ArrStructuredObject getStructuredObject() {
-        return null; //throw new NotImplementedException();
-    }
-
-    @Override
-    public Integer getStructuredObjectId() {
-        return null; //throw new NotImplementedException();
-    }
-
     public void setOutputDefinition(final ArrOutputDefinition outputDefinition) {
         this.outputDefinition = outputDefinition;
     }

@@ -187,9 +187,7 @@ public class MultipleBulkAction extends BulkAction {
         }
 
         // apply on current node
-        LevelWithItems parentLevel = levelWithItems.getParent();
         ArrLevel level = levelWithItems.getLevel();
-        ArrNode node = level.getNode();
 
 		//apply(node, levelWithItems.descItems, TypeLevel.CHILD, parentLevel);
 		apply(levelWithItems, TypeLevel.CHILD);

@@ -225,7 +225,7 @@ public class UnitIdTest {
     public void testTreeBuilder1() {
         SealedUnitIdTree root = new SealedUnitIdTree();
         try {
-            root.addSealedValue("1");
+            root.addSealedValue("1", null);
 
             SealedLevel level = root.getLevel(SealedUnitId.LevelType.DEFAULT);
             assertTrue(level.getUnitCount() == 1);
@@ -245,12 +245,12 @@ public class UnitIdTest {
     public void testTreeBuilder2() {
         SealedUnitIdTree root = new SealedUnitIdTree();
         try {
-            root.addSealedValue("1");
-            root.addSealedValue("1//1/2");
-            root.addSealedValue("1/1/2");
-            root.addSealedValue("2/1/1");
-            root.addSealedValue("2/1");
-            root.addSealedValue("/3");
+            root.addSealedValue("1", null);
+            root.addSealedValue("1//1/2", null);
+            root.addSealedValue("1/1/2", null);
+            root.addSealedValue("2/1/1", null);
+            root.addSealedValue("2/1", null);
+            root.addSealedValue("/3", null);
 
             SealedLevel level = root.getLevel(SealedUnitId.LevelType.DEFAULT);
             assertTrue(level.getUnitCount() == 2);
@@ -471,7 +471,7 @@ public class UnitIdTest {
     public void testCreateSealed2() {
         SealedUnitIdTree root = new SealedUnitIdTree();
         try {
-            root.addSealedValue("1");
+            root.addSealedValue("1", null);
 
             SealedLevel level = root.getLevel(LevelType.DEFAULT);
             PartSealedUnitId sealed = level.createSealed(null, null);
@@ -509,7 +509,7 @@ public class UnitIdTest {
     public void testCreateSealed4() {
         SealedUnitIdTree root = new SealedUnitIdTree();
         try {
-            root.addSealedValue("3");
+            root.addSealedValue("3", null);
 
             UnitIdPart part2 = UnitIdPart.parse("2");
             UnitIdPart part4 = UnitIdPart.parse("4");
@@ -530,10 +530,10 @@ public class UnitIdTest {
     public void testCreateSealed5() {
         SealedUnitIdTree root = new SealedUnitIdTree();
         try {
-            root.addSealedValue("3");
-            root.addSealedValue("3+1");
-            root.addSealedValue("4+1");
-            root.addSealedValue("5");
+            root.addSealedValue("3", null);
+            root.addSealedValue("3+1", null);
+            root.addSealedValue("4+1", null);
+            root.addSealedValue("5", null);
 
             UnitIdPart part2 = UnitIdPart.parse("2+1");
             UnitIdPart part4 = UnitIdPart.parse("4");
@@ -592,7 +592,7 @@ public class UnitIdTest {
     public void testCreateSealed7() {
         SealedUnitIdTree root = new SealedUnitIdTree();
         try {
-            root.addSealedValue("1-1");
+            root.addSealedValue("1-1", null);
             UnitIdPart part1 = UnitIdPart.parse("1");
             //UnitIdPart part1_1 = UnitIdPart.parse("1-1");
 
@@ -612,8 +612,8 @@ public class UnitIdTest {
     public void testCreateSealed7_2() {
         SealedUnitIdTree root = new SealedUnitIdTree();
         try {
-            root.addSealedValue("1-3");
-            root.addSealedValue("1-4");
+            root.addSealedValue("1-3", null);
+            root.addSealedValue("1-4", null);
 
             UnitIdPart part1_m2 = UnitIdPart.parse("1-2");
 
@@ -633,9 +633,9 @@ public class UnitIdTest {
     public void testCreateSealed7_3() {
         SealedUnitIdTree root = new SealedUnitIdTree();
         try {
-            root.addSealedValue("1");
-            root.addSealedValue("2");
-            root.addSealedValue("3");
+            root.addSealedValue("1", null);
+            root.addSealedValue("2", null);
+            root.addSealedValue("3", null);
 
             UnitIdPart part5 = UnitIdPart.parse("5");
 
@@ -655,11 +655,11 @@ public class UnitIdTest {
     public void testCreateSealed7_4() {
         SealedUnitIdTree root = new SealedUnitIdTree();
         try {
-            root.addSealedValue("1");
-            root.addSealedValue("1+1");
-            root.addSealedValue("2");
-            root.addSealedValue("2+1");
-            root.addSealedValue("3");
+            root.addSealedValue("1", null);
+            root.addSealedValue("1+1", null);
+            root.addSealedValue("2", null);
+            root.addSealedValue("2+1", null);
+            root.addSealedValue("3", null);
 
             UnitIdPart part3 = UnitIdPart.parse("3");
 
@@ -697,7 +697,7 @@ public class UnitIdTest {
     public void testCreateSealed7_6() {
         SealedUnitIdTree root = new SealedUnitIdTree();
         try {
-            root.addSealedValue("1-1");
+            root.addSealedValue("1-1", null);
 
             UnitIdPart part1_m1 = UnitIdPart.parse("1");
 
@@ -718,8 +718,8 @@ public class UnitIdTest {
     public void testCreateSealed8() {
         SealedUnitIdTree root = new SealedUnitIdTree();
         try {
-            root.addSealedValue("2+4");
-            root.addSealedValue("2+5");
+            root.addSealedValue("2+4", null);
+            root.addSealedValue("2+5", null);
 
             UnitIdPart part3 = UnitIdPart.parse("2+3");
             UnitIdPart part6 = UnitIdPart.parse("2+6");
@@ -741,8 +741,8 @@ public class UnitIdTest {
     public void testCreateSealed9() {
         SealedUnitIdTree root = new SealedUnitIdTree();
         try {
-            root.addSealedValue("2+4");
-            root.addSealedValue("2+5");
+            root.addSealedValue("2+4", null);
+            root.addSealedValue("2+5", null);
 
             UnitIdPart part3 = UnitIdPart.parse("2+3");
             UnitIdPart part4_1 = UnitIdPart.parse("2+4+1");
@@ -764,7 +764,7 @@ public class UnitIdTest {
     public void testCreateSealed10() {
         SealedUnitIdTree root = new SealedUnitIdTree();
         try {
-            root.addSealedValue("2+4+2");
+            root.addSealedValue("2+4+2", null);
 
             UnitIdPart part4_1 = UnitIdPart.parse("2+4+1+5");
             UnitIdPart part4_3 = UnitIdPart.parse("2+4+3");
@@ -786,9 +786,9 @@ public class UnitIdTest {
     public void testCreateSealed11() {
         SealedUnitIdTree root = new SealedUnitIdTree();
         try {
-            root.addSealedValue("1");
-            root.addSealedValue("1+1");
-            root.addSealedValue("1+1+1-1");
+            root.addSealedValue("1", null);
+            root.addSealedValue("1+1", null);
+            root.addSealedValue("1+1+1-1", null);
 
             UnitIdPart part1 = UnitIdPart.parse("1");
             UnitIdPart part1_1_1 = UnitIdPart.parse("1+1+1");
@@ -856,7 +856,7 @@ public class UnitIdTest {
         SealedUnitIdTree root = new SealedUnitIdTree();
         try {
             // add value -> 1 is in the tree but not sealed
-            root.addValue("1", false);
+            root.addValue("1", false, null);
 
             UnitIdPart part1_m1 = UnitIdPart.parse("1-1");
             UnitIdPart part1 = UnitIdPart.parse("1");
@@ -880,7 +880,7 @@ public class UnitIdTest {
         SealedUnitIdTree root = new SealedUnitIdTree();
         try {
             // add value -> 1 is in the tree but not sealed
-            root.addSealedValue("1");
+            root.addSealedValue("1", null);
 
             UnitIdPart part1_m1 = UnitIdPart.parse("1-1");
             UnitIdPart part1_m1_1 = UnitIdPart.parse("1-1+1");
@@ -928,18 +928,18 @@ public class UnitIdTest {
     public void testFind1() {
         SealedUnitIdTree root = new SealedUnitIdTree();
         try {
-            root.addSealedValue("1");
-            root.addSealedValue("1/1");
-            root.addSealedValue("1/1+1");
-            root.addSealedValue("1/2");
-            root.addSealedValue("1/2//1");
-            root.addSealedValue("1/2//2");
-            root.addSealedValue("1/2//2/5");
-            root.addSealedValue("1/2//2/6");
-            root.addSealedValue("1/2//2/7-1");
-            root.addSealedValue("1/2//3");
-            root.addSealedValue("2");
-            root.addSealedValue("3");
+            root.addSealedValue("1", null);
+            root.addSealedValue("1/1", null);
+            root.addSealedValue("1/1+1", null);
+            root.addSealedValue("1/2", null);
+            root.addSealedValue("1/2//1", null);
+            root.addSealedValue("1/2//2", null);
+            root.addSealedValue("1/2//2/5", null);
+            root.addSealedValue("1/2//2/6", null);
+            root.addSealedValue("1/2//2/7-1", null);
+            root.addSealedValue("1/2//3", null);
+            root.addSealedValue("2", null);
+            root.addSealedValue("3", null);
 
             PartSealedUnitId result1 = root.find("1");
             assertEquals(result1.getValue(), "1");

@@ -135,6 +135,75 @@
             <column name="sequence_name" value="arr_used_value|used_value_id"/>
             <column name="next_val" value="1"/>
         </insert>
+
+    </changeSet>
+    <!-- Table for used values (ref. ozn) - remove and change to attribute in arr_item -->
+    <changeSet id="20180903234903" author="ppyt">
+        <!-- remove data -->
+        <delete tableName="arr_used_value" />
+        <delete tableName="db_hibernate_sequences">
+           <where>sequence_name='arr_used_value|used_value_id'</where>
+        </delete>
+
+        <dropForeignKeyConstraint baseTableName="arr_used_value" constraintName="fk_arr_used_value_create_change" />
+        <dropForeignKeyConstraint baseTableName="arr_used_value" constraintName="fk_arr_used_value_item_type" />
+        <dropForeignKeyConstraint baseTableName="arr_used_value" constraintName="fk_arr_used_value_fund" />
+        <dropIndex tableName="arr_used_value" indexName="arr_used_value_lookup_idx"/>
+
+        <dropColumn tableName="arr_used_value" columnName="value" />
+        <dropColumn tableName="arr_used_value" columnName="item_type_id" />
+
+        <renameTable newTableName="arr_locked_value" oldTableName="arr_used_value" />
+        <renameColumn tableName="arr_locked_value" columnDataType="int"  newColumnName="locked_value_id" oldColumnName="used_value_id"/>
+
+        <!-- Add column for lock -->
+        <addColumn tableName="arr_locked_value">
+            <column name="item_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+
+        <addForeignKeyConstraint constraintName="fk_arr_locked_value_fund"
+                                 baseTableName="arr_locked_value"
+                                 baseColumnNames="fund_id"
+                                 referencedTableName="arr_fund"
+                                 referencedColumnNames="fund_id"
+                                 onDelete="NO ACTION"/>
+        <addForeignKeyConstraint constraintName="fk_arr_locked_value_item"
+                                 baseTableName="arr_locked_value"
+                                 baseColumnNames="item_id"
+                                 referencedTableName="arr_item"
+                                 referencedColumnNames="item_id"
+                                 onDelete="NO ACTION"/>
+        <addForeignKeyConstraint constraintName="fk_arr_locked_value_create_change"
+                                 baseTableName="arr_locked_value"
+                                 baseColumnNames="create_change_id"
+                                 referencedTableName="arr_change"
+                                 referencedColumnNames="change_id"
+                                 onDelete="NO ACTION"/>
+
+        <!-- Indexy pro vyhledavani zaznamu -->
+        <createIndex tableName="arr_locked_value" indexName="arr_locked_value_fund_idx">
+          <column name="fund_id" />
+        </createIndex>
+        <createIndex tableName="arr_locked_value" indexName="arr_locked_value_item_idx">
+          <column name="item_id" />
+        </createIndex>
+
+        <insert tableName="db_hibernate_sequences">
+            <column name="sequence_name" value="arr_locked_value|locked_value_id"/>
+            <column name="next_val" value="1"/>
+        </insert>
+
+        <!-- Index pro vyhledavani nodu -->
+        <createIndex tableName="arr_node" indexName="arr_node_fund_idx">
+          <column name="fund_id" />
+        </createIndex>
+    </changeSet>
+
+    <!-- Zneplatneni cache z duvodu zmeny atributu na objektu ArrDataUnitid -->
+    <changeSet id="20180903234904" author="ppyt">
+        <delete tableName="arr_cached_node" />
     </changeSet>
 
 </databaseChangeLog>

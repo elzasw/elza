@@ -55,7 +55,7 @@ import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
-import cz.tacr.elza.repository.UsedValueRepository;
+import cz.tacr.elza.repository.LockedValueRepository;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.eventnotification.events.EventFunds;
 import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
@@ -108,7 +108,7 @@ public class RevertingChangesService {
     private DataRepository dataRepository;
 
     @Autowired
-    private UsedValueRepository usedValueRepository;
+    private LockedValueRepository usedValueRepository;
 
     /**
      * Vyhledání provedení změn nad AS, případně nad konkrétní JP z AS.

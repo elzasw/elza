@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 
 import com.google.common.base.Objects;
 
+import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataCoordinates;
 import cz.tacr.elza.domain.ArrDataDecimal;
@@ -35,7 +36,6 @@ import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrStructuredObject;
-import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.repository.FundFileRepository;
@@ -457,7 +457,7 @@ public class ImportFromFund implements ImportSource {
 
         public ItemUnitidImpl(final ArrDescItem item, final ArrDataUnitid itemData) {
             super(item);
-            value = itemData.getValue();
+            value = itemData.getUnitId();
         }
 
         @Override
