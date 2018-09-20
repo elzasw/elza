@@ -12,6 +12,7 @@ import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.CompareToBuilder;
@@ -749,6 +750,26 @@ public class FundLevelService {
                 movedLevel.getPosition());
     }
 
+    /**
+     * Změní pořadí levelů na pořadí v jakém jsou předané. Předpokládané použití je pro všechny levely jednoho rodiče.
+     * @param levels všechny levely jednoho rodiče
+     * @param change změna
+     */
+    public void changeLevelsPosition(List<ArrLevel> levels, ArrChange change) {
+        Assert.notNull(change, "Změna musí být vyplněna");
+
+        if (CollectionUtils.isEmpty(levels)) {
+            return;
+        }
+
+        for (int i = 1; i <= levels.size(); i++) {
+            ArrLevel level = levels.get(i - 1);
+
+            ArrLevel newLevel = createNewLevelVersion(level, change);
+            newLevel.setPosition(i);
+            levelRepository.saveAndFlush(newLevel);
+        }
+    }
 
     /**
      * Směr přidání nového uzlu.
