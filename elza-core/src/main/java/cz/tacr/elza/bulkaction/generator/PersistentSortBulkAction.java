@@ -135,7 +135,7 @@ public class PersistentSortBulkAction extends BulkAction {
             queue.add(level);
         }
 
-        ArrChange change = arrangementService.createChange(ArrChange.Type.BULK_ACTION);
+        ArrChange change = runContext.getChange();
         while (!queue.isEmpty()) {
             sort(queue.poll(), change);
         }
