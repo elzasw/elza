@@ -995,7 +995,8 @@ function fillImpossibleTypes(data, refTypesMap) {
     const dataItemTypeMap = getMapFromList(data.itemTypes);
 
     Object.keys(refTypesMap).forEach(itemTypeId => {
-        if (!data.itemTypes[itemTypeId]) {
+        const itemTypeFound = indexById(data.itemTypes, itemTypeId);
+        if (itemTypeFound == null) {
             const itemType = refTypesMap[itemTypeId];
             const itemSpecs = itemType.descItemSpecs;
 
@@ -1032,7 +1033,7 @@ function fillImpossibleTypes(data, refTypesMap) {
                 width: 1,
                 ...finalItemType
             };
-            data.itemTypes[resultItemType.id] = resultItemType;
+            data.itemTypes.push(resultItemType);
         }
     });
 
