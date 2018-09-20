@@ -274,7 +274,7 @@ var messages = {
     "ribbon.action.arr.show-daos": "Digitální entity k JP",
     "ribbon.action.arr.fund.settings.ui": "Nastavení zobrazení",
     "ribbon.action.arr.fund.settings.template": "Správa šablon",
-    "ribbon.action.registry": "Rejstříková hesla",
+    "ribbon.action.registry": "Přístupové body",
     "ribbon.action.party": "Osoby",
     "ribbon.action.admin": "Administrace",
     "ribbon.action.admin.developer": "Developer mode",

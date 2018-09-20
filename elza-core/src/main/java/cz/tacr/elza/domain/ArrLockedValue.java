@@ -11,21 +11,19 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
-import cz.tacr.elza.domain.enumeration.StringLength;
-
 /**
- * Entity for used values
+ * Entity for locked values
  * 
  *
  */
-@Entity(name = "arr_used_value")
+@Entity(name = "arr_locked_value")
 @Table
-public class ArrUsedValue {
+public class ArrLockedValue {
 
     @Id
     @GeneratedValue
     @Access(AccessType.PROPERTY) // required to read id without fetch from db    
-    Integer usedValueId;
+    Integer lockedValueId;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFund.class)
     @JoinColumn(name = "fundId", nullable = false)
@@ -38,22 +36,19 @@ public class ArrUsedValue {
     @JoinColumn(name = "createChangeId", nullable = false)
     ArrChange createChange;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulItemType.class)
-    @JoinColumn(name = "itemTypeId", nullable = false)
-    RulItemType itemType;
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrItem.class)
+    @JoinColumn(name = "itemId", nullable = false)
+    ArrItem item;
 
-    @Column(name = "itemTypeId", updatable = false, insertable = false)
-    Integer itemTypeId;
+    @Column(name = "itemId", updatable = false, insertable = false)
+    Integer itemId;
 
-    @Column(length = StringLength.LENGTH_1000, nullable = false)
-    String value;
-
-    public Integer getUsedValueId() {
-        return usedValueId;
+    public Integer getLockedValueId() {
+        return lockedValueId;
     }
 
-    public void setUsedValueId(Integer usedValueId) {
-        this.usedValueId = usedValueId;
+    public void setLockedValueId(Integer usedValueId) {
+        this.lockedValueId = usedValueId;
     }
 
     public ArrFund getFund() {
@@ -81,28 +76,20 @@ public class ArrUsedValue {
         this.createChange = createChange;
     }
 
-    public RulItemType getItemType() {
-        return itemType;
+    public ArrItem getItem() {
+        return item;
     }
 
-    public void setItemType(RulItemType itemType) {
-        this.itemType = itemType;
-        this.itemTypeId = (itemType != null) ? itemType.getItemTypeId() : null;
+    public void setItem(ArrItem item) {
+        this.item = item;
+        this.itemId = (item != null) ? item.getItemId() : null;
     }
 
-    public Integer getItemTypeId() {
-        return itemTypeId;
+    public Integer getItemId() {
+        return itemId;
     }
 
-    public void setItemTypeId(Integer itemTypeId) {
-        this.itemTypeId = itemTypeId;
-    }
-
-    public String getValue() {
-        return value;
-    }
-
-    public void setValue(String value) {
-        this.value = value;
+    public void setItemId(Integer itemId) {
+        this.itemId = itemId;
     }
 }

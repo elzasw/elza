@@ -14,7 +14,7 @@ public class UnitidValueConvertor implements ItemDataConvertor {
 
         ArrDataUnitid unitid = (ArrDataUnitid) data;
         DescriptionItemStringImpl item = new DescriptionItemStringImpl();
-        item.setV(unitid.getValue());
+        item.setV(unitid.getUnitId());
         return item;
     }
 }

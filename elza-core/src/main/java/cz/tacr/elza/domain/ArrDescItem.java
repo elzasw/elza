@@ -1,5 +1,7 @@
 package cz.tacr.elza.domain;
 
+import java.util.Date;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -30,8 +32,6 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import cz.tacr.elza.repository.DataRepositoryImpl;
 import cz.tacr.elza.search.DescItemIndexingInterceptor;
-
-import java.util.Date;
 
 
 /**
@@ -202,16 +202,6 @@ public class ArrDescItem extends ArrItem {
 
     @Override
     public ArrOutputDefinition getOutputDefinition() {
-        return null; //throw new NotImplementedException();
-    }
-
-    @Override
-    public ArrStructuredObject getStructuredObject() {
-        return null; //throw new NotImplementedException();
-    }
-
-    @Override
-    public Integer getStructuredObjectId() {
         return null; //throw new NotImplementedException();
     }
 
