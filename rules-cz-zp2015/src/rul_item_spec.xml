@@ -2018,15 +2018,6 @@
             <item-spec-register register-type="PERSON"/>
         </item-spec-registers>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_3" item-type="ZP2015_ENTITY_ROLE">
-        <name>autoři doprovodných textů</name>
-        <description>autoři doprovodných textů</description>
-        <shortcut></shortcut>
-        <item-spec-registers>
-            <item-spec-register register-type="PARTY_GROUP"/>
-            <item-spec-register register-type="PERSON"/>
-        </item-spec-registers>
-    </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_4" item-type="ZP2015_ENTITY_ROLE">
         <name>autoři fotografií</name>
         <description>autoři fotografií</description>
@@ -2039,6 +2030,15 @@
     <item-spec code="ZP2015_ENTITY_ROLE_5" item-type="ZP2015_ENTITY_ROLE">
         <name>autoři hudební složky</name>
         <description>autoři hudební složky</description>
+        <shortcut></shortcut>
+        <item-spec-registers>
+            <item-spec-register register-type="PARTY_GROUP"/>
+            <item-spec-register register-type="PERSON"/>
+        </item-spec-registers>
+    </item-spec>
+    <item-spec code="ZP2015_ENTITY_ROLE_10" item-type="ZP2015_ENTITY_ROLE">
+        <name>autoři textové složky</name>
+        <description>autoři textové složky</description>
         <shortcut></shortcut>
         <item-spec-registers>
             <item-spec-register register-type="PARTY_GROUP"/>
@@ -2081,18 +2081,18 @@
             <item-spec-register register-type="PERSON"/>
         </item-spec-registers>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_10" item-type="ZP2015_ENTITY_ROLE">
-        <name>autoři textové složky</name>
-        <description>autoři textové složky</description>
+    <item-spec code="ZP2015_ENTITY_ROLE_11" item-type="ZP2015_ENTITY_ROLE">
+        <name>autoři textů</name>
+        <description>autoři textů</description>
         <shortcut></shortcut>
         <item-spec-registers>
             <item-spec-register register-type="PARTY_GROUP"/>
             <item-spec-register register-type="PERSON"/>
         </item-spec-registers>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_11" item-type="ZP2015_ENTITY_ROLE">
-        <name>autoři textů</name>
-        <description>autoři textů</description>
+    <item-spec code="ZP2015_ENTITY_ROLE_3" item-type="ZP2015_ENTITY_ROLE">
+        <name>autoři doprovodných textů</name>
+        <description>autoři doprovodných textů</description>
         <shortcut></shortcut>
         <item-spec-registers>
             <item-spec-register register-type="PARTY_GROUP"/>
