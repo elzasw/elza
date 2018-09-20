@@ -169,11 +169,7 @@ public class PersistentSortBulkAction extends BulkAction {
         }
         children.sort(comparator);
 
-        for (int i = 1; i <= children.size(); i++) {
-            children.get(i - 1).setPosition(i);
-        }
-
-        fundLevelService.shiftNodes(children, change, 1);
+        fundLevelService.changeLevelsPosition(children, change);
     }
 
     /**
