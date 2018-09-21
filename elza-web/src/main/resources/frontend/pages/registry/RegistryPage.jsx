@@ -13,7 +13,7 @@ import RegistryList from 'components/registry/RegistryList'
 import {addToastrWarning} from 'components/shared/toastr/ToastrActions.jsx'
 import {Button} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
-import {registryMoveStart, registryMove, registryMoveCancel, registryDelete, registryDetailFetchIfNeeded, registryAdd, registryListInvalidate} from 'actions/registry/registry.jsx'
+import {registryDelete, registryDetailFetchIfNeeded, registryAdd, registryListInvalidate} from 'actions/registry/registry.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes.jsx'
 import {Shortcuts} from 'react-shortcuts';
@@ -57,33 +57,12 @@ class RegistryPage extends AbstractReactComponent {
         this.initData(nextProps);
     }
 
-
-    canMoveRegistry = () => {
-        const {registryDetail: {id, data}, registryList:{filter:{registryParentId}, recordForMove}} = this.props;
-
-        return id &&
-            data &&
-            !recordForMove &&
-            !data.partyId &&
-            data.hierarchical &&
-            id != registryParentId
-    };
-
     canDeleteRegistry = () => {
         const {registryDetail: {id, data}, registryList:{filter:{registryParentId}}} = this.props;
 
         return id &&
             data &&
             id != registryParentId
-    };
-
-    canMoveApplyCancelRegistry = () => {
-        const {registryDetail: {id, data}, registryList:{recordForMove}} = this.props;
-
-        return id &&
-            data &&
-            recordForMove &&
-            !data.partyId
     };
 
     initData = (props = this.props) => {
@@ -121,21 +100,6 @@ class RegistryPage extends AbstractReactComponent {
             case 'addRegistry':
                 this.handleAddRegistry();
                 break;
-            case 'registryMove':
-                if (this.canMoveRegistry()) {
-                    this.handleRegistryMoveStart()
-                }
-                break;
-            case 'registryMoveApply':
-                if (this.canMoveApplyCancelRegistry()) {
-                    this.handleRegistryMoveConfirm()
-                }
-                break;
-            case 'registryMoveCancel':
-                if (this.canMoveApplyCancelRegistry()) {
-                    this.handleRegistryMoveCancel()
-                }
-                break;
             case 'area1':
                 this.props.dispatch(setFocus(FOCUS_KEYS.REGISTRY, 1));
                 break;
@@ -146,15 +110,9 @@ class RegistryPage extends AbstractReactComponent {
     };
 
     handleAddRegistry = () => {
-        const {registryList: {filter:{registryParentId, versionId}, parents}} = this.props;
-        let parentName = '';
+        const {registryList: {filter:{versionId}, parents}} = this.props;
 
-        const parentIndex = indexById(parents, registryParentId);
-        if (parentIndex !== null) {
-            parentName = parents[parentIndex].name;
-        }
-
-        this.dispatch(registryAdd(registryParentId, versionId === null ? -1 : versionId, this.handleCallAddRegistry, parentName, false));
+        this.dispatch(registryAdd(versionId === null ? -1 : versionId, this.handleCallAddRegistry, false));
     };
 
     handleCallAddRegistry = (data) => {
@@ -174,21 +132,6 @@ class RegistryPage extends AbstractReactComponent {
         confirm(i18n('party.setValid.confirm')) && this.dispatch(setValidRegistry(this.props.registryDetail.data.id));
     };
     */
-
-    handleRegistryMoveStart = () => {
-        const {registryDetail:{data}} = this.props;
-        this.dispatch(registryMoveStart(data));
-    };
-
-    handleRegistryMoveConfirm = () => {
-        const {registryList: {filter: {registryParentId}}} = this.props;
-        this.dispatch(registryMove(registryParentId));
-    };
-
-    handleRegistryMoveCancel = () => {
-        this.dispatch(registryMoveCancel());
-    };
-
 
     handleRegistryImport = () => {
        this.dispatch(
@@ -265,33 +208,6 @@ class RegistryPage extends AbstractReactComponent {
                     </Button>
                 );
             }*/
-        }
-
-        if (this.canMoveRegistry()) {
-            if (userDetail.hasOne(perms.AP_SCOPE_WR_ALL, {type: perms.AP_SCOPE_WR, scopeId: data ? data.scopeId : null})) {
-                itemActions.push(
-                    <Button key='registryMove' onClick={this.handleRegistryMoveStart}>
-                        <Icon glyph="fa-share"/>
-                        <div><span className="btnText">{i18n('registry.moveRegistry')}</span></div>
-                    </Button>
-                );
-            }
-        }
-        if (this.canMoveApplyCancelRegistry()) {
-            if (userDetail.hasOne(perms.AP_SCOPE_WR_ALL, {type: perms.AP_SCOPE_WR, scopeId: data ? data.scopeId : null})) {
-                itemActions.push(
-                    <Button key='registryMoveApply' onClick={this.handleRegistryMoveConfirm}>
-                        <Icon glyph="fa-check-circle"/>
-                        <div><span className="btnText">{i18n('registry.applyMove')}</span></div>
-                    </Button>
-                );
-                itemActions.push(
-                    <Button key='registryMoveCancel' onClick={this.handleRegistryMoveCancel}>
-                        <Icon glyph="fa-times"/>
-                        <div><span className="btnText">{i18n('registry.cancelMove')}</span></div>
-                    </Button>
-                );
-            }
         }
 
         let altSection;

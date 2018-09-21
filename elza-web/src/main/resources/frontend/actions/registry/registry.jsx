@@ -45,60 +45,6 @@ export function registryListInvalidate() {
 }
 
 
-/**
- * TODO Rejstříky ve verzi 16 nemají žádnou možnost pro move (hierarchie)
- *
- * @param parentRecordId
- * @returns {Function}
- */
-export function registryMove(parentRecordId) {
-    return (dispatch, getState) => {
-        const store = getState();
-        const list = storeFromArea(store, AREA_REGISTRY_LIST);
-        if (!list.recordForMove) {
-            console.error('Not selected record for move');
-            return;
-        }
-
-        WebApi.getAccessPoint(list.recordForMove.id).then((data) => {
-            // TODO compel AP
-            savingApiWrapper(dispatch, WebApi.updateAccessPoint(list.recordForMove.id, {...data, parentRecordId})).then(json => {
-                dispatch(registryMoveFinish());
-                dispatch(registryListInvalidate());
-            });
-        });
-    }
-}
-
-
-export function registryMoveStart(data) {
-
-    return {
-        type: types.REGISTRY_MOVE_REGISTRY_START,
-        area: AREA_REGISTRY_LIST,
-        data
-    }
-}
-
-export function registryMoveCancel() {
-    return {
-        type: types.REGISTRY_MOVE_REGISTRY_CANCEL,
-        area: AREA_REGISTRY_LIST,
-    }
-}
-
-
-export function registryMoveFinish() {
-    return {
-        type: types.REGISTRY_MOVE_REGISTRY_FINISH,
-        area: AREA_REGISTRY_LIST,
-    }
-}
-
-
-
-
-
 export const AREA_REGISTRY_DETAIL = "registryDetail";
 
 export function registryDetailFetchIfNeeded(id) {
@@ -118,15 +64,14 @@ export function registryDetailClear() {
 }
 
 
-export function registryAdd(parentId, versionId, callback, parentName = '', showSubmitTypes = false) {
+export function registryAdd(versionId, callback, showSubmitTypes = false) {
     return (dispatch) => {
-        const title = parentId && parentName ? i18n('registry.addRegistryFor', parentName.substr(0, 40)) : i18n('registry.addRegistry');
+        const title = i18n('registry.addRegistry');
         dispatch(modalDialogShow(this, title,
             <AddRegistryForm
                 versionId={versionId}
                 showSubmitTypes={showSubmitTypes}
-                onSubmitForm={(data, submitType) => (dispatch(registryRecordCreate(parentId, callback, data, submitType)))}
-                parentRecordId={parentId}
+                onSubmitForm={(data, submitType) => (dispatch(registryRecordCreate(callback, data, submitType)))}
             />
             )
         )
@@ -134,7 +79,7 @@ export function registryAdd(parentId, versionId, callback, parentName = '', show
     }
 }
 
-function registryRecordCreate(parentId, callback, data, submitType) {
+function registryRecordCreate(callback, data, submitType) {
     return (dispatch, getState) => {
         savingApiWrapper(dispatch, WebApi.createAccessPoint(data.name, data.complement, data.langaugeCode, data.description, data.typeId, data.scopeId)).then(json => {
             dispatch(modalDialogHide());
