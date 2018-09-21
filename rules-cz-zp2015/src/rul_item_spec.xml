@@ -2763,11 +2763,6 @@
         <description>Rukopisy</description>
         <shortcut>rkp</shortcut>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_COUNT_HDB" item-type="ZP2015_UNIT_COUNT_ITEM">
-        <name>Hudebniny</name>
-        <description>Hudebniny</description>
-        <shortcut>hdb</shortcut>
-    </item-spec>
     <item-spec code="ZP2015_UNIT_COUNT_PPR" item-type="ZP2015_UNIT_COUNT_ITEM">
         <name>Podací protokoly</name>
         <description>Podací protokoly</description>
@@ -2807,11 +2802,6 @@
         <name>Samostatné pečetě, odlitky pečetí a otisky typářů</name>
         <description>Samostatné pečetě, odlitky pečetí a otisky typářů</description>
         <shortcut>otd</shortcut>
-    </item-spec>
-    <item-spec code="ZP2015_UNIT_COUNT_OTC" item-type="ZP2015_UNIT_COUNT_ITEM">
-        <name>Kopie otisků</name>
-        <description>Kopie otisků</description>
-        <shortcut>otc</shortcut>
     </item-spec>
     <item-spec code="ZP2015_UNIT_COUNT_MAP" item-type="ZP2015_UNIT_COUNT_ITEM">
         <name>Mapy</name>
@@ -2937,38 +2927,5 @@
         <name>Jiné</name>
         <description>Jiné</description>
         <shortcut>jin</shortcut>
-    </item-spec>
-    <item-spec code="ZP2015_UNIT_COUNT_OTHER" item-type="ZP2015_UNIT_COUNT_ITEM">
-        <name>Neevidovaná jednotlivost</name>
-        <description>Neevidovaná jednotlivost</description>
-        <shortcut>njn</shortcut>
-    </item-spec>
-    <item-spec code="ZP2015_UNIT_COUNT_KTT_BOX" item-type="ZP2015_UNIT_COUNT_ITEM">
-        <name>Kartotéční zásuvka</name>
-        <description>Kartotéční zásuvka</description>
-        <shortcut>část</shortcut>
-        <view-order>55</view-order>
-    </item-spec>
-    <item-spec code="ZP2015_UNIT_COUNT_KTT_ITEM" item-type="ZP2015_UNIT_COUNT_ITEM">
-        <name>Kartotéční lístek</name>
-        <description>Kartotéční lístek</description>
-        <shortcut>část</shortcut>
-        <view-order>56</view-order>
-    </item-spec>
-    <item-spec code="ZP2015_UNIT_COUNT_PART" item-type="ZP2015_UNIT_COUNT_ITEM">
-        <name>Část jednotlivosti</name>
-        <description>Část jednotlivosti</description>
-        <shortcut>část</shortcut>
-        <view-order>57</view-order>
-    </item-spec>
-    <item-spec code="ZP2015_UNIT_COUNT_KAR" item-type="ZP2015_UNIT_COUNT_ITEM">
-        <name>Kartotéka</name>
-        <description>Kartotéka</description>
-        <shortcut>kar</shortcut>
-    </item-spec>
-    <item-spec code="ZP2015_UNIT_COUNT_FAS" item-type="ZP2015_UNIT_COUNT_ITEM">
-        <name>Fascikl</name>
-        <description>Fascikl</description>
-        <shortcut>fas</shortcut>
     </item-spec>
 </item-specs>
