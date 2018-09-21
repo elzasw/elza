@@ -527,7 +527,8 @@ export default function subNodeForm(state = initialState, action = {}) {
             consolidateDescItems(descItemType, infoType, refType, true)
 
             descItemGroup.descItemTypes.sort((a, b) => {
-                return state.refTypesMap[a.id].viewOrder - state.refTypesMap[b.id].viewOrder
+                return indexById(descItemGroup.types, a.id) - indexById(descItemGroup.types, b.id);
+                //return state.refTypesMap[a.id].viewOrder - state.refTypesMap[b.id].viewOrder
                 //return a.viewOrder - b.viewOrder
             });
 

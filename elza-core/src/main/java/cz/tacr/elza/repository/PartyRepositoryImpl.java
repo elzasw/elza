@@ -13,6 +13,7 @@ import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import javax.persistence.criteria.Subquery;
 import javax.transaction.Transactional;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -46,14 +47,20 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
 
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         CriteriaQuery<ParParty> query = builder.createQuery(ParParty.class);
+        Subquery<Integer> subquery = query.subquery(Integer.class);
+        Root<ParParty> partySubquery = subquery.from(ParParty.class);
         Root<ParParty> party = query.from(ParParty.class);
 
-        Predicate condition = preparePartyApSearchPredicate(searchRecord, partyTypeId, apTypeIds, scopeIds, party, builder, query, false);
+        Predicate condition = preparePartyApSearchPredicate(searchRecord, partyTypeId, apTypeIds, scopeIds, party, builder, query, false, true);
+        Predicate conditionSubquery = preparePartyApSearchPredicate(searchRecord, partyTypeId, apTypeIds, scopeIds, partySubquery, builder, null, true, false);
+
+        subquery.where(conditionSubquery);
+        subquery.select(partySubquery.get(ParParty.ABSTRACT_PARTY_ID));
 
         query.select(party);
         if (condition != null) {
             Order order = builder.asc(party.get(ParParty.ABSTRACT_PARTY_ID));
-            query.where(condition).orderBy(order);
+            query.where(condition, builder.in(party.get(ParParty.ABSTRACT_PARTY_ID)).value(subquery)).orderBy(order);
         }
 
         Join<Object, Object> partyName = party.join(ParParty.PARTY_PREFERRED_NAME, JoinType.LEFT);
@@ -79,7 +86,7 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
         CriteriaQuery<Long> query = builder.createQuery(Long.class);
         Root<ParParty> party = query.from(ParParty.class);
 
-        Predicate condition = preparePartyApSearchPredicate(searchRecord, partyTypeId, apTypeIds, scopeIds, party, builder, query, true);
+        Predicate condition = preparePartyApSearchPredicate(searchRecord, partyTypeId, apTypeIds, scopeIds, party, builder, query, true, false);
 
         query.select(builder.countDistinct(party));
         if (condition != null) {
@@ -117,11 +124,12 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
                                                            final Root<ParParty> partyRoot,
                                                            final CriteriaBuilder cb,
                                                            final CriteriaQuery<?> query,
-                                                           final boolean count) {
+                                                           final boolean count,
+                                                           final boolean onlyPrefferedName) {
         // join AP which must always exists
         Join<ParParty, ApAccessPoint> apJoin = partyRoot.join(ParParty.RECORD, JoinType.INNER);
 
-        Predicate cond = ApAccessPointRepositoryImpl.prepareApSearchPredicate(searchValue, apTypeIds, scopeIds, apJoin, cb, query, count);
+        Predicate cond = ApAccessPointRepositoryImpl.prepareApSearchPredicate(searchValue, apTypeIds, scopeIds, apJoin, cb, query, count, onlyPrefferedName);
         // add party type condition
         if (partyTypeId != null) {
             Predicate typeCond = cb.equal(partyRoot.get(ParParty.PARTY_TYPE_ID), partyTypeId);

@@ -202,7 +202,7 @@ public class ClientFactoryVO {
 
     @Autowired
     private ApFactory apFactory;
-    
+
     /**
      * Vytvoření nastavení.
      *

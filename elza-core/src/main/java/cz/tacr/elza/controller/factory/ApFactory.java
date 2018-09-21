@@ -464,7 +464,7 @@ public class ApFactory {
                 item = new ApItemAPFragmentRefVO(apItem);
                 break;
             default:
-                throw new NotImplementedException("Nen� implementov�no: " + dataType.getCode());
+                throw new NotImplementedException("Není implementováno: " + dataType.getCode());
         }
 
         return item;

@@ -164,7 +164,7 @@ class RegistryField extends AbstractReactComponent {
             <RegistryListItem
                 {...item}
                 eidTypes={eidTypes}
-                apTypeIdMap={this.props.apTypeIdMap}
+                apTypeIdMap={apTypeIdMapp}
                 className={classNames('item', {focus: highlighted, active: selected})}
             />
         </TooltipTrigger>;
