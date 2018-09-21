@@ -2578,69 +2578,69 @@
     </item-spec>
     <!-- jiné typy datace -->
     <item-spec code="ZP2015_DATE_OF_CONTENT" item-type="ZP2015_DATE_OTHER">
-        <name>obsahu</name>
+        <name>Datace obsahu</name>
         <description>Datace obsahu jednotky popisu</description>
-        <shortcut></shortcut>
+        <shortcut>obsah</shortcut>
     </item-spec>
     <item-spec code="ZP2015_DATE_DECLARED" item-type="ZP2015_DATE_OTHER">
-        <name>deklarovaná</name>
+        <name>Datace deklarovaná</name>
         <description>Datace, k níž se jednotka popisu hlásí</description>
-        <shortcut></shortcut>
+        <shortcut>deklarovaná</shortcut>
     </item-spec>
     <item-spec code="ZP2015_DATE_ORIG" item-type="ZP2015_DATE_OTHER">
-        <name>vzniku předlohy</name>
+        <name>Datace vzniku předlohy</name>
         <description>Datace vzniku předlohy, pokud je popisována kopie, která nenahrazuje předlohu</description>
-        <shortcut></shortcut>
+        <shortcut>vznik předlohy</shortcut>
     </item-spec>
     <item-spec code="ZP2015_DATE_OF_COPY" item-type="ZP2015_DATE_OTHER">
-        <name>vzniku kopie</name>
+        <name>Datace vzniku kopie</name>
         <description>Datace vzniku kopie, která nahrazuje zničenou archiválii</description>
-        <shortcut></shortcut>
+        <shortcut>vznik kopie</shortcut>
     </item-spec>
     <item-spec code="ZP2015_DATE_SEALING" item-type="ZP2015_DATE_OTHER">
-        <name>zpečetění</name>
+        <name>Datace zpečetění</name>
         <description>Datace zpečetění jednotky popisu</description>
-        <shortcut></shortcut>
+        <shortcut>zpečetění</shortcut>
     </item-spec>
     <item-spec code="ZP2015_DATE_ACT_PUBLISHING" item-type="ZP2015_DATE_OTHER">
-        <name>vydání listiny</name>
+        <name>Datace vydání listiny</name>
         <description>Datace vydání listiny</description>
-        <shortcut></shortcut>
+        <shortcut>vydání listiny</shortcut>
     </item-spec>
     <item-spec code="ZP2015_DATE_INSERT" item-type="ZP2015_DATE_OTHER">
-        <name>insert/transept</name>
+        <name>Datace insertu/transeptu</name>
         <description>Datace insertu/transeptu</description>
-        <shortcut></shortcut>
+        <shortcut>insert/transept</shortcut>
     </item-spec>
     <item-spec code="ZP2015_DATE_MOLD_CREATION" item-type="ZP2015_DATE_OTHER">
-        <name>vzniku matrice</name>
+        <name>Datace vzniku matrice</name>
         <description>Datace vzniku matrice, z níž byla jednotka popisu zhotovena</description>
-        <shortcut></shortcut>
+        <shortcut>vznik matrice</shortcut>
     </item-spec>
     <item-spec code="ZP2015_DATE_USAGE" item-type="ZP2015_DATE_OTHER">
-        <name>užívání typáře</name>
+        <name>Datace užívání typáře</name>
         <description>Doba užívání typáře</description>
-        <shortcut></shortcut>
+        <shortcut>užívání typáře</shortcut>
     </item-spec>
     <item-spec code="ZP2015_DATE_PUBLISHING" item-type="ZP2015_DATE_OTHER">
-        <name>vydání dokumentu</name>
+        <name>Datace vydání dokumentu</name>
         <description>Datace vydání dokumentu, k němuž byl popisovaný otisk připojen</description>
-        <shortcut></shortcut>
+        <shortcut>vydání dokumentu</shortcut>
     </item-spec>
     <item-spec code="ZP2015_DATE_MAP_UPDATE" item-type="ZP2015_DATE_OTHER">
-        <name>reambulace mapy</name>
+        <name>Datace reambulace mapy</name>
         <description>Datace reambulace (aktualizace) mapy</description>
-        <shortcut></shortcut>
+        <shortcut>reambulace mapy</shortcut>
     </item-spec>
     <item-spec code="ZP2015_DATE_CAPTURING" item-type="ZP2015_DATE_OTHER">
-        <name>pořízení obrazového záznamu</name>
+        <name>Datace pořízení obrazového záznamu</name>
         <description>Datace pořízení obrazového záznamu</description>
-        <shortcut></shortcut>
+        <shortcut>pořízení obrazového záznamu</shortcut>
     </item-spec>
     <item-spec code="ZP2015_DATE_RECORDING" item-type="ZP2015_DATE_OTHER">
-        <name>pořízení filmového / zvukového záznamu</name>
+        <name>Datace pořízení filmového / zvukového záznamu</name>
         <description>Datace pořízení filmového / zvukového záznamu</description>
-        <shortcut></shortcut>
+        <shortcut>pořízení filmového / zvukového záznamu</shortcut>
     </item-spec>
     <item-spec code="ZP2015_PACKET_TYPE_SAMOST" item-type="ZP2015_PACKET_TYPE">
         <name>Samostatně</name>
