@@ -2323,9 +2323,10 @@ public class PackageService {
                     .filter(key -> key.startsWith(templateZipKeyDir) && !key.equals(templateZipKeyDir))
                     .map(key -> key.replace(templateZipKeyDir, ""))
                     .collect(Collectors.toList());
-            File dirFile = new File(dirTemplates + File.separator + template.getDirectory());
+            String path = dirTemplates + File.separator + template.getDirectory();
+            File dirFile = new File(path);
             if (!dirFile.exists() && !dirFile.mkdirs()) {
-                throw new IOException("Nepodařilo se vytvořit složku.");
+                throw new IOException("Nepodařilo se vytvořit složku: " + path);
             }
             for (String file : templateFileKeys) {
                 ruc.getPackageUpdateContext().saveFile(dirFile, templateDir, file);
