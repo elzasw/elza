@@ -183,6 +183,8 @@ var messages = {
     "exception.reg.FOREIGN_ENTITY_INVALID_SUBTYPE": "Navázaná entita musí mít typ rejstříku nebo podtyp, který je navázaný na roli entity",
     "exception.reg.FOREIGN_ENTITY_INVALID_SCOPE": "Navázaná entita musí mít stejnou třídu rejstříkového hesla jako osoba, ke které entitu navazujeme",
 
+    "exception.sobj.NO_VALID_ITEMS": "Bez vyplnění alespoň některých prvků popisu nelze položku přidat. Vyplňte příslušné prvky popisu.",
+
     "exception.usr.USER_DELETE_ERROR": "Osobu nelze smazat, kvůli navázaným uživatelům",
     "exception.usr.USER_NOT_FOUND": "Uživatel s ID={id} neexistuje",
     "exception.usr.USER_NOT_LOGGED": "Uživatel není přihlášen",

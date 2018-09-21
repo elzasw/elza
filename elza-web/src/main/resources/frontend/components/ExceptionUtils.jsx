@@ -12,6 +12,7 @@ const TYPE2GROUP = {
     'OutputCode': 'out',
     'PackageCode': 'pkg',
     'RegistryCode': 'reg',
+    'StructObjCode': 'sobj',
     'UserCode': 'usr'
 };
 
