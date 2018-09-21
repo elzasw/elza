@@ -3,7 +3,6 @@ package cz.tacr.elza.bulkaction.generator.multiple;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-import cz.tacr.elza.core.data.StaticDataProvider;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.context.annotation.Scope;
@@ -14,6 +13,7 @@ import cz.tacr.elza.bulkaction.generator.result.ActionResult;
 import cz.tacr.elza.bulkaction.generator.result.DateRangeActionResult;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
+import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDescItem;
@@ -53,10 +53,6 @@ public class DateRangeAction extends Action {
      */
     private ArrDataUnitdate datePriorMin;
     private ArrDataUnitdate datePriorMax;
-    /**
-     * Flag that prior max should be same as date min
-     */
-    private boolean priorMaxAsDateMin = false;
 
     /**
      * Minimální čas
@@ -73,11 +69,6 @@ public class DateRangeAction extends Action {
      */
     private ArrDataUnitdate datePosteriorMin;
     private ArrDataUnitdate datePosteriorMax;
-
-    /**
-     * Flag that posterior min should be same as date max
-     */
-    private boolean posteriorMinAsDateMax = false;
 
 	DateRangeAction(DateRangeConfig config) {
 		this.config = config;
@@ -159,11 +150,17 @@ public class DateRangeAction extends Action {
             // check range
             ArrDataUnitdate bulkUnitDate = (ArrDataUnitdate) bulkRange.getData();
 
-            if (bulkFrom == null || bulkFrom.getNormalizedFrom() > bulkUnitDate.getNormalizedFrom()) {
+            if (bulkFrom == null || bulkFrom.getNormalizedFrom() > bulkUnitDate.getNormalizedFrom()
+            // if same value -> estimated is more important then not estimated
+                    || (bulkFrom.getNormalizedFrom() == bulkUnitDate.getNormalizedFrom()
+                            && Boolean.TRUE.equals(bulkUnitDate.getValueFromEstimated()))) {
                 bulkFrom = bulkUnitDate;
             }
 
-            if (bulkTo == null || bulkTo.getNormalizedTo() < bulkUnitDate.getNormalizedTo()) {
+            if (bulkTo == null || bulkTo.getNormalizedTo() < bulkUnitDate.getNormalizedTo() ||
+            // if same value -> estimated is more important then not estimated
+                    (bulkTo.getNormalizedTo() == bulkUnitDate.getNormalizedTo()
+                            && Boolean.TRUE.equals(bulkUnitDate.getValueToEstimated()))) {
                 bulkTo = bulkUnitDate;
             }
         }
@@ -236,7 +233,6 @@ public class DateRangeAction extends Action {
             if (dateMin == null || bulkFrom.getNormalizedFrom() < dateMin.getNormalizedFrom()) {
                 dateMin = bulkFrom;
             }
-            priorMaxAsDateMin = true;
         }
 
         if (!fromStoredAsPosterior && toStoredAsPosterior) {
@@ -244,7 +240,6 @@ public class DateRangeAction extends Action {
             if (dateMax == null || dateMax.getNormalizedTo() < bulkTo.getNormalizedTo()) {
                 dateMax = bulkTo;
             }
-            posteriorMinAsDateMax = true;
         }
     }
 
@@ -257,10 +252,13 @@ public class DateRangeAction extends Action {
      */
     private void processMainUnitDate(ArrDataUnitdate unitDate) {
         // store as standard range
-        if (dateMin == null || dateMin.getNormalizedFrom() > unitDate.getNormalizedFrom()) {
+        if (dateMin == null || dateMin.getNormalizedFrom() > unitDate.getNormalizedFrom()
+                || (dateMin.getNormalizedFrom() == unitDate.getNormalizedFrom() && unitDate.getValueFromEstimated())) {
+
             dateMin = unitDate;
         }
-        if (dateMax == null || dateMax.getNormalizedTo() < unitDate.getNormalizedTo()) {
+        if (dateMax == null || dateMax.getNormalizedTo() < unitDate.getNormalizedTo()
+                || (dateMax.getNormalizedTo() == unitDate.getNormalizedTo() && unitDate.getValueToEstimated())) {
             dateMax = unitDate;
         }
     }
