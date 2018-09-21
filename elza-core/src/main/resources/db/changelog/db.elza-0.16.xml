@@ -253,6 +253,7 @@
     </changeSet>
 
     <changeSet id="20182806133300" author="fric">
+        <validCheckSum>ANY</validCheckSum>
         <!--migrace description-->
         <createTable tableName="ap_description">
             <column name="description_id" type="int">
@@ -289,6 +290,7 @@
 
     <!-- Create tables for external id -->
     <changeSet id="20180226153500" author="fric">
+        <validCheckSum>ANY</validCheckSum>
         <createTable tableName="ap_external_id_type">
             <column name="external_id_type_id" type="int">
                 <constraints primaryKey="true" nullable="false"/>
@@ -340,6 +342,7 @@
     </changeSet>
 
     <changeSet id="20180226123500" author="fric">
+        <validCheckSum>ANY</validCheckSum>
         <!--migrace acess_point-->
         <renameTable oldTableName="ap_record" newTableName="ap_access_point"/>
         <dropColumn tableName="ap_access_point" columnName="record"/>
