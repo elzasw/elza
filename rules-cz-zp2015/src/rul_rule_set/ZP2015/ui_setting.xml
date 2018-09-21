@@ -65,7 +65,7 @@
                 <type code="ZP2015_UNIT_TYPE" width="1"/>
                 <type code="ZP2015_UNIT_COUNT" width="1"/>
                 <type code="ZP2015_STORAGE_ID" width="1"/>
-                <type code="ZP2015_EXTRA_UNITS" width="1"/>
+                <type code="ZP2015_EXTRA_UNITS" width="2"/>
                 <type code="ZP2015_UNIT_EXT_TYPE" width="1"/>
                 <type code="ZP2015_CONNECTED_RECORD" width="2"/>                
             </group>

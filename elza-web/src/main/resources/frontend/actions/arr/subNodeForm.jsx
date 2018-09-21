@@ -704,7 +704,17 @@ class ItemFormActions {
                 type: types.FUND_TEMPLATE_USE,
                 area: this.area,
                 versionId,
-                routingKey,
+                template
+            });
+        }
+    }
+
+    fundSubNodeFormTemplateUseOnly(versionId, template) {
+        return (dispatch) => {
+            dispatch({
+                type: types.FUND_TEMPLATE_USE,
+                area: this.area,
+                versionId,
                 template
             });
         }

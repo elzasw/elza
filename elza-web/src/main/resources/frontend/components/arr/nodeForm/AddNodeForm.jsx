@@ -17,6 +17,7 @@ import './AddNodeForm.less';
 import FundTreeCopy from '../FundTreeCopy';
 import FundField from '../../admin/FundField';
 import {FUND_TREE_AREA_COPY} from '../../../actions/constants/ActionTypes';
+import {nodeFormActions} from '../../../actions/arr/subNodeForm.jsx'
 
 const TEMPLATE_SCENARIOS = 'TEMPLATE_SCENARIOS';
 
@@ -157,7 +158,31 @@ class AddNodeForm extends AbstractReactComponent {
     };
 
     handleScenarioChange = e => {
-        this.setState({ selectedScenario: e.target.value });
+        if (e.target.value === TEMPLATE_SCENARIOS) {
+            const {
+                arrRegion,
+                userDetail
+            } = this.props;
+
+            const settings = userDetail.settings;
+            const fund =
+                arrRegion.activeIndex != null
+                    ? arrRegion.funds[arrRegion.activeIndex]
+                    : null;
+            let lastUseTemplateName = null;
+            if (fund) {
+                lastUseTemplateName = this.getLastUseTemplateName(settings, fund);
+            }
+            this.setState({ selectedScenario: e.target.value, template: lastUseTemplateName });
+        } else {
+            this.setState({ selectedScenario: e.target.value });
+        }
+    };
+
+    getLastUseTemplateName = (settings, fund) => {
+        const fundTemplates = getOneSettings(settings, 'FUND_TEMPLATES', 'FUND', fund.id);
+        const templates = fundTemplates.value ? JSON.parse(fundTemplates.value).map(template => template.name) : [];
+        return templates.indexOf(fund.lastUseTemplateName) >= 0 ? fund.lastUseTemplateName : null;
     };
 
     handleTemplateChange = e => {
@@ -251,6 +276,7 @@ class AddNodeForm extends AbstractReactComponent {
                                 submitData.createItems = createItems;
                             }
                         }
+                        this.dispatch(nodeFormActions.fundSubNodeFormTemplateUseOnly(activeFund.versionId, template));
                     }
                 }
             }
@@ -474,6 +500,7 @@ class AddNodeForm extends AbstractReactComponent {
 
         let templates = [];
         let scnRadios = [];
+        let lastUseTemplateName = null;
         if (!loading) {
             let i = 0;
             if (scenarios) {
@@ -558,6 +585,14 @@ class AddNodeForm extends AbstractReactComponent {
             );
         }
 
+        let defaultValueTemplate = "";
+        if (lastUseTemplateName) {
+            defaultValueTemplate = lastUseTemplateName;
+        }
+        if (template) {
+            defaultValueTemplate = template;
+        }
+
         return (
             <div>
                 <FormGroup>
@@ -579,10 +614,10 @@ class AddNodeForm extends AbstractReactComponent {
                                     disabled={loading || submitting}
                                     label={""}
                                     onChange={this.handleTemplateChange}
-                                    defaultValue={""}
+                                    defaultValue={defaultValueTemplate}
                                 >
                                     <option value={""} key="no-select">{i18n('global.action.select')}</option>
-                                    {templates.map(tmp => <option value={tmp} selected={tmp === template} key={tmp}>{tmp}</option>)}
+                                    {templates.map(tmp => <option value={tmp} key={tmp}>{tmp}</option>)}
                                 </FormInput>
                             }
                         </div>}
