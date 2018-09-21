@@ -9,7 +9,7 @@
 	<queryString>
 		<![CDATA[]]>
 	</queryString>
-	<field name="record" class="java.lang.String"/>
+	<field name="prefName" class="cz.tacr.elza.print.ap.Name"/>
 	<field name="recordObj" class="cz.tacr.elza.print.RecordWithLinks">
 		<fieldDescription><![CDATA[_THIS]]></fieldDescription>
 	</field>
@@ -58,7 +58,7 @@
 				<textElement>
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{record}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{prefName}.getFullName()]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="Text" x="180" y="0" width="275" height="15" uuid="f594599e-8a70-4210-835c-1c8482543917">
