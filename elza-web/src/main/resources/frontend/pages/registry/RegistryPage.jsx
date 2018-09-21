@@ -76,8 +76,6 @@ class RegistryPage extends AbstractReactComponent {
 
         return id &&
             data &&
-            data.childs &&
-            data.childs.length === 0 &&
             id != registryParentId
     };
 
