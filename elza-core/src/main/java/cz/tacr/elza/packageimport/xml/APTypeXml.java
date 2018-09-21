@@ -6,16 +6,17 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
+import cz.tacr.elza.packageimport.xml.common.OtherCodes;
+
 
 /**
- * VO typ vztahu.
+ * Access point type (XML)
  *
- * @author Martin Šlapa
  * @since 21.11.2016
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "register-type")
-public class RegisterType {
+@XmlType(name = "ap-type")
+public class APTypeXml {
 
     @XmlAttribute(name = "code", required = true)
     private String code;
@@ -23,14 +24,25 @@ public class RegisterType {
     @XmlAttribute(name = "party-type")
     private String partyType;
 
-    @XmlAttribute(name = "parent-register-type")
-    private String parentRegisterType;
+    @XmlAttribute(name = "parent-ap-type")
+    private String parentType;
 
     @XmlElement(name = "name", required = true)
     private String name;
 
     @XmlElement(name = "read-only", required = true)
     private boolean readOnly;
+
+    @XmlElement(name = "other-codes")
+    private OtherCodes otherCodes;
+
+    public OtherCodes getOtherCodes() {
+        return otherCodes;
+    }
+
+    public void setOtherCodes(OtherCodes otherCodes) {
+        this.otherCodes = otherCodes;
+    }
 
     public String getCode() {
         return code;
@@ -48,12 +60,12 @@ public class RegisterType {
         this.partyType = partyType;
     }
 
-    public String getParentRegisterType() {
-        return parentRegisterType;
+    public String getParentType() {
+        return parentType;
     }
 
-    public void setParentRegisterType(final String parentRegisterType) {
-        this.parentRegisterType = parentRegisterType;
+    public void setParentType(final String parentRegisterType) {
+        this.parentType = parentRegisterType;
     }
 
     public String getName() {
