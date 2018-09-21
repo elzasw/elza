@@ -318,8 +318,8 @@ var messages = {
     "ribbon.action.party.importExt": "Import ze systému",
     "ribbon.action.arr.fund.import": "Import",
     "ribbon.action.arr.fund.export": "Export",
-    "ribbon.action.registry.import": "Import ze systému",
-    "ribbon.action.registry.importExt": "Import hesla",
+    "ribbon.action.registry.import": "Import ze souboru",
+    "ribbon.action.registry.importExt": "Import ze systému",
     "ribbon.action.logout": "Odhlásit",
     "ribbon.action.showFundHistory": "Historie změn",
 
