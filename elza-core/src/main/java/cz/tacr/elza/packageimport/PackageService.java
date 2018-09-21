@@ -12,7 +12,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -106,6 +105,8 @@ import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.PackageCode;
 import cz.tacr.elza.interpi.service.InterpiService;
+import cz.tacr.elza.packageimport.xml.APTypeXml;
+import cz.tacr.elza.packageimport.xml.APTypes;
 import cz.tacr.elza.packageimport.xml.ActionItemType;
 import cz.tacr.elza.packageimport.xml.ActionRecommended;
 import cz.tacr.elza.packageimport.xml.ArrangementExtension;
@@ -141,8 +142,6 @@ import cz.tacr.elza.packageimport.xml.PartyTypeRelation;
 import cz.tacr.elza.packageimport.xml.PartyTypeRelations;
 import cz.tacr.elza.packageimport.xml.PolicyType;
 import cz.tacr.elza.packageimport.xml.PolicyTypes;
-import cz.tacr.elza.packageimport.xml.RegisterType;
-import cz.tacr.elza.packageimport.xml.RegisterTypes;
 import cz.tacr.elza.packageimport.xml.RegistryRole;
 import cz.tacr.elza.packageimport.xml.RegistryRoles;
 import cz.tacr.elza.packageimport.xml.RelationClassType;
@@ -171,6 +170,7 @@ import cz.tacr.elza.packageimport.xml.Template;
 import cz.tacr.elza.packageimport.xml.Templates;
 import cz.tacr.elza.repository.ActionRecommendedRepository;
 import cz.tacr.elza.repository.ActionRepository;
+import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApExternalIdTypeRepository;
 import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.ArrangementExtensionRepository;
@@ -299,7 +299,6 @@ public class PackageService {
     public static final String RELATION_TYPE_XML = "par_relation_type.xml";
     public static final String RELATION_TYPE_ROLE_TYPE_XML = "par_relation_type_role_type.xml";
     public static final String REGISTRY_ROLE_XML = "par_registry_role.xml";
-    public static final String REGISTER_TYPE_XML = "reg_register_type.xml";
     public static final String SETTING_XML = "ui_setting.xml";
 
     /**
@@ -467,6 +466,9 @@ public class PackageService {
     @Autowired
     private StructObjValueService structObjValueService;
 
+    @Autowired
+    private ApAccessPointRepository accessPointRepository;
+
     private List<RulTemplate> newRultemplates = new ArrayList<>();
 
     /**
@@ -602,9 +604,10 @@ public class PackageService {
                 .convertXmlStreamToObject(RelationTypeRoleTypes.class, RELATION_TYPE_ROLE_TYPE_XML);
         processRelationTypeRoleTypes(relationTypeRoleTypes, rulPackage, parRelationRoleTypes, parRelationTypes);
 
-        RegisterTypes registerTypes = pkgCtx.convertXmlStreamToObject(RegisterTypes.class,
-                                                                      REGISTER_TYPE_XML);
-        List<ApType> apTypes = processApTypes(registerTypes, rulPackage, parPartyTypes);
+        APTypeUpdater apTypeUpdater = new APTypeUpdater(apTypeRepository, registryRoleRepository,
+                this.accessPointRepository, parPartyTypes);
+        apTypeUpdater.run(pkgCtx);
+        List<ApType> apTypes = apTypeUpdater.getApTypes();
 
         RegistryRoles registryRoles = pkgCtx.convertXmlStreamToObject(RegistryRoles.class,
                                                                       REGISTRY_ROLE_XML);
@@ -1126,80 +1129,6 @@ public class PackageService {
         parRegistryRole.setApType(apType);
     }
 
-    /**
-     * Zpracování vztahy typu třídy.
-     *
-     * @param registerTypes vztahy typů tříd
-     * @param rulPackage    balíček
-     * @param parPartyTypes seznam typů osob
-     * @return seznam aktuálních záznamů
-     */
-    private List<ApType> processApTypes(@Nullable final RegisterTypes registerTypes,
-                                              @NotNull final RulPackage rulPackage,
-                                              @NotNull final List<ParPartyType> parPartyTypes) {
-        // TODO: nacitani AP type musi byt serazeno podle urovni (recursive query) aby mohl byt zbytek
-        // (nezaktualizovane typy) odstranen hierarchicky (linked hash map uchova poradi)
-        Map<String, ApType> oldTypeCodeMap = apTypeRepository.findByRulPackage(rulPackage)
-                .stream().collect(Collectors.toMap(
-                                                   ApType::getCode,
-                                                   Function.identity(),
-                                                   (v1, v2) -> {
-                                                       throw new SystemException("Duplicate AP code, value=" + v1.getCode(), BaseCode.DB_INTEGRITY_PROBLEM);
-                                                   },
-                                                   LinkedHashMap::new));
-        List<ApType> newTypes = new ArrayList<>();
-
-        if (registerTypes != null && CollectionUtils.isNotEmpty(registerTypes.getRegisterTypes())) {
-            for (RegisterType registerType : registerTypes.getRegisterTypes()) {
-                ApType type = oldTypeCodeMap.remove(registerType.getCode());
-                if (type == null) {
-                    type = new ApType();
-                }
-                convertRegisterToApType(rulPackage, registerType, type, parPartyTypes);
-                newTypes.add(type);
-            }
-            // druhým průchodem nastavíme rodiče (stromová struktura)
-            for (RegisterType registerType : registerTypes.getRegisterTypes()) {
-                if (registerType.getParentRegisterType() != null) {
-                    ApType apType = findEntity(newTypes, registerType.getCode(), ApType::getCode);
-                    ApType apTypeParent = findEntity(newTypes, registerType.getParentRegisterType(), ApType::getCode);
-                    apType.setParentApType(apTypeParent);
-                }
-            }
-        }
-
-        Collection<ApType> oldTypes = oldTypeCodeMap.values();
-        oldTypes.forEach(registryRoleRepository::deleteByApType);
-
-        apTypeRepository.delete(oldTypes);
-
-        return apTypeRepository.save(newTypes);
-    }
-
-    /**
-     * Konverze VO -> DO.
-     *
-     * @param rulPackage       balíček
-     * @param registerType     vztah typů tříd - VO
-     * @param apType  vztah typů tříd - DO
-     * @param parPartyTypes    seznam typů osob
-     */
-    private void convertRegisterToApType(final RulPackage rulPackage,
-                                        final RegisterType registerType,
-                                        final ApType apType,
-                                        final List<ParPartyType> parPartyTypes) {
-        apType.setRulPackage(rulPackage);
-        apType.setCode(registerType.getCode());
-        apType.setName(registerType.getName());
-        apType.setReadOnly(registerType.isReadOnly());
-        if (registerType.getPartyType() != null) {
-            ParPartyType parPartyType = findEntity(parPartyTypes, registerType.getPartyType(), ParPartyType::getCode);
-            if (parPartyType == null) {
-                throw new BusinessException("ParPartyType s code=" + registerType.getPartyType() + " nenalezen", PackageCode.CODE_NOT_FOUND).set("code", registerType.getPartyType()).set("file", REGISTER_TYPE_XML);
-            }
-            apType.setPartyType(parPartyType);
-        }
-    }
 
     /**
      * Zpracování entity.
@@ -1658,7 +1587,7 @@ public class PackageService {
      * @param <S>
      * @return nalezená entita
      */
-    private <T, S> T findEntity(@NotNull final Collection<T> list,
+    static <T, S> T findEntity(@NotNull final Collection<T> list,
                                 @NotNull final S find,
                                 @NotNull final Function<T, S> function) {
         for (T item : list) {
@@ -3282,29 +3211,29 @@ public class PackageService {
     }
 
     private void exportRegisterTypes(final RulPackage rulPackage, final ZipOutputStream zos) throws IOException {
-        RegisterTypes registerTypes = new RegisterTypes();
+        APTypes registerTypes = new APTypes();
         List<ApType> apTypes = apTypeRepository.findByRulPackage(rulPackage);
         if (apTypes.size() == 0) {
             return;
         }
-        List<RegisterType> registerTypeList = new ArrayList<>(apTypes.size());
+        List<APTypeXml> registerTypeList = new ArrayList<>(apTypes.size());
         registerTypes.setRegisterTypes(registerTypeList);
 
         for (ApType apType : apTypes) {
-            RegisterType registerType = new RegisterType();
+            APTypeXml registerType = new APTypeXml();
             convertRegisterType(apType, registerType);
             registerTypeList.add(registerType);
         }
 
-        addObjectToZipFile(registerTypes, zos, REGISTER_TYPE_XML);
+        addObjectToZipFile(registerTypes, zos, APTypeUpdater.AP_TYPE_XML);
     }
 
-    private void convertRegisterType(final ApType apType, final RegisterType registerType) {
+    private void convertRegisterType(final ApType apType, final APTypeXml registerType) {
         registerType.setName(apType.getName());
         registerType.setCode(apType.getCode());
         registerType.setReadOnly(apType.isReadOnly());
         registerType.setPartyType(apType.getPartyType() == null ? null : apType.getPartyType().getCode());
-        registerType.setParentRegisterType(apType.getParentApType() == null ? null : apType.getParentApType().getCode());
+        registerType.setParentType(apType.getParentApType() == null ? null : apType.getParentApType().getCode());
     }
 
     private void exportRegistryRoles(final RulPackage rulPackage, final ZipOutputStream zos) throws IOException {
