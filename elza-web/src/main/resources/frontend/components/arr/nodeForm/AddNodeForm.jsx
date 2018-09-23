@@ -66,6 +66,12 @@ class AddNodeForm extends AbstractReactComponent {
                 errors.push("no file selected");
             }
         }
+        if(selectedType != "NEW" && selectedSourceAS === "OTHER"){
+            const selectedIds = props.fundTreeCopy ? props.fundTreeCopy.selectedIds : {};
+            if(Object.keys(selectedIds).length === 0){
+                errors.push("no selected id");
+            }
+        }
         return errors;
     }
     /**
@@ -351,6 +357,14 @@ class AddNodeForm extends AbstractReactComponent {
         this.getDirectionScenarios(initDirection);
         this.fetchScopeList();
     }
+
+    componentWillReceiveProps(nextProps){
+        const errors = this.validate(nextProps, this.state);
+        if(errors.length === 0){
+            this.setState({ valid: true });
+        }
+    }
+
     fetchScopeList = () => {
         WebApi.getScopes(this.props.versionId).then(data => {
             const selectedScope = data[0] || undefined;
@@ -360,6 +374,21 @@ class AddNodeForm extends AbstractReactComponent {
             });
         });
     };
+
+    changeNodeSource = (type, source) => {
+        return (e) => {
+            const nextState = {...this.state,};
+            if(type){nextState.selectedType = type;}
+            if(source){nextState.selectedSourceAS = source;}
+
+            const errors = this.validate(this.props, nextState);
+
+            this.setState({
+                ...nextState,
+                valid: errors.length === 0,
+            });
+        };
+    }
 
     render() {
         const {
@@ -407,11 +436,7 @@ class AddNodeForm extends AbstractReactComponent {
                                     inline
                                     name="selectType"
                                     checked={this.state.selectedType === 'NEW'}
-                                    onChange={e => {
-                                        this.setState({
-                                            selectedType: 'NEW'
-                                        });
-                                    }}
+                                    onChange={this.changeNodeSource("NEW")}
                                 >
                                     {i18n('arr.fund.addNode.type.new')}
                                 </Radio>
@@ -420,15 +445,8 @@ class AddNodeForm extends AbstractReactComponent {
                                 <Radio
                                     inline
                                     name="selectType"
-                                    checked={
-                                        this.state.selectedType === 'EXISTING'
-                                    }
-                                    onChange={e => {
-                                        this.setState({
-                                            selectedType: 'EXISTING',
-                                            valid: false
-                                        });
-                                    }}
+                                    checked={this.state.selectedType === 'EXISTING'}
+                                    onChange={this.changeNodeSource("EXISTING")}
                                 >
                                     {i18n('arr.fund.addNode.type.existing')}
                                 </Radio>
@@ -641,12 +659,7 @@ class AddNodeForm extends AbstractReactComponent {
                                     checked={
                                         this.state.selectedSourceAS === 'FILE'
                                     }
-                                    onChange={e => {
-                                        this.setState({
-                                            selectedSourceAS: 'FILE',
-                                            valid:false
-                                        });
-                                    }}
+                                    onChange={this.changeNodeSource("EXISTING", "FILE")}
                                 >
                                     {i18n(
                                         'arr.fund.addNode.type.existing.file'
@@ -661,12 +674,7 @@ class AddNodeForm extends AbstractReactComponent {
                                     checked={
                                         this.state.selectedSourceAS === 'OTHER'
                                     }
-                                    onChange={e => {
-                                        this.setState({
-                                            selectedSourceAS: 'OTHER',
-                                            valid: true
-                                        });
-                                    }}
+                                    onChange={this.changeNodeSource("EXISTING", "OTHER")}
                                 >
                                     {i18n(
                                         'arr.fund.addNode.type.existing.other'
