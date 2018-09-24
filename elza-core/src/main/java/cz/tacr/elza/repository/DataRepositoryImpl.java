@@ -31,6 +31,7 @@ import com.google.common.collect.Lists;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataCoordinates;
+import cz.tacr.elza.domain.ArrDataDate;
 import cz.tacr.elza.domain.ArrDataDecimal;
 import cz.tacr.elza.domain.ArrDataInteger;
 import cz.tacr.elza.domain.ArrDataPartyRef;
@@ -47,8 +48,6 @@ import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.common.ObjectListIterator;
-import cz.tacr.elza.domain.*;
 import cz.tacr.elza.exception.SystemException;
 
 
@@ -300,7 +299,6 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
         if (dataClassType.equals(ArrDataString.class) ||
                 dataClassType.equals(ArrDataText.class) ||
                 dataClassType.equals(ArrDataCoordinates.class) ||
-                dataClassType.equals(ArrDataUnitid.class) ||
                 dataClassType.equals(ArrDataDecimal.class) ||
                 dataClassType.equals(ArrDataDate.class) ||
                 dataClassType.equals(ArrDataInteger.class)) {
@@ -314,6 +312,19 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
                 @Override
                 public Path<String> getValueStringSelection(final CriteriaBuilder criteriaBuilder) {
                     return targetJoin.get("value");
+                }
+            };
+        } else if (dataClassType.equals(ArrDataUnitid.class)) {
+            return new AbstractDescItemDataTypeHelper() {
+
+                @Override
+                protected void init() {
+                    targetJoin = dataRoot;
+                }
+
+                @Override
+                public Path<String> getValueStringSelection(final CriteriaBuilder criteriaBuilder) {
+                    return targetJoin.get(ArrDataUnitid.UNITID);
                 }
             };
         } else if (dataClassType.equals(ArrDataPartyRef.class)) {
