@@ -205,12 +205,18 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
             state.conditionValues = filter.condition
         }
 
-        const conditionHasValue = state.conditionSelectedCode !== "NONE";
-        const valueHasValue = state.selectedValueItemsType === "selected" || (state.selectedValueItems && state.selectedValueItems.length > 0);
-        if (conditionHasValue || !valueHasValue) {
-            state.valueAccodrionType = "CONDITION";
-        } else {
-            state.valueAccodrionType = "VALUE";
+        // Určení typu uplatněného filtru - podmínka nebo hodnota        
+        // pokud je vybrana podminka, tak ma prednost
+        state.valueAccodrionType = "VALUE";
+        const condInfo = this.getConditionInfo();
+        // pokud existuji podminky muze byt rizeno podminkou
+        if(condInfo.items.length>0) {
+            // ? je vybrana podminka
+            const conditionHasValue = state.conditionSelectedCode !== "NONE";
+            const valueHasValue = state.selectedValueItemsType === "selected" || (state.selectedValueItems && state.selectedValueItems.length > 0);
+            if (conditionHasValue || !valueHasValue) {
+                state.valueAccodrionType = "CONDITION";
+            }            
         }
 
         this.state = state
@@ -591,7 +597,7 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
         }
 
         const info = this.getConditionInfo()
-
+        // no conditions -> do not render
         if (info.items.length === 0) {
             return null
         }
