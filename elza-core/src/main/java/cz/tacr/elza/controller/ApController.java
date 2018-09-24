@@ -81,6 +81,7 @@ import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.PartyTypeRepository;
 import cz.tacr.elza.repository.RelationRoleTypeRepository;
 import cz.tacr.elza.repository.ScopeRepository;
+import cz.tacr.elza.service.AccessPointMigrationService;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.FragmentService;
@@ -105,6 +106,9 @@ public class ApController {
 
     @Autowired
     private AccessPointService accessPointService;
+
+    @Autowired
+    private AccessPointMigrationService apMigrationService;
 
     @Autowired
     private ExternalSystemService externalSystemService;
@@ -323,6 +327,19 @@ public class ApController {
         Assert.notNull(accessPointId, "Identifikátor přístupového bodu musí být vyplněn");
         ApAccessPoint accessPoint = accessPointService.getAccessPointInternalWithLock(accessPointId);
         accessPointService.confirmAccessPoint(accessPoint);
+    }
+
+    /**
+     * Provede migraci přístupového bodu na strukturovaný.
+     *
+     * @param accessPointId identifikátor přístupového bodu
+     */
+    @Transactional
+    @RequestMapping(value = "/{accessPointId}/migrate", method = RequestMethod.POST)
+    public void migrateAccessPoint(@PathVariable final Integer accessPointId) {
+        Assert.notNull(accessPointId, "Identifikátor přístupového bodu musí být vyplněn");
+        ApAccessPoint accessPoint = accessPointService.getAccessPointInternalWithLock(accessPointId);
+        apMigrationService.migrateAccessPoint(accessPoint);
     }
 
     /**

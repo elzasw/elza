@@ -52,6 +52,7 @@ import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApName;
 import cz.tacr.elza.domain.ApNameItem;
+import cz.tacr.elza.domain.ApRuleSystem;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApType;
@@ -1138,6 +1139,46 @@ public class AccessPointService {
         apGeneratorService.generateAsyncAfterCommit(name.getAccessPoint().getAccessPointId(), change.getChangeId());
 
         return itemsCreated;
+    }
+
+    @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
+    public void migrateApItems(@AuthParam(type = AuthParam.Type.AP) final ApAccessPoint accessPoint,
+                               final List<ApUpdateItemVO> apItems,
+                               final Map<ApName, List<ApUpdateItemVO>> nameItemsMap) {
+        Validate.notNull(accessPoint, "Přístupový bod musí být vyplněn");
+        apDataService.validationMigrateAp(accessPoint);
+        Validate.notNull(apItems);
+        Validate.notNull(nameItemsMap);
+
+        Set<ApName> apNames = nameItemsMap.keySet();
+        for (ApName name : apNames) {
+            name.setState(ApState.INIT);
+        }
+        apNameRepository.save(apNames);
+
+        ApRuleSystem ruleSystem = accessPoint.getApType().getRuleSystem();
+        accessPoint.setRuleSystem(ruleSystem);
+        accessPoint.setState(ApState.INIT);
+        apRepository.save(accessPoint);
+
+        ApChange change = apDataService.createChange(ApChange.Type.AP_MIGRATE);
+
+        List<ApBodyItem> itemsDbAp = bodyItemRepository.findValidItemsByAccessPoint(accessPoint);
+        apItemService.changeItems(apItems, new ArrayList<>(itemsDbAp), change, (RulItemType it, RulItemSpec is, ApChange c, int objectId, int position)
+                -> createBodyItem(accessPoint, it, is, c, objectId, position));
+
+        List<ApNameItem> itemsDbNames = apNames.isEmpty() ? Collections.emptyList() : nameItemRepository.findValidItemsByNames(apNames);
+        Map<Integer, List<ApNameItem>> nameApNameItemMap = itemsDbNames.stream().collect(Collectors.groupingBy(ApNameItem::getNameId));
+
+        for (Map.Entry<ApName, List<ApUpdateItemVO>> entry : nameItemsMap.entrySet()) {
+            List<ApUpdateItemVO> items = entry.getValue();
+            ApName name = entry.getKey();
+            List<ApNameItem> itemsDb = nameApNameItemMap.computeIfAbsent(name.getNameId(), k -> new ArrayList<>());
+            apItemService.changeItems(items, new ArrayList<>(itemsDb), change, (RulItemType it, RulItemSpec is, ApChange c, int objectId, int position)
+                    -> createNameItem(name, it, is, c, objectId, position));
+        }
+
+        apGeneratorService.generateAsyncAfterCommit(accessPoint.getAccessPointId(), change.getChangeId());
     }
 
     /**

@@ -13,7 +13,7 @@ import RegistryList from '../../components/registry/RegistryList'
 import {addToastrWarning} from '../../components/shared/toastr/ToastrActions.jsx'
 import {Button} from 'react-bootstrap';
 import {indexById} from '../../stores/app/utils.jsx'
-import {registryMoveStart, registryMove, registryMoveCancel, registryDelete, registryDetailFetchIfNeeded, registryAdd, registryListInvalidate} from '../../actions/registry/registry.jsx'
+import {registryMoveStart, registryMove, registryMoveCancel, registryDelete, registryDetailFetchIfNeeded, registryAdd, registryListInvalidate, apMigrate} from '../../actions/registry/registry.jsx'
 import {modalDialogShow, modalDialogHide} from '../../actions/global/modalDialog.jsx'
 import {refRecordTypesFetchIfNeeded} from '../../actions/refTables/recordTypes.jsx'
 import {Shortcuts} from 'react-shortcuts';
@@ -59,6 +59,15 @@ class RegistryPage extends AbstractReactComponent {
         this.initData(nextProps);
     }
 
+    canMigrateAp = () => {
+        const {registryDetail: {id, data}, refTables} = this.props;
+        const apTypeIdMap = refTables.recordTypes.typeIdMap;
+
+        return id &&
+            data &&
+            apTypeIdMap[data.typeId].ruleSystemId !== null &&
+            data.ruleSystemId === null
+    };
 
     canMoveRegistry = () => {
         const {registryDetail: {id, data}, registryList:{filter:{registryParentId}, recordForMove}} = this.props;
@@ -172,6 +181,11 @@ class RegistryPage extends AbstractReactComponent {
         }
     };
 
+    handleApMigrate = () => {
+        const {registryDetail:{data:{id}}} = this.props;
+        this.props.dispatch(apMigrate(id));
+    };
+
     /* MCV-45365
     handleSetValidParty = () => {
         confirm(i18n('party.setValid.confirm')) && this.props.dispatch(setValidRegistry(this.props.registryDetail.data.id));
@@ -268,6 +282,17 @@ class RegistryPage extends AbstractReactComponent {
                     </Button>
                 );
             }*/
+        }
+
+        if (this.canMigrateAp()) {
+            if (userDetail.hasOne(perms.AP_SCOPE_WR_ALL, {type: perms.AP_SCOPE_WR, scopeId: data ? data.scopeId : null})) {
+                itemActions.push(
+                    <Button key='apMigrate' onClick={this.handleApMigrate}>
+                        <Icon glyph="fa-share"/>
+                        <div><span className="btnText">{i18n('registry.migrateAp')}</span></div>
+                    </Button>
+                );
+            }
         }
 
         if (this.canMoveRegistry()) {

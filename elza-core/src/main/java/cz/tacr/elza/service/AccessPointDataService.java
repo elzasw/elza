@@ -361,4 +361,18 @@ public class AccessPointDataService {
                 && Objects.equals(apName.getLanguageId(), languageId);
     }
 
+    /**
+     * Validace přístupového bodu pro migraci.
+     *
+     * @param accessPoint přístupový bod
+     */
+    public void validationMigrateAp(final ApAccessPoint accessPoint) {
+        validationNotDeleted(accessPoint);
+        validateStructureType(accessPoint.getApType());
+        if (accessPoint.getRuleSystem() != null) {
+            throw new BusinessException("Nelze migrovat přístupový bod", RegistryCode.CANT_MIGRATE_AP)
+                    .set("accessPointId", accessPoint.getAccessPointId())
+                    .set("uuid", accessPoint.getUuid());
+        }
+    }
 }

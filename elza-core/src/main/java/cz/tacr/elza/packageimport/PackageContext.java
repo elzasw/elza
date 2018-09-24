@@ -225,6 +225,7 @@ public class PackageContext {
 			case NAME_ITEMS:
 				return dirRules;
 			case TEXT_GENERATOR:
+			case MIGRATE:
 				return dirGroovies;
 			default:
 				throw new NotImplementedException("Rule type: " + apRule.getRuleType());

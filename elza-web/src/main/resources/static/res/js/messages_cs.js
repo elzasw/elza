@@ -185,6 +185,7 @@ var messages = {
     "exception.reg.FOREIGN_ENTITY_INVALID_SUBTYPE": "Navázaná entita musí mít typ rejstříku nebo podtyp, který je navázaný na roli entity",
     "exception.reg.FOREIGN_ENTITY_INVALID_SCOPE": "Navázaná entita musí mít stejnou třídu rejstříkového hesla jako osoba, ke které entitu navazujeme",
     "exception.reg.NOT_UNIQUE_FULL_NAME": "Celé jméno není unikátní v rámci třídy",
+    "exception.reg.CANT_MIGRATE_AP": "Nelze migrovat přístupový bod",
 
     "exception.usr.USER_DELETE_ERROR": "Osobu nelze smazat, kvůli navázaným uživatelům",
     "exception.usr.USER_NOT_FOUND": "Uživatel s ID={id} neexistuje",
@@ -850,6 +851,7 @@ var messages = {
     "registry.deleteRegistryQuestion": "Opravdu chcete smazat rejstříkové heslo?",
     "registry.deleteCoordinatesQuestion": "Opravdu chcete smazat tyto souřadnice?",
     "registry.moveRegistry": "Přesunout heslo",
+    "registry.migrateAp": "Převést na strukturované heslo",
     "registry.deleteRegistry": "Smazat heslo",
     "registry.registryUsage": "Použití hesla",
     "registry.registryUsageCount": "Počet nalezených výskytů",

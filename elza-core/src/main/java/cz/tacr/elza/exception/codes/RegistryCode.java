@@ -144,6 +144,10 @@ public enum RegistryCode implements ErrorCode {
     /**
      * Typ hesla musí mít vazbu na typ osoby.
      */
-    REGISTRY_HAS_NOT_TYPE_PARTY;
+    REGISTRY_HAS_NOT_TYPE_PARTY,
 
+    /**
+     * Nelze migrovat přístupový bod.
+     */
+    CANT_MIGRATE_AP;
 }

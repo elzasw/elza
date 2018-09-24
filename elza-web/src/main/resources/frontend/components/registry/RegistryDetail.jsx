@@ -164,11 +164,17 @@ class RegistryDetail extends AbstractReactComponent {
     };
 
     canEdit() {
-        const {userDetail, registryDetail: { data, fetched }} = this.props;
+        const {userDetail, registryDetail: { data, fetched }, apTypeIdMap} = this.props;
 
         // Pokud je načteno && není osoba
         if (!fetched || data.partyId) {
             return false
+        }
+
+        const type = apTypeIdMap[data.typeId];
+
+        if (type.ruleSystemId !== data.ruleSystemId) {
+            return false;
         }
 
         // Pokud nemá oprávnění, zakážeme editaci
@@ -523,7 +529,7 @@ class RegistryDetail extends AbstractReactComponent {
                         </div>
                     </CollapsablePanel>
                     <CollapsablePanel tabIndex={0} key={"DESCRIPTION"} isOpen={activeIndexes && activeIndexes["DESCRIPTION"] === true} header={<div>{i18n("accesspoint.detail.description")}{this.renderApItemsError(data)}</div>} eventKey={"DESCRIPTION"} onPin={this.handlePinToggle} onSelect={this.handleToggleActive}>
-                        {this.showForm() && this.renderActions()}
+                        {this.showForm() && !disableEdit && this.renderActions()}
                         <div className={"cp-15"}>
                             <div className="elements-container">
                                 <div className={"el-12"}>
@@ -542,7 +548,7 @@ class RegistryDetail extends AbstractReactComponent {
                                 subNodeForm={ap.form}
                                 closed={false}
                                 focus={null}
-                                readMode={false}
+                                readMode={disableEdit}
                             />}
                         </div>
                     </CollapsablePanel>

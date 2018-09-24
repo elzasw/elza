@@ -255,8 +255,14 @@ public class AccessPointGeneratorService {
 
         List<ApItem> apItems = new ArrayList<>(bodyItemRepository.findValidItemsByAccessPoint(accessPoint));
         List<ApName> apNames = apNameRepository.findByAccessPoint(accessPoint);
-        Map<Integer, ApName> apNameMap = apNames.stream().collect(Collectors.toMap(ApName::getNameId, Function.identity()));
-        List<ApNameItem> nameItems = nameItemRepository.findValidItemsByNames(apNames);
+
+        Map<Integer, ApName> apNameMap = apNames.isEmpty()
+                ? Collections.emptyMap()
+                : apNames.stream().collect(Collectors.toMap(ApName::getNameId, Function.identity()));
+
+        List<ApNameItem> nameItems = apNames.isEmpty()
+                ? Collections.emptyList()
+                : nameItemRepository.findValidItemsByNames(apNames);
 
         Map<Integer, List<ApItem>> nameItemsMap = createNameItemsMap(nameItems);
 

@@ -1007,6 +1007,7 @@ public class PackageService {
             case NAME_ITEMS:
                 return ZIP_DIR_RULES;
             case TEXT_GENERATOR:
+            case MIGRATE:
                 return ZIP_DIR_SCRIPTS;
             default:
                 throw new NotImplementedException("Rule type: " + rule.getRuleType());
