@@ -18,6 +18,11 @@ import cz.tacr.elza.domain.enumeration.StringLength;
 public class ArrDataUnitid extends ArrData {
 
     /**
+     * Name of attribute with value
+     */
+    static public String UNITID = "unitId";
+
+    /**
      * value of the unitid
      */
     // attribute has name unitid and not value 
