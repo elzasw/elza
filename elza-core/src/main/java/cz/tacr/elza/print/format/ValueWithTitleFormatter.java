@@ -93,10 +93,9 @@ public class ValueWithTitleFormatter implements FormatAction {
         ItemSpec spec = item.getSpecification();
         if (spec != null) {
             // get specification
-            String specName = spec.getShortcut();
-            if (StringUtils.isEmpty(specName)) {
-                specName = spec.getName();
-            }
+        	SpecTitleSource specTitleSource = ctx.getSpecTitleSource();
+        	String specName = specTitleSource.getValue(spec);
+
             // convert name
             if (titleLowerCase) {
                 specName = specName.toLowerCase();

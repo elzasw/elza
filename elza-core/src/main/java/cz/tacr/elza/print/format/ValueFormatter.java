@@ -42,10 +42,9 @@ public class ValueFormatter implements FormatAction {
         ItemSpec spec = item.getSpecification();
         if (spec != null) {
             // write value with specification
-            String specName = spec.getShortcut();
-            if (StringUtils.isEmpty(specName)) {
-                specName = spec.getName();
-            }
+        	SpecTitleSource specTitleSource = ctx.getSpecTitleSource();
+        	String specName = specTitleSource.getValue(spec).toLowerCase();
+
             ctx.appendSpecWithValue(specName, value);
         } else {
             // write value without specification

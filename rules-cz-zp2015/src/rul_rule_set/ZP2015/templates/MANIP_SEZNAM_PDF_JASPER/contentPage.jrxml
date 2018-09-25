@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.3.1.final using JasperReports Library version 6.3.1  -->
-<!-- 2018-09-21T20:35:16 -->
+<!-- Created with Jaspersoft Studio version 6.4.0.final using JasperReports Library version 6.4.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="contentPage" language="groovy" pageWidth="595" pageHeight="842" columnWidth="455" leftMargin="70" rightMargin="70" topMargin="70" bottomMargin="70" uuid="71cc9236-0f65-4a0a-bb66-bbfe841a66c1">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="net.sf.jasperreports.print.create.bookmarks" value="true"/>
@@ -390,7 +389,11 @@ $F{node}.getItemsWithSpec("ZP2015_LEVEL_TYPE","ZP2015_LEVEL_ROOT").size() > 0]]>
 		.addValueWithTitle("ZP2015_EXTRA_UNITS")
 		.setSpecFormat("", ": ", false)
 		.setItemSeparator("<br>")
-		.addValueWithTitle("ZP2015_DATE_OTHER")
+		.setTitleSeparator(" - ")
+		.setSpecTitleSource(cz.tacr.elza.print.format.SpecTitleSource.NAME)
+		.addValue("ZP2015_DATE_OTHER")
+      	.setTitleSeparator(": ")
+      	.setSpecTitleSource(cz.tacr.elza.print.format.SpecTitleSource.SHORTCUT)
 		.addValueWithTitle("ZP2015_ITEM_TITLE")
 		.addValueWithTitle("ZP2015_PART")
 		.addValue("ZP2015_ENTITY_ROLE")
