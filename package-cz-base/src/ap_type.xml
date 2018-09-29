@@ -1,6 +1,6 @@
 <ap-types>
     <ap-type code="PARTY_GROUP">
-        <name>Rejstřík korporativní</name>
+        <name>Korporace</name>
         <hierarchical>false</hierarchical>
         <read-only>true</read-only>
     </ap-type>
@@ -64,7 +64,7 @@
         <read-only>false</read-only>
     </ap-type>
     <ap-type code="PERSON">
-        <name>Rejstřík osobní</name>
+        <name>Osoba, bytost, zvíře</name>
         <hierarchical>false</hierarchical>
         <read-only>true</read-only>
     </ap-type>
@@ -104,7 +104,7 @@
         <read-only>false</read-only>
     </ap-type>
     <ap-type code="GEO">
-        <name>Rejstřík zeměpisný</name>
+        <name>Geografický objekt</name>
         <hierarchical>false</hierarchical>
         <read-only>true</read-only>
     </ap-type>
@@ -149,7 +149,7 @@
         <read-only>false</read-only>
     </ap-type>
     <ap-type code="EVENT">
-        <name>Rejstřík událostí</name>
+        <name>Událost</name>
         <hierarchical>false</hierarchical>
         <read-only>true</read-only>
     </ap-type>
@@ -173,7 +173,7 @@
         <read-only>false</read-only>
     </ap-type>
     <ap-type code="ARTWORK">
-        <name>Rejstřík děl</name>
+        <name>Dílo, výtvor</name>
         <hierarchical>false</hierarchical>
         <read-only>true</read-only>
     </ap-type>
@@ -218,7 +218,7 @@
         <read-only>false</read-only>
     </ap-type>
     <ap-type code="TERM">
-        <name>Rejstřík věcný</name>
+        <name>Pojem</name>
         <hierarchical>false</hierarchical>
         <read-only>true</read-only>
     </ap-type>
