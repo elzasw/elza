@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
@@ -43,6 +44,7 @@ import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
+import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.security.AuthorizationRequest;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.UserService;
@@ -60,6 +62,8 @@ public class DEExportService {
 
     private final ResourcePathResolver resourcePathResolver;
 
+    private final ScopeRepository scopeRepository;
+
     @Autowired
     public DEExportService(EntityManager em,
             StaticDataService staticDataService,
@@ -68,11 +72,13 @@ public class DEExportService {
             LevelRepository levelRepository,
             NodeCacheService nodeCacheService,
             ApAccessPointRepository apRepository,
-            ResourcePathResolver resourcePathResolver) {
+            ResourcePathResolver resourcePathResolver,
+            ScopeRepository scopeRepository) {
         this.initHelper = new ExportInitHelper(em, userService, levelRepository, nodeCacheService, apRepository,
                 fundVersionRepository);
         this.staticDataService = staticDataService;
         this.resourcePathResolver = resourcePathResolver;
+        this.scopeRepository = scopeRepository;
     }
 
     public List<String> getTransformationNames() throws IOException {
@@ -149,23 +155,7 @@ public class DEExportService {
             // check permissions for each exported part
             if (CollectionUtils.isNotEmpty(sections)) {
                 for (FundSections fs : sections) {
-                    int versionId = fs.getFundVersionId();
-                    ArrFundVersion fundVersion = initHelper.getFundVersionRepository().getOneCheckExist(versionId);
-                    
-                    AuthorizationRequest exportAuthReq = AuthorizationRequest
-                            .hasPermission(UsrPermission.Permission.FUND_EXPORT_ALL)
-                            .or(UsrPermission.Permission.FUND_EXPORT, fundVersion);
-                    AuthorizationRequest readAuthReq = AuthorizationRequest
-                            .hasPermission(UsrPermission.Permission.FUND_RD_ALL)
-                            .or(UsrPermission.Permission.FUND_RD, fundVersion);
-                    if(!exportAuthReq.matches(userDetail)||
-                            !readAuthReq.matches(userDetail)) {
-                        // throw exception - authorization not granted
-                        UsrPermission.Permission deniedPermissions[] = {UsrPermission.Permission.FUND_EXPORT_ALL, UsrPermission.Permission.FUND_RD_ALL};
-                        throw new AccessDeniedException("Missing permissions: " + Arrays.toString(deniedPermissions),
-                                deniedPermissions);                        
-                    }
-                        
+                    checkExportPermission(fs, userDetail);
                 }
             }
         }
@@ -186,5 +176,44 @@ public class DEExportService {
             exportData(os, new XmlExportBuilder(), params);
             response.flushBuffer();
         }
+    }
+
+    /**
+     * Check permissions to export give FundSections
+     * 
+     * @param fs
+     *            fund section
+     * @param userDetail
+     */
+    private void checkExportPermission(FundSections fs, UserDetail userDetail) {
+        int versionId = fs.getFundVersionId();
+        ArrFundVersion fundVersion = initHelper.getFundVersionRepository().getOneCheckExist(versionId);
+
+        AuthorizationRequest exportAuthReq = AuthorizationRequest
+                .hasPermission(UsrPermission.Permission.FUND_EXPORT_ALL)
+                .or(UsrPermission.Permission.FUND_EXPORT, fundVersion);
+        if (!exportAuthReq.matches(userDetail)) {
+            // throw exception - authorization not granted
+            UsrPermission.Permission deniedPermissions[] = { UsrPermission.Permission.FUND_EXPORT_ALL,
+                    UsrPermission.Permission.FUND_EXPORT };
+            throw new AccessDeniedException("Missing permissions: " + Arrays.toString(deniedPermissions),
+                    deniedPermissions);
+        }
+
+        Set<Integer> scopeIds = this.scopeRepository.findIdsByFundId(fundVersion.getFundVersionId());
+        scopeIds.forEach(scopeId -> {
+            // test permissions for scope id
+            AuthorizationRequest authReq = AuthorizationRequest
+                    .hasPermission(UsrPermission.Permission.AP_SCOPE_RD_ALL)
+                    .or(UsrPermission.Permission.AP_SCOPE_RD, scopeId);
+            if (!authReq.matches(userDetail)) {
+                // throw exception - authorization not granted
+                UsrPermission.Permission deniedPermissions[] = { UsrPermission.Permission.AP_SCOPE_RD_ALL,
+                        UsrPermission.Permission.AP_SCOPE_RD };
+                throw new AccessDeniedException(
+                        "Missing permissions: " + Arrays.toString(deniedPermissions),
+                        deniedPermissions);
+            }
+        });
     }
 }
