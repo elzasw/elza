@@ -206,4 +206,23 @@ public class UserPermission {
         }
         return false;
     }
+
+    /**
+     * Check scope specific permission
+     * 
+     * @param perm
+     * @param scopeId
+     * @return
+     */
+    public boolean hasScopePermission(Permission perm, Integer scopeId) {
+        Validate.isTrue(perm.getType() == PermissionType.SCOPE);
+
+        if (this.permission != perm) {
+            return false;
+        }
+        if (!scopeIds.contains(scopeId)) {
+            return false;
+        }
+        return true;
+    }
 }
