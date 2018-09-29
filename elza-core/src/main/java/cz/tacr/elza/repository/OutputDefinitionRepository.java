@@ -60,4 +60,9 @@ public interface OutputDefinitionRepository extends JpaRepository<ArrOutputDefin
     boolean existsByName(@Param("name") String name);
 
     void deleteByFund(ArrFund fund);
+
+    @Modifying
+    @Query("UPDATE arr_output_definition d SET d.template = :value WHERE d.template = :key")
+    void updateTemplateByTemplate(@Param(value = "key") RulTemplate key,
+                                  @Param(value = "value") RulTemplate value);
 }
