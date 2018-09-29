@@ -15,13 +15,13 @@ import java.util.List;
 public class Templates {
 
     @XmlElement(name = "template", required = true)
-    private List<Template> templates;
+    private List<TemplateXml> templates;
 
-    public List<Template> getTemplates() {
+    public List<TemplateXml> getTemplates() {
         return templates;
     }
 
-    public void setTemplates(final List<Template> templates) {
+    public void setTemplates(final List<TemplateXml> templates) {
         this.templates = templates;
     }
 }

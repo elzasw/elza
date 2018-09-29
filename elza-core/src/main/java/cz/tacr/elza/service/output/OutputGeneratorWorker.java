@@ -105,6 +105,8 @@ public class OutputGeneratorWorker implements Runnable {
         generator.init(params);
         generator.generate();
 
+        // reset error
+        definition.setError(null);
         OutputState state = resolveEndState(params);
         definition.setState(state); // saved by commit
 
