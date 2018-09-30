@@ -859,9 +859,9 @@ var messages = {
     "registry.list.itemsVisibleCountFrom": "Zobrazeno {0} z {1}, zpřesněte vyhledávací filtr",
     "registry.list.noRecord": "Zadanému filtru neodpovídají žádná data",
 
-    "registry.add.type": "Typ přístupového bodu",
+    "registry.add.type": "Třída přístupového bodu",
     "registry.update.title": "Změna přístupového bodu",
-    "registry.update.type": "Typ přístupového bodu",
+    "registry.update.type": "Třída přístupového bodu",
     "registry.scopeClass": "Oblast",
     "registry.addRegistryVariant": "Přidání varianty jména",
     "registry.placePath": "Cesta k umístění: ",
