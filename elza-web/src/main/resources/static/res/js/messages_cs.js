@@ -1174,7 +1174,7 @@ var messages = {
     "extImport.attType": "Atribut",
     "extImport.value": "Hodnota",
     "extImport.source": "Zdroj",
-    "extImport.noResults": "Nebyli nalezeny žádné výsledky",
+    "extImport.noResults": "Nebyly nalezeny žádné záznamy",
     "extImport.results": "Výsledky",
     "extImport.resultDetail": "Detail výsledku",
     "extImport.id": "ID",
