@@ -8,11 +8,35 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-import cz.tacr.elza.domain.*;
-import cz.tacr.elza.repository.*;
 import org.apache.commons.lang3.Validate;
 
+import cz.tacr.elza.domain.ApExternalIdType;
 import cz.tacr.elza.domain.ApType;
+import cz.tacr.elza.domain.ParComplementType;
+import cz.tacr.elza.domain.ParPartyNameFormType;
+import cz.tacr.elza.domain.ParRegistryRole;
+import cz.tacr.elza.domain.ParRelationType;
+import cz.tacr.elza.domain.ParRelationTypeRoleType;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulPackage;
+import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.RulStructuredType;
+import cz.tacr.elza.domain.SysLanguage;
+import cz.tacr.elza.repository.ApExternalIdTypeRepository;
+import cz.tacr.elza.repository.ApTypeRepository;
+import cz.tacr.elza.repository.ComplementTypeRepository;
+import cz.tacr.elza.repository.ItemSpecRepository;
+import cz.tacr.elza.repository.ItemTypeRepository;
+import cz.tacr.elza.repository.PackageRepository;
+import cz.tacr.elza.repository.PartyNameFormTypeRepository;
+import cz.tacr.elza.repository.PartyTypeComplementTypeRepository;
+import cz.tacr.elza.repository.RegistryRoleRepository;
+import cz.tacr.elza.repository.RelationTypeRepository;
+import cz.tacr.elza.repository.RelationTypeRoleTypeRepository;
+import cz.tacr.elza.repository.RuleSetRepository;
+import cz.tacr.elza.repository.StructuredTypeRepository;
+import cz.tacr.elza.repository.SysLanguageRepository;
 
 public class StaticDataProvider {
 
@@ -216,6 +240,11 @@ public class StaticDataProvider {
         return itemTypeIdMap.get(id);
     }
 
+    /**
+     * 
+     * @param code
+     * @return Return null if item type does not exists
+     */
     public ItemType getItemTypeByCode(String code) {
         Validate.notEmpty(code);
         return itemTypeCodeMap.get(code);

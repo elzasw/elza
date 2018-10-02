@@ -33,8 +33,8 @@ public class ItemTypeLiteVO {
 
     /**
      * stav počítanýho atributu
-     * - 0 - vypnutý
-     * - 1 - zapnutý
+     * - 0 - vypnutý (použije se vypočtená hodnota)
+     * - 1 - zapnutý (lze zadat hodnotu manuálně)
      *
      * Číslené z důvodu optimalizace
      */

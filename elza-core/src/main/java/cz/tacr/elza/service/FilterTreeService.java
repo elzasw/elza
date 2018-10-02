@@ -9,13 +9,11 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 
 import javax.annotation.Nullable;
 
-import cz.tacr.elza.core.data.StaticDataProvider;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +34,7 @@ import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.controller.vo.filter.SearchParam;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.core.data.ItemType;
+import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -43,7 +42,6 @@ import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.vo.DescItemValues;
-import cz.tacr.elza.domain.vo.TitleValues;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
@@ -51,6 +49,7 @@ import cz.tacr.elza.filter.DescItemTypeFilter;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.service.vo.TitleItemsByType;
 
 
 /**
@@ -177,7 +176,7 @@ public class FilterTreeService {
         }
 
         ArrayList<Integer> subIds = FilterTools.getSublist(page, pageSize, filteredIds);
-        Map<Integer, Map<Integer, TitleValues>> nodeValuesMap = Collections.emptyMap();
+        Map<Integer, TitleItemsByType> nodeValuesMap = Collections.emptyMap();
         if (!subIds.isEmpty() && !itemTypes.isEmpty()) {
             nodeValuesMap = descriptionItemService.createNodeValuesByItemTypeIdMap(subIds,
                     itemTypes,
@@ -300,7 +299,7 @@ public class FilterTreeService {
     private List<FilterNode> createResult(final ArrFundVersion version,
                                           final List<Integer> filteredIds,
                                           final Map<Integer, TreeNode> versionCache,
-                                          final Map<Integer, Map<Integer, TitleValues>> nodeValuesMap) {
+                                          final Map<Integer, TitleItemsByType> nodeValuesMap) {
 
         List<FilterNode> result = new ArrayList<>(filteredIds.size());
 
@@ -329,13 +328,12 @@ public class FilterTreeService {
         for (Integer filteredId : filteredIds) {
 
             //vytvoření mapy hodnot podle typu atributu
-            Map<Integer, TitleValues> titleValuesMap = nodeValuesMap.get(filteredId);
+            TitleItemsByType titleValuesMap = nodeValuesMap.get(filteredId);
+
+            // prepare descItemValues
             Map<Integer, DescItemValues> descItemValuesMap = null;
             if (titleValuesMap != null) {
-                descItemValuesMap = new HashMap<>(titleValuesMap.size());
-                for (Entry<Integer, TitleValues> entry : titleValuesMap.entrySet()) {
-                    descItemValuesMap.put(entry.getKey(), entry.getValue().toDescItemValues());
-                }
+                descItemValuesMap = titleValuesMap.toDescItemValues();
             }
 
             //najdeme objekt uzlu a jeho rodiče, abychom získali jejich verzi
