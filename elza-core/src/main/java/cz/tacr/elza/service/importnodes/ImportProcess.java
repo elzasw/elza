@@ -25,7 +25,6 @@ import org.springframework.stereotype.Component;
 
 import com.vividsolutions.jts.geom.Geometry;
 
-import cz.tacr.elza.common.GeometryConvertor;
 import cz.tacr.elza.core.data.CalendarType;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
@@ -394,8 +393,10 @@ public class ImportProcess {
             ((ArrDataJsonTable) data).setValue(((ItemJsonTable) item).getValue());
         } else if (item instanceof ItemCoordinates) {
             data = new ArrDataCoordinates();
-            Geometry geo = GeometryConvertor.convert(((ItemCoordinates) item).getGeometry());
-            ((ArrDataCoordinates) data).setValue(geo);
+            Geometry geo = ((ItemCoordinates) item).getGeometry();
+            // clone value
+            Geometry geoClone = (Geometry) geo.clone();
+            ((ArrDataCoordinates) data).setValue(geoClone);
         } else if (item instanceof ItemFileRef) {
             data = new ArrDataFileRef();
             ArrFile file = fundFileRepository.findOne(((ItemFileRef) item).getFileId());

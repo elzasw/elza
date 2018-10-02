@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.google.common.base.Objects;
+import com.vividsolutions.jts.geom.Geometry;
 
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ArrData;
@@ -564,15 +565,15 @@ public class ImportFromFund implements ImportSource {
 
     private class ItemCoordinatesRefImpl  extends ItemImpl implements ItemCoordinates {
 
-        private final String geometry;
+        private final Geometry geometry;
 
         public ItemCoordinatesRefImpl(final ArrDescItem item, final ArrDataCoordinates itemData) {
             super(item);
-            geometry = itemData.toString();
+            geometry = itemData.getValue();
         }
 
         @Override
-        public String getGeometry() {
+        public Geometry getGeometry() {
             return geometry;
         }
     }
