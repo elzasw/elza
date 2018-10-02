@@ -26,13 +26,13 @@ import javax.persistence.TemporalType;
 import javax.persistence.TypedQuery;
 import javax.validation.constraints.NotNull;
 
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
 
 import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
 import cz.tacr.elza.config.ConfigView;
@@ -125,7 +125,7 @@ public class RevertingChangesService {
                                      final int maxSize,
                                      final int offset,
                                      @Nullable final ArrChange fromChange) {
-        Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
+        Validate.notNull(fundVersion, "Verze AS musí být vyplněna");
 
         Integer fundId = fundVersion.getFund().getFundId();
         Integer nodeId = node == null ? null : node.getNodeId();
@@ -202,9 +202,9 @@ public class RevertingChangesService {
                                            final int maxSize,
                                            @NotNull final LocalDateTime fromDate,
                                            @NotNull final ArrChange fromChange) {
-        Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
-        Assert.notNull(fromDate, "Datum od musí být vyplněn");
-        Assert.notNull(fromChange, "Změna musí být vyplněna");
+        Validate.notNull(fundVersion, "Verze AS musí být vyplněna");
+        Validate.notNull(fromDate, "Datum od musí být vyplněn");
+        Validate.notNull(fromChange, "Změna musí být vyplněna");
 
         Integer fundId = fundVersion.getFund().getFundId();
         Integer nodeId = node == null ? null : node.getNodeId();
@@ -239,9 +239,9 @@ public class RevertingChangesService {
                               @Nullable final ArrNode node,
                               @NotNull final ArrChange fromChange,
                               @NotNull final ArrChange toChange) {
-        Assert.notNull(fund, "AS musí být vyplněn");
-        Assert.notNull(fromChange, "Změna od musí být vyplněna");
-        Assert.notNull(toChange, "Změna do musí být vyplněna");
+        Validate.notNull(fund, "AS musí být vyplněn");
+        Validate.notNull(fromChange, "Změna od musí být vyplněna");
+        Validate.notNull(toChange, "Změna do musí být vyplněna");
 
         Integer fundId = fund.getFundId();
         Integer nodeId = node == null ? null : node.getNodeId();
@@ -979,7 +979,7 @@ public class RevertingChangesService {
             } else {
                 ViewTitles viewTitles = configView.getViewTitles(ruleSetId, fundId);
                 String defaultTitle = viewTitles.getDefaultTitle();
-                defaultTitle = org.apache.commons.lang.StringUtils.isEmpty(defaultTitle) ? "JP <" + entry.getValue() + ">" : defaultTitle;
+                defaultTitle = StringUtils.isEmpty(defaultTitle) ? "JP <" + entry.getValue() + ">" : defaultTitle;
                 result.put(entry, defaultTitle);
             }
         }
@@ -1031,7 +1031,7 @@ public class RevertingChangesService {
      */
     private String createHqlSubNodeQuery(@NotNull final ArrFund fund,
                                          @Nullable final ArrNode node) {
-        Assert.notNull(fund, "AS musí být vyplněn");
+        Validate.notNull(fund, "AS musí být vyplněn");
         String query = "SELECT n FROM arr_node n WHERE fund = :fund";
         if (node != null) {
             query += " AND n = :node";
@@ -1048,7 +1048,7 @@ public class RevertingChangesService {
      */
     private String createSubNodeQuery(@NotNull final Integer fundId,
                                       @Nullable final Integer nodeId) {
-        Assert.notNull(fundId, "Identifikátor AS musí být vyplněn");
+        Validate.notNull(fundId, "Identifikátor AS musí být vyplněn");
         String query = "SELECT node_id FROM arr_node WHERE fund_id = :fundId";
         if (nodeId != null) {
             query += " AND node_id = :nodeId";
