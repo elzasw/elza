@@ -5,16 +5,16 @@ elza:
     user: <dbUser>
     pass: <dbPass>
 
-  attachment:
+#  attachment:
     # Konfigurace mimetypu pro editaci souboru
-    mimeDefs:
-      - mimeType: text/plain
-        editable: true
+#    mimeDefs:
+#      - mimeType: text/plain
+#        editable: true
         # Generatory pro jednotlive typy souboru
-        generators:
-         - outputMimeType: application/pdf
-           command: txt2pdf 
-           outputFileName: result.pdf
+#        generators:
+#         - outputMimeType: application/pdf
+#           command: txt2pdf 
+#           outputFileName: result.pdf
 
 spring:    
   jpa:
