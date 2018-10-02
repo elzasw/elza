@@ -339,7 +339,10 @@ class PartyDetail extends AbstractReactComponent {
                         </div>
                         <div>
                             <div className="description">{this.getPartyId(party)}</div>
-                            <div>{dateTimeToString(new Date(party.accessPoint.lastUpdate))}</div>
+                            {
+                                // tato hodnota prozatim neni dostupna
+                                // <div>{dateTimeToString(new Date(party.accessPoint.lastUpdate))}</div>
+                            }
                         </div>
                     </div>
                 </div>
