@@ -36,7 +36,7 @@ const FileListBox = class FileListBox extends AbstractReactComponent {
 
     renderItemContent(props) {
         const {item} = props;
-        const {onDelete, onDownloadPdf, supportDownloadPdf, onReplace, onEdit, supportEdit, onDownload, onInfo} = this.props;
+        const {onDelete, onDownloadPdf, supportDownloadPdf, onReplace, onEdit, supportEdit, onDownload, onInfo, readMode} = this.props;
         let iconName;
         switch (item.mimeType) {
             case 'application/pdf':
@@ -63,11 +63,11 @@ const FileListBox = class FileListBox extends AbstractReactComponent {
                 </div>
                 <div className="actions">
                     {onInfo && <Icon glyph='fa-info-circle' onClick={() => onInfo(item.id)} />}
-                    {showEdit && <Icon title={i18n("global.action.update")} glyph='fa-edit' onClick={() => onEdit(item.id)} />}
+                    {showEdit && !readMode && <Icon title={i18n("global.action.update")} glyph='fa-edit' onClick={() => onEdit(item.id)} />}
                     {showDownloadPdf && <Icon title={i18n("global.action.download")} glyph='fa-file-pdf-o' onClick={() => onDownloadPdf(item.id)} />}
                     {onDownload && <Icon title={i18n("global.action.download")} glyph='fa-download' onClick={() => onDownload(item.id)} />}
-                    {onReplace && <Icon title={i18n("global.action.replace")} glyph='fa-exchange' onClick={() => onReplace(item.id)} />}
-                    {onDelete && <Icon title={i18n("global.action.delete")} glyph='fa-trash' onClick={() => onDelete(item.id)} />}
+                    {onReplace && !readMode && <Icon title={i18n("global.action.replace")} glyph='fa-exchange' onClick={() => onReplace(item.id)} />}
+                    {onDelete && !readMode && <Icon title={i18n("global.action.delete")} glyph='fa-trash' onClick={() => onDelete(item.id)} />}
                 </div>
             </div>
         )
@@ -155,6 +155,7 @@ FileListBox.propsTypes = {
     },
     onSearch: React.PropTypes.func,
     onChange: React.PropTypes.func,
+    readMode: React.PropTypes.bool,
     selectionType: React.PropTypes.string
 };
 

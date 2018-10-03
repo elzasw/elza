@@ -172,7 +172,7 @@ var messages = {
     "exception.reg.SCOPE_CODE_CANT_CHANGE": "Kód oblasti nelze změnit",
     "exception.reg.SCOPE_EXISTS": "Kod oblasti entit již existuje",
     "exception.reg.USING_SCOPE_CANT_DELETE": "Nelze smazat oblast, která obsahuje přístupový bod",
-    
+
     "exception.sobj.NO_VALID_ITEMS": "Bez vyplnění alespoň některých prvků popisu nelze položku přidat. Vyplňte příslušné prvky popisu.",
 
     "exception.usr.USER_DELETE_ERROR": "Osobu nelze smazat, kvůli navázaným uživatelům",
@@ -448,6 +448,7 @@ var messages = {
     "arr.fund.files.action.add.fromFile": "Ze souboru",
     "arr.fund.files.action.add.editable": "Ručně psaný text",
     "arr.fund.files.action.delete": "Odebrat přílohu",
+    "arr.fund.files.noMimetypeConfig": "V konfiguraci aplikace není definován žádný upravitelný formát souboru. Pro ručně psaný text je nutné nastavit alespoň jeden upravitelný formát. Administrátor může provést příslušné nastavení aplikace",
 
     "arr.fund.template.title": "Správa šablon",
     "arr.fund.template.empty": "Nejsou definovány žádné šablony",
