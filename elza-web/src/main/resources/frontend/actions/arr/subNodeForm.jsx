@@ -276,12 +276,12 @@ class ItemFormActions {
         }
 
         if (this.descItemNeedStore(descItem, refType) || overrideDescItem) {
-            dispatch(statusSaving());
 
-            // Umělé navýšení verze o 1 - aby mohla pozitivně projít případná další update operace
-            dispatch(increaseNodeVersion(versionId, parentId, parentVersionId));
             // Reálné provedení operace
             if (typeof descItem.id !== 'undefined') {
+                dispatch(statusSaving());
+                // Umělé navýšení verze o 1 - aby mohla pozitivně projít případná další update operace
+                dispatch(increaseNodeVersion(versionId, parentId, parentVersionId));
                 this._callUpdateDescItem(versionId, parentVersionId, parentId, descItem)
                     .then(json => {
                         if(this.area === OutputFormActions.AREA || this.area === StructureFormActions.AREA){
@@ -292,6 +292,9 @@ class ItemFormActions {
                     })
             } else {
                 if (!loc.descItem.saving) {
+                    dispatch(statusSaving());
+                    // Umělé navýšení verze o 1 - aby mohla pozitivně projít případná další update operace
+                    dispatch(increaseNodeVersion(versionId, parentId, parentVersionId));
                     dispatch(this._fundSubNodeFormDescItemCreate(versionId, routingKey, valueLocation));
                     this._callCreateDescItem(versionId, subNodeForm.data.parent.id, subNodeForm.data.parent.version, loc.descItemType.id, descItem)
                         .then(json => {
