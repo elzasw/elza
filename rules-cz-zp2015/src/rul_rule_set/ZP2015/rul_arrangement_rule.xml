@@ -1,17 +1,17 @@
 <arrangement-rules>
-    <arrangement-rule filename="ZP2015_Validation.drl">
+    <arrangement-rule filename="Validation.drl">
         <rule-type>CONFORMITY_INFO</rule-type>
         <priority>100</priority>
     </arrangement-rule>
-    <arrangement-rule filename="ZP2015_NewLevel.drl">
+    <arrangement-rule filename="NewLevel.drl">
         <rule-type>NEW_LEVEL</rule-type>
         <priority>100</priority>
     </arrangement-rule>
-    <arrangement-rule filename="ZP2015_ChangeImpact.drl">
+    <arrangement-rule filename="ChangeImpact.drl">
         <rule-type>CONFORMITY_IMPACT</rule-type>
         <priority>100</priority>
     </arrangement-rule>
-    <arrangement-rule filename="ZP2015_AvailableItems.drl">
+    <arrangement-rule filename="AvailableItems.drl">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </arrangement-rule>
