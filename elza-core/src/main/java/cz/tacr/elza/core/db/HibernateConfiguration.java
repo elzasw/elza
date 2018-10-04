@@ -9,11 +9,13 @@ import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfigurat
 import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
 import org.springframework.boot.autoconfigure.transaction.TransactionManagerCustomizers;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.transaction.jta.JtaTransactionManager;
 
 import cz.tacr.elza.core.data.StaticDataTransactionInterceptor;
 
 @Configuration
+@DependsOn("appContext")
 public class HibernateConfiguration extends HibernateJpaAutoConfiguration {
 
     public HibernateConfiguration(DataSource dataSource,
