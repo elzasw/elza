@@ -3,17 +3,20 @@ import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {AbstractReactComponent, Icon, i18n, FileListBox, StoreHorizontalLoader, FormInput} from 'components/shared';
 import AddFileForm from './AddFileForm'
-import {Button, MenuItem} from 'react-bootstrap'
+import {Button, DropdownButton, MenuItem} from 'react-bootstrap'
 import {fetchFundFilesIfNeeded, fundFilesFilterByText, fundFilesCreate, fundFilesEditEditable, fundFilesDelete, fundFilesReplace, fundFilesUpdate} from 'actions/arr/fundFiles.jsx'
 import {modalDialogShow,modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {UrlFactory} from 'actions/index.jsx';
 
 import './FundFiles.less'
 import {downloadFile} from "../../actions/global/download";
-import FixedDropDownButton from "../shared/fixed-dropdown-button/FixedDropDownButton";
 import EditableFileForm from "./EditableFileForm";
 import {WebApi} from "../../actions/WebApi";
 import {showAsyncWaiting} from "../../actions/global/modalDialog";
+import TooltipTrigger from "../shared/tooltip/TooltipTrigger";
+
+import * as dms from "../../actions/global/dms";
+import storeFromArea from "../../shared/utils/storeFromArea";
 
 let _ReplaceId = null;
 
@@ -29,6 +32,8 @@ class FundFiles extends AbstractReactComponent {
         filterText: React.PropTypes.string.isRequired,
         fetched: React.PropTypes.bool.isRequired,
         fundFiles: React.PropTypes.object.isRequired,   // store fund files
+        dms: React.PropTypes.object.isRequired,
+        readMode: React.PropTypes.bool,
     };
 
     state = {
@@ -45,7 +50,8 @@ class FundFiles extends AbstractReactComponent {
 
     fetchIfNeeded = (props = this.props) => {
         const {versionId, fundId} = props;
-        this.dispatch(fetchFundFilesIfNeeded(versionId, fundId));
+        this.props.dispatch(fetchFundFilesIfNeeded(versionId, fundId));
+        this.props.dispatch(dms.mimeTypesFetchIfNeeded());
     };
 
     handleTextSearch = (text) => {
@@ -64,7 +70,7 @@ class FundFiles extends AbstractReactComponent {
     handleDownloadByMimeType = (id, outputMimeType) => {
         const {fundId} = this.props;
         // window.open(`/api/dms/fund/${fundId}/${id}/generated?mimeType=${outputMimeType}`);
-        this.dispatch(downloadFile("arr-generated-file-" + id, `/api/dms/fund/${fundId}/${id}/generated?mimeType=${outputMimeType}`));
+        this.dispatch(downloadFile(UrlFactory.downloadGeneratedDmsFile(id, fundId, outputMimeType)));
     };
 
     handleDelete = (id) => {
@@ -77,7 +83,9 @@ class FundFiles extends AbstractReactComponent {
     };
 
     handleCreateEditable = () => {
-        this.dispatch(modalDialogShow(this, i18n('dms.file.title.editable.add'), <EditableFileForm create onSubmitForm={this.handleCreateEditableSubmit} />));
+        if(this.hasMimeTypes()){
+            this.dispatch(modalDialogShow(this, i18n('dms.file.title.editable.add'), <EditableFileForm create onSubmitForm={this.handleCreateEditableSubmit} />));
+        }
     };
 
     handleCreateFromFileSubmit = (data) => {
@@ -128,18 +136,38 @@ class FundFiles extends AbstractReactComponent {
         }
     };
 
+    hasMimeTypes = () => {
+        const {dms} = this.props;
+        return dms.fetched && dms.rows.length > 0;
+    }
+
     render() {
-        const {fundFiles} = this.props;
+        const {fundFiles, readMode, dms} = this.props;
 
         return <div className='fund-files'>
             <StoreHorizontalLoader store={fundFiles}/>
 
-            {fundFiles.fetched && <div className="actions-container">
+            {!readMode && fundFiles.fetched && <div className="actions-container">
                 <div className="actions">
-                    <FixedDropDownButton id='dropdown-add-file' noCaret title={<div><Icon glyph='fa-plus' /> {i18n('arr.fund.files.action.add')}</div>}>
-                        <MenuItem onClick={this.handleCreateFromFile}>{i18n("arr.fund.files.action.add.fromFile")}</MenuItem>
-                        <MenuItem onClick={this.handleCreateEditable}>{i18n("arr.fund.files.action.add.editable")}</MenuItem>
-                    </FixedDropDownButton>
+                    <DropdownButton bsStyle="default" id='dropdown-add-file' noCaret title={<Icon glyph='fa-plus-circle' />}>
+                        <MenuItem onClick={this.handleCreateFromFile}>
+                            {i18n("arr.fund.files.action.add.fromFile")}
+                        </MenuItem>
+                        <MenuItem disabled={!this.hasMimeTypes()} onClick={this.handleCreateEditable}>
+                            {!this.hasMimeTypes() ?
+                             <TooltipTrigger
+                                 key="info"
+                                 content={<div style={{maxWidth: "300px"}}>{ i18n("arr.fund.files.noMimetypeConfig") }</div>}
+                                 placement="left"
+                                 showDelay={1}
+                                 holdOnHover
+                             >
+                                 {i18n("arr.fund.files.action.add.editable")}
+                             </TooltipTrigger> :
+                             i18n("arr.fund.files.action.add.editable")
+                            }
+                        </MenuItem>
+                    </DropdownButton>
                 </div>
             </div>}
             <FormInput className="hidden" type="file" ref='uploadInput' onChange={this.handleReplaceSubmit} />
@@ -156,10 +184,17 @@ class FundFiles extends AbstractReactComponent {
                 onEdit={this.handleEdit}
                 supportEdit={(id, item) => item.editable}
                 onDownloadPdf={(id) => this.handleDownloadByMimeType(id, "application/pdf")}
+                readMode={ readMode }
                 supportDownloadPdf={(id, item) => item.generatePdf}
             />}
         </div>
     }
 }
 
-export default connect(null, null, null, { withRef: true })(FundFiles);
+function mapStateToProps(state) {
+    return {
+        dms: storeFromArea(state, dms.MIME_TYPES_AREA)
+    };
+}
+
+export default connect(mapStateToProps, null, null, { withRef: true })(FundFiles);
