@@ -8,7 +8,6 @@ export {default as ListBox2} from 'components/shared/listbox/ListBox2.jsx';
 export {default as LazyListBox} from 'components/shared/listbox/LazyListBox.jsx';
 export {default as FilterableListBox} from 'components/shared/listbox/FilterableListBox.jsx';
 export {default as FileListBox} from 'components/shared/listbox/FileListBox.jsx';
-export {default as FixedDropDownButton} from 'components/shared/fixed-dropdown-button/FixedDropDownButton.jsx';
 export {default as NoFocusButton} from 'components/shared/button/NoFocusButton.jsx';
 export * as Toastr from 'components/shared/toastr/index.jsx';
 export {default as RibbonMenu} from 'components/shared/ribbon-menu/RibbonMenu.jsx';

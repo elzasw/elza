@@ -10,7 +10,6 @@ import {UrlFactory} from 'actions/index.jsx';
 
 import './FundFiles.less'
 import {downloadFile} from "../../actions/global/download";
-import FixedDropDownButton from "../shared/fixed-dropdown-button/FixedDropDownButton";
 import EditableFileForm from "./EditableFileForm";
 import {WebApi} from "../../actions/WebApi";
 import {showAsyncWaiting} from "../../actions/global/modalDialog";
