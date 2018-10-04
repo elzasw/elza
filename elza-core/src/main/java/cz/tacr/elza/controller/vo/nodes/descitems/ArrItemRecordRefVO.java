@@ -1,6 +1,10 @@
 package cz.tacr.elza.controller.vo.nodes.descitems;
 
 
+import java.util.Objects;
+
+import javax.persistence.EntityManager;
+
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.ApAccessPoint;
@@ -8,8 +12,6 @@ import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
-
-import javax.persistence.EntityManager;
 
 
 /**
@@ -49,7 +51,10 @@ public class ArrItemRecordRefVO extends ArrItemVO {
         ArrDataRecordRef data = new ArrDataRecordRef();
 
         if (record != null) {
-            throw new BusinessException("Inconsistent data, record is not null", BaseCode.PROPERTY_IS_INVALID);
+            if (!Objects.equals(record.getId(), value)) {
+                throw new BusinessException("Inconsistent data, party is not null", BaseCode.PROPERTY_IS_INVALID)
+                        .set("value", value).set("record.id", record.getId());
+            }
         }
 
         // try to map record
