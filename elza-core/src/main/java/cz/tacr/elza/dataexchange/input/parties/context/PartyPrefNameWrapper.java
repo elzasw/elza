@@ -57,8 +57,8 @@ public class PartyPrefNameWrapper implements RefUpdateWrapper {
         CriteriaBuilder cb = session.getCriteriaBuilder();
         CriteriaUpdate<ParParty> query = cb.createCriteriaUpdate(ParParty.class);
         Root<ParParty> root = query.from(ParParty.class);
-        query.set(ParParty.PARTY_PREFERRED_NAME, prefName);
-        query.where(cb.equal(root.get(ParParty.ABSTRACT_PARTY_ID), partyInfo.getEntityId()));
+        query.set(ParParty.FIELD_PARTY_PREFERRED_NAME, prefName);
+        query.where(cb.equal(root.get(ParParty.FIELD_PARTY_ID), partyInfo.getEntityId()));
         // execute query
         int affected = session.createQuery(query).executeUpdate();
         Validate.isTrue(affected == 1);

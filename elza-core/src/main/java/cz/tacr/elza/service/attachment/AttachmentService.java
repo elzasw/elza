@@ -30,6 +30,8 @@ import cz.tacr.elza.utils.TempDirectory;
 public class AttachmentService {
     private static final Logger logger = LoggerFactory.getLogger(ApplicationSecurity.class);
 
+    private static final long MAX_PROCESS_TIMEOUT = 5L * 60 * 1000;
+
     @Autowired
     private DmsService dmsService;
     @Autowired
@@ -178,8 +180,7 @@ public class AttachmentService {
             Process process = Runtime.getRuntime().exec(command, null, tempDir.getPath().toFile());
 
             // Zpracování běhu procesu a čekání na jeho dokončení
-            // TODO [stanekpa] - kam dáme tuto konfiguraci?
-            processService.process(process, 5 * 60 * 1000);
+            processService.process(process, MAX_PROCESS_TIMEOUT);
 
             if (!Files.exists(outputFile)) {
                 throw new IOException("Generování nevytvořilo výstupní soubor " + outputFile.toString());

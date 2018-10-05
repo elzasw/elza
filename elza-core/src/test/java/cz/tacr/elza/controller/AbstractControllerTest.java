@@ -1205,7 +1205,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
             case "STRUCTURED": {
                 descItem = new ArrItemStructureVO();
-                ((ArrItemStructureVO) descItem).setValue(((ArrStructureDataVO) value).id);
+            ((ArrItemStructureVO) descItem).setValue(((ArrStructureDataVO) value).getId());
                 break;
             }
 

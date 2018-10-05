@@ -41,7 +41,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
 	        final Integer excludedGroupId,
 	        final CriteriaQuery<T> query) {
 		Join<UsrUser, ParParty> partyJoin = user.join(UsrUser.PARTY, JoinType.INNER);
-		Join<ParParty, ApAccessPoint> apJoin = partyJoin.join(ParParty.RECORD, JoinType.INNER);
+		Join<ParParty, ApAccessPoint> apJoin = partyJoin.join(ParParty.FIELD_RECORD, JoinType.INNER);
 		Join<ApAccessPoint, ApName> nameJoin = ApAccessPointRepositoryImpl.preparePrefNameJoin(apJoin, builder);
 		
 		List<Predicate> conditions = new ArrayList<>();
@@ -50,7 +50,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
 		if (StringUtils.isNotBlank(search)) {
 			final String searchValue = "%" + search.toLowerCase() + "%";
 			conditions.add(builder.or(
-			        builder.like(builder.lower(nameJoin.get(ApName.NAME)), searchValue),
+			        builder.like(builder.lower(nameJoin.get(ApName.COL_NAME)), searchValue),
 			        builder.like(builder.lower(user.get(UsrUser.USERNAME)), searchValue),
 			        builder.like(builder.lower(user.get(UsrUser.DESCRIPTION)), searchValue)));
 		}
@@ -142,7 +142,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
 	        final int userId,
 	        final boolean includeUser) {
         Join<UsrUser, ParParty> partyJoin = user.join(UsrUser.PARTY, JoinType.INNER);
-        Join<ParParty, ApAccessPoint> apJoin = partyJoin.join(ParParty.RECORD, JoinType.INNER);
+        Join<ParParty, ApAccessPoint> apJoin = partyJoin.join(ParParty.FIELD_RECORD, JoinType.INNER);
         Join<ApAccessPoint, ApName> recordName = ApAccessPointRepositoryImpl.preparePrefNameJoin(apJoin, builder);
         
         List<Predicate> conditions = new ArrayList<>();
@@ -151,7 +151,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
         if (StringUtils.isNotBlank(search)) {
             final String searchValue = "%" + search.toLowerCase() + "%";
             conditions.add(builder.or(
-                    builder.like(builder.lower(recordName.get(ApName.NAME)), searchValue),
+                    builder.like(builder.lower(recordName.get(ApName.COL_NAME)), searchValue),
                     builder.like(builder.lower(user.get(UsrUser.USERNAME)), searchValue),
                     builder.like(builder.lower(user.get(UsrUser.DESCRIPTION)), searchValue)
             ));
@@ -312,11 +312,11 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
     
     private static void prepareUserView(Root<UsrUser> user, CriteriaBuilder cb, CriteriaQuery<?> query) {
         Join<UsrUser, ParParty> partyJoin = user.join(UsrUser.PARTY, JoinType.INNER);
-        Join<ParParty, ApAccessPoint> apJoin = partyJoin.join(ParParty.RECORD, JoinType.INNER);
+        Join<ParParty, ApAccessPoint> apJoin = partyJoin.join(ParParty.FIELD_RECORD, JoinType.INNER);
         // join current preferred AP names
         Join<ApAccessPoint, ApName> nameJoin = ApAccessPointRepositoryImpl.preparePrefNameJoin(apJoin, cb);
         // define order
-        Order order1 = cb.asc(nameJoin.get(ApName.NAME));
+        Order order1 = cb.asc(nameJoin.get(ApName.COL_NAME));
         Order order2 = cb.asc(user.get(UsrUser.USERNAME));
         query.orderBy(order1, order2);
     }

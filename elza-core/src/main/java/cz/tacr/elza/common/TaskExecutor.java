@@ -50,7 +50,7 @@ public class TaskExecutor {
 
     /**
      * Caller stop async queue processing. This operation will block caller thread
-     * until manager thread does not terminate.
+     * until manager thread terminates.
      *
      * When terminated no more tasks will be passed to execution.
      */
@@ -58,12 +58,14 @@ public class TaskExecutor {
         if (state == State.RUNNING) {
             state = State.STOPPING;
             // notify manager thread about stopping
-            notify();
+            notifyAll();
             // wait until manager thread does not terminate
             while (state != State.TERMINATED) {
                 try {
                     wait(100);
                 } catch (InterruptedException e) {
+                    // nothing to do here
+                    Thread.currentThread().interrupt();
                 }
             }
         }
@@ -81,7 +83,7 @@ public class TaskExecutor {
         taskQueue.addLast(task);
         // notify manager thread about new task
         if (runningTasks.size() < threadPoolSize) {
-            notify();
+            notifyAll();
         }
     }
 
@@ -91,6 +93,9 @@ public class TaskExecutor {
                 try {
                     wait();
                 } catch (InterruptedException e) {
+                    // nothing to do here
+                    state = State.TERMINATED;
+                    Thread.currentThread().interrupt();
                 }
                 continue;
             }
@@ -113,7 +118,7 @@ public class TaskExecutor {
         runningTasks.remove(task);
         // notify manager thread about ended task
         if (taskQueue.size() > 0) {
-            notify();
+            notifyAll();
         }
     }
 }

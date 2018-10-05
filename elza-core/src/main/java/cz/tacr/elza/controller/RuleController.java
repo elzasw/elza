@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -175,12 +176,15 @@ public class RuleController {
         Assert.notNull(code, "Kód musí být vyplněn");
         try {
             File file = packageService.exportPackage(code);
-            response.setContentType("application/zip");
-            response.setHeader("Content-Disposition", "inline; filename=" + code + "-package.zip");
-            response.setContentLength((int) file.length());
-            InputStream is = new FileInputStream(file);
-            IOUtils.copy(is, response.getOutputStream());
-            response.flushBuffer();
+            try (InputStream is = new FileInputStream(file)) {
+                response.setContentType("application/zip");
+                response.setHeader("Content-Disposition", "inline; filename=" + code + "-package.zip");
+                response.setContentLength((int) file.length());
+
+                IOUtils.copy(is, response.getOutputStream());
+                response.flushBuffer();
+            }
+            Files.delete(file);
         } catch (IOException ex) {
             throw new SystemException("Problem pri zapisu souboru", ex);
         }

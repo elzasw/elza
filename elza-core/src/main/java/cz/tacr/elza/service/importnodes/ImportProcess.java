@@ -734,20 +734,14 @@ public class ImportProcess {
 	public static String renameConflictName(final String name, final Map<String, ArrFile> currentFiles) {
 		String tmpName = name;
 
-		boolean conflict = false;
 		int i = 0;
 		do {
-			if (conflict) {
-				i++;
-				conflict = false;
-				tmpName = includeNumber(tmpName, i);
+            if (!currentFiles.containsKey(tmpName)) {
+                return tmpName;
 			}
-			if (currentFiles.containsKey(tmpName)) {
-				conflict = true;
-				break;
-			}
-		} while (conflict);
-		return tmpName;
+            i++;
+            tmpName = includeNumber(tmpName, i);
+        } while (true);
 	}
 
     /**

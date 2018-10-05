@@ -141,7 +141,12 @@ public class RevertingChangesService {
         // dotaz pro zjištění poslední změny (pro nastavení parametru outdated)
         Query queryLastChange = createQueryLastChange(fundId, nodeId);
 
-        ChangeResult lastChange = convertResult((Object[]) queryLastChange.getSingleResult());
+        Object queryResult = queryLastChange.getSingleResult();
+        if (queryResult == null) {
+            throw new BusinessException("Failed to find valid last change", ArrangementCode.DATA_NOT_FOUND)
+                    .set("nodeId", nodeId);
+        }
+        ChangeResult lastChange = convertResult((Object[]) queryResult);
         Integer count = ((Number) queryCount.getSingleResult()).intValue();
 
         // nalezené změny
@@ -452,7 +457,12 @@ public class RevertingChangesService {
         // dotaz pro zjištění poslední změny
         Query queryLastChange = createQueryLastChange(fundId, nodeId);
 
-        ChangeResult lastChange = convertResult((Object[]) queryLastChange.getSingleResult());
+        Object queryResult = queryLastChange.getSingleResult();
+        if (queryResult == null) {
+            throw new BusinessException("Failed to find valid last change", ArrangementCode.DATA_NOT_FOUND)
+                    .set("nodeId", nodeId);
+        }
+        ChangeResult lastChange = convertResult((Object[]) queryResult);
 
         if (!fromChange.getChangeId().equals(lastChange.getChangeId())) {
             throw new BusinessException("Existuje novější verze", ArrangementCode.EXISTS_NEWER_CHANGE);
@@ -1007,10 +1017,7 @@ public class RevertingChangesService {
      * @param o pole parametrů z dotazu
      * @return převedený objekt
      */
-    private ChangeResult convertResult(final Object[] o) {
-        if (o == null) {
-            return null;
-        }
+    private @NotNull ChangeResult convertResult(@NotNull final Object[] o) {
         ChangeResult change = new ChangeResult();
         change.setChangeId((Integer) o[0]);
         change.setChangeDate(((Timestamp) o[1]).toLocalDateTime());

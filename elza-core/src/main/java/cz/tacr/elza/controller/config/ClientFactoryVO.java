@@ -2197,12 +2197,12 @@ public class ClientFactoryVO {
 
     public ArrStructureDataVO createStructureData(final ArrStructuredObject structureData) {
         ArrStructureDataVO structureDataVO = new ArrStructureDataVO();
-        structureDataVO.id = structureData.getStructuredObjectId();
-        structureDataVO.typeCode = structureData.getStructuredType().getCode();
-        structureDataVO.value = structureData.getValue();
-        structureDataVO.errorDescription = structureData.getErrorDescription();
-        structureDataVO.assignable = structureData.getAssignable();
-        structureDataVO.state = structureData.getState();
+        structureDataVO.setId(structureData.getStructuredObjectId());
+        structureDataVO.setTypeCode(structureData.getStructuredType().getCode());
+        structureDataVO.setValue(structureData.getValue());
+        structureDataVO.setErrorDescription(structureData.getErrorDescription());
+        structureDataVO.setAssignable(structureData.getAssignable());
+        structureDataVO.setState(structureData.getState());
         return structureDataVO;
     }
 
@@ -2218,7 +2218,7 @@ public class ClientFactoryVO {
         List<StructureExtensionFundVO> result = new ArrayList<>(allStructureExtensions.size());
         allStructureExtensions.forEach(se -> {
             StructureExtensionFundVO structureExtensionFund = createStructureExtensionFund(se);
-            structureExtensionFund.active = structureExtensions.contains(se);
+            structureExtensionFund.setActive(structureExtensions.contains(se));
             result.add(structureExtensionFund);
         });
         return result;
@@ -2226,10 +2226,10 @@ public class ClientFactoryVO {
 
     private StructureExtensionFundVO createStructureExtensionFund(final RulStructuredTypeExtension structureExtension) {
         StructureExtensionFundVO structureExtensionFundVO = new StructureExtensionFundVO();
-        structureExtensionFundVO.id = structureExtension.getStructuredTypeExtensionId();
-        structureExtensionFundVO.code = structureExtension.getCode();
-        structureExtensionFundVO.name = structureExtension.getName();
-        structureExtensionFundVO.active = false;
+        structureExtensionFundVO.setId(structureExtension.getStructuredTypeExtensionId());
+        structureExtensionFundVO.setCode(structureExtension.getCode());
+        structureExtensionFundVO.setName(structureExtension.getName());
+        structureExtensionFundVO.setActive(false);
         return structureExtensionFundVO;
     }
 

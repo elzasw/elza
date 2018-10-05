@@ -78,7 +78,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
 
             @Override
             public void init(final Root<ArrDescItem> descItemJoin) {
-                specJoin = descItemJoin.join(ArrDescItem.ITEM_SPEC, JoinType.LEFT);
+                specJoin = descItemJoin.join(ArrDescItem.FIELD_ITEM_SPEC, JoinType.LEFT);
             }
 
             @Override
@@ -126,14 +126,14 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
 
             Predicate versionPredicate;
             if (version.getLockChange() == null) {
-                versionPredicate = builder.isNull(descItem.get(ArrDescItem.DELETE_CHANGE_ID));
+                versionPredicate = builder.isNull(descItem.get(ArrDescItem.FIELD_DELETE_CHANGE_ID));
             } else {
                 Integer lockChangeId = version.getLockChange().getChangeId();
 
-                Predicate createPred = builder.lt(descItem.get(ArrDescItem.CREATE_CHANGE_ID), lockChangeId);
+                Predicate createPred = builder.lt(descItem.get(ArrDescItem.FIELD_CREATE_CHANGE_ID), lockChangeId);
                 Predicate deletePred = builder.or(
-                        builder.isNull(descItem.get(ArrDescItem.DELETE_CHANGE_ID)),
-                        builder.gt(descItem.get(ArrDescItem.DELETE_CHANGE_ID), lockChangeId)
+                        builder.isNull(descItem.get(ArrDescItem.FIELD_DELETE_CHANGE_ID)),
+                        builder.gt(descItem.get(ArrDescItem.FIELD_DELETE_CHANGE_ID), lockChangeId)
                 );
 
                 versionPredicate = builder.and(createPred, deletePred);
@@ -141,12 +141,12 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
 
             //seznam AND podmínek
             List<Predicate> andPredicates = new LinkedList<>();
-            andPredicates.add(builder.equal(descItem.get(ArrDescItem.NODE).get(ArrNode.FUND), version.getFund()));
-            andPredicates.add(descItem.get(ArrDescItem.NODE_ID).in(partOfNodeIds));
+            andPredicates.add(builder.equal(descItem.get(ArrDescItem.FIELD_NODE).get(ArrNode.FIELD_FUND), version.getFund()));
+            andPredicates.add(descItem.get(ArrDescItem.FIELD_NODE_ID).in(partOfNodeIds));
             andPredicates.add(versionPredicate);
-            andPredicates.add(builder.equal(descItem.get(ArrDescItem.ITEM_TYPE), itemType));
+            andPredicates.add(builder.equal(descItem.get(ArrDescItem.FIELD_ITEM_TYPE), itemType));
 
-            query.select(descItem.get(ArrItem.ITEM_SPEC));
+            query.select(descItem.get(ArrItem.FIELD_ITEM_SPEC));
             query.where(andPredicates.toArray(new Predicate[andPredicates.size()]));
 
             //query.orderBy(builder.asc(substringValue));
@@ -188,14 +188,14 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
 
         Predicate versionPredicate;
         if (version.getLockChange() == null) {
-            versionPredicate = builder.isNull(descItem.get(ArrDescItem.DELETE_CHANGE_ID));
+            versionPredicate = builder.isNull(descItem.get(ArrDescItem.FIELD_DELETE_CHANGE_ID));
         } else {
             Integer lockChangeId = version.getLockChange().getChangeId();
 
-            Predicate createPred = builder.lt(descItem.get(ArrDescItem.CREATE_CHANGE_ID), lockChangeId);
+            Predicate createPred = builder.lt(descItem.get(ArrDescItem.FIELD_CREATE_CHANGE_ID), lockChangeId);
             Predicate deletePred = builder.or(
-                    builder.isNull(descItem.get(ArrDescItem.DELETE_CHANGE_ID)),
-                    builder.gt(descItem.get(ArrDescItem.DELETE_CHANGE_ID), lockChangeId)
+                    builder.isNull(descItem.get(ArrDescItem.FIELD_DELETE_CHANGE_ID)),
+                    builder.gt(descItem.get(ArrDescItem.FIELD_DELETE_CHANGE_ID), lockChangeId)
             );
 
             versionPredicate = builder.and(createPred, deletePred);
@@ -203,10 +203,10 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
 
         //seznam AND podmínek
         List<Predicate> andPredicates = new LinkedList<>();
-        andPredicates.add(builder.equal(descItem.get(ArrItem.DATA), data));
-        andPredicates.add(builder.equal(descItem.get(ArrDescItem.NODE).get(ArrNode.FUND), version.getFund()));
+        andPredicates.add(builder.equal(descItem.get(ArrItem.FIELD_DATA), data));
+        andPredicates.add(builder.equal(descItem.get(ArrDescItem.FIELD_NODE).get(ArrNode.FIELD_FUND), version.getFund()));
         andPredicates.add(versionPredicate);
-        andPredicates.add(builder.equal(descItem.get(ArrDescItem.ITEM_TYPE), itemType));
+        andPredicates.add(builder.equal(descItem.get(ArrDescItem.FIELD_ITEM_TYPE), itemType));
         if (specificationDataTypeHelper.useSpec()) {
             specificationDataTypeHelper.init(descItem);
 
@@ -331,26 +331,26 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
             return new AbstractDescItemDataTypeHelper() {
                 @Override
                 protected void init() {
-                    Join<ArrDataPartyRef, ParParty> party = dataRoot.join(ArrDataPartyRef.PARTY, JoinType.INNER);
-                    Join<ParParty, ApAccessPoint> record = party.join(ParParty.RECORD, JoinType.INNER);
+                    Join<ArrDataPartyRef, ParParty> party = dataRoot.join(ArrDataPartyRef.FIELD_PARTY, JoinType.INNER);
+                    Join<ParParty, ApAccessPoint> record = party.join(ParParty.FIELD_RECORD, JoinType.INNER);
                     targetJoin = record;
                 }
 
                 @Override
                 public Path<String> getValueStringSelection(final CriteriaBuilder criteriaBuilder) {
-                    return targetJoin.get(ParParty.RECORD);
+                    return targetJoin.get(ParParty.FIELD_RECORD);
                 }
             };
         } else if (dataClassType.equals(ArrDataRecordRef.class)) {
             return new AbstractDescItemDataTypeHelper() {
                 @Override
                 protected void init() {
-                    targetJoin = dataRoot.join(ArrDataRecordRef.RECORD, JoinType.INNER);
+                    targetJoin = dataRoot.join(ArrDataRecordRef.FIELD_RECORD, JoinType.INNER);
                 }
 
                 @Override
                 public Path<String> getValueStringSelection(final CriteriaBuilder criteriaBuilder) {
-                    return targetJoin.get(ArrDataRecordRef.RECORD);
+                    return targetJoin.get(ArrDataRecordRef.FIELD_RECORD);
                 }
             };
         } else if (dataClassType.equals(ArrDataStructureRef.class)) {

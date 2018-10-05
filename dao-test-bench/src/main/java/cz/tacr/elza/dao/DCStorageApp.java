@@ -24,12 +24,16 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 @EnableWebMvc
 public class DCStorageApp extends SpringBootServletInitializer {
 
-	private static final Map<String, Object> DEFAULT_PROPERTIES = new HashMap<String, Object>() {{
-			put("dcstorage.repositoryIdentifier", "defaultRepository");
-			put("dcstorage.basePath", "storage");
-			put("dcstorage.rejectMode", false);
-			put("server.port", 8536);
-	}};
+    private static final Map<String, Object> DEFAULT_PROPERTIES = new HashMap<String, Object>();
+
+    // Initialize default properties
+    {
+        DEFAULT_PROPERTIES.put("dcstorage.repositoryIdentifier", "defaultRepository");
+        DEFAULT_PROPERTIES.put("dcstorage.basePath", "storage");
+        DEFAULT_PROPERTIES.put("dcstorage.rejectMode", false);
+        DEFAULT_PROPERTIES.put("server.port", 8536);
+
+    }
 
 	@Autowired
 	private DCStorageConfig storageConfig;

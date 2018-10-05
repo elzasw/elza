@@ -127,9 +127,18 @@ public class UnitIdPart
         return sb.toString();
     }
 
+    @Override
+    public int hashCode() {
+        return parts.hashCode();
+    }
+
+    @Override
     public boolean equals(Object obj) {
         if (this == obj) {
             return true;
+        }
+        if (obj == null) {
+            return false;
         }
         if (obj.getClass() != UnitIdPart.class) {
             return false;

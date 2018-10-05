@@ -11,11 +11,11 @@ import cz.tacr.elza.domain.ApName;
 public class NameLoader extends AbstractEntityLoader<ApName> {
 
     public NameLoader(EntityManager em, int batchSize) {
-        super(ApName.class, ApName.ACCESS_POINT_ID, em, batchSize);
+        super(ApName.class, ApName.COL_ACCESS_POINT_ID, em, batchSize);
     }
 
     @Override
     protected Predicate createQueryCondition(Path<?> root, CriteriaBuilder cb) {
-        return root.get(ApName.DELETE_CHANGE_ID).isNull();
+        return root.get(ApName.COL_DELETE_CHANGE_ID).isNull();
     }
 }

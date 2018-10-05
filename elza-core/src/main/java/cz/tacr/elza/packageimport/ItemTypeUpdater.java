@@ -1,28 +1,54 @@
 package cz.tacr.elza.packageimport;
 
-import cz.tacr.elza.core.data.DataType;
-import cz.tacr.elza.domain.*;
-import cz.tacr.elza.domain.table.ElzaColumn;
-import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.exception.codes.PackageCode;
-import cz.tacr.elza.packageimport.xml.*;
-import cz.tacr.elza.repository.*;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Component;
+import static cz.tacr.elza.packageimport.PackageService.ITEM_TYPE_XML;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static cz.tacr.elza.packageimport.PackageService.ITEM_TYPE_XML;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Component;
+
+import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.domain.ApType;
+import cz.tacr.elza.domain.RulDataType;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemSpecRegister;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulPackage;
+import cz.tacr.elza.domain.RulPackageDependency;
+import cz.tacr.elza.domain.RulStructuredType;
+import cz.tacr.elza.domain.table.ElzaColumn;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.exception.codes.PackageCode;
+import cz.tacr.elza.packageimport.xml.Category;
+import cz.tacr.elza.packageimport.xml.Column;
+import cz.tacr.elza.packageimport.xml.DisplayType;
+import cz.tacr.elza.packageimport.xml.ItemSpec;
+import cz.tacr.elza.packageimport.xml.ItemSpecRegister;
+import cz.tacr.elza.packageimport.xml.ItemSpecs;
+import cz.tacr.elza.packageimport.xml.ItemType;
+import cz.tacr.elza.packageimport.xml.ItemTypes;
+import cz.tacr.elza.repository.ApTypeRepository;
+import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.ItemSpecRegisterRepository;
+import cz.tacr.elza.repository.ItemSpecRepository;
+import cz.tacr.elza.repository.ItemTypeRepository;
+import cz.tacr.elza.repository.PackageDependencyRepository;
+import cz.tacr.elza.repository.PackageRepository;
 
 /**
  * Class to update item types in DB
@@ -105,7 +131,7 @@ public class ItemTypeUpdater {
      * @param rulPackage
      */
     private void processDescItemSpecs(
-            final ItemSpecs itemSpecs,
+                                      @Nullable final ItemSpecs itemSpecs,
             final List<RulItemType> rulDescItemTypes, RulPackage rulPackage)
     {
 
@@ -139,7 +165,8 @@ public class ItemTypeUpdater {
 
         rulDescItemSpecsNew = itemSpecRepository.save(rulDescItemSpecsNew);
 
-        processDescItemSpecsRegister(itemSpecs, rulDescItemSpecsNew);
+        processDescItemSpecsRegister((itemSpecs != null) ? itemSpecs.getItemSpecs() : Collections.emptyList(),
+                                     rulDescItemSpecsNew);
 
         List<RulItemSpec> rulDescItemSpecsDelete = new ArrayList<>(rulDescItemSpecs);
         rulDescItemSpecsDelete.removeAll(rulDescItemSpecsNew);
@@ -446,31 +473,36 @@ public class ItemTypeUpdater {
     /**
      * Zpracování napojení specifikací na ap.
      *
-     * @param itemSpecs    seznam importovaných specifikací
-     * @param rulDescItemSpecs seznam specifikací atributů
+     * @param itemSpecs
+     *            seznam importovaných specifikací
+     * @param rulDescItemSpecs
+     *            seznam specifikací atributů (nový v DB)
      */
-    private void processDescItemSpecsRegister(final ItemSpecs itemSpecs,
-                                              final List<RulItemSpec> rulDescItemSpecs) {
+    private void processDescItemSpecsRegister(@Nonnull final List<ItemSpec> itemSpecs,
+                                              @Nonnull final List<RulItemSpec> rulDescItemSpecs) {
 
         List<ApType> apTypes = apTypeRepository.findAll();
 
-        for (RulItemSpec rulDescItemSpec : rulDescItemSpecs) {
-            List<ItemSpec> findItemsSpec = itemSpecs.getItemSpecs().stream().filter(
-                    (r) -> r.getCode().equals(rulDescItemSpec.getCode())).collect(Collectors.toList());
-            ItemSpec item;
-            if (findItemsSpec.size() > 0) {
-                item = findItemsSpec.get(0);
-            } else {
-                throw new IllegalStateException("Kód " + rulDescItemSpec.getCode() + " neexistuje v ItemSpecs");
-            }
+        List<RulItemSpecRegister> rulItemSpecRegistersNew = new ArrayList<>();
 
-            List<RulItemSpecRegister> rulItemSpecRegisters = itemSpecRegisterRepository
+        List<RulItemSpecRegister> rulItemSpecRegisters = new ArrayList<>();
+
+        for (RulItemSpec rulDescItemSpec : rulDescItemSpecs) {
+            // Find input item spec from source
+            List<ItemSpec> findItemsSpec = itemSpecs.stream().filter(
+                    (r) -> r.getCode().equals(rulDescItemSpec.getCode())).collect(Collectors.toList());
+
+            Validate.isTrue(findItemsSpec.size() == 1, "Cannot find code in itemSpecs, code: {}",
+                            rulDescItemSpec.getCode());
+            ItemSpec item = findItemsSpec.get(0);
+
+            List<RulItemSpecRegister> dbSpecs = itemSpecRegisterRepository
                     .findByDescItemSpecId(rulDescItemSpec);
-            List<RulItemSpecRegister> rulItemSpecRegistersNew = new ArrayList<>();
+            rulItemSpecRegisters.addAll(dbSpecs);
 
             if (!CollectionUtils.isEmpty(item.getItemSpecRegisters())) {
                 for (ItemSpecRegister itemSpecRegister : item.getItemSpecRegisters()) {
-                    List<RulItemSpecRegister> findItems = rulItemSpecRegisters.stream()
+                    List<RulItemSpecRegister> findItems = dbSpecs.stream()
                             .filter((r) -> r.getApType().getCode().equals(
                                     itemSpecRegister.getRegisterType())).collect(Collectors.toList());
                     RulItemSpecRegister itemRegister;
@@ -486,14 +518,13 @@ public class ItemTypeUpdater {
                     rulItemSpecRegistersNew.add(itemRegister);
                 }
             }
-
-            rulItemSpecRegistersNew = itemSpecRegisterRepository.save(rulItemSpecRegistersNew);
-
-            List<RulItemSpecRegister> rulItemSpecRegistersDelete = new ArrayList<>(rulItemSpecRegisters);
-            rulItemSpecRegistersDelete.removeAll(rulItemSpecRegistersNew);
-            itemSpecRegisterRepository.delete(rulItemSpecRegistersDelete);
-
         }
+
+        rulItemSpecRegistersNew = itemSpecRegisterRepository.save(rulItemSpecRegistersNew);
+
+        List<RulItemSpecRegister> rulItemSpecRegistersDelete = new ArrayList<>(rulItemSpecRegisters);
+        rulItemSpecRegistersDelete.removeAll(rulItemSpecRegistersNew);
+        itemSpecRegisterRepository.delete(rulItemSpecRegistersDelete);
 
     }
 

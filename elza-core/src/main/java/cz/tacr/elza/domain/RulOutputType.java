@@ -11,8 +11,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
-import org.apache.commons.lang.builder.EqualsBuilder;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import cz.tacr.elza.domain.enumeration.StringLength;
@@ -103,19 +101,5 @@ public class RulOutputType {
 
     public void setComponent(final RulComponent component) {
         this.component = component;
-    }
-
-    @Override
-    public boolean equals(final Object obj) {
-        if (!(obj instanceof cz.tacr.elza.domain.RulOutputType)) {
-            return false;
-        }
-        if (this == obj) {
-            return true;
-        }
-
-        cz.tacr.elza.domain.RulOutputType other = (cz.tacr.elza.domain.RulOutputType) obj;
-
-        return new EqualsBuilder().append(outputTypeId, other.getOutputTypeId()).isEquals();
     }
 }

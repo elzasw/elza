@@ -83,7 +83,9 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
     }
 
     @Override
-    public List<ArrLevel> findAllParentsByNodeId(final Integer nodeId, @Nullable final ArrChange lockChange, boolean orderFromRoot) {
+    public List<ArrLevel> findAllParentsByNodeId(final Integer nodeId,
+                                                 @Nullable final ArrChange lockChange,
+                                                 boolean orderFromRoot) {
         Validate.notNull(nodeId);
 
         RecursiveQueryBuilder<ArrLevel> rqBuilder = DatabaseType.getCurrent().createRecursiveQueryBuilder(ArrLevel.class);
@@ -104,7 +106,7 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
         rqBuilder.prepareQuery(entityManager);
 
         rqBuilder.setParameter("nodeId", nodeId);
-        if (verCond == specifiedVerCond) {
+        if (lockChange != null) {
             Integer lockChangeId = lockChange.getChangeId();
             rqBuilder.setParameter("lockChangeId", Validate.notNull(lockChangeId));
         }

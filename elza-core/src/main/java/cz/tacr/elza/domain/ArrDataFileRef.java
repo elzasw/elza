@@ -20,7 +20,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ArrDataFileRef extends ArrData {
 
-    public static final String FILE = "file";
+    public static final String COL_FILE = "file";
 
     @RestResource(exported = false)
 	@ManyToOne(fetch=FetchType.LAZY, targetEntity = ArrFile.class)

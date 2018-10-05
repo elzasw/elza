@@ -29,7 +29,6 @@ import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.events.ConformityInfoUpdatedEvent;
 import cz.tacr.elza.exception.LockVersionChangeException;
-import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.service.RuleService;
@@ -70,6 +69,16 @@ public class UpdateConformityInfoWorker implements Runnable {
 
     private WorkerStatus status = WorkerStatus.RUNNABLE;
 
+    private Thread thread;
+
+    private enum WorkerStatus {
+        RUNNABLE, RUNNING, TERMINATING, TERMINATED;
+
+        public static boolean isRunning(WorkerStatus status) {
+            return status == RUNNABLE || status == RUNNING;
+        }
+    }
+
     public UpdateConformityInfoWorker(Integer fundVersionId) {
         this.fundVersionId = Validate.notNull(fundVersionId);
     }
@@ -79,12 +88,25 @@ public class UpdateConformityInfoWorker implements Runnable {
     public void run() {
         logger.debug("Spusteno nove vlakno pro aktualizaci stavu, fundVersionId: " + fundVersionId);
 
+        synchronized (this) {
+            Validate.isTrue(status == WorkerStatus.RUNNABLE);
+
+            this.thread = Thread.currentThread();
+            status = WorkerStatus.RUNNING;
+        }
+
         Set<Integer> processedNodeIds = new LinkedHashSet<>();
-        status = WorkerStatus.RUNNING;
         try {
             ArrFundVersion version = getFundVersion();
             while (true) {
-                ArrNode node = getNextNode();
+                ArrNode node;
+                synchronized (this) {
+                    if (status != WorkerStatus.RUNNING) {
+                        break;
+                    }
+                    node = getNextNode();
+                }
+
                 if (node == null) {
                     eventNotificationService.publishEvent(EventFactory.createIdsInVersionEvent(EventType.CONFORMITY_INFO, version,
                             processedNodeIds.toArray(new Integer[processedNodeIds.size()])));
@@ -97,7 +119,11 @@ public class UpdateConformityInfoWorker implements Runnable {
         } catch (Exception e) {
             logger.error("Unexpected error during conformity update", e);
         } finally {
-            terminate();
+            synchronized (this) {
+                nodeQueue.clear();
+                status = WorkerStatus.TERMINATED;
+                thread = null;
+            }
         }
     }
 
@@ -182,10 +208,9 @@ public class UpdateConformityInfoWorker implements Runnable {
      *
      * @return nod z fronty
      */
-    private synchronized ArrNode getNextNode() {
+    private ArrNode getNextNode() {
         Iterator<ArrNode> it = nodeQueue.iterator();
         if (!it.hasNext()) {
-            terminate();
             return null;
         }
         ArrNode node = it.next();
@@ -194,35 +219,28 @@ public class UpdateConformityInfoWorker implements Runnable {
     }
 
     /**
-     * Provede ukončení běhu. Nechá dopočítat poslední uzel.
-     */
-    public synchronized void terminate() {
-        nodeQueue.clear();
-        status = WorkerStatus.TERMINATED;
-    }
-
-    /**
      * Provede ukončení běhu. Počká než vlákno skutečně skončí.
      */
     public void terminateAndWait() {
         synchronized (this) {
-            nodeQueue.clear();
+            if (status == WorkerStatus.TERMINATED) {
+                return;
+            }
             status = WorkerStatus.TERMINATING;
         }
-        while (status != WorkerStatus.TERMINATED) {
+        while (true) {
+            synchronized (this) {
+                if (status == WorkerStatus.TERMINATED) {
+                    break;
+                }
+            }
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
-                throw new SystemException("Chyba při ukončování vlákna pro validaci uzlů.", e);
+                // Nothing to do with this -> simply finish
+                Thread.currentThread().interrupt();
             }
         }
     }
 
-    private enum WorkerStatus {
-        RUNNABLE, RUNNING, TERMINATING, TERMINATED;
-
-        public static boolean isRunning(WorkerStatus status) {
-            return status == RUNNABLE || status == RUNNING;
-        }
-    }
 }

@@ -51,7 +51,7 @@ public class PartyInfoLoader extends AbstractEntityLoader<PartyInfoImpl> {
 
     @Override
     protected void setQueryFetch(FetchParent<?, ?> baseEntity) {
-        baseEntity.fetch(ParParty.RECORD);
+        baseEntity.fetch(ParParty.FIELD_RECORD);
     }
 
     @Override
@@ -85,10 +85,10 @@ public class PartyInfoLoader extends AbstractEntityLoader<PartyInfoImpl> {
     }
 
     public static PartyInfoLoader createPartyIdLoader(EntityManager em, int batchSize, StaticDataProvider staticData) {
-        return new PartyInfoLoader(ParParty.ABSTRACT_PARTY_ID, em, batchSize, staticData);
+        return new PartyInfoLoader(ParParty.FIELD_PARTY_ID, em, batchSize, staticData);
     }
 
     public static PartyInfoLoader createAPIdLoader(EntityManager em, int batchSize, StaticDataProvider staticData) {
-        return new PartyInfoLoader(ParParty.RECORD_FK, em, batchSize, staticData);
+        return new PartyInfoLoader(ParParty.FIELD_RECORD_FK, em, batchSize, staticData);
     }
 }

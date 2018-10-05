@@ -13,14 +13,15 @@ public class KonzoleVystup {
     private PrintWriter pw = null;
 
     public void initialize() {
-        FileWriter fw;
+        FileWriter fw = null;
         try {
             fw = new FileWriter("testLog.txt");
-            BufferedWriter bw = new BufferedWriter(fw);
-            pw = new PrintWriter(bw);
         } catch (IOException e) {
             e.printStackTrace();
+            return;
         }
+        BufferedWriter bw = new BufferedWriter(fw);
+        pw = new PrintWriter(bw);
     }
 
     public void print(String message) {

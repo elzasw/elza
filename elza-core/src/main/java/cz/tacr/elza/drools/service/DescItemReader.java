@@ -71,34 +71,39 @@ public class DescItemReader {
 		Set<Level> levels = items.keySet();
 
 		// handle empty key set
-		if (levels.size() == 0) {
+        if (levels.isEmpty()) {
 			return;
 		}
 
         Map<Integer, List<ArrDescItem>> descItemsMap = null;
 		Map<Integer, RestoredNode> cachedNodes = null;
 
+        // Check if load from cache
         if (version.getLockChange() == null) {
             Collection<Integer> nodeIds = new ArrayList<>(nodes.size());
             for (ArrNode node : nodes) {
                 nodeIds.add(node.getNodeId());
             }
             cachedNodes = nodeCacheService.getNodes(nodeIds);
+
+            for (Level level : levels) {
+                List<ArrDescItem> levelDescItems = cachedNodes.get(level.getNodeId()).getDescItems();
+                List<DescItem> items = ModelFactory.createDescItems(levelDescItems, descItemFactory, structItemRepos);
+                level.setDescItems(items);
+            }
         } else {
+            // Load from DB
 			List<ArrDescItem> descItems = descItemRepository.findByNodesAndDeleteChange(nodes, version.getLockChange());
+
             descItemsMap = ElzaTools.createGroupMap(descItems, p -> p.getNode().getNodeId());
+
+            for (Level level : levels) {
+                List<ArrDescItem> levelDescItems = descItemsMap.get(level.getNodeId());
+                List<DescItem> items = ModelFactory.createDescItems(levelDescItems, descItemFactory, structItemRepos);
+                level.setDescItems(items);
+            }
         }
 
-        for (Level level : levels) {
-            List<ArrDescItem> levelDescItems;
-            if (version.getLockChange() == null) {
-                levelDescItems = cachedNodes.get(level.getNodeId()).getDescItems();
-            } else {
-                levelDescItems = descItemsMap.get(level.getNodeId());
-            }
-			List<DescItem> items = ModelFactory.createDescItems(levelDescItems, descItemFactory, structItemRepos);
-            level.setDescItems(items);
-        }
 
 	}
 }

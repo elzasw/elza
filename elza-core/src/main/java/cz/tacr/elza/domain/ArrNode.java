@@ -1,10 +1,8 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import cz.tacr.elza.domain.enumeration.StringLength;
-import cz.tacr.elza.domain.interfaces.Versionable;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
+import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.util.List;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;
@@ -16,9 +14,14 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-import java.io.Serializable;
-import java.time.LocalDateTime;
-import java.util.List;
+
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import cz.tacr.elza.domain.enumeration.StringLength;
+import cz.tacr.elza.domain.interfaces.Versionable;
 
 
 /**
@@ -31,8 +34,8 @@ import java.util.List;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
 public class ArrNode extends AbstractVersionableEntity implements Versionable, Serializable, Comparable<ArrNode> {
 
-    public static final String FUND = "fund";
-    public static final String NODE_ID = "nodeId";
+    public static final String FIELD_FUND = "fund";
+    public static final String FIELD_NODE_ID = "nodeId";
 
     @Id
     @GeneratedValue
@@ -46,10 +49,10 @@ public class ArrNode extends AbstractVersionableEntity implements Versionable, S
     private String uuid;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFund.class)
-    @JoinColumn(name = "fundId", nullable = false)
+    @JoinColumn(name = "fund_id", nullable = false)
     private ArrFund fund;
 
-    @Column(name = "fundId", insertable = false, updatable = false)
+    @Column(name = "fund_id", insertable = false, updatable = false)
     private Integer fundId;
 
     @OneToMany(mappedBy = "node", fetch = FetchType.LAZY)
