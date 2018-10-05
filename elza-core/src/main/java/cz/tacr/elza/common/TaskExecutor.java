@@ -62,7 +62,7 @@ public class TaskExecutor {
             // wait until manager thread does not terminate
             while (state != State.TERMINATED) {
                 try {
-                    Thread.sleep(100);
+                    wait(100);
                 } catch (InterruptedException e) {
                 }
             }
