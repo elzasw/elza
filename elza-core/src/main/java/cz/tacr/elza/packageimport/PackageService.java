@@ -532,12 +532,17 @@ public class PackageService {
     }
 
     private void preImportPackage() {
+        logger.info("Stoping services before package update");
+
         structObjValueService.stopGenerator();
         // odebrání používaných groovy scritpů
         cacheService.resetCache(CacheInvalidateEvent.Type.GROOVY);
     }
 
     private void postImportPackage(PackageContext pkgCtx) {
+        logger.info("Package was updated. Code: {}, Version: {}", pkgCtx.getPackageInfo().getCode(),
+                    pkgCtx.getPackageInfo().getVersion());
+
         // add request to regenerate structObjs
         Set<String> codes = pkgCtx.getRegenerateStructureTypes();
         List<RulStructuredType> revalidateStructureTypes = new ArrayList<>(codes.size());
@@ -549,6 +554,8 @@ public class PackageService {
         structObjValueService.addToValidateByTypes(revalidateStructureTypes);
 
         structObjValueService.startGenerator();
+
+        logger.info("Services were restarted after package update");
     }
 
     public void importPackageInternal(final PackageContext pkgCtx) {
