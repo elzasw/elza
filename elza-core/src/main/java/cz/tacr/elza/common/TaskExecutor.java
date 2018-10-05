@@ -58,7 +58,7 @@ public class TaskExecutor {
         if (state == State.RUNNING) {
             state = State.STOPPING;
             // notify manager thread about stopping
-            notify();
+            notifyAll();
             // wait until manager thread does not terminate
             while (state != State.TERMINATED) {
                 try {
@@ -81,7 +81,7 @@ public class TaskExecutor {
         taskQueue.addLast(task);
         // notify manager thread about new task
         if (runningTasks.size() < threadPoolSize) {
-            notify();
+            notifyAll();
         }
     }
 
@@ -113,7 +113,7 @@ public class TaskExecutor {
         runningTasks.remove(task);
         // notify manager thread about ended task
         if (taskQueue.size() > 0) {
-            notify();
+            notifyAll();
         }
     }
 }

@@ -131,6 +131,9 @@ public class UnitIdPart
         if (this == obj) {
             return true;
         }
+        if (obj == null) {
+            return false;
+        }
         if (obj.getClass() != UnitIdPart.class) {
             return false;
         }

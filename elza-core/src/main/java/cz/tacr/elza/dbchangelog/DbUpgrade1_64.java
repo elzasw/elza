@@ -1,6 +1,7 @@
 package cz.tacr.elza.dbchangelog;
 
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
@@ -44,20 +45,22 @@ public class DbUpgrade1_64 implements CustomTaskChange {
         final JdbcConnection databaseConnection = (JdbcConnection) database.getConnection();
         try {
 
-            int id;
+            int id = 0;
             try (PreparedStatement ps = databaseConnection
                     .prepareStatement("SELECT next_val FROM db_hibernate_sequences WHERE sequence_name = 'rul_package|package_id'");) {
-                ps.execute();                
-                if (ps.getResultSet().next()) {
-                    id = ps.getResultSet().getInt(1);
-                    try (PreparedStatement ps2 = databaseConnection
-                            .prepareStatement("UPDATE db_hibernate_sequences SET next_val = next_val + 1 WHERE sequence_name = 'rul_package|package_id'");) {
-                        ps2.executeUpdate();
+                ps.execute();
+                try(ResultSet rs = ps.getResultSet();) {
+                    if (rs.next()) {
+                        id = rs.getInt(1);
+                        try (PreparedStatement ps2 = databaseConnection
+                                .prepareStatement("UPDATE db_hibernate_sequences SET next_val = next_val + 1 WHERE sequence_name = 'rul_package|package_id'");) {
+                            ps2.executeUpdate();
+                        }
+                    } else {
+                        id = 0;
                     }
-                } else {
-                    id = 0;
+                    id += 1000; // TODO slapa: je asi potřeba opravit generátor - prověřit                    
                 }
-                id += 1000; // TODO slapa: je asi potřeba opravit generátor - prověřit
             }
 
             try(PreparedStatement ps = databaseConnection.prepareStatement("INSERT INTO rul_package (package_id, name, code, description, version) " +
