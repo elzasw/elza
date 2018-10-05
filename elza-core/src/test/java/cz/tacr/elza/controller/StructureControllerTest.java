@@ -239,6 +239,9 @@ public class StructureControllerTest extends AbstractControllerTest {
         assertNotNull(structureData.assignable);
         assertSame(structureData.state, ArrStructuredObject.State.TEMP);
 
+        // add item
+        createStructureItemPacketNumber(fundVersion, structureData);
+
         ArrStructureDataVO structureDataConfirmed = confirmStructureData(fundVersion.getId(), structureData.id);
         // check id of returned type
         assertTrue(Objects.equals(structureDataConfirmed.id, structureDataConfirmed.id));
