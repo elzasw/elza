@@ -14,35 +14,14 @@ public class KonzoleVystup {
 
     public void initialize() {
         FileWriter fw = null;
-        BufferedWriter bw = null;
-        BufferedWriter bw;
-        try() {
+        try {
             fw = new FileWriter("testLog.txt");
-            bw = new BufferedWriter(fw);
-            pw = new PrintWriter(bw);
         } catch (IOException e) {
-            e.printStackTrace();            
-            if(bw!=null) {
-                try {
-                    bw.close();
-                    bw=null;
-                }
-                catch (IOException e) {
-                    // not checked
-                }
-            }
-            if(fw!=null) {
-                try {
-                    fw.close();
-                    fw=null;
-                }
-                catch (IOException e) {
-                    // not checked
-                }
-            }
-            return;
+            e.printStackTrace();
             return;
         }
+        BufferedWriter bw = new BufferedWriter(fw);
+        pw = new PrintWriter(bw);
     }
 
     public void print(String message) {
