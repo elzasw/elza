@@ -8,7 +8,6 @@ import java.util.List;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Marshaller;
-import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -71,7 +70,7 @@ public class XmlApOutputStream implements ApOutputStream {
 
         try {
             fragment.close();
-        } catch (XMLStreamException | IOException e) {
+        } catch (IOException e) {
             throw new SystemException(e);
         }
 

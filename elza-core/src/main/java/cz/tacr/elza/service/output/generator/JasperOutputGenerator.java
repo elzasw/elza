@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import javax.persistence.EntityManager;
 
@@ -122,15 +123,21 @@ public class JasperOutputGenerator extends DmsOutputGenerator {
     }
 
     private void prepareSubreports(Map<String, Object> parameters) throws IOException {
-        Files.list(params.getTemplateDir()).filter(path -> {
+        try(Stream<Path> filePathStream = Files.list(params.getTemplateDir())) {
+            // Filter templates
+            filePathStream.filter(path -> {
             String name = path.getFileName().toString();
             return name.endsWith(TEMPLATE_EXTENSION) && !name.equals(MAIN_TEMPLATE_NAME);
-        }).forEach(path -> {
-            String subreportName = path.getFileName().toString();
-            subreportName = subreportName.substring(0, subreportName.length() - TEMPLATE_EXTENSION.length());
-            JasperReport subreport = loadTemplate(path);
-            parameters.put(subreportName, subreport);
+
+            }).forEach(path -> {
+                // load templates
+                String subreportName = path.getFileName().toString();
+                subreportName = subreportName.substring(0, subreportName.length() - TEMPLATE_EXTENSION.length());
+                JasperReport subreport = loadTemplate(path);
+                parameters.put(subreportName, subreport);
         });
+        }
+
     }
 
     private JasperReport loadTemplate(Path templateFile) {

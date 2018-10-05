@@ -181,18 +181,17 @@ public class PackageContext {
 				throw new IllegalStateException("Soubor " + zipDir + "/" + filename + " neexistuje v zip");
 			}
 
-			FileOutputStream bw = new FileOutputStream(file);
+            try (FileOutputStream bw = new FileOutputStream(file);) {
 
-			byte[] buf = new byte[8192];
-			for (; ; ) {
-				int nread = byteArrayInputStream.read(buf, 0, buf.length);
-				if (nread <= 0) {
-					break;
-				}
-				bw.write(buf, 0, nread);
+                byte[] buf = new byte[8192];
+                for (;;) {
+                    int nread = byteArrayInputStream.read(buf, 0, buf.length);
+                    if (nread <= 0) {
+                        break;
+                    }
+                    bw.write(buf, 0, nread);
+                }
 			}
-
-			bw.close();
 
 		} finally {
 			if (output != null) {
