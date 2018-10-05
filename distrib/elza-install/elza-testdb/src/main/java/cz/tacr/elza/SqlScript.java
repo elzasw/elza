@@ -34,16 +34,18 @@ public class SqlScript {
 
         String result = null;
         try {
-            BufferedReader br = new BufferedReader(new FileReader(fileSql));
-            String prikaz = null;
-            while ((prikaz = br.readLine()) != null) {
-                if (prikaz.trim().length() == 0) {
-                    continue;
-                }
-                if (result == null) {
-                    result = prikaz + "\n";
-                } else {
-                    result += prikaz + "\n";
+            try(BufferedReader br = new BufferedReader(new FileReader(fileSql));)
+            {
+                String prikaz = null;
+                while ((prikaz = br.readLine()) != null) {
+                    if (prikaz.trim().length() == 0) {
+                        continue;
+                    }
+                    if (result == null) {
+                        result = prikaz + "\n";
+                    } else {
+                        result += prikaz + "\n";
+                    }
                 }
             }
         } catch (IOException e) {

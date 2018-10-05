@@ -17,6 +17,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 
 import org.apache.tomcat.util.http.fileupload.IOUtils;
+import org.assertj.core.util.Files;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -175,12 +176,15 @@ public class RuleController {
         Assert.notNull(code, "Kód musí být vyplněn");
         try {
             File file = packageService.exportPackage(code);
-            response.setContentType("application/zip");
-            response.setHeader("Content-Disposition", "inline; filename=" + code + "-package.zip");
-            response.setContentLength((int) file.length());
-            InputStream is = new FileInputStream(file);
-            IOUtils.copy(is, response.getOutputStream());
-            response.flushBuffer();
+            try (InputStream is = new FileInputStream(file)) {
+                response.setContentType("application/zip");
+                response.setHeader("Content-Disposition", "inline; filename=" + code + "-package.zip");
+                response.setContentLength((int) file.length());
+
+                IOUtils.copy(is, response.getOutputStream());
+                response.flushBuffer();
+            }
+            Files.delete(file);
         } catch (IOException ex) {
             throw new SystemException("Problem pri zapisu souboru", ex);
         }
