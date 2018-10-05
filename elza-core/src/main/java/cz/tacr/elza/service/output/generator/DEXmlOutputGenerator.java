@@ -46,4 +46,9 @@ public class DEXmlOutputGenerator extends DmsOutputGenerator {
         params.setFundsSections(Collections.singleton(fundSections));
         return params;
     }
+
+    @Override
+    public void close() throws IOException {
+
+    }
 }

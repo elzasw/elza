@@ -13,7 +13,7 @@ elza:
         # Generatory pro jednotlive typy souboru
 #        generators:
 #         - outputMimeType: application/pdf
-#           command: txt2pdf {3} {7}
+#           command: pandoc {2} -o {4}
 #           outputFileName: result.pdf
 
 spring:    

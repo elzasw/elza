@@ -1,37 +1,30 @@
 package cz.tacr.elza.service.attachment;
 
-import cz.tacr.elza.common.NamedInputStreamResource;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import cz.tacr.elza.common.CloseablePathResource;
 import cz.tacr.elza.domain.DmsFile;
 import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.security.ApplicationSecurity;
 import cz.tacr.elza.service.DmsService;
 import cz.tacr.elza.service.ProcessService;
 import cz.tacr.elza.utils.TempDirectory;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
-import org.springframework.stereotype.Service;
-
-import javax.annotation.Nullable;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Servisní třída pro práci s přílohami.
  *
- * @author Pavel Stánek [pavel.stanek@marbes.cz]
- * @since 09.11.2017
  */
 @Service
 public class AttachmentService {
@@ -91,109 +84,50 @@ public class AttachmentService {
     }
 
     /**
-     * Metadata pro parametrizované formátování command.
+     * Command parameter formatter
      */
-    private static class FormatMeta {
-        private String inputFileName;
-        private String inputFileExtension;
-        private String inputFileFilename;
-        private String inputFileFullPath;
-        private String outputFileName;
-        private String outputFileExtension;
-        private String outputFileFilename;
-        private String outputFileFullPath;
+    private static class CmdParamFormatter {
+        final private String workDir;
+        final private String inputFileName;
+        final private String inputFilePath;
+        final private String outputFileName;
+        final private String outputFilePath;
 
-        public FormatMeta(final String inputFileName, final String inputFileExtension, final String inputFileFilename, final String inputFileFullPath) {
-            this.setInputFileName(inputFileName);
-            this.setInputFileExtension(inputFileExtension);
-            this.setInputFileFilename(inputFileFilename);
-            this.setInputFileFullPath(inputFileFullPath);
-        }
-
-        public String getInputFileName() {
-            return inputFileName;
-        }
-
-        public void setInputFileName(String inputFileName) {
+        public CmdParamFormatter(final String workDir, final String inputFileName, final String inputFilePath,
+                final String outputFileName, final String outputFilePath) {
+            this.workDir = workDir;
             this.inputFileName = inputFileName;
-        }
-
-        public String getInputFileExtension() {
-            return inputFileExtension;
-        }
-
-        public void setInputFileExtension(String inputFileExtension) {
-            this.inputFileExtension = inputFileExtension;
-        }
-
-        public String getInputFileFilename() {
-            return inputFileFilename;
-        }
-
-        public void setInputFileFilename(String inputFileFilename) {
-            this.inputFileFilename = inputFileFilename;
-        }
-
-        public String getInputFileFullPath() {
-            return inputFileFullPath;
-        }
-
-        public void setInputFileFullPath(String inputFileFullPath) {
-            this.inputFileFullPath = inputFileFullPath;
-        }
-
-        public String getOutputFileName() {
-            return outputFileName;
-        }
-
-        public void setOutputFileName(String outputFileName) {
+            this.inputFilePath = inputFilePath;
             this.outputFileName = outputFileName;
+            this.outputFilePath = outputFilePath;
         }
 
-        public String getOutputFileExtension() {
-            return outputFileExtension;
+        public CmdParamFormatter(Path workDirPath, Path inputFile, Path outputFile) {
+            this.workDir = workDirPath.toString();
+            this.inputFileName = inputFile.getFileName().toString();
+            this.inputFilePath = inputFile.toString();
+            this.outputFileName = outputFile.getFileName().toString();
+            this.outputFilePath = outputFile.toString();
         }
 
-        public void setOutputFileExtension(String outputFileExtension) {
-            this.outputFileExtension = outputFileExtension;
-        }
+        /**
+         * Formátování řetězce s podporou použití proměnných jako ja např. název input
+         * souboru apod.
+         *
+         * @param text
+         *            text
+         * @return výstupní text
+         */
+        String formatString(final String text) {
+            return MessageFormat.format(
+                                        text,
+                                        workDir,
+                                        inputFileName,
+                                        inputFilePath,
+                                        outputFileName,
+                                        outputFilePath);
 
-        public String getOutputFileFilename() {
-            return outputFileFilename;
         }
-
-        public void setOutputFileFilename(String outputFileFilename) {
-            this.outputFileFilename = outputFileFilename;
-        }
-
-        public String getOutputFileFullPath() {
-            return outputFileFullPath;
-        }
-
-        public void setOutputFileFullPath(String outputFileFullPath) {
-            this.outputFileFullPath = outputFileFullPath;
-        }
-    }
-
-    /**
-     * Formátování řetězce s podporou použití proměnných jako ja např. název input souboru apod.
-     *
-     * @param text       text
-     * @param formatMeta metadata
-     * @return výstupní text
-     */
-    private String formatString(final String text, final FormatMeta formatMeta) {
-        return MessageFormat.format(
-                text,
-                formatMeta.getInputFileName(),
-                formatMeta.getInputFileExtension(),
-                formatMeta.getInputFileFilename(),
-                formatMeta.getInputFileFullPath(),
-                formatMeta.getOutputFileName(),
-                formatMeta.getOutputFileExtension(),
-                formatMeta.getOutputFileFilename(),
-                formatMeta.getOutputFileFullPath()
-        );
     }
 
     /**
@@ -202,60 +136,56 @@ public class AttachmentService {
      * @param dmsFile vstupní soubor
      * @return vygenerovaný pdf soubor, pokud je null, není podpora pro převod vstupního souboru do požadovaného výstupu
      */
-    public @Nullable
-    Resource generate(final DmsFile dmsFile, final String outputMimeType) {
+    public CloseablePathResource generate(final DmsFile dmsFile, final String outputMimeType) {
         logger.info("Generuje se pdf soubor pro dms id {}", dmsFile.getFileId());
 
+        Path origFilePath = dmsService.getFilePath(dmsFile);
         // Pokud je již pdf, jen se vrátí
         if (dmsFile.getMimeType().equalsIgnoreCase(outputMimeType)) {
-            return new NamedInputStreamResource(dmsFile.getFileName(), dmsService.downloadFile(dmsFile));
+            return new CloseablePathResource(origFilePath);
         }
 
         // Pokud není podpora, vrátí se null
         AttachmentConfig.MimeDef mimeDef = attachmentConfig.findMimeDef(dmsFile.getMimeType());
         if (mimeDef == null) {
-            return null;
+            throw new SystemException("Cannot find mimetype in attachment configuration", BaseCode.PROPERTY_NOT_EXIST)
+                    .set("mime-type", dmsFile.getMimeType());
         }
         AttachmentConfig.Generator generator = mimeDef.findGenerator(outputMimeType);
         if (generator == null) {
-            return null;
+            throw new SystemException("Cannot find suitable generator in attachment configuration",
+                    BaseCode.PROPERTY_NOT_EXIST)
+                            .set("originalMimeType", dmsFile.getMimeType())
+                            .set("targetMimeType", outputMimeType);
         }
 
         // Vytvoření pracovního adresáře
         TempDirectory tempDir = new TempDirectory("elza-generate");
-        File workingDir = tempDir.getPath().toFile();
-        logger.info("Pracovní adresář: {}", workingDir.getAbsolutePath());
+        logger.info("Pracovní adresář: {}", tempDir.getPath().toString());
+
+        Path inputFile = tempDir.getPath().resolve("input.dat");
+        Path outputFile = tempDir.getPath().resolve(generator.getOutputFileName());
 
         try {
-            final String inputFileName = "input";
-            final String inputFileExtension = "dat";
-            final String inputFileFilename = inputFileName + "." + inputFileExtension;
-            File inputFile = new File(workingDir, inputFileFilename);
-            FormatMeta formatMeta = new FormatMeta(inputFileName, inputFileExtension, inputFileFilename, inputFile.getAbsolutePath());
+            // copy source file as inputFile
+            Files.copy(origFilePath, inputFile);
 
-            OutputFileData outputFileData = createOutputFileData(generator.getOutputFileName(), formatMeta);
-            File outputFile = new File(workingDir, outputFileData.getOutputFileFilename());
-            fillFormatMeta(formatMeta, outputFileData.getOutputFileName(), outputFileData.getOutputFileExtension(), outputFileData.getOutputFileFilename(), outputFile.getAbsolutePath());
-
-            // Připravení vstupního souboru pro generování
-            try (InputStream is = dmsService.downloadFile(dmsFile); OutputStream os = new FileOutputStream(inputFile)) {
-                IOUtils.copy(is, os);
-            }
-
-            // Spuštění procesu
+            // Spuštění procesu - příprava parametrů
             final String sourceCommand = generator.getCommand();
-            String command = formatString(sourceCommand, formatMeta);
-            Process process = Runtime.getRuntime().exec(command, null, workingDir);
+            CmdParamFormatter cpf = new CmdParamFormatter(tempDir.getPath(), inputFile, outputFile);
+            String command = cpf.formatString(sourceCommand);
+
+            Process process = Runtime.getRuntime().exec(command, null, tempDir.getPath().toFile());
 
             // Zpracování běhu procesu a čekání na jeho dokončení
             // TODO [stanekpa] - kam dáme tuto konfiguraci?
             processService.process(process, 5 * 60 * 1000);
 
-            if (!outputFile.exists()) {
-                throw new IOException("Generování nevytvořilo výstupní soubor " + outputFile.getAbsolutePath());
+            if (!Files.exists(outputFile)) {
+                throw new IOException("Generování nevytvořilo výstupní soubor " + outputFile.toString());
             }
 
-            final InputStream is = new FileInputStream(outputFile) {
+            final CloseablePathResource cpr = new CloseablePathResource(outputFile) {
                 @Override
                 public void close() throws IOException {
                     super.close();
@@ -264,83 +194,10 @@ public class AttachmentService {
                 }
             };
 
-            return new NamedInputStreamResource(outputFile.getName(), is);
+            return cpr;
         } catch (Exception ex) {
             tempDir.delete();
             throw new BusinessException("Chyba generování výstupního souboru", ex, BaseCode.INVALID_STATE);
-        }
-    }
-
-    /**
-     * Vytvoření dat pro výstupní soubor.
-     *
-     * @param outputFileName název výstupu
-     * @param formatMeta     metadata pro parametrizované formátování command
-     * @return data výstupního souboru
-     */
-    private OutputFileData createOutputFileData(final String outputFileName, final FormatMeta formatMeta) {
-        final OutputFileData outputFileData;
-        if (StringUtils.isNotEmpty(outputFileName)) {
-            String value = formatString(outputFileName, formatMeta);
-            int n = value.lastIndexOf('.');
-            if (n > 0) {
-                String name = value.substring(0, n);
-                String extension = value.substring(n + 1);
-                outputFileData = new OutputFileData(name, extension, name + "." + extension);
-            } else {
-                outputFileData = new OutputFileData(value, "", value);
-            }
-        } else {
-            outputFileData = new OutputFileData("output", "dat", "output.dat");
-        }
-        return outputFileData;
-    }
-
-    /**
-     * Doplnění struktury {@link FormatMeta} o data o výstupním souboru.
-     *
-     * @param formatMeta          metadata pro parametrizované formátování command
-     * @param outputFileName      název výstupu
-     * @param outputFileExtension přípona výstupu
-     * @param outputFileFilename  název souboru výstupu
-     * @param outputFileFullPath  absolutní cesta k výstupnímu souboru
-     */
-    private void fillFormatMeta(final FormatMeta formatMeta,
-                                final String outputFileName,
-                                final String outputFileExtension,
-                                final String outputFileFilename,
-                                final String outputFileFullPath) {
-        formatMeta.setOutputFileFullPath(outputFileFullPath);
-        formatMeta.setOutputFileName(outputFileName);
-        formatMeta.setOutputFileExtension(outputFileExtension);
-        formatMeta.setOutputFileFilename(outputFileFilename);
-    }
-
-    /**
-     * Pomocná třída pro data výstupního souboru.
-     */
-    private static class OutputFileData {
-
-        private final String outputFileName;
-        private final String outputFileExtension;
-        private final String outputFileFilename;
-
-        public OutputFileData(final String outputFileName, final String outputFileExtension, final String outputFileFilename) {
-            this.outputFileName = outputFileName;
-            this.outputFileExtension = outputFileExtension;
-            this.outputFileFilename = outputFileFilename;
-        }
-
-        public String getOutputFileName() {
-            return outputFileName;
-        }
-
-        public String getOutputFileExtension() {
-            return outputFileExtension;
-        }
-
-        public String getOutputFileFilename() {
-            return outputFileFilename;
         }
     }
 }

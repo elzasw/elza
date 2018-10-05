@@ -1,5 +1,6 @@
 package cz.tacr.elza.service.output;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -94,21 +95,24 @@ public class OutputGeneratorWorker implements Runnable {
 
     /**
      * Process output. Must be called in transaction.
+     * @throws
      */
     private void generateOutput() {
         ArrOutputDefinition definition = outputServiceInternal.getOutputDefinitionForGenerator(outputDefinitionId);
 
         Engine engine = definition.getTemplate().getEngine();
-        OutputGenerator generator = outputGeneratorFactory.createOutputGenerator(engine);
+        try (OutputGenerator generator = outputGeneratorFactory.createOutputGenerator(engine);) {
+            OutputParams params = createOutputParams(definition);
+            generator.init(params);
+            generator.generate();
 
-        OutputParams params = createOutputParams(definition);
-        generator.init(params);
-        generator.generate();
-
-        // reset error
-        definition.setError(null);
-        OutputState state = resolveEndState(params);
-        definition.setState(state); // saved by commit
+            // reset error
+            definition.setError(null);
+            OutputState state = resolveEndState(params);
+            definition.setState(state); // saved by commit
+        } catch (IOException e) {
+            throw new SystemException("Failed to generate output", e, BaseCode.INVALID_STATE);
+        }
 
         outputServiceInternal.publishOutputStateChanged(definition, fundVersionId);
     }
