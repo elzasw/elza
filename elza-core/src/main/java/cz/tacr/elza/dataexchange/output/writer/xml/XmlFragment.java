@@ -1,5 +1,6 @@
 package cz.tacr.elza.dataexchange.output.writer.xml;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
@@ -15,7 +16,7 @@ import org.apache.commons.lang3.Validate;
 /**
  * Simple representation of file as xml fragment. Implementation is not thread-safe.
  */
-public class XmlFragment implements AutoCloseable {
+public class XmlFragment implements Closeable {
 
     private static final XMLOutputFactory OUTPUT_FACTORY = XMLOutputFactory.newInstance();
 
@@ -72,11 +73,15 @@ public class XmlFragment implements AutoCloseable {
     }
 
     @Override
-    public void close() throws XMLStreamException, IOException {
+    public void close() throws IOException {
         if (isExist()) {
             try {
                 if (streamWriter != null) {
-                    streamWriter.close();
+                    try {
+                        streamWriter.close();
+                    } catch (XMLStreamException e) {
+                        throw new IOException("Failed to close stream writter", e);
+                    }
                     streamWriter = null;
                 }
             } finally {
