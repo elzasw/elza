@@ -13,6 +13,9 @@
 	<parameter name="registryPage" class="net.sf.jasperreports.engine.JasperReport"/>
 	<parameter name="puvodcePage" class="net.sf.jasperreports.engine.JasperReport"/>
 	<parameter name="lastPage" class="net.sf.jasperreports.engine.JasperReport"/>
+	<parameter name="attPage" class="net.sf.jasperreports.engine.JasperReport">
+		<parameterDescription><![CDATA[Page with attachments]]></parameterDescription>
+	</parameter>
 	<queryString>
 		<![CDATA[]]>
 	</queryString>
@@ -57,6 +60,21 @@
 					<subreportParameterExpression><![CDATA[$P{output}]]></subreportParameterExpression>
 				</subreportParameter>
 				<subreportExpression><![CDATA[$P{introPage}]]></subreportExpression>
+			</p:subreportPart>
+		</part>
+		<part uuid="e26f7783-e6ea-46b1-b3a3-787acfd2f50e">
+			<printWhenExpression><![CDATA[$P{output}.getAttPagePlaceHolders("ZP2015_ATTACHMENT").size()>0]]></printWhenExpression>
+			<p:subreportPart xmlns:p="http://jasperreports.sourceforge.net/jasperreports/parts" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/parts http://jasperreports.sourceforge.net/xsd/parts.xsd">
+				<subreportParameter name="output">
+					<subreportParameterExpression><![CDATA[$P{output}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="fund">
+					<subreportParameterExpression><![CDATA[$P{fund}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="REPORT_DATA_SOURCE">
+					<subreportParameterExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($P{output}.getAttPagePlaceHolders("ZP2015_ATTACHMENT"))]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportExpression><![CDATA[$P{attPage}]]></subreportExpression>
 			</p:subreportPart>
 		</part>
 		<part uuid="43ca8116-fb27-4587-a630-b8b6559634f9">
