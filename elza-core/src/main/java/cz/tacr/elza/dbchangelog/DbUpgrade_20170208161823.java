@@ -86,12 +86,12 @@ public class DbUpgrade_20170208161823 implements CustomTaskChange {
             throw new CustomChangeException(
                     "Chyba při vykonávání sql příkazu " + e.getLocalizedMessage(), e);
         } finally {
+            
             if (ps != null) {
                 try {
                     ps.close();
                 } catch (SQLException e) {
-                    throw new CustomChangeException(
-                            "Chyba při uzavírání transakce" + e.getLocalizedMessage(), e);
+                    // Silently catch exception
                 }
             }
         }
