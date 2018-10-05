@@ -3642,3 +3642,60 @@ when $activeLevel: ActiveLevel( )
 then
     $itemType.setType(RulItemType.Type.POSSIBLE);
 end
+
+rule "Možné role entit pro neevidované jednotlivosti"
+no-loop
+when $activeLevel: ActiveLevel( )
+    $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_OTHER") ) from $activeLevel.descItems
+    $itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE" ) )
+    $itemSpec: RulItemSpecExt( code in (
+        // autoři
+        "ZP2015_ENTITY_ROLE_1",
+        // autoři textů
+        "ZP2015_ENTITY_ROLE_11",        
+        // autoři výtvarné stránky
+        "ZP2015_ENTITY_ROLE_14",
+        // vydavatelé
+        "ZP2015_ENTITY_ROLE_15",
+        // vydavatelé / nakladatelé
+        "ZP2015_ENTITY_ROLE_16",
+        // pečetitelé
+        "ZP2015_ENTITY_ROLE_17",
+        // příjemci
+        "ZP2015_ENTITY_ROLE_21",
+        // žadatelé
+        "ZP2015_ENTITY_ROLE_22",
+        // odesilatelé
+        "ZP2015_ENTITY_ROLE_24",
+        // fotografové
+        "ZP2015_ENTITY_ROLE_31",
+        // kartografové
+        "ZP2015_ENTITY_ROLE_33",
+        // editoři / redaktoři
+        "ZP2015_ENTITY_ROLE_35",
+        // překladatelé
+        "ZP2015_ENTITY_ROLE_44",
+        // svědci
+        "ZP2015_ENTITY_ROLE_46",
+        // ručitelé (rukojmě)
+        "ZP2015_ENTITY_ROLE_47",
+        // písaři
+        "ZP2015_ENTITY_ROLE_48",
+        // výrobci nosičů záznamů
+        "ZP2015_ENTITY_ROLE_50",
+        // tiskárny/tiskaři
+        "ZP2015_ENTITY_ROLE_52",
+        // místa vydání
+        "ZP2015_ENTITY_ROLE_58",
+        // místa vzniku jednotek popisu
+        "ZP2015_ENTITY_ROLE_61",
+        // místa vzniku předloh popisovaných kopií
+        "ZP2015_ENTITY_ROLE_62",
+        // entity zachycené jednotkami popisu
+        "ZP2015_ENTITY_ROLE_64",
+        // ostatní entity zachycené jednotkami popisu
+        "ZP2015_ENTITY_ROLE_65"
+     ) ) from $itemType.rulItemSpecList
+then
+    $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+end
