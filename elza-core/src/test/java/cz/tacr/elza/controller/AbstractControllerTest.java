@@ -1,43 +1,7 @@
 package cz.tacr.elza.controller;
 
-import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.config.EncoderConfig;
-import com.jayway.restassured.config.RestAssuredConfig;
-import com.jayway.restassured.internal.support.Prettifier;
-import com.jayway.restassured.response.Header;
-import com.jayway.restassured.response.Response;
-import com.jayway.restassured.response.ResponseBody;
-import com.jayway.restassured.response.ResponseOptions;
-import com.jayway.restassured.specification.RequestSpecification;
-import cz.tacr.elza.AbstractTest;
-import cz.tacr.elza.controller.ArrangementController.FaFilteredFulltextParam;
-import cz.tacr.elza.controller.vo.*;
-import cz.tacr.elza.controller.vo.ApAccessPointNameVO;
-import cz.tacr.elza.controller.vo.filter.Filters;
-import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
-import cz.tacr.elza.controller.vo.nodes.NodeData;
-import cz.tacr.elza.controller.vo.nodes.NodeDataParam;
-import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
-import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.*;
-import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
-import cz.tacr.elza.domain.ArrStructuredObject;
-import cz.tacr.elza.domain.table.ElzaTable;
-import cz.tacr.elza.service.FundLevelService;
-import cz.tacr.elza.service.vo.ChangesResult;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.BooleanUtils;
-import org.junit.Assert;
-import org.junit.Before;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
+import static com.jayway.restassured.RestAssured.given;
 
-import javax.annotation.Nullable;
 import java.io.File;
 import java.io.InputStream;
 import java.math.BigDecimal;
@@ -54,7 +18,105 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
-import static com.jayway.restassured.RestAssured.given;
+import javax.annotation.Nullable;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.BooleanUtils;
+import org.junit.Assert;
+import org.junit.Before;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+
+import com.jayway.restassured.RestAssured;
+import com.jayway.restassured.config.EncoderConfig;
+import com.jayway.restassured.config.RestAssuredConfig;
+import com.jayway.restassured.internal.support.Prettifier;
+import com.jayway.restassured.response.Header;
+import com.jayway.restassured.response.Response;
+import com.jayway.restassured.response.ResponseBody;
+import com.jayway.restassured.response.ResponseOptions;
+import com.jayway.restassured.specification.RequestSpecification;
+
+import cz.tacr.elza.AbstractTest;
+import cz.tacr.elza.controller.ArrangementController.FaFilteredFulltextParam;
+import cz.tacr.elza.controller.vo.AddLevelParam;
+import cz.tacr.elza.controller.vo.ApAccessPointCreateVO;
+import cz.tacr.elza.controller.vo.ApAccessPointNameVO;
+import cz.tacr.elza.controller.vo.ApAccessPointVO;
+import cz.tacr.elza.controller.vo.ApScopeVO;
+import cz.tacr.elza.controller.vo.ApTypeVO;
+import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
+import cz.tacr.elza.controller.vo.ArrFundVO;
+import cz.tacr.elza.controller.vo.ArrFundVersionVO;
+import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
+import cz.tacr.elza.controller.vo.ArrOutputDefinitionVO;
+import cz.tacr.elza.controller.vo.ArrOutputExtVO;
+import cz.tacr.elza.controller.vo.ArrOutputVO;
+import cz.tacr.elza.controller.vo.ArrStructureDataVO;
+import cz.tacr.elza.controller.vo.CopyNodesParams;
+import cz.tacr.elza.controller.vo.CopyNodesValidate;
+import cz.tacr.elza.controller.vo.CopyNodesValidateResult;
+import cz.tacr.elza.controller.vo.CreateFundVO;
+import cz.tacr.elza.controller.vo.FilterNode;
+import cz.tacr.elza.controller.vo.FilterNodePosition;
+import cz.tacr.elza.controller.vo.FilteredResultVO;
+import cz.tacr.elza.controller.vo.FundListCountResult;
+import cz.tacr.elza.controller.vo.NodeItemWithParent;
+import cz.tacr.elza.controller.vo.OutputSettingsVO;
+import cz.tacr.elza.controller.vo.PackageVO;
+import cz.tacr.elza.controller.vo.ParInstitutionVO;
+import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
+import cz.tacr.elza.controller.vo.ParPartyTypeVO;
+import cz.tacr.elza.controller.vo.ParPartyVO;
+import cz.tacr.elza.controller.vo.ParRelationVO;
+import cz.tacr.elza.controller.vo.RulDataTypeVO;
+import cz.tacr.elza.controller.vo.RulDescItemSpecVO;
+import cz.tacr.elza.controller.vo.RulDescItemTypeVO;
+import cz.tacr.elza.controller.vo.RulOutputTypeVO;
+import cz.tacr.elza.controller.vo.RulPolicyTypeVO;
+import cz.tacr.elza.controller.vo.RulRuleSetVO;
+import cz.tacr.elza.controller.vo.RulStructureTypeVO;
+import cz.tacr.elza.controller.vo.RulTemplateVO;
+import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
+import cz.tacr.elza.controller.vo.SysExternalSystemVO;
+import cz.tacr.elza.controller.vo.TreeData;
+import cz.tacr.elza.controller.vo.TreeNodeVO;
+import cz.tacr.elza.controller.vo.UserInfoVO;
+import cz.tacr.elza.controller.vo.UsrGroupVO;
+import cz.tacr.elza.controller.vo.UsrPermissionVO;
+import cz.tacr.elza.controller.vo.UsrUserVO;
+import cz.tacr.elza.controller.vo.ValidationResult;
+import cz.tacr.elza.controller.vo.filter.Filters;
+import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.controller.vo.nodes.NodeData;
+import cz.tacr.elza.controller.vo.nodes.NodeDataParam;
+import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
+import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemCoordinatesVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemDateVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemDecimalVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemEnumVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemFormattedTextVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemIntVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemJsonTableVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemPartyRefVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemRecordRefVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStringVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStructureVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemTextVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitdateVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitidVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
+import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
+import cz.tacr.elza.domain.ArrStructuredObject;
+import cz.tacr.elza.domain.table.ElzaTable;
+import cz.tacr.elza.service.FundLevelService;
+import cz.tacr.elza.service.vo.ChangesResult;
 
 
 public abstract class AbstractControllerTest extends AbstractTest {
@@ -411,27 +473,38 @@ public abstract class AbstractControllerTest extends AbstractTest {
             default:
                 throw new IllegalStateException("Nedefinovaný stav " + method + ".");
         }
+        
+        if(status.value()!=response.statusCode()) {
+            String msg = formatResponse(response);
+            logger.info(msg);
 
-        logResponse(response);
-        Assert.assertEquals(status.value(), response.statusCode());
+            StringBuilder msgBuilder = new StringBuilder();
+            msgBuilder.append("Received unexpected status code: ")
+                    .append(response.statusCode()).append(", expected: ").append(status.value())
+                    .append(", detail: ").append(msg);
+            Assert.fail(msgBuilder.toString());
+        }
 
         return response;
     }
 
-    private static void logResponse(final Response response) {
+    private static String formatResponse(final Response response) {
         String contentType = response.contentType();
-        logger.info("Response status: " + response.statusLine() + ", content-type: " + contentType);
-        // print body in some cases
-        if(contentType!=null) {
-        	if(contentType.startsWith(JSON_CONTENT_TYPE)||contentType.startsWith("text/")) {
+        StringBuilder msg = new StringBuilder();
+        msg.append("Response status: ").append(response.statusLine());
+        if (contentType != null) {
+            msg.append(", content-type: ").append(contentType);
 
-        		ResponseBody<?> responseBody = response;
-        		ResponseOptions<?> responseOptions = response;
-        		String body = new Prettifier().getPrettifiedBodyIfPossible(responseOptions, responseBody);
-        		logger.info("Response body:" + body);
-        	}
+            if (contentType.startsWith(JSON_CONTENT_TYPE) || contentType.startsWith("text/")) {
+                ResponseBody<?> responseBody = response;
+                ResponseOptions<?> responseOptions = response;
+                String body = new Prettifier().getPrettifiedBodyIfPossible(responseOptions, responseBody);
+                msg.append("\n").append("Response body:").append(body);
+
+            }
         }
-	}
+        return msg.toString();
+    }
 
 	/**
      * Multipart request
@@ -450,9 +523,12 @@ public abstract class AbstractControllerTest extends AbstractTest {
         requestSpecification.header(MULTIPART_HEADER).log().all().config(UTF8_ENCODER_CONFIG).cookies(cookies);
 
         Response response = requestSpecification.post(url);
-        logResponse(response);
 
-        Assert.assertEquals(HttpStatus.OK.value(), response.statusCode());
+        if (HttpStatus.OK.value() != response.statusCode()) {
+            String msg = formatResponse(response);
+            logger.error(msg);
+            Assert.fail("Received error, code: " + response.statusCode() + ", detail: " + msg);
+        }
 
         return response;
     }

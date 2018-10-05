@@ -1,5 +1,5 @@
 <structure-definitions>
-    <structure-definition structure-type="SRD_PACKET" filename="SRD_PACKET.drl">
+    <structure-definition structure-type="SRD_PACKET" filename="Packet.drl">
         <def-type>ATTRIBUTE_TYPES</def-type>
         <priority>1</priority>
     </structure-definition>

@@ -20,7 +20,7 @@ public class ArrDataUnitid extends ArrData {
     /**
      * Name of attribute with value
      */
-    static public String UNITID = "unitId";
+    public static final String FIELD_UNITID = "unitId";
 
     /**
      * value of the unitid
@@ -55,7 +55,7 @@ public class ArrDataUnitid extends ArrData {
 
     @Override
     public String getFulltextValue() {
-        return unitId;
+        return getUnitId();
     }
 
 	@Override

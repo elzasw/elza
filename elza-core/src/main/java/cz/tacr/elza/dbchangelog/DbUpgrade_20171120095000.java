@@ -51,12 +51,12 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
 
     @Override
     public void setUp() throws SetupException {
-
+        // not needed
     }
 
     @Override
     public void setFileOpener(final ResourceAccessor resourceAccessor) {
-
+        // not needed
     }
 
     @Override
@@ -66,12 +66,11 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
 
     @Override
     public void execute(final Database db) throws CustomChangeException {
-        //String name = db.getDatabaseProductName();
         dc = (JdbcConnection) db.getConnection();
         try {
 
             List<ArrPacket> packets = findAllPackets();
-            if (packets.size() > 0) {
+            if (!packets.isEmpty()) {
                 migratePackets(packets);
 
             }
@@ -139,11 +138,12 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
     private Integer getNextDescItemObjectId() throws DatabaseException, SQLException {
         PreparedStatement ps = dc.prepareStatement("SELECT MAX(desc_item_object_id) AS max FROM arr_item");
         ps.execute();
-        ResultSet rs = ps.getResultSet();
-        if (rs.next()) {
-            return rs.getInt("max") + 1;
-        } else {
-            return 1;
+        try (ResultSet rs = ps.getResultSet()) {
+            if (rs.next()) {
+                return rs.getInt("max") + 1;
+            } else {
+                return 1;
+            }
         }
     }
 
@@ -177,7 +177,7 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
         ps.setInt(i++, itemSpec.getItemSpecId());
         ps.setInt(i++, 1);
         ps.setInt(i++, 0);
-        ps.setInt(i++, dataId);
+        ps.setInt(i, dataId);
         ps.executeUpdate();
 
         insertStructureItem(structureData, itemId);
@@ -202,7 +202,7 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
         ps.setInt(i++, itemType.getItemTypeId());
         ps.setInt(i++, 1);
         ps.setInt(i++, 0);
-        ps.setInt(i++, dataId);
+        ps.setInt(i, dataId);
         ps.executeUpdate();
 
         insertStructureItem(structureData, itemId);
@@ -274,9 +274,10 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
         List<ArrDataPacketRef> dataPacketRefs = new ArrayList<>();
         PreparedStatement ps = dc.prepareStatement("SELECT * FROM arr_data_packet_ref");
         ps.execute();
-        ResultSet rs = ps.getResultSet();
-        while (rs.next()) {
-            dataPacketRefs.add(createDataPacketRef(rs));
+        try (ResultSet rs = ps.getResultSet();) {
+            while (rs.next()) {
+                dataPacketRefs.add(createDataPacketRef(rs));
+            }
         }
         return dataPacketRefs;
     }
@@ -314,7 +315,7 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
         ps.setInt(i++, structureData.getStructureTypeId());
         ps.setInt(i++, structureData.getFundId());
         ps.setBoolean(i++, structureData.getAssignable());
-        ps.setString(i++, structureData.getState().name());
+        ps.setString(i, structureData.getState().name());
         ps.executeUpdate();
     }
 
@@ -322,9 +323,10 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
         Map<Integer, Integer> result = new HashMap<>();
         PreparedStatement ps = dc.prepareStatement("SELECT * FROM arr_fund_version fv WHERE lock_change_id IS NULL");
         ps.execute();
-        ResultSet rs = ps.getResultSet();
-        while (rs.next()) {
-            result.put(rs.getInt("fund_id"), rs.getInt("rule_set_id"));
+        try (ResultSet rs = ps.getResultSet();) {
+            while (rs.next()) {
+                result.put(rs.getInt("fund_id"), rs.getInt("rule_set_id"));
+            }
         }
         return result;
     }
@@ -500,9 +502,10 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
         List<ArrPacket> packets = new ArrayList<>();
         PreparedStatement ps = dc.prepareStatement("SELECT * FROM arr_packet");
         ps.execute();
-        ResultSet rs = ps.getResultSet();
-        while (rs.next()) {
-            packets.add(createPacket(rs));
+        try (ResultSet rs = ps.getResultSet();) {
+            while (rs.next()) {
+                packets.add(createPacket(rs));
+            }
         }
         return packets;
     }
@@ -512,9 +515,10 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
         PreparedStatement ps = dc.prepareStatement("SELECT * FROM rul_item_type it WHERE it.data_type_id = ?");
         ps.setInt(1, DATA_TYPE_PACKET_REF);
         ps.execute();
-        ResultSet rs = ps.getResultSet();
-        while (rs.next()) {
-            items.add(createItemType(rs));
+        try (ResultSet rs = ps.getResultSet();) {
+            while (rs.next()) {
+                items.add(createItemType(rs));
+            }
         }
         return items;
     }
@@ -539,9 +543,10 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
     private Integer nextItemTypeViewOrder() throws DatabaseException, SQLException {
         PreparedStatement ps = dc.prepareStatement("SELECT MAX(" + RulItemType.VIEW_ORDER  + ") FROM " + RulItemType.TABLE);
         ps.execute();
-        ResultSet rs = ps.getResultSet();
-        if (rs.next()) {
-            return rs.getInt(1) + 1;
+        try (ResultSet rs = ps.getResultSet();) {
+            if (rs.next()) {
+                return rs.getInt(1) + 1;
+            }
         }
         return 1;
     }
@@ -550,9 +555,10 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
         List<DbSequence> dbSequences = new ArrayList<>();
         PreparedStatement ps = dc.prepareStatement("SELECT * FROM db_hibernate_sequences");
         ps.execute();
-        ResultSet rs = ps.getResultSet();
-        while (rs.next()) {
-            dbSequences.add(createDbSequence(rs));
+        try (ResultSet rs = ps.getResultSet();) {
+            while (rs.next()) {
+                dbSequences.add(createDbSequence(rs));
+            }
         }
         return dbSequences;
     }
@@ -561,9 +567,10 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
         List<RulRuleSet> ruleSets = new ArrayList<>();
         PreparedStatement ps = dc.prepareStatement("SELECT * FROM rul_rule_set");
         ps.execute();
-        ResultSet rs = ps.getResultSet();
-        while (rs.next()) {
-            ruleSets.add(createRuleSet(rs));
+        try (ResultSet rs = ps.getResultSet();) {
+            while (rs.next()) {
+                ruleSets.add(createRuleSet(rs));
+            }
         }
         return ruleSets;
     }
@@ -574,9 +581,10 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
         ps.setInt(1, ruleSet.getPackageId());
         ps.setInt(2, ruleSet.getRuleSetId());
         ps.execute();
-        ResultSet rs = ps.getResultSet();
-        while (rs.next()) {
-            packetTypes.add(createPacketType(rs));
+        try (ResultSet rs = ps.getResultSet();) {
+            while (rs.next()) {
+                packetTypes.add(createPacketType(rs));
+            }
         }
         return packetTypes;
     }

@@ -194,7 +194,7 @@ public class DescItemRepositoryImpl implements DescItemRepositoryCustom {
 
         String hql = "SELECT di FROM arr_item di JOIN FETCH di.data d WHERE (di.data IN (SELECT ds FROM arr_data_string ds WHERE ds.value like :text)" +
                 " OR di.data IN (SELECT ds FROM arr_data_text ds WHERE ds.value like :text)" +
-                " OR di.data IN (SELECT ds FROM arr_data_unitid ds WHERE ds.value like :text))"
+                " OR di.data IN (SELECT ds FROM arr_data_unitid ds WHERE ds.unitId like :text))"
                 + " AND di.itemType = :itemType";
 
         if(itemType.getUseSpecification()){

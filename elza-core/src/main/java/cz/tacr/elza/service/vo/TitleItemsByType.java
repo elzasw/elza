@@ -24,11 +24,8 @@ public class TitleItemsByType {
     Map<Integer, TitleValues> items = new HashMap<>();
 
     public void addItem(Integer itemTypeId, TitleValue titleValue) {
-        TitleValues values = items.get(itemTypeId);
-        if (values == null) {
-            values = new TitleValues();
-            items.put(itemTypeId, values);
-        }
+        TitleValues values = items.computeIfAbsent(itemTypeId,
+                                                   v -> new TitleValues());
         values.addValue(titleValue);
     }
 
@@ -45,7 +42,7 @@ public class TitleItemsByType {
     public List<String> getValues(Integer itemTypeId) {
         TitleValues titleValues = items.get(itemTypeId);
         if (titleValues == null) {
-            Collections.emptyList();
+            return Collections.emptyList();
         }
 
         List<String> result = new ArrayList<>();
