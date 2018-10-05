@@ -5,6 +5,7 @@ import java.io.StringWriter;
 import java.util.Map;
 
 import org.apache.commons.lang3.Validate;
+import org.apache.commons.logging.Log;
 import org.slf4j.Logger;
 
 import cz.tacr.elza.exception.codes.BaseCode;
@@ -55,7 +56,27 @@ public class ExceptionResponseBuilder {
         return er;
     }
 
+    /**
+     * Default logger used by Spring
+     * 
+     * @param logger
+     */
+    public void logError(Log logger) {
+        String msg = formatException();
+        logger.error(msg, source);
+    }
+
+    /**
+     * org.slf4j.logger
+     * 
+     * @param logger
+     */
     public void logError(Logger logger) {
+        String msg = formatException();
+        logger.error(msg, source);
+    }
+
+    String formatException() {
         StringBuilder sb = new StringBuilder("Exception type:")
                 .append(errorCode.getType())
                 .append(", code:")
@@ -75,8 +96,7 @@ public class ExceptionResponseBuilder {
             sb.setLength(sb.length() - 1); // remove last ;
             sb.append('}');
         }
-
-        logger.error(sb.toString(), source);
+        return sb.toString();
     }
 
     public static ExceptionResponseBuilder createFrom(Throwable t) {
@@ -94,4 +114,5 @@ public class ExceptionResponseBuilder {
                 .setLevel(e.getLevel())
                 .setProperties(e.getProperties());
     }
+
 }

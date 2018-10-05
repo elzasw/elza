@@ -1,8 +1,6 @@
 package cz.tacr.elza.controller.config;
 
 import org.hibernate.StaleObjectStateException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,13 +20,9 @@ import cz.tacr.elza.exception.codes.BaseCode;
 /**
  * Error handler pro hezké chyby
  *
- * @author Petr Compel [petr.compel@marbes.cz]
- * @since 28.1.2015
  */
 @ControllerAdvice
 public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
-
-    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     @ExceptionHandler({Exception.class})
     @ResponseBody
