@@ -11,6 +11,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.persistence.EntityManager;
 import javax.servlet.ServletOutputStream;
@@ -86,11 +87,16 @@ public class DEExportService {
         if (!Files.exists(transformDir)) {
             return Collections.emptyList();
         }
-        return Files.list(transformDir)
-                .filter(p -> p.endsWith(".xslt"))
-                .map(p -> p.getFileName().toString())
-                .map(n -> n.substring(0, n.length() - 5))
-                .sorted().collect(Collectors.toList());
+
+        try (Stream<Path> files = Files.list(transformDir);) {
+            return files
+                    .filter(p -> p.endsWith(".xslt"))
+                    .map(p -> p.getFileName().toString())
+                    .map(n -> n.substring(0, n.length() - 5))
+                    .sorted().collect(Collectors.toList());
+
+        }
+
     }
 
     /**

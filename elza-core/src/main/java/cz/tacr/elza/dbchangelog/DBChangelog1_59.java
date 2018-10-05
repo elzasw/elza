@@ -22,8 +22,6 @@ import liquibase.statement.core.UpdateStatement;
 /**
  * Vygenerování UUID pro povinný sloupec v reg_record.
  *
- * @author Jiří Vaněk [jiri.vanek@marbes.cz]
- * @since 24. 10. 2016
  */
 public class DBChangelog1_59 implements CustomSqlChange {
 
@@ -31,20 +29,20 @@ public class DBChangelog1_59 implements CustomSqlChange {
     public SqlStatement[] generateStatements(final Database database) throws CustomChangeException {
         JdbcConnection connection = (JdbcConnection) database.getConnection();
         try {
-            Statement createStatement = connection.createStatement();
-            ResultSet resultSet = createStatement.executeQuery("select record_id from reg_record");
+            try (Statement createStatement = connection.createStatement();
+                    ResultSet resultSet = createStatement.executeQuery("select record_id from reg_record");) {
 
-            List<SqlStatement> statements = new LinkedList<>();
-            while (resultSet.next()) {
-                int recordId = resultSet.getInt(1);
-                UpdateStatement updateStatement = new UpdateStatement(null, null, "reg_record");
-                updateStatement.addNewColumnValue(ApAccessPoint.UUID, UUID.randomUUID().toString());
-                updateStatement.setWhereClause("record_id = " + recordId);
+                List<SqlStatement> statements = new LinkedList<>();
+                while (resultSet.next()) {
+                    int recordId = resultSet.getInt(1);
+                    UpdateStatement updateStatement = new UpdateStatement(null, null, "reg_record");
+                    updateStatement.addNewColumnValue(ApAccessPoint.UUID, UUID.randomUUID().toString());
+                    updateStatement.setWhereClause("record_id = " + recordId);
 
-                statements.add(updateStatement);
+                    statements.add(updateStatement);
+                }
+                return statements.toArray(new SqlStatement[statements.size()]);
             }
-
-            return statements.toArray(new SqlStatement[statements.size()]);
         } catch (DatabaseException | SQLException e) {
             throw new CustomChangeException("Chyba v db update 55.", e);
         }
@@ -58,10 +56,12 @@ public class DBChangelog1_59 implements CustomSqlChange {
 
     @Override
     public void setUp() throws SetupException {
+        // Not needed
     }
 
     @Override
     public void setFileOpener(final ResourceAccessor resourceAccessor) {
+        // Not needed
     }
 
     @Override

@@ -8,6 +8,7 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
@@ -32,7 +33,6 @@ import cz.tacr.elza.dataexchange.input.DEImportParams.ImportPositionParams;
 import cz.tacr.elza.dataexchange.input.aps.context.AccessPointsContext;
 import cz.tacr.elza.dataexchange.input.context.ImportContext;
 import cz.tacr.elza.dataexchange.input.context.ImportInitHelper;
-import cz.tacr.elza.dataexchange.input.context.ImportPhase;
 import cz.tacr.elza.dataexchange.input.institutions.context.InstitutionsContext;
 import cz.tacr.elza.dataexchange.input.parties.context.PartiesContext;
 import cz.tacr.elza.dataexchange.input.reader.XmlElementReader;
@@ -149,11 +149,13 @@ public class DEImportService {
         if (!Files.exists(transformDir)) {
             return Collections.emptyList();
         }
-        return Files.list(transformDir)
+        try (Stream<Path> files = Files.list(transformDir);) {
+            return files
                 .filter(p -> p.endsWith(".xslt"))
                 .map(p -> p.getFileName().toString())
                 .map(n -> n.substring(0, n.length() - 5))
                 .sorted().collect(Collectors.toList());
+        }
     }
 
     public void validateData(InputStream is) {
