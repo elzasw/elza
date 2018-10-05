@@ -1335,6 +1335,10 @@ export class UrlFactory {
     static downloadDmsFile(id) {
         return serverContextPath + WebApiCls.dmsUrl + '/' + id
     }
+
+    static downloadGeneratedDmsFile(id, fundId, mimeType){
+        return serverContextPath + WebApiCls.dmsUrl +`/fund/${fundId}/${id}/generated?mimeType=${mimeType}`;
+    }
     static downloadOutputResult(id) {
         return serverContextPath + '/api/outputResult/' + id
     }

@@ -1005,22 +1005,41 @@ class DescItemType extends AbstractReactComponent {
         const label = this.renderLabel();
         const showDeleteDescItemType = this.getShowDeleteDescItemType();
         const descItems = descItemType.descItems.map((descItem, descItemIndex) => {
+
             const actions = [];
 
-            if (!readMode && infoType.rep === 1 && !(infoType.cal && !infoType.calSt)) {
-                if (rulDataType.code !== 'ENUM' && infoType.ind) {
-                    actions.push(<NoFocusButton key="notIdentified"
-                                                className={descItem.undefined ? 'notIdentified' : 'identified'}
-                                                onClick={() => onDescItemNotIdentified(descItemIndex, descItem)}
-                                                title={i18n('subNodeForm.descItemType.title.notIdentified')}><Icon
-                        glyph="fa-low-vision"/></NoFocusButton>);
-                }
-                actions.push(<NoFocusButton disabled={!this.getShowDeleteDescItem(descItem)} key="delete"
-                                            onClick={onDescItemRemove.bind(this, descItemIndex)}
-                                            title={i18n('subNodeForm.deleteDescItem')}><Icon
-                    glyph="fa-times"/></NoFocusButton>);
-            }
+            // pokud prvek popisu neni pocitan automaticky nebo je u nej povoleno zadavat vlastni hodnotu
+            const editable = !infoType.cal || infoType.calSt;
 
+            // pokud je zapnuty rezim uprav a prvek popisu je upravitelny
+            if(!readMode && editable)
+            {
+                // pokud je opakovatelny, neni ENUM a je mozne ho nastavit jako "nezjisteno"
+                if (infoType.rep === 1 && rulDataType.code !== 'ENUM' && infoType.ind) {
+                    actions.push(
+                        <NoFocusButton
+                            key="notIdentified"
+                            className={descItem.undefined ? 'notIdentified' : 'identified'}
+                            onClick={() => onDescItemNotIdentified(descItemIndex, descItem)}
+                            title={i18n('subNodeForm.descItemType.title.notIdentified')}
+                        >
+                            <Icon glyph="fa-low-vision"/>
+                        </NoFocusButton>);
+                }
+
+                // pokud je opakovatelny, nebo je jich vice nez 1
+                if(infoType.rep === 1 || descItemType.descItems.length > 1){
+                    actions.push(
+                        <NoFocusButton
+                            disabled={!this.getShowDeleteDescItem(descItem)}
+                            key="delete"
+                            onClick={onDescItemRemove.bind(this, descItemIndex)}
+                            title={i18n('subNodeForm.deleteDescItem')}
+                        >
+                            <Icon glyph="fa-times"/>
+                        </NoFocusButton>);
+                }
+            }
             const errors = conformityInfo.errors[descItem.descItemObjectId];
             if (errors && errors.length > 0) {
                 const messages = errors.map(error => error.description);

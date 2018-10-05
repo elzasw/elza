@@ -33,7 +33,7 @@ export default class ListPager extends React.Component {
             <div className="list-pager">
                 <Icon onClick={prev} glyph="fa-chevron-left fa-lg" className="arrow-left" />
                 <span className="middle-text">
-                    {from} - {to} z {maxSize}
+                    {from + 1} - {to} z {maxSize}
                 </span>
                 <Icon onClick={next} glyph="fa fa-chevron-right fa-lg" className="arrow-right" />
             </div>

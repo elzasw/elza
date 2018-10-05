@@ -39,9 +39,12 @@ public class GeometryConvertor {
 
     public static Geometry convert(String value) {
         try {
-            return new WKTReader().read(value);
+            WKTReader reader = new WKTReader();
+            Geometry result = reader.read(value);
+            return result;
         } catch (ParseException e) {
-            throw new SystemException("Failed to parse geometry value", e, BaseCode.PROPERTY_IS_INVALID);
+            throw new SystemException("Failed to parse geometry value", e, BaseCode.PROPERTY_IS_INVALID)
+                    .set("value", value);
         }
     }
 

@@ -30,7 +30,7 @@ public class ArrItemUnitidVO extends ArrItemVO {
     @Override
     public ArrData createDataEntity(EntityManager em) {
         ArrDataUnitid data = new ArrDataUnitid();
-        data.setValue(value);
+        data.setUnitId(value);
         data.setDataType(DataType.UNITID.getEntity());
         return data;
     }

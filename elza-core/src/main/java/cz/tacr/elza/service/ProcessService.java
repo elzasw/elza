@@ -1,6 +1,10 @@
 package cz.tacr.elza.service;
 
-import cz.tacr.elza.exception.SystemException;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.concurrent.Future;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanFactory;
@@ -9,18 +13,11 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.Future;
+import cz.tacr.elza.exception.SystemException;
 
 /**
  * Serviska pro práci s procesy.
  *
- * @author Pavel Stánek [pavel.stanek@marbes.cz]
- * @since 10.11.2017
  */
 @Service
 public class ProcessService {
@@ -97,23 +94,15 @@ public class ProcessService {
      */
     public void waitForProcess(final Future<Integer> future, final String processId, final long maxmillis) {
         long waitingMillis = 0;
-        List<Future> results = Collections.singletonList(future);
         while (true) {
-            boolean allDone = true;
-            for (Future<Boolean> x : results) {
-                if (!x.isDone()) {
-                    allDone = false;
-                    break;
-                }
-            }
-            if (allDone) {
+
+            if (future.isDone()) {
                 break;
             }
             try {
                 Thread.sleep(100);
                 waitingMillis += 100;
             } catch (InterruptedException ex) {
-                throw new SystemException("Při čekání na dokončení procesu nastala chyba");
             }
 
             if (waitingMillis % 1000 == 0) {

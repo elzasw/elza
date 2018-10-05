@@ -5,8 +5,8 @@ public class SealedUnitIdTree extends SealedUnitId {
     public SealedUnitIdTree() {
     }
 
-    public PartSealedUnitId addSealedValue(String uv) throws UnitIdException {
-        return addValue(uv, true);
+    public PartSealedUnitId addSealedValue(String uv, SealValidator validator) throws UnitIdException {
+        return addValue(uv, true, validator);
     }
 
     @Override

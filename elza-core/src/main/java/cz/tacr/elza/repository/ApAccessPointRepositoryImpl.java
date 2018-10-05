@@ -44,19 +44,22 @@ public class ApAccessPointRepositoryImpl implements ApAccessPointRepositoryCusto
         CriteriaQuery<ApAccessPoint> query = builder.createQuery(ApAccessPoint.class);
         Root<ApAccessPoint> record = query.from(ApAccessPoint.class);
 
-        Predicate condition = prepareApSearchPredicate(searchRecord, apTypeIds, scopeIdsForSearch, record, builder, query, false);
+        Subquery<Integer> subquery = query.subquery(Integer.class);
+        Root<ApAccessPoint> recordSubquery = subquery.from(ApAccessPoint.class);
+        Predicate condition = prepareApSearchPredicate(searchRecord, apTypeIds, scopeIdsForSearch, record, builder, query, false, true);
+        Predicate conditionSubquery = prepareApSearchPredicate(searchRecord, apTypeIds, scopeIdsForSearch, recordSubquery, builder, null, true, false);
+        subquery.where(conditionSubquery);
+        subquery.select(recordSubquery.get(ApAccessPoint.ACCESS_POINT_ID));
 
         query.select(record);
         if (condition != null) {
-            query.where(condition);
+            query.where(condition, builder.in(record.get(ApAccessPoint.ACCESS_POINT_ID)).value(subquery));
         }
 
-        List<ApAccessPoint> resultList = entityManager.createQuery(query)
+        return entityManager.createQuery(query)
                 .setFirstResult(firstResult)
                 .setMaxResults(maxResults)
                 .getResultList();
-
-        return resultList.stream().distinct().collect(Collectors.toList());
     }
 
     @Override
@@ -71,7 +74,7 @@ public class ApAccessPointRepositoryImpl implements ApAccessPointRepositoryCusto
         CriteriaQuery<Long> query = builder.createQuery(Long.class);
         Root<ApAccessPoint> record = query.from(ApAccessPoint.class);
 
-        Predicate condition = prepareApSearchPredicate(searchRecord, apTypeIds, scopeIds, record, builder, query, true);
+        Predicate condition = prepareApSearchPredicate(searchRecord, apTypeIds, scopeIds, record, builder, query, true, false);
 
         query.select(builder.countDistinct(record));
         if (condition != null) {
@@ -99,7 +102,8 @@ public class ApAccessPointRepositoryImpl implements ApAccessPointRepositoryCusto
                                                      final From<?, ApAccessPoint> fromAp,
                                                      final CriteriaBuilder cb,
                                                      final CriteriaQuery<?> query,
-                                                     final boolean count) {
+                                                     final boolean count,
+                                                     final boolean onlyPrefferedName) {
         // prepare conjunction list
         List<Predicate> conjunctions = new ArrayList<>();
 
@@ -117,9 +121,13 @@ public class ApAccessPointRepositoryImpl implements ApAccessPointRepositoryCusto
             query.orderBy(cb.asc(nameJoin.get(ApName.NAME)));
         }
 
+        if (onlyPrefferedName) {
+            conjunctions.add(cb.isTrue(nameJoin.get(ApName.PREFERRED_NAME)));
+        }
+
         // add text search
         String searchExp = StringUtils.trimToNull(searchValue);
-        if (searchExp != null) {
+        if (searchExp != null && !onlyPrefferedName) {
             searchExp = '%' + searchExp.toLowerCase() + '%';
 
             // add description join

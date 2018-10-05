@@ -17,6 +17,7 @@ import './AddNodeForm.less';
 import FundTreeCopy from '../FundTreeCopy';
 import FundField from '../../admin/FundField';
 import {FUND_TREE_AREA_COPY} from '../../../actions/constants/ActionTypes';
+import {nodeFormActions} from '../../../actions/arr/subNodeForm.jsx'
 
 const TEMPLATE_SCENARIOS = 'TEMPLATE_SCENARIOS';
 
@@ -63,6 +64,12 @@ class AddNodeForm extends AbstractReactComponent {
             }
             if(!importXml){
                 errors.push("no file selected");
+            }
+        }
+        if(selectedType != "NEW" && selectedSourceAS === "OTHER"){
+            const selectedIds = props.fundTreeCopy ? props.fundTreeCopy.selectedIds : {};
+            if(Object.keys(selectedIds).length === 0){
+                errors.push("no selected id");
             }
         }
         return errors;
@@ -157,7 +164,31 @@ class AddNodeForm extends AbstractReactComponent {
     };
 
     handleScenarioChange = e => {
-        this.setState({ selectedScenario: e.target.value });
+        if (e.target.value === TEMPLATE_SCENARIOS) {
+            const {
+                arrRegion,
+                userDetail
+            } = this.props;
+
+            const settings = userDetail.settings;
+            const fund =
+                arrRegion.activeIndex != null
+                    ? arrRegion.funds[arrRegion.activeIndex]
+                    : null;
+            let lastUseTemplateName = null;
+            if (fund) {
+                lastUseTemplateName = this.getLastUseTemplateName(settings, fund);
+            }
+            this.setState({ selectedScenario: e.target.value, template: lastUseTemplateName });
+        } else {
+            this.setState({ selectedScenario: e.target.value });
+        }
+    };
+
+    getLastUseTemplateName = (settings, fund) => {
+        const fundTemplates = getOneSettings(settings, 'FUND_TEMPLATES', 'FUND', fund.id);
+        const templates = fundTemplates.value ? JSON.parse(fundTemplates.value).map(template => template.name) : [];
+        return templates.indexOf(fund.lastUseTemplateName) >= 0 ? fund.lastUseTemplateName : null;
     };
 
     handleTemplateChange = e => {
@@ -251,6 +282,7 @@ class AddNodeForm extends AbstractReactComponent {
                                 submitData.createItems = createItems;
                             }
                         }
+                        this.dispatch(nodeFormActions.fundSubNodeFormTemplateUseOnly(activeFund.versionId, template));
                     }
                 }
             }
@@ -325,6 +357,14 @@ class AddNodeForm extends AbstractReactComponent {
         this.getDirectionScenarios(initDirection);
         this.fetchScopeList();
     }
+
+    componentWillReceiveProps(nextProps){
+        const errors = this.validate(nextProps, this.state);
+        if(errors.length === 0){
+            this.setState({ valid: true });
+        }
+    }
+
     fetchScopeList = () => {
         WebApi.getScopes(this.props.versionId).then(data => {
             const selectedScope = data[0] || undefined;
@@ -334,6 +374,21 @@ class AddNodeForm extends AbstractReactComponent {
             });
         });
     };
+
+    changeNodeSource = (type, source) => {
+        return (e) => {
+            const nextState = {...this.state,};
+            if(type){nextState.selectedType = type;}
+            if(source){nextState.selectedSourceAS = source;}
+
+            const errors = this.validate(this.props, nextState);
+
+            this.setState({
+                ...nextState,
+                valid: errors.length === 0,
+            });
+        };
+    }
 
     render() {
         const {
@@ -381,11 +436,7 @@ class AddNodeForm extends AbstractReactComponent {
                                     inline
                                     name="selectType"
                                     checked={this.state.selectedType === 'NEW'}
-                                    onChange={e => {
-                                        this.setState({
-                                            selectedType: 'NEW'
-                                        });
-                                    }}
+                                    onChange={this.changeNodeSource("NEW")}
                                 >
                                     {i18n('arr.fund.addNode.type.new')}
                                 </Radio>
@@ -394,15 +445,8 @@ class AddNodeForm extends AbstractReactComponent {
                                 <Radio
                                     inline
                                     name="selectType"
-                                    checked={
-                                        this.state.selectedType === 'EXISTING'
-                                    }
-                                    onChange={e => {
-                                        this.setState({
-                                            selectedType: 'EXISTING',
-                                            valid: false
-                                        });
-                                    }}
+                                    checked={this.state.selectedType === 'EXISTING'}
+                                    onChange={this.changeNodeSource("EXISTING")}
                                 >
                                     {i18n('arr.fund.addNode.type.existing')}
                                 </Radio>
@@ -474,6 +518,7 @@ class AddNodeForm extends AbstractReactComponent {
 
         let templates = [];
         let scnRadios = [];
+        let lastUseTemplateName = null;
         if (!loading) {
             let i = 0;
             if (scenarios) {
@@ -558,6 +603,14 @@ class AddNodeForm extends AbstractReactComponent {
             );
         }
 
+        let defaultValueTemplate = "";
+        if (lastUseTemplateName) {
+            defaultValueTemplate = lastUseTemplateName;
+        }
+        if (template) {
+            defaultValueTemplate = template;
+        }
+
         return (
             <div>
                 <FormGroup>
@@ -579,10 +632,10 @@ class AddNodeForm extends AbstractReactComponent {
                                     disabled={loading || submitting}
                                     label={""}
                                     onChange={this.handleTemplateChange}
-                                    defaultValue={""}
+                                    defaultValue={defaultValueTemplate}
                                 >
                                     <option value={""} key="no-select">{i18n('global.action.select')}</option>
-                                    {templates.map(tmp => <option value={tmp} selected={tmp === template} key={tmp}>{tmp}</option>)}
+                                    {templates.map(tmp => <option value={tmp} key={tmp}>{tmp}</option>)}
                                 </FormInput>
                             }
                         </div>}
@@ -606,12 +659,7 @@ class AddNodeForm extends AbstractReactComponent {
                                     checked={
                                         this.state.selectedSourceAS === 'FILE'
                                     }
-                                    onChange={e => {
-                                        this.setState({
-                                            selectedSourceAS: 'FILE',
-                                            valid:false
-                                        });
-                                    }}
+                                    onChange={this.changeNodeSource("EXISTING", "FILE")}
                                 >
                                     {i18n(
                                         'arr.fund.addNode.type.existing.file'
@@ -626,12 +674,7 @@ class AddNodeForm extends AbstractReactComponent {
                                     checked={
                                         this.state.selectedSourceAS === 'OTHER'
                                     }
-                                    onChange={e => {
-                                        this.setState({
-                                            selectedSourceAS: 'OTHER',
-                                            valid: true
-                                        });
-                                    }}
+                                    onChange={this.changeNodeSource("EXISTING", "OTHER")}
                                 >
                                     {i18n(
                                         'arr.fund.addNode.type.existing.other'

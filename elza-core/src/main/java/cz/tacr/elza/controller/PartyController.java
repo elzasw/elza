@@ -43,6 +43,7 @@ import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ParComplementType;
+import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyNameFormType;
 import cz.tacr.elza.domain.ParPartyType;
@@ -526,7 +527,9 @@ public class PartyController {
     @RequestMapping(value = "/institutions", method = RequestMethod.GET)
 	@Transactional
     public List<ParInstitutionVO> getInstitutions() {
-        return factoryVo.createInstitutionList(institutionRepository.findAll());
+        //findAll()
+        List<ParInstitution> instsFromDB = institutionRepository.findAllWithFetch();
+        return factoryVo.createInstitutionList(instsFromDB);
     }
 
     /**

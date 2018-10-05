@@ -13,19 +13,23 @@ import cz.tacr.elza.bulkaction.generator.unitid.SealedUnitIdTree;
 import cz.tacr.elza.bulkaction.generator.unitid.UnitIdException;
 import cz.tacr.elza.bulkaction.generator.unitid.UnitIdGenerator;
 import cz.tacr.elza.bulkaction.generator.unitid.UnitIdGeneratorParams;
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.domain.ArrBulkActionRun;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataUnitid;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.ArrLockedValue;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.repository.DescItemRepository;
-import cz.tacr.elza.repository.UsedValueRepository;
+import cz.tacr.elza.repository.LockedValueRepository;
 
 /**
  * Hromadná akce prochází strom otevřené verze archivní pomůcky a doplňuje u položek požadované atributy.
@@ -54,10 +58,7 @@ public class GenerateUnitId extends BulkAction {
     private RulItemSpec descItemPreviousSpec;
 
     @Autowired
-    private DescItemRepository descItemRepository;
-
-    @Autowired
-    UsedValueRepository usedValueRepository;
+    LockedValueRepository usedValueRepository;
 
 	protected final GenerateUnitIdConfig config;
 
@@ -114,55 +115,31 @@ public class GenerateUnitId extends BulkAction {
 
     }
 
-    /**
-     * Načtení atributu.
-     *
-     * @param level uzel
-     * @return nalezený atribut
-     */
-    private ArrDescItem loadDescItem(final ArrLevel level) {
-        List<ArrDescItem> descItems = descItemRepository
-                .findByNodeAndDeleteChangeIsNullAndItemTypeId(level.getNode(), descItemType.getItemTypeId());
-        if (descItems.size() == 0) {
-            return null;
-        }
-        if (descItems.size() > 1) {
-            throw new IllegalStateException(
-                    descItemType.getCode() + " nemuze byt vice nez jeden (" + descItems.size() + ")");
-        }
-        return descItems.get(0);
-    }
-
-    /**
-     * Načtení atributu - level.
-     *
-     * @param level uzel
-     * @return nalezený atribut
-     */
-    private ArrDescItem loadDescItemLevel(final ArrLevel level) {
-        List<ArrDescItem> descItems = descItemRepository
-                .findByNodeAndDeleteChangeIsNullAndItemTypeId(level.getNode(),
-                        descItemLevelType.getItemTypeId());
-        if (descItems.size() == 0) {
-            return null;
-        }
-        if (descItems.size() > 1) {
-            throw new IllegalStateException(
-                    descItemType.getCode() + " nemuze byt vice nez jeden (" + descItems.size() + ")");
-        }
-        return descItems.get(0);
-    }
-
     private SealedUnitIdTree buildUsedIdTree() {
         ArrFund fund = getFundVersion().getFund();
 
-        List<String> usedValues = usedValueRepository.findByFundAndItemType(fund, descItemType);
+        List<ArrLockedValue> lockedItems = this.usedValueRepository.findByFundAndItemType(fund, descItemType);
 
         SealedUnitIdTree sealedTree = new SealedUnitIdTree();
-        if (usedValues != null) {
-            for (String uv : usedValues) {
+        if (lockedItems != null) {
+            for (ArrLockedValue uv : lockedItems) {
                 try {
-                    sealedTree.addSealedValue(uv);
+                    ArrItem item = uv.getItem();
+                    ArrData data = item.getData();
+                    ArrDataUnitid unitId = HibernateUtils.unproxy(data);
+                    String value = unitId.getUnitId();
+                    
+                    sealedTree.addSealedValue(value, (input) -> {
+                        // validate is input is same with original object
+                        ArrDescItem locked = HibernateUtils.unproxy(input);
+                        if (!uv.getItemId().equals(locked.getItemId())) {
+                            throw new SystemException("Previously sealed value was found with different node",
+                                    BaseCode.INVALID_STATE)
+                                            .set("value", value)
+                                            .set("originalItemId", uv.getItemId())
+                                            .set("otherItemId", locked.getItemId());
+                        }
+                    });
                 } catch (UnitIdException e) {
                     throw new SystemException("Incorrect value in used value repository", BaseCode.INVALID_STATE)
                             .set("value", uv);

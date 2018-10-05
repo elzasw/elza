@@ -77,10 +77,15 @@ actions:
         inputType: ZP2015_ORIGINATOR
         distinct: true
 
-    # Agregace jazyků - zatim nefunkcni
+    # Agregace jazyků
     - !Copy
         inputType: ZP2015_LANGUAGE
         distinct: true
+        
+    # Agregace příloh
+    - !Copy
+        inputType: ZP2015_ATTACHMENT
+        distinct: true        
 
     # Počet JP v pomůcce        
     - !NodeCount

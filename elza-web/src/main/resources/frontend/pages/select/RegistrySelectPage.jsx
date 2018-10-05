@@ -51,7 +51,7 @@ class RegistrySelectPage extends SelectPage {
                 if (!partyDetail.fetched || partyDetail.isFetching || !partyDetail.id) {
                     return;
                 }
-                onSelect(partyDetail.data.record);
+                onSelect(partyDetail.data.accessPoint);
                 break;
             case OPEN_PAGE.REGISTRY:
                 if (!registryDetail.fetched || registryDetail.isFetching || !registryDetail.id) {

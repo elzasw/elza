@@ -7,7 +7,6 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 /**
  * Popisek hodnoty atributu uzlu.
  *
- * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 18.03.2016
  */
 public class TitleValue extends DescItemValue {

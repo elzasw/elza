@@ -26,16 +26,17 @@ import javax.persistence.TemporalType;
 import javax.persistence.TypedQuery;
 import javax.validation.constraints.NotNull;
 
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
 
 import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
 import cz.tacr.elza.config.ConfigView;
+import cz.tacr.elza.config.view.ViewTitles;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
@@ -48,20 +49,19 @@ import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
-import cz.tacr.elza.domain.vo.TitleValue;
-import cz.tacr.elza.domain.vo.TitleValues;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
-import cz.tacr.elza.repository.UsedValueRepository;
+import cz.tacr.elza.repository.LockedValueRepository;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.eventnotification.events.EventFunds;
 import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.vo.Change;
 import cz.tacr.elza.service.vo.ChangesResult;
+import cz.tacr.elza.service.vo.TitleItemsByType;
 
 /**
  * Servisní třída pro práci s obnovou změn v archivní souboru - "UNDO".
@@ -108,7 +108,7 @@ public class RevertingChangesService {
     private DataRepository dataRepository;
 
     @Autowired
-    private UsedValueRepository usedValueRepository;
+    private LockedValueRepository usedValueRepository;
 
     /**
      * Vyhledání provedení změn nad AS, případně nad konkrétní JP z AS.
@@ -125,7 +125,7 @@ public class RevertingChangesService {
                                      final int maxSize,
                                      final int offset,
                                      @Nullable final ArrChange fromChange) {
-        Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
+        Validate.notNull(fundVersion, "Verze AS musí být vyplněna");
 
         Integer fundId = fundVersion.getFund().getFundId();
         Integer nodeId = node == null ? null : node.getNodeId();
@@ -202,9 +202,9 @@ public class RevertingChangesService {
                                            final int maxSize,
                                            @NotNull final LocalDateTime fromDate,
                                            @NotNull final ArrChange fromChange) {
-        Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
-        Assert.notNull(fromDate, "Datum od musí být vyplněn");
-        Assert.notNull(fromChange, "Změna musí být vyplněna");
+        Validate.notNull(fundVersion, "Verze AS musí být vyplněna");
+        Validate.notNull(fromDate, "Datum od musí být vyplněn");
+        Validate.notNull(fromChange, "Změna musí být vyplněna");
 
         Integer fundId = fundVersion.getFund().getFundId();
         Integer nodeId = node == null ? null : node.getNodeId();
@@ -239,9 +239,9 @@ public class RevertingChangesService {
                               @Nullable final ArrNode node,
                               @NotNull final ArrChange fromChange,
                               @NotNull final ArrChange toChange) {
-        Assert.notNull(fund, "AS musí být vyplněn");
-        Assert.notNull(fromChange, "Změna od musí být vyplněna");
-        Assert.notNull(toChange, "Změna do musí být vyplněna");
+        Validate.notNull(fund, "AS musí být vyplněn");
+        Validate.notNull(fromChange, "Změna od musí být vyplněna");
+        Validate.notNull(toChange, "Změna do musí být vyplněna");
 
         Integer fundId = fund.getFundId();
         Integer nodeId = node == null ? null : node.getNodeId();
@@ -879,15 +879,17 @@ public class RevertingChangesService {
             }
         }
 
-        ConfigView.ViewTitles viewTitles = configView.getViewTitles(fundVersion.getRuleSet().getCode(), fundVersion.getFund().getFundId());
-        Set<String> descItemTypeCodes = viewTitles.getTreeItem() == null ? Collections.emptySet() : new LinkedHashSet<>(viewTitles.getTreeItem());
+        ViewTitles viewTitles = configView.getViewTitles(fundVersion.getRuleSetId(),
+                                                                    fundVersion.getFundId());
+        Set<Integer> descItemTypeCodes = viewTitles.getTreeItemIds() == null ? Collections.emptySet()
+                : new LinkedHashSet<>(viewTitles.getTreeItemIds());
 
-        Set<RulItemType> descItemTypes = new HashSet<>();
+        List<RulItemType> descItemTypes = Collections.emptyList();
         if (!descItemTypeCodes.isEmpty()) {
-            descItemTypes = itemTypeRepository.findByCode(descItemTypeCodes);
+            descItemTypes = itemTypeRepository.findAll(descItemTypeCodes);
             if (descItemTypes.size() != descItemTypeCodes.size()) {
                 List<String> foundCodes = descItemTypes.stream().map(RulItemType::getCode).collect(Collectors.toList());
-                Collection<String> missingCodes = new HashSet<>(descItemTypeCodes);
+                Collection<Integer> missingCodes = new HashSet<>(descItemTypeCodes);
                 missingCodes.removeAll(foundCodes);
 
                 logger.warn("Nepodařilo se nalézt typy atributů s kódy " + org.apache.commons.lang.StringUtils.join(missingCodes, ", ") + ". Změňte kódy v"
@@ -896,7 +898,10 @@ public class RevertingChangesService {
 
         }
 
-        HashMap<Map.Entry<Integer, Integer>, String> changeNodeMap = createNodeLabels(changeIdNodeIdMap, descItemTypes, fundVersion.getRuleSet().getCode(), fundVersion.getFund().getFundId());
+        HashMap<Map.Entry<Integer, Integer>, String> changeNodeMap = createNodeLabels(changeIdNodeIdMap, descItemTypes,
+                                                                                      fundVersion.getRuleSetId(),
+                                                                                      fundVersion.getFund()
+                                                                                              .getFundId());
 
         Map<Integer, UsrUser> users = userService.findUserMap(userIds);
 
@@ -946,35 +951,35 @@ public class RevertingChangesService {
     /**
      * Vytvoření mapy popisků JP podle identifikátoru změny/JP.
      *
-     * @param changeIdNodeIdMap mapa změny/JP
-     * @param itemTypes         seznam typů atributů
-     * @param code
-     *@param fundId @return mapa popisků
+     * @param changeIdNodeIdMap
+     *            mapa změny/JP
+     * @param itemTypes
+     *            seznam typů atributů
+     * @param ruleSetId
+     *            identifikátor pravidel
+     * @param fundId
+     *            @return mapa popisků
      */
     private HashMap<Map.Entry<Integer, Integer>, String> createNodeLabels(final HashMap<Integer, Integer> changeIdNodeIdMap,
-                                                                          final Set<RulItemType> itemTypes,
-                                                                          final String code, final Integer fundId) {
+                                                                          final List<RulItemType> itemTypes,
+                                                                          final Integer ruleSetId,
+                                                                          final Integer fundId) {
         HashMap<Map.Entry<Integer, Integer>, String> result = new HashMap<>();
 
         for (Map.Entry<Integer, Integer> entry : changeIdNodeIdMap.entrySet()) {
-            Map<Integer, Map<String, TitleValues>> nodeValuesMap = descriptionItemService
+            Map<Integer, TitleItemsByType> nodeValuesMap = descriptionItemService
                     .createNodeValuesByItemTypeCodeMap(Collections.singleton(entry.getValue()), itemTypes, entry.getKey(), null);
-            Map<String, TitleValues> valuesMap = nodeValuesMap.get(entry.getValue());
-            if (valuesMap != null) {
+            TitleItemsByType items = nodeValuesMap.get(entry.getValue());
+            if (items != null) {
                 List<String> titles = new ArrayList<>();
                 for (RulItemType itemType : itemTypes) {
-                    TitleValues titleValues = valuesMap.get(itemType.getCode());
-                    if (titleValues != null) {
-                        for (TitleValue titleValue : titleValues.getValues()) {
-                            titles.add(titleValue.getValue());
-                        }
-                    }
+                    titles.addAll(items.getValues(itemType.getItemTypeId()));
                 }
                 result.put(entry, String.join(" ", titles));
             } else {
-                ConfigView.ViewTitles viewTitles = configView.getViewTitles(code, fundId);
+                ViewTitles viewTitles = configView.getViewTitles(ruleSetId, fundId);
                 String defaultTitle = viewTitles.getDefaultTitle();
-                defaultTitle = org.apache.commons.lang.StringUtils.isEmpty(defaultTitle) ? "JP <" + entry.getValue() + ">" : defaultTitle;
+                defaultTitle = StringUtils.isEmpty(defaultTitle) ? "JP <" + entry.getValue() + ">" : defaultTitle;
                 result.put(entry, defaultTitle);
             }
         }
@@ -1026,7 +1031,7 @@ public class RevertingChangesService {
      */
     private String createHqlSubNodeQuery(@NotNull final ArrFund fund,
                                          @Nullable final ArrNode node) {
-        Assert.notNull(fund, "AS musí být vyplněn");
+        Validate.notNull(fund, "AS musí být vyplněn");
         String query = "SELECT n FROM arr_node n WHERE fund = :fund";
         if (node != null) {
             query += " AND n = :node";
@@ -1043,7 +1048,7 @@ public class RevertingChangesService {
      */
     private String createSubNodeQuery(@NotNull final Integer fundId,
                                       @Nullable final Integer nodeId) {
-        Assert.notNull(fundId, "Identifikátor AS musí být vyplněn");
+        Validate.notNull(fundId, "Identifikátor AS musí být vyplněn");
         String query = "SELECT node_id FROM arr_node WHERE fund_id = :fundId";
         if (nodeId != null) {
             query += " AND node_id = :nodeId";
