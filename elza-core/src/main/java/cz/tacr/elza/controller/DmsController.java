@@ -18,10 +18,9 @@ import javax.transaction.Transactional;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.Validate;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -31,6 +30,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import cz.tacr.elza.common.CloseablePathResource;
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.ArrFileVO;
@@ -458,19 +458,16 @@ public class DmsController {
         ArrFile file = dmsService.getArrFile(fileId);
         Assert.isTrue(fundId.equals(file.getFund().getFundId()), "Nesouhlasí id AS");
 
-        Resource output = attachmentService.generate(file, mimeType);
-
-        response.setHeader("Content-Disposition", "attachment;filename=" + output.getFilename());
-
         ServletOutputStream out = response.getOutputStream();
-        try (InputStream in = output.getInputStream()) {
-            if (in != null) {
-                IOUtils.copy(in, out);
-                IOUtils.closeQuietly(in);
-                IOUtils.closeQuietly(out);
-            } else {
-                throw new BusinessException("Požadovaný soubor nelze generovat do " + mimeType, BaseCode.INVALID_STATE);
-            }
+
+        try (CloseablePathResource output = attachmentService.generate(file, mimeType)) {
+            response.setHeader("Content-Disposition", "attachment;filename=" + output.getFilename());
+            response.setContentLengthLong(output.contentLength());
+
+            // Copy to output stream
+            output.writeTo(out);
+
+            IOUtils.closeQuietly(out);
         }
     }
 
