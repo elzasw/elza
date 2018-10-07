@@ -63,9 +63,12 @@ public class ProcessService {
         // Čekáme na dokončení
         while (process.isAlive()) {
             try {
-                process.wait(250);
+                synchronized (process) {
+                    process.wait(250);
+                }
             } catch (InterruptedException e) {
-                throw new SystemException("Při čekání na dokončení procesu nastala chyba");
+                // Nothing to do with this
+                Thread.currentThread().interrupt();
             }
         }
 
@@ -103,6 +106,8 @@ public class ProcessService {
                 Thread.sleep(100);
                 waitingMillis += 100;
             } catch (InterruptedException ex) {
+                // Nothing to do with this
+                Thread.currentThread().interrupt();
             }
 
             if (waitingMillis % 1000 == 0) {

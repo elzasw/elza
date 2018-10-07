@@ -196,7 +196,7 @@ public class ArrBulkActionRun {
      *
      * @return stav state
      */
-    public State getState() {
+    public synchronized State getState() {
         return state;
     }
 

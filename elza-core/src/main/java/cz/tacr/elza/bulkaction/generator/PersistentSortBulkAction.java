@@ -33,7 +33,6 @@ import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
-import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.FundLevelService;
 
 /**
@@ -42,9 +41,6 @@ import cz.tacr.elza.service.FundLevelService;
 public class PersistentSortBulkAction extends BulkAction {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
-
-    @Autowired
-    private ArrangementService arrangementService;
 
     @Autowired
     private FundLevelService fundLevelService;
@@ -193,9 +189,9 @@ public class PersistentSortBulkAction extends BulkAction {
                 }
             } else if (newValue != null) {
                 int compareTo = currentValue.compareTo(newValue);
-                if (runConfig.isAsc() && compareTo == -1) { // podle způsobu řazení zjistíme jestli je nová hodnota lepší než ta co už máme(pro typy atributů s více hodnotami)
+                if (runConfig.isAsc() && compareTo < 0) { // podle způsobu řazení zjistíme jestli je nová hodnota lepší než ta co už máme(pro typy atributů s více hodnotami)
                     nodeValues.put(arrDescItem.getNodeId(), newValue);
-                } else if (!runConfig.isAsc() && compareTo == 1) {
+                } else if (!runConfig.isAsc() && compareTo > 0) {
                     nodeValues.put(arrDescItem.getNodeId(), newValue);
                 }
             }
