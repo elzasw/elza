@@ -30,7 +30,7 @@ import cz.tacr.elza.utils.TempDirectory;
 public class AttachmentService {
     private static final Logger logger = LoggerFactory.getLogger(ApplicationSecurity.class);
 
-    private static final long MAX_PROCESS_TIMEOUT = 5 * 60 * 1000;
+    private static final long MAX_PROCESS_TIMEOUT = 5L * 60 * 1000;
 
     @Autowired
     private DmsService dmsService;

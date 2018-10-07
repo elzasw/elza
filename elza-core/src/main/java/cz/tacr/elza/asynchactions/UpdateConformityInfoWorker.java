@@ -228,7 +228,6 @@ public class UpdateConformityInfoWorker implements Runnable {
             }
             status = WorkerStatus.TERMINATING;
         }
-        boolean interrupted = false;
         while (true) {
             synchronized (this) {
                 if (status == WorkerStatus.TERMINATED) {
@@ -238,21 +237,9 @@ public class UpdateConformityInfoWorker implements Runnable {
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
-                interrupted = true;
-                synchronized (this) {
-                    // check if thread is live
-                    if (status == WorkerStatus.TERMINATING && this.thread != null) {
-                        if (!thread.isAlive()) {
-                            // terminate immediately if thread is dear
-                            break;
-                        }
-                    }
-                }
+                // Nothing to do with this -> simply finish
+                Thread.currentThread().interrupt();
             }
-        }
-
-        if (interrupted) {
-            Thread.currentThread().interrupt();
         }
     }
 

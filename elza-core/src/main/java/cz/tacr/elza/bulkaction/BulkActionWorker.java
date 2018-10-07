@@ -133,24 +133,19 @@ public class BulkActionWorker implements Callable<BulkActionWorker> {
             return;
         }
 
-        boolean interrupted = false;
         try {
-            while (bulkActionRun.getState() == State.RUNNING && !interrupted) {
+            while (bulkActionRun.getState() == State.RUNNING) {
                 try {
                     Thread.sleep(100);
                 } catch (InterruptedException e) {
-                    interrupted = true;
+                    // Nothing to do with this -> simply finish
+                    Thread.currentThread().interrupt();
                 }
             }
             setStateAndPublish(State.INTERRUPTED);
         } finally {
             bulkActionRun.setInterrupted(false);
         }
-
-        if (interrupted) {
-            Thread.currentThread().interrupt();
-        }
-
     }
 
     @Override
