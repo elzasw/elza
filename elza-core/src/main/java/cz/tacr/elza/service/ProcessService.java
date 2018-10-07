@@ -63,9 +63,7 @@ public class ProcessService {
         // Čekáme na dokončení
         while (process.isAlive()) {
             try {
-                synchronized (process) {
-                    process.wait(250);
-                }
+                process.wait(250);
             } catch (InterruptedException e) {
                 // Nothing to do with this
                 Thread.currentThread().interrupt();
