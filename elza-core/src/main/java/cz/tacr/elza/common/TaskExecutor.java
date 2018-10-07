@@ -50,7 +50,7 @@ public class TaskExecutor {
 
     /**
      * Caller stop async queue processing. This operation will block caller thread
-     * until manager thread does not terminate.
+     * until manager thread terminates.
      *
      * When terminated no more tasks will be passed to execution.
      */
@@ -64,6 +64,8 @@ public class TaskExecutor {
                 try {
                     wait(100);
                 } catch (InterruptedException e) {
+                    // nothing to do here
+                    Thread.currentThread().interrupt();
                 }
             }
         }
@@ -91,6 +93,9 @@ public class TaskExecutor {
                 try {
                     wait();
                 } catch (InterruptedException e) {
+                    // nothing to do here
+                    state = State.TERMINATED;
+                    Thread.currentThread().interrupt();
                 }
                 continue;
             }
