@@ -14,8 +14,6 @@ import java.util.stream.Collectors;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -351,15 +349,21 @@ public class BulkActionService implements ListenableFutureCallback<BulkActionWor
     /**
      * Přeruší všechny akce pro danou verzi. (všechny naplánované + čekající)
      *
-     * @param fundVersionId id verze archivní pomůcky
+     * Synchronní metoda, čeká na přerušení
+     * 
+     * @param fundVersionId
+     *            id verze archivní pomůcky
      */
     public void terminateBulkActions(final Integer fundVersionId) {
+        // TODO: Toto řešení nedává smysl pro mazání AS odkud je funkce volána
+        //       Bude nutné více přepracovat, např. rovnou hromadné akce smazat. 
         bulkActionRepository.findByFundVersionIdAndState(fundVersionId, State.WAITING).forEach(bulkActionRun -> {
             bulkActionRun.setState(State.INTERRUPTED);
             bulkActionRepository.save(bulkActionRun);
         });
         bulkActionRepository.flush();
 
+        // Tady není řešena správně synchronizace
         if (runningWorkers.containsKey(fundVersionId)) {
             runningWorkers.get(fundVersionId).terminate();
         }

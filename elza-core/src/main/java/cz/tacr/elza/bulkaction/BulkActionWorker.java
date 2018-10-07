@@ -12,7 +12,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrBulkActionRun.State;
-import cz.tacr.elza.exception.SystemException;
 
 /**
  * Úloha hromadné akce.
@@ -130,25 +129,28 @@ public class BulkActionWorker implements Callable<BulkActionWorker> {
      * Ukončí běžící hromadnou akci.
      */
     public void terminate() {
-        State state = bulkActionRun.getState();
-
-        if (state != State.RUNNING) {
+        if (!bulkActionRun.setInterrupted(true)) {
             return;
         }
 
-        bulkActionRun.setInterrupted(true);
-
-        while (state == State.RUNNING) {
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                throw new SystemException("Chyba při ukončování vlákna hromadné akce.", e);
+        boolean interrupted = false;
+        try {
+            while (bulkActionRun.getState() == State.RUNNING && !interrupted) {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    interrupted = true;
+                }
             }
+            setStateAndPublish(State.INTERRUPTED);
+        } finally {
+            bulkActionRun.setInterrupted(false);
         }
 
-        setStateAndPublish(State.INTERRUPTED);
+        if (interrupted) {
+            Thread.currentThread().interrupt();
+        }
 
-        bulkActionRun.setInterrupted(false);
     }
 
     @Override
