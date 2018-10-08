@@ -25,9 +25,15 @@
         <cxf.version>3.1.11</cxf.version>
         <hibernate.version>5.2.17.Final</hibernate.version>
         <hibernate.search.orm.version>5.7.1.Final</hibernate.search.orm.version>
-        <hibernate.lucene.version>5.5.4</hibernate.lucene.version>  <!-- nelze zvednout na 6.6.0, protože hibernate.search.orm.version nemá ani v 5.8.0.Beta3 závislost na 6.6.0, ale jen 5.5.4. Mezi verzí 5.5.4 a 6.6.0 byla odebrána vnitřní třída Index ve třídě org.apache.lucene.document.Field. -->
+        <hibernate.lucene.version>5.5.4</hibernate.lucene.version>  <!-- nelze zvednout na 6.6.0, protože hibernate.search.orm.version nemá ani 
+            v 5.8.0.Beta3 závislost na 6.6.0, ale jen 5.5.4. Mezi verzí 5.5.4 a 6.6.0 
+            byla odebrána vnitřní třída Index ve třídě org.apache.lucene.document.Field. -->
         <spring.boot.version>1.5.3.RELEASE</spring.boot.version>
         <spring.security.version>4.2.3.RELEASE</spring.security.version>
+
+        <sonar.core.codeCoveragePlugin>jacoco</sonar.core.codeCoveragePlugin>
+        <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
+        <sonar.jacoco.reportPath>${project.basedir}/../target/jacoco.exec</sonar.jacoco.reportPath>
     </properties>
 
     <modules>
@@ -496,52 +502,43 @@
 		</reporting>
 	</profile>
 
-	<profile>
-		<!-- Profile for automated builds with Jenkins + SonarQube -->
-		<id>jacoco-report</id>
-		<build>
-			<pluginManagement>
-				<plugins>
-					<plugin>
-						<groupId>org.jacoco</groupId>
-						<artifactId>jacoco-maven-plugin</artifactId>
-						<version>0.8.2</version>
-					</plugin>
-				</plugins>
-			</pluginManagement>
-	<plugins>
-		<plugin>
-			<groupId>org.jacoco</groupId>
-			<artifactId>jacoco-maven-plugin</artifactId>
-			<configuration>
-				<append>true</append>
-			</configuration>
-			<!-- 
-			<executions>
-				<execution>
-					<id>agent-for-ut</id>
-					<goals>
-						<goal>prepare-agent</goal>
-					</goals>
-				</execution>
-				<execution>
-					<id>agent-for-it</id>
-					<goals>
-						<goal>prepare-agent-integration</goal>
-					</goals>
-				</execution>
-				<execution>
-					<id>jacoco-site</id>
-					<phase>verify</phase>
-					<goals>
-						<goal>report</goal>
-					</goals>
-				</execution>
-			</executions>-->
-		</plugin>
-	</plugins>			
-		</build>
-	</profile>
+    <profile>
+        <!-- Profile for automated builds with Jenkins + SonarQube -->
+        <id>jacoco-report</id>
+        <build>
+            <pluginManagement>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                        <version>0.8.2</version>
+                    </plugin>
+                </plugins>
+            </pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.jacoco</groupId>
+                    <artifactId>jacoco-maven-plugin</artifactId>
+                    <configuration>
+                        <append>true</append>
+                        <destFile>${sonar.jacoco.reportPath}</destFile>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>prepare-agent</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                    <!-- <executions> <execution> <id>agent-for-ut</id> <goals> 
+                        <goal>prepare-agent</goal> </goals> </execution> <execution> <id>agent-for-it</id> 
+                        <goals> <goal>prepare-agent-integration</goal> </goals> </execution> <execution> 
+                        <id>jacoco-site</id> <phase>verify</phase> <goals> <goal>report</goal> </goals> 
+                        </execution> </executions> -->
+                </plugin>
+            </plugins>
+        </build>
+    </profile>
 
 
     </profiles>
