@@ -669,8 +669,8 @@ public class RevertingChangesService {
                 {"arr_request_queue_item", "createChange"},
                 {"arr_request", "createChange"},
 
-                { ArrStructuredObject.TABLE_NAME, ArrStructuredObject.CREATE_CHANGE },
-                { ArrStructuredObject.TABLE_NAME, ArrStructuredObject.DELETE_CHANGE },
+                { ArrStructuredObject.TABLE_NAME, ArrStructuredObject.FIELD_CREATE_CHANGE },
+                { ArrStructuredObject.TABLE_NAME, ArrStructuredObject.FIELD_DELETE_CHANGE },
 
                 { ArrFundStructureExtension.TABLE_NAME, ArrFundStructureExtension.CREATE_CHANGE },
                 { ArrFundStructureExtension.TABLE_NAME, ArrFundStructureExtension.DELETE_CHANGE }

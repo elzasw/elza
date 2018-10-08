@@ -50,7 +50,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
 		if (StringUtils.isNotBlank(search)) {
 			final String searchValue = "%" + search.toLowerCase() + "%";
 			conditions.add(builder.or(
-			        builder.like(builder.lower(nameJoin.get(ApName.COL_NAME)), searchValue),
+			        builder.like(builder.lower(nameJoin.get(ApName.FIELD_NAME)), searchValue),
 			        builder.like(builder.lower(user.get(UsrUser.USERNAME)), searchValue),
 			        builder.like(builder.lower(user.get(UsrUser.DESCRIPTION)), searchValue)));
 		}
@@ -151,7 +151,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
         if (StringUtils.isNotBlank(search)) {
             final String searchValue = "%" + search.toLowerCase() + "%";
             conditions.add(builder.or(
-                    builder.like(builder.lower(recordName.get(ApName.COL_NAME)), searchValue),
+                    builder.like(builder.lower(recordName.get(ApName.FIELD_NAME)), searchValue),
                     builder.like(builder.lower(user.get(UsrUser.USERNAME)), searchValue),
                     builder.like(builder.lower(user.get(UsrUser.DESCRIPTION)), searchValue)
             ));
@@ -316,7 +316,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
         // join current preferred AP names
         Join<ApAccessPoint, ApName> nameJoin = ApAccessPointRepositoryImpl.preparePrefNameJoin(apJoin, cb);
         // define order
-        Order order1 = cb.asc(nameJoin.get(ApName.COL_NAME));
+        Order order1 = cb.asc(nameJoin.get(ApName.FIELD_NAME));
         Order order2 = cb.asc(user.get(UsrUser.USERNAME));
         query.orderBy(order1, order2);
     }

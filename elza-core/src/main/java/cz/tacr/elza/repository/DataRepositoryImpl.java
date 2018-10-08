@@ -362,7 +362,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
 
                 @Override
                 public Path<String> getValueStringSelection(final CriteriaBuilder criteriaBuilder) {
-                    return targetJoin.get(ArrStructuredObject.VALUE);
+                    return targetJoin.get(ArrStructuredObject.FIELD_VALUE);
                 }
             };
         } else {

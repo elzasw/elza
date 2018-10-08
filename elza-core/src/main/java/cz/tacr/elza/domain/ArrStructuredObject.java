@@ -37,13 +37,13 @@ public class ArrStructuredObject implements IArrFund, Structured {
 
     public final static String TABLE_NAME = "arr_structured_object";
 
-    public final static String STRUCTURED_OBJECT_ID = "structuredObjectId";
+    public final static String FIELD_STRUCTURED_OBJECT_ID = "structuredObjectId";
 
-    public final static String CREATE_CHANGE = "createChange";
+    public final static String FIELD_CREATE_CHANGE = "createChange";
 
-    public final static String DELETE_CHANGE = "deleteChange";
+    public final static String FIELD_DELETE_CHANGE = "deleteChange";
 
-    public static String VALUE = "value";
+    public static String FIELD_VALUE = "value";
 
     @Id
     @GeneratedValue

@@ -22,15 +22,15 @@ import cz.tacr.elza.domain.enumeration.StringLength;
 @Entity(name = "ap_access_point")
 public class ApAccessPoint implements IApScope {
 
-    public static final String COL_ACCESS_POINT_ID = "accessPointId";
-    public static final String COL_UUID = "uuid";
-    public static final String COL_AP_TYPE = "apType";
-    public static final String COL_AP_TYPE_ID = "apTypeId";
-    public static final String COL_SCOPE = "scope";
-    public static final String COL_SCOPE_ID = "scopeId";
-    public static final String COL_NAMES = "names";
-    public static final String COL_DESCRIPTIONS = "descriptions";
-    public static final String COL_DELETE_CHANGE_ID = "deleteChangeId";
+    public static final String FIELD_ACCESS_POINT_ID = "accessPointId";
+    public static final String FIELD_UUID = "uuid";
+    public static final String FIELD_AP_TYPE = "apType";
+    public static final String FIELD_AP_TYPE_ID = "apTypeId";
+    public static final String FIELD_SCOPE = "scope";
+    public static final String FIELD_SCOPE_ID = "scopeId";
+    public static final String FIELD_NAMES = "names";
+    public static final String FIELD_DESCRIPTIONS = "descriptions";
+    public static final String FIELD_DELETE_CHANGE_ID = "deleteChangeId";
 
     @Id
     @GeneratedValue
@@ -41,14 +41,14 @@ public class ApAccessPoint implements IApScope {
     private String uuid;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApType.class)
-    @JoinColumn(name = COL_AP_TYPE_ID, nullable = false)
+    @JoinColumn(name = FIELD_AP_TYPE_ID, nullable = false)
     private ApType apType;
 
     @Column(nullable = false, updatable = false, insertable = false)
     private Integer apTypeId;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApScope.class)
-    @JoinColumn(name = COL_SCOPE_ID, nullable = false)
+    @JoinColumn(name = FIELD_SCOPE_ID, nullable = false)
     private ApScope scope;
 
     @Column(nullable = false, updatable = false, insertable = false)
@@ -62,7 +62,7 @@ public class ApAccessPoint implements IApScope {
     private Integer createChangeId;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApChange.class)
-    @JoinColumn(name = COL_DELETE_CHANGE_ID, nullable = true)
+    @JoinColumn(name = FIELD_DELETE_CHANGE_ID, nullable = true)
     private ApChange deleteChange;
 
     @Column(nullable = true, updatable = false, insertable = false)

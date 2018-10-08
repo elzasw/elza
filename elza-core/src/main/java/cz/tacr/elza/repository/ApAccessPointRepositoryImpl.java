@@ -49,11 +49,11 @@ public class ApAccessPointRepositoryImpl implements ApAccessPointRepositoryCusto
         Predicate condition = prepareApSearchPredicate(searchRecord, apTypeIds, scopeIdsForSearch, record, builder, query, false, true);
         Predicate conditionSubquery = prepareApSearchPredicate(searchRecord, apTypeIds, scopeIdsForSearch, recordSubquery, builder, null, true, false);
         subquery.where(conditionSubquery);
-        subquery.select(recordSubquery.get(ApAccessPoint.COL_ACCESS_POINT_ID));
+        subquery.select(recordSubquery.get(ApAccessPoint.FIELD_ACCESS_POINT_ID));
 
         query.select(record);
         if (condition != null) {
-            query.where(condition, builder.in(record.get(ApAccessPoint.COL_ACCESS_POINT_ID)).value(subquery));
+            query.where(condition, builder.in(record.get(ApAccessPoint.FIELD_ACCESS_POINT_ID)).value(subquery));
         }
 
         return entityManager.createQuery(query)
@@ -108,21 +108,21 @@ public class ApAccessPointRepositoryImpl implements ApAccessPointRepositoryCusto
         List<Predicate> conjunctions = new ArrayList<>();
 
         // search only active AP
-        conjunctions.add(fromAp.get(ApAccessPoint.COL_DELETE_CHANGE_ID).isNull());
+        conjunctions.add(fromAp.get(ApAccessPoint.FIELD_DELETE_CHANGE_ID).isNull());
 
         // add name join
-        Join<ApAccessPoint, ApName> nameJoin = fromAp.join(ApAccessPoint.COL_NAMES, JoinType.LEFT);
-        Predicate nameFkCond = cb.equal(fromAp.get(ApAccessPoint.COL_ACCESS_POINT_ID),
-                nameJoin.get(ApName.COL_ACCESS_POINT_ID));
-        Predicate activeNameCond = nameJoin.get(ApName.COL_DELETE_CHANGE_ID).isNull();
+        Join<ApAccessPoint, ApName> nameJoin = fromAp.join(ApAccessPoint.FIELD_NAMES, JoinType.LEFT);
+        Predicate nameFkCond = cb.equal(fromAp.get(ApAccessPoint.FIELD_ACCESS_POINT_ID),
+                nameJoin.get(ApName.FIELD_ACCESS_POINT_ID));
+        Predicate activeNameCond = nameJoin.get(ApName.FIELD_DELETE_CHANGE_ID).isNull();
         nameJoin.on(cb.and(nameFkCond, activeNameCond));
 
         if (!count) {
-            query.orderBy(cb.asc(nameJoin.get(ApName.COL_NAME)));
+            query.orderBy(cb.asc(nameJoin.get(ApName.FIELD_NAME)));
         }
 
         if (onlyPrefferedName) {
-            conjunctions.add(cb.isTrue(nameJoin.get(ApName.COL_PREFERRED_NAME)));
+            conjunctions.add(cb.isTrue(nameJoin.get(ApName.FIELD_PREFERRED_NAME)));
         }
 
         // add text search
@@ -137,17 +137,17 @@ public class ApAccessPointRepositoryImpl implements ApAccessPointRepositoryCusto
             // descJoin.on(cb.and(descFkCond, activeDescCond));
 
             // add like condition to where
-            Predicate nameLikeCond = cb.like(cb.lower(nameJoin.get(ApName.COL_NAME)), searchExp);
+            Predicate nameLikeCond = cb.like(cb.lower(nameJoin.get(ApName.FIELD_NAME)), searchExp);
             conjunctions.add(nameLikeCond);
         }
 
         // add scope id condition
         Validate.isTrue(!scopeIds.isEmpty());
-        conjunctions.add(fromAp.get(ApAccessPoint.COL_SCOPE_ID).in(scopeIds));
+        conjunctions.add(fromAp.get(ApAccessPoint.FIELD_SCOPE_ID).in(scopeIds));
 
         // add AP type condition
         if (CollectionUtils.isNotEmpty(apTypeIds)) {
-            conjunctions.add(fromAp.get(ApAccessPoint.COL_AP_TYPE_ID).in(apTypeIds));
+            conjunctions.add(fromAp.get(ApAccessPoint.FIELD_AP_TYPE_ID).in(apTypeIds));
         }
 
         return cb.and(conjunctions.toArray(new Predicate[0]));
@@ -162,11 +162,11 @@ public class ApAccessPointRepositoryImpl implements ApAccessPointRepositoryCusto
      * @return Created preferred AP name join.
      */
     public static Join<ApAccessPoint, ApName> preparePrefNameJoin(From<?, ApAccessPoint> fromAp, CriteriaBuilder cb) {
-        Join<ApAccessPoint, ApName> join = fromAp.join(ApAccessPoint.COL_NAMES, JoinType.INNER);
-        Predicate fkCond = cb.equal(fromAp.get(ApAccessPoint.COL_ACCESS_POINT_ID),
-                                        join.get(ApName.COL_ACCESS_POINT_ID));
-        Predicate activeCond = join.get(ApName.COL_DELETE_CHANGE_ID).isNull();
-        Predicate prefCond = cb.isTrue(join.get(ApName.COL_PREFERRED_NAME));
+        Join<ApAccessPoint, ApName> join = fromAp.join(ApAccessPoint.FIELD_NAMES, JoinType.INNER);
+        Predicate fkCond = cb.equal(fromAp.get(ApAccessPoint.FIELD_ACCESS_POINT_ID),
+                                        join.get(ApName.FIELD_ACCESS_POINT_ID));
+        Predicate activeCond = join.get(ApName.FIELD_DELETE_CHANGE_ID).isNull();
+        Predicate prefCond = cb.isTrue(join.get(ApName.FIELD_PREFERRED_NAME));
         join.on(cb.and(fkCond, activeCond, prefCond));
         return join;
     }
