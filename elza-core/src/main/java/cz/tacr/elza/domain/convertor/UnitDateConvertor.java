@@ -553,7 +553,8 @@ public class UnitDateConvertor {
             date = date.plusMonths(1);
             token.dateTo = date.minusSeconds(1);
         } catch (DateTimeParseException e) {
-            e.printStackTrace();
+            throw new SystemException("Failed to parse", BaseCode.PROPERTY_IS_INVALID)
+                    .set("value", yearMonthString);
         }
 
         return token;
@@ -601,7 +602,8 @@ public class UnitDateConvertor {
             date = date.minusSeconds(1);
             token.dateTo = date;
         } catch (DateTimeParseException e) {
-            e.printStackTrace();
+            throw new SystemException("Failed to parse", BaseCode.PROPERTY_IS_INVALID)
+                    .set("value", dateString);
         }
 
         return token;
@@ -622,7 +624,8 @@ public class UnitDateConvertor {
             token.dateFrom = LocalDateTime.of(year, 1, 1, 0, 0);
             token.dateTo = LocalDateTime.of(year, 12, 31, 23, 59, 59);
         } catch (NumberFormatException | DateTimeParseException e) {
-            e.printStackTrace();
+            throw new SystemException("Failed to parse", BaseCode.PROPERTY_IS_INVALID)
+                    .set("value", yearString);
         }
         return token;
     }
@@ -655,7 +658,8 @@ public class UnitDateConvertor {
             token.estimate = true;
 
         } catch (NumberFormatException | DateTimeParseException e) {
-            e.printStackTrace();
+            throw new SystemException("Failed to parse", BaseCode.PROPERTY_IS_INVALID)
+                    .set("value", centuryString);
         }
         return token;
     }
