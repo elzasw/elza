@@ -38,15 +38,15 @@ import cz.tacr.elza.api.IUnitdate;
 public class ParUnitdate implements IUnitdate {
 
     /* Konstanty pro vazby a fieldy. */
-    public static final String UNITDATE_ID = "unitdateId";
-    public static final String CALENDAR_TYPE = "calendarType";
-    public static final String VALUE_FROM = "valueFrom";
-    public static final String VALUE_FROM_ESTIMATED = "valueFromEstimated";
-    public static final String VALUE_TO = "valueTo";
-    public static final String VALUE_TO_ESTIMATED = "valueToEstimated";
-    public static final String FORMAT = "format";
-    public static final String TEXT_DATE = "textDate";
-    public static final String NOTE = "note";
+    public static final String FIELD_UNITDATE_ID = "unitdateId";
+    public static final String FIELD_CALENDAR_TYPE = "calendarType";
+    public static final String FIELD_VALUE_FROM = "valueFrom";
+    public static final String FIELD_VALUE_FROM_ESTIMATED = "valueFromEstimated";
+    public static final String FIELD_VALUE_TO = "valueTo";
+    public static final String FIELD_VALUE_TO_ESTIMATED = "valueToEstimated";
+    public static final String FIELD_FORMAT = "format";
+    public static final String FIELD_TEXT_DATE = "textDate";
+    public static final String FIELD_NOTE = "note";
 
     @Id
     @GeneratedValue

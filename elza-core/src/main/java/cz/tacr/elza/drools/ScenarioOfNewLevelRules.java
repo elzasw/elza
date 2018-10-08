@@ -1,5 +1,6 @@
 package cz.tacr.elza.drools;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.LinkedList;
 import java.util.List;
@@ -40,7 +41,8 @@ public class ScenarioOfNewLevelRules extends Rules {
     public synchronized List<ScenarioOfNewLevel> execute(final ArrLevel level,
                                                          final DirectionLevel directionLevel,
                                                          final ArrFundVersion version)
-            throws Exception {
+            throws IOException
+    {
 
         NewLevelApproaches newLevelApproaches = new NewLevelApproaches();
 

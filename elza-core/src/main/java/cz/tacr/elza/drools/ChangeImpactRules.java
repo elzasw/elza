@@ -1,5 +1,6 @@
 package cz.tacr.elza.drools;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -46,18 +47,24 @@ public class ChangeImpactRules extends Rules {
     /**
      * Spuštění zpracování pravidel.
      *
-     * @param createDescItem    hodnoty atributů k vytvoření
-     * @param updateDescItem    hodnoty atributů k upravení
-     * @param deleteDescItem    hodnoty atributů ke smazání
-     * @param nodeTypeOperation typ operace
+     * @param createDescItem
+     *            hodnoty atributů k vytvoření
+     * @param updateDescItem
+     *            hodnoty atributů k upravení
+     * @param deleteDescItem
+     *            hodnoty atributů ke smazání
+     * @param nodeTypeOperation
+     *            typ operace
      * @return seznam dopadů
+     * @throws IOException
      */
     public synchronized Set<RelatedNodeDirection> execute(final List<ArrDescItem> createDescItem,
                                                           final List<ArrDescItem> updateDescItem,
                                                           final List<ArrDescItem> deleteDescItem,
                                                           final NodeTypeOperation nodeTypeOperation,
                                                           final RulRuleSet rulRuleSet)
-            throws Exception {
+            throws IOException
+    {
         List<Object> facts = new LinkedList<>();
         facts.addAll( prepareDescItemList(createDescItem, updateDescItem, deleteDescItem) );
         facts.add(nodeTypeOperation);

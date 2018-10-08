@@ -13,21 +13,17 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import liquibase.change.custom.CustomTaskChange;
 import liquibase.database.Database;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.CustomChangeException;
 import liquibase.exception.DatabaseException;
-import liquibase.exception.SetupException;
-import liquibase.exception.ValidationErrors;
-import liquibase.resource.ResourceAccessor;
 
 /**
  * Migrace arr_packet & arr_data_packet_ref.
  *
  * @since 20.11.2017
  */
-public class DbUpgrade_20171120095000 implements CustomTaskChange {
+public class DbUpgrade_20171120095000 extends BaseTaskChange {
 
     private static final int DATA_TYPE_STRING = 2;
     private static final int DATA_TYPE_PACKET_REF = 11;
@@ -43,26 +39,6 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
     private List<RulItemType> packetRefItemTypes = new ArrayList<>();
     private Integer change;
     private Integer descItemObjectId;
-
-    @Override
-    public String getConfirmationMessage() {
-        return null;
-    }
-
-    @Override
-    public void setUp() throws SetupException {
-        // not needed
-    }
-
-    @Override
-    public void setFileOpener(final ResourceAccessor resourceAccessor) {
-        // not needed
-    }
-
-    @Override
-    public ValidationErrors validate(final Database database) {
-        return null;
-    }
 
     @Override
     public void execute(final Database db) throws CustomChangeException {
@@ -265,7 +241,7 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
     }
 
     private void deleteDataPacketRef(final ArrDataPacketRef packetRef) throws DatabaseException, SQLException {
-        PreparedStatement ps = dc.prepareStatement("DELETE FROM " + ArrDataPacketRef.TABLE + " WHERE " + ArrDataPacketRef.DATA_ID + "=?;");
+        PreparedStatement ps = dc.prepareStatement("DELETE FROM " + ArrDataPacketRef.TABLE + " WHERE " + ArrDataPacketRef.COL_DATA_ID + "=?;");
         ps.setInt(1, packetRef.getDataId());
         ps.executeUpdate();
     }
@@ -283,7 +259,7 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
     }
 
     private ArrDataPacketRef createDataPacketRef(final ResultSet rs) throws SQLException {
-        return new ArrDataPacketRef(rs.getInt(ArrDataPacketRef.DATA_ID), rs.getInt(ArrDataPacketRef.PACKET_ID));
+        return new ArrDataPacketRef(rs.getInt(ArrDataPacketRef.COL_DATA_ID), rs.getInt(ArrDataPacketRef.COL_PACKET_ID));
     }
 
     private void saveHibernateSequences() throws SQLException, DatabaseException {
@@ -577,7 +553,7 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
 
     private List<RulPacketType> findPacketTypeByRuleSet(final RulRuleSet ruleSet) throws DatabaseException, SQLException {
         List<RulPacketType> packetTypes = new ArrayList<>();
-        PreparedStatement ps = dc.prepareStatement("SELECT * FROM " + RulPacketType.TABLE + " WHERE " + RulPacketType.PACKAGE_ID + "=? AND " + RulPacketType.RULE_SET_ID + "=?");
+        PreparedStatement ps = dc.prepareStatement("SELECT * FROM " + RulPacketType.TABLE + " WHERE " + RulPacketType.COL_PACKAGE_ID + "=? AND " + RulPacketType.COL_RULE_SET_ID + "=?");
         ps.setInt(1, ruleSet.getPackageId());
         ps.setInt(2, ruleSet.getRuleSetId());
         ps.execute();
@@ -590,18 +566,18 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
     }
 
     private RulPacketType createPacketType(final ResultSet rs) throws SQLException {
-        return new RulPacketType(rs.getInt(RulPacketType.PACKET_TYPE_ID),
-                rs.getString(RulPacketType.CODE),
-                rs.getString(RulPacketType.NAME),
-                rs.getString(RulPacketType.SHORTCUT),
-                rs.getInt(RulPacketType.RULE_SET_ID),
-                rs.getInt(RulPacketType.PACKAGE_ID));
+        return new RulPacketType(rs.getInt(RulPacketType.COL_PACKET_TYPE_ID),
+                rs.getString(RulPacketType.COL_CODE),
+                rs.getString(RulPacketType.COL_NAME),
+                rs.getString(RulPacketType.COL_SHORTCUT),
+                rs.getInt(RulPacketType.COL_RULE_SET_ID),
+                rs.getInt(RulPacketType.COL_PACKAGE_ID));
     }
 
     private RulRuleSet createRuleSet(final ResultSet rs) throws SQLException {
-        return new RulRuleSet(rs.getInt(RulRuleSet.RULE_SET_ID),
-                rs.getString(RulRuleSet.CODE),
-                rs.getInt(RulRuleSet.PACKAGE_ID));
+        return new RulRuleSet(rs.getInt(RulRuleSet.COL_RULE_SET_ID),
+                rs.getString(RulRuleSet.COL_CODE),
+                rs.getInt(RulRuleSet.COL_PACKAGE_ID));
     }
 
     private DbSequence createDbSequence(final ResultSet rs) throws SQLException {
@@ -934,9 +910,9 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
     }
 
     private static class RulRuleSet {
-        private static String RULE_SET_ID = "rule_set_id";
-        private static String CODE = "code";
-        private static String PACKAGE_ID = "package_id";
+        private static String COL_RULE_SET_ID = "rule_set_id";
+        private static String COL_CODE = "code";
+        private static String COL_PACKAGE_ID = "package_id";
 
         private Integer ruleSetId;
         private String code;
@@ -962,24 +938,24 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
     }
 
     private ArrPacket createPacket(final ResultSet rs) throws SQLException {
-        Integer packetTypeId = rs.getInt(ArrPacket.PACKET_TYPE_ID);
+        Integer packetTypeId = rs.getInt(ArrPacket.COL_PACKET_TYPE_ID);
         if (rs.wasNull()) {
             packetTypeId = null;
         }
-        return new ArrPacket(rs.getInt(ArrPacket.PACKET_ID),
-                rs.getString(ArrPacket.STORAGE_NUMBER),
+        return new ArrPacket(rs.getInt(ArrPacket.COL_PACKET_ID),
+                rs.getString(ArrPacket.COL_STORAGE_NUMBER),
                 packetTypeId,
-                rs.getInt(ArrPacket.FUND_ID),
-                ArrPacket.State.valueOf(rs.getString(ArrPacket.STATE).trim()));
+                rs.getInt(ArrPacket.COL_FUND_ID),
+                ArrPacket.State.valueOf(rs.getString(ArrPacket.COL_STATE).trim()));
     }
 
     private static class ArrPacket {
 
-        private static String PACKET_ID = "packet_id";
-        private static String STORAGE_NUMBER = "storage_number";
-        private static String PACKET_TYPE_ID = "packet_type_id";
-        private static String FUND_ID = "fund_id";
-        private static String STATE = "state";
+        private static String COL_PACKET_ID = "packet_id";
+        private static String COL_STORAGE_NUMBER = "storage_number";
+        private static String COL_PACKET_TYPE_ID = "packet_type_id";
+        private static String COL_FUND_ID = "fund_id";
+        private static String COL_STATE = "state";
 
         private Integer packetId;
         private String storageNumber;
@@ -1025,12 +1001,12 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
     private static class RulPacketType {
 
         private static String TABLE = "rul_packet_type";
-        private static String PACKET_TYPE_ID = "packet_type_id";
-        private static String CODE = "code";
-        private static String NAME = "name";
-        private static String SHORTCUT = "shortcut";
-        private static String RULE_SET_ID = "rule_set_id";
-        private static String PACKAGE_ID = "package_id";
+        private static String COL_PACKET_TYPE_ID = "packet_type_id";
+        private static String COL_CODE = "code";
+        private static String COL_NAME = "name";
+        private static String COL_SHORTCUT = "shortcut";
+        private static String COL_RULE_SET_ID = "rule_set_id";
+        private static String COL_PACKAGE_ID = "package_id";
 
         private Integer packetTypeId;
         private String code;
@@ -1128,8 +1104,8 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
     private static class ArrDataPacketRef {
 
         private static String TABLE = "arr_data_packet_ref";
-        private static String DATA_ID = "data_id";
-        private static String PACKET_ID = "packet_id";
+        private static String COL_DATA_ID = "data_id";
+        private static String COL_PACKET_ID = "packet_id";
 
         private Integer dataId;
         private Integer packetId;

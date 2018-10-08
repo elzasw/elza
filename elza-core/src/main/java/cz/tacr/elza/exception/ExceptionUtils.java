@@ -1,10 +1,11 @@
 package cz.tacr.elza.exception;
 
-import cz.tacr.elza.exception.codes.ErrorCode;
-import org.apache.commons.collections.CollectionUtils;
+import java.util.Collection;
+
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.ObjectUtils;
 
-import java.util.Collection;
+import cz.tacr.elza.exception.codes.ErrorCode;
 
 /**
  * Pomocná třída pro zjednodušené vytváření vyjímek.
@@ -56,21 +57,20 @@ public class ExceptionUtils {
     public static void notEmptyElseBusiness(final Collection object, final ErrorCode code) {
         notEmptyElseBusiness(object, code.getType() + "-" + code.getCode(), code);
     }
-
+    
     public static void notEmptyElseBusiness(final Collection object, final String message, final ErrorCode code) {
         if (CollectionUtils.isEmpty(object)) {
             throw new BusinessException(message, code);
         }
     }
-
+    
     public static void isEmptyElseBusiness(final Collection object, final ErrorCode code) {
         isEmptyElseBusiness(object, code.getType() + "-" + code.getCode(), code);
     }
-
+    
     public static void isEmptyElseBusiness(final Collection object, final String message, final ErrorCode code) {
         if (CollectionUtils.isNotEmpty(object)) {
             throw new BusinessException(message, code);
         }
     }
-
 }

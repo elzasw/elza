@@ -491,18 +491,6 @@ export class WebApiCls {
         return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/' + accessPointId + '/name/' + nameId + '/preferred');
     }
 
-    createRegCoordinates(data){
-        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/regCoordinates', null, data);
-    }
-
-    updateRegCoordinates(coordinates) {
-        return AjaxUtils.ajaxPut(WebApiCls.registryUrl + '/regCoordinates/' + coordinates.id, null, coordinates);
-    }
-
-    deleteRegCoordinates(coordinatesId) {
-        return AjaxUtils.ajaxDelete(WebApiCls.registryUrl + '/regCoordinates/' + coordinatesId);
-    }
-
     getRecordTypes() {
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/recordTypes');
     }

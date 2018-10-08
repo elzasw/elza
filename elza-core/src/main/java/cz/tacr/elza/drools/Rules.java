@@ -1,6 +1,7 @@
 package cz.tacr.elza.drools;
 
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
@@ -40,8 +41,12 @@ public abstract class Rules {
 
     /**
      * Metoda pro kontrolu aktuálnosti souboru s pravidly.
+     * 
+     * @throws IOException
      */
-    protected Map.Entry<FileTime, KnowledgeBase> testChangeFile(final Path path, final Map.Entry<FileTime, KnowledgeBase> entry) throws Exception {
+    protected Map.Entry<FileTime, KnowledgeBase> testChangeFile(final Path path,
+                                                                final Map.Entry<FileTime, KnowledgeBase> entry)
+            throws IOException {
         FileTime ft = Files.getLastModifiedTime(path);
         if (entry.getKey() == null || ft.compareTo(entry.getKey()) > 0) {
             Map.Entry<FileTime, KnowledgeBase> entryNew = reloadRules(path);
@@ -55,8 +60,10 @@ public abstract class Rules {
 
     /**
      * Přenačtení souboru s pravidly.
+     * 
+     * @throws IOException
      */
-    private Map.Entry<FileTime, KnowledgeBase> reloadRules(final Path path) throws Exception {
+    private Map.Entry<FileTime, KnowledgeBase> reloadRules(final Path path) throws IOException {
         KnowledgeBuilder kbuilder = KnowledgeBuilderFactory.newKnowledgeBuilder();
 
         kbuilder.add(ResourceFactory.newInputStreamResource(new FileInputStream(path.toFile()), "UTF-8"),
@@ -76,8 +83,9 @@ public abstract class Rules {
      *
      * @param path
      * @return nová session
+     * @throws IOException
      */
-    public synchronized StatelessKieSession createNewStatelessKieSession(final Path path) throws Exception {
+    public synchronized StatelessKieSession createNewStatelessKieSession(final Path path) throws IOException {
 
         Map.Entry<FileTime, KnowledgeBase> entry = rulesByPathMap.get(path);
 

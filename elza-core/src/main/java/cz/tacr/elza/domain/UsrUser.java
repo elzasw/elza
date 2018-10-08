@@ -18,7 +18,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 /**
  * Uživatel.
  *
- * @author Martin Šlapa
  * @since 11.04.2016
  */
 @Entity(name = "usr_user")
@@ -48,11 +47,11 @@ public class UsrUser {
     private String description;
 
     /* Konstanty pro vazby a fieldy. */
-    public static final String USER_ID = "userId";
-    public static final String PARTY = "party";
-    public static final String USERNAME = "username";
-    public static final String DESCRIPTION = "description";
-    public static final String ACTIVE = "active";
+    public static final String FIELD_USER_ID = "userId";
+    public static final String FIELD_PARTY = "party";
+    public static final String FIELD_USERNAME = "username";
+    public static final String FIELD_DESCRIPTION = "description";
+    public static final String FIELD_ACTIVE = "active";
 
     /**
      * @return identifikátor entity

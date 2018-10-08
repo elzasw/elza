@@ -1,6 +1,5 @@
 package cz.tacr.elza.dataexchange.output.writer.xml;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
@@ -48,7 +47,8 @@ import cz.tacr.elza.schema.v2.TimeIntervalExt;
 /**
  * XML output stream for parties export.
  */
-public class XmlPartiesOutputStream implements PartiesOutputStream {
+public class XmlPartiesOutputStream extends BaseFragmentStream
+        implements PartiesOutputStream {
 
     private final static Logger logger = LoggerFactory.getLogger(XmlPartiesOutputStream.class);
 
@@ -57,18 +57,14 @@ public class XmlPartiesOutputStream implements PartiesOutputStream {
 
     private final RootNode rootNode;
 
-    private final XmlFragment fragment;
-
-    private boolean processed;
-
     public XmlPartiesOutputStream(RootNode rootNode, Path tempDirectory) {
+        super(tempDirectory);
         this.rootNode = rootNode;
-        this.fragment = new XmlFragment(tempDirectory);
     }
 
     @Override
     public void addParty(PartyInfo partyInfo) {
-        Validate.isTrue(!processed);
+        Validate.isTrue(!isProcessed());
 
         Party element = createParty(partyInfo);
         try {
@@ -80,31 +76,17 @@ public class XmlPartiesOutputStream implements PartiesOutputStream {
 
     @Override
     public void processed() {
-        Validate.isTrue(!processed);
-
-        try {
-            fragment.close();
-        } catch (IOException e) {
-            throw new SystemException(e);
-        }
+        finishFragment();
 
         if (fragment.isExist()) {
             FileNode node = new FileNode(fragment.getPath());
             rootNode.setNode(ChildNodeType.PARTIES, node);
         }
-        processed = true;
     }
 
     @Override
     public void close() {
-        if (processed) {
-            return;
-        }
-        try {
-            fragment.delete();
-        } catch (IOException e) {
-            throw new SystemException(e);
-        }
+        closeFragment();
     }
 
     private void writeParty(Party party) throws Exception {

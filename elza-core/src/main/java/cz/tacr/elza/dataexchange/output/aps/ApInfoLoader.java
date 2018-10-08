@@ -31,7 +31,7 @@ public class ApInfoLoader extends AbstractEntityLoader<ApInfoImpl> {
     private final boolean globalScopePermission;
 
     public ApInfoLoader(ExportContext context, EntityManager em, UserService userService) {
-        super(ApAccessPoint.class, ApAccessPoint.COL_ACCESS_POINT_ID, em, context.getBatchSize());
+        super(ApAccessPoint.class, ApAccessPoint.FIELD_ACCESS_POINT_ID, em, context.getBatchSize());
         this.nameLoader = new NameLoader(em, batchSize);
         this.descriptionLoader = new DescriptionLoader(em, batchSize);
         this.externalIdLoader = new ExternalIdLoader(em, batchSize);

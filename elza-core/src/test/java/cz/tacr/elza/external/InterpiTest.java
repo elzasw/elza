@@ -1,4 +1,4 @@
-package cz.tacr.elza.other;
+package cz.tacr.elza.external;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -34,7 +34,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.Assert;
 
-import cz.tacr.elza.ElzaCoreTest;
+import cz.tacr.elza.ElzaCoreMain;
 import cz.tacr.elza.api.ApExternalSystemType;
 import cz.tacr.elza.common.XmlUtils;
 import cz.tacr.elza.common.security.NoCheckTrustManager;
@@ -76,7 +76,7 @@ import cz.tacr.elza.repository.ScopeRepository;
 @Ignore
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest
-@ContextConfiguration(classes = ElzaCoreTest.class)
+@ContextConfiguration(classes = ElzaCoreMain.class)
 //@SpringApplicationConfiguration(classes = ElzaCoreTest.class)
 public class InterpiTest extends AbstractControllerTest {
 

@@ -124,20 +124,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
 
             Root<ArrDescItem> descItem = query.from(ArrDescItem.class);
 
-            Predicate versionPredicate;
-            if (version.getLockChange() == null) {
-                versionPredicate = builder.isNull(descItem.get(ArrDescItem.FIELD_DELETE_CHANGE_ID));
-            } else {
-                Integer lockChangeId = version.getLockChange().getChangeId();
-
-                Predicate createPred = builder.lt(descItem.get(ArrDescItem.FIELD_CREATE_CHANGE_ID), lockChangeId);
-                Predicate deletePred = builder.or(
-                        builder.isNull(descItem.get(ArrDescItem.FIELD_DELETE_CHANGE_ID)),
-                        builder.gt(descItem.get(ArrDescItem.FIELD_DELETE_CHANGE_ID), lockChangeId)
-                );
-
-                versionPredicate = builder.and(createPred, deletePred);
-            }
+            Predicate versionPredicate = prepareVersionPredicate(version, builder, descItem);
 
             //seznam AND podmínek
             List<Predicate> andPredicates = new LinkedList<>();
@@ -157,6 +144,23 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
             result.addAll(resultList.stream().map(RulItemSpec::getItemSpecId).collect(Collectors.toList()));
         }
         return new ArrayList<>(result);
+    }
+
+    private Predicate prepareVersionPredicate(final ArrFundVersion version,
+                                              CriteriaBuilder builder, Root<ArrDescItem> descItem) {
+        if (version.getLockChange() == null) {
+            return builder.isNull(descItem.get(ArrDescItem.FIELD_DELETE_CHANGE_ID));
+        } else {
+            Integer lockChangeId = version.getLockChange().getChangeId();
+
+            Predicate createPred = builder.lt(descItem.get(ArrDescItem.FIELD_CREATE_CHANGE_ID), lockChangeId);
+            Predicate deletePred = builder.or(
+                                              builder.isNull(descItem.get(ArrDescItem.FIELD_DELETE_CHANGE_ID)),
+                                              builder.gt(descItem.get(ArrDescItem.FIELD_DELETE_CHANGE_ID),
+                                                         lockChangeId));
+
+            return builder.and(createPred, deletePred);
+        }
     }
 
     /**
@@ -186,20 +190,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
 
         Root<ArrDescItem> descItem = query.from(ArrDescItem.class);
 
-        Predicate versionPredicate;
-        if (version.getLockChange() == null) {
-            versionPredicate = builder.isNull(descItem.get(ArrDescItem.FIELD_DELETE_CHANGE_ID));
-        } else {
-            Integer lockChangeId = version.getLockChange().getChangeId();
-
-            Predicate createPred = builder.lt(descItem.get(ArrDescItem.FIELD_CREATE_CHANGE_ID), lockChangeId);
-            Predicate deletePred = builder.or(
-                    builder.isNull(descItem.get(ArrDescItem.FIELD_DELETE_CHANGE_ID)),
-                    builder.gt(descItem.get(ArrDescItem.FIELD_DELETE_CHANGE_ID), lockChangeId)
-            );
-
-            versionPredicate = builder.and(createPred, deletePred);
-        }
+        Predicate versionPredicate = prepareVersionPredicate(version, builder, descItem);
 
         //seznam AND podmínek
         List<Predicate> andPredicates = new LinkedList<>();
@@ -362,7 +353,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
 
                 @Override
                 public Path<String> getValueStringSelection(final CriteriaBuilder criteriaBuilder) {
-                    return targetJoin.get(ArrStructuredObject.VALUE);
+                    return targetJoin.get(ArrStructuredObject.FIELD_VALUE);
                 }
             };
         } else {

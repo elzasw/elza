@@ -7,6 +7,8 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import org.apache.commons.lang.Validate;
+
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
@@ -58,7 +60,11 @@ public class DataValidationResults {
 	 * @param errorMsg	Error description
 	 * @return Object with error description
 	 */
-    public DataValidationResult createError(final ArrDescItem item, final String errorMsg, final String policyTypeCode) {
+    public DataValidationResult createError(final ArrDescItem item, final String errorMsg,
+                                            @Nullable final String policyTypeCode) {
+        Validate.notNull(item);
+        Validate.notNull(errorMsg);
+
         DataValidationResult result = new DataValidationResult(ValidationResultType.ERROR);
         result.setDescItem(item);
         result.setMessage(errorMsg);

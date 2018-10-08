@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.Validate;
 
@@ -407,14 +408,26 @@ public class StaticDataProvider {
     private void initApTypes(ApTypeRepository apTypeRepository) {
         List<ApType> apTypes = apTypeRepository.findAll();
 
-        Map<Integer, ApType> idMap = createLookup(apTypes, ApType::getApTypeId);
+        // We have to create lookup of copied objects
+        Map<Integer, ApType> idMap = apTypes.stream().collect(Collectors.toMap(ApType::getApTypeId,
+                                                                               ApType::makeCopy));
 
-        for (ApType rt : apTypes) {
-            // ensure reference equality (single transaction)
-            if (rt.getParentApType() != null) {
-                checkPackageReference(rt.getRulPackage());
-                Validate.isTrue(rt.getParentApType() == idMap.get(rt.getParentApType().getApTypeId()));
+        // TODO: should be collection ordered?
+
+        List<ApType> result = new ArrayList<>(apTypes.size());
+        for (ApType rt : idMap.values()) {
+            checkPackageReference(rt.getRulPackage());
+
+            // switch parent reference
+            Integer parentId = rt.getParentApTypeId();
+            if (parentId != null) {
+                ApType parent = idMap.get(parentId);
+                Validate.notNull(parent);
+                rt.setParentApType(parent);
             }
+
+            result.add(rt);
+
             // update reference to party type
             if (rt.getPartyType() != null) {
                 PartyType partyType = PartyType.fromId(rt.getPartyType().getPartyTypeId());
@@ -422,9 +435,9 @@ public class StaticDataProvider {
             }
         }
         // update fields
-        this.apTypes = Collections.unmodifiableList(apTypes);
+        this.apTypes = Collections.unmodifiableList(result);
         this.apTypeIdMap = idMap;
-        this.apTypeCodeMap = createLookup(apTypes, ApType::getCode);
+        this.apTypeCodeMap = createLookup(result, ApType::getCode);
     }
 
     private void initRelationTypes(RelationTypeRepository relationTypeRepository,

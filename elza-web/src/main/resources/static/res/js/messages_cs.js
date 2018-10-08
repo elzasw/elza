@@ -124,6 +124,8 @@ var messages = {
     "exception.base.INVALID_STATE": "Neplatný stav",
     "exception.base.CYCLE_DETECT": "Nelze provést kvůli detekci cyklické závislosti",
 
+    "exception.ba.INCORRECT_CONFIG": "Chybná konfigurace hromadné akce.",
+
     "exception.dig.REPOSITORY_NOT_FOUND": "Digitalizační repository neexistuje ({code})",
     "exception.dig.DAO_NOT_FOUND": "DAO neexistuje ({code})",
     "exception.dig.DAO_AND_NODE_HAS_DIFFERENT_PACKAGE": "DAO a JP okazují na různý package",
@@ -835,10 +837,9 @@ var messages = {
     "registry.name": "Název",
     "registry.characteristics": "Charakteristika",
     "registry.shown": "Zobrazeno",
-    "registry.deleteRegistryQuestion": "Opravdu chcete smazat rejstříkové heslo?",
-    "registry.deleteCoordinatesQuestion": "Opravdu chcete smazat tyto souřadnice?",
-    "registry.deleteRegistry": "Smazat heslo",
-    "registry.registryUsage": "Použití hesla",
+    "registry.deleteRegistryQuestion": "Opravdu chcete smazat přístupový bod?",
+    "registry.deleteRegistry": "Smazat",
+    "registry.registryUsage": "Místa použití",
     "registry.registryUsageCount": "Počet nalezených výskytů",
     "registry.usage.tooMany": "Počet nalezených výskytů je příliš velký",
     "registry.replaceText": "Nahrazení hesla ve výskytech za heslo",

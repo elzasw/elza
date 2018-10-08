@@ -6,9 +6,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nonnull;
+
 import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.bulkaction.generator.LevelWithItems;
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
@@ -41,10 +44,10 @@ public class UnitCounter {
      *
      * If null not applied
      */
-    private ItemType objectType;
+    private ItemType srcStructObjType;
 
     /**
-     * Type of item for object mapping.
+     * Type of item for structured object mapping.
      */
     private ItemType objectItemType;
 
@@ -106,9 +109,9 @@ public class UnitCounter {
         // object / packet mapping
         String objectTypeCode = config.getObjectType();
         if (objectTypeCode != null) {
-            objectType = spd.getItemTypeByCode(objectTypeCode);
-            Validate.notNull(objectType);
-            Validate.isTrue(objectType.getDataType() == DataType.STRUCTURED);
+            srcStructObjType = spd.getItemTypeByCode(objectTypeCode);
+            Validate.notNull(srcStructObjType);
+            Validate.isTrue(srcStructObjType.getDataType() == DataType.STRUCTURED);
 
             // get item type with packets
             objectItemType = spd.getItemTypeByCode(config.getObjectItemType());
@@ -189,36 +192,54 @@ public class UnitCounter {
             }
         }
 
-        if (objectType != null) {
-            for (ArrDescItem item : level.getDescItems()) {
-                // check if type match
-                if (!objectType.getItemTypeId().equals(item.getItemTypeId())) {
-                    continue;
-                }
+        // StructObj mapping
+        if (srcStructObjType != null) {
+            countStructObjs(srcStructObjType.getItemTypeId(), level, unitCountAction);
+        }
+    }
 
-                // fetch valid items from packet
-                Integer packetId = ((ArrDataStructureRef) item.getData()).getStructuredObjectId();
-                if (!countedObjects.contains(packetId)) {
-                    // TODO: Do filtering in DB
-                    List<ArrStructuredItem> structObjItems = this.structureItemRepository
-                            .findByStructuredObjectAndDeleteChangeIsNullFetchData(packetId);
-                    // filter only our item types
-                    for (ArrStructuredItem structObjItem : structObjItems) {
-                        if (structObjItem.getItemTypeId().equals(this.objectItemType.getItemTypeId())) {
-                            // find mapping
-                            String value = objectMapping.get(structObjItem.getItemSpecId());
-                            if (value != null) {
-                                if (unitCountAction.isLocal()) {
-                                    unitCountAction.createDescItem(level.getNode(), value, 1);
-                                } else {
-                                    unitCountAction.addValue(value, 1);
-                                }
+    /**
+     * Count from given structured object
+     * 
+     * @param itemTypeId
+     * @param Level.get
+     */
+    private void countStructObjs(@Nonnull Integer itemTypeId, LevelWithItems level,
+                                UnitCountAction unitCountAction) {
+        for (ArrDescItem item : level.getDescItems()) {
+            // check if type match
+            if (!itemTypeId.equals(item.getItemTypeId())) {
+                continue;
+            }
 
-                                // mark as counted
-                                countedObjects.add(packetId);
-                            }
-                        }
+            // fetch valid items from packet
+            ArrDataStructureRef dataStructObjRef = HibernateUtils.unproxy(item.getData());
+            Integer packetId = dataStructObjRef.getStructuredObjectId();
+            if (!countedObjects.contains(packetId)) {
+                countStructObj(packetId, level, unitCountAction);
+            }
+        }
+
+    }
+
+    private void countStructObj(Integer packetId, LevelWithItems level, UnitCountAction unitCountAction) {
+        // TODO: Do filtering in DB
+        List<ArrStructuredItem> structObjItems = this.structureItemRepository
+                .findByStructuredObjectAndDeleteChangeIsNullFetchData(packetId);
+        // filter only our item types
+        for (ArrStructuredItem structObjItem : structObjItems) {
+            if (structObjItem.getItemTypeId().equals(this.objectItemType.getItemTypeId())) {
+                // find mapping
+                String value = objectMapping.get(structObjItem.getItemSpecId());
+                if (value != null) {
+                    if (unitCountAction.isLocal()) {
+                        unitCountAction.createDescItem(level.getNode(), value, 1);
+                    } else {
+                        unitCountAction.addValue(value, 1);
                     }
+
+                    // mark as counted
+                    countedObjects.add(packetId);
                 }
             }
         }

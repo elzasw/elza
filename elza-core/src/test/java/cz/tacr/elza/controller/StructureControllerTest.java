@@ -21,6 +21,7 @@ import cz.tacr.elza.controller.vo.ArrFundVersionVO;
 import cz.tacr.elza.controller.vo.ArrStructureDataVO;
 import cz.tacr.elza.controller.vo.FilteredResultVO;
 import cz.tacr.elza.controller.vo.RulStructureTypeVO;
+import cz.tacr.elza.controller.vo.StructureExtensionFundVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemIntVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStringVO;

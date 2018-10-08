@@ -38,6 +38,8 @@ public class CloseablePathResource
 
     @Override
     public void close() throws IOException {
+        // This implementation has
+        // nothing to close
     }
 
     public void writeTo(OutputStream out) throws IOException {

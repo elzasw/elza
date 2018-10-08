@@ -1,5 +1,6 @@
 package cz.tacr.elza;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.runner.RunWith;
@@ -24,7 +25,7 @@ import cz.tacr.elza.service.StartupService;
  * Base test class
  */
 @RunWith(SpringRunner.class)
-@ContextConfiguration(classes=ElzaCoreTest.class)
+@ContextConfiguration(classes=ElzaCoreMain.class)
 @SpringBootTest(webEnvironment=WebEnvironment.RANDOM_PORT)
 public abstract class AbstractTest {
 
@@ -56,5 +57,11 @@ public abstract class AbstractTest {
     	helperTestService.loadPackage("SIMPLE-DEV", "rules-simple-dev");
 
         helperTestService.deleteTables();
+    }
+
+    @After
+    public void tearDown() {
+        // try to stop all services which were active during this test run
+        helperTestService.waitForWorkers();
     }
 }

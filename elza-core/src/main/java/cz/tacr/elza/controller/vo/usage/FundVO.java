@@ -4,20 +4,52 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * @author Jiří Vaněk [jiri.vanek@marbes.cz]
+ * 
  * @since 5. 10. 2017
  */
 public class FundVO {
 
-	public Integer id;
+    private Integer id;
 
-	public String name;
+    private String name;
 
-	public Integer nodeCount;
+    private Integer nodeCount;
 
-	public List<NodeVO> nodes;
+    private List<NodeVO> nodes;
 
-	public FundVO() {
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Integer getNodeCount() {
+        return nodeCount;
+    }
+
+    public void setNodeCount(Integer nodeCount) {
+        this.nodeCount = nodeCount;
+    }
+
+    public List<NodeVO> getNodes() {
+        return nodes;
+    }
+
+    public void setNodes(List<NodeVO> nodes) {
+        this.nodes = nodes;
+    }
+
+    public FundVO() {
 	}
 
 	public FundVO(final Integer id, final String name, final Integer nodeCount,
