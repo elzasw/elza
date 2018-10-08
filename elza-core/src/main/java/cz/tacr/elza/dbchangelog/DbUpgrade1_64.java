@@ -6,38 +6,19 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
 
-import liquibase.change.custom.CustomTaskChange;
 import liquibase.database.Database;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.CustomChangeException;
 import liquibase.exception.DatabaseException;
-import liquibase.exception.SetupException;
-import liquibase.exception.ValidationErrors;
-import liquibase.resource.ResourceAccessor;
 
 /**
  * Migrace dat pro změnu datace (odstranění polointervalů).
  */
-public class DbUpgrade1_64 implements CustomTaskChange {
+public class DbUpgrade1_64 extends BaseTaskChange {
 
     @Override
     public String getConfirmationMessage() {
         return "Migrace číselníků osob pod balíček CZ_BASE.";
-    }
-
-    @Override
-    public void setFileOpener(final ResourceAccessor arg0) {
-        // Not needed
-    }
-
-    @Override
-    public void setUp() throws SetupException {
-        // Not needed
-    }
-
-    @Override
-    public ValidationErrors validate(final Database arg0) {
-        return null;
     }
 
     @Override

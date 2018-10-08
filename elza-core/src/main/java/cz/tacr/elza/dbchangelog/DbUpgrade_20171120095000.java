@@ -13,21 +13,17 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import liquibase.change.custom.CustomTaskChange;
 import liquibase.database.Database;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.CustomChangeException;
 import liquibase.exception.DatabaseException;
-import liquibase.exception.SetupException;
-import liquibase.exception.ValidationErrors;
-import liquibase.resource.ResourceAccessor;
 
 /**
  * Migrace arr_packet & arr_data_packet_ref.
  *
  * @since 20.11.2017
  */
-public class DbUpgrade_20171120095000 implements CustomTaskChange {
+public class DbUpgrade_20171120095000 extends BaseTaskChange {
 
     private static final int DATA_TYPE_STRING = 2;
     private static final int DATA_TYPE_PACKET_REF = 11;
@@ -43,26 +39,6 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
     private List<RulItemType> packetRefItemTypes = new ArrayList<>();
     private Integer change;
     private Integer descItemObjectId;
-
-    @Override
-    public String getConfirmationMessage() {
-        return null;
-    }
-
-    @Override
-    public void setUp() throws SetupException {
-        // not needed
-    }
-
-    @Override
-    public void setFileOpener(final ResourceAccessor resourceAccessor) {
-        // not needed
-    }
-
-    @Override
-    public ValidationErrors validate(final Database database) {
-        return null;
-    }
 
     @Override
     public void execute(final Database db) throws CustomChangeException {
