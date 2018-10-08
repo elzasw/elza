@@ -426,6 +426,10 @@ function insertItemType(item, items){
 }
 
 export function mergeAfterUpdate(state, data, refTables) {
+	// Hotfix pro Bug 4620 - Chyba při změně Složky na Jednotlivost
+	// Potreba upravit ve funkci update ve FlatFormData
+    data = fillImpossibleTypes(data, state.refTypesMap);
+
     let changedItem = data.item;
     let flatForm = new FlatFormData(refTables);
     let flatLocalForm = new FlatFormData(refTables);
