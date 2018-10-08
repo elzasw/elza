@@ -520,7 +520,7 @@ public class FundLevelService {
                                 final ArrNode staticNodeParent,
                                 final AddLevelDirection direction,
                                 @Nullable final String scenarionName,
-                                @Nullable final Set<RulItemType> descItemCopyTypes) {
+                                final Set<RulItemType> descItemCopyTypes) {
 
         Assert.notNull(staticNode, "Refereční JP musí být vyplněna");
         Assert.notNull(staticNodeParent, "Rodič JP musí být vyplněn");
