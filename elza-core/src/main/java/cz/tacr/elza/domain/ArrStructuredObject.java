@@ -43,7 +43,7 @@ public class ArrStructuredObject implements IArrFund, Structured {
 
     public final static String FIELD_DELETE_CHANGE = "deleteChange";
 
-    public static String FIELD_VALUE = "value";
+    public final static String FIELD_VALUE = "value";
 
     @Id
     @GeneratedValue

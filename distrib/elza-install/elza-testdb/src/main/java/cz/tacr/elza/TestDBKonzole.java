@@ -42,8 +42,8 @@ public class TestDBKonzole {
         jc.setPrikaz(script);
 
         KonzoleVystup konzoleVystup = new KonzoleVystup();
-        konzoleVystup.initialize();
         try {
+            konzoleVystup.initialize();
             jc.initializeConnection();
             if (!createDB) {
                 System.out.println("Bude spusten test pripojeni");
