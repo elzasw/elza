@@ -213,12 +213,12 @@ public class RuleService {
      */
     public List<RulTemplate> getTemplates(final String outputTypeCode) {
         if (outputTypeCode == null) {
-            return templateRepository.findAll(new Sort(Sort.Direction.ASC, RulTemplate.NAME));
+            return templateRepository.findAll(new Sort(Sort.Direction.ASC, RulTemplate.FIELD_NAME));
         }
         RulOutputType outputType = outputTypeRepository.findByCode(outputTypeCode);
         Assert.notNull(outputType, "Typ outputu s kodem '" + outputTypeCode + "' nebyl nalezen");
 
-        return templateRepository.findNotDeletedByOutputType(outputType, new Sort(Sort.Direction.ASC, RulTemplate.NAME));
+        return templateRepository.findNotDeletedByOutputType(outputType, new Sort(Sort.Direction.ASC, RulTemplate.FIELD_NAME));
     }
 
 

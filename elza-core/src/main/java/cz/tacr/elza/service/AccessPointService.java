@@ -1327,7 +1327,7 @@ public class AccessPointService {
      * @return nalezené jazyky
      */
     public List<SysLanguage> findAllLanguagesOrderByCode() {
-        return sysLanguageRepository.findAll(new Sort(Sort.Direction.ASC, SysLanguage.CODE));
+        return sysLanguageRepository.findAll(new Sort(Sort.Direction.ASC, SysLanguage.FIELD_CODE));
     }
 
     /**

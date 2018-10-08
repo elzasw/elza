@@ -26,11 +26,11 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
 public class UsrGroupUser {
 
-    public static final String GROUP_USER_ID = "groupUserId";
-    public static final String GROUP = "group";
-    public static final String USER = "user";
-    public static final String USER_ID = "userId";
-    public static final String GROUP_ID = "groupId";
+    public static final String FIELD_GROUP_USER_ID = "groupUserId";
+    public static final String FIELD_GROUP = "group";
+    public static final String FIELD_USER = "user";
+    public static final String FIELD_USER_ID = "userId";
+    public static final String FIELD_GROUP_ID = "groupId";
 
     @Id
     @GeneratedValue

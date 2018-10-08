@@ -22,7 +22,12 @@ public class XmlFragment implements Closeable {
 
     private final Path directory;
 
-    private Path file;
+    /**
+     * Path to the fragment
+     * 
+     * If this value is null then fragment is closed
+     */
+    private Path file = null;
 
     private OutputStream outputStream;
 
@@ -90,6 +95,13 @@ public class XmlFragment implements Closeable {
         }
     }
 
+    /**
+     * Delete fragment
+     * 
+     * If fragment is opened it closed first
+     * 
+     * @throws IOException
+     */
     public void delete() throws IOException {
         if (isExist()) {
             streamWriter = null; // w/o close, we don't need to write open elements

@@ -28,6 +28,9 @@ import cz.tacr.elza.domain.enumeration.StringLength;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class RulTemplate {
 
+    /* Konstanty pro vazby a fieldy. */
+    public static final String FIELD_NAME = "name";
+
     @Id
     @GeneratedValue
     @Access(AccessType.PROPERTY) // required to read id without fetch from db
@@ -65,9 +68,6 @@ public class RulTemplate {
 
     @Column(nullable = false)
     private Boolean deleted;
-
-    /* Konstanty pro vazby a fieldy. */
-    public static final String NAME = "name";
 
     public Integer getTemplateId() {
         return templateId;
