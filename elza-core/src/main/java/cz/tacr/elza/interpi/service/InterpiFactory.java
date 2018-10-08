@@ -14,8 +14,6 @@ import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
 
-import cz.tacr.elza.interpi.service.vo.*;
-import cz.tacr.elza.service.vo.ImportAccessPoint;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,12 +26,9 @@ import cz.tacr.elza.controller.vo.InterpiRelationMappingVO;
 import cz.tacr.elza.core.data.PartyType;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ApChange;
-import cz.tacr.elza.domain.ApDescription;
 import cz.tacr.elza.domain.ApExternalId;
 import cz.tacr.elza.domain.ApExternalIdType;
 import cz.tacr.elza.domain.ApExternalSystem;
-import cz.tacr.elza.domain.ApName;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ParComplementType;
@@ -59,6 +54,10 @@ import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.interpi.service.pqf.PQFQueryBuilder;
+import cz.tacr.elza.interpi.service.vo.ConditionVO;
+import cz.tacr.elza.interpi.service.vo.ExternalRecordVO;
+import cz.tacr.elza.interpi.service.vo.InterpiEntity;
+import cz.tacr.elza.interpi.service.vo.MappingVO;
 import cz.tacr.elza.interpi.ws.wo.DoplnekTyp;
 import cz.tacr.elza.interpi.ws.wo.EntitaTyp;
 import cz.tacr.elza.interpi.ws.wo.IdentifikaceTyp;
@@ -93,11 +92,11 @@ import cz.tacr.elza.repository.PartyTypeRepository;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.GroovyScriptService;
 import cz.tacr.elza.service.PartyService;
+import cz.tacr.elza.service.vo.ImportAccessPoint;
 
 /**
  * Třída pro konverzi objektů z a do INTERPI.
  *
- * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 6. 12. 2016
  */
 @Service
@@ -279,10 +278,6 @@ public class InterpiFactory {
         for (IdentifikatorSouvTyp identifikaceTyp : identifikace) {
             if (identifikaceTyp.getTyp() == IdentifikatorSouvTypA.INTERPI) { // chceme jen identifikátory typu INTERPI
                 interpiRecordId = identifikaceTyp.getValue();
-                break;
-            }
-
-            if (interpiRecordId != null) {
                 break;
             }
         }
