@@ -1,15 +1,23 @@
 package cz.tacr.elza.controller;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.util.List;
 
-import cz.tacr.elza.controller.vo.*;
-import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
-import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
 import org.junit.Assert;
 import org.junit.Test;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import cz.tacr.elza.controller.vo.ApAccessPointCreateVO;
+import cz.tacr.elza.controller.vo.ApAccessPointVO;
+import cz.tacr.elza.controller.vo.ApScopeVO;
+import cz.tacr.elza.controller.vo.ApTypeVO;
+import cz.tacr.elza.controller.vo.ArrFundVO;
+import cz.tacr.elza.controller.vo.ArrFundVersionVO;
+import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
+import cz.tacr.elza.controller.vo.TreeData;
+import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
 
 
 /**
@@ -147,12 +155,12 @@ public class ApControllerTest extends AbstractControllerTest {
 
         // Dohledání usages
         RecordUsageVO usage = usagesRecord(replacedRecordCreated.getId());
-        Assert.assertNotNull(usage.funds);
+        Assert.assertNotNull(usage.getFunds());
 
         // Replace
         replaceRecord(replacedRecordCreated.getId(), replacementRecordCreated.getId());
         RecordUsageVO usageAfterReplace = usagesRecord(replacedRecordCreated.getId());
-        Assert.assertTrue(usageAfterReplace.funds == null || usageAfterReplace.funds.isEmpty());
+        Assert.assertTrue(usageAfterReplace.getFunds() == null || usageAfterReplace.getFunds().isEmpty());
     }
 
     private ApTypeVO getNonHierarchicalApType(final List<ApTypeVO> list, final boolean hasPartyType) {
