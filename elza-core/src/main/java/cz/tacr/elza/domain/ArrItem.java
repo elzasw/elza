@@ -36,10 +36,10 @@ import cz.tacr.elza.service.cache.NodeCacheSerializable;
 @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
 public abstract class ArrItem implements NodeCacheSerializable {
 
-    public static final String DATA = "data";
-    public static final String ITEM_SPEC = "itemSpec";
-    public static final String ITEM_TYPE = "itemType";
-    public static final String POSITION = "position";
+    public static final String FIELD_DATA = "data";
+    public static final String FIELD_ITEM_SPEC = "itemSpec";
+    public static final String FIELD_ITEM_TYPE = "itemType";
+    public static final String FIELD_POSITION = "position";
 
     @Id
     @GeneratedValue

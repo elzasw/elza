@@ -30,7 +30,6 @@ import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.service.FundLevelService;
@@ -44,9 +43,6 @@ public class PersistentSortBulkAction extends BulkAction {
 
     @Autowired
     private FundLevelService fundLevelService;
-
-    @Autowired
-    private DescItemRepository descItemRepository;
 
     @Autowired
     private ItemTypeRepository itemTypeRepository;

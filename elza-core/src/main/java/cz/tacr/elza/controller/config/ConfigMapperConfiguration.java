@@ -521,7 +521,7 @@ public class ConfigMapperConfiguration {
                 .exclude("partyNames")
                 .exclude("partyCreators")
                 .exclude("relations")
-                .exclude(ParParty.RECORD)
+                .exclude(ParParty.FIELD_RECORD)
                 .customize(new CustomMapper<ParParty, ParPartyVO>() {
                     @Override
                     public void mapAtoB(ParParty a, ParPartyVO b, MappingContext context) {

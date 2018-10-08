@@ -55,15 +55,15 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
         Predicate conditionSubquery = preparePartyApSearchPredicate(searchRecord, partyTypeId, apTypeIds, scopeIds, partySubquery, builder, null, true, false);
 
         subquery.where(conditionSubquery);
-        subquery.select(partySubquery.get(ParParty.ABSTRACT_PARTY_ID));
+        subquery.select(partySubquery.get(ParParty.FIELD_PARTY_ID));
 
         query.select(party);
         if (condition != null) {
-            Order order = builder.asc(party.get(ParParty.ABSTRACT_PARTY_ID));
-            query.where(condition, builder.in(party.get(ParParty.ABSTRACT_PARTY_ID)).value(subquery)).orderBy(order);
+            Order order = builder.asc(party.get(ParParty.FIELD_PARTY_ID));
+            query.where(condition, builder.in(party.get(ParParty.FIELD_PARTY_ID)).value(subquery)).orderBy(order);
         }
 
-        Join<Object, Object> partyName = party.join(ParParty.PARTY_PREFERRED_NAME, JoinType.LEFT);
+        Join<Object, Object> partyName = party.join(ParParty.FIELD_PARTY_PREFERRED_NAME, JoinType.LEFT);
         query.orderBy(builder.asc(partyName.get("mainPart")), builder.asc(partyName.get("otherPart")));
 
         return entityManager.createQuery(query)
@@ -100,7 +100,7 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
     @Override
     @Transactional
     public void unsetAllPreferredName() {
-        entityManager.createQuery("update par_party set " + ParParty.PARTY_PREFERRED_NAME + " = null").executeUpdate();
+        entityManager.createQuery("update par_party set " + ParParty.FIELD_PARTY_PREFERRED_NAME + " = null").executeUpdate();
     }
     
     /**
@@ -127,12 +127,12 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
                                                            final boolean count,
                                                            final boolean onlyPrefferedName) {
         // join AP which must always exists
-        Join<ParParty, ApAccessPoint> apJoin = partyRoot.join(ParParty.RECORD, JoinType.INNER);
+        Join<ParParty, ApAccessPoint> apJoin = partyRoot.join(ParParty.FIELD_RECORD, JoinType.INNER);
 
         Predicate cond = ApAccessPointRepositoryImpl.prepareApSearchPredicate(searchValue, apTypeIds, scopeIds, apJoin, cb, query, count, onlyPrefferedName);
         // add party type condition
         if (partyTypeId != null) {
-            Predicate typeCond = cb.equal(partyRoot.get(ParParty.PARTY_TYPE_ID), partyTypeId);
+            Predicate typeCond = cb.equal(partyRoot.get(ParParty.FIELD_PARTY_TYPE_ID), partyTypeId);
             cond = cb.and(cond, typeCond);
         }
 

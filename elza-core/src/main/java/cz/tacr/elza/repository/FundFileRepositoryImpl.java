@@ -42,8 +42,8 @@ public class FundFileRepositoryImpl extends AbstractFileRepository<ArrFile> impl
         Predicate predicate = prepareFileSearchPredicate(search, file);
         Predicate predicateCount = prepareFileSearchPredicate(search, fileCount);
 
-        Predicate equal = builder.equal(file.get(ArrFile.FUND), fund);
-        Predicate equalCount = builder.equal(fileCount.get(ArrFile.FUND), fund);
+        Predicate equal = builder.equal(file.get(ArrFile.FIELD_FUND), fund);
+        Predicate equalCount = builder.equal(fileCount.get(ArrFile.FIELD_FUND), fund);
 
         query.where(predicate != null ? builder.and(equal,predicate):builder.and(equal));
         queryCount.where(predicateCount != null ? builder.and(equalCount,predicateCount):builder.and(equal));

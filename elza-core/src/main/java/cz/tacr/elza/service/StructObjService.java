@@ -400,7 +400,7 @@ public class StructObjService {
      */
     private int findNextPosition(final ArrStructuredObject structureData, final RulItemType itemType) {
         List<ArrStructuredItem> structureItems = structureItemRepository.findOpenItemsAfterPosition(itemType,
-                structureData, 0, new PageRequest(0, 1, Sort.Direction.DESC, ArrItem.POSITION));
+                structureData, 0, new PageRequest(0, 1, Sort.Direction.DESC, ArrItem.FIELD_POSITION));
         if (structureItems.size() == 0) {
             return 1;
         } else {

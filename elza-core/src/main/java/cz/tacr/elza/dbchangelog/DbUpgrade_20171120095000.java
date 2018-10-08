@@ -243,7 +243,7 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
             throws DatabaseException, SQLException {
         PreparedStatement ps = dc.prepareStatement(
                 "UPDATE " + RulItemType.TABLE + " SET data_type_id = ?, " +
-                        RulItemType.STRUCTURE_TYPE_ID + " = ? WHERE item_type_id = ?;");
+                        RulItemType.COL_STRUCTURE_TYPE_ID + " = ? WHERE item_type_id = ?;");
         ps.setInt(1, dataTypeSoRef);
         ps.setInt(2, structureTypeId);
         ps.setInt(3, itemTypeId);
@@ -417,7 +417,7 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
                                        final String name,
                                        final Integer ruleSetId,
                                        final Integer packageId) throws DatabaseException, SQLException {
-        return new RulStructureType(nextId(RulStructureType.TABLE, RulStructureType.STRUCTURE_TYPE_ID), code, name, packageId, ruleSetId);
+        return new RulStructureType(nextId(RulStructureType.TABLE, RulStructureType.COL_STRUCTURE_TYPE_ID), code, name, packageId, ruleSetId);
     }
 
     private RulItemType createItemType(final Integer dataTypeId,
@@ -430,7 +430,7 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
                                        final Integer ruleSetId,
                                        final Integer packageId,
                                        final Integer structureTypeId) throws DatabaseException, SQLException {
-        return new RulItemType(nextId(RulItemType.TABLE, RulItemType.ITEM_TYPE_ID), dataTypeId, code, name, shortcut, description, false, false, useSpecification, viewOrder, ruleSetId, packageId, null, structureTypeId);
+        return new RulItemType(nextId(RulItemType.TABLE, RulItemType.COL_ITEM_TYPE_ID), dataTypeId, code, name, shortcut, description, false, false, useSpecification, viewOrder, ruleSetId, packageId, null, structureTypeId);
     }
 
     private Integer nextId(final String table, final String column) throws DatabaseException, SQLException {
@@ -476,11 +476,11 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
     }
 
     private void insertStructureType(final RulStructureType structureType) throws DatabaseException, SQLException {
-        PreparedStatement ps = dc.prepareStatement("INSERT INTO " + RulStructureType.TABLE + " (" + RulStructureType.STRUCTURE_TYPE_ID + "," +
-                RulStructureType.CODE + "," +
-                RulStructureType.NAME + "," +
-                RulStructureType.PACKAGE_ID + "," +
-                RulStructureType.RULE_SET_ID + ") " +
+        PreparedStatement ps = dc.prepareStatement("INSERT INTO " + RulStructureType.TABLE + " (" + RulStructureType.COL_STRUCTURE_TYPE_ID + "," +
+                RulStructureType.COL_CODE + "," +
+                RulStructureType.COL_NAME + "," +
+                RulStructureType.COL_PACKAGE_ID + "," +
+                RulStructureType.COL_RULE_SET_ID + ") " +
                 "VALUES (?, ?, ?, ?, ?);");
         int i = 1;
         ps.setInt(i++, structureType.getStructureTypeId());
@@ -524,24 +524,24 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
     }
 
     private RulItemType createItemType(ResultSet rs) throws SQLException {
-        return new RulItemType(rs.getInt(RulItemType.ITEM_TYPE_ID),
-                rs.getInt(RulItemType.DATA_TYPE_ID),
-                rs.getString(RulItemType.CODE),
-                rs.getString(RulItemType.NAME),
-                rs.getString(RulItemType.SHORTCUT),
-                rs.getString(RulItemType.DESCRIPTION),
-                rs.getBoolean(RulItemType.IS_VALUE_UNIQUE),
-                rs.getBoolean(RulItemType.CAN_BE_ORDERED),
-                rs.getBoolean(RulItemType.USE_SPECIFICATION),
-                rs.getInt(RulItemType.VIEW_ORDER),
-                rs.getInt(RulItemType.RULE_SET_ID),
-                rs.getInt(RulItemType.PACKAGE_ID),
-                rs.getString(RulItemType.COLUMNS_DEFINITION),
+        return new RulItemType(rs.getInt(RulItemType.COL_ITEM_TYPE_ID),
+                rs.getInt(RulItemType.COL_DATA_TYPE_ID),
+                rs.getString(RulItemType.COL_CODE),
+                rs.getString(RulItemType.COL_NAME),
+                rs.getString(RulItemType.COL_SHORTCUT),
+                rs.getString(RulItemType.COL_DESCRIPTION),
+                rs.getBoolean(RulItemType.COL_IS_VALUE_UNIQUE),
+                rs.getBoolean(RulItemType.COL_CAN_BE_ORDERED),
+                rs.getBoolean(RulItemType.COL_USE_SPECIFICATION),
+                rs.getInt(RulItemType.COL_VIEW_ORDER),
+                rs.getInt(RulItemType.COL_RULE_SET_ID),
+                rs.getInt(RulItemType.COL_PACKAGE_ID),
+                rs.getString(RulItemType.COL_COLUMNS_DEFINITION),
                 null /*struct_type - not exists yet*/);
     }
 
     private Integer nextItemTypeViewOrder() throws DatabaseException, SQLException {
-        PreparedStatement ps = dc.prepareStatement("SELECT MAX(" + RulItemType.VIEW_ORDER  + ") FROM " + RulItemType.TABLE);
+        PreparedStatement ps = dc.prepareStatement("SELECT MAX(" + RulItemType.COL_VIEW_ORDER  + ") FROM " + RulItemType.TABLE);
         ps.execute();
         try (ResultSet rs = ps.getResultSet();) {
             if (rs.next()) {
@@ -613,11 +613,11 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
     private static class RulStructureType {
 
         private static String TABLE = "rul_structure_type";
-        private static String STRUCTURE_TYPE_ID = "structure_type_id";
-        private static String CODE = "code";
-        private static String NAME = "name";
-        private static String PACKAGE_ID = "package_id";
-        private static String RULE_SET_ID = "rule_set_id";
+        private static String COL_STRUCTURE_TYPE_ID = "structure_type_id";
+        private static String COL_CODE = "code";
+        private static String COL_NAME = "name";
+        private static String COL_PACKAGE_ID = "package_id";
+        private static String COL_RULE_SET_ID = "rule_set_id";
 
         private Integer structureTypeId;
         private String code;
@@ -778,20 +778,20 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
     private static class RulItemType {
 
         private static String TABLE = "rul_item_type";
-        private static String ITEM_TYPE_ID = "item_type_id";
-        private static String DATA_TYPE_ID = "data_type_id";
-        private static String CODE = "code";
-        private static String NAME = "name";
-        private static String SHORTCUT = "shortcut";
-        private static String DESCRIPTION = "description";
-        private static String IS_VALUE_UNIQUE = "is_value_unique";
-        private static String CAN_BE_ORDERED = "can_be_ordered";
-        private static String USE_SPECIFICATION = "use_specification";
-        private static String VIEW_ORDER = "view_order";
-        private static String PACKAGE_ID = "package_id";
-        private static String COLUMNS_DEFINITION = "columns_definition";
-        private static String RULE_SET_ID = "rule_set_id";
-        private static String STRUCTURE_TYPE_ID = "structure_type_id";
+        private static String COL_ITEM_TYPE_ID = "item_type_id";
+        private static String COL_DATA_TYPE_ID = "data_type_id";
+        private static String COL_CODE = "code";
+        private static String COL_NAME = "name";
+        private static String COL_SHORTCUT = "shortcut";
+        private static String COL_DESCRIPTION = "description";
+        private static String COL_IS_VALUE_UNIQUE = "is_value_unique";
+        private static String COL_CAN_BE_ORDERED = "can_be_ordered";
+        private static String COL_USE_SPECIFICATION = "use_specification";
+        private static String COL_VIEW_ORDER = "view_order";
+        private static String COL_PACKAGE_ID = "package_id";
+        private static String COL_COLUMNS_DEFINITION = "columns_definition";
+        private static String COL_RULE_SET_ID = "rule_set_id";
+        private static String COL_STRUCTURE_TYPE_ID = "structure_type_id";
 
         private Integer itemTypeId;
         private Integer dataTypeId;
