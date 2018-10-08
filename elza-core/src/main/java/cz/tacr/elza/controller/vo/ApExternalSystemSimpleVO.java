@@ -7,8 +7,6 @@ import cz.tacr.elza.domain.ApExternalSystem;
 /**
  * VO pro externí systém.
  *
- * @author Martin Šlapa
- * @since 05.12.2016
  */
 public class ApExternalSystemSimpleVO extends SysExternalSystemSimpleVO {
 
