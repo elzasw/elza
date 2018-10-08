@@ -7,12 +7,44 @@ package cz.tacr.elza.controller;
  */
 public class StructureExtensionFundVO {
 
-    public Integer id;
+    private Integer id;
 
-    public String code;
+    private String code;
 
-    public String name;
+    private String name;
 
-    public Boolean active;
+    private Boolean active;
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Boolean getActive() {
+        return active;
+    }
+
+    public void setActive(Boolean active) {
+        this.active = active;
+    }
 
 }

@@ -223,9 +223,9 @@ public class StructureControllerTest extends AbstractControllerTest {
 
         // check name and id
         RulStructureTypeVO structureType = structureTypes.get(0);
-        assertEquals(STRUCTURE_TYPE_CODE, structureType.code);
-        assertNotNull(structureType.id);
-        assertNotNull(structureType.name);
+        assertEquals(STRUCTURE_TYPE_CODE, structureType.getCode());
+        assertNotNull(structureType.getId());
+        assertNotNull(structureType.getName());
 
         // check extensions
         List<StructureExtensionFundVO> fundStructureExtension = findFundStructureExtension(fundVersion.getId(), STRUCTURE_TYPE_CODE);
@@ -233,20 +233,20 @@ public class StructureControllerTest extends AbstractControllerTest {
         assertEquals(1, fundStructureExtension.size());
 
         StructureExtensionFundVO structureExtensionFund = fundStructureExtension.get(0);
-        assertNotNull(structureExtensionFund.id);
-        assertNotNull(structureExtensionFund.name);
-        assertNotNull(structureExtensionFund.code);
-        assertFalse(structureExtensionFund.active);
+        assertNotNull(structureExtensionFund.getId());
+        assertNotNull(structureExtensionFund.getName());
+        assertNotNull(structureExtensionFund.getCode());
+        assertFalse(structureExtensionFund.getActive());
 
         setFundStructureExtensions(fundVersion.getId(), STRUCTURE_TYPE_CODE, Collections.singletonList(STRUCTURE_EXTENSION_CODE));
         fundStructureExtension = findFundStructureExtension(fundVersion.getId(), STRUCTURE_TYPE_CODE);
         structureExtensionFund = fundStructureExtension.get(0);
-        assertTrue(structureExtensionFund.active);
+        assertTrue(structureExtensionFund.getActive());
 
         setFundStructureExtensions(fundVersion.getId(), STRUCTURE_TYPE_CODE, Collections.emptyList());
         fundStructureExtension = findFundStructureExtension(fundVersion.getId(), STRUCTURE_TYPE_CODE);
         structureExtensionFund = fundStructureExtension.get(0);
-        assertFalse(structureExtensionFund.active);
+        assertFalse(structureExtensionFund.getActive());
     }
 
     private void structureDataTest(final ArrFundVersionVO fundVersion) {

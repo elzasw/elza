@@ -44,7 +44,6 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
 /**
  * Servisní třída pro přesuny uzlů ve stromu.
  *
- * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 18.01.2016
  */
 @Service
@@ -428,7 +427,8 @@ public class FundLevelService {
 
         eventNotificationService.publishEvent(new EventDeleteNode(EventType.DELETE_LEVEL,
                 version.getFundVersionId(),
-                deleteNode.getNodeId(),deleteNodeParent.getNodeId()));
+                deleteNode.getNodeId(),
+                (deleteNodeParent != null) ? deleteNodeParent.getNodeId() : null));
 
         return level;
     }
