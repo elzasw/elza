@@ -30,7 +30,7 @@ public class ArrSearchWork {
     private String indexName;
 
     @Column(length = LENGTH_250, nullable = false)
-    private String entityClass;
+    private Class entityClass;
 
     @Column(nullable = false)
     private Integer entityId;
@@ -40,7 +40,10 @@ public class ArrSearchWork {
     private WorkType workType;
 
     @Column(nullable = false)
-    private LocalDateTime lastUpdate;
+    private LocalDateTime insertTime;
+
+    @Column(nullable = true)
+    private LocalDateTime startTime;
 
     public Integer getSearchWorkId() {
         return searchWorkId;
@@ -58,11 +61,11 @@ public class ArrSearchWork {
         this.indexName = indexName;
     }
 
-    public String getEntityClass() {
+    public Class getEntityClass() {
         return entityClass;
     }
 
-    public void setEntityClass(String entityClass) {
+    public void setEntityClass(Class entityClass) {
         this.entityClass = entityClass;
     }
 
@@ -82,12 +85,20 @@ public class ArrSearchWork {
         this.workType = workType;
     }
 
-    public LocalDateTime getLastUpdate() {
-        return lastUpdate;
+    public LocalDateTime getInsertTime() {
+        return insertTime;
     }
 
-    public void setLastUpdate(LocalDateTime lastUpdate) {
-        this.lastUpdate = lastUpdate;
+    public void setInsertTime(LocalDateTime insertTime) {
+        this.insertTime = insertTime;
+    }
+
+    public LocalDateTime getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(LocalDateTime startTime) {
+        this.startTime = startTime;
     }
 
     public enum WorkType {

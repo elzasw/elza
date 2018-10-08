@@ -9,6 +9,7 @@ import javax.servlet.MultipartConfigElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
@@ -49,6 +50,9 @@ public class ElzaCore {
 
     @Autowired
     private ApplicationContext context;
+
+    @Value("${elza.hibernate.index.thread_max:5}")
+    private int threadMax;
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -100,13 +104,23 @@ public class ElzaCore {
         return threadPoolTaskExecutor;
     }
 
+    @Bean(name = "threadPoolTaskExecutorHS")
+    public ThreadPoolTaskExecutor threadPoolTaskExecutorHibernateSearch() {
+        ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
+        threadPoolTaskExecutor.setCorePoolSize(threadMax);
+        // threadPoolTaskExecutor.setMaxPoolSize();
+        threadPoolTaskExecutor.setThreadNamePrefix("HibernateSearchIndex-");
+        threadPoolTaskExecutor.initialize();
+        return threadPoolTaskExecutor;
+    }
+
     @Bean(name = "conformityUpdateTaskExecutor")
     public Executor conformityUpdateTaskExecutor() {
         return threadPoolTaskExecutorBulkAction();
     }
 
     @Bean
-    public ClientEventDispatcher clientEventDispatcher(){
+    public ClientEventDispatcher clientEventDispatcher() {
         return new WebScoketClientEventService();
     }
 

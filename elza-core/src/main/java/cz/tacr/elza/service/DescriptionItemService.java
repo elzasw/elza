@@ -84,6 +84,7 @@ import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.search.SearchIndexSupport;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventChangeDescItem;
 import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
@@ -95,7 +96,7 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
  *
  */
 @Service
-public class DescriptionItemService {
+public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 
     @Autowired
     private NodeRepository nodeRepository;
@@ -1706,4 +1707,14 @@ public class DescriptionItemService {
 
         return descItemCreated;
     }
+
+    @Override
+    public Map<Integer, ArrDescItem> findToIndex(Collection<Integer> ids) {
+        if (CollectionUtils.isEmpty(ids)) {
+            return Collections.emptyMap();
+        }
+        // todo[marek]: optimalizovat nacteni vcene zavislosti
+        return descItemRepository.findAll(ids).stream().collect(Collectors.toMap(o -> o.getItemId(), o -> o));
+    }
+
 }
