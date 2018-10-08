@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,13 +62,13 @@ public class ProcessService {
         }
 
         // Čekáme na dokončení
-        while (process.isAlive()) {
-            try {
-                process.wait(250);
-            } catch (InterruptedException e) {
-                // Nothing to do with this
-                Thread.currentThread().interrupt();
+        try {
+            while (!process.waitFor(250, TimeUnit.MILLISECONDS)) {
+                // nop
             }
+        } catch (InterruptedException e) {
+            // Nothing to do with this
+            Thread.currentThread().interrupt();
         }
 
         // Získání chybového výstupu
