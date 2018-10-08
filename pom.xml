@@ -21,6 +21,10 @@
         <gpg.skip>true</gpg.skip>
         <maven.javadoc.skip>true</maven.javadoc.skip>
         <enforcer.skip>true</enforcer.skip>
+        
+        <!-- Configuration for maven-surefire-plugin, 
+             has to be configured separately because of JaCoCo -->
+        <argLine>-Dfile.encoding=UTF-8</argLine>
 
         <cxf.version>3.1.11</cxf.version>
         <hibernate.version>5.2.17.Final</hibernate.version>
@@ -34,7 +38,8 @@
         <surefire.version>2.22.0</surefire.version>
         <sonar.core.codeCoveragePlugin>jacoco</sonar.core.codeCoveragePlugin>
         <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
-        <sonar.jacoco.reportPaths>${project.basedir}/../target/jacoco.exec</sonar.jacoco.reportPaths>
+        <sonar.junit.reportPaths>elza-core/target/surefire-reports</sonar.junit.reportPaths>
+        <sonar.jacoco.reportPaths>elza-core/target/jacoco.exec</sonar.jacoco.reportPaths>
     </properties>
 
     <modules>
@@ -318,9 +323,6 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <configuration>
-                        <argLine>-Dfile.encoding=UTF-8</argLine>
-                    </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -518,11 +520,6 @@
             </pluginManagement>
             <plugins>
                 <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-surefire-plugin</artifactId>
-                    <version>${surefire.version}</version>
-                </plugin>
-                <plugin>
                     <groupId>org.jacoco</groupId>
                     <artifactId>jacoco-maven-plugin</artifactId>
                     <configuration>
@@ -531,9 +528,31 @@
                     </configuration>
                     <executions>
                         <execution>
+                            <id>default-prepare-agent</id>
                             <goals>
                                 <goal>prepare-agent</goal>
                             </goals>
+                            <configuration>
+                              <destFile>${project.basedir}/target/jacoco.exec</destFile>
+                            </configuration>
+                        </execution>
+                        <execution>
+                            <id>default-report</id>
+                            <goals>
+                                <goal>report</goal>
+                            </goals>
+                            <configuration>
+                              <dataFile>${project.basedir}/target/jacoco.exec</dataFile>
+                            </configuration>
+                        </execution>
+                        <execution>
+                            <id>default-check</id>
+                            <goals>
+                                <goal>check</goal>
+                            </goals>
+                            <configuration>
+                                <rules></rules>
+                            </configuration>
                         </execution>
                     </executions>
                     <!-- <executions> <execution> <id>agent-for-ut</id> <goals> 
