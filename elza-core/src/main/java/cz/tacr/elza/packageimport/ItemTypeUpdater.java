@@ -498,9 +498,7 @@ public class ItemTypeUpdater {
 
             List<RulItemSpecRegister> dbSpecs = itemSpecRegisterRepository
                     .findByDescItemSpecId(rulDescItemSpec);
-            if (dbSpecs != null) {
-                rulItemSpecRegisters.addAll(dbSpecs);
-            }
+            rulItemSpecRegisters.addAll(dbSpecs);
 
             if (!CollectionUtils.isEmpty(item.getItemSpecRegisters())) {
                 for (ItemSpecRegister itemSpecRegister : item.getItemSpecRegisters()) {

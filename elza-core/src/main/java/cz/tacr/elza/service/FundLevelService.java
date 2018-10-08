@@ -397,6 +397,8 @@ public class FundLevelService {
      * @param deleteNode       node ke smazání
      * @param deleteNodeParent rodič nodu ke smazání
      */
+    // Dává smysl, aby deleteNodeParent byl null?
+    // Pravděpodobně by vždy měl být non-null - nemůžeme takto mazat kořen
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public ArrLevel deleteLevel(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion version,
                                 final ArrNode deleteNode,
