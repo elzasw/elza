@@ -10,7 +10,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import org.apache.commons.collections4.map.HashedMap;
-import org.hibernate.search.backend.LuceneWork;
 import org.hibernate.search.backend.spi.Work;
 import org.hibernate.search.backend.spi.WorkType;
 import org.hibernate.search.engine.impl.WorkPlan;
@@ -29,24 +28,24 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrIndexWork;
 import cz.tacr.elza.service.DescriptionItemService;
-import cz.tacr.elza.service.SearchWorkService;
+
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.toSet;
 
 /**
  * @author <a href="mailto:stepan.marek@coreit.cz">Stepan Marek</a>
  */
 @Component
-public class SearchWorkIndexService {
+public class SearchIndexService {
 
-    private static final Logger logger = LoggerFactory.getLogger(SearchWorkIndexService.class);
+    private static final Logger logger = LoggerFactory.getLogger(SearchIndexService.class);
 
     private ExtendedSearchIntegrator integrator;
 
     @PersistenceContext
     private EntityManager em;
-
-    @Autowired
-    private SearchWorkService searchWorkService;
 
     @Autowired
     private DescriptionItemService descriptionItemService;
@@ -62,33 +61,37 @@ public class SearchWorkIndexService {
     }
 
     @Transactional
-    public void processBatch(Class entityClass, Set<Integer> entityIdList) {
+    public void processBatch(List<ArrIndexWork> workList) {
 
-        Map<Integer, Object> entityMap = findAll(entityClass, entityIdList);
+        workList.stream().collect(groupingBy(work -> work.getEntityClass())).forEach((entityClass, list) -> {
 
-        entityIdList.removeAll(entityMap.keySet());
+            String indexName = entityClass.getName();
 
-        WorkPlan plan = new WorkPlan(integrator);
-        for (Integer id : entityIdList) {
-            plan.addWork(new Work(entityClass, id, WorkType.DELETE));
-        }
+            // predpokladame, ze index name odpovida nazvu entity
+            IndexManager indexManager = integrator.getIndexManager(indexName);
+            if (indexManager == null) {
+                logger.error("Index manager not found for entity [{}]", entityClass);
+                return;
+            }
 
-        for (Map.Entry<Integer, Object> entry : entityMap.entrySet()) {
-            plan.addWork(new Work(entry.getValue(), entry.getKey(), WorkType.INDEX));
-        }
+            Set<Integer> entityIdSet = list.stream().map(work -> work.getEntityId()).collect(toSet());
 
-        List<LuceneWork> queue = plan.getPlannedLuceneWork();
+            Map<Integer, Object> entityMap = findAll(entityClass, entityIdSet);
 
-        EntityIndexBinding binding = integrator.getIndexBindings().get(entityClass);
-        IndexManager[] indexManagers = binding.getIndexManagers();
+            WorkPlan plan = new WorkPlan(integrator);
 
-        IndexManager indexManager = integrator.getIndexManager(entityClass.getName());
-        if (indexManager == null) {
-            logger.error("Received a remote message about an unknown index '{}': discarding message!", entityClass);
-            return;
-        }
+            entityIdSet.removeAll(entityMap.keySet());
 
-        indexManager.performOperations(queue, null);
+            for (Integer id : entityIdSet) {
+                plan.addWork(new Work(entityClass, id, WorkType.DELETE));
+            }
+
+            for (Map.Entry<Integer, Object> entry : entityMap.entrySet()) {
+                plan.addWork(new Work(entry.getValue(), entry.getKey(), WorkType.INDEX));
+            }
+
+            indexManager.performOperations(plan.getPlannedLuceneWork(), null);
+        });
     }
 
     private <T> Map<Integer, T> findAll(Class<T> entityClass, Collection<Integer> ids) {

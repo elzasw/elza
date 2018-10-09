@@ -6,25 +6,24 @@ import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-import static cz.tacr.elza.domain.enumeration.StringLength.*;
+import static cz.tacr.elza.domain.enumeration.StringLength.LENGTH_250;
+import static cz.tacr.elza.domain.enumeration.StringLength.LENGTH_50;
 
 /**
  * Entity for used values
  */
-@Entity(name = "arr_search_work")
+@Entity(name = "arr_index_work")
 @Table
-public class ArrSearchWork {
+public class ArrIndexWork {
 
     @Id
     @GeneratedValue
     @Access(AccessType.PROPERTY) // required to read id without fetch from db    
-    private Integer searchWorkId;
+    private Long indexWorkId;
 
     @Column(length = LENGTH_50, nullable = false)
     private String indexName;
@@ -35,22 +34,18 @@ public class ArrSearchWork {
     @Column(nullable = false)
     private Integer entityId;
 
-    @Enumerated(EnumType.STRING)
-    @Column(length = LENGTH_ENUM, nullable = false)
-    private WorkType workType;
-
     @Column(nullable = false)
     private LocalDateTime insertTime;
 
     @Column(nullable = true)
     private LocalDateTime startTime;
 
-    public Integer getSearchWorkId() {
-        return searchWorkId;
+    public Long getIndexWorkId() {
+        return indexWorkId;
     }
 
-    public void setSearchWorkId(Integer searchWorkId) {
-        this.searchWorkId = searchWorkId;
+    public void setIndexWorkId(Long indexWorkId) {
+        this.indexWorkId = indexWorkId;
     }
 
     public String getIndexName() {
@@ -77,14 +72,6 @@ public class ArrSearchWork {
         this.entityId = entityId;
     }
 
-    public WorkType getWorkType() {
-        return workType;
-    }
-
-    public void setWorkType(WorkType workType) {
-        this.workType = workType;
-    }
-
     public LocalDateTime getInsertTime() {
         return insertTime;
     }
@@ -99,11 +86,6 @@ public class ArrSearchWork {
 
     public void setStartTime(LocalDateTime startTime) {
         this.startTime = startTime;
-    }
-
-    public enum WorkType {
-        DELETE,
-        INDEX
     }
 
 }

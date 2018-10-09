@@ -18,7 +18,7 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 
 import cz.tacr.elza.core.AppContext;
-import cz.tacr.elza.service.SearchWorkService;
+import cz.tacr.elza.service.IndexWorkService;
 
 /**
  * @author <a href="mailto:stepan.marek@coreit.cz">Stepan Marek</a>
@@ -33,7 +33,7 @@ public class DbQueueProcessor implements BackendQueueProcessor {
     private ExtendedSearchIntegrator searchIntegrator;
 
     @Autowired
-    private SearchWorkService searchWorkService;
+    private IndexWorkService indexWorkService;
 
     public DbQueueProcessor() {
         AppContext.addApplicationListener((ApplicationListener<ContextRefreshedEvent>) event -> {
@@ -57,14 +57,14 @@ public class DbQueueProcessor implements BackendQueueProcessor {
 
     @Override
     public void applyWork(List<LuceneWork> workList, IndexingMonitor monitor) {
-        searchWorkService.createSearchWork(indexName, workList);
+        indexWorkService.createIndexWork(indexName, workList);
         // todo[marek]: odstranit
         // indexManager.performOperations(workList, monitor);
     }
 
     @Override
     public void applyStreamWork(LuceneWork work, IndexingMonitor monitor) {
-        searchWorkService.createSearchWork(indexName, work);
+        indexWorkService.createIndexWork(indexName, work);
         // todo[marek]: odstranit
         // indexManager.performStreamOperation(work, monitor, false);
     }

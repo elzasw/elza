@@ -51,7 +51,7 @@ public class ElzaCore {
     @Autowired
     private ApplicationContext context;
 
-    @Value("${elza.hibernate.index.thread_max:5}")
+    @Value("${elza.hibernate.index.thread_max:4}")
     private int threadMax;
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
