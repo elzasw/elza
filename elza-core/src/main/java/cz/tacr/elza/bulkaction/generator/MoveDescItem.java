@@ -19,8 +19,6 @@ import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.vo.NodeTypeOperation;
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.service.ArrangementCacheService;
 import cz.tacr.elza.service.RuleService;
 
@@ -59,9 +57,8 @@ public class MoveDescItem extends BulkActionDFS {
 
 		// check if supported source data type
 		if (srcItemType.getDataType() != DataType.STRING) {
-			throw new SystemException(
-			        "Hromadná akce " + getName() + " je nakonfigurována pro nepodporovaný datový typ:",
-			        BaseCode.SYSTEM_ERROR).set("itemTypeCode", srcItemType.getCode());
+            throw createConfigException("Source item type has unsupported data type.")
+                    .set("itemTypeCode", this.srcItemType.getCode());
 		}
 
 		this.srcItemType = srcItemType.getEntity();
@@ -70,30 +67,29 @@ public class MoveDescItem extends BulkActionDFS {
 		ItemType trgItemType = staticDataProvider.getItemTypeByCode(config.getTarget().getItemType());
 		Validate.notNull(trgItemType);
 		if (trgItemType.getDataType() != DataType.STRING) {
-			throw new SystemException(
-			        "Hromadná akce " + getName() + " je nakonfigurována pro nepodporovaný datový typ:",
-			        BaseCode.SYSTEM_ERROR).set("itemTypeCode", trgItemType.getCode());
+            throw createConfigException("Target item type has unsupported data type.")
+                    .set("itemTypeCode", this.trgItemType.getCode());
 		}
 		this.trgItemType = trgItemType.getEntity();
+
+        // check specification
 		String trgItemSpecCode = config.getTarget().getItemSpec();
 		if (trgItemSpecCode != null) {
 			this.trgItemSpec = trgItemType.getItemSpecByCode(trgItemSpecCode);
 			if(trgItemSpec==null) {
-				throw new SystemException(
-				        "Hromadná akce " + getName() + " má chybnou specifikaci:",
-				        BaseCode.SYSTEM_ERROR).set("itemTypeCode", trgItemType.getCode())
-				                .set("specCode", trgItemSpecCode);
+                throw createConfigException("Target item type has unknown specification.")
+                                .set("itemTypeCode", this.trgItemType.getCode())
+                                .set("itemSpecCode", trgItemSpecCode);
 			}
 		} else {
 			if (Boolean.TRUE.equals(this.trgItemType.getUseSpecification())) {
-				throw new SystemException(
-				        "Hromadná akce " + getName() + " je nakonfigurována bez určení specifikace:",
-				        BaseCode.SYSTEM_ERROR).set("itemTypeCode", trgItemType.getCode());
+                throw createConfigException("Target item type has to have specification.")
+                                .set("itemTypeCode", this.trgItemType.getCode());
 			}
 		}
 	}
 
-	@Override
+    @Override
 	public String getName() {
 		return MoveDescItem.class.getSimpleName();
 	}

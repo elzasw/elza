@@ -124,6 +124,8 @@ var messages = {
     "exception.base.INVALID_STATE": "Neplatný stav",
     "exception.base.CYCLE_DETECT": "Nelze provést kvůli detekci cyklické závislosti",
 
+    "exception.ba.INCORRECT_CONFIG": "Chybná konfigurace hromadné akce.",
+
     "exception.dig.REPOSITORY_NOT_FOUND": "Digitalizační repository neexistuje ({code})",
     "exception.dig.DAO_NOT_FOUND": "DAO neexistuje ({code})",
     "exception.dig.DAO_AND_NODE_HAS_DIFFERENT_PACKAGE": "DAO a JP okazují na různý package",
