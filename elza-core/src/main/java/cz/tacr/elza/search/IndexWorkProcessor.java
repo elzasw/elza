@@ -20,6 +20,8 @@ import org.springframework.stereotype.Component;
 import cz.tacr.elza.domain.ArrIndexWork;
 import cz.tacr.elza.service.IndexWorkService;
 
+import static java.util.stream.Collectors.*;
+
 /**
  * @author <a href="mailto:stepan.marek@coreit.cz">Stepan Marek</a>
  */
@@ -119,17 +121,34 @@ public class IndexWorkProcessor {
             return;
         }
 
-        List<Long> workIdList = workList.stream().map(w -> w.getIndexWorkId()).collect(Collectors.toList());
+        List<Long> workIdList = workList.stream().map(work -> work.getIndexWorkId()).collect(Collectors.toList());
 
         indexWorkService.updateStartTime(workIdList);
 
-        Set<Integer> entityIdList = workList.stream().map(w -> w.getEntityId()).collect(Collectors.toSet());
+        Set<Integer> entityIdList = workList.stream().map(work -> work.getEntityId()).collect(Collectors.toSet());
 
         taskExecutor.submit(() -> {
 
-            searchWorkIndexService.processBatch(workList);
+            processBatch(workList);
 
             indexWorkService.delete(workIdList);
         });
+    }
+
+    protected void processBatch(List<ArrIndexWork> workList) {
+        try {
+
+            searchWorkIndexService.processBatch(workList);
+
+        } catch (Exception e) {
+            StringBuilder sb = new StringBuilder(256);
+            workList.stream().collect(groupingBy(work -> work.getEntityClass(), mapping(work -> work.getEntityId().toString(), joining(", ", "[", "]"))))
+                    .forEach((entityClass, list) -> {
+                        if (sb.length() > 0) sb.append(", ");
+                        sb.append(entityClass.getName() + " " + list);
+                    });
+            logger.error("Hibernate search index - error processing a batch: " + sb, e);
+            throw e;
+        }
     }
 }

@@ -11,7 +11,6 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 import static cz.tacr.elza.domain.enumeration.StringLength.LENGTH_250;
-import static cz.tacr.elza.domain.enumeration.StringLength.LENGTH_50;
 
 /**
  * Entity for used values
@@ -25,7 +24,7 @@ public class ArrIndexWork {
     @Access(AccessType.PROPERTY) // required to read id without fetch from db    
     private Long indexWorkId;
 
-    @Column(length = LENGTH_50, nullable = false)
+    @Column(length = LENGTH_250, nullable = false)
     private String indexName;
 
     @Column(length = LENGTH_250, nullable = false)
