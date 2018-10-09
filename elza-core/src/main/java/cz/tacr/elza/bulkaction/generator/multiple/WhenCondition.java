@@ -93,49 +93,74 @@ public class WhenCondition {
 	}
 
 	public boolean isTrue(LevelWithItems level) {
-		// check item type and item spec
-		if (itemType != null) {
-			List<ArrDescItem> items = level.getDescItems(itemType, itemSpec);
-			if (items == null) {
-				return false;
-			}
-		}
-
-		// test someOf
-		if (someOf != null) {
-			boolean exists = false;
-			for (WhenCondition some : someOf) {
-				if (some.isTrue(level)) {
-					exists = true;
-					break;
-				}
-			}
-			if(!exists) {
-				return false;
-			}
-		}
-
-		// test all
-		if (all != null) {
-			for (WhenCondition cond : all) {
-				if (!cond.isTrue(level)) {
-					return false;
-				}
-			}
-		}
-
-		// test parent condition
-		if (parentCond != null) {
-			LevelWithItems parent = level.getParent();
-			if (parent == null) {
-				// parent does not exists
-				return false;
-			}
-			if (!parentCond.isTrue(parent)) {
-				return false;
-			}
-		}
+        if (!checkItemType(level)) {
+            return false;
+        }
+        if (!checkSomeOf(level)) {
+            return false;
+        }
+        if (!checkAll(level)) {
+            return false;
+        }
+        if (!checkParent(level)) {
+            return false;
+        }
 		return true;
 	}
 
+    private boolean checkParent(LevelWithItems level) {
+        // test parent condition
+        if (parentCond != null) {
+            LevelWithItems parent = level.getParent();
+            if (parent == null) {
+                // parent does not exists
+                return false;
+            }
+            if (!parentCond.isTrue(parent)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean checkAll(LevelWithItems level) {
+        // test all
+        if (all != null) {
+            for (WhenCondition cond : all) {
+                if (!cond.isTrue(level)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    private boolean checkItemType(LevelWithItems level) {
+        // check item type and item spec
+        if (itemType != null) {
+            List<ArrDescItem> items = level.getDescItems(itemType, itemSpec);
+            if (items == null) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean checkSomeOf(LevelWithItems level) {
+
+        // test someOf
+        if (someOf != null) {
+            boolean exists = false;
+            for (WhenCondition some : someOf) {
+                if (some.isTrue(level)) {
+                    exists = true;
+                    break;
+                }
+            }
+            if (!exists) {
+                return false;
+            }
+        }
+        return true;
+    }
 }

@@ -21,8 +21,8 @@ public class UnitIdPart
     ArrayList<Integer> parts;
 
     enum Sign {
-        Plus,
-        Minus
+        PLUS,
+        MINUS
     }
 
     /**
@@ -62,13 +62,13 @@ public class UnitIdPart
                 result.storePart(value, sign);
 
                 value = 0;
-                sign = Sign.Minus;
+                sign = Sign.MINUS;
             } else 
             if (c == '+') {
                 result.storePart(value, sign);
 
                 value = 0;
-                sign = Sign.Plus;
+                sign = Sign.PLUS;
             } else {
                 // unrecognized character
                 throw new UnitIdException("Invalid token: '"+c+"', position: " + (pos+1) );
@@ -94,7 +94,7 @@ public class UnitIdPart
                 throw new UnitIdException("First part has to be without sign");
             }
 
-            if (sign.equals(Sign.Minus)) {
+            if (sign.equals(Sign.MINUS)) {
                 value = -value;
             }
         }
