@@ -38,8 +38,8 @@
         <surefire.version>2.22.0</surefire.version>
         <sonar.core.codeCoveragePlugin>jacoco</sonar.core.codeCoveragePlugin>
         <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
-        <sonar.junit.reportPaths>elza-core/target/surefire-reports</sonar.junit.reportPaths>
-        <sonar.jacoco.reportPaths>elza-core/target/jacoco.exec</sonar.jacoco.reportPaths>
+        <sonar.junit.reportPaths>target/surefire-reports</sonar.junit.reportPaths>
+        <sonar.jacoco.reportPaths>target/jacoco.exec</sonar.jacoco.reportPaths>
     </properties>
 
     <modules>
@@ -522,44 +522,14 @@
                 <plugin>
                     <groupId>org.jacoco</groupId>
                     <artifactId>jacoco-maven-plugin</artifactId>
-                    <configuration>
-                        <append>true</append>
-                        <destFile>${sonar.jacoco.reportPaths}</destFile>
-                    </configuration>
                     <executions>
                         <execution>
                             <id>default-prepare-agent</id>
                             <goals>
                                 <goal>prepare-agent</goal>
                             </goals>
-                            <configuration>
-                              <destFile>${project.basedir}/target/jacoco.exec</destFile>
-                            </configuration>
-                        </execution>
-                        <execution>
-                            <id>default-report</id>
-                            <goals>
-                                <goal>report</goal>
-                            </goals>
-                            <configuration>
-                              <dataFile>${project.basedir}/target/jacoco.exec</dataFile>
-                            </configuration>
-                        </execution>
-                        <execution>
-                            <id>default-check</id>
-                            <goals>
-                                <goal>check</goal>
-                            </goals>
-                            <configuration>
-                                <rules></rules>
-                            </configuration>
                         </execution>
                     </executions>
-                    <!-- <executions> <execution> <id>agent-for-ut</id> <goals> 
-                        <goal>prepare-agent</goal> </goals> </execution> <execution> <id>agent-for-it</id> 
-                        <goals> <goal>prepare-agent-integration</goal> </goals> </execution> <execution> 
-                        <id>jacoco-site</id> <phase>verify</phase> <goals> <goal>report</goal> </goals> 
-                        </execution> </executions> -->
                 </plugin>
             </plugins>
         </build>
