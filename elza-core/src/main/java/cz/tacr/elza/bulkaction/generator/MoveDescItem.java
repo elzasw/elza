@@ -26,6 +26,8 @@ import cz.tacr.elza.service.RuleService;
 @Scope("prototype")
 public class MoveDescItem extends BulkActionDFS {
 
+    private static final String ITEM_TYPE_CODE = "itemTypeCode";
+
 	MoveDescItemConfig config;
 
 	@Autowired
@@ -58,7 +60,7 @@ public class MoveDescItem extends BulkActionDFS {
 		// check if supported source data type
 		if (srcItemType.getDataType() != DataType.STRING) {
             throw createConfigException("Source item type has unsupported data type.")
-                    .set("itemTypeCode", this.srcItemType.getCode());
+                    .set(ITEM_TYPE_CODE, this.srcItemType.getCode());
 		}
 
 		this.srcItemType = srcItemType.getEntity();
@@ -68,7 +70,7 @@ public class MoveDescItem extends BulkActionDFS {
 		Validate.notNull(trgItemType);
 		if (trgItemType.getDataType() != DataType.STRING) {
             throw createConfigException("Target item type has unsupported data type.")
-                    .set("itemTypeCode", this.trgItemType.getCode());
+                    .set(ITEM_TYPE_CODE, this.trgItemType.getCode());
 		}
 		this.trgItemType = trgItemType.getEntity();
 
@@ -78,13 +80,13 @@ public class MoveDescItem extends BulkActionDFS {
 			this.trgItemSpec = trgItemType.getItemSpecByCode(trgItemSpecCode);
 			if(trgItemSpec==null) {
                 throw createConfigException("Target item type has unknown specification.")
-                                .set("itemTypeCode", this.trgItemType.getCode())
+                        .set(ITEM_TYPE_CODE, this.trgItemType.getCode())
                                 .set("itemSpecCode", trgItemSpecCode);
 			}
 		} else {
 			if (Boolean.TRUE.equals(this.trgItemType.getUseSpecification())) {
                 throw createConfigException("Target item type has to have specification.")
-                                .set("itemTypeCode", this.trgItemType.getCode());
+                        .set(ITEM_TYPE_CODE, this.trgItemType.getCode());
 			}
 		}
 	}
