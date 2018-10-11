@@ -3622,16 +3622,16 @@ public class PackageService {
      * @param zos      stream zip souboru
      */
     private void addToZipFile(final String fileName, final File file, final ZipOutputStream zos) throws IOException {
-        FileInputStream fis = new FileInputStream(file);
-        ZipEntry zipEntry = new ZipEntry(fileName);
-        zos.putNextEntry(zipEntry);
-        byte[] bytes = new byte[1024];
-        int length;
-        while ((length = fis.read(bytes)) >= 0) {
-            zos.write(bytes, 0, length);
+        try (FileInputStream fis = new FileInputStream(file);) {
+            ZipEntry zipEntry = new ZipEntry(fileName);
+            zos.putNextEntry(zipEntry);
+            byte[] bytes = new byte[1024];
+            int length;
+            while ((length = fis.read(bytes)) >= 0) {
+                zos.write(bytes, 0, length);
+            }
+            zos.closeEntry();
         }
-        zos.closeEntry();
-        fis.close();
     }
 
     /**

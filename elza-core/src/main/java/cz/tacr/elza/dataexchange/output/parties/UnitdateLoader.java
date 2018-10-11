@@ -8,6 +8,6 @@ import cz.tacr.elza.domain.ParUnitdate;
 public class UnitdateLoader extends AbstractEntityLoader<ParUnitdate> {
 
     public UnitdateLoader(EntityManager em, int batchSize) {
-        super(ParUnitdate.class, ParUnitdate.UNITDATE_ID, em, batchSize);
+        super(ParUnitdate.class, ParUnitdate.FIELD_UNITDATE_ID, em, batchSize);
     }
 }

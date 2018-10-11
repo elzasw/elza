@@ -1,5 +1,22 @@
 package cz.tacr.elza.service;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+
+import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.domain.ArrChange;
@@ -17,44 +34,28 @@ import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrRequest;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.DaoLinkRequestRepository;
 import cz.tacr.elza.repository.DaoRequestDaoRepository;
 import cz.tacr.elza.repository.DaoRequestRepository;
 import cz.tacr.elza.repository.DigitizationRequestNodeRepository;
 import cz.tacr.elza.repository.DigitizationRequestRepository;
+import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.RequestRepository;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventIdDaoIdInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventIdNodeIdInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
 
 /**
  * Servisní třída pro obsluhu a správu požadavků
  *
- * @author Martin Šlapa
  * @since 07.12.2016
  */
 @Service
 public class RequestService {
-
-    @Autowired
-    private ExternalSystemService externalSystemService;
 
     @Autowired
     private DigitizationRequestRepository digitizationRequestRepository;
@@ -82,6 +83,9 @@ public class RequestService {
 
     @Autowired
     private RequestQueueService requestQueueService;
+
+    @Autowired
+    private FundVersionRepository fundVerRepos;
 
     /**
      * Vytvoření jednoznačného identifikátoru požadavku.
@@ -318,13 +322,12 @@ public class RequestService {
     @AuthMethod(permission = {UsrPermission.Permission.ADMIN})
     public void deleteRequest(@NotNull final ArrRequest request) {
 
-        ArrFundVersion openVersion = null;
-        for (ArrFundVersion version : request.getFund().getVersions()) {
-            if (version.getLockChange() == null) {
-                openVersion = version;
-                break;
-            }
+        ArrFundVersion openVersion = fundVerRepos.findByFundIdAndLockChangeIsNull(request.getFund().getFundId());
+        if (openVersion == null) {
+            throw new SystemException("Cannot find open version", BaseCode.DB_INTEGRITY_PROBLEM)
+                    .set("fundId", request.getFund().getFundId());
         }
+
         if (requestQueueService.isRequestInQueue(request)) {
             requestQueueService.deleteRequestFromQueue(request, openVersion);
         } else {

@@ -1,8 +1,17 @@
 package cz.tacr.elza.domain;
 
-import javax.persistence.*;
 
-import org.apache.commons.lang3.StringUtils;
+import javax.persistence.Access;
+import javax.persistence.AccessType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 
 import cz.tacr.elza.domain.enumeration.StringLength;
 
@@ -10,13 +19,13 @@ import cz.tacr.elza.domain.enumeration.StringLength;
 @Inheritance(strategy = InheritanceType.JOINED)
 public class ApName {
 
-    public static final String NAME_ID = "nameId";
-    public static final String NAME = "name";
-    public static final String COMPLEMENT = "complement";
-    public static final String PREFERRED_NAME = "preferredName";
-    public static final String LANGUAGE = "language";
-    public static final String ACCESS_POINT_ID = "accessPointId";
-    public static final String DELETE_CHANGE_ID = "deleteChangeId";
+    public static final String FIELD_NAME_ID = "nameId";
+    public static final String FIELD_NAME = "name";
+    public static final String FIELD_COMPLEMENT = "complement";
+    public static final String FIELD_PREFERRED_NAME = "preferredName";
+    public static final String FIELD_LANGUAGE = "language";
+    public static final String FIELD_ACCESS_POINT_ID = "accessPointId";
+    public static final String FIELD_DELETE_CHANGE_ID = "deleteChangeId";
 
     @Id
     @GeneratedValue
@@ -43,7 +52,7 @@ public class ApName {
     private Integer languageId;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApAccessPoint.class)
-    @JoinColumn(name = ACCESS_POINT_ID, nullable = false)
+    @JoinColumn(name = FIELD_ACCESS_POINT_ID, nullable = false)
     private ApAccessPoint accessPoint;
 
     @Column(nullable = false, updatable = false, insertable = false)
@@ -57,7 +66,7 @@ public class ApName {
     private Integer createChangeId;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApChange.class)
-    @JoinColumn(name = DELETE_CHANGE_ID, nullable = true)
+    @JoinColumn(name = FIELD_DELETE_CHANGE_ID, nullable = true)
     private ApChange deleteChange;
 
     @Column(nullable = true, updatable = false, insertable = false)

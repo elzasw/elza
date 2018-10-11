@@ -448,7 +448,7 @@ public class ConfigMapperConfiguration {
 
         mapperFactory.classMap(ArrNodeRegister.class, ArrNodeRegisterVO.class)
             .field("nodeRegisterId", "id")
-            .exclude(ArrNodeRegister.RECORD)
+            .exclude(ArrNodeRegister.FIELD_RECORD)
             .customize(new CustomMapper<ArrNodeRegister, ArrNodeRegisterVO>() {
                 @Override
                 public void mapAtoB(ArrNodeRegister a, ArrNodeRegisterVO b, MappingContext context) {
@@ -521,7 +521,7 @@ public class ConfigMapperConfiguration {
                 .exclude("partyNames")
                 .exclude("partyCreators")
                 .exclude("relations")
-                .exclude(ParParty.RECORD)
+                .exclude(ParParty.FIELD_RECORD)
                 .customize(new CustomMapper<ParParty, ParPartyVO>() {
                     @Override
                     public void mapAtoB(ParParty a, ParPartyVO b, MappingContext context) {

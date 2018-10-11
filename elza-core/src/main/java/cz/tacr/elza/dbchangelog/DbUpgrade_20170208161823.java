@@ -4,42 +4,17 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import liquibase.change.custom.CustomTaskChange;
 import liquibase.database.Database;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.CustomChangeException;
 import liquibase.exception.DatabaseException;
-import liquibase.exception.SetupException;
-import liquibase.exception.ValidationErrors;
-import liquibase.resource.ResourceAccessor;
 
 /**
  * Odstranění unique constraintu z arr_packet.
  *
- * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 9. 2. 2017
  */
-public class DbUpgrade_20170208161823 implements CustomTaskChange {
-
-    @Override
-    public String getConfirmationMessage() {
-        return null;
-    }
-
-    @Override
-    public void setUp() throws SetupException {
-        // not needed
-    }
-
-    @Override
-    public void setFileOpener(final ResourceAccessor resourceAccessor) {
-        // not needed
-    }
-
-    @Override
-    public ValidationErrors validate(final Database database) {
-        return null;
-    }
+public class DbUpgrade_20170208161823 extends BaseTaskChange {
 
     @Override
     public void execute(final Database database) throws CustomChangeException {
@@ -86,12 +61,12 @@ public class DbUpgrade_20170208161823 implements CustomTaskChange {
             throw new CustomChangeException(
                     "Chyba při vykonávání sql příkazu " + e.getLocalizedMessage(), e);
         } finally {
+            
             if (ps != null) {
                 try {
                     ps.close();
                 } catch (SQLException e) {
-                    throw new CustomChangeException(
-                            "Chyba při uzavírání transakce" + e.getLocalizedMessage(), e);
+                    // Silently catch exception
                 }
             }
         }

@@ -56,15 +56,12 @@ class RegistryPage extends AbstractReactComponent {
     componentWillReceiveProps(nextProps) {
         this.initData(nextProps);
     }
-
+    
     canDeleteRegistry = () => {
-        const {registryDetail: {id, data}, registryList:{filter:{registryParentId}}} = this.props;
+        // We can delete item if has id and data
+        const {id, data} = this.props.registryDetail;
 
-        return id &&
-            data &&
-            data.childs &&
-            data.childs.length === 0 &&
-            id != registryParentId
+        return id && data;
     };
 
     initData = (props = this.props) => {
@@ -161,7 +158,7 @@ class RegistryPage extends AbstractReactComponent {
         if (userDetail.hasOne(perms.AP_SCOPE_WR_ALL)) {
             altActions.push(
                 <Button key='addRegistry' onClick={this.handleAddRegistry}>
-                    <Icon glyph="fa-download"/>
+                    <Icon glyph="fa-plus-circle"/>
                     <div><span className="btnText">{i18n('registry.addNewRegistry')}</span></div>
                 </Button>
             );

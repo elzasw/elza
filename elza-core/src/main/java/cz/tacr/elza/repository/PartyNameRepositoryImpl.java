@@ -25,6 +25,6 @@ public class PartyNameRepositoryImpl implements PartyNameCustomRepository {
     @Override
     @Transactional
     public void unsetAllParty() {
-        entityManager.createQuery("update par_party_name set " + ParPartyName.PARTY + " = null").executeUpdate();
+        entityManager.createQuery("update par_party_name set " + ParPartyName.FIELD_PARTY + " = null").executeUpdate();
     }
 }

@@ -36,7 +36,7 @@ public class DBChangelog1_59 implements CustomSqlChange {
                 while (resultSet.next()) {
                     int recordId = resultSet.getInt(1);
                     UpdateStatement updateStatement = new UpdateStatement(null, null, "reg_record");
-                    updateStatement.addNewColumnValue(ApAccessPoint.UUID, UUID.randomUUID().toString());
+                    updateStatement.addNewColumnValue(ApAccessPoint.FIELD_UUID, UUID.randomUUID().toString());
                     updateStatement.setWhereClause("record_id = " + recordId);
 
                     statements.add(updateStatement);

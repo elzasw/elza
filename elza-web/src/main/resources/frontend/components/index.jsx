@@ -17,9 +17,6 @@ export {default as Ribbon} from 'components/page/Ribbon.jsx';
 export {default as RegistryDetail} from 'components/registry/RegistryDetail.jsx';
 export {default as RegistryList} from 'components/registry/RegistryList.jsx';
 export {default as RegistryListItem} from 'components/registry/RegistryListItem.jsx';
-export {default as RegistryDetailVariantRecords} from 'components/registry/RegistryDetailVariantRecords.jsx';
-export {default as RegistryDetailCoordinates} from 'components/registry/RegistryDetailCoordinates.jsx';
-
 
 export {default as AddRegistryForm} from 'components/registry/AddRegistryForm.jsx';
 export {default as EditRegistryForm} from 'components/registry/EditRegistryForm.jsx';

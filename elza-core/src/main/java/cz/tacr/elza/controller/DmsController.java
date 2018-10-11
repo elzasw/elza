@@ -333,11 +333,10 @@ public class DmsController {
         Assert.notNull(file, "Soubor s fileId " + fileId + " neexistuje!");
         response.setHeader("Content-Disposition", "attachment;filename="+file.getFileName());
 
-        ServletOutputStream out = response.getOutputStream();
-        InputStream in = dmsService.downloadFile(file);
-        IOUtils.copy(in, out);
-        IOUtils.closeQuietly(in);
-        IOUtils.closeQuietly(out);
+        try (ServletOutputStream out = response.getOutputStream();
+                InputStream in = dmsService.downloadFile(file);) {
+            IOUtils.copy(in, out);
+        }
     }
 
     /**
@@ -356,30 +355,37 @@ public class DmsController {
         // check number of files
         List<ArrOutputFile> outputFiles = result.getOutputFiles();
         
+        ServletOutputStream out = response.getOutputStream();
+
         File fileForDownload = null;
         String fileName;
-        InputStream in;
-        if(outputFiles.size()==1) {
-            // single file download directly
-            ArrOutputFile singleFile = outputFiles.get(0);
-            in = dmsService.downloadFile(singleFile);
-            fileName = singleFile.getFileName();
-        } else {
-            // multiple files have to be zipped
-            fileForDownload = dmsService.getOutputFilesZip(result);
-            fileName = outputDef.getName() + ".zip";
-            in = new BufferedInputStream(new FileInputStream(fileForDownload));
+
+        InputStream in = null;
+        try {
+            if (outputFiles.size() == 1) {
+                // single file download directly
+                ArrOutputFile singleFile = outputFiles.get(0);
+                in = dmsService.downloadFile(singleFile);
+                fileName = singleFile.getFileName();
+
+            } else {
+                // multiple files have to be zipped
+                fileForDownload = dmsService.getOutputFilesZip(result);
+                fileName = outputDef.getName() + ".zip";
+                in = new BufferedInputStream(new FileInputStream(fileForDownload));
+            }
+            response.setHeader("Content-Disposition", "attachment;filename=" + fileName);
+
+            IOUtils.copy(in, out);
+        } finally {
+            IOUtils.closeQuietly(in);
+            IOUtils.closeQuietly(out);
+            if (fileForDownload != null) {
+                fileForDownload.delete();
+            }
+
         }
 
-        response.setHeader("Content-Disposition", "attachment;filename=" + fileName);
-
-        ServletOutputStream out = response.getOutputStream();
-        IOUtils.copy(in, out);
-        IOUtils.closeQuietly(in);
-        IOUtils.closeQuietly(out);
-        if (fileForDownload != null) {
-            fileForDownload.delete();
-    }
     }
 
     /**

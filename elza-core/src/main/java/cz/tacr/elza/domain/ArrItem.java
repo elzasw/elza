@@ -15,7 +15,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
-import org.apache.commons.lang.builder.EqualsBuilder;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.NumericField;
 import org.springframework.data.rest.core.annotation.RestResource;
@@ -27,10 +26,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import cz.tacr.elza.service.cache.NodeCacheSerializable;
 
 /**
- * Nadřízená položka.
+ * Abstraktní prvek popisu
  *
- * @author Martin Šlapa
- * @since 19.06.2016
  */
 @Entity(name = "arr_item")
 @Table
@@ -39,10 +36,10 @@ import cz.tacr.elza.service.cache.NodeCacheSerializable;
 @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
 public abstract class ArrItem implements NodeCacheSerializable {
 
-    public static final String DATA = "data";
-    public static final String ITEM_SPEC = "itemSpec";
-    public static final String ITEM_TYPE = "itemType";
-    public static final String POSITION = "position";
+    public static final String FIELD_DATA = "data";
+    public static final String FIELD_ITEM_SPEC = "itemSpec";
+    public static final String FIELD_ITEM_TYPE = "itemType";
+    public static final String FIELD_POSITION = "position";
 
     @Id
     @GeneratedValue
@@ -230,24 +227,6 @@ public abstract class ArrItem implements NodeCacheSerializable {
     public void setItemSpec(final RulItemSpec itemSpec) {
         this.itemSpec = itemSpec;
         this.itemSpecId = itemSpec == null ? null : itemSpec.getItemSpecId();
-    }
-
-    @Override
-    public boolean equals(final Object obj) {
-        if (!(obj instanceof ArrItem)) {
-            return false;
-        }
-        if (this == obj) {
-            return true;
-        }
-
-        if (getItemId() == null) {
-            return false;
-        }
-
-        ArrItem other = (ArrItem) obj;
-
-        return new EqualsBuilder().append(itemId, other.getItemId()).isEquals();
     }
 
     @Override

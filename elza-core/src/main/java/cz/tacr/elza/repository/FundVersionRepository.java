@@ -13,7 +13,7 @@ import cz.tacr.elza.domain.ArrNode;
 
 
 /**
- * @author by Ondřej Buriánek, burianek@marbes.cz.
+ * 
  * @since 22.7.15
  */
 @Repository

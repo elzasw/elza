@@ -1,4 +1,4 @@
-package cz.tacr.elza.other;
+package cz.tacr.elza.bulkaction;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;

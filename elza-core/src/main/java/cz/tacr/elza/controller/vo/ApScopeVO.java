@@ -10,42 +10,12 @@ import cz.tacr.elza.domain.SysLanguage;
 /**
  * Třída rejstříku.
  *
- * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 27.01.2016
  */
-public class ApScopeVO {
-
-    private Integer id;
-
-    private String code;
-
-    private String name;
+public class ApScopeVO
+        extends BaseCodeVo {
 
     private String language;
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(final Integer id) {
-        this.id = id;
-    }
-
-    public String getCode() {
-        return code;
-    }
-
-    public void setCode(final String code) {
-        this.code = code;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(final String name) {
-        this.name = name;
-    }
 
     public String getLanguage() {
         return language;
@@ -60,9 +30,9 @@ public class ApScopeVO {
      */
     public ApScope createEntity(StaticDataProvider staticData) {
         ApScope entity = new ApScope();
-        entity.setCode(code);
-        entity.setName(name);
-        entity.setScopeId(id);
+        entity.setCode(getCode());
+        entity.setName(getName());
+        entity.setScopeId(getId());
         if (StringUtils.isNotEmpty(language)) {
             SysLanguage lang = staticData.getSysLanguageByCode(language);
             entity.setLanguage(Validate.notNull(lang));

@@ -41,8 +41,6 @@ import {PropTypes} from 'prop-types';
 import defaultKeymap from './RegistryDetailKeymap.jsx';
 import './RegistryDetail.less';
 import EditRegistryForm from "./EditRegistryForm";
-import RegistryDetailVariantRecords from "./RegistryDetailVariantRecords";
-import RegistryDetailCoordinates from "./RegistryDetailCoordinates";
 import {requestScopesIfNeeded} from "../../actions/refTables/scopesData";
 import {FOCUS_KEYS} from "../../constants";
 import ApChangeDescriptionForm from "./ApChangeDescriptionForm";

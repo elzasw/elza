@@ -83,6 +83,7 @@ import cz.tacr.elza.controller.vo.RulRuleSetVO;
 import cz.tacr.elza.controller.vo.RulStructureTypeVO;
 import cz.tacr.elza.controller.vo.RulTemplateVO;
 import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
+import cz.tacr.elza.controller.vo.StructureExtensionFundVO;
 import cz.tacr.elza.controller.vo.SysExternalSystemVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
@@ -1205,7 +1206,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
             case "STRUCTURED": {
                 descItem = new ArrItemStructureVO();
-                ((ArrItemStructureVO) descItem).setValue(((ArrStructureDataVO) value).id);
+            ((ArrItemStructureVO) descItem).setValue(((ArrStructureDataVO) value).getId());
                 break;
             }
 
