@@ -21,7 +21,6 @@ export {default as RegistryListItem} from 'components/registry/RegistryListItem.
 export {default as AddRegistryForm} from 'components/registry/AddRegistryForm.jsx';
 export {default as EditRegistryForm} from 'components/registry/EditRegistryForm.jsx';
 export {default as RegistryLabel} from 'components/registry/RegistryLabel.jsx';
-export {default as RegistryCoordinate} from 'components/registry/RegistryCoordinate.jsx';
 export {default as RegistryField} from 'components/registry/RegistryField.jsx';
 
 
