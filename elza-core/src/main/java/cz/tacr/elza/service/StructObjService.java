@@ -47,6 +47,8 @@ import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.StructObjCode;
+import cz.tacr.elza.packageimport.PackageService;
+import cz.tacr.elza.packageimport.xml.SettingStructureTypes;
 import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.FilteredResult;

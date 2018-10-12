@@ -23,6 +23,12 @@ public enum RegistryCode implements ErrorCode {
      */
     CANT_DELETE_PREFERRED_NAME,
 
+
+    /**
+     * Nelze migrovat přístupový bod.
+     */
+    CANT_MIGRATE_AP,
+
     /**
      * Nalezeno použití hesla v návazné tabulce.
      */
@@ -55,6 +61,11 @@ public enum RegistryCode implements ErrorCode {
      */
     PARTY_NOT_EXIST,
 
+    /**
+     * Typ hesla musí mít vazbu na typ osoby.
+     */
+    REGISTRY_HAS_NOT_TYPE_PARTY,
+
     /** Nebyl nalezen typ rejstříku. */
     REGISTRY_TYPE_NOT_FOUND,
 
@@ -71,53 +82,5 @@ public enum RegistryCode implements ErrorCode {
     /**
      * Nelze smazat třídu rejstříku, která je nastavena na rejstříku.
      */
-
-    SCOPE_CODE_CANT_CHANGE,
-
-    USING_SCOPE_CANT_DELETE,
-
-    /**
-     * Osoba neexistuje.
-     */
-    PARTY_NOT_EXIST,
-
-    /**
-     * Navázaná entita musí mít stejnou třídu rejstříkového hesla jako osoba, ke které entitu navazujeme.
-     */
-    FOREIGN_ENTITY_INVALID_SCOPE,
-
-    /**
-     * Navázaná entita musí mít typ rejstříku nebo podtyp, který je navázaný na roli entity.
-     */
-    FOREIGN_ENTITY_INVALID_SUBTYPE,
-
-    /**
-     * Nelze upravit odstraněný přístupový bod.
-     */
-    CANT_CHANGE_DELETED_AP,
-
-    /**
-     * Nelze upravit odstraněné jméno přístupového bodu.
-     */
-    CANT_CHANGE_DELETED_NAME,
-
-    /**
-     * Celé jméno není unikátní v rámci třídy.
-     */
-    NOT_UNIQUE_FULL_NAME,
-
-    /**
-     * Nelze smazat preferované jméno.
-     */
-    CANT_DELETE_PREFERRED_NAME,
-
-    /**
-     * Typ hesla musí mít vazbu na typ osoby.
-     */
-    REGISTRY_HAS_NOT_TYPE_PARTY,
-
-    /**
-     * Nelze migrovat přístupový bod.
-     */
-    CANT_MIGRATE_AP;
+    USING_SCOPE_CANT_DELETE;
 }
