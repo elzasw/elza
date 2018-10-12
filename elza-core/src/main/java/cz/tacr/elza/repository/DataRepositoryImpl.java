@@ -31,6 +31,7 @@ import com.google.common.collect.Lists;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataCoordinates;
+import cz.tacr.elza.domain.ArrDataDate;
 import cz.tacr.elza.domain.ArrDataDecimal;
 import cz.tacr.elza.domain.ArrDataInteger;
 import cz.tacr.elza.domain.ArrDataPartyRef;
@@ -47,8 +48,6 @@ import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.common.ObjectListIterator;
-import cz.tacr.elza.domain.*;
 import cz.tacr.elza.exception.SystemException;
 
 
@@ -79,7 +78,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
 
             @Override
             public void init(final Root<ArrDescItem> descItemJoin) {
-                specJoin = descItemJoin.join(ArrDescItem.ITEM_SPEC, JoinType.LEFT);
+                specJoin = descItemJoin.join(ArrDescItem.FIELD_ITEM_SPEC, JoinType.LEFT);
             }
 
             @Override
@@ -125,29 +124,16 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
 
             Root<ArrDescItem> descItem = query.from(ArrDescItem.class);
 
-            Predicate versionPredicate;
-            if (version.getLockChange() == null) {
-                versionPredicate = builder.isNull(descItem.get(ArrDescItem.DELETE_CHANGE_ID));
-            } else {
-                Integer lockChangeId = version.getLockChange().getChangeId();
-
-                Predicate createPred = builder.lt(descItem.get(ArrDescItem.CREATE_CHANGE_ID), lockChangeId);
-                Predicate deletePred = builder.or(
-                        builder.isNull(descItem.get(ArrDescItem.DELETE_CHANGE_ID)),
-                        builder.gt(descItem.get(ArrDescItem.DELETE_CHANGE_ID), lockChangeId)
-                );
-
-                versionPredicate = builder.and(createPred, deletePred);
-            }
+            Predicate versionPredicate = prepareVersionPredicate(version, builder, descItem);
 
             //seznam AND podmínek
             List<Predicate> andPredicates = new LinkedList<>();
-            andPredicates.add(builder.equal(descItem.get(ArrDescItem.NODE).get(ArrNode.FUND), version.getFund()));
-            andPredicates.add(descItem.get(ArrDescItem.NODE_ID).in(partOfNodeIds));
+            andPredicates.add(builder.equal(descItem.get(ArrDescItem.FIELD_NODE).get(ArrNode.FIELD_FUND), version.getFund()));
+            andPredicates.add(descItem.get(ArrDescItem.FIELD_NODE_ID).in(partOfNodeIds));
             andPredicates.add(versionPredicate);
-            andPredicates.add(builder.equal(descItem.get(ArrDescItem.ITEM_TYPE), itemType));
+            andPredicates.add(builder.equal(descItem.get(ArrDescItem.FIELD_ITEM_TYPE), itemType));
 
-            query.select(descItem.get(ArrItem.ITEM_SPEC));
+            query.select(descItem.get(ArrItem.FIELD_ITEM_SPEC));
             query.where(andPredicates.toArray(new Predicate[andPredicates.size()]));
 
             //query.orderBy(builder.asc(substringValue));
@@ -158,6 +144,23 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
             result.addAll(resultList.stream().map(RulItemSpec::getItemSpecId).collect(Collectors.toList()));
         }
         return new ArrayList<>(result);
+    }
+
+    private Predicate prepareVersionPredicate(final ArrFundVersion version,
+                                              CriteriaBuilder builder, Root<ArrDescItem> descItem) {
+        if (version.getLockChange() == null) {
+            return builder.isNull(descItem.get(ArrDescItem.FIELD_DELETE_CHANGE_ID));
+        } else {
+            Integer lockChangeId = version.getLockChange().getChangeId();
+
+            Predicate createPred = builder.lt(descItem.get(ArrDescItem.FIELD_CREATE_CHANGE_ID), lockChangeId);
+            Predicate deletePred = builder.or(
+                                              builder.isNull(descItem.get(ArrDescItem.FIELD_DELETE_CHANGE_ID)),
+                                              builder.gt(descItem.get(ArrDescItem.FIELD_DELETE_CHANGE_ID),
+                                                         lockChangeId));
+
+            return builder.and(createPred, deletePred);
+        }
     }
 
     /**
@@ -187,27 +190,14 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
 
         Root<ArrDescItem> descItem = query.from(ArrDescItem.class);
 
-        Predicate versionPredicate;
-        if (version.getLockChange() == null) {
-            versionPredicate = builder.isNull(descItem.get(ArrDescItem.DELETE_CHANGE_ID));
-        } else {
-            Integer lockChangeId = version.getLockChange().getChangeId();
-
-            Predicate createPred = builder.lt(descItem.get(ArrDescItem.CREATE_CHANGE_ID), lockChangeId);
-            Predicate deletePred = builder.or(
-                    builder.isNull(descItem.get(ArrDescItem.DELETE_CHANGE_ID)),
-                    builder.gt(descItem.get(ArrDescItem.DELETE_CHANGE_ID), lockChangeId)
-            );
-
-            versionPredicate = builder.and(createPred, deletePred);
-        }
+        Predicate versionPredicate = prepareVersionPredicate(version, builder, descItem);
 
         //seznam AND podmínek
         List<Predicate> andPredicates = new LinkedList<>();
-        andPredicates.add(builder.equal(descItem.get(ArrItem.DATA), data));
-        andPredicates.add(builder.equal(descItem.get(ArrDescItem.NODE).get(ArrNode.FUND), version.getFund()));
+        andPredicates.add(builder.equal(descItem.get(ArrItem.FIELD_DATA), data));
+        andPredicates.add(builder.equal(descItem.get(ArrDescItem.FIELD_NODE).get(ArrNode.FIELD_FUND), version.getFund()));
         andPredicates.add(versionPredicate);
-        andPredicates.add(builder.equal(descItem.get(ArrDescItem.ITEM_TYPE), itemType));
+        andPredicates.add(builder.equal(descItem.get(ArrDescItem.FIELD_ITEM_TYPE), itemType));
         if (specificationDataTypeHelper.useSpec()) {
             specificationDataTypeHelper.init(descItem);
 
@@ -300,7 +290,6 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
         if (dataClassType.equals(ArrDataString.class) ||
                 dataClassType.equals(ArrDataText.class) ||
                 dataClassType.equals(ArrDataCoordinates.class) ||
-                dataClassType.equals(ArrDataUnitid.class) ||
                 dataClassType.equals(ArrDataDecimal.class) ||
                 dataClassType.equals(ArrDataDate.class) ||
                 dataClassType.equals(ArrDataInteger.class)) {
@@ -316,30 +305,43 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
                     return targetJoin.get("value");
                 }
             };
+        } else if (dataClassType.equals(ArrDataUnitid.class)) {
+            return new AbstractDescItemDataTypeHelper() {
+
+                @Override
+                protected void init() {
+                    targetJoin = dataRoot;
+                }
+
+                @Override
+                public Path<String> getValueStringSelection(final CriteriaBuilder criteriaBuilder) {
+                    return targetJoin.get(ArrDataUnitid.FIELD_UNITID);
+                }
+            };
         } else if (dataClassType.equals(ArrDataPartyRef.class)) {
             return new AbstractDescItemDataTypeHelper() {
                 @Override
                 protected void init() {
-                    Join<ArrDataPartyRef, ParParty> party = dataRoot.join(ArrDataPartyRef.PARTY, JoinType.INNER);
-                    Join<ParParty, ApAccessPoint> record = party.join(ParParty.RECORD, JoinType.INNER);
+                    Join<ArrDataPartyRef, ParParty> party = dataRoot.join(ArrDataPartyRef.FIELD_PARTY, JoinType.INNER);
+                    Join<ParParty, ApAccessPoint> record = party.join(ParParty.FIELD_RECORD, JoinType.INNER);
                     targetJoin = record;
                 }
 
                 @Override
                 public Path<String> getValueStringSelection(final CriteriaBuilder criteriaBuilder) {
-                    return targetJoin.get(ParParty.RECORD);
+                    return targetJoin.get(ParParty.FIELD_RECORD);
                 }
             };
         } else if (dataClassType.equals(ArrDataRecordRef.class)) {
             return new AbstractDescItemDataTypeHelper() {
                 @Override
                 protected void init() {
-                    targetJoin = dataRoot.join(ArrDataRecordRef.RECORD, JoinType.INNER);
+                    targetJoin = dataRoot.join(ArrDataRecordRef.FIELD_RECORD, JoinType.INNER);
                 }
 
                 @Override
                 public Path<String> getValueStringSelection(final CriteriaBuilder criteriaBuilder) {
-                    return targetJoin.get(ArrDataRecordRef.RECORD);
+                    return targetJoin.get(ArrDataRecordRef.FIELD_RECORD);
                 }
             };
         } else if (dataClassType.equals(ArrDataStructureRef.class)) {
@@ -351,7 +353,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
 
                 @Override
                 public Path<String> getValueStringSelection(final CriteriaBuilder criteriaBuilder) {
-                    return targetJoin.get(ArrStructuredObject.VALUE);
+                    return targetJoin.get(ArrStructuredObject.FIELD_VALUE);
                 }
             };
         } else {

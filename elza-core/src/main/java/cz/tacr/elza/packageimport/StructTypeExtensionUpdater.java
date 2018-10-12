@@ -57,6 +57,15 @@ public class StructTypeExtensionUpdater
 
     private List<RulStructuredTypeExtension> rulStructureExtensionsDelete;
 
+    public StructTypeExtensionUpdater(StructuredTypeExtensionRepository structureExtensionRepository,
+            StructureExtensionDefinitionRepository structureExtensionDefinitionRepository,
+            ComponentRepository componentRepository,
+            StructObjService structureService) {
+        this.structureExtensionRepository = structureExtensionRepository;
+        this.structureExtensionDefinitionRepository = structureExtensionDefinitionRepository;
+        this.componentRepository = componentRepository;
+        this.structureService = structureService;
+    }
 
     private String getZipDir(final RulStructureExtensionDefinition extensionDefinition) {
         switch (extensionDefinition.getDefType()) {
@@ -67,16 +76,6 @@ public class StructTypeExtensionUpdater
             default:
                 throw new NotImplementedException("Def type: " + extensionDefinition.getDefType());
         }
-    }
-
-    public StructTypeExtensionUpdater(StructuredTypeExtensionRepository structureExtensionRepository,
-    		StructureExtensionDefinitionRepository structureExtensionDefinitionRepository, ComponentRepository componentRepository,
-    		StructObjService structureService
-    		) {
-    	this.structureExtensionRepository = structureExtensionRepository;
-    	this.structureExtensionDefinitionRepository = structureExtensionDefinitionRepository;
-    	this.componentRepository = componentRepository;
-    	this.structureService = structureService;
     }
 
     /**

@@ -249,6 +249,8 @@ public class StructObjValueService {
                 try {
                     lock.wait(100);
                 } catch (InterruptedException e) {
+                    // nothing to do here
+                    Thread.currentThread().interrupt();
                 }
             }
         }
@@ -276,6 +278,12 @@ public class StructObjValueService {
                     try {
                         lock.wait(QUEUE_CHECK_TIME_INTERVAL);
                     } catch (InterruptedException e) {
+                        // request to stop thread -> nothing to do
+                        stopGenerator = false;
+                        generatorThread = null;
+                        lock.notifyAll();
+
+                        Thread.currentThread().interrupt();
                     }
                 }
             }

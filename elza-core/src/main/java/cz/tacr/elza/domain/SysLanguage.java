@@ -18,8 +18,8 @@ import cz.tacr.elza.domain.enumeration.StringLength;
 @Table
 public class SysLanguage {
 
-    public static final String CODE = "code";
-    public static final String NAME = "name";
+    public static final String FIELD_CODE = "code";
+    public static final String FIELD_NAME = "name";
 
     @Id
     @GeneratedValue

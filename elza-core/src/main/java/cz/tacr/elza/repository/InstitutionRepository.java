@@ -16,7 +16,6 @@ import cz.tacr.elza.domain.projection.ParInstitutionInfo;
 /**
  * Repository pro {@link ParInstitution}.
  *
- * @author Martin Šlapa
  * @since 18.3.2016
  */
 @Repository
@@ -27,6 +26,14 @@ public interface InstitutionRepository extends JpaRepository<ParInstitution, Int
     ParInstitution findByParty(ParParty parParty);
 
     List<ParInstitutionInfo> findInfoByPartyIdIn(Collection<Integer> partyIds);
+
+    @Query("SELECT i FROM par_institution i " +
+            "JOIN FETCH i.party p " +
+            "JOIN FETCH p.accessPoint ap " +
+            "JOIN ap.names n " +
+            "WHERE n.deleteChange is null AND n.preferredName = true " +
+            "ORDER BY n.fullName")
+    List<ParInstitution> findAllWithFetch();
 
     @Modifying
     int deleteByInstitutionIdIn(Collection<Integer> partyIds);

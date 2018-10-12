@@ -219,7 +219,7 @@ public class UnitDateConvertor {
 			String[] data = format.split(DEFAULT_INTERVAL_DELIMITER);
 			format = data[0];
 		}
-		String formatted = convertToken(format, unitdate, true, false);
+        String formatted = convertToken(format, unitdate, true, true);
 		return formatted;
     }
 
@@ -235,7 +235,7 @@ public class UnitDateConvertor {
 			String[] data = format.split(DEFAULT_INTERVAL_DELIMITER);
 			format = data[1];
 		}
-		String formatted = convertToken(format, unitdate, false, false);
+        String formatted = convertToken(format, unitdate, false, true);
 		return formatted;
 	}
 
@@ -296,14 +296,18 @@ public class UnitDateConvertor {
     /**
      * Konverze tokenu - výrazu.
      *
-     * @param format     vstupní formát
-     * @param unitdate   doplňovaný objekt
-     * @param first      zda-li se jedná o první datum
-     * @param allow      povolit odhad?
+     * @param format
+     *            vstupní formát
+     * @param unitdate
+     *            doplňovaný objekt
+     * @param first
+     *            zda-li se jedná o první datum
+     * @param allowEstimate
+     *            povolit odhad?
      * @return výsledný řetězec
      */
     private static String convertToken(final String format, final IUnitdate unitdate, final boolean first,
-                                       final boolean allow) {
+                                       final boolean allowEstimate) {
 
         if (format.equals("")) {
             return format;
@@ -333,7 +337,7 @@ public class UnitDateConvertor {
         }
 
         if (canAddEstimate) {
-            ret = addEstimate(ret, unitdate, first, allow);
+            ret = addEstimate(ret, unitdate, first, allowEstimate);
         }
 
         return ret;
@@ -549,7 +553,8 @@ public class UnitDateConvertor {
             date = date.plusMonths(1);
             token.dateTo = date.minusSeconds(1);
         } catch (DateTimeParseException e) {
-            e.printStackTrace();
+            throw new SystemException("Failed to parse", BaseCode.PROPERTY_IS_INVALID)
+                    .set("value", yearMonthString);
         }
 
         return token;
@@ -597,7 +602,8 @@ public class UnitDateConvertor {
             date = date.minusSeconds(1);
             token.dateTo = date;
         } catch (DateTimeParseException e) {
-            e.printStackTrace();
+            throw new SystemException("Failed to parse", BaseCode.PROPERTY_IS_INVALID)
+                    .set("value", dateString);
         }
 
         return token;
@@ -618,7 +624,8 @@ public class UnitDateConvertor {
             token.dateFrom = LocalDateTime.of(year, 1, 1, 0, 0);
             token.dateTo = LocalDateTime.of(year, 12, 31, 23, 59, 59);
         } catch (NumberFormatException | DateTimeParseException e) {
-            e.printStackTrace();
+            throw new SystemException("Failed to parse", BaseCode.PROPERTY_IS_INVALID)
+                    .set("value", yearString);
         }
         return token;
     }
@@ -651,7 +658,8 @@ public class UnitDateConvertor {
             token.estimate = true;
 
         } catch (NumberFormatException | DateTimeParseException e) {
-            e.printStackTrace();
+            throw new SystemException("Failed to parse", BaseCode.PROPERTY_IS_INVALID)
+                    .set("value", centuryString);
         }
         return token;
     }

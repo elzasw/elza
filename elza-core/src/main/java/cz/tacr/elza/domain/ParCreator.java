@@ -29,7 +29,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ParCreator {
 
-    public static final String PARTY = "party";
+    public static final String FIELD_PARTY = "party";
 
     @Id
     @GeneratedValue

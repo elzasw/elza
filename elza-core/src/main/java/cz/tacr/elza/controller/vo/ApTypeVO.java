@@ -14,23 +14,10 @@ import javax.annotation.Nullable;
 /**
  * VO pro Číselník typů rejstříkových hesel.
  *
- * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 21.12.2015
  */
-public class ApTypeVO {
-
-    /**
-     * Id.
-     */
-    private Integer id;
-    /**
-     * Kód typu.
-     */
-    private String code;
-    /**
-     * Název typu.
-     */
-    private String name;
+public class ApTypeVO
+        extends BaseCodeVo {
     /**
      * Příznak, zda může daný typ rejstříku obsahovat hesla nebo se jedná jen o "nadtyp".
      */
@@ -62,30 +49,6 @@ public class ApTypeVO {
     @Deprecated
     // TODO: change to parent reference or id
     private List<String> parents;
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(final Integer id) {
-        this.id = id;
-    }
-
-    public String getCode() {
-        return code;
-    }
-
-    public void setCode(final String code) {
-        this.code = code;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(final String name) {
-        this.name = name;
-    }
 
     public Boolean getAddRecord() {
         return addRecord;

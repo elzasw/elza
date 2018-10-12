@@ -3,7 +3,6 @@ package cz.tacr.elza.service;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-import cz.tacr.elza.domain.*;
 import org.apache.commons.lang.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -11,6 +10,25 @@ import org.springframework.stereotype.Service;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.domain.ApName;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataCoordinates;
+import cz.tacr.elza.domain.ArrDataDate;
+import cz.tacr.elza.domain.ArrDataDecimal;
+import cz.tacr.elza.domain.ArrDataFileRef;
+import cz.tacr.elza.domain.ArrDataInteger;
+import cz.tacr.elza.domain.ArrDataJsonTable;
+import cz.tacr.elza.domain.ArrDataPartyRef;
+import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrDataString;
+import cz.tacr.elza.domain.ArrDataStructureRef;
+import cz.tacr.elza.domain.ArrDataText;
+import cz.tacr.elza.domain.ArrDataUnitdate;
+import cz.tacr.elza.domain.ArrDataUnitid;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.domain.vo.CoordinatesTitleValue;
 import cz.tacr.elza.domain.vo.JsonTableTitleValue;
@@ -134,7 +152,7 @@ public class DescriptionItemServiceInternal {
             return new TitleValue(textData.getValue());
         case UNITID:
             ArrDataUnitid unitidData = (ArrDataUnitid) data;
-            return new TitleValue(unitidData.getValue());
+            return new TitleValue(unitidData.getUnitId());
         case INT:
             ArrDataInteger intData = (ArrDataInteger) data;
             return new TitleValue(intData.getValue().toString());

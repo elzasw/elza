@@ -457,7 +457,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
         Query query;
         try {
 			Query textQuery = parser.parse(queryText, ArrDescItem.FULLTEXT_ATT);
-			Query fundIdQuery = queryBuilder.keyword().onField(ArrDescItem.FUND_ID).matching(fundId).createQuery();
+			Query fundIdQuery = queryBuilder.keyword().onField(ArrDescItem.FIELD_FUND_ID).matching(fundId).createQuery();
             query = queryBuilder.bool().must(textQuery).must(fundIdQuery).createQuery();
 
         } catch (QueryNodeException e) {

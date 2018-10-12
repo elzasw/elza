@@ -30,10 +30,8 @@ import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
-import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.FundLevelService;
 
 /**
@@ -44,21 +42,13 @@ public class PersistentSortBulkAction extends BulkAction {
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     @Autowired
-    private ArrangementService arrangementService;
-
-    @Autowired
     private FundLevelService fundLevelService;
-
-    @Autowired
-    private DescItemRepository descItemRepository;
 
     @Autowired
     private ItemTypeRepository itemTypeRepository;
 
     @Autowired
     private ItemSpecRepository itemSpecRepository;
-
-    private PersistentSortConfig config;
 
     private PersistentSortRunConfig runConfig;
 
@@ -72,8 +62,6 @@ public class PersistentSortBulkAction extends BulkAction {
 
     public PersistentSortBulkAction(PersistentSortConfig persistentSortConfig) {
         Validate.notNull(persistentSortConfig);
-
-        this.config = persistentSortConfig;
     }
 
     @Override
@@ -83,42 +71,38 @@ public class PersistentSortBulkAction extends BulkAction {
         String jsonConfig = bulkActionRun.getConfig();
 
         if (jsonConfig == null) {
-            throw new SystemException("Chybí nastavení hromadné akce " + getName(), BaseCode.SYSTEM_ERROR);
+            throw createConfigException("Missing runtime configuration");
         }
         try {
             runConfig = objectMapper.readValue(jsonConfig, PersistentSortRunConfig.class);
         } catch (IOException e) {
-            throw new SystemException("Problém při parsování JSON", e, BaseCode.JSON_PARSE);
+            throw createConfigException("Failed to parse runtime configuration")
+                    .set("jsonConfig", jsonConfig);
         }
 
         itemType = itemTypeRepository.findOneByCode(runConfig.getItemTypeCode());
         if (itemType == null) {
-            throw new SystemException(
-                    "Hromadná akce " + getName() + " je nakonfigurována pro neexistující typ atributu:",
-                    BaseCode.SYSTEM_ERROR).set("itemTypeCode", runConfig.getItemTypeCode());
+            throw createConfigException("Item type not found")
+                    .set("itemTypeCode", runConfig.getItemTypeCode());
         }
 
         DataType dataType = DataType.fromId(itemType.getDataTypeId());
         List<DataType> allowedDataTypes = Arrays.asList(DataType.INT, DataType.DECIMAL, DataType.STRING, DataType.TEXT,
                 DataType.FORMATTED_TEXT, DataType.UNITDATE);
         if (!allowedDataTypes.contains(dataType)) {
-            throw new SystemException(
-                    "Hromadná akce " + getName() + " je nakonfigurována pro nepodporovaný datový typ:",
-                    BaseCode.SYSTEM_ERROR).set("dataTypeCode", dataType.getCode());
+            throw createConfigException("Unsupported data type").set("dataTypeCode", dataType.getCode());
         }
 
         if (itemType.getUseSpecification()) {
             if (StringUtils.isBlank(runConfig.getItemSpecCode())) {
-                throw new SystemException(
-                        "Hromadná akce " + getName() + " musí mít nastavenu specifikaci pro typ atributu:",
-                        BaseCode.SYSTEM_ERROR).set("itemTypeCode", runConfig.getItemTypeCode());
+                throw createConfigException("Missing specification.")
+                        .set("itemTypeCode", runConfig.getItemTypeCode());
             }
 
             itemSpec = itemSpecRepository.findOneByCode(runConfig.getItemSpecCode());
             if (itemSpec == null) {
-                throw new SystemException(
-                        "Hromadná akce " + getName() + " je nakonfigurována pro neexistující specifikaci:",
-                        BaseCode.SYSTEM_ERROR).set("itemSpecCode", runConfig.getItemSpecCode());
+                throw createConfigException("Specification not found.")
+                        .set("itemSpecCode", runConfig.getItemSpecCode());
             }
         }
 
@@ -193,9 +177,9 @@ public class PersistentSortBulkAction extends BulkAction {
                 }
             } else if (newValue != null) {
                 int compareTo = currentValue.compareTo(newValue);
-                if (runConfig.isAsc() && compareTo == -1) { // podle způsobu řazení zjistíme jestli je nová hodnota lepší než ta co už máme(pro typy atributů s více hodnotami)
+                if (runConfig.isAsc() && compareTo < 0) { // podle způsobu řazení zjistíme jestli je nová hodnota lepší než ta co už máme(pro typy atributů s více hodnotami)
                     nodeValues.put(arrDescItem.getNodeId(), newValue);
-                } else if (!runConfig.isAsc() && compareTo == 1) {
+                } else if (!runConfig.isAsc() && compareTo > 0) {
                     nodeValues.put(arrDescItem.getNodeId(), newValue);
                 }
             }

@@ -18,38 +18,38 @@
             <tree>ZP2015_NAD ZP2015_ZNACKA_FONDU ZP2015_TITLE ZP2015_UNIT_DATE</tree>
             <accordion-left>ZP2015_NAD ZP2015_ZNACKA_FONDU ZP2015_TITLE ZP2015_UNIT_DATE</accordion-left>
             <accordion-right>ZP2015_FOLDER_TYPE ZP2015_STORAGE_ID</accordion-right>
-            <hierarchy-level code="ZP2015_LEVEL_TYPE">
-                <hierarchy-item code="ZP2015_LEVEL_ROOT">
+            <hierarchy type-code="ZP2015_LEVEL_TYPE" default-separator="|">
+                <level spec-code="ZP2015_LEVEL_ROOT">
                     <icon>fa-sitemap</icon>
-                    <separator-first>||</separator-first>
-                    <separator-other>|</separator-other>
-                </hierarchy-item>
-                <hierarchy-item code="ZP2015_LEVEL_SECTION">
+                </level>
+                <level spec-code="ZP2015_LEVEL_SECTION">
                     <icon>fa-sitemap</icon>
-                    <separator-first>||</separator-first>
-                    <separator-other>|</separator-other>
-                </hierarchy-item>
-                <hierarchy-item code="ZP2015_LEVEL_SERIES">
+                    <separators>
+                      <separator parent="ZP2015_LEVEL_ROOT">||</separator>
+                    </separators>
+                </level>
+                <level spec-code="ZP2015_LEVEL_SERIES">
                     <icon>ez-serie</icon>
-                    <separator-first>||</separator-first>
-                    <separator-other>|</separator-other>
-                </hierarchy-item>
-                <hierarchy-item code="ZP2015_LEVEL_FOLDER">
+                    <separators>
+                      <separator parent="ZP2015_LEVEL_SECTION">||</separator>
+                    </separators>
+                </level>
+                <level spec-code="ZP2015_LEVEL_FOLDER">
                     <icon>fa-folder-o</icon>
-                    <separator-first>||</separator-first>
-                    <separator-other>|</separator-other>
-                </hierarchy-item>
-                <hierarchy-item code="ZP2015_LEVEL_ITEM">
+                    <separators>
+                      <separator parent="ZP2015_LEVEL_SERIES">||</separator>
+                    </separators>
+                </level>
+                <level spec-code="ZP2015_LEVEL_ITEM">
                     <icon>fa-file-text-o</icon>
-                    <separator-first>||</separator-first>
-                    <separator-other>|</separator-other>
-                </hierarchy-item>
-                <hierarchy-item code="ZP2015_LEVEL_PART">
+                    <separators>
+                      <separator parent="ZP2015_LEVEL_SERIES">||</separator>
+                    </separators>
+                </level>
+                <level spec-code="ZP2015_LEVEL_PART">
                     <icon>ez-item-part-o</icon>
-                    <separator-first>||</separator-first>
-                    <separator-other>|</separator-other>
-                </hierarchy-item>
-            </hierarchy-level>
+                </level>
+            </hierarchy>
         </ns2:default>
     </fund-views>
     <type-groups settings-type="TYPE_GROUPS" entity-type="RULE">
@@ -68,7 +68,7 @@
                 <type code="ZP2015_UNIT_TYPE" width="1"/>
                 <type code="ZP2015_UNIT_COUNT" width="1"/>
                 <type code="ZP2015_STORAGE_ID" width="1"/>
-                <type code="ZP2015_EXTRA_UNITS" width="1"/>
+                <type code="ZP2015_EXTRA_UNITS" width="2"/>
                 <type code="ZP2015_UNIT_EXT_TYPE" width="1"/>
                 <type code="ZP2015_CONNECTED_RECORD" width="2"/>                
             </group>

@@ -24,7 +24,7 @@ import cz.tacr.elza.service.StartupService;
  * Base test class
  */
 @RunWith(SpringRunner.class)
-@ContextConfiguration(classes=ElzaCoreTest.class)
+@ContextConfiguration(classes=ElzaCoreMain.class)
 @SpringBootTest(webEnvironment=WebEnvironment.RANDOM_PORT)
 public abstract class AbstractTest {
 

@@ -139,8 +139,13 @@ class PartyPage extends AbstractReactComponent {
         const altActions = [...parts.altActions];
         if (userDetail.hasOne(perms.AP_SCOPE_WR_ALL)) {
             altActions.push(
-                <ControllableDropdownButton key='add-party' ref='addParty' id='add-party' title={<span className="dropContent"><Icon glyph='fa-download fa-fw' /><div><span className="btnText">{i18n('party.addParty')}</span></div></span>}>
-                    {partyTypes.items.map(type => <MenuItem key={type.id} eventKey={type.id} onClick={this.handleAddParty.bind(this, type.id)}>{type.name}</MenuItem>)}
+                <ControllableDropdownButton key='add-party' ref='addParty' id='add-party' title={<span className="dropContent">
+                   <Icon glyph='fa-plus-circle' /><div><span className="btnText">{i18n('party.addParty')}</span></div></span>}>
+                    {
+                        partyTypes.items.map(
+                            type => <MenuItem key={type.id} eventKey={type.id} onClick={this.handleAddParty.bind(this, type.id)}>{type.name}</MenuItem>
+                            )
+                    }
                 </ControllableDropdownButton>
             );
             altActions.push(<Button key='import-party' onClick={this.handleImport}>

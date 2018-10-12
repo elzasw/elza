@@ -1,62 +1,60 @@
 package cz.tacr.elza.packageimport.xml;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import cz.tacr.elza.domain.UISettings;
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.BaseCode;
-import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
+import java.io.IOException;
+import java.util.List;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElements;
+import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlList;
-import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlValue;
-import java.io.IOException;
-import java.util.List;
+
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
+
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import cz.tacr.elza.domain.UISettings;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
 
 
 /**
  * VO SettingFundViews.
  *
- * @author Martin Šlapa
- * @since 22.3.2016
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "fund-views", namespace = "fund-views")
+@XmlType(name = "fund-views")
 public class SettingFundViews extends Setting {
+
+    final static String NS_FUND_VIEWS = "fund-views";
 
     private static final ObjectMapper objectMapper = Jackson2ObjectMapperBuilder.json().build();
 
-    @XmlElements({
-            @XmlElement(name = "default", type = Default.class, namespace = "fund-views", required = true),
-            @XmlElement(name = "fund", type = Fund.class, namespace = "fund-views"),
-    })
-    private List<Item> items;
+    @XmlElement(name = "default", type = FundView.class, namespace = NS_FUND_VIEWS, required = true)
+    private FundView fundView;
 
     public SettingFundViews() {
         setSettingsType(UISettings.SettingsType.FUND_VIEW);
         setEntityType(UISettings.EntityType.RULE);
     }
 
-    public List<Item> getItems() {
-        return items;
+    public FundView getFundView() {
+        return fundView;
     }
 
-    public void setItems(final List<Item> items) {
-        this.items = items;
+    public void setFundView(FundView fundView) {
+        this.fundView = fundView;
     }
 
     @Override
     public String getValue() {
         try {
-            return objectMapper.writeValueAsString(this);
+            return objectMapper.writeValueAsString(fundView);
         } catch (JsonProcessingException e) {
             throw new SystemException(e.getMessage(), e, BaseCode.JSON_PARSE);
         }
@@ -65,15 +63,16 @@ public class SettingFundViews extends Setting {
     @Override
     public void setValue(final String value) {
         try {
-            items = objectMapper.readValue(value, SettingFundViews.class).getItems();
+            fundView = objectMapper.readValue(value, FundView.class);
         } catch (IOException e) {
             throw new SystemException(e.getMessage(), e, BaseCode.JSON_PARSE);
         }
     }
 
-    @XmlTransient
     @JsonTypeInfo(use = JsonTypeInfo.Id.MINIMAL_CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
-    public static abstract class Item {
+    @XmlAccessorType(XmlAccessType.FIELD)
+    @XmlType(name = "fund-view", namespace = NS_FUND_VIEWS)
+    public static class FundView {
 
         @XmlElement(name = "title", required = true)
         private String title;
@@ -90,8 +89,8 @@ public class SettingFundViews extends Setting {
         @XmlElement(name = "accordion-right", required = true)
         private AccordionRight accordionRight;
 
-        @XmlElement(name = "hierarchy-level", required = true)
-        private List<HierarchyLevel> hierarchyLevels;
+        @XmlElement(name = "hierarchy", required = true)
+        private HierarchyXml hierarchy;
 
         public String getTitle() {
             return title;
@@ -133,78 +132,93 @@ public class SettingFundViews extends Setting {
             this.accordionRight = accordionRight;
         }
 
-        public List<HierarchyLevel> getHierarchyLevels() {
-            return hierarchyLevels;
+        public HierarchyXml getHierarchy() {
+            return hierarchy;
         }
 
-        public void setHierarchyLevels(final List<HierarchyLevel> hierarchyLevels) {
-            this.hierarchyLevels = hierarchyLevels;
-        }
-    }
-
-    @XmlAccessorType(XmlAccessType.FIELD)
-    @XmlType(name = "default", namespace = "fund-views")
-    public static class Default extends Item {
-
-    }
-
-    @XmlAccessorType(XmlAccessType.FIELD)
-    public static class Fund extends Item {
-
-        @XmlAttribute(name = "fund-id", required = true)
-        private Integer fundId;
-
-        public Integer getFundId() {
-            return fundId;
-        }
-
-        public void setFundId(final Integer fundId) {
-            this.fundId = fundId;
+        public void setHierarchy(final HierarchyXml hierarchyLevels) {
+            this.hierarchy = hierarchyLevels;
         }
     }
 
     @XmlAccessorType(XmlAccessType.FIELD)
-    @XmlType(name = "hierarchy-level")
-    public static class HierarchyLevel {
+    @XmlType(name = "hierarchy")
+    public static class HierarchyXml {
 
-        @XmlAttribute(name = "code", required = true)
+        @XmlAttribute(name = "type-code", required = true)
         private String code;
 
-        @XmlElement(name = "hierarchy-item", required = true)
-        private List<HierarchyItem> hierarchyItems;
+        @XmlAttribute(name = "default-separator", required = true)
+        private String defaultSeparator;
 
-        public String getCode() {
+        @XmlElement(name = "level", required = true)
+        private List<HierarchyItem> levels;
+
+        public String getTypeCode() {
             return code;
         }
 
-        public void setCode(final String code) {
+        public void setTypeCode(final String code) {
             this.code = code;
         }
 
-        public List<HierarchyItem> getHierarchyItems() {
-            return hierarchyItems;
+        public List<HierarchyItem> getLevels() {
+            return levels;
         }
 
-        public void setHierarchyItems(final List<HierarchyItem> hierarchyItems) {
-            this.hierarchyItems = hierarchyItems;
+        public void setLevels(final List<HierarchyItem> levels) {
+            this.levels = levels;
+        }
+
+        public String getDefaultSeparator() {
+            return defaultSeparator;
+        }
+
+        public void setDefaultSeparator(String defaultSeparator) {
+            this.defaultSeparator = defaultSeparator;
         }
     }
 
     @XmlAccessorType(XmlAccessType.FIELD)
-    @XmlType(name = "hierarchy-item")
+    @XmlType(name = "separator", namespace = NS_FUND_VIEWS)
+    public static class Separator {
+        @XmlAttribute(name = "parent", required = true)
+        private String parent;
+
+        @XmlValue
+        private String value;
+
+        public String getParent() {
+            return parent;
+        }
+
+        public void setParent(String parent) {
+            this.parent = parent;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        public void setValue(String value) {
+            this.value = value;
+        }
+
+    }
+
+    @XmlAccessorType(XmlAccessType.FIELD)
+    @XmlType(name = "level", namespace = NS_FUND_VIEWS)
     public static class HierarchyItem {
 
-        @XmlAttribute(name = "code", required = true)
+        @XmlAttribute(name = "spec-code", required = true)
         private String code;
 
         @XmlElement(name = "icon", required = true)
         private String icon;
 
-        @XmlElement(name = "separator-first", required = true)
-        private String separatorFirst;
-
-        @XmlElement(name = "separator-other", required = true)
-        private String separatorOther;
+        @XmlElementWrapper(name = "separators")
+        @XmlElement(name = "separator", required = false)
+        private List<Separator> separators;
 
         public String getCode() {
             return code;
@@ -222,26 +236,18 @@ public class SettingFundViews extends Setting {
             this.icon = icon;
         }
 
-        public String getSeparatorFirst() {
-            return separatorFirst;
+        public List<Separator> getSeparators() {
+            return separators;
         }
 
-        public void setSeparatorFirst(final String separatorFirst) {
-            this.separatorFirst = separatorFirst;
-        }
-
-        public String getSeparatorOther() {
-            return separatorOther;
-        }
-
-        public void setSeparatorOther(final String separatorOther) {
-            this.separatorOther = separatorOther;
+        public void setSeparators(final List<Separator> separators) {
+            this.separators = separators;
         }
 
     }
 
     @XmlAccessorType(XmlAccessType.FIELD)
-    @XmlType(name = "tree")
+    @XmlType(name = "tree", namespace = NS_FUND_VIEWS)
     public static class Tree {
 
         @XmlValue
@@ -258,7 +264,7 @@ public class SettingFundViews extends Setting {
     }
 
     @XmlAccessorType(XmlAccessType.FIELD)
-    @XmlType(name = "accordion-left")
+    @XmlType(name = "accordion-left", namespace = NS_FUND_VIEWS)
     public static class AccordionLeft {
 
         @XmlValue
@@ -276,7 +282,7 @@ public class SettingFundViews extends Setting {
     }
 
     @XmlAccessorType(XmlAccessType.FIELD)
-    @XmlType(name = "accordion-right")
+    @XmlType(name = "accordion-right", namespace = NS_FUND_VIEWS)
     public static class AccordionRight {
 
         @XmlValue

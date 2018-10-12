@@ -865,7 +865,7 @@ class ArrPage extends ArrParentPage {
                         key: "files" ,
                         name: i18n('arr.panel.title.files'),
                         ref: "fundFiles",
-                        render:() => this.renderFundFiles(activeFund),
+                        render:() => this.renderFundFiles(activeFund, readMode),
                         focus: () => this.wrappedFocus("fundFiles"),
                         condition: userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId: activeFund.id})
                     },
@@ -944,16 +944,14 @@ class ArrPage extends ArrParentPage {
         )
     }
 
-    renderFundFiles() {
-        const {arrRegion} = this.props;
-        const activeFund = arrRegion.activeIndex !== null ? arrRegion.funds[arrRegion.activeIndex] : null;
-
+    renderFundFiles(activeFund, readMode) {
         return <FundFiles
             ref="fundFiles"
             versionId={activeFund.versionId}
             fundId={activeFund.id}
             fundFiles={activeFund.fundFiles}
-        />
+            readMode={readMode}
+        />;
     }
 
     handleSetExtendedView(showExtendedView) {

@@ -15,7 +15,6 @@ import {createReferenceMarkString, getGlyph} from 'components/arr/ArrUtils.jsx'
 import {canSetFocus, focusWasSet, isFocusFor, setFocus} from 'actions/global/focus.jsx'
 import NodePanel from "./NodePanel";
 import {FOCUS_KEYS} from "../../constants.tsx";
-import * as groups from "../../actions/refTables/groups"
 
 class NodeTabs extends AbstractReactComponent {
     constructor(props) {
@@ -26,13 +25,11 @@ class NodeTabs extends AbstractReactComponent {
 
     componentDidMount() {
         this.dispatch(nodesFetchIfNeeded(this.props.versionId));
-        this.dispatch(groups.fetchIfNeeded(this.props.versionId));
         this.trySetFocus(this.props)
     }
 
     componentWillReceiveProps(nextProps) {
         this.dispatch(nodesFetchIfNeeded(nextProps.versionId));
-        this.dispatch(groups.fetchIfNeeded(nextProps.versionId));
         this.trySetFocus(nextProps)
     }
 

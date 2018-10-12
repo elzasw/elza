@@ -57,7 +57,7 @@ class DescItemPartyRef extends AbstractReactComponent {
 
         if (readMode) {
             if (value) {
-                return <DescItemLabel onClick={onDetail.bind(this, descItem.party.id)} notIdentified={descItem.undefined} value={value.record.record} />;
+                return <DescItemLabel onClick={onDetail.bind(this, descItem.party.id)} notIdentified={descItem.undefined} value={value.accessPoint.record} />;
             } else {
                 return <DescItemLabel value={cal ? i18n("subNodeForm.descItemType.calculable") : ""} cal={cal} notIdentified={descItem.undefined} />
             }

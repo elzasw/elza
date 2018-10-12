@@ -17,7 +17,7 @@ public class StructObjectInfoLoader extends AbstractEntityLoader<StructObjectInf
     private final StaticDataProvider staticData;
 
     public StructObjectInfoLoader(EntityManager em, int batchSize, StaticDataProvider staticData) {
-        super(ArrStructuredObject.class, ArrStructuredObject.STRUCTURED_OBJECT_ID, em, batchSize);
+        super(ArrStructuredObject.class, ArrStructuredObject.FIELD_STRUCTURED_OBJECT_ID, em, batchSize);
         this.structItemLoader = new StructItemLoader(em, batchSize);
         this.staticData = Validate.notNull(staticData);
     }

@@ -49,9 +49,9 @@ public class AuthorizationRequest {
 	 */
 	static class AuthCheckFundId extends AuthCheck {
 
-		Integer fundId;
+        final Integer fundId;
 
-		AuthCheckFundId(Permission perm, Integer fundId) {
+        AuthCheckFundId(Permission perm, final Integer fundId) {
 			super(perm);
 			this.fundId = fundId;
 		}
@@ -66,6 +66,25 @@ public class AuthorizationRequest {
 		}
 	}
 
+    static class AuthCheckScopeId extends AuthCheck {
+
+        final Integer scopeId;
+
+        AuthCheckScopeId(Permission perm, final Integer scopeId) {
+            super(perm);
+            this.scopeId = scopeId;
+        }
+
+        public boolean matches(Collection<UserPermission> perms) {
+            for (UserPermission up : perms) {
+                if (up.hasScopePermission(perm, scopeId)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+
 	List<AuthCheck> checkList = new ArrayList<>();
 
 	AuthorizationRequest() {
@@ -79,6 +98,7 @@ public class AuthorizationRequest {
 				|| perm == Permission.FUND_BA_ALL || perm == Permission.FUND_CL_VER_WR_ALL
 				|| perm == Permission.FUND_EXPORT_ALL || perm == Permission.FUND_OUTPUT_WR_ALL
 				|| perm == Permission.FUND_RD_ALL
+                || perm == Permission.AP_SCOPE_RD_ALL || perm == Permission.AP_SCOPE_WR_ALL
 				|| perm == Permission.USR_PERM);
 
 		checkList.add(new AuthCheck(perm));
@@ -106,6 +126,10 @@ public class AuthorizationRequest {
 		case FUND_RD:		
 			checkList.add(new AuthCheckFundId(perm, entityId));
 			break;
+        case AP_SCOPE_RD:
+        case AP_SCOPE_WR:
+            checkList.add(new AuthCheckScopeId(perm, entityId));
+            break;
 		default:
 			throw new IllegalStateException("Unsupported permission check, permission = "+perm);
 		}

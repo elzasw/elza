@@ -1,37 +1,21 @@
 package cz.tacr.elza.dbchangelog;
 
-import liquibase.change.custom.CustomTaskChange;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+
 import liquibase.database.Database;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.CustomChangeException;
 import liquibase.exception.DatabaseException;
-import liquibase.exception.SetupException;
-import liquibase.exception.ValidationErrors;
-import liquibase.resource.ResourceAccessor;
-
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 
 /**
- * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
- *         Date: 22.12.16
+ * 
  */
-public class DbUpgrade_201612220713 implements CustomTaskChange {
+public class DbUpgrade_201612220713 extends BaseTaskChange {
 
     @Override
     public String getConfirmationMessage() {
         return "Doplnění pole uuid do AS";
-    }
-
-    @Override
-    public void setFileOpener(ResourceAccessor arg0) {}
-
-    @Override
-    public void setUp() throws SetupException {}
-
-    @Override
-    public ValidationErrors validate(Database arg0) {
-        return null;
     }
 
     @Override

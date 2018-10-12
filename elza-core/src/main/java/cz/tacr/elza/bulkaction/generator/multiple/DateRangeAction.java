@@ -3,7 +3,6 @@ package cz.tacr.elza.bulkaction.generator.multiple;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-import cz.tacr.elza.core.data.StaticDataProvider;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.context.annotation.Scope;
@@ -14,6 +13,7 @@ import cz.tacr.elza.bulkaction.generator.result.ActionResult;
 import cz.tacr.elza.bulkaction.generator.result.DateRangeActionResult;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
+import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDescItem;
@@ -31,6 +31,8 @@ import cz.tacr.elza.exception.codes.BaseCode;
 public class DateRangeAction extends Action {
 
     protected final static DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+
+    public static String PARAM_PROPERTY = "property";
 
 	private final DateRangeConfig config;
     /**
@@ -53,10 +55,6 @@ public class DateRangeAction extends Action {
      */
     private ArrDataUnitdate datePriorMin;
     private ArrDataUnitdate datePriorMax;
-    /**
-     * Flag that prior max should be same as date min
-     */
-    private boolean priorMaxAsDateMin = false;
 
     /**
      * Minimální čas
@@ -74,11 +72,6 @@ public class DateRangeAction extends Action {
     private ArrDataUnitdate datePosteriorMin;
     private ArrDataUnitdate datePosteriorMax;
 
-    /**
-     * Flag that posterior min should be same as date max
-     */
-    private boolean posteriorMinAsDateMax = false;
-
 	DateRangeAction(DateRangeConfig config) {
 		this.config = config;
 	}
@@ -91,7 +84,7 @@ public class DateRangeAction extends Action {
 		String outputType = config.getOutputType();
 		if (outputType == null) {
 			throw new BusinessException("Není vyplněn parametr 'output_type' v akci.", BaseCode.PROPERTY_NOT_EXIST)
-			        .set("property", "outputType");
+                    .set(PARAM_PROPERTY, "outputType");
 		}
 		outputItemType = ruleSystem.getItemTypeByCode(outputType);
 		if (outputItemType.getDataType() != DataType.TEXT) {
@@ -103,7 +96,7 @@ public class DateRangeAction extends Action {
 		String inputType = config.getInputType();
 		if (inputType == null) {
 			throw new BusinessException("Není vyplněn parametr 'inputType' v akci.", BaseCode.PROPERTY_NOT_EXIST)
-			        .set("property", "input_type");
+                    .set(PARAM_PROPERTY, "input_type");
 		}
 		inputItemType = ruleSystem.getItemTypeByCode(inputType);
 		checkValidDataType(inputItemType, DataType.UNITDATE);
@@ -111,7 +104,7 @@ public class DateRangeAction extends Action {
         String bulkRangeCode = config.getBulkRangeType();
         if (bulkRangeCode == null) {
             throw new BusinessException("Není vyplněn parametr 'bulkRangeType' v akci.", BaseCode.PROPERTY_NOT_EXIST)
-                    .set("property", "bulkRangeType");
+                    .set(PARAM_PROPERTY, "bulkRangeType");
 		}
         bulkRangeType = ruleSystem.getItemTypeByCode(bulkRangeCode);
         checkValidDataType(bulkRangeType, DataType.UNITDATE);
@@ -159,11 +152,17 @@ public class DateRangeAction extends Action {
             // check range
             ArrDataUnitdate bulkUnitDate = (ArrDataUnitdate) bulkRange.getData();
 
-            if (bulkFrom == null || bulkFrom.getNormalizedFrom() > bulkUnitDate.getNormalizedFrom()) {
+            if (bulkFrom == null || bulkFrom.getNormalizedFrom() > bulkUnitDate.getNormalizedFrom()
+            // if same value -> estimated is more important then not estimated
+                    || (bulkFrom.getNormalizedFrom() == bulkUnitDate.getNormalizedFrom()
+                            && Boolean.TRUE.equals(bulkUnitDate.getValueFromEstimated()))) {
                 bulkFrom = bulkUnitDate;
             }
 
-            if (bulkTo == null || bulkTo.getNormalizedTo() < bulkUnitDate.getNormalizedTo()) {
+            if (bulkTo == null || bulkTo.getNormalizedTo() < bulkUnitDate.getNormalizedTo() ||
+            // if same value -> estimated is more important then not estimated
+                    (bulkTo.getNormalizedTo() == bulkUnitDate.getNormalizedTo()
+                            && Boolean.TRUE.equals(bulkUnitDate.getValueToEstimated()))) {
                 bulkTo = bulkUnitDate;
             }
         }
@@ -236,7 +235,6 @@ public class DateRangeAction extends Action {
             if (dateMin == null || bulkFrom.getNormalizedFrom() < dateMin.getNormalizedFrom()) {
                 dateMin = bulkFrom;
             }
-            priorMaxAsDateMin = true;
         }
 
         if (!fromStoredAsPosterior && toStoredAsPosterior) {
@@ -244,7 +242,6 @@ public class DateRangeAction extends Action {
             if (dateMax == null || dateMax.getNormalizedTo() < bulkTo.getNormalizedTo()) {
                 dateMax = bulkTo;
             }
-            posteriorMinAsDateMax = true;
         }
     }
 
@@ -257,10 +254,13 @@ public class DateRangeAction extends Action {
      */
     private void processMainUnitDate(ArrDataUnitdate unitDate) {
         // store as standard range
-        if (dateMin == null || dateMin.getNormalizedFrom() > unitDate.getNormalizedFrom()) {
+        if (dateMin == null || dateMin.getNormalizedFrom() > unitDate.getNormalizedFrom()
+                || (dateMin.getNormalizedFrom() == unitDate.getNormalizedFrom() && unitDate.getValueFromEstimated())) {
+
             dateMin = unitDate;
         }
-        if (dateMax == null || dateMax.getNormalizedTo() < unitDate.getNormalizedTo()) {
+        if (dateMax == null || dateMax.getNormalizedTo() < unitDate.getNormalizedTo()
+                || (dateMax.getNormalizedTo() == unitDate.getNormalizedTo() && unitDate.getValueToEstimated())) {
             dateMax = unitDate;
         }
     }

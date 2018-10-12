@@ -66,8 +66,10 @@ public interface StructuredItemRepository extends JpaRepository<ArrStructuredIte
     @Query("DELETE FROM arr_structured_item i WHERE i.structuredObject = :structuredObject")
     void deleteByStructuredObject(@Param("structuredObject") ArrStructuredObject structuredObject);
 
+    int countItemsByStructuredObjectAndDeleteChangeIsNull(ArrStructuredObject structuredObject);
+
     @Query("SELECT COUNT(i) FROM arr_item i JOIN i.data d WHERE i.deleteChange IS NULL AND d.structuredObject = :structuredObject")
-    Integer countItemsByStructuredObject(@Param("structuredObject") ArrStructuredObject structuredObject);
+    Integer countItemsUsingStructObj(@Param("structuredObject") ArrStructuredObject structuredObject);
 
     void deleteByStructuredObjectFund(ArrFund fund);
 }

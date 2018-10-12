@@ -43,7 +43,7 @@ public class FreemarkerOutputGenerator extends DmsOutputGenerator {
                               DmsService dmsService) {
         super(em, dmsService);
         outputModel = new OutputModel(staticDataService, fundTreeProvider, nodeCacheService, institutionRepository,
-                apDescRepository, apNameRepository, apEidRepository);
+                apDescRepository, apNameRepository, apEidRepository, null);
     }
 
     @Override
@@ -79,5 +79,9 @@ public class FreemarkerOutputGenerator extends DmsOutputGenerator {
 
         Path templateFile = templateDir.resolve(TEMPLATE_FILE_NAME);
         return cfg.getTemplate(templateFile.getFileName().toString());
+    }
+
+    @Override
+    public void close() throws IOException {
     }
 }

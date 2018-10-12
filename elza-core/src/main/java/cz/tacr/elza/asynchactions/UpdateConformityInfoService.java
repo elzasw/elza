@@ -86,16 +86,6 @@ public class UpdateConformityInfoService {
     }
 
     /**
-     * Provede ukončení běhu vlákna. (dopočítá poslední stav a ukončí se)
-     */
-    public synchronized void terminateWorkerInVersion(Integer fundVersionId) {
-        UpdateConformityInfoWorker worker = fundVersionIdWorkerMap.remove(fundVersionId);
-        if (worker != null) {
-            worker.terminate();
-        }
-    }
-
-    /**
      * Provede ukončení běhu vlákna.
      */
     public synchronized void terminateWorkerInVersionAndWait(Integer fundVersionId) {

@@ -3,16 +3,16 @@ package cz.tacr.elza.controller.vo.usage;
 import java.util.List;
 
 /**
- * @author Jiří Vaněk [jiri.vanek@marbes.cz]
+ * 
  * @since 5. 10. 2017
  */
 public class NodeVO {
 
-	public Integer id;
+    private Integer id;
 
-	public String title;
+    private String title;
 
-	public List<OccurrenceVO> occurrences;
+    private List<OccurrenceVO> occurrences;
 
 	public NodeVO() {}
 
@@ -21,4 +21,28 @@ public class NodeVO {
 		this.title = title;
 		this.occurrences = occurrences;
 	}
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public List<OccurrenceVO> getOccurrences() {
+        return occurrences;
+    }
+
+    public void setOccurrences(List<OccurrenceVO> occurrences) {
+        this.occurrences = occurrences;
+    }
 }

@@ -1,12 +1,6 @@
 
 package cz.tacr.elza.domain;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import cz.tacr.elza.api.interfaces.IApScope;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.hibernate.annotations.Type;
-import org.springframework.data.rest.core.annotation.RestResource;
+import java.util.List;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;
@@ -23,7 +17,16 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
-import java.util.List;
+
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.hibernate.annotations.Type;
+import org.springframework.data.rest.core.annotation.RestResource;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import cz.tacr.elza.api.interfaces.IApScope;
 
 
 /**
@@ -39,15 +42,16 @@ import java.util.List;
 public class ParParty extends AbstractVersionableEntity implements IApScope {
 
     /* Konstanty pro vazby a fieldy. */
-    public static final String ABSTRACT_PARTY_ID = "partyId";
-    public static final String RECORD = "accessPoint";
-    public static final String RECORD_FK = RECORD + ".accessPointId";
-    public static final String PARTY_TYPE = "partyType";
-    public static final String PARTY_TYPE_ID = "partyTypeId";
-    public static final String PARTY_PREFERRED_NAME = "preferredName";
-    public static final String HISTORY = "history";
-    public static final String SOURCE_INFORMATION = "sourceInformation";
-    public static final String CHARACTERISTICS = "characteristics";
+    public static final String FIELD_PARTY_ID = "partyId";
+    public static final String FIELD_RECORD = "accessPoint";
+    // TODO: Is it correct? FIELD_RECORD_FK
+    public static final String FIELD_RECORD_FK = FIELD_RECORD + ".accessPointId";
+    public static final String FIELD_PARTY_TYPE = "partyType";
+    public static final String FIELD_PARTY_TYPE_ID = "partyTypeId";
+    public static final String FIELD_PARTY_PREFERRED_NAME = "preferredName";
+    public static final String FIELD_HISTORY = "history";
+    public static final String FIELD_SOURCE_INFORMATION = "sourceInformation";
+    public static final String FIELD_CHARACTERISTICS = "characteristics";
 
     @Id
     @GeneratedValue

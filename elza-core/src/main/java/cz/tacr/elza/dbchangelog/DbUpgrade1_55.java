@@ -1,39 +1,22 @@
 package cz.tacr.elza.dbchangelog;
 
-import liquibase.change.custom.CustomTaskChange;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+
 import liquibase.database.Database;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.CustomChangeException;
 import liquibase.exception.DatabaseException;
-import liquibase.exception.SetupException;
-import liquibase.exception.ValidationErrors;
-import liquibase.resource.ResourceAccessor;
-
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 
 /**
  * Migrace dat pro změnu datace (odstranění polointervalů).
  *
- * @author Martin Šlapa
- * @since 24.10.2016
  */
-public class DbUpgrade1_55 implements CustomTaskChange {
+public class DbUpgrade1_55 extends BaseTaskChange {
 
     @Override
     public String getConfirmationMessage() {
         return "Migrace dat pro změnu datace (odstranění polointervalů).";
-    }
-
-    @Override
-    public void setFileOpener(ResourceAccessor arg0) {}
-
-    @Override
-    public void setUp() throws SetupException {}
-
-    @Override
-    public ValidationErrors validate(Database arg0) {
-        return null;
     }
 
     @Override

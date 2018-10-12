@@ -1,6 +1,8 @@
 package cz.tacr.elza.controller.vo.nodes.descitems;
 
 
+import java.util.Objects;
+
 import javax.persistence.EntityManager;
 
 import cz.tacr.elza.controller.vo.ArrFileVO;
@@ -48,7 +50,10 @@ public class ArrItemFileRefVO extends ArrItemVO {
         ArrDataFileRef data = new ArrDataFileRef();
 
         if (file != null) {
-            throw new BusinessException("Inconsistent data, file is not null", BaseCode.PROPERTY_IS_INVALID);
+            if (!Objects.equals(file.getId(), value)) {
+                throw new BusinessException("Inconsistent data, party is not null", BaseCode.PROPERTY_IS_INVALID)
+                        .set("value", value).set("file.id", file.getId());
+            }
         }
 
         // try to map file

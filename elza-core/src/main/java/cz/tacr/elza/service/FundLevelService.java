@@ -44,7 +44,6 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
 /**
  * Servisní třída pro přesuny uzlů ve stromu.
  *
- * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 18.01.2016
  */
 @Service
@@ -398,6 +397,8 @@ public class FundLevelService {
      * @param deleteNode       node ke smazání
      * @param deleteNodeParent rodič nodu ke smazání
      */
+    // Dává smysl, aby deleteNodeParent byl null?
+    // Pravděpodobně by vždy měl být non-null - nemůžeme takto mazat kořen
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public ArrLevel deleteLevel(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion version,
                                 final ArrNode deleteNode,
@@ -428,7 +429,8 @@ public class FundLevelService {
 
         eventNotificationService.publishEvent(new EventDeleteNode(EventType.DELETE_LEVEL,
                 version.getFundVersionId(),
-                deleteNode.getNodeId(),deleteNodeParent.getNodeId()));
+                deleteNode.getNodeId(),
+                (deleteNodeParent != null) ? deleteNodeParent.getNodeId() : null));
 
         return level;
     }
@@ -518,7 +520,7 @@ public class FundLevelService {
                                 final ArrNode staticNodeParent,
                                 final AddLevelDirection direction,
                                 @Nullable final String scenarionName,
-                                @Nullable final Set<RulItemType> descItemCopyTypes) {
+                                final Set<RulItemType> descItemCopyTypes) {
 
         Assert.notNull(staticNode, "Refereční JP musí být vyplněna");
         Assert.notNull(staticNodeParent, "Rodič JP musí být vyplněn");

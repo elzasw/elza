@@ -12,6 +12,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import cz.tacr.elza.dao.DCStorageConfig;
 
@@ -37,11 +38,12 @@ public class PathResolver {
 	public static void forEachDaoFilePath(String packageIdentifier, String daoIdentifier, Consumer<Path> action) {
 		Path daoPath = resolveDaoPath(packageIdentifier, daoIdentifier);
 		try {
-			Files.walk(daoPath, 1)
-					.filter(p -> !(p.equals(daoPath)
+            try (Stream<Path> fileStream = Files.walk(daoPath, 1)) {
+                fileStream.filter(p -> !(p.equals(daoPath)
 							|| p.endsWith(DAO_CONFIG_FILE_NAME)
 							|| p.endsWith(DELETE_ENTRY_FILE_NAME)))
 					.forEach(action);
+            }
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
 		}
