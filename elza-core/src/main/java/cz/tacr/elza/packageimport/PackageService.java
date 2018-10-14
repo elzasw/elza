@@ -631,7 +631,7 @@ public class PackageService {
         processRelationTypeRoleTypes(relationTypeRoleTypes, rulPackage, parRelationRoleTypes, parRelationTypes);
 
         APTypeUpdater apTypeUpdater = new APTypeUpdater(apTypeRepository, registryRoleRepository,
-                this.accessPointRepository, parPartyTypes);
+                this.accessPointRepository, parPartyTypes, apRuleSystems, staticDataService.getData());
         apTypeUpdater.run(pkgCtx);
         List<ApType> apTypes = apTypeUpdater.getApTypes();
 

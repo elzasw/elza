@@ -58,6 +58,29 @@ public class ApType {
     @JoinColumn(name = "packageId", nullable = false)
     private RulPackage rulPackage;
 
+    public ApType() {
+
+    }
+
+    /**
+     * Copy constructor
+     * 
+     * @param src
+     */
+    protected ApType(ApType src) {
+        // source maybe lazy hibernate obj -> have to read data with methods 
+        this.apTypeId = src.getApTypeId();
+        this.code = src.getCode();
+        this.name = src.getName();
+        this.readOnly = src.isReadOnly();
+        this.parentApType = src.getParentApType();
+        this.parentApTypeId = src.getParentApTypeId();
+        this.partyType = src.getPartyType();
+        this.partyTypeId = src.getPartyTypeId();
+        this.ruleSystem = src.getRuleSystem();
+        this.rulPackage = src.getRulPackage();
+    }
+
     /**
      * Vlastní ID.
      *
@@ -201,5 +224,9 @@ public class ApType {
     @Override
     public String toString() {
         return "ApType pk=" + apTypeId;
+    }
+
+    public static ApType makeCopy(ApType src) {
+        return new ApType(src);
     }
 }
