@@ -3574,8 +3574,11 @@ public class PackageService {
     private <T> void addObjectToZipFile(final T data, final ZipOutputStream zos, final String fileName)
             throws IOException {
         File xmlFile = convertObjectToXmlFile(data);
-        addToZipFile(fileName, xmlFile, zos);
-        xmlFile.delete();
+        try {
+            addToZipFile(fileName, xmlFile, zos);
+        } finally {
+            xmlFile.delete();
+        }
     }
 
     public Boolean getTesting() {

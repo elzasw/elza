@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import cz.tacr.elza.common.AutoDeletingTempFile;
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
@@ -374,16 +375,12 @@ public class DmsService {
         return outputFileRepository.findByTextAndResult(search, outputResult, from, count);
     }
 
-    public File getOutputFilesZip(final ArrOutputResult result) {
+    public Path getOutputFilesZip(final ArrOutputResult result) throws IOException {
+        Path ret;
 
-        File file = null;
-        FileOutputStream fos = null;
-        ZipOutputStream zos = null;
-
-        try {
-            file = File.createTempFile("ElzaOutput", ".zip");
-            fos = new FileOutputStream(file);
-            zos = new ZipOutputStream(fos);
+        try (AutoDeletingTempFile tempFile = AutoDeletingTempFile.createTempFile("ElzaOutput", ".zip");
+                FileOutputStream fos = new FileOutputStream(tempFile.getPath().toFile());
+                ZipOutputStream zos = new ZipOutputStream(fos);) {
 
             for (ArrOutputFile outputFile : result.getOutputFiles()) {
                 File dmsFile = getFilePath(outputFile).toFile();
@@ -392,35 +389,10 @@ public class DmsService {
                 }
             }
 
-            file.deleteOnExit();
-            return file;
-        } catch (IOException e) {
-
-            if (file != null) {
-                file.delete();
-            }
-
-            throw new IllegalStateException(e);
-
-        } finally {
-
-            if (zos != null) {
-                try {
-                    zos.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-
-            if (fos != null) {
-                try {
-                    fos.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
+            ret = tempFile.release();
 
         }
+        return ret;
     }
 
     /**
