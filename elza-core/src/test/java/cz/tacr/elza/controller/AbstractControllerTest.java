@@ -398,9 +398,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
     // Import institucí
     private final static String XML_INSTITUTION = "institution-import.xml";
 
-    // Výchozí scope
-    private final static String IMPORT_SCOPE = "GLOBAL";
-
     private static Map<String, String> cookies = null;
 
     public static File getResourceFile(String resourcePath) {
@@ -425,8 +422,13 @@ public abstract class AbstractControllerTest extends AbstractTest {
         RequestSpecification requestSpecification = given();
         requestSpecification.formParam("username", "admin");
         requestSpecification.formParam("password", "admin");
-        requestSpecification.header(WWW_FORM_CT_HEADER).log().all().config(UTF8_ENCODER_CONFIG);
+        requestSpecification.header(WWW_FORM_CT_HEADER).config(UTF8_ENCODER_CONFIG);
+
         Response response = requestSpecification.post("/login");
+        if (response.getStatusCode() != HttpStatus.OK.value()) {
+            // log request
+            requestSpecification.log().all();
+        }
         cookies = response.getCookies();
     }
 
@@ -501,7 +503,10 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
         RequestSpecification requestSpecification = params.apply(given());
 
-        requestSpecification.header(header).log().all().config(UTF8_ENCODER_CONFIG).cookies(cookies);
+        // add header
+        requestSpecification.header(header);
+        requestSpecification.config(UTF8_ENCODER_CONFIG);
+        requestSpecification.cookies(cookies);
 
         Response response;
         switch (method) {
@@ -531,6 +536,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
         }
         
         if(status.value()!=response.statusCode()) {
+            // Log request if status code failed
+            requestSpecification.log().all();
+
             String msg = formatResponse(response);
             logger.info(msg);
 
@@ -576,11 +584,15 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
         RequestSpecification requestSpecification = params.apply(given());
 
-        requestSpecification.header(MULTIPART_HEADER).log().all().config(UTF8_ENCODER_CONFIG).cookies(cookies);
+        requestSpecification.header(MULTIPART_HEADER).cookies(cookies);
+        requestSpecification.config(UTF8_ENCODER_CONFIG);
 
         Response response = requestSpecification.post(url);
 
         if (HttpStatus.OK.value() != response.statusCode()) {
+            // log only if error
+            requestSpecification.log().all();
+
             String msg = formatResponse(response);
             logger.error(msg);
             Assert.fail("Received error, code: " + response.statusCode() + ", detail: " + msg);

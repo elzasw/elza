@@ -1,15 +1,22 @@
 package cz.tacr.elza.drools;
 
+import java.io.IOException;
 import java.nio.file.NoSuchFileException;
 import java.util.List;
 import java.util.Set;
 
-import cz.tacr.elza.domain.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.ArrOutputDefinition;
+import cz.tacr.elza.domain.ArrStructuredItem;
+import cz.tacr.elza.domain.RulItemTypeExt;
+import cz.tacr.elza.domain.RulStructuredType;
 import cz.tacr.elza.domain.vo.DataValidationResult;
 import cz.tacr.elza.domain.vo.NodeTypeOperation;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
@@ -109,11 +116,8 @@ public class RulesExecutor {
                                                                final List<ArrStructuredItem> structureItems) {
         try {
             return structureItemTypesRules.execute(structureType, rulDescItemTypeExtList, fundVersion.getFund(), structureItems);
-        } catch (NoSuchFileException e) {
-            logger.warn("Neexistuje soubor pro spuštění scriptu." + e.getMessage(), e);
-            return rulDescItemTypeExtList;
-        } catch (Exception e) {
-            throw new SystemException(e);
+        } catch (IOException e) {
+            throw wrapIOException(e);
         }
     }
 
@@ -157,11 +161,8 @@ public class RulesExecutor {
         try {
             return impactOfChangesLevelStateRules
                     .execute(createDescItem, updateDescItem, deleteDescItem, nodeTypeOperation, version.getRuleSet());
-        } catch (NoSuchFileException e) {
-            logger.warn("Neexistuje soubor pro spuštění scriptu." + e.getMessage(), e);
-			throw new SystemException(e);
-        } catch (Exception e) {
-            throw new SystemException(e);
+        } catch (IOException e) {
+            throw wrapIOException(e);
         }
     }
 
@@ -176,11 +177,8 @@ public class RulesExecutor {
                                                                      final ArrFundVersion version) {
         try {
             return descItemValidationRules.execute(level, version);
-        } catch (NoSuchFileException e) {
-            logger.warn("Neexistuje soubor pro spuštění scriptu." + e.getMessage(), e);
-			throw new SystemException(e);
-        } catch (Exception e) {
-            throw new SystemException(e);
+        } catch (IOException e) {
+            throw wrapIOException(e);
         }
     }
 
@@ -189,11 +187,12 @@ public class RulesExecutor {
                                                                    final ArrFundVersion version) {
         try {
             return scenarioOfNewLevelRules.execute(level, directionLevel, version);
-        } catch (NoSuchFileException e) {
-            logger.warn("Neexistuje soubor pro spuštění scriptu." + e.getMessage(), e);
-			throw new SystemException(e);
-        } catch (Exception e) {
-            throw new SystemException(e);
+        } catch (IOException e) {
+            throw wrapIOException(e);
         }
+    }
+
+    private SystemException wrapIOException(IOException e) {
+        return new SystemException("Failed to process rule file", e);
     }
 }

@@ -32,7 +32,7 @@ public class DateRangeAction extends Action {
 
     protected final static DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
-    public static String PARAM_PROPERTY = "property";
+    public static final String PARAM_PROPERTY = "property";
 
 	private final DateRangeConfig config;
     /**

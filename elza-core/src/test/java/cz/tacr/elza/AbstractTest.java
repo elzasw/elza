@@ -1,5 +1,6 @@
 package cz.tacr.elza;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.runner.RunWith;
@@ -56,5 +57,11 @@ public abstract class AbstractTest {
     	helperTestService.loadPackage("SIMPLE-DEV", "rules-simple-dev");
 
         helperTestService.deleteTables();
+    }
+
+    @After
+    public void tearDown() {
+        // try to stop all services which were active during this test run
+        helperTestService.waitForWorkers();
     }
 }

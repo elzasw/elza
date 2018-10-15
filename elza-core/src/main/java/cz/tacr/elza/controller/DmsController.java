@@ -347,7 +347,9 @@ public class DmsController {
      */
     @RequestMapping(value = "/api/outputResult/{outputResultId}", method = RequestMethod.GET)
     @Transactional
-    public void getOutputResultZip(HttpServletResponse response, @PathVariable(value = "outputResultId") Integer outputResultId) throws IOException {
+    public void getOutputResultZip(HttpServletResponse response,
+                                   @PathVariable(value = "outputResultId") Integer outputResultId)
+            throws IOException {
         Validate.notNull(outputResultId, "Identifikátor výstupu musí být vyplněn");
         ArrOutputResult result = outputResultRepository.getOneCheckExist(outputResultId);
         ArrOutputDefinition outputDef = result.getOutputDefinition();
@@ -370,7 +372,7 @@ public class DmsController {
 
             } else {
                 // multiple files have to be zipped
-                fileForDownload = dmsService.getOutputFilesZip(result);
+                fileForDownload = dmsService.getOutputFilesZip(result).toFile();
                 fileName = outputDef.getName() + ".zip";
                 in = new BufferedInputStream(new FileInputStream(fileForDownload));
             }
