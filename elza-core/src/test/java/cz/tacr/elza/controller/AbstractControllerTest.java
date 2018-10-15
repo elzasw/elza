@@ -356,9 +356,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
     // Import institucí
     private final static String XML_INSTITUTION = "institution-import.xml";
 
-    // Výchozí scope
-    private final static String IMPORT_SCOPE = "GLOBAL";
-
     private static Map<String, String> cookies = null;
 
     public static File getResourceFile(String resourcePath) {
@@ -383,8 +380,13 @@ public abstract class AbstractControllerTest extends AbstractTest {
         RequestSpecification requestSpecification = given();
         requestSpecification.formParam("username", "admin");
         requestSpecification.formParam("password", "admin");
-        requestSpecification.header(WWW_FORM_CT_HEADER).log().all().config(UTF8_ENCODER_CONFIG);
+        requestSpecification.header(WWW_FORM_CT_HEADER).config(UTF8_ENCODER_CONFIG);
+
         Response response = requestSpecification.post("/login");
+        if (response.getStatusCode() != HttpStatus.OK.value()) {
+            // log request
+            requestSpecification.log().all();
+        }
         cookies = response.getCookies();
     }
 

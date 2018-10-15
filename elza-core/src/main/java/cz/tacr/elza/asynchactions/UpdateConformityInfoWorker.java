@@ -140,8 +140,10 @@ public class UpdateConformityInfoWorker implements Runnable {
 
         ArrLevel level = levelRepository.findByNode(node, version.getLockChange());
 
-        Validate.notNull(level, "Cannot find Level for node (nodeId=%s) for version(fundVersionId=%s)", nodeId,
-                version.getFundVersionId());
+        if (level == null) {
+            logger.info("Level does not exists in DB, nodeId = {}", node.getNodeId());
+            return;
+        }
 
         logger.debug("Aktualizace stavu " + nodeId + " ve verzi " + fundVersionId);
 

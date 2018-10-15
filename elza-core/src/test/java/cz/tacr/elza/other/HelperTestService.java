@@ -13,19 +13,22 @@ import java.util.zip.ZipOutputStream;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
-import cz.tacr.elza.repository.ApAccessPointRepository;
-import cz.tacr.elza.repository.ApDescriptionRepository;
-import cz.tacr.elza.repository.ApExternalIdRepository;
-import cz.tacr.elza.repository.ApNameRepository;
 import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.packageimport.PackageService;
+import cz.tacr.elza.repository.ApAccessPointRepository;
+import cz.tacr.elza.repository.ApDescriptionRepository;
+import cz.tacr.elza.repository.ApExternalIdRepository;
+import cz.tacr.elza.repository.ApNameRepository;
+import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.BulkActionNodeRepository;
 import cz.tacr.elza.repository.BulkActionRunRepository;
 import cz.tacr.elza.repository.CachedNodeRepository;
@@ -66,7 +69,6 @@ import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.PartyTypeComplementTypeRepository;
 import cz.tacr.elza.repository.PartyTypeRelationRepository;
 import cz.tacr.elza.repository.PermissionRepository;
-import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.RelationEntityRepository;
 import cz.tacr.elza.repository.RelationRepository;
 import cz.tacr.elza.repository.RelationRoleTypeRepository;
@@ -188,6 +190,8 @@ public class HelperTestService {
     private ApDescriptionRepository apDescRepository;
     @Autowired
     private ApExternalIdRepository apEidRepository;
+    @Autowired
+    private UpdateConformityInfoService updateConformityInfoService;
 
     @Autowired
     private PackageService packageService;
@@ -219,7 +223,7 @@ public class HelperTestService {
 
     @Transactional
     public void deleteTables() {
-    	logger.info("Cleaning table contents...");
+        logger.debug("Cleaning table contents...");
 
         cachedNodeRepository.deleteAll();
         permissionRepository.deleteAll();
@@ -351,6 +355,18 @@ public class HelperTestService {
             }
             zout.closeEntry();
             fin.close();
+        }
+    }
+
+    /**
+     * Function will wait for all workers
+     */
+    // This method is not running in transaction
+    public void waitForWorkers() {
+        List<ArrFundVersion> fundVersions = fundVersionRepository.findAll();
+        for (ArrFundVersion fundVersion : fundVersions) {
+            logger.debug("Finishing worker fundVersionId: " + fundVersion.getFundVersionId());
+            updateConformityInfoService.terminateWorkerInVersionAndWait(fundVersion.getFundVersionId());
         }
     }
 

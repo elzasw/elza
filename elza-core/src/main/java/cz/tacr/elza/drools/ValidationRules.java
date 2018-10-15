@@ -1,5 +1,6 @@
 package cz.tacr.elza.drools;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -61,15 +62,17 @@ public class ValidationRules extends Rules {
 	private static final Logger logger = LoggerFactory.getLogger(ValidationRules.class);
 
 	/**
-	 * Spustí validaci atributů.
-	 *
-	 * @param level
-	 *            level, na kterým spouštíme validaci
-	 * @param version
-	 *            verze, do které spadá uzel
-	 * @return seznam validačních chyb nebo prázdný seznam
-	 */
-	public synchronized List<DataValidationResult> execute(final ArrLevel level, final ArrFundVersion version) throws Exception {
+     * Spustí validaci atributů.
+     *
+     * @param level
+     *            level, na kterým spouštíme validaci
+     * @param version
+     *            verze, do které spadá uzel
+     * @return seznam validačních chyb nebo prázdný seznam
+     * @throws IOException
+     */
+    public synchronized List<DataValidationResult> execute(final ArrLevel level, final ArrFundVersion version)
+            throws IOException {
 
 		LinkedList<Object> facts = new LinkedList<>();
 
@@ -121,16 +124,23 @@ public class ValidationRules extends Rules {
 		while (iterator.hasNext()) {
 			DataValidationResult validationResult = iterator.next();
 
-			RulPolicyType rulPolicyType = policyTypesMap.get(validationResult.getPolicyTypeCode());
+            // policy code has to be set
+            String polCode = validationResult.getPolicyTypeCode();
+            if (polCode == null) {
+                throw new SystemException("Policy code not found", BaseCode.INVALID_STATE)
+                        .set("message", validationResult.getMessage())
+                        .set("resultType", validationResult.getResultType());
+            }
 
-			if (rulPolicyType == null) {
-                logger.error("Kód '" + validationResult.getPolicyTypeCode()
-                        + "' neexistuje. Je nutné upravit drools pravidla. Message: " + validationResult.getMessage());
-				iterator.remove();
-				continue;
-			}
+            RulPolicyType rulPolicyType = policyTypesMap.get(polCode);
+            if (rulPolicyType == null) {
+                throw new SystemException("Policy code not found", BaseCode.INVALID_STATE)
+                        .set("message", validationResult.getMessage())
+                        .set("resultType", validationResult.getResultType())
+                        .set("policyCode", validationResult.getPolicyTypeCode());
+            }
 
-			validationResult.setPolicyType(rulPolicyType);
+            validationResult.setPolicyType(rulPolicyType);
 
 			switch (validationResult.getResultType()) {
 
