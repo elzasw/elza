@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -50,6 +51,7 @@ import cz.tacr.elza.api.UseUnitdateEnum;
 import cz.tacr.elza.api.enums.ParRelationClassTypeRepeatabilityEnum;
 import cz.tacr.elza.api.enums.UIPartyGroupTypeEnum;
 import cz.tacr.elza.bulkaction.BulkActionConfigManager;
+import cz.tacr.elza.common.AutoDeletingTempFile;
 import cz.tacr.elza.core.AppContext;
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.core.data.DataType;
@@ -2106,43 +2108,6 @@ public class PackageService {
     }
 
     /**
-     * Odstranění rollback souborů.
-     *
-     * @param dir adresář
-     */
-    private void cleanBackupFiles(final File dir) {
-
-        File[] files = dir.listFiles((dir1, name) -> name.endsWith(".bck"));
-
-        if (files != null) {
-            for (File file : files) {
-                file.delete();
-            }
-        }
-    }
-
-    /**
-     * Provedení obnovy při selhání importu.
-     *
-     * @param dir adresář
-     */
-    private void rollBackFiles(final File dir) throws IOException {
-
-        File[] files = dir.listFiles((dir1, name) -> name.endsWith(".bck"));
-
-        if (files != null) {
-            for (File file : files) {
-                File fileMove = new File(StringUtils.stripEnd(file.getPath(), ".bck"));
-                if (fileMove.exists()) {
-                    fileMove.delete();
-                }
-                Files.move(file.toPath(), fileMove.toPath());
-            }
-        }
-    }
-
-
-    /**
      * Převod VO na DAO hromadné akce.
      *  @param rulPackage       balíček
      * @param packageAction    VO hromadné akce
@@ -2563,19 +2528,9 @@ public class PackageService {
 
                 entityManager.flush();
 
-                cleanBackupFiles(dirActions);
-                cleanBackupFiles(dirRules);
-
                 bulkActionConfigManager.load();
-            } catch (Exception e) {
-                try {
-                    rollBackFiles(dirActions);
-                    rollBackFiles(dirRules);
-
-                    throw new SystemException("Nastala chyba během importu balíčku", e);
-                } catch (IOException e1) {
-                    throw new SystemException("Nastala chyba během obnovy souborů po selhání importu balíčku", e);
-                }
+            } catch (IOException e) {
+                throw new SystemException("Nastala chyba během obnovy souborů po selhání importu balíčku", e);
             }
         }
     }
@@ -2615,23 +2570,29 @@ public class PackageService {
      * @param code
      *            kód balíčku
      * @return výsledný soubor
+     * @throws IOException
      */
     @Transactional(readOnly = true)
-    synchronized public File exportPackage(final String code) {
+    synchronized public Path exportPackage(final String code) throws IOException {
         RulPackage rulPackage = packageRepository.findTopByCode(code);
 
         if (rulPackage == null) {
             throw new ObjectNotFoundException("Balíček s kódem " + code + " neexistuje", PackageCode.PACKAGE_NOT_EXIST).set("code", code);
         }
 
-        File file = null;
-        FileOutputStream fos = null;
-        ZipOutputStream zos = null;
+        try (AutoDeletingTempFile tempFile = AutoDeletingTempFile.createTempFile("ElzaPackage-" + code + "-",
+                                                                                 "-package.zip"))
+        {
+            exportPackage(rulPackage, tempFile.getPath());
+            return tempFile.release();
+        }
 
-        try {
-            file = File.createTempFile("ElzaPackage-" + code + "-", "-package.zip");
-            fos = new FileOutputStream(file);
-            zos = new ZipOutputStream(fos);
+    }
+
+    private void exportPackage(RulPackage rulPackage, Path path) throws IOException {
+
+        try (FileOutputStream fos = new FileOutputStream(path.toFile());
+                ZipOutputStream zos = new ZipOutputStream(fos);) {
 
             exportPackageInfo(rulPackage, zos);
             exportRuleSet(rulPackage, zos);
@@ -2656,38 +2617,7 @@ public class PackageService {
             exportRelationRoleTypes(rulPackage, zos);
             exportSettings(rulPackage, zos);
             exportExternalIdTypes(rulPackage, zos);
-
-            file.deleteOnExit();
-        } catch (Exception e) {
-
-            if (file != null) {
-                file.delete();
-            }
-
-            throw new IllegalStateException(e);
-
-        } finally {
-
-            if (zos != null) {
-                try {
-                    zos.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-
-            if (fos != null) {
-                try {
-                    fos.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-
         }
-
-        return file;
-
     }
 
     /**
