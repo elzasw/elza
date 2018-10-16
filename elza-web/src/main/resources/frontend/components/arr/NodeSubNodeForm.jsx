@@ -309,7 +309,9 @@ class NodeSubNodeForm extends AbstractReactComponent {
                     type.descItems.forEach(item => {
                         const itemCls = factory.createClass(item);
                         const newItem = itemCls.copyItem(withValues);
-                        newItem.strValue = itemCls.toSimpleString();
+                        if(withValues) {
+                            newItem.strValue = itemCls.toSimpleString();
+                        }
                         items.push(newItem);
                     });
 

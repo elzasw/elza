@@ -7,7 +7,11 @@ export class ItemRecordRef extends Item {
     }
 
     toSimpleString() {
-        return this.item.record.record;
+        if(this.item.accessPoint===undefined||this.item.accessPoint===null) {
+            return null;
+        } else {
+            return this.item.accessPoint.record;
+        }
     };
 
 }
