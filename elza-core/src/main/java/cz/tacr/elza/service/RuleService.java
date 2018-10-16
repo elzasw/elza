@@ -1,8 +1,35 @@
 package cz.tacr.elza.service;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import javax.persistence.EntityManager;
+import javax.transaction.Transactional;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
 import com.google.common.collect.Lists;
 
-import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
 import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.controller.factory.ExtendedObjectsFactory;
@@ -64,31 +91,6 @@ import cz.tacr.elza.repository.TemplateRepository;
 import cz.tacr.elza.service.eventnotification.events.EventNodeIdVersionInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.validation.ArrDescItemsPostValidator;
-import org.apache.commons.collections4.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-
-import javax.persistence.EntityManager;
-import javax.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 
 /**
@@ -187,8 +189,8 @@ public class RuleService {
         while(iterator.hasNext()) {
             DataValidationResult validationResult = iterator.next();
             if (validationResult.getPolicyTypeCode() == null) {
-                logger.error("Validační výsledek nemá vyplněný kód typu kontroly, proto nebude použit. " + validationResult);
-                iterator.remove();
+                throw new SystemException("Validation result without policy type code", BaseCode.INVALID_STATE)
+                        .set("message", validationResult.getMessage());
             }
         }
 
@@ -257,6 +259,9 @@ public class RuleService {
             nodeConformityInfoRepository.save(conformityInfo);
 
             for (DataValidationResult validationResult : validationResults) {
+                // policy type has to be set
+                Validate.notNull(validationResult.getPolicyType());
+
                 switch (validationResult.getResultType()) {
                     case MISSING:
                         ArrNodeConformityMissing missing = new ArrNodeConformityMissing();
@@ -275,6 +280,8 @@ public class RuleService {
                         error.setPolicyType(validationResult.getPolicyType());
                         nodeConformityErrorsRepository.save(error);
                         break;
+                default:
+                    throw new IllegalStateException();
                 }
             }
 
