@@ -213,7 +213,7 @@ public class DescItemTypeFilter {
      * @param luceneQueries
      */
     private Map<Integer, Set<Integer>> processLuceneQueries(final FullTextEntityManager fullTextEntityManager,
-            final QueryBuilder queryBuilder, final Integer fundId, final List<Query> luceneQueries) {
+                                                            final QueryBuilder queryBuilder, final Integer fundId, final List<Query> luceneQueries) {
         Map<Integer, Set<Integer>> nodeIdToDescItemIds = null;
         if (!luceneQueries.isEmpty()) {
             BooleanJunction<BooleanJunction> booleanJunction = queryBuilder.bool();
@@ -224,10 +224,10 @@ public class DescItemTypeFilter {
                 booleanJunction.must(q);
             });
 
-            List<Object> rows = createFullTextQuery(fullTextEntityManager, booleanJunction.createQuery(), ArrDescItem.class).setProjection("nodeId", "itemId").getResultList();
+            List<Object> rows = createFullTextQuery(fullTextEntityManager, booleanJunction.createQuery(), ArrDescItem.class).setProjection(ArrDescItem.NODE_ID, ArrDescItem.ITEM_ID).getResultList();
 
             nodeIdToDescItemIds = new HashMap<>(rows.size());
-            for (Object row: rows) {
+            for (Object row : rows) {
                 Object[] rowArray = (Object[]) row;
                 Integer nodeId = (Integer) rowArray[0];
                 Integer descItemId = (Integer) rowArray[1];

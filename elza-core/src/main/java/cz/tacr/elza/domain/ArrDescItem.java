@@ -1,5 +1,7 @@
 package cz.tacr.elza.domain;
 
+import java.util.Date;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -12,16 +14,17 @@ import javax.persistence.Transient;
 
 import org.apache.lucene.analysis.core.KeywordTokenizerFactory;
 import org.apache.lucene.analysis.core.LowerCaseFilterFactory;
+import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Analyzer;
 import org.hibernate.search.annotations.AnalyzerDef;
+import org.hibernate.search.annotations.Facet;
+import org.hibernate.search.annotations.FacetEncodingType;
 import org.hibernate.search.annotations.Field;
-import org.hibernate.search.annotations.FieldBridge;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.NumericField;
 import org.hibernate.search.annotations.Store;
 import org.hibernate.search.annotations.TokenFilterDef;
 import org.hibernate.search.annotations.TokenizerDef;
-import org.hibernate.search.bridge.builtin.IntegerBridge;
 import org.springframework.data.rest.core.annotation.RestResource;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -30,8 +33,6 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import cz.tacr.elza.repository.DataRepositoryImpl;
 import cz.tacr.elza.search.DescItemIndexingInterceptor;
-
-import java.util.Date;
 
 
 /**
@@ -52,20 +53,22 @@ import java.util.Date;
 @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
 public class ArrDescItem extends ArrItem {
 
-	// Constants for fulltext indexing
-	public static final String FUND_ID = "fundId";
+    // Constants for fulltext indexing
+    public static final String ITEM_ID = "itemId";
+    public static final String FUND_ID = "fundId";
+    public static final String FUND_ID_STRING = "fundIdString";
     public static final String NODE = "node";
     public static final String NODE_ID = "nodeId";
     public static final String CREATE_CHANGE_ID = "createChangeId";
     public static final String DELETE_CHANGE_ID = "deleteChangeId";
-	public static final String DESC_ITEM_TYPE_ID = "descItemTypeId";
-	public static final String FULLTEXT_ATT = "fulltextValue";
-	public static final String SPECIFICATION_ATT = "specification";
-	public static final String INTGER_ATT = "valueInt";
-	public static final String DECIMAL_ATT = "valueDecimal";
-	public static final String DATE_ATT = "valueDate";
-	public static final String NORMALIZED_FROM_ATT = "normalizedFrom";
-	public static final String NORMALIZED_TO_ATT = "normalizedTo";
+    public static final String DESC_ITEM_TYPE_ID = "descItemTypeId";
+    public static final String FULLTEXT_ATT = "fulltextValue";
+    public static final String SPECIFICATION_ATT = "specification";
+    public static final String INTGER_ATT = "valueInt";
+    public static final String DECIMAL_ATT = "valueDecimal";
+    public static final String DATE_ATT = "valueDate";
+    public static final String NORMALIZED_FROM_ATT = "normalizedFrom";
+    public static final String NORMALIZED_TO_ATT = "normalizedTo";
 
 	@JsonIgnore
     @RestResource(exported = false)
@@ -102,22 +105,18 @@ public class ArrDescItem extends ArrItem {
 		this.nodeId = src.nodeId;
 	}
 
-	@Field(store = Store.YES)
-    public String getDescItemIdString() {
-        return getItemId().toString();
-    }
-
     @Override
-    @Field(store = Store.YES)
-    @FieldBridge(impl = IntegerBridge.class)
+    @Field(name = NODE_ID, analyze = Analyze.NO, store = Store.YES)
+    // @FieldBridge(impl = IntegerBridge.class)
     public Integer getNodeId() {
         return nodeId;
     }
 
-	@JsonIgnore
+    @JsonIgnore
     @Override
-	@Field(name = FUND_ID)
-    @FieldBridge(impl = IntegerBridge.class)
+    @Field(name = FUND_ID, analyze = Analyze.NO, store = Store.YES)
+    @Facet(name = FUND_ID_STRING, forField = FUND_ID, encoding = FacetEncodingType.STRING)
+    // @FieldBridge(impl = IntegerBridge.class)
     public Integer getFundId() {
         return indexData.getFundId();
     }

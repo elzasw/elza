@@ -1,6 +1,9 @@
 package cz.tacr.elza.repository;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.vo.ArrFundOpenVersion;
@@ -40,6 +43,8 @@ public interface FundRepositoryCustom {
 	 * @return počet archivních fondů splňujících podmínky fulltextu
 	 */
 	Integer findCountByFulltext(String fulltext, final Integer userId);
+
+	List<ArrFund> findFundByFulltext(String fulltext, Integer userId);
 
 	FilteredResult<ArrFund> findFunds(String search, int firstResult, int maxResults);
 
