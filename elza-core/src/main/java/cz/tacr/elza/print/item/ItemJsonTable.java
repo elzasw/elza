@@ -30,7 +30,6 @@ public class ItemJsonTable extends AbstractItem {
     public String getSerializedValue() {
         StringBuilder sb = new StringBuilder();
 
-        boolean hasData = false;
         for (ElzaRow row : value.getRows()) {
             Map<String, String> columns = row.getValues();
 
@@ -40,15 +39,13 @@ public class ItemJsonTable extends AbstractItem {
                 String value = columns.get(col.getCode());
                 if (StringUtils.isNotBlank(value)) {
                     // add separator
-                    if (hasData) {
-                        if (itemAdded) {
-                            sb.append(ITEM_SEPARATOR);
-                        } else {
-                            sb.append(ROW_SEPARATOR);
-                            itemAdded = true;
-                        }
+                    if (itemAdded) {
+                        sb.append(ITEM_SEPARATOR);
                     } else {
-                        hasData = true;
+                        // add row separator only if exists previous data
+                        if (sb.length() > 0) {
+                            sb.append(ROW_SEPARATOR);
+                        }
                         itemAdded = true;
                     }
                     sb.append(value);

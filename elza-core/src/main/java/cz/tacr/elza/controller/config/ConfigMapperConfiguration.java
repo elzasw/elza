@@ -449,7 +449,7 @@ public class ConfigMapperConfiguration {
 
         mapperFactory.classMap(ArrNodeRegister.class, ArrNodeRegisterVO.class)
             .field("nodeRegisterId", "id")
-            .exclude(ArrNodeRegister.RECORD)
+            .exclude(ArrNodeRegister.FIELD_RECORD)
             .customize(new CustomMapper<ArrNodeRegister, ArrNodeRegisterVO>() {
                 @Override
                 public void mapAtoB(ArrNodeRegister a, ArrNodeRegisterVO b, MappingContext context) {
@@ -522,7 +522,7 @@ public class ConfigMapperConfiguration {
                 .exclude("partyNames")
                 .exclude("partyCreators")
                 .exclude("relations")
-                .exclude(ParParty.RECORD)
+                .exclude(ParParty.FIELD_RECORD)
                 .customize(new CustomMapper<ParParty, ParPartyVO>() {
                     @Override
                     public void mapAtoB(ParParty a, ParPartyVO b, MappingContext context) {
@@ -961,7 +961,26 @@ public class ConfigMapperConfiguration {
         mapperFactory.classMap(ArrDataDate.class, ArrItemDateVO.class).byDefault().register();
         mapperFactory.classMap(ArrDataJsonTable.class, ArrItemJsonTableVO.class).byDefault().register();
         mapperFactory.classMap(ArrDataDecimal.class, ArrItemDecimalVO.class).byDefault().register();
-        mapperFactory.classMap(ArrDataUnitid.class, ArrItemUnitidVO.class).byDefault().register();
+        mapperFactory.classMap(ArrDataUnitid.class, ArrItemUnitidVO.class).customize(
+                                                                                     new CustomMapper<ArrDataUnitid, ArrItemUnitidVO>() {
+                                                                                         @Override
+                                                                                         public void mapAtoB(final ArrDataUnitid unitId,
+                                                                                                             final ArrItemUnitidVO unitIdVo,
+                                                                                                             final MappingContext context) {
+                                                                                             unitIdVo.setValue(unitId
+                                                                                                     .getUnitId());
+                                                                                         }
+
+                                                                                         @Override
+                                                                                         public void mapBtoA(final ArrItemUnitidVO unitIdVo,
+                                                                                                             final ArrDataUnitid unitId,
+                                                                                                             final MappingContext context) {
+                                                                                             unitId.setUnitId(unitIdVo
+                                                                                                     .getValue());
+                                                                                         }
+
+                                                                                     })
+                .byDefault().register();
         mapperFactory.classMap(ArrDataUnitdate.class, ArrItemUnitdateVO.class).customize(
                 new CustomMapper<ArrDataUnitdate, ArrItemUnitdateVO>() {
                     @Override

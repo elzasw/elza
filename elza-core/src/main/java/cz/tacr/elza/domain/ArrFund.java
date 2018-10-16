@@ -1,6 +1,5 @@
 package cz.tacr.elza.domain;
 
-import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -24,23 +23,22 @@ import cz.tacr.elza.api.interfaces.IArrFund;
 import cz.tacr.elza.domain.interfaces.Versionable;
 
 /**
- * Archivní pomůcka. Archivní pomůcka je lineárně verzována pomocí {@link ArrFundVersion}.
- * @author by Ondřej Buriánek, burianek@marbes.cz.
+ * Archivní pomůcka. Archivní pomůcka je lineárně verzována pomocí
+ * {@link ArrFundVersion}.
+ * 
  * @since 22.7.15
  */
 @Entity(name = "arr_fund")
 @Cache(region = "fund", usage = CacheConcurrencyStrategy.READ_WRITE)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class ArrFund extends AbstractVersionableEntity implements Versionable, Serializable, IArrFund {
-
-	public static final String NAME = "name";
+public class ArrFund extends AbstractVersionableEntity implements Versionable, IArrFund {
 
 	@Id
 	@GeneratedValue
     @Access(AccessType.PROPERTY) // required to read id without fetch from db
 	private Integer fundId;
 
-	@Column(length = 255, nullable = false)
+    @Column(length = 255, nullable = false)
 	private String name;
 
 	@Column(nullable = false)

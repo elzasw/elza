@@ -4,11 +4,34 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import cz.tacr.elza.controller.vo.*;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import cz.tacr.elza.controller.vo.ApAccessPointCreateVO;
+import cz.tacr.elza.controller.vo.ApAccessPointVO;
+import cz.tacr.elza.controller.vo.ApScopeVO;
+import cz.tacr.elza.controller.vo.ApTypeVO;
+import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
+import cz.tacr.elza.controller.vo.ArrFundVO;
+import cz.tacr.elza.controller.vo.ArrFundVersionVO;
+import cz.tacr.elza.controller.vo.ParComplementTypeVO;
+import cz.tacr.elza.controller.vo.ParDynastyVO;
+import cz.tacr.elza.controller.vo.ParEventVO;
+import cz.tacr.elza.controller.vo.ParPartyGroupIdentifierVO;
+import cz.tacr.elza.controller.vo.ParPartyGroupVO;
+import cz.tacr.elza.controller.vo.ParPartyNameComplementVO;
+import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
+import cz.tacr.elza.controller.vo.ParPartyNameVO;
+import cz.tacr.elza.controller.vo.ParPartyTypeVO;
+import cz.tacr.elza.controller.vo.ParPartyVO;
+import cz.tacr.elza.controller.vo.ParPersonVO;
+import cz.tacr.elza.controller.vo.ParRelationEntityVO;
+import cz.tacr.elza.controller.vo.ParRelationRoleTypeVO;
+import cz.tacr.elza.controller.vo.ParRelationTypeVO;
+import cz.tacr.elza.controller.vo.ParRelationVO;
+import cz.tacr.elza.controller.vo.ParUnitdateVO;
+import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
@@ -531,8 +554,8 @@ public class PartyControllerTest extends AbstractControllerTest {
 
         RecordUsageVO response = usageParty(personO1.getId());
 
-        Assert.assertFalse(response.funds == null || response.funds.isEmpty());
-        Assert.assertFalse(response.parties == null || response.parties.isEmpty());
+        Assert.assertFalse(response.getFunds() == null || response.getFunds().isEmpty());
+        Assert.assertFalse(response.getParties() == null || response.getParties().isEmpty());
 
         /* Vytvoření osoby replacement **/
         ParPersonVO personO2 = givePerson("replacement");
@@ -540,8 +563,8 @@ public class PartyControllerTest extends AbstractControllerTest {
         replaceParty(personO1.getId(), personO2.getId());
 
         response = usageParty(personO1.getId());
-        Assert.assertTrue(response.funds == null || response.funds.isEmpty());
-        Assert.assertTrue(response.parties == null || response.parties.isEmpty());
+        Assert.assertTrue(response.getFunds() == null || response.getFunds().isEmpty());
+        Assert.assertTrue(response.getParties() == null || response.getParties().isEmpty());
     }
 
 

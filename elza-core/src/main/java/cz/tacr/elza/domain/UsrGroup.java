@@ -26,11 +26,11 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 public class UsrGroup {
 
 	/* Konstanty pro vazby a fieldy. */
-	public static final String GROUP_ID = "groupId";
-	public static final String CODE = "code";
-	public static final String NAME = "name";
-	public static final String DESCRIPTION = "description";
-	public static final String USERS = "users";
+	public static final String FIELD_GROUP_ID = "groupId";
+	public static final String FIELD_CODE = "code";
+	public static final String FIELD_NAME = "name";
+	public static final String FIELD_DESCRIPTION = "description";
+	public static final String FIELD_USERS = "users";
 
 	@Id
     @GeneratedValue

@@ -1,5 +1,6 @@
 import {i18n} from 'components/shared';
 import {addToastr} from "components/shared/toastr/ToastrActions.jsx";
+import {createException} from 'components/ExceptionUtils.jsx';
 
 /**
  *  Downloads file from specified url
@@ -70,7 +71,7 @@ export function downloadFileInFrame(url, id) {
  *  @param filename {String} name of the file with which it will be saved when completed
  *  @param method {String} request method
  *  @param data {Object} request data
- *  @param contentType {String} request contentType 
+ *  @param contentType {String} request contentType
  */
 export function downloadAjaxFile(address,filename,method="GET",data=null,contentType="application/json"){
     return (dispatch)=>{
@@ -81,11 +82,18 @@ export function downloadAjaxFile(address,filename,method="GET",data=null,content
         req.onload = function (event) {
             const {readyState, status} = event.target;
             if(readyState !== 4 || status !== 200){
-                console.log("Download request failed, status:",status,"readyState:",readyState);
+                const reader = new FileReader();
+                reader.onloadend = (e)=>{
+                    // parse the read data to json and create exception
+                    const data = JSON.parse(e.srcElement.result);
+                    dispatch(createException(data));
+                }
+                // Read the response blob in the file reader
+                reader.readAsText(event.target.response);
                 return false;
             }
-            var resContentType = req.getResponseHeader('Content-Type');                  
-            var resContentDisp = req.getResponseHeader('Content-Disposition');                  
+            var resContentType = req.getResponseHeader('Content-Type');
+            var resContentDisp = req.getResponseHeader('Content-Disposition');
             if (resContentDisp && !filename) {
                 filename = getFilenameFromDisposition(resContentDisp);
             } else if (!resContentDisp) {
@@ -93,9 +101,9 @@ export function downloadAjaxFile(address,filename,method="GET",data=null,content
                 filename = "unknown-filename";
             }
             if(!resContentType){
-                console.log("Missing content type header"); 
+                console.log("Missing content type header");
             }
-            var blob = new Blob([req.response], { type: resContentType });                        
+            var blob = new Blob([req.response], { type: resContentType });
 
             if (typeof window.navigator.msSaveBlob !== 'undefined') {
                 // IE workaround for HTML7007, Edge workaround for Issue #7260192

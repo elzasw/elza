@@ -25,10 +25,12 @@ public class SealedLevel {
      * @param remaining
      * @param seal
      *            Flag if value should be marked as sealed
+     * @param validator
      * @return
      * @throws UnitIdException
      */
-    public PartSealedUnitId add(UnitIdPart part, String remaining, boolean seal) throws UnitIdException {
+    public PartSealedUnitId add(UnitIdPart part, String remaining, boolean seal, SealValidator validator)
+            throws UnitIdException {
         // check if exists
         PartSealedUnitId unit = units.get(part);
         if (unit == null) {
@@ -42,10 +44,10 @@ public class SealedLevel {
             if (unit.isSealed()) {
                 throw new UnitIdException("Item is already sealed");
             }
-            unit.setSealed(seal);
+            unit.setSealed(seal, validator);
             return unit;
         } else {
-            return unit.addValue(remaining, seal);
+            return unit.addValue(remaining, seal, validator);
         }
     }
 
@@ -94,7 +96,8 @@ public class SealedLevel {
         } else {
             Validate.isTrue(!result.isSealed());
         }
-        result.setSealed(true);
+        // Create sealed based on boarders -> no validator is added
+        result.setSealed(true, null);
 
         return result;
     }

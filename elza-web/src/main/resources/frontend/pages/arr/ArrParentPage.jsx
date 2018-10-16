@@ -50,6 +50,7 @@ import PageLayout from "../shared/layout/PageLayout";
 import {fundChangeReadMode} from 'actions/arr/fund.jsx'
 import defaultKeymap from './ArrParentPageKeymap.jsx';
 import {FOCUS_KEYS} from "../../constants.tsx";
+import * as groups from "../../actions/refTables/groups";
 
 export default class ArrParentPage extends AbstractReactComponent {
 
@@ -118,6 +119,7 @@ export default class ArrParentPage extends AbstractReactComponent {
         var activeFund = this.getActiveFund(this.props);
         if (activeFund !== null) {
             this.requestFundTreeData(activeFund);
+            this.props.dispatch(groups.fetchIfNeeded(activeFund.versionId));
         }
     }
 
@@ -128,6 +130,7 @@ export default class ArrParentPage extends AbstractReactComponent {
         var activeFund = this.getActiveFund(nextProps);
         if (activeFund !== null) {
             this.requestFundTreeData(activeFund);
+            this.props.dispatch(groups.fetchIfNeeded(activeFund.versionId));
         }
     }
 

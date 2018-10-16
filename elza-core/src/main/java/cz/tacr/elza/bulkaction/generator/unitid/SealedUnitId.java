@@ -100,7 +100,7 @@ public abstract class SealedUnitId {
      * @return
      * @throws UnitIdException
      */
-    public PartSealedUnitId addValue(String value, boolean seal) throws UnitIdException {
+    public PartSealedUnitId addValue(String value, boolean seal, SealValidator validator) throws UnitIdException {
         Validate.isTrue(value != null);
         Validate.isTrue(value.length() > 0);
 
@@ -127,7 +127,7 @@ public abstract class SealedUnitId {
             remaining = null;
         }
 
-        return level.add(part, remaining, seal);
+        return level.add(part, remaining, seal, validator);
     }
 
     abstract public int getDepth();

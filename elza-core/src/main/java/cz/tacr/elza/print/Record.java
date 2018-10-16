@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -135,5 +136,24 @@ public class Record {
             eids = Collections.unmodifiableList(eids);
         }
         return eids;
+    }
+
+    /**
+     * Return string with formatted list of external ids
+     * 
+     * Format of the result is <type1>: <value1>, <type2>: <value2>...
+     * 
+     * @return
+     */
+    public String getFormattedEids() {
+        List<ExternalId> eids = getEids();
+        if (eids == null) {
+            return "";
+        } else {
+            return eids.stream().map(eid -> {
+                return eid.getType().getName() + ": " + eid.getValue();
+            }).collect(Collectors.joining(", "));
+        }
+
     }
 }

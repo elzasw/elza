@@ -20,7 +20,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ArrDataPartyRef extends ArrData {
 
-    public static final String PARTY = "party";
+    public static final String FIELD_PARTY = "party";
 
     @RestResource(exported = false)
 	@ManyToOne(fetch = FetchType.LAZY, targetEntity = ParParty.class)

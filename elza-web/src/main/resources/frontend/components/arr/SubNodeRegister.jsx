@@ -40,7 +40,7 @@ const SubNodeRegister = class SubNodeRegister extends AbstractReactComponent {
      */
     handleCreateRecord(index) {
         const {versionId} = this.props;
-        this.dispatch(registryAdd(null, versionId, this.handleCreatedRecord.bind(this, index), '', true));
+        this.dispatch(registryAdd(versionId, this.handleCreatedRecord.bind(this, index), true));
     }
 
     /**

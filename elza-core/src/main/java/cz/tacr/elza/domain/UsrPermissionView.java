@@ -12,14 +12,13 @@ import javax.persistence.ManyToOne;
 /**
  * Pomocná entita pro načítání práv.
  *
- * @author Martin Šlapa
  * @since 02.05.2016
  */
 @Entity(name = "usr_permission_view")
 public class UsrPermissionView {
 
-    public static final String SCOPE = "scope";
-    public static final String USER = "user";
+    public static final String FIELD_SCOPE = "scope";
+    public static final String FIELD_USER = "user";
 
     /**
      * Identifikátor entity.

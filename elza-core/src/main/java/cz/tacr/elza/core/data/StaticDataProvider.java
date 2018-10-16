@@ -7,12 +7,37 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
-import cz.tacr.elza.domain.*;
-import cz.tacr.elza.repository.*;
 import org.apache.commons.lang3.Validate;
 
+import cz.tacr.elza.domain.ApExternalIdType;
 import cz.tacr.elza.domain.ApType;
+import cz.tacr.elza.domain.ParComplementType;
+import cz.tacr.elza.domain.ParPartyNameFormType;
+import cz.tacr.elza.domain.ParRegistryRole;
+import cz.tacr.elza.domain.ParRelationType;
+import cz.tacr.elza.domain.ParRelationTypeRoleType;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulPackage;
+import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.RulStructuredType;
+import cz.tacr.elza.domain.SysLanguage;
+import cz.tacr.elza.repository.ApExternalIdTypeRepository;
+import cz.tacr.elza.repository.ApTypeRepository;
+import cz.tacr.elza.repository.ComplementTypeRepository;
+import cz.tacr.elza.repository.ItemSpecRepository;
+import cz.tacr.elza.repository.ItemTypeRepository;
+import cz.tacr.elza.repository.PackageRepository;
+import cz.tacr.elza.repository.PartyNameFormTypeRepository;
+import cz.tacr.elza.repository.PartyTypeComplementTypeRepository;
+import cz.tacr.elza.repository.RegistryRoleRepository;
+import cz.tacr.elza.repository.RelationTypeRepository;
+import cz.tacr.elza.repository.RelationTypeRoleTypeRepository;
+import cz.tacr.elza.repository.RuleSetRepository;
+import cz.tacr.elza.repository.StructuredTypeRepository;
+import cz.tacr.elza.repository.SysLanguageRepository;
 
 public class StaticDataProvider {
 
@@ -216,6 +241,11 @@ public class StaticDataProvider {
         return itemTypeIdMap.get(id);
     }
 
+    /**
+     * 
+     * @param code
+     * @return Return null if item type does not exists
+     */
     public ItemType getItemTypeByCode(String code) {
         Validate.notEmpty(code);
         return itemTypeCodeMap.get(code);
@@ -336,7 +366,13 @@ public class StaticDataProvider {
     }
 
     private void checkPackageReference(RulPackage rulPackage) {
-        Validate.isTrue(rulPackage == packageIdMap.get(rulPackage.getPackageId()));
+        if (rulPackage == null) {
+            Validate.notNull(rulPackage);
+        }
+        RulPackage currPackage = packageIdMap.get(rulPackage.getPackageId());
+        if (rulPackage != currPackage) {
+            Validate.isTrue(rulPackage == currPackage);
+        }
     }
 
     private void initPartyNameFormTypes(PartyNameFormTypeRepository partyNameFormTypeRepository) {
@@ -378,14 +414,26 @@ public class StaticDataProvider {
     private void initApTypes(ApTypeRepository apTypeRepository) {
         List<ApType> apTypes = apTypeRepository.findAll();
 
-        Map<Integer, ApType> idMap = createLookup(apTypes, ApType::getApTypeId);
+        // We have to create lookup of copied objects
+        Map<Integer, ApType> idMap = apTypes.stream().collect(Collectors.toMap(ApType::getApTypeId,
+                                                                               ApType::makeCopy));
 
-        for (ApType rt : apTypes) {
-            // ensure reference equality (single transaction)
-            if (rt.getParentApType() != null) {
-                checkPackageReference(rt.getRulPackage());
-                Validate.isTrue(rt.getParentApType() == idMap.get(rt.getParentApType().getApTypeId()));
+        // TODO: should be collection ordered?
+
+        List<ApType> result = new ArrayList<>(apTypes.size());
+        for (ApType rt : idMap.values()) {
+            checkPackageReference(rt.getRulPackage());
+
+            // switch parent reference
+            Integer parentId = rt.getParentApTypeId();
+            if (parentId != null) {
+                ApType parent = idMap.get(parentId);
+                Validate.notNull(parent);
+                rt.setParentApType(parent);
             }
+
+            result.add(rt);
+
             // update reference to party type
             if (rt.getPartyType() != null) {
                 PartyType partyType = PartyType.fromId(rt.getPartyType().getPartyTypeId());
@@ -393,9 +441,9 @@ public class StaticDataProvider {
             }
         }
         // update fields
-        this.apTypes = Collections.unmodifiableList(apTypes);
+        this.apTypes = Collections.unmodifiableList(result);
         this.apTypeIdMap = idMap;
-        this.apTypeCodeMap = createLookup(apTypes, ApType::getCode);
+        this.apTypeCodeMap = createLookup(result, ApType::getCode);
     }
 
     private void initRelationTypes(RelationTypeRepository relationTypeRepository,

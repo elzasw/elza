@@ -11,7 +11,7 @@ import cz.tacr.elza.domain.ArrDataStructureRef;
  */
 public class ArrDataStructureRefWrapper extends ArrDataWrapper {
 
-    private final ArrDataStructureRef entity;
+    private final ArrDataStructureRef dataStuctRef;
 
     private final String structObjImportId;
 
@@ -19,7 +19,7 @@ public class ArrDataStructureRefWrapper extends ArrDataWrapper {
 
     ArrDataStructureRefWrapper(ArrDataStructureRef entity, String structObjImportId, SectionContext sectionCtx) {
         super(entity);
-        this.entity = Validate.notNull(entity);
+        this.dataStuctRef = Validate.notNull(entity);
         this.structObjImportId = Validate.notNull(structObjImportId);
         this.sectionCtx = sectionCtx;
     }
@@ -31,9 +31,9 @@ public class ArrDataStructureRefWrapper extends ArrDataWrapper {
     @Override
     public void beforeEntitySave(Session session) {
         // prepare structured object reference
-        Validate.isTrue(entity.getStructuredObject() == null);
+        Validate.isTrue(dataStuctRef.getStructuredObject() == null);
         StructObjContext structObjCtx = sectionCtx.getStructObject(structObjImportId);
-        entity.setStructuredObject(structObjCtx.getIdHolder().getEntityRef(session));
+        dataStuctRef.setStructuredObject(structObjCtx.getIdHolder().getEntityRef(session));
         // call super
         super.beforeEntitySave(session);
     }

@@ -17,8 +17,20 @@ import cz.tacr.elza.domain.enumeration.StringLength;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ArrDataUnitid extends ArrData {
 
-    @Column(length = StringLength.LENGTH_250, nullable = false)
-    private String value;
+    /**
+     * Name of attribute with value
+     */
+    public static final String FIELD_UNITID = "unitId";
+
+    /**
+     * value of the unitid
+     */
+    // attribute has name unitid and not value 
+    // because operator TREAT in JPQL needs
+    // unique names (tested with Hibernate 5.2)
+    // see LockedValueRepository and query findByFundAndItemTypeAndValue
+    @Column(name = "value", length = StringLength.LENGTH_250, nullable = false)
+    private String unitId;
 
 	public ArrDataUnitid() {
 
@@ -30,20 +42,20 @@ public class ArrDataUnitid extends ArrData {
 	}
 
     private void copyValue(ArrDataUnitid src) {
-        this.value = src.value;
+        this.unitId = src.unitId;
     }
 
-    public String getValue() {
-        return value;
+    public String getUnitId() {
+        return unitId;
     }
 
-    public void setValue(final String value) {
-        this.value = value;
+    public void setUnitId(final String value) {
+        this.unitId = value;
     }
 
     @Override
     public String getFulltextValue() {
-        return value;
+        return getUnitId();
     }
 
 	@Override
@@ -54,7 +66,7 @@ public class ArrDataUnitid extends ArrData {
     @Override
     protected boolean isEqualValueInternal(ArrData srcData) {
         ArrDataUnitid src = (ArrDataUnitid)srcData;
-        return value.equals(src.value);
+        return unitId.equals(src.unitId);
     }
 
     @Override

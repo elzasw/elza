@@ -70,25 +70,16 @@ class AddRegistryForm extends AbstractReactComponent {
     }
 
     prepareState = (props) => {
-        const {fields: {typeId}, parentRecordId, registryList:{filter:{registryTypeId}}, registryRegionRecordTypes, refTables: {recordTypes: {typeIdMap}}} = props;
+        const {fields: {typeId}, registryList:{filter:{registryTypeId}}, registryRegionRecordTypes, refTables: {recordTypes: {typeIdMap}}} = props;
 
         // Pokud není nastaven typ rejstříku, pokusíme se ho nastavit
         if (!typeId || typeId.value === "") {
-            // Pokud je předán parentRecordId, přednačte se do prvku výběr rejstříku a tento prvek se nastaví jako disabled
-            if (parentRecordId !== null) {
-                if (!this.state.disabled) {
-                    WebApi.getAccessPoint(parentRecordId).then(json => {
-                        const type = typeIdMap[json.typeId];
-                        this.props.load({typeId: json.typeId, scopeId: json.scopeId, structured: type && type.ruleSystemId != null});
-                    });
-                    this.setState({disabled: true});
-                }
-            } else {    //  pokud není předán parentRecordId, může se výběr rejstříku editovat
-                this.setState({disabled: false});
-                if (registryTypeId && this.isValueUseable(registryRegionRecordTypes.item, registryTypeId)){ // pokud o vybrání nějaké položky, která je uvedena v registryRegion.registryTypesId
-                    const type = typeIdMap[json.typeId];
-                    this.props.load({typeId: registryTypeId, structured: type && type.ruleSystemId != null});
-                }
+            //  může se editovat výběr rejstříku editovat
+            this.setState({disabled: false});
+            if(registryTypeId && this.isValueUseable(registryRegionRecordTypes.item, registryTypeId)) {
+                 // pokud o vybrání nějaké položky, která je uvedena v registryRegion.registryTypesId
+                const type = typeIdMap[json.typeId];
+                this.props.load({typeId: registryTypeId, structured: type && type.ruleSystemId != null});
             }
         }
     }

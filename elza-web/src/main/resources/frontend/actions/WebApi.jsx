@@ -568,18 +568,6 @@ export class WebApiCls {
 
     }
 
-    createRegCoordinates(data){
-        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/regCoordinates', null, data);
-    }
-
-    updateRegCoordinates(coordinates) {
-        return AjaxUtils.ajaxPut(WebApiCls.registryUrl + '/regCoordinates/' + coordinates.id, null, coordinates);
-    }
-
-    deleteRegCoordinates(coordinatesId) {
-        return AjaxUtils.ajaxDelete(WebApiCls.registryUrl + '/regCoordinates/' + coordinatesId);
-    }
-
     getRecordTypes() {
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/recordTypes');
     }
@@ -1415,6 +1403,10 @@ export class UrlFactory {
 
     static downloadDmsFile(id) {
         return serverContextPath + WebApiCls.dmsUrl + '/' + id
+    }
+
+    static downloadGeneratedDmsFile(id, fundId, mimeType){
+        return serverContextPath + WebApiCls.dmsUrl +`/fund/${fundId}/${id}/generated?mimeType=${mimeType}`;
     }
     static downloadOutputResult(id) {
         return serverContextPath + '/api/outputResult/' + id

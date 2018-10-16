@@ -146,7 +146,7 @@ public class XmlUtils {
         if (dateTime == null) {
             return null;
         }
-        XMLGregorianCalendar xmlGc = DATATYPE_FACTORY.newXMLGregorianCalendar(
+        return DATATYPE_FACTORY.newXMLGregorianCalendar(
                 dateTime.getYear(),
                 dateTime.getMonthValue(),
                 dateTime.getDayOfMonth(),
@@ -155,7 +155,6 @@ public class XmlUtils {
                 dateTime.getSecond(),
                 dateTime.getNano() / 1000000,
                 DatatypeConstants.FIELD_UNDEFINED);
-        return xmlGc;
     }
 
     /**
@@ -173,7 +172,7 @@ public class XmlUtils {
     /**
      * Wraps element to JAXB element. Commonly used for fragment serialization of XML type.
      */
-    public static JAXBElement<?> wrapElement(String localName, Object element) {
+    public static <T> JAXBElement<T> wrapElement(String localName, T element) {
         return wrapElement(new QName(localName), element);
     }
 
@@ -181,7 +180,7 @@ public class XmlUtils {
      * Wraps element to JAXB element. Commonly used for fragment serialization of XML type.
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    public static JAXBElement<?> wrapElement(QName name, Object element) {
+    public static <T> JAXBElement<T> wrapElement(QName name, T element) {
         Validate.notNull(name);
         return new JAXBElement(name, element.getClass(), element);
     }
@@ -241,7 +240,10 @@ public class XmlUtils {
      */
     public static String formatXml(final InputStream inputStream) {
         try {
-            Transformer transformer = TransformerFactory.newInstance().newTransformer();
+            TransformerFactory transFactory = TransformerFactory.newInstance();
+            transFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+
+            Transformer transformer = transFactory.newTransformer();
             transformer.setOutputProperty(OutputKeys.INDENT, "yes");
             transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
             transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
@@ -254,5 +256,12 @@ public class XmlUtils {
         } catch (TransformerException e) {
             throw new SystemException("Chyba při formátování xml.", e);
         }
+    }
+
+    /**
+     * Cannot instantiate class
+     */
+    private XmlUtils() {
+
     }
 }

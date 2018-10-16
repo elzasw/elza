@@ -11,7 +11,6 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
-import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.commons.lang.Validate;
@@ -121,7 +120,7 @@ class XmlSectionOutputStream implements SectionOutputStream {
             for (XmlFragment stFragment : structTypeIdFragmentMap.values()) {
                 stFragment.close();
             }
-        } catch (XMLStreamException | IOException e) {
+        } catch (IOException e) {
             throw new SystemException(e);
         }
 
@@ -211,18 +210,23 @@ class XmlSectionOutputStream implements SectionOutputStream {
     }
 
     private void writeStructObject(StructuredObject structObj, RulStructuredType structType) throws Exception {
-        XmlFragment structTypeFragment = structTypeIdFragmentMap.get(structType.getStructuredTypeId());
-        if (structTypeFragment == null) {
-            structTypeFragment = new XmlFragment(tempDirectory);
-            XMLStreamWriter sw = structTypeFragment.openStreamWriter();
-            sw.writeStartDocument();
-            sw.writeStartElement(XmlNameConsts.STRUCT_TYPE);
-            sw.writeAttribute(XmlNameConsts.STRUCT_TYPE_CODE, structType.getCode());
-            sw.writeStartElement(XmlNameConsts.STRUCT_OBJECTS);
-            structTypeIdFragmentMap.put(structType.getStructuredTypeId(), structTypeFragment);
+        XmlFragment frag = structTypeIdFragmentMap.get(structType.getStructuredTypeId());
+        if (frag == null) {
+            frag = new XmlFragment(tempDirectory);
+            try {
+                XMLStreamWriter sw = frag.openStreamWriter();
+                sw.writeStartDocument();
+                sw.writeStartElement(XmlNameConsts.STRUCT_TYPE);
+                sw.writeAttribute(XmlNameConsts.STRUCT_TYPE_CODE, structType.getCode());
+                sw.writeStartElement(XmlNameConsts.STRUCT_OBJECTS);
+            } catch (Exception e) {
+                frag.close();
+                throw e;
+            }
+            structTypeIdFragmentMap.put(structType.getStructuredTypeId(), frag);
         }
 
-        XMLStreamWriter sw = structTypeFragment.getStreamWriter();
+        XMLStreamWriter sw = frag.getStreamWriter();
         serializeJaxbType(sw, XmlNameConsts.STRUCT_OBJECT, structObj);
     }
 

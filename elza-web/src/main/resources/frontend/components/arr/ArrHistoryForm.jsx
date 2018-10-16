@@ -92,17 +92,21 @@ class ArrHistoryForm extends AbstractReactComponent {
             + ', changeDate: ' + dateToString(new Date(item.changeDate));
     }
 
+    // Returns id of the selected node. Returns null when id doesnt exist or when reverting global history
+    getNodeId = () => {
+        const { node, showHistoryForNode } = this.state;
+        return showHistoryForNode && node && typeof node.id !== "undefined" ? node.id : null;
+    }
+
     getItems = (fromIndex, toIndex) => {
         const {versionId} = this.props;
         const {changeId, node, showHistoryForNode} = this.state;
-
-        const useNodeId = showHistoryForNode ? ( node ? node.id : null ) : null;
 
         this.setState({
             fetching: true
         });
 
-        return WebApi.findChanges(versionId, useNodeId, fromIndex, toIndex - fromIndex, changeId)
+        return WebApi.findChanges(versionId, this.getNodeId(), fromIndex, toIndex - fromIndex, changeId)
             .then(json => {
                 if (json.totalCount > 0 && changeId === null) {    // pokud nemáme uložen první changeId, uložíme si ho do state
                     this.setState({
@@ -215,7 +219,7 @@ class ArrHistoryForm extends AbstractReactComponent {
         const {node, changeId, selectedIndex, selectedItem} = this.state;
 
         if (confirm(i18n('arr.history.deleteQuestion', selectedIndex + 1))) {
-            onDeleteChanges(node ? node.id : null, changeId, selectedItem.changeId);
+            onDeleteChanges(this.getNodeId(), changeId, selectedItem.changeId);
         }
     }
 
@@ -247,9 +251,7 @@ class ArrHistoryForm extends AbstractReactComponent {
         const {versionId} = this.props;
         const {goToDateValue, changeId, node, showHistoryForNode} = this.state;
 
-        const useNodeId = showHistoryForNode ? ( node ? node.id : null ) : null;
-
-        return WebApi.findChangesByDate(versionId, useNodeId, changeId, dateTimeToLocalUTC(goToDateValue))
+        return WebApi.findChangesByDate(versionId, this.getNodeId(), changeId, dateTimeToLocalUTC(goToDateValue))
             .then(json => {
                 const offset = json.offset;
                 this.setState({

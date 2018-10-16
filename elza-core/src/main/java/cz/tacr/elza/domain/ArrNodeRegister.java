@@ -23,10 +23,10 @@ import cz.tacr.elza.service.importnodes.vo.NodeRegister;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
 public class ArrNodeRegister implements NodeRegister {
 
-    public static final String NODE_ID = "nodeId";
-    public static final String NODE = "node";
-    public static final String RECORD = "record";
-    public static final String DELETE_CHANGE = "deleteChange";
+    public static final String FIELD_NODE_ID = "nodeId";
+    public static final String FIELD_NODE = "node";
+    public static final String FIELD_RECORD = "record";
+    public static final String FIELD_DELETE_CHANGE = "deleteChange";
 
     @Id
     @GeneratedValue

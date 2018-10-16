@@ -33,6 +33,25 @@ then
     $itemType.setIndefinable(true);
 end
 
+rule "Nastaveni vychozi urovne pro chyby u prvku popisu"
+salience 100
+no-loop
+when
+  $itemType : RulItemTypeExt()
+then
+  $itemType.setPolicyTypeCode("SRD_BASIC");
+end
+
+rule "Nastaveni vychozi urovne pro chyby u specifikaci"
+salience 100
+no-loop
+when
+  $itemType : RulItemTypeExt()
+  $itemSpec : RulItemSpecExt() from $itemType.rulItemSpecList
+then
+  $itemSpec.setPolicyTypeCode("SRD_BASIC");
+end
+
 // Nastaveni vychozi neopakovatelnosti atributu
 rule "U atributu je zapotrebi nove explicitne nastavit neopakovatelnost"
 salience 100

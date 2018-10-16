@@ -54,7 +54,7 @@ public class DescriptionItemStringImpl extends DescriptionItemString {
 			return geo;
 		case UNITID:
 			ArrDataUnitid id = new ArrDataUnitid();
-			id.setValue(value);
+            id.setUnitId(value);
 			return id;
 		default:
 			throw new DEImportException("Unsupported data type:" + dataType);

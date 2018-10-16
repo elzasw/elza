@@ -346,8 +346,7 @@ $F{node}.getItemsWithSpec("ZP2015_LEVEL_TYPE","ZP2015_LEVEL_ROOT").size() > 0]]>
 	.setTitleSeparator(": ")
 	.setItemSeparator(", ")
 	.addValueWithTitle("ZP2015_UNIT_DATE_PRE")
-	.addValueWithTitle("ZP2015_UNIT_DATE_POST")
-	.addValueWithTitle("ZP2015_UNIT_DATE_TEXT")]]></defaultValueExpression>
+	.addValueWithTitle("ZP2015_UNIT_DATE_POST")]]></defaultValueExpression>
 	</parameter>
 	<parameter name="otherIdFormatter" class="cz.tacr.elza.print.format.Formatter" isForPrompting="false">
 		<parameterDescription><![CDATA[]]></parameterDescription>
@@ -390,7 +389,11 @@ $F{node}.getItemsWithSpec("ZP2015_LEVEL_TYPE","ZP2015_LEVEL_ROOT").size() > 0]]>
 		.addValueWithTitle("ZP2015_EXTRA_UNITS")
 		.setSpecFormat("", ": ", false)
 		.setItemSeparator("<br>")
-		.addValueWithTitle("ZP2015_DATE_OTHER")
+		.setTitleSeparator(" - ")
+		.setSpecTitleSource(cz.tacr.elza.print.format.SpecTitleSource.NAME)
+		.addValue("ZP2015_DATE_OTHER")
+      	.setTitleSeparator(": ")
+      	.setSpecTitleSource(cz.tacr.elza.print.format.SpecTitleSource.SHORTCUT)
 		.addValueWithTitle("ZP2015_ITEM_TITLE")
 		.addValueWithTitle("ZP2015_PART")
 		.addValue("ZP2015_ENTITY_ROLE")
@@ -434,7 +437,8 @@ $F{node}.getItemsWithSpec("ZP2015_LEVEL_TYPE","ZP2015_LEVEL_ROOT").size() > 0]]>
 	<parameter name="storageFormatter" class="cz.tacr.elza.print.format.Formatter" isForPrompting="false">
 		<parameterDescription><![CDATA[]]></parameterDescription>
 		<defaultValueExpression><![CDATA[new cz.tacr.elza.print.format.Formatter()
-	.setBlockSeparators("/","")
+    .setBlockSeparators("/","")
+    .setItemSeparator(", ")
 	.addValue("ZP2015_STORAGE_ID")
 	.beginBlock().addValue("ZP2015_ITEM_ORDER").endBlock()]]></defaultValueExpression>
 	</parameter>
@@ -490,6 +494,17 @@ $F{node}.getItemsWithSpec("ZP2015_LEVEL_TYPE","ZP2015_LEVEL_ROOT").size() > 0]]>
 	</parameter>
 	<parameter name="templateVariant" class="java.lang.String">
 		<defaultValueExpression><![CDATA["B"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="rootNodeDetailFormatter" class="cz.tacr.elza.print.format.Formatter" isForPrompting="false">
+		<parameterDescription><![CDATA[]]></parameterDescription>
+		<defaultValueExpression><![CDATA[new cz.tacr.elza.print.format.Formatter()
+	.setTitleSeparator(": ")
+	.setItemSeparator("<br>")
+	.setSpecSeparator(": ")
+	.setBlockSeparators("","")
+	.beginBlock()
+		.addValueWithTitle("ZP2015_EDITION")
+	.endBlock()]]></defaultValueExpression>
 	</parameter>
 	<queryString>
 		<![CDATA[]]>
@@ -846,7 +861,7 @@ $F{node}.getItemsWithSpec("ZP2015_LEVEL_TYPE","ZP2015_LEVEL_ROOT").size() > 0]]>
 					<textFieldExpression><![CDATA[$P{outputDetailFormatter}.format($P{output})]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="">
-					<reportElement key="" style="Item" positionType="Float" mode="Transparent" x="0" y="7" width="455" height="1" isRemoveLineWhenBlank="true" backcolor="#0DFF00" uuid="c493609b-f050-40e3-9f11-701aae268a31">
+					<reportElement key="" style="Item" positionType="Float" mode="Transparent" x="0" y="6" width="455" height="1" isRemoveLineWhenBlank="true" backcolor="#0DFF00" uuid="c493609b-f050-40e3-9f11-701aae268a31">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					</reportElement>
 					<box topPadding="3" bottomPadding="3"/>
@@ -856,7 +871,7 @@ $F{node}.getItemsWithSpec("ZP2015_LEVEL_TYPE","ZP2015_LEVEL_ROOT").size() > 0]]>
 					<textFieldExpression><![CDATA[$P{datationFormatter}.format($F{node})]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="">
-					<reportElement key="" style="Item" positionType="Float" mode="Transparent" x="0" y="8" width="455" height="1" isRemoveLineWhenBlank="true" backcolor="#00FFFF" uuid="674eef49-aa12-47b5-964c-4681de760f53"/>
+					<reportElement key="" style="Item" positionType="Float" mode="Transparent" x="0" y="7" width="455" height="1" isRemoveLineWhenBlank="true" backcolor="#00FFFF" uuid="674eef49-aa12-47b5-964c-4681de760f53"/>
 					<box topPadding="3" bottomPadding="3"/>
 					<textElement markup="html">
 						<font pdfEncoding="Cp1250"/>
@@ -866,7 +881,7 @@ $P{rootShortDetailFormatter}.format($P{output}) :
 $P{shortDetailFormatter}.format($F{node})]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="">
-					<reportElement key="" style="Item" positionType="Float" mode="Transparent" x="0" y="9" width="455" height="1" isRemoveLineWhenBlank="true" backcolor="#000DFF" uuid="3c1bed84-a8d7-4689-b873-651991dc790d"/>
+					<reportElement key="" style="Item" positionType="Float" mode="Transparent" x="0" y="8" width="455" height="1" isRemoveLineWhenBlank="true" backcolor="#000DFF" uuid="3c1bed84-a8d7-4689-b873-651991dc790d"/>
 					<box topPadding="3" bottomPadding="3"/>
 					<textElement markup="html">
 						<font pdfEncoding="Cp1250"/>
@@ -874,6 +889,16 @@ $P{shortDetailFormatter}.format($F{node})]]></textFieldExpression>
 					<textFieldExpression><![CDATA[$F{node}.getItemsWithSpec("ZP2015_LEVEL_TYPE","ZP2015_LEVEL_ROOT").size() > 0 ?
 	$P{rootDetailFotmatter}.format($P{output}) :
 	$P{detailFormatter}.format($F{node})]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="">
+					<reportElement key="" style="Item" positionType="Float" mode="Transparent" x="0" y="9" width="455" height="1" isRemoveLineWhenBlank="true" backcolor="#000DFF" uuid="06be55e2-a051-4582-93e6-d5d04f9e26e5"/>
+					<box topPadding="3" bottomPadding="3"/>
+					<textElement markup="html">
+						<font pdfEncoding="Cp1250"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{node}.getItemsWithSpec("ZP2015_LEVEL_TYPE","ZP2015_LEVEL_ROOT").size() > 0 ?
+	$P{rootNodeDetailFormatter}.format($F{node}):
+	""]]></textFieldExpression>
 				</textField>
 			</frame>
 		</band>

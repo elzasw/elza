@@ -11,7 +11,7 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -101,10 +101,12 @@ public class ApControllerTest extends AbstractControllerTest {
         Assert.assertNotNull(eidType.getName());
     }
 
-    @Test(timeout = 60000)
+    @Test//(timeout = 60000)
     public void testStructureAccessPoint() throws InterruptedException {
 
         ApTypeVO type = getApType(STRUCT_AP_TYPE);
+        assertNotNull(type);
+
         Map<String, LanguageVO> languages = getAllLanguages();
 
         List<ApScopeVO> scopes = getAllScopes();
@@ -115,9 +117,9 @@ public class ApControllerTest extends AbstractControllerTest {
         ap.setScopeId(scopeId);
 
         ApAccessPointVO accessPoint = createStructuredAccessPoint(ap);
-        Assert.assertNotNull(accessPoint);
+        assertNotNull(accessPoint);
         ApFormVO form = accessPoint.getForm();
-        Assert.assertNotNull(form);
+        assertNotNull(form);
         List<ApAccessPointNameVO> names = new ArrayList<>(accessPoint.getNames());
         ApAccessPointNameVO accessPointName = names.get(0);
 
@@ -417,12 +419,12 @@ public class ApControllerTest extends AbstractControllerTest {
 
         // Dohledání usages
         RecordUsageVO usage = usagesRecord(replacedRecordCreated.getId());
-        Assert.assertNotNull(usage.funds);
+        Assert.assertNotNull(usage.getFunds());
 
         // Replace
         replaceRecord(replacedRecordCreated.getId(), replacementRecordCreated.getId());
         RecordUsageVO usageAfterReplace = usagesRecord(replacedRecordCreated.getId());
-        Assert.assertTrue(usageAfterReplace.funds == null || usageAfterReplace.funds.isEmpty());
+        Assert.assertTrue(usageAfterReplace.getFunds() == null || usageAfterReplace.getFunds().isEmpty());
     }
 
     private ApTypeVO getNonHierarchicalApType(final List<ApTypeVO> list, final boolean hasPartyType, final boolean hasRuleSystem) {

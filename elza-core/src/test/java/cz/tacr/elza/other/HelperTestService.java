@@ -13,16 +13,72 @@ import java.util.zip.ZipOutputStream;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
-import cz.tacr.elza.repository.*;
 import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.packageimport.PackageService;
+import cz.tacr.elza.repository.ApAccessPointRepository;
+import cz.tacr.elza.repository.ApChangeRepository;
+import cz.tacr.elza.repository.ApDescriptionRepository;
+import cz.tacr.elza.repository.ApExternalIdRepository;
+import cz.tacr.elza.repository.ApFragmentRepository;
+import cz.tacr.elza.repository.ApItemRepository;
+import cz.tacr.elza.repository.ApNameRepository;
+import cz.tacr.elza.repository.ApTypeRepository;
+import cz.tacr.elza.repository.BulkActionNodeRepository;
+import cz.tacr.elza.repository.BulkActionRunRepository;
+import cz.tacr.elza.repository.CachedNodeRepository;
+import cz.tacr.elza.repository.ChangeRepository;
+import cz.tacr.elza.repository.ComplementTypeRepository;
+import cz.tacr.elza.repository.DataRepository;
+import cz.tacr.elza.repository.DataTypeRepository;
+import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.ExternalSystemRepository;
+import cz.tacr.elza.repository.FundRegisterScopeRepository;
+import cz.tacr.elza.repository.FundRepository;
+import cz.tacr.elza.repository.FundStructureExtensionRepository;
+import cz.tacr.elza.repository.FundVersionRepository;
+import cz.tacr.elza.repository.GroupRepository;
+import cz.tacr.elza.repository.GroupUserRepository;
+import cz.tacr.elza.repository.InstitutionRepository;
+import cz.tacr.elza.repository.InstitutionTypeRepository;
+import cz.tacr.elza.repository.ItemRepository;
+import cz.tacr.elza.repository.ItemSpecRegisterRepository;
+import cz.tacr.elza.repository.ItemSpecRepository;
+import cz.tacr.elza.repository.ItemTypeRepository;
+import cz.tacr.elza.repository.LevelRepository;
+import cz.tacr.elza.repository.NodeConformityErrorRepository;
+import cz.tacr.elza.repository.NodeConformityMissingRepository;
+import cz.tacr.elza.repository.NodeConformityRepository;
+import cz.tacr.elza.repository.NodeExtensionRepository;
+import cz.tacr.elza.repository.NodeOutputRepository;
+import cz.tacr.elza.repository.NodeRegisterRepository;
+import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.repository.OutputDefinitionRepository;
+import cz.tacr.elza.repository.OutputRepository;
+import cz.tacr.elza.repository.PartyCreatorRepository;
+import cz.tacr.elza.repository.PartyGroupIdentifierRepository;
+import cz.tacr.elza.repository.PartyNameComplementRepository;
+import cz.tacr.elza.repository.PartyNameFormTypeRepository;
+import cz.tacr.elza.repository.PartyNameRepository;
+import cz.tacr.elza.repository.PartyRepository;
+import cz.tacr.elza.repository.PartyTypeComplementTypeRepository;
+import cz.tacr.elza.repository.PartyTypeRelationRepository;
+import cz.tacr.elza.repository.PermissionRepository;
+import cz.tacr.elza.repository.RelationEntityRepository;
+import cz.tacr.elza.repository.RelationRepository;
+import cz.tacr.elza.repository.RelationRoleTypeRepository;
+import cz.tacr.elza.repository.RelationTypeRepository;
+import cz.tacr.elza.repository.RelationTypeRoleTypeRepository;
+import cz.tacr.elza.repository.StructuredObjectRepository;
+import cz.tacr.elza.repository.UserRepository;
 
 
 /**
@@ -138,6 +194,8 @@ public class HelperTestService {
     @Autowired
     private ApExternalIdRepository apEidRepository;
     @Autowired
+    private UpdateConformityInfoService updateConformityInfoService;
+    @Autowired
     private ApItemRepository apItemRepository;
     @Autowired
     private ApFragmentRepository fragmentRepository;
@@ -174,7 +232,7 @@ public class HelperTestService {
 
     @Transactional
     public void deleteTables() {
-    	logger.info("Cleaning table contents...");
+        logger.debug("Cleaning table contents...");
 
         cachedNodeRepository.deleteAll();
         permissionRepository.deleteAll();
@@ -309,6 +367,18 @@ public class HelperTestService {
             }
             zout.closeEntry();
             fin.close();
+        }
+    }
+
+    /**
+     * Function will wait for all workers
+     */
+    // This method is not running in transaction
+    public void waitForWorkers() {
+        List<ArrFundVersion> fundVersions = fundVersionRepository.findAll();
+        for (ArrFundVersion fundVersion : fundVersions) {
+            logger.debug("Finishing worker fundVersionId: " + fundVersion.getFundVersionId());
+            updateConformityInfoService.terminateWorkerInVersionAndWait(fundVersion.getFundVersionId());
         }
     }
 
