@@ -1660,7 +1660,7 @@ public class ArrangementController {
             return Collections.emptyList();
         }
 
-        return arrangementService.findNodeIdsByFulltext(input.getSearchValue(), fundList);
+        return arrangementService.findFundsByFulltext(input.getSearchValue(), fundList);
     }
 
 /*

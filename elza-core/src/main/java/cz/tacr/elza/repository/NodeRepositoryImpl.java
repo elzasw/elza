@@ -43,7 +43,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
 import cz.tacr.elza.api.IUnitdate;
-import cz.tacr.elza.controller.vo.ArrFundFulltextResult;
 import cz.tacr.elza.controller.vo.filter.SearchParam;
 import cz.tacr.elza.controller.vo.filter.SearchParamType;
 import cz.tacr.elza.controller.vo.filter.TextSearchParam;
@@ -59,6 +58,7 @@ import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.convertor.CalendarConverter;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
+import cz.tacr.elza.domain.vo.ArrFundItemCount;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
 import cz.tacr.elza.exception.InvalidQueryException;
 import cz.tacr.elza.filter.DescItemTypeFilter;
@@ -77,9 +77,6 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
 
     @Autowired
     private LevelRepository levelRepository;
-
-    @Autowired
-    private FundRepository fundRepository;
 
     @Autowired
     private CalendarTypeRepository calendarTypeRepository;
@@ -109,28 +106,16 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
      * @param text The query text.
      */
     @Override
-    public List<ArrFundFulltextResult> findByFulltextAll(final String text, final Collection<ArrFund> fundList) {
+    public List<ArrFundItemCount> findFundIdsByFulltext(final String text, final Collection<ArrFund> fundList) {
         Assert.notEmpty(fundList, "Nebyl vyplněn identifikátor AS");
 
         if (fundList.isEmpty()) {
             return Collections.emptyList();
         }
 
-        List<Facet> facets = groupDescItemIdsByData(text, fundList.stream().map(o -> o.getFundId()).collect(toSet()));
+        List<Facet> facets = countDescItemByFundId(text, fundList.stream().map(o -> o.getFundId()).collect(toSet()));
 
-        List<ArrFundFulltextResult> list = new ArrayList<>();
-
-        for (Facet facet : facets) {
-            Integer fundId = Integer.valueOf(facet.getValue());
-            ArrFund fund = fundRepository.findOne(fundId);
-            ArrFundFulltextResult result = new ArrFundFulltextResult();
-            result.setId(fundId);
-            result.setName(fund.getName());
-            result.setCount(facet.getCount());
-            list.add(result);
-        }
-
-        return list;
+        return facets.stream().map(facet -> new ArrFundItemCount(Integer.valueOf(facet.getValue()), facet.getCount())).collect(toList());
     }
 
     /**
@@ -554,7 +539,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
      * @param text hodnota podle které se hledá
      * @return id atributů které mají danou hodnotu
      */
-    private List<Facet> groupDescItemIdsByData(final String text, final Collection<Integer> fundIds) {
+    private List<Facet> countDescItemByFundId(final String text, final Collection<Integer> fundIds) {
 
         if (StringUtils.isBlank(text) || CollectionUtils.isEmpty(fundIds)) {
             return Collections.emptyList();

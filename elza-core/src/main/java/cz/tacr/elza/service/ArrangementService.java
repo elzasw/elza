@@ -68,6 +68,7 @@ import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.UIVisiblePolicy;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.domain.vo.ArrFundItemCount;
 import cz.tacr.elza.domain.vo.NodeTypeOperation;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
@@ -731,8 +732,17 @@ public class ArrangementService {
      * @param fundIds id fondů, do kterých uzly patří
      * @return seznam id uzlů které vyhovují parametrům
      */
-    public List<ArrFundFulltextResult> findNodeIdsByFulltext(final String searchValue, final Collection<ArrFund> fundList) {
-        return nodeRepository.findByFulltextAll(searchValue, fundList);
+    public List<ArrFundFulltextResult> findFundsByFulltext(final String searchValue, final Collection<ArrFund> fundList) {
+        List<ArrFundFulltextResult> list = new ArrayList<>();
+        for (ArrFundItemCount fundCount : nodeRepository.findFundIdsByFulltext(searchValue, fundList)) {
+            ArrFundFulltextResult result = new ArrFundFulltextResult();
+            ArrFund fund = fundRepository.findOne(fundCount.getFundId());
+            result.setName(fund.getName());
+            result.setId(fundCount.getFundId());
+            result.setCount(fundCount.getItemCount());
+            list.add(result);
+        }
+        return list;
     }
 
     /**

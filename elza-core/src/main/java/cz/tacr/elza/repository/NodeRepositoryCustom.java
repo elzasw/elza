@@ -6,11 +6,11 @@ import java.util.Set;
 
 import org.hibernate.ScrollableResults;
 
-import cz.tacr.elza.controller.vo.ArrFundFulltextResult;
 import cz.tacr.elza.controller.vo.filter.SearchParam;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.vo.ArrFundItemCount;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
 import cz.tacr.elza.exception.InvalidQueryException;
 import cz.tacr.elza.filter.DescItemTypeFilter;
@@ -36,11 +36,10 @@ public interface NodeRepositoryCustom {
      * Najde uzly s danou hodnotou.
      *
      * @param fundId id fondů, do kterých uzly patří
-     * @param lockChangeId id verze ve které se má hledat, může být null
      * @param text hledaná hodnota
      * @return množina id uzlů odopovídající hledané hodnotě
      */
-    List<ArrFundFulltextResult> findByFulltextAll(String text, Collection<ArrFund> fundList);
+    List<ArrFundItemCount> findFundIdsByFulltext(String text, Collection<ArrFund> fundList);
 
     /**
      * Najde uzly s danou hodnotou.
@@ -92,4 +91,5 @@ public interface NodeRepositoryCustom {
      * Return list of uncached nodes
      */
     ScrollableResults findUncachedNodes();
+
 }
