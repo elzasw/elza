@@ -206,4 +206,24 @@
         <delete tableName="arr_cached_node" />
     </changeSet>
 
+    <!-- Aktualizace opravneni po prejmenovani enum v kodu -->
+    <changeSet id="20180903234905" author="ppyt">
+       <update tableName="usr_permission">
+           <column name="permission" value="AP_SCOPE_RD"/>
+           <where>permission='REG_SCOPE_RD'</where>
+       </update>
+       <update tableName="usr_permission">
+           <column name="permission" value="AP_SCOPE_RD_ALL"/>
+           <where>permission='REG_SCOPE_RD_ALL'</where>
+       </update>
+       <update tableName="usr_permission">
+           <column name="permission" value="AP_SCOPE_WR"/>
+           <where>permission='REG_SCOPE_WR'</where>
+       </update>
+       <update tableName="usr_permission">
+           <column name="permission" value="AP_SCOPE_WR_ALL"/>
+           <where>permission='REG_SCOPE_WR_ALL'</where>
+       </update>
+    </changeSet>
+
 </databaseChangeLog>
