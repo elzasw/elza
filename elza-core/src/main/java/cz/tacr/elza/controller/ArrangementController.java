@@ -1641,10 +1641,13 @@ public class ArrangementController {
 
 
     /**
-     * Seznam AS serazeny podle poctu vyhledanych JP. Jsou zohlednena opravneni uzivatele k AS.
+     * Seznam AS serazeny podle poctu vyhledanych JP.
+     * Jsou zohlednena opravneni uzivatele k AS.
+     * Vysledek vyhledavani je ulozeny v user session pro pouziti v {@link ArrangementController#fundFulltext(java.lang.Integer)}.
      *
-     * @param input vstupní data pro načtení
-     * @return data stromu
+     * @param input vstupni data pro fultextove vyhledavani
+     * @return seznam AS razeny podle poctu vyhledanych JP
+     * @see ArrangementController#fundFulltext(java.lang.Integer)
      */
     @RequestMapping(value = "/fundFulltext", method = RequestMethod.POST)
     public List<ArrFundFulltextResult> fundFulltext(final @RequestBody FulltextFundRequest input) {
@@ -1663,6 +1666,14 @@ public class ArrangementController {
         return arrangementService.findFundsByFulltext(input.getSearchValue(), fundList);
     }
 
+    /**
+     * Seznam uzlu daneho AS serazeny podle relevance pri vyhledani.
+     * Seznam je vytazeny z user session viz {@link ArrangementController#fundFulltext(cz.tacr.elza.controller.vo.FulltextFundRequest)}.
+     *
+     * @param fundId ID uzlu
+     * @return seznam uzlu daneho AS serazeny podle relevance pri vyhledani
+     * @see ArrangementController#fundFulltext(cz.tacr.elza.controller.vo.FulltextFundRequest)
+     */
     @RequestMapping(value = "/fundFulltext/{fundId}", method = RequestMethod.GET)
     public List<TreeNodeVO> fundFulltext(final @PathVariable(value = "fundId") Integer fundId) {
         // vybereš ze session seznam nodeId podle AS a vytvoří TreeNodeVO
