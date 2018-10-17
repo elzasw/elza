@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
@@ -63,7 +64,8 @@ public class TempFileProvider {
     }
 
     private boolean deleteTempDirContent() throws IOException {
-        return Files.list(tmpDirPath).map(tmpFilePath -> {
+        try (Stream<Path> deleteStream = Files.list(tmpDirPath)) {
+            return deleteStream.map(tmpFilePath -> {
             try {
                 Files.delete(tmpFilePath);
                 return Boolean.TRUE;
@@ -72,6 +74,7 @@ public class TempFileProvider {
                 return Boolean.FALSE;
             }
         }).reduce(Boolean.TRUE, Boolean::logicalAnd);
+        }
     }
 
     private static Path createTempDir(Path parentPath, String prefix) {

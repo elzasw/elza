@@ -38,25 +38,25 @@ public class GroupRepositoryImpl implements GroupRepositoryCustom {
         if (StringUtils.isNotBlank(search)) {
             final String searchValue = "%" + search.toLowerCase() + "%";
             conditions.add(builder.or(
-                    builder.like(builder.lower(group.get(UsrGroup.CODE)), searchValue),
-                    builder.like(builder.lower(group.get(UsrGroup.NAME)), searchValue),
-                    builder.like(builder.lower(group.get(UsrGroup.DESCRIPTION)), searchValue)
+                    builder.like(builder.lower(group.get(UsrGroup.FIELD_CODE)), searchValue),
+                    builder.like(builder.lower(group.get(UsrGroup.FIELD_NAME)), searchValue),
+                    builder.like(builder.lower(group.get(UsrGroup.FIELD_DESCRIPTION)), searchValue)
             ));
         }
 
         if (userId != null) {
             final Subquery<UsrGroup> subquery = query.subquery(UsrGroup.class);
             final Root<UsrPermission> permissionUserSubq = subquery.from(UsrPermission.class);
-            subquery.select(permissionUserSubq.get(UsrPermission.GROUP_CONTROL_ID));
+            subquery.select(permissionUserSubq.get(UsrPermission.FIELD_GROUP_CONTROL_ID));
 
             final Subquery<UsrGroup> subsubquery = subquery.subquery(UsrGroup.class);
             final Root<UsrGroupUser> groupUserSubq = subsubquery.from(UsrGroupUser.class);
-            subsubquery.select(groupUserSubq.get(UsrGroupUser.GROUP_ID));
-            subsubquery.where(builder.equal(groupUserSubq.get(UsrGroupUser.USER_ID), userId));
+            subsubquery.select(groupUserSubq.get(UsrGroupUser.FIELD_GROUP_ID));
+            subsubquery.where(builder.equal(groupUserSubq.get(UsrGroupUser.FIELD_USER_ID), userId));
 
-            subquery.where(builder.or(builder.equal(permissionUserSubq.get(UsrPermission.USER_ID), userId), builder.in(permissionUserSubq.get(UsrPermission.GROUP_ID)).value(subsubquery)));
+            subquery.where(builder.or(builder.equal(permissionUserSubq.get(UsrPermission.FIELD_USER_ID), userId), builder.in(permissionUserSubq.get(UsrPermission.FIELD_GROUP_ID)).value(subsubquery)));
 
-            conditions.add(builder.and(builder.in(group.get(UsrGroup.GROUP_ID)).value(subquery)));
+            conditions.add(builder.and(builder.in(group.get(UsrGroup.FIELD_GROUP_ID)).value(subquery)));
         }
 
         return builder.and(conditions.toArray(new Predicate[conditions.size()]));
@@ -79,7 +79,7 @@ public class GroupRepositoryImpl implements GroupRepositoryCustom {
         queryCount.select(builder.countDistinct(groupCount));
 
         if (condition != null) {
-            Order order = builder.asc(group.get(UsrGroup.NAME));
+            Order order = builder.asc(group.get(UsrGroup.FIELD_NAME));
             query.where(condition).orderBy(order);
 
             queryCount.where(conditionCount);

@@ -114,11 +114,11 @@ public class DescItemRepositoryImpl implements DescItemRepositoryCustom {
             CriteriaQuery<ArrDescItem> query = builder.createQuery(ArrDescItem.class);
             Root<ArrDescItem> root = query.from(ArrDescItem.class);
 
-            Join<Object, Object> nodeJoin = root.join(ArrDescItem.NODE, JoinType.INNER);
-            root.fetch(ArrDescItem.NODE, JoinType.INNER);
+            Join<Object, Object> nodeJoin = root.join(ArrDescItem.FIELD_NODE, JoinType.INNER);
+            root.fetch(ArrDescItem.FIELD_NODE, JoinType.INNER);
 
-            Predicate predicateNodeIds = nodeJoin.get(ArrNode.NODE_ID).in(subNodeIds);
-            Predicate predicateDeleteChange = root.get(ArrDescItem.DELETE_CHANGE_ID).isNull();
+            Predicate predicateNodeIds = nodeJoin.get(ArrNode.FIELD_NODE_ID).in(subNodeIds);
+            Predicate predicateDeleteChange = root.get(ArrDescItem.FIELD_DELETE_CHANGE_ID).isNull();
             query.where(predicateNodeIds, predicateDeleteChange);
 
             List<ArrDescItem> resultList = entityManager.createQuery(query).getResultList();
@@ -194,7 +194,7 @@ public class DescItemRepositoryImpl implements DescItemRepositoryCustom {
 
         String hql = "SELECT di FROM arr_item di JOIN FETCH di.data d WHERE (di.data IN (SELECT ds FROM arr_data_string ds WHERE ds.value like :text)" +
                 " OR di.data IN (SELECT ds FROM arr_data_text ds WHERE ds.value like :text)" +
-                " OR di.data IN (SELECT ds FROM arr_data_unitid ds WHERE ds.value like :text))"
+                " OR di.data IN (SELECT ds FROM arr_data_unitid ds WHERE ds.unitId like :text))"
                 + " AND di.itemType = :itemType";
 
         if(itemType.getUseSpecification()){

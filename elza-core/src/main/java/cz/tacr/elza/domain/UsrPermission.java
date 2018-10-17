@@ -20,22 +20,20 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 /**
  * Oprávnění pro uživatele / skupinu.
  *
- * @author Martin Šlapa
- * @since 26.04.2016
  */
 @Entity(name = "usr_permission")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
 public class UsrPermission {
 
-	public static final String USER = "user";
-    public static final String USER_ID = "userId";
-	public static final String GROUP = "group";
-    public static final String GROUP_ID = "groupId";
-	public static final String USER_CONTROL = "userControl";
-    public static final String USER_CONTROL_ID = "userControlId";
-    public static final String GROUP_CONTROL_ID = "groupControlId";
-	public static final String GROUP_CONTROL = "groupControl";
-	public static final String PERMISSION = "permission";
+	public static final String FIELD_USER = "user";
+    public static final String FIELD_USER_ID = "userId";
+	public static final String FIELD_GROUP = "group";
+    public static final String FIELD_GROUP_ID = "groupId";
+	public static final String FIELD_USER_CONTROL = "userControl";
+    public static final String FIELD_USER_CONTROL_ID = "userControlId";
+    public static final String FIELD_GROUP_CONTROL_ID = "groupControlId";
+	public static final String FIELD_GROUP_CONTROL = "groupControl";
+	public static final String FIELD_PERMISSION = "permission";
 
     @Id
     @GeneratedValue

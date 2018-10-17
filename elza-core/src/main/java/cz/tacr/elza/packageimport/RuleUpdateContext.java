@@ -99,4 +99,8 @@ public class RuleUpdateContext {
 		return rulRuleSet;
 	}
 
+    public String getKeyDirPath() {
+        return this.keyDirPath;
+    }
+
 }

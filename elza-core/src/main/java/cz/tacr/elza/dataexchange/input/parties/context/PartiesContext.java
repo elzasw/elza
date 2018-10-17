@@ -209,6 +209,8 @@ public class PartiesContext {
     
     /**
      * Prepare acess points for parties
+     * 
+     * Method can be called only once !!!
      */
     public void prepareAps() {
     	for(PartyInfo partyInfo : importIdPartyInfoMap.values()) {
@@ -293,6 +295,8 @@ public class PartiesContext {
             	// TODO: groovy script after commit (outside import)
             	context.getParties().prepareAps();
             	context.getAccessPoints().storeAll();
+                // parties were stored -> unregister listener
+                return false;
             }
             return true;
         }

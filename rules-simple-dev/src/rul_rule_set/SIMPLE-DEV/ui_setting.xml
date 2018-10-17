@@ -4,6 +4,47 @@
         <favorite-item>SRD_LANGUAGE_43</favorite-item>
         <favorite-item>SRD_LANGUAGE_8</favorite-item>
     </favorite-item-specs>
+    <fund-views settings-type="FUND_VIEW" entity-type="RULE">
+        <ns2:default>
+            <title>&lt;Není nastaveno&gt;</title>
+            <strict-mode>true</strict-mode>
+            <tree>SRD_NAD SRD_TITLE SRD_UNIT_DATE</tree>
+            <accordion-left>SRD_NAD SRD_TITLE SRD_UNIT_DATE</accordion-left>
+            <accordion-right>SRD_FOLDER_TYPE SRD_STORAGE_ID</accordion-right>
+            <hierarchy type-code="SRD_LEVEL_TYPE" default-separator="|">
+                <level spec-code="SRD_LEVEL_ROOT">
+                    <icon>fa-sitemap</icon>
+                </level>
+                <level spec-code="SRD_LEVEL_SECTION">
+                    <icon>fa-sitemap</icon>
+                    <separators>
+                      <separator parent="SRD_LEVEL_ROOT">||</separator>
+                    </separators>
+                </level>
+                <level spec-code="SRD_LEVEL_SERIES">
+                    <icon>ez-serie</icon>
+                    <separators>
+                      <separator parent="SRD_LEVEL_SECTION">||</separator>
+                    </separators>
+                </level>
+                <level spec-code="SRD_LEVEL_FOLDER">
+                    <icon>fa-folder-o</icon>
+                    <separators>
+                      <separator parent="SRD_LEVEL_SERIES">||</separator>
+                    </separators>
+                </level>
+                <level spec-code="SRD_LEVEL_ITEM">
+                    <icon>fa-file-text-o</icon>
+                    <separators>
+                      <separator parent="SRD_LEVEL_SERIES">||</separator>
+                    </separators>
+                </level>
+                <level spec-code="SRD_LEVEL_PART">
+                    <icon>ez-item-part-o</icon>
+                </level>
+            </hierarchy>
+        </ns2:default>
+    </fund-views>
     <allow-structure-types settings-type="STRUCTURE_TYPES" entity-type="RULE">
         <ns4:type code="SRD_PACKET"/>
     </allow-structure-types>

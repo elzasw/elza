@@ -1,30 +1,23 @@
 elza:
   data:
+    # Nastaveni DB
     url: <dbURL>
     user: <dbUser>
     pass: <dbPass>
 
-  rules:
-    ZP2015:
-      default:
-        - NORMAL
+#  attachment:
+    # Konfigurace mimetypu pro editaci souboru
+#    mimeDefs:
+#      - mimeType: text/plain
+#        editable: true
+        # Generatory pro jednotlive typy souboru
+#        generators:
+#         - outputMimeType: application/pdf
+#           command: pandoc {2} -o {4}
+#           outputFileName: result.pdf
 
-  treenode:
-    title: ZP2015_TITLE
-    defaultTitle: <Není nastaven popisek>
-
-spring:
-  app:
-    buildType: REL
-    
+spring:    
   jpa:
-    #pametova databaze automaticky zapina hibernate.ddl-auto: create
-    hibernate.ddl-auto: none
-    generate-ddl: false
-     
     properties:
       hibernate:
         <dbDialect>
-
-        hbm2ddl:
-          auto: none

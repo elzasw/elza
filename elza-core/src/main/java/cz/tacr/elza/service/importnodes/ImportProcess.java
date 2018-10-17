@@ -25,7 +25,6 @@ import org.springframework.stereotype.Component;
 
 import com.vividsolutions.jts.geom.Geometry;
 
-import cz.tacr.elza.common.GeometryConvertor;
 import cz.tacr.elza.core.data.CalendarType;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
@@ -370,7 +369,7 @@ public class ImportProcess {
             ((ArrDataDecimal) data).setValue(((ItemDecimal) item).getValue());
         } else if (item instanceof ItemUnitid) {
             data = new ArrDataUnitid();
-            ((ArrDataUnitid) data).setValue(((ItemUnitid) item).getValue());
+            ((ArrDataUnitid) data).setUnitId(((ItemUnitid) item).getValue());
         } else if (item instanceof ItemUnitdate) {
             data = new ArrDataUnitdate();
             String value = ((ItemUnitdate) item).getValue();
@@ -394,8 +393,10 @@ public class ImportProcess {
             ((ArrDataJsonTable) data).setValue(((ItemJsonTable) item).getValue());
         } else if (item instanceof ItemCoordinates) {
             data = new ArrDataCoordinates();
-            Geometry geo = GeometryConvertor.convert(((ItemCoordinates) item).getGeometry());
-            ((ArrDataCoordinates) data).setValue(geo);
+            Geometry geo = ((ItemCoordinates) item).getGeometry();
+            // clone value
+            Geometry geoClone = (Geometry) geo.clone();
+            ((ArrDataCoordinates) data).setValue(geoClone);
         } else if (item instanceof ItemFileRef) {
             data = new ArrDataFileRef();
             ArrFile file = fundFileRepository.findOne(((ItemFileRef) item).getFileId());
@@ -733,20 +734,14 @@ public class ImportProcess {
 	public static String renameConflictName(final String name, final Map<String, ArrFile> currentFiles) {
 		String tmpName = name;
 
-		boolean conflict = false;
 		int i = 0;
 		do {
-			if (conflict) {
-				i++;
-				conflict = false;
-				tmpName = includeNumber(tmpName, i);
+            if (!currentFiles.containsKey(tmpName)) {
+                return tmpName;
 			}
-			if (currentFiles.containsKey(tmpName)) {
-				conflict = true;
-				break;
-			}
-		} while (conflict);
-		return tmpName;
+            i++;
+            tmpName = includeNumber(tmpName, i);
+        } while (true);
 	}
 
     /**

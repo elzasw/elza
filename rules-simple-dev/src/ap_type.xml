@@ -1,0 +1,6 @@
+<ap-types>
+    <ap-type code="PERSON_BEING_STRUCT" parent-ap-type="PERSON" rule-system="AP-BASE">
+        <name>bytost - strukturovaná</name>
+        <read-only>false</read-only>
+    </ap-type>
+</ap-types>

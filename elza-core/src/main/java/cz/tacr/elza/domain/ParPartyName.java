@@ -33,8 +33,8 @@ import cz.tacr.elza.domain.enumeration.StringLength;
 public class ParPartyName {
 
     public static final String PK = "partyNameId";
-    public static final String PARTY = "party";
-    public static final String PARTY_FK = PARTY + ".partyId";
+    public static final String FIELD_PARTY = "party";
+    public static final String PARTY_FK = FIELD_PARTY + ".partyId";
 
     @Id
     @GeneratedValue

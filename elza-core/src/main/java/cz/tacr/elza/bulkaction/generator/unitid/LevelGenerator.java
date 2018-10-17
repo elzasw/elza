@@ -307,7 +307,7 @@ public class LevelGenerator {
         }
         // Store new value
         ArrDataUnitid dataUnitId = new ArrDataUnitid();
-        dataUnitId.setValue(value);
+        dataUnitId.setUnitId(value);
 
         ArrDescItem descItemUnitId = new ArrDescItem();
         descItemUnitId.setItemType(params.getItemType());
@@ -429,6 +429,17 @@ public class LevelGenerator {
 
         Node n = new Node(l, nodeLevelSpec);
 
+        StringBuilder expectedPrefix = new StringBuilder();
+        if (prefix.length() > 0) {
+            expectedPrefix.append(prefix).append('/');
+        }
+
+        // check if extra slash sublevel
+        if (isExtraSlashBoundary(nodeLevelSpec)) {
+            n.setExtraSlashBefore(true);
+            expectedPrefix.append('/');
+        }
+
         // read current unitId
         ArrDescItem itemUnidId = params.getBulkAction().loadSingleDescItem(l.getNode(), params.getItemType());
         if (itemUnidId != null) {
@@ -439,22 +450,20 @@ public class LevelGenerator {
             }
             ArrDataUnitid unitId = HibernateUtils.unproxy(data);
 
-            String value = unitId.getValue();
-            // check if value is fixed
-            PartSealedUnitId sealedUnitId = params.getSealedTree().find(value);
-            n.setSealedUnitId(sealedUnitId);
+            String value = unitId.getUnitId();
             n.setOldValue(itemUnidId, value);
 
-            StringBuilder expectedPrefix = new StringBuilder();
-            if (prefix.length() > 0) {
-                expectedPrefix.append(prefix).append('/');
+            // check if value is fixed
+            PartSealedUnitId sealedUnitId = params.getSealedTree().find(value);
+            if (sealedUnitId != null) {
+                n.setSealedUnitId(sealedUnitId);
+                // check if value is not sealed with other descItem
+                SealValidator validator = sealedUnitId.getSealValidator();
+                if (validator != null) {
+                    validator.checkSeal(itemUnidId);
+                }
             }
-            
-            // check if extra slash sublevel
-            if (isExtraSlashBoundary(nodeLevelSpec)) {
-                n.setExtraSlashBefore(true);
-                expectedPrefix.append('/');
-            }
+
             // check if value match prefix
             if (value.startsWith(expectedPrefix.toString())) {
                 String remaining = value.substring(expectedPrefix.length());

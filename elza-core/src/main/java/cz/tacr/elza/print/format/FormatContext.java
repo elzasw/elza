@@ -36,6 +36,7 @@ public class FormatContext {
      */
     private String itemSeparator = "; ";
 
+    private SpecTitleSource specTitleSource = SpecTitleSource.SHORTCUT;
     /**
      * Active separator for specifications
      */
@@ -110,6 +111,14 @@ public class FormatContext {
     
 	public void setSpecificationAfterValue(boolean afterValue) {
 		this.specificationAfterValue = afterValue;
+	}
+
+	public SpecTitleSource getSpecTitleSource() {
+		return specTitleSource;
+	}
+
+	public void setSpecTitleSource(SpecTitleSource specTitleSource) {
+		this.specTitleSource = specTitleSource;
 	}
     
     public void setTitleSeparator(String titleSeparator) {

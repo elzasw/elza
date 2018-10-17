@@ -73,7 +73,7 @@ public class UnitIdGenerator {
             }
             ArrData data = descItem.getData();
             ArrDataUnitid unitId = HibernateUtils.unproxy(data);
-            rootUnitId = unitId.getValue();
+            rootUnitId = unitId.getUnitId();
         }
 
         Validate.notNull(rootUnitId);

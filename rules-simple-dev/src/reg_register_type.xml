@@ -1,7 +1,0 @@
-<register-types>
-    <register-type code="PERSON_BEING_STRUCT" parent-register-type="PERSON" rule-system="AP-BASE">
-        <name>bytost - strukturovaná</name>
-        <hierarchical>false</hierarchical>
-        <read-only>false</read-only>
-    </register-type>
-</register-types>

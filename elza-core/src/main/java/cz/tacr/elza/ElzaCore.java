@@ -36,8 +36,6 @@ import cz.tacr.elza.websocket.service.WebScoketClientEventService;
 /**
  * Spouštěcí třída pro modul elza-core.
  *
- * @author by Ondřej Buriánek, burianek@marbes.cz.
- * @since 22.7.15
  */
 @Configuration
 @EntityScan(basePackageClasses = {ElzaCore.class})
@@ -54,7 +52,7 @@ public class ElzaCore {
     @Value("${elza.hibernate.index.thread_max:4}")
     private int threadMax;
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private static final Logger logger = LoggerFactory.getLogger(ElzaCore.class);
 
     public static void main(final String[] args) {
         configure();
@@ -69,9 +67,9 @@ public class ElzaCore {
 
     @Bean
     public EventBus eventBus() {
-        return new EventBus((exception, context) -> {
-            logger.error("Subscriber exception " + context.getSubscriberMethod(), exception);
-        });
+        return new EventBus(// exception handler
+                (exception, busContext) -> logger.error("Event bus exception: " + busContext.getSubscriberMethod(),
+                                                        exception));
     }
 
     @Bean
@@ -129,7 +127,7 @@ public class ElzaCore {
         Map<String, Object> busListenerMap = context.getBeansWithAnnotation(EventBusListener.class);
 
         for (Map.Entry<String, Object> listenerEntry : busListenerMap.entrySet()) {
-            logger.info("Registrace objektu " + listenerEntry.getKey() + " pro příjem událostí.");
+            logger.info("Registrace objektu {} pro příjem událostí.", listenerEntry.getKey());
             eventBus().register(listenerEntry.getValue());
 
         }

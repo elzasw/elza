@@ -1,36 +1,13 @@
 package cz.tacr.elza.controller.vo;
 
 /**
- * @author Pavel Stánek
- * @since 29.06.2016
  */
-public class RulTemplateVO {
-    /** Id. */
-    private Integer id;
-    /** Kód. */
-    private String code;
-    /** N8yev. */
-    private String name;
+public class RulTemplateVO extends BaseCodeVo {
+
     /** Typ systému - enum převedený na string. */
     private String engine;
     /** Adresář pro výstupy. */
     private String directory;
-
-    public String getCode() {
-        return code;
-    }
-
-    public void setCode(final String code) {
-        this.code = code;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(final String name) {
-        this.name = name;
-    }
 
     public String getEngine() {
         return engine;
@@ -46,13 +23,5 @@ public class RulTemplateVO {
 
     public void setDirectory(final String directory) {
         this.directory = directory;
-    }
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(final Integer id) {
-        this.id = id;
     }
 }

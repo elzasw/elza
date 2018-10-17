@@ -46,6 +46,7 @@ import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.exception.codes.StructObjCode;
 import cz.tacr.elza.packageimport.PackageService;
 import cz.tacr.elza.packageimport.xml.SettingStructureTypes;
 import cz.tacr.elza.repository.ChangeRepository;
@@ -230,7 +231,7 @@ public class StructObjService {
             // drop permanent object
 
             // check usage
-            Integer count = structureItemRepository.countItemsByStructuredObject(structObj);
+            Integer count = structureItemRepository.countItemsUsingStructObj(structObj);
             if (count > 0) {
                 throw new BusinessException("Existují návazné entity, položka nelze smazat", ArrangementCode.STRUCTURE_DATA_DELETE_ERROR)
                         .level(Level.WARNING)
@@ -406,7 +407,7 @@ public class StructObjService {
      */
     private int findNextPosition(final ArrStructuredObject structureData, final RulItemType itemType) {
         List<ArrStructuredItem> structureItems = structureItemRepository.findOpenItemsAfterPosition(itemType,
-                structureData, 0, new PageRequest(0, 1, Sort.Direction.DESC, ArrItem.POSITION));
+                structureData, 0, new PageRequest(0, 1, Sort.Direction.DESC, ArrItem.FIELD_POSITION));
         if (structureItems.size() == 0) {
             return 1;
         } else {
@@ -703,6 +704,13 @@ public class StructObjService {
         }
         if (!structureData.getState().equals(ArrStructuredObject.State.TEMP)) {
             throw new BusinessException("Strukturovaná data nemají dočasný stav", BaseCode.INVALID_STATE);
+        }
+        int itemCount = structureItemRepository
+                .countItemsByStructuredObjectAndDeleteChangeIsNull(structureData);
+        if (itemCount == 0) {
+            throw new BusinessException("Structured object without items cannot be confirmed.",
+                    StructObjCode.NO_VALID_ITEMS)
+                            .set("structObjId", structureData.getStructuredObjectId());
         }
         // reset temporary value -> final have to be calculated
         structureData.setValue(null);

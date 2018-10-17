@@ -5,13 +5,15 @@ import i18n from "./i18n";
 import Exception from "./shared/exception/Exception";
 
 const TYPE2GROUP = {
-    'BaseCode': 'base',
     'ArrangementCode': 'arr',
+    'BaseCode': 'base',
+    'BulkActionCode': 'ba',
     'DigitizationCode': 'dig',
     'ExternalCode': 'ext',
     'OutputCode': 'out',
     'PackageCode': 'pkg',
     'RegistryCode': 'reg',
+    'StructObjCode': 'sobj',
     'UserCode': 'usr'
 };
 

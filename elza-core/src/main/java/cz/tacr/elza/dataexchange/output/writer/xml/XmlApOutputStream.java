@@ -1,6 +1,5 @@
 package cz.tacr.elza.dataexchange.output.writer.xml;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
@@ -8,7 +7,6 @@ import java.util.List;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Marshaller;
-import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -34,24 +32,20 @@ import cz.tacr.elza.schema.v2.ExternalId;
 /**
  * XML output stream for access points export.
  */
-public class XmlApOutputStream implements ApOutputStream {
+public class XmlApOutputStream extends BaseFragmentStream implements ApOutputStream {
 
     private final JAXBContext jaxbContext = XmlUtils.createJAXBContext(AccessPoint.class);
 
     private final RootNode rootNode;
 
-    private final XmlFragment fragment;
-
-    private boolean processed;
-
     public XmlApOutputStream(RootNode rootNode, Path tempDirectory) {
+        super(tempDirectory);
         this.rootNode = rootNode;
-        this.fragment = new XmlFragment(tempDirectory);
     }
 
     @Override
     public void addAccessPoint(ApInfo apInfo) {
-        Validate.isTrue(!processed);
+        Validate.isTrue(!isProcessed());
 
         AccessPoint element = new AccessPoint();
         element.setApe(createEntry(apInfo));
@@ -67,31 +61,17 @@ public class XmlApOutputStream implements ApOutputStream {
 
     @Override
     public void processed() {
-        Validate.isTrue(!processed);
-
-        try {
-            fragment.close();
-        } catch (XMLStreamException | IOException e) {
-            throw new SystemException(e);
-        }
+        finishFragment();
 
         if (fragment.isExist()) {
             FileNode node = new FileNode(fragment.getPath());
             rootNode.setNode(ChildNodeType.ACCESS_POINTS, node);
         }
-        processed = true;
     }
 
     @Override
     public void close() {
-        if (processed) {
-            return;
-        }
-        try {
-            fragment.delete();
-        } catch (IOException e) {
-            throw new SystemException(e);
-        }
+        closeFragment();
     }
 
     private void writeAP(AccessPoint ap) throws Exception {
