@@ -1,5 +1,8 @@
 package cz.tacr.elza.controller.vo;
 
+/**
+ * Fultextove vyhledavani
+ */
 public class FulltextFundRequest {
 
     private String searchValue;

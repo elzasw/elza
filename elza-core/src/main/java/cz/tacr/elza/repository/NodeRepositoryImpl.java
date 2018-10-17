@@ -37,7 +37,6 @@ import org.hibernate.search.query.dsl.QueryBuilder;
 import org.hibernate.search.query.engine.spi.FacetManager;
 import org.hibernate.search.query.facet.Facet;
 import org.hibernate.search.query.facet.FacetSortOrder;
-import org.hibernate.search.query.facet.FacetingRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
@@ -58,13 +57,12 @@ import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.convertor.CalendarConverter;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
-import cz.tacr.elza.domain.vo.ArrFundItemCount;
+import cz.tacr.elza.domain.vo.ArrFundToNodeList;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
 import cz.tacr.elza.exception.InvalidQueryException;
 import cz.tacr.elza.filter.DescItemTypeFilter;
 
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toSet;
+import static java.util.stream.Collectors.*;
 
 /**
  * Custom node repository implementation
@@ -100,22 +98,54 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
         return nodes;
     }
 
-    /**
-     * Vrátí id nodů, přes všechny AS.
-     *
-     * @param text The query text.
-     */
+    /*
     @Override
-    public List<ArrFundItemCount> findFundIdsByFulltext(final String text, final Collection<ArrFund> fundList) {
+    public List<ArrFundToNodeList> findFundIdsByFulltext(final String text, final Collection<ArrFund> fundList) {
+
         Assert.notEmpty(fundList, "Nebyl vyplněn identifikátor AS");
 
         if (fundList.isEmpty()) {
             return Collections.emptyList();
         }
 
-        List<Facet> facets = countDescItemByFundId(text, fundList.stream().map(o -> o.getFundId()).collect(toSet()));
+        List<Facet> facets = countItemsByFundId(text, fundList.stream().map(o -> o.getFundId()).collect(toSet()));
 
-        return facets.stream().map(facet -> new ArrFundItemCount(Integer.valueOf(facet.getValue()), facet.getCount())).collect(toList());
+        return facets.stream().map(facet -> new ArrFundToNodeList(Integer.valueOf(facet.getValue()), facet.getCount())).collect(toList());
+    }
+    */
+
+    /**
+     * Vrátí id nodů, přes všechny AS.
+     *
+     * @param text The query text.
+     */
+    @Override
+    public List<ArrFundToNodeList> findFundIdsByFulltext(final String text, final Collection<ArrFund> fundList) {
+
+        Assert.notEmpty(fundList, "Nebyl vyplněn identifikátor AS");
+
+        FullTextQueryContext<ArrDescItem> ctx = new FullTextQueryContext<>(ArrDescItem.class);
+
+        Query descItemIdsQuery = createFundIdsQuery(fundList.stream().map(o -> o.getFundId()).collect(toList()), ctx.getQueryBuilder());
+
+        List<ArrDescItemInfo> itemList = findNodeIdsByValidDescItems(null, descItemIdsQuery, ctx);
+
+        // mapa (fundId -> nodeIdList -> itemCount)
+        Map<Integer, Map<Integer, Long>> map = itemList.stream().collect(groupingBy(i -> i.getFundId(), groupingBy(i -> i.getNodeId(), counting())));
+
+        List<ArrFundToNodeList> result = map.entrySet().stream().map(entry -> {
+
+            // nodeId list serazeny podle relevance tzn. podle poctu nalezenych itemu
+            List<Integer> nodeIdList = entry.getValue().entrySet().stream()
+                    .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
+                    .map(integerLongEntry -> integerLongEntry.getKey())
+                    .collect(toList());
+
+            return new ArrFundToNodeList(entry.getKey(), nodeIdList);
+
+        }).collect(toList());
+
+        return result;
     }
 
     /**
@@ -539,7 +569,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
      * @param text hodnota podle které se hledá
      * @return id atributů které mají danou hodnotu
      */
-    private List<Facet> countDescItemByFundId(final String text, final Collection<Integer> fundIds) {
+    private List<Facet> countItemsByFundId(final String text, final Collection<Integer> fundIds) {
 
         if (StringUtils.isBlank(text) || CollectionUtils.isEmpty(fundIds)) {
             return Collections.emptyList();
@@ -562,20 +592,20 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
                 .createQuery();
 
         // FullTextQuery fullTextQuery = ctx.createFullTextQuery(query).setProjection(ArrDescItem.ITEM_ID, ArrDescItem.NODE_ID, ArrDescItem.FUND_ID);
-        FullTextQuery fullTextQuery = ctx.createFullTextQuery(query).setProjection(ArrDescItem.ITEM_ID).setMaxResults(0);
+        FullTextQuery fullTextQuery = ctx.createFullTextQuery(query).setProjection(ArrDescItem.ITEM_ID);
 
-        final String facetName = "fund_facet";
-        FacetingRequest facetingRequest = queryBuilder.facet().name(facetName).onField(ArrDescItem.FUND_ID_STRING)
+        List<Object[]> resultList = fullTextQuery.getResultList();
+
+        final String fundFacet = "fund_facet";
+
+        FacetManager facetManager = fullTextQuery.getFacetManager();
+
+        facetManager.enableFaceting(queryBuilder.facet().name(fundFacet).onField(ArrDescItem.FUND_ID_STRING)
                 .discrete()
                 .includeZeroCounts(false)
                 .orderedBy(FacetSortOrder.COUNT_DESC)
-                .maxFacetCount(20)
-                .createFacetingRequest();
-
-        FacetManager facetManager = fullTextQuery.getFacetManager();
-        facetManager.enableFaceting(facetingRequest);
-
-        List<Object[]> resultList = fullTextQuery.getResultList();
+                // .maxFacetCount(20)
+                .createFacetingRequest());
 
         /*
         resultList.stream()
@@ -583,9 +613,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
                 .collect(toList());
         */
 
-        // FacetSelection facetSelection = facetManager.getFacetGroup(facetName);
-
-        return facetManager.getFacets(facetName);
+        return facetManager.getFacets(fundFacet);
     }
 
     private Query createValidDescItemInVersionQuery(QueryBuilder queryBuilder) {

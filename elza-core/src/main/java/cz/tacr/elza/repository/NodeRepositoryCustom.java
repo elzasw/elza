@@ -10,7 +10,7 @@ import cz.tacr.elza.controller.vo.filter.SearchParam;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.vo.ArrFundItemCount;
+import cz.tacr.elza.domain.vo.ArrFundToNodeList;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
 import cz.tacr.elza.exception.InvalidQueryException;
 import cz.tacr.elza.filter.DescItemTypeFilter;
@@ -39,7 +39,7 @@ public interface NodeRepositoryCustom {
      * @param text hledaná hodnota
      * @return množina id uzlů odopovídající hledané hodnotě
      */
-    List<ArrFundItemCount> findFundIdsByFulltext(String text, Collection<ArrFund> fundList);
+    List<ArrFundToNodeList> findFundIdsByFulltext(String text, Collection<ArrFund> fundList);
 
     /**
      * Najde uzly s danou hodnotou.

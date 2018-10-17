@@ -1,5 +1,8 @@
 package cz.tacr.elza.controller.vo;
 
+/**
+ * Vysledek fultextoveho vyhledavani pres vsechny AS.
+ */
 public class ArrFundFulltextResult extends ArrFundBaseVO {
 
     /**

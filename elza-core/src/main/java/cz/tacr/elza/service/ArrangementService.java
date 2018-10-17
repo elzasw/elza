@@ -29,6 +29,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -68,7 +71,7 @@ import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.UIVisiblePolicy;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
-import cz.tacr.elza.domain.vo.ArrFundItemCount;
+import cz.tacr.elza.domain.vo.ArrFundToNodeList;
 import cz.tacr.elza.domain.vo.NodeTypeOperation;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
@@ -107,6 +110,7 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
  * permissions.
  */
 @Service
+@Configuration
 public class ArrangementService {
 
     private static final AtomicInteger LAST_DESC_ITEM_OBJECT_ID = new AtomicInteger(-1);
@@ -734,15 +738,31 @@ public class ArrangementService {
      */
     public List<ArrFundFulltextResult> findFundsByFulltext(final String searchValue, final Collection<ArrFund> fundList) {
         List<ArrFundFulltextResult> list = new ArrayList<>();
-        for (ArrFundItemCount fundCount : nodeRepository.findFundIdsByFulltext(searchValue, fundList)) {
+        List<ArrFundToNodeList> fundToNodeList = nodeRepository.findFundIdsByFulltext(searchValue, fundList);
+        Holder<List<ArrFundToNodeList>> holder = fundFulltextSession();
+        holder.set(fundToNodeList);
+        for (ArrFundToNodeList fundCount : fundToNodeList) {
             ArrFundFulltextResult result = new ArrFundFulltextResult();
             ArrFund fund = fundRepository.findOne(fundCount.getFundId());
             result.setName(fund.getName());
             result.setId(fundCount.getFundId());
-            result.setCount(fundCount.getItemCount());
+            result.setCount(fundCount.getNodeCount());
             list.add(result);
         }
         return list;
+    }
+
+    public ArrFundToNodeList getFundToNodeListFromSession(Integer fundId) {
+        Holder<List<ArrFundToNodeList>> holder = fundFulltextSession();
+        List<ArrFundToNodeList> list = holder.get();
+        if (list != null) {
+            for (ArrFundToNodeList fundToNodeList : list) {
+                if (fundId.equals(fundToNodeList.getFundId())) {
+                    return fundToNodeList;
+                }
+            }
+        }
+        return null;
     }
 
     /**
@@ -1306,6 +1326,28 @@ public class ArrangementService {
             for (TreeNode node : treeNode.getChilds()) {
                 recursiveAddNodes(nodeIds, node, nodePolicyTypes, policiesMap, nodeProblemsMap, foundNode);
             }
+        }
+    }
+
+    /**
+     * @return vrací session uživatele
+     */
+    @Bean
+    @Scope("session")
+    public Holder<List<ArrFundToNodeList>> fundFulltextSession() {
+        return new Holder<>();
+    }
+
+    public static class Holder<T> {
+
+        private T object;
+
+        public T get() {
+            return object;
+        }
+
+        public void set(T object) {
+            this.object = object;
         }
     }
 

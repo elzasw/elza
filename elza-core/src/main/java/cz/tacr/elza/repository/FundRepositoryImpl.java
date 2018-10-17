@@ -54,10 +54,6 @@ public class FundRepositoryImpl implements FundRepositoryCustom {
         return Math.toIntExact((long) query.getSingleResult());
     }
 
-    /**
-     * @param fulltext nepovinne - vyhledavani 'LIKE' v name a internalCode
-     * @return seznam
-     */
     @Override
     public List<ArrFund> findFundByFulltext(final String fulltext, final Integer userId) {
         String hql = "SELECT f FROM arr_fund f " + createFulltextWhereClause(fulltext, userId);

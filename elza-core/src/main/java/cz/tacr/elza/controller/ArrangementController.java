@@ -25,6 +25,8 @@ import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Scope;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
@@ -108,6 +110,7 @@ import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.vo.ArrFundToNodeList;
 import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ConcurrentUpdateException;
@@ -1646,6 +1649,12 @@ public class ArrangementController {
     }
 
 
+    /**
+     * Seznam AS serazeny podle poctu vyhledanych JP. Jsou zohlednena opravneni uzivatele k AS.
+     *
+     * @param input vstupní data pro načtení
+     * @return data stromu
+     */
     @RequestMapping(value = "/fundFulltext", method = RequestMethod.POST)
     public List<ArrFundFulltextResult> fundFulltext(final @RequestBody FulltextFundRequest input) {
 
@@ -1663,15 +1672,15 @@ public class ArrangementController {
         return arrangementService.findFundsByFulltext(input.getSearchValue(), fundList);
     }
 
-/*
-    @RequestMapping(value = "/fundFulltext", method = RequestMethod.POST)
-    public List<TreeNodeVO> fundFulltext(final @RequestParam Integer fundId) {
-
+    @RequestMapping(value = "/fundFulltext/{fundId}", method = RequestMethod.GET)
+    public List<TreeNodeVO> fundFulltext(final @PathVariable(value = "fundId") Integer fundId) {
         // vybereš ze session seznam nodeId podle AS a vytvoří TreeNodeVO
 
-    }
-*/
+        ArrFundToNodeList fundToNodeList = arrangementService.getFundToNodeListFromSession(fundId);
+        Assert.notNull(fundToNodeList, "Nebyla nalezen AS");
 
+        return null;
+    }
 
     /**
      * Vyhledání vazeb AP - rejstříky.
