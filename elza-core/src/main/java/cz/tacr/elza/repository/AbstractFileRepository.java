@@ -32,8 +32,8 @@ abstract public class AbstractFileRepository<T extends DmsFile> {
         if (StringUtils.isNotBlank(searchText)) {
             final String searchValue = "%" + searchText.toLowerCase() + "%";
             return builder.or(
-                    builder.like(builder.lower(file.get(T.NAME)), searchValue),
-                    builder.like(builder.lower(file.get(T.FILE_NAME)), searchValue)
+                    builder.like(builder.lower(file.get(T.FIELD_NAME)), searchValue),
+                    builder.like(builder.lower(file.get(T.FIELD_FILE_NAME)), searchValue)
             );
         }
         return null;

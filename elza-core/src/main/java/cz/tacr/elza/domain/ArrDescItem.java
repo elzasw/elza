@@ -53,22 +53,22 @@ import cz.tacr.elza.search.DescItemIndexingInterceptor;
 @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
 public class ArrDescItem extends ArrItem {
 
-    // Constants for fulltext indexing
-    public static final String ITEM_ID = "itemId";
-    public static final String FUND_ID = "fundId";
-    public static final String FUND_ID_STRING = "fundIdString";
-    public static final String NODE = "node";
-    public static final String NODE_ID = "nodeId";
-    public static final String CREATE_CHANGE_ID = "createChangeId";
-    public static final String DELETE_CHANGE_ID = "deleteChangeId";
-    public static final String DESC_ITEM_TYPE_ID = "descItemTypeId";
-    public static final String FULLTEXT_ATT = "fulltextValue";
-    public static final String SPECIFICATION_ATT = "specification";
-    public static final String INTGER_ATT = "valueInt";
-    public static final String DECIMAL_ATT = "valueDecimal";
-    public static final String DATE_ATT = "valueDate";
-    public static final String NORMALIZED_FROM_ATT = "normalizedFrom";
-    public static final String NORMALIZED_TO_ATT = "normalizedTo";
+	// Constants for fulltext indexing
+    public static final String FIELD_ITEM_ID = "itemId";
+    public static final String FIELD_FUND_ID = "fundId";
+    public static final String FIELD_FUND_ID_STRING = "fundIdString";
+    public static final String FIELD_NODE = "node";
+    public static final String FIELD_NODE_ID = "nodeId";
+    public static final String FIELD_CREATE_CHANGE_ID = "createChangeId";
+    public static final String FIELD_DELETE_CHANGE_ID = "deleteChangeId";
+    public static final String FIELD_DESC_ITEM_TYPE_ID = "descItemTypeId";
+	public static final String FULLTEXT_ATT = "fulltextValue";
+	public static final String SPECIFICATION_ATT = "specification";
+	public static final String INTGER_ATT = "valueInt";
+	public static final String DECIMAL_ATT = "valueDecimal";
+	public static final String DATE_ATT = "valueDate";
+	public static final String NORMALIZED_FROM_ATT = "normalizedFrom";
+	public static final String NORMALIZED_TO_ATT = "normalizedTo";
 
 	@JsonIgnore
     @RestResource(exported = false)
@@ -114,8 +114,8 @@ public class ArrDescItem extends ArrItem {
 
     @JsonIgnore
     @Override
-    @Field(name = FUND_ID, analyze = Analyze.NO, store = Store.YES)
-    @Facet(name = FUND_ID_STRING, forField = FUND_ID, encoding = FacetEncodingType.STRING)
+    @Field(name = FIELD_FUND_ID, analyze = Analyze.NO, store = Store.YES)
+    @Facet(name = FIELD_FUND_ID_STRING, forField = FUND_ID, encoding = FacetEncodingType.STRING)
     // @FieldBridge(impl = IntegerBridge.class)
     public Integer getFundId() {
         return indexData.getFundId();
@@ -176,7 +176,7 @@ public class ArrDescItem extends ArrItem {
 	 * @return
 	 */
 	@JsonIgnore
-	@Field(name = DESC_ITEM_TYPE_ID)
+    @Field(name = FIELD_DESC_ITEM_TYPE_ID)
 	//@FieldBridge(impl = IntegerBridge.class)
 	public Integer getDescItemTypeId() {
 		return itemTypeId;
@@ -201,16 +201,6 @@ public class ArrDescItem extends ArrItem {
 
     @Override
     public ArrOutputDefinition getOutputDefinition() {
-        return null; //throw new NotImplementedException();
-    }
-
-    @Override
-    public ArrStructuredObject getStructuredObject() {
-        return null; //throw new NotImplementedException();
-    }
-
-    @Override
-    public Integer getStructuredObjectId() {
         return null; //throw new NotImplementedException();
     }
 

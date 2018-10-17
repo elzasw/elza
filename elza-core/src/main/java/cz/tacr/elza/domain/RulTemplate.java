@@ -13,21 +13,23 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
-import org.apache.commons.lang.builder.EqualsBuilder;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import cz.tacr.elza.domain.enumeration.StringLength;
 
 
 /**
- * @author Petr Compel <petr.compel@marbes.cz>
+ * Output template
+ * 
  * @since 16.6.2016
  */
 @Entity(name = "rul_template")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class RulTemplate {
+
+    /* Konstanty pro vazby a fieldy. */
+    public static final String FIELD_NAME = "name";
 
     @Id
     @GeneratedValue
@@ -66,9 +68,6 @@ public class RulTemplate {
 
     @Column(nullable = false)
     private Boolean deleted;
-
-    /* Konstanty pro vazby a fieldy. */
-    public static final String NAME = "name";
 
     public Integer getTemplateId() {
         return templateId;
@@ -165,20 +164,6 @@ public class RulTemplate {
 
     public void setDeleted(final Boolean deleted) {
         this.deleted = deleted;
-    }
-
-    @Override
-    public boolean equals(final Object obj) {
-        if (!(obj instanceof cz.tacr.elza.domain.RulTemplate)) {
-            return false;
-        }
-        if (this == obj) {
-            return true;
-        }
-
-        cz.tacr.elza.domain.RulTemplate other = (cz.tacr.elza.domain.RulTemplate) obj;
-
-        return new EqualsBuilder().append(templateId, other.getTemplateId()).isEquals();
     }
 
     /**

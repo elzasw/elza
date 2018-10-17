@@ -287,12 +287,12 @@ public class DescItemTypeFilter {
 
     private Query createDescItemTypeQuery(final QueryBuilder queryBuilder) {
         Integer descItemTypeId = descItemType.getItemTypeId();
-		return queryBuilder.range().onField(ArrDescItem.DESC_ITEM_TYPE_ID).from(descItemTypeId).to(descItemTypeId).
+		return queryBuilder.range().onField(ArrDescItem.FIELD_DESC_ITEM_TYPE_ID).from(descItemTypeId).to(descItemTypeId).
                 createQuery();
     }
 
     private Query createFundIdQuery(final QueryBuilder queryBuilder, final Integer fundId) {
-		return queryBuilder.keyword().onField(ArrDescItem.FUND_ID).matching(fundId).createQuery();
+		return queryBuilder.keyword().onField(ArrDescItem.FIELD_FUND_ID).matching(fundId).createQuery();
     }
 
     public RulItemType getDescItemType() {

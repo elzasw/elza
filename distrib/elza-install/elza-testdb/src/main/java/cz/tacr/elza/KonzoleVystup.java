@@ -12,22 +12,14 @@ public class KonzoleVystup {
 
     private PrintWriter pw = null;
 
-    public void initialize() {
-        FileWriter fw;
-        try {
-            fw = new FileWriter("testLog.txt");
-            BufferedWriter bw = new BufferedWriter(fw);
-            pw = new PrintWriter(bw);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public void initialize() throws IOException {
+        FileWriter fw = new FileWriter("testLog.txt");
+        BufferedWriter bw = new BufferedWriter(fw);
+        pw = new PrintWriter(bw);
     }
 
     public void print(String message) {
         System.out.println(message);
-        if (pw == null) {
-            initialize();
-        }
         pw.println(message);
     }
 

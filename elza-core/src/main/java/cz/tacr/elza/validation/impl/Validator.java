@@ -97,7 +97,8 @@ public class Validator {
                     continue;
                 } else if (RulItemSpec.Type.IMPOSSIBLE.equals(extSpec.getType())) {
                     validationResults.createErrorImpossible(descItem, "Prvek " + type.getName() + " se specifikací "
-                            + extSpec.getName() + " není možné evidovat u této jednotky archivního popisu.", extSpec.getPolicyTypeCode());
+                            + extSpec.getName() + " není možné evidovat u této jednotky archivního popisu.",
+                                                            extSpec.getPolicyTypeCode());
                 }
 
                 List<ArrDescItem> specItems = specItemsMap.get(descItem.getItemSpec());

@@ -47,8 +47,10 @@ class FundNodesSelect extends AbstractReactComponent {
     componentDidMount() {
         const {multipleSelection, multipleSelectionOneLevel, selectedId, fund:{fundTreeNodes, versionId}, onChange} = this.props;
 
-        this.props.dispatch(fundTreeConfigure(types.FUND_TREE_AREA_NODES, versionId, multipleSelection, multipleSelectionOneLevel));         
+        this.props.dispatch(fundTreeConfigure(types.FUND_TREE_AREA_NODES, versionId, multipleSelection, multipleSelectionOneLevel));
         this.props.dispatch(fundTreeSelectNode(types.FUND_TREE_AREA_NODES, versionId, selectedId, false, false));
+
+        this.handleChange(versionId, fundTreeNodes.expandedIds, multipleSelection, onChange);
     }
 
     componentWillReceiveProps(nextProps){
@@ -175,4 +177,3 @@ function mapStateToProps(state) {
 }
 
 export default connect(mapStateToProps)(FundNodesSelect);
-

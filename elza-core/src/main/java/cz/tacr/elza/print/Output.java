@@ -79,9 +79,10 @@ public interface Output {
     NodeIterator createFlatNodeIterator();
 
     /**
-     * @return kolekci s počtem prvků odpovídajícím počtu stran příloh, používá se jako DS v Jasperu pro placeholder stránky
+     * @return kolekci s počtem prvků odpovídajícím počtu stran příloh,
+     *         používá se jako DS v Jasperu pro placeholder stránky
      */
-    List<JRAttPagePlaceHolder> getAttPagePlaceHolders();
+    List<AttPagePlaceHolder> getAttPagePlaceHolders(final String itemTypeCode);
 
     /**
      * vstupem je kód typu rejstříku a vrací se seznam rejstříkových hesel řazených podle názvu (record).

@@ -69,7 +69,6 @@ import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.domain.vo.NodeTypeOperation;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.domain.vo.TitleValue;
-import cz.tacr.elza.domain.vo.TitleValues;
 import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.drools.RulesExecutor;
 import cz.tacr.elza.exception.BusinessException;
@@ -88,6 +87,7 @@ import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventChangeDescItem;
 import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
+import cz.tacr.elza.service.vo.TitleItemsByType;
 
 
 /**
@@ -96,6 +96,8 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
  */
 @Service
 public class DescriptionItemService {
+
+    private static final Logger logger = LoggerFactory.getLogger(DescriptionItemService.class);
 
     @Autowired
     private NodeRepository nodeRepository;
@@ -150,8 +152,6 @@ public class DescriptionItemService {
 
     @Autowired
     private DescriptionItemServiceInternal serviceInternal;
-
-    private static final Logger logger = LoggerFactory.getLogger(DescriptionItemService.class);
 
     /**
      * Kontrola otevřené verze.
@@ -1082,7 +1082,7 @@ public class DescriptionItemService {
 
 	}
 
-    public Map<Integer, Map<Integer, TitleValues>> createNodeValuesByItemTypeIdMap(final Collection<Integer> nodeIds,
+    public Map<Integer, TitleItemsByType> createNodeValuesByItemTypeIdMap(final Collection<Integer> nodeIds,
                                                                                    final Collection<RulItemType> descItemTypes,
                                                                                    final Integer changeId,
                                                                                    @Nullable final TreeNode subtreeRoot,
@@ -1102,62 +1102,33 @@ public class DescriptionItemService {
 
         List<ArrDescItem> descItems = descItemRepository.findDescItemsByNodeIds(nodeIdSet, descItemTypes, changeId);
 
-        Map<Integer, Map<Integer, TitleValues>> nodeIdMap = new HashMap<>();
+        Map<Integer, TitleItemsByType> nodeIdMap = new HashMap<>();
         for (ArrDescItem descItem : descItems) {
             TitleValue titleValue = serviceInternal.createTitleValue(descItem, dataExport);
             Integer nodeId = descItem.getNodeId();
-            Integer itemTypeId = descItem.getItemTypeId();
-            addTitleValueToMap(titleValue, nodeId, itemTypeId, nodeIdMap);
+
+            TitleItemsByType itemsByType = nodeIdMap.computeIfAbsent(nodeId, id -> new TitleItemsByType());
+
+            itemsByType.addItem(descItem.getItemTypeId(), titleValue);
         }
         return nodeIdMap;
     }
 
-    // TODO: this method should be replaced by createNodeValuesByItemTypeIdMap
-    public Map<Integer, Map<String, TitleValues>> createNodeValuesByItemTypeCodeMap(final Collection<Integer> nodeIds,
+    /**
+     * 
+     * @param nodeIds
+     * @param descItemTypes
+     * @param changeId
+     * @param subtreeRoot
+     * @return Map of
+     *         nodeId, itemTypeCode, values
+     */
+    public Map<Integer, TitleItemsByType> createNodeValuesByItemTypeCodeMap(final Collection<Integer> nodeIds,
                                                                                     final Collection<RulItemType> descItemTypes,
                                                                                     final Integer changeId,
                                                                                     @Nullable final TreeNode subtreeRoot) {
-        if (nodeIds.isEmpty() || descItemTypes.isEmpty()) {
-            return Collections.emptyMap();
-        }
 
-        Set<Integer> nodeIdSet = new HashSet<>(nodeIds);
-
-        // chceme nalézt atributy i pro rodiče podstromu
-        TreeNode rootParent = subtreeRoot;
-        while (rootParent != null) {
-            nodeIdSet.add(rootParent.getId());
-            rootParent = rootParent.getParent();
-        }
-
-        List<ArrDescItem> descItems = descItemRepository.findDescItemsByNodeIds(nodeIdSet, descItemTypes, changeId);
-
-        Map<Integer, Map<String, TitleValues>> nodeIdMap = new HashMap<>();
-        StaticDataProvider staticData = staticDataService.getData();
-        for (ArrDescItem descItem : descItems) {
-            TitleValue titleValue = serviceInternal.createTitleValue(descItem, false);
-            Integer nodeId = descItem.getNodeId();
-            String itemTypeCode = staticData.getItemTypeById(descItem.getItemTypeId()).getCode();
-            addTitleValueToMap(titleValue, nodeId, itemTypeCode, nodeIdMap);
-        }
-        return nodeIdMap;
-    }
-
-    private <T> void addTitleValueToMap(final TitleValue value,
-                                        final Integer nodeId,
-                                        final T itemTypeKey,
-                                        final Map<Integer, Map<T, TitleValues>> nodeIdMap) {
-        Map<T, TitleValues> itemTypeMap = nodeIdMap.get(nodeId);
-        if (itemTypeMap == null) {
-            itemTypeMap = new HashMap<>();
-            nodeIdMap.put(nodeId, itemTypeMap);
-        }
-        TitleValues titleValues = itemTypeMap.get(itemTypeKey);
-        if (titleValues == null) {
-            titleValues = new TitleValues();
-            itemTypeMap.put(itemTypeKey, titleValues);
-        }
-        titleValues.addValue(value);
+        return createNodeValuesByItemTypeIdMap(nodeIds, descItemTypes, changeId, subtreeRoot, false);
     }
 
     /**
@@ -1343,7 +1314,7 @@ public class DescriptionItemService {
                     break;
                 case "UNITID":
                     ArrDataUnitid itemUnitid = new ArrDataUnitid();
-                    itemUnitid.setValue(text);
+                itemUnitid.setUnitId(text);
                     data = itemUnitid;
                     break;
                 case "UNITDATE":
@@ -1527,7 +1498,7 @@ public class DescriptionItemService {
 			dt.setValue(getReplacedDataValue(dt.getValue(), searchString, replaceString));
 		} else if (dataNew instanceof ArrDataUnitid) {
             ArrDataUnitid dt = (ArrDataUnitid) dataNew;
-            dt.setValue(getReplacedDataValue(dt.getValue(), searchString, replaceString));
+            dt.setUnitId(getReplacedDataValue(dt.getUnitId(), searchString, replaceString));
         } else {
 			throw new IllegalStateException(
 			        "Zatím není implementováno pro kod " + descItem.getItemType().getCode());

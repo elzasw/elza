@@ -2,10 +2,10 @@ package cz.tacr.elza.controller;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 
@@ -174,13 +175,17 @@ public class RuleController {
                                   HttpServletResponse response) {
         Assert.notNull(code, "Kód musí být vyplněn");
         try {
-            File file = packageService.exportPackage(code);
+            Path filePath = packageService.exportPackage(code);
             response.setContentType("application/zip");
             response.setHeader("Content-Disposition", "inline; filename=" + code + "-package.zip");
-            response.setContentLength((int) file.length());
-            InputStream is = new FileInputStream(file);
-            IOUtils.copy(is, response.getOutputStream());
+            response.setContentLength((int) Files.size(filePath));
+            ServletOutputStream os = response.getOutputStream();
+
+            Files.copy(filePath, os);
+
             response.flushBuffer();
+
+            Files.delete(filePath);
         } catch (IOException ex) {
             throw new SystemException("Problem pri zapisu souboru", ex);
         }

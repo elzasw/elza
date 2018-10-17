@@ -1,5 +1,26 @@
 package cz.tacr.elza.print;
 
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+
 import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.PartyType;
 import cz.tacr.elza.core.data.StaticDataProvider;
@@ -61,25 +82,6 @@ import cz.tacr.elza.service.cache.CachedNode;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.cache.RestoredNode;
 import cz.tacr.elza.service.output.OutputParams;
-import org.apache.commons.lang.NotImplementedException;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Validate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
-
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
@@ -147,13 +149,19 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
     private final ApExternalIdRepository apEidRepository;
 
+    /**
+     * Provider for attachments
+     */
+    private AttPageProvider attPageProvider;
+
     public OutputModel(StaticDataService staticDataService,
                        FundTreeProvider fundTreeProvider,
                        NodeCacheService nodeCacheService,
                        InstitutionRepository institutionRepository,
                        ApDescriptionRepository apDescRepository,
                        ApNameRepository apNameRepository,
-                       ApExternalIdRepository apEidRepository) {
+            ApExternalIdRepository apEidRepository,
+            AttPageProvider attPageProvider) {
         this.staticDataService = staticDataService;
         this.fundTreeProvider = fundTreeProvider;
         this.nodeCacheService = nodeCacheService;
@@ -161,6 +169,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         this.apDescRepository = apDescRepository;
         this.apNameRepository = apNameRepository;
         this.apEidRepository = apEidRepository;
+        this.attPageProvider = attPageProvider;
     }
 
     public boolean isInitialized() {
@@ -722,7 +731,6 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
     @Override
     public File getFile(ArrFile arrFile) {
-        Validate.isTrue(HibernateUtils.isInitialized(arrFile));
 
         File file = fileIdMap.get(arrFile.getFileId());
         if (file != null) {
@@ -738,8 +746,12 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
     }
 
     @Override
-    public List<JRAttPagePlaceHolder> getAttPagePlaceHolders() {
-        // TODO Auto-generated method stub
-        return null;
+    public List<AttPagePlaceHolder> getAttPagePlaceHolders(final String itemTypeCode) {
+
+        if (attPageProvider == null) {
+            return Collections.emptyList();
+        }
+
+        return attPageProvider.getAttPagePlaceHolders(itemTypeCode);
     }
 }

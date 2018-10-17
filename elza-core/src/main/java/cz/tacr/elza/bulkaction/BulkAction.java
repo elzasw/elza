@@ -18,10 +18,12 @@ import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.exception.AbstractException;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.exception.codes.BulkActionCode;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
@@ -100,6 +102,17 @@ public abstract class BulkAction {
 
 		staticDataProvider = staticDataService.getData();
 	}
+
+    /**
+     * Prepare exception for incorrect configuration
+     * 
+     * @param message
+     * @return
+     */
+    protected AbstractException createConfigException(String message) {
+        return new SystemException(message, BulkActionCode.INCORRECT_CONFIG)
+                .set("name", this.getName());
+    }
 
     /**
      * Abstrakní metoda pro spuštění hromadné akce.

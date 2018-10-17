@@ -94,6 +94,9 @@ public class Formatter {
 		return addAction(new EndBlockFormatter());
 	}
 
+	public Formatter setSpecTitleSource(SpecTitleSource source) {
+		return addAction(new SetSpecificationTitleSource(source));
+	}
 	/**
 	 * Set separator for specification
 	 * @param specSeparator Separator for specification

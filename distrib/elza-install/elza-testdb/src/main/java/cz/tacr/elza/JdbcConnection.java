@@ -3,7 +3,12 @@
  */
 package cz.tacr.elza;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.Driver;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -82,26 +87,28 @@ public class JdbcConnection {
     }
 
     public void testConnection() throws SQLException {
-        Connection con = DriverManager.getConnection(url, uzivatel, heslo);
-        DatabaseMetaData meta = con.getMetaData();
-        System.out.println("pripojeno k databazi " + meta.getDatabaseProductName()
-                + " " + meta.getDatabaseProductVersion());
-        con.close();
+        try (Connection con = DriverManager.getConnection(url, uzivatel, heslo);) {
+            DatabaseMetaData meta = con.getMetaData();
+            System.out.println("pripojeno k databazi " + meta.getDatabaseProductName()
+                    + " " + meta.getDatabaseProductVersion());
+        }
     }
 
     public void runSql() throws SQLException {
-        Connection con = DriverManager.getConnection(url, uzivatel, heslo);
-        if (prikaz != null && !prikaz.trim().isEmpty()) {
-            prikaz = updateParametr(prikaz, params);
-            String[] subPrikazList = prikaz.split(";");
-            for (String subPrikaz : subPrikazList) {
-                if (subPrikaz == null || subPrikaz.trim().length() == 0) {
-                    continue;
+        try (Connection con = DriverManager.getConnection(url, uzivatel, heslo);) {
+            if (prikaz != null && !prikaz.trim().isEmpty()) {
+                prikaz = updateParametr(prikaz, params);
+                String[] subPrikazList = prikaz.split(";");
+                for (String subPrikaz : subPrikazList) {
+                    if (subPrikaz == null || subPrikaz.trim().length() == 0) {
+                        continue;
+                    }
+                    try (PreparedStatement ps = con.prepareStatement(subPrikaz);) {
+                        ps.execute();
+                    }
                 }
-                con.prepareStatement(subPrikaz).execute();
             }
         }
-        con.close();
     }
 
     private String updateParametr(String input, List<String> params) {

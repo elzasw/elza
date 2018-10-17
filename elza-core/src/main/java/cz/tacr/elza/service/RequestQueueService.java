@@ -1,6 +1,31 @@
 package cz.tacr.elza.service;
 
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.stream.Collectors;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.NotImplementedException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.util.concurrent.ListenableFuture;
+import org.springframework.util.concurrent.ListenableFutureCallback;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDaoLink;
@@ -23,6 +48,7 @@ import cz.tacr.elza.repository.DaoLinkRepository;
 import cz.tacr.elza.repository.DaoRequestDaoRepository;
 import cz.tacr.elza.repository.DigitizationRequestNodeRepository;
 import cz.tacr.elza.repository.ExternalSystemRepository;
+import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.RequestQueueItemRepository;
 import cz.tacr.elza.repository.RequestRepository;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
@@ -37,40 +63,15 @@ import cz.tacr.elza.ws.types.v1.Materials;
 import cz.tacr.elza.ws.types.v1.OnDaoLinked;
 import cz.tacr.elza.ws.types.v1.OnDaoUnlinked;
 import cz.tacr.elza.ws.types.v1.TransferRequest;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.NotImplementedException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallbackWithoutResult;
-import org.springframework.transaction.support.TransactionTemplate;
-import org.springframework.util.concurrent.ListenableFuture;
-import org.springframework.util.concurrent.ListenableFutureCallback;
-
-import java.io.IOException;
-import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.stream.Collectors;
 
 /**
  * Servisní třída pro obsluhu a správu požadavků
  *
- * @author Martin Šlapa
- * @since 07.12.2016
  */
 @Service
 public class RequestQueueService implements ListenableFutureCallback<RequestQueueService.RequestExecute> {
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final static Logger logger = LoggerFactory.getLogger(RequestQueueService.class);
 
     @Autowired
     private RequestQueueItemRepository requestQueueItemRepository;
@@ -90,6 +91,9 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
     @Autowired
     @Qualifier("threadPoolTaskExecutorRQ")
     private ThreadPoolTaskExecutor taskExecutor;
+
+    @Autowired
+    private FundVersionRepository fundVerRepos;
 
     @Autowired
     private WsClient wsClient;
@@ -117,6 +121,8 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
     private DaoLinkRepository daoLinkRepository;
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
+
+    private static final long RETRY_TIME = 60L * 1000;
 
     // seznam identifikátorů externích systémů, na které se provádí odesílání požadavků
     private Set<Integer> externalSystemIds = new HashSet<>();
@@ -398,9 +404,11 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
             } else {
                 logger.warn("Nepodařilo se odeslat požadavek " + requestExecute + " na externí systém " + requestExecute.externalSystemId);
                 try {
-                    Thread.sleep(60 * 1000);
+                    Thread.sleep(RETRY_TIME);
                 } catch (InterruptedException e) {
                     logger.error(e.toString(), e);
+                    // nothing to do here
+                    Thread.currentThread().interrupt();
                 }
             }
             synchronized (lock) {
@@ -494,14 +502,12 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
         private void execute(final ArrRequestQueueItem queueItem) {
 
             ArrRequest request = queueItem.getRequest();
-            List<ArrFundVersion> versions = request.getFund().getVersions();
 
-            ArrFundVersion openVersion = null;
-            for (ArrFundVersion version : versions) {
-                if (version.getLockChange() == null) {
-                    openVersion = version;
-                    break;
-                }
+            // get active version
+            ArrFundVersion openVersion = fundVerRepos.findByFundIdAndLockChangeIsNull(request.getFund().getFundId());
+            if (openVersion == null) {
+                throw new SystemException("Cannot find open version", BaseCode.DB_INTEGRITY_PROBLEM)
+                        .set("fundId", request.getFund().getFundId());
             }
 
             sendNotification(openVersion, request, queueItem, EventType.REQUEST_ITEM_QUEUE_CHANGE);

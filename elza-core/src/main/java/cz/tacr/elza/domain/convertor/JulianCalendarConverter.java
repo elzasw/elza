@@ -5,21 +5,20 @@ import java.time.LocalDateTime;
 /**
  * Juliánský kalendář.
  *
- * @author Martin Šlapa
  * @since 06.04.2016
  */
 public class JulianCalendarConverter implements ICalendarConverter {
 
     @Override
     public LocalDateTime fromCalendar(final LocalDateTime julianDate) {
-        int day = fromJulianDayDiff(julianDate);
+        long day = fromJulianDayDiff(julianDate);
         LocalDateTime gregorianDate = julianDate.plusDays(day);
         return gregorianDate;
     }
 
     @Override
     public LocalDateTime toCalendar(final LocalDateTime normalizedDate) {
-        int day = toJulianDayDiff(normalizedDate);
+        long day = toJulianDayDiff(normalizedDate);
         LocalDateTime julianDate = normalizedDate.minusDays(day);
         return julianDate;
     }
@@ -30,12 +29,12 @@ public class JulianCalendarConverter implements ICalendarConverter {
      * @param date juliánský datum
      * @return počet dní
      */
-    private int fromJulianDayDiff(final LocalDateTime date) {
+    private long fromJulianDayDiff(final LocalDateTime date) {
         LocalDateTime refDate = LocalDateTime.of(date.getYear(), 3, 12, 0, 0);
         int yearX = date.getYear() / 100 * 100;
         int y100 = (yearX - 3) / 100;
         int y400 = yearX / 400;
-        int tmpDayDiff = y100 - y400 - 1;
+        long tmpDayDiff = y100 - y400 - 1L;
 
         LocalDateTime dateTime = refDate.minusDays(tmpDayDiff - 1);
         if (date.isBefore(dateTime)) {
@@ -51,12 +50,12 @@ public class JulianCalendarConverter implements ICalendarConverter {
      * @param date gregoriánský datum
      * @return počet dní
      */
-    private int toJulianDayDiff(final LocalDateTime date) {
+    private long toJulianDayDiff(final LocalDateTime date) {
         LocalDateTime refDate = LocalDateTime.of(date.getYear(), 3, 1, 0, 0);
         int yearX = date.getYear() / 100 * 100;
         int y100 = (yearX - 3) / 100;
         int y400 = yearX / 400;
-        int tmpDayDiff = y100 - y400 - 1;
+        long tmpDayDiff = y100 - y400 - 1L;
 
         LocalDateTime dateTime = refDate.plusDays(tmpDayDiff - 1);
         if (date.isBefore(dateTime)) {

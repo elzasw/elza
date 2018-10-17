@@ -10,8 +10,6 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
-import org.apache.commons.lang.builder.EqualsBuilder;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
@@ -19,7 +17,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  * pravidla tvorby, případně stávající pravidla dále rozpracovat a modifikovat. Je realizována pouze
  * entita obalující základní pravidla, nikoli reálná základní pravidla.
  *
- * @author by Ondřej Buriánek, burianek@marbes.cz.
  * @since 22.7.15
  */
 @Entity(name = "rul_rule_set")
@@ -76,19 +73,5 @@ public class RulRuleSet {
     @Override
     public String toString() {
         return "RulRuleSet pk=" + ruleSetId;
-    }
-
-    @Override
-    public boolean equals(final Object obj) {
-        if (!(obj instanceof RulRuleSet)) {
-            return false;
-        }
-        if (this == obj) {
-            return true;
-        }
-
-        RulRuleSet other = (RulRuleSet) obj;
-
-        return new EqualsBuilder().append(ruleSetId, other.getRuleSetId()).isEquals();
     }
 }

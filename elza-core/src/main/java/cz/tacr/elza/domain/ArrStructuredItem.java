@@ -62,12 +62,10 @@ public class ArrStructuredItem extends ArrItem {
         return null;
     }
 
-    @Override
     public ArrStructuredObject getStructuredObject() {
         return structuredObject;
     }
 
-    @Override
     public Integer getStructuredObjectId() {
         return structuredObjectId;
     }

@@ -1,5 +1,7 @@
 package cz.tacr.elza.service.importnodes.vo.descitems;
 
+import com.vividsolutions.jts.geom.Geometry;
+
 /**
  * Rozhraní pro reprezentaci atributu.
  *
@@ -7,6 +9,6 @@ package cz.tacr.elza.service.importnodes.vo.descitems;
  */
 public interface ItemCoordinates extends Item {
 
-    String getGeometry();
+    Geometry getGeometry();
 
 }

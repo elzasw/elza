@@ -1029,11 +1029,11 @@ public class OutputService {
     public ArrOutputItem updateOutputItem(final ArrOutputItem outputItem,
                                           final Integer outputDefinitionVersion,
                                           @AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId) {
-        Assert.notNull(outputItem, "Výstup musí být vyplněn");
-        Assert.notNull(outputItem.getPosition(), "Pozice musí být vyplněna");
-        Assert.notNull(outputItem.getDescItemObjectId(), "Unikátní identifikátor hodnoty atributu musí být vyplněna");
-        Assert.notNull(outputDefinitionVersion, "Verze definice výstupu musí být vyplněna");
-        Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
+        Validate.notNull(outputItem, "Výstup musí být vyplněn");
+        Validate.notNull(outputItem.getPosition(), "Pozice musí být vyplněna");
+        Validate.notNull(outputItem.getDescItemObjectId(), "Unikátní identifikátor hodnoty atributu musí být vyplněna");
+        Validate.notNull(outputDefinitionVersion, "Verze definice výstupu musí být vyplněna");
+        Validate.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
 
         ArrChange change = null;
         ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
@@ -1048,11 +1048,19 @@ public class OutputService {
         ArrOutputItem outputItemDB = outputItems.get(0);
 
         final ArrOutputDefinition outputDefinition = outputItemDB.getOutputDefinition();
-        Assert.notNull(outputDefinition, "Definice výstupu musí být vyplněna");
+        Validate.notNull(outputDefinition, "Definice výstupu musí být vyplněna");
 
         List<OutputState> allowedState = Collections.singletonList(OutputState.OPEN);
         if (!allowedState.contains(outputDefinition.getState())) {
             throw new BusinessException("Nelze upravit výstupu, který není ve stavu otevřený", OutputCode.NOT_PROCESS_IN_STATE);
+        }
+
+        // check itemTypes
+        if (!outputItemDB.getItemTypeId().equals(outputItem.getItemTypeId())) {
+            throw new BusinessException("Received item has different itemType from item in DB",
+                    OutputCode.NOT_PROCESS_IN_STATE)
+                            .set("dbItemTypeId", outputItemDB.getItemTypeId())
+                            .set("receivedItemTypeId", outputItem.getItemTypeId());
         }
 
         checkCalculatingAttribute(outputDefinition, outputItemDB.getItemType());
@@ -1086,57 +1094,63 @@ public class OutputService {
         Validate.notNull(change);
 
         if (version.getLockChange() != null) {
-            throw new BusinessException("Nelze aktualizovat prvek popisu pro výstup v uzavřené verzi.", ArrangementCode.VERSION_ALREADY_CLOSED);
+            throw new BusinessException("Nelze aktualizovat prvek popisu pro výstup v uzavřené verzi.",
+                    ArrangementCode.VERSION_ALREADY_CLOSED);
         }
 
-			Integer positionOrig = outputItemDB.getPosition();
-            Integer positionNew = outputItem.getPosition();
+        Integer positionOrig = outputItemDB.getPosition();
+        Integer positionNew = outputItem.getPosition();
 
-            // změnila pozice, budou se provádět posuny
-            if (positionOrig != positionNew) {
+        // změnila pozice, budou se provádět posuny
+        if (positionOrig != positionNew) {
 
-			int maxPosition = outputItemRepository.findMaxItemPosition(outputItemDB.getItemType(), outputItemDB.getOutputDefinition());
+            int maxPosition = outputItemRepository.findMaxItemPosition(outputItemDB.getItemType(),
+                                                                       outputItemDB.getOutputDefinition());
 
-                if (outputItem.getPosition() == null || (outputItem.getPosition() > maxPosition)) {
-                    outputItem.setPosition(maxPosition + 1);
-                }
+            if (outputItem.getPosition() == null || (outputItem.getPosition() > maxPosition)) {
+                outputItem.setPosition(maxPosition + 1);
+            }
 
-                List<ArrOutputItem> outputItemsMove;
-                Integer diff;
+            List<ArrOutputItem> outputItemsMove;
+            Integer diff;
 
-                if (positionNew < positionOrig) {
-                    diff = 1;
-					outputItemsMove = findOutputItemsBetweenPosition(outputItemDB, positionNew, positionOrig - 1);
-                } else {
-                    diff = -1;
-					outputItemsMove = findOutputItemsBetweenPosition(outputItemDB, positionOrig + 1, positionNew);
-                }
+            if (positionNew < positionOrig) {
+                diff = 1;
+                outputItemsMove = findOutputItemsBetweenPosition(outputItemDB, positionNew, positionOrig - 1);
+            } else {
+                diff = -1;
+                outputItemsMove = findOutputItemsBetweenPosition(outputItemDB, positionOrig + 1, positionNew);
+            }
 
             for (ArrOutputItem item : outputItemsMove) {
                 itemService.copyItem(item, change, item.getPosition() + diff);
             }
         }
 
-            try {
-				ArrOutputItem descItemNew = new ArrOutputItem(outputItemDB);
+        try {
+            // Copy new value
+            ArrOutputItem descItemNew = new ArrOutputItem(outputItemDB);
 
-				outputItemDB.setDeleteChange(change);
-			itemService.save(outputItemDB);
+            // save old value with deleteChange
+            outputItemDB.setDeleteChange(change);
+            itemService.save(outputItemDB);
 
-                descItemNew.setItemId(null);
-                descItemNew.setCreateChange(change);
-                descItemNew.setPosition(positionNew);
-                descItemNew.setData(outputItem.getData());
+            descItemNew.setItemId(null);
+            descItemNew.setCreateChange(change);
+            descItemNew.setPosition(positionNew);
+            // update specification
+            descItemNew.setItemSpec(outputItem.getItemSpec());
+            descItemNew.setData(outputItem.getData());
 
             ArrOutputItem outputItemUpdated = itemService.save(descItemNew);
 
             outputServiceInternal.publishOutputItemChanged(outputItemUpdated, version.getFundVersionId());
             return outputItemUpdated;
 
-            } catch (Exception e) {
-                throw new SystemException(e);
-            }
+        } catch (Exception e) {
+            throw new SystemException(e);
         }
+    }
 
     /**
      * Vyhledá všechny hodnoty atributu mezi pozicemi.

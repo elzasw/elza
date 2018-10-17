@@ -196,16 +196,19 @@ public class ArrBulkActionRun {
      *
      * @return stav state
      */
-    public State getState() {
+    public synchronized State getState() {
         return state;
     }
 
     /**
      * Nastaví stav hromadné akce
+     * 
+     * Akce je synchronizovaná z důvodu metody setInterrupted
      *
-     * @param state stav
+     * @param state
+     *            stav
      */
-    public void setState(final State state) {
+    public synchronized void setState(final State state) {
         this.state = state;
     }
 
@@ -289,8 +292,19 @@ public class ArrBulkActionRun {
         return interrupted;
     }
 
-    public void setInterrupted(final boolean interrupted) {
+    /**
+     * Try to interrupt bulk action
+     * 
+     * @param interrupted
+     * @return Return true if action was interrupted. Return false if action is
+     *         not running and cannot be interrupted
+     */
+    public synchronized boolean setInterrupted(final boolean interrupted) {
+        if (state != State.RUNNING) {
+            return false;
+        }
         this.interrupted = interrupted;
+        return true;
     }
 
     /**

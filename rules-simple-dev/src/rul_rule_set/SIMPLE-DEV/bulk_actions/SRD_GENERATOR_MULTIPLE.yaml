@@ -33,12 +33,12 @@ actions:
     outputType: SRD_UNIT_HIST
 
   - !Copy
-    inputTypes:
+    inputType:
       - SRD_TITLE
     outputType: SRD_TITLE
 
   - !Copy
     distinct: true
-    inputTypes:
+    inputType:
       - SRD_TITLE
     outputType: SRD_UNIT_ARR

@@ -23,6 +23,10 @@ public class ItemPartyRef extends AbstractItem {
     protected Party getValue() {
         return party;
     }
+    
+    public Party getParty() {
+    	return party;
+    }
 
     @Override
     public <T> T getValue(final Class<T> type) {

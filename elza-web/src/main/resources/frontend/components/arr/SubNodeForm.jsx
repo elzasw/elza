@@ -353,7 +353,7 @@ class SubNodeForm extends AbstractReactComponent {
             descItemTypeIndex,
             descItemIndex
         };
-        this.props.dispatch(registryAdd(null, versionId, this.handleCreatedRecord.bind(this, valueLocation), '', true));
+        this.props.dispatch(registryAdd(versionId, this.handleCreatedRecord.bind(this, valueLocation), true));
     }
 
     /**

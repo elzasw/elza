@@ -13,21 +13,17 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import liquibase.change.custom.CustomTaskChange;
 import liquibase.database.Database;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.CustomChangeException;
 import liquibase.exception.DatabaseException;
-import liquibase.exception.SetupException;
-import liquibase.exception.ValidationErrors;
-import liquibase.resource.ResourceAccessor;
 
 /**
  * Migrace arr_packet & arr_data_packet_ref.
  *
  * @since 20.11.2017
  */
-public class DbUpgrade_20171120095000 implements CustomTaskChange {
+public class DbUpgrade_20171120095000 extends BaseTaskChange {
 
     private static final int DATA_TYPE_STRING = 2;
     private static final int DATA_TYPE_PACKET_REF = 11;
@@ -45,33 +41,12 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
     private Integer descItemObjectId;
 
     @Override
-    public String getConfirmationMessage() {
-        return null;
-    }
-
-    @Override
-    public void setUp() throws SetupException {
-
-    }
-
-    @Override
-    public void setFileOpener(final ResourceAccessor resourceAccessor) {
-
-    }
-
-    @Override
-    public ValidationErrors validate(final Database database) {
-        return null;
-    }
-
-    @Override
     public void execute(final Database db) throws CustomChangeException {
-        //String name = db.getDatabaseProductName();
         dc = (JdbcConnection) db.getConnection();
         try {
 
             List<ArrPacket> packets = findAllPackets();
-            if (packets.size() > 0) {
+            if (!packets.isEmpty()) {
                 migratePackets(packets);
 
             }
@@ -139,11 +114,12 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
     private Integer getNextDescItemObjectId() throws DatabaseException, SQLException {
         PreparedStatement ps = dc.prepareStatement("SELECT MAX(desc_item_object_id) AS max FROM arr_item");
         ps.execute();
-        ResultSet rs = ps.getResultSet();
-        if (rs.next()) {
-            return rs.getInt("max") + 1;
-        } else {
-            return 1;
+        try (ResultSet rs = ps.getResultSet()) {
+            if (rs.next()) {
+                return rs.getInt("max") + 1;
+            } else {
+                return 1;
+            }
         }
     }
 
@@ -177,7 +153,7 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
         ps.setInt(i++, itemSpec.getItemSpecId());
         ps.setInt(i++, 1);
         ps.setInt(i++, 0);
-        ps.setInt(i++, dataId);
+        ps.setInt(i, dataId);
         ps.executeUpdate();
 
         insertStructureItem(structureData, itemId);
@@ -202,7 +178,7 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
         ps.setInt(i++, itemType.getItemTypeId());
         ps.setInt(i++, 1);
         ps.setInt(i++, 0);
-        ps.setInt(i++, dataId);
+        ps.setInt(i, dataId);
         ps.executeUpdate();
 
         insertStructureItem(structureData, itemId);
@@ -243,7 +219,7 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
             throws DatabaseException, SQLException {
         PreparedStatement ps = dc.prepareStatement(
                 "UPDATE " + RulItemType.TABLE + " SET data_type_id = ?, " +
-                        RulItemType.STRUCTURE_TYPE_ID + " = ? WHERE item_type_id = ?;");
+                        RulItemType.COL_STRUCTURE_TYPE_ID + " = ? WHERE item_type_id = ?;");
         ps.setInt(1, dataTypeSoRef);
         ps.setInt(2, structureTypeId);
         ps.setInt(3, itemTypeId);
@@ -265,7 +241,7 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
     }
 
     private void deleteDataPacketRef(final ArrDataPacketRef packetRef) throws DatabaseException, SQLException {
-        PreparedStatement ps = dc.prepareStatement("DELETE FROM " + ArrDataPacketRef.TABLE + " WHERE " + ArrDataPacketRef.DATA_ID + "=?;");
+        PreparedStatement ps = dc.prepareStatement("DELETE FROM " + ArrDataPacketRef.TABLE + " WHERE " + ArrDataPacketRef.COL_DATA_ID + "=?;");
         ps.setInt(1, packetRef.getDataId());
         ps.executeUpdate();
     }
@@ -274,15 +250,16 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
         List<ArrDataPacketRef> dataPacketRefs = new ArrayList<>();
         PreparedStatement ps = dc.prepareStatement("SELECT * FROM arr_data_packet_ref");
         ps.execute();
-        ResultSet rs = ps.getResultSet();
-        while (rs.next()) {
-            dataPacketRefs.add(createDataPacketRef(rs));
+        try (ResultSet rs = ps.getResultSet();) {
+            while (rs.next()) {
+                dataPacketRefs.add(createDataPacketRef(rs));
+            }
         }
         return dataPacketRefs;
     }
 
     private ArrDataPacketRef createDataPacketRef(final ResultSet rs) throws SQLException {
-        return new ArrDataPacketRef(rs.getInt(ArrDataPacketRef.DATA_ID), rs.getInt(ArrDataPacketRef.PACKET_ID));
+        return new ArrDataPacketRef(rs.getInt(ArrDataPacketRef.COL_DATA_ID), rs.getInt(ArrDataPacketRef.COL_PACKET_ID));
     }
 
     private void saveHibernateSequences() throws SQLException, DatabaseException {
@@ -314,7 +291,7 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
         ps.setInt(i++, structureData.getStructureTypeId());
         ps.setInt(i++, structureData.getFundId());
         ps.setBoolean(i++, structureData.getAssignable());
-        ps.setString(i++, structureData.getState().name());
+        ps.setString(i, structureData.getState().name());
         ps.executeUpdate();
     }
 
@@ -322,9 +299,10 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
         Map<Integer, Integer> result = new HashMap<>();
         PreparedStatement ps = dc.prepareStatement("SELECT * FROM arr_fund_version fv WHERE lock_change_id IS NULL");
         ps.execute();
-        ResultSet rs = ps.getResultSet();
-        while (rs.next()) {
-            result.put(rs.getInt("fund_id"), rs.getInt("rule_set_id"));
+        try (ResultSet rs = ps.getResultSet();) {
+            while (rs.next()) {
+                result.put(rs.getInt("fund_id"), rs.getInt("rule_set_id"));
+            }
         }
         return result;
     }
@@ -415,7 +393,7 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
                                        final String name,
                                        final Integer ruleSetId,
                                        final Integer packageId) throws DatabaseException, SQLException {
-        return new RulStructureType(nextId(RulStructureType.TABLE, RulStructureType.STRUCTURE_TYPE_ID), code, name, packageId, ruleSetId);
+        return new RulStructureType(nextId(RulStructureType.TABLE, RulStructureType.COL_STRUCTURE_TYPE_ID), code, name, packageId, ruleSetId);
     }
 
     private RulItemType createItemType(final Integer dataTypeId,
@@ -428,7 +406,7 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
                                        final Integer ruleSetId,
                                        final Integer packageId,
                                        final Integer structureTypeId) throws DatabaseException, SQLException {
-        return new RulItemType(nextId(RulItemType.TABLE, RulItemType.ITEM_TYPE_ID), dataTypeId, code, name, shortcut, description, false, false, useSpecification, viewOrder, ruleSetId, packageId, null, structureTypeId);
+        return new RulItemType(nextId(RulItemType.TABLE, RulItemType.COL_ITEM_TYPE_ID), dataTypeId, code, name, shortcut, description, false, false, useSpecification, viewOrder, ruleSetId, packageId, null, structureTypeId);
     }
 
     private Integer nextId(final String table, final String column) throws DatabaseException, SQLException {
@@ -474,11 +452,11 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
     }
 
     private void insertStructureType(final RulStructureType structureType) throws DatabaseException, SQLException {
-        PreparedStatement ps = dc.prepareStatement("INSERT INTO " + RulStructureType.TABLE + " (" + RulStructureType.STRUCTURE_TYPE_ID + "," +
-                RulStructureType.CODE + "," +
-                RulStructureType.NAME + "," +
-                RulStructureType.PACKAGE_ID + "," +
-                RulStructureType.RULE_SET_ID + ") " +
+        PreparedStatement ps = dc.prepareStatement("INSERT INTO " + RulStructureType.TABLE + " (" + RulStructureType.COL_STRUCTURE_TYPE_ID + "," +
+                RulStructureType.COL_CODE + "," +
+                RulStructureType.COL_NAME + "," +
+                RulStructureType.COL_PACKAGE_ID + "," +
+                RulStructureType.COL_RULE_SET_ID + ") " +
                 "VALUES (?, ?, ?, ?, ?);");
         int i = 1;
         ps.setInt(i++, structureType.getStructureTypeId());
@@ -500,9 +478,10 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
         List<ArrPacket> packets = new ArrayList<>();
         PreparedStatement ps = dc.prepareStatement("SELECT * FROM arr_packet");
         ps.execute();
-        ResultSet rs = ps.getResultSet();
-        while (rs.next()) {
-            packets.add(createPacket(rs));
+        try (ResultSet rs = ps.getResultSet();) {
+            while (rs.next()) {
+                packets.add(createPacket(rs));
+            }
         }
         return packets;
     }
@@ -512,36 +491,38 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
         PreparedStatement ps = dc.prepareStatement("SELECT * FROM rul_item_type it WHERE it.data_type_id = ?");
         ps.setInt(1, DATA_TYPE_PACKET_REF);
         ps.execute();
-        ResultSet rs = ps.getResultSet();
-        while (rs.next()) {
-            items.add(createItemType(rs));
+        try (ResultSet rs = ps.getResultSet();) {
+            while (rs.next()) {
+                items.add(createItemType(rs));
+            }
         }
         return items;
     }
 
     private RulItemType createItemType(ResultSet rs) throws SQLException {
-        return new RulItemType(rs.getInt(RulItemType.ITEM_TYPE_ID),
-                rs.getInt(RulItemType.DATA_TYPE_ID),
-                rs.getString(RulItemType.CODE),
-                rs.getString(RulItemType.NAME),
-                rs.getString(RulItemType.SHORTCUT),
-                rs.getString(RulItemType.DESCRIPTION),
-                rs.getBoolean(RulItemType.IS_VALUE_UNIQUE),
-                rs.getBoolean(RulItemType.CAN_BE_ORDERED),
-                rs.getBoolean(RulItemType.USE_SPECIFICATION),
-                rs.getInt(RulItemType.VIEW_ORDER),
-                rs.getInt(RulItemType.RULE_SET_ID),
-                rs.getInt(RulItemType.PACKAGE_ID),
-                rs.getString(RulItemType.COLUMNS_DEFINITION),
+        return new RulItemType(rs.getInt(RulItemType.COL_ITEM_TYPE_ID),
+                rs.getInt(RulItemType.COL_DATA_TYPE_ID),
+                rs.getString(RulItemType.COL_CODE),
+                rs.getString(RulItemType.COL_NAME),
+                rs.getString(RulItemType.COL_SHORTCUT),
+                rs.getString(RulItemType.COL_DESCRIPTION),
+                rs.getBoolean(RulItemType.COL_IS_VALUE_UNIQUE),
+                rs.getBoolean(RulItemType.COL_CAN_BE_ORDERED),
+                rs.getBoolean(RulItemType.COL_USE_SPECIFICATION),
+                rs.getInt(RulItemType.COL_VIEW_ORDER),
+                rs.getInt(RulItemType.COL_RULE_SET_ID),
+                rs.getInt(RulItemType.COL_PACKAGE_ID),
+                rs.getString(RulItemType.COL_COLUMNS_DEFINITION),
                 null /*struct_type - not exists yet*/);
     }
 
     private Integer nextItemTypeViewOrder() throws DatabaseException, SQLException {
-        PreparedStatement ps = dc.prepareStatement("SELECT MAX(" + RulItemType.VIEW_ORDER  + ") FROM " + RulItemType.TABLE);
+        PreparedStatement ps = dc.prepareStatement("SELECT MAX(" + RulItemType.COL_VIEW_ORDER  + ") FROM " + RulItemType.TABLE);
         ps.execute();
-        ResultSet rs = ps.getResultSet();
-        if (rs.next()) {
-            return rs.getInt(1) + 1;
+        try (ResultSet rs = ps.getResultSet();) {
+            if (rs.next()) {
+                return rs.getInt(1) + 1;
+            }
         }
         return 1;
     }
@@ -550,9 +531,10 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
         List<DbSequence> dbSequences = new ArrayList<>();
         PreparedStatement ps = dc.prepareStatement("SELECT * FROM db_hibernate_sequences");
         ps.execute();
-        ResultSet rs = ps.getResultSet();
-        while (rs.next()) {
-            dbSequences.add(createDbSequence(rs));
+        try (ResultSet rs = ps.getResultSet();) {
+            while (rs.next()) {
+                dbSequences.add(createDbSequence(rs));
+            }
         }
         return dbSequences;
     }
@@ -561,39 +543,41 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
         List<RulRuleSet> ruleSets = new ArrayList<>();
         PreparedStatement ps = dc.prepareStatement("SELECT * FROM rul_rule_set");
         ps.execute();
-        ResultSet rs = ps.getResultSet();
-        while (rs.next()) {
-            ruleSets.add(createRuleSet(rs));
+        try (ResultSet rs = ps.getResultSet();) {
+            while (rs.next()) {
+                ruleSets.add(createRuleSet(rs));
+            }
         }
         return ruleSets;
     }
 
     private List<RulPacketType> findPacketTypeByRuleSet(final RulRuleSet ruleSet) throws DatabaseException, SQLException {
         List<RulPacketType> packetTypes = new ArrayList<>();
-        PreparedStatement ps = dc.prepareStatement("SELECT * FROM " + RulPacketType.TABLE + " WHERE " + RulPacketType.PACKAGE_ID + "=? AND " + RulPacketType.RULE_SET_ID + "=?");
+        PreparedStatement ps = dc.prepareStatement("SELECT * FROM " + RulPacketType.TABLE + " WHERE " + RulPacketType.COL_PACKAGE_ID + "=? AND " + RulPacketType.COL_RULE_SET_ID + "=?");
         ps.setInt(1, ruleSet.getPackageId());
         ps.setInt(2, ruleSet.getRuleSetId());
         ps.execute();
-        ResultSet rs = ps.getResultSet();
-        while (rs.next()) {
-            packetTypes.add(createPacketType(rs));
+        try (ResultSet rs = ps.getResultSet();) {
+            while (rs.next()) {
+                packetTypes.add(createPacketType(rs));
+            }
         }
         return packetTypes;
     }
 
     private RulPacketType createPacketType(final ResultSet rs) throws SQLException {
-        return new RulPacketType(rs.getInt(RulPacketType.PACKET_TYPE_ID),
-                rs.getString(RulPacketType.CODE),
-                rs.getString(RulPacketType.NAME),
-                rs.getString(RulPacketType.SHORTCUT),
-                rs.getInt(RulPacketType.RULE_SET_ID),
-                rs.getInt(RulPacketType.PACKAGE_ID));
+        return new RulPacketType(rs.getInt(RulPacketType.COL_PACKET_TYPE_ID),
+                rs.getString(RulPacketType.COL_CODE),
+                rs.getString(RulPacketType.COL_NAME),
+                rs.getString(RulPacketType.COL_SHORTCUT),
+                rs.getInt(RulPacketType.COL_RULE_SET_ID),
+                rs.getInt(RulPacketType.COL_PACKAGE_ID));
     }
 
     private RulRuleSet createRuleSet(final ResultSet rs) throws SQLException {
-        return new RulRuleSet(rs.getInt(RulRuleSet.RULE_SET_ID),
-                rs.getString(RulRuleSet.CODE),
-                rs.getInt(RulRuleSet.PACKAGE_ID));
+        return new RulRuleSet(rs.getInt(RulRuleSet.COL_RULE_SET_ID),
+                rs.getString(RulRuleSet.COL_CODE),
+                rs.getInt(RulRuleSet.COL_PACKAGE_ID));
     }
 
     private DbSequence createDbSequence(final ResultSet rs) throws SQLException {
@@ -605,11 +589,11 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
     private static class RulStructureType {
 
         private static String TABLE = "rul_structure_type";
-        private static String STRUCTURE_TYPE_ID = "structure_type_id";
-        private static String CODE = "code";
-        private static String NAME = "name";
-        private static String PACKAGE_ID = "package_id";
-        private static String RULE_SET_ID = "rule_set_id";
+        private static String COL_STRUCTURE_TYPE_ID = "structure_type_id";
+        private static String COL_CODE = "code";
+        private static String COL_NAME = "name";
+        private static String COL_PACKAGE_ID = "package_id";
+        private static String COL_RULE_SET_ID = "rule_set_id";
 
         private Integer structureTypeId;
         private String code;
@@ -770,20 +754,20 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
     private static class RulItemType {
 
         private static String TABLE = "rul_item_type";
-        private static String ITEM_TYPE_ID = "item_type_id";
-        private static String DATA_TYPE_ID = "data_type_id";
-        private static String CODE = "code";
-        private static String NAME = "name";
-        private static String SHORTCUT = "shortcut";
-        private static String DESCRIPTION = "description";
-        private static String IS_VALUE_UNIQUE = "is_value_unique";
-        private static String CAN_BE_ORDERED = "can_be_ordered";
-        private static String USE_SPECIFICATION = "use_specification";
-        private static String VIEW_ORDER = "view_order";
-        private static String PACKAGE_ID = "package_id";
-        private static String COLUMNS_DEFINITION = "columns_definition";
-        private static String RULE_SET_ID = "rule_set_id";
-        private static String STRUCTURE_TYPE_ID = "structure_type_id";
+        private static String COL_ITEM_TYPE_ID = "item_type_id";
+        private static String COL_DATA_TYPE_ID = "data_type_id";
+        private static String COL_CODE = "code";
+        private static String COL_NAME = "name";
+        private static String COL_SHORTCUT = "shortcut";
+        private static String COL_DESCRIPTION = "description";
+        private static String COL_IS_VALUE_UNIQUE = "is_value_unique";
+        private static String COL_CAN_BE_ORDERED = "can_be_ordered";
+        private static String COL_USE_SPECIFICATION = "use_specification";
+        private static String COL_VIEW_ORDER = "view_order";
+        private static String COL_PACKAGE_ID = "package_id";
+        private static String COL_COLUMNS_DEFINITION = "columns_definition";
+        private static String COL_RULE_SET_ID = "rule_set_id";
+        private static String COL_STRUCTURE_TYPE_ID = "structure_type_id";
 
         private Integer itemTypeId;
         private Integer dataTypeId;
@@ -926,9 +910,9 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
     }
 
     private static class RulRuleSet {
-        private static String RULE_SET_ID = "rule_set_id";
-        private static String CODE = "code";
-        private static String PACKAGE_ID = "package_id";
+        private static String COL_RULE_SET_ID = "rule_set_id";
+        private static String COL_CODE = "code";
+        private static String COL_PACKAGE_ID = "package_id";
 
         private Integer ruleSetId;
         private String code;
@@ -954,24 +938,24 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
     }
 
     private ArrPacket createPacket(final ResultSet rs) throws SQLException {
-        Integer packetTypeId = rs.getInt(ArrPacket.PACKET_TYPE_ID);
+        Integer packetTypeId = rs.getInt(ArrPacket.COL_PACKET_TYPE_ID);
         if (rs.wasNull()) {
             packetTypeId = null;
         }
-        return new ArrPacket(rs.getInt(ArrPacket.PACKET_ID),
-                rs.getString(ArrPacket.STORAGE_NUMBER),
+        return new ArrPacket(rs.getInt(ArrPacket.COL_PACKET_ID),
+                rs.getString(ArrPacket.COL_STORAGE_NUMBER),
                 packetTypeId,
-                rs.getInt(ArrPacket.FUND_ID),
-                ArrPacket.State.valueOf(rs.getString(ArrPacket.STATE).trim()));
+                rs.getInt(ArrPacket.COL_FUND_ID),
+                ArrPacket.State.valueOf(rs.getString(ArrPacket.COL_STATE).trim()));
     }
 
     private static class ArrPacket {
 
-        private static String PACKET_ID = "packet_id";
-        private static String STORAGE_NUMBER = "storage_number";
-        private static String PACKET_TYPE_ID = "packet_type_id";
-        private static String FUND_ID = "fund_id";
-        private static String STATE = "state";
+        private static String COL_PACKET_ID = "packet_id";
+        private static String COL_STORAGE_NUMBER = "storage_number";
+        private static String COL_PACKET_TYPE_ID = "packet_type_id";
+        private static String COL_FUND_ID = "fund_id";
+        private static String COL_STATE = "state";
 
         private Integer packetId;
         private String storageNumber;
@@ -1017,12 +1001,12 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
     private static class RulPacketType {
 
         private static String TABLE = "rul_packet_type";
-        private static String PACKET_TYPE_ID = "packet_type_id";
-        private static String CODE = "code";
-        private static String NAME = "name";
-        private static String SHORTCUT = "shortcut";
-        private static String RULE_SET_ID = "rule_set_id";
-        private static String PACKAGE_ID = "package_id";
+        private static String COL_PACKET_TYPE_ID = "packet_type_id";
+        private static String COL_CODE = "code";
+        private static String COL_NAME = "name";
+        private static String COL_SHORTCUT = "shortcut";
+        private static String COL_RULE_SET_ID = "rule_set_id";
+        private static String COL_PACKAGE_ID = "package_id";
 
         private Integer packetTypeId;
         private String code;
@@ -1120,8 +1104,8 @@ public class DbUpgrade_20171120095000 implements CustomTaskChange {
     private static class ArrDataPacketRef {
 
         private static String TABLE = "arr_data_packet_ref";
-        private static String DATA_ID = "data_id";
-        private static String PACKET_ID = "packet_id";
+        private static String COL_DATA_ID = "data_id";
+        private static String COL_PACKET_ID = "packet_id";
 
         private Integer dataId;
         private Integer packetId;

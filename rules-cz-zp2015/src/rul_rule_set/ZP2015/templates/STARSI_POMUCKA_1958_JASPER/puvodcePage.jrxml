@@ -74,7 +74,7 @@
 				<textElement markup="html">
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA["<b>Preferovaná forma jména: </b>"+$F{record}.getRecord()]]></textFieldExpression>
+				<textFieldExpression><![CDATA["<b>Preferovaná forma jména: </b>"+$F{record}.getPrefName().getFullName()]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="Text" positionType="Float" x="0" y="90" width="455" height="20" isRemoveLineWhenBlank="true" uuid="19ed5bf0-79ad-459a-8caf-927314b8f4be">
@@ -88,20 +88,20 @@
 			<textField isStretchWithOverflow="true">
 				<reportElement style="Text" positionType="Float" x="0" y="50" width="455" height="20" isRemoveLineWhenBlank="true" uuid="034bd6a6-f9b1-41c3-9d72-45f64a1bb28b">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-					<printWhenExpression><![CDATA[org.apache.commons.lang3.StringUtils.isNotBlank($F{partyObj}.getRecord().getExternalId())]]></printWhenExpression>
+					<printWhenExpression><![CDATA[org.apache.commons.lang3.StringUtils.isNotBlank($F{partyObj}.getRecord().getFormattedEids())]]></printWhenExpression>
 				</reportElement>
 				<textElement markup="html">
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA["<b>INTERPI: </b>"+$F{partyObj}.getRecord().getExternalId()]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{partyObj}.getRecord().getFormattedEids()]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" bookmarkLevel="2">
 				<reportElement style="Heading 2" x="0" y="0" width="455" height="50" isRemoveLineWhenBlank="true" isPrintInFirstWholeBand="true" uuid="8df034eb-c92e-4259-9b6a-132ea63701b3"/>
 				<textElement verticalAlignment="Middle" markup="html">
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{record}.getRecord()]]></textFieldExpression>
-				<anchorNameExpression><![CDATA[$F{record}.getRecord()]]></anchorNameExpression>
+				<textFieldExpression><![CDATA[$F{record}.getPrefName().getFullName()]]></textFieldExpression>
+				<anchorNameExpression><![CDATA[$F{record}.getPrefName().getFullName()]]></anchorNameExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="Text" positionType="Float" x="0" y="110" width="455" height="20" isRemoveLineWhenBlank="true" uuid="c9328994-3313-40c9-937a-692b67b4c4ed">
@@ -188,7 +188,7 @@
 							<textElement markup="html">
 								<font pdfEncoding="Cp1250"/>
 							</textElement>
-							<textFieldExpression><![CDATA["<b>"+StringUtils.capitalize($F{roleType}.getName())+": </b>"+$F{record}.getRecord()]]></textFieldExpression>
+							<textFieldExpression><![CDATA["<b>"+StringUtils.capitalize($F{roleType}.getName())+": </b>"+$F{record}.getPrefName().getFullName()]]></textFieldExpression>
 						</textField>
 					</jr:listContents>
 				</jr:list>
@@ -239,7 +239,7 @@
 							<textElement markup="html">
 								<font pdfEncoding="Cp1250"/>
 							</textElement>
-							<textFieldExpression><![CDATA["<b>"+StringUtils.capitalize($F{roleType}.getName())+": </b>"+$F{record}.getRecord()]]></textFieldExpression>
+							<textFieldExpression><![CDATA["<b>"+StringUtils.capitalize($F{roleType}.getName())+": </b>"+$F{record}.getPrefName().getFullName()]]></textFieldExpression>
 						</textField>
 					</jr:listContents>
 				</jr:list>
@@ -291,7 +291,7 @@
 													<textElement>
 														<font pdfEncoding="Cp1250"/>
 													</textElement>
-													<textFieldExpression><![CDATA[StringUtils.capitalize($F{roleType}.getName())+": "+$F{record}.getRecord()+(StringUtils.isNotBlank($F{note})?(" ("+$F{note}+")"):"")]]></textFieldExpression>
+													<textFieldExpression><![CDATA[StringUtils.capitalize($F{roleType}.getName())+": "+$F{record}.getPrefName().getFullName()+(StringUtils.isNotBlank($F{note})?(" ("+$F{note}+")"):"")]]></textFieldExpression>
 												</textField>
 											</jr:listContents>
 										</jr:list>

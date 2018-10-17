@@ -12,7 +12,7 @@ import java.util.Arrays;
 import java.util.Set;
 import cz.tacr.elza.domain.RulItemType;
 
-rule "Jen vybrané jsou možné"
+rule "Možné neopakovatelné prvky"
 no-loop
 when
     $itemType : RulItemTypeExt( code in (
@@ -23,6 +23,17 @@ when
 then
     $itemType.setType(RulItemType.Type.POSSIBLE);
     $itemType.setRepeatable(false);
+end
+
+rule "Možné opakovatelné prvky - přílohy"
+no-loop
+when
+    $itemType : RulItemTypeExt( code in (
+        "ZP2015_ATTACHMENT"
+    ) )
+then
+    $itemType.setType(RulItemType.Type.POSSIBLE);
+    $itemType.setRepeatable(true);
 end
 
 // Povinné prvky popisu

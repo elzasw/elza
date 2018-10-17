@@ -17,11 +17,11 @@ import cz.tacr.elza.domain.ArrDataUnitid;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.domain.ArrUsedValue;
+import cz.tacr.elza.domain.ArrLockedValue;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.repository.UsedValueRepository;
+import cz.tacr.elza.repository.LockedValueRepository;
 import cz.tacr.elza.service.ArrangementCacheService;
 
 public class SealUnitId extends BulkActionDFS {
@@ -60,7 +60,7 @@ public class SealUnitId extends BulkActionDFS {
     ArrangementCacheService arrangementCacheService;
 
     @Autowired
-    UsedValueRepository usedValueRepository;
+    LockedValueRepository usedValueRepository;
 
     Deque<StackUnitId> nodeIdStack = new ArrayDeque<>();
 
@@ -109,7 +109,7 @@ public class SealUnitId extends BulkActionDFS {
         ArrData data = descItem.getData();
         ArrDataUnitid dataUnitId = HibernateUtils.unproxy(data);
 
-        String value = dataUnitId.getValue();
+        String value = dataUnitId.getUnitId();
         StackUnitId stackUnitId = new StackUnitId(level.getNodeId(), value);
 
         if (parentUnitId != null) {
@@ -126,18 +126,28 @@ public class SealUnitId extends BulkActionDFS {
             parentUnitId.setLastSibling(stackUnitId);
         }
 
+
         ArrFund fund = runContext.getFund();
+
         // find as used value
-        ArrUsedValue fixedValue = usedValueRepository.findByFundAndItemTypeAndValue(fund, itemType, value);
+        ArrLockedValue fixedValue = usedValueRepository.findByFundAndItemTypeAndValue(fund, itemType, value);
         if (fixedValue == null) {
-            // store as used value
-            fixedValue = new ArrUsedValue();
+            // lock if not locked
+            fixedValue = new ArrLockedValue();
             fixedValue.setFund(fund);
-            fixedValue.setItemType(itemType);
+            fixedValue.setItem(descItem);
             fixedValue.setCreateChange(getChange());
-            fixedValue.setValue(value);
 
             usedValueRepository.save(fixedValue);
+        } else {
+            // check that descItem match current frozen value
+            if (!fixedValue.getItemId().equals(descItem.getItemId())) {
+                throw new SystemException("Incorrect value to be fixed, value is already fixed with another item",
+                        BaseCode.INVALID_STATE)
+                                .set("value", value)
+                                .set("fixedAtItemId", fixedValue.getItemId())
+                                .set("otherItemId", descItem.getItemId());
+            }
         }
 
         // store on stack
