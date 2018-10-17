@@ -25,8 +25,6 @@ import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Scope;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
@@ -277,27 +275,27 @@ public class ArrangementController {
     @Autowired
     private ImportNodesFromSource importNodesFromSource;
 
-    @Autowired
-    private ArrangementFormService formService;
+	@Autowired
+	private ArrangementFormService formService;
 
-    @Autowired
+	@Autowired
     private StaticDataService staticDataService;
 
     /**
-     * Poskytuje seznam balíčků digitalizátů pouze pod archivní souborem (AS).
+     *  Poskytuje seznam balíčků digitalizátů pouze pod archivní souborem (AS).
      *
-     * @param fundVersionId id archivního souboru
-     * @param search vyhledává (použití LIKE) nad kódem balíčku, kódem a labelem arr_dao (přirazený k balíčku), kódem a labelem arr_dao_batch_info
+     * @param fundVersionId   id archivního souboru
+     * @param search   vyhledává (použití LIKE) nad kódem balíčku, kódem a labelem arr_dao (přirazený k balíčku), kódem a labelem arr_dao_batch_info
      * @param unassigned mají-li se získávat pouze balíčky, které obsahují DAO, které nejsou nikam přirazené (unassigned = true), a nebo úplně všechny (unassigned = false)
-     * @param maxResults maximální počet vyhledaných balíčků
-     * @return seznam balíčků, seřazení je podle ID balíčku sestupně (tzn. poslední vytvořené budou na začátku seznamu)
+     * @param maxResults  maximální počet vyhledaných balíčků
+     * @return  seznam balíčků, seřazení je podle ID balíčku sestupně (tzn. poslední vytvořené budou na začátku seznamu)
      */
     @RequestMapping(value = "/daopackages/{fundVersionId}",
             method = RequestMethod.GET,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    @Transactional
-    public List<ArrDaoPackageVO> findDaoPackages(
+	@Transactional
+	public List<ArrDaoPackageVO> findDaoPackages(
             @PathVariable(value = "fundVersionId") final Integer fundVersionId,
             @RequestParam(value = "search", required = false) final String search,
             @RequestParam(value = "unassigned", required = false, defaultValue = "false") final Boolean unassigned,
@@ -314,22 +312,22 @@ public class ArrangementController {
      * Poskytuje seznam digitálních entit (DAO), které jsou napojené na konkrétní jednotku popisu (JP) nebo nemá žádné napojení (pouze pod archivní souborem (AS)).
      *
      * @param fundVersionId id archivního souboru
-     * @param nodeId id node, pokud je null, najde entity bez napojení
-     * @param detail načíst detailní informace (plnit struktutu vč návazných), výchozí hodnota false
-     * @param index počáteční pozice pro načtení
-     * @param maxResults počet načítaných výsledků
+     * @param nodeId        id node, pokud je null, najde entity bez napojení
+     * @param detail        načíst detailní informace (plnit struktutu vč návazných), výchozí hodnota false
+     * @param index         počáteční pozice pro načtení
+     * @param maxResults    počet načítaných výsledků
      * @return seznam digitálních entit (DAO)
      */
     @RequestMapping(value = "/daos/{fundVersionId}",
             method = RequestMethod.GET,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    @Transactional
-    public List<ArrDaoVO> findDaos(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                                   @RequestParam(value = "nodeId", required = false) final Integer nodeId,
-                                   @RequestParam(value = "detail", required = false, defaultValue = "false") final Boolean detail,
-                                   @RequestParam(value = "index", required = false, defaultValue = "0") final Integer index,
-                                   @RequestParam(value = "maxResults", required = false, defaultValue = "99999") final Integer maxResults) {
+	@Transactional
+	public List<ArrDaoVO> findDaos(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                            @RequestParam(value = "nodeId", required = false) final Integer nodeId,
+                            @RequestParam(value = "detail", required = false, defaultValue = "false") final Boolean detail,
+                            @RequestParam(value = "index", required = false, defaultValue = "0") final Integer index,
+                            @RequestParam(value = "maxResults", required = false, defaultValue = "99999") final Integer maxResults) {
         Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
 
@@ -343,57 +341,56 @@ public class ArrangementController {
         return factoryVo.createDaoList(arrDaoList, BooleanUtils.isTrue(detail), fundVersion);
     }
 
-    /**
-     * Poskytuje seznam digitálních entit (DAO), které jsou napojené na konkrétní balíček.
-     *
-     * @param fundVersionId id archivního souboru
-     * @param daoPackageId id package
-     * @param unassigned mají-li se získávat pouze balíčky, které obsahují DAO, které nejsou nikam přirazené (unassigned = true), a nebo úplně všechny (unassigned = false)
-     * @param index počáteční pozice pro načtení
-     * @param maxResults počet načítaných výsledků
-     * @return seznam digitálních entit (DAO)
-     */
-    @RequestMapping(value = "/daos/{fundVersionId}/{daoPackageId}",
-            method = RequestMethod.GET,
-            consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    @Transactional
-    public List<ArrDaoVO> findDaosByPackage(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                                            @PathVariable(value = "daoPackageId") final Integer daoPackageId,
-                                            @RequestParam(value = "detail", required = false, defaultValue = "false") final Boolean detail,
-                                            @RequestParam(value = "unassigned", required = false, defaultValue = "false") final Boolean unassigned,
-                                            @RequestParam(value = "index", required = false, defaultValue = "0") final Integer index,
-                                            @RequestParam(value = "maxResults", required = false, defaultValue = "99999") final Integer maxResults) {
-        Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
-        Assert.notNull(daoPackageId, "Idenitifikátor DAO obalu musí být vyplněn");
+        /**
+         * Poskytuje seznam digitálních entit (DAO), které jsou napojené na konkrétní balíček.
+         *
+         * @param fundVersionId id archivního souboru
+         * @param daoPackageId  id package
+         * @param unassigned mají-li se získávat pouze balíčky, které obsahují DAO, které nejsou nikam přirazené (unassigned = true), a nebo úplně všechny (unassigned = false)
+         * @param index         počáteční pozice pro načtení
+         * @param maxResults    počet načítaných výsledků
+         * @return seznam digitálních entit (DAO)
+         */
+        @RequestMapping(value = "/daos/{fundVersionId}/{daoPackageId}",
+                method = RequestMethod.GET,
+                consumes = MediaType.APPLICATION_JSON_VALUE,
+                produces = MediaType.APPLICATION_JSON_VALUE)
+	@Transactional
+	public List<ArrDaoVO> findDaosByPackage(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                                         @PathVariable(value = "daoPackageId") final Integer daoPackageId,
+                                         @RequestParam(value = "detail", required = false, defaultValue = "false") final Boolean detail,
+                                         @RequestParam(value = "unassigned", required = false, defaultValue = "false") final Boolean unassigned,
+                                         @RequestParam(value = "index", required = false, defaultValue = "0") final Integer index,
+                                         @RequestParam(value = "maxResults", required = false, defaultValue = "99999") final Integer maxResults) {
+            Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
+            Assert.notNull(daoPackageId, "Idenitifikátor DAO obalu musí být vyplněn");
 
-        ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
-        final ArrDaoPackage arrDaoPackage = daoPackageRepository.getOneCheckExist(daoPackageId);
+            ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
+            final ArrDaoPackage arrDaoPackage = daoPackageRepository.getOneCheckExist(daoPackageId);
 
 
-        final List<ArrDao> arrDaoList = daoService.findDaosByPackage(fundVersion, arrDaoPackage, index, maxResults,
-                BooleanUtils.isTrue(unassigned));
+            final List<ArrDao> arrDaoList = daoService.findDaosByPackage(fundVersion, arrDaoPackage, index, maxResults,
+                    BooleanUtils.isTrue(unassigned));
 
-        final List<ArrDaoVO> daoList = factoryVo.createDaoList(arrDaoList, BooleanUtils.isTrue(detail), fundVersion);
+            final List<ArrDaoVO> daoList = factoryVo.createDaoList(arrDaoList, BooleanUtils.isTrue(detail), fundVersion);
 
-        final List<Integer> processingArrDaoIds = daoService.findProcessingArrDaoRequestDaoArrDaoIds(arrDaoList);
+            final List<Integer> processingArrDaoIds = daoService.findProcessingArrDaoRequestDaoArrDaoIds(arrDaoList);
 
-        daoList.forEach(i -> i.setExistInArrDaoRequest(processingArrDaoIds.contains(i.getId())));
+            daoList.forEach(i -> i.setExistInArrDaoRequest(processingArrDaoIds.contains(i.getId())));
 
-        return daoList;
-    }
+            return daoList;
+        }
 
     /**
      * připojení digitalizát na JP (vytvoření záznamu v arr_dao_link)
-     *
      * @param daoId DAO pro propojení
      * @param nodeId Node pro propojení
      */
     @Transactional
     @RequestMapping(value = "/daos/{fundVersionId}/{daoId}/{nodeId}/create",
-            method = RequestMethod.PUT,
-            consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
+                method = RequestMethod.PUT,
+                consumes = MediaType.APPLICATION_JSON_VALUE,
+                produces = MediaType.APPLICATION_JSON_VALUE)
     public void createDaoLink(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
                               @PathVariable(value = "daoId") final Integer daoId,
                               @PathVariable(value = "nodeId") final Integer nodeId) {
@@ -410,14 +407,13 @@ public class ArrangementController {
 
     /**
      * Odpojí digitalizát od JP (vyplnění záznamu delete_change_id v arr_dao_link)
-     *
      * @param daoLinkId ID požadovaného linku k rozpojení
      */
     @Transactional
     @RequestMapping(value = "/daolinks/{fundVersionId}/{daoLinkId}",
-            method = RequestMethod.DELETE,
-            consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
+                method = RequestMethod.DELETE,
+                consumes = MediaType.APPLICATION_JSON_VALUE,
+                produces = MediaType.APPLICATION_JSON_VALUE)
     public void deleteDaoLink(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
                               @PathVariable(value = "daoLinkId") final Integer daoLinkId) {
         Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
@@ -432,10 +428,10 @@ public class ArrangementController {
     /**
      * Smazání hodnot atributu podle typu.
      *
-     * @param fundVersionId identfikátor verze AP
-     * @param nodeId identfikátor JP
-     * @param nodeVersion verze JP
-     * @param descItemTypeId identfikátor typu hodnoty atributu
+     * @param fundVersionId   identfikátor verze AP
+     * @param nodeId                identfikátor JP
+     * @param nodeVersion           verze JP
+     * @param descItemTypeId        identfikátor typu hodnoty atributu
      */
     @Transactional
     @RequestMapping(value = "/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/{descItemTypeId}",
@@ -465,10 +461,10 @@ public class ArrangementController {
     /**
      * Smazání hodnot atributu podle typu.
      *
-     * @param fundVersionId identfikátor verze AP
-     * @param nodeId identfikátor výstupu
-     * @param nodeVersion verze výstupu
-     * @param itemTypeId identfikátor typu hodnoty atributu
+     * @param fundVersionId   identfikátor verze AP
+     * @param nodeId                identfikátor výstupu
+     * @param nodeVersion           verze výstupu
+     * @param itemTypeId        identfikátor typu hodnoty atributu
      */
     @Transactional
     @RequestMapping(value = "/outputItems/{fundVersionId}/{outputDefinitionId}/{outputDefinitionVersion}/{itemTypeId}",
@@ -498,9 +494,9 @@ public class ArrangementController {
     /**
      * Smazání hodnoty atributu.
      *
-     * @param descItemVO hodnota atributu
-     * @param fundVersionId identfikátor verze AP
-     * @param nodeVersion verze JP
+     * @param descItemVO            hodnota atributu
+     * @param fundVersionId   identfikátor verze AP
+     * @param nodeVersion           verze JP
      */
     @Transactional
     @RequestMapping(value = "/descItems/{fundVersionId}/{nodeVersion}/delete",
@@ -526,15 +522,15 @@ public class ArrangementController {
 
     /**
      * Stažení CSV souboru z hodnoty atributu.
-     *
      * @param response response
      * @param fundVersionId verze souboru
      * @param descItemObjectId object id atributu
+     * @throws IOException
      */
     @RequestMapping(value = "/descItems/{fundVersionId}/csv/export",
             method = RequestMethod.GET,
             produces = "text/csv")
-    @Transactional
+	@Transactional
     public void descItemCsvExport(
             final HttpServletResponse response,
             @PathVariable(value = "fundVersionId") final Integer fundVersionId,
@@ -558,15 +554,15 @@ public class ArrangementController {
 
     /**
      * Stažení CSV souboru z hodnoty atributu.
-     *
      * @param response response
      * @param fundVersionId verze souboru
      * @param descItemObjectId object id atributu
+     * @throws IOException
      */
     @RequestMapping(value = "/outputItems/{fundVersionId}/csv/export",
             method = RequestMethod.GET,
             produces = "text/csv")
-    @Transactional
+	@Transactional
     public void outputItemCsvExport(
             final HttpServletResponse response,
             @PathVariable(value = "fundVersionId") final Integer fundVersionId,
@@ -591,7 +587,6 @@ public class ArrangementController {
 
     /**
      * Import CSV souboru, založí se nová hodnota s obsahem souboru.
-     *
      * @param fundVersionId verze souboru
      * @param nodeVersion verze node
      * @param nodeId id node
@@ -625,7 +620,6 @@ public class ArrangementController {
 
     /**
      * Import CSV souboru, založí se nová hodnota s obsahem souboru.
-     *
      * @param fundVersionId verze souboru
      * @param outputDefinitionVersion verze výstupu
      * @param outputDefinitionId id výstupu
@@ -660,10 +654,10 @@ public class ArrangementController {
     /**
      * Aktualizace hodnoty atributu.
      *
-     * @param descItemVO hodnota atributu
-     * @param fundVersionId identfikátor verze AP
-     * @param nodeVersion verze JP
-     * @param createNewVersion vytvořit novou verzi?
+     * @param descItemVO            hodnota atributu
+     * @param fundVersionId   identfikátor verze AP
+     * @param nodeVersion           verze JP
+     * @param createNewVersion      vytvořit novou verzi?
      */
     @Transactional
     @RequestMapping(value = "/descItems/{fundVersionId}/{nodeVersion}/update/{createNewVersion}",
@@ -674,22 +668,22 @@ public class ArrangementController {
                                          @PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                          @PathVariable(value = "nodeVersion") final Integer nodeVersion,
                                          @PathVariable(value = "createNewVersion") final Boolean createNewVersion) {
-        Validate.notNull(descItemVO, "Hodnota atributu musí být vyplněna");
-        Validate.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
-        Validate.notNull(nodeVersion, "Nebyla vyplněna verze JP");
-        Validate.notNull(createNewVersion, "Vytvořit novou verzi musí být vyplněno");
+		Validate.notNull(descItemVO, "Hodnota atributu musí být vyplněna");
+		Validate.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
+		Validate.notNull(nodeVersion, "Nebyla vyplněna verze JP");
+		Validate.notNull(createNewVersion, "Vytvořit novou verzi musí být vyplněno");
 
-        return formService.updateDescItem(fundVersionId, nodeVersion, descItemVO, createNewVersion.booleanValue());
+		return formService.updateDescItem(fundVersionId, nodeVersion, descItemVO, createNewVersion.booleanValue());
     }
 
     /**
      * Nastavení atributu na "Nezjištěno".
      *
-     * @param fundVersionId id archivního souboru
-     * @param nodeId id JP
-     * @param nodeVersion verze JP
-     * @param descItemTypeId identfikátor typu hodnoty atributu
-     * @param descItemSpecId identfikátor specifikace hodnoty atributu
+     * @param fundVersionId    id archivního souboru
+     * @param nodeId           id JP
+     * @param nodeVersion      verze JP
+     * @param descItemTypeId   identfikátor typu hodnoty atributu
+     * @param descItemSpecId   identfikátor specifikace hodnoty atributu
      * @param descItemObjectId identifikátor existující hodnoty atributu
      * @return upravená hodnota atributu nastavená na nezjištěno
      */
@@ -717,11 +711,11 @@ public class ArrangementController {
     /**
      * Zrušení nastavení atributu na "Nezjištěno".
      *
-     * @param fundVersionId id archivního souboru
-     * @param nodeId id JP
-     * @param nodeVersion verze JP
-     * @param descItemTypeId identfikátor typu hodnoty atributu
-     * @param descItemSpecId identfikátor specifikace hodnoty atributu
+     * @param fundVersionId    id archivního souboru
+     * @param nodeId           id JP
+     * @param nodeVersion      verze JP
+     * @param descItemTypeId   identfikátor typu hodnoty atributu
+     * @param descItemSpecId   identfikátor specifikace hodnoty atributu
      * @param descItemObjectId identifikátor existující hodnoty atributu
      * @return odstraněný atribut
      */
@@ -747,12 +741,12 @@ public class ArrangementController {
     /**
      * Nastavení atributu na "Nezjištěno".
      *
-     * @param fundVersionId id archivního souboru
-     * @param outputDefinitionId identifikátor výstupu
+     * @param fundVersionId           id archivního souboru
+     * @param outputDefinitionId      identifikátor výstupu
      * @param outputDefinitionVersion verze výstupu
-     * @param outputItemTypeId dentfikátor typu hodnoty atributu
-     * @param outputItemSpecId identfikátor specifikace hodnoty atributu
-     * @param outputItemObjectId identifikátor existující hodnoty atributu
+     * @param outputItemTypeId        dentfikátor typu hodnoty atributu
+     * @param outputItemSpecId        identfikátor specifikace hodnoty atributu
+     * @param outputItemObjectId      identifikátor existující hodnoty atributu
      * @return upravená hodnota atributu nastavená na nezjištěno
      */
     @Transactional
@@ -778,12 +772,12 @@ public class ArrangementController {
     /**
      * Zrušení nastavení atributu na "Nezjištěno".
      *
-     * @param fundVersionId id archivního souboru
-     * @param outputDefinitionId identifikátor výstupu
+     * @param fundVersionId           id archivního souboru
+     * @param outputDefinitionId      identifikátor výstupu
      * @param outputDefinitionVersion verze výstupu
-     * @param outputItemTypeId dentfikátor typu hodnoty atributu
-     * @param outputItemSpecId identfikátor specifikace hodnoty atributu
-     * @param outputItemObjectId identifikátor existující hodnoty atributu
+     * @param outputItemTypeId        dentfikátor typu hodnoty atributu
+     * @param outputItemSpecId        identfikátor specifikace hodnoty atributu
+     * @param outputItemObjectId      identifikátor existující hodnoty atributu
      * @return odstraněný atribut
      */
     @Transactional
@@ -808,11 +802,11 @@ public class ArrangementController {
     /**
      * Vytvoření hodnoty atributu.
      *
-     * @param descItemVO hodnota atributu
-     * @param fundVersionId identfikátor verze AP
-     * @param descItemTypeId identfikátor typu hodnoty atributu
-     * @param nodeId identfikátor JP
-     * @param nodeVersion verze JP
+     * @param descItemVO            hodnota atributu
+     * @param fundVersionId   identfikátor verze AP
+     * @param descItemTypeId        identfikátor typu hodnoty atributu
+     * @param nodeId                identfikátor JP
+     * @param nodeVersion           verze JP
      * @return hodnota atributu
      */
     @Transactional
@@ -859,7 +853,7 @@ public class ArrangementController {
         List<ArrNode> sourceNodes = factoryDO.createNodes(copyNodesValidate.getSourceNodes());
 
         ImportFromFund importFromFund = importNodesFromSource.createImportFromFund();
-        importFromFund.init(sourceNodes, copyNodesValidate.isIgnoreRootNodes());
+		importFromFund.init(sourceNodes, copyNodesValidate.isIgnoreRootNodes());
 
         return importNodesFromSource.validateData(importFromFund, targetFundVersion);
     }
@@ -886,30 +880,30 @@ public class ArrangementController {
 
 
         ImportFromFund importFromFund = importNodesFromSource.createImportFromFund();
-        importFromFund.init(sourceNodes, copyNodesParams.isIgnoreRootNodes());
+		importFromFund.init(sourceNodes, copyNodesParams.isIgnoreRootNodes());
 
         importNodesFromSource.importData(importFromFund, new ImportParams() {
             @Override
             public ConflictResolve getFileConflictResolve() {
-                cz.tacr.elza.controller.vo.ConflictResolve fileResolveType = copyNodesParams.getFilesConflictResolve();
-                if (fileResolveType != null) {
-                    String name = fileResolveType.name();
-                    return ConflictResolve.valueOf(name);
-                } else {
-                    return ConflictResolve.USE_TARGET;
-                }
+				cz.tacr.elza.controller.vo.ConflictResolve fileResolveType = copyNodesParams.getFilesConflictResolve();
+				if (fileResolveType != null) {
+					String name = fileResolveType.name();
+					return ConflictResolve.valueOf(name);
+				} else {
+					return ConflictResolve.USE_TARGET;
+				}
             }
 
             @Override
             public ConflictResolve getStructuredConflictResolve() {
-                cz.tacr.elza.controller.vo.ConflictResolve packetResolveType = copyNodesParams
-                        .getStructuredsConflictResolve();
-                if (packetResolveType != null) {
-                    String name = packetResolveType.name();
-                    return ConflictResolve.valueOf(name);
-                } else {
+				cz.tacr.elza.controller.vo.ConflictResolve packetResolveType = copyNodesParams
+				        .getStructuredsConflictResolve();
+				if (packetResolveType != null) {
+					String name = packetResolveType.name();
+					return ConflictResolve.valueOf(name);
+				} else {
                     return ConflictResolve.COPY_AND_RENAME;
-                }
+				}
             }
         }, targetFundVersion, targetStaticNode, targetStaticParentNode, copyNodesParams.getSelectedDirection());
     }
@@ -993,8 +987,8 @@ public class ArrangementController {
      * Přepnutí na automatickou/uživatelskou úpravu typu atributu.
      *
      * @param outputDefinitionId identifikátor výstupu
-     * @param fundVersionId identfikátor verze AS
-     * @param itemTypeId identfikátor typu hodnoty atributu
+     * @param fundVersionId      identfikátor verze AS
+     * @param itemTypeId         identfikátor typu hodnoty atributu
      */
     @Transactional
     @RequestMapping(value = "/output/{outputDefinitionId}/{fundVersionId}/{itemTypeId}/switch", method = RequestMethod.POST)
@@ -1012,11 +1006,11 @@ public class ArrangementController {
     /**
      * Získání dat pro formulář.
      *
-     * @param outputDefinitionId identfikátor outputu
+     * @param outputDefinitionId    identfikátor outputu
      * @param fundVersionId id verze stromu
      * @return formulář
      */
-    @Transactional
+	@Transactional
     @RequestMapping(value = "/output/{outputDefinitionId}/{fundVersionId}/form", method = RequestMethod.GET)
     public OutputFormDataNewVO getOutputFormData(@PathVariable(value = "outputDefinitionId") final Integer outputDefinitionId,
                                                  @PathVariable(value = "fundVersionId") final Integer fundVersionId) {
@@ -1053,25 +1047,25 @@ public class ArrangementController {
     /**
      * Seznam AP.
      *
-     * @param fulltext fulltext podle názvu a interního čísla AS
-     * @param max maximální počet záznamů
+     * @param fulltext     fulltext podle názvu a interního čísla AS
+    * @param max            maximální počet záznamů
      * @return seznam AP
      */
     @RequestMapping(value = "/getFunds", method = RequestMethod.GET)
-    @Transactional
+	@Transactional
     public FundListCountResult getFunds(@RequestParam(value = "fulltext", required = false) final String fulltext,
-                                        @RequestParam(value = "max") final Integer max) {
-        UserDetail userDetail = userService.getLoggedUserDetail();
+	        @RequestParam(value = "max") final Integer max) {
+		UserDetail userDetail = userService.getLoggedUserDetail();
 
-        FilteredResult<ArrFund> funds;
+		FilteredResult<ArrFund> funds;
 
-        if (userDetail.hasPermission(UsrPermission.Permission.FUND_RD_ALL)) {
-            // read all funds
-            funds = fundRepository.findFunds(fulltext, 0, max);
-        } else {
-            Integer userId = userDetail.getId();
-            funds = fundRepository.findFundsWithPermissions(fulltext, 0, max, userId);
-        }
+		if (userDetail.hasPermission(UsrPermission.Permission.FUND_RD_ALL)) {
+			// read all funds
+			funds = fundRepository.findFunds(fulltext, 0, max);
+		} else {
+			Integer userId = userDetail.getId();
+			funds = fundRepository.findFundsWithPermissions(fulltext, 0, max, userId);
+		}
 
 		/*
 		List<ArrFundOpenVersion> funds = fundRepository.findByFulltext(fulltext, max, userId);
@@ -1081,26 +1075,25 @@ public class ArrangementController {
 			fundsCount = fundRepository.findCountByFulltext(fulltext, userId);
 		}*/
 
-        List<ArrFund> fundList = funds.getList();
+		List<ArrFund> fundList = funds.getList();
 
-        List<ArrFundVO> fundVOList = new ArrayList<>(fundList.size());
-        fundList.forEach(f -> {
+		List<ArrFundVO> fundVOList = new ArrayList<>(fundList.size());
+		fundList.forEach(f -> {
             ArrFundVO fundVO = factoryVo.createFundVO(f.getFund(), false);
-            //fundVO.setVersions(Arrays.asList(factoryVo.createFundVersion(f.getOpenVersion())));
-            fundVOList.add(fundVO);
+			//fundVO.setVersions(Arrays.asList(factoryVo.createFundVersion(f.getOpenVersion())));
+			fundVOList.add(fundVO);
         });
 
-        return new FundListCountResult(fundVOList, funds.getTotalCount());
+		return new FundListCountResult(fundVOList, funds.getTotalCount());
     }
 
     /**
      * Načtení souboru na základě id.
-     *
      * @param fundId id souboru
      * @return konkrétní AP
      */
     @RequestMapping(value = "/getFund/{fundId}", method = RequestMethod.GET)
-    @Transactional
+	@Transactional
     public ArrFundVO getFund(@PathVariable("fundId") final Integer fundId) {
         ArrFund fund = fundRepository.findOne(fundId);
         if (fund == null) {
@@ -1113,9 +1106,11 @@ public class ArrangementController {
      * Smazání celého archivního souboru. (pouze pokud neexistuje výstup
      * (arr_named_output))
      *
-     * @param fundId id archivního souboru
-     * @throws DeleteFailedException Nelze smazat archivní soubor, pro který existuje alespoň jeden
-     * výstup.
+     * @param fundId
+     *            id archivního souboru
+     * @throws DeleteFailedException
+     *             Nelze smazat archivní soubor, pro který existuje alespoň jeden
+     *             výstup.
      */
     @RequestMapping(value = "/deleteFund/{fundId}", method = RequestMethod.DELETE)
     public void deleteFund(@PathVariable("fundId") final Integer fundId) throws DeleteFailedException {
@@ -1131,11 +1126,11 @@ public class ArrangementController {
      * @return seznam AS, každá obsahuje pouze jednu verzi, jinak je vrácená víckrát
      */
     @RequestMapping(value = "/getVersions", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
-    @Transactional
+	@Transactional
     public List<ArrFundVO> getFundsByVersionIds(@RequestBody final IdsParam idsParam) {
 
         if (CollectionUtils.isEmpty(idsParam.getIds())) {
-            return Collections.emptyList();
+			return Collections.emptyList();
         }
 
         List<ArrFundVersion> versions = fundVersionRepository.findAll(idsParam.getIds());
@@ -1161,7 +1156,7 @@ public class ArrangementController {
      */
     @RequestMapping(value = "/fundTree", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    @Transactional
+	@Transactional
     public TreeData getFundTree(final @RequestBody FaTreeParam input) {
         Assert.notNull(input, "Vstupní data musí být vyplněny");
         Assert.notNull(input.getVersionId(), "Nebyla vyplněn identifikátor verze AS");
@@ -1201,8 +1196,8 @@ public class ArrangementController {
     /**
      * Uzavře otevřenou verzi archivní pomůcky a otevře novou verzi.
      *
-     * @param versionId verze, která se má uzavřít
-     * @param dateRange vysčítaná informace o časovém rozsahu fondu
+     * @param versionId         verze, která se má uzavřít
+     * @param dateRange         vysčítaná informace o časovém rozsahu fondu
      * @return nová verze archivní pomůcky
      * @throws ConcurrentUpdateException chyba při současné manipulaci s položkou více uživateli
      */
@@ -1223,29 +1218,28 @@ public class ArrangementController {
     /**
      * Získání dat pro formulář.
      *
-     * @param nodeId identfikátor JP
+     * @param nodeId    identfikátor JP
      * @param versionId id verze stromu
      * @return formulář
      */
     @RequestMapping(value = "/nodes/{nodeId}/{versionId}/form", method = RequestMethod.GET)
-    @Transactional
+	@Transactional
     public DescFormDataNewVO getNodeFormData(@PathVariable(value = "nodeId") final Integer nodeId,
                                              @PathVariable(value = "versionId") final Integer versionId) {
-        Validate.notNull(versionId, "Identifikátor verze musí být vyplněn");
-        Validate.notNull(nodeId, "Identifikátor uzlu musí být vyplněn");
+		Validate.notNull(versionId, "Identifikátor verze musí být vyplněn");
+		Validate.notNull(nodeId, "Identifikátor uzlu musí být vyplněn");
 
-        return formService.getNodeFormData(versionId, nodeId);
+		return formService.getNodeFormData(versionId, nodeId);
     }
 
     /**
      * Získání dat pro formuláře.
-     *
-     * @param nodeIds identfikátory JP
+     * @param nodeIds   identfikátory JP
      * @param versionId id verze stromu
      * @return formuláře
      */
     @RequestMapping(value = "/nodes/{versionId}/forms", method = RequestMethod.GET)
-    @Transactional
+	@Transactional
     public NodeFormsDataVO getNodeFormsData(@RequestParam(value = "nodeIds") final Integer[] nodeIds,
                                             @PathVariable(value = "versionId") final Integer versionId) {
         Assert.notNull(versionId, "Identifikátor verze musí být vyplněn");
@@ -1263,13 +1257,13 @@ public class ArrangementController {
     /**
      * Získání dat formuláře pro JP a jeho okolí.
      *
-     * @param nodeId identfikátory JP
+     * @param nodeId    identfikátory JP
      * @param versionId id verze stromu
-     * @param around velikost okolí - počet před a za uvedeným uzlem
+     * @param around    velikost okolí - počet před a za uvedeným uzlem
      * @return formuláře
      */
     @RequestMapping(value = "/nodes/{versionId}/{nodeId}/{around}/forms", method = RequestMethod.GET)
-    @Transactional
+	@Transactional
     public NodeFormsDataVO getNodeWithAroundFormsData(@PathVariable(value = "versionId") final Integer versionId,
                                                       @PathVariable(value = "nodeId") final Integer nodeId,
                                                       @PathVariable(value = "around") final Integer around) {
@@ -1288,8 +1282,8 @@ public class ArrangementController {
         Map<Integer, DescFormDataNewVO> forms = new HashMap<>();
 
         for (ArrNode arrNode : nodes) {
-            DescFormDataNewVO formData = formService.getNodeFormData(version, arrNode.getNodeId());
-            forms.put(arrNode.getNodeId(), formData);
+			DescFormDataNewVO formData = formService.getNodeFormData(version, arrNode.getNodeId());
+			forms.put(arrNode.getNodeId(), formData);
         }
 
         return new NodeFormsDataVO(forms);
@@ -1297,7 +1291,6 @@ public class ArrangementController {
 
     /**
      * Načte číselník typů kalendářů.
-     *
      * @return typy kalendářů
      */
     @RequestMapping(value = "/calendarTypes", method = RequestMethod.GET)
@@ -1361,14 +1354,14 @@ public class ArrangementController {
 
         // Oprávnění na uživatele a skupiny
         if (createFund.getAdminUsers() != null && !createFund.getAdminUsers().isEmpty()) {
-            // add permissions to selectected users
-            createFund.getAdminUsers().forEach(
-                    u -> userService.addFundAdminPermissions(u.getId(), null, newFund));
+			// add permissions to selectected users
+			createFund.getAdminUsers().forEach(
+			        u -> userService.addFundAdminPermissions(u.getId(), null, newFund));
         }
         if (createFund.getAdminGroups() != null && !createFund.getAdminGroups().isEmpty()) {
-            // add permissions to selectected groups
-            createFund.getAdminGroups().forEach(
-                    g -> userService.addFundAdminPermissions(null, g.getId(), newFund));
+			// add permissions to selectected groups
+			createFund.getAdminGroups().forEach(
+			        g -> userService.addFundAdminPermissions(null, g.getId(), newFund));
         }
 
         return factoryVo.createFundVO(newFund, true);
@@ -1376,14 +1369,14 @@ public class ArrangementController {
 
     /**
      * Úprava archivní pomůcky
-     *
      * @param ruleSetId id pravidel, která budou nastavena otevřené verzi
      * @param arrFundVO Archivní pomůcka k úpravě
+     * @return
      */
     @Transactional
     @RequestMapping(value = "/updateFund", method = RequestMethod.POST)
     public ArrFundVO updateFund(@RequestParam("ruleSetId") final Integer ruleSetId,
-                                @RequestBody final ArrFundVO arrFundVO) {
+            @RequestBody final ArrFundVO arrFundVO) {
         Assert.notNull(arrFundVO, "AS musí být vyplněn");
 
         StaticDataProvider staticData = staticDataService.getData();
@@ -1473,21 +1466,21 @@ public class ArrangementController {
      * @return List scénářů
      */
     @RequestMapping(value = "/scenarios", method = RequestMethod.POST)
-    @Transactional
+	@Transactional
     public List<ScenarioOfNewLevelVO> getDescriptionItemTypesForNewLevel(
             @RequestParam(required = false, value = "withGroups") final Boolean withGroups,
             @RequestBody final DescriptionItemParam param) {
 
         ArrFundVersion version = fundVersionRepository.findOne(param.getVersionId());
-        Validate.notNull(version, "Neplatná verze AP");
+		Validate.notNull(version, "Neplatná verze AP");
 
         Integer fundId = version.getFund().getFundId();
         String ruleCode = version.getRuleSet().getCode();
-        ArrNodeVO nodeVo = param.getNode();
-        Validate.notNull(nodeVo);
+		ArrNodeVO nodeVo = param.getNode();
+		Validate.notNull(nodeVo);
 
         return factoryVo.createScenarioOfNewLevelList(descriptionItemService
-                .getDescriptionItemTypesForNewLevel(nodeVo.getId(), param.getDirection(),
+		        .getDescriptionItemTypesForNewLevel(nodeVo.getId(), param.getDirection(),
                         param.getVersionId()), withGroups, ruleCode, fundId);
     }
 
@@ -1500,7 +1493,7 @@ public class ArrangementController {
      */
     @RequestMapping(value = "/nodes", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    @Transactional
+	@Transactional
     public List<TreeNodeVO> getNodes(@RequestBody final IdsParam idsParam) {
         Assert.notNull(idsParam.getVersionId(), "Nebyla zadána verze stromu.");
 
@@ -1560,12 +1553,11 @@ public class ArrangementController {
 
     /**
      * Smazání uzlu.
-     *
      * @param nodeParam vstupní parametry pro smazání
      */
     @Transactional
     @RequestMapping(value = "/levels", method = RequestMethod.DELETE)
-    public NodeWithParent deleteLevel(@RequestBody final NodeParam nodeParam) {
+    public NodeWithParent deleteLevel(@RequestBody final NodeParam nodeParam){
         Assert.notNull(nodeParam, "Parametry JP musí být vyplněny");
         Assert.notNull(nodeParam.getVersionId(), "Nebyl vyplněn identifikátor verze AS");
         Assert.notNull(nodeParam.getStaticNode(), "Nebyla zvolena referenční JP");
@@ -1588,9 +1580,9 @@ public class ArrangementController {
     /**
      * Provede zkopírování atributu daného typu ze staršího bratra uzlu.
      *
-     * @param versionId id verze stromu
+     * @param versionId      id verze stromu
      * @param descItemTypeId typ atributu, který chceme zkopírovat
-     * @param nodeVO uzel, na který nastavíme hodnoty ze staršího bratra
+     * @param nodeVO         uzel, na který nastavíme hodnoty ze staršího bratra
      * @return vytvořené hodnoty
      */
     @Transactional
@@ -1686,7 +1678,7 @@ public class ArrangementController {
      * Vyhledání vazeb AP - rejstříky.
      *
      * @param versionId id verze stromu
-     * @param nodeId identfikátor JP
+     * @param nodeId    identfikátor JP
      * @return vazby
      */
     @RequestMapping(value = "/registerLinks/{nodeId}/{versionId}",
@@ -1703,7 +1695,7 @@ public class ArrangementController {
      * Vyhledání vazeb AP - rejstříky pro formulář.
      *
      * @param versionId id verze stromu
-     * @param nodeId identfikátor JP
+     * @param nodeId    identfikátor JP
      * @return vazby pro formulář
      */
     @RequestMapping(value = "/registerLinks/{nodeId}/{versionId}/form",
@@ -1720,9 +1712,9 @@ public class ArrangementController {
     /**
      * Vytvoření vazby AP - rejstříky
      *
-     * @param versionId id verze stromu
-     * @param nodeId identfikátor JP
-     * @param nodeRegisterVO vazba
+     * @param versionId         id verze stromu
+     * @param nodeId            identfikátor JP
+     * @param nodeRegisterVO    vazba
      * @return vazba
      */
     @Transactional
@@ -1731,8 +1723,8 @@ public class ArrangementController {
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ArrNodeRegisterVO createRegisterLinks(final @PathVariable(value = "versionId") Integer versionId,
-                                                 final @PathVariable(value = "nodeId") Integer nodeId,
-                                                 final @RequestBody ArrNodeRegisterVO nodeRegisterVO) {
+                                                       final @PathVariable(value = "nodeId") Integer nodeId,
+                                                       final @RequestBody ArrNodeRegisterVO nodeRegisterVO) {
         ArrNodeRegister nodeRegister = factoryDO.createRegisterLink(nodeRegisterVO);
         nodeRegister = accessPointService.createRegisterLink(versionId, nodeId, nodeRegister);
         return factoryVo.createRegisterLink(nodeRegister);
@@ -1741,9 +1733,9 @@ public class ArrangementController {
     /**
      * Upravení vazby AP - rejstříky.
      *
-     * @param versionId id verze stromu
-     * @param nodeId identfikátor JP
-     * @param nodeRegisterVO vazba
+     * @param versionId         id verze stromu
+     * @param nodeId            identfikátor JP
+     * @param nodeRegisterVO    vazba
      * @return vazba
      */
     @Transactional
@@ -1762,10 +1754,10 @@ public class ArrangementController {
     /**
      * Smazání vazby AP - rejstříky.
      *
-     * @param versionId id verze stromu
-     * @param nodeId identfikátor JP
-     * @param nodeRegisterVO vazba
-     * @return vazba
+     * @param versionId         id verze stromu
+     * @param nodeId            identfikátor JP
+     * @param nodeRegisterVO    vazba
+     * @return  vazba
      */
     @Transactional
     @RequestMapping(value = "/registerLinks/{nodeId}/{versionId}/delete",
@@ -1784,7 +1776,7 @@ public class ArrangementController {
      * Validuje verzi archivní pomůcky a vrátí list chyb.
      * Pokud je počet chyb 0 pak předpokládáme že stav AP = OK
      *
-     * @param versionId verze, která se má validovat
+     * @param versionId         verze, která se má validovat
      * @return Objekt s listem (prvních 20) chyb
      */
     @RequestMapping(value = "/validateVersion/{versionId}/{showAll}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -1807,7 +1799,7 @@ public class ArrangementController {
      * Validuje verzi archivní pomůcky a vrátí počet chyb
      * Pokud je počet chyb 0 pak předpokládáme že stav AP = OK
      *
-     * @param versionId verze, která se má validovat
+     * @param versionId         verze, která se má validovat
      * @return počet chyb
      */
     @RequestMapping(value = "/validateVersionCount/{versionId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -1828,11 +1820,12 @@ public class ArrangementController {
      *
      * @param versionId id verze
      * @param filters filtry
+     *
      * @return počet všech záznamů splňujících filtry
      */
     @RequestMapping(value = "/filterNodes/{versionId}", method = RequestMethod.PUT)
     public Integer filterNodes(@PathVariable("versionId") final Integer versionId,
-                               @RequestBody(required = false) final Filters filters) {
+            @RequestBody(required = false) final Filters filters) {
         ArrFundVersion version = fundVersionRepository.getOneCheckExist(versionId);
         List<DescItemTypeFilter> descItemFilters = factoryDO.createFilters(filters);
         return filterTreeService.filterData(version, descItemFilters, filters.getNodeId());
@@ -1841,9 +1834,9 @@ public class ArrangementController {
     /**
      * Do filtrovaného seznamu načte hodnoty atributů a vrátí podstránku záznamů.
      *
-     * @param versionId id verze
-     * @param page číslo stránky, od 0
-     * @param pageSize velikost stránky
+     * @param versionId       id verze
+     * @param page            číslo stránky, od 0
+     * @param pageSize        velikost stránky
      * @param descItemTypeIds id typů atributů, které chceme načíst
      * @return mapa hodnot atributů nodeId -> descItemId -> value
      */
@@ -1896,7 +1889,7 @@ public class ArrangementController {
      * @return seznam uzlů a jejich indexu v seznamu filtrovaných uzlů, seřazené podle indexu
      */
     @RequestMapping(value = "/getFilteredFulltext/{versionId}", method = RequestMethod.POST)
-    @Transactional
+	@Transactional
     public List<FilterNodePosition> getFilteredFulltextNodes(@PathVariable("versionId") final Integer versionId,
                                                              @RequestBody final FaFilteredFulltextParam param) {
         ArrFundVersion version = fundVersionRepository.getOneCheckExist(versionId);
@@ -1907,15 +1900,15 @@ public class ArrangementController {
     /**
      * Získání unikátních hodnot atributů podle typu.
      *
-     * @param versionId verze stromu
+     * @param versionId      verze stromu
      * @param descItemTypeId id typu atributu
-     * @param fulltext fultextové hledání
-     * @param max maximální počet záznamů
-     * @param specIds id specifikací / id typů atributů
+     * @param fulltext       fultextové hledání
+     * @param max            maximální počet záznamů
+     * @param specIds        id specifikací / id typů atributů
      * @return seznam unikátních hodnot
      */
     @RequestMapping(value = "/filterUniqueValues/{versionId}", method = RequestMethod.PUT)
-    @Transactional
+	@Transactional
     public List<String> filterUniqueValues(@PathVariable("versionId") final Integer versionId,
                                            @RequestParam("descItemTypeId") final Integer descItemTypeId,
                                            @RequestParam(value = "fulltext", required = false) final String fulltext,
@@ -1933,7 +1926,8 @@ public class ArrangementController {
      * Získání unikátních specifikací atributů podle typu.
      *
      * @param fundVersionId verze stromu
-     * @param itemTypeId id typu atributu
+     * @param itemTypeId    id typu atributu
+     *
      * @return seznam unikátních hodnot
      */
     @RequestMapping(value = "/findUniqueSpecIds/{fundVersionId}", method = RequestMethod.POST)
@@ -1951,7 +1945,6 @@ public class ArrangementController {
 
     /**
      * Nahrazení textu v hodnotách textových atributů.
-     *
      * @param versionId id verze stromu
      * @param descItemTypeId typ atributu
      * @param searchText hledaný text v atributu
@@ -1973,7 +1966,7 @@ public class ArrangementController {
 
         Set<RulItemSpec> specifications =
                 CollectionUtils.isEmpty(replaceDataBody.getSpecIds()) ? null :
-                        new HashSet<>(itemSpecRepository.findAll(replaceDataBody.getSpecIds()));
+                new HashSet<>(itemSpecRepository.findAll(replaceDataBody.getSpecIds()));
 
         descriptionItemService.replaceDescItemValues(version, descItemType, nodesDO, specifications, searchText, replaceText, replaceDataBody.getSelectionType() == SelectionType.FUND);
     }
@@ -1981,11 +1974,11 @@ public class ArrangementController {
     /**
      * Nastavení textu hodnotám atributu..
      *
-     * @param versionId id verze stromu
-     * @param descItemTypeId typ atributu
+     * @param versionId         id verze stromu
+     * @param descItemTypeId    typ atributu
      * @param newDescItemSpecId pokud se jedná o atribut se specifikací -> id specifikace, která bude nastavena
-     * @param text text, který nahradí hledaný text v celém textu
-     * @param replaceDataBody seznam uzlů, ve kterých hledáme a seznam specifikací
+     * @param text              text, který nahradí hledaný text v celém textu
+     * @param replaceDataBody   seznam uzlů, ve kterých hledáme a seznam specifikací
      */
     @Transactional
     @RequestMapping(value = "/placeDataValues/{versionId}", method = RequestMethod.PUT)
@@ -2000,10 +1993,10 @@ public class ArrangementController {
         Set<ArrNode> nodesDO = new HashSet<>(factoryDO.createNodes(replaceDataBody.getNodes()));
 
         RulItemSpec newDescItemSpec = newDescItemSpecId == null ? null
-                : itemSpecRepository.findOne(newDescItemSpecId);
+                                                                    : itemSpecRepository.findOne(newDescItemSpecId);
         Set<RulItemSpec> specifications =
                 CollectionUtils.isEmpty(replaceDataBody.getSpecIds()) ? null :
-                        new HashSet<>(itemSpecRepository.findAll(replaceDataBody.getSpecIds()));
+                new HashSet<>(itemSpecRepository.findAll(replaceDataBody.getSpecIds()));
 
         descriptionItemService
                 .placeDescItemValues(version, descItemType, nodesDO, newDescItemSpec, specifications, text, replaceDataBody.getSelectionType() == SelectionType.FUND);
@@ -2012,9 +2005,9 @@ public class ArrangementController {
     /**
      * Nastavit specifikaci hodnotám atributu.
      *
-     * @param fundVersionId id verze stromu
-     * @param itemTypeId typ atributu
-     * @param replaceSpecId id specifikace, která bude nastavena
+     * @param fundVersionId   id verze stromu
+     * @param itemTypeId      typ atributu
+     * @param replaceSpecId   id specifikace, která bude nastavena
      * @param replaceDataBody seznam uzlů, ve kterých hledáme a seznam specifikací
      */
     @Transactional
@@ -2033,16 +2026,16 @@ public class ArrangementController {
                 new HashSet<>(itemSpecRepository.findAll(replaceDataBody.getSpecIds()));
 
         descriptionItemService.setSpecification(fundVersion, itemType, nodesDO,
-                setSpecification, specifications, replaceDataBody.getSpecIds().contains(null),
-                replaceDataBody.getSelectionType() == SelectionType.FUND);
+		        setSpecification, specifications, replaceDataBody.getSpecIds().contains(null),
+		        replaceDataBody.getSelectionType() == SelectionType.FUND);
     }
 
     /**
      * Smazání hodnot atributů daného typu pro vybrané uzly.
      *
-     * @param versionId id verze stromu
-     * @param descItemTypeId typ atributu
-     * @param replaceDataBody seznam uzlů, ve kterých hledáme a seznam specifikací
+     * @param versionId         id verze stromu
+     * @param descItemTypeId    typ atributu
+     * @param replaceDataBody   seznam uzlů, ve kterých hledáme a seznam specifikací
      */
     @Transactional
     @RequestMapping(value = "/deleteDataValues/{versionId}", method = RequestMethod.PUT)
@@ -2056,22 +2049,22 @@ public class ArrangementController {
 
         Set<RulItemSpec> specifications =
                 CollectionUtils.isEmpty(replaceDataBody.getSpecIds()) ? null :
-                        new HashSet<>(itemSpecRepository.findAll(replaceDataBody.getSpecIds()));
+                new HashSet<>(itemSpecRepository.findAll(replaceDataBody.getSpecIds()));
 
         descriptionItemService.deleteDescItemValues(version, descItemType, nodesDO, specifications, replaceDataBody.getSelectionType() == SelectionType.FUND);
     }
 
     @RequestMapping(value = "/validation/{fundVersionId}/{fromIndex}/{toIndex}", method = RequestMethod.GET)
-    @Transactional
+	@Transactional
     public ValidationItems getValidation(@PathVariable("fundVersionId") final Integer fundVersionId,
-                                         @PathVariable(value = "fromIndex") final Integer fromIndex,
-                                         @PathVariable(value = "toIndex") final Integer toIndex) {
+                                                 @PathVariable(value = "fromIndex") final Integer fromIndex,
+                                                 @PathVariable(value = "toIndex") final Integer toIndex) {
         ArrFundVersion version = fundVersionRepository.getOneCheckExist(fundVersionId);
         return arrangementService.getValidationNodes(version, fromIndex, toIndex);
     }
 
     @RequestMapping(value = "/validation/{fundVersionId}/find/{nodeId}/{direction}", method = RequestMethod.GET)
-    @Transactional
+	@Transactional
     public ValidationItems findValidationError(@PathVariable("fundVersionId") final Integer fundVersionId,
                                                @PathVariable(value = "nodeId") final Integer nodeId,
                                                @PathVariable(value = "direction") final Integer direction) {
@@ -2096,10 +2089,10 @@ public class ArrangementController {
      * Načtení seznamu outputů - objekt outputu s vazbou na objekt named output.
      *
      * @param fundVersionId identfikátor verze AS
-     * @return seznam outputů
+     * @return  seznam outputů
      */
     @RequestMapping(value = "/output/{fundVersionId}", method = RequestMethod.GET)
-    @Transactional
+	@Transactional
     public List<ArrOutputExtVO> getOutputs(@PathVariable(value = "fundVersionId") final Integer fundVersionId, @RequestParam(value = "state", required = false) final OutputState state) {
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         List<ArrOutput> outputs = state == null ? outputService.getSortedOutputs(fundVersion) : outputService.getSortedOutputsByState(fundVersion, state);
@@ -2110,11 +2103,11 @@ public class ArrangementController {
      * Načtení detailu outputu objekt output s vazbou na named output a seznamem připojených node.
      *
      * @param fundVersionId identfikátor verze AS
-     * @param outputId identifikátor výstupu
+     * @param outputId      identifikátor výstupu
      * @return output
      */
     @RequestMapping(value = "/output/{fundVersionId}/{outputId}", method = RequestMethod.GET)
-    @Transactional
+	@Transactional
     public ArrOutputExtVO getOutput(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                     @PathVariable(value = "outputId") final Integer outputId) {
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
@@ -2126,7 +2119,7 @@ public class ArrangementController {
     /**
      * Konfigurace generovaných výstupů
      *
-     * @param outputId identifikátor výstupů
+     * @param outputId      identifikátor výstupů
      */
     @RequestMapping(value = "/output/{outputId}/settings", method = RequestMethod.PUT)
     public void updateOutputSettings(@PathVariable(value = "outputId") final Integer outputId,
@@ -2136,8 +2129,9 @@ public class ArrangementController {
     }
 
 
+
     @RequestMapping(value = "/output/generate/{outputId}", method = RequestMethod.GET)
-    @Transactional
+	@Transactional
     public GenerateOutputResult generateOutput(@PathVariable(value = "outputId") int outputId,
                                                @RequestParam(value = "forced", defaultValue = "false") boolean forced) {
         ArrOutput output = outputService.getOutput(outputId);
@@ -2155,7 +2149,7 @@ public class ArrangementController {
      * Vytvoření nového pojmenovaného výstupu.
      *
      * @param fundVersionId identfikátor verze AS
-     * @param param vstupní parametry pro vytvoření outputu
+     * @param param         vstupní parametry pro vytvoření outputu
      * @return vytvořený výstup
      */
     @Transactional
@@ -2173,7 +2167,7 @@ public class ArrangementController {
      * Zamknutí verze výstupu.
      *
      * @param fundVersionId identfikátor verze AS
-     * @param outputId identifikátor výstupu
+     * @param outputId      identifikátor výstupu
      */
     @Transactional
     @RequestMapping(value = "/output/{fundVersionId}/{outputId}/lock", method = RequestMethod.POST)
@@ -2188,8 +2182,8 @@ public class ArrangementController {
      * Přidání uzlů k výstupu.
      *
      * @param fundVersionId identfikátor verze AS
-     * @param outputId identifikátor výstupu
-     * @param nodeIds seznam přidáváných identifikátorů uzlů
+     * @param outputId      identifikátor výstupu
+     * @param nodeIds       seznam přidáváných identifikátorů uzlů
      */
     @Transactional
     @RequestMapping(value = "/output/{fundVersionId}/{outputId}/add", method = RequestMethod.POST)
@@ -2205,8 +2199,8 @@ public class ArrangementController {
      * Odebrání uzlů u výstupu.
      *
      * @param fundVersionId identfikátor verze AS
-     * @param outputId identifikátor výstupu
-     * @param nodeIds seznam odebíraných identifikátorů uzlů
+     * @param outputId      identifikátor výstupu
+     * @param nodeIds       seznam odebíraných identifikátorů uzlů
      */
     @Transactional
     @RequestMapping(value = "/output/{fundVersionId}/{outputId}/remove", method = RequestMethod.POST)
@@ -2222,7 +2216,7 @@ public class ArrangementController {
      * Smazání pojmenovaného výstupu.
      *
      * @param fundVersionId identfikátor verze AS
-     * @param outputId identifikátor výstupu
+     * @param outputId      identifikátor výstupu
      */
     @Transactional
     @RequestMapping(value = "/output/{fundVersionId}/{outputId}", method = RequestMethod.DELETE)
@@ -2237,7 +2231,7 @@ public class ArrangementController {
      * Vrácení stavu pojmenovaného výstupu do stavu otevřený.
      *
      * @param fundVersionId identfikátor verze AS
-     * @param outputId identifikátor výstupu
+     * @param outputId      identifikátor výstupu
      */
     @Transactional
     @RequestMapping(value = "/output/{fundVersionId}/{outputId}/revert", method = RequestMethod.POST)
@@ -2252,7 +2246,7 @@ public class ArrangementController {
      * Vytvoření kopie outputu
      *
      * @param fundVersionId identfikátor verze AS
-     * @param outputId identifikátor výstupu
+     * @param outputId      identifikátor výstupu
      * @return kopie výstupu
      */
     @Transactional
@@ -2268,8 +2262,8 @@ public class ArrangementController {
      * Upravení výstupu.
      *
      * @param fundVersionId identfikátor verze AS
-     * @param outputId identfikátor výstupu
-     * @param param vstupní parametry pro úpravu outputu
+     * @param outputId      identfikátor výstupu
+     * @param param         vstupní parametry pro úpravu outputu
      */
     @Transactional
     @RequestMapping(value = "/output/{fundVersionId}/{outputId}/update", method = RequestMethod.POST)
@@ -2286,14 +2280,14 @@ public class ArrangementController {
      * Vyhledání provedení změn nad AS, případně nad konkrétní JP z AS.
      *
      * @param fundVersionId identfikátor verze AS
-     * @param maxSize maximální počet záznamů
-     * @param offset počet přeskočených záznamů
-     * @param changeId identifikátor změny, vůči které chceme počítat offset (pokud není vyplněn, bere se vždy poslední)
-     * @param nodeId identifikátor JP u které vyhledáváme změny (pokud není vyplněn, vyhledává se přes celý AS)
+     * @param maxSize       maximální počet záznamů
+     * @param offset        počet přeskočených záznamů
+     * @param changeId      identifikátor změny, vůči které chceme počítat offset (pokud není vyplněn, bere se vždy poslední)
+     * @param nodeId        identifikátor JP u které vyhledáváme změny (pokud není vyplněn, vyhledává se přes celý AS)
      * @return výsledek hledání
      */
     @RequestMapping(value = "/changes/{fundVersionId}", method = RequestMethod.GET)
-    @Transactional
+	@Transactional
     public ChangesResult findChanges(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                      @RequestParam(value = "maxSize", required = false, defaultValue = "20") final Integer maxSize,
                                      @RequestParam(value = "offset", required = false, defaultValue = "0") final Integer offset,
@@ -2318,14 +2312,14 @@ public class ArrangementController {
      * Vyhledání provedení změn nad AS, případně nad konkrétní JP z AS.
      *
      * @param fundVersionId identfikátor verze AS
-     * @param maxSize maximální počet záznamů
-     * @param fromDate datum vůči kterému vyhledávám v seznamu (př. formátu query parametru: 2016-11-07T10:32:04)
-     * @param changeId identifikátor změny, vůči které chceme počítat offset (pokud není vyplněn, bere se vždy poslední)
-     * @param nodeId identifikátor JP u které vyhledáváme změny (pokud není vyplně, vyhledává se přes celý AS)
+     * @param maxSize       maximální počet záznamů
+     * @param fromDate      datum vůči kterému vyhledávám v seznamu (př. formátu query parametru: 2016-11-07T10:32:04)
+     * @param changeId      identifikátor změny, vůči které chceme počítat offset (pokud není vyplněn, bere se vždy poslední)
+     * @param nodeId        identifikátor JP u které vyhledáváme změny (pokud není vyplně, vyhledává se přes celý AS)
      * @return výsledek hledání
      */
     @RequestMapping(value = "/changes/{fundVersionId}/date", method = RequestMethod.GET)
-    @Transactional
+	@Transactional
     public ChangesResult findChangesByDate(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                            @RequestParam(value = "maxSize", required = false, defaultValue = "20") final Integer maxSize,
                                            @RequestParam(value = "fromDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) final LocalDateTime fromDate,
@@ -2347,9 +2341,9 @@ public class ArrangementController {
      * Provede revertování AS / JP k požadovanému stavu.
      *
      * @param fundVersionId identfikátor verze AS
-     * @param fromChangeId identifikátor změny, vůči které provádíme revertování (od)
-     * @param toChangeId identifikátor změny, ke které provádíme revertování (do)
-     * @param nodeId identifikátor JP u které provádíme změny (pokud není vyplněn, revertuje se přes celý AS)
+     * @param fromChangeId  identifikátor změny, vůči které provádíme revertování (od)
+     * @param toChangeId    identifikátor změny, ke které provádíme revertování (do)
+     * @param nodeId        identifikátor JP u které provádíme změny (pokud není vyplněn, revertuje se přes celý AS)
      */
     @RequestMapping(value = "/changes/{fundVersionId}/revert", method = RequestMethod.GET)
     @Transactional
@@ -2374,8 +2368,8 @@ public class ArrangementController {
      * Vytvoření požadavku nebo přidání JP k existujícímu požadavku.
      *
      * @param fundVersionId identifikátor verze AS
-     * @param send současně odeslat požadavek?
-     * @param param parametry požadavku
+     * @param send          současně odeslat požadavek?
+     * @param param         parametry požadavku
      */
     @RequestMapping(value = "/requests/{fundVersionId}/digitization/add", method = RequestMethod.POST)
     @Transactional
@@ -2391,7 +2385,7 @@ public class ArrangementController {
         ArrDigitizationFrontdesk digitizationFrontdesk = externalSystemService.findDigitizationFrontdesk(param.digitizationFrontdeskId);
 
         if (nodes.size() != param.nodeIds.size()) {
-            throw new SystemException("Neplatný počet nalezených jednotek popisu (" + nodes.size() + ", " + param.nodeIds.size() + ")", BaseCode.ID_NOT_EXIST);
+            throw new SystemException("Neplatný počet nalezených jednotek popisu (" + nodes.size() + ", " +  param.nodeIds.size() + ")", BaseCode.ID_NOT_EXIST);
         }
 
         ArrDigitizationRequest digitizationRequest;
@@ -2412,8 +2406,8 @@ public class ArrangementController {
      * Vytvoření požadavku nebo přidání DAO k existujícímu požadavku.
      *
      * @param fundVersionId identifikátor verze AS
-     * @param send současně odeslat požadavek?
-     * @param param parametry požadavku
+     * @param send          současně odeslat požadavek?
+     * @param param         parametry požadavku
      */
     @RequestMapping(value = "/requests/{fundVersionId}/dao/add", method = RequestMethod.POST)
     @Transactional
@@ -2428,7 +2422,7 @@ public class ArrangementController {
         List<ArrDao> daos = daoRepository.findAll(param.daoIds);
 
         if (daos.size() != param.daoIds.size()) {
-            throw new SystemException("Neplatný počet nalezených digitalizátů (" + daos.size() + ", " + param.daoIds.size() + ")", BaseCode.ID_NOT_EXIST);
+            throw new SystemException("Neplatný počet nalezených digitalizátů (" + daos.size() + ", " +  param.daoIds.size() + ")", BaseCode.ID_NOT_EXIST);
         }
 
         ArrDaoRequest daoRequest;
@@ -2448,7 +2442,7 @@ public class ArrangementController {
      * Odeslání požadavku.
      *
      * @param fundVersionId identifikátor verze AS
-     * @param requestId identifikátor požadavku
+     * @param requestId     identifikátor požadavku
      */
     @RequestMapping(value = "/requests/{fundVersionId}/{requestId}/send", method = RequestMethod.POST)
     @Transactional
@@ -2466,7 +2460,7 @@ public class ArrangementController {
      * Změna požadavku.
      *
      * @param fundVersionId identfikátor verze AS
-     * @param param parametry požadavku
+     * @param param         parametry požadavku
      */
     @RequestMapping(value = "/requests/{fundVersionId}/{requestId}", method = RequestMethod.PUT)
     @Transactional
@@ -2483,7 +2477,7 @@ public class ArrangementController {
      * Odebrání JP z požadavku.
      *
      * @param fundVersionId identfikátor verze AS
-     * @param param parametry požadavku
+     * @param param         parametry požadavku
      */
     @RequestMapping(value = "/requests/{fundVersionId}/digitization/remove", method = RequestMethod.POST)
     @Transactional
@@ -2497,7 +2491,7 @@ public class ArrangementController {
         List<ArrNode> nodes = nodeRepository.findAll(param.nodeIds);
 
         if (nodes.size() != param.nodeIds.size()) {
-            throw new SystemException("Neplatný počet nalezených jednotek popisu (" + nodes.size() + ", " + param.nodeIds.size() + ")", BaseCode.ID_NOT_EXIST);
+            throw new SystemException("Neplatný počet nalezených jednotek popisu (" + nodes.size() + ", " +  param.nodeIds.size() + ")", BaseCode.ID_NOT_EXIST);
         }
 
         ArrDigitizationRequest digitizationRequest = requestService.getDigitizationRequest(param.id);
@@ -2508,13 +2502,13 @@ public class ArrangementController {
      * Vyhledání požadavků.
      *
      * @param fundVersionId identfikátor verze AS
-     * @param state stav požadavku
-     * @param type typ požadavku
-     * @param detail vyplnit detailní informace o požadavku?
+     * @param state         stav požadavku
+     * @param type          typ požadavku
+     * @param detail        vyplnit detailní informace o požadavku?
      * @return seznam odpovídajících požadavků
      */
     @RequestMapping(value = "/requests/{fundVersionId}", method = RequestMethod.GET)
-    @Transactional
+	@Transactional
     public List<ArrRequestVO> findRequests(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                            @RequestParam(value = "state", required = false) final ArrRequest.State state,
                                            @RequestParam(value = "type", required = false) final ArrRequest.ClassType type,
@@ -2530,7 +2524,7 @@ public class ArrangementController {
 
 
     @RequestMapping(value = "/requests/queued", method = RequestMethod.GET)
-    @Transactional
+	@Transactional
     public List<ArrRequestQueueItemVO> findQueuedRequests() {
         List<ArrRequestQueueItem> requestQueueItems = requestQueueService.findQueued();
         return factoryVo.createRequestQueueItem(requestQueueItems);
@@ -2540,13 +2534,13 @@ public class ArrangementController {
     /**
      * Získání konkrétního požadavku.
      *
-     * @param fundVersionId identfikátor verze AS
-     * @param requestId identifikátor požadavku
-     * @param detail vyplnit detailní informace o požadavku?
+     * @param fundVersionId  identfikátor verze AS
+     * @param requestId      identifikátor požadavku
+     * @param detail         vyplnit detailní informace o požadavku?
      * @return nalezený požadavek
      */
     @RequestMapping(value = "/requests/{fundVersionId}/{requestId}", method = RequestMethod.GET)
-    @Transactional
+	@Transactional
     public ArrRequestVO getRequest(
             @PathVariable(value = "fundVersionId") final Integer fundVersionId,
             @PathVariable(value = "requestId") final Integer requestId,
@@ -2705,7 +2699,6 @@ public class ArrangementController {
 
     /**
      * Výstupní objekt pro získaná data pro formulář detailu.
-     *
      * @param <T> typ nadřazené entity, např. ArrNodeVO nebo output atp.
      */
     public static abstract class FormDataNewVO<T> {
@@ -2912,7 +2905,6 @@ public class ArrangementController {
     /**
      * Výstupní objekt pro hodnotu atributu a nadřazenou entitu.
      * - pro create / delete / update
-     *
      * @param <T> typ nadřazené entity, např. ArrNodeVO nebo output atp.
      */
     public static abstract class ItemResult<T> {
@@ -2966,7 +2958,7 @@ public class ArrangementController {
     /**
      * Vstupní parametry pro přesuny uzlů.
      */
-    public static class LevelMoveParam extends NodeParam {
+    public static class LevelMoveParam extends NodeParam{
 
         /**
          * Seznam uzlů, které přesouváme.
@@ -3116,47 +3108,36 @@ public class ArrangementController {
         public Integer getVersionId() {
             return versionId;
         }
-
         public void setVersionId(final Integer versionId) {
             this.versionId = versionId;
         }
-
         public Integer getNodeId() {
             return nodeId;
         }
-
         public void setNodeId(final Integer nodeId) {
             this.nodeId = nodeId;
         }
-
         public String getSearchValue() {
             return searchValue;
         }
-
         public void setSearchValue(final String searchValue) {
             this.searchValue = searchValue;
         }
-
         public Depth getDepth() {
             return depth;
         }
-
         public void setDepth(final Depth depth) {
             this.depth = depth;
         }
-
         public List<SearchParam> getSearchParams() {
             return searchParams;
         }
-
         public void setSearchParams(final List<SearchParam> searchParams) {
             this.searchParams = searchParams;
         }
-
         public boolean getLuceneQuery() {
             return luceneQuery;
         }
-
         public void setLuceneQuery(final boolean luceneQuery) {
             this.luceneQuery = luceneQuery;
         }

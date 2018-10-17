@@ -113,7 +113,7 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
 @Configuration
 public class ArrangementService {
 
-    private static final AtomicInteger LAST_DESC_ITEM_OBJECT_ID = new AtomicInteger(-1);
+	private static final AtomicInteger LAST_DESC_ITEM_OBJECT_ID = new AtomicInteger(-1);
 
     @Autowired
     private FundRegisterScopeRepository faRegisterRepository;
@@ -159,8 +159,8 @@ public class ArrangementService {
     @Autowired
     private AccessPointService accessPointService;
 
-    @Autowired
-    DescriptionItemServiceInternal arrangementInternal;
+	@Autowired
+	DescriptionItemServiceInternal arrangementInternal;
     @Autowired
     private PolicyService policyService;
 
@@ -170,8 +170,8 @@ public class ArrangementService {
     @Autowired
     private ArrangementCacheService arrangementCacheService;
 
-    @Autowired
-    private NodeCacheService nodeCacheService;
+	@Autowired
+	private NodeCacheService nodeCacheService;
 
     @Autowired
     private ScopeRepository scopeRepository;
@@ -187,13 +187,13 @@ public class ArrangementService {
     /**
      * Vytvoření archivního souboru.
      *
-     * @param name název
-     * @param ruleSet pravidla
-     * @param change změna
-     * @param uuid uuid
+     * @param name         název
+     * @param ruleSet      pravidla
+     * @param change       změna
+     * @param uuid         uuid
      * @param internalCode iterní kód
-     * @param institution instituce
-     * @param dateRange časový rozsah
+     * @param institution  instituce
+     * @param dateRange    časový rozsah
      * @return vytvořený arch. soubor
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN, UsrPermission.Permission.FUND_CREATE})
@@ -218,7 +218,9 @@ public class ArrangementService {
     }
 
     /**
-     * @param scopes @return Upravená archivní pomůcka
+     * @param fund
+     * @param ruleSet
+     * @param scopes  @return Upravená archivní pomůcka
      */
     @Transactional
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN, UsrPermission.Permission.FUND_VER_WR})
@@ -269,8 +271,8 @@ public class ArrangementService {
                                final Collection<ApScope> newApScopes) {
         Assert.notNull(fund, "AS musí být vyplněn");
 
-        Map<Integer, ArrFundRegisterScope> dbIdentifiersMap = ElzaTools
-                .createEntityMap(faRegisterRepository.findByFund(fund), i -> i.getScope().getScopeId());
+		Map<Integer, ArrFundRegisterScope> dbIdentifiersMap = ElzaTools
+				.createEntityMap(faRegisterRepository.findByFund(fund), i -> i.getScope().getScopeId());
         Set<ArrFundRegisterScope> removeScopes = new HashSet<>(dbIdentifiersMap.values());
 
         for (ApScope newScope : newApScopes) {
@@ -294,9 +296,9 @@ public class ArrangementService {
      * Vytvoří novou archivní pomůcku se zadaným názvem. Jako datum založení vyplní aktuální datum a čas. Pro root
      * vytvoří atributy podle scénáře.
      *
-     * @param name název archivní pomůcky
-     * @param ruleSet id pravidel podle kterých se vytváří popis
-     * @param dateRange vysčítaná informace o časovém rozsahu fondu
+     * @param name         název archivní pomůcky
+     * @param ruleSet      id pravidel podle kterých se vytváří popis
+     * @param dateRange    vysčítaná informace o časovém rozsahu fondu
      * @param internalCode interní označení
      * @return nová archivní pomůcka
      */
@@ -344,22 +346,22 @@ public class ArrangementService {
 
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN, UsrPermission.Permission.FUND_CREATE})
     public ArrFund createFund(final String name,
-                              final String internalCode,
-                              final ParInstitution institution) {
-        ArrFund fund = new ArrFund();
-        fund.setCreateDate(LocalDateTime.now());
-        fund.setName(name);
-        fund.setInternalCode(internalCode);
-        fund.setInstitution(institution);
-        return fundRepository.save(fund);
+				              final String internalCode,
+				              final ParInstitution institution) {
+		ArrFund fund = new ArrFund();
+		fund.setCreateDate(LocalDateTime.now());
+		fund.setName(name);
+		fund.setInternalCode(internalCode);
+		fund.setInstitution(institution);
+		return fundRepository.save(fund);
     }
 
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_VER_WR, UsrPermission.Permission.FUND_ADMIN})
+    @AuthMethod(permission = { UsrPermission.Permission.FUND_VER_WR, UsrPermission.Permission.FUND_ADMIN })
     public ArrFundVersion createVersion(final ArrChange createChange,
-                                        @AuthParam(type = Type.FUND) final ArrFund fund,
-                                        final RulRuleSet ruleSet,
-                                        final ArrNode rootNode,
-                                        final String dateRange) {
+                                         @AuthParam(type = Type.FUND) final ArrFund fund,
+                                         final RulRuleSet ruleSet,
+                                         final ArrNode rootNode,
+                                         final String dateRange) {
         ArrFundVersion version = new ArrFundVersion();
         version.setCreateChange(createChange);
         version.setFund(fund);
@@ -437,7 +439,7 @@ public class ArrangementService {
         node.setUuid(generateUuid());
         node.setFund(fund);
         nodeRepository.save(node);
-        nodeCacheService.createEmptyNode(node);
+		nodeCacheService.createEmptyNode(node);
         return node;
     }
 
@@ -461,14 +463,14 @@ public class ArrangementService {
         node.setUuid(uuid);
         node.setFund(fund);
         nodeRepository.save(node);
-        nodeCacheService.createEmptyNode(node);
+		nodeCacheService.createEmptyNode(node);
         return node;
     }
 
     /**
      * Vytvoření objektu pro změny s primárním uzlem.
      *
-     * @param type typ změny
+     * @param type        typ změny
      * @param primaryNode primární uzel
      * @return objekt změny
      */
@@ -479,7 +481,7 @@ public class ArrangementService {
         change.setChangeDate(LocalDateTime.now());
 
         if (userDetail != null && userDetail.getId() != null) {
-            UsrUser user = em.getReference(UsrUser.class, userDetail.getId());
+			UsrUser user = em.getReference(UsrUser.class, userDetail.getId());
             change.setUser(user);
         }
 
@@ -502,7 +504,7 @@ public class ArrangementService {
     /**
      * Dodatečné nastavení primární vazby u změny.
      *
-     * @param change změna u které primární uzel nastavujeme
+     * @param change        změna u které primární uzel nastavujeme
      * @param primaryNodeId identifikátor uzlu
      * @return upravená změna
      */
@@ -516,7 +518,7 @@ public class ArrangementService {
     /**
      * Dodatečné nastavení primární vazby u změny.
      *
-     * @param change změna u které primární uzel nastavujeme
+     * @param change      změna u které primární uzel nastavujeme
      * @param primaryNode uzel
      * @return upravená změna
      */
@@ -544,7 +546,7 @@ public class ArrangementService {
      * Uzavře otevřenou verzi archivní pomůcky a otevře novou verzi.
      * - spustí přepočet stavů uzlů pro novou verzi
      *
-     * @param version verze, která se má uzavřít
+     * @param version   verze, která se má uzavřít
      * @param dateRange vysčítaná informace o časovém rozsahu fondu
      * @return nová verze archivní pomůcky
      * @throws ConcurrentUpdateException chyba při současné manipulaci s položkou více uživateli
@@ -619,8 +621,8 @@ public class ArrangementService {
         }
 
         for (ArrDescItem descItem : descItemRepository.findByNodeAndDeleteChangeIsNull(level.getNode())) {
-            descItem.setDeleteChange(deleteChange);
-            descItemRepository.save(descItem);
+			descItem.setDeleteChange(deleteChange);
+			descItemRepository.save(descItem);
         }
 
         return deleteLevelInner(level, deleteChange);
@@ -648,20 +650,20 @@ public class ArrangementService {
      * @return Identifikátor objektu
      */
     public Integer getNextDescItemObjectId() {
-        return LAST_DESC_ITEM_OBJECT_ID.updateAndGet(id -> {
-            if (id < 0) {
-                id = itemRepository.findMaxItemObjectId();
-            }
-            return id + 1;
-        });
+    	return LAST_DESC_ITEM_OBJECT_ID.updateAndGet(id -> {
+    		if (id < 0) {
+    			id = itemRepository.findMaxItemObjectId();
+    		}
+    		return id + 1;
+    	});
     }
 
     /**
      * Provede zkopírování atributu daného typu ze staršího bratra uzlu.
      *
-     * @param version verze stromu
+     * @param version      verze stromu
      * @param descItemType typ atributu, který chceme zkopírovat
-     * @param level uzel, na který nastavíme hodnoty ze staršího bratra
+     * @param level        uzel, na který nastavíme hodnoty ze staršího bratra
      * @return vytvořené hodnoty
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.FUND_RD})
@@ -680,7 +682,7 @@ public class ArrangementService {
 
         ArrLevel olderSibling = levelRepository.findOlderSibling(level, version.getLockChange());
         if (olderSibling == null) {
-            throw new BusinessException("Node does not have older sibling, levelId=" + level.getLevelId(), BaseCode.INVALID_STATE);
+        	throw new BusinessException("Node does not have older sibling, levelId="+level.getLevelId(), BaseCode.INVALID_STATE);
         }
 
         // Read source data
@@ -692,11 +694,11 @@ public class ArrangementService {
         List<ArrDescItem> deletedDescItems = null;
         if (CollectionUtils.isNotEmpty(nodeDescItems)) {
             deletedDescItems = descriptionItemService.deleteDescriptionItems(nodeDescItems, level.getNode(), version,
-                    change, false);
+                                                                             change, false);
         }
 
         final List<ArrDescItem> newDescItems = descriptionItemService
-                .copyDescItemWithDataToNode(level.getNode(), siblingDescItems, change, version);
+                    .copyDescItemWithDataToNode(level.getNode(), siblingDescItems, change, version);
 
         descItemRepository.flush();
 
@@ -705,7 +707,7 @@ public class ArrangementService {
 
         // revalidate node
         ruleService.conformityInfo(version.getFundVersionId(), Arrays.asList(level.getNode().getNodeId()),
-                NodeTypeOperation.SAVE_DESC_ITEM, newDescItems, null, deletedDescItems);
+        		NodeTypeOperation.SAVE_DESC_ITEM, newDescItems, null, deletedDescItems);
 
         // Should it be taken from cache?
         return descItemRepository.findOpenByNodeAndTypes(level.getNode(), typeSet);
@@ -714,7 +716,7 @@ public class ArrangementService {
     /**
      * Zjistí, jestli patří vybraný level do dané verze.
      *
-     * @param level level
+     * @param level   level
      * @param version verze
      * @return true pokud patří uzel do verze, jinak false
      */
@@ -768,10 +770,10 @@ public class ArrangementService {
     /**
      * Vyhledání id nodů podle hodnoty atributu.
      *
-     * @param version verze AP
-     * @param nodeId id uzlu pod kterým se má hledat, může být null
+     * @param version     verze AP
+     * @param nodeId      id uzlu pod kterým se má hledat, může být null
      * @param searchValue hledaná hodnota
-     * @param depth hloubka v jaké se hledá pod předaným nodeId
+     * @param depth       hloubka v jaké se hledá pod předaným nodeId
      * @return seznam id uzlů které vyhovují parametrům
      */
     public Set<Integer> findNodeIdsByFulltext(final ArrFundVersion version, final Integer nodeId, final String searchValue, final Depth depth) {
@@ -793,8 +795,8 @@ public class ArrangementService {
     /**
      * Vyhledání id nodů podle lucene dotazu. např: +specification:*čís* -fulltextValue:ddd
      *
-     * @param version verze AP
-     * @param nodeId id uzlu pod kterým se má hledat, může být null
+     * @param version     verze AP
+     * @param nodeId      id uzlu pod kterým se má hledat, může být null
      * @param searchValue lucene dotaz (např: +specification:*čís* -fulltextValue:ddd)
      * @param depth hloubka v jaké se hledá pod předaným nodeId
      * @return seznam id uzlů které vyhovují parametrům
@@ -827,14 +829,15 @@ public class ArrangementService {
     /**
      * Vyhledání id nodů podle parametrů.
      *
-     * @param version verze AP
-     * @param nodeId id uzlu pod kterým se má hledat, může být null
+     * @param version     verze AP
+     * @param nodeId      id uzlu pod kterým se má hledat, může být null
      * @param searchParams parametry pro rozšířené vyhledávání
-     * @param depth hloubka v jaké se hledá pod předaným nodeId
+     * @param depth       hloubka v jaké se hledá pod předaným nodeId
+     *
      * @return množina id uzlů které vyhovují parametrům
      */
     public Set<Integer> findNodeIdsBySearchParams(final ArrFundVersion version, final Integer nodeId,
-                                                  final List<SearchParam> searchParams, final Depth depth) {
+            final List<SearchParam> searchParams, final Depth depth) {
         Assert.notNull(version, "Verze AS musí být vyplněna");
         Assert.notNull(depth, "Musí být vyplněno");
         Assert.notEmpty(searchParams, "Musí existovat vyhledávající parametr");
@@ -870,8 +873,8 @@ public class ArrangementService {
      * Provede uzamčení nodu (zvýšení verze uzlu)
      *
      * @param lockNode uzamykaný node
-     * @param version verze stromu, do které patří uzel
-     * @param change změna
+     * @param version  verze stromu, do které patří uzel
+     * @param change   změna
      * @return level nodu
      */
     public ArrLevel lockNode(final ArrNode lockNode, final ArrFundVersion version, final ArrChange change) {
@@ -886,8 +889,9 @@ public class ArrangementService {
     /**
      * Provede uzamčení nodu (zvýšení verze uzlu)
      *
-     * @param dbNode odpovídající uzel načtený z db
+     * @param dbNode   odpovídající uzel načtený z db
      * @param lockNode uzamykaný node
+     * @param change
      * @return level nodu
      */
     public ArrNode lockNode(final ArrNode dbNode, final ArrNode lockNode, final ArrChange change) {
@@ -1071,8 +1075,8 @@ public class ArrangementService {
      * Vyhledání sousedních uzlů kolem určitého uzlu.
      *
      * @param version verze AP
-     * @param node uzel
-     * @param around velikost okolí
+     * @param node    uzel
+     * @param around  velikost okolí
      * @return okolní uzly (včetně původního)
      */
     public List<ArrNode> findSiblingsAroundOfNode(final ArrFundVersion version, final ArrNode node, final Integer around) {
@@ -1103,8 +1107,9 @@ public class ArrangementService {
      * Vrací výsek chybných JP podle indexů.
      *
      * @param fundVersion verze archivní pomůcky
-     * @param indexFrom od indexu
-     * @param indexTo do indexu
+     * @param indexFrom   od indexu
+     * @param indexTo     do indexu
+     * @return
      */
     public ArrangementController.ValidationItems getValidationNodes(final ArrFundVersion fundVersion,
                                                                     final Integer indexFrom,
@@ -1194,8 +1199,8 @@ public class ArrangementService {
      * Vyhledává chyby po/před zvolené JP.
      *
      * @param fundVersion verze archivního fondu
-     * @param nodeId identifikátor uzlu, od kterého vyhledávám
-     * @param direction směr hledání
+     * @param nodeId      identifikátor uzlu, od kterého vyhledávám
+     * @param direction   směr hledání
      * @return výsledek hledání
      */
     public ArrangementController.ValidationItems findErrorNode(final ArrFundVersion fundVersion,
@@ -1237,8 +1242,8 @@ public class ArrangementService {
      * Přidání typu chyby k nodu
      *
      * @param nodeProblemsMap typy problémů
-     * @param nodeId identifikátor uzlu
-     * @param policyTypeId identifikátor typu
+     * @param nodeId          identifikátor uzlu
+     * @param policyTypeId    identifikátor typu
      */
     private void addNodeProblem(final Map<Integer, Set<Integer>> nodeProblemsMap, final Integer nodeId, final Integer policyTypeId) {
         Set<Integer> policyTypeIds = nodeProblemsMap.get(nodeId);
@@ -1262,12 +1267,12 @@ public class ArrangementService {
     /**
      * Rekurzivní procházení a přidávání JP s chybou
      *
-     * @param nodeIds seznam chybných JP (postupně přidávaný)
-     * @param treeNode aktuálně procházená JP
+     * @param nodeIds           seznam chybných JP (postupně přidávaný)
+     * @param treeNode          aktuálně procházená JP
      * @param parentPolicyTypes viditelnost rodiče
-     * @param policiesMap mapa všech nastavení nad JP
-     * @param nodeProblemsMap mapa všech chybných JP podle typu
-     * @param foundNode pomocný objekt pro vyhledání další chyby
+     * @param policiesMap       mapa všech nastavení nad JP
+     * @param nodeProblemsMap   mapa všech chybných JP podle typu
+     * @param foundNode         pomocný objekt pro vyhledání další chyby
      */
     private void recursiveAddNodes(final List<Integer> nodeIds,
                                    final TreeNode treeNode,

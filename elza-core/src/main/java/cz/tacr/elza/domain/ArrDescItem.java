@@ -106,7 +106,7 @@ public class ArrDescItem extends ArrItem {
 	}
 
     @Override
-    @Field(name = NODE_ID, analyze = Analyze.NO, store = Store.YES)
+    @Field(name = FIELD_NODE_ID, analyze = Analyze.NO, store = Store.YES)
     // @FieldBridge(impl = IntegerBridge.class)
     public Integer getNodeId() {
         return nodeId;
@@ -115,7 +115,7 @@ public class ArrDescItem extends ArrItem {
     @JsonIgnore
     @Override
     @Field(name = FIELD_FUND_ID, analyze = Analyze.NO, store = Store.YES)
-    @Facet(name = FIELD_FUND_ID_STRING, forField = FUND_ID, encoding = FacetEncodingType.STRING)
+    @Facet(name = FIELD_FUND_ID_STRING, forField = FIELD_FUND_ID, encoding = FacetEncodingType.STRING)
     // @FieldBridge(impl = IntegerBridge.class)
     public Integer getFundId() {
         return indexData.getFundId();
