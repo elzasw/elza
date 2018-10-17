@@ -108,7 +108,6 @@ import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.UsrPermission;
-import cz.tacr.elza.domain.vo.ArrFundToNodeList;
 import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ConcurrentUpdateException;
@@ -1667,11 +1666,7 @@ public class ArrangementController {
     @RequestMapping(value = "/fundFulltext/{fundId}", method = RequestMethod.GET)
     public List<TreeNodeVO> fundFulltext(final @PathVariable(value = "fundId") Integer fundId) {
         // vybereš ze session seznam nodeId podle AS a vytvoří TreeNodeVO
-
-        ArrFundToNodeList fundToNodeList = arrangementService.getFundToNodeListFromSession(fundId);
-        Assert.notNull(fundToNodeList, "Nebyla nalezen AS");
-
-        return null;
+        return arrangementService.getNodeListByFulltext(fundId);
     }
 
     /**

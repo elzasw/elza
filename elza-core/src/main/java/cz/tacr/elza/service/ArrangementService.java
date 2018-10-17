@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -739,32 +740,47 @@ public class ArrangementService {
      * @return seznam id uzlů které vyhovují parametrům
      */
     public List<ArrFundFulltextResult> findFundsByFulltext(final String searchValue, final Collection<ArrFund> fundList) {
-        List<ArrFundFulltextResult> list = new ArrayList<>();
+
         List<ArrFundToNodeList> fundToNodeList = nodeRepository.findFundIdsByFulltext(searchValue, fundList);
-        Holder<List<ArrFundToNodeList>> holder = fundFulltextSession();
-        holder.set(fundToNodeList);
+        fundFulltextSession().set(fundToNodeList);
+
+        List<ArrFundFulltextResult> resultList = new ArrayList<>();
         for (ArrFundToNodeList fundCount : fundToNodeList) {
             ArrFundFulltextResult result = new ArrFundFulltextResult();
             ArrFund fund = fundRepository.findOne(fundCount.getFundId());
             result.setName(fund.getName());
             result.setId(fundCount.getFundId());
             result.setCount(fundCount.getNodeCount());
-            list.add(result);
+            resultList.add(result);
         }
-        return list;
+        return resultList;
     }
 
-    public ArrFundToNodeList getFundToNodeListFromSession(Integer fundId) {
+    protected ArrFundToNodeList getFundToNodeListFromSession(Integer fundId) {
         Holder<List<ArrFundToNodeList>> holder = fundFulltextSession();
         List<ArrFundToNodeList> list = holder.get();
-        if (list != null) {
-            for (ArrFundToNodeList fundToNodeList : list) {
-                if (fundId.equals(fundToNodeList.getFundId())) {
-                    return fundToNodeList;
-                }
+        if (list == null) {
+            throw new SystemException("Nenalezena session data");
+        }
+        for (ArrFundToNodeList fundToNodeList : list) {
+            if (fundId.equals(fundToNodeList.getFundId())) {
+                return fundToNodeList;
             }
         }
         return null;
+    }
+
+    public List<TreeNodeVO> getNodeListByFulltext(Integer fundId) {
+        ArrFundToNodeList fundToNodeList = getFundToNodeListFromSession(fundId);
+        if (fundToNodeList != null) {
+            List<Integer> nodeIdList = fundToNodeList.getNodeIdList();
+            if (nodeIdList.size() > 20) {
+                nodeIdList = nodeIdList.subList(0, 20);
+            }
+            ArrFundVersion fundVersion = getOpenVersionByFundId(fundToNodeList.getFundId());
+            return levelTreeCacheService.getNodesByIds(nodeIdList, fundVersion.getFundVersionId());
+        }
+        return Collections.emptyList();
     }
 
     /**
