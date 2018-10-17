@@ -155,6 +155,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
      */
     @Override
     public Set<Integer> findByFulltextAndVersionLockChangeId(final String text, final Integer fundId, final Integer lockChangeId) {
+
         Assert.notNull(fundId, "Nebyl vyplněn identifikátor AS");
 
         FullTextQueryContext<ArrDescItem> ctx = new FullTextQueryContext<>(ArrDescItem.class);
@@ -169,6 +170,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
     @Override
     public Set<Integer> findByLuceneQueryAndVersionLockChangeId(final String queryText, final Integer fundId, final Integer lockChangeId)
             throws InvalidQueryException {
+
         Assert.notNull(fundId, "Nebyl vyplněn identifikátor AS");
 
         FullTextQueryContext<ArrDescItem> ctx = new FullTextQueryContext<>(ArrDescItem.class);
@@ -182,7 +184,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
 
     @Override
     public Set<Integer> findBySearchParamsAndVersionLockChangeId(final List<SearchParam> searchParams, final Integer fundId,
-                                                                 final Integer lockChangeId) {
+            final Integer lockChangeId) {
         Assert.notNull(fundId, "Nebyl vyplněn identifikátor AS");
         Assert.notEmpty(searchParams, "Musí být vyplněn alespoň jeden parametr vyhledávání");
 
@@ -219,17 +221,17 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
     }
 
     @Override
-    public ScrollableResults findUncachedNodes() {
+	public ScrollableResults findUncachedNodes() {
 
         // přepsáno z NOT IN z důvodu optimalizace na LEFT JOIN
-        String hql = "SELECT n.nodeId FROM arr_node n LEFT JOIN arr_cached_node cn ON cn.nodeId = n.nodeId WHERE cn IS NULL";
+		String hql = "SELECT n.nodeId FROM arr_node n LEFT JOIN arr_cached_node cn ON cn.nodeId = n.nodeId WHERE cn IS NULL";
 
-        // get Hibernate session
-        Session session = entityManager.unwrap(Session.class);
-        ScrollableResults scrollableResults = session.createQuery(hql).setCacheMode(CacheMode.IGNORE)
-                .scroll(ScrollMode.FORWARD_ONLY);
+		// get Hibernate session
+		Session session = entityManager.unwrap(Session.class);
+		ScrollableResults scrollableResults = session.createQuery(hql).setCacheMode(CacheMode.IGNORE)
+		        .scroll(ScrollMode.FORWARD_ONLY);
 
-        return scrollableResults;
+		return scrollableResults;
 		/*
 		List<Object[]> resultList = query.getResultList();
 
@@ -260,7 +262,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
      * @return id nodů
      */
     private Set<Integer> findByTextSearchParamsAndVersionLockChangeId(final List<TextSearchParam> searchParams, final Integer fundId,
-                                                                      final Integer lockChangeId) {
+            final Integer lockChangeId) {
 
         Assert.notNull(fundId, "Nebyl vyplněn identifikátor AS");
         Assert.notEmpty(searchParams, "Musí být vyplněn alespoň jeden parametr vyhledávání");
@@ -336,7 +338,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
      * @return dotaz
      */
     private Query createDateQuery(final String value, final Integer calendarId, final UnitdateCondition condition,
-                                  final QueryBuilder queryBuilder) {
+            final QueryBuilder queryBuilder) {
         Assert.notNull(value, "Hodnota musí být vyplněna");
         Assert.notNull(calendarId, "Identifikátor typu kalendáře musí být vyplněn");
         Assert.notNull(condition, "Podmínka musí být vyplněna");
@@ -356,16 +358,16 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
         Query query;
         switch (condition) {
             case CONTAINS:
-                Query fromQuery = queryBuilder.range().onField(ArrDescItem.NORMALIZED_FROM_ATT).above(secondsFrom)
-                        .createQuery();
-                Query toQuery = queryBuilder.range().onField(ArrDescItem.NORMALIZED_TO_ATT).below(secondsTo).createQuery();
+			Query fromQuery = queryBuilder.range().onField(ArrDescItem.NORMALIZED_FROM_ATT).above(secondsFrom)
+			        .createQuery();
+			Query toQuery = queryBuilder.range().onField(ArrDescItem.NORMALIZED_TO_ATT).below(secondsTo).createQuery();
                 query = queryBuilder.bool().must(fromQuery).must(toQuery).createQuery();
                 break;
             case GE:
-                query = queryBuilder.range().onField(ArrDescItem.NORMALIZED_FROM_ATT).above(secondsFrom).createQuery();
+			query = queryBuilder.range().onField(ArrDescItem.NORMALIZED_FROM_ATT).above(secondsFrom).createQuery();
                 break;
             case LE:
-                query = queryBuilder.range().onField(ArrDescItem.NORMALIZED_TO_ATT).below(secondsTo).createQuery();
+			query = queryBuilder.range().onField(ArrDescItem.NORMALIZED_TO_ATT).below(secondsTo).createQuery();
                 break;
             default:
                 throw new IllegalStateException("Neznámý typ podmínky " + condition);
@@ -450,7 +452,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
      * Vyhledávání probíhá podle lucene dotazu.
      *
      * @param queryText lucene dotaz (např: +specification:*čís* -fulltextValue:ddd)
-     * @param fundId id fondu
+     * @param fundId    id fondu
      * @return id atributů které mají danou hodnotu
      * @throws InvalidQueryException neplatný lucene dotaz
      */
@@ -464,26 +466,26 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
         parser.setAllowLeadingWildcard(true);
 
         // Po přechodu na lucene 6.6.0 se Použije tento kód
-        //        HashMap<String, PointsConfig> stringNumericConfigHashMap = new HashMap<>();
-        //        PointsConfig intConfig = new PointsConfig(NumberFormat.getIntegerInstance(), Integer.class);
-        //        PointsConfig longConfig = new PointsConfig(NumberFormat.getNumberInstance(), Long.class);
-        //        stringNumericConfigHashMap.put("specification", intConfig);
-        //        stringNumericConfigHashMap.put("normalizedFrom", longConfig);
-        //        stringNumericConfigHashMap.put("normalizedTo", longConfig);
-        //        parser.setPointsConfigMap(stringNumericConfigHashMap);
+//        HashMap<String, PointsConfig> stringNumericConfigHashMap = new HashMap<>();
+//        PointsConfig intConfig = new PointsConfig(NumberFormat.getIntegerInstance(), Integer.class);
+//        PointsConfig longConfig = new PointsConfig(NumberFormat.getNumberInstance(), Long.class);
+//        stringNumericConfigHashMap.put("specification", intConfig);
+//        stringNumericConfigHashMap.put("normalizedFrom", longConfig);
+//        stringNumericConfigHashMap.put("normalizedTo", longConfig);
+//        parser.setPointsConfigMap(stringNumericConfigHashMap);
         HashMap<String, NumericConfig> stringNumericConfigHashMap = new HashMap<>();
-        stringNumericConfigHashMap.put(ArrDescItem.SPECIFICATION_ATT,
-                new NumericConfig(1, NumberFormat.getIntegerInstance(), FieldType.NumericType.INT));
-        stringNumericConfigHashMap.put(ArrDescItem.NORMALIZED_FROM_ATT,
-                new NumericConfig(16, NumberFormat.getNumberInstance(), FieldType.NumericType.LONG));
-        stringNumericConfigHashMap.put(ArrDescItem.NORMALIZED_TO_ATT,
-                new NumericConfig(16, NumberFormat.getNumberInstance(), FieldType.NumericType.LONG));
+		stringNumericConfigHashMap.put(ArrDescItem.SPECIFICATION_ATT,
+		        new NumericConfig(1, NumberFormat.getIntegerInstance(), FieldType.NumericType.INT));
+		stringNumericConfigHashMap.put(ArrDescItem.NORMALIZED_FROM_ATT,
+		        new NumericConfig(16, NumberFormat.getNumberInstance(), FieldType.NumericType.LONG));
+		stringNumericConfigHashMap.put(ArrDescItem.NORMALIZED_TO_ATT,
+		        new NumericConfig(16, NumberFormat.getNumberInstance(), FieldType.NumericType.LONG));
         parser.setNumericConfigMap(stringNumericConfigHashMap);
 
         try {
 
-            Query textQuery = parser.parse(queryText, ArrDescItem.FULLTEXT_ATT);
-            Query fundIdQuery = queryBuilder.keyword().onField(ArrDescItem.FIELD_FUND_ID).matching(fundId).createQuery();
+			Query textQuery = parser.parse(queryText, ArrDescItem.FULLTEXT_ATT);
+			Query fundIdQuery = queryBuilder.keyword().onField(ArrDescItem.FIELD_FUND_ID).matching(fundId).createQuery();
             return queryBuilder.bool().must(textQuery).must(fundIdQuery).createQuery();
 
         } catch (QueryNodeException e) {
@@ -507,8 +509,8 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
         BooleanJunction<BooleanJunction> textConditions = queryBuilder.bool();
         for (String token : tokens) {
             String searchValue = "*" + token + "*";
-            Query createQuery = queryBuilder.keyword().wildcard().onField(ArrDescItem.FULLTEXT_ATT)
-                    .matching(searchValue).createQuery();
+			Query createQuery = queryBuilder.keyword().wildcard().onField(ArrDescItem.FULLTEXT_ATT)
+			        .matching(searchValue).createQuery();
             textConditions.must(createQuery);
         }
 
