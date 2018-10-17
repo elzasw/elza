@@ -28,29 +28,38 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrIndexWork;
+import cz.tacr.elza.domain.SysIndexWork;
 import cz.tacr.elza.service.DescriptionItemService;
 
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toSet;
 
-/**
- * @author <a href="mailto:stepan.marek@coreit.cz">Stepan Marek</a>
- */
 @Component
 public class SearchIndexService {
 
     private static final Logger logger = LoggerFactory.getLogger(SearchIndexService.class);
 
-    private ExtendedSearchIntegrator integrator;
+    // --- services ---
+
+    private final DescriptionItemService descriptionItemService;
+
+    // --- fields ---
 
     @PersistenceContext
     private EntityManager em;
 
-    @Autowired
-    private DescriptionItemService descriptionItemService;
+    private ExtendedSearchIntegrator integrator;
 
     private Map<Class, SearchIndexSupport> repositoryMap = new HashedMap<>();
+
+    // --- constructor ---
+
+    @Autowired
+    public SearchIndexService(DescriptionItemService descriptionItemService) {
+        this.descriptionItemService = descriptionItemService;
+    }
+
+    // --- methods ---
 
     @PostConstruct
     public void init() {
@@ -61,7 +70,7 @@ public class SearchIndexService {
     }
 
     @Transactional
-    public void processBatch(List<ArrIndexWork> workList) {
+    public void processBatch(List<SysIndexWork> workList) {
 
         workList.stream().collect(groupingBy(work -> work.getEntityClass())).forEach((entityClass, list) -> {
 

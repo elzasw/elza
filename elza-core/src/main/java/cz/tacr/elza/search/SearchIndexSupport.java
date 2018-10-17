@@ -4,8 +4,15 @@ import java.util.Collection;
 import java.util.Map;
 
 /**
- * @author <a href="mailto:stepan.marek@coreit.cz">Stepan Marek</a>
+ * Hibernate Search support
  */
 public interface SearchIndexSupport<T> {
+
+    /**
+     * Seznam objektu pro preindexovani v Hibernate Search.
+     *
+     * @param ids seznam ID
+     * @return seznam objektu (ID -> entita)
+     */
     Map<Integer, T> findToIndex(Collection<Integer> ids);
 }

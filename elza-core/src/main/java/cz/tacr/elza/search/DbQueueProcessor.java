@@ -21,19 +21,27 @@ import cz.tacr.elza.core.AppContext;
 import cz.tacr.elza.service.IndexWorkService;
 
 /**
- * @author <a href="mailto:stepan.marek@coreit.cz">Stepan Marek</a>
+ * Hibernate Search support - implementace Backend Queue Processor, ktera neindexuje okamzite,
+ * ale uklada pozadavky na indexovani do fronty v DB tabulce {@code sys_index_work}.
  */
+@SuppressWarnings("SpringJavaAutowiredMembersInspection")
 public class DbQueueProcessor implements BackendQueueProcessor {
 
     private static final Logger logger = LoggerFactory.getLogger(DbQueueProcessor.class);
+
+    // --- services ---
+
+    @Autowired
+    private IndexWorkService indexWorkService;
+
+    // --- fields ---
 
     private Properties props = null;
     private IndexManager indexManager;
     private String indexName;
     private ExtendedSearchIntegrator searchIntegrator;
 
-    @Autowired
-    private IndexWorkService indexWorkService;
+    // --- constructor ---
 
     public DbQueueProcessor() {
         AppContext.addApplicationListener((ApplicationListener<ContextRefreshedEvent>) event -> {
@@ -42,6 +50,8 @@ public class DbQueueProcessor implements BackendQueueProcessor {
             factory.autowireBean(DbQueueProcessor.this);
         });
     }
+
+    // --- methods ---
 
     @Override
     public void initialize(Properties props, WorkerBuildContext context, IndexManager indexManager) {

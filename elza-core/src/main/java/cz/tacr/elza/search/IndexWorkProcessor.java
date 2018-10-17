@@ -17,13 +17,13 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 
-import cz.tacr.elza.domain.ArrIndexWork;
+import cz.tacr.elza.domain.SysIndexWork;
 import cz.tacr.elza.service.IndexWorkService;
 
 import static java.util.stream.Collectors.*;
 
 /**
- * @author <a href="mailto:stepan.marek@coreit.cz">Stepan Marek</a>
+ * Listener nad tabulkou {@code sys_index_work} - zpracovava frontu pozadavku na preindexovani entit v Hibernate Search.
  */
 @Component
 @ConditionalOnProperty(prefix = "elza.hibernate.index", name = "enabled", havingValue = "true", matchIfMissing = true)
@@ -33,17 +33,13 @@ public class IndexWorkProcessor {
 
     // --- services ---
 
-    @Autowired
-    private IndexWorkService indexWorkService;
+    private final IndexWorkService indexWorkService;
 
-    @Autowired
-    private SearchIndexService searchWorkIndexService;
+    private final SearchIndexService searchWorkIndexService;
+
+    private final ThreadPoolTaskExecutor taskExecutor;
 
     // --- fields ---
-
-    @Autowired
-    @Qualifier("threadPoolTaskExecutorHS")
-    private ThreadPoolTaskExecutor taskExecutor;
 
     @Value("${elza.hibernate.index.batch_size:100}")
     private int batchSize;
@@ -63,6 +59,18 @@ public class IndexWorkProcessor {
         this.disabled = disabled;
     }
 
+    // --- constructor ---
+
+    @Autowired
+    public IndexWorkProcessor(
+            IndexWorkService indexWorkService,
+            SearchIndexService searchWorkIndexService,
+            @Qualifier("threadPoolTaskExecutorHS") ThreadPoolTaskExecutor taskExecutor) {
+        this.indexWorkService = indexWorkService;
+        this.searchWorkIndexService = searchWorkIndexService;
+        this.taskExecutor = taskExecutor;
+    }
+
     // --- methods ---
 
     @Scheduled(fixedRateString = "${elza.hibernate.index.refresh_rate:1000}")
@@ -73,7 +81,7 @@ public class IndexWorkProcessor {
             // pockame, az bude volny thread, aby se worky zbytecne nehromadili ve fronte a nezamykaly v DB
             if (taskExecutor.getCorePoolSize() > taskExecutor.getActiveCount()) {
 
-                Page<ArrIndexWork> workPage;
+                Page<SysIndexWork> workPage;
 
                 do {
 
@@ -81,7 +89,7 @@ public class IndexWorkProcessor {
 
                     if (workPage.hasContent()) {
 
-                        List<ArrIndexWork> workList = workPage.getContent();
+                        List<SysIndexWork> workList = workPage.getContent();
 
                         indexAll(workList);
                     }
@@ -94,7 +102,7 @@ public class IndexWorkProcessor {
         }
     }
 
-    protected void indexAll(List<ArrIndexWork> workList) {
+    protected void indexAll(List<SysIndexWork> workList) {
 
         int size = workList.size();
 
@@ -114,7 +122,7 @@ public class IndexWorkProcessor {
         }
     }
 
-    protected void indexBatch(List<ArrIndexWork> workList) {
+    protected void indexBatch(List<SysIndexWork> workList) {
 
         if (CollectionUtils.isEmpty(workList)) {
             logger.debug("Hibernate search index - nothing to update");
@@ -135,7 +143,7 @@ public class IndexWorkProcessor {
         });
     }
 
-    protected void processBatch(List<ArrIndexWork> workList) {
+    protected void processBatch(List<SysIndexWork> workList) {
         try {
 
             searchWorkIndexService.processBatch(workList);

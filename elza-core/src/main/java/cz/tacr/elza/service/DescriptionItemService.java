@@ -1684,7 +1684,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         if (CollectionUtils.isEmpty(ids)) {
             return Collections.emptyMap();
         }
-        // todo[marek]: optimalizovat nacteni vcene zavislosti
+        // moznost optimalizovat nacteni vcene zavislosti
         return descItemRepository.findAll(ids).stream().collect(Collectors.toMap(o -> o.getItemId(), o -> o));
     }
 

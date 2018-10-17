@@ -13,11 +13,11 @@ import javax.persistence.Table;
 import static cz.tacr.elza.domain.enumeration.StringLength.LENGTH_250;
 
 /**
- * Entity for used values
+ * Hibernate Search support - fronta entit pro preindexovani
  */
-@Entity(name = "arr_index_work")
+@Entity(name = "sys_index_work")
 @Table
-public class ArrIndexWork {
+public class SysIndexWork {
 
     @Id
     @GeneratedValue

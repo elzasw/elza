@@ -10,23 +10,23 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import cz.tacr.elza.domain.ArrIndexWork;
+import cz.tacr.elza.domain.SysIndexWork;
 
 @Repository
-public interface IndexWorkRepository extends JpaRepository<ArrIndexWork, Long> {
+public interface IndexWorkRepository extends JpaRepository<SysIndexWork, Long> {
 
-    @Query("from arr_index_work w where w.startTime is null")
-    Page<ArrIndexWork> findAllToIndex(Pageable pageable);
+    @Query("from sys_index_work w where w.startTime is null")
+    Page<SysIndexWork> findAllToIndex(Pageable pageable);
 
     @Modifying
-    @Query("update arr_index_work w set w.startTime = current_timestamp where w.indexWorkId in (:ids)")
+    @Query("update sys_index_work w set w.startTime = current_timestamp where w.indexWorkId in (:ids)")
     void updateStartTime(@Param("ids") Collection<Long> workIdList);
 
     @Modifying
-    @Query("update arr_index_work w set w.startTime = null where w.startTime is not null")
+    @Query("update sys_index_work w set w.startTime = null where w.startTime is not null")
     void clearStartTime();
 
     @Modifying
-    @Query("delete from arr_index_work w where w.indexWorkId in (:ids)")
+    @Query("delete from sys_index_work w where w.indexWorkId in (:ids)")
     void delete(@Param("ids") Collection<Long> workIdList);
 }

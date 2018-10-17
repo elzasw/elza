@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import cz.tacr.elza.domain.ArrIndexWork;
+import cz.tacr.elza.domain.SysIndexWork;
 import cz.tacr.elza.repository.IndexWorkRepository;
 
 @Service
@@ -26,20 +26,26 @@ public class IndexWorkService {
 
     // --- dao ---
 
+    private final IndexWorkRepository indexWorkRepository;
+
+    // --- constructor ---
+
     @Autowired
-    private IndexWorkRepository indexWorkRepository;
+    public IndexWorkService(IndexWorkRepository indexWorkRepository) {
+        this.indexWorkRepository = indexWorkRepository;
+    }
 
     // --- methods ---
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public ArrIndexWork createIndexWork(String indexName, LuceneWork luceneWork) {
+    public SysIndexWork createIndexWork(String indexName, LuceneWork luceneWork) {
         Class<?> entityClass = luceneWork.getEntityClass();
         if (!entityClass.getName().equals(indexName)) {
             // predpokladame, ze index name odpovida nazvu entity,
             // jinak je potreba upravit logiku v cz.tacr.elza.search.SearchIndexService.processBatch()
             throw new IllegalStateException("Invalid index name [" + indexName + "] for class [" + entityClass.getName() + "]");
         }
-        ArrIndexWork work = new ArrIndexWork();
+        SysIndexWork work = new SysIndexWork();
         work.setIndexName(indexName);
         work.setEntityClass(entityClass);
         work.setEntityId(Integer.valueOf(luceneWork.getIdInString()));
@@ -54,7 +60,7 @@ public class IndexWorkService {
         }
     }
 
-    public Page<ArrIndexWork> findAllToIndex(Pageable pageable) {
+    public Page<SysIndexWork> findAllToIndex(Pageable pageable) {
         return indexWorkRepository.findAllToIndex(pageable);
     }
 

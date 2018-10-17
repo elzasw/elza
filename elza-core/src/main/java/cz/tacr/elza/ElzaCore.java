@@ -49,10 +49,13 @@ public class ElzaCore {
     @Autowired
     private ApplicationContext context;
 
+    private static final Logger logger = LoggerFactory.getLogger(ElzaCore.class);
+
+    /**
+     * pocet threadu vyhrazenych pro hromadnou indexaci Hibernate Search
+     */
     @Value("${elza.hibernate.index.thread_max:4}")
     private int threadMax;
-
-    private static final Logger logger = LoggerFactory.getLogger(ElzaCore.class);
 
     public static void main(final String[] args) {
         configure();
@@ -102,6 +105,9 @@ public class ElzaCore {
         return threadPoolTaskExecutor;
     }
 
+    /**
+     * ThreadPoolTaskExecutor pro indexaci Hibernate Search
+     */
     @Bean(name = "threadPoolTaskExecutorHS")
     public ThreadPoolTaskExecutor threadPoolTaskExecutorHibernateSearch() {
         ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();

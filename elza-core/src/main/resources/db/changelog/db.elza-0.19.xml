@@ -5,9 +5,9 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
 
     <changeSet id="20181009100910" author="marek">
-        <createTable tableName="arr_index_work">
+        <createTable tableName="sys_index_work">
             <column name="index_work_id" type="bigint">
-                <constraints primaryKey="true" primaryKeyName="pk_arr_index_work"/>
+                <constraints primaryKey="true" primaryKeyName="pk_sys_index_work"/>
             </column>
             <column name="index_name" type="nvarchar(250)">
                 <constraints nullable="false"/>
