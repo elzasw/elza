@@ -135,15 +135,9 @@
             <artifactId>hibernate-ehcache</artifactId>
         </dependency>
         <dependency>
-           <groupId>org.hibernate</groupId>
-           <artifactId>hibernate-search-orm</artifactId>
-        </dependency>
-        <!--
-        <dependency>
             <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-search-backend-jms</artifactId>
+            <artifactId>hibernate-search-orm</artifactId>
         </dependency>
-        -->
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-search-serialization-avro</artifactId>

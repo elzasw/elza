@@ -176,11 +176,6 @@
             </dependency>
             <dependency>
                 <groupId>org.hibernate</groupId>
-                <artifactId>hibernate-search-backend-jms</artifactId>
-                <version>${hibernate.search.orm.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-search-serialization-avro</artifactId>
                 <version>${hibernate.search.orm.version}</version>
             </dependency>
