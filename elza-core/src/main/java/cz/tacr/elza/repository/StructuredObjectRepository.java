@@ -74,4 +74,22 @@ public interface StructuredObjectRepository extends JpaRepository<ArrStructuredO
             "WHERE so.state = 'TEMP'")
     List<ArrStructuredObject> findConnectedTempObjs();
 
+    /**
+     * Count number of structured objects within two changeIds
+     * 
+     * @param fundId
+     * @param fromChange
+     *            Higher change id
+     * @param toChange
+     *            Lower change id
+     * @return
+     */
+    @Query("SELECT COUNT(i) FROM arr_structured_object so WHERE so.fundId = :fundId and " +
+            "( " +
+            " (so.createChangeId>=:toChangeId AND so.createChangeId<=:fromChangeId) OR " +
+            " (so.deleteChangeId is not null AND so.deleteChangeId>=:toChangeId AND so.deleteChangeId<=:fromChangeId) "
+            +
+            ")")
+    int countItemsWithinChangeRange(Integer fundId, Integer changeId, Integer changeId2);
+
 }
