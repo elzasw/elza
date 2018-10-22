@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -901,14 +902,14 @@ public class ClientFactoryVO {
         }
 
         List<ApAccessPointVO> apListVO = apFactory.createVO(apList);
-        Map<Integer, ApAccessPointVO> apMapVO = apListVO.stream()
-                .collect(Collectors.toMap(ApAccessPointVO::getId, Function.identity()));
+        Iterator<ApAccessPointVO> apVoIt = apListVO.iterator();
 
         for (T item : items) {
             ArrItemVO itemVO = createItem(item);
             ArrData data = item.getData();
             if (data instanceof ArrDataRecordRef) {
-                ((ArrItemRecordRefVO) itemVO).setRecord(apMapVO.get(((ArrDataRecordRef) data).getRecord().getAccessPointId()));
+                ApAccessPointVO apVo = apVoIt.next();
+                ((ArrItemRecordRefVO) itemVO).setRecord(apVo);
             }
             result.add(itemVO);
         }
