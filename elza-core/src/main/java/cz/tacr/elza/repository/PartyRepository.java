@@ -1,13 +1,14 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.projection.ParPartyInfo;
+import java.util.Collection;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.util.Collection;
-import java.util.List;
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.projection.ParPartyInfo;
 
 
 /**
@@ -65,4 +66,10 @@ public interface PartyRepository extends ElzaJpaRepository<ParParty, Integer>, P
             "JOIN FETCH ap.accessPoint rec " +
             "WHERE ap.partyId IN :ids")
     List<ParParty> findAllFetch(@Param("ids") Iterable<Integer> ids);
+
+    @Query("SELECT distinct i.itemId" +
+            " FROM arr_item i" +
+            " JOIN arr_data_party_ref pr ON (pr.dataId = i.dataId)" +
+            " WHERE pr.party.partyId = ?1")
+    List<Integer> findItemIdByParty(Integer partyId);
 }

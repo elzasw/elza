@@ -68,14 +68,12 @@ public class DbQueueProcessor implements BackendQueueProcessor {
     @Override
     public void applyWork(List<LuceneWork> workList, IndexingMonitor monitor) {
         indexWorkService.createIndexWork(indexName, workList);
-        // todo[marek]: odstranit
         // indexManager.performOperations(workList, monitor);
     }
 
     @Override
     public void applyStreamWork(LuceneWork work, IndexingMonitor monitor) {
         indexWorkService.createIndexWork(indexName, work);
-        // todo[marek]: odstranit
         // indexManager.performStreamOperation(work, monitor, false);
     }
 

@@ -82,4 +82,10 @@ public interface ApAccessPointRepository
     @QueryHints({@QueryHint(name = "javax.persistence.lock.timeout", value = "15000")})
     @Query("SELECT ap FROM ap_access_point ap where ap.accessPointId = :accessPointId")
     ApAccessPoint findOneWithLock(@Param("accessPointId") Integer accessPointId);
+
+    @Query("SELECT distinct i.itemId" +
+            " FROM arr_item i" +
+            " JOIN arr_data_party_ref pr ON (pr.dataId = i.dataId)" +
+            " WHERE pr.party.accessPoint.accessPointId = ?1")
+    List<Integer> findItemIdByAccessPointId(Integer accessPointId);
 }

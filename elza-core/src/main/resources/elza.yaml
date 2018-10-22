@@ -10,7 +10,7 @@ elza:
 
 #  hibernate:
 #    index:
-#      enabled: false
+#      enabled: true
 #      refresh_rate: 1000
 #      batch_size: 100
 #      thread_max: 4
