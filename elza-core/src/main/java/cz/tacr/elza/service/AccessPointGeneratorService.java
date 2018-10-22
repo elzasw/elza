@@ -46,7 +46,6 @@ import cz.tacr.elza.domain.ApNameItem;
 import cz.tacr.elza.domain.ApRule;
 import cz.tacr.elza.domain.ApRuleSystem;
 import cz.tacr.elza.domain.ApState;
-import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.RulComponent;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulItemTypeExt;
@@ -100,7 +99,7 @@ public class AccessPointGeneratorService {
     private final IEventNotificationService eventNotificationService;
     private final StructureExtensionDefinitionRepository structureExtensionDefinitionRepository;
     private final StructureDefinitionRepository structureDefinitionRepository;
-    private final IndexWorkService indexWorkService;
+    private final AccessPointService accessPointService;
     private final EntityManager em;
 
     private Map<File, GroovyScriptService.GroovyScriptFile> groovyScriptMap = new HashMap<>();
@@ -125,7 +124,7 @@ public class AccessPointGeneratorService {
                                        final IEventNotificationService eventNotificationService,
                                        final StructureExtensionDefinitionRepository structureExtensionDefinitionRepository,
                                        final StructureDefinitionRepository structureDefinitionRepository,
-                                       final IndexWorkService indexWorkService,
+                                       final AccessPointService accessPointService,
                                        final EntityManager em) {
         this.ruleRepository = ruleRepository;
         this.resourcePathResolver = resourcePathResolver;
@@ -143,7 +142,7 @@ public class AccessPointGeneratorService {
         this.eventNotificationService = eventNotificationService;
         this.structureExtensionDefinitionRepository = structureExtensionDefinitionRepository;
         this.structureDefinitionRepository = structureDefinitionRepository;
-        this.indexWorkService = indexWorkService;
+        this.accessPointService = accessPointService;
         this.em = em;
         this.taskExecutor.addTask(new AccessPointGeneratorThread());
         this.taskExecutor.start();
@@ -332,7 +331,7 @@ public class AccessPointGeneratorService {
 
         eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.ACCESS_POINT_UPDATE, accessPoint.getAccessPointId()));
 
-        reindexDescItem(accessPoint);
+        accessPointService.reindexDescItem(accessPoint);
     }
 
     private boolean processResult(final ApAccessPoint accessPoint, final ApChange change, final Map<Integer, ApName> apNameMap, final Map<Integer, List<ApItem>> nameItemsMap, final AccessPoint result) {
@@ -710,11 +709,6 @@ public class AccessPointGeneratorService {
         public int hashCode() {
             return Objects.hash(accessPointId);
         }
-    }
-
-    public void reindexDescItem(ApAccessPoint accessPoint) {
-        List<Integer> itemIdList = apRepository.findItemIdByAccessPointId(accessPoint.getAccessPointId());
-        indexWorkService.createIndexWork(ArrDescItem.class, itemIdList);
     }
 
 }

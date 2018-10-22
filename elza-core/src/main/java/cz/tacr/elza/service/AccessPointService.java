@@ -2127,9 +2127,12 @@ public class AccessPointService {
         return sequenceService.getNext(OBJECT_ID_SEQUENCE_NAME);
     }
 
+    @Transactional
     public void reindexDescItem(ApAccessPoint accessPoint) {
-        List<Integer> itemIdList = apRepository.findItemIdByAccessPointId(accessPoint.getAccessPointId());
-        indexWorkService.createIndexWork(ArrDescItem.class, itemIdList);
+        Collection<Integer> itemIds = new HashSet<>(256);
+        itemIds.addAll(apRepository.findItemIdByAccessPointIdOverDataPartyRef(accessPoint.getAccessPointId()));
+        itemIds.addAll(apRepository.findItemIdByAccessPointIdOverDataRecordRef(accessPoint.getAccessPointId()));
+        indexWorkService.createIndexWork(ArrDescItem.class, itemIds);
     }
 
     /**

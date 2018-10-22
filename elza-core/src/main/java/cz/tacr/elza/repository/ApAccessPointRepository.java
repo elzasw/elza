@@ -87,5 +87,12 @@ public interface ApAccessPointRepository
             " FROM arr_item i" +
             " JOIN arr_data_party_ref pr ON (pr.dataId = i.dataId)" +
             " WHERE pr.party.accessPoint.accessPointId = ?1")
-    List<Integer> findItemIdByAccessPointId(Integer accessPointId);
+    List<Integer> findItemIdByAccessPointIdOverDataPartyRef(Integer accessPointId);
+
+
+    @Query("SELECT distinct i.itemId" +
+            " FROM arr_item i" +
+            " JOIN arr_data_record_ref rr ON (rr.dataId = i.dataId)" +
+            " WHERE rr.record.accessPointId = ?1")
+    List<Integer> findItemIdByAccessPointIdOverDataRecordRef(Integer accessPointId);
 }
