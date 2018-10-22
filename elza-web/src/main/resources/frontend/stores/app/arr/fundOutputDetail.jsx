@@ -103,8 +103,13 @@ export default function fundOutputDetail(state = initialState, action = {}) {
             } else {
                 return state;
             }
+        case types.OUTPUT_INCREASE_VERSION:
+            return {
+                ...state,
+                subNodeForm: subNodeForm(state.subNodeForm, action)
+            }
         case types.FUND_OUTPUT_DETAIL_CLEAR:
-            return initialState;
+            return initialState;        
         default:
             return state
     }

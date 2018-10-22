@@ -11,6 +11,7 @@ import {isFundOutputFunctionsAction} from './fundOutputFunctions.jsx';
 import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
 import {modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {savingApiWrapper} from 'actions/global/status.jsx';
+
 export function isFundOutput(action) {
     if (isFundOutputDetail(action)) {
         return true
@@ -38,6 +39,7 @@ export function isFundOutputDetail(action) {
         case types.FUND_OUTPUT_DETAIL_RECEIVE:
         case types.FUND_OUTPUT_SELECT_OUTPUT:
         case types.FUND_OUTPUT_DETAIL_CLEAR:
+        case types.OUTPUT_INCREASE_VERSION:
             return true;
         default:
             return false
