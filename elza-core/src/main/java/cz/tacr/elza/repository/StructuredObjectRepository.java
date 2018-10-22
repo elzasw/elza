@@ -84,12 +84,14 @@ public interface StructuredObjectRepository extends JpaRepository<ArrStructuredO
      *            Lower change id
      * @return
      */
-    @Query("SELECT COUNT(i) FROM arr_structured_object so WHERE so.fundId = :fundId and " +
+    @Query("SELECT COUNT(so) FROM arr_structured_object so WHERE so.fundId = :fundId and " +
             "( " +
             " (so.createChangeId>=:toChangeId AND so.createChangeId<=:fromChangeId) OR " +
             " (so.deleteChangeId is not null AND so.deleteChangeId>=:toChangeId AND so.deleteChangeId<=:fromChangeId) "
             +
             ")")
-    int countItemsWithinChangeRange(Integer fundId, Integer changeId, Integer changeId2);
+    int countItemsWithinChangeRange(@Param("fundId") Integer fundId,
+                                    @Param("fromChangeId") Integer fromChangeId,
+                                    @Param("toChangeId") Integer toChangeId);
 
 }
