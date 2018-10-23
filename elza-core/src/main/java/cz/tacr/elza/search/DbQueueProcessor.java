@@ -1,5 +1,6 @@
 package cz.tacr.elza.search;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
@@ -70,17 +71,37 @@ public class DbQueueProcessor implements BackendQueueProcessor {
     }
 
     @Override
-    public void applyWork(List<LuceneWork> workList, IndexingMonitor monitor) {
-        indexWorkService.createIndexWork(indexName, workList);
-        // indexManager.performOperations(workList, monitor);
-        indexWorkProcessor.notifyIndexing();
+    public void applyWork(List<LuceneWork> luceneWorkList, IndexingMonitor monitor) {
+
+        // nektere tasky nemaji ID (napr. PurgeAllLuceneWork) - ty zpracujeme synchronne
+        List<LuceneWork> syncList = new ArrayList<>(luceneWorkList.size());
+        List<LuceneWork> asyncList = new ArrayList<>(luceneWorkList.size());
+        for (LuceneWork luceneWork : luceneWorkList) {
+            if (luceneWork.getId() == null) {
+                syncList.add(luceneWork);
+            } else {
+                asyncList.add(luceneWork);
+            }
+        }
+
+        if (!syncList.isEmpty()) {
+            indexManager.performOperations(luceneWorkList, monitor);
+        }
+        if (!asyncList.isEmpty()) {
+            indexWorkService.createIndexWork(indexName, syncList);
+            indexWorkProcessor.notifyIndexing();
+        }
     }
 
     @Override
-    public void applyStreamWork(LuceneWork work, IndexingMonitor monitor) {
-        indexWorkService.createIndexWork(indexName, work);
-        // indexManager.performStreamOperation(work, monitor, false);
-        indexWorkProcessor.notifyIndexing();
+    public void applyStreamWork(LuceneWork luceneWork, IndexingMonitor monitor) {
+        // nektere tasky nemaji ID (napr. PurgeAllLuceneWork) - ty zpracujeme synchronne
+        if (luceneWork.getId() == null) {
+            indexManager.performStreamOperation(luceneWork, monitor, false);
+        } else {
+            indexWorkService.createIndexWork(indexName, luceneWork);
+            indexWorkProcessor.notifyIndexing();
+        }
     }
 
     protected LuceneWorkSerializer getWorkSerializer() {
