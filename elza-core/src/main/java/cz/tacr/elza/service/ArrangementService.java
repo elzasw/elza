@@ -745,13 +745,19 @@ public class ArrangementService {
         fundFulltextSession().set(fundToNodeList);
 
         List<ArrFundFulltextResult> resultList = new ArrayList<>();
-        for (ArrFundToNodeList fundCount : fundToNodeList) {
-            ArrFundFulltextResult result = new ArrFundFulltextResult();
-            ArrFund fund = fundRepository.findOne(fundCount.getFundId());
-            result.setName(fund.getName());
-            result.setId(fundCount.getFundId());
-            result.setCount(fundCount.getNodeCount());
-            resultList.add(result);
+
+        if (!fundToNodeList.isEmpty()) {
+
+            Map<Integer, ArrFund> fundMap = fundList.stream().collect(Collectors.toMap(fund -> fund.getFundId(), fund -> fund));
+
+            for (ArrFundToNodeList fundCount : fundToNodeList) {
+                ArrFundFulltextResult result = new ArrFundFulltextResult();
+                ArrFund fund = fundMap.get(fundCount.getFundId());
+                result.setName(fund.getName());
+                result.setId(fundCount.getFundId());
+                result.setCount(fundCount.getNodeCount());
+                resultList.add(result);
+            }
         }
         return resultList;
     }
