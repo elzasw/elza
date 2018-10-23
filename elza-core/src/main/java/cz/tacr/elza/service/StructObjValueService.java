@@ -133,6 +133,12 @@ public class StructObjValueService {
         this.em = em;
     }
 
+    private ArrSobjVrequest addToValidateInternal(final ArrStructuredObject sobj) {
+        ArrSobjVrequest sobjVRequest = new ArrSobjVrequest();
+        sobjVRequest.setStructuredObject(sobj);
+        return sobjVRequest;
+    }
+
     /**
      * Přidání hodnoty k validaci.
      *
@@ -140,10 +146,8 @@ public class StructObjValueService {
      *            hodnota
      */
     public void addToValidate(final ArrStructuredObject sobj) {
-        ArrSobjVrequest sobjQueue = new ArrSobjVrequest();
-        sobjQueue.setStructuredObject(sobj);
-
-        sobjVrequestRepository.save(sobjQueue);
+        ArrSobjVrequest sobjVRequest = addToValidateInternal(sobj);
+        sobjVrequestRepository.save(sobjVRequest);
 
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
             @Override
@@ -161,11 +165,7 @@ public class StructObjValueService {
      *            seznam hodnot
      */
     public void addToValidate(final List<ArrStructuredObject> structureDataList) {
-        Iterator<ArrSobjVrequest> it = structureDataList.stream().map(sobj -> {
-            ArrSobjVrequest sobjQueue = new ArrSobjVrequest();
-            sobjQueue.setStructuredObject(sobj);
-            return sobjQueue;
-        }).iterator();
+        Iterator<ArrSobjVrequest> it = structureDataList.stream().map(sobj -> addToValidateInternal(sobj)).iterator();
 
         sobjVrequestRepository.save((Iterable<ArrSobjVrequest>) (() -> it));
 
@@ -186,10 +186,8 @@ public class StructObjValueService {
      */
     public void addIdsToValidate(final List<Integer> structureDataIds) {
         Iterator<ArrSobjVrequest> it = structureDataIds.stream().map(sobjId -> {
-            ArrSobjVrequest sobjQueue = new ArrSobjVrequest();
             ArrStructuredObject sobj = em.getReference(ArrStructuredObject.class, sobjId);
-            sobjQueue.setStructuredObject(sobj);
-            return sobjQueue;
+            return addToValidateInternal(sobj);
         }).iterator();
 
         sobjVrequestRepository.save((Iterable<ArrSobjVrequest>) (() -> it));
@@ -312,24 +310,25 @@ public class StructObjValueService {
             return false;
         }
 
+        boolean doNextCheck = false;
         List<ArrSobjVrequest> items = page.getContent();
         List<ArrSobjVrequest> delItems = new ArrayList<>(items.size());
         // now run validate
-        items.forEach(item -> {
+        for (ArrSobjVrequest item : items) {
             final ArrStructuredObject sobj = item.getStructuredObject();
             try {
-                generateAndValidate(sobj);
+                doNextCheck |= generateAndValidate(sobj);
                 delItems.add(item);
             } catch (Exception e) {
                 logger.error("Nastala chyba při validaci hodnoty strukturovaného typu -> structureDataId="
                         + sobj.getStructuredObjectId(), e);
             }
-        });
+        }
 
         // drop processed items
         sobjVrequestRepository.delete(delItems);
 
-        return page.hasNext();
+        return doNextCheck || page.hasNext();
     }
 
     /**
@@ -342,14 +341,15 @@ public class StructObjValueService {
      * @param structObj
      *            hodnota struktovaného datového typu
      *
+     * @return Return true if next check is required
      */
-    private void generateAndValidate(final ArrStructuredObject structObj) {
+    private boolean generateAndValidate(final ArrStructuredObject structObj) {
         // do not generate for temp objects
         if (structObj.getState() == ArrStructuredObject.State.TEMP) {
-            return;
+            return false;
         }
 
-        generateValue(structObj);
+        return generateValue(structObj);
     }
 
     /**
@@ -358,11 +358,12 @@ public class StructObjValueService {
      * Method will only check if value is empty.
      *
      * @param structObj
-     * @return Return generated value. Return null if failed
+     * @return Return true if next check is required
      */
-    private void generateValue(ArrStructuredObject structObj) {
+    private boolean generateValue(ArrStructuredObject structObj) {
+        boolean requestNextCheck = false;
         // generate value
-        String oldValue = structObj.getValue();
+        String oldSortValue = structObj.getSortValue();
         ArrStructuredObject.State state = ArrStructuredObject.State.OK;
         ValidationErrorDescription validationErrorDescription = new ValidationErrorDescription();
 
@@ -385,25 +386,13 @@ public class StructObjValueService {
 
         // run duplicate check only for nondeleted values
         if (structObj.getDeleteChangeId() == null) {
-            boolean duplicatedValues = false;
-            // check duplicates
-            if (StringUtils.isNotEmpty(oldValue)) {
-                if (oldValue.equals(value)) {
-                    duplicatedValues |= recheckDuplicates(oldValue, structObj, 0);
-                } else {
-                    recheckDuplicates(oldValue, structObj, 1);
-                }
-            }
-
-            if (StringUtils.isNotEmpty(value)) {
-                // same values -> do only one check
-                if (!value.equals(oldValue)) {
-                    duplicatedValues |= recheckDuplicates(value, structObj, 0);
-                }
-            }
-            if (duplicatedValues) {
+            DuplicationEvaluator evaluator = new DuplicationEvaluator(oldSortValue, sortValue, structObj);
+            if (evaluator.evaluate()) {
                 validationErrorDescription.setDuplicateValue(true);
+                // modify value to contain object id
+                value = value + " (id=" + structObj.getStructuredObjectId().toString() + ")";
             }
+            requestNextCheck = evaluator.isRequestNextCheck();
         }
 
         if (validationErrorDescription.hasSomeError()) {
@@ -415,7 +404,7 @@ public class StructObjValueService {
 
         // check if some value has changed
         boolean change = false;
-        if (!StringUtils.equals(oldValue, value)) {
+        if (!StringUtils.equals(structObj.getValue(), value)) {
             structObj.setValue(value);
             change = true;
         }
@@ -437,45 +426,8 @@ public class StructObjValueService {
             structObjRepository.save(structObj);
             sendNotification(structObj);
         }
-    }
 
-    /**
-     * Recheck struct objects for duplicates
-     *
-     * @param checkedValue
-     *            Value to be check
-     * @param srcStructObj
-     *            Object which caused / requested this check
-     *            Source object is not notified.
-     */
-    private boolean recheckDuplicates(String checkedValue,
-                                   ArrStructuredObject srcStructObj,
-                                      int numPossible) {
-        // check duplicates - if not empty
-        Validate.isTrue(StringUtils.isNotEmpty(checkedValue));
-        Validate.isTrue(srcStructObj.getDeleteChangeId() == null);
-
-        // read current structObjs
-        List<ArrStructuredObject> validStructureDataList = structObjRepository
-                .findValidByStructureTypeAndFund(srcStructObj.getStructuredType(), srcStructObj.getFund(),
-                                                 checkedValue, srcStructObj);
-        int cnt = validStructureDataList.size();
-
-        boolean duplicatedValues;
-
-        if (cnt <= numPossible) {
-            duplicatedValues = false;
-        } else {
-            duplicatedValues = true;
-        }
-
-        for (ArrStructuredObject so : validStructureDataList) {
-            // reset duplicated state
-            setDuplicatedState(so, duplicatedValues);
-            sendNotification(so);
-        }
-
-        return duplicatedValues;
+        return requestNextCheck;
     }
 
     private void sendNotification(ArrStructuredObject structObj) {
@@ -498,13 +450,14 @@ public class StructObjValueService {
         }
     }
 
+    /*
     private void setDuplicatedState(ArrStructuredObject so, boolean duplicated) {
-
+    
         // Do not check duplicates on TEMP items
         Validate.isTrue(so.getState() != State.TEMP);
-
+    
         String errorDescr = so.getErrorDescription();
-
+    
         ValidationErrorDescription ved = new ValidationErrorDescription();
         if (StringUtils.isNotBlank(errorDescr)) {
             try {
@@ -515,7 +468,7 @@ public class StructObjValueService {
             }
         }
         ved.setDuplicateValue(duplicated);
-
+    
         String value = ved.asJsonString();
         if (value != null) {
             so.setState(State.ERROR);
@@ -523,9 +476,9 @@ public class StructObjValueService {
             so.setState(State.OK);
         }
         so.setErrorDescription(value);
-
+    
         structObjRepository.save(so);
-    }
+    }*/
 
     /**
      * Validace položek pro strukturovaný datový typ.
@@ -705,6 +658,118 @@ public class StructObjValueService {
 
         public void setSortValue(String sortValue) {
             this.sortValue = sortValue;
+        }
+    }
+
+    public class DuplicationEvaluator {
+
+        private final String oldSortValue;
+        private final String sortValue;
+        private final ArrStructuredObject structObj;
+
+        /**
+         * Flag if item is duplicated
+         */
+        private boolean duplicated = false;
+
+        /**
+         * List of objects for further check because of duplication
+         */
+        List<ArrStructuredObject> needsRecheck = new ArrayList<>();
+
+        public DuplicationEvaluator(final String oldSortValue, final String sortValue,
+                final ArrStructuredObject structObj) {
+            this.oldSortValue = oldSortValue;
+            this.sortValue = sortValue;
+            this.structObj = structObj;
+
+            Validate.isTrue(structObj.getDeleteChangeId() == null);
+        }
+
+        public boolean isRequestNextCheck() {
+            return !needsRecheck.isEmpty();
+        }
+
+        /**
+         * Evaluate if structured object is duplicated
+         * 
+         * Method will also plan to revalidate other structured objects
+         * 
+         * @return Return if value is duplicated
+         */
+        public boolean evaluate() {
+
+            // check duplicates
+            if (StringUtils.isNotEmpty(oldSortValue)) {
+                if (oldSortValue.equals(sortValue)) {
+                    duplicated |= checkDuplicates(oldSortValue, false);
+                } else {
+                    // check if exists other duplicated items with old value
+                    // ignore return value
+                    checkDuplicates(oldSortValue, true);
+                }
+            }
+
+            if (StringUtils.isNotEmpty(sortValue)) {
+                // check if same values -> do only one check / see above
+                if (!sortValue.equals(oldSortValue)) {
+                    duplicated |= checkDuplicates(sortValue, false);
+                }
+            }
+
+            // plan others for recheck
+            if (needsRecheck.size() > 0) {
+                Iterator<ArrSobjVrequest> it = needsRecheck.stream().map(sobj -> addToValidateInternal(sobj))
+                        .iterator();
+
+                sobjVrequestRepository.save((Iterable<ArrSobjVrequest>) (() -> it));
+            }
+
+            return duplicated;
+        }
+
+        /**
+         * Check structured objects for duplicates
+         *
+         * Check is based on sort values
+         * 
+         * @param checkedSortValue
+         *            Value to be check
+         * @param oneAllowed
+         *            Flag if exactly one such item might exists
+         * @return Return true if duplicated items exists
+         */
+        private boolean checkDuplicates(String checkedSortValue, boolean oneAllowed) {
+            // check duplicates - if not empty
+            Validate.isTrue(StringUtils.isNotEmpty(checkedSortValue));
+
+            // read current structObjs
+            List<ArrStructuredObject> validStructureDataList = structObjRepository
+                    .findValidByStructureTypeAndFund(structObj.getStructuredType(), structObj.getFund(),
+                                                     checkedSortValue, structObj);
+            int cnt = validStructureDataList.size();
+
+            if (cnt > 1) {
+                // multiple duplicated items -> we do not have to revalidate them
+                // it already happen when they were entered
+                return true;
+            } else if (cnt == 1) {
+                // only one another duplicated item exists
+                ArrStructuredObject otherObject = validStructureDataList.get(0);
+                if (oneAllowed) {
+                    // item is not duplicated any more
+                    this.needsRecheck.add(otherObject);
+                } else {
+                    // check if already duplicated
+                    if (otherObject.getState() == State.OK) {
+                        // other item is ok -> have to be recheck
+                        needsRecheck.add(otherObject);
+                    }
+                    // other items are not allowed but exists
+                    return true;
+                }
+            }
+            return false;
         }
     }
 
