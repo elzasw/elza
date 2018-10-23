@@ -561,13 +561,6 @@ public class ImportProcess {
      * @return výsledná mapa pro provazování
      */
 	private Map<Integer, ArrStructuredObject> prepareStructObjs() {
-		// get current packets
-		Map<String, ArrStructuredObject> fundPacketsMapName = structureDataRepository
-                .findByFundAndDeleteChangeIsNull(targetFundVersion.getFund())
-		        .stream().collect(
-		                Collectors.toMap(structuredObject -> structuredObject.getValue(), Function.identity())
-		        );
-
 		// Map PacketId to ArrPacket
 		Map<Integer, ArrStructuredObject> result = new HashMap<>();
 
@@ -589,7 +582,7 @@ public class ImportProcess {
             	*/
             case COPY_AND_RENAME:
                 //String srcPacketKey = sourcePacket.getValue();
-                structuredObject = copyStructObjFromSource(sourcePacket, fundPacketsMapName);
+                structuredObject = copyStructObjFromSource(sourcePacket);
                 break;
             case USE_TARGET:
 			default:
@@ -608,11 +601,8 @@ public class ImportProcess {
      *
      * @param sourceObj
      *            zdrojový objekt
-     * @param soNameMap
-     *            mapa současných strukt.obj
      */
-    private ArrStructuredObject copyStructObjFromSource(ArrStructuredObject sourceObj,
-                                                        Map<String, ArrStructuredObject> soNameMap) {
+    private ArrStructuredObject copyStructObjFromSource(ArrStructuredObject sourceObj) {
         // prepare new obj
         ArrStructuredObject so = new ArrStructuredObject();
         so.setAssignable(Boolean.TRUE);
