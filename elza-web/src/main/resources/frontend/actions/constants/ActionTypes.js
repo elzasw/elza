@@ -371,9 +371,14 @@ export const CHANGE_USER = 'CHANGE_USER'
 export const CHANGE_GROUP = 'CHANGE_GROUP'
 
 export const DELETE_FUND = 'DELETE_FUND'
-export const OUTPUT_STATE_CHANGE = 'OUTPUT_STATE_CHANGE'
+
+/**
+ * Output related actions
+ */
 export const OUTPUT_CHANGES = 'OUTPUT_CHANGES'
 export const OUTPUT_CHANGES_DETAIL = 'OUTPUT_CHANGES_DETAIL'
+export const OUTPUT_INCREASE_VERSION = 'OUTPUT_INCREASE_VERSION'
+export const OUTPUT_STATE_CHANGE = 'OUTPUT_STATE_CHANGE'
 
 /**
  * Bulk Actions

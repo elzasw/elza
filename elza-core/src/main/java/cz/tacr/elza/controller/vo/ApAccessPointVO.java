@@ -2,6 +2,8 @@ package cz.tacr.elza.controller.vo;
 
 import java.util.Collection;
 
+import cz.tacr.elza.domain.ApAccessPoint;
+
 
 /**
  * VO rejstříkového záznamu.
@@ -134,5 +136,21 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
 
     public void setNames(Collection<ApAccessPointNameVO> names) {
         this.names = names;
+    }
+
+    /**
+     * Create new instance from domain object
+     * 
+     * @param ap
+     * @return
+     */
+    public static ApAccessPointVO newInstance(ApAccessPoint ap) {
+        ApAccessPointVO apvo = new ApAccessPointVO();
+        apvo.setId(ap.getAccessPointId());
+        apvo.setInvalid(ap.getDeleteChange() != null);
+        apvo.setScopeId(ap.getScopeId());
+        apvo.setTypeId(ap.getApTypeId());
+        apvo.setUuid(ap.getUuid());
+        return apvo;
     }
 }

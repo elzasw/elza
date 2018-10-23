@@ -234,13 +234,11 @@ export function fundNodeSubNodeFulltextSearch(filterText) {
  * @param nodeVersionId jaké id verze se má povýšit - pokud node již bude mít jinou verzi, nebude se zvyšovat
  */
 export function increaseNodeVersion(versionId, nodeId, nodeVersionId) {
-    return (dispatch) => {
-        dispatch({
+    return {
             type: types.FUND_NODE_INCREASE_VERSION,
             versionId,
             nodeId,
             nodeVersionId
-        })
     }
 }
 /**
