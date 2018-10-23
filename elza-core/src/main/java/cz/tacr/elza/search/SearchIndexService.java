@@ -10,6 +10,8 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import org.apache.commons.collections4.map.HashedMap;
+import org.apache.commons.lang.StringUtils;
+import org.hibernate.search.backend.LuceneWork;
 import org.hibernate.search.backend.spi.Work;
 import org.hibernate.search.backend.spi.WorkType;
 import org.hibernate.search.engine.impl.WorkPlan;
@@ -99,7 +101,13 @@ public class SearchIndexService {
                 plan.addWork(new Work(entry.getValue(), entry.getKey(), WorkType.INDEX));
             }
 
-            indexManager.performOperations(plan.getPlannedLuceneWork(), null);
+            List<LuceneWork> luceneWorkList = plan.getPlannedLuceneWork();
+
+            if (logger.isDebugEnabled()) {
+                logger.debug("Index manager perform operations:\n" + StringUtils.join(luceneWorkList, "\n"));
+            }
+
+            indexManager.performOperations(luceneWorkList, null);
         });
     }
 

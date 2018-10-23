@@ -36,7 +36,10 @@ public class DbQueueProcessor implements BackendQueueProcessor {
 
     // --- fields ---
 
-    private Properties props = null;
+    @Autowired
+    private IndexWorkProcessor indexWorkProcessor;
+
+    private Properties props;
     private IndexManager indexManager;
     private String indexName;
     private ExtendedSearchIntegrator searchIntegrator;
@@ -56,6 +59,7 @@ public class DbQueueProcessor implements BackendQueueProcessor {
     @Override
     public void initialize(Properties props, WorkerBuildContext context, IndexManager indexManager) {
         logger.debug("Search Integrator setup");
+        this.props = props;
         this.indexManager = indexManager;
         this.indexName = indexManager.getIndexName();
         this.searchIntegrator = context.getUninitializedSearchIntegrator();
@@ -69,16 +73,17 @@ public class DbQueueProcessor implements BackendQueueProcessor {
     public void applyWork(List<LuceneWork> workList, IndexingMonitor monitor) {
         indexWorkService.createIndexWork(indexName, workList);
         // indexManager.performOperations(workList, monitor);
+        indexWorkProcessor.notifyIndexProcessor();
     }
 
     @Override
     public void applyStreamWork(LuceneWork work, IndexingMonitor monitor) {
         indexWorkService.createIndexWork(indexName, work);
         // indexManager.performStreamOperation(work, monitor, false);
+        indexWorkProcessor.notifyIndexProcessor();
     }
 
     protected LuceneWorkSerializer getWorkSerializer() {
         return searchIntegrator.getWorkSerializer();
     }
-
 }

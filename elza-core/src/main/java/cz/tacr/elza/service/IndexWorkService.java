@@ -38,46 +38,49 @@ public class IndexWorkService {
 
     // --- methods ---
 
-    @Transactional
-    public SysIndexWork createIndexWork(Class<?> entityClass, Integer entityId) {
-        SysIndexWork work = new SysIndexWork();
-        work.setIndexName(entityClass.getName());
-        work.setEntityClass(entityClass);
-        work.setEntityId(entityId);
-        work.setInsertTime(LocalDateTime.now());
-        return indexWorkRepository.save(work);
-    }
-
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public SysIndexWork createIndexWork(String indexName, LuceneWork luceneWork) {
-        Class<?> entityClass = luceneWork.getEntityClass();
+    private SysIndexWork _createIndexWork(Class<?> entityClass, String indexName, Integer entityId) {
         if (!entityClass.getName().equals(indexName)) {
             // predpokladame, ze index name odpovida nazvu entity,
             // jinak je potreba upravit logiku v cz.tacr.elza.search.SearchIndexService.processBatch()
             throw new IllegalStateException("Invalid index name [" + indexName + "] for class [" + entityClass.getName() + "]");
         }
-        return createIndexWork(entityClass, Integer.valueOf(luceneWork.getIdInString()));
+        SysIndexWork work = new SysIndexWork();
+        work.setIndexName(indexName);
+        work.setEntityClass(entityClass);
+        work.setEntityId(entityId);
+        work.setInsertTime(LocalDateTime.now());
+        return work;
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void createIndexWork(String indexName, List<LuceneWork> workList) {
-        for (LuceneWork work : workList) {
-            createIndexWork(indexName, work);
-        }
+    @Transactional
+    public SysIndexWork createIndexWork(Class<?> entityClass, Integer entityId) {
+        SysIndexWork work = _createIndexWork(entityClass, entityClass.getName(), entityId);
+        return indexWorkRepository.save(work);
     }
 
     @Transactional
     public List<SysIndexWork> createIndexWork(Class<?> entityClass, Collection<Integer> entityIdList) {
-        List<SysIndexWork> workList = entityIdList.stream().distinct().map(entityId -> {
-            SysIndexWork work = new SysIndexWork();
-            work.setIndexName(entityClass.getName());
-            work.setEntityClass(entityClass);
-            work.setEntityId(entityId);
-            work.setInsertTime(LocalDateTime.now());
-            return work;
-        }).collect(Collectors.toList());
-        indexWorkRepository.save(workList);
-        return workList;
+        List<SysIndexWork> workList = entityIdList.stream()
+                .distinct()
+                .map(entityId -> _createIndexWork(entityClass, entityClass.getName(), entityId))
+                .collect(Collectors.toList());
+        return indexWorkRepository.save(workList);
+    }
+
+    private SysIndexWork _createIndexWork(String indexName, LuceneWork luceneWork) {
+        return _createIndexWork(luceneWork.getEntityClass(), indexName, Integer.valueOf(luceneWork.getIdInString()));
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public SysIndexWork createIndexWork(String indexName, LuceneWork luceneWork) {
+        SysIndexWork work = _createIndexWork(indexName, luceneWork);
+        return indexWorkRepository.save(work);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public List<SysIndexWork> createIndexWork(String indexName, List<LuceneWork> luceneWorkList) {
+        List<SysIndexWork> workList = luceneWorkList.stream().map(luceneWork -> _createIndexWork(indexName, luceneWork)).collect(Collectors.toList());
+        return indexWorkRepository.save(workList);
     }
 
     public Page<SysIndexWork> findAllToIndex(Pageable pageable) {

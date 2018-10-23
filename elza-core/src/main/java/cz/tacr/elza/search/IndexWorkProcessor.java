@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -26,8 +25,7 @@ import static java.util.stream.Collectors.*;
  * Listener nad tabulkou {@code sys_index_work} - zpracovava frontu pozadavku na preindexovani entit v Hibernate Search.
  */
 @Component
-@ConditionalOnProperty(prefix = "elza.hibernate.index", name = "enabled", havingValue = "true", matchIfMissing = true)
-public class IndexWorkProcessor {
+public class IndexWorkProcessor implements Runnable {
 
     private static final Logger logger = LoggerFactory.getLogger(IndexWorkProcessor.class);
 
@@ -37,27 +35,26 @@ public class IndexWorkProcessor {
 
     private final SearchIndexService searchWorkIndexService;
 
-    private final ThreadPoolTaskExecutor taskExecutor;
-
     // --- fields ---
 
+    private final ThreadPoolTaskExecutor taskExecutor;
+
     @Value("${elza.hibernate.index.batch_size:100}")
-    private int batchSize;
+    private int batchSize = 100;
+
+    @Value("${elza.hibernate.index.enabled:true}")
+    private volatile boolean enabled = true;
 
     /**
-     * disable processing in runtime
+     * temporary pause processing
      */
-    private volatile boolean disabled = false;
+    private volatile boolean stop = true;
 
-    // --- getters/setters ---
+    private volatile boolean suspend = true;
 
-    public boolean isDisabled() {
-        return disabled;
-    }
+    private Thread manager;
 
-    public void setDisabled(boolean disabled) {
-        this.disabled = disabled;
-    }
+    private final Object lock = new Object();
 
     // --- constructor ---
 
@@ -66,6 +63,7 @@ public class IndexWorkProcessor {
             IndexWorkService indexWorkService,
             SearchIndexService searchWorkIndexService,
             @Qualifier("threadPoolTaskExecutorHS") ThreadPoolTaskExecutor taskExecutor) {
+
         this.indexWorkService = indexWorkService;
         this.searchWorkIndexService = searchWorkIndexService;
         this.taskExecutor = taskExecutor;
@@ -73,32 +71,112 @@ public class IndexWorkProcessor {
 
     // --- methods ---
 
-    @Scheduled(fixedRateString = "${elza.hibernate.index.refresh_rate:1000}")
-    public void indexAll() {
+    /**
+     * Nastartuje hlavni thread - zavolat jednou po startu aplikace
+     */
+    public void startIndexProcessor() {
 
-        if (!disabled) {
+        if (this.manager != null) {
+            throw new IllegalStateException("Already running");
+        }
 
-            // pockame, az bude volny thread, aby se worky zbytecne nehromadili ve fronte a nezamykaly v DB
-            if (taskExecutor.getCorePoolSize() > taskExecutor.getActiveCount()) {
+        indexWorkService.clearStartTime();
+
+        this.suspend = false;
+        this.stop = false;
+
+        this.manager = new Thread(this, "IndexWorkProcessor");
+        this.manager.start();
+    }
+
+    /**
+     * Pozastavi zpracovani - povolit zpracovani metodou {@link IndexWorkProcessor#resumeIndexProcessor()}.
+     *
+     * @see IndexWorkProcessor#resumeIndexProcessor()
+     */
+    public void suspendIndexProcessor() {
+        this.suspend = true;
+        this.stop = true;
+        logger.info("Hibernate search index - suspended");
+    }
+
+    /**
+     * Pokracuje ve zpracovani po {@link IndexWorkProcessor#suspendIndexProcessor()}.
+     *
+     * @see IndexWorkProcessor#suspendIndexProcessor()
+     */
+    public void resumeIndexProcessor() {
+        this.stop = false;
+        this.suspend = false;
+        synchronized (lock) {
+            lock.notifyAll();
+        }
+        logger.info("Hibernate search index - resumed");
+    }
+
+    /**
+     * Notifikuje procesor o tom, ze ve fronte jsou nove zpravy.
+     */
+    @Scheduled(fixedRateString = "${elza.hibernate.index.refresh_rate:60000}")
+    public void notifyIndexProcessor() {
+        this.suspend = false;
+        if (!this.stop) {
+            synchronized (lock) {
+                lock.notifyAll();
+            }
+        }
+    }
+
+    public void run() {
+
+        logger.info("Hibernate search index - started");
+
+        while (true) {
+
+            synchronized (lock) {
+                try {
+                    while (this.suspend || this.stop) {
+                        lock.wait();
+                    }
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    logger.error("Hibernate search index - processor thread interrupted");
+                    return;
+                }
+            }
+
+            try {
 
                 Page<SysIndexWork> workPage;
 
                 do {
 
+                    if (this.stop) {
+                        break;
+                    }
+
+                    // pockame, az bude volny thread, aby se worky zbytecne nehromadili ve fronte a nezamykaly v DB
+                    /*
+                    if (taskExecutor.getActiveCount() > 2 * taskExecutor.getCorePoolSize()) {
+                        logger.debug("Hibernate search index - no thread available, indexing delayed");
+                        break;
+                    }
+                    */
+
                     workPage = indexWorkService.findAllToIndex(new PageRequest(0, taskExecutor.getCorePoolSize() * batchSize));
 
                     if (workPage.hasContent()) {
 
-                        List<SysIndexWork> workList = workPage.getContent();
-
-                        indexAll(workList);
+                        indexAll(workPage.getContent());
                     }
 
-                } while (!disabled && workPage.hasNext());
+                } while (workPage.hasNext());
 
-            } else {
-                logger.debug("Hibernate search index - no thread available, indexing delayed");
+            } catch (Exception e) {
+                logger.error("Hibernate search index error", e);
             }
+
+            this.suspend = true;
         }
     }
 
@@ -140,6 +218,7 @@ public class IndexWorkProcessor {
             processBatch(workList);
 
             indexWorkService.delete(workIdList);
+
         });
     }
 

@@ -15,6 +15,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
+import javax.annotation.PostConstruct;
+import javax.transaction.Transactional;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
@@ -25,6 +27,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.Assert;
 
 import com.google.common.base.Objects;
@@ -83,6 +87,7 @@ import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.search.IndexWorkProcessor;
 import cz.tacr.elza.search.SearchIndexSupport;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventChangeDescItem;
@@ -153,6 +158,24 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 
     @Autowired
     private DescriptionItemServiceInternal serviceInternal;
+
+    @Autowired
+    private IndexWorkService indexWorkService;
+
+    @Autowired
+    private IndexWorkProcessor indexWorkProcessor;
+
+    private TransactionSynchronizationAdapter indexWorkNotify;
+
+    @PostConstruct
+    public void init() {
+        this.indexWorkNotify = new TransactionSynchronizationAdapter() {
+            @Override
+            public void afterCompletion(int status) {
+                indexWorkProcessor.notifyIndexProcessor();
+            }
+        };
+    }
 
     /**
      * Kontrola otevřené verze.
@@ -1686,6 +1709,24 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         }
         // moznost optimalizovat nacteni vcene zavislosti
         return descItemRepository.findAll(ids).stream().collect(Collectors.toMap(o -> o.getItemId(), o -> o));
+    }
+
+    @Transactional
+    public void reindexDescItem(Integer itemId) {
+        try {
+            indexWorkService.createIndexWork(ArrDescItem.class, itemId);
+        } finally {
+            TransactionSynchronizationManager.registerSynchronization(indexWorkNotify);
+        }
+    }
+
+    @Transactional
+    public void reindexDescItem(Collection<Integer> itemIds) {
+        try {
+            indexWorkService.createIndexWork(ArrDescItem.class, itemIds);
+        } finally {
+            TransactionSynchronizationManager.registerSynchronization(indexWorkNotify);
+        }
     }
 
 }

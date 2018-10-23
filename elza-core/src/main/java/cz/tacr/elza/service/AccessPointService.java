@@ -222,9 +222,6 @@ public class AccessPointService {
     @Autowired
     private SequenceService sequenceService;
 
-    @Autowired
-    private IndexWorkService indexWorkService;
-
     /**
      * Kody tříd rejstříků nastavené v konfiguraci elzy.
      */
@@ -2132,7 +2129,7 @@ public class AccessPointService {
         Collection<Integer> itemIds = new HashSet<>(256);
         itemIds.addAll(apRepository.findItemIdByAccessPointIdOverDataPartyRef(accessPoint.getAccessPointId()));
         itemIds.addAll(apRepository.findItemIdByAccessPointIdOverDataRecordRef(accessPoint.getAccessPointId()));
-        indexWorkService.createIndexWork(ArrDescItem.class, itemIds);
+        descriptionItemService.reindexDescItem(itemIds);
     }
 
     /**

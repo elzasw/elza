@@ -208,9 +208,6 @@ public class PartyService {
     @Autowired
     private ScopeRepository scopeRepository;
 
-    @Autowired
-    private IndexWorkService indexWorkService;
-
     /**
      * Najde osobu podle rejstříkového hesla.
      *
@@ -1164,7 +1161,8 @@ public class PartyService {
     }
 
     public void reindexDescItem(ParParty party) {
-        List<Integer> itemIdList = partyRepository.findItemIdByParty(party.getPartyId());
-        indexWorkService.createIndexWork(ArrDescItem.class, itemIdList);
+        List<Integer> itemIds = partyRepository.findItemIdByParty(party.getPartyId());
+        descriptionItemService.reindexDescItem(itemIds);
     }
+
 }

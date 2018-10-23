@@ -30,6 +30,7 @@ import cz.tacr.elza.repository.ApNameRepository;
 import cz.tacr.elza.repository.BulkActionRunRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.search.IndexWorkProcessor;
 import cz.tacr.elza.service.cache.NodeCacheService;
 
 /**
@@ -66,6 +67,8 @@ public class StartupService implements SmartLifecycle {
 
     private final AccessPointGeneratorService accessPointGeneratorService;
 
+    private final IndexWorkProcessor indexWorkProcessor;
+
     private boolean running;
 
     @Autowired
@@ -81,7 +84,8 @@ public class StartupService implements SmartLifecycle {
                           EntityManager em,
                           ApNameRepository apNameRepository,
                           final AccessPointService accessPointService,
-                          final AccessPointGeneratorService accessPointGeneratorService) {
+                          final AccessPointGeneratorService accessPointGeneratorService,
+                          IndexWorkProcessor indexWorkProcessor) {
         this.nodeRepository = nodeRepository;
         this.fundVersionRepository = fundVersionRepository;
         this.updateConformityInfoService = updateConformityInfoService;
@@ -95,6 +99,7 @@ public class StartupService implements SmartLifecycle {
         this.em = em;
         this.accessPointService = accessPointService;
         this.accessPointGeneratorService = accessPointGeneratorService;
+        this.indexWorkProcessor = indexWorkProcessor;
     }
 
     @Autowired
@@ -159,6 +164,7 @@ public class StartupService implements SmartLifecycle {
         structureDataService.startGenerator();
         runQueuedRequests();
         runQueuedAccessPoints();
+        indexWorkProcessor.startIndexProcessor();
     }
 
     /**
