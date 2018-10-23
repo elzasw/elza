@@ -73,14 +73,14 @@ public class DbQueueProcessor implements BackendQueueProcessor {
     public void applyWork(List<LuceneWork> workList, IndexingMonitor monitor) {
         indexWorkService.createIndexWork(indexName, workList);
         // indexManager.performOperations(workList, monitor);
-        indexWorkProcessor.notifyIndexProcessor();
+        indexWorkProcessor.notifyIndexing();
     }
 
     @Override
     public void applyStreamWork(LuceneWork work, IndexingMonitor monitor) {
         indexWorkService.createIndexWork(indexName, work);
         // indexManager.performStreamOperation(work, monitor, false);
-        indexWorkProcessor.notifyIndexProcessor();
+        indexWorkProcessor.notifyIndexing();
     }
 
     protected LuceneWorkSerializer getWorkSerializer() {

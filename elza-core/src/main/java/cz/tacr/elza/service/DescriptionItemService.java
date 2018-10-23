@@ -172,7 +172,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         this.indexWorkNotify = new TransactionSynchronizationAdapter() {
             @Override
             public void afterCompletion(int status) {
-                indexWorkProcessor.notifyIndexProcessor();
+                indexWorkProcessor.notifyIndexing();
             }
         };
     }

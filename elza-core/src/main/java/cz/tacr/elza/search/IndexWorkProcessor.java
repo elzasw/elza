@@ -42,17 +42,16 @@ public class IndexWorkProcessor implements Runnable {
     @Value("${elza.hibernate.index.batch_size:100}")
     private int batchSize = 100;
 
-    @Value("${elza.hibernate.index.enabled:true}")
     private volatile boolean enabled = true;
 
     /**
      * temporary pause processing
      */
-    private volatile boolean stop = true;
+    private volatile boolean stop = false;
 
-    private volatile boolean suspend = true;
+    private volatile boolean suspend = false;
 
-    private Thread manager;
+    private volatile Thread manager = null;
 
     private final Object lock = new Object();
 
@@ -74,7 +73,7 @@ public class IndexWorkProcessor implements Runnable {
     /**
      * Nastartuje hlavni thread - zavolat jednou po startu aplikace
      */
-    public void startIndexProcessor() {
+    public synchronized void startIndexing() {
 
         if (this.manager != null) {
             throw new IllegalStateException("Already running");
@@ -82,43 +81,54 @@ public class IndexWorkProcessor implements Runnable {
 
         indexWorkService.clearStartTime();
 
-        this.suspend = false;
-        this.stop = false;
+        this.enabled = true;
 
         this.manager = new Thread(this, "IndexWorkProcessor");
         this.manager.start();
     }
 
     /**
-     * Pozastavi zpracovani - povolit zpracovani metodou {@link IndexWorkProcessor#resumeIndexProcessor()}.
-     *
-     * @see IndexWorkProcessor#resumeIndexProcessor()
+     * Zastavi hlavni thread - zavolat jednou pri ukoncovani aplikace
      */
-    public void suspendIndexProcessor() {
-        this.suspend = true;
-        this.stop = true;
-        logger.info("Hibernate search index - suspended");
+    public synchronized void stopIndexing() {
+
+        this.enabled = false;
+
+        synchronized (lock) {
+            lock.notifyAll();
+        }
     }
 
     /**
-     * Pokracuje ve zpracovani po {@link IndexWorkProcessor#suspendIndexProcessor()}.
+     * Pozastavi zpracovani - povolit zpracovani metodou {@link IndexWorkProcessor#resumeIndexing()}.
      *
-     * @see IndexWorkProcessor#suspendIndexProcessor()
+     * @see IndexWorkProcessor#resumeIndexing()
      */
-    public void resumeIndexProcessor() {
+    public void suspendIndexing() {
+        this.suspend = true;
+        this.stop = true;
+        logger.info("Hibernate search index processor - suspended");
+    }
+
+    /**
+     * Pokracuje ve zpracovani po {@link IndexWorkProcessor#suspendIndexing()}.
+     *
+     * @see IndexWorkProcessor#suspendIndexing()
+     */
+    public void resumeIndexing() {
         this.stop = false;
         this.suspend = false;
         synchronized (lock) {
             lock.notifyAll();
         }
-        logger.info("Hibernate search index - resumed");
+        logger.info("Hibernate search index processor - resumed");
     }
 
     /**
      * Notifikuje procesor o tom, ze ve fronte jsou nove zpravy.
      */
     @Scheduled(fixedRateString = "${elza.hibernate.index.refresh_rate:60000}")
-    public void notifyIndexProcessor() {
+    public void notifyIndexing() {
         this.suspend = false;
         if (!this.stop) {
             synchronized (lock) {
@@ -129,54 +139,75 @@ public class IndexWorkProcessor implements Runnable {
 
     public void run() {
 
-        logger.info("Hibernate search index - started");
+        logger.info("Hibernate search index processor - started");
 
-        while (true) {
+        try {
 
-            synchronized (lock) {
-                try {
-                    while (this.suspend || this.stop) {
-                        lock.wait();
+            while (true) {
+
+                synchronized (lock) {
+                    try {
+                        while (this.suspend || this.stop) {
+
+                            if (!this.enabled) {
+                                return;
+                            }
+
+                            lock.wait();
+                        }
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        logger.error("Hibernate search index processor - processor thread interrupted");
                     }
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    logger.error("Hibernate search index - processor thread interrupted");
-                    return;
+                }
+
+                try {
+
+                    Page<SysIndexWork> workPage;
+
+                    do {
+
+                        if (!this.enabled) {
+                            return;
+                        }
+
+                        if (this.stop) {
+                            break;
+                        }
+
+                        // pockame, az bude volny thread, aby se worky zbytecne nehromadili ve fronte a nezamykaly v DB
+                        /*
+                        if (taskExecutor.getActiveCount() > 2 * taskExecutor.getCorePoolSize()) {
+                            logger.debug("Hibernate search index processor - no thread available, indexing delayed");
+                            break;
+                        }
+                        */
+
+                        workPage = indexWorkService.findAllToIndex(new PageRequest(0, taskExecutor.getCorePoolSize() * batchSize));
+
+                        if (workPage.hasContent()) {
+
+                            indexAll(workPage.getContent());
+                        }
+
+                    } while (workPage.hasNext());
+
+                } catch (Exception e) {
+
+                    logger.error("Hibernate search index processor error", e);
+
+                } finally {
+
+                    this.suspend = true;
                 }
             }
 
-            try {
+        } finally {
 
-                Page<SysIndexWork> workPage;
+            // konec zpracovani
+            this.manager = null;
 
-                do {
-
-                    if (this.stop) {
-                        break;
-                    }
-
-                    // pockame, az bude volny thread, aby se worky zbytecne nehromadili ve fronte a nezamykaly v DB
-                    /*
-                    if (taskExecutor.getActiveCount() > 2 * taskExecutor.getCorePoolSize()) {
-                        logger.debug("Hibernate search index - no thread available, indexing delayed");
-                        break;
-                    }
-                    */
-
-                    workPage = indexWorkService.findAllToIndex(new PageRequest(0, taskExecutor.getCorePoolSize() * batchSize));
-
-                    if (workPage.hasContent()) {
-
-                        indexAll(workPage.getContent());
-                    }
-
-                } while (workPage.hasNext());
-
-            } catch (Exception e) {
-                logger.error("Hibernate search index error", e);
-            }
-
-            this.suspend = true;
+            logger.info("Hibernate search index processor - finished");
         }
     }
 
@@ -186,7 +217,7 @@ public class IndexWorkProcessor implements Runnable {
 
         if (size > 0) {
 
-            logger.debug("Hibernate search index - indexing of " + size + " entries in batches of " + batchSize);
+            logger.debug("Hibernate search index processor - indexing of " + size + " entries in batches of " + batchSize);
 
             int start = 0;
             while (start < size) {
@@ -203,7 +234,7 @@ public class IndexWorkProcessor implements Runnable {
     protected void indexBatch(List<SysIndexWork> workList) {
 
         if (CollectionUtils.isEmpty(workList)) {
-            logger.debug("Hibernate search index - nothing to update");
+            logger.debug("Hibernate search index processor - nothing to update");
             return;
         }
 
@@ -234,7 +265,7 @@ public class IndexWorkProcessor implements Runnable {
                         if (sb.length() > 0) sb.append(", ");
                         sb.append(entityClass.getName() + " " + list);
                     });
-            logger.error("Hibernate search index - error processing a batch: " + sb, e);
+            logger.error("Hibernate search index processor - error processing a batch: " + sb, e);
             throw e;
         }
     }

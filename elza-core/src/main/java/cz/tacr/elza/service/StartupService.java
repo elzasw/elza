@@ -122,6 +122,7 @@ public class StartupService implements SmartLifecycle {
     @Override
     public void stop() {
         logger.info("Elza stopping ...");
+        indexWorkProcessor.stopIndexing();
         structureDataService.stopGenerator();
         // TODO: stop async processes
         running = false;
@@ -162,9 +163,9 @@ public class StartupService implements SmartLifecycle {
         syncNodeCacheService();
         startNodeValidation();
         structureDataService.startGenerator();
+        indexWorkProcessor.startIndexing();
         runQueuedRequests();
         runQueuedAccessPoints();
-        indexWorkProcessor.startIndexProcessor();
     }
 
     /**
