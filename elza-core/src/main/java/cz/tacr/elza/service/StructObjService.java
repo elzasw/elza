@@ -33,6 +33,7 @@ import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.ArrStructuredObject;
+import cz.tacr.elza.domain.ArrStructuredObject.State;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulStructuredType;
@@ -238,7 +239,17 @@ public class StructObjService {
             structObjRepository.save(structObj);
 
             // check duplicates for deleted item
-            structObjService.addToValidate(structObj);
+            // find potentially duplicated items
+            List<ArrStructuredObject> potentialDuplicates = structObjRepository
+                    .findValidByStructureTypeAndFund(structObj.getStructuredType(),
+                                                     structObj.getFund(),
+                                                     structObj.getSortValue(),
+                                                     structObj);
+            for (ArrStructuredObject pd : potentialDuplicates) {
+                if (pd.getState().equals(State.ERROR)) {
+                    structObjService.addToValidate(pd);
+                }
+            }
 
             notificationService.publishEvent(new EventStructureDataChange(structObj.getFundId(),
                     structObj.getStructuredType().getCode(),
@@ -294,7 +305,6 @@ public class StructObjService {
                                                  @AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId) {
 
         ArrStructuredObject structObj = getStructObjById(structureDataId);
-        ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
 
         ArrChange change = structObj.getState() == ArrStructuredObject.State.TEMP ? structObj.getCreateChange()
                 : arrangementService.createChange(ArrChange.Type.ADD_STRUCTURE_ITEM);
@@ -420,7 +430,6 @@ public class StructObjService {
     public ArrStructuredItem updateStructureItem(final ArrStructuredItem structureItem,
                                                  @AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId,
                                                  final boolean createNewVersion) {
-        ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
 
         ArrStructuredItem structureItemDB = structureItemRepository.findOpenItemFetchData(structureItem.getDescItemObjectId());
         if (structureItemDB == null) {
@@ -503,7 +512,6 @@ public class StructObjService {
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public ArrStructuredItem deleteStructureItem(final ArrStructuredItem structureItem,
                                                  @AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId) {
-        ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
 
         ArrStructuredItem structureItemDB = structureItemRepository.findOpenItemFetchData(structureItem.getDescItemObjectId());
         if (structureItemDB == null) {
@@ -653,7 +661,6 @@ public class StructObjService {
     public ArrStructuredObject deleteStructureItemsByType(@AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId,
                                                           final Integer structureDataId,
                                                           final Integer itemTypeId) {
-        ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
         ArrStructuredObject structObj = getStructObjById(structureDataId);
         RulItemType type = ruleService.getItemTypeById(itemTypeId);
         List<ArrStructuredItem> structureItems = structureItemRepository.findOpenItems(type, structObj);
