@@ -19,6 +19,7 @@ import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.NumericField;
 import org.springframework.data.rest.core.annotation.RestResource;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
@@ -45,6 +46,7 @@ public abstract class ArrItem implements NodeCacheSerializable {
     @Access(AccessType.PROPERTY) // required to read id without fetch from db
 	protected Integer itemId;
 
+    @JsonIgnore
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrChange.class)
     @JoinColumn(name = "createChangeId", nullable = false)
@@ -53,6 +55,7 @@ public abstract class ArrItem implements NodeCacheSerializable {
     @Column(name = "createChangeId", nullable = false, updatable = false, insertable = false)
 	protected Integer createChangeId;
 
+    @JsonIgnore
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrChange.class)
     @JoinColumn(name = "deleteChangeId", nullable = true)
@@ -64,6 +67,7 @@ public abstract class ArrItem implements NodeCacheSerializable {
     @Column(nullable = false)
 	protected Integer descItemObjectId;
 
+    @JsonIgnore
     @RestResource(exported = false)
 	@ManyToOne(fetch=FetchType.LAZY, targetEntity = RulItemType.class)
     @JoinColumn(name = "itemTypeId", nullable = false)
@@ -72,6 +76,7 @@ public abstract class ArrItem implements NodeCacheSerializable {
     @Column(name = "itemTypeId", nullable = false, updatable = false, insertable = false)
 	protected Integer itemTypeId;
 
+    @JsonIgnore
     @RestResource(exported = false)
 	@ManyToOne(fetch=FetchType.LAZY, targetEntity = RulItemSpec.class)
     @JoinColumn(name = "itemSpecId")
