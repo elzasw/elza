@@ -7,6 +7,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import org.apache.commons.lang.Validate;
 import org.springframework.data.rest.core.annotation.RestResource;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -83,6 +84,12 @@ public class ArrDataStructureRef extends ArrData {
     public void mergeInternal(final ArrData srcData) {
         ArrDataStructureRef src = (ArrDataStructureRef) srcData;
         copyValue(src);
+    }
+
+    @Override
+    protected void validateInternal() {
+        Validate.notNull(structuredObject);
+        Validate.notNull(structuredObjectId);
     }
 }
 

@@ -6,6 +6,8 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
+import org.apache.commons.lang.Validate;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
@@ -64,5 +66,10 @@ public class ArrDataDecimal extends ArrData {
     public void mergeInternal(final ArrData srcData) {
         ArrDataDecimal src = (ArrDataDecimal)srcData;
         copyValue(src);
+    }
+
+    @Override
+    protected void validateInternal() {
+        Validate.notNull(value);
     }
 }

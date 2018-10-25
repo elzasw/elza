@@ -4,6 +4,8 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
+import org.apache.commons.lang.Validate;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 
@@ -64,5 +66,10 @@ public class ArrDataInteger extends ArrData {
     public void mergeInternal(final ArrData srcData) {
         ArrDataInteger src = (ArrDataInteger) srcData;
         copyValue(src);
+    }
+
+    @Override
+    protected void validateInternal() {
+        Validate.notNull(value);
     }
 }

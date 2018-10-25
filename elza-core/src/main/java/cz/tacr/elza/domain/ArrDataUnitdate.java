@@ -7,6 +7,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import org.apache.commons.lang.Validate;
 import org.springframework.data.rest.core.annotation.RestResource;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -211,5 +212,16 @@ public class ArrDataUnitdate extends ArrData implements IUnitdate {
     public void mergeInternal(final ArrData srcData) {
         ArrDataUnitdate src = (ArrDataUnitdate) srcData;
         copyValue(src);
+    }
+
+    @Override
+    protected void validateInternal() {
+        Validate.notNull(calendarType);
+        Validate.notNull(calendarTypeId);
+        Validate.notNull(format);
+        Validate.notNull(normalizedFrom);
+        Validate.notNull(normalizedTo);
+        Validate.notNull(valueFromEstimated);
+        Validate.notNull(valueToEstimated);
     }
 }

@@ -46,6 +46,7 @@ public abstract class ArrItem implements NodeCacheSerializable {
     @Access(AccessType.PROPERTY) // required to read id without fetch from db
 	protected Integer itemId;
 
+    @JsonIgnore
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrChange.class)
     @JoinColumn(name = "createChangeId", nullable = false)
@@ -54,6 +55,7 @@ public abstract class ArrItem implements NodeCacheSerializable {
     @Column(name = "createChangeId", nullable = false, updatable = false, insertable = false)
 	protected Integer createChangeId;
 
+    @JsonIgnore
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrChange.class)
     @JoinColumn(name = "deleteChangeId", nullable = true)
@@ -65,6 +67,7 @@ public abstract class ArrItem implements NodeCacheSerializable {
     @Column(nullable = false)
 	protected Integer descItemObjectId;
 
+    @JsonIgnore
     @RestResource(exported = false)
 	@ManyToOne(fetch=FetchType.LAZY, targetEntity = RulItemType.class)
     @JoinColumn(name = "itemTypeId", nullable = false)
@@ -73,6 +76,7 @@ public abstract class ArrItem implements NodeCacheSerializable {
     @Column(name = "itemTypeId", nullable = false, updatable = false, insertable = false)
 	protected Integer itemTypeId;
 
+    @JsonIgnore
     @RestResource(exported = false)
 	@ManyToOne(fetch=FetchType.LAZY, targetEntity = RulItemSpec.class)
     @JoinColumn(name = "itemSpecId")
@@ -119,14 +123,12 @@ public abstract class ArrItem implements NodeCacheSerializable {
 		this.position = src.position;
 	}
 
-	@JsonIgnore
     @Field
     @NumericField
     public Integer getCreateChangeId() {
         return createChangeId;
     }
 
-    @JsonIgnore
     @Field
     @NumericField
     public Integer getDeleteChangeId() {
@@ -148,6 +150,19 @@ public abstract class ArrItem implements NodeCacheSerializable {
     public void setCreateChange(final ArrChange createChange) {
         this.createChange = createChange;
         this.createChangeId = createChange == null ? null : createChange.getChangeId();
+    }
+
+    /**
+     * Setter which will not touch ID in createChange
+     * 
+     * @param createChange
+     * @param createChangeId
+     */
+    public void setCreateChange(final ArrChange createChange,
+                                final Integer createChangeId) {
+        this.createChange = createChange;
+        this.createChangeId = createChangeId;
+
     }
 
     public ArrChange getDeleteChange() {
