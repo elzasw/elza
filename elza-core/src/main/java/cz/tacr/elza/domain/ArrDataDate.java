@@ -1,13 +1,16 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.Date;
+
+import org.apache.commons.lang.Validate;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
  * Hodnota atributu archivního popisu typu Datum.
@@ -66,5 +69,10 @@ public class ArrDataDate extends ArrData {
     public void mergeInternal(final ArrData srcData) {
         ArrDataDate src = (ArrDataDate) srcData;
         copyValue(src);
+    }
+
+    @Override
+    protected void validateInternal() {
+        Validate.notNull(value);
     }
 }

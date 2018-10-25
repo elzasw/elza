@@ -4,6 +4,8 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
+import org.apache.commons.lang.Validate;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -70,5 +72,10 @@ public class ArrDataCoordinates extends ArrData {
     public void mergeInternal(final ArrData srcData) {
         ArrDataCoordinates src = (ArrDataCoordinates) srcData;
         copyValue(src);
+    }
+
+    @Override
+    protected void validateInternal() {
+        Validate.notNull(value);
     }
 }

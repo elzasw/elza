@@ -7,6 +7,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import org.apache.commons.lang.Validate;
 import org.springframework.data.rest.core.annotation.RestResource;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -77,5 +78,11 @@ public class ArrDataFileRef extends ArrData {
     public void mergeInternal(final ArrData srcData) {
         ArrDataFileRef src = (ArrDataFileRef)srcData;
         copyValue(src);
+    }
+
+    @Override
+    protected void validateInternal() {
+        Validate.notNull(file);
+        Validate.notNull(fileId);
     }
 }

@@ -43,6 +43,8 @@ import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeRegister;
+import cz.tacr.elza.domain.table.ElzaRow;
+import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
@@ -130,7 +132,9 @@ public class NodeCacheService {
         mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
         mapper.setVisibility(new InterfaceVisibilityChecker(NodeCacheSerializable.class,
                 String.class, Number.class, Boolean.class, Iterable.class,
-                LocalDate.class));
+                LocalDate.class, ElzaTable.class, ElzaRow.class,
+                // used in ElzaRow
+                Map.class));
     }
 
     /**
@@ -483,7 +487,7 @@ public class NodeCacheService {
 	private void reloadCachedNodes(final Collection<RestoredNode> cachedNodes) {
 
 		StaticDataProvider sdp = staticDataService.getData();
-        RestoreAction ra = new RestoreAction(sdp, structureDataRepository,
+        RestoreAction ra = new RestoreAction(sdp, entityManager, structureDataRepository,
                 partyRepository, /*partyNameComplementRepository,
                                  partyNameRepository,*/
                 accessPointRepository,
@@ -526,6 +530,8 @@ public class NodeCacheService {
      * @return výsledek serializace
      */
     private String serialize(final CachedNode cachedNode) {
+        // Validate that node contains all required data
+        cachedNode.validate();
         try {
             return mapper.writeValueAsString(cachedNode);
         } catch (JsonProcessingException e) {
@@ -612,7 +618,7 @@ public class NodeCacheService {
 		List<ArrCachedNode> records = new ArrayList<>(nodes.size());
 
 		for (ArrNode node : nodes) {
-			CachedNode cachedNode = new CachedNode();
+            CachedNode cachedNode = new CachedNode(node.getNodeId(), node.getUuid());
 			String data = serialize(cachedNode);
 
 			ArrCachedNode record = new ArrCachedNode();

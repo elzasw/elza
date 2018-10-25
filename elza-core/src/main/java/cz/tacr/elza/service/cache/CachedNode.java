@@ -4,7 +4,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.apache.commons.lang3.Validate;
+
 import cz.tacr.elza.domain.ArrDaoLink;
+import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrNodeExtension;
 import cz.tacr.elza.domain.ArrNodeRegister;
@@ -126,4 +129,91 @@ public class CachedNode implements NodeCacheSerializable {
 		}
 		descItems.add(descItem);
 	}
+
+    /**
+     * Validate node data
+     * 
+     * Typically called before serialization
+     */
+    public void validate() {
+        if (uuid == null) {
+            throw new NullPointerException("uuid is null");
+        }
+        validateDescItems();
+        validateNodeRegisters();
+        validateNodeExtensions();
+        validateDaoLinks();
+    }
+
+    private void validateDaoLinks() {
+        if (daoLinks == null) {
+            return;
+        }
+        for (ArrDaoLink daoLink : daoLinks) {
+            Validate.notNull(daoLink.getCreateChange());
+            Validate.notNull(daoLink.getCreateChangeId());
+            Validate.notNull(daoLink.getDao());
+            Validate.notNull(daoLink.getDaoLinkId());
+            Validate.notNull(daoLink.getNode());
+            Validate.notNull(daoLink.getNodeId());
+        }
+    }
+
+    private void validateNodeExtensions() {
+        if (nodeExtensions == null) {
+            return;
+        }
+
+        for (ArrNodeExtension nodeExtension : nodeExtensions) {
+            if (nodeExtension.getCreateChange() == null) {
+                throw new NullPointerException("Missing createChange");
+            }
+            if (nodeExtension.getCreateChangeId() == null) {
+                throw new NullPointerException("Missing createChangeId");
+            }
+            if(nodeExtension.getArrangementExtension()==null) {
+                throw new NullPointerException("Missing arrangement extension");
+            }
+            if(nodeExtension.getArrangementExtensionId()==null) {
+                throw new NullPointerException("Missing arrangement extension ID");
+            }
+        }
+    }
+
+    private void validateNodeRegisters() {
+        if (nodeRegisters == null) {
+            return;
+        }
+
+        for (ArrNodeRegister nodeRegister : nodeRegisters) {
+            Validate.notNull(nodeRegister.getRecord());
+            Validate.notNull(nodeRegister.getRecordId());
+        }
+
+    }
+
+    private void validateDescItems() {
+        if (descItems == null) {
+            return;
+        }
+        for (ArrDescItem descItem : descItems) {
+            // changeId is not stored in CachedNode
+            // consider to store it also
+            if (descItem.getCreateChange() == null) {
+                throw new NullPointerException("createChange is null");
+            }
+            if (descItem.getCreateChangeId() == null) {
+                throw new NullPointerException("createChangeId is null");
+            }
+            Validate.notNull(descItem.getDescItemObjectId());
+            Validate.notNull(descItem.getItemType());
+            Validate.notNull(descItem.getItemTypeId());
+            Validate.notNull(descItem.getPosition());
+
+            ArrData data = descItem.getData();
+            if (data != null) {
+                data.validate();
+            }
+        }
+    }
 }

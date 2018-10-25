@@ -19,7 +19,6 @@ import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.NumericField;
 import org.springframework.data.rest.core.annotation.RestResource;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
@@ -119,14 +118,12 @@ public abstract class ArrItem implements NodeCacheSerializable {
 		this.position = src.position;
 	}
 
-	@JsonIgnore
     @Field
     @NumericField
     public Integer getCreateChangeId() {
         return createChangeId;
     }
 
-    @JsonIgnore
     @Field
     @NumericField
     public Integer getDeleteChangeId() {
@@ -148,6 +145,19 @@ public abstract class ArrItem implements NodeCacheSerializable {
     public void setCreateChange(final ArrChange createChange) {
         this.createChange = createChange;
         this.createChangeId = createChange == null ? null : createChange.getChangeId();
+    }
+
+    /**
+     * Setter which will not touch ID in createChange
+     * 
+     * @param createChange
+     * @param createChangeId
+     */
+    public void setCreateChange(final ArrChange createChange,
+                                final Integer createChangeId) {
+        this.createChange = createChange;
+        this.createChangeId = createChangeId;
+
     }
 
     public ArrChange getDeleteChange() {

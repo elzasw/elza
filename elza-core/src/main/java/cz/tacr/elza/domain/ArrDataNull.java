@@ -40,4 +40,9 @@ public class ArrDataNull extends ArrData {
     public void mergeInternal(final ArrData srcData) {
         Validate.isInstanceOf(ArrDataNull.class, srcData);
     }
+
+    @Override
+    protected void validateInternal() {
+        // nothing to check        
+    }
 }

@@ -5,6 +5,7 @@ import javax.persistence.Entity;
 import javax.persistence.Lob;
 import javax.persistence.Table;
 
+import org.apache.commons.lang.Validate;
 import org.hibernate.annotations.Type;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -64,5 +65,10 @@ public class ArrDataText extends ArrData {
     public void mergeInternal(final ArrData srcData) {
         ArrDataText src = (ArrDataText) srcData;
         copyValue(src);
+    }
+
+    @Override
+    protected void validateInternal() {
+        Validate.notNull(value);
     }
 }

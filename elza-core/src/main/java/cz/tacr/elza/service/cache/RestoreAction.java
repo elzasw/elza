@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.persistence.EntityManager;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 
@@ -15,6 +17,7 @@ import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrData;
@@ -26,9 +29,11 @@ import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrNodeExtension;
 import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.RulArrangementExtension;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
@@ -57,14 +62,17 @@ public class RestoreAction {
     
     final private PartyNameRepository partyNameRepository;*/
 
-    private ApAccessPointRepository accessPointRepository;
+    final private ApAccessPointRepository accessPointRepository;
 
-    private FundFileRepository fundFileRepository;
+    final private FundFileRepository fundFileRepository;
 
-    private DaoRepository daoRepository;
+    final private DaoRepository daoRepository;
+
+    final private EntityManager em;
 
     public RestoreAction(final StaticDataProvider sdp,
-            StructuredObjectRepository structureDataRepository,
+            final EntityManager em,
+            final StructuredObjectRepository structureDataRepository,
             final PartyRepository partyRepository,
             /*final PartyNameComplementRepository partyNameComplementRepository,
             final PartyNameRepository partyNameRepository,*/
@@ -72,6 +80,7 @@ public class RestoreAction {
             final FundFileRepository fundFileRepository,
             final DaoRepository daoRepository) {
         this.sdp = sdp;
+        this.em = em;
         this.structureDataRepository = structureDataRepository;
         this.partyRepository = partyRepository;
         /*this.partyNameComplementRepository = partyNameComplementRepository;
@@ -99,9 +108,14 @@ public class RestoreAction {
      * Load description item type from rule system provider
      * 
      * @param descItem
-     * @param sdp
      */
-    private void loadDescItemType(ArrDescItem descItem, StaticDataProvider sdp) {
+    private void restoreDescItem(ArrDescItem descItem) {
+        // restore createChange
+        Validate.notNull(descItem.getCreateChangeId());
+        ArrChange createChange = em.getReference(ArrChange.class, descItem.getCreateChangeId());
+        descItem.setCreateChange(createChange, descItem.getCreateChangeId());
+
+        // restore item type
         Validate.notNull(descItem.getItemTypeId());
         ItemType itemType = sdp.getItemTypeById(descItem.getItemTypeId());
         Validate.notNull(itemType);
@@ -187,7 +201,7 @@ public class RestoreAction {
                 descItem.setNode(node);
 
                 // set dataType, itemType, itemSpec
-                loadDescItemType(descItem, sdp);
+                restoreDescItem(descItem);
 
                 // restore links
                 ArrData data = descItem.getData();
@@ -208,12 +222,17 @@ public class RestoreAction {
         }
         if (CollectionUtils.isNotEmpty(restoredNode.getDaoLinks())) {
             for (ArrDaoLink daoLink : restoredNode.getDaoLinks()) {
-                addDaoLink(daoLink);
+                restoreDaoLink(daoLink);
             }
         }
         if (CollectionUtils.isNotEmpty(restoredNode.getNodeRegisters())) {
             for (ArrNodeRegister nodeRegister : restoredNode.getNodeRegisters()) {
                 addNodeAPRef(nodeRegister);
+            }
+        }
+        if (CollectionUtils.isNotEmpty(restoredNode.getNodeExtensions())) {
+            for (ArrNodeExtension nodeExt : restoredNode.getNodeExtensions()) {
+                restoreNodeExt(nodeExt);
             }
         }
     }
@@ -259,7 +278,11 @@ public class RestoreAction {
         dataList.add(data);
     }
 
-    private void addDaoLink(ArrDaoLink daoLink) {
+    private void restoreDaoLink(ArrDaoLink daoLink) {
+        Validate.notNull(daoLink.getCreateChangeId());
+        ArrChange createChange = em.getReference(ArrChange.class, daoLink.getCreateChangeId());
+        daoLink.setCreateChange(createChange, daoLink.getCreateChangeId());
+
         Validate.notNull(daoLink.getDaoId());
         
         if (restoreDaoLinks == null) {
@@ -278,6 +301,18 @@ public class RestoreAction {
         List<ArrNodeRegister> dataList = restoreNodeAPRef.computeIfAbsent(nodeRegister.getRecordId(),
                                                                           k -> new ArrayList<>());
         dataList.add(nodeRegister);
+    }
+
+    private void restoreNodeExt(ArrNodeExtension nodeExt) {
+        Validate.notNull(nodeExt.getArrangementExtensionId());
+        Validate.notNull(nodeExt.getCreateChangeId());
+
+        RulArrangementExtension arExt = em.getReference(RulArrangementExtension.class, nodeExt
+                .getArrangementExtensionId());
+        nodeExt.setArrangementExtension(arExt, nodeExt.getArrangementExtensionId());
+
+        ArrChange createChange = em.getReference(ArrChange.class, nodeExt.getCreateChangeId());
+        nodeExt.setCreateChange(createChange, nodeExt.getCreateChangeId());
     }
 
     /**
