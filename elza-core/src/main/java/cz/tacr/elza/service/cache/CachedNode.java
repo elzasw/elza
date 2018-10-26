@@ -11,6 +11,8 @@ import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrNodeExtension;
 import cz.tacr.elza.domain.ArrNodeRegister;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
 
 /**
  * Objekt pro serializaci dat s informacemi o JP - pro NodeCacheService.
@@ -152,6 +154,8 @@ public class CachedNode implements NodeCacheSerializable {
         for (ArrDaoLink daoLink : daoLinks) {
             Validate.notNull(daoLink.getCreateChange());
             Validate.notNull(daoLink.getCreateChangeId());
+            // Deleted items should not be stored
+            Validate.isTrue(daoLink.getDeleteChangeId() == null);
             Validate.notNull(daoLink.getDao());
             Validate.notNull(daoLink.getDaoLinkId());
             Validate.notNull(daoLink.getNode());
@@ -204,6 +208,12 @@ public class CachedNode implements NodeCacheSerializable {
             }
             if (descItem.getCreateChangeId() == null) {
                 throw new NullPointerException("createChangeId is null");
+            }
+            // Deleted items cannot be stored in cache
+            if (descItem.getDeleteChangeId() != null || descItem.getDeleteChange() != null) {
+                throw new SystemException("Item is marked as deleted and cannot be placed in cache",
+                        BaseCode.DB_INTEGRITY_PROBLEM)
+                                .set("itemId", descItem.getItemId());
             }
             Validate.notNull(descItem.getDescItemObjectId());
             Validate.notNull(descItem.getItemType());

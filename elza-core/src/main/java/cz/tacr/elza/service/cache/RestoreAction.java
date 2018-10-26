@@ -36,6 +36,7 @@ import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.RulArrangementExtension;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.DaoRepository;
@@ -114,6 +115,12 @@ public class RestoreAction {
         Validate.notNull(descItem.getCreateChangeId());
         ArrChange createChange = em.getReference(ArrChange.class, descItem.getCreateChangeId());
         descItem.setCreateChange(createChange, descItem.getCreateChangeId());
+
+        // Deleted items cannot be stored in cache
+        if (descItem.getDeleteChangeId() != null) {
+            throw new SystemException("Item is marked as deleted and placed in cache", BaseCode.DB_INTEGRITY_PROBLEM)
+                    .set("itemId", descItem.getItemId());
+        }
 
         // restore item type
         Validate.notNull(descItem.getItemTypeId());
