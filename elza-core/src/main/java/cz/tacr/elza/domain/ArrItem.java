@@ -40,6 +40,7 @@ public abstract class ArrItem implements NodeCacheSerializable {
     public static final String FIELD_ITEM_SPEC = "itemSpec";
     public static final String FIELD_ITEM_TYPE = "itemType";
     public static final String FIELD_POSITION = "position";
+    public static final String DELETE_CHANGE_ID_MAX = "" + Integer.MAX_VALUE;
 
     @Id
     @GeneratedValue
@@ -129,7 +130,7 @@ public abstract class ArrItem implements NodeCacheSerializable {
         return createChangeId;
     }
 
-    @Field
+    @Field(indexNullAs = DELETE_CHANGE_ID_MAX)
     @NumericField
     public Integer getDeleteChangeId() {
         return deleteChangeId;
