@@ -132,7 +132,7 @@ public abstract class ArrItem implements NodeCacheSerializable {
     @Field
     @NumericField
     public Integer getDeleteChangeId() {
-        return deleteChangeId == null ? Integer.MAX_VALUE : deleteChangeId;
+        return deleteChangeId;
     }
 
     public Integer getItemId() {
