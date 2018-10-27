@@ -13,9 +13,9 @@ import org.apache.commons.lang3.Validate;
 import org.apache.pdfbox.io.MemoryUsageSetting;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
+import org.springframework.context.ApplicationContext;
 
 import cz.tacr.elza.common.CloseablePathResource;
-import cz.tacr.elza.core.AppContext;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.DmsFile;
 import cz.tacr.elza.exception.SystemException;
@@ -162,10 +162,15 @@ public class PdfAttProvider implements AttPageProvider {
      */
     Map<String, Attachments> attachmentsByType = new HashMap<>();
 
-    private final DmsService dmsService = AppContext.getBean(DmsService.class);
-    private final AttachmentService attachmentService = AppContext.getBean(AttachmentService.class);
+    private final DmsService dmsService;
+    private final AttachmentService attachmentService;
 
     private Output output;
+
+    public PdfAttProvider(ApplicationContext applicationContext) {
+        dmsService = applicationContext.getBean(DmsService.class);
+        attachmentService = applicationContext.getBean(AttachmentService.class);
+    }
 
     /**
      * Create PDF file from attachment (if possible)

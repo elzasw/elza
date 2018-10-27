@@ -3,6 +3,7 @@ package cz.tacr.elza.service.output.generator;
 import javax.persistence.EntityManager;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
 import cz.tacr.elza.core.data.StaticDataService;
@@ -39,8 +40,11 @@ public class OutputGeneratorFactory {
     
     private final ApExternalIdRepository apEidRepository;
 
+    private final ApplicationContext applicationContext;
+
     @Autowired
-    public OutputGeneratorFactory(StaticDataService staticDataService,
+    public OutputGeneratorFactory(ApplicationContext applicationContext,
+            StaticDataService staticDataService,
             FundTreeProvider fundTreeProvider,
             NodeCacheService nodeCacheService,
             InstitutionRepository institutionRepository,
@@ -50,6 +54,7 @@ public class OutputGeneratorFactory {
             EntityManager em,
             DmsService dmsService,
             DEExportService exportService) {
+        this.applicationContext = applicationContext;
         this.staticDataService = staticDataService;
         this.fundTreeProvider = fundTreeProvider;
         this.nodeCacheService = nodeCacheService;
@@ -81,7 +86,8 @@ public class OutputGeneratorFactory {
     }
 
     public JasperOutputGenerator createJasperOutputGenerator() {
-        return new JasperOutputGenerator(staticDataService, fundTreeProvider, nodeCacheService, institutionRepository,
+        return new JasperOutputGenerator(applicationContext, staticDataService, fundTreeProvider, nodeCacheService,
+                institutionRepository,
                 apDescRepository, apNameRepository, apEidRepository, em, dmsService);
     }
 
