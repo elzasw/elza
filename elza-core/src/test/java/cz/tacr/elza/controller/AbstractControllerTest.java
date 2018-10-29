@@ -1,7 +1,5 @@
 package cz.tacr.elza.controller;
 
-import static com.jayway.restassured.RestAssured.given;
-
 import java.io.File;
 import java.io.InputStream;
 import java.math.BigDecimal;
@@ -53,6 +51,7 @@ import cz.tacr.elza.controller.vo.ApEidTypeVO;
 import cz.tacr.elza.controller.vo.ApScopeVO;
 import cz.tacr.elza.controller.vo.ApTypeVO;
 import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
+import cz.tacr.elza.controller.vo.ArrFundFulltextResult;
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
 import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
@@ -67,6 +66,7 @@ import cz.tacr.elza.controller.vo.CreateFundVO;
 import cz.tacr.elza.controller.vo.FilterNode;
 import cz.tacr.elza.controller.vo.FilterNodePosition;
 import cz.tacr.elza.controller.vo.FilteredResultVO;
+import cz.tacr.elza.controller.vo.FulltextFundRequest;
 import cz.tacr.elza.controller.vo.FundListCountResult;
 import cz.tacr.elza.controller.vo.LanguageVO;
 import cz.tacr.elza.controller.vo.NodeItemWithParent;
@@ -139,6 +139,8 @@ import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.vo.ChangesResult;
+
+import static com.jayway.restassured.RestAssured.given;
 
 public abstract class AbstractControllerTest extends AbstractTest {
 
@@ -233,6 +235,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String DELETE_OUTPUT_ITEM = ARRANGEMENT_CONTROLLER_URL
             + "/outputItems/{fundVersionId}/{outputDefinitionVersion}/delete";
     protected static final String FULLTEXT = ARRANGEMENT_CONTROLLER_URL + "/fulltext";
+    protected static final String FUND_FULLTEXT = ARRANGEMENT_CONTROLLER_URL + "/fundFulltext";
+    protected static final String FUND_FULLTEXT_LIST = ARRANGEMENT_CONTROLLER_URL + "/fundFulltext/{fundId}";
     protected static final String FIND_REGISTER_LINKS = ARRANGEMENT_CONTROLLER_URL + "/registerLinks/{nodeId}/{versionId}";
     protected static final String FIND_REGISTER_LINKS_FORM = ARRANGEMENT_CONTROLLER_URL + "/registerLinks/{nodeId}/{versionId}/form";
     protected static final String CREATE_REGISTER_LINK = ARRANGEMENT_CONTROLLER_URL + "/registerLinks/{nodeId}/{versionId}/create";
@@ -1524,6 +1528,22 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected List<ArrangementController.TreeNodeFulltext> fulltext(final ArrangementController.FaFulltextParam input) {
         return Arrays.asList(post(spec -> spec
                 .body(input), FULLTEXT).getBody().as(ArrangementController.TreeNodeFulltext[].class));
+    }
+
+    /**
+     * Fulltexove vyhledavani pres vice uzlu.
+     */
+    protected List<ArrFundFulltextResult> fundFulltext(final FulltextFundRequest input) {
+        return Arrays.asList(post(spec -> spec.body(input), FUND_FULLTEXT)
+                .getBody().as(ArrFundFulltextResult[].class));
+    }
+
+    /**
+     * Seznam uzlu vyhledaneho AS po fulltextovem vyhledani serazeny podle relevance pri vyhledani.
+     */
+    protected List<TreeNodeVO> fundFulltextNodeList(final Integer fundId) {
+        return Arrays.asList(get(spec -> spec.pathParameter("fundId", fundId), FUND_FULLTEXT_LIST)
+                .getBody().as(TreeNodeVO[].class));
     }
 
     /**

@@ -224,7 +224,7 @@ public class DescItemTypeFilter {
                 booleanJunction.must(q);
             });
 
-            List<Object> rows = createFullTextQuery(fullTextEntityManager, booleanJunction.createQuery(), ArrDescItem.class).setProjection("nodeId", "itemId").getResultList();
+            List<Object> rows = createFullTextQuery(fullTextEntityManager, booleanJunction.createQuery(), ArrDescItem.class).setProjection(ArrDescItem.FIELD_NODE_ID, ArrDescItem.FIELD_ITEM_ID).getResultList();
 
             nodeIdToDescItemIds = new HashMap<>(rows.size());
             for (Object row: rows) {

@@ -26,6 +26,7 @@ import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.vo.ChangesResult;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.csv.CSVRecord;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -110,6 +111,63 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         //smazání fondu
         deleteFund(fund);
 
+    }
+
+    @Test
+    public void fundFulltextTest() {
+
+        final String value = "aaa";
+        final int count = 2;
+
+        List<ArrFundVO> funds = new ArrayList<>();
+        for (int i = 0; i < 3; i++) {
+            funds.add(createFundFulltext(i, count, value));
+        }
+
+        try {
+
+            Set<String> names = funds.stream().map(fund -> fund.getName()).collect(Collectors.toSet());
+
+            List<ArrFundFulltextResult> resultList = fundFulltext(new FulltextFundRequest(value));
+
+            for (ArrFundFulltextResult result : resultList) {
+                assertTrue("Invalid fund [" + result.getName() + "]", names.remove(result.getName()));
+                assertEquals("Invalid count [" + result.getName() + "]", count, result.getCount());
+            }
+
+            assertTrue("Fund not found [" + StringUtils.join(names, ", ") + "]", names.isEmpty());
+
+            for (ArrFundFulltextResult result : resultList) {
+                List<TreeNodeVO> nodeList = fundFulltextNodeList(result.getId());
+                assertEquals("Invalid count [" + result.getName() + "]", count, nodeList.size());
+                for (TreeNodeVO node : nodeList) {
+                    assertEquals("Invalid node value [" + result.getName() + "]", value, node.getName());
+                }
+            }
+
+        } finally {
+            //smazání fondu
+            for (ArrFundVO fund : funds) {
+                deleteFund(fund.getId());
+            }
+        }
+    }
+
+    private ArrFundVO createFundFulltext(int i, int count, String value) {
+
+        ArrFundVO fund = createFund("Test fulltext " + i, "TST" + 1);
+
+        RulDescItemTypeExtVO typeVo = findDescItemTypeByCode("SRD_TITLE");
+
+        ArrFundVersionVO fundVersion = getOpenVersion(fund);
+        List<ArrNodeVO> nodes = createLevels(fundVersion);
+
+        for (int j = 0; j < count; j++) {
+            ArrItemVO descItem = buildDescItem(typeVo.getCode(), null, value, null, null);
+            ArrangementController.DescItemResult descItemResult = createDescItem(descItem, fundVersion, nodes.get(j), typeVo);
+        }
+
+        return fund;
     }
 
     @Test

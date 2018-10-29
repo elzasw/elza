@@ -5,7 +5,7 @@
     <parent>
         <artifactId>elza</artifactId>
         <groupId>cz.tacr.elza</groupId>
-        <version>0.19.1-SNAPSHOT</version>
+        <version>0.19.0-SNAPSHOT</version>
     </parent>
     <artifactId>elza-core</artifactId>
     <name>ELZA Core</name>
@@ -239,6 +239,11 @@
             <groupId>org.geotools.xsd</groupId>
             <artifactId>gt-xsd-kml</artifactId>
             <version>${geotools.version}</version>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.lucene</groupId>
+          <artifactId>lucene-grouping</artifactId>
+          <version>${hibernate.lucene.version}</version>
         </dependency>
         <dependency>
           <groupId>org.apache.lucene</groupId>
