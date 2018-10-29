@@ -52,7 +52,15 @@ class NodeRequests{
         this.skipUpdatesCount++;
         this.descItems[descItemObjectId].addRequest(requestData);
     }
-    shouldSkipUpdate(){
+    /**
+     * Called when node change was received
+     * 
+     * Function will check number of pending requests and decrement it.
+     * 
+     * Return true if event is our own. Return false if event is not our
+     * and should be processed
+     */
+    onReceivedNodeChange(){
         if(this.skipUpdatesCount > 0){
             this.skipUpdatesCount--;
             return true;
@@ -115,11 +123,18 @@ function onUpdateResponse(request, response){
     nodeRequestController.sendNextUpdate(nodeId,descItemObjectId);
 }
 
-export function shouldSkipNodeEvent(entityIds, callback){
+/**
+ * Check if update event should be skipped
+ * 
+ * This happen is we caused the update event
+ * @param {*} entityIds 
+ */
+export function onReceivedNodeChange(entityIds){
     let node = nodeRequestController.nodes[entityIds[0]];
-    if(!node || !node.shouldSkipUpdate){
-        callback();
+    if(node && node.onReceivedNodeChange()){
+        return true;
     }
+    return false;
 }
 
 const nodeRequestController = new NodeRequestController();

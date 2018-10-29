@@ -20,6 +20,7 @@ import org.apache.pdfbox.io.MemoryUsageSetting;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.text.PDFTextStripper;
+import org.springframework.context.ApplicationContext;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -64,9 +65,9 @@ public class JasperOutputGenerator extends DmsOutputGenerator {
     private final OutputModel outputModel;
 
     SimplePdfReportConfiguration pdfExpConfig = new SimplePdfReportConfiguration();
-    private PdfAttProvider pdfAttProvider = new PdfAttProvider();
+    private PdfAttProvider pdfAttProvider;
 
-    JasperOutputGenerator(StaticDataService staticDataService,
+    JasperOutputGenerator(ApplicationContext applicationContext, StaticDataService staticDataService,
                           FundTreeProvider fundTreeProvider,
                           NodeCacheService nodeCacheService,
                           InstitutionRepository institutionRepository,
@@ -77,6 +78,7 @@ public class JasperOutputGenerator extends DmsOutputGenerator {
                           DmsService dmsService) {
         super(em, dmsService);
 
+        pdfAttProvider = new PdfAttProvider(applicationContext);
         outputModel = new OutputModel(staticDataService, fundTreeProvider, nodeCacheService, institutionRepository,
                 apDescRepository, apNameRepository, apEidRepository,
                 pdfAttProvider);
