@@ -88,7 +88,7 @@ public class DbQueueProcessor implements BackendQueueProcessor {
             indexManager.performOperations(luceneWorkList, monitor);
         }
         if (!asyncList.isEmpty()) {
-            indexWorkService.createIndexWork(indexName, syncList);
+            indexWorkService.createIndexWork(indexName, asyncList);
             indexWorkProcessor.notifyIndexing();
         }
     }
