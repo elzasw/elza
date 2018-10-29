@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -29,6 +30,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -41,6 +45,7 @@ import cz.tacr.elza.controller.ArrangementController;
 import cz.tacr.elza.controller.ArrangementController.Depth;
 import cz.tacr.elza.controller.ArrangementController.TreeNodeFulltext;
 import cz.tacr.elza.controller.ArrangementController.VersionValidationItem;
+import cz.tacr.elza.controller.vo.ArrFundFulltextResult;
 import cz.tacr.elza.controller.vo.NodeItemWithParent;
 import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
@@ -67,6 +72,7 @@ import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.UIVisiblePolicy;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.domain.vo.ArrFundToNodeList;
 import cz.tacr.elza.domain.vo.NodeTypeOperation;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
@@ -105,6 +111,7 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
  * permissions.
  */
 @Service
+@Configuration
 public class ArrangementService {
 
 	private static final AtomicInteger LAST_DESC_ITEM_OBJECT_ID = new AtomicInteger(-1);
@@ -632,6 +639,7 @@ public class ArrangementService {
         level.setDeleteChange(deleteChange);
         return levelRepository.saveAndFlush(level);
     }
+
     /**
      * Vrací další identifikátor objektu pro atribut (oproti PK se zachovává při nové verzi)
      * <p>
@@ -722,11 +730,63 @@ public class ArrangementService {
         Integer levelDeleteChange = level.getDeleteChange() == null ?
                 Integer.MAX_VALUE : level.getDeleteChange().getChangeId();
 
-        if (level.getCreateChange().getChangeId() < lockChange && levelDeleteChange >= lockChange) {
-            return true;
-        } else {
-            return false;
+        return level.getCreateChange().getChangeId() < lockChange && levelDeleteChange >= lockChange;
+    }
+
+    /**
+     * Vyhledání id nodů podle hodnoty atributu.
+     *
+     * @param fundIds id fondů, do kterých uzly patří
+     * @return seznam id uzlů které vyhovují parametrům
+     */
+    public List<ArrFundFulltextResult> findFundsByFulltext(final String searchValue, final Collection<ArrFund> fundList) {
+
+        List<ArrFundToNodeList> fundToNodeList = nodeRepository.findFundIdsByFulltext(searchValue, fundList);
+        fundFulltextSession().set(fundToNodeList);
+
+        List<ArrFundFulltextResult> resultList = new ArrayList<>();
+
+        if (!fundToNodeList.isEmpty()) {
+
+            Map<Integer, ArrFund> fundMap = fundList.stream().collect(Collectors.toMap(fund -> fund.getFundId(), fund -> fund));
+
+            for (ArrFundToNodeList fundCount : fundToNodeList) {
+                ArrFundFulltextResult result = new ArrFundFulltextResult();
+                ArrFund fund = fundMap.get(fundCount.getFundId());
+                result.setName(fund.getName());
+                result.setId(fundCount.getFundId());
+                result.setCount(fundCount.getNodeCount());
+                resultList.add(result);
+            }
         }
+        return resultList;
+    }
+
+    protected ArrFundToNodeList getFundToNodeListFromSession(Integer fundId) {
+        Holder<List<ArrFundToNodeList>> holder = fundFulltextSession();
+        List<ArrFundToNodeList> list = holder.get();
+        if (list == null) {
+            throw new SystemException("Nenalezena session data");
+        }
+        for (ArrFundToNodeList fundToNodeList : list) {
+            if (fundId.equals(fundToNodeList.getFundId())) {
+                return fundToNodeList;
+            }
+        }
+        return null;
+    }
+
+    public List<TreeNodeVO> getNodeListByFulltext(Integer fundId) {
+        ArrFundToNodeList fundToNodeList = getFundToNodeListFromSession(fundId);
+        if (fundToNodeList != null) {
+            List<Integer> nodeIdList = fundToNodeList.getNodeIdList();
+            if (nodeIdList.size() > 20) {
+                nodeIdList = nodeIdList.subList(0, 20);
+            }
+            ArrFundVersion fundVersion = getOpenVersionByFundId(fundToNodeList.getFundId());
+            return levelTreeCacheService.getNodesByIds(nodeIdList, fundVersion.getFundVersionId());
+        }
+        return Collections.emptyList();
     }
 
     /**
@@ -1293,6 +1353,28 @@ public class ArrangementService {
             for (TreeNode node : treeNode.getChilds()) {
                 recursiveAddNodes(nodeIds, node, nodePolicyTypes, policiesMap, nodeProblemsMap, foundNode);
             }
+        }
+    }
+
+    /**
+     * @return vrací session uživatele
+     */
+    @Bean
+    @Scope("session")
+    public Holder<List<ArrFundToNodeList>> fundFulltextSession() {
+        return new Holder<>();
+    }
+
+    public static class Holder<T> {
+
+        private T object;
+
+        public T get() {
+            return object;
+        }
+
+        public void set(T object) {
+            this.object = object;
         }
     }
 

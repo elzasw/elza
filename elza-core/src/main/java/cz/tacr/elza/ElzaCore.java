@@ -9,6 +9,7 @@ import javax.servlet.MultipartConfigElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
@@ -49,6 +50,12 @@ public class ElzaCore {
     private ApplicationContext context;
 
     private static final Logger logger = LoggerFactory.getLogger(ElzaCore.class);
+
+    /**
+     * pocet threadu vyhrazenych pro hromadnou indexaci Hibernate Search
+     */
+    @Value("${elza.hibernate.index.thread_max:4}")
+    private int threadMax;
 
     public static void main(final String[] args) {
         configure();
@@ -98,13 +105,26 @@ public class ElzaCore {
         return threadPoolTaskExecutor;
     }
 
+    /**
+     * ThreadPoolTaskExecutor pro indexaci Hibernate Search
+     */
+    @Bean(name = "threadPoolTaskExecutorHS")
+    public ThreadPoolTaskExecutor threadPoolTaskExecutorHibernateSearch() {
+        ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
+        threadPoolTaskExecutor.setCorePoolSize(threadMax);
+        // threadPoolTaskExecutor.setMaxPoolSize();
+        threadPoolTaskExecutor.setThreadNamePrefix("HibernateSearchIndex-");
+        threadPoolTaskExecutor.initialize();
+        return threadPoolTaskExecutor;
+    }
+
     @Bean(name = "conformityUpdateTaskExecutor")
     public Executor conformityUpdateTaskExecutor() {
         return threadPoolTaskExecutorBulkAction();
     }
 
     @Bean
-    public ClientEventDispatcher clientEventDispatcher(){
+    public ClientEventDispatcher clientEventDispatcher() {
         return new WebScoketClientEventService();
     }
 

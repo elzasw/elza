@@ -214,6 +214,7 @@ import cz.tacr.elza.repository.StructuredTypeExtensionRepository;
 import cz.tacr.elza.repository.StructuredTypeRepository;
 import cz.tacr.elza.repository.TemplateRepository;
 import cz.tacr.elza.repository.UIPartyGroupRepository;
+import cz.tacr.elza.search.IndexWorkProcessor;
 import cz.tacr.elza.service.CacheService;
 import cz.tacr.elza.service.StructObjService;
 import cz.tacr.elza.service.StructObjValueService;
@@ -491,6 +492,9 @@ public class PackageService {
     @Autowired
     private OutputResultRepository outputResultRepository;
 
+    @Autowired
+    private IndexWorkProcessor indexWorkProcessor;
+
     /**
      * Provede import balíčku.
      *
@@ -540,9 +544,9 @@ public class PackageService {
             } else {
                 throw new SystemException(e);
             }
-        }
-        finally {
+        } finally {
             if (pkgCtx != null) {
+
                 // start services after import
                 postImportPackage(pkgCtx);
 
@@ -560,7 +564,11 @@ public class PackageService {
     private void preImportPackage() {
         logger.info("Stoping services before package update");
 
+        // zastavit indexovani
+        indexWorkProcessor.suspendIndexing();
+
         structObjValueService.stopGenerator();
+
         // odebrání používaných groovy scritpů
         cacheService.resetCache(CacheInvalidateEvent.Type.GROOVY);
     }
@@ -569,17 +577,25 @@ public class PackageService {
         logger.info("Package was updated. Code: {}, Version: {}", pkgCtx.getPackageInfo().getCode(),
                     pkgCtx.getPackageInfo().getVersion());
 
-        // add request to regenerate structObjs
-        Set<String> codes = pkgCtx.getRegenerateStructureTypes();
-        List<RulStructuredType> revalidateStructureTypes = new ArrayList<>(codes.size());
-        for (String code : codes) {
-            RulStructuredType structType = this.structureTypeRepository.findByCode(code);
-            revalidateStructureTypes.add(structType);
+        try {
+
+            // add request to regenerate structObjs
+            Set<String> codes = pkgCtx.getRegenerateStructureTypes();
+            List<RulStructuredType> revalidateStructureTypes = new ArrayList<>(codes.size());
+            for (String code : codes) {
+                RulStructuredType structType = this.structureTypeRepository.findByCode(code);
+                revalidateStructureTypes.add(structType);
+            }
+
+            structObjValueService.addToValidateByTypes(revalidateStructureTypes);
+
+            structObjValueService.startGenerator();
+
+        } finally {
+
+            // spustit indexovani
+            indexWorkProcessor.resumeIndexing();
         }
-
-        structObjValueService.addToValidateByTypes(revalidateStructureTypes);
-
-        structObjValueService.startGenerator();
 
         logger.info("Services were restarted after package update");
     }

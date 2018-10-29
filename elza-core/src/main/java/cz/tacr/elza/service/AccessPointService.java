@@ -337,6 +337,7 @@ public class AccessPointService {
             externalIdRepository.save(eids);
 
             publishAccessPointDeleteEvent(ap);
+            reindexDescItem(ap);
         }
     }
 
@@ -1043,7 +1044,7 @@ public class AccessPointService {
 
         // založení strukturovaného hlavního jména
         createStructuredName(accessPoint, true, language, change);
-
+        reindexDescItem(accessPoint);
         return accessPoint;
     }
 
@@ -1078,6 +1079,7 @@ public class AccessPointService {
         }
 
         publishAccessPointUpdateEvent(accessPoint);
+        reindexDescItem(accessPoint);
         return accessPoint;
     }
 
@@ -1283,7 +1285,9 @@ public class AccessPointService {
         Validate.notNull(accessPoint, "Přístupový bod musí být vyplněn");
         apDataService.validationNotDeleted(accessPoint);
 
-        return createName(accessPoint, false, name, complement, language, null, true);
+        ApName apName = createName(accessPoint, false, name, complement, language, null, true);
+        reindexDescItem(accessPoint);
+        return apName;
     }
 
     /**
@@ -1297,7 +1301,9 @@ public class AccessPointService {
         Validate.notNull(accessPoint, "Přístupový bod musí být vyplněn");
         apDataService.validationNotDeleted(accessPoint);
 
-        return createStructuredName(accessPoint, false, null, null);
+        ApName apName = createStructuredName(accessPoint, false, null, null);
+        reindexDescItem(accessPoint);
+        return apName;
     }
 
     /**
@@ -1409,6 +1415,7 @@ public class AccessPointService {
         String fullName = AccessPointDataService.generateFullName(name, complement);
         ApName apNameNew = apDataService.updateAccessPointName(accessPoint, apName, name, complement, fullName, language, change, true);
         publishAccessPointUpdateEvent(accessPoint);
+        reindexDescItem(accessPoint);
         return apNameNew;
     }
 
@@ -1441,6 +1448,7 @@ public class AccessPointService {
         apItemService.copyItems(apName, newName, change);
         //apGeneratorService.generateAndSetResult(accessPoint, change);
         apGeneratorService.generateAsyncAfterCommit(accessPoint.getAccessPointId(), change.getChangeId());
+        reindexDescItem(accessPoint);
         return newName;
     }
 
@@ -1467,6 +1475,7 @@ public class AccessPointService {
             apGeneratorService.generateAsyncAfterCommit(accessPoint.getAccessPointId(), change.getChangeId());
         }
         publishAccessPointUpdateEvent(accessPoint);
+        reindexDescItem(accessPoint);
     }
 
     /**
@@ -1547,6 +1556,8 @@ public class AccessPointService {
             //apGeneratorService.generateAndSetResult(accessPoint, change);
             apGeneratorService.generateAsyncAfterCommit(accessPoint.getAccessPointId(), change.getChangeId());
         }
+
+        reindexDescItem(accessPoint);
     }
 
     /**
@@ -1957,6 +1968,8 @@ public class AccessPointService {
             apDataService.validationNameUnique(accessPoint.getScope(), name.getFullName());
         }
 
+        reindexDescItem(accessPoint);
+
         return accessPoint;
     }
 
@@ -2081,6 +2094,8 @@ public class AccessPointService {
             apDataService.changeDescription(accessPoint, description.getDescription(), change.get());
         }
 
+        reindexDescItem(accessPoint);
+
         return accessPoint;
     }
 
@@ -2093,13 +2108,13 @@ public class AccessPointService {
      * @param newName
      */
     private ApName updateAccessPointNameWhenChanged(final ApChangeNeed change, final ApAccessPoint accessPoint, final ApName existsName, final ApName newName) {
-        if (!apDataService.equalsNames(existsName, newName)) {
-            String name = newName.getName();
-            String complement = newName.getComplement();
-            String fullName = AccessPointDataService.generateFullName(name, complement);
-            return apDataService.updateAccessPointName(accessPoint, existsName, name, complement, fullName, newName.getLanguage(), change.get(), false);
+        if (apDataService.equalsNames(existsName, newName)) {
+            return existsName;
         }
-        return existsName;
+        String name = newName.getName();
+        String complement = newName.getComplement();
+        String fullName = AccessPointDataService.generateFullName(name, complement);
+        return apDataService.updateAccessPointName(accessPoint, existsName, name, complement, fullName, newName.getLanguage(), change.get(), false);
     }
 
     /**
@@ -2107,6 +2122,14 @@ public class AccessPointService {
      */
     public int nextNameObjectId() {
         return sequenceService.getNext(OBJECT_ID_SEQUENCE_NAME);
+    }
+
+    @Transactional
+    public void reindexDescItem(ApAccessPoint accessPoint) {
+        Collection<Integer> itemIds = new HashSet<>(256);
+        itemIds.addAll(apRepository.findItemIdByAccessPointIdOverDataPartyRef(accessPoint.getAccessPointId()));
+        itemIds.addAll(apRepository.findItemIdByAccessPointIdOverDataRecordRef(accessPoint.getAccessPointId()));
+        descriptionItemService.reindexDescItem(itemIds);
     }
 
     /**

@@ -1,13 +1,16 @@
 package cz.tacr.elza.repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
 import org.hibernate.ScrollableResults;
 
 import cz.tacr.elza.controller.vo.filter.SearchParam;
+import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.vo.ArrFundToNodeList;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
 import cz.tacr.elza.exception.InvalidQueryException;
 import cz.tacr.elza.filter.DescItemTypeFilter;
@@ -29,6 +32,15 @@ public interface NodeRepositoryCustom {
      */
     List<ArrNode> findNodesByDirection(ArrNode node, ArrFundVersion version,
                                        RelatedNodeDirection direction);
+
+    /**
+     * Najde uzly s danou hodnotou.
+     *
+     * @param fundId id fondů, do kterých uzly patří
+     * @param text hledaná hodnota
+     * @return množina id uzlů odopovídající hledané hodnotě
+     */
+    List<ArrFundToNodeList> findFundIdsByFulltext(String text, Collection<ArrFund> fundList);
 
     /**
      * Najde uzly s danou hodnotou.
@@ -82,7 +94,7 @@ public interface NodeRepositoryCustom {
 
 	/**
 	 * Return list of uncached nodes
-	 * 
+	 *
 	 * @return
 	 */
 	ScrollableResults findUncachedNodes();

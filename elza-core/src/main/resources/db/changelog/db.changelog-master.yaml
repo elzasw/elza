@@ -156,3 +156,5 @@ databaseChangeLog:
      file: db/changelog/db.elza-0.17.xml
   - include:
      file: db/changelog/db.elza-0.18.xml
+  - include:
+     file: db/changelog/db.elza-0.19.xml
