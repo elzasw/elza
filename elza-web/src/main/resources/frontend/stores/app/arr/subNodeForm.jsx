@@ -363,6 +363,22 @@ export default function subNodeForm(state = initialState, action = {}) {
                     }
                 }
             }
+        case types.OUTPUT_INCREASE_VERSION:
+           if(state.data === null || state.data.parent.id !==action.outputId || state.data.parent.version != action.outputVersion) {
+                console.error("Received unexpected increase output version", state, action)
+                return state;
+           }
+           return {
+            ...state,
+            data: {
+                ...state.data,
+                parent: {
+                    ...state.data.parent,
+                    version: action.outputVersion + 1,
+                }
+            }
+        }
+
         case types.FUND_SUB_NODE_FORM_VALUE_RESPONSE:
             console.log("sub node response", state.data, action)
             let node = action.descItemResult.node || action.descItemResult.parent;

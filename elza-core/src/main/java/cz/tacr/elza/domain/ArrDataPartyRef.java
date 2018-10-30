@@ -7,6 +7,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import org.apache.commons.lang.Validate;
 import org.springframework.data.rest.core.annotation.RestResource;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -95,5 +96,11 @@ public class ArrDataPartyRef extends ArrData {
 
     public static void setFulltextProvider(ApFulltextProvider fullTextProvider) {
         ArrDataPartyRef.fulltextProvider = fullTextProvider;
+    }
+
+    @Override
+    protected void validateInternal() {
+        Validate.notNull(party);
+        Validate.notNull(partyId);
     }
 }

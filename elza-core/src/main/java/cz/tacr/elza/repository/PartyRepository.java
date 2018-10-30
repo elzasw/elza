@@ -57,7 +57,6 @@ public interface PartyRepository extends ElzaJpaRepository<ParParty, Integer>, P
 
     @Query("SELECT ap FROM par_party ap " +
             "LEFT JOIN FETCH ap.preferredName pn " +
-            "JOIN FETCH pn.nameFormType nft " +
             "LEFT JOIN FETCH pn.validFrom vf " +
             "LEFT JOIN FETCH vf.calendarType vfct " +
             "LEFT JOIN FETCH pn.validTo vt " +

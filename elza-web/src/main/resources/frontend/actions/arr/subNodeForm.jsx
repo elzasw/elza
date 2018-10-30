@@ -8,7 +8,8 @@ import {findByRoutingKeyInGlobalState, getMapFromList, getRoutingKeyType, indexB
 import {getFocusDescItemLocation} from 'stores/app/arr/subNodeFormUtils.jsx'
 import {valuesEquals} from 'components/Utils.jsx'
 import {setFocus} from 'actions/global/focus.jsx'
-import {increaseNodeVersion} from 'actions/arr/node.jsx'
+import {increaseNodeVersion} from './node.jsx'
+import {outputIncreaseNodeVersion} from './outputActions.jsx'
 import * as types from '../../actions/constants/ActionTypes.js';
 import {addToastrDanger, addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
 import {i18n} from 'components/shared';
@@ -239,11 +240,14 @@ export class ItemFormActions {
         }
     }
 
-    /** Metoda pro volání API. */
+    /** Metoda pro volání API, aktualizace hodnoty
+     * @param {Function} dispatch dispatch pro store
+     * @param {Object} formState stav formuláře
+     */
     // @Abstract
-    _callUpdateDescItem(versionId, parentVersionId, parentId, descItem) {}
+    _callUpdateDescItem(dispatch, formState, versionId, parentVersionId, parentId, descItem) {}
 
-    /** Metoda pro volání API. */
+    /** Metoda pro volání API, vložení hodnoty */
     // @Abstract
     _callCreateDescItem(versionId, parentId, parentVersionId, descItemTypeId, descItem) {}
 
@@ -252,7 +256,8 @@ export class ItemFormActions {
      * @param {Function} dispatch odkaz na funkci dispatch
      * @param {Function} getState odkaz na funkci pro načtení store
      * @param {int} versionId verze AS
-     * @param {int} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
+     * @param {int} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, 
+     *                         ve které je formulář
      * @param {Object} valueLocation konkrétní umístění hodnoty
      */
     _formValueStore(dispatch, getState, versionId, routingKey, valueLocation, overrideDescItem=false) {
@@ -280,9 +285,7 @@ export class ItemFormActions {
             // Reálné provedení operace
             if (typeof descItem.id !== 'undefined') {
                 dispatch(statusSaving());
-                // Umělé navýšení verze o 1 - aby mohla pozitivně projít případná další update operace
-                dispatch(increaseNodeVersion(versionId, parentId, parentVersionId));
-                this._callUpdateDescItem(versionId, parentVersionId, parentId, descItem)
+                this._callUpdateDescItem(dispatch, subNodeForm, versionId, parentVersionId, parentId, descItem)
                     .then(json => {
                         if(this.area === OutputFormActions.AREA || this.area === StructureFormActions.AREA){
                             dispatch(this._fundSubNodeFormDescItemResponse(versionId, routingKey, valueLocation, json, 'UPDATE'));
@@ -291,6 +294,7 @@ export class ItemFormActions {
                         dispatch(statusSaved());
                     })
             } else {
+                // check if not already saving
                 if (!loc.descItem.saving) {
                     dispatch(statusSaving());
                     // Umělé navýšení verze o 1 - aby mohla pozitivně projít případná další update operace
@@ -501,7 +505,7 @@ export class ItemFormActions {
 
                 const descItem = {...loc.descItem, position: index + 1};
 
-                this._callUpdateDescItem(versionId, subNodeForm.data.parent.version, descItem)
+                this._callUpdateDescItem(dispatch, sunNodeForm, versionId, subNodeForm.data.parent.version, descItem)
                     .then(json => {
                         const newValueLocation = {...valueLocation, descItemIndex: index};
                         dispatch(this._fundSubNodeFormDescItemResponse(versionId, routingKey, newValueLocation, json, 'UPDATE'));
@@ -1093,9 +1097,11 @@ class NodeFormActions extends ItemFormActions {
     }
 
     // @Override
-    _callUpdateDescItem(versionId, parentVersionId, parentId, descItem) {
-        //return WebApi.updateDescItem(versionId, parentVersionId, descItem);
-        //
+    _callUpdateDescItem(dispatch, formState, versionId, parentVersionId, parentId, descItem) {
+        // Umělé navýšení verze o 1 - aby mohla pozitivně projít případná další update operace
+        console.log("Before update, parentVersionId: ",parentVersionId);
+        dispatch(increaseNodeVersion(versionId, parentId, parentVersionId));
+        
         console.log("update desc Item");
         return new Promise((resolve, reject) => {
             NodeRequestController.updateRequest(versionId, parentVersionId, parentId, descItem, (json) => {resolve(json)})
@@ -1187,8 +1193,11 @@ class OutputFormActions extends ItemFormActions {
     }
 
     // @Override
-    _callUpdateDescItem(versionId, parentVersionId, parentId, descItem) {
-        return WebApi.updateOutputItem(versionId, parentVersionId, descItem);
+    _callUpdateDescItem(dispatch, formState, fundVersionId, outputVersionId, outputId, descItem) {
+        // increase output version
+        dispatch(outputIncreaseNodeVersion(fundVersionId, outputId, outputVersionId));
+
+        return WebApi.updateOutputItem(fundVersionId, outputVersionId, descItem);
     }
 
     // @Override
@@ -1274,7 +1283,7 @@ class StructureFormActions extends ItemFormActions {
     }
 
     // @Override
-    _callUpdateDescItem(versionId, parentVersionId, parentId, descItem) {
+    _callUpdateDescItem(dispatch, formState, versionId, parentVersionId, parentId, descItem) {
         return WebApi.updateStructureItem(versionId, descItem);
     }
 

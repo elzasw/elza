@@ -57,4 +57,10 @@ public class Structured {
         result.setValue(structObj.getValue());
         return result;
     }
+
+    public static Structured newInstance(String value, NodeLoader nodeLoader) {
+        Structured result = new Structured(nodeLoader);
+        result.setValue(value);
+        return result;
+    }
 }

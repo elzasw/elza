@@ -7,7 +7,11 @@ export class ItemPartyRef extends Item {
     }
 
     toSimpleString() {
-        return this.item.party.record.record;
+        if(this.item.party===undefined||this.item.party===null) {
+            return null;
+        } else {
+            return this.item.party.accessPoint.record;
+        }
     };
 
 }

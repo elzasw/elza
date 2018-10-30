@@ -41,6 +41,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronizationAdapter;
@@ -52,7 +53,6 @@ import cz.tacr.elza.api.enums.ParRelationClassTypeRepeatabilityEnum;
 import cz.tacr.elza.api.enums.UIPartyGroupTypeEnum;
 import cz.tacr.elza.bulkaction.BulkActionConfigManager;
 import cz.tacr.elza.common.AutoDeletingTempFile;
-import cz.tacr.elza.core.AppContext;
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.StaticDataProvider;
@@ -347,6 +347,9 @@ public class PackageService {
 
     @PersistenceContext
     private EntityManager entityManager;
+
+    @Autowired
+    private ApplicationContext applicationContext;
 
     @Autowired
     private PackageRepository packageRepository;
@@ -2306,7 +2309,7 @@ public class PackageService {
                                                final PackageContext puc) {
         List<RulDataType> rulDataTypes = dataTypeRepository.findAll();
 
-        ItemTypeUpdater updater = AppContext.getBean(ItemTypeUpdater.class);
+        ItemTypeUpdater updater = applicationContext.getBean(ItemTypeUpdater.class);
 
         return updater.update(rulDataTypes, itemTypes, itemSpecs, puc);
     }

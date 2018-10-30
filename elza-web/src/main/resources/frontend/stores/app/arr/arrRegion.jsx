@@ -224,6 +224,7 @@ export default function arrRegion(state = initialState, action) {
         case types.FUND_FUND_SELECT_SUBNODE:
         case types.OUTPUT_CHANGES:
         case types.OUTPUT_CHANGES_DETAIL:
+        case types.OUTPUT_INCREASE_VERSION:
         case types.OUTPUT_STATE_CHANGE:
         case types.NODES_DELETE:
         case types.CHANGE_FUND_ACTION:

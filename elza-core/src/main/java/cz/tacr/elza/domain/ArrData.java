@@ -1,5 +1,7 @@
 package cz.tacr.elza.domain;
 
+import java.util.Date;
+
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.Column;
@@ -25,9 +27,6 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.service.cache.NodeCacheSerializable;
-
-import java.time.LocalDate;
-import java.util.Date;
 
 
 /**
@@ -239,4 +238,22 @@ public abstract class ArrData implements NodeCacheSerializable {
 		trg.setDataId(null);
 		return trg;
 	}
+
+    /**
+     * Validate data state
+     * 
+     * Function check if object contains minimum required
+     * information to be save in DB.
+     * 
+     * Method throws RuntimeException if problem is found.
+     */
+    public void validate() {
+        Validate.notNull(this.dataTypeId);
+        validateInternal();
+    }
+
+    /**
+     * Each domain object has to implement its own validation
+     */
+    abstract protected void validateInternal();
 }

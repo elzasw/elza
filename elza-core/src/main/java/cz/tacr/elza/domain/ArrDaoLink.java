@@ -130,4 +130,10 @@ public class ArrDaoLink {
     public void setDeleteChangeId(final Integer deleteChangeId) {
         this.deleteChangeId = deleteChangeId;
     }
+
+    public void setCreateChange(final ArrChange createChange,
+                                final Integer createChangeId) {
+        this.createChange = createChange;
+        this.createChangeId = createChangeId;
+    }
 }

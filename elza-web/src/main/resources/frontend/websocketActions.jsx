@@ -2,6 +2,7 @@ import React from 'react';
 
 import {ApplicationActions, EmailSettingsActions} from 'actions/index.jsx';
 import {webSocketConnect, webSocketDisconnect} from 'actions/global/webSocket.jsx';
+import {onReceivedNodeChange} from "websocketController.jsx";
 import * as arrRequestActions from 'actions/arr/arrRequestActions';
 import * as daoActions from 'actions/arr/daoActions';
 import {store} from 'stores/index.jsx';
@@ -429,9 +430,9 @@ function filesChangeEvent(value) {
 }
 
 function nodesChange(value) {
-    //shouldSkipNodeEvent(value.entityIds,()=>{
-    store.dispatch(changeNodes(value.versionId, value.entityIds));
-    //});
+    if(!onReceivedNodeChange(value.entityIds)) {
+        store.dispatch(changeNodes(value.versionId, value.entityIds));
+    }
 }
 function outputItemChange(value) {
     store.dispatch(changeOutputs(value.versionId, [value.outputDefinitionId]));

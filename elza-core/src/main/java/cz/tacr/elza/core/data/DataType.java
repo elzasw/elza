@@ -6,27 +6,43 @@ import java.util.Map;
 
 import org.apache.commons.lang3.Validate;
 
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataApFragRef;
+import cz.tacr.elza.domain.ArrDataCoordinates;
+import cz.tacr.elza.domain.ArrDataDate;
+import cz.tacr.elza.domain.ArrDataDecimal;
+import cz.tacr.elza.domain.ArrDataFileRef;
+import cz.tacr.elza.domain.ArrDataInteger;
+import cz.tacr.elza.domain.ArrDataJsonTable;
+import cz.tacr.elza.domain.ArrDataNull;
+import cz.tacr.elza.domain.ArrDataPartyRef;
+import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrDataString;
+import cz.tacr.elza.domain.ArrDataStructureRef;
+import cz.tacr.elza.domain.ArrDataText;
+import cz.tacr.elza.domain.ArrDataUnitdate;
+import cz.tacr.elza.domain.ArrDataUnitid;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.repository.DataTypeRepository;
 
 public enum DataType {
-    INT(Integer.MAX_VALUE),
-    STRING(1000),
-    TEXT(Integer.MAX_VALUE),
-    UNITDATE,
-    UNITID(250),
-    FORMATTED_TEXT(Integer.MAX_VALUE),
-    COORDINATES,
-    PARTY_REF,
-    RECORD_REF,
-    DECIMAL(38),
-    STRUCTURED,
-    ENUM,
-    FILE_REF,
-    JSON_TABLE(Integer.MAX_VALUE),
-    DATE,
-    APFRAG_REF;
+    INT(ArrDataInteger.class, Integer.MAX_VALUE),
+    STRING(ArrDataString.class, 1000),
+    TEXT(ArrDataText.class, Integer.MAX_VALUE),
+    UNITDATE(ArrDataUnitdate.class),
+    UNITID(ArrDataUnitid.class, 250),
+    FORMATTED_TEXT(ArrDataText.class, Integer.MAX_VALUE),
+    COORDINATES(ArrDataCoordinates.class),
+    PARTY_REF(ArrDataPartyRef.class),
+    RECORD_REF(ArrDataRecordRef.class),
+    DECIMAL(ArrDataDecimal.class, 38),
+    STRUCTURED(ArrDataStructureRef.class),
+    ENUM(ArrDataNull.class),
+    FILE_REF(ArrDataFileRef.class),
+    JSON_TABLE(ArrDataJsonTable.class, Integer.MAX_VALUE),
+    DATE(ArrDataDate.class),
+    APFRAG_REF(ArrDataApFragRef.class);
 
     private static Map<Integer, DataType> entityIdMap;
 
@@ -34,12 +50,25 @@ public enum DataType {
 
     private RulDataType entity;
 
-    private DataType(Integer valueMaxSize) {
+    private final Class<? extends ArrData> domainClass;
+
+    private DataType(Class<? extends ArrData> domainClass, Integer valueMaxSize) {
+        this.domainClass = domainClass;
         this.valueMaxSize = valueMaxSize;
     }
 
-    private DataType() {
-        this(null);
+    private DataType(Class<? extends ArrData> domainClass) {
+        this(domainClass, null);
+    }
+
+    /**
+     * Check if data class is valid for this type
+     * 
+     * @param dataClass
+     * @return
+     */
+    public boolean isValidClass(Class<? extends ArrData> dataClass) {
+        return (dataClass == domainClass);
     }
 
     /**

@@ -265,6 +265,7 @@ export function fund(state, action) {
             };
         case types.OUTPUT_CHANGES:
         case types.OUTPUT_CHANGES_DETAIL:
+        case types.OUTPUT_INCREASE_VERSION:
         case types.OUTPUT_STATE_CHANGE:
         case types.CHANGE_OUTPUTS: {
             const result = {

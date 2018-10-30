@@ -206,4 +206,51 @@
         <delete tableName="arr_cached_node" />
     </changeSet>
 
+    <!-- Aktualizace opravneni po prejmenovani enum v kodu -->
+    <changeSet id="20180903234905" author="ppyt">
+       <update tableName="usr_permission">
+           <column name="permission" value="AP_SCOPE_RD"/>
+           <where>permission='REG_SCOPE_RD'</where>
+       </update>
+       <update tableName="usr_permission">
+           <column name="permission" value="AP_SCOPE_RD_ALL"/>
+           <where>permission='REG_SCOPE_RD_ALL'</where>
+       </update>
+       <update tableName="usr_permission">
+           <column name="permission" value="AP_SCOPE_WR"/>
+           <where>permission='REG_SCOPE_WR'</where>
+       </update>
+       <update tableName="usr_permission">
+           <column name="permission" value="AP_SCOPE_WR_ALL"/>
+           <where>permission='REG_SCOPE_WR_ALL'</where>
+       </update>
+    </changeSet>
+    
+    <!-- Fix on invalida sequences from 20180226123500 -->
+    <changeSet id="20180903234906" author="ppyt">
+       <!-- Delete incorrect items -->
+       <delete tableName="db_hibernate_sequences">
+         <where>sequence_name='reg_variant_record|variant_record_id'</where>
+       </delete>       
+       <delete tableName="db_hibernate_sequences">
+         <where>sequence_name='reg_record|record_id'</where>
+       </delete>
+       <delete tableName="db_hibernate_sequences">
+         <where>sequence_name='ap_access_point|access_point_id'</where>
+       </delete>
+       <!-- Re insert sequence -->
+        <insert tableName="db_hibernate_sequences">
+            <column name="sequence_name" value="ap_access_point|access_point_id"/>
+            <column name="next_val" value="1"/>
+        </insert>
+        <!-- Set position -->
+        <sql>
+            update db_hibernate_sequences set next_val = (select coalesce(max(access_point_id),0)+20 from ap_access_point) where sequence_name = 'ap_access_point|access_point_id';
+        </sql>        
+    </changeSet>
+
+    <!-- Zneplatneni cache z duvodu nalezeni neplatnych zaznamu v RC verzi -->
+    <changeSet id="20180903234907" author="ppyt">
+        <delete tableName="arr_cached_node" />
+    </changeSet>
 </databaseChangeLog>

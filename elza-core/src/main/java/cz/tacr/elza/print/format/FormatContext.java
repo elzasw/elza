@@ -249,10 +249,12 @@ public class FormatContext {
 
         if (appendText.length() > 0) {
             // begin block
-            if (beginBlockSeparator != null) {
+            if (beginBlockSeparator != null && beginBlockSeparator.length() > 0) {
                 // append begin block if required or some text is already in builder
                 if(useBeginBlockSeparatorAlways || resultBuffer.length()>0)
                 {
+                    // reset pending separator -> block separator is used instead
+                    pendingSeparator = null;
                     appendResult(beginBlockSeparator);
                 }
             }

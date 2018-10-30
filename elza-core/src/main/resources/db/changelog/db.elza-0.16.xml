@@ -351,6 +351,9 @@
         <renameColumn newColumnName="access_point_id" oldColumnName="record_id" tableName="ap_access_point"/>
         <renameColumn newColumnName="access_point_id" oldColumnName="record_id" tableName="par_party"/>
 
+        <!-- This is bug (incorrect value is updated)
+             Is fixed in in db.elza-0.17 / 20180903234906
+            -->
         <update tableName="db_hibernate_sequences">
             <column name="sequence_name" value="reg_record|record_id" />
             <where>sequence_name = 'ap_access_point|access_point_id'</where>
