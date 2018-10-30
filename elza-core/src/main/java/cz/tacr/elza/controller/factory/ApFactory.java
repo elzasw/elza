@@ -215,43 +215,31 @@ public class ApFactory {
         // prepare external ids
         List<ApExternalIdVO> eidsVO = transformList(eids, ApExternalIdVO::newInstance);
         // create VO
-        ApAccessPointVO vo = new ApAccessPointVO();
+        ApAccessPointVO vo = ApAccessPointVO.newInstance(ap);
         vo.setExternalIds(eidsVO);
-        vo.setId(ap.getAccessPointId());
-        vo.setInvalid(ap.getDeleteChange() != null);
         vo.setNames(namesVO);
         vo.setErrorDescription(ap.getErrorDescription());
         vo.setRuleSystemId(ruleSystem == null ? null : ruleSystem.getRuleSystemId());
         vo.setState(ap.getState() == null ? null : ApStateVO.valueOf(ap.getState().name()));
         // vo.setPartyId(partyId);
         vo.setRecord(prefName.getFullName());
-        vo.setScopeId(ap.getScopeId());
-        vo.setTypeId(ap.getApTypeId());
-        vo.setUuid(ap.getUuid());
         if (desc != null) {
             vo.setCharacteristics(desc.getDescription());
         }
 
-        // TODO: remove these properties from client
-        //result.setExternalSystem();
-        //result.setNote();
-        //result.setVersion();
-        //result.setParents();
-        // TODO: client must read AP type from storage by typeId
-        //result.setTypesToRoot();
-        //result.setAddRecord();
-        // TODO: change to more detail history (undo) overview
-        //result.setLastUpdate(findLastUpdate(accessPointData));
-
         return vo;
     }
 
+    /**
+     * Create collection of VO from APs
+     * 
+     * Function guarantees ordering of APs between input and output
+     * 
+     * @param accessPoints
+     * @return Collection of VOs
+     */
     public List<ApAccessPointVO> createVO(final Collection<ApAccessPoint> accessPoints) {
-        if (accessPoints == null) {
-            return null;
-        }
-
-        if (accessPoints.size() == 0) {
+        if (CollectionUtils.isEmpty(accessPoints)) {
             return Collections.emptyList();
         }
 
@@ -464,7 +452,7 @@ public class ApFactory {
                 item = new ApItemAPFragmentRefVO(apItem);
                 break;
             default:
-                throw new NotImplementedException("Nen√≠ implementov√°no: " + dataType.getCode());
+                throw new NotImplementedException("NenÌ implementov·no: " + dataType.getCode());
         }
 
         return item;

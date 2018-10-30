@@ -129,4 +129,17 @@ public class ArrNodeExtension implements NodeExtension {
     public Integer getArrangementExtensionId() {
         return arrangementExtensionId;
     }
+
+    public void setArrangementExtension(final RulArrangementExtension arrangementExtension,
+                                        final Integer arrangementExtensionId) {
+        this.arrangementExtension = arrangementExtension;
+        this.arrangementExtensionId = arrangementExtensionId;
+    }
+
+    public void setCreateChange(final ArrChange createChange,
+                                final Integer createChangeId) {
+        this.createChange = createChange;
+        this.createChangeId = createChangeId;
+
+    }
 }

@@ -82,4 +82,11 @@ public class ArrDataJsonTable extends ArrData  {
         ArrDataJsonTable src = (ArrDataJsonTable) srcData;
         copyValue(src);
     }
+
+    @Override
+    protected void validateInternal() {
+        if (value == null) {
+            throw new NullPointerException("Missing value in table ArrDataJsonTable");
+        }
+    }
 }

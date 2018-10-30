@@ -483,8 +483,9 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
 		        new NumericConfig(1, NumberFormat.getIntegerInstance(), FieldType.NumericType.INT));
 		stringNumericConfigHashMap.put(ArrDescItem.NORMALIZED_FROM_ATT,
 		        new NumericConfig(16, NumberFormat.getNumberInstance(), FieldType.NumericType.LONG));
-		stringNumericConfigHashMap.put(ArrDescItem.NORMALIZED_TO_ATT,
-		        new NumericConfig(16, NumberFormat.getNumberInstance(), FieldType.NumericType.LONG));
+        stringNumericConfigHashMap.put(ArrDescItem.NORMALIZED_TO_ATT,
+                                       new NumericConfig(16, NumberFormat.getNumberInstance(),
+                                               FieldType.NumericType.LONG));
 
         stringNumericConfigHashMap.put(ArrDescItem.FIELD_FUND_ID,
                 new NumericConfig(32, NumberFormat.getNumberInstance(), FieldType.NumericType.INT));

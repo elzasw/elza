@@ -1,9 +1,16 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
+import org.apache.commons.lang.Validate;
 import org.springframework.data.rest.core.annotation.RestResource;
 
-import javax.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
  * Hodnota atributu archivního popisu typu {@link ApFragment}.
@@ -70,6 +77,12 @@ public class ArrDataApFragRef extends ArrData {
     public void mergeInternal(final ArrData srcData) {
         ArrDataApFragRef src = (ArrDataApFragRef) srcData;
         this.copyValue(src);
+    }
+
+    @Override
+    protected void validateInternal() {
+        Validate.notNull(fragment);
+        Validate.notNull(fragmentId);
     }
 
 }

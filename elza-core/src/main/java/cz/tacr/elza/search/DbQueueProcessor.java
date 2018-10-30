@@ -16,9 +16,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationListener;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.event.ContextRefreshedEvent;
 
-import cz.tacr.elza.core.AppContext;
 import cz.tacr.elza.service.IndexWorkService;
 
 /**
@@ -29,6 +29,9 @@ import cz.tacr.elza.service.IndexWorkService;
 public class DbQueueProcessor implements BackendQueueProcessor {
 
     private static final Logger logger = LoggerFactory.getLogger(DbQueueProcessor.class);
+
+    @Autowired
+    ConfigurableApplicationContext appContext;
 
     // --- services ---
 
@@ -48,7 +51,7 @@ public class DbQueueProcessor implements BackendQueueProcessor {
     // --- constructor ---
 
     public DbQueueProcessor() {
-        AppContext.addApplicationListener((ApplicationListener<ContextRefreshedEvent>) event -> {
+        appContext.addApplicationListener((ApplicationListener<ContextRefreshedEvent>) event -> {
             logger.debug("Spring application context init for " + DbQueueProcessor.class);
             AutowireCapableBeanFactory factory = event.getApplicationContext().getAutowireCapableBeanFactory();
             factory.autowireBean(DbQueueProcessor.this);

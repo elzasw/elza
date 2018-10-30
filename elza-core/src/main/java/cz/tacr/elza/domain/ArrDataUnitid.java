@@ -4,6 +4,8 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
+import org.apache.commons.lang.Validate;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import cz.tacr.elza.domain.enumeration.StringLength;
@@ -73,5 +75,10 @@ public class ArrDataUnitid extends ArrData {
     public void mergeInternal(final ArrData srcData) {
         ArrDataUnitid src = (ArrDataUnitid) srcData;
         copyValue(src);
+    }
+
+    @Override
+    protected void validateInternal() {
+        Validate.notNull(unitId);
     }
 }
