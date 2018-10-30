@@ -263,7 +263,7 @@ class AddNodeForm extends AbstractReactComponent {
                         console.error("Nebyla nalezena šablona s názvem: " + template);
                     } else {
                         const template = value[index];
-                        if (template.withValues) {
+                        if (template.formData!=null) {
                             const formData = template.formData;
                             const createItems = [];
                             Object.keys(formData).map(itemTypeId => {

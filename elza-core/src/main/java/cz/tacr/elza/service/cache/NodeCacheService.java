@@ -11,9 +11,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -21,7 +19,6 @@ import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.Validate;
 import org.castor.core.util.Assert;
 import org.hibernate.ScrollableResults;
 import org.slf4j.Logger;
@@ -38,37 +35,19 @@ import com.fasterxml.jackson.databind.introspect.VisibilityChecker;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.collect.Lists;
 
-import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.common.db.HibernateUtils;
-import cz.tacr.elza.core.data.CalendarType;
-import cz.tacr.elza.core.data.DataType;
-import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ArrCachedNode;
-import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDaoLink;
-import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDataFileRef;
-import cz.tacr.elza.domain.ArrDataPartyRef;
-import cz.tacr.elza.domain.ArrDataRecordRef;
-import cz.tacr.elza.domain.ArrDataStructureRef;
-import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeRegister;
-import cz.tacr.elza.domain.ArrStructuredObject;
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.ParPartyName;
-import cz.tacr.elza.domain.ParPartyNameComplement;
-import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.domain.table.ElzaRow;
+import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
-import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.CachedNodeRepository;
 import cz.tacr.elza.repository.DaoLinkRepository;
@@ -77,8 +56,6 @@ import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.FundFileRepository;
 import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.repository.PartyNameComplementRepository;
-import cz.tacr.elza.repository.PartyNameRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
 
@@ -121,8 +98,15 @@ public class NodeCacheService {
     @Autowired
     private PartyRepository partyRepository;
 
+    /*
     @Autowired
-    private ApAccessPointRepository apAccessPointRepository;
+    private PartyNameComplementRepository partyNameComplementRepository;
+    
+    @Autowired
+    private PartyNameRepository partyNameRepository;*/
+
+    @Autowired
+    private ApAccessPointRepository accessPointRepository;
 
     @Autowired
     private FundFileRepository fundFileRepository;
@@ -142,19 +126,15 @@ public class NodeCacheService {
     @Autowired
 	private StaticDataService staticDataService;
 
-    @Autowired
-    private PartyNameComplementRepository partyNameComplementRepository;
-
-    @Autowired
-    private PartyNameRepository partyNameRepository;
-
     public NodeCacheService() {
         mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
         mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
         mapper.setVisibility(new InterfaceVisibilityChecker(NodeCacheSerializable.class,
                 String.class, Number.class, Boolean.class, Iterable.class,
-                LocalDate.class));
+                LocalDate.class, ElzaTable.class, ElzaRow.class,
+                // used in ElzaRow
+                Map.class));
     }
 
     /**
@@ -507,290 +487,13 @@ public class NodeCacheService {
 	private void reloadCachedNodes(final Collection<RestoredNode> cachedNodes) {
 
 		StaticDataProvider sdp = staticDataService.getData();
-
-        Map<ArrDescItem, Integer> itemStructureDataMap = new HashMap<>();
-        Map<ArrDescItem, Integer> itemPartiesMap = new HashMap<>();
-        Map<ArrDescItem, Integer> itemRecordsMap = new HashMap<>();
-        Map<ArrDescItem, Integer> itemFilesMap = new HashMap<>();
-        Map<ArrDaoLink, Integer> daoLinksMap = new HashMap<>();
-        Map<ArrNodeRegister, Integer> nodeRegistersMap = new HashMap<>();
-
-		for (RestoredNode restoredNode : cachedNodes) {
-			ArrNode node = restoredNode.getNode();
-			if (CollectionUtils.isNotEmpty(restoredNode.getDescItems())) {
-				for (ArrDescItem descItem : restoredNode.getDescItems()) {
-					// set node
-					descItem.setNode(node);
-
-					loadDescItemType(descItem, sdp);
-
-					ArrData data = descItem.getData();
-					if (data != null) {
-						// restore dataType
-						if (data instanceof ArrDataStructureRef) {
-						    itemStructureDataMap.put(descItem, ((ArrDataStructureRef) data).getStructuredObjectId());
-						} else if (data instanceof ArrDataPartyRef) {
-							itemPartiesMap.put(descItem, ((ArrDataPartyRef) data).getPartyId());
-						} else if (data instanceof ArrDataRecordRef) {
-							itemRecordsMap.put(descItem, ((ArrDataRecordRef) data).getRecordId());
-						} else if (data instanceof ArrDataFileRef) {
-							itemFilesMap.put(descItem, ((ArrDataFileRef) data).getFileId());
-						} else if (data instanceof ArrDataUnitdate) {
-							loadUnitdate((ArrDataUnitdate) data);
-						}
-                    }
-                }
-            }
-			if (CollectionUtils.isNotEmpty(restoredNode.getDaoLinks())) {
-				for (ArrDaoLink daoLink : restoredNode.getDaoLinks()) {
-                    daoLinksMap.put(daoLink, daoLink.getDaoId());
-                }
-            }
-			if (CollectionUtils.isNotEmpty(restoredNode.getNodeRegisters())) {
-				for (ArrNodeRegister nodeRegister : restoredNode.getNodeRegisters()) {
-                    nodeRegistersMap.put(nodeRegister, nodeRegister.getRecordId());
-                }
-            }
-        }
-
-        fillArrStructureData(itemStructureDataMap);
-        fillParParties(itemPartiesMap);
-        fillApRecords(itemRecordsMap);
-        fillArrFiles(itemFilesMap);
-        fillArrDaoLinks(daoLinksMap);
-        fillArrNodeRegisters(nodeRegistersMap);
-    }
-
-	/**
-	 * Load description item type from rule system provider
-	 *  @param descItem
-	 * @param sdp
-     */
-	private void loadDescItemType(ArrDescItem descItem, StaticDataProvider sdp) {
-		Validate.notNull(descItem.getItemTypeId());
-		ItemType itemType = sdp.getItemTypeById(descItem.getItemTypeId());
-		Validate.notNull(itemType);
-
-		descItem.setItemType(itemType.getEntity());
-
-		Integer itemSpecId = descItem.getItemSpecId();
-		if (itemSpecId != null) {
-			RulItemSpec itemSpec = itemType.getItemSpecById(itemSpecId);
-			Validate.notNull(itemSpec);
-			descItem.setItemSpec(itemSpec);
-		}
-
-		// Restore dataType
-		ArrData data = descItem.getData();
-		if (data != null) {
-			loadDataType(data, itemType);
-		}
-
-	}
-
-	/**
-	 * Load data type and set it
-	 *
-	 * @param data
-	 * @param itemType
-	 */
-	private void loadDataType(ArrData data, ItemType itemType) {
-		DataType dataType = itemType.getDataType();
-		// check that item type match
-        if (dataType.getId() != data.getDataTypeId()) {
-            throw new BusinessException(
-                    "Data inconsistency, dataId = " + data.getDataId(),
-                    BaseCode.DB_INTEGRITY_PROBLEM)
-                            .set("dataId", data.getDataId())
-                            .set("dataTypeId", data.getDataTypeId())
-                            .set("itemTypeId", itemType.getItemTypeId())
-                            .set("itemTypeCode", itemType.getCode())
-                            .set("itemTypeDataTypeId", dataType.getId());
-        }
-
-		data.setDataType(dataType.getEntity());
-	}
-
-	/**
-	 * Load unit date fields
-	 *
-	 * Method sets proper calendar type.
-	 *
-	 * @param data
-	 */
-	private void loadUnitdate(ArrDataUnitdate data) {
-		CalendarType calendarType = CalendarType.fromId(data.getCalendarTypeId());
-		Validate.notNull(calendarType);
-		data.setCalendarType(calendarType.getEntity());
-	}
-
-    /**
-     * Vyplnění návazných entity {@link ApAccessPoint}.
-     *
-     * @param nodeRegistersMap mapa entit k vyplnění
-     */
-    private void fillArrNodeRegisters(final Map<ArrNodeRegister, Integer> nodeRegistersMap) {
-        if (nodeRegistersMap.size() == 0) {
-            return;
-        }
-        List<ApAccessPoint> records = apAccessPointRepository.findAll(nodeRegistersMap.values());
-        Map<Integer, ApAccessPoint> recordsMapFound = new HashMap<>();
-        for (ApAccessPoint record : records) {
-            recordsMapFound.put(record.getAccessPointId(), record);
-        }
-
-        for (Map.Entry<ArrNodeRegister, Integer> entry : nodeRegistersMap.entrySet()) {
-            ArrNodeRegister nodeRegister = entry.getKey();
-            nodeRegister.setRecord(recordsMapFound.get(entry.getValue()));
-        }
-    }
-
-    /**
-     * Vyplnění návazných entity {@link ArrDao}.
-     *
-     * @param daoLinksMap mapa entit k vyplnění
-     */
-    private void fillArrDaoLinks(final Map<ArrDaoLink, Integer> daoLinksMap) {
-        if (daoLinksMap.size() == 0) {
-            return;
-        }
-        List<ArrDao> daos = daoRepository.findAll(daoLinksMap.values());
-        Map<Integer, ArrDao> daosMapFound = new HashMap<>();
-        for (ArrDao dao : daos) {
-            daosMapFound.put(dao.getDaoId(), dao);
-        }
-
-        for (Map.Entry<ArrDaoLink, Integer> entry : daoLinksMap.entrySet()) {
-            ArrDaoLink daoLink = entry.getKey();
-            daoLink.setDao(daosMapFound.get(entry.getValue()));
-        }
-    }
-
-    /**
-     * Vyplnění návazných entity {@link ArrFile}.
-     *
-     * @param itemFilesMap mapa entit k vyplnění
-     */
-    private void fillArrFiles(final Map<ArrDescItem, Integer> itemFilesMap) {
-        if (itemFilesMap.size() == 0) {
-            return;
-        }
-        List<ArrFile> files = fundFileRepository.findAll(itemFilesMap.values());
-        Map<Integer, ArrFile> itemFilesMapFound = new HashMap<>();
-        for (ArrFile file : files) {
-            itemFilesMapFound.put(file.getFileId(), file);
-        }
-
-        for (Map.Entry<ArrDescItem, Integer> entry : itemFilesMap.entrySet()) {
-            ArrDescItem descItem = entry.getKey();
-            ((ArrDataFileRef) descItem.getData()).setFile(itemFilesMapFound.get(entry.getValue()));
-        }
-    }
-
-
-    /**
-     * Vyplnění návazných entity {@link ApAccessPoint}.
-     *
-     * @param itemRecordsMap mapa entit k vyplnění
-     */
-    private void fillApRecords(final Map<ArrDescItem, Integer> itemRecordsMap) {
-        if (itemRecordsMap.size() == 0) {
-            return;
-        }
-        List<ApAccessPoint> records = apAccessPointRepository.findAll(itemRecordsMap.values());
-        Map<Integer, ApAccessPoint> recordsMapFound = new HashMap<>();
-        for (ApAccessPoint record : records) {
-            recordsMapFound.put(record.getAccessPointId(), record);
-        }
-
-        for (Map.Entry<ArrDescItem, Integer> entry : itemRecordsMap.entrySet()) {
-            ArrDescItem descItem = entry.getKey();
-            ((ArrDataRecordRef) descItem.getData()).setRecord(recordsMapFound.get(entry.getValue()));
-        }
-    }
-
-    /**
-     * Vyplnění návazných entity {@link ParParty}.
-     *
-     * @param itemPartiesMap mapa entit k vyplnění
-     */
-    private void fillParParties(final Map<ArrDescItem, Integer> itemPartiesMap) {
-        if (itemPartiesMap.size() == 0) {
-            return;
-        }
-        ObjectListIterator<Integer> iterator = new ObjectListIterator<>(itemPartiesMap.values());
-        Map<Integer, ParParty> partiesMapFound = new HashMap<>();
-        List<ParPartyName> partyNames = new ArrayList<>();
-        while (iterator.hasNext()) {
-            List<Integer> next = iterator.next();
-            List<ParParty> parties = partyRepository.findAllFetch(next);
-            partyNames.addAll(partyNameRepository.findByPartyIds(next));
-            for (ParParty party : parties) {
-                partiesMapFound.put(party.getPartyId(), party);
-            }
-        }
-
-        Map<Integer, List<ParPartyName>> partyNamesMap = partyNames.stream().collect(Collectors.groupingBy(s -> s.getParty().getPartyId()));
-
-        Set<Integer> preferredNameIds = new HashSet<>();
-        for (ParParty party : partiesMapFound.values()) {
-            CollectionUtils.addIgnoreNull(preferredNameIds, party.getPreferredNameId());
-        }
-
-        iterator = new ObjectListIterator<>(preferredNameIds);
-        Map<Integer, List<ParPartyNameComplement>> preferredNameIdComplementsMap = new HashMap<>();
-        while (iterator.hasNext()) {
-            List<ParPartyNameComplement> partyNameComplements = partyNameComplementRepository.findByPartyNameIds(iterator.next());
-            Map<Integer, List<ParPartyNameComplement>> map = partyNameComplements.stream().collect(Collectors.groupingBy(s -> s.getPartyName().getPartyNameId()));
-            map.forEach((k, v) -> preferredNameIdComplementsMap.merge(k, v, (v1, v2) -> {
-                Set<ParPartyNameComplement> set = new TreeSet<>(v1);
-                set.addAll(v2);
-                return new ArrayList<>(set);
-            }));
-        }
-
-        for (ParParty party : partiesMapFound.values()) {
-            if (party.getPreferredNameId() != null) {
-                List<ParPartyNameComplement> partyNameComplements = preferredNameIdComplementsMap.get(party.getPreferredNameId());
-                if (partyNameComplements != null) {
-                    party.getPreferredName().setPartyNameComplements(partyNameComplements);
-                } else {
-                    party.getPreferredName().setPartyNameComplements(Collections.emptyList());
-                }
-            }
-            List<ParPartyName> parPartyNames = partyNamesMap.get(party.getPartyId());
-            if (parPartyNames != null) {
-                party.setPartyNames(parPartyNames);
-            } else {
-                party.setPartyNames(Collections.emptyList());
-            }
-        }
-
-        for (Map.Entry<ArrDescItem, Integer> entry : itemPartiesMap.entrySet()) {
-            ArrDescItem descItem = entry.getKey();
-            ((ArrDataPartyRef) descItem.getData()).setParty(partiesMapFound.get(entry.getValue()));
-        }
-    }
-
-    /**
-     * Vyplnění návazných entity {@link ArrStructuredObject}.
-     *
-     * @param itemStructureDataMap mapa entit k vyplnění
-     */
-    private void fillArrStructureData(final Map<ArrDescItem, Integer> itemStructureDataMap) {
-        if (itemStructureDataMap.size() == 0) {
-            return;
-        }
-        List<ArrStructuredObject> structureDataList = structureDataRepository.findAll(itemStructureDataMap.values());
-        Map<Integer, ArrStructuredObject> structureDataMapFound = new HashMap<>();
-        for (ArrStructuredObject structureData : structureDataList) {
-            structureDataMapFound.put(structureData.getStructuredObjectId(), structureData);
-        }
-
-        for (Map.Entry<ArrDescItem, Integer> entry : itemStructureDataMap.entrySet()) {
-            ArrDescItem descItem = entry.getKey();
-            ((ArrDataStructureRef) descItem.getData()).setStructuredObject(structureDataMapFound.get(entry.getValue()));
-        }
+        RestoreAction ra = new RestoreAction(sdp, entityManager, structureDataRepository,
+                partyRepository, /*partyNameComplementRepository,
+                                 partyNameRepository,*/
+                accessPointRepository,
+                fundFileRepository,
+                daoRepository);
+        ra.restore(cachedNodes);
     }
 
     /**
@@ -827,6 +530,8 @@ public class NodeCacheService {
      * @return výsledek serializace
      */
     private String serialize(final CachedNode cachedNode) {
+        // Validate that node contains all required data
+        cachedNode.validate();
         try {
             return mapper.writeValueAsString(cachedNode);
         } catch (JsonProcessingException e) {
@@ -913,7 +618,7 @@ public class NodeCacheService {
 		List<ArrCachedNode> records = new ArrayList<>(nodes.size());
 
 		for (ArrNode node : nodes) {
-			CachedNode cachedNode = new CachedNode();
+            CachedNode cachedNode = new CachedNode(node.getNodeId(), node.getUuid());
 			String data = serialize(cachedNode);
 
 			ArrCachedNode record = new ArrCachedNode();

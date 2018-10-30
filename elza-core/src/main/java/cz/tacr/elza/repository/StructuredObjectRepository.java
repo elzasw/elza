@@ -27,11 +27,11 @@ public interface StructuredObjectRepository extends JpaRepository<ArrStructuredO
 
     @Query("SELECT sd FROM arr_structured_object sd WHERE sd.structuredType = :structuredType "
             + "AND sd.fund = :fund AND sd.deleteChange IS NULL "
-            + "AND value = :value AND sd.state in ('OK','ERROR') "
+            + "AND sd.sortValue = :sortValue AND sd.state in ('OK','ERROR') "
             + "AND sd <> :ignoreSobj")
     List<ArrStructuredObject> findValidByStructureTypeAndFund(@Param("structuredType") RulStructuredType structuredType,
                                                               @Param("fund") ArrFund fund,
-                                                              @Param("value") String value,
+                                                              @Param("sortValue") String sortValue,
                                                               @Param("ignoreSobj") ArrStructuredObject ignoreSobj);
 
     @Query("SELECT sd.structuredObjectId FROM arr_structured_object sd WHERE sd.structuredType = :structuredType "
@@ -73,5 +73,25 @@ public interface StructuredObjectRepository extends JpaRepository<ArrStructuredO
             "JOIN arr_data_structure_ref ds ON ds.structuredObject = so " +
             "WHERE so.state = 'TEMP'")
     List<ArrStructuredObject> findConnectedTempObjs();
+
+    /**
+     * Count number of structured objects within two changeIds
+     * 
+     * @param fundId
+     * @param fromChange
+     *            Higher change id
+     * @param toChange
+     *            Lower change id
+     * @return
+     */
+    @Query("SELECT COUNT(so) FROM arr_structured_object so WHERE so.fundId = :fundId and " +
+            "( " +
+            " (so.createChangeId>=:toChangeId AND so.createChangeId<=:fromChangeId) OR " +
+            " (so.deleteChangeId is not null AND so.deleteChangeId>=:toChangeId AND so.deleteChangeId<=:fromChangeId) "
+            +
+            ")")
+    int countItemsWithinChangeRange(@Param("fundId") Integer fundId,
+                                    @Param("fromChangeId") Integer fromChangeId,
+                                    @Param("toChangeId") Integer toChangeId);
 
 }
