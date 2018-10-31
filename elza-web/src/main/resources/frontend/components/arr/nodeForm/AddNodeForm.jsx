@@ -251,6 +251,7 @@ class AddNodeForm extends AbstractReactComponent {
                 scenarioName: selectedScenario === TEMPLATE_SCENARIOS ? null : selectedScenario
             };
 
+            const emptyItemTypeIds = []; // seznam identifikátorů prázdných typů atributu, které se mají po založení přidat na formulář (použití pro šablony)
             if (selectedScenario === TEMPLATE_SCENARIOS) {
                 if (activeFund) {
                     let settings = userDetail.settings;
@@ -275,6 +276,8 @@ class AddNodeForm extends AbstractReactComponent {
                                             itemTypeId: itemTypeId
                                         };
                                         createItems.push(newItem);
+                                    } else {
+                                        emptyItemTypeIds.push(parseInt(itemTypeId));
                                     }
                                 });
                             });
@@ -287,7 +290,7 @@ class AddNodeForm extends AbstractReactComponent {
                 }
             }
 
-            onSubmit(submitData, 'NEW');
+            onSubmit(submitData, 'NEW', null, emptyItemTypeIds);
         } else if (this.state.selectedSourceAS === 'FILE') {
 
             const submitData = {

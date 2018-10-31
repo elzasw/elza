@@ -66,6 +66,7 @@ export class ItemFormActions {
                 case types.FUND_SUB_NODE_FORM_VALUE_DELETE:
                 case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_DELETE:
                 case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_ADD:
+                case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPES_ADD_TEMPLATE:
                 case types.FUND_SUB_NODE_FORM_TEMPLATE_USE:
                 case types.FUND_SUB_NODE_FORM_VALUE_RESPONSE:
                 case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_COPY_FROM_PREV_RESPONSE:
@@ -695,7 +696,7 @@ export class ItemFormActions {
         }
     }
 
-    fundSubNodeFormTemplateUse(versionId, routingKey, template, replaceValues) {
+    fundSubNodeFormTemplateUse(versionId, routingKey, template, replaceValues, addItemTypeIds) {
         return (dispatch, getState) => {
             const state = getState();
             dispatch({
@@ -705,7 +706,8 @@ export class ItemFormActions {
                 routingKey,
                 template,
                 replaceValues,
-                groups: state.refTables.groups.data
+                groups: state.refTables.groups.data,
+                addItemTypeIds
             });
             dispatch({
                 type: types.FUND_TEMPLATE_USE,
