@@ -15,7 +15,6 @@ import org.springframework.transaction.jta.JtaTransactionManager;
 import cz.tacr.elza.core.data.StaticDataTransactionInterceptor;
 
 @Configuration
-@DependsOn("appContext")
 public class HibernateConfiguration extends HibernateJpaAutoConfiguration {
 
     public HibernateConfiguration(DataSource dataSource,
