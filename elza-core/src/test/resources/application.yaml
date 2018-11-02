@@ -29,6 +29,8 @@ spring:
                 default:
                     indexBase: ${elza.workingDir}/lucene/indexes/
                     directory_provider: filesystem
+                    worker:
+                      backend: cz.tacr.elza.search.DbQueueProcessor
 
             dialect: org.hibernate.spatial.dialect.h2geodb.GeoDBDialect
 
