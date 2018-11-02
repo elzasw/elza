@@ -532,20 +532,6 @@ public class RevertingChangesService {
                 throw new BusinessException("Existuje blokující změna v JP", ArrangementCode.EXISTS_BLOCKING_CHANGE);
             }
         }
-        // check if change includes structured types
-        // unsupported operation till 1.1 (MT11)
-        int itemsCnt = structuredItemRepository.countItemsWithinChangeRange(fundId, fromChange.getChangeId(),
-                                                                            toChange.getChangeId());
-        if (itemsCnt > 0) {
-            throw new BusinessException("Změna ve strukturovaném objektu, změnu bude možné vrátit až od verze 1.1",
-                    ArrangementCode.EXISTS_BLOCKING_CHANGE);
-        }
-        itemsCnt = structuredObjectRepository.countItemsWithinChangeRange(fundId, fromChange.getChangeId(),
-                                                                          toChange.getChangeId());
-        if (itemsCnt > 0) {
-            throw new BusinessException("Změna ve strukturovaném objektu, změnu bude možné vrátit až od verze 1.1",
-                    ArrangementCode.EXISTS_BLOCKING_CHANGE);
-        }
     }
 
     private Query createUpdateOutputQuery(final @NotNull ArrFund fund, final @Nullable ArrNode node, final @NotNull ArrChange toChange) {

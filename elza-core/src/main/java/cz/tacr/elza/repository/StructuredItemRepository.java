@@ -73,22 +73,4 @@ public interface StructuredItemRepository extends JpaRepository<ArrStructuredIte
 
     void deleteByStructuredObjectFund(ArrFund fund);
 
-    /**
-     * Count number of structured items within two changeIds
-     * 
-     * @param fundId
-     * @param fromChange
-     *            Higher change id
-     * @param toChange
-     *            Lower change id
-     * @return
-     */
-    @Query("SELECT COUNT(i) FROM arr_structured_item i WHERE i.structuredObject.fundId = :fundId and " +
-            "( " + 
-            " (i.createChangeId>=:toChangeId AND i.createChangeId<=:fromChangeId) OR "+
-            " (i.deleteChangeId is not null AND i.deleteChangeId>=:toChangeId AND i.deleteChangeId<=:fromChangeId) " +
-            ")")
-    int countItemsWithinChangeRange(@Param("fundId") Integer fundId,
-                                    @Param("fromChangeId") Integer fromChange,
-                                    @Param("toChangeId") Integer toChangeId);
 }
