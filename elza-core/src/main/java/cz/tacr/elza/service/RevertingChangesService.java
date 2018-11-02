@@ -276,71 +276,105 @@ public class RevertingChangesService {
         Query nodeIdsQuery = findChangeNodeIdsQuery(fund, node, toChange);
         Set<Integer> nodeIdsChange = new HashSet<>(nodeIdsQuery.getResultList());
 
-        Query updateEntityQuery;
-        Query deleteEntityQuery;
-
-        deleteEntityQuery = createConformityDeleteForeignEntityQuery(fund, node, /*toChange,*/ "arr_node_conformity_error");
-        deleteEntityQuery.executeUpdate();
-
-        deleteEntityQuery = createConformityDeleteForeignEntityQuery(fund, node, /*toChange,*/ "arr_node_conformity_missing");
-        deleteEntityQuery.executeUpdate();
-
-        deleteEntityQuery = createConformityDeleteEntityQuery(fund, node/*, toChange*/);
-        deleteEntityQuery.executeUpdate();
+        {
+            Query deleteEntityQuery = createConformityDeleteForeignEntityQuery(fund, node, /*toChange,*/ "arr_node_conformity_error");
+            deleteEntityQuery.executeUpdate();
+        }
+        {
+            Query deleteEntityQuery = createConformityDeleteForeignEntityQuery(fund, node, /*toChange,*/ "arr_node_conformity_missing");
+            deleteEntityQuery.executeUpdate();
+        }
+        {
+            Query deleteEntityQuery = createConformityDeleteEntityQuery(fund, node/*, toChange*/);
+            deleteEntityQuery.executeUpdate();
+        }
 
         // drop used/fixed values
         usedValueRepository.deleteToChange(fund, toChange.getChangeId());
 
-        updateEntityQuery = createSimpleUpdateEntityQuery(fund, node, "deleteChange", "arr_level", toChange);
-        deleteEntityQuery = createSimpleDeleteEntityQuery(fund, node, "createChange", "arr_level", toChange);
-        updateEntityQuery.executeUpdate();
-        deleteEntityQuery.executeUpdate();
+        {
+            Query updateEntityQuery = createSimpleUpdateEntityQuery(fund, node, "deleteChange", "arr_level", toChange);
+            Query deleteEntityQuery = createSimpleDeleteEntityQuery(fund, node, "createChange", "arr_level", toChange);
+            updateEntityQuery.executeUpdate();
+            deleteEntityQuery.executeUpdate();
+        }
 
-        updateEntityQuery = createSimpleUpdateEntityQuery(fund, node, "deleteChange", "arr_node_register", toChange);
-        deleteEntityQuery = createSimpleDeleteEntityQuery(fund, node, "createChange", "arr_node_register", toChange);
-        updateEntityQuery.executeUpdate();
-        deleteEntityQuery.executeUpdate();
+        {
+            Query updateEntityQuery = createSimpleUpdateEntityQuery(fund, node, "deleteChange", "arr_node_register", toChange);
+            Query deleteEntityQuery = createSimpleDeleteEntityQuery(fund, node, "createChange", "arr_node_register", toChange);
+            updateEntityQuery.executeUpdate();
+            deleteEntityQuery.executeUpdate();
+        }
 
-        updateEntityQuery = createSimpleUpdateEntityQuery(fund, node, "deleteChange", "arr_node_extension", toChange);
-        deleteEntityQuery = createSimpleDeleteEntityQuery(fund, node, "createChange", "arr_node_extension", toChange);
-        updateEntityQuery.executeUpdate();
-        deleteEntityQuery.executeUpdate();
+        {
+            Query updateEntityQuery = createSimpleUpdateEntityQuery(fund, node, "deleteChange", "arr_node_extension", toChange);
+            Query deleteEntityQuery = createSimpleDeleteEntityQuery(fund, node, "createChange", "arr_node_extension", toChange);
+            updateEntityQuery.executeUpdate();
+            deleteEntityQuery.executeUpdate();
+        }
 
-        updateEntityQuery = createSimpleUpdateEntityQuery(fund, node, "deleteChange", "arr_dao_link", toChange);
-        deleteEntityQuery = createSimpleDeleteEntityQuery(fund, node, "createChange", "arr_dao_link", toChange);
-        updateEntityQuery.executeUpdate();
-        deleteEntityQuery.executeUpdate();
+        {
+            Query updateEntityQuery = createSimpleUpdateEntityQuery(fund, node, "deleteChange", "arr_dao_link", toChange);
+            Query deleteEntityQuery = createSimpleDeleteEntityQuery(fund, node, "createChange", "arr_dao_link", toChange);
+            updateEntityQuery.executeUpdate();
+            deleteEntityQuery.executeUpdate();
+        }
 
-        updateEntityQuery = createExtendUpdateEntityQuery(fund, node, "deleteChange", "arr_desc_item", "arr_item", toChange);
-        updateEntityQuery.executeUpdate();
+        {
+            Query updateEntityQuery = createExtendUpdateEntityQuery(fund, node, "deleteChange", "arr_desc_item", "arr_item", toChange);
+            updateEntityQuery.executeUpdate();
 
-        TypedQuery<ArrData> arrDataQuery = findChangeArrDataQuery(fund, node, toChange);
-        Set<ArrData> arrDataList = new HashSet<>(arrDataQuery.getResultList());
+            TypedQuery<ArrData> arrDataQuery = findChangeArrDataQuery(fund, node, toChange);
+            Set<ArrData> arrDataList = new HashSet<>(arrDataQuery.getResultList());
 
-        /*deleteEntityQuery = createDeleteForeignEntityQuery(fund, node, "createChange", "arr_desc_item", "item", "arr_data", toChange);
-        deleteEntityQuery.executeUpdate();*/
+            /*
+            Query deleteEntityQuery = createDeleteForeignEntityQuery(fund, node, "createChange", "arr_desc_item", "item", "arr_data", toChange);
+            deleteEntityQuery.executeUpdate();
+            */
 
-        deleteEntityQuery = createExtendDeleteEntityQuery(fund, node, "createChange", "arr_desc_item", /*"item",*/ "arr_item", toChange);
-        deleteEntityQuery.executeUpdate();
+            Query deleteEntityQuery = createExtendDeleteEntityQuery(fund, node, "createChange", "arr_desc_item", /*"item",*/ "arr_item", toChange);
+            deleteEntityQuery.executeUpdate();
 
-        dataRepository.delete(arrDataList);
+            dataRepository.delete(arrDataList);
+        }
 
-        updateEntityQuery = createUpdateOutputQuery(fund, node, toChange);
-        updateEntityQuery.executeUpdate();
+        {
+            createFundStructureExtUpdateEntityQuery(fund, toChange).executeUpdate();
+            createFundStructureExtDeleteEntityQuery(fund, toChange).executeUpdate();
 
-        updateEntityQuery = createSimpleUpdateEntityQuery(fund, node, "deleteChange", "arr_node_output", toChange);
-        deleteEntityQuery = createSimpleDeleteEntityQuery(fund, node, "createChange", "arr_node_output", toChange);
-        updateEntityQuery.executeUpdate();
-        deleteEntityQuery.executeUpdate();
+            createStructuredItemUpdateEntityQuery(fund, toChange).executeUpdate();
+            createStructuredItemDeleteEntityQuery(fund, toChange).executeUpdate();
 
-        updateEntityQuery = createUpdateActionQuery(fund, node, toChange);
-        updateEntityQuery.executeUpdate();
+            createSobjVrequestDeleteEntityQuery(fund, toChange).executeUpdate();
 
-        deleteEntityQuery = createDeleteActionNodeQuery(fund, node, toChange);
-        deleteEntityQuery.executeUpdate();
+            createStructuredObjectUpdateEntityQuery(fund, toChange).executeUpdate();
+            createStructuredObjectDeleteEntityQuery(fund, toChange).executeUpdate();
+        }
 
-        deleteEntityQuery = createDeleteActionRunQuery(fund, toChange);
-        deleteEntityQuery.executeUpdate();
+        {
+            Query updateEntityQuery = createUpdateOutputQuery(fund, node, toChange);
+            updateEntityQuery.executeUpdate();
+        }
+
+        {
+            Query updateEntityQuery = createSimpleUpdateEntityQuery(fund, node, "deleteChange", "arr_node_output", toChange);
+            Query deleteEntityQuery = createSimpleDeleteEntityQuery(fund, node, "createChange", "arr_node_output", toChange);
+            updateEntityQuery.executeUpdate();
+            deleteEntityQuery.executeUpdate();
+        }
+
+        {
+            Query updateEntityQuery = createUpdateActionQuery(fund, node, toChange);
+            updateEntityQuery.executeUpdate();
+        }
+        {
+            Query deleteEntityQuery = createDeleteActionNodeQuery(fund, node, toChange);
+            deleteEntityQuery.executeUpdate();
+        }
+        {
+            Query deleteEntityQuery = createDeleteActionRunQuery(fund, toChange);
+            deleteEntityQuery.executeUpdate();
+        }
 
         Query deleteNotUseChangesQuery = createDeleteNotUseChangesQuery();
         deleteNotUseChangesQuery.executeUpdate();
@@ -430,11 +464,22 @@ public class RevertingChangesService {
 
         Query query = entityManager.createNativeQuery(queryString);
 
-        query.setParameter("types", Arrays.asList(ArrChange.Type.ADD_RECORD_NODE.name(),
+        query.setParameter("types", Arrays.asList(
+                ArrChange.Type.ADD_RECORD_NODE.name(),
                 ArrChange.Type.DELETE_RECORD_NODE.name(),
                 ArrChange.Type.UPDATE_DESC_ITEM.name(),
                 ArrChange.Type.ADD_DESC_ITEM.name(),
-                ArrChange.Type.DELETE_DESC_ITEM.name()));
+                ArrChange.Type.DELETE_DESC_ITEM.name(),
+                ArrChange.Type.ADD_STRUCTURE_DATA.name(),
+                ArrChange.Type.ADD_STRUCTURE_DATA_BATCH.name(),
+                ArrChange.Type.UPDATE_STRUCT_DATA_BATCH.name(),
+                ArrChange.Type.DELETE_STRUCTURE_DATA.name(),
+                ArrChange.Type.ADD_STRUCTURE_ITEM.name(),
+                ArrChange.Type.UPDATE_STRUCTURE_ITEM.name(),
+                ArrChange.Type.DELETE_STRUCTURE_ITEM.name(),
+                ArrChange.Type.ADD_FUND_STRUCTURE_EXT.name(),
+                ArrChange.Type.SET_FUND_STRUCTURE_EXT.name(),
+                ArrChange.Type.DELETE_FUND_STRUCTURE_EXT.name()));
 
         query.setParameter("fundId", fundId);
 
@@ -661,7 +706,7 @@ public class RevertingChangesService {
 
     /**
      * Delete from ARR_CHANGE unused change_ids
-     * 
+     *
      * @return
      */
     public Query createDeleteNotUseChangesQuery() {
@@ -675,7 +720,7 @@ public class RevertingChangesService {
                 {"arr_node_register", "deleteChange"},
                 {"arr_node_extension", "createChange"},
                 {"arr_node_extension", "deleteChange"},
-                
+
                 {"arr_fund_version", "createChange"},
                 {"arr_fund_version", "lockChange"},
                 {"arr_bulk_action_run", "change"},
@@ -684,10 +729,10 @@ public class RevertingChangesService {
                 {"arr_node_output", "createChange"},
                 {"arr_node_output", "deleteChange"},
                 {"arr_output_result", "change"},
-                
+
                 {"arr_dao_link", "createChange"},
                 {"arr_dao_link", "deleteChange"},
-                
+
                 {"arr_request_queue_item", "createChange"},
                 {"arr_request", "createChange"},
 
@@ -720,6 +765,7 @@ public class RevertingChangesService {
 
         String hqlSubSelect = String.format("SELECT i.%2$s FROM %1$s i WHERE %2$s IN (%3$s)", subTable, changeNameColumn, nodesHql);
         String hql = String.format("UPDATE %1$s SET %2$s = NULL WHERE %2$s IN (%3$s)", table, changeNameColumn, hqlSubSelect);
+
         Query query = entityManager.createQuery(hql);
 
         // nastavení parametrů dotazu
@@ -752,6 +798,120 @@ public class RevertingChangesService {
         if (node != null) {
             query.setParameter("node", node);
         }
+
+        return query;
+    }
+
+    private Query createStructuredItemDeleteEntityQuery(@NotNull final ArrFund fund, @NotNull final ArrChange change) {
+
+        String hql = "DELETE FROM arr_structured_item i WHERE i.itemId IN (" +
+                " SELECT si.itemId FROM arr_structured_item si" +
+                " JOIN si.structuredObject so" +
+                " WHERE so.fund = :fund" +
+                " AND si.createChange >= :change" +
+                ")";
+
+        Query query = entityManager.createQuery(hql);
+
+        // nastavení parametrů dotazu
+        query.setParameter("fund", fund);
+        query.setParameter("change", change);
+
+        return query;
+    }
+
+    private Query createStructuredItemUpdateEntityQuery(@NotNull final ArrFund fund, @NotNull final ArrChange change) {
+
+        String hql = "UPDATE arr_structured_item i SET i.deleteChange = NULL WHERE i.itemId IN (" +
+                " SELECT si.itemId FROM arr_structured_item si" +
+                " JOIN si.structuredObject so" +
+                " WHERE so.fund = :fund" +
+                " AND si.deleteChange >= :change" +
+                ")";
+
+        Query query = entityManager.createQuery(hql);
+
+        // nastavení parametrů dotazu
+        query.setParameter("fund", fund);
+        query.setParameter("change", change);
+
+        return query;
+    }
+
+    private Query createSobjVrequestDeleteEntityQuery(@NotNull final ArrFund fund, @NotNull final ArrChange change) {
+
+        String hql = "DELETE FROM arr_sobj_vrequest r" +
+                " WHERE r.structuredObject IN (" +
+                " SELECT so FROM arr_structured_object so" +
+                " WHERE so.fund = :fund" +
+                " AND so.createChange >= :change" +
+                ")";
+
+        Query query = entityManager.createQuery(hql);
+
+        // nastavení parametrů dotazu
+        query.setParameter("fund", fund);
+        query.setParameter("change", change);
+
+        return query;
+    }
+
+    private Query createStructuredObjectDeleteEntityQuery(@NotNull final ArrFund fund, @NotNull final ArrChange change) {
+
+        String hql = "DELETE FROM arr_structured_object so" +
+                " WHERE so.fund = :fund" +
+                " AND so.createChange >= :change";
+
+        Query query = entityManager.createQuery(hql);
+
+        // nastavení parametrů dotazu
+        query.setParameter("fund", fund);
+        query.setParameter("change", change);
+
+        return query;
+    }
+
+    private Query createStructuredObjectUpdateEntityQuery(@NotNull final ArrFund fund, @NotNull final ArrChange change) {
+
+        String hql = "UPDATE arr_structured_object so SET so.deleteChange = NULL" +
+                " WHERE so.fund = :fund" +
+                " AND so.deleteChange >= :change";
+
+        Query query = entityManager.createQuery(hql);
+
+        // nastavení parametrů dotazu
+        query.setParameter("fund", fund);
+        query.setParameter("change", change);
+
+        return query;
+    }
+
+    private Query createFundStructureExtDeleteEntityQuery(@NotNull final ArrFund fund, @NotNull final ArrChange change) {
+
+        String hql = "DELETE FROM arr_fund_structure_extension ext" +
+                " WHERE ext.fund = :fund" +
+                " AND ext.createChange >= :change";
+
+        Query query = entityManager.createQuery(hql);
+
+        // nastavení parametrů dotazu
+        query.setParameter("fund", fund);
+        query.setParameter("change", change);
+
+        return query;
+    }
+
+    private Query createFundStructureExtUpdateEntityQuery(@NotNull final ArrFund fund, @NotNull final ArrChange change) {
+
+        String hql = "UPDATE arr_fund_structure_extension ext SET ext.deleteChange = NULL" +
+                " WHERE ext.fund = :fund" +
+                " AND ext.deleteChange >= :change";
+
+        Query query = entityManager.createQuery(hql);
+
+        // nastavení parametrů dotazu
+        query.setParameter("fund", fund);
+        query.setParameter("change", change);
 
         return query;
     }
@@ -952,12 +1112,23 @@ public class RevertingChangesService {
             }
 
             if (isNodeContext) {
-                if ((change.getType() != null &&
-                        !Arrays.asList(ArrChange.Type.ADD_RECORD_NODE,
-                                ArrChange.Type.DELETE_RECORD_NODE,
-                                ArrChange.Type.UPDATE_DESC_ITEM,
-                                ArrChange.Type.ADD_DESC_ITEM,
-                                ArrChange.Type.DELETE_DESC_ITEM).contains(change.getType())) || change.getNodeChanges() > 1) {
+                if ((change.getType() != null && !Arrays.asList(
+                        ArrChange.Type.ADD_RECORD_NODE,
+                        ArrChange.Type.DELETE_RECORD_NODE,
+                        ArrChange.Type.UPDATE_DESC_ITEM,
+                        ArrChange.Type.ADD_DESC_ITEM,
+                        ArrChange.Type.DELETE_DESC_ITEM,
+                        ArrChange.Type.ADD_STRUCTURE_DATA,
+                        ArrChange.Type.ADD_STRUCTURE_DATA_BATCH,
+                        ArrChange.Type.UPDATE_STRUCT_DATA_BATCH,
+                        ArrChange.Type.DELETE_STRUCTURE_DATA,
+                        ArrChange.Type.ADD_STRUCTURE_ITEM,
+                        ArrChange.Type.UPDATE_STRUCTURE_ITEM,
+                        ArrChange.Type.DELETE_STRUCTURE_ITEM,
+                        ArrChange.Type.ADD_FUND_STRUCTURE_EXT,
+                        ArrChange.Type.SET_FUND_STRUCTURE_EXT,
+                        ArrChange.Type.DELETE_FUND_STRUCTURE_EXT)
+                        .contains(change.getType())) || change.getNodeChanges() > 1) {
                     canRevert = false;
                 }
             }
@@ -1122,6 +1293,24 @@ public class RevertingChangesService {
                 "      SELECT create_change_id, node_id, 1 AS weight FROM arr_dao_link WHERE node_id IN (%2$s)\n" +
                 "      UNION ALL\n" +
                 "      SELECT delete_change_id, node_id, 1 AS weight FROM arr_dao_link WHERE node_id IN (%2$s)\n" +
+                "      UNION ALL\n" +
+                "      SELECT delete_change_id, null, 1 AS weight FROM arr_fund_structure_extension ext WHERE ext.fund_id = :fundId\n" +
+                "      UNION ALL\n" +
+                "      SELECT create_change_id, null, 1 AS weight FROM arr_fund_structure_extension ext WHERE ext.fund_id = :fundId\n" +
+                "      UNION ALL\n" +
+                "      SELECT i.create_change_id, null, 1 AS weight FROM arr_structured_item si\n" +
+                "            JOIN arr_item i ON i.item_id = si.item_id\n" +
+                "            JOIN arr_structured_object so ON so.structured_object_id = si.structured_object_id\n" +
+                "            WHERE so.fund_id = :fundId\n" +
+                "      UNION ALL\n" +
+                "      SELECT i.delete_change_id, null, 1 AS weight FROM arr_structured_item si\n" +
+                "            JOIN arr_item i ON i.item_id = si.item_id\n" +
+                "            JOIN arr_structured_object so ON so.structured_object_id = si.structured_object_id\n" +
+                "            WHERE so.fund_id = :fundId\n" +
+                "      UNION ALL\n" +
+                "      SELECT delete_change_id, null, 1 AS weight FROM arr_structured_object so WHERE so.fund_id = :fundId AND so.state <> '" + ArrStructuredObject.State.TEMP.name() + "'\n" +
+                "      UNION ALL\n" +
+                "      SELECT create_change_id, null, 1 AS weight FROM arr_structured_object so WHERE so.fund_id = :fundId AND so.state <> '" + ArrStructuredObject.State.TEMP.name() + "'\n" +
                 "      UNION ALL\n" +
                 "      SELECT change_id, null, 0 AS weight FROM arr_bulk_action_run r JOIN arr_fund_version v ON r.fund_version_id = v.fund_version_id WHERE v.fund_id = :fundId AND r.state = '" + ArrBulkActionRun.State.FINISHED + "'\n" +
                 //                "    ) chlx ORDER BY change_id DESC\n" +
