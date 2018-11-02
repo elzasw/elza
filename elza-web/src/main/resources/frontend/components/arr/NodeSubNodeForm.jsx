@@ -32,8 +32,7 @@ import TemplateForm, {EXISTS_TEMPLATE, NEW_TEMPLATE} from "./TemplateForm";
 import TemplateUseForm from "./TemplateUseForm";
 import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx'
 import DescItemFactory from "components/arr/nodeForm/DescItemFactory.jsx";
-import { CLS_ITEM_ENUM } from "../../shared/factory/factoryConsts";
-import * as types from "../../actions/constants/ActionTypes";
+import {CLS, CLS_ITEM_ENUM} from "../../shared/factory/factoryConsts";
 
 require('./NodeSubNodeForm.less');
 
@@ -317,7 +316,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
                         const itemCls = factory.createClass(item);
                         const newItem = itemCls.copyItem(withValues);
                         // enums are always stored
-                        if(withValues || item[factory.CLS] === factory.CLS_ITEM_ENUM) {
+                        if(withValues || item[CLS] === CLS_ITEM_ENUM) {
                             newItem.strValue = itemCls.toSimpleString();
                         }
                         items.push(newItem);
