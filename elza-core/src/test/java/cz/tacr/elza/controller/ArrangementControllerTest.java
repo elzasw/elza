@@ -114,7 +114,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    public void fundFulltextTest() {
+    public void fundFulltextTest() throws InterruptedException {
 
         final String value = "aaa";
         final int count = 2;
@@ -123,6 +123,9 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         for (int i = 0; i < 3; i++) {
             funds.add(createFundFulltext(i, count, value));
         }
+
+        // je třeba počkat na asychronné přeindexování (možná by se mělo řešit úplně jinak)
+        Thread.sleep(1000);
 
         try {
 
