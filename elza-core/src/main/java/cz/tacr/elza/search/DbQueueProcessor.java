@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import cz.tacr.elza.exception.SystemException;
 import org.hibernate.search.backend.IndexingMonitor;
 import org.hibernate.search.backend.LuceneWork;
 import org.hibernate.search.backend.spi.BackendQueueProcessor;
@@ -31,18 +32,13 @@ public class DbQueueProcessor implements BackendQueueProcessor {
 
     private static final Logger logger = LoggerFactory.getLogger(DbQueueProcessor.class);
 
-    @Autowired
-    ApplicationContext applicationContext;
 
     // --- services ---
 
-    @Autowired
-    private IndexWorkService indexWorkService;
+    private static IndexWorkService indexWorkService;
+    private static IndexWorkProcessor indexWorkProcessor;
 
     // --- fields ---
-
-    @Autowired
-    private IndexWorkProcessor indexWorkProcessor;
 
     private Properties props;
     private IndexManager indexManager;
@@ -52,12 +48,16 @@ public class DbQueueProcessor implements BackendQueueProcessor {
     // --- constructor ---
 
     public DbQueueProcessor() {
-        ConfigurableApplicationContext confAppContext = (ConfigurableApplicationContext) applicationContext;
-        confAppContext.addApplicationListener((ApplicationListener<ContextRefreshedEvent>) event -> {
-            logger.debug("Spring application context init for " + DbQueueProcessor.class);
-            AutowireCapableBeanFactory factory = event.getApplicationContext().getAutowireCapableBeanFactory();
-            factory.autowireBean(DbQueueProcessor.this);
-        });
+    }
+
+    /**
+     * Doinicializace potřebných bean při startu.
+     *
+     * @param applicationContext
+     */
+    public static void startInit(final ApplicationContext applicationContext) {
+        DbQueueProcessor.indexWorkService = applicationContext.getBean(IndexWorkService.class);
+        DbQueueProcessor.indexWorkProcessor = applicationContext.getBean(IndexWorkProcessor.class);
     }
 
     // --- methods ---
@@ -71,12 +71,22 @@ public class DbQueueProcessor implements BackendQueueProcessor {
         this.searchIntegrator = context.getUninitializedSearchIntegrator();
     }
 
+    /**
+     * Kontrola nainicialozování používaných bean.
+     */
+    private void checkBeans() {
+        if (indexWorkService == null || indexWorkProcessor == null) {
+            throw new SystemException("Nebyly inicializované závislé beany!");
+        }
+    }
+
     @Override
     public void close() {
     }
 
     @Override
     public void applyWork(List<LuceneWork> luceneWorkList, IndexingMonitor monitor) {
+        checkBeans();
 
         // nektere tasky nemaji ID (napr. PurgeAllLuceneWork) - ty zpracujeme synchronne
         List<LuceneWork> syncList = new ArrayList<>(luceneWorkList.size());
@@ -100,6 +110,7 @@ public class DbQueueProcessor implements BackendQueueProcessor {
 
     @Override
     public void applyStreamWork(LuceneWork luceneWork, IndexingMonitor monitor) {
+        checkBeans();
         // nektere tasky nemaji ID (napr. PurgeAllLuceneWork) - ty zpracujeme synchronne
         if (luceneWork.getId() == null) {
             indexManager.performStreamOperation(luceneWork, monitor, false);
