@@ -9,7 +9,6 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
-import cz.tacr.elza.controller.factory.RuleFactory;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +22,7 @@ import cz.tacr.elza.bulkaction.BulkActionConfig;
 import cz.tacr.elza.bulkaction.generator.PersistentSortRunConfig;
 import cz.tacr.elza.common.GeometryConvertor;
 import cz.tacr.elza.controller.factory.ApFactory;
+import cz.tacr.elza.controller.factory.RuleFactory;
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.controller.vo.ApScopeVO;
 import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
@@ -45,6 +45,8 @@ import cz.tacr.elza.controller.vo.ArrOutputVO;
 import cz.tacr.elza.controller.vo.BulkActionRunVO;
 import cz.tacr.elza.controller.vo.BulkActionVO;
 import cz.tacr.elza.controller.vo.DmsFileVO;
+import cz.tacr.elza.controller.vo.IssueStateVO;
+import cz.tacr.elza.controller.vo.IssueTypeVO;
 import cz.tacr.elza.controller.vo.NodeConformityErrorVO;
 import cz.tacr.elza.controller.vo.NodeConformityMissingVO;
 import cz.tacr.elza.controller.vo.NodeConformityVO;
@@ -194,6 +196,8 @@ import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.UsrGroup;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.domain.WfIssueState;
+import cz.tacr.elza.domain.WfIssueType;
 import cz.tacr.elza.domain.convertor.CalendarConverter;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
@@ -1145,6 +1149,15 @@ public class ConfigMapperConfiguration {
                 byDefault().
                 exclude("nodeIds").
                 register();
+
+        mapperFactory.classMap(WfIssueType.class, IssueTypeVO.class)
+                .byDefault()
+                .field("issueTypeId", "id")
+                .register();
+        mapperFactory.classMap(WfIssueState.class, IssueStateVO.class)
+                .byDefault()
+                .field("issueStateId", "id")
+                .register();
     }
 
     /**

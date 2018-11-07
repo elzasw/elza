@@ -63,7 +63,8 @@ import cz.tacr.elza.controller.vo.ArrStructureDataVO;
 import cz.tacr.elza.controller.vo.BulkActionRunVO;
 import cz.tacr.elza.controller.vo.BulkActionVO;
 import cz.tacr.elza.controller.vo.DmsFileVO;
-import cz.tacr.elza.controller.vo.LanguageVO;
+import cz.tacr.elza.controller.vo.IssueStateVO;
+import cz.tacr.elza.controller.vo.IssueTypeVO;
 import cz.tacr.elza.controller.vo.NodeConformityVO;
 import cz.tacr.elza.controller.vo.ParInstitutionVO;
 import cz.tacr.elza.controller.vo.ParPartyNameComplementVO;
@@ -168,11 +169,12 @@ import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.RulStructuredTypeExtension;
 import cz.tacr.elza.domain.RulTemplate;
 import cz.tacr.elza.domain.SysExternalSystem;
-import cz.tacr.elza.domain.SysLanguage;
 import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.UsrGroup;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.domain.WfIssueState;
+import cz.tacr.elza.domain.WfIssueType;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
@@ -2249,4 +2251,13 @@ public class ClientFactoryVO {
         }
         return createSimpleEntity(extSystem, SysExternalSystemSimpleVO.class);
     }
+
+    public List<IssueTypeVO> createIssueTypes(final List<WfIssueType> issueTypeList) {
+        return createList(issueTypeList, IssueTypeVO.class, null);
+    }
+
+    public List<IssueStateVO> createIssueStates(final List<WfIssueState> issueStateList) {
+        return createList(issueStateList, IssueStateVO.class, null);
+    }
+
 }

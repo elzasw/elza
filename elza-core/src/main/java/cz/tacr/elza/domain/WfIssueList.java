@@ -1,0 +1,70 @@
+package cz.tacr.elza.domain;
+
+import javax.persistence.Access;
+import javax.persistence.AccessType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+
+/**
+ * Seznam problémů
+ */
+@Entity(name = "wf_issue_list")
+public class WfIssueList {
+
+    @Id
+    @GeneratedValue
+    @Access(AccessType.PROPERTY)
+    private Integer issueListId;
+
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFund.class, optional = false)
+    @JoinColumn(name = "fund_id", nullable = false)
+    private ArrFund fund;
+
+    @Column(nullable = false)
+    private Boolean open;
+
+    @Column(length = 250, nullable = false)
+    private String name;
+
+    public Integer getIssueListId() {
+        return issueListId;
+    }
+
+    public void setIssueListId(Integer issueListId) {
+        this.issueListId = issueListId;
+    }
+
+    public ArrFund getFund() {
+        return fund;
+    }
+
+    public void setFund(ArrFund fund) {
+        this.fund = fund;
+    }
+
+    public Boolean getOpen() {
+        return open;
+    }
+
+    public void setOpen(Boolean open) {
+        this.open = open;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public String toString() {
+        return "WfIssueList pk=" + issueListId;
+    }
+}
