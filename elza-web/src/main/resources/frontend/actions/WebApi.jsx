@@ -65,6 +65,27 @@ export class WebApiCls {
         return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/fulltext', null,  data);
     }
 
+    /**
+     * Seznam AS serazeny podle poctu vyhledanych JP.
+     * Vysledek vyhledavani je ulozeny v user session pro pouziti v {@link #fundFulltext(number)}.
+     *
+     * @param input vstupni data pro fultextove vyhledavani
+     * @return seznam AS razeny podle poctu vyhledanych JP
+     */
+    fundFulltext(filterText) {
+        return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/fundFulltext', null,  filterText);
+    }
+
+    /**
+     * Seznam uzlu daneho AS serazeny podle relevance pri vyhledani.
+
+     * @param fundId identifikátor AS
+     * @return seznam uzlu daneho AS serazeny podle relevance pri vyhledani
+     */
+    fundFulltextNodes(fundId) {
+        return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + `/fundFulltext/${fundId}`, null,  fundId);
+    }
+
     getFundsByVersionIds(versionIds) {
         return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/getVersions', null, {ids: versionIds});
     }

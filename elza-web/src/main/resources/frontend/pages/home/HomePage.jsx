@@ -20,6 +20,7 @@ import PageLayout from "../shared/layout/PageLayout";
 
 import './HomePage.less'
 import {FOCUS_KEYS} from "../../constants.tsx";
+import SearchFundsForm from "../../components/arr/SearchFundsForm";
 
 /**
  * Home stránka
@@ -56,6 +57,17 @@ class HomePage extends AbstractReactComponent {
         }
     };
 
+    /**
+     * Vyvolání dialogu s vyhledáním na všemi AS.
+     */
+    handleFundsSearchForm = () => {
+        this.props.dispatch(modalDialogShow(
+            this,
+            i18n('arr.fund.title.search'),
+            <SearchFundsForm />
+        ));
+    };
+
     handleAddFund = () => {
         const {userDetail} = this.props;
         let initData = {};
@@ -81,6 +93,10 @@ class HomePage extends AbstractReactComponent {
                 <Button key="add-fa" onClick={this.handleAddFund}><Icon glyph="fa-plus-circle" /><div><span className="btnText">{i18n('ribbon.action.arr.fund.add')}</span></div></Button>
             );
         }
+
+        altActions.push(
+            <Button key="search-fa" onClick={this.handleFundsSearchForm}><Icon glyph="fa-search" /><div><span className="btnText">{i18n('ribbon.action.arr.fund.search')}</span></div></Button>
+        );
 
         let altSection;
         if (altActions.length > 0) {

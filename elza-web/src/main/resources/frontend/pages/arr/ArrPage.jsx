@@ -70,6 +70,7 @@ import ArrStructurePanel from "../../components/arr/ArrStructurePanel";
 import {structureTypesFetchIfNeeded} from "../../actions/refTables/structureTypes";
 import objectById from "../../shared/utils/objectById";
 import FundTemplateSettingsForm from "../../components/arr/FundTemplateSettingsForm";
+import SearchFundsForm from "../../components/arr/SearchFundsForm";
 
 const keyModifier = Utils.getKeyModifier();
 
@@ -429,6 +430,17 @@ class ArrPage extends ArrParentPage {
     };
 
     /**
+     * Vyvolání dialogu s vyhledáním na všemi AS.
+     */
+    handleFundsSearchForm = () => {
+        this.props.dispatch(modalDialogShow(
+            this,
+            i18n('arr.fund.title.search'),
+            <SearchFundsForm />
+        ));
+    };
+
+    /**
      * Sestavení Ribbonu.
      * @return {Object} view
      */
@@ -509,6 +521,11 @@ class ArrPage extends ArrParentPage {
             }
         }
         let altSection;
+
+        altActions.push(
+            <Button key="search-fa" onClick={this.handleFundsSearchForm}><Icon glyph="fa-search" /><div><span className="btnText">{i18n('ribbon.action.arr.fund.search')}</span></div></Button>
+        );
+
         if (altActions.length > 0) {
             altSection = <RibbonGroup key="alt" className="small">{altActions}</RibbonGroup>
         }
