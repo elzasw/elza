@@ -262,6 +262,7 @@ var messages = {
     "ribbon.action.arr.fund.newFundAction": "Připravit novou hrom. akci",
     "ribbon.action.arr.fund.output": "Výstupy",
     "ribbon.action.arr.fund.fas": "Archivní pomůcky",
+    "ribbon.action.arr.fund.search": "Vyhledat v arch. souborech",
     "ribbon.action.fundAction.action.new": "Nová akce",
     "ribbon.action.fundAction.action.copy": "Připravit novou akci",
     "ribbon.action.fundAction.action.interrupt": "Přerušit akci",
@@ -416,6 +417,8 @@ var messages = {
     "arr.output.panel.template.noSettings": "Vybraná šablona nemá žádná nastavení",
     "arr.output.panel.files.notGenerated": "Výstup nebyl vygenerován",
 
+    "arr.fund.search.result.count": "Počet nalezených výsledků: {0}",
+
     "change.arr.output.generating.title": "Generuje se výstup",
     "change.arr.output.outdated.title": "Výstup byl vygenerován, ale data nejsou aktuální",
     "change.arr.output.finished.title": "Výstup byl vygenerován",
@@ -563,6 +566,7 @@ var messages = {
     "arr.fund.filterSettings.condition.coordinates.near.50000": "50 km",
     "arr.fund.filterSettings.condition.coordinates.near.100000": "100 km",
     "arr.fund.title.referendeMark": "Číslo JP",
+    "arr.fund.title.search": "Vyhledat v archivních souborech",
     "arr.fund.filterSettings.action.clear": "Zrušit filtr",
 
     "arr.fund.jsonTable.cell.title": "Tabulka {0}x{1}",
