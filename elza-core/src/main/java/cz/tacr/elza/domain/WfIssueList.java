@@ -10,6 +10,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
+import cz.tacr.elza.domain.enumeration.StringLength;
+
 /**
  * Seznam problémů
  */
@@ -28,7 +30,7 @@ public class WfIssueList {
     @Column(nullable = false)
     private Boolean open;
 
-    @Column(length = 250, nullable = false)
+    @Column(length = StringLength.LENGTH_250, nullable = false)
     private String name;
 
     public Integer getIssueListId() {

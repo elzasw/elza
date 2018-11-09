@@ -120,6 +120,13 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
+
+        <addColumn tableName="usr_permission">
+            <column name="issue_list_id" type="integer">
+                <constraints foreignKeyName="fk_permission_issue_list" referencedTableName="wf_issue_list" referencedColumnNames="issue_list_id"/>
+            </column>
+        </addColumn>
+
     </changeSet>
 
 </databaseChangeLog>

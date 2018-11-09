@@ -42,6 +42,11 @@ public class UserPermission {
      */
     private Set<Integer> scopeIds = new HashSet<>();
 
+    /**
+     * Seznam identifikátorů protokolů, ke kterým se vztahuje oprávnění.
+     */
+    private Set<Integer> issueListIds = new HashSet<>();
+
     public UserPermission(final UsrPermission.Permission permission) {
         this.permission = permission;
     }
@@ -56,6 +61,10 @@ public class UserPermission {
 
     public Set<Integer> getScopeIds() {
         return scopeIds;
+    }
+
+    public Set<Integer> getIssueListIds() {
+        return issueListIds;
     }
 
     @Override
@@ -85,6 +94,10 @@ public class UserPermission {
 
     public void addScopeId(final Integer scopeId) {
         scopeIds.add(scopeId);
+    }
+
+    public void addIssueListId(final Integer issueListId) {
+        issueListIds.add(issueListId);
     }
 
     public Set<Integer> getControlUserIds() {
@@ -179,30 +192,35 @@ public class UserPermission {
 
         PermissionType permType = permission.getType();
         switch (permType) {
-        case ALL:
-            return true;
-        case FUND:
-            if (fundIds.contains(usrPermission.getFundId())) {
+            case ALL:
                 return true;
-            }
-            break;
-        case USER:
-            if (controlUserIds.contains(usrPermission.getUserControlId())) {
-                return true;
-            }
-            break;
-        case GROUP:
-            if (controlGroupIds.contains(usrPermission.getGroupControlId())) {
-                return true;
-            }
-            break;
-        case SCOPE:
-            if (scopeIds.contains(usrPermission.getScopeId())) {
-                return true;
-            }
-            break;
-        default:
-            throw new UnsupportedOperationException("Neimplementovaný typ oprvánění: " + permission.getType());
+            case FUND:
+                if (fundIds.contains(usrPermission.getFundId())) {
+                    return true;
+                }
+                break;
+            case USER:
+                if (controlUserIds.contains(usrPermission.getUserControlId())) {
+                    return true;
+                }
+                break;
+            case GROUP:
+                if (controlGroupIds.contains(usrPermission.getGroupControlId())) {
+                    return true;
+                }
+                break;
+            case SCOPE:
+                if (scopeIds.contains(usrPermission.getScopeId())) {
+                    return true;
+                }
+                break;
+            case ISSUE_LIST:
+                if (issueListIds.contains(usrPermission.getIssueListId())) {
+                    return true;
+                }
+                break;
+            default:
+                throw new UnsupportedOperationException("Neimplementovaný typ oprvánění: " + permission.getType());
         }
         return false;
     }
@@ -221,6 +239,21 @@ public class UserPermission {
             return false;
         }
         if (!scopeIds.contains(scopeId)) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Check issue list specific permission
+     */
+    public boolean hasIssueListPermission(Permission perm, Integer issueListId) {
+        Validate.isTrue(perm.getType() == PermissionType.ISSUE_LIST);
+
+        if (this.permission != perm) {
+            return false;
+        }
+        if (!issueListIds.contains(issueListId)) {
             return false;
         }
         return true;

@@ -27,7 +27,12 @@ public interface PermissionRepository extends JpaRepository<UsrPermission, Integ
      * @param user uživatel
      * @return seznam všech jeho oprávnění
      */
-    @Query("SELECT p FROM usr_permission p LEFT JOIN FETCH p.scope s LEFT JOIN FETCH p.fund f WHERE p.user = :user OR p.group.groupId IN (SELECT gu.group.groupId FROM usr_group_user gu WHERE gu.user = :user)")
+    @Query("SELECT p" +
+            " FROM usr_permission p" +
+            " LEFT JOIN FETCH p.scope s" +
+            " LEFT JOIN FETCH p.fund f" +
+            " LEFT JOIN FETCH p.issueList il" +
+            " WHERE p.user = :user OR p.group.groupId IN (SELECT gu.group.groupId FROM usr_group_user gu WHERE gu.user = :user)")
     List<UsrPermission> getAllPermissions(@Param("user") UsrUser user);
 
     /**
@@ -41,6 +46,7 @@ public interface PermissionRepository extends JpaRepository<UsrPermission, Integ
             " LEFT JOIN FETCH p.group g" +
             " LEFT JOIN FETCH p.scope s" +
             " LEFT JOIN FETCH p.fund f" +
+            " LEFT JOIN FETCH p.issueList il" +
             " WHERE p.user = :user OR g.groupId IN (SELECT gu.group.groupId FROM usr_group_user gu WHERE gu.user = :user)")
     List<UsrPermission> getAllPermissionsWithGroups(@Param("user") UsrUser user);
 

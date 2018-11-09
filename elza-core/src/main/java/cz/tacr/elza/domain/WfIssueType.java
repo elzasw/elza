@@ -9,6 +9,8 @@ import javax.persistence.Id;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import cz.tacr.elza.domain.enumeration.StringLength;
+
 @Entity(name = "wf_issue_type")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
 public class WfIssueType {
@@ -18,10 +20,10 @@ public class WfIssueType {
     @Access(AccessType.PROPERTY)
     private Integer issueTypeId;
 
-    @Column(length = 50, nullable = false, unique = true)
+    @Column(length = StringLength.LENGTH_50, nullable = false, unique = true)
     private String code;
 
-    @Column(length = 250, nullable = false)
+    @Column(length = StringLength.LENGTH_250, nullable = false)
     private String name;
 
     public Integer getIssueTypeId() {

@@ -35,6 +35,9 @@ public class UsrPermissionVO {
     /** Scope, ke kterému se vztahuje oprávnění. */
     private ApScopeVO scope;
 
+    /** Protokol, ke kterému se vztahuje oprávnění. */
+    private WfIssueListBaseVO issueList;
+
     /** Typ oprávnění. */
     public UsrPermission.Permission getPermission() {
         return permission;
@@ -98,5 +101,13 @@ public class UsrPermissionVO {
 
     public void setUserControl(UsrUserVO userControl) {
         this.userControl = userControl;
+    }
+
+    public WfIssueListBaseVO getIssueList() {
+        return issueList;
+    }
+
+    public void setIssueList(WfIssueListBaseVO issueList) {
+        this.issueList = issueList;
     }
 }

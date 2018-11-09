@@ -17,8 +17,6 @@ import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 import javax.validation.constraints.NotNull;
 
-import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.repository.ApNameRepository;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 import org.hibernate.validator.constraints.NotEmpty;
@@ -41,14 +39,16 @@ import cz.tacr.elza.controller.vo.UserInfoVO;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.core.security.Authorization;
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.UsrGroup;
 import cz.tacr.elza.domain.UsrGroupUser;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.domain.WfIssueList;
 import cz.tacr.elza.exception.AccessDeniedException;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.Level;
@@ -57,6 +57,7 @@ import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.exception.codes.UserCode;
+import cz.tacr.elza.repository.ApNameRepository;
 import cz.tacr.elza.repository.FilteredResult;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.GroupRepository;
@@ -64,6 +65,7 @@ import cz.tacr.elza.repository.GroupUserRepository;
 import cz.tacr.elza.repository.PermissionRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.UserRepository;
+import cz.tacr.elza.repository.WfIssueListRepository;
 import cz.tacr.elza.security.AuthorizationRequest;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.security.UserPermission;
@@ -104,6 +106,9 @@ public class UserService {
     @Autowired
     private ApNameRepository apNameRepository;
 
+    @Autowired
+    private WfIssueListRepository issueListRepository;
+
     @Value("${elza.security.salt:kdFss=+4Df_%}")
     private String SALT;
 
@@ -126,6 +131,7 @@ public class UserService {
 	        UsrPermission.Permission.FUND_EXPORT,
 	        UsrPermission.Permission.FUND_BA,
 	        UsrPermission.Permission.FUND_VER_WR,
+            UsrPermission.Permission.FUND_ISSUE_ADMIN,
 	};
 
     public UserService() {
@@ -196,6 +202,7 @@ public class UserService {
                 setScopeRelation(permission, permission.getScopeId());
                 setControlUserRelation(permission, permission.getUserControlId());
                 setControlGroupRelation(permission, permission.getGroupControlId());
+                setIssueListRelation(permission, permission.getIssueListId());
                 permissionsAdd.add(permission);
             } else {
                 if (changePermissionType == ChangePermissionType.ADD) { // pro akci add nelze předat vyplněné id
@@ -210,6 +217,7 @@ public class UserService {
                     setScopeRelation(permissionDB, permission.getScopeId());
                     setControlUserRelation(permissionDB, permission.getUserControlId());
                     setControlGroupRelation(permissionDB, permission.getGroupControlId());
+                    setIssueListRelation(permission, permission.getIssueListId());
                     permissionsUpdate.add(permissionDB);
                 }
             }
@@ -238,35 +246,40 @@ public class UserService {
         for (UsrPermission permission : permissions) {
             switch (permission.getPermission().getType()) {
                 case ALL: {
-                    if (permission.getScopeId() != null || permission.getFundId() != null || permission.getUserControlId() != null || permission.getGroupControlId() != null) {
+                    if (permission.getScopeId() != null || permission.getFundId() != null || permission.getUserControlId() != null || permission.getGroupControlId() != null || permission.getIssueListId() != null) {
                         throw new SystemException("Neplatný vstup oprávnění: ALL", UserCode.PERM_ILLEGAL_INPUT).set("type", "ALL");
                     }
                     break;
                 }
                 case SCOPE: {
-                    if (permission.getScopeId() == null || permission.getFundId() != null || permission.getUserControlId() != null || permission.getGroupControlId() != null) {
+                    if (permission.getScopeId() == null || permission.getFundId() != null || permission.getUserControlId() != null || permission.getGroupControlId() != null || permission.getIssueListId() != null) {
                         throw new SystemException("Neplatný vstup oprávnění: SCOPE", UserCode.PERM_ILLEGAL_INPUT).set("type", "SCOPE");
                     }
                     break;
                 }
                 case FUND: {
-                    if (permission.getScopeId() != null || permission.getFundId() == null || permission.getUserControlId() != null || permission.getGroupControlId() != null) {
+                    if (permission.getScopeId() != null || permission.getFundId() == null || permission.getUserControlId() != null || permission.getGroupControlId() != null || permission.getIssueListId() != null) {
                         throw new SystemException("Neplatný vstup oprávnění: FUND", UserCode.PERM_ILLEGAL_INPUT).set("type", "FUND");
                     }
                     break;
                 }
                 case USER:
-                    if (permission.getScopeId() != null || permission.getFundId() != null || permission.getUserControlId() == null || permission.getGroupControlId() != null) {
+                    if (permission.getScopeId() != null || permission.getFundId() != null || permission.getUserControlId() == null || permission.getGroupControlId() != null || permission.getIssueListId() != null) {
                         throw new SystemException("Neplatný vstup oprávnění: USER", UserCode.PERM_ILLEGAL_INPUT).set("type", "USER");
                     }
                     break;
-            case GROUP:
-                if (/*permission.getScopeId() != null || permission.getFundId() != null || permission.getUserControlId() != null ||*/
-                permission.getGroupControlId() == null) {
-                    throw new SystemException("Neplatný vstup oprávnění: GROUP", UserCode.PERM_ILLEGAL_INPUT)
-                            .set("type", "GROUP");
+                case GROUP:
+                    if (/*permission.getScopeId() != null || permission.getFundId() != null || permission.getUserControlId() != null || permission.getGroupControlId() != null || permission.getIssueListId() != null) {*/
+                            permission.getGroupControlId() == null) {
+                        throw new SystemException("Neplatný vstup oprávnění: GROUP", UserCode.PERM_ILLEGAL_INPUT).set("type", "GROUP");
+                    }
+                    break;
+                case ISSUE_LIST: {
+                    if (permission.getScopeId() != null || permission.getFundId() != null || permission.getUserControlId() != null || permission.getGroupControlId() != null || permission.getIssueListId() == null) {
+                        throw new SystemException("Neplatný vstup oprávnění: ISSUE_LIST", UserCode.PERM_ILLEGAL_INPUT).set("type", "ISSUE_LIST");
+                    }
+                    break;
                 }
-                break;
                 default:
                     throw new IllegalStateException("Nedefinovaný typ oprávnění");
             }
@@ -377,6 +390,25 @@ public class UserService {
             permission.setGroupControl(group);
         } else {
             permission.setGroupControl(null);
+        }
+    }
+
+    /**
+     * Nastaví vazbu na protokol, pokud je předané id. Pokud předané není, je vazba odstraněna.
+     * Kontroluje existenci objektu s daným id.
+     *
+     * @param permission oprávnění
+     * @param issueListId id objektu, na který má být přidána vazba
+     */
+    private void setIssueListRelation(final UsrPermission permission, final Integer issueListId) {
+        if (issueListId != null) {
+            WfIssueList issueList = issueListRepository.findOne(issueListId);
+            if (issueList == null) {
+                throw new SystemException("Neplatný protokol", BaseCode.ID_NOT_EXIST);
+            }
+            permission.setIssueList(issueList);
+        } else {
+            permission.setIssueList(null);
         }
     }
 
@@ -906,6 +938,10 @@ public class UserService {
 
             if (permission.getUserControl() != null) {
                 userPermission.addControlUserId(permission.getUserControlId());
+            }
+
+            if (permission.getIssueList() != null) {
+                userPermission.addIssueListId(permission.getIssueList().getIssueListId());
             }
         }
 

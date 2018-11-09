@@ -63,8 +63,8 @@ import cz.tacr.elza.controller.vo.ArrStructureDataVO;
 import cz.tacr.elza.controller.vo.BulkActionRunVO;
 import cz.tacr.elza.controller.vo.BulkActionVO;
 import cz.tacr.elza.controller.vo.DmsFileVO;
-import cz.tacr.elza.controller.vo.IssueStateVO;
-import cz.tacr.elza.controller.vo.IssueTypeVO;
+import cz.tacr.elza.controller.vo.WfIssueStateVO;
+import cz.tacr.elza.controller.vo.WfIssueTypeVO;
 import cz.tacr.elza.controller.vo.NodeConformityVO;
 import cz.tacr.elza.controller.vo.ParInstitutionVO;
 import cz.tacr.elza.controller.vo.ParPartyNameComplementVO;
@@ -2252,12 +2252,12 @@ public class ClientFactoryVO {
         return createSimpleEntity(extSystem, SysExternalSystemSimpleVO.class);
     }
 
-    public List<IssueTypeVO> createIssueTypes(final List<WfIssueType> issueTypeList) {
-        return createList(issueTypeList, IssueTypeVO.class, null);
+    public List<WfIssueTypeVO> createIssueTypes(final List<WfIssueType> issueTypeList) {
+        return createList(issueTypeList, WfIssueTypeVO.class, null);
     }
 
-    public List<IssueStateVO> createIssueStates(final List<WfIssueState> issueStateList) {
-        return createList(issueStateList, IssueStateVO.class, null);
+    public List<WfIssueStateVO> createIssueStates(final List<WfIssueState> issueStateList) {
+        return createList(issueStateList, WfIssueStateVO.class, null);
     }
 
 }

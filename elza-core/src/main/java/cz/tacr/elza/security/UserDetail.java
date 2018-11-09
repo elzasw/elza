@@ -137,6 +137,11 @@ public class UserDetail {
 						return true;
 					}
 					break;
+				case ISSUE_LIST:
+					if (userPermission.getIssueListIds().contains(entityId)) {
+						return true;
+					}
+					break;
 				default:
 					throw new IllegalStateException(permission.getType().toString());
 				}

@@ -1,6 +1,6 @@
 package cz.tacr.elza.controller.vo;
 
-public class IssueStateVO extends BaseCodeVo {
+public class WfIssueStateVO extends BaseCodeVo {
 
     // --- fields ---
 

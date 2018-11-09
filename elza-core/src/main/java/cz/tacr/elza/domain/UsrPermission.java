@@ -90,6 +90,14 @@ public class UsrPermission {
     @Column(name = "groupControlId", updatable = false, insertable = false, nullable = false)
     private Integer groupControlId;
 
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = WfIssueList.class)
+    @JoinColumn(name = "issueListId")
+    private WfIssueList issueList;
+
+    /** Slouží jen pro čtení. */
+    @Column(name = "issueListId", updatable = false, insertable = false, nullable = false)
+    private Integer issueListId;
+
     /**
      * @return identifikátor entity
      */
@@ -238,6 +246,25 @@ public class UsrPermission {
     }
 
     /**
+     * @return protokol, ke kterému se oprávnění vztahuje
+     */
+    public WfIssueList getIssueList() {
+        return issueList;
+    }
+
+    /**
+     * @return protokol, ke kterému se oprávnění vztahuje
+     */
+    public void setIssueList(WfIssueList issueList) {
+        this.issueList = issueList;
+        this.issueListId = issueList == null ? null : issueList.getIssueListId();
+    }
+
+    public Integer getIssueListId() {
+        return issueListId;
+    }
+
+    /**
      * Typ oprávnění. Řeší, zda-li oprávnění má ještě nějaké návaznosti.
      */
     public enum PermissionType {
@@ -265,7 +292,12 @@ public class UsrPermission {
         /**
 		 * Oprávnění se vztahuje na konkrétní scope.
 		 */
-		SCOPE
+		SCOPE,
+
+        /**
+         * Oprávnění se vztahuje na konkrétní protokol.
+         */
+        ISSUE_LIST
     }
 
     /**
@@ -508,7 +540,35 @@ public class UsrPermission {
         /**
          * Spravovaná entita skupina.
          */
-		GROUP_CONTROL_ENTITITY(PermissionType.GROUP);
+        GROUP_CONTROL_ENTITITY(PermissionType.GROUP),
+
+        /**
+         * Správa protokolů pro konkrétní AS
+         */
+        FUND_ISSUE_ADMIN(PermissionType.FUND),
+
+        /**
+         * Správa protokolů pro všechny AS
+         */
+        FUND_ISSUE_ADMIN_ALL {
+            @Override
+            public boolean isEqualOrHigher(Permission permission) {
+                if (permission == FUND_ISSUE_ADMIN_ALL || permission == FUND_ISSUE_ADMIN) {
+                    return true;
+                }
+                return false;
+            }
+        },
+
+        /**
+         * Zobrazení připomínek pro konkrétní issue list
+         */
+        FUND_ISSUE_LIST_RD(PermissionType.ISSUE_LIST),
+
+        /**
+         * Tvorba připomínek pro konkrétní issue list
+         */
+        FUND_ISSUE_LIST_WR(PermissionType.ISSUE_LIST);
 
         /**
          * Typ oprávnění
@@ -538,6 +598,7 @@ public class UsrPermission {
             fundAllPerms.add(UsrPermission.Permission.FUND_BA_ALL);
             fundAllPerms.add(UsrPermission.Permission.FUND_EXPORT_ALL);
             fundAllPerms.add(UsrPermission.Permission.FUND_CL_VER_WR_ALL);
+            fundAllPerms.add(UsrPermission.Permission.FUND_ISSUE_ADMIN_ALL);
         }
 
         /**

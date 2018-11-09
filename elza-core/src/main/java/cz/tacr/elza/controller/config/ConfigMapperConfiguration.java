@@ -45,8 +45,6 @@ import cz.tacr.elza.controller.vo.ArrOutputVO;
 import cz.tacr.elza.controller.vo.BulkActionRunVO;
 import cz.tacr.elza.controller.vo.BulkActionVO;
 import cz.tacr.elza.controller.vo.DmsFileVO;
-import cz.tacr.elza.controller.vo.IssueStateVO;
-import cz.tacr.elza.controller.vo.IssueTypeVO;
 import cz.tacr.elza.controller.vo.NodeConformityErrorVO;
 import cz.tacr.elza.controller.vo.NodeConformityMissingVO;
 import cz.tacr.elza.controller.vo.NodeConformityVO;
@@ -84,6 +82,9 @@ import cz.tacr.elza.controller.vo.UISettingsVO;
 import cz.tacr.elza.controller.vo.UsrGroupVO;
 import cz.tacr.elza.controller.vo.UsrPermissionVO;
 import cz.tacr.elza.controller.vo.UsrUserVO;
+import cz.tacr.elza.controller.vo.WfIssueListBaseVO;
+import cz.tacr.elza.controller.vo.WfIssueStateVO;
+import cz.tacr.elza.controller.vo.WfIssueTypeVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.DescItemSpecLiteVO;
 import cz.tacr.elza.controller.vo.nodes.ItemTypeDescItemsLiteVO;
@@ -196,6 +197,7 @@ import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.UsrGroup;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.domain.WfIssueList;
 import cz.tacr.elza.domain.WfIssueState;
 import cz.tacr.elza.domain.WfIssueType;
 import cz.tacr.elza.domain.convertor.CalendarConverter;
@@ -1150,11 +1152,15 @@ public class ConfigMapperConfiguration {
                 exclude("nodeIds").
                 register();
 
-        mapperFactory.classMap(WfIssueType.class, IssueTypeVO.class)
+        mapperFactory.classMap(WfIssueList.class, WfIssueListBaseVO.class)
+                .byDefault()
+                .field("issueListId", "id")
+                .register();
+        mapperFactory.classMap(WfIssueType.class, WfIssueTypeVO.class)
                 .byDefault()
                 .field("issueTypeId", "id")
                 .register();
-        mapperFactory.classMap(WfIssueState.class, IssueStateVO.class)
+        mapperFactory.classMap(WfIssueState.class, WfIssueStateVO.class)
                 .byDefault()
                 .field("issueStateId", "id")
                 .register();

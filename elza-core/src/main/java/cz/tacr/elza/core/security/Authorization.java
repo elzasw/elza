@@ -25,6 +25,7 @@ import cz.tacr.elza.domain.UsrGroup;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.domain.WfIssueList;
 import cz.tacr.elza.exception.AccessDeniedException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.repository.ApAccessPointRepository;
@@ -134,21 +135,23 @@ public class Authorization {
 			} else {
 				// type based permission checker
 				switch (permission.getType()) {
-				case ALL:
-					if (userDetail.hasPermission(permission)) {
-						hasPermission = true;
-					}
-					break;
-
-				case SCOPE:
-					// permissions for scope
-					hasPermission = checkScopePermission(permission, methodInfo, userDetail);
-					break;
-				case FUND:
-					hasPermission = checkFundPermission(permission, methodInfo, userDetail);
-					break;
-				default:
-					throw new IllegalStateException("Permission type not defined: " + permission.getType());
+					case ALL:
+						if (userDetail.hasPermission(permission)) {
+							hasPermission = true;
+						}
+						break;
+					case SCOPE:
+						// permissions for scope
+						hasPermission = checkScopePermission(permission, methodInfo, userDetail);
+						break;
+					case FUND:
+						hasPermission = checkFundPermission(permission, methodInfo, userDetail);
+						break;
+					case ISSUE_LIST:
+						hasPermission = checkIssueListPermission(permission, methodInfo, userDetail);
+						break;
+					default:
+						throw new IllegalStateException("Permission type not defined: " + permission.getType());
 				}
 			}
 
@@ -302,6 +305,16 @@ public class Authorization {
 		});
 	}
 
+	private boolean checkIssueListPermission(Permission permission, MethodInfo methodInfo, UserDetail userDetail) {
+		return hasPermission(methodInfo, (authParam, parameterValue) -> {
+			Integer entityId = loadIssueListId(parameterValue, authParam.type());
+			if (userDetail.hasPermission(permission, entityId)) {
+				return PermissionResult.GRANT_ACCESS;
+			}
+			return PermissionResult.DENY_ACCESS;
+		});
+	}
+
 	/**
 	 * Prapare scope id
 	 *
@@ -361,6 +374,26 @@ public class Authorization {
 				return ((IArrFund) value).getFund().getFundId();
 			}
 			break;
+		}
+		throw new IllegalStateException(type + ":" + value.getClass().getName());
+	}
+
+	/**
+	 * Load issueList id
+	 *
+	 * @param value vstupní objekt
+	 * @param type typ vstupního parametru
+	 * @return identfikátor entity
+	 */
+	private Integer loadIssueListId(final Object value, final AuthParam.Type type) {
+		switch (type) {
+			case ISSUE_LIST:
+				if (value instanceof Integer) {
+					return (Integer) value;
+				} else if (value instanceof WfIssueList) {
+					return ((WfIssueList) value).getIssueListId();
+				}
+				break;
 		}
 		throw new IllegalStateException(type + ":" + value.getClass().getName());
 	}

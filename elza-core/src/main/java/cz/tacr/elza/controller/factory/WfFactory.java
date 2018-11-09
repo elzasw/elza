@@ -1,0 +1,78 @@
+package cz.tacr.elza.controller.factory;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import cz.tacr.elza.controller.vo.WfCommentVO;
+import cz.tacr.elza.controller.vo.WfIssueListVO;
+import cz.tacr.elza.controller.vo.WfIssueVO;
+import cz.tacr.elza.domain.WfComment;
+import cz.tacr.elza.domain.WfIssue;
+import cz.tacr.elza.domain.WfIssueList;
+import cz.tacr.elza.repository.FundRepository;
+import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.repository.WfCommentRepository;
+import cz.tacr.elza.repository.WfIssueListRepository;
+import cz.tacr.elza.repository.WfIssueRepository;
+import cz.tacr.elza.repository.WfIssueStateRepository;
+import cz.tacr.elza.repository.WfIssueTypeRepository;
+
+/**
+ * @author <a href="mailto:stepan.marek@marbes.cz">Stepan Marek</a>
+ */
+@Service
+public class WfFactory {
+
+    private final FundRepository fundRepository;
+    private final NodeRepository nodeRepository;
+
+    private final WfCommentRepository commentRepository;
+    private final WfIssueListRepository issueListRepository;
+    private final WfIssueRepository issueRepository;
+    private final WfIssueStateRepository issueStateRepository;
+    private final WfIssueTypeRepository issueTypeRepository;
+
+    @Autowired
+    public WfFactory(FundRepository fundRepository, NodeRepository nodeRepository, WfCommentRepository commentRepository, WfIssueListRepository issueListRepository, WfIssueRepository issueRepository, WfIssueStateRepository issueStateRepository, WfIssueTypeRepository issueTypeRepository) {
+        this.fundRepository = fundRepository;
+        this.nodeRepository = nodeRepository;
+        this.commentRepository = commentRepository;
+        this.issueListRepository = issueListRepository;
+        this.issueRepository = issueRepository;
+        this.issueStateRepository = issueStateRepository;
+        this.issueTypeRepository = issueTypeRepository;
+    }
+
+    public WfIssueListVO createIssueListVO(WfIssueList issueList) {
+        WfIssueListVO issueListVO = new WfIssueListVO();
+        issueListVO.setId(issueList.getIssueListId());
+        issueListVO.setFundId(issueList.getFund().getFundId());
+        issueListVO.setName(issueList.getName());
+        issueListVO.setOpen(issueList.getOpen());
+        return issueListVO;
+    }
+
+    public WfIssueVO createIssueVO(WfIssue issue) {
+        WfIssueVO issueVO = new WfIssueVO();
+        issueVO.setId(issue.getIssueId());
+        issueVO.setIssueListId(issue.getIssueList().getIssueListId());
+        issueVO.setNodeId(issue.getNode().getNodeId());
+        issueVO.setIssueTypeId(issue.getIssueType().getIssueTypeId());
+        issueVO.setIssueStateId(issue.getIssueState().getIssueStateId());
+        issueVO.setDescription(issue.getDescription());
+        issueVO.setUserCreateId(issue.getUserCreate().getUserId());
+        return issueVO;
+    }
+
+    public WfCommentVO createCommentVO(WfComment comment) {
+        WfCommentVO commentVO = new WfCommentVO();
+        commentVO.setId(comment.getCommentId());
+        commentVO.setIssueId(comment.getIssue().getIssueId());
+        commentVO.setComment(comment.getComment());
+        commentVO.setUserId(comment.getUser().getUserId());
+        commentVO.setPrevStateId(comment.getPrevState().getIssueStateId());
+        commentVO.setNextStateId(comment.getNextState().getIssueStateId());
+        commentVO.setTimeCreated(comment.getTimeCreated());
+        return commentVO;
+    }
+}

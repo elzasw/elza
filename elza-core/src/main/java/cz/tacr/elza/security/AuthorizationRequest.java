@@ -93,12 +93,12 @@ public class AuthorizationRequest {
 
 	public AuthorizationRequest or(Permission perm) {
 		// only some permission type checks are supported
-		Validate.isTrue(perm == Permission.ADMIN || perm == Permission.FUND_ARR_ALL 
-		        || perm == Permission.FUND_ADMIN
+		Validate.isTrue(perm == Permission.ADMIN || perm == Permission.FUND_ARR_ALL
+				|| perm == Permission.FUND_ADMIN
 				|| perm == Permission.FUND_BA_ALL || perm == Permission.FUND_CL_VER_WR_ALL
 				|| perm == Permission.FUND_EXPORT_ALL || perm == Permission.FUND_OUTPUT_WR_ALL
-				|| perm == Permission.FUND_RD_ALL
-                || perm == Permission.AP_SCOPE_RD_ALL || perm == Permission.AP_SCOPE_WR_ALL
+				|| perm == Permission.FUND_RD_ALL || perm == Permission.FUND_ISSUE_ADMIN_ALL
+				|| perm == Permission.AP_SCOPE_RD_ALL || perm == Permission.AP_SCOPE_WR_ALL
 				|| perm == Permission.USR_PERM);
 
 		checkList.add(new AuthCheck(perm));
@@ -117,21 +117,22 @@ public class AuthorizationRequest {
 	 */
 	public AuthorizationRequest or(Permission perm, Integer entityId) {
 		// only some permission type checks are supported
-		switch(perm) {
+		switch (perm) {
 		case FUND_ARR:
 		case FUND_BA:
 		case FUND_CL_VER_WR:
 		case FUND_EXPORT:
 		case FUND_VER_WR:
-		case FUND_RD:		
+		case FUND_RD:
+		case FUND_ISSUE_ADMIN:
 			checkList.add(new AuthCheckFundId(perm, entityId));
 			break;
-        case AP_SCOPE_RD:
-        case AP_SCOPE_WR:
-            checkList.add(new AuthCheckScopeId(perm, entityId));
-            break;
+		case AP_SCOPE_RD:
+		case AP_SCOPE_WR:
+			checkList.add(new AuthCheckScopeId(perm, entityId));
+			break;
 		default:
-			throw new IllegalStateException("Unsupported permission check, permission = "+perm);
+			throw new IllegalStateException("Unsupported permission check, permission = " + perm);
 		}
 		return this;
 	}
