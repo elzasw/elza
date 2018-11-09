@@ -120,9 +120,9 @@ public class IssueController {
 
     @RequestMapping(value = "/issue_lists/{issueListId}/issues", method = RequestMethod.GET)
     @Transactional
-    public List<IssueVO> getIssueList(@PathVariable Integer issueListId,
-                                      @RequestParam(name = "issue_state_id", required = false) Integer stateId,
-                                      @RequestParam(name = "issue_type_id", required = false) Integer typeId) {
+    public List<IssueVO> findIssues(@PathVariable Integer issueListId,
+                                    @RequestParam(name = "issue_state_id", required = false) Integer stateId,
+                                    @RequestParam(name = "issue_type_id", required = false) Integer typeId) {
 
         WfIssueState state = stateId != null ? issueStateRepository.getOneCheckExist(stateId) : null;
         WfIssueType type = typeId != null ? issueTypeRepository.getOneCheckExist(typeId) : null;

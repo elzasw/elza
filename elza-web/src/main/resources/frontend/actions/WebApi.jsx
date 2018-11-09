@@ -37,6 +37,7 @@ export class WebApiCls {
 
     static baseUrl = '/api';
     static arrangementUrl = WebApiCls.baseUrl + '/arrangement';
+    static issueUrl = WebApiCls.baseUrl + '/issue';
     static registryUrl = WebApiCls.baseUrl + '/registry';
     static partyUrl = WebApiCls.baseUrl + '/party';
     static importUrl = WebApiCls.baseUrl + '/import';
@@ -1392,9 +1393,161 @@ export class WebApiCls {
         return AjaxUtils.ajaxPost(WebApiCls.structureUrl + '/data/' + fundVersionId + '/assignable/' + assignable, null, structureDataIds)
     }
 
+    /**
+     * Získání druhů připomnek.
+     *
+     * @returns {Promise} list druhů připomínek
+     */
+    findAllTypes() {
+        return AjaxUtils.ajaxGet(WebApiCls.issueUrl+ '/issue_types');
+    }
+
+    /**
+     * Získání stavů připomínek.
+     *
+     * @returns {Promise} list stavů připomínek
+     */
+    findAllStates() {
+        return AjaxUtils.ajaxGet(WebApiCls.issueUrl+ '/issue_states');
+    }
+
+    /**
+     * Získání protokolů pro konkrétní archivní souboru.
+     *
+     * @param fundId identifikátor AS
+     * @returns {Promise} seznam protokolů
+     */
+    findIssueListByFund(fundId : number) {
+        return AjaxUtils.ajaxGet(WebApiCls.issueUrl+ '/funds/' + fundId + '/issue_lists');
+    }
+
+    /**
+     * Získání detailu protokolu.
+     *
+     * @param issueListId identifikátor protokolu.
+     * @returns {Promise} detail protokolu
+     */
+    getIssueList(issueListId : number) {
+        return AjaxUtils.ajaxGet(WebApiCls.issueUrl+ '/issue_lists/' + issueListId);
+    }
+
+    /**
+     * Získání seznam připomínek dle parametrů.
+     *
+     * @param issueListId identifikátor protokolu.
+     * @param stateId     identifikátor stavu připomínky dle kterého filtrujeme
+     * @param typeId      identifikátor druhu připomínky dle kterého filtrujeme
+     * @returns {Promise} seznam připomínek
+     */
+    findIssues(issueListId : number, stateId : number = null, typeId : number = null) {
+        const requestParams = {
+            stateId,
+            typeId
+        };
+        return AjaxUtils.ajaxGet(WebApiCls.issueUrl+ '/issue_lists/' + issueListId + '/issues', requestParams);
+    }
+
+    /**
+     * Založení nového protokolu.
+     *
+     * @param data {IssueListVO} data pro založení protokolu
+     */
+    addIssueList(data : IssueListVO) {
+        return AjaxUtils.ajaxPost(WebApiCls.issueUrl + '/issue_lists', null, data)
+    }
+
+    /**
+     * Získání detailu připomínky.
+     *
+     * @param issueId identifikátor připomínky
+     * @returns {Promise} detail připomínky
+     */
+    getIssue(issueId : number) {
+        return AjaxUtils.ajaxGet(WebApiCls.issueUrl+ '/issues/' + issueId);
+    }
+
+    /**
+     * Přidání připomínky k protokolu.
+     *
+     * @param data {IssueVO} data pro přidání připomínky
+     * @returns {Promise}
+     */
+    addIssue(data : IssueVO) {
+        return AjaxUtils.ajaxPost(WebApiCls.issueUrl + '/issues', null, data)
+    }
+
+    /**
+     * Změna stavu připomínky.
+     *
+     * @param issueId      identifikátor připomínky
+     * @param issueStateId identifikátor stavu připomínky
+     * @returns {Promise}
+     */
+    setIssueState(issueId : number, issueStateId: number) {
+        const requestParams = {
+            issueStateId,
+        };
+        return AjaxUtils.ajaxPost(WebApiCls.issueUrl + '/issues/' + issueId + '/setState', requestParams)
+    }
+
+    /**
+     * Vyhledání komentářů k připomínce.
+     *
+     * @param issueId identifikátor připomínky
+     * @returns {Promise} pole {CommentVO}
+     */
+    findCommentByIssue(issueId : number) {
+        return AjaxUtils.ajaxGet(WebApiCls.issueUrl+ '/issues/' + issueId + '/comments');
+    }
+
+    /**
+     * Získání detailu komentáře.
+     *
+     * @param commentId identifikátor komentáře
+     * @returns {Promise} detail {CommentVO}
+     */
+    getComment(commentId : number) {
+        return AjaxUtils.ajaxGet(WebApiCls.issueUrl+ '/comments/' + commentId);
+    }
+
+    /**
+     * Založení nového komentáře.
+     *
+     * @param data komentář
+     * @returns {Promise}
+     */
+    addComment(data : CommentVO) {
+        return AjaxUtils.ajaxPost(WebApiCls.issueUrl + '/comments', null, data)
+    }
 
 }
 
+declare class IssueListVO extends Object {
+    issueListId: number;
+    fundId: number;
+    name: string;
+    open: boolean;
+}
+
+declare class IssueVO extends Object {
+    issueId: number;
+    issueListId: number;
+    nodeId: number;
+    issueTypeId: number;
+    issueStateId: number;
+    description: string;
+    userCreateId: number;
+}
+
+declare class CommentVO extends Object {
+    commentId: number;
+    issueId: number;
+    comment: string;
+    userId: number;
+    prevStateId: number;
+    nextStateId: number;
+    timeCreated: string;
+}
 
 /**
  * Továrna URL
