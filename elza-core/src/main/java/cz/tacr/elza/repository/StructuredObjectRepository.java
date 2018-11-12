@@ -11,7 +11,6 @@ import org.springframework.stereotype.Repository;
 
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.RulStructuredType;
 import cz.tacr.elza.domain.RulStructuredTypeExtension;
@@ -75,19 +74,27 @@ public interface StructuredObjectRepository extends JpaRepository<ArrStructuredO
             "WHERE so.state = 'TEMP'")
     List<ArrStructuredObject> findConnectedTempObjs();
 
-    @Query("FROM arr_structured_object so" +
+    @Query("SELECT so" +
+            " FROM arr_structured_object so" +
             " WHERE so.fund.id = :fundId" +
             " AND so.deleteChange.id in :deleteChangeIds" +
             " AND so.state <> 'TEMP'" +
             " ORDER BY so.sortValue")
     List<ArrStructuredObject> findByFundAndDeleteChange(@Param("fundId") Integer fundId, @Param("deleteChangeIds") List<Integer> deleteChangeIds);
 
-    @Query("FROM arr_structured_object so" +
+    @Query("SELECT so" +
+            " FROM arr_structured_object so" +
             " WHERE so.fund.id = :fundId" +
             " AND so.createChange.id in :createChangeIds" +
             " AND so.state <> 'TEMP'" +
             " ORDER BY so.sortValue")
     List<ArrStructuredObject> findByFundAndCreateChange(@Param("fundId") Integer fundId, @Param("createChangeIds") List<Integer> createChangeIds);
+
+    @Query("SELECT so" +
+            " FROM arr_structured_object so" +
+            " WHERE so.fund = :fund" +
+            " AND so.deleteChange >= :change")
+    List<ArrStructuredObject> findNotBeforeDeleteChange(@Param("fund") ArrFund fund, @Param("change") ArrChange change);
 
     /**
      * Count number of structured objects within two changeIds

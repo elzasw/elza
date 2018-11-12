@@ -46,6 +46,7 @@ import cz.tacr.elza.domain.ArrFundStructureExtension;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrOutputDefinition;
+import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.UsrPermission;
@@ -120,6 +121,9 @@ public class RevertingChangesService {
 
     @Autowired
     private StructObjService structObjService;
+
+    @Autowired
+    private StructObjValueService structObjValueService;
 
     /**
      * Vyhledání provedení změn nad AS, případně nad konkrétní JP z AS.
@@ -322,13 +326,13 @@ public class RevertingChangesService {
 
         if (nodeId == null) {
 
-            createStructuredItemUpdateEntityQuery(fund, toChange).executeUpdate();
-            createStructuredItemDeleteEntityQuery(fund, toChange).executeUpdate();
+            structuredItemDelete(fund, toChange);
+            structuredItemUpdate(fund, toChange);
 
-            createSobjVrequestDeleteEntityQuery(fund, toChange).executeUpdate();
+            sobjVrequestDelete(fund, toChange);
 
-            createStructuredObjectUpdateEntityQuery(fund, toChange).executeUpdate();
-            createStructuredObjectDeleteEntityQuery(fund, toChange).executeUpdate();
+            structuredObjectDelete(fund, toChange);
+            structuredObjectUpdate(fund, toChange);
         }
 
         {
@@ -774,7 +778,7 @@ public class RevertingChangesService {
         return query;
     }
 
-    private Query createStructuredItemDeleteEntityQuery(@NotNull final ArrFund fund, @NotNull final ArrChange change) {
+    private void structuredItemDelete(@NotNull ArrFund fund, @NotNull ArrChange toChange) {
 
         String hql = "DELETE FROM arr_structured_item i WHERE i.itemId IN (" +
                 " SELECT si.itemId FROM arr_structured_item si" +
@@ -787,30 +791,25 @@ public class RevertingChangesService {
 
         // nastavení parametrů dotazu
         query.setParameter("fund", fund);
-        query.setParameter("change", change);
+        query.setParameter("change", toChange);
 
-        return query;
+        query.executeUpdate();
     }
 
-    private Query createStructuredItemUpdateEntityQuery(@NotNull final ArrFund fund, @NotNull final ArrChange change) {
+    private void structuredItemUpdate(@NotNull final ArrFund fund, @NotNull final ArrChange change) {
 
-        String hql = "UPDATE arr_structured_item i SET i.deleteChange = NULL WHERE i.itemId IN (" +
-                " SELECT si.itemId FROM arr_structured_item si" +
-                " JOIN si.structuredObject so" +
-                " WHERE so.fund = :fund" +
-                " AND si.deleteChange >= :change" +
-                ")";
+        List<ArrStructuredItem> structuredItemList = structuredItemRepository.findNotBeforeDeleteChange(fund, change);
 
-        Query query = entityManager.createQuery(hql);
+        structObjValueService.addToValidate(structuredItemList.stream().map(item -> item.getStructuredObject()).collect(Collectors.toList()));
 
-        // nastavení parametrů dotazu
-        query.setParameter("fund", fund);
-        query.setParameter("change", change);
+        for (ArrStructuredItem structuredItem : structuredItemList) {
+            structuredItem.setDeleteChange(null);
+        }
 
-        return query;
+        structuredItemRepository.save(structuredItemList);
     }
 
-    private Query createSobjVrequestDeleteEntityQuery(@NotNull final ArrFund fund, @NotNull final ArrChange change) {
+    private void sobjVrequestDelete(@NotNull ArrFund fund, @NotNull ArrChange toChange) {
 
         String hql = "DELETE FROM arr_sobj_vrequest r" +
                 " WHERE r.structuredObject IN (" +
@@ -823,12 +822,12 @@ public class RevertingChangesService {
 
         // nastavení parametrů dotazu
         query.setParameter("fund", fund);
-        query.setParameter("change", change);
+        query.setParameter("change", toChange);
 
-        return query;
+        query.executeUpdate();
     }
 
-    private Query createStructuredObjectDeleteEntityQuery(@NotNull final ArrFund fund, @NotNull final ArrChange change) {
+    private void structuredObjectDelete(@NotNull ArrFund fund, @NotNull ArrChange toChange) {
 
         String hql = "DELETE FROM arr_structured_object so" +
                 " WHERE so.fund = :fund" +
@@ -838,24 +837,22 @@ public class RevertingChangesService {
 
         // nastavení parametrů dotazu
         query.setParameter("fund", fund);
-        query.setParameter("change", change);
+        query.setParameter("change", toChange);
 
-        return query;
+        query.executeUpdate();
     }
 
-    private Query createStructuredObjectUpdateEntityQuery(@NotNull final ArrFund fund, @NotNull final ArrChange change) {
+    private void structuredObjectUpdate(@NotNull final ArrFund fund, @NotNull final ArrChange change) {
 
-        String hql = "UPDATE arr_structured_object so SET so.deleteChange = NULL" +
-                " WHERE so.fund = :fund" +
-                " AND so.deleteChange >= :change";
+        List<ArrStructuredObject> structuredObjectList = structuredObjectRepository.findNotBeforeDeleteChange(fund, change);
 
-        Query query = entityManager.createQuery(hql);
+        structObjValueService.addToValidate(structuredObjectList);
 
-        // nastavení parametrů dotazu
-        query.setParameter("fund", fund);
-        query.setParameter("change", change);
+        for (ArrStructuredObject structuredObject : structuredObjectList) {
+            structuredObject.setDeleteChange(null);
+        }
 
-        return query;
+        structuredObjectRepository.save(structuredObjectList);
     }
 
     private Query findChangeNodeIdsQuery(@NotNull final ArrFund fund,
