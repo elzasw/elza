@@ -2,11 +2,13 @@
 import {indexById, selectedAfterClose} from 'stores/app/utils.jsx'
 
 import {fund, fundInitState} from './fund.jsx'
+import fundModal from './fundModal.jsx'
 import nodeSetting from './nodeSetting.jsx'
 import visiblePolicy from './visiblePolicy.jsx'
 import {consolidateState} from 'components/Utils.jsx'
 import {isBulkAction} from 'actions/arr/bulkActions.jsx'
 import {isFundTreeAction} from 'actions/arr/fundTree.jsx'
+import {isFundModalAction} from 'actions/arr/fundModal.jsx'
 import {nodeFormActions, outputFormActions, structureFormActions} from 'actions/arr/subNodeForm.jsx'
 import {isSubNodeRegisterAction} from 'actions/arr/subNodeRegister.jsx'
 import {isSubNodeDaosAction} from 'actions/arr/subNodeDaos.jsx'
@@ -24,9 +26,9 @@ import {isFundActionAction} from 'actions/arr/fundAction.jsx'
 import {isFundOutput} from 'actions/arr/fundOutput.jsx'
 import {isFundOutputFilesAction} from 'actions/arr/fundOutputFiles.jsx'
 import processAreaStores from "shared/utils/processAreaStores";
- import isCommonArea from "stores/utils/isCommonArea";
- import globalFundTree from "./globalFundTree";
- import {isStructureNodeForm} from "../../../actions/arr/structureNodeForm";
+import isCommonArea from "stores/utils/isCommonArea";
+import globalFundTree from "./globalFundTree";
+import {isStructureNodeForm} from "../../../actions/arr/structureNodeForm";
 
  const initialState = {
     activeIndex: null,
@@ -37,6 +39,7 @@ import processAreaStores from "shared/utils/processAreaStores";
     visiblePolicy: visiblePolicy(),
     funds: [],
     globalFundTree: globalFundTree(undefined, {}),
+    fundModal: fundModal(undefined, {})
 };
 
 function selectFundTab(state, action) {
@@ -95,6 +98,7 @@ export default function arrRegion(state = initialState, action) {
         || isFundActionAction(action)
         || isFundOutput(action)
         || isStructureNodeForm(action)
+        || isFundModalAction(action)
     ) {
         const index = indexById(state.funds, action.versionId, "versionId");
         if (index !== null) {

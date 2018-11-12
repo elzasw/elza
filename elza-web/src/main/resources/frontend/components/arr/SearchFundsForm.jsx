@@ -5,20 +5,19 @@ import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx'
 import Search from "../shared/search/Search";
 import {connect} from "react-redux";
 
+//  Actions
+import * as types from '../../actions/constants/ActionTypes.js';
+import {fundModalFulltextChange, fundModalFulltextSearch} from '../../actions/arr/fundModal.jsx'
+
 /**
  * Formulář pro vyhledávání nad archivními soubory.
  */
 class SearchFundsForm extends AbstractReactComponent {
-
     static propTypes = {};
 
-    componentWillReceiveProps(nextProps) {
+    componentWillReceiveProps(nextProps) {}
 
-    }
-
-    componentDidMount() {
-
-    }
+    componentDidMount() {}
 
     /**
      * Vyhledání v archivních souborech.
@@ -26,16 +25,16 @@ class SearchFundsForm extends AbstractReactComponent {
      * @param fulltext hledaný výraz
      */
     handleSearch = (fulltext) => {
-        // TODO ELZA-1656: provede nastavení ve store + předá informaci listového store o vyhledání
         console.warn("#handleSearch: " + fulltext);
+        this.dispatch(fundModalFulltextSearch(fulltext));
     };
 
     /**
      * Smazání výsledků vyhledávání.
      */
     handleClearSearch = () => {
-        // TODO ELZA-1656: vymaže kompletně store pro vyhledávání
         console.warn("#handleClearSearch");
+        this.dispatch(fundModalFulltextChange(''));
     };
 
     render() {
@@ -45,10 +44,10 @@ class SearchFundsForm extends AbstractReactComponent {
                     onSearch={this.handleSearch}
                     onClear={this.handleClearSearch}
                     placeholder={i18n('search.input.search')}
-                    value={""} // zde se bude opírat hodnotu ze store
+                    value={this.props.searchText}
                 />
                 <div> {/*TODO ELZA-1656: opřít o výsledky hledání, nezobrazovat pokud není co k zobrazení */}
-                    {i18n('arr.fund.search.result.count', 1)}
+                    {i18n('arr.fund.search.result.count', this.props.count)}
                     {/*TODO ELZA-1656: přidat komponentu pro zobrazení výsledků */}
                 </div>
             </Modal.Body>
@@ -57,8 +56,13 @@ class SearchFundsForm extends AbstractReactComponent {
 }
 
 function mapStateToProps(state) {
+    const { fundModal } = state.arrRegion;
     {/*TODO ELZA-1656: mapování potřebný dat ze store pro render */}
-    return {}
+    return {
+        searchText: fundModal.filterText,
+        result: fundModal.searchedIDs,
+        count: fundModal.count
+    }
 }
 
 export default connect(mapStateToProps)(SearchFundsForm);
