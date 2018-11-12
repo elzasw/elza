@@ -1158,7 +1158,7 @@ public class StructObjService {
             changeIdStructuredObjectMap.computeIfAbsent(changeId, k -> new HashMap<>()).put(structuredObject.getStructuredObjectId(), structuredObject);
         }
         for (ArrStructuredObject structuredObject : structObjRepository.findByFundAndDeleteChange(fundId, changeIdList)) {
-            Integer changeId = structuredObject.getCreateChange().getChangeId();
+            Integer changeId = structuredObject.getDeleteChange().getChangeId();
             changeIdStructuredObjectMap.computeIfAbsent(changeId, k -> new HashMap<>()).put(structuredObject.getStructuredObjectId(), structuredObject);
         }
         for (ArrStructuredItem structuredItem : structureItemRepository.findByFundAndCreateChange(fundId, changeIdList)) {
