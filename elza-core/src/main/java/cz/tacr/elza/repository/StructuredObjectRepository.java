@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.RulStructuredType;
 import cz.tacr.elza.domain.RulStructuredTypeExtension;
@@ -64,7 +65,7 @@ public interface StructuredObjectRepository extends JpaRepository<ArrStructuredO
     ArrChange findTempChangeByStructuredObject(@Param("structuredObject") ArrStructuredObject structuredObject);
 
     List<ArrStructuredObject> findByFundAndDeleteChangeIsNull(ArrFund fund);
-    
+
     List<ArrStructuredObject> findByFund(ArrFund fund);
 
     void deleteByFund(ArrFund fund);
@@ -73,5 +74,39 @@ public interface StructuredObjectRepository extends JpaRepository<ArrStructuredO
             "JOIN arr_data_structure_ref ds ON ds.structuredObject = so " +
             "WHERE so.state = 'TEMP'")
     List<ArrStructuredObject> findConnectedTempObjs();
+
+    @Query("FROM arr_structured_object so" +
+            " WHERE so.fund.id = :fundId" +
+            " AND so.deleteChange.id in :deleteChangeIds" +
+            " AND so.state <> 'TEMP'" +
+            " ORDER BY so.sortValue")
+    List<ArrStructuredObject> findByFundAndDeleteChange(@Param("fundId") Integer fundId, @Param("deleteChangeIds") List<Integer> deleteChangeIds);
+
+    @Query("FROM arr_structured_object so" +
+            " WHERE so.fund.id = :fundId" +
+            " AND so.createChange.id in :createChangeIds" +
+            " AND so.state <> 'TEMP'" +
+            " ORDER BY so.sortValue")
+    List<ArrStructuredObject> findByFundAndCreateChange(@Param("fundId") Integer fundId, @Param("createChangeIds") List<Integer> createChangeIds);
+
+    /**
+     * Count number of structured objects within two changeIds
+     *
+     * @param fundId
+     * @param fromChange
+     *            Higher change id
+     * @param toChange
+     *            Lower change id
+     * @return
+     */
+    @Query("SELECT COUNT(so) FROM arr_structured_object so WHERE so.fundId = :fundId and " +
+            "( " +
+            " (so.createChangeId>=:toChangeId AND so.createChangeId<=:fromChangeId) OR " +
+            " (so.deleteChangeId is not null AND so.deleteChangeId>=:toChangeId AND so.deleteChangeId<=:fromChangeId) "
+            +
+            ")")
+    int countItemsWithinChangeRange(@Param("fundId") Integer fundId,
+                                    @Param("fromChangeId") Integer fromChangeId,
+                                    @Param("toChangeId") Integer toChangeId);
 
 }
