@@ -27,6 +27,7 @@ import javax.persistence.TemporalType;
 import javax.persistence.TypedQuery;
 import javax.validation.constraints.NotNull;
 
+import cz.tacr.elza.service.eventnotification.events.EventStructureDataChange;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -848,11 +849,20 @@ public class RevertingChangesService {
 
         structObjValueService.addToValidate(structuredObjectList);
 
+        List<Integer> structureDataIds = new ArrayList<>(structuredObjectList.size());
         for (ArrStructuredObject structuredObject : structuredObjectList) {
             structuredObject.setDeleteChange(null);
+            structureDataIds.add(structuredObject.getStructuredObjectId());
         }
 
         structuredObjectRepository.save(structuredObjectList);
+
+        eventNotificationService.publishEvent(new EventStructureDataChange(fund.getFundId(),
+                null,
+                null,
+                null,
+                structureDataIds,
+                null));
     }
 
     private Query findChangeNodeIdsQuery(@NotNull final ArrFund fund,
