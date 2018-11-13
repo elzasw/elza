@@ -4,10 +4,9 @@ import {Modal} from 'react-bootstrap';
 import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx'
 import Search from "../shared/search/Search";
 import {connect} from "react-redux";
-
-//  Actions
-import * as types from '../../actions/constants/ActionTypes.js';
-import {fundModalFulltextChange, fundModalFulltextSearch} from '../../actions/arr/fundModal.jsx'
+import * as fundSearchActions from '../../actions/arr/fundSearch.jsx'
+import Loading from "../shared/loading/Loading";
+import HorizontalLoader from "../shared/loading/HorizontalLoader";
 
 /**
  * Formulář pro vyhledávání nad archivními soubory.
@@ -15,9 +14,13 @@ import {fundModalFulltextChange, fundModalFulltextSearch} from '../../actions/ar
 class SearchFundsForm extends AbstractReactComponent {
     static propTypes = {};
 
-    componentWillReceiveProps(nextProps) {}
+    componentWillReceiveProps(nextProps) {
+        this.props.dispatch(fundSearchActions.fundSearchFetchIfNeeded());
+    }
 
-    componentDidMount() {}
+    componentDidMount() {
+        this.props.dispatch(fundSearchActions.fundSearchFetchIfNeeded());
+    }
 
     /**
      * Vyhledání v archivních souborech.
@@ -25,43 +28,61 @@ class SearchFundsForm extends AbstractReactComponent {
      * @param fulltext hledaný výraz
      */
     handleSearch = (fulltext) => {
-        console.warn("#handleSearch: " + fulltext);
-        this.dispatch(fundModalFulltextSearch(fulltext));
+        this.props.dispatch(fundSearchActions.fundSearchFulltextChange(fulltext));
     };
 
     /**
      * Smazání výsledků vyhledávání.
      */
     handleClearSearch = () => {
-        console.warn("#handleClearSearch");
-        this.dispatch(fundModalFulltextChange(''));
+        this.props.dispatch(fundSearchActions.fundSearchFulltextClear());
     };
 
     render() {
+        const {fundSearch} = this.props;
         return (
             <Modal.Body>
                 <Search
                     onSearch={this.handleSearch}
                     onClear={this.handleClearSearch}
                     placeholder={i18n('search.input.search')}
-                    value={this.props.searchText}
+                    value={fundSearch.fulltext}
                 />
-                <div> {/*TODO ELZA-1656: opřít o výsledky hledání, nezobrazovat pokud není co k zobrazení */}
-                    {i18n('arr.fund.search.result.count', this.props.count)}
-                    {/*TODO ELZA-1656: přidat komponentu pro zobrazení výsledků */}
-                </div>
+                {this.renderResult()}
             </Modal.Body>
         )
+    }
+
+    renderResult = () => {
+        const {fundSearch} = this.props;
+
+        const result = [];
+
+        if (fundSearch.isFetching) {
+            result.push(<HorizontalLoader hover showText={false} key="loader"/>);
+        }
+
+        if (fundSearch.fetched) {
+            result.push(<div key="result">
+                {i18n('arr.fund.search.result.count', this.getAllCount(fundSearch.funds))}
+                {/*TODO ELZA-1656: přidat komponentu pro zobrazení výsledků */}
+            </div>)
+        }
+
+        return result;
+    };
+
+    getAllCount = (funds) => {
+        let count = 0;
+        funds.forEach(fund => count += fund.count);
+        return count;
     }
 }
 
 function mapStateToProps(state) {
-    const { fundModal } = state.arrRegion;
-    {/*TODO ELZA-1656: mapování potřebný dat ze store pro render */}
+    const {fundSearch} = state.arrRegion;
     return {
-        searchText: fundModal.filterText,
-        result: fundModal.searchedIDs,
-        count: fundModal.count
+        fundSearch
     }
 }
 

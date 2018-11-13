@@ -1651,7 +1651,11 @@ public class ArrangementController {
      */
     @RequestMapping(value = "/fundFulltext", method = RequestMethod.POST)
     public List<ArrFundFulltextResult> fundFulltext(final @RequestBody FulltextFundRequest input) {
-
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         // vyhledáš, vrátíš seznam AS s počtem nalezených JP
         // + uložíš si do session uživatele Map<fundId, List<nodeId>
 
