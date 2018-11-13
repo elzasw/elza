@@ -10,7 +10,6 @@ export function isFundSearchAction(action) {
         case types.FUND_SEARCH_FULLTEXT_REQUEST:
         case types.FUND_SEARCH_FULLTEXT_RECEIVE:
         case types.FUND_SEARCH_EXPAND_FUND:
-        case types.FUND_SEARCH_COLLAPSE_FUND:
         case types.FUND_SEARCH_FUND_REQUEST:
         case types.FUND_SEARCH_FUND_RECEIVE:
             return true;
@@ -59,5 +58,26 @@ function fundSearchFulltextReceive(funds) {
     return {
         type: types.FUND_SEARCH_FULLTEXT_RECEIVE,
         funds
+    }
+}
+
+function fundSearchFundRequest(fund) {
+    return {
+        type: types.FUND_SEARCH_FUND_REQUEST,
+        fund
+    }
+}
+
+function fundSearchFundReceive(nodes) {
+    return {
+        type: types.FUND_SEARCH_FUND_RECEIVE,
+        nodes
+    }
+}
+
+export function fundSearchExpandFund(fund) {
+    return {
+        type: types.FUND_SEARCH_EXPAND_FUND,
+        fund
     }
 }

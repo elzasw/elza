@@ -11,7 +11,7 @@ const initialState = {
 };
 
 const initialFundState = {
-    expand: false,
+    expanded: false,
     isFetching: false,
     fetched: false,
     nodes: []
@@ -50,12 +50,28 @@ export default function fundSearch(state = initialState, action = {}) {
             };
         }
         case types.FUND_SEARCH_EXPAND_FUND: {
-            return state; // TODO
-        }
-        case types.FUND_SEARCH_COLLAPSE_FUND: {
-            return state; // TODO
+            var index = indexById(state.funds, action.fund.id);
+            const newFunds = [...state.funds];
+            const {fund} = action;
+
+            Object.assign(newFunds[index], {...fund, expanded: !fund.expanded, isFetching: true});
+            
+            return {
+                ...state,
+                funds: newFunds
+            };
         }
         case types.FUND_SEARCH_FUND_REQUEST: {
+            var index = indexById(state.funds, action.fund.id);
+            const newFunds = [...state.funds];
+            const {fund} = action;
+
+            Object.assign(newFunds[index], {...fund, expanded: !fund.expanded, isFetching: true});
+            
+            return {
+                ...state,
+                funds: newFunds
+            };
             return state; // TODO
         }
         case types.FUND_SEARCH_FUND_RECEIVE:{

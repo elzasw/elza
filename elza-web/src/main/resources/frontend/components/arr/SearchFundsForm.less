@@ -4,9 +4,22 @@
 @rowHeight: 16px;
 
 .fund-search {
-    .referenceMark;
+    min-height: 300px;
 
-    &-result {
+    &.no-fulltext {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 1.2em;
+        text-align: center;
+    }
+
+    &.result {
+        margin-top: 10px;
+        padding: 10px;
+        border: 1px solid #ccc;
+            
         .exp-col {
             flex-grow: 1;
             line-height: 16px;
@@ -17,37 +30,7 @@
             cursor: pointer;
         }
 
-        .node-label {
-            display: flex;
-            flex-grow: 1;
-            height: 16px;
-            line-height: 16px;
-            vertical-align: middle;
-            cursor: pointer;
-            &:hover {
-                background: #EEEEEE;
-            }
-        }
-
-        .node-icon {
-            height: 16px;
-            line-height: 16px;
-            vertical-align: middle;
-            margin: 0 5px 0 3px;
-        }
-
-        .node-icon-color {
-            padding:0 2px;
-            width:2em;
-            height:2em;
-            text-align:center;
-            font-size: 0.7em;
-            flex-shrink: 0;
-            border-radius: 20px;
-            line-height:2em;
-        }
-
-        .node {
+        .fund {
             display: flex;
             height: @rowHeight;
             white-space: nowrap;
@@ -57,39 +40,36 @@
                 background: @tree-node-label-active-bg;
                 cursor: pointer;
             }
-        }
 
-        .node-color {
-            height: auto;
-            padding:1px;
-            .exp-col{
-                width:20px;
-                min-width:auto;
-                max-width:auto;
+            &-icon {
+                height: 16px;
+                line-height: 16px;
+                vertical-align: middle;
+                margin: 0 5px 0 3px;
+    
+                &-color {
+                    width:2em;
+                    height:2em;
+                    padding:0 2px;
+                    flex-shrink: 0;
+                    text-align:center;
+                    flex-shrink: 0;
+                    border-radius: 20px;
+                    font-size: 0.7em;
+                }
             }
-        }
 
-        .active {
-            background: @tree-node-active-bg;
-            &:hover {
-                background: @tree-node-active-hover-bg;
-            }
-            .node-label {
-                background: @tree-node-active-bg;
+            &-label {
+                display: flex;
+                flex-grow: 1;
+                height: 16px;
+                line-height: 16px;
+                vertical-align: middle;
+                cursor: pointer;
                 &:hover {
-                    background: @tree-node-active-hover-bg;
+                    background: #EEEEEE;
                 }
             }
         }
-    }
-
-    &-no-fulltext {
-        display: flex;
-        min-height: 300px;
-        align-items: center;
-        justify-content: center;
-        font-weight: bold;
-        font-size: 1.2em;
-        text-align: center;
     }
 }
