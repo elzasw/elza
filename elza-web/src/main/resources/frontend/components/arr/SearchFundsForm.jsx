@@ -4,17 +4,11 @@ import {Modal} from 'react-bootstrap';
 import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx'
 import Search from "../shared/search/Search";
 import {connect} from "react-redux";
-<<<<<<< HEAD
-import './SearchFundsForm.less';
-
-//  Actions
-import * as types from '../../actions/constants/ActionTypes.js';
-import {fundModalFulltextChange, fundModalFulltextSearch} from '../../actions/arr/fundModal.jsx'
-=======
 import * as fundSearchActions from '../../actions/arr/fundSearch.jsx'
 import Loading from "../shared/loading/Loading";
 import HorizontalLoader from "../shared/loading/HorizontalLoader";
->>>>>>> b492a1f1c51c28a9208016c40044da209057f515
+
+import './SearchFundsForm.less';
 
 /**
  * Formulář pro vyhledávání nad archivními soubory.
@@ -135,7 +129,6 @@ class SearchFundsForm extends AbstractReactComponent {
     };
 
     render() {
-<<<<<<< HEAD
         let { data } = this.props;
 
         // mockup data
@@ -150,9 +143,7 @@ class SearchFundsForm extends AbstractReactComponent {
             version: 2
         }
 
-=======
         const {fundSearch} = this.props;
->>>>>>> b492a1f1c51c28a9208016c40044da209057f515
         return (
             <Modal.Body>
                 <Search
@@ -161,7 +152,6 @@ class SearchFundsForm extends AbstractReactComponent {
                     placeholder={i18n('search.input.search')}
                     value={fundSearch.fulltext}
                 />
-<<<<<<< HEAD
                 {data.length > 0 ?
                     <div className={"fund-search-result"}>
                         {i18n('arr.fund.search.result.count', this.props.count)}
@@ -176,9 +166,7 @@ class SearchFundsForm extends AbstractReactComponent {
                         {i18n('arr.fund.search.noFulltext')}
                     </div>
                 }
-=======
                 {this.renderResult()}
->>>>>>> b492a1f1c51c28a9208016c40044da209057f515
             </Modal.Body>
         )
     }
