@@ -3,16 +3,32 @@ import {connect} from "react-redux";
 import {Modal} from 'react-bootstrap';
 const classNames = require('classnames');
 import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx'
+import {createReferenceMark, getGlyph, getFundFromFundAndVersion} from 'components/arr/ArrUtils.jsx'
 import {AbstractReactComponent, FormInput, Icon, i18n} from 'components/shared';
 
+import {routerNavigate} from 'actions/router.jsx'
+import {modalDialogHide} from 'actions/global/modalDialog.jsx'
 import * as fundSearchActions from '../../actions/arr/fundSearch.jsx'
 import Search from "../shared/search/Search";
 import Loading from "../shared/loading/Loading";
 import HorizontalLoader from "../shared/loading/HorizontalLoader";
 
+import {selectFundTab} from 'actions/arr/fund.jsx'
+import {globalFundTreeInvalidate} from "../../actions/arr/globalFundTree";
+
 import './SearchFundsForm.less';
 
 const FUND_NAME_MAX_CHARS = 60
+
+const colorMap = {
+    "fa-database":{background:"#fff",color:"#000"},
+    "fa-folder-o":{background:"#ffcc00",color:"#fff"},
+    "ez-serie":{background:"#6696dd", color:"#fff"},
+    "fa-sitemap":{background:"#4444cc", color:"#fff"},
+    "fa-file-text-o":{background:"#ff972c", color:"#fff"},
+    "ez-item-part-o":{background:"#cc3820", color: "#fff"},
+    "default":{background:"#333", color: "#fff"}
+}
 
 /**
  * Formulář pro vyhledávání nad archivními soubory.
@@ -52,52 +68,112 @@ class SearchFundsForm extends AbstractReactComponent {
     };
 
     /**
+     * Přejít na detail uzlu
+     */
+    handleNodeClick = (item) => {
+        const { fulltext, funds } = this.props.fundSearch;
+        const itemFund = funds.find(fund => fund.nodes.some(node => node.id === item.id));
+
+        // Přepnutí na stránku pořádání a zavření dialogu
+        this.dispatch(routerNavigate('/arr'));
+        this.dispatch(modalDialogHide());
+
+        // Otevření archivního souboru
+        // this.navigateToFund(itemFund);
+    };
+
+    navigateToFund = (item) => {
+        var fundObj = getFundFromFundAndVersion(item, item.version);
+
+
+        this.dispatch(globalFundTreeInvalidate());
+        this.dispatch(selectFundTab(fundObj));
+    }
+
+    /**
      * Renderování vyhledaného archivního souboru.
-     * @param fund {Object} uzel
+     * @param type {string} typ
+     * @param item {Object} AS / uzel
      * @return {Object} view
      */
-    renderFund = (fund, totalCount) => {
-        const {expanded} = fund;
+    renderItem = (type, item) => {
+        const {expanded} = item;
 
         const expColCls = 'exp-col ' + (expanded ? 'fa fa-minus-square-o' : 'fa fa-plus-square-o');
-        const expCol = <span className={expColCls} onClick={() => this.handleFundClick(fund)}></span>
+        const expCol = <span className={expColCls} onClick={() => this.handleFundClick(item)}></span>
+        const detailCol = <span className="detail-col fa fa-sign-out" onClick={() => this.handleNodeClick(item)}></span>
 
-        const cls = classNames({
-            fund: true,
-            opened: expanded,
-            closed: !expanded,
-        });
-        const iconClass = classNames({
-            "fund-icon": true,
-            "fund-icon-color": true
-        });
+        const levels = createReferenceMark(item, null);
 
-        let name = fund.name;
+        let cls;
+        if (type === 'fund') {
+            cls = classNames({
+                item: true,
+                opened: expanded,
+                closed: !expanded,
+            });
+            item.icon = 'fa-database';
+        } else {
+            cls = 'item';
+        }
+
+        let name = item.name;
         if (name.length > FUND_NAME_MAX_CHARS) {
             name = name.substring(0, FUND_NAME_MAX_CHARS - 3) + '...'
         }
 
-        const iconStyle = {
-            backgroundColor: '#ffffff',
-            color: '#000000' 
+        let backgroundColor, color;
+        if (colorMap[item.icon]){
+            backgroundColor = colorMap[item.icon].background;
+            color = colorMap[item.icon].color;
+        } else {
+            backgroundColor = colorMap["default"].background;
+            color = colorMap["default"].color;
         }
 
-        return <div key={fund.id} className={cls}>
-            {expCol}
-            <Icon className={iconClass} style={iconStyle} fill={iconStyle.backgroundColor} stroke="none" glyph="fa-database"/>
-            <div
-                title={fund.name}
-                className="fund-label"
-            >
-                {name} ({fund.count})
+        const iconStyle = {
+            backgroundColor:backgroundColor,
+            color:color
+        };
+
+        let icon = getGlyph(item.icon);
+        const iconRemap = {
+            "fa-folder-o":"folder",
+            "ez-serie":"serie",
+            "fa-sitemap":"sitemap",
+            "fa-file-text-o":"fileText",
+            "ez-item-part-o":"fileTextPart",
+            "fa-exclamation-triangle":"triangleExclamation"
+        };
+
+        if (iconRemap[icon]){
+            icon = iconRemap[icon];
+        }
+
+        return <div key={item.id} className={type}>
+            <div className={cls}>
+                {type === 'fund' ? expCol : levels}
+                <Icon className="item-icon" style={iconStyle} fill={iconStyle.backgroundColor} stroke="none" glyph={icon}/>
+                <div
+                    title={item.name}
+                    className="item-label"
+                >
+                    {name} {item.count && `(${item.count})`}
+                    {type === 'node' && detailCol}
+                </div>
             </div>
+            {expanded && item.nodes &&
+                <div className="nodes">
+                    {item.nodes.map(node => this.renderItem('node', node))}
+                </div>
+            }
         </div>;
     };
 
     render() {
         const {fundSearch} = this.props;
         const isFulltext = fundSearch.fulltext.length > 0;
-        const totalCount =  this.getTotalCount(fundSearch.funds);
+        const totalCount = this.getTotalCount(fundSearch.funds);
 
         return (
             <Modal.Body>
@@ -128,14 +204,10 @@ class SearchFundsForm extends AbstractReactComponent {
         }
 
         if (fundSearch.fetched) {
-            const totalCount = this.getTotalCount(fundSearch.funds);
-
             result.push(
                 <div key="result" className="result-list">
                     {fundSearch.funds.length > 0 &&
-                        <div className="result-list">
-                            {fundSearch.funds.map(fund => this.renderFund(fund, totalCount))}
-                        </div>        
+                        fundSearch.funds.map(fund => this.renderItem('fund', fund)) 
                     }
                 </div>
             )

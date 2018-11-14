@@ -54,7 +54,7 @@ export default function fundSearch(state = initialState, action = {}) {
             const newFunds = [...state.funds];
             const {fund} = action;
 
-            Object.assign(newFunds[index], {...fund, expanded: !fund.expanded, isFetching: true});
+            Object.assign(newFunds[index], {...fund, expanded: !fund.expanded});
             
             return {
                 ...state,
@@ -64,18 +64,27 @@ export default function fundSearch(state = initialState, action = {}) {
         case types.FUND_SEARCH_FUND_REQUEST: {
             var index = indexById(state.funds, action.fund.id);
             const newFunds = [...state.funds];
-            const {fund} = action;
 
-            Object.assign(newFunds[index], {...fund, expanded: !fund.expanded, isFetching: true});
+            Object.assign(newFunds[index], {...action.fund, isFetching: true});
             
             return {
                 ...state,
                 funds: newFunds
             };
-            return state; // TODO
         }
         case types.FUND_SEARCH_FUND_RECEIVE:{
-            return state; // TODO
+            var index = indexById(state.funds, action.fund.id);
+            const newFunds = [...state.funds];
+
+            Object.assign(
+                newFunds[index], 
+                {...action.fund, isFetching: false, fetched: true, nodes: action.nodes}
+            );
+            
+            return {
+                ...state,
+                funds: newFunds
+            };
         }
         default:
             return state

@@ -21,7 +21,7 @@ export function isFundSearchAction(action) {
 export function fundSearchFetchIfNeeded() {
     return (dispatch, getState) => {
         const {arrRegion: {fundSearch}} = getState();
-        const {currentDataKey, isFetching, fulltext} = fundSearch;
+        const {currentDataKey, isFetching, fulltext, funds} = fundSearch;
 
         if ((fulltext != currentDataKey && !isFetching)) {
             dispatch(fundSearchFulltextRequest(fulltext));
@@ -30,6 +30,14 @@ export function fundSearchFetchIfNeeded() {
             });
         }
 
+        funds.forEach(fund => {
+            if (fund.expanded && !fund.isFetching && !fund.fetched) {
+                dispatch(fundSearchFundRequest(fund));
+                WebApi.fundFulltextNodes(fund.id).then(result => {
+                    dispatch(fundSearchFundReceive(fund, result));
+                });
+            }
+        })
     }
 }
 
@@ -68,9 +76,10 @@ function fundSearchFundRequest(fund) {
     }
 }
 
-function fundSearchFundReceive(nodes) {
+function fundSearchFundReceive(fund, nodes) {
     return {
         type: types.FUND_SEARCH_FUND_RECEIVE,
+        fund,
         nodes
     }
 }

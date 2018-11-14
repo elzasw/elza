@@ -1,7 +1,7 @@
 @import "/variables.less";
 @import "./ReferenceMark.less";
 
-@rowHeight: 16px;
+@rowHeight: 24px;
 
 .fund-search {
     min-height: 300px;
@@ -19,56 +19,62 @@
         margin-top: 10px;
         padding: 10px;
         border: 1px solid #ccc;
-            
-        .exp-col {
-            flex-grow: 1;
-            line-height: 16px;
-            min-width: 26px;
-            max-width: 26px;
-            text-align: center;
-            vertical-align: middle;
-            cursor: pointer;
-        }
 
-        .fund {
-            display: flex;
-            height: @rowHeight;
-            white-space: nowrap;
-            font-size: 0.9em;
-            width: 100%;
-            &:hover {
-                background: @tree-node-label-active-bg;
-                cursor: pointer;
-            }
+        .result-list {
+            height: 400px;
+            overflow-y: auto;
 
-            &-icon {
-                height: 16px;
-                line-height: 16px;
-                vertical-align: middle;
-                margin: 0 5px 0 3px;
-    
-                &-color {
-                    width:2em;
-                    height:2em;
-                    padding:0 2px;
-                    flex-shrink: 0;
-                    text-align:center;
-                    flex-shrink: 0;
-                    border-radius: 20px;
-                    font-size: 0.7em;
-                }
-            }
-
-            &-label {
-                display: flex;
+            .exp-col, .detail-col {
                 flex-grow: 1;
-                height: 16px;
-                line-height: 16px;
+                line-height: 20px;
+                min-width: 26px;
+                max-width: 26px;
+                text-align: center;
                 vertical-align: middle;
+                font-size: 16px;
                 cursor: pointer;
+            }
+
+            .referenceMark;
+
+            .item {
+                display: flex;
+                align-items: center;
+                width: 100%;
+                height: @rowHeight;
+                margin: 5px 0;
+                white-space: nowrap;
+                font-size: 0.9em;
                 &:hover {
-                    background: #EEEEEE;
+                    background: @tree-node-label-active-bg;
                 }
+
+                &-icon {
+                    height: 20px;
+                    line-height: 20px;
+                    vertical-align: middle;
+                    margin: 0 5px 0 3px;
+                    padding:0 6px;
+                    border-radius: 20px;
+                    text-align:center;
+                }
+
+                &-label {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    flex-grow: 1;
+                    height: 24px;
+                    line-height: 24px;
+                    vertical-align: middle;
+                    &:hover {
+                        background: #EEEEEE;
+                    }
+                }
+            }
+
+            .nodes {
+                padding-left: 48px;
             }
         }
     }
