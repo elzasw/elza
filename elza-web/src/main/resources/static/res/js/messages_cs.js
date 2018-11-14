@@ -701,6 +701,13 @@ var messages = {
     "arr.history.change.title.BATCH_DELETE_DESC_ITEM": "hromadné vymazání atributů",
     "arr.history.change.title.BULK_ACTION": "hromadná funkce",
     "arr.history.change.title.IMPORT": "import AS",
+    "arr.history.change.title.ADD_STRUCTURE_DATA": "založení strukturovaného typu",
+    "arr.history.change.title.ADD_STRUCTURE_DATA_BATCH": "hromadné založení strukt. typu",
+    "arr.history.change.title.UPDATE_STRUCT_DATA_BATCH": "hromadná úprava strukt. typů",
+    "arr.history.change.title.DELETE_STRUCTURE_DATA": "zrušení strukturovaného typu",
+    "arr.history.change.title.ADD_STRUCTURE_ITEM": "založení atributu u strukt. typu",
+    "arr.history.change.title.UPDATE_STRUCTURE_ITEM": "změna atributu u strukt. typu",
+    "arr.history.change.title.DELETE_STRUCTURE_ITEM": "zrušení atributu u strukt. typu",
 
     "arr.history.change.description.CREATE_AS": "Vytvoření archivního souboru",
     "arr.history.change.description.ADD_NODES_OUTPUT": "Připojení JP ({0}) k výstupu",
