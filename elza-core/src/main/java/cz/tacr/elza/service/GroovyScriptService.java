@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -50,26 +51,21 @@ public class GroovyScriptService {
     // groovy script pro vytvoření DID
     private final GroovyScriptFile createDidScriptFile;
 
-    // groovy script pro interpi detail v listu
-    private final GroovyScriptFile interpiRecordListScriptFile;
-
-    // groovy script pro interpi detail v mapování
-    private final GroovyScriptFile interpiRecordDetailScriptFile;
+    // groovy script pro import z Interpi
+    private final GroovyScriptFile interpiScriptFile;
 
     @Autowired
     public GroovyScriptService(ResourcePathResolver resourcePathResolver,
                                @Value("classpath:/script/groovy/createRecord.groovy") Resource createRecordScriptSource,
                                @Value("classpath:/script/groovy/createDid.groovy") Resource createDidScriptSource,
-                               @Value("classpath:/script/groovy/interpiRecord.groovy") Resource interpiRecordListScriptSource,
-                               @Value("classpath:/script/groovy/interpiRecordDetail.groovy") Resource interpiRecordDetailScriptSource) {
+                               @Value("classpath:/script/groovy/interpiImport.groovy") Resource interpiFile) {
         try {
             Path groovyDir = resourcePathResolver.getGroovyDir(); // TODO: Move initialization to startup service
             Files.createDirectories(groovyDir);
 
             this.createRecordScriptFile = GroovyScriptFile.create(createRecordScriptSource, groovyDir);
             this.createDidScriptFile = GroovyScriptFile.create(createDidScriptSource, groovyDir);
-            this.interpiRecordListScriptFile = GroovyScriptFile.create(interpiRecordListScriptSource, groovyDir);
-            this.interpiRecordDetailScriptFile = GroovyScriptFile.create(interpiRecordDetailScriptSource, groovyDir);
+            this.interpiScriptFile = GroovyScriptFile.create(interpiFile, groovyDir);
         } catch (Throwable t) {
             throw new SystemException("Failed to initialize groovy scripts", t);
         }
@@ -107,16 +103,16 @@ public class GroovyScriptService {
         return (Did) createDidScriptFile.evaluate(input);
     }
 
-    @SuppressWarnings("unchecked")
     public List<ExternalRecordVO> convertListToExternalRecordVO(final List<EntitaTyp> searchResults,
                                                                 final boolean generateVariantNames,
                                                                 final InterpiFactory interpiFactory) {
-        Map<String, Object> input = new HashMap<>();
-        input.put("ENTITIES", searchResults);
-        input.put("FACTORY", interpiFactory);
-        input.put("GENERATE_VARIANT_NAMES", generateVariantNames);
 
-        return (List<ExternalRecordVO>) interpiRecordListScriptFile.evaluate(input);
+        List<ExternalRecordVO> resultList = new ArrayList<>(searchResults.size());
+        for (EntitaTyp et : searchResults) {
+            ExternalRecordVO result = convertToExternalRecordVO(et, generateVariantNames, interpiFactory);
+            resultList.add(result);
+        }
+        return resultList;
     }
 
     public ExternalRecordVO convertToExternalRecordVO(final EntitaTyp entity,
@@ -127,7 +123,7 @@ public class GroovyScriptService {
         input.put("FACTORY", interpiFactory);
         input.put("GENERATE_VARIANT_NAMES", generateVariantNames);
 
-        return (ExternalRecordVO) interpiRecordDetailScriptFile.evaluate(input);
+        return (ExternalRecordVO) interpiScriptFile.evaluate(input);
     }
 
     public static class GroovyScriptFile {
