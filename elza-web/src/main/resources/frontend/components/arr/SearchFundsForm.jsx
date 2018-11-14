@@ -6,12 +6,16 @@ import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx'
 import {createReferenceMark, getGlyph, getFundFromFundAndVersion} from 'components/arr/ArrUtils.jsx'
 import {AbstractReactComponent, FormInput, Icon, i18n} from 'components/shared';
 
+import * as types from 'actions/constants/ActionTypes.js';
+
 import {routerNavigate} from 'actions/router.jsx'
 import {modalDialogHide} from 'actions/global/modalDialog.jsx'
 import * as fundSearchActions from '../../actions/arr/fundSearch.jsx'
 import Search from "../shared/search/Search";
 import Loading from "../shared/loading/Loading";
 import HorizontalLoader from "../shared/loading/HorizontalLoader";
+
+import {fundTreeFulltextChange} from 'actions/arr/fundTree.jsx'
 
 import {selectFundTab} from 'actions/arr/fund.jsx'
 import {globalFundTreeInvalidate} from "../../actions/arr/globalFundTree";
@@ -78,13 +82,17 @@ class SearchFundsForm extends AbstractReactComponent {
         this.dispatch(routerNavigate('/arr'));
         this.dispatch(modalDialogHide());
 
-        // Otevření archivního souboru
-        // this.navigateToFund(itemFund);
+        // Vyplní vyhledávací políčko na stránce pořádání
+        this.dispatch(fundTreeFulltextChange(types.FUND_TREE_AREA_MAIN, item.version, fulltext));
+
+        // @todo - Vyber uzel ze stromu
+
+        // Otevření archivního souboru - @todo
+        // this.navigateToFund(itemFund.id, item);
     };
 
-    navigateToFund = (item) => {
-        var fundObj = getFundFromFundAndVersion(item, item.version);
-
+    navigateToFund = (fund) => {
+        const fundObj = getFundFromFundAndVersion(fund, null);
 
         this.dispatch(globalFundTreeInvalidate());
         this.dispatch(selectFundTab(fundObj));
