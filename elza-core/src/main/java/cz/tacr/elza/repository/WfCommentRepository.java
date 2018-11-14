@@ -11,6 +11,9 @@ import cz.tacr.elza.domain.WfComment;
 @Repository
 public interface WfCommentRepository extends ElzaJpaRepository<WfComment, Integer> {
 
-    @Query("from wf_comment c where c.issue.id = :issueId order by c.timeCreated")
+    @Query("select c" +
+            " from wf_comment c" +
+            " where c.issue.issueId = :issueId" +
+            " order by c.timeCreated")
     List<WfComment> findByIssueId(@Param(value = "issueId") Integer issueId);
 }

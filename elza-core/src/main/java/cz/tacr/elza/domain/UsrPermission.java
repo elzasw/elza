@@ -82,14 +82,6 @@ public class UsrPermission {
     @Column(name = "scopeId", updatable = false, insertable = false, nullable = false)
     private Integer scopeId;
 
-    /** Slouží jen pro čtení. */
-    @Column(name = "userControlId", updatable = false, insertable = false, nullable = false)
-    private Integer userControlId;
-
-    /** Slouží jen pro čtení. */
-    @Column(name = "groupControlId", updatable = false, insertable = false, nullable = false)
-    private Integer groupControlId;
-
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = WfIssueList.class)
     @JoinColumn(name = "issueListId")
     private WfIssueList issueList;
@@ -97,6 +89,14 @@ public class UsrPermission {
     /** Slouží jen pro čtení. */
     @Column(name = "issueListId", updatable = false, insertable = false, nullable = false)
     private Integer issueListId;
+
+    /** Slouží jen pro čtení. */
+    @Column(name = "userControlId", updatable = false, insertable = false, nullable = false)
+    private Integer userControlId;
+
+    /** Slouží jen pro čtení. */
+    @Column(name = "groupControlId", updatable = false, insertable = false, nullable = false)
+    private Integer groupControlId;
 
     /**
      * @return identifikátor entity
@@ -219,6 +219,25 @@ public class UsrPermission {
         this.scopeId = scopeId;
     }
 
+    /**
+     * @return protokol, ke kterému se oprávnění vztahuje
+     */
+    public WfIssueList getIssueList() {
+        return issueList;
+    }
+
+    /**
+     * @return protokol, ke kterému se oprávnění vztahuje
+     */
+    public void setIssueList(WfIssueList issueList) {
+        this.issueList = issueList;
+        this.issueListId = issueList == null ? null : issueList.getIssueListId();
+    }
+
+    public Integer getIssueListId() {
+        return issueListId;
+    }
+
     public UsrUser getUserControl() {
         return userControl;
     }
@@ -243,25 +262,6 @@ public class UsrPermission {
 
     public Integer getGroupControlId() {
         return groupControlId;
-    }
-
-    /**
-     * @return protokol, ke kterému se oprávnění vztahuje
-     */
-    public WfIssueList getIssueList() {
-        return issueList;
-    }
-
-    /**
-     * @return protokol, ke kterému se oprávnění vztahuje
-     */
-    public void setIssueList(WfIssueList issueList) {
-        this.issueList = issueList;
-        this.issueListId = issueList == null ? null : issueList.getIssueListId();
-    }
-
-    public Integer getIssueListId() {
-        return issueListId;
     }
 
     /**

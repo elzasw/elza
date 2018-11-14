@@ -192,35 +192,35 @@ public class UserPermission {
 
         PermissionType permType = permission.getType();
         switch (permType) {
-            case ALL:
+        case ALL:
+            return true;
+        case FUND:
+            if (fundIds.contains(usrPermission.getFundId())) {
                 return true;
-            case FUND:
-                if (fundIds.contains(usrPermission.getFundId())) {
-                    return true;
-                }
-                break;
-            case USER:
-                if (controlUserIds.contains(usrPermission.getUserControlId())) {
-                    return true;
-                }
-                break;
-            case GROUP:
-                if (controlGroupIds.contains(usrPermission.getGroupControlId())) {
-                    return true;
-                }
-                break;
-            case SCOPE:
-                if (scopeIds.contains(usrPermission.getScopeId())) {
-                    return true;
-                }
-                break;
-            case ISSUE_LIST:
-                if (issueListIds.contains(usrPermission.getIssueListId())) {
-                    return true;
-                }
-                break;
-            default:
-                throw new UnsupportedOperationException("Neimplementovaný typ oprvánění: " + permission.getType());
+            }
+            break;
+        case USER:
+            if (controlUserIds.contains(usrPermission.getUserControlId())) {
+                return true;
+            }
+            break;
+        case GROUP:
+            if (controlGroupIds.contains(usrPermission.getGroupControlId())) {
+                return true;
+            }
+            break;
+        case SCOPE:
+            if (scopeIds.contains(usrPermission.getScopeId())) {
+                return true;
+            }
+            break;
+        case ISSUE_LIST:
+            if (issueListIds.contains(usrPermission.getIssueListId())) {
+                return true;
+            }
+            break;
+        default:
+            throw new UnsupportedOperationException("Neimplementovaný typ oprvánění: " + permission.getType());
         }
         return false;
     }

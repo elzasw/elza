@@ -15,11 +15,16 @@ import javax.persistence.ManyToOne;
 
 import org.hibernate.annotations.Type;
 
+import cz.tacr.elza.api.interfaces.IArrFund;
+import cz.tacr.elza.api.interfaces.IWfIssueList;
+
 /**
  * Jednotlivý problém
  */
 @Entity(name = "wf_issue")
-public class WfIssue {
+public class WfIssue implements IArrFund, IWfIssueList {
+
+    // --- fields ---
 
     @Id
     @GeneratedValue
@@ -56,6 +61,8 @@ public class WfIssue {
 
     @Column(nullable = false)
     private LocalDateTime timeCreated;
+
+    // --- getters/setters ---
 
     public Integer getIssueId() {
         return issueId;
@@ -127,6 +134,18 @@ public class WfIssue {
 
     public void setTimeCreated(LocalDateTime timeCreated) {
         this.timeCreated = timeCreated;
+    }
+
+    // --- methods ---
+
+    @Override
+    public ArrFund getFund() {
+        return issueList != null ? issueList.getFund() : null;
+    }
+
+    @Override
+    public Integer getIssueListId() {
+        return issueList != null ? issueList.getIssueListId() : null;
     }
 
     @Override

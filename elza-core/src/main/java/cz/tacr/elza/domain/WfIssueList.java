@@ -10,13 +10,17 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
+import cz.tacr.elza.api.interfaces.IArrFund;
+import cz.tacr.elza.api.interfaces.IWfIssueList;
 import cz.tacr.elza.domain.enumeration.StringLength;
 
 /**
  * Seznam problémů
  */
 @Entity(name = "wf_issue_list")
-public class WfIssueList {
+public class WfIssueList implements IArrFund, IWfIssueList {
+
+    // --- fields ---
 
     @Id
     @GeneratedValue
@@ -33,6 +37,9 @@ public class WfIssueList {
     @Column(length = StringLength.LENGTH_250, nullable = false)
     private String name;
 
+    // --- getters/setters ---
+
+    @Override
     public Integer getIssueListId() {
         return issueListId;
     }
@@ -64,6 +71,8 @@ public class WfIssueList {
     public void setName(String name) {
         this.name = name;
     }
+
+    // --- methods ---
 
     @Override
     public String toString() {

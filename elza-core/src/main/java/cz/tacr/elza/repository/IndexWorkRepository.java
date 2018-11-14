@@ -15,7 +15,7 @@ import cz.tacr.elza.domain.SysIndexWork;
 @Repository
 public interface IndexWorkRepository extends JpaRepository<SysIndexWork, Long> {
 
-    @Query("from sys_index_work w where w.startTime is null")
+    @Query("select w from sys_index_work w where w.startTime is null")
     Page<SysIndexWork> findAllToIndex(Pageable pageable);
 
     @Modifying

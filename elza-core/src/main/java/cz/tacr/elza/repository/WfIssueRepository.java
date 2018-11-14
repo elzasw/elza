@@ -13,10 +13,15 @@ import cz.tacr.elza.domain.WfIssue;
 @Repository
 public interface WfIssueRepository extends ElzaJpaRepository<WfIssue, Integer>, WfIssueRepositoryCustom {
 
-    @Query("from wf_issue i where i.issueList.id = :issueListId order by number")
+    @Query("select i" +
+            " from wf_issue i" +
+            " where i.issueList.issueListId = :issueListId" +
+            " order by number")
     Page<WfIssue> findByFundId(@Param(value = "issueListId") Integer issueListId, Pageable pageable);
 
-    @Query("select max(i.number) from wf_issue i where i.issueList.id = :issueListId")
+    @Query("select max(i.number)" +
+            " from wf_issue i" +
+            " where i.issueList.issueListId = :issueListId")
     Optional<Integer> getNumberMax(@Param(value = "issueListId") Integer issueListId);
 
 }

@@ -1,5 +1,7 @@
 package cz.tacr.elza.controller;
 
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,14 +34,8 @@ import cz.tacr.elza.domain.WfIssue;
 import cz.tacr.elza.domain.WfIssueList;
 import cz.tacr.elza.domain.WfIssueState;
 import cz.tacr.elza.domain.WfIssueType;
-import cz.tacr.elza.repository.FundRepository;
-import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.repository.WfCommentRepository;
-import cz.tacr.elza.repository.WfIssueListRepository;
-import cz.tacr.elza.repository.WfIssueRepository;
-import cz.tacr.elza.repository.WfIssueStateRepository;
-import cz.tacr.elza.repository.WfIssueTypeRepository;
 import cz.tacr.elza.security.UserDetail;
+import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.IssueService;
 import cz.tacr.elza.service.UserService;
 
@@ -49,18 +45,9 @@ public class IssueController {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    // --- dao ---
-
-    private final FundRepository fundRepository;
-    private final NodeRepository nodeRepository;
-
-    private final WfCommentRepository commentRepository;
-    private final WfIssueListRepository issueListRepository;
-    private final WfIssueRepository issueRepository;
-    private final WfIssueStateRepository issueStateRepository;
-    private final WfIssueTypeRepository issueTypeRepository;
-
     // --- services ---
+
+    private final ArrangementService arrangementService;
 
     private final IssueService issueService;
 
@@ -75,16 +62,10 @@ public class IssueController {
     // --- constructor ---
 
     @Autowired
-    public IssueController(IssueService issueService, UserService userService, FundRepository fundRepository, NodeRepository nodeRepository, WfCommentRepository commentRepository, WfIssueListRepository issueListRepository, WfIssueRepository issueRepository, WfIssueStateRepository issueStateRepository, WfIssueTypeRepository issueTypeRepository, ClientFactoryVO factoryVo, WfFactory factory) {
+    public IssueController(ArrangementService arrangementService, IssueService issueService, UserService userService, ClientFactoryVO factoryVo, WfFactory factory) {
+        this.arrangementService = arrangementService;
         this.issueService = issueService;
         this.userService = userService;
-        this.fundRepository = fundRepository;
-        this.nodeRepository = nodeRepository;
-        this.commentRepository = commentRepository;
-        this.issueListRepository = issueListRepository;
-        this.issueRepository = issueRepository;
-        this.issueStateRepository = issueStateRepository;
-        this.issueTypeRepository = issueTypeRepository;
         this.factoryVo = factoryVo;
         this.factory = factory;
     }
@@ -92,43 +73,53 @@ public class IssueController {
     // --- methods ---
 
     @RequestMapping(value = "/issue_types", method = RequestMethod.GET)
-    public List<WfIssueTypeVO> findAllTypes() {
-        List<WfIssueType> issueTypeList = issueTypeRepository.findAll();
+    public List<WfIssueTypeVO> findAllIssueTypes() {
+        List<WfIssueType> issueTypeList = issueService.findAllType();
         return factoryVo.createIssueTypes(issueTypeList);
     }
 
     @RequestMapping(value = "/issue_states", method = RequestMethod.GET)
-    public List<WfIssueStateVO> findAllStates() {
-        List<WfIssueState> issueStateList = issueStateRepository.findAll();
+    public List<WfIssueStateVO> findAllIssueStates() {
+        List<WfIssueState> issueStateList = issueService.findAllState();
         return factoryVo.createIssueStates(issueStateList);
     }
 
     @RequestMapping(value = "/funds/{fundId}/issue_lists", method = RequestMethod.GET)
     @Transactional
     public List<WfIssueListVO> findIssueListByFund(@PathVariable Integer fundId) {
-        List<WfIssueList> issueListList = issueService.findByFundId(fundId);
-        return issueListList.stream().map(issueList -> factory.createIssueListVO(issueList)).collect(Collectors.toList());
+
+        ArrFund fund = arrangementService.getFund(fundId);
+
+        UserDetail userDetail = userService.getLoggedUserDetail();
+
+        List<WfIssueList> issueListList = issueService.findIssueListByFund(fund, userDetail);
+
+        return issueListList.stream().map(issueList -> factory.createIssueListVO(issueList, false)).collect(Collectors.toList());
     }
 
     @RequestMapping(value = "/issue_lists/{issueListId}", method = RequestMethod.GET)
     @Transactional
     public WfIssueListVO getIssueList(@PathVariable Integer issueListId) {
-        WfIssueList issueList = issueListRepository.getOneCheckExist(issueListId);
-        return factory.createIssueListVO(issueList);
+        // kontrola existence a opravneni
+        WfIssueList issueList = issueService.getIssueList(issueListId);
+        return factory.createIssueListVO(issueList, true);
     }
 
     @RequestMapping(value = "/issue_lists/{issueListId}/issues", method = RequestMethod.GET)
     @Transactional
-    public List<WfIssueVO> findIssues(@PathVariable Integer issueListId,
-                                      @RequestParam(name = "issue_state_id", required = false) Integer stateId,
-                                      @RequestParam(name = "issue_type_id", required = false) Integer typeId) {
+    public List<WfIssueVO> findIssueByIssueList(@PathVariable Integer issueListId,
+                                                @RequestParam(name = "issue_state_id", required = false) Integer stateId,
+                                                @RequestParam(name = "issue_type_id", required = false) Integer typeId) {
 
-        WfIssueState state = stateId != null ? issueStateRepository.getOneCheckExist(stateId) : null;
-        WfIssueType type = typeId != null ? issueTypeRepository.getOneCheckExist(typeId) : null;
+        // kontrola existence a opravneni
+        WfIssueList issueList = issueService.getIssueList(issueListId);
 
-        List<WfIssue> issueList = issueService.findIssueByIssueListId(issueListId, state, type);
+        WfIssueState state = stateId != null ? issueService.getState(stateId) : null;
+        WfIssueType type = typeId != null ? issueService.getType(typeId) : null;
 
-        return issueList.stream().map(issue -> factory.createIssueVO(issue)).collect(Collectors.toList());
+        List<WfIssue> issues = issueService.findIssueByIssueListId(issueListId, state, type);
+
+        return issues.stream().map(issue -> factory.createIssueVO(issue)).collect(Collectors.toList());
     }
 
     @RequestMapping(value = "/issue_lists", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -138,22 +129,32 @@ public class IssueController {
         Assert.isNull(issueListVO.getId(), "Neplatný identifikátor protokolu [issueListId=" + issueListVO.getId() + "]");
         Assert.notNull(issueListVO.getOpen(), "Chybí příznak stavu protokolu [open]");
 
-        // todo[marek]: opravneni
-        /*
-        if (userDetail.hasPermission(UsrPermission.Permission.FUND_RD_ALL)) {
-        }
-        */
+        // kontrola existence a opravneni
+        ArrFund fund = arrangementService.getFund(issueListVO.getFundId());
 
-        // validace na existenci fundu
-        ArrFund fund = fundRepository.getOneCheckExist(issueListVO.getFundId());
+        // validace uzivatelu
+        Collection<UsrUser> rdUsers = issueListVO.getRdUserIds() != null
+                ? userService.getUsers(new HashSet<>(issueListVO.getRdUserIds()))
+                : null;
 
-        return factory.createIssueListVO(issueService.addIssueList(fund, issueListVO.getName(), issueListVO.getOpen()));
+        // validace uzivatelu
+        Collection<UsrUser> wrUsers = issueListVO.getWrUserIds() != null
+                ? userService.getUsers(new HashSet<>(issueListVO.getWrUserIds()))
+                : null;
+
+        UsrUser admin = userService.getLoggedUser();
+
+        WfIssueList issueList = issueService.addIssueList(fund, issueListVO.getName(), issueListVO.getOpen());
+
+        issueService.addIssueListPermission(issueList, admin, rdUsers, wrUsers);
+
+        return factory.createIssueListVO(issueList, true);
     }
 
     @RequestMapping(value = "/issues/{issueId}", method = RequestMethod.GET)
     @Transactional
     public WfIssueVO getIssue(@PathVariable Integer issueId) {
-        WfIssue issue = issueRepository.getOneCheckExist(issueId);
+        WfIssue issue = issueService.getIssue(issueId);
         return factory.createIssueVO(issue);
     }
 
@@ -178,41 +179,46 @@ public class IssueController {
         */
 
         // validace na existenci
-        ArrNode node = issueVO.getNodeId() != null ? nodeRepository.getOneCheckExist(issueVO.getNodeId()) : null;
-        WfIssueList issueList = issueListRepository.getOneCheckExist(issueVO.getIssueListId());
-        WfIssueType issueType = issueTypeRepository.getOneCheckExist(issueVO.getIssueTypeId());
+        ArrNode node = issueVO.getNodeId() != null ? arrangementService.getNode(issueVO.getNodeId()) : null;
+        WfIssueList issueList = issueService.getIssueList(issueVO.getIssueListId());
+        WfIssueType issueType = issueService.getType(issueVO.getIssueTypeId());
 
         UsrUser usrUser = userService.getUser(userDetail.getId());
 
-        return factory.createIssueVO(issueService.addIssue(issueList, node, issueType, issueVO.getDescription(), usrUser));
+        WfIssue issue = issueService.addIssue(issueList, node, issueType, issueVO.getDescription(), usrUser);
+
+        return factory.createIssueVO(issue);
     }
 
     @RequestMapping(value = "/issues/{issueId}/setState", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
     public void setIssueState(@PathVariable Integer issueId, @RequestParam Integer issueStateId) {
-        WfIssue issue = issueRepository.getOneCheckExist(issueId);
-        WfIssueState issueState = issueStateRepository.getOneCheckExist(issueStateId);
+        // kontrola existence
+        WfIssue issue = issueService.getIssue(issueId);
+        WfIssueState issueState = issueService.getState(issueStateId);
         issueService.setIssueState(issue, issueState);
     }
 
     @RequestMapping(value = "/issues/{issueId}/comments", method = RequestMethod.GET)
     @Transactional
-    public List<WfCommentVO> findCommentByIssue(@PathVariable Integer issueId) {
-        WfIssue issue = issueRepository.getOneCheckExist(issueId);
+    public List<WfCommentVO> findIssueCommentByIssue(@PathVariable Integer issueId) {
+        // kontrola existence a opravneni
+        WfIssue issue = issueService.getIssue(issueId);
         List<WfComment> commentList = issueService.findCommentByIssueId(issueId);
         return commentList.stream().map(comment -> factory.createCommentVO(comment)).collect(Collectors.toList());
     }
 
     @RequestMapping(value = "/comments/{commentId}", method = RequestMethod.GET)
     @Transactional
-    public WfCommentVO getComment(@PathVariable Integer commentId) {
-        WfComment comment = commentRepository.getOneCheckExist(commentId);
+    public WfCommentVO getIssueComment(@PathVariable Integer commentId) {
+        // kontrola existence a opravneni
+        WfComment comment = issueService.getComment(commentId);
         return factory.createCommentVO(comment);
     }
 
     @RequestMapping(value = "/comments", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
-    public WfCommentVO addComment(@RequestBody WfCommentVO commentVO) {
+    public WfCommentVO addIssueComment(@RequestBody WfCommentVO commentVO) {
 
         Assert.isNull(commentVO.getId(), "Neplatný identifikátor komentáře [commentId=" + commentVO.getId() + "");
         Assert.notNull(commentVO.getIssueId(), "Chybí identifikátor připomínky [issueId]");
@@ -230,12 +236,12 @@ public class IssueController {
         */
 
         // validace na existenci issue
-        WfIssue issue = issueRepository.getOneCheckExist(commentVO.getIssueId());
+        WfIssue issue = issueService.getIssue(commentVO.getIssueId());
 
         UsrUser usrUser = userService.getUser(userDetail.getId());
 
         WfIssueState newIssueState = commentVO.getNextStateId() != null
-                ? issueStateRepository.getOneCheckExist(commentVO.getNextStateId())
+                ? issueService.getState(commentVO.getNextStateId())
                 : null;
 
         return factory.createCommentVO(issueService.addComment(issue, commentVO.getComment(), newIssueState, usrUser));

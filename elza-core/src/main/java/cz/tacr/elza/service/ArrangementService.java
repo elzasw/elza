@@ -22,6 +22,7 @@ import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
 import javax.transaction.Transactional;
+import javax.validation.constraints.NotNull;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -184,6 +185,23 @@ public class ArrangementService {
     private ApplicationContext appCtx;
 
     public static final String UNDEFINED = "Nezjištěno";
+
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.FUND_RD})
+    public ArrFund getFund(@AuthParam(type = AuthParam.Type.FUND) @NotNull Integer fundId) {
+        ArrFund fund = fundRepository.findOne(fundId);
+        if (fund == null) {
+            throw new ObjectNotFoundException("Nebyl nalezen AS s ID=" + fundId, ArrangementCode.FUND_NOT_FOUND).setId(fundId);
+        }
+        return fund;
+    }
+
+    public ArrNode getNode(@NotNull Integer nodeId) {
+        ArrNode node = nodeRepository.findOne(nodeId);
+        if (node == null) {
+            throw new ObjectNotFoundException("Nebyla nalezena JP s ID=" + nodeId, ArrangementCode.NODE_NOT_FOUND).setId(nodeId);
+        }
+        return node;
+    }
 
     /**
      * Vytvoření archivního souboru.

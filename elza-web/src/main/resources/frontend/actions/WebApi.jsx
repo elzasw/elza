@@ -1398,7 +1398,7 @@ export class WebApiCls {
      *
      * @returns {Promise} list druhů připomínek
      */
-    findAllTypes() {
+    findAllIssueTypes() {
         return AjaxUtils.ajaxGet(WebApiCls.issueUrl+ '/issue_types');
     }
 
@@ -1407,7 +1407,7 @@ export class WebApiCls {
      *
      * @returns {Promise} list stavů připomínek
      */
-    findAllStates() {
+    findAllIssueStates() {
         return AjaxUtils.ajaxGet(WebApiCls.issueUrl+ '/issue_states');
     }
 
@@ -1439,7 +1439,7 @@ export class WebApiCls {
      * @param typeId      identifikátor druhu připomínky dle kterého filtrujeme
      * @returns {Promise} seznam připomínek
      */
-    findIssues(issueListId : number, stateId : number = null, typeId : number = null) {
+    findIssueByIssueList(issueListId : number, stateId : number = null, typeId : number = null) {
         const requestParams = {
             stateId,
             typeId
@@ -1496,7 +1496,7 @@ export class WebApiCls {
      * @param issueId identifikátor připomínky
      * @returns {Promise} pole {CommentVO}
      */
-    findCommentByIssue(issueId : number) {
+    findIssueCommentByIssue(issueId : number) {
         return AjaxUtils.ajaxGet(WebApiCls.issueUrl+ '/issues/' + issueId + '/comments');
     }
 
@@ -1506,7 +1506,7 @@ export class WebApiCls {
      * @param commentId identifikátor komentáře
      * @returns {Promise} detail {CommentVO}
      */
-    getComment(commentId : number) {
+    getIssueComment(commentId : number) {
         return AjaxUtils.ajaxGet(WebApiCls.issueUrl+ '/comments/' + commentId);
     }
 
@@ -1516,21 +1516,23 @@ export class WebApiCls {
      * @param data komentář
      * @returns {Promise}
      */
-    addComment(data : CommentVO) {
+    addIssueComment(data : CommentVO) {
         return AjaxUtils.ajaxPost(WebApiCls.issueUrl + '/comments', null, data)
     }
 
 }
 
 declare class IssueListVO extends Object {
-    issueListId: number;
+    id: number;
     fundId: number;
     name: string;
     open: boolean;
+    rdUserIds: number[];
+    wrUserIds: number[];
 }
 
 declare class IssueVO extends Object {
-    issueId: number;
+    id: number;
     issueListId: number;
     nodeId: number;
     issueTypeId: number;
@@ -1540,7 +1542,7 @@ declare class IssueVO extends Object {
 }
 
 declare class CommentVO extends Object {
-    commentId: number;
+    id: number;
     issueId: number;
     comment: string;
     userId: number;

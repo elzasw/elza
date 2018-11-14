@@ -1,11 +1,19 @@
 package cz.tacr.elza.controller.factory;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import cz.tacr.elza.controller.vo.WfCommentVO;
 import cz.tacr.elza.controller.vo.WfIssueListVO;
 import cz.tacr.elza.controller.vo.WfIssueVO;
+import cz.tacr.elza.domain.UsrPermission.Permission;
+import cz.tacr.elza.domain.UsrPermissionView;
+import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.WfComment;
 import cz.tacr.elza.domain.WfIssue;
 import cz.tacr.elza.domain.WfIssueList;
@@ -43,12 +51,33 @@ public class WfFactory {
         this.issueTypeRepository = issueTypeRepository;
     }
 
-    public WfIssueListVO createIssueListVO(WfIssueList issueList) {
+    public WfIssueListVO createIssueListVO(WfIssueList issueList, boolean withPermissions) {
+
         WfIssueListVO issueListVO = new WfIssueListVO();
         issueListVO.setId(issueList.getIssueListId());
         issueListVO.setFundId(issueList.getFund().getFundId());
         issueListVO.setName(issueList.getName());
         issueListVO.setOpen(issueList.getOpen());
+
+        if (withPermissions) {
+
+            List<UsrUser> rdUsers = new ArrayList<>();
+            List<UsrUser> wrUsers = new ArrayList<>();
+
+            List<UsrPermissionView> permissionList = issueListRepository.findPermissionByIssueListId(Collections.singletonList(issueList.getIssueListId()));
+            for (UsrPermissionView permission : permissionList) {
+                if (Permission.FUND_ISSUE_LIST_RD.equals(permission.getPermission())) {
+                    rdUsers.add(permission.getUser());
+                }
+                if (Permission.FUND_ISSUE_LIST_WR.equals(permission.getPermission())) {
+                    wrUsers.add(permission.getUser());
+                }
+            }
+
+            issueListVO.setRdUserIds(rdUsers.stream().map(user -> user.getUserId()).distinct().collect(Collectors.toList()));
+            issueListVO.setWrUserIds(wrUsers.stream().map(user -> user.getUserId()).distinct().collect(Collectors.toList()));
+        }
+
         return issueListVO;
     }
 
@@ -56,7 +85,7 @@ public class WfFactory {
         WfIssueVO issueVO = new WfIssueVO();
         issueVO.setId(issue.getIssueId());
         issueVO.setIssueListId(issue.getIssueList().getIssueListId());
-        issueVO.setNodeId(issue.getNode().getNodeId());
+        issueVO.setNodeId(issue.getNode() != null ? issue.getNode().getNodeId() : null);
         issueVO.setIssueTypeId(issue.getIssueType().getIssueTypeId());
         issueVO.setIssueStateId(issue.getIssueState().getIssueStateId());
         issueVO.setDescription(issue.getDescription());

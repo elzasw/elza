@@ -8,6 +8,6 @@ import cz.tacr.elza.domain.WfIssueState;
 @Repository
 public interface WfIssueStateRepository extends ElzaJpaRepository<WfIssueState, Integer> {
 
-    @Query("from wf_issue_state s where s.startState = true")
+    @Query("select s from wf_issue_state s where s.startState = true")
     WfIssueState getStartState();
 }

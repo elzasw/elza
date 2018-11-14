@@ -15,8 +15,12 @@ import javax.persistence.ManyToOne;
 
 import org.hibernate.annotations.Type;
 
+import cz.tacr.elza.api.interfaces.IWfIssueList;
+
 @Entity(name = "wf_comment")
-public class WfComment {
+public class WfComment implements IWfIssueList {
+
+    // --- fields ---
 
     @Id
     @GeneratedValue
@@ -46,6 +50,8 @@ public class WfComment {
 
     @Column(nullable = false)
     private LocalDateTime timeCreated;
+
+    // --- getters/setters ---
 
     public Integer getCommentId() {
         return commentId;
@@ -101,6 +107,13 @@ public class WfComment {
 
     public void setTimeCreated(LocalDateTime timeCreated) {
         this.timeCreated = timeCreated;
+    }
+
+    // --- methods ---
+
+    @Override
+    public Integer getIssueListId() {
+        return issue != null ? issue.getIssueListId() : null;
     }
 
     @Override

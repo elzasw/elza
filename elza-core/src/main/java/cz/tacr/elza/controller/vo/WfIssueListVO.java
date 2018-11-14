@@ -1,8 +1,12 @@
 package cz.tacr.elza.controller.vo;
 
+import java.util.List;
+
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotBlank;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
 
 /**
  * @author <a href="mailto:stepan.marek@marbes.cz">Stepan Marek</a>
@@ -18,6 +22,10 @@ public class WfIssueListVO {
     private String name;
     @NotNull
     private Boolean open;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private List<Integer> rdUserIds;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private List<Integer> wrUserIds;
 
     // --- getters/setters ---
 
@@ -51,5 +59,21 @@ public class WfIssueListVO {
 
     public void setOpen(Boolean open) {
         this.open = open;
+    }
+
+    public List<Integer> getRdUserIds() {
+        return rdUserIds;
+    }
+
+    public void setRdUserIds(List<Integer> rdUserIds) {
+        this.rdUserIds = rdUserIds;
+    }
+
+    public List<Integer> getWrUserIds() {
+        return wrUserIds;
+    }
+
+    public void setWrUserIds(List<Integer> wrUserIds) {
+        this.wrUserIds = wrUserIds;
     }
 }
