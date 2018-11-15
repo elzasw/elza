@@ -4,14 +4,17 @@ package cz.tacr.elza.controller.vo;
 /**
  * VO rejstříkového hesla obsahující pouze základní údaje.
  *
- * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
- * @since 02.02.2016
+ * Nyní se používá v klientovi u osob při vytváření vazby
  */
 public class ApRecordSimple extends AbstractApAccessPoint {
     private Integer id;
     private String record;
     private String characteristics;
-    private Integer apTypeId;
+
+    /**
+     * AccessPoint type ID
+     */
+    private Integer typeId;
 
     public Integer getId() {
         return id;
@@ -37,11 +40,11 @@ public class ApRecordSimple extends AbstractApAccessPoint {
         this.characteristics = characteristics;
     }
 
-    public Integer getApTypeId() {
-        return apTypeId;
+    public Integer getTypeId() {
+        return typeId;
     }
 
-    public void setApTypeId(final Integer apTypeId) {
-        this.apTypeId = apTypeId;
+    public void setTypeId(final Integer apTypeId) {
+        this.typeId = apTypeId;
     }
 }
