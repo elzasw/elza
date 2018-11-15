@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<issue-types>
+    <issue-type code="IMPORTANT">
+        <name>Zásadní</name>
+        <view-order>1</view-order>
+    </issue-type>
+    <issue-type code="RECOMMENDED">
+        <name>Doporučující</name>
+        <view-order>2</view-order>
+    </issue-type>
+    <issue-type code="MINOR">
+        <name>Drobná</name>
+        <view-order>3</view-order>
+    </issue-type>
+</issue-types>

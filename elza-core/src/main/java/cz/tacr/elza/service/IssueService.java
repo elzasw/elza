@@ -88,7 +88,7 @@ public class IssueService {
      * @returns seznam druhů připomínek
      */
     public List<WfIssueType> findAllIssueTypes() {
-        return issueTypeRepository.findAll();
+        return issueTypeRepository.findAllOrderByViewOrder();
     }
 
     /**

@@ -42,6 +42,9 @@
             <column name="final_state" type="boolean" defaultValue="false" remarks="Flag if state is final. There might be several final states.">
                 <constraints nullable="false"/>
             </column>
+            <column name="package_id" type="integer">
+                <constraints nullable="false" foreignKeyName="fk_issue_state_package" referencedTableName="rul_package" referencedColumnNames="package_id"/>
+            </column>
         </createTable>
         <createTable tableName="wf_issue_type">
             <column name="issue_type_id" type="integer">
@@ -52,6 +55,12 @@
             </column>
             <column name="name" type="nvarchar(250)">
                 <constraints nullable="false"/>
+            </column>
+            <column name="view_order" type="integer">
+                <constraints nullable="false"/>
+            </column>
+            <column name="package_id" type="integer">
+                <constraints nullable="false" foreignKeyName="fk_issue_type_package" referencedTableName="rul_package" referencedColumnNames="package_id"/>
             </column>
         </createTable>
         <createTable tableName="wf_issue_list">
@@ -120,9 +129,6 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
-    </changeSet>
-
-    <changeSet id="20181109120000" author="marek">
 
         <addColumn tableName="usr_permission">
             <column name="issue_list_id" type="integer">

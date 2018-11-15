@@ -97,6 +97,8 @@ import cz.tacr.elza.domain.UIPartyGroup;
 import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.UISettings.EntityType;
 import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.WfIssueState;
+import cz.tacr.elza.domain.WfIssueType;
 import cz.tacr.elza.domain.integer.DisplayType;
 import cz.tacr.elza.domain.table.ElzaColumn;
 import cz.tacr.elza.exception.AbstractException;
@@ -122,6 +124,10 @@ import cz.tacr.elza.packageimport.xml.ExtensionRule;
 import cz.tacr.elza.packageimport.xml.ExtensionRules;
 import cz.tacr.elza.packageimport.xml.ExternalIdType;
 import cz.tacr.elza.packageimport.xml.ExternalIdTypes;
+import cz.tacr.elza.packageimport.xml.IssueState;
+import cz.tacr.elza.packageimport.xml.IssueStates;
+import cz.tacr.elza.packageimport.xml.IssueType;
+import cz.tacr.elza.packageimport.xml.IssueTypes;
 import cz.tacr.elza.packageimport.xml.ItemSpec;
 import cz.tacr.elza.packageimport.xml.ItemSpecRegister;
 import cz.tacr.elza.packageimport.xml.ItemSpecs;
@@ -214,6 +220,8 @@ import cz.tacr.elza.repository.StructuredTypeExtensionRepository;
 import cz.tacr.elza.repository.StructuredTypeRepository;
 import cz.tacr.elza.repository.TemplateRepository;
 import cz.tacr.elza.repository.UIPartyGroupRepository;
+import cz.tacr.elza.repository.WfIssueStateRepository;
+import cz.tacr.elza.repository.WfIssueTypeRepository;
 import cz.tacr.elza.search.IndexWorkProcessor;
 import cz.tacr.elza.service.CacheService;
 import cz.tacr.elza.service.StructObjService;
@@ -319,6 +327,16 @@ public class PackageService {
      * pravidla popisu ap
      */
     public static final String RULE_SYSTEM_XML = "ap_rule_system.xml";
+
+    /**
+     * stavy připomínek
+     */
+    public static final String ISSUE_STATE_XML = "wf_issue_state.xml";
+
+    /**
+     * druhy připomínek
+     */
+    public static final String ISSUE_TYPE_XML = "wf_issue_type.xml";
 
     /**
      * Složka templatů
@@ -496,6 +514,12 @@ public class PackageService {
     private OutputResultRepository outputResultRepository;
 
     @Autowired
+    private WfIssueTypeRepository issueTypeRepository;
+
+    @Autowired
+    private WfIssueStateRepository issueStateRepository;
+
+    @Autowired
     private IndexWorkProcessor indexWorkProcessor;
 
     /**
@@ -503,7 +527,7 @@ public class PackageService {
      *
      * @param file
      *            soubor balíčku
-     * 
+     *
      *            Note: only one package can be imported at a time
      */
     @Transactional
@@ -765,6 +789,12 @@ public class PackageService {
         processExternalIdTypes(externalIdTypes, rulPackage);
 
         // END AP --------------------------------------------------------------------------------------------------
+
+        IssueTypes issueTypes = pkgCtx.convertXmlStreamToObject(IssueTypes.class, ISSUE_TYPE_XML);
+        processIssueTypes(issueTypes, rulPackage);
+
+        IssueStates issueStates = pkgCtx.convertXmlStreamToObject(IssueStates.class, ISSUE_STATE_XML);
+        processIssueStates(issueStates, rulPackage);
 
         entityManager.flush();
 
@@ -1752,6 +1782,75 @@ public class PackageService {
     }
 
     /**
+     * Provede synchronizaci typů připomínek.
+     *
+     * @param issueTypes typy připomínek
+     * @param rulPackage importovaný balíček
+     */
+    private void processIssueTypes(IssueTypes issueTypes, final RulPackage rulPackage) {
+
+        List<WfIssueType> wfIssueTypes = issueTypeRepository.findByRulPackage(rulPackage);
+
+        List<WfIssueType> wfIssueTypesNew = new ArrayList<>();
+
+        if (issueTypes != null) {
+            for (IssueType issueType : issueTypes.getIssueTypes()) {
+                WfIssueType wfIssueType = findEntity(wfIssueTypes, issueType.getCode(), WfIssueType::getCode);
+                if (wfIssueType == null) {
+                    wfIssueType = new WfIssueType();
+                }
+                wfIssueType.setCode(issueType.getCode());
+                wfIssueType.setName(issueType.getName());
+                wfIssueType.setViewOrder(issueType.getViewOrder());
+                wfIssueType.setRulPackage(rulPackage);
+                wfIssueTypesNew.add(wfIssueType);
+            }
+        }
+
+        wfIssueTypesNew = issueTypeRepository.save(wfIssueTypesNew);
+
+        List<WfIssueType> WfIssueTypeDelete = new ArrayList<>(wfIssueTypes);
+        WfIssueTypeDelete.removeAll(wfIssueTypesNew);
+
+        issueTypeRepository.delete(WfIssueTypeDelete);
+    }
+
+    /**
+     * Provede synchronizaci stavů připomínek.
+     *
+     * @param issueStates stavy připomínek
+     * @param rulPackage importovaný balíček
+     */
+    private void processIssueStates(IssueStates issueStates, final RulPackage rulPackage) {
+
+        List<WfIssueState> wfIssueStates = issueStateRepository.findByRulPackage(rulPackage);
+
+        List<WfIssueState> wfIssueStatesNew = new ArrayList<>();
+
+        if (issueStates != null) {
+            for (IssueState issueState : issueStates.getIssueStates()) {
+                WfIssueState wfIssueState = findEntity(wfIssueStates, issueState.getCode(), WfIssueState::getCode);
+                if (wfIssueState == null) {
+                    wfIssueState = new WfIssueState();
+                }
+                wfIssueState.setCode(issueState.getCode());
+                wfIssueState.setName(issueState.getName());
+                wfIssueState.setStartState(issueState.isStartState());
+                wfIssueState.setFinalState(issueState.isFinalState());
+                wfIssueState.setRulPackage(rulPackage);
+                wfIssueStatesNew.add(wfIssueState);
+            }
+        }
+
+        wfIssueStatesNew = issueStateRepository.save(wfIssueStatesNew);
+
+        List<WfIssueState> WfIssueStateDelete = new ArrayList<>(wfIssueStates);
+        WfIssueStateDelete.removeAll(wfIssueStatesNew);
+
+        issueStateRepository.delete(WfIssueStateDelete);
+    }
+
+    /**
      * Generická metoda pro vyhledání v seznamu entit podle definované metody.
      *
      * @param list      seznam prohledávaných entit
@@ -2575,12 +2674,12 @@ public class PackageService {
 
     /**
      * Smazání importovaného balíčku podle kódu.
-     * 
+     *
      * Note: only one package can be imported at a time
      *
      * @param code
      *            kód balíčku
-     * 
+     *
      */
     @Transactional
     @AuthMethod(permission = { UsrPermission.Permission.ADMIN })
@@ -2641,6 +2740,8 @@ public class PackageService {
         settingsRepository.deleteByRulPackage(rulPackage);
         ruleRepository.deleteByRulPackage(rulPackage);
         ruleSystemRepository.deleteByRulPackage(rulPackage);
+        issueStateRepository.deleteByRulPackage(rulPackage);
+        issueTypeRepository.deleteByRulPackage(rulPackage);
         packageRepository.delete(rulPackage);
 
         entityManager.flush();
@@ -2739,7 +2840,7 @@ public class PackageService {
 
     /**
      * Provede export balíčku s konfigurací.
-     * 
+     *
      * Note: only one package can be imported at a time
      *
      * @param code
@@ -2792,6 +2893,8 @@ public class PackageService {
             exportRelationRoleTypes(rulPackage, zos);
             exportSettings(rulPackage, zos);
             exportExternalIdTypes(rulPackage, zos);
+            exportIssueTypes(rulPackage, zos);
+            exportIssueStates(rulPackage, zos);
         }
     }
 
@@ -3509,6 +3612,63 @@ public class PackageService {
         }
 
         addObjectToZipFile(itemSpecs, zos, ITEM_SPEC_XML);
+    }
+
+    /**
+     * Exportování druhů připomínek
+     *
+     * @param rulPackage balíček
+     * @param zos stream zip souboru
+     */
+    private void exportIssueTypes(final RulPackage rulPackage, final ZipOutputStream zos) throws IOException {
+
+        List<WfIssueType> wfIssueTypes = issueTypeRepository.findByRulPackage(rulPackage);
+
+        if (!wfIssueTypes.isEmpty()) {
+
+            List<IssueType> issueTypeList = new ArrayList<>(wfIssueTypes.size());
+            for (WfIssueType wfIssueType : wfIssueTypes) {
+                IssueType issueType = new IssueType();
+                issueType.setCode(wfIssueType.getCode());
+                issueType.setName(wfIssueType.getName());
+                issueType.setViewOrder(wfIssueType.getViewOrder());
+                issueTypeList.add(issueType);
+            }
+
+            IssueTypes issueTypes = new IssueTypes();
+            issueTypes.setIssueTypes(issueTypeList);
+
+            addObjectToZipFile(issueTypes, zos, ISSUE_TYPE_XML);
+        }
+    }
+
+    /**
+     * Exportování stavů připomínek
+     *
+     * @param rulPackage balíček
+     * @param zos stream zip souboru
+     */
+    private void exportIssueStates(final RulPackage rulPackage, final ZipOutputStream zos) throws IOException {
+
+        List<WfIssueState> wfIssueStates = issueStateRepository.findByRulPackage(rulPackage);
+
+        if (!wfIssueStates.isEmpty()) {
+
+            List<IssueState> issueStateList = new ArrayList<>(wfIssueStates.size());
+            for (WfIssueState wfIssueState : wfIssueStates) {
+                IssueState issueState = new IssueState();
+                issueState.setCode(wfIssueState.getCode());
+                issueState.setName(wfIssueState.getName());
+                issueState.setStartState(wfIssueState.isStartState());
+                issueState.setFinalState(wfIssueState.isFinalState());
+                issueStateList.add(issueState);
+            }
+
+            IssueStates issueStates = new IssueStates();
+            issueStates.setIssueStates(issueStateList);
+
+            addObjectToZipFile(issueStates, zos, ISSUE_STATE_XML);
+        }
     }
 
     /**

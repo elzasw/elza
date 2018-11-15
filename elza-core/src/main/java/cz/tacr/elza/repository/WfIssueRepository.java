@@ -16,7 +16,7 @@ public interface WfIssueRepository extends ElzaJpaRepository<WfIssue, Integer>, 
     @Query("select i" +
             " from wf_issue i" +
             " where i.issueList.issueListId = :issueListId" +
-            " order by number")
+            " order by i.number")
     Page<WfIssue> findByFundId(@Param(value = "issueListId") Integer issueListId, Pageable pageable);
 
     @Query("select max(i.number)" +
