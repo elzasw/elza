@@ -10,6 +10,7 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import javax.validation.constraints.NotNull;
 
 import org.springframework.stereotype.Component;
 
@@ -27,7 +28,7 @@ public class WfIssueRepositoryImpl implements WfIssueRepositoryCustom {
     private EntityManager entityManager;
 
     @Override
-    public List<WfIssue> findByIssueListId(Integer issueListId, @Nullable WfIssueState issueState, @Nullable WfIssueType issueType) {
+    public List<WfIssue> findByIssueListId(@NotNull Integer issueListId, @Nullable WfIssueState issueState, @Nullable WfIssueType issueType) {
 
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         CriteriaQuery<WfIssue> query = builder.createQuery(WfIssue.class);

@@ -12,12 +12,12 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
+import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
 
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
@@ -74,26 +74,30 @@ public class IssueService {
     // --- methods ---
 
     /**
-     * Získání seznamu stavů.
+     * Získání stavů připomínek.
+     *
+     * @returns zeznam stavů připomínek
      */
-    public List<WfIssueState> findAllState() {
+    public List<WfIssueState> findAllIssueStates() {
         return issueStateRepository.findAll();
     }
 
     /**
-     * Získání seznamu typů.
+     * Získání druhů připomnek.
+     *
+     * @returns seznam druhů připomínek
      */
-    public List<WfIssueType> findAllType() {
+    public List<WfIssueType> findAllIssueTypes() {
         return issueTypeRepository.findAll();
     }
 
     /**
-     * Získání stavu.
+     * Získání detailu stavu připomínek.
      *
-     * @param typeId identifikátor stavu
+     * @param stateId identifikátor stavu
      * @return stav
      */
-    public WfIssueState getState(@NotNull Integer stateId) {
+    public WfIssueState getIssueState(@NotNull Integer stateId) {
         WfIssueState state = issueStateRepository.findOne(stateId);
         if (state == null) {
             throw new ObjectNotFoundException("Stav protokolu nenalezen [issueStateId=" + stateId + "]", BaseCode.ID_NOT_EXIST).setId(stateId);
@@ -102,12 +106,12 @@ public class IssueService {
     }
 
     /**
-     * Získání typu.
+     * Získání detailu druhu připomínky.
      *
-     * @param typeId identifikátor typu
-     * @return typ
+     * @param typeId identifikátor druhu
+     * @return druh
      */
-    public WfIssueType getType(@NotNull Integer typeId) {
+    public WfIssueType getIssueType(@NotNull Integer typeId) {
         WfIssueType type = issueTypeRepository.findOne(typeId);
         if (type == null) {
             throw new ObjectNotFoundException("Typ protokolu nenalezen [issueTypeId=" + typeId + "]", BaseCode.ID_NOT_EXIST).setId(typeId);
@@ -116,7 +120,7 @@ public class IssueService {
     }
 
     /**
-     * Získání protokolu.
+     * Získání detailu protokolu.
      *
      * @param issueListId identifikátor protokolu
      * @return protokol
@@ -131,7 +135,7 @@ public class IssueService {
     }
 
     /**
-     * Získání připomínky.
+     * Získání detailu připomínky.
      *
      * @param issueId identifikátor připomínky
      * @return připomínka
@@ -146,10 +150,10 @@ public class IssueService {
     }
 
     /**
-     * Získání komentáře.
+     * Získání detailu komentáře.
      *
-     * @param issueId identifikátor komentáře
-     * @return komentář
+     * @param commentId identifikátor komentáře
+     * @returns komentář
      */
     @AuthMethod(permission = {Permission.FUND_ISSUE_LIST_RD, Permission.FUND_ISSUE_LIST_WR})
     public WfComment getComment(@AuthParam(type = AuthParam.Type.COMMENT) @NotNull Integer commentId) {
@@ -160,7 +164,14 @@ public class IssueService {
         return comment;
     }
 
-    public List<WfIssueList> findIssueListByFund(ArrFund fund, UserDetail userDetail) {
+    /**
+     * Vyhledá protokoly k danému archivní souboru - řazeno nejprve otevřené a pak uzavřené
+     *
+     * @param fund AS
+     * @return seznam protokolů
+     */
+    public List<WfIssueList> findIssueListByFund(@NotNull ArrFund fund, @NotNull UserDetail userDetail) {
+        Validate.notNull(fund, "Fund is null");
         if (userDetail.getId() == null
                 || userDetail.hasPermission(Permission.FUND_ISSUE_ADMIN_ALL)
                 || userDetail.hasPermission(Permission.FUND_ISSUE_ADMIN_ALL, fund.getFundId())) {
@@ -175,25 +186,42 @@ public class IssueService {
     }
 
     protected List<WfIssueList> findIssueListByFundWithPermission(@NotNull ArrFund fund, @NotNull Integer userId) {
-        Assert.notNull(userId);
         return issueListRepository.findByFundIdWithPermission(fund.getFundId(), userId);
     }
 
+    /**
+     * Vyhledá připomínky k danému protokolu - řazeno vzestupně podle čísla připomínky
+     *
+     * @param issueList protokol
+     * @param issueState stav připomínky, dle kterého filtrujeme
+     * @param issueType druh připomínky, dle kterého filtrujeme
+     */
     @AuthMethod(permission = {Permission.FUND_ISSUE_LIST_RD, Permission.FUND_ISSUE_LIST_WR})
-    public List<WfIssue> findIssueByIssueListId(@AuthParam(type = AuthParam.Type.ISSUE_LIST) @NotNull Integer issueListId, WfIssueState issueState, WfIssueType issueType) {
-        return issueRepository.findByIssueListId(issueListId, issueState, issueType);
+    public List<WfIssue> findIssueByIssueListId(@AuthParam(type = AuthParam.Type.ISSUE_LIST) @NotNull WfIssueList issueList, @Nullable WfIssueState issueState, @Nullable WfIssueType issueType) {
+        Validate.notNull(issueList, "Issue list is null");
+        return issueRepository.findByIssueListId(issueList.getIssueListId(), issueState, issueType);
     }
 
+    /**
+     * Vyhledá komentáře k dané připomínce - řazeno vzestupně podle času
+     *
+     * @param issue připomínka
+     * @return seznam komentářů
+     */
     @AuthMethod(permission = {Permission.FUND_ISSUE_LIST_RD, Permission.FUND_ISSUE_LIST_WR})
-    public List<WfComment> findCommentByIssueId(@AuthParam(type = AuthParam.Type.ISSUE) @NotNull Integer issueId) {
-        return commentRepository.findByIssueId(issueId);
+    public List<WfComment> findCommentByIssueId(@AuthParam(type = AuthParam.Type.ISSUE) @NotNull WfIssue issue) {
+        Validate.notNull(issue, "Issue is null");
+        return commentRepository.findByIssueId(issue.getIssueId());
     }
 
+    /**
+     * Založí nový protokol k danému AS
+     */
     @Transactional
     @AuthMethod(permission = {Permission.FUND_ISSUE_ADMIN, Permission.FUND_ISSUE_ADMIN_ALL})
     public WfIssueList addIssueList(@AuthParam(type = AuthParam.Type.FUND) @NotNull ArrFund fund, String name, boolean open) {
-        Assert.notNull(fund, "Fund is null");
-        Assert.hasText(name, "Empty name");
+        Validate.notNull(fund, "Fund is null");
+        Validate.notBlank(name, "Empty name");
         WfIssueList issueList = new WfIssueList();
         issueList.setFund(fund);
         issueList.setName(name);
@@ -201,9 +229,15 @@ public class IssueService {
         return issueListRepository.save(issueList);
     }
 
+    /**
+     * Nastavení oprávnění k novému protokolu
+     */
     @Transactional
     @AuthMethod(permission = {Permission.FUND_ISSUE_ADMIN, Permission.FUND_ISSUE_ADMIN_ALL})
     public void addIssueListPermission(@AuthParam(type = AuthParam.Type.ISSUE_LIST) @NotNull WfIssueList issueList, @NotNull UsrUser owner, Collection<UsrUser> rdUsers, Collection<UsrUser> wrUsers) {
+
+        Validate.notNull(issueList, "Issue list is null");
+        Validate.notNull(owner, "User is null");
 
         Map<Integer, UsrUser> users = new HashMap<>();
         Map<Integer, List<Permission>> permissions = new HashMap<>();
@@ -237,9 +271,16 @@ public class IssueService {
         }
     }
 
+    /**
+     * Založí novou připomínku k danému protokolu
+     */
     @Transactional
     @AuthMethod(permission = {Permission.FUND_ISSUE_LIST_WR})
     public WfIssue addIssue(@AuthParam(type = AuthParam.Type.ISSUE_LIST) @NotNull WfIssueList issueList, @Nullable ArrNode node, @NotNull WfIssueType issueType, String description, @NotNull UsrUser user) {
+
+        Validate.notNull(issueList, "Issue list is null");
+        Validate.notBlank(description, "Empty description");
+        Validate.notNull(user, "User is null");
 
         WfIssueState issueState = issueStateRepository.getStartState();
 
@@ -257,20 +298,30 @@ public class IssueService {
         return issueRepository.save(issue);
     }
 
+    /**
+     * Změna stavu připomínky
+     */
     @Transactional
     @AuthMethod(permission = {Permission.FUND_ISSUE_LIST_WR})
     public void setIssueState(@AuthParam(type = AuthParam.Type.ISSUE) @NotNull WfIssue issue, @NotNull WfIssueState issueState) {
-        Assert.notNull(issue, "Issue is null");
-        Assert.notNull(issueState, "Issue state is null");
+        Validate.notNull(issue, "Issue is null");
+        Validate.notNull(issueState, "Issue state is null");
         issue.setIssueState(issueState);
         issueRepository.save(issue);
     }
 
+    /**
+     * Založí nový komentář k dané připomínce
+     */
     @Transactional
     @AuthMethod(permission = {Permission.FUND_ISSUE_LIST_WR})
-    public WfComment addComment(@AuthParam(type = AuthParam.Type.ISSUE) @NotNull WfIssue issue, String text, @Nullable WfIssueState nextState, @NotNull UsrUser usrUser) {
+    public WfComment addComment(@AuthParam(type = AuthParam.Type.ISSUE) @NotNull WfIssue issue, String text, @Nullable WfIssueState nextState, @NotNull UsrUser user) {
 
-        WfComment comment = createComment(issue, nextState, text, usrUser);
+        Validate.notNull(issue, "Issue is null");
+        Validate.notBlank(text, "Empty comment");
+        Validate.notNull(user, "User is null");
+
+        WfComment comment = createComment(issue, nextState, text, user);
 
         if (nextState != null) {
             issue.setIssueState(nextState);
