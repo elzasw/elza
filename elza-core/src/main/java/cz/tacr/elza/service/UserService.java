@@ -1337,10 +1337,32 @@ public class UserService {
     /**
      * Odstraní oprávnění podle AS.
      *
-     * @param fund archivní souboru
+     * @param fund archivní soubor
      */
-    public void deleteByFund(final ArrFund fund) {
+    @Transactional
+    public void deletePermissionsByFund(final ArrFund fund) {
         permissionRepository.deleteByFund(fund);
+    }
+
+    /**
+     * Odstraní oprávnění podle protokolu.
+     *
+     * @param issueList protokol
+     */
+    @Transactional
+    public void deletePermissionsByIssueList(final WfIssueList issueList) {
+        permissionRepository.deleteByIssueList(issueList);
+    }
+
+    /**
+     * Odstraní oprávnění podle protokolu.
+     *
+     * @param issueList protokol
+     * @param permission oprávnění
+     */
+    @Transactional
+    public void deletePermissionsByIssueList(final WfIssueList issueList, Permission permission) {
+        permissionRepository.deleteByIssueListAndPermission(issueList, permission);
     }
 
     /**

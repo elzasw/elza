@@ -2,7 +2,6 @@ package cz.tacr.elza.service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -32,6 +31,7 @@ import cz.tacr.elza.domain.WfIssueState;
 import cz.tacr.elza.domain.WfIssueType;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.repository.PermissionRepository;
 import cz.tacr.elza.repository.WfCommentRepository;
 import cz.tacr.elza.repository.WfIssueListRepository;
 import cz.tacr.elza.repository.WfIssueRepository;
@@ -55,6 +55,8 @@ public class IssueService {
     private final WfIssueStateRepository issueStateRepository;
     private final WfIssueTypeRepository issueTypeRepository;
 
+    private final PermissionRepository permissionRepository;
+
     // --- services ---
 
     private final UserService userService;
@@ -62,13 +64,14 @@ public class IssueService {
     // --- constructor ---
 
     @Autowired
-    public IssueService(UserService userService, WfCommentRepository commentRepository, WfIssueListRepository issueListRepository, WfIssueRepository issueRepository, WfIssueStateRepository issueStateRepository, WfIssueTypeRepository issueTypeRepository) {
+    public IssueService(UserService userService, WfCommentRepository commentRepository, WfIssueListRepository issueListRepository, WfIssueRepository issueRepository, WfIssueStateRepository issueStateRepository, WfIssueTypeRepository issueTypeRepository, PermissionRepository permissionRepository) {
         this.userService = userService;
         this.commentRepository = commentRepository;
         this.issueListRepository = issueListRepository;
         this.issueRepository = issueRepository;
         this.issueStateRepository = issueStateRepository;
         this.issueTypeRepository = issueTypeRepository;
+        this.permissionRepository = permissionRepository;
     }
 
     // --- methods ---
@@ -230,20 +233,36 @@ public class IssueService {
     }
 
     /**
+     * Úprava vlastností existujícího protokolu
+     */
+    @Transactional
+    @AuthMethod(permission = {Permission.FUND_ISSUE_ADMIN, Permission.FUND_ISSUE_ADMIN_ALL})
+    public WfIssueList updateIssueList(@AuthParam(type = AuthParam.Type.ISSUE_LIST) @NotNull WfIssueList issueList, @Nullable String name, @Nullable Boolean open) {
+        Validate.notNull(issueList, "Issue list is null");
+        if (name != null) {
+            issueList.setName(name);
+        }
+        if (open != null) {
+            issueList.setOpen(open);
+        }
+        return issueListRepository.save(issueList);
+    }
+
+    /**
      * Nastavení oprávnění k novému protokolu
      */
     @Transactional
     @AuthMethod(permission = {Permission.FUND_ISSUE_ADMIN, Permission.FUND_ISSUE_ADMIN_ALL})
-    public void addIssueListPermission(@AuthParam(type = AuthParam.Type.ISSUE_LIST) @NotNull WfIssueList issueList, @NotNull UsrUser owner, Collection<UsrUser> rdUsers, Collection<UsrUser> wrUsers) {
+    public void addIssueListPermission(@AuthParam(type = AuthParam.Type.ISSUE_LIST) @NotNull WfIssueList issueList, @NotNull UsrUser admin, Collection<UsrUser> rdUsers, Collection<UsrUser> wrUsers) {
 
         Validate.notNull(issueList, "Issue list is null");
-        Validate.notNull(owner, "User is null");
+        Validate.notNull(admin, "User is null");
 
         Map<Integer, UsrUser> users = new HashMap<>();
         Map<Integer, List<Permission>> permissions = new HashMap<>();
 
-        users.put(owner.getUserId(), owner);
-        permissions.put(owner.getUserId(), Arrays.asList(Permission.FUND_ISSUE_LIST_RD, Permission.FUND_ISSUE_LIST_WR));
+        // users.put(admin.getUserId(), admin);
+        // permissions.put(admin.getUserId(), Arrays.asList(Permission.FUND_ISSUE_LIST_RD, Permission.FUND_ISSUE_LIST_WR));
 
         if (rdUsers != null) {
             for (UsrUser user : rdUsers) {
@@ -269,6 +288,29 @@ public class IssueService {
             }).collect(Collectors.toList());
             userService.addUserPermission(user, permissionList, false);
         }
+
+        permissionRepository.flush();
+    }
+
+    /**
+     * Nastavení oprávnění k existujícímu protokolu
+     */
+    @Transactional
+    @AuthMethod(permission = {Permission.FUND_ISSUE_ADMIN, Permission.FUND_ISSUE_ADMIN_ALL})
+    public void updateIssueListPermission(@AuthParam(type = AuthParam.Type.ISSUE_LIST) @NotNull WfIssueList issueList, @NotNull UsrUser admin, Collection<UsrUser> rdUsers, Collection<UsrUser> wrUsers) {
+
+        Validate.notNull(issueList, "Issue list is null");
+        Validate.notNull(admin, "User is null");
+
+        if (rdUsers != null) {
+            userService.deletePermissionsByIssueList(issueList, Permission.FUND_ISSUE_LIST_RD);
+        }
+
+        if (wrUsers != null) {
+            userService.deletePermissionsByIssueList(issueList, Permission.FUND_ISSUE_LIST_WR);
+        }
+
+        addIssueListPermission(issueList, admin, rdUsers, wrUsers);
     }
 
     /**

@@ -125,7 +125,7 @@ public class IssueController {
     @Transactional
     public WfIssueListVO addIssueList(@RequestBody WfIssueListVO issueListVO) {
 
-        Validate.isTrue(issueListVO.getId() == null, "Neplatný identifikátor protokolu [issueListId=" + issueListVO.getId() + "]");
+        Validate.isTrue(issueListVO.getId() == null, "Neplatný identifikátor protokolu [id=" + issueListVO.getId() + "]");
         Validate.notNull(issueListVO.getFundId(), "Chybí identifikátor AS [fundId]");
         Validate.notBlank(issueListVO.getName(), "Chybí název protokolu [name]");
         Validate.notNull(issueListVO.getOpen(), "Chybí příznak stavu protokolu [open]");
@@ -143,11 +143,35 @@ public class IssueController {
                 ? userService.getUsers(new HashSet<>(issueListVO.getWrUserIds()))
                 : null;
 
-        UsrUser admin = userService.getLoggedUser();
-
         WfIssueList issueList = issueService.addIssueList(fund, issueListVO.getName(), issueListVO.getOpen());
 
-        issueService.addIssueListPermission(issueList, admin, rdUsers, wrUsers);
+        issueService.addIssueListPermission(issueList, userService.getLoggedUser(), rdUsers, wrUsers);
+
+        return factory.createIssueListVO(issueList, true);
+    }
+
+    @RequestMapping(value = "/issue_lists/{issueListId}", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Transactional
+    public WfIssueListVO updateIssueList(@PathVariable Integer issueListId, @RequestBody WfIssueListVO issueListVO) {
+
+        Validate.isTrue(issueListId.equals(issueListVO.getId()), "Neplatný identifikátor protokolu [id=" + issueListVO.getId() + "]");
+
+        // kontrola existence a opravneni
+        WfIssueList issueList = issueService.getIssueList(issueListId);
+
+        // validace uzivatelu
+        Collection<UsrUser> rdUsers = issueListVO.getRdUserIds() != null
+                ? userService.getUsers(new HashSet<>(issueListVO.getRdUserIds()))
+                : null;
+
+        // validace uzivatelu
+        Collection<UsrUser> wrUsers = issueListVO.getWrUserIds() != null
+                ? userService.getUsers(new HashSet<>(issueListVO.getWrUserIds()))
+                : null;
+
+        issueService.updateIssueList(issueList, issueListVO.getName(), issueListVO.getOpen());
+
+        issueService.updateIssueListPermission(issueList, userService.getLoggedUser(), rdUsers, wrUsers);
 
         return factory.createIssueListVO(issueList, true);
     }
@@ -163,7 +187,7 @@ public class IssueController {
     @Transactional
     public WfIssueVO addIssue(@RequestBody WfIssueVO issueVO) {
 
-        Validate.isTrue(issueVO.getId() == null, "Neplatný identifikátor připomínky [issueId=" + issueVO.getId() + "]");
+        Validate.isTrue(issueVO.getId() == null, "Neplatný identifikátor připomínky [id=" + issueVO.getId() + "]");
         Validate.notNull(issueVO.getIssueListId(), "Chybí identifikátor protokolu [issueListId]");
         Validate.notNull(issueVO.getIssueTypeId(), "Chybí identifikátor druhu připomínky [issueTypeId]");
         Validate.notBlank(issueVO.getDescription(), "Chybí popis připomínky [description]");
@@ -211,7 +235,7 @@ public class IssueController {
     @Transactional
     public WfCommentVO addIssueComment(@RequestBody WfCommentVO commentVO) {
 
-        Validate.isTrue(commentVO.getId() == null, "Neplatný identifikátor komentáře [commentId=" + commentVO.getId() + "");
+        Validate.isTrue(commentVO.getId() == null, "Neplatný identifikátor komentáře [id=" + commentVO.getId() + "");
         Validate.notNull(commentVO.getIssueId(), "Chybí identifikátor připomínky [issueId]");
         Validate.notBlank(commentVO.getComment(), "Chybí text připomínky [comment]");
 

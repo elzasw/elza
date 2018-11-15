@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import cz.tacr.elza.controller.vo.WfCommentVO;
 import cz.tacr.elza.controller.vo.WfIssueListVO;
@@ -17,8 +18,6 @@ import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.WfComment;
 import cz.tacr.elza.domain.WfIssue;
 import cz.tacr.elza.domain.WfIssueList;
-import cz.tacr.elza.repository.FundRepository;
-import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.WfCommentRepository;
 import cz.tacr.elza.repository.WfIssueListRepository;
 import cz.tacr.elza.repository.WfIssueRepository;
@@ -29,10 +28,8 @@ import cz.tacr.elza.repository.WfIssueTypeRepository;
  * @author <a href="mailto:stepan.marek@marbes.cz">Stepan Marek</a>
  */
 @Service
+@Transactional(readOnly = true)
 public class WfFactory {
-
-    private final FundRepository fundRepository;
-    private final NodeRepository nodeRepository;
 
     private final WfCommentRepository commentRepository;
     private final WfIssueListRepository issueListRepository;
@@ -41,9 +38,7 @@ public class WfFactory {
     private final WfIssueTypeRepository issueTypeRepository;
 
     @Autowired
-    public WfFactory(FundRepository fundRepository, NodeRepository nodeRepository, WfCommentRepository commentRepository, WfIssueListRepository issueListRepository, WfIssueRepository issueRepository, WfIssueStateRepository issueStateRepository, WfIssueTypeRepository issueTypeRepository) {
-        this.fundRepository = fundRepository;
-        this.nodeRepository = nodeRepository;
+    public WfFactory(WfCommentRepository commentRepository, WfIssueListRepository issueListRepository, WfIssueRepository issueRepository, WfIssueStateRepository issueStateRepository, WfIssueTypeRepository issueTypeRepository) {
         this.commentRepository = commentRepository;
         this.issueListRepository = issueListRepository;
         this.issueRepository = issueRepository;

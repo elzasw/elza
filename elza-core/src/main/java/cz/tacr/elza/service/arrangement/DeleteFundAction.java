@@ -318,7 +318,7 @@ public class DeleteFundAction {
      */
     private void dropNodeInfo() {
         policyService.deleteFundVisiblePolicies(fund);
-        userService.deleteByFund(fund);
+        userService.deletePermissionsByFund(fund);
 
         // delete node from cache
         cachedNodeRepository.deleteByFund(fund);

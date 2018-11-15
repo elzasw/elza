@@ -1,15 +1,18 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.UsrGroup;
-import cz.tacr.elza.domain.UsrPermission;
-import cz.tacr.elza.domain.UsrUser;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.UsrGroup;
+import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.UsrPermission.Permission;
+import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.domain.WfIssueList;
 
 /**
  * Respozitory pro {@link UsrPermission}.
@@ -57,4 +60,8 @@ public interface PermissionRepository extends JpaRepository<UsrPermission, Integ
     void deleteByGroup(UsrGroup group);
 
     void deleteByFund(ArrFund fund);
+
+    void deleteByIssueList(WfIssueList issueList);
+
+    void deleteByIssueListAndPermission(WfIssueList issueList, Permission permission);
 }

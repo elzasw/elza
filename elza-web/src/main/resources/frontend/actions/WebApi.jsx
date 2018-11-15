@@ -1457,6 +1457,16 @@ export class WebApiCls {
     }
 
     /**
+     * Úprava vlastností existujícího protokolu
+     *
+     * @param issueListId identifikátor protokolu.
+     * @param data {IssueListVO} data pro uložení protokolu
+     */
+    updateIssueList(issueListId : number, data : IssueListVO) {
+        return AjaxUtils.ajaxPut(WebApiCls.issueUrl+ '/issue_lists/' + issueListId, null, data)
+    }
+
+    /**
      * Získání detailu připomínky.
      *
      * @param issueId identifikátor připomínky
