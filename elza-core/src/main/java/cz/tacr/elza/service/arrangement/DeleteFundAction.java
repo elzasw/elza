@@ -56,6 +56,9 @@ import cz.tacr.elza.repository.OutputResultRepository;
 import cz.tacr.elza.repository.RequestQueueItemRepository;
 import cz.tacr.elza.repository.StructuredItemRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
+import cz.tacr.elza.repository.WfCommentRepository;
+import cz.tacr.elza.repository.WfIssueListRepository;
+import cz.tacr.elza.repository.WfIssueRepository;
 import cz.tacr.elza.service.DmsService;
 import cz.tacr.elza.service.IEventNotificationService;
 import cz.tacr.elza.service.PolicyService;
@@ -204,6 +207,15 @@ public class DeleteFundAction {
     @Autowired
     private DataFileRefRepository dataFileRefRepository;
 
+    @Autowired
+    private WfCommentRepository commentRepository;
+
+    @Autowired
+    private WfIssueListRepository issueListRepository;
+
+    @Autowired
+    private WfIssueRepository issueRepository;
+
     /**
      * Prepare fund deletion
      */
@@ -245,6 +257,7 @@ public class DeleteFundAction {
 
         prepare();
 
+        dropIssues();
         dropDaos();
         dropBulkActions();
         dropOutputs();
@@ -294,7 +307,7 @@ public class DeleteFundAction {
         structureDataRepository.deleteInBatch(objList);
         */
         structureDataRepository.deleteByFund(fund);
-        
+
         fundStructureExtensionRepository.deleteByFund(fund);
         em.flush();
 
@@ -383,6 +396,15 @@ public class DeleteFundAction {
         daoFileGroupRepository.deleteByFund(fund);
         daoRepository.deleteByFund(fund);
         daoPackageRepository.deleteByFund(fund);
+
+        em.flush();
+    }
+
+    private void dropIssues() {
+
+        commentRepository.deleteByFundId(fundId);
+        issueRepository.deleteByFundId(fundId);
+        issueListRepository.deleteByFundId(fundId);
 
         em.flush();
     }

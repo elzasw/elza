@@ -342,4 +342,13 @@ public class IssueService {
         return commentRepository.save(comment);
     }
 
+    /**
+     * V případě, že při UNDO dochází k rušení celého nodu, musí se zrušit vazba z issue.
+     */
+    @Transactional
+    public void resetIssueNode(Collection<Integer> deleteNodeIds) {
+        if (deleteNodeIds != null && !deleteNodeIds.isEmpty()) {
+            issueRepository.resetNodes(deleteNodeIds);
+        }
+    }
 }

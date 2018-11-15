@@ -27,7 +27,6 @@ import javax.persistence.TemporalType;
 import javax.persistence.TypedQuery;
 import javax.validation.constraints.NotNull;
 
-import cz.tacr.elza.service.eventnotification.events.EventStructureDataChange;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -62,6 +61,7 @@ import cz.tacr.elza.repository.StructuredObjectRepository;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.eventnotification.events.EventFunds;
 import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
+import cz.tacr.elza.service.eventnotification.events.EventStructureDataChange;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.vo.Change;
 import cz.tacr.elza.service.vo.ChangesResult;
@@ -125,6 +125,9 @@ public class RevertingChangesService {
 
     @Autowired
     private StructObjValueService structObjValueService;
+
+    @Autowired
+    private IssueService issueService;
 
     /**
      * Vyhledání provedení změn nad AS, případně nad konkrétní JP z AS.
@@ -366,6 +369,8 @@ public class RevertingChangesService {
 
         Set<Integer> deleteNodeIds = getNodeIdsToDelete();
         nodeIdsChange.removeAll(deleteNodeIds);
+
+        issueService.resetIssueNode(deleteNodeIds);
 
         nodeCacheService.deleteNodes(deleteNodeIds);
 

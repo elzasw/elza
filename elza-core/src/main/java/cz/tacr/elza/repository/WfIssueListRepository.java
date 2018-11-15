@@ -2,6 +2,7 @@ package cz.tacr.elza.repository;
 
 import java.util.List;
 
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -54,4 +55,9 @@ public interface WfIssueListRepository extends ElzaJpaRepository<WfIssueList, In
             " from wf_comment c" +
             " where c.commentId = :commentId")
     Integer findFundIdByCommentId(@Param(value = "commentId") Integer commentId);
+
+    @Modifying
+    @Query("delete from wf_issue_list il where il.fund.fundId = :fundId")
+    void deleteByFundId(@Param(value = "fundId") Integer fundId);
+
 }
