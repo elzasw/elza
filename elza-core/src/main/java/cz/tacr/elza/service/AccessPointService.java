@@ -38,6 +38,7 @@ import cz.tacr.elza.controller.vo.usage.OccurrenceType;
 import cz.tacr.elza.controller.vo.usage.OccurrenceVO;
 import cz.tacr.elza.controller.vo.usage.PartyVO;
 import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
+import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
@@ -1040,22 +1041,37 @@ public class AccessPointService {
     /**
      * Aktualizace přístupového bodu - není verzované!
      *
-     * @param accessPoint přístupový bod
-     * @param type        měněný typ přístupového bodu
+     * @param accessPointId
+     *            ID přístupového bodu
+     * @param type
+     *            měněný typ přístupového bodu
      * @return upravený přístupový bodu
      */
+    @Transactional
     @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
-    public ApAccessPoint updateAccessPoint(@AuthParam(type = AuthParam.Type.AP) final ApAccessPoint accessPoint,
-                                           final ApType type) {
-        Assert.notNull(accessPoint, "Přístupový bod musí být vyplněn");
-        Assert.notNull(type, "Typ musí být vyplněn");
-        validationNotDeleted(accessPoint);
-        validationNotParty(accessPoint);
-        if (type.getApTypeId().equals(accessPoint.getApType().getApTypeId())) {
-            return accessPoint;
+    public ApAccessPoint changeApType(@AuthParam(type = AuthParam.Type.AP) final Integer accessPointId,
+                                      final Integer apTypeId) {
+        Validate.notNull(accessPointId);
+        Validate.notNull(apTypeId);
+
+        // get ap type
+        StaticDataProvider sdp = this.staticDataService.createProvider();
+        ApType apType = sdp.getApTypeById(apTypeId);
+        Validate.notNull(apType, "AP Type not found, id={}", apTypeId);
+
+        // get ap
+        ApAccessPoint ap = getAccessPoint(accessPointId);
+        Validate.notNull(ap, "AP not found, id={}", accessPointId);
+
+        validationNotDeleted(ap);
+        validationNotParty(ap);
+
+        // check if modified
+        if (apTypeId.equals(ap.getApTypeId())) {
+            return ap;
         }
-        accessPoint.setApType(type);
-        return apRepository.save(accessPoint);
+        ap.setApType(apType);
+        return apRepository.save(ap);
     }
 
     /**
@@ -1580,7 +1596,7 @@ public class AccessPointService {
             }
             createExternalId(accessPoint, externalIdType, externalId, change);
         } else {
-            accessPoint = updateAccessPoint(accessPointExists, type);
+            accessPoint = changeApType(accessPointExists.getAccessPointId(), type.getApTypeId());
             invalidateAllNames(accessPoint, change);
             changeDescription(accessPoint, description);
         }
