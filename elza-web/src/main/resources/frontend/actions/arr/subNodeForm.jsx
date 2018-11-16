@@ -290,8 +290,9 @@ class ItemFormActions {
                     .then(json => {
                         if(this.area === OutputFormActions.AREA || this.area === StructureFormActions.AREA){
                             dispatch(this._fundSubNodeFormDescItemResponse(versionId, routingKey, valueLocation, json, 'UPDATE'));
+                        } else {
+                            dispatch(this._fundSubNodeUpdate(versionId, refTables, json));
                         }
-                        dispatch(this._fundSubNodeUpdate(versionId, refTables, json));
                         dispatch(statusSaved());
                     })
             } else {
