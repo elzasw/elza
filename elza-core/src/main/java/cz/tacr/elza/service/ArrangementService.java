@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
@@ -747,15 +748,19 @@ public class ArrangementService {
         List<ArrFundFulltextResult> resultList = new ArrayList<>();
 
         if (!fundToNodeList.isEmpty()) {
-
-            Map<Integer, ArrFund> fundMap = fundList.stream().collect(Collectors.toMap(fund -> fund.getFundId(), fund -> fund));
+            List<Integer> fundIds = fundList.stream().map(ArrFund::getFundId).collect(Collectors.toList());
+            Map<Integer, ArrFundVersion> fundIdVersionsMap = getOpenVersionsByFundIds(fundIds).stream()
+                    .collect(Collectors.toMap(ArrFundVersion::getFundId, Function.identity()));
+            Map<Integer, ArrFund> fundMap = fundList.stream().collect(Collectors.toMap(ArrFund::getFundId, Function.identity()));
 
             for (ArrFundToNodeList fundCount : fundToNodeList) {
                 ArrFundFulltextResult result = new ArrFundFulltextResult();
                 ArrFund fund = fundMap.get(fundCount.getFundId());
+                ArrFundVersion fundVersion = fundIdVersionsMap.get(fundCount.getFundId());
                 result.setName(fund.getName());
                 result.setId(fundCount.getFundId());
                 result.setCount(fundCount.getNodeCount());
+                result.setFundVersionId(fundVersion.getFundVersionId());
                 resultList.add(result);
             }
         }
