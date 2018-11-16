@@ -15,6 +15,9 @@ import Search from "../shared/search/Search";
 import Loading from "../shared/loading/Loading";
 import HorizontalLoader from "../shared/loading/HorizontalLoader";
 
+import {createFundRoot, getParentNode} from './ArrUtils.jsx'
+import {fundSelectSubNode} from 'actions/arr/node.jsx'
+
 import {fundTreeFulltextChange} from 'actions/arr/fundTree.jsx'
 
 import {selectFundTab} from 'actions/arr/fund.jsx'
@@ -76,7 +79,7 @@ class SearchFundsForm extends AbstractReactComponent {
      */
     handleNodeClick = (item) => {
         const { fulltext, funds } = this.props.fundSearch;
-        const itemFund = funds.find(fund => fund.nodes.some(node => node.id === item.id));
+        const itemFund = this.props.fundSearch.funds.find(fund => fund.nodes.some(nd => nd.id === item.id));
 
         // Přepnutí na stránku pořádání a zavření dialogu
         this.props.dispatch(routerNavigate('/arr'));
@@ -85,17 +88,33 @@ class SearchFundsForm extends AbstractReactComponent {
         // Vyplní vyhledávací políčko na stránce pořádání
         this.props.dispatch(fundTreeFulltextChange(types.FUND_TREE_AREA_MAIN, item.version, fulltext));
 
-        // @todo - Vyber uzel ze stromu
+        // Vyber uzel ze stromu
+        this.fundSelectSubNode(item, false);
 
         // Otevření archivního souboru - @todo
-        // this.navigateToFund(itemFund.id, item);
+        // this.navigateToFund(itemFund);
     };
 
     navigateToFund = (fund) => {
-        const fundObj = getFundFromFundAndVersion(fund, null);
+        const fundObj = getFundFromFundAndVersion(fund.id, fund.fundVersionId);
 
         this.props.dispatch(globalFundTreeInvalidate());
         this.props.dispatch(selectFundTab(fundObj));
+    }
+
+    /**
+     * Výběr a otevření uzlu v záložce AS.
+     * @param node {Object} uzel
+     * @param openNewTab {Boolean} true, pokud se má otevřít v nové záložce
+     */
+    fundSelectSubNode = (node, openNewTab) => {
+        const itemFund = this.props.fundSearch.funds.find(fund => fund.nodes.some(nd => nd.id === node.id));
+        let parentNode = getParentNode(node, itemFund.nodes);
+        
+        if (parentNode == null) {   // root
+            parentNode = createFundRoot(itemFund);
+        }
+        this.dispatch(fundSelectSubNode(itemFund.fundVersionId, node.id, parentNode, openNewTab, null, false));
     }
 
     /**
@@ -233,6 +252,7 @@ class SearchFundsForm extends AbstractReactComponent {
 
 function mapStateToProps(state) {
     const {fundSearch} = state.arrRegion;
+
     return {
         fundSearch
     }

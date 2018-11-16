@@ -269,7 +269,8 @@ export function getSettings(items, type = null, entityType = null, entityId = nu
  * @return {Object} virtuální kořenový uzel pro kořenový uzel AS
  */
 export function createFundRoot(fund) {
-    return {id: 'ROOT_' + fund.versionId, name: fund.name, root: true};
+    const version = typeof fund.versionId !== 'undefined' ? fund.versionId : fund.fundVersionId;
+    return {id: 'ROOT_' + version, name: fund.name, root: true};
 }
 
 /**
