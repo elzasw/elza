@@ -79,11 +79,11 @@ class SearchFundsForm extends AbstractReactComponent {
         const itemFund = funds.find(fund => fund.nodes.some(node => node.id === item.id));
 
         // Přepnutí na stránku pořádání a zavření dialogu
-        this.dispatch(routerNavigate('/arr'));
-        this.dispatch(modalDialogHide());
+        this.props.dispatch(routerNavigate('/arr'));
+        this.props.dispatch(modalDialogHide());
 
         // Vyplní vyhledávací políčko na stránce pořádání
-        this.dispatch(fundTreeFulltextChange(types.FUND_TREE_AREA_MAIN, item.version, fulltext));
+        this.props.dispatch(fundTreeFulltextChange(types.FUND_TREE_AREA_MAIN, item.version, fulltext));
 
         // @todo - Vyber uzel ze stromu
 
@@ -94,8 +94,8 @@ class SearchFundsForm extends AbstractReactComponent {
     navigateToFund = (fund) => {
         const fundObj = getFundFromFundAndVersion(fund, null);
 
-        this.dispatch(globalFundTreeInvalidate());
-        this.dispatch(selectFundTab(fundObj));
+        this.props.dispatch(globalFundTreeInvalidate());
+        this.props.dispatch(selectFundTab(fundObj));
     }
 
     /**
