@@ -7,7 +7,7 @@ import org.hibernate.validator.constraints.NotBlank;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 /**
- * @author <a href="mailto:stepan.marek@marbes.cz">Stepan Marek</a>
+ * Připomínka
  */
 public class WfIssueVO {
 

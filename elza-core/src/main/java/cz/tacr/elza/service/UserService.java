@@ -13,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 import javax.validation.constraints.NotNull;
@@ -1507,5 +1508,58 @@ public class UserService {
 			addUserPermission(user, usrPermissions, false);
 		}
 	}
+
+    /**
+     * Nastavení oprávnění k novému protokolu
+     */
+    @Transactional
+    @AuthMethod(permission = {Permission.FUND_ISSUE_ADMIN, Permission.FUND_ISSUE_ADMIN_ALL})
+    public void updateIssueListPermissions(@AuthParam(type = AuthParam.Type.ISSUE_LIST) @NotNull WfIssueList issueList, @Nullable Collection<UsrUser> rdUsers, @Nullable Collection<UsrUser> wrUsers) {
+
+        Validate.notNull(issueList, "Issue list is null");
+
+        Map<Integer, UsrUser> update = new HashMap<>();
+
+        if (rdUsers != null) {
+            update.putAll(updateIssueListPermissions(issueList, rdUsers, Permission.FUND_ISSUE_LIST_RD));
+        }
+
+        if (wrUsers != null) {
+            update.putAll(updateIssueListPermissions(issueList, wrUsers, Permission.FUND_ISSUE_LIST_WR));
+        }
+
+        for (UsrUser user : update.values()) {
+            invalidateCache(user);
+            changeUserEvent(user);
+        }
+
+        permissionRepository.flush();
+    }
+
+    private Map<Integer, UsrUser> updateIssueListPermissions(@NotNull WfIssueList issueList, @NotNull Collection<UsrUser> users, @NotNull Permission permissionType) {
+
+        Map<Integer, UsrUser> userMap = users.stream().collect(Collectors.toMap(user -> user.getUserId(), user -> user));
+
+        Map<Integer, UsrUser> update = new HashMap<>();
+
+        for (UsrPermission permissionDb : permissionRepository.findByIssueListAndPermission(issueList.getIssueListId(), permissionType)) {
+            UsrUser user = permissionDb.getUser();
+            if (userMap.remove(user.getUserId()) == null) {
+                permissionRepository.delete(permissionDb);
+                update.put(user.getUserId(), user);
+            }
+        }
+
+        for (UsrUser user : userMap.values()) {
+            UsrPermission permission = new UsrPermission();
+            permission.setPermission(permissionType);
+            permission.setUser(user);
+            permission.setIssueList(issueList);
+            permissionRepository.save(permission);
+            update.put(user.getUserId(), user);
+        }
+
+        return update;
+    }
 
 }

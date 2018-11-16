@@ -1,16 +1,24 @@
 package cz.tacr.elza.service;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
+import java.time.format.DateTimeFormatter;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
+import org.apache.commons.csv.CSVPrinter;
+import org.apache.commons.csv.QuoteMode;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,11 +26,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
+import cz.tacr.elza.domain.ApName;
 import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.WfComment;
 import cz.tacr.elza.domain.WfIssue;
@@ -31,21 +41,26 @@ import cz.tacr.elza.domain.WfIssueState;
 import cz.tacr.elza.domain.WfIssueType;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.repository.PermissionRepository;
 import cz.tacr.elza.repository.WfCommentRepository;
 import cz.tacr.elza.repository.WfIssueListRepository;
 import cz.tacr.elza.repository.WfIssueRepository;
 import cz.tacr.elza.repository.WfIssueStateRepository;
 import cz.tacr.elza.repository.WfIssueTypeRepository;
 import cz.tacr.elza.security.UserDetail;
+import cz.tacr.elza.service.eventnotification.EventFactory;
+import cz.tacr.elza.service.eventnotification.events.EventType;
 
 import static cz.tacr.elza.domain.UsrPermission.Permission;
+import static cz.tacr.elza.utils.CsvUtils.*;
+import static org.apache.commons.io.IOUtils.LINE_SEPARATOR_WINDOWS;
 
 @Service
 @Transactional(readOnly = true)
 public class IssueService {
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private static final Logger logger = LoggerFactory.getLogger(IssueService.class);
+
+    private static final int CVS_MAX_TEXT_LENGTH = 32760;
 
     // --- dao ---
 
@@ -55,23 +70,39 @@ public class IssueService {
     private final WfIssueStateRepository issueStateRepository;
     private final WfIssueTypeRepository issueTypeRepository;
 
-    private final PermissionRepository permissionRepository;
-
     // --- services ---
 
+    private final AccessPointService accessPointService;
+    private final ArrangementService arrangementService;
+    private final IEventNotificationService eventNotificationService;
+    private final LevelTreeCacheService levelTreeCacheService;
     private final UserService userService;
 
     // --- constructor ---
 
     @Autowired
-    public IssueService(UserService userService, WfCommentRepository commentRepository, WfIssueListRepository issueListRepository, WfIssueRepository issueRepository, WfIssueStateRepository issueStateRepository, WfIssueTypeRepository issueTypeRepository, PermissionRepository permissionRepository) {
+    public IssueService(
+            AccessPointService accessPointService,
+            ArrangementService arrangementService,
+            IEventNotificationService eventNotificationService,
+            LevelTreeCacheService levelTreeCacheService,
+            UserService userService,
+            WfCommentRepository commentRepository,
+            WfIssueListRepository issueListRepository,
+            WfIssueRepository issueRepository,
+            WfIssueStateRepository issueStateRepository,
+            WfIssueTypeRepository issueTypeRepository
+    ) {
+        this.accessPointService = accessPointService;
+        this.arrangementService = arrangementService;
+        this.eventNotificationService = eventNotificationService;
+        this.levelTreeCacheService = levelTreeCacheService;
         this.userService = userService;
         this.commentRepository = commentRepository;
         this.issueListRepository = issueListRepository;
         this.issueRepository = issueRepository;
         this.issueStateRepository = issueStateRepository;
         this.issueTypeRepository = issueTypeRepository;
-        this.permissionRepository = permissionRepository;
     }
 
     // --- methods ---
@@ -79,7 +110,7 @@ public class IssueService {
     /**
      * Získání stavů připomínek.
      *
-     * @returns zeznam stavů připomínek
+     * @returns seznam stavů připomínek
      */
     public List<WfIssueState> findAllIssueStates() {
         return issueStateRepository.findAll();
@@ -223,13 +254,19 @@ public class IssueService {
     @Transactional
     @AuthMethod(permission = {Permission.FUND_ISSUE_ADMIN, Permission.FUND_ISSUE_ADMIN_ALL})
     public WfIssueList addIssueList(@AuthParam(type = AuthParam.Type.FUND) @NotNull ArrFund fund, String name, boolean open) {
+
         Validate.notNull(fund, "Fund is null");
         Validate.notBlank(name, "Empty name");
+
         WfIssueList issueList = new WfIssueList();
         issueList.setFund(fund);
         issueList.setName(name);
         issueList.setOpen(open);
-        return issueListRepository.save(issueList);
+        issueList = issueListRepository.save(issueList);
+
+        publishAccessPointEvent(issueList.getIssueListId(), EventType.ISSUE_LIST_CREATE);
+
+        return issueList;
     }
 
     /**
@@ -238,79 +275,20 @@ public class IssueService {
     @Transactional
     @AuthMethod(permission = {Permission.FUND_ISSUE_ADMIN, Permission.FUND_ISSUE_ADMIN_ALL})
     public WfIssueList updateIssueList(@AuthParam(type = AuthParam.Type.ISSUE_LIST) @NotNull WfIssueList issueList, @Nullable String name, @Nullable Boolean open) {
+
         Validate.notNull(issueList, "Issue list is null");
+
         if (name != null) {
             issueList.setName(name);
         }
         if (open != null) {
             issueList.setOpen(open);
         }
-        return issueListRepository.save(issueList);
-    }
+        issueList = issueListRepository.save(issueList);
 
-    /**
-     * Nastavení oprávnění k novému protokolu
-     */
-    @Transactional
-    @AuthMethod(permission = {Permission.FUND_ISSUE_ADMIN, Permission.FUND_ISSUE_ADMIN_ALL})
-    public void addIssueListPermission(@AuthParam(type = AuthParam.Type.ISSUE_LIST) @NotNull WfIssueList issueList, @NotNull UsrUser admin, Collection<UsrUser> rdUsers, Collection<UsrUser> wrUsers) {
+        publishAccessPointEvent(issueList.getIssueListId(), EventType.ISSUE_LIST_UPDATE);
 
-        Validate.notNull(issueList, "Issue list is null");
-        Validate.notNull(admin, "User is null");
-
-        Map<Integer, UsrUser> users = new HashMap<>();
-        Map<Integer, List<Permission>> permissions = new HashMap<>();
-
-        // users.put(admin.getUserId(), admin);
-        // permissions.put(admin.getUserId(), Arrays.asList(Permission.FUND_ISSUE_LIST_RD, Permission.FUND_ISSUE_LIST_WR));
-
-        if (rdUsers != null) {
-            for (UsrUser user : rdUsers) {
-                users.put(user.getUserId(), user);
-                permissions.computeIfAbsent(user.getUserId(), k -> new ArrayList<>()).add(Permission.FUND_ISSUE_LIST_RD);
-            }
-        }
-
-        if (wrUsers != null) {
-            for (UsrUser user : wrUsers) {
-                users.put(user.getUserId(), user);
-                permissions.computeIfAbsent(user.getUserId(), k -> new ArrayList<>()).add(Permission.FUND_ISSUE_LIST_WR);
-            }
-        }
-
-        for (UsrUser user : users.values()) {
-            List<UsrPermission> permissionList = permissions.get(user.getUserId()).stream().map(permissionType -> {
-                UsrPermission permission = new UsrPermission();
-                permission.setPermission(permissionType);
-                permission.setUser(user);
-                permission.setIssueList(issueList);
-                return permission;
-            }).collect(Collectors.toList());
-            userService.addUserPermission(user, permissionList, false);
-        }
-
-        permissionRepository.flush();
-    }
-
-    /**
-     * Nastavení oprávnění k existujícímu protokolu
-     */
-    @Transactional
-    @AuthMethod(permission = {Permission.FUND_ISSUE_ADMIN, Permission.FUND_ISSUE_ADMIN_ALL})
-    public void updateIssueListPermission(@AuthParam(type = AuthParam.Type.ISSUE_LIST) @NotNull WfIssueList issueList, @NotNull UsrUser admin, Collection<UsrUser> rdUsers, Collection<UsrUser> wrUsers) {
-
-        Validate.notNull(issueList, "Issue list is null");
-        Validate.notNull(admin, "User is null");
-
-        if (rdUsers != null) {
-            userService.deletePermissionsByIssueList(issueList, Permission.FUND_ISSUE_LIST_RD);
-        }
-
-        if (wrUsers != null) {
-            userService.deletePermissionsByIssueList(issueList, Permission.FUND_ISSUE_LIST_WR);
-        }
-
-        addIssueListPermission(issueList, admin, rdUsers, wrUsers);
+        return issueList;
     }
 
     /**
@@ -337,7 +315,12 @@ public class IssueService {
         issue.setDescription(description);
         issue.setUserCreate(user);
         issue.setTimeCreated(LocalDateTime.now());
-        return issueRepository.save(issue);
+
+        issue = issueRepository.save(issue);
+
+        publishAccessPointEvent(issue.getIssueId(), EventType.ISSUE_CREATE);
+
+        return issue;
     }
 
     /**
@@ -349,6 +332,7 @@ public class IssueService {
         Validate.notNull(issue, "Issue is null");
         Validate.notNull(issueState, "Issue state is null");
         issue.setIssueState(issueState);
+        publishAccessPointEvent(issue.getIssueId(), EventType.ISSUE_UPDATE);
         issueRepository.save(issue);
     }
 
@@ -369,6 +353,8 @@ public class IssueService {
             issue.setIssueState(nextState);
             issueRepository.save(issue);
         }
+
+        publishAccessPointEvent(issue.getIssueId(), EventType.ISSUE_UPDATE);
 
         return comment;
     }
@@ -393,4 +379,139 @@ public class IssueService {
             issueRepository.resetNodes(deleteNodeIds);
         }
     }
+
+    protected List<WfComment> findCommentByIssueIds(List<Integer> issueIds) {
+        if (issueIds == null || issueIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return commentRepository.findByIssueIds(issueIds);
+    }
+
+    protected Map<Integer, List<WfComment>> groupCommentByIssueId(List<Integer> issueIds) {
+        return findCommentByIssueIds(issueIds).stream().collect(Collectors.groupingBy(comment -> comment.getIssue().getIssueId()));
+    }
+
+    @AuthMethod(permission = {Permission.FUND_ISSUE_LIST_RD, Permission.FUND_ISSUE_LIST_WR})
+    public void exportIssueList(@AuthParam(type = AuthParam.Type.ISSUE_LIST) @NotNull WfIssueList issueList, OutputStream os) throws IOException {
+
+        Validate.notNull(issueList, "Issue list is null");
+
+        List<WfIssue> issues = findIssueByIssueListId(issueList, null, null);
+
+        Map<Integer, TreeNodeVO> nodeMap = findNodeReferenceMark(issueList, issues);
+
+        Map<Integer, List<WfComment>> issueToCommentMap = groupCommentByIssueId(issues.stream().map(issue -> issue.getIssueId()).collect(Collectors.toList()));
+
+        Map<Integer, ApName> userToAccessPointNameMap = findUserAccessPointNames(issues, issueToCommentMap);
+
+        DateTimeFormatter commentDateFormatter = DateTimeFormatter.ofPattern("d.M.u");
+
+        String[] headers = new String[]{
+                "\u010C\u00EDslo JP",
+                "\u010C\u00EDslo",
+                "Druh",
+                "Stav",
+                "U\u017Eivatel",
+                "Datum",
+                "Popis",
+                "Koment\u00E1\u0159e"
+        };
+
+        CSVPrinter printer = CSV_EXCEL_FORMAT.withHeader(headers).withQuoteMode(QuoteMode.NON_NUMERIC)
+                .print(new OutputStreamWriter(os, CSV_EXCEL_CHARSET));
+
+        for (WfIssue issue : issues) {
+
+            TreeNodeVO node = issue.getNode() != null ? nodeMap.get(issue.getNode().getNodeId()) : null;
+            printer.print(node != null ? StringUtils.join(node.getReferenceMark()) : null);
+            printer.print(issue.getNumber());
+            printer.print(issue.getIssueType().getName());
+            printer.print(issue.getIssueState().getName());
+
+            printer.print(formatUserName(userToAccessPointNameMap, issue.getUserCreate()));
+            printer.print(CVS_DATE_TIME_FORMATTER.format(issue.getTimeCreated()));
+            printer.print(issue.getDescription());
+
+            StringBuilder text = new StringBuilder(1024);
+
+            List<WfComment> comments = issueToCommentMap.get(issue.getIssueId());
+
+            if (comments != null) {
+                for (WfComment comment : comments) {
+
+                    if (text.length() > 0) {
+                        text.append(LINE_SEPARATOR_WINDOWS);
+                    }
+
+                    text.append(String.format("%s (%s): %s",
+                            commentDateFormatter.format(comment.getTimeCreated()),
+                            formatUserName(userToAccessPointNameMap, comment.getUser()),
+                            comment.getComment()));
+
+                    if (comment.getPrevState() != comment.getNextState()) {
+                        text.append(String.format(" [zm\u011Bna stavu na %s]", comment.getNextState().getName()));
+                    }
+                }
+            }
+
+            if (text.length() > CVS_MAX_TEXT_LENGTH) {
+                text.setLength(CVS_MAX_TEXT_LENGTH);
+                if (!StringUtils.endsWith(text, LINE_SEPARATOR_WINDOWS)) {
+                    text.append(LINE_SEPARATOR_WINDOWS);
+                }
+                text.append("...");
+            }
+
+            printer.print(text);
+
+            printer.println();
+        }
+
+        printer.flush();
+    }
+
+    protected Map<Integer, TreeNodeVO> findNodeReferenceMark(@NotNull WfIssueList issueList, @NotNull List<WfIssue> issues) {
+        if (issues != null && !issues.isEmpty()) {
+            ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(issueList.getFund().getFundId());
+            if (fundVersion != null) {
+                List<TreeNodeVO> nodes = levelTreeCacheService.getNodesByIds(issues.stream().filter(issue -> issue.getNode() != null).map(issue -> issue.getNode().getNodeId()).collect(Collectors.toList()), fundVersion.getFundVersionId());
+                return nodes.stream().collect(Collectors.toMap(node -> node.getId(), node -> node));
+            }
+        }
+        return Collections.emptyMap();
+    }
+
+    protected Map<Integer, ApName> findUserAccessPointNames(List<WfIssue> issues, Map<Integer, List<WfComment>> issueCommentMap) {
+
+        Map<Integer, UsrUser> userMap = new HashMap<>();
+        for (WfIssue issue : issues) {
+            UsrUser user = issue.getUserCreate();
+            userMap.put(user.getUserId(), user);
+        }
+        for (List<WfComment> comments : issueCommentMap.values()) {
+            for (WfComment comment : comments) {
+                UsrUser user = comment.getUser();
+                userMap.put(user.getUserId(), user);
+            }
+        }
+
+        Set<Integer> accessPointIds = userMap.values().stream()
+                .map(user -> user.getParty().getAccessPoint().getAccessPointId())
+                .collect(Collectors.toSet());
+
+        Map<Integer, ApName> accessPointToNameMap = accessPointService.findPreferredNamesByAccessPointIds(accessPointIds).stream()
+                .collect(Collectors.toMap(apName -> apName.getAccessPoint().getAccessPointId(), apName -> apName));
+
+        return userMap.values().stream()
+                .collect(Collectors.toMap(user -> user.getUserId(), user -> accessPointToNameMap.get(user.getParty().getAccessPoint().getAccessPointId())));
+    }
+
+    protected String formatUserName(Map<Integer, ApName> userAccessPointNameMap, UsrUser user) {
+        return userAccessPointNameMap.get(user.getUserId()).getName();
+    }
+
+    protected void publishAccessPointEvent(Integer id, final EventType type) {
+        eventNotificationService.publishEvent(EventFactory.createIdEvent(type, id));
+    }
+
 }

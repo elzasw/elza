@@ -1,39 +1,5 @@
 package cz.tacr.elza.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import cz.tacr.elza.controller.ArrangementController.CopySiblingResult;
-import cz.tacr.elza.controller.ArrangementController.DescFormDataNewVO;
-import cz.tacr.elza.controller.vo.*;
-import cz.tacr.elza.controller.vo.ApTypeVO;
-import cz.tacr.elza.controller.vo.ApScopeVO;
-import cz.tacr.elza.controller.vo.filter.Filters;
-import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
-import cz.tacr.elza.controller.vo.nodes.NodeDataParam;
-import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
-import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStringVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemTextVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
-import cz.tacr.elza.domain.ArrDataText;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrOutputDefinition;
-import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.table.ElzaRow;
-import cz.tacr.elza.domain.table.ElzaTable;
-import cz.tacr.elza.drools.DirectionLevel;
-import cz.tacr.elza.service.ArrIOService;
-import cz.tacr.elza.service.FundLevelService;
-import cz.tacr.elza.service.vo.ChangesResult;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.csv.CSVRecord;
-import org.apache.commons.lang3.StringUtils;
-import org.junit.Assert;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -52,6 +18,61 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.csv.CSVRecord;
+import org.apache.commons.lang3.StringUtils;
+import org.junit.Assert;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import cz.tacr.elza.controller.ArrangementController.CopySiblingResult;
+import cz.tacr.elza.controller.ArrangementController.DescFormDataNewVO;
+import cz.tacr.elza.controller.vo.ApAccessPointCreateVO;
+import cz.tacr.elza.controller.vo.ApAccessPointVO;
+import cz.tacr.elza.controller.vo.ApScopeVO;
+import cz.tacr.elza.controller.vo.ApTypeVO;
+import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
+import cz.tacr.elza.controller.vo.ArrFundFulltextResult;
+import cz.tacr.elza.controller.vo.ArrFundVO;
+import cz.tacr.elza.controller.vo.ArrFundVersionVO;
+import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
+import cz.tacr.elza.controller.vo.ArrOutputDefinitionVO;
+import cz.tacr.elza.controller.vo.ArrOutputExtVO;
+import cz.tacr.elza.controller.vo.CopyNodesParams;
+import cz.tacr.elza.controller.vo.CopyNodesValidate;
+import cz.tacr.elza.controller.vo.CopyNodesValidateResult;
+import cz.tacr.elza.controller.vo.FilterNode;
+import cz.tacr.elza.controller.vo.FilterNodePosition;
+import cz.tacr.elza.controller.vo.FulltextFundRequest;
+import cz.tacr.elza.controller.vo.NodeItemWithParent;
+import cz.tacr.elza.controller.vo.OutputSettingsVO;
+import cz.tacr.elza.controller.vo.RulOutputTypeVO;
+import cz.tacr.elza.controller.vo.TreeData;
+import cz.tacr.elza.controller.vo.TreeNodeVO;
+import cz.tacr.elza.controller.vo.filter.Filters;
+import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.controller.vo.nodes.NodeDataParam;
+import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
+import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStringVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemTextVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
+import cz.tacr.elza.domain.ArrDataText;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrOutputDefinition;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.table.ElzaRow;
+import cz.tacr.elza.domain.table.ElzaTable;
+import cz.tacr.elza.drools.DirectionLevel;
+import cz.tacr.elza.service.FundLevelService;
+import cz.tacr.elza.service.vo.ChangesResult;
+import cz.tacr.elza.utils.CsvUtils;
 
 import static org.junit.Assert.*;
 
@@ -630,8 +651,8 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
             // Export a kontrola
             InputStream is = descItemCsvExport(fundVersion.getId(), descItemResult.getItem().getDescItemObjectId());
-            Reader in = new InputStreamReader(is, ArrIOService.CSV_EXCEL_ENCODING);
-            Iterable<CSVRecord> records = ArrIOService.CSV_EXCEL_FORMAT.withFirstRecordAsHeader().parse(in);
+            Reader in = new InputStreamReader(is, CsvUtils.CSV_EXCEL_ENCODING);
+            Iterable<CSVRecord> records = CsvUtils.CSV_EXCEL_FORMAT.withFirstRecordAsHeader().parse(in);
             List<CSVRecord> recordsList = new ArrayList<>();
             records.forEach(recordsList::add);
             assertTrue(recordsList.size() == 6); // šest řádků bez hlavičky

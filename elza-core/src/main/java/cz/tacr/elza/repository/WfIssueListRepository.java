@@ -7,7 +7,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import cz.tacr.elza.domain.UsrPermissionView;
 import cz.tacr.elza.domain.WfIssueList;
 
 @Repository
@@ -25,11 +24,6 @@ public interface WfIssueListRepository extends ElzaJpaRepository<WfIssueList, In
             " and il.issueListId in (select pv.issueList.issueListId from usr_permission_view pv where pv.user.userId = :userId)" +
             " order by il.open desc, il.name")
     List<WfIssueList> findByFundIdWithPermission(@Param(value = "fundId") Integer fundId, @Param(value = "userId") Integer userId);
-
-    @Query("select pv" +
-            " from usr_permission_view pv" +
-            " where pv.issueList.issueListId in :issueListIds")
-    List<UsrPermissionView> findPermissionByIssueListId(@Param(value = "issueListIds") List<Integer> issueListIds);
 
     @Query("select i.issueList.issueListId" +
             " from wf_issue i" +

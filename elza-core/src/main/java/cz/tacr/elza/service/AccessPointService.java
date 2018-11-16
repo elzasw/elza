@@ -2133,6 +2133,18 @@ public class AccessPointService {
     }
 
     /**
+     * Vrátí preferovaná jména pro dané přístupové body
+     *
+     * @return seznam jmen přístupových bodů
+     */
+    public List<ApName> findPreferredNamesByAccessPointIds(Collection<Integer> accessPointIds) {
+        if (accessPointIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return apNameRepository.findPreferredNamesByAccessPointIds(accessPointIds);
+    }
+
+    /**
      * Pomocná třída pro založení změny až při její první potřebě.
      */
     private class ApChangeNeed {

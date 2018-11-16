@@ -1,7 +1,7 @@
 package cz.tacr.elza.controller.vo;
 
 /**
- * @author <a href="mailto:stepan.marek@marbes.cz">Stepan Marek</a>
+ * Základní údaje o protokolu (viz seznam oprávnění).
  */
 public class WfIssueListBaseVO {
 

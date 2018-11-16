@@ -1,7 +1,7 @@
 package cz.tacr.elza.api.interfaces;
 
 /**
- * @author <a href="mailto:stepan.marek@marbes.cz">Stepan Marek</a>
+ * Protokol
  */
 public interface IWfIssueList {
 

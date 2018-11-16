@@ -7,7 +7,7 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.NotBlank;
 
 /**
- * @author <a href="mailto:stepan.marek@marbes.cz">Stepan Marek</a>
+ * Komentář k připomínce
  */
 public class WfCommentVO {
 

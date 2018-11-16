@@ -64,4 +64,15 @@ public interface PermissionRepository extends JpaRepository<UsrPermission, Integ
     void deleteByIssueList(WfIssueList issueList);
 
     void deleteByIssueListAndPermission(WfIssueList issueList, Permission permission);
+
+    @Query("select p" +
+            " from usr_permission p" +
+            " where p.issueList.issueListId = :issueListId")
+    List<UsrPermission> findByIssueListId(@Param(value = "issueListId") Integer issueListId);
+
+    @Query("select p" +
+            " from usr_permission p" +
+            " where p.issueList.issueListId = :issueListId" +
+            " and p.permission = :permission")
+    List<UsrPermission> findByIssueListAndPermission(@Param(value = "issueListId") Integer issueListId, @Param(value = "permission") Permission permission);
 }

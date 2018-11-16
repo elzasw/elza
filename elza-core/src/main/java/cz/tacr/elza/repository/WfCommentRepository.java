@@ -18,6 +18,12 @@ public interface WfCommentRepository extends ElzaJpaRepository<WfComment, Intege
             " order by c.timeCreated")
     List<WfComment> findByIssueId(@Param(value = "issueId") Integer issueId);
 
+    @Query("select c" +
+            " from wf_comment c" +
+            " where c.issue.issueId in :issueIds" +
+            " order by c.timeCreated")
+    List<WfComment> findByIssueIds(@Param(value = "issueIds") List<Integer> issueIds);
+
     @Modifying
     @Query("delete from wf_comment c" +
             " where c.issue.issueId in (select i.issueId from wf_issue i where i.issueList.fund.fundId = :fundId)")

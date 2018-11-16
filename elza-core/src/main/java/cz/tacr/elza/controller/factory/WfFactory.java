@@ -1,7 +1,6 @@
 package cz.tacr.elza.controller.factory;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -12,39 +11,45 @@ import org.springframework.transaction.annotation.Transactional;
 import cz.tacr.elza.controller.vo.WfCommentVO;
 import cz.tacr.elza.controller.vo.WfIssueListVO;
 import cz.tacr.elza.controller.vo.WfIssueVO;
+import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrPermission.Permission;
-import cz.tacr.elza.domain.UsrPermissionView;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.WfComment;
 import cz.tacr.elza.domain.WfIssue;
 import cz.tacr.elza.domain.WfIssueList;
+import cz.tacr.elza.repository.PermissionRepository;
 import cz.tacr.elza.repository.WfCommentRepository;
 import cz.tacr.elza.repository.WfIssueListRepository;
 import cz.tacr.elza.repository.WfIssueRepository;
 import cz.tacr.elza.repository.WfIssueStateRepository;
 import cz.tacr.elza.repository.WfIssueTypeRepository;
 
-/**
- * @author <a href="mailto:stepan.marek@marbes.cz">Stepan Marek</a>
- */
 @Service
 @Transactional(readOnly = true)
 public class WfFactory {
+
+    // --- dao ---
 
     private final WfCommentRepository commentRepository;
     private final WfIssueListRepository issueListRepository;
     private final WfIssueRepository issueRepository;
     private final WfIssueStateRepository issueStateRepository;
     private final WfIssueTypeRepository issueTypeRepository;
+    private final PermissionRepository permissionRepository;
+
+    // --- constructor ---
 
     @Autowired
-    public WfFactory(WfCommentRepository commentRepository, WfIssueListRepository issueListRepository, WfIssueRepository issueRepository, WfIssueStateRepository issueStateRepository, WfIssueTypeRepository issueTypeRepository) {
+    public WfFactory(WfCommentRepository commentRepository, WfIssueListRepository issueListRepository, WfIssueRepository issueRepository, WfIssueStateRepository issueStateRepository, WfIssueTypeRepository issueTypeRepository, PermissionRepository permissionRepository) {
         this.commentRepository = commentRepository;
         this.issueListRepository = issueListRepository;
         this.issueRepository = issueRepository;
         this.issueStateRepository = issueStateRepository;
         this.issueTypeRepository = issueTypeRepository;
+        this.permissionRepository = permissionRepository;
     }
+
+    // --- methods ---
 
     public WfIssueListVO createIssueListVO(WfIssueList issueList, boolean withPermissions) {
 
@@ -59,8 +64,8 @@ public class WfFactory {
             List<UsrUser> rdUsers = new ArrayList<>();
             List<UsrUser> wrUsers = new ArrayList<>();
 
-            List<UsrPermissionView> permissionList = issueListRepository.findPermissionByIssueListId(Collections.singletonList(issueList.getIssueListId()));
-            for (UsrPermissionView permission : permissionList) {
+            List<UsrPermission> permissionList = permissionRepository.findByIssueListId(issueList.getIssueListId());
+            for (UsrPermission permission : permissionList) {
                 if (Permission.FUND_ISSUE_LIST_RD.equals(permission.getPermission())) {
                     rdUsers.add(permission.getUser());
                 }

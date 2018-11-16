@@ -19,7 +19,6 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang3.StringUtils;
@@ -73,6 +72,9 @@ import cz.tacr.elza.repository.ItemRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.OutputItemRepository;
 
+import static cz.tacr.elza.utils.CsvUtils.CSV_EXCEL_ENCODING;
+import static cz.tacr.elza.utils.CsvUtils.CSV_EXCEL_FORMAT;
+
 /**
  * Serviska pro import/export dat pro ArrItem.
  *
@@ -111,20 +113,6 @@ public class ArrIOService {
 
     @Autowired
     private RuleService ruleService;
-
-    /**
-     * CSV konfigurace pro CZ Excel.
-     */
-    public static final CSVFormat CSV_EXCEL_FORMAT = CSVFormat.DEFAULT
-            .withIgnoreEmptyLines(false)
-            .withAllowMissingColumnNames()
-            .withDelimiter(';')
-            .withQuote('"');
-    /**
-     * Kódování pro CSV soubory.
-     */
-    public static final String CSV_EXCEL_ENCODING = "cp1250";
-
 
     /**
      * Export dat tabulky do csv formátu, který bude zapsán do streamu.
