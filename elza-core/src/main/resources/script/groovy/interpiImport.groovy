@@ -43,7 +43,8 @@ String createDetail(InterpiEntity entity) {
         }
         return details.join("; ")
     } else {
-        return createSimpleDetail(entitaTyp);
+        // field popisTyp not found -> generate empty description
+        return ""; //createSimpleDetail(entitaTyp);
     }
 
 //    return "id: " + FACTORY.getInterpiRecordId(entity) + "\n" +
