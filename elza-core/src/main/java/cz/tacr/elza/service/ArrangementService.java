@@ -186,8 +186,7 @@ public class ArrangementService {
 
     public static final String UNDEFINED = "Nezjištěno";
 
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.FUND_RD})
-    public ArrFund getFund(@AuthParam(type = AuthParam.Type.FUND) @NotNull Integer fundId) {
+    public ArrFund getFund(@NotNull Integer fundId) {
         ArrFund fund = fundRepository.findOne(fundId);
         if (fund == null) {
             throw new ObjectNotFoundException("Nebyl nalezen AS s ID=" + fundId, ArrangementCode.FUND_NOT_FOUND).setId(fundId);

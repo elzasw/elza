@@ -3,6 +3,7 @@ package cz.tacr.elza.service;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -1373,6 +1374,9 @@ public class UserService {
      * @return mapa uživatelů
      */
     public Map<Integer, UsrUser> findUserMap(final Collection<Integer> userIds) {
+        if (userIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
         List<UsrUser> users = userRepository.findAll(userIds);
         return users.stream().collect(Collectors.toMap(UsrUser::getUserId, Function.identity()));
     }

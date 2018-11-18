@@ -85,6 +85,7 @@ public class WfFactory {
         WfIssueVO issueVO = new WfIssueVO();
         issueVO.setId(issue.getIssueId());
         issueVO.setIssueListId(issue.getIssueList().getIssueListId());
+        issueVO.setNumber(issue.getNumber());
         issueVO.setNodeId(issue.getNode() != null ? issue.getNode().getNodeId() : null);
         issueVO.setIssueTypeId(issue.getIssueType().getIssueTypeId());
         issueVO.setIssueStateId(issue.getIssueState().getIssueStateId());

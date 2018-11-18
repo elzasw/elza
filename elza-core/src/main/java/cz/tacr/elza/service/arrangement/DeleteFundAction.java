@@ -16,6 +16,7 @@ import cz.tacr.elza.bulkaction.BulkActionService;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.WfIssueList;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.BulkActionNodeRepository;
@@ -53,6 +54,7 @@ import cz.tacr.elza.repository.OutputFileRepository;
 import cz.tacr.elza.repository.OutputItemRepository;
 import cz.tacr.elza.repository.OutputRepository;
 import cz.tacr.elza.repository.OutputResultRepository;
+import cz.tacr.elza.repository.PermissionRepository;
 import cz.tacr.elza.repository.RequestQueueItemRepository;
 import cz.tacr.elza.repository.StructuredItemRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
@@ -215,6 +217,9 @@ public class DeleteFundAction {
 
     @Autowired
     private WfIssueRepository issueRepository;
+
+    @Autowired
+    private PermissionRepository permissionRepository;
 
     /**
      * Prepare fund deletion
@@ -402,9 +407,16 @@ public class DeleteFundAction {
 
     private void dropIssues() {
 
+        List<WfIssueList> issueLists = issueListRepository.findByFundId(fundId);
+
+        for (WfIssueList issueList : issueLists) {
+            permissionRepository.deleteByIssueList(issueList);
+        }
+
         commentRepository.deleteByFundId(fundId);
         issueRepository.deleteByFundId(fundId);
-        issueListRepository.deleteByFundId(fundId);
+        // issueListRepository.deleteByFundId(fundId);
+        issueListRepository.delete(issueLists);
 
         em.flush();
     }

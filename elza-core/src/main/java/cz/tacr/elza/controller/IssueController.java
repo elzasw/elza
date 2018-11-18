@@ -2,8 +2,8 @@ package cz.tacr.elza.controller;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletResponse;
@@ -108,6 +108,7 @@ public class IssueController {
     @Transactional
     public List<WfIssueListVO> findIssueListByFund(@PathVariable Integer fundId) {
 
+        // kontrola existence
         ArrFund fund = arrangementService.getFund(fundId);
 
         UserDetail userDetail = userService.getLoggedUserDetail();
@@ -141,13 +142,13 @@ public class IssueController {
     @Transactional
     public List<WfIssueVO> findIssueByIssueList(@PathVariable Integer issueListId,
                                                 @RequestParam(name = "issue_state_id", required = false) Integer issueStateId,
-                                                @RequestParam(name = "issue_type_id", required = false) Integer issueTyypeId) {
+                                                @RequestParam(name = "issue_type_id", required = false) Integer issueTypeId) {
 
         // kontrola existence a opravneni
         WfIssueList issueList = issueService.getIssueList(issueListId);
 
         WfIssueState state = issueStateId != null ? issueService.getIssueState(issueStateId) : null;
-        WfIssueType type = issueTyypeId != null ? issueService.getIssueType(issueTyypeId) : null;
+        WfIssueType type = issueTypeId != null ? issueService.getIssueType(issueTypeId) : null;
 
         List<WfIssue> issues = issueService.findIssueByIssueListId(issueList, state, type);
 
@@ -173,14 +174,8 @@ public class IssueController {
         ArrFund fund = arrangementService.getFund(issueListVO.getFundId());
 
         // validace uzivatelu
-        Collection<UsrUser> rdUsers = issueListVO.getRdUserIds() != null
-                ? userService.getUsers(new HashSet<>(issueListVO.getRdUserIds()))
-                : null;
-
-        // validace uzivatelu
-        Collection<UsrUser> wrUsers = issueListVO.getWrUserIds() != null
-                ? userService.getUsers(new HashSet<>(issueListVO.getWrUserIds()))
-                : null;
+        Collection<UsrUser> rdUsers = findUsers(issueListVO.getRdUserIds(), "rdUserIds");
+        Collection<UsrUser> wrUsers = findUsers(issueListVO.getWrUserIds(), "wrUserIds");
 
         WfIssueList issueList = issueService.addIssueList(fund, issueListVO.getName(), issueListVO.getOpen());
 
@@ -206,14 +201,8 @@ public class IssueController {
         WfIssueList issueList = issueService.getIssueList(issueListId);
 
         // validace uzivatelu
-        Collection<UsrUser> rdUsers = issueListVO.getRdUserIds() != null
-                ? userService.getUsers(new HashSet<>(issueListVO.getRdUserIds()))
-                : null;
-
-        // validace uzivatelu
-        Collection<UsrUser> wrUsers = issueListVO.getWrUserIds() != null
-                ? userService.getUsers(new HashSet<>(issueListVO.getWrUserIds()))
-                : null;
+        Collection<UsrUser> rdUsers = findUsers(issueListVO.getRdUserIds(), "rdUserIds");
+        Collection<UsrUser> wrUsers = findUsers(issueListVO.getWrUserIds(), "wrUserIds");
 
         issueService.updateIssueList(issueList, issueListVO.getName(), issueListVO.getOpen());
 
@@ -272,9 +261,9 @@ public class IssueController {
         Validate.notBlank(issueVO.getDescription(), "Chybí popis připomínky [description]");
 
         // validace na existenci
-        ArrNode node = issueVO.getNodeId() != null ? arrangementService.getNode(issueVO.getNodeId()) : null;
         WfIssueList issueList = issueService.getIssueList(issueVO.getIssueListId());
         WfIssueType issueType = issueService.getIssueType(issueVO.getIssueTypeId());
+        ArrNode node = issueVO.getNodeId() != null ? arrangementService.getNode(issueVO.getNodeId()) : null;
 
         UsrUser user = userService.getLoggedUser();
         Validate.notNull(user, "Uzivatel není prihlášený");
@@ -354,6 +343,15 @@ public class IssueController {
         WfComment comment = issueService.addComment(issue, commentVO.getComment(), newIssueState, user);
 
         return factory.createCommentVO(comment);
+    }
+
+    protected Collection<UsrUser> findUsers(List<Integer> userIds, String fieldName) {
+        if (userIds != null) {
+            Map<Integer, UsrUser> userMap = userService.findUserMap(userIds);
+            Validate.isTrue(userMap.size() == userIds.size(), "Neplatný uživatel [" + fieldName + "]");
+            return userMap.values();
+        }
+        return null;
     }
 
 }

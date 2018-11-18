@@ -16,6 +16,8 @@ public class WfIssueVO {
     private Integer id;
     @NotNull
     private Integer issueListId;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Integer number;
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     private Integer nodeId;
     @NotNull
@@ -41,6 +43,14 @@ public class WfIssueVO {
 
     public void setIssueListId(Integer issueListId) {
         this.issueListId = issueListId;
+    }
+
+    public Integer getNumber() {
+        return number;
+    }
+
+    public void setNumber(Integer number) {
+        this.number = number;
     }
 
     public Integer getNodeId() {

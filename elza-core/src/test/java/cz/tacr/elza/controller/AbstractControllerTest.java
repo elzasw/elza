@@ -170,6 +170,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String DE_EXPORT_CONTROLLER_URL = "/api/export";
     protected static final String USER_CONTROLLER_URL = "/api/user";
     protected static final String GROUP_CONTROLLER_URL = "/api/group";
+    protected static final String ISSUE_CONTROLLER_URL = "/api/issue";
 
     // ADMIN
     protected static final String REINDEX = ADMIN_CONTROLLER_URL + "/reindex";
@@ -391,6 +392,21 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected final static String DELETE_GROUP_FUND_PERMISSION = GROUP_CONTROLLER_URL + "/{groupId}/permission/delete/fund/{fundId}";
     protected final static String DELETE_GROUP_FUND_ALL_PERMISSION = GROUP_CONTROLLER_URL + "/{groupId}/permission/delete/fund/all";
 
+    protected static final String ALL_ISSUE_TYPES = ISSUE_CONTROLLER_URL + "/issue_types";
+    protected static final String ALL_ISSUE_STATES = ISSUE_CONTROLLER_URL + "/issue_states";
+    protected static final String CREATE_ISSUE_LIST = ISSUE_CONTROLLER_URL + "/issue_lists";
+    protected static final String CREATE_ISSUE = ISSUE_CONTROLLER_URL + "/issues";
+    protected static final String CREATE_COMMENT = ISSUE_CONTROLLER_URL + "/comments";
+    protected static final String GET_ISSUE_LIST = ISSUE_CONTROLLER_URL + "/issue_lists/{issueListId}";
+    protected static final String GET_ISSUE = ISSUE_CONTROLLER_URL + "/issues/{issueId}";
+    protected static final String GET_COMMENT = ISSUE_CONTROLLER_URL + "/comments/{commentId}";
+    protected static final String FIND_ISSUE_LISTS = ISSUE_CONTROLLER_URL + "/funds/{fundId}/issue_lists";
+    protected static final String FIND_ISSUES = ISSUE_CONTROLLER_URL + "/issue_lists/{issueListId}/issues";
+    protected static final String FIND_COMMENTS = ISSUE_CONTROLLER_URL + "/issues/{issueId}/comments";
+    protected static final String UPDATE_ISSUE_LIST = ISSUE_CONTROLLER_URL + "/issue_lists/{issueListId}";
+    protected static final String SET_ISSUE_STATE = ISSUE_CONTROLLER_URL + "/issues/{issueId}/setState";
+    protected static final String EXPORT_ISSUE_LIST = ISSUE_CONTROLLER_URL + "/issue_lists/{issueListId}/export";
+
     protected final static DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.00");
 
     @Value("${local.server.port}")
@@ -416,16 +432,20 @@ public abstract class AbstractControllerTest extends AbstractTest {
         super.setUp();
         RestAssured.port = port;                        // nastavi default port pro REST-assured
         RestAssured.baseURI = RestAssured.DEFAULT_URI;  // nastavi default URI pro REST-assured. Nejcasteni localhost
-        login();
+        loginAsAdmin();
         if (loadInstitutions) {
             importXmlFile(null, 1, getResourceFile(XML_INSTITUTION));
         }
     }
 
-    protected void login() {
+    protected void loginAsAdmin() {
+        login("admin", "admin");
+    }
+
+    protected void login(String username, String password) {
         RequestSpecification requestSpecification = given();
-        requestSpecification.formParam("username", "admin");
-        requestSpecification.formParam("password", "admin");
+        requestSpecification.formParam("username", username);
+        requestSpecification.formParam("password", password);
         requestSpecification.header(WWW_FORM_CT_HEADER).config(UTF8_ENCODER_CONFIG);
 
         Response response = requestSpecification.post("/login");
@@ -538,7 +558,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
             default:
                 throw new IllegalStateException("Nedefinovaný stav " + method + ".");
         }
-        
+
         if(status.value()!=response.statusCode()) {
             // Log request if status code failed
             requestSpecification.log().all();
