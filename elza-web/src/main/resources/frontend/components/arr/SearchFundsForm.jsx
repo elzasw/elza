@@ -3,7 +3,7 @@ import {connect} from "react-redux";
 import {Modal} from 'react-bootstrap';
 const classNames = require('classnames');
 import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx'
-import {createReferenceMark, getGlyph, getFundFromFundAndVersion} from 'components/arr/ArrUtils.jsx'
+import {createReferenceMark, getNodeIcon, getFundFromFundAndVersion} from 'components/arr/ArrUtils.jsx'
 import {AbstractReactComponent, FormInput, Icon, i18n} from 'components/shared';
 import { WebApi } from '../../actions/WebApi';
 
@@ -17,27 +17,15 @@ import Loading from "../shared/loading/Loading";
 import HorizontalLoader from "../shared/loading/HorizontalLoader";
 
 import {createFundRoot, getParentNode} from './ArrUtils.jsx'
-import {fundSelectSubNode} from 'actions/arr/node.jsx'
-
-import {fundTreeFulltextChange} from 'actions/arr/fundTree.jsx'
 
 import {fundsSelectFund} from 'actions/fund/fund.jsx'
-import {fundTreeFetch} from 'actions/arr/fundTree.jsx';
 import {selectFundTab} from 'actions/arr/fund.jsx'
+import {fundTreeFetch, fundTreeFulltextChange} from 'actions/arr/fundTree.jsx';
+import {fundSelectSubNode} from 'actions/arr/node.jsx'
 
 import './SearchFundsForm.less';
 
 const FUND_NAME_MAX_CHARS = 60
-
-const colorMap = {
-    "fa-database":{background:"#fff",color:"#000"},
-    "fa-folder-o":{background:"#ffcc00",color:"#fff"},
-    "ez-serie":{background:"#6696dd", color:"#fff"},
-    "fa-sitemap":{background:"#4444cc", color:"#fff"},
-    "fa-file-text-o":{background:"#ff972c", color:"#fff"},
-    "ez-item-part-o":{background:"#cc3820", color: "#fff"},
-    "default":{background:"#333", color: "#fff"}
-}
 
 /**
  * Formulář pro vyhledávání nad archivními soubory.
@@ -172,38 +160,12 @@ class SearchFundsForm extends AbstractReactComponent {
             name = name.substring(0, FUND_NAME_MAX_CHARS - 3) + '...'
         }
 
-        let backgroundColor, color;
-        if (colorMap[item.icon]){
-            backgroundColor = colorMap[item.icon].background;
-            color = colorMap[item.icon].color;
-        } else {
-            backgroundColor = colorMap["default"].background;
-            color = colorMap["default"].color;
-        }
-
-        const iconStyle = {
-            backgroundColor:backgroundColor,
-            color:color
-        };
-
-        let icon = getGlyph(item.icon);
-        const iconRemap = {
-            "fa-folder-o":"folder",
-            "ez-serie":"serie",
-            "fa-sitemap":"sitemap",
-            "fa-file-text-o":"fileText",
-            "ez-item-part-o":"fileTextPart",
-            "fa-exclamation-triangle":"triangleExclamation"
-        };
-
-        if (iconRemap[icon]){
-            icon = iconRemap[icon];
-        }
+        const iconProps = getNodeIcon(true, item.icon);
 
         return <div key={item.id} className={type}>
             <div className={cls}>
                 {type === 'fund' ? expCol : levels}
-                <Icon className="item-icon" style={iconStyle} fill={iconStyle.backgroundColor} stroke="none" glyph={icon}/>
+                <Icon className="item-icon" {...iconProps}/>
                 <div
                     title={item.name}
                     className="item-label"
@@ -275,11 +237,9 @@ class SearchFundsForm extends AbstractReactComponent {
 
 function mapStateToProps(state) {
     const {fundSearch} = state.arrRegion;
-    const {fundDetail} = state.fundRegion;
 
     return {
-        fundSearch,
-        fundDetail
+        fundSearch
     }
 }
 

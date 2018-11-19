@@ -412,6 +412,57 @@ export function getGlyph(type) {
     }
 }
 
+export function getNodeIcon(colorCoded, iconCode) {
+    const colorMap = {
+        "fa-database":{background:"#fff",color:"#000"},
+        "fa-folder-o":{background:"#ffcc00",color:"#fff"},
+        "ez-serie":{background:"#6696dd", color:"#fff"},
+        "fa-sitemap":{background:"#4444cc", color:"#fff"},
+        "fa-file-text-o":{background:"#ff972c", color:"#fff"},
+        "ez-item-part-o":{background:"#cc3820", color: "#fff"},
+        "default":{background:"#333", color: "#fff"}
+    }
+    
+    let iconStyle = {};
+    let backgroundColor, color;
+
+    if (colorCoded){
+        if (colorMap[iconCode]){
+            backgroundColor = colorMap[iconCode].background;
+            color = colorMap[iconCode].color;
+        } else {
+            backgroundColor = colorMap["default"].background;
+            color = colorMap["default"].color;
+        }
+
+        iconStyle = {
+            backgroundColor:backgroundColor,
+            color:color
+        };
+    }
+
+    let icon = getGlyph(iconCode);
+    const iconRemap = {
+        "fa-folder-o":"folder",
+        "ez-serie":"serie",
+        "fa-sitemap":"sitemap",
+        "fa-file-text-o":"fileText",
+        "ez-item-part-o":"fileTextPart",
+        "fa-exclamation-triangle":"triangleExclamation"
+    };
+
+    if (iconRemap[iconCode] && colorCoded){
+        icon = iconRemap[iconCode];
+    }
+
+    return ({
+        glyph: icon,
+        style: iconStyle,
+        fill: iconStyle.backgroundColor,
+        stroke: "none"
+    });
+}
+
 export const DIGITIZATION = "DIGITIZATION";
 export const DAO = "DAO";
 export const DAO_LINK = "DAO_LINK";
