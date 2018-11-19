@@ -5,6 +5,7 @@ const classNames = require('classnames');
 import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx'
 import {createReferenceMark, getGlyph, getFundFromFundAndVersion} from 'components/arr/ArrUtils.jsx'
 import {AbstractReactComponent, FormInput, Icon, i18n} from 'components/shared';
+import { WebApi } from '../../actions/WebApi';
 
 import * as types from 'actions/constants/ActionTypes.js';
 
@@ -20,8 +21,9 @@ import {fundSelectSubNode} from 'actions/arr/node.jsx'
 
 import {fundTreeFulltextChange} from 'actions/arr/fundTree.jsx'
 
+import {fundsSelectFund} from 'actions/fund/fund.jsx'
+import {fundTreeFetch} from 'actions/arr/fundTree.jsx';
 import {selectFundTab} from 'actions/arr/fund.jsx'
-import {globalFundTreeInvalidate} from "../../actions/arr/globalFundTree";
 
 import './SearchFundsForm.less';
 
@@ -88,33 +90,54 @@ class SearchFundsForm extends AbstractReactComponent {
         // Vyplní vyhledávací políčko na stránce pořádání
         this.props.dispatch(fundTreeFulltextChange(types.FUND_TREE_AREA_MAIN, item.version, fulltext));
 
-        // Vyber uzel ze stromu
-        this.fundSelectSubNode(item, false);
-
-        // Otevření archivního souboru - @todo
-        // this.navigateToFund(itemFund);
+        // Otevře detailu uzlu
+        this.navigateToNode(itemFund, item);
     };
 
-    navigateToFund = (fund) => {
-        const fundObj = getFundFromFundAndVersion(fund.id, fund.fundVersionId);
-
-        this.props.dispatch(globalFundTreeInvalidate());
-        this.props.dispatch(selectFundTab(fundObj));
-    }
-
-    /**
-     * Výběr a otevření uzlu v záložce AS.
+     /**
+     * Přepnutí do detailu uzlu.
+     * @param fund {Object} AS
      * @param node {Object} uzel
      * @param openNewTab {Boolean} true, pokud se má otevřít v nové záložce
      */
-    fundSelectSubNode = (node, openNewTab) => {
-        const itemFund = this.props.fundSearch.funds.find(fund => fund.nodes.some(nd => nd.id === node.id));
-        let parentNode = getParentNode(node, itemFund.nodes);
-        
-        if (parentNode == null) {   // root
-            parentNode = createFundRoot(itemFund);
-        }
-        this.dispatch(fundSelectSubNode(itemFund.fundVersionId, node.id, parentNode, openNewTab, null, false));
+    navigateToNode = (fund, node) => {
+        WebApi.getFundDetail(fund.id).then(fund => {
+            this.props.dispatch(fundsSelectFund(fund.id));
+            this.props.dispatch(selectFundTab(fund));
+            this.props.dispatch(this.fundSelectSubNode(fund, node, false));
+        });
+    }
+
+    /**
+     * Výběr uzlu.
+     * @param fund {Object} AS
+     * @param node {Object} uzel
+     * @param openNewTab {Boolean} true, pokud se má otevřít v nové záložce
+     */
+    fundSelectSubNode = (fund, node, openNewTab) => {
+        return (dispatch, getState) => {
+            const { arrRegion } = getState();
+            const activeFund = this.getActiveIndex(arrRegion);
+
+            dispatch(fundTreeFetch(types.FUND_TREE_AREA_MAIN, fund.versionId, node.id, activeFund.expandedIds)).then(() => {
+                const { arrRegion } = getState();
+                const activeFund = this.getActiveIndex(arrRegion);
+
+                const nodeFromTree = activeFund.fundTree.nodes.find(n => n.id === node.id);
+
+                let parentNode = getParentNode(nodeFromTree, activeFund.fundTree.nodes);
+
+                if (parentNode === null) {
+                    parentNode = createFundRoot(fund);
+                }
+
+                dispatch(fundSelectSubNode(fund.versionId, node.id, parentNode, openNewTab, null, true));
+            });
+        };
+    }
+
+    getActiveIndex(arrRegion) {
+        return arrRegion.activeIndex !== null ? arrRegion.funds[arrRegion.activeIndex] : null;
     }
 
     /**
@@ -252,9 +275,11 @@ class SearchFundsForm extends AbstractReactComponent {
 
 function mapStateToProps(state) {
     const {fundSearch} = state.arrRegion;
+    const {fundDetail} = state.fundRegion;
 
     return {
-        fundSearch
+        fundSearch,
+        fundDetail
     }
 }
 
