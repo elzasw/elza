@@ -230,6 +230,19 @@ then
     $itemSpec.setType(RulItemSpec.Type.REQUIRED);
 end
 
+rule "Nesmí být jiná než logická složka, pokud nadřazená složka je s uvedenim EJ nebo hromadina"
+no-loop
+when
+    $activeLevel : ActiveLevel( parent!=null  )
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_FOLDER" ) from $activeLevel.descItems
+    $level : Level( this!=$activeLevel )
+    DescItem(type=="ZP2015_FOLDER_TYPE" && (specCode in ("ZP2015_FOLDER_SINGLE_TYPE", "ZP2015_FOLDER_UNITS") ) ) from $level.descItems
+    $itemType : RulItemTypeExt(code == "ZP2015_FOLDER_TYPE")
+    $itemSpec : RulItemSpecExt(code != "ZP2015_FOLDER_LOGICAL" ) from $itemType.rulItemSpecList
+then
+    $itemSpec.setType(RulItemSpec.Type.IMPOSSIBLE);
+end
+
 // Pokud je nadřazená složka bez uvedeni EJ nebo hromadina, potom muze byt hromadina nebo s uvedenim EJ
 rule "Může být hromadina nebo s uvedením EJ, pokud nemá nadřazenou složku nebo jen logické"
 no-loop
