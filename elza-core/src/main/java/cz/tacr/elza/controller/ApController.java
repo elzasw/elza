@@ -14,6 +14,7 @@ import javax.transaction.Transactional;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -289,6 +290,11 @@ public class ApController {
         Assert.notNull(accessPointId, "Identifikátor rejstříkového hesla musí být vyplněn");
 
         ApAccessPoint ap = accessPointService.getAccessPoint(accessPointId);
+        ApAccessPointVO vo = getAccessPoint(ap);
+        return vo;
+    }
+
+    private ApAccessPointVO getAccessPoint(ApAccessPoint ap) {
         ApAccessPointVO vo = apFactory.createVO(ap);
         
         ParParty party = partyService.findParPartyByAccessPoint(ap);
@@ -308,14 +314,12 @@ public class ApController {
     @Transactional
     @RequestMapping(value = "/{accessPointId}", method = RequestMethod.PUT)
     public ApAccessPointVO updateAccessPoint(@PathVariable final Integer accessPointId,
-                                             @RequestBody final ApAccessPointEditVO accessPoint) {
-        Assert.notNull(accessPointId, "Identifikátor přístupového bodu musí být vyplněn");
-        Assert.notNull(accessPoint, "Přístupový bod musí být vyplněn");
+                                             @RequestBody final ApAccessPointEditVO editVo) {
+        Validate.notNull(accessPointId, "Identifikátor přístupového bodu musí být vyplněn");
+        Validate.notNull(editVo);
 
-        ApAccessPoint accessPointEdit = accessPointService.getAccessPoint(accessPointId);
-        ApType type = accessPointService.getType(accessPoint.getTypeId());
-        ApAccessPoint editedAccessPoint = accessPointService.updateAccessPoint(accessPointEdit, type);
-        return getAccessPoint(editedAccessPoint.getAccessPointId());
+        ApAccessPoint ap = accessPointService.changeApType(accessPointId, editVo.getTypeId());
+        return getAccessPoint(ap);
     }
 
     /**

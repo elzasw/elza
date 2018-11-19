@@ -1,16 +1,97 @@
 package cz.tacr.elza.service;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+import javax.persistence.EntityManager;
+import javax.transaction.Transactional;
+import javax.transaction.Transactional.TxType;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
-import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApDescription;
+import cz.tacr.elza.domain.ApName;
+import cz.tacr.elza.domain.ApScope;
+import cz.tacr.elza.domain.ApType;
+import cz.tacr.elza.domain.ArrCalendarType;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDataPartyRef;
+import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrItem;
+import cz.tacr.elza.domain.ArrNodeRegister;
+import cz.tacr.elza.domain.ParComplementType;
+import cz.tacr.elza.domain.ParCreator;
+import cz.tacr.elza.domain.ParInstitution;
+import cz.tacr.elza.domain.ParInstitutionType;
+import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.ParPartyGroup;
+import cz.tacr.elza.domain.ParPartyGroupIdentifier;
+import cz.tacr.elza.domain.ParPartyName;
+import cz.tacr.elza.domain.ParPartyNameComplement;
+import cz.tacr.elza.domain.ParPartyNameFormType;
+import cz.tacr.elza.domain.ParPartyType;
+import cz.tacr.elza.domain.ParRelation;
+import cz.tacr.elza.domain.ParRelationEntity;
+import cz.tacr.elza.domain.ParRelationRoleType;
+import cz.tacr.elza.domain.ParRelationType;
+import cz.tacr.elza.domain.ParUnitdate;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrPermission.Permission;
+import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.Level;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.RegistryCode;
-import cz.tacr.elza.repository.*;
+import cz.tacr.elza.repository.ApAccessPointRepository;
+import cz.tacr.elza.repository.ApTypeRepository;
+import cz.tacr.elza.repository.CalendarTypeRepository;
+import cz.tacr.elza.repository.ComplementTypeRepository;
+import cz.tacr.elza.repository.DataPartyRefRepository;
+import cz.tacr.elza.repository.DataRecordRefRepository;
+import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.InstitutionRepository;
+import cz.tacr.elza.repository.ItemSpecRegisterRepository;
+import cz.tacr.elza.repository.ItemSpecRepository;
+import cz.tacr.elza.repository.NodeRegisterRepository;
+import cz.tacr.elza.repository.PartyCreatorRepository;
+import cz.tacr.elza.repository.PartyGroupIdentifierRepository;
+import cz.tacr.elza.repository.PartyGroupRepository;
+import cz.tacr.elza.repository.PartyNameComplementRepository;
+import cz.tacr.elza.repository.PartyNameFormTypeRepository;
+import cz.tacr.elza.repository.PartyNameRepository;
+import cz.tacr.elza.repository.PartyRelationRepository;
+import cz.tacr.elza.repository.PartyRepository;
+import cz.tacr.elza.repository.PartyTypeRepository;
+import cz.tacr.elza.repository.RelationEntityRepository;
+import cz.tacr.elza.repository.RelationRepository;
+import cz.tacr.elza.repository.RelationRoleTypeRepository;
+import cz.tacr.elza.repository.RelationTypeRepository;
+import cz.tacr.elza.repository.ScopeRepository;
+import cz.tacr.elza.repository.UnitdateRepository;
+import cz.tacr.elza.repository.UserRepository;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
@@ -18,21 +99,6 @@ import cz.tacr.elza.service.eventnotification.events.ActionEvent;
 import cz.tacr.elza.service.eventnotification.events.EventId;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.party.ApConvResult;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.NotImplementedException;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-
-import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
-import javax.transaction.Transactional;
-import javax.transaction.Transactional.TxType;
-import java.util.*;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 
 /**
@@ -599,17 +665,15 @@ public class PartyService {
 
             partyRepository.flush();
 
-            eventNotificationService.publishEvent(new EventId(EventType.PARTY_DELETE, party.getPartyId()));
             partyRepository.delete(party);
-            accessPointService.deleteAccessPoint(party.getAccessPointId(), false);
         } else {
-            // TODO: nepouzivat slozite nacitani a synch metodu pro nastaveni delete change
-            throw new NotImplementedException("nepouzivat slozite nacitani a synch metodu pro nastaveni delete change");
-            /* final ApAccessPoint record = party.getAccessPoint();
-            ApAccessPointData accessPointData = accessPointDataService.findAccessPointData(record);
-            record.setInvalid(true);
-            accessPointService.saveAccessPoint(accessPointData, false); */
+            // party is used -> cannot be deleted
         }
+        // invalidate AP
+        accessPointService.deleteAccessPoint(party.getAccessPointId(), false);
+
+        // send notification
+        eventNotificationService.publishEvent(new EventId(EventType.PARTY_DELETE, party.getPartyId()));
     }
 
     private boolean canBeDeleted(ParParty party) {

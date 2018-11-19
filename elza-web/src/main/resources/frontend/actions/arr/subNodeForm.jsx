@@ -66,6 +66,7 @@ class ItemFormActions {
                 case types.FUND_SUB_NODE_FORM_VALUE_DELETE:
                 case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_DELETE:
                 case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_ADD:
+                case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPES_ADD_TEMPLATE:
                 case types.FUND_SUB_NODE_FORM_TEMPLATE_USE:
                 case types.FUND_SUB_NODE_FORM_VALUE_RESPONSE:
                 case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_COPY_FROM_PREV_RESPONSE:
@@ -289,8 +290,9 @@ class ItemFormActions {
                     .then(json => {
                         if(this.area === OutputFormActions.AREA || this.area === StructureFormActions.AREA){
                             dispatch(this._fundSubNodeFormDescItemResponse(versionId, routingKey, valueLocation, json, 'UPDATE'));
+                        } else {
+                            dispatch(this._fundSubNodeUpdate(versionId, refTables, json));
                         }
-                        dispatch(this._fundSubNodeUpdate(versionId, refTables, json));
                         dispatch(statusSaved());
                     })
             } else {
@@ -695,7 +697,7 @@ class ItemFormActions {
         }
     }
 
-    fundSubNodeFormTemplateUse(versionId, routingKey, template, replaceValues) {
+    fundSubNodeFormTemplateUse(versionId, routingKey, template, replaceValues, addItemTypeIds) {
         return (dispatch, getState) => {
             const state = getState();
             dispatch({
@@ -705,7 +707,8 @@ class ItemFormActions {
                 routingKey,
                 template,
                 replaceValues,
-                groups: state.refTables.groups.data
+                groups: state.refTables.groups.data,
+                addItemTypeIds
             });
             dispatch({
                 type: types.FUND_TEMPLATE_USE,

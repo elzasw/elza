@@ -33,6 +33,7 @@ import TemplateUseForm from "./TemplateUseForm";
 import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx'
 import DescItemFactory from "components/arr/nodeForm/DescItemFactory.jsx";
 import { CLS_ITEM_ENUM } from "../../shared/factory/factoryConsts";
+import * as types from "../../actions/constants/ActionTypes";
 
 require('./NodeSubNodeForm.less');
 
@@ -389,11 +390,11 @@ class NodeSubNodeForm extends AbstractReactComponent {
 
                 if (createItems.length > 0 || updateItems.length > 0 || deleteItems.length > 0) {
                     return WebApi.updateDescItems(fund.versionId, selectedSubNode.id, selectedSubNode.version, createItems, updateItems, deleteItems).then(() => {
-                        this.dispatch(nodeFormActions.fundSubNodeFormTemplateUse(fund.versionId, routingKey, template, data.replaceValues));
+                        this.dispatch(nodeFormActions.fundSubNodeFormTemplateUse(fund.versionId, routingKey, template, data.replaceValues, true));
                         return this.dispatch(modalDialogHide());
                     });
                 } else {
-                    this.dispatch(nodeFormActions.fundSubNodeFormTemplateUse(fund.versionId, routingKey, template, data.replaceValues));
+                    this.dispatch(nodeFormActions.fundSubNodeFormTemplateUse(fund.versionId, routingKey, template, data.replaceValues, false));
                     return this.dispatch(modalDialogHide());
                 }
             }

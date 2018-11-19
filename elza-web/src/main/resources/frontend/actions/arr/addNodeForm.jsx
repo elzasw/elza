@@ -46,10 +46,10 @@ export function addNodeFormArr(direction, node, selectedSubNodeIndex, versionId)
  */
 export function addNodeForm(direction, node, parentNode, versionId, afterCreateCallback, allowedDirections = ['BEFORE', 'AFTER', 'CHILD', 'ATEND']) {
     return (dispatch) => {
-        const onSubmit = (data, type, cb) => {
+        const onSubmit = (data, type, cb, emptyItemTypeIds) => {
             switch (type) {
                 case "NEW": {
-                    dispatch(addNode(data.indexNode, data.parentNode, data.versionId, data.direction, data.descItemCopyTypes, data.scenarioName, data.createItems, afterCreateCallback));
+                    dispatch(addNode(data.indexNode, data.parentNode, data.versionId, data.direction, data.descItemCopyTypes, data.scenarioName, data.createItems, afterCreateCallback, emptyItemTypeIds));
                     dispatch(modalDialogHide());
                     break;
                 }

@@ -140,8 +140,8 @@ class PartyDetailRelations extends AbstractReactComponent {
                         {relation.relationEntities && relation.relationEntities.map(entity =>
                         <div className="flex flex-1 no-wrap-group" key={entity.id}>
                             <label>{entity.roleType.name}:</label>
-                            <div className="item">{entity.accessPoint.record}</div>
-                            <div className="item note">{entity.accessPoint.note}</div>
+                            <div className="item">{entity.record.record}</div>
+                            <div className="item note">{entity.record.note}</div>
                         </div>)}
                         {relation.note && <div className="note">{relation.note}</div>}
                     </div>

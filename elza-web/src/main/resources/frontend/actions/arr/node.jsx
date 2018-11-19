@@ -3,7 +3,7 @@
  */
 
 import {WebApi} from 'actions/index.jsx';
-import * as types from 'actions/constants/ActionTypes.js';
+import * as types from './../../actions/constants/ActionTypes.js';
 import {findByRoutingKeyInGlobalState, indexById} from 'stores/app/utils.jsx'
 import {createFundRoot, isFundRootId} from 'components/arr/ArrUtils.jsx'
 import {savingApiWrapper} from 'actions/global/status.jsx';
@@ -264,10 +264,12 @@ export function increaseMultipleNodesVersions(versionId,nodeArray){
  * @param {string} direction směr přidání, řetězec 'BEFORE', 'AFTER' nebo 'CHILD'
  * @param {Array} descItemCopyTypes seznam id atributů, pro které se mají zkopírovat hodnoty z bezprostředně předcházejícího uzlu, který je před aktuálně přidávaným
  * @param {string} scenarioName název scénáře, který má být použit
- * @param {func} callback, který je volán po úspěšném založení, předpis: function (versionId, node, parentNode), node je nově založený node a parentNode je jeho aktualizovaný nadřazený node
+ * @param createItems
+ * @param afterCreateCallback callback, který je volán po úspěšném založení, předpis: function (versionId, node, parentNode), node je nově založený node a parentNode je jeho aktualizovaný nadřazený node
+ * @param emptyItemTypeIds seznam identifikátorů typů atributu, které budou přidány na detail JP po založení
  */
-export function addNode(indexNode, parentNode, versionId, direction, descItemCopyTypes = null, scenarioName = null, createItems = null, afterCreateCallback = null) {
-    return (dispatch) => {
+export function addNode(indexNode, parentNode, versionId, direction, descItemCopyTypes = null, scenarioName = null, createItems = null, afterCreateCallback = null, emptyItemTypeIds = null) {
+    return (dispatch, getState) => {
         parentNode = {
             id: parentNode.id,
             lastUpdate: parentNode.lastUpdate,
@@ -286,6 +288,20 @@ export function addNode(indexNode, parentNode, versionId, direction, descItemCop
         return savingApiWrapper(dispatch, WebApi.addNode(indexNode, parentNode, versionId, direction, descItemCopyTypes, scenarioName, createItems)).then((json) => {
             dispatch(fundNodeChangeAdd(versionId, json.node, indexNode, json.parentNode, direction));
             afterCreateCallback && afterCreateCallback(versionId, json.node, json.parentNode);
+
+            const state = getState();
+            const activeFund = state.arrRegion.funds[state.arrRegion.activeIndex];
+            const activeNode = activeFund.nodes.nodes[activeFund.nodes.activeIndex];
+
+            if (emptyItemTypeIds) {
+                dispatch({
+                    type: types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPES_ADD_TEMPLATE,
+                    area: "NODE",
+                    versionId,
+                    routingKey: activeNode.routingKey,
+                    itemTypeIds: emptyItemTypeIds
+                });
+            }
         });
     }
 }
