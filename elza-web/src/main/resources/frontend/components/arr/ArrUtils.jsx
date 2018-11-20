@@ -413,26 +413,16 @@ export function getGlyph(type) {
 }
 
 export function getNodeIcon(colorCoded, iconCode) {
-    const colorMap = {
-        "fa-database":{background:"#fff",color:"#000"},
-        "fa-folder-o":{background:"#ffcc00",color:"#fff"},
-        "ez-serie":{background:"#6696dd", color:"#fff"},
-        "fa-sitemap":{background:"#4444cc", color:"#fff"},
-        "fa-file-text-o":{background:"#ff972c", color:"#fff"},
-        "ez-item-part-o":{background:"#cc3820", color: "#fff"},
-        "default":{background:"#333", color: "#fff"}
-    }
-    
     let iconStyle = {};
     let backgroundColor, color;
 
     if (colorCoded){
-        if (colorMap[iconCode]){
-            backgroundColor = colorMap[iconCode].background;
-            color = colorMap[iconCode].color;
+        if (COLOR_MAP[iconCode]){
+            backgroundColor = COLOR_MAP[iconCode].background;
+            color = COLOR_MAP[iconCode].color;
         } else {
-            backgroundColor = colorMap["default"].background;
-            color = colorMap["default"].color;
+            backgroundColor = COLOR_MAP["default"].background;
+            color = COLOR_MAP["default"].color;
         }
 
         iconStyle = {
@@ -442,17 +432,9 @@ export function getNodeIcon(colorCoded, iconCode) {
     }
 
     let icon = getGlyph(iconCode);
-    const iconRemap = {
-        "fa-folder-o":"folder",
-        "ez-serie":"serie",
-        "fa-sitemap":"sitemap",
-        "fa-file-text-o":"fileText",
-        "ez-item-part-o":"fileTextPart",
-        "fa-exclamation-triangle":"triangleExclamation"
-    };
 
-    if (iconRemap[iconCode] && colorCoded){
-        icon = iconRemap[iconCode];
+    if (ICON_REMAP[iconCode] && colorCoded){
+        icon = ICON_REMAP[iconCode];
     }
 
     return ({
@@ -461,6 +443,25 @@ export function getNodeIcon(colorCoded, iconCode) {
         fill: iconStyle.backgroundColor,
         stroke: "none"
     });
+}
+
+export const ICON_REMAP = {
+    "fa-folder-o":"folder",
+    "ez-serie":"serie",
+    "fa-sitemap":"sitemap",
+    "fa-file-text-o":"fileText",
+    "ez-item-part-o":"fileTextPart",
+    "fa-exclamation-triangle":"triangleExclamation"
+};
+
+const COLOR_MAP = {
+    "fa-database":{background:"#fff",color:"#000"},
+    "fa-folder-o":{background:"#ffcc00",color:"#fff"},
+    "ez-serie":{background:"#6696dd", color:"#fff"},
+    "fa-sitemap":{background:"#4444cc", color:"#fff"},
+    "fa-file-text-o":{background:"#ff972c", color:"#fff"},
+    "ez-item-part-o":{background:"#cc3820", color: "#fff"},
+    "default":{background:"#333", color: "#fff"}
 }
 
 export const DIGITIZATION = "DIGITIZATION";

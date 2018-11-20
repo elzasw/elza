@@ -75,9 +75,6 @@ class SearchFundsForm extends AbstractReactComponent {
         this.props.dispatch(routerNavigate('/arr'));
         this.props.dispatch(modalDialogHide());
 
-        // Vyplní vyhledávací políčko na stránce pořádání
-        this.props.dispatch(fundTreeFulltextChange(types.FUND_TREE_AREA_MAIN, item.version, fulltext));
-
         // Otevře detailu uzlu
         this.navigateToNode(itemFund, item);
     };
@@ -118,6 +115,10 @@ class SearchFundsForm extends AbstractReactComponent {
                 if (parentNode === null) {
                     parentNode = createFundRoot(fund);
                 }
+                
+                const { fulltext } = this.props.fundSearch;
+                // Vyplní vyhledávací políčko na stránce pořádání
+                this.props.dispatch(fundTreeFulltextChange(types.FUND_TREE_AREA_MAIN, fund.versionId, fulltext));
 
                 dispatch(fundSelectSubNode(fund.versionId, node.id, parentNode, openNewTab, null, true));
             });
