@@ -86,11 +86,18 @@ class SearchFundsForm extends AbstractReactComponent {
      * @param openNewTab {Boolean} true, pokud se má otevřít v nové záložce
      */
     navigateToNode = (fund, node) => {
-        WebApi.getFundDetail(fund.id).then(fund => {
-            this.props.dispatch(fundsSelectFund(fund.id));
-            this.props.dispatch(selectFundTab(fund));
-            this.props.dispatch(this.fundSelectSubNode(fund, node, false));
-        });
+        const { arrRegion } = this.props;
+        const activeFund = this.getActiveIndex(arrRegion);
+
+       if (fund.id !== activeFund.id) {
+            WebApi.getFundDetail(fund.id).then(fund => {
+                this.props.dispatch(fundsSelectFund(fund.id));
+                this.props.dispatch(selectFundTab(fund));
+                this.props.dispatch(this.fundSelectSubNode(fund, node, false, true));
+            });
+        } else {
+            this.props.dispatch(this.fundSelectSubNode(activeFund, node, false, false));
+        }
     }
 
     /**
@@ -98,30 +105,42 @@ class SearchFundsForm extends AbstractReactComponent {
      * @param fund {Object} AS
      * @param node {Object} uzel
      * @param openNewTab {Boolean} true, pokud se má otevřít v nové záložce
+     * @param force {Boolean} true, natáhne informace o stromové struktuře
      */
-    fundSelectSubNode = (fund, node, openNewTab) => {
+    fundSelectSubNode = (fund, node, openNewTab, force) => {
         return (dispatch, getState) => {
+            const { fulltext } = this.props.fundSearch;
             const { arrRegion } = getState();
             const activeFund = this.getActiveIndex(arrRegion);
 
-            dispatch(fundTreeFetch(types.FUND_TREE_AREA_MAIN, fund.versionId, node.id, activeFund.expandedIds)).then(() => {
-                const { arrRegion } = getState();
-                const activeFund = this.getActiveIndex(arrRegion);
+            if (force) {
+                dispatch(fundTreeFetch(types.FUND_TREE_AREA_MAIN, fund.versionId, node.id, activeFund.expandedIds)).then(() => {
+                    const { arrRegion } = getState();
+                    const activeFund = this.getActiveIndex(arrRegion);
 
+                    const nodeFromTree = activeFund.fundTree.nodes.find(n => n.id === node.id);
+
+                    let parentNode = getParentNode(nodeFromTree, activeFund.fundTree.nodes);
+
+                    if (parentNode === null) {
+                        parentNode = createFundRoot(fund);
+                    }
+                    
+                    dispatch(fundSelectSubNode(fund.versionId, node.id, parentNode, openNewTab, null, true));
+                });
+            } else {
                 const nodeFromTree = activeFund.fundTree.nodes.find(n => n.id === node.id);
 
                 let parentNode = getParentNode(nodeFromTree, activeFund.fundTree.nodes);
-
                 if (parentNode === null) {
                     parentNode = createFundRoot(fund);
                 }
-                
-                const { fulltext } = this.props.fundSearch;
-                // Vyplní vyhledávací políčko na stránce pořádání
-                this.props.dispatch(fundTreeFulltextChange(types.FUND_TREE_AREA_MAIN, fund.versionId, fulltext));
 
                 dispatch(fundSelectSubNode(fund.versionId, node.id, parentNode, openNewTab, null, true));
-            });
+            }
+
+            // Vyplní vyhledávací políčko na stránce pořádání
+            dispatch(fundTreeFulltextChange(types.FUND_TREE_AREA_MAIN, fund.versionId, fulltext));
         };
     }
 
@@ -240,7 +259,8 @@ function mapStateToProps(state) {
     const {fundSearch} = state.arrRegion;
 
     return {
-        fundSearch
+        fundSearch,
+        arrRegion: state.arrRegion
     }
 }
 
