@@ -1,8 +1,9 @@
 package cz.tacr.elza.controller.factory;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -51,6 +52,12 @@ public class WfFactory {
 
     // --- methods ---
 
+    /**
+     * Seznam protokolů
+     *
+     * @param withPermissions vyplnit i oprávnění
+     * @returns seznam protokolů
+     */
     public WfIssueListVO createIssueListVO(WfIssueList issueList, boolean withPermissions) {
 
         WfIssueListVO issueListVO = new WfIssueListVO();
@@ -61,26 +68,32 @@ public class WfFactory {
 
         if (withPermissions) {
 
-            List<UsrUser> rdUsers = new ArrayList<>();
-            List<UsrUser> wrUsers = new ArrayList<>();
+            Map<Integer, UsrUser> rdUserMap = new HashMap<>();
+            Map<Integer, UsrUser> wrUserMap = new HashMap<>();
 
             List<UsrPermission> permissionList = permissionRepository.findByIssueListId(issueList.getIssueListId());
             for (UsrPermission permission : permissionList) {
+                UsrUser user = permission.getUser();
                 if (Permission.FUND_ISSUE_LIST_RD.equals(permission.getPermission())) {
-                    rdUsers.add(permission.getUser());
+                    rdUserMap.put(user.getUserId(), user);
                 }
                 if (Permission.FUND_ISSUE_LIST_WR.equals(permission.getPermission())) {
-                    wrUsers.add(permission.getUser());
+                    wrUserMap.put(user.getUserId(), user);
                 }
             }
 
-            issueListVO.setRdUserIds(rdUsers.stream().map(user -> user.getUserId()).distinct().collect(Collectors.toList()));
-            issueListVO.setWrUserIds(wrUsers.stream().map(user -> user.getUserId()).distinct().collect(Collectors.toList()));
+            issueListVO.setRdUserIds(new ArrayList<>(rdUserMap.keySet()));
+            issueListVO.setWrUserIds(new ArrayList<>(wrUserMap.keySet()));
         }
 
         return issueListVO;
     }
 
+    /**
+     * Seznam připomínek
+     *
+     * @returns seznam připomínek
+     */
     public WfIssueVO createIssueVO(WfIssue issue) {
         WfIssueVO issueVO = new WfIssueVO();
         issueVO.setId(issue.getIssueId());
@@ -91,9 +104,15 @@ public class WfFactory {
         issueVO.setIssueStateId(issue.getIssueState().getIssueStateId());
         issueVO.setDescription(issue.getDescription());
         issueVO.setUserCreateId(issue.getUserCreate().getUserId());
+        issueVO.setTimeCreated(issue.getTimeCreated());
         return issueVO;
     }
 
+    /**
+     * Seznam komentářů
+     *
+     * @returns seznam komentářů
+     */
     public WfCommentVO createCommentVO(WfComment comment) {
         WfCommentVO commentVO = new WfCommentVO();
         commentVO.setId(comment.getCommentId());

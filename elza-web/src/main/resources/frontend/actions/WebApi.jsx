@@ -1549,6 +1549,7 @@ declare class IssueVO extends Object {
     issueStateId: number;
     description: string;
     userCreateId: number;
+    timeCreated: string;
 }
 
 declare class CommentVO extends Object {

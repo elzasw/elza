@@ -95,6 +95,11 @@ import cz.tacr.elza.controller.vo.UsrGroupVO;
 import cz.tacr.elza.controller.vo.UsrPermissionVO;
 import cz.tacr.elza.controller.vo.UsrUserVO;
 import cz.tacr.elza.controller.vo.ValidationResult;
+import cz.tacr.elza.controller.vo.WfCommentVO;
+import cz.tacr.elza.controller.vo.WfIssueListVO;
+import cz.tacr.elza.controller.vo.WfIssueStateVO;
+import cz.tacr.elza.controller.vo.WfIssueTypeVO;
+import cz.tacr.elza.controller.vo.WfIssueVO;
 import cz.tacr.elza.controller.vo.ap.ApFragmentVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemAccessPointRefVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemCoordinatesVO;
@@ -438,10 +443,16 @@ public abstract class AbstractControllerTest extends AbstractTest {
         }
     }
 
+    /**
+     * Provede prihlášení jako uživatel 'admin'
+     */
     protected void loginAsAdmin() {
         login("admin", "admin");
     }
 
+    /**
+     * Provede prihlášení jako daný uživatel
+     */
     protected void login(String username, String password) {
         RequestSpecification requestSpecification = given();
         requestSpecification.formParam("username", username);
@@ -3638,4 +3649,150 @@ public abstract class AbstractControllerTest extends AbstractTest {
                 .pathParameter("itemTypeId", itemTypeId), DELETE_FRAGMENT_ITEMS_BY_TYPE)
                 .as(ApFragmentVO.class);
     }
+
+    // --- Issues ---
+
+    /**
+     * Získání druhů připomínek.
+     *
+     * @returns seznam druhů připomínek
+     */
+    protected List<WfIssueTypeVO> findAllIssueTypes() {
+        return Arrays.asList(get(ALL_ISSUE_TYPES).getBody().as(WfIssueTypeVO[].class));
+    }
+
+    /**
+     * Získání stavů připomínek.
+     *
+     * @returns seznam stavů připomínek
+     */
+    protected List<WfIssueStateVO> findAllIssueStates() {
+        return Arrays.asList(get(ALL_ISSUE_STATES).getBody().as(WfIssueStateVO[].class));
+    }
+
+    /**
+     * Získání detailu protokolu.
+     *
+     * @param issueListId identifikátor protokolu
+     * @return protokol
+     */
+    protected WfIssueListVO getIssueList(Integer issueListId) {
+        return get(spec -> spec.pathParameter("issueListId", issueListId), GET_ISSUE_LIST).as(WfIssueListVO.class);
+    }
+
+    /**
+     * Získání detailu připomínky.
+     *
+     * @param issueId identifikátor připomínky
+     * @return připomínka
+     */
+    protected WfIssueVO getIssue(Integer issueId) {
+        return get(spec -> spec.pathParameter("issueId", issueId), GET_ISSUE).as(WfIssueVO.class);
+    }
+
+    /**
+     * Získání detailu komentáře.
+     *
+     * @param commentId identifikátor komentáře
+     * @returns komentář
+     */
+    protected WfCommentVO getIssueComment(Integer commentId) {
+        return get(spec -> spec.pathParameter("commentId", commentId), GET_COMMENT).as(WfCommentVO.class);
+    }
+
+    /**
+     * Založí nový protokol k danému AS
+     *
+     * @param issueListVO data pro založení protokolu
+     * @return detail založeného protokolu
+     */
+    protected WfIssueListVO addIssueList(WfIssueListVO issueListVO) {
+        return post(spec -> spec.body(issueListVO), CREATE_ISSUE_LIST).getBody().as(WfIssueListVO.class);
+    }
+
+    /**
+     * Založení nové připomínky k danému protokolu
+     *
+     * @param issueVO data pro založení připomínky
+     * @return detail založené připomínky
+     */
+    protected WfIssueVO addIssue(WfIssueVO issueVO) {
+        return post(spec -> spec.body(issueVO), CREATE_ISSUE).getBody().as(WfIssueVO.class);
+    }
+
+    /**
+     * Založení nového komentáře k dané připomínce
+     *
+     * @param commentVO data pro založení protokolu
+     * @return detail založeného komentáře
+     */
+    protected WfCommentVO addIssueComment(WfCommentVO commentVO) {
+        return post(spec -> spec.body(commentVO), CREATE_COMMENT).getBody().as(WfCommentVO.class);
+    }
+
+    /**
+     * Vyhledá protokoly k danému archivní souboru - řazeno nejprve otevřené a pak uzavřené
+     *
+     * @param fundId identifikátor AS
+     * @return seznam protokolů
+     */
+    protected List<WfIssueListVO> findIssueListByFund(Integer fundId) {
+        return Arrays.asList(get(spec -> spec.pathParameter("fundId", fundId), FIND_ISSUE_LISTS).as(WfIssueListVO[].class));
+    }
+
+    /**
+     * Vyhledá připomínky k danému protokolu - řazeno vzestupně podle čísla připomínky
+     *
+     * @param issueListId identifikátor protokolu
+     * @param issueStateId identifikátor stavu připomínky, dle kterého filtrujeme
+     * @param issueTypeId identifikátor druhu připomínky, dle kterého filtrujeme
+     */
+    protected List<WfIssueVO> findIssueByIssueList(Integer issueListId, Integer issueStateId, Integer issueTypeId) {
+        return Arrays.asList(get(spec -> {
+            spec.pathParameter("issueListId", issueListId);
+            if (issueStateId != null) {
+                spec.queryParameter("issue_state_id", issueStateId);
+            }
+            if (issueTypeId != null) {
+                spec.queryParameter("issue_type_id", issueTypeId);
+            }
+            return spec;
+        }, FIND_ISSUES).as(WfIssueVO[].class));
+    }
+
+    /**
+     * Vyhledá komentáře k dané připomínce - řazeno vzestupně podle času
+     *
+     * @param issueId identifikátor připomínky
+     * @return seznam komentářů
+     */
+    protected List<WfCommentVO> findIssueCommentByIssue(Integer issueId) {
+        return Arrays.asList(get(spec -> spec.pathParameter("issueId", issueId), FIND_COMMENTS).as(WfCommentVO[].class));
+    }
+
+    /**
+     * Úprava vlastností existujícího protokolu
+     *
+     * @param issueListId identifikátor protokolu
+     * @param issueListVO data pro uložení protokolu
+     * @return detail uloženého protokolu
+     */
+    protected WfIssueListVO updateIssueList(Integer issueListId, WfIssueListVO issueListVO) {
+        return put(spec -> spec
+                .pathParameter("issueListId", issueListId)
+                .body(issueListVO), UPDATE_ISSUE_LIST)
+                .getBody().as(WfIssueListVO.class);
+    }
+
+    /**
+     * Změna stavu připomínky
+     *
+     * @param issueStateId identifikátor stavu připomínky
+     */
+    protected void setIssueState(Integer issueId, Integer issueStateId) {
+        post(spec -> spec
+                .pathParameter("issueId", issueId)
+                .queryParameter("issueStateId", issueStateId), SET_ISSUE_STATE);
+    }
+
 }

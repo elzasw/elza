@@ -26,39 +26,66 @@ public class WfIssue implements IArrFund, IWfIssueList {
 
     // --- fields ---
 
+    /**
+     * Indentifikátor připomínky
+     */
     @Id
     @GeneratedValue
     @Access(AccessType.PROPERTY)
     private Integer issueId;
 
+    /**
+     * Protokol
+     */
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = WfIssueList.class)
     @JoinColumn(name = "issue_list_id", nullable = false)
     private WfIssueList issueList;
 
+    /**
+     * Číslo připomínky v rámci protokolu - generované systémem
+     */
     @Column(nullable = false)
     private Integer number;
 
+    /**
+     * Uzel
+     */
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrNode.class, optional = true)
     @JoinColumn(name = "node_id", nullable = true)
     private ArrNode node;
 
+    /**
+     * Druh připomínky
+     */
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = WfIssueType.class, optional = false)
     @JoinColumn(name = "issue_type_id", nullable = false)
     private WfIssueType issueType;
 
+    /**
+     * Stav připomínky
+     */
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = WfIssueState.class, optional = false)
     @JoinColumn(name = "issue_state_id", nullable = false)
     private WfIssueState issueState;
 
+    /**
+     * Text připomínky
+     */
     @Column(nullable = false)
     @Lob
     @Type(type = "org.hibernate.type.TextType")
     private String description;
 
+    /**
+     * Indentifikátor uživatele, který připomínku založil
+     */
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = UsrUser.class, optional = false)
     @JoinColumn(name = "user_create_id", nullable = false)
     private UsrUser userCreate;
 
+    /**
+     * Datum a čas založení této připomínky
+     */
     @Column(nullable = false)
     private LocalDateTime timeCreated;
 

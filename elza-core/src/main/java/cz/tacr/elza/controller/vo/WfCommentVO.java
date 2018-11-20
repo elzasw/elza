@@ -13,14 +13,42 @@ public class WfCommentVO {
 
     // --- fields ---
 
+    /**
+     * Indentifikátor komentáře - při zakládání není vyplněno
+     */
     private Integer id;
+
+    /**
+     * Indentifikátor připomínky - při zakládání povinné
+     */
     @NotNull
     private Integer issueId;
+
+    /**
+     * Text komentáře - při zakládání povinné
+     */
     @NotBlank
     private String comment;
+
+    /**
+     * Indentifikátor uživatele, který komentář založil - doplní systém dle přihlášeného uživatele - při zakládání není vyplněno
+     */
+    @NotNull
     private Integer userId;
+
+    /**
+     * Indentifikátor stavu připomínky před založením tohoto komentáře - při zakládání není vyplněno
+     */
     private Integer prevStateId;
+
+    /**
+     * Indentifikátor stavu připomínky po založení tohoto komentáře - při zakládání volitelné
+     */
     private Integer nextStateId;
+
+    /**
+     * Datum a čas založení tohoto komentáře - při zakládání není vyplněno
+     */
     private LocalDateTime timeCreated;
 
     // --- getters/setters ---

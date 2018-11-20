@@ -7,7 +7,14 @@ public class WfIssueListBaseVO {
 
     // --- fields ---
 
+    /**
+     * Indentifikátor protokolu
+     */
     private Integer id;
+
+    /**
+     * Název protokolu
+     */
     private String name;
 
     // --- getters/setters ---

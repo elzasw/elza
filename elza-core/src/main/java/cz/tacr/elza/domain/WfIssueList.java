@@ -22,18 +22,30 @@ public class WfIssueList implements IArrFund, IWfIssueList {
 
     // --- fields ---
 
+    /**
+     * Indentifikátor protokolu
+     */
     @Id
     @GeneratedValue
     @Access(AccessType.PROPERTY)
     private Integer issueListId;
 
+    /**
+     * Archivní soubor
+     */
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFund.class, optional = false)
     @JoinColumn(name = "fund_id", nullable = false)
     private ArrFund fund;
 
+    /**
+     * Stav protokolu (otevřený/uzavřený)
+     */
     @Column(nullable = false)
     private Boolean open;
 
+    /**
+     * Název protokolu
+     */
     @Column(length = StringLength.LENGTH_250, nullable = false)
     private String name;
 

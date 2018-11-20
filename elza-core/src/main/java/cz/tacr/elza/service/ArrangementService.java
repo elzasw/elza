@@ -186,6 +186,13 @@ public class ArrangementService {
 
     public static final String UNDEFINED = "Nezjištěno";
 
+    /**
+     * Načtení souboru na základě id.
+     *
+     * @param fundId id souboru
+     * @return konkrétní AP
+     * @throws ObjectNotFoundException objekt nenalezen
+     */
     public ArrFund getFund(@NotNull Integer fundId) {
         ArrFund fund = fundRepository.findOne(fundId);
         if (fund == null) {
@@ -194,6 +201,13 @@ public class ArrangementService {
         return fund;
     }
 
+    /**
+     * Načtení uzlu na základě id.
+     *
+     * @param nodeId id souboru
+     * @return konkrétní uzel
+     * @throws ObjectNotFoundException objekt nenalezen
+     */
     public ArrNode getNode(@NotNull Integer nodeId) {
         ArrNode node = nodeRepository.findOne(nodeId);
         if (node == null) {

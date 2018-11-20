@@ -4,8 +4,14 @@ public class WfIssueStateVO extends BaseCodeVo {
 
     // --- fields ---
 
+    /**
+     * Příznak výchozího stavu
+     */
     private boolean startState;
 
+    /**
+     * Příznak koncového stavu
+     */
     private boolean finalState;
 
     // --- getters/setters ---

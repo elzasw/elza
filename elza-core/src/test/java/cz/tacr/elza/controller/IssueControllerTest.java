@@ -31,6 +31,9 @@ public class IssueControllerTest extends AbstractControllerTest {
 
     private static final String PASSWORD = "passwd";
 
+    /**
+     * Získání druhů připomínek.
+     */
     @Test
     public void findAllIssueTypesTest() {
         List<WfIssueTypeVO> issueTypes = findAllIssueTypes();
@@ -38,6 +41,9 @@ public class IssueControllerTest extends AbstractControllerTest {
         assertFalse(issueTypes.isEmpty());
     }
 
+    /**
+     * Získání stavů připomínek.
+     */
     @Test
     public void findAllIssueStatesTest() {
         List<WfIssueStateVO> issueStates = findAllIssueStates();
@@ -45,6 +51,10 @@ public class IssueControllerTest extends AbstractControllerTest {
         assertFalse(issueStates.isEmpty());
     }
 
+    /**
+     * Pozitivni test na operace s protokoly, pripominkami a komentari - formou scenare.
+     * Test zohlednuje i opravneni uzivatelu.
+     */
     @Test
     public void issueTest1() throws Exception {
 
@@ -145,6 +155,7 @@ public class IssueControllerTest extends AbstractControllerTest {
                     assertEquals(Integer.valueOf(1), issueVO2.getNumber());
                     assertEquals(issueTypeVO1.getId(), issueVO2.getIssueTypeId());
                     assertEquals(description, issueVO2.getDescription());
+                    assertNotNull(issueVO2.getTimeCreated());
 
                     issueId = issueVO2.getId();
                 }
@@ -262,23 +273,27 @@ public class IssueControllerTest extends AbstractControllerTest {
             });
 
         } finally {
-            deleteUserFundAllPermission(userVO1.getId());
-            deleteUserFundAllPermission(userVO2.getId());
-            deleteUserFundAllPermission(userVO3.getId());
             deleteUserFundAllPermission(userVO4.getId());
+            deleteUserFundAllPermission(userVO3.getId());
+            deleteUserFundAllPermission(userVO2.getId());
+            deleteUserFundAllPermission(userVO1.getId());
+            deleteUserFundAllPermission(adminUserVO.getId());
             deleteFund(fund.getId());
         }
     }
 
-    protected <T> T runAsUser(String username, Callable<T> callback) throws Exception {
-        login(username, PASSWORD);
-        try {
-            return callback.call();
-        } finally {
-            loginAsAdmin();
-        }
+    /**
+     * Zalozeni testovaciho AS
+     */
+    private ArrFundVO createFund() {
+        ArrFundVO fund = createFund("Test issue", "TST1");
+        RulDescItemTypeExtVO typeVo = findDescItemTypeByCode("SRD_TITLE");
+        return fund;
     }
 
+    /**
+     * Zalozeni uzivatele s opravnenim na zakladani protokulu k danemu AS.
+     */
     private UsrUserVO createAdmin(String username, Integer fundId) {
 
         UsrUserVO adminUserVO = createUser(username);
@@ -294,160 +309,26 @@ public class IssueControllerTest extends AbstractControllerTest {
         return adminUserVO;
     }
 
+    /**
+     * Zalozeni testovaciho uzivatele bez jakychkoliv opravneni
+     */
     private UsrUserVO createUser(String username) {
         List<ParPartyVO> party = findParty(null, 0, 1, null, null);
         return createUser(username, PASSWORD, party.get(0).getId());
     }
 
-    private ArrFundVO createFund() {
-        ArrFundVO fund = createFund("Test issue", "TST1");
-        RulDescItemTypeExtVO typeVo = findDescItemTypeByCode("SRD_TITLE");
-        return fund;
-    }
-
-    // ---
 
     /**
-     * Získání druhů připomínek.
+     * Provede akce v {@code callback} jako daný uživatel.
      *
-     * @returns seznam druhů připomínek
+     * @throws Exception výjimka z {@code callback}
      */
-    protected List<WfIssueTypeVO> findAllIssueTypes() {
-        return Arrays.asList(get(ALL_ISSUE_TYPES).getBody().as(WfIssueTypeVO[].class));
+    private <T> T runAsUser(String username, Callable<T> callback) throws Exception {
+        login(username, PASSWORD);
+        try {
+            return callback.call();
+        } finally {
+            loginAsAdmin();
+        }
     }
-
-    /**
-     * Získání stavů připomínek.
-     *
-     * @returns seznam stavů připomínek
-     */
-    protected List<WfIssueStateVO> findAllIssueStates() {
-        return Arrays.asList(get(ALL_ISSUE_STATES).getBody().as(WfIssueStateVO[].class));
-    }
-
-    /**
-     * Získání detailu protokolu.
-     *
-     * @param issueListId identifikátor protokolu
-     * @return protokol
-     */
-    protected WfIssueListVO getIssueList(Integer issueListId) {
-        return get(spec -> spec.pathParameter("issueListId", issueListId), GET_ISSUE_LIST).as(WfIssueListVO.class);
-    }
-
-    /**
-     * Získání detailu připomínky.
-     *
-     * @param issueId identifikátor připomínky
-     * @return připomínka
-     */
-    protected WfIssueVO getIssue(Integer issueId) {
-        return get(spec -> spec.pathParameter("issueId", issueId), GET_ISSUE).as(WfIssueVO.class);
-    }
-
-    /**
-     * Získání detailu komentáře.
-     *
-     * @param commentId identifikátor komentáře
-     * @returns komentář
-     */
-    protected WfCommentVO getIssueComment(Integer commentId) {
-        return get(spec -> spec.pathParameter("commentId", commentId), GET_COMMENT).as(WfCommentVO.class);
-    }
-
-    /**
-     * Založí nový protokol k danému AS
-     *
-     * @param issueListVO data pro založení protokolu
-     * @return detail založeného protokolu
-     */
-    protected WfIssueListVO addIssueList(WfIssueListVO issueListVO) {
-        return post(spec -> spec.body(issueListVO), CREATE_ISSUE_LIST).getBody().as(WfIssueListVO.class);
-    }
-
-    /**
-     * Založení nové připomínky k danému protokolu
-     *
-     * @param issueVO data pro založení připomínky
-     * @return detail založené připomínky
-     */
-    protected WfIssueVO addIssue(WfIssueVO issueVO) {
-        return post(spec -> spec.body(issueVO), CREATE_ISSUE).getBody().as(WfIssueVO.class);
-    }
-
-    /**
-     * Založení nového komentáře k dané připomínce
-     *
-     * @param commentVO data pro založení protokolu
-     * @return detail založeného komentáře
-     */
-    protected WfCommentVO addIssueComment(WfCommentVO commentVO) {
-        return post(spec -> spec.body(commentVO), CREATE_COMMENT).getBody().as(WfCommentVO.class);
-    }
-
-    /**
-     * Vyhledá protokoly k danému archivní souboru - řazeno nejprve otevřené a pak uzavřené
-     *
-     * @param fundId identifikátor AS
-     * @return seznam protokolů
-     */
-    protected List<WfIssueListVO> findIssueListByFund(Integer fundId) {
-        return Arrays.asList(get(spec -> spec.pathParameter("fundId", fundId), FIND_ISSUE_LISTS).as(WfIssueListVO[].class));
-    }
-
-    /**
-     * Vyhledá připomínky k danému protokolu - řazeno vzestupně podle čísla připomínky
-     *
-     * @param issueListId identifikátor protokolu
-     * @param issueStateId identifikátor stavu připomínky, dle kterého filtrujeme
-     * @param issueTypeId identifikátor druhu připomínky, dle kterého filtrujeme
-     */
-    protected List<WfIssueVO> findIssueByIssueList(Integer issueListId, Integer issueStateId, Integer issueTypeId) {
-        return Arrays.asList(get(spec -> {
-            spec.pathParameter("issueListId", issueListId);
-            if (issueStateId != null) {
-                spec.queryParameter("issue_state_id", issueStateId);
-            }
-            if (issueTypeId != null) {
-                spec.queryParameter("issue_type_id", issueTypeId);
-            }
-            return spec;
-        }, FIND_ISSUES).as(WfIssueVO[].class));
-    }
-
-    /**
-     * Vyhledá komentáře k dané připomínce - řazeno vzestupně podle času
-     *
-     * @param issueId identifikátor připomínky
-     * @return seznam komentářů
-     */
-    protected List<WfCommentVO> findIssueCommentByIssue(Integer issueId) {
-        return Arrays.asList(get(spec -> spec.pathParameter("issueId", issueId), FIND_COMMENTS).as(WfCommentVO[].class));
-    }
-
-    /**
-     * Úprava vlastností existujícího protokolu
-     *
-     * @param issueListId identifikátor protokolu
-     * @param issueListVO data pro uložení protokolu
-     * @return detail uloženého protokolu
-     */
-    protected WfIssueListVO updateIssueList(Integer issueListId, WfIssueListVO issueListVO) {
-        return put(spec -> spec
-                .pathParameter("issueListId", issueListId)
-                .body(issueListVO), UPDATE_ISSUE_LIST)
-                .getBody().as(WfIssueListVO.class);
-    }
-
-    /**
-     * Změna stavu připomínky
-     *
-     * @param issueStateId identifikátor stavu připomínky
-     */
-    protected void setIssueState(Integer issueId, Integer issueStateId) {
-        post(spec -> spec
-                .pathParameter("issueId", issueId)
-                .queryParameter("issueStateId", issueStateId), SET_ISSUE_STATE);
-    }
-
 }

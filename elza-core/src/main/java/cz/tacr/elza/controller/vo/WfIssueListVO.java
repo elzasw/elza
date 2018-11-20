@@ -15,15 +15,38 @@ public class WfIssueListVO {
 
     // --- fields ---
 
+    /**
+     * Indentifikátor protokolu - při zakládání není vyplněno
+     */
     private Integer id;
+
+    /**
+     * Indentifikátor archivního souboru - při zakládání povinné
+     */
     @NotNull
     private Integer fundId;
+
+    /**
+     * Název protokolu - při zakládání povinné
+     */
     @NotBlank
     private String name;
+
+    /**
+     * Stav protokolu (otevřený/uzavřený) - při zakládání povinné
+     */
     @NotNull
     private Boolean open;
+
+    /**
+     * Seznam indentifikátorů uživatelů, kteří mají oprávnění na čtení připomínek k danému protokolu - při zakládání volitelné
+     */
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private List<Integer> rdUserIds;
+
+    /**
+     * Seznam indentifikátorů uživatelů, kteří mají oprávnění na zakládání připomínek k danému protokolu - při zakládání volitelné
+     */
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private List<Integer> wrUserIds;
 

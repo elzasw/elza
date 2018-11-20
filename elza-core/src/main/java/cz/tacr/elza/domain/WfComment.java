@@ -22,32 +22,53 @@ public class WfComment implements IWfIssueList {
 
     // --- fields ---
 
+    /**
+     * Indentifikátor komentáře
+     */
     @Id
     @GeneratedValue
     @Access(AccessType.PROPERTY)
     private Integer commentId;
 
+    /**
+     * Připomínka
+     */
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = WfIssue.class, optional = false)
     @JoinColumn(name = "issue_id", nullable = false)
     private WfIssue issue;
 
+    /**
+     * Text komentáře
+     */
     @Column(nullable = false)
     @Lob
     @Type(type = "org.hibernate.type.TextType")
     private String comment;
 
+    /**
+     * Uživatel, který komentář založil
+     */
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = UsrUser.class, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     private UsrUser user;
 
+    /**
+     * Stav připomínky před založením tohoto komentáře
+     */
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = WfIssueState.class, optional = false)
     @JoinColumn(name = "prev_state_id", nullable = false)
     private WfIssueState prevState;
 
+    /**
+     * Stavu připomínky po založení tohoto komentáře
+     */
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = WfIssueState.class, optional = false)
     @JoinColumn(name = "next_state_id", nullable = false)
     private WfIssueState nextState;
 
+    /**
+     * Datum a čas založení tohoto komentáře
+     */
     @Column(nullable = false)
     private LocalDateTime timeCreated;
 

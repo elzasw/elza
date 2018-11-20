@@ -405,6 +405,9 @@ public class DeleteFundAction {
         em.flush();
     }
 
+    /**
+     * Smazání protokolů, připomínek, komentářů a oprávění uživatelů pro přístup k protokolům
+     */
     private void dropIssues() {
 
         List<WfIssueList> issueLists = issueListRepository.findByFundId(fundId);
