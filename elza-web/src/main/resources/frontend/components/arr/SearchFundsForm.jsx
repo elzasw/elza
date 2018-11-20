@@ -83,7 +83,6 @@ class SearchFundsForm extends AbstractReactComponent {
      * Přepnutí do detailu uzlu.
      * @param fund {Object} AS
      * @param node {Object} uzel
-     * @param openNewTab {Boolean} true, pokud se má otevřít v nové záložce
      */
     navigateToNode = (fund, node) => {
         const { arrRegion } = this.props;
