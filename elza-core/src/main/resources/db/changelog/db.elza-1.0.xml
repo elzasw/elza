@@ -235,4 +235,12 @@
         <sql>INSERT INTO db_hibernate_sequences (sequence_name, next_val) SELECT 'ap_name|object_id', COALESCE(MAX(object_id),0)+1 FROM ap_name</sql>
     </changeSet>
 
+    <changeSet id="20181120234100" author="ppyt">
+       <!-- remove unused db entitities -->
+       <delete tableName="db_hibernate_sequences">
+         <where>sequence_name='par_party_subtype|party_subtype_id'</where>
+       </delete>
+       <dropTable tableName="ap_variant_record"/>
+    </changeSet>
+
 </databaseChangeLog>
