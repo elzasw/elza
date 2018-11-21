@@ -149,56 +149,54 @@ class SearchFundsForm extends AbstractReactComponent {
 
     /**
      * Renderování vyhledaného archivního souboru.
-     * @param type {string} typ
-     * @param item {Object} AS / uzel
+     * @param fund {Object} AS
      * @return {Object} view
      */
-    renderItem = (type, item) => {
-        const {expanded} = item;
-
+    renderFund = (fund) => {
+        const {expanded} = fund;
         const expColCls = 'exp-col ' + (expanded ? 'fa fa-minus-square-o' : 'fa fa-plus-square-o');
-        const expCol = <span className={expColCls} onClick={() => this.handleFundClick(item)}></span>
-        const detailCol = <span className="detail-col fa fa-sign-out" onClick={() => this.handleNodeClick(item)}></span>
 
-        const levels = createReferenceMark(item, null);
+        let cls = classNames({
+            item: true,
+            opened: expanded,
+            closed: !expanded,
+        });
+        fund.icon = '';
 
-        let cls;
-        if (type === 'fund') {
-            cls = classNames({
-                item: true,
-                opened: expanded,
-                closed: !expanded,
-            });
-            item.icon = 'fa-database';
-        } else {
-            cls = 'item';
-        }
-
-        let name = item.name;
+        let name = fund.name;
         if (name.length > FUND_NAME_MAX_CHARS) {
             name = name.substring(0, FUND_NAME_MAX_CHARS - 3) + '...'
         }
 
-        const iconProps = getNodeIcon(true, item.icon);
-
-        return <div key={item.id} className={type}>
+        return <div key={fund.id} className="fund">
             <div className={cls}>
-                {type === 'fund' ? expCol : levels}
-                <Icon className="item-icon" {...iconProps}/>
-                <div
-                    title={item.name}
-                    className="item-label"
-                >
-                    {name} {item.count && `(${item.count})`}
-                    {type === 'node' && detailCol}
-                </div>
+                <span className={expColCls} onClick={() => this.handleFundClick(fund)} />
+                <Icon className="item-icon" glyph="fa-database" />
+                <div title={fund.name} className="item-label">{name} {fund.count && `(${fund.count})`}</div>
             </div>
-            {expanded && item.nodes &&
+            {expanded && fund.nodes &&
                 <div className="nodes">
-                    {item.nodes.map(node => this.renderItem('node', node))}
+                    {fund.nodes.map(node => this.renderNode(node))}
                 </div>
             }
         </div>;
+    };
+
+    /**
+     * Render JP.
+     *
+     * @param node objekt JP
+     * @returns {*}
+     */
+    renderNode = (node) => {
+        const levels = createReferenceMark(node, null);
+        const iconProps = getNodeIcon(true, node.icon);
+        return <div className="node">
+            <div className="levels">{levels}</div>
+            <Icon className="item-icon" {...iconProps}/>
+            <div title={node.name} className="item-label">{node.name}</div>
+            <span className="detail-col fa fa-sign-out" onClick={() => this.handleNodeClick(node)} />
+        </div>
     };
 
     render() {
@@ -238,7 +236,7 @@ class SearchFundsForm extends AbstractReactComponent {
             result.push(
                 <div key="result" className="result-list">
                     {fundSearch.funds.length > 0 &&
-                        fundSearch.funds.map(fund => this.renderItem('fund', fund)) 
+                        fundSearch.funds.map(fund => this.renderFund(fund))
                     }
                 </div>
             )

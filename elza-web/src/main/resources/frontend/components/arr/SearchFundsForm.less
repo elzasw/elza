@@ -48,9 +48,6 @@
                 margin: 5px 0;
                 white-space: nowrap;
                 font-size: 0.9em;
-                &:hover {
-                    background: @tree-node-label-active-bg;
-                }
 
                 &-icon {
                     height: 20px;
@@ -77,7 +74,28 @@
             }
 
             .nodes {
-                padding-left: 30px;
+                display: table;
+                width: 100%;
+                .node {
+                    display: table-row;
+                    &:hover {
+                        background: @tree-node-label-active-bg;
+                    }
+                    .levels {
+                        padding-left: 53px;
+                        display: table-cell;
+                    }
+                    .svg-icon {
+                        display: table-cell;
+                    }
+                    .item-label {
+                        display: table-cell;
+                        width: 100%;
+                    }
+                    .detail-col {
+                        display: table-cell;
+                    }
+                }
             }
         }
     }
