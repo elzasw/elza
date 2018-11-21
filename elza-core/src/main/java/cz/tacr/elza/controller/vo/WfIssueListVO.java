@@ -39,16 +39,16 @@ public class WfIssueListVO {
     private Boolean open;
 
     /**
-     * Seznam indentifikátorů uživatelů, kteří mají oprávnění na čtení připomínek k danému protokolu - při zakládání volitelné
+     * Seznam uživatelů, kteří mají oprávnění na čtení připomínek k danému protokolu - při zakládání volitelné
      */
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private List<Integer> rdUserIds;
+    private List<UsrUserVO> rdUsers;
 
     /**
      * Seznam indentifikátorů uživatelů, kteří mají oprávnění na zakládání připomínek k danému protokolu - při zakládání volitelné
      */
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private List<Integer> wrUserIds;
+    private List<UsrUserVO> wrUsers;
 
     // --- getters/setters ---
 
@@ -84,19 +84,19 @@ public class WfIssueListVO {
         this.open = open;
     }
 
-    public List<Integer> getRdUserIds() {
-        return rdUserIds;
+    public List<UsrUserVO> getRdUsers() {
+        return rdUsers;
     }
 
-    public void setRdUserIds(List<Integer> rdUserIds) {
-        this.rdUserIds = rdUserIds;
+    public void setRdUsers(List<UsrUserVO> rdUsers) {
+        this.rdUsers = rdUsers;
     }
 
-    public List<Integer> getWrUserIds() {
-        return wrUserIds;
+    public List<UsrUserVO> getWrUsers() {
+        return wrUsers;
     }
 
-    public void setWrUserIds(List<Integer> wrUserIds) {
-        this.wrUserIds = wrUserIds;
+    public void setWrUsers(List<UsrUserVO> wrUsers) {
+        this.wrUsers = wrUsers;
     }
 }

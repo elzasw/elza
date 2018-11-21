@@ -1,10 +1,11 @@
 package cz.tacr.elza.controller.factory;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
+import cz.tacr.elza.controller.config.ClientFactoryVO;
+import cz.tacr.elza.controller.vo.UsrUserVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,34 +20,25 @@ import cz.tacr.elza.domain.WfComment;
 import cz.tacr.elza.domain.WfIssue;
 import cz.tacr.elza.domain.WfIssueList;
 import cz.tacr.elza.repository.PermissionRepository;
-import cz.tacr.elza.repository.WfCommentRepository;
-import cz.tacr.elza.repository.WfIssueListRepository;
-import cz.tacr.elza.repository.WfIssueRepository;
-import cz.tacr.elza.repository.WfIssueStateRepository;
-import cz.tacr.elza.repository.WfIssueTypeRepository;
 
 @Service
 @Transactional(readOnly = true)
 public class WfFactory {
 
+    // --- other factory ---
+
+    private final ClientFactoryVO factoryVO;
+
     // --- dao ---
 
-    private final WfCommentRepository commentRepository;
-    private final WfIssueListRepository issueListRepository;
-    private final WfIssueRepository issueRepository;
-    private final WfIssueStateRepository issueStateRepository;
-    private final WfIssueTypeRepository issueTypeRepository;
     private final PermissionRepository permissionRepository;
 
     // --- constructor ---
 
     @Autowired
-    public WfFactory(WfCommentRepository commentRepository, WfIssueListRepository issueListRepository, WfIssueRepository issueRepository, WfIssueStateRepository issueStateRepository, WfIssueTypeRepository issueTypeRepository, PermissionRepository permissionRepository) {
-        this.commentRepository = commentRepository;
-        this.issueListRepository = issueListRepository;
-        this.issueRepository = issueRepository;
-        this.issueStateRepository = issueStateRepository;
-        this.issueTypeRepository = issueTypeRepository;
+    public WfFactory(final ClientFactoryVO factoryVO,
+                     final PermissionRepository permissionRepository) {
+        this.factoryVO = factoryVO;
         this.permissionRepository = permissionRepository;
     }
 
@@ -82,46 +74,104 @@ public class WfFactory {
                 }
             }
 
-            issueListVO.setRdUserIds(new ArrayList<>(rdUserMap.keySet()));
-            issueListVO.setWrUserIds(new ArrayList<>(wrUserMap.keySet()));
+            issueListVO.setRdUsers(factoryVO.createUserList(new ArrayList<>(rdUserMap.values()), false));
+            issueListVO.setWrUsers(factoryVO.createUserList(new ArrayList<>(wrUserMap.values()), false));
         }
 
         return issueListVO;
     }
 
     /**
-     * Seznam připomínek
+     * Připomínka
      *
      * @returns seznam připomínek
      */
     public WfIssueVO createIssueVO(WfIssue issue) {
-        WfIssueVO issueVO = new WfIssueVO();
-        issueVO.setId(issue.getIssueId());
-        issueVO.setIssueListId(issue.getIssueList().getIssueListId());
-        issueVO.setNumber(issue.getNumber());
-        issueVO.setNodeId(issue.getNode() != null ? issue.getNode().getNodeId() : null);
-        issueVO.setIssueTypeId(issue.getIssueType().getIssueTypeId());
-        issueVO.setIssueStateId(issue.getIssueState().getIssueStateId());
-        issueVO.setDescription(issue.getDescription());
-        issueVO.setUserCreateId(issue.getUserCreate().getUserId());
-        issueVO.setTimeCreated(issue.getTimeCreated());
-        return issueVO;
+        if (issue == null) {
+            return null;
+        }
+        return createIssueVO(Collections.singleton(issue)).get(0);
     }
 
     /**
-     * Seznam komentářů
+     * Seznam připomínek
      *
-     * @returns seznam komentářů
+     * @return seznam připomínek
      */
-    public WfCommentVO createCommentVO(WfComment comment) {
-        WfCommentVO commentVO = new WfCommentVO();
-        commentVO.setId(comment.getCommentId());
-        commentVO.setIssueId(comment.getIssue().getIssueId());
-        commentVO.setComment(comment.getComment());
-        commentVO.setUserId(comment.getUser().getUserId());
-        commentVO.setPrevStateId(comment.getPrevState().getIssueStateId());
-        commentVO.setNextStateId(comment.getNextState().getIssueStateId());
-        commentVO.setTimeCreated(comment.getTimeCreated());
-        return commentVO;
+    public List<WfIssueVO> createIssueVO(final Collection<WfIssue> issues) {
+        if (issues == null) {
+            return null;
+        }
+
+        List<UsrUser> users = new ArrayList<>();
+        for (WfIssue issue : issues) {
+            users.add(issue.getUserCreate());
+        }
+
+        Map<Integer, UsrUserVO> usersMap = factoryVO.createUserList(users, false).stream()
+                .collect(Collectors.toMap(UsrUserVO::getId, Function.identity()));
+
+        List<WfIssueVO> issueVOS = new ArrayList<>();
+        for (WfIssue issue : issues) {
+            WfIssueVO issueVO = new WfIssueVO();
+            issueVO.setId(issue.getIssueId());
+            issueVO.setIssueListId(issue.getIssueList().getIssueListId());
+            issueVO.setNumber(issue.getNumber());
+            issueVO.setNodeId(issue.getNode() != null ? issue.getNode().getNodeId() : null);
+            issueVO.setIssueTypeId(issue.getIssueType().getIssueTypeId());
+            issueVO.setIssueStateId(issue.getIssueState().getIssueStateId());
+            issueVO.setDescription(issue.getDescription());
+            issueVO.setUserCreate(usersMap.get(issue.getUserCreate().getUserId()));
+            issueVO.setTimeCreated(issue.getTimeCreated());
+            issueVOS.add(issueVO);
+        }
+
+        return issueVOS;
+    }
+
+    /**
+     * Komentář.
+     *
+     * @return komentář
+     */
+    public WfCommentVO createCommentVO(final WfComment comment) {
+        if (comment == null) {
+            return null;
+        }
+        return createCommentVO(Collections.singleton(comment)).get(0);
+    }
+
+    /**
+     * Seznam komentářů.
+     *
+     * @return seznam komentářů
+     */
+    public List<WfCommentVO> createCommentVO(final Collection<WfComment> comments) {
+        if (comments == null) {
+            return null;
+        }
+
+        List<UsrUser> users = new ArrayList<>();
+        for (WfComment comment : comments) {
+            users.add(comment.getUser());
+        }
+
+        Map<Integer, UsrUserVO> usersMap = factoryVO.createUserList(users, false).stream()
+                .collect(Collectors.toMap(UsrUserVO::getId, Function.identity()));
+
+        List<WfCommentVO> commentVOS = new ArrayList<>();
+        for (WfComment comment : comments) {
+            WfCommentVO commentVO = new WfCommentVO();
+            commentVO.setId(comment.getCommentId());
+            commentVO.setIssueId(comment.getIssue().getIssueId());
+            commentVO.setComment(comment.getComment());
+            commentVO.setUser(usersMap.get(comment.getUser().getUserId()));
+            commentVO.setPrevStateId(comment.getPrevState().getIssueStateId());
+            commentVO.setNextStateId(comment.getNextState().getIssueStateId());
+            commentVO.setTimeCreated(comment.getTimeCreated());
+            commentVOS.add(commentVO);
+        }
+
+        return commentVOS;
     }
 }

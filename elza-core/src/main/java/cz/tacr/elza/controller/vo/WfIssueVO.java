@@ -56,9 +56,9 @@ public class WfIssueVO {
     private String description;
 
     /**
-     * Indentifikátor uživatele, který připomínku založil - doplní systém dle přihlášeného uživatele - při zakládání není vyplněno
+     * Uživatel, který připomínku založil - doplní systém dle přihlášeného uživatele - při zakládání není vyplněno
      */
-    private Integer userCreateId;
+    private UsrUserVO userCreate;
 
     /**
      * Datum a čas založení této připomínky
@@ -123,12 +123,12 @@ public class WfIssueVO {
         this.description = description;
     }
 
-    public Integer getUserCreateId() {
-        return userCreateId;
+    public UsrUserVO getUserCreate() {
+        return userCreate;
     }
 
-    public void setUserCreateId(Integer userCreateId) {
-        this.userCreateId = userCreateId;
+    public void setUserCreate(UsrUserVO userCreate) {
+        this.userCreate = userCreate;
     }
 
     public LocalDateTime getTimeCreated() {

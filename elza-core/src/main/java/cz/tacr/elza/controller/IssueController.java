@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 
+import cz.tacr.elza.controller.vo.*;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,11 +25,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.factory.WfFactory;
-import cz.tacr.elza.controller.vo.WfCommentVO;
-import cz.tacr.elza.controller.vo.WfIssueListVO;
-import cz.tacr.elza.controller.vo.WfIssueStateVO;
-import cz.tacr.elza.controller.vo.WfIssueTypeVO;
-import cz.tacr.elza.controller.vo.WfIssueVO;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.UsrUser;
@@ -152,7 +148,7 @@ public class IssueController {
 
         List<WfIssue> issues = issueService.findIssueByIssueListId(issueList, state, type);
 
-        return issues.stream().map(issue -> factory.createIssueVO(issue)).collect(Collectors.toList());
+        return factory.createIssueVO(issues);
     }
 
     /**
@@ -174,8 +170,8 @@ public class IssueController {
         ArrFund fund = arrangementService.getFund(issueListVO.getFundId());
 
         // validace uzivatelu
-        Collection<UsrUser> rdUsers = findUsers(issueListVO.getRdUserIds(), "rdUserIds");
-        Collection<UsrUser> wrUsers = findUsers(issueListVO.getWrUserIds(), "wrUserIds");
+        Collection<UsrUser> rdUsers = findUsers(issueListVO.getRdUsers(), "rdUsers");
+        Collection<UsrUser> wrUsers = findUsers(issueListVO.getWrUsers(), "wrUsers");
 
         WfIssueList issueList = issueService.addIssueList(fund, issueListVO.getName(), issueListVO.getOpen());
 
@@ -201,8 +197,8 @@ public class IssueController {
         WfIssueList issueList = issueService.getIssueList(issueListId);
 
         // validace uzivatelu
-        Collection<UsrUser> rdUsers = findUsers(issueListVO.getRdUserIds(), "rdUserIds");
-        Collection<UsrUser> wrUsers = findUsers(issueListVO.getWrUserIds(), "wrUserIds");
+        Collection<UsrUser> rdUsers = findUsers(issueListVO.getRdUsers(), "rdUsers");
+        Collection<UsrUser> wrUsers = findUsers(issueListVO.getWrUsers(), "wrUsers");
 
         issueService.updateIssueList(issueList, issueListVO.getName(), issueListVO.getOpen());
 
@@ -345,10 +341,10 @@ public class IssueController {
         return factory.createCommentVO(comment);
     }
 
-    protected Collection<UsrUser> findUsers(List<Integer> userIds, String fieldName) {
-        if (userIds != null) {
-            Map<Integer, UsrUser> userMap = userService.findUserMap(userIds);
-            Validate.isTrue(userMap.size() == userIds.size(), "Neplatný uživatel [" + fieldName + "]");
+    protected Collection<UsrUser> findUsers(List<UsrUserVO> users, String fieldName) {
+        if (users != null) {
+            Map<Integer, UsrUser> userMap = userService.findUserMap(users.stream().map(UsrUserVO::getId).collect(Collectors.toList()));
+            Validate.isTrue(userMap.size() == users.size(), "Neplatný uživatel [" + fieldName + "]");
             return userMap.values();
         }
         return null;

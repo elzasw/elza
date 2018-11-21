@@ -1537,8 +1537,8 @@ declare class IssueListVO extends Object {
     fundId: number;
     name: string;
     open: boolean;
-    rdUserIds: number[];
-    wrUserIds: number[];
+    rdUsers: UsrUserVO[];
+    wrUsers: UsrUserVO[];
 }
 
 declare class IssueVO extends Object {
@@ -1548,7 +1548,7 @@ declare class IssueVO extends Object {
     issueTypeId: number;
     issueStateId: number;
     description: string;
-    userCreateId: number;
+    userCreate: UsrUserVO;
     timeCreated: string;
 }
 
@@ -1556,10 +1556,20 @@ declare class CommentVO extends Object {
     id: number;
     issueId: number;
     comment: string;
-    userId: number;
+    user: UsrUserVO;
     prevStateId: number;
     nextStateId: number;
     timeCreated: string;
+}
+
+declare class UsrUserVO extends Object {
+    username : string;
+    id : string;
+    active : boolean;
+    description : string;
+    party : Object;
+    permissions : Object[];
+    groups : Object[];
 }
 
 /**

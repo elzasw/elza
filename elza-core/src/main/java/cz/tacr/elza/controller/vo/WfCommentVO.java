@@ -31,10 +31,10 @@ public class WfCommentVO {
     private String comment;
 
     /**
-     * Indentifikátor uživatele, který komentář založil - doplní systém dle přihlášeného uživatele - při zakládání není vyplněno
+     * Uživatel, který komentář založil - doplní systém dle přihlášeného uživatele - při zakládání není vyplněno
      */
     @NotNull
-    private Integer userId;
+    private UsrUserVO user;
 
     /**
      * Indentifikátor stavu připomínky před založením tohoto komentáře - při zakládání není vyplněno
@@ -77,12 +77,12 @@ public class WfCommentVO {
         this.comment = comment;
     }
 
-    public Integer getUserId() {
-        return userId;
+    public UsrUserVO getUser() {
+        return user;
     }
 
-    public void setUserId(Integer userId) {
-        this.userId = userId;
+    public void setUser(UsrUserVO user) {
+        this.user = user;
     }
 
     public Integer getPrevStateId() {

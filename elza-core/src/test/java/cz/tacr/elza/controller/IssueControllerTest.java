@@ -84,8 +84,8 @@ public class IssueControllerTest extends AbstractControllerTest {
                     issueListVO1.setFundId(fund.getId());
                     issueListVO1.setName(name1);
                     issueListVO1.setOpen(true);
-                    issueListVO1.setRdUserIds(Arrays.asList(userVO1.getId(), userVO2.getId()));
-                    issueListVO1.setWrUserIds(Arrays.asList(userVO1.getId()));
+                    issueListVO1.setRdUsers(Arrays.asList(userVO1, userVO2));
+                    issueListVO1.setWrUsers(Arrays.asList(userVO1));
 
                     WfIssueListVO issueListVO2 = addIssueList(issueListVO1);
 
@@ -118,8 +118,8 @@ public class IssueControllerTest extends AbstractControllerTest {
 
                     issueListVO.setName(name2);
                     issueListVO.setOpen(false);
-                    issueListVO.setRdUserIds(Arrays.asList(userVO1.getId(), userVO3.getId(), userVO4.getId()));
-                    issueListVO.setWrUserIds(Arrays.asList(userVO1.getId(), userVO3.getId()));
+                    issueListVO.setRdUsers(Arrays.asList(userVO1, userVO3, userVO4));
+                    issueListVO.setWrUsers(Arrays.asList(userVO1, userVO3));
 
                     WfIssueListVO issueListVO4 = updateIssueList(issueListId, issueListVO);
 
