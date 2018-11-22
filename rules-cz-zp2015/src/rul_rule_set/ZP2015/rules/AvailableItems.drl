@@ -573,9 +573,7 @@ when
         // Předměty faleristické povahy
         "ZP2015_UNIT_TYPE_PFP",
         // Jiné
-        "ZP2015_UNIT_TYPE_JIN",
-        // Neevidovaná jednotlivost
-        "ZP2015_UNIT_TYPE_OTHER"    
+        "ZP2015_UNIT_TYPE_JIN"
          ) ) from $itemType.rulItemSpecList
 then
     $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
