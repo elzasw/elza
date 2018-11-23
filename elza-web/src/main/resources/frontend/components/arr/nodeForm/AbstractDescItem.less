@@ -1,7 +1,7 @@
 .desc-item-value.desc-item-value-parts {
     display: flex;
     flex-direction: row;
-    flex-wrap: nowrap;    
+    flex-wrap: nowrap;
     .part1 {
         margin-right: 4px;
         width: 50%;
@@ -19,6 +19,8 @@
 .desc-item-spec {
     .spec-required {
         background-color: #ffd3d3;
+        background-color: #ffeed3;
+        background-color: #e0e6ff;
     }
 
     .spec-recommended {
@@ -26,10 +28,12 @@
     }
 
     .spec-possible {
-        background-color: #e0e6ff;
+        background-color: transparent;
     }
 
     .spec-impossible {
-        background-color: #ffeed3;
+        background-color: #eee;
+        color: #888;
+        font-style: italic;
     }
 }

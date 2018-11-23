@@ -37,8 +37,8 @@ class AddDescItemTypeForm extends AbstractReactComponent {
         this.props.descItemTypes.forEach(node => {
             const children = [];
             node.children.forEach(item => {
+                item.className = "type-"+item.type.toLowerCase();
                 if (item.type === AddDescItemTypeForm.ITEM_TYPE_POSSIBLE) {
-                    item.className = "type-"+item.type.toLowerCase();
                     children.push(item);
                 }
             });
@@ -108,6 +108,3 @@ export default reduxForm({
     form: 'addDescItemTypeForm',
     fields: ['descItemTypeId'],
 })(AddDescItemTypeForm)
-
-
-
