@@ -288,7 +288,7 @@ export function fundTreeFulltextSearch(area, versionId, params, result, luceneQu
  * {Arraz} searchedData seznam nalezených node
  * {boolean} clearFilter jedná se o akci, která má pouze vymazat aktuální filtr?
  */
-function fundTreeFulltextResult(area, versionId, filterText, searchedData, clearFilter, searchFormData, luceneQuery) {
+export function fundTreeFulltextResult(area, versionId, filterText, searchedData, clearFilter, searchFormData, luceneQuery) {
     return {
         type: types.FUND_FUND_TREE_FULLTEXT_RESULT,
         area,
