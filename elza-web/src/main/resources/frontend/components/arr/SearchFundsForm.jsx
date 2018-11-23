@@ -113,29 +113,36 @@ class SearchFundsForm extends AbstractReactComponent {
             const activeFund = this.getActiveIndex(arrRegion);
 
             if (force) {
-                dispatch(fundTreeFetch(types.FUND_TREE_AREA_MAIN, fund.versionId, node.id, activeFund.expandedIds)).then(() => {
+                dispatch(fundTreeFetch(types.FUND_TREE_AREA_MAIN, fund.versionId, node.id, activeFund.fundTree.expandedIds)).then(() => {
                     const { arrRegion } = getState();
                     const activeFund = this.getActiveIndex(arrRegion);
 
-                    const nodeFromTree = activeFund.fundTree.nodes.find(n => n.id === node.id);
+                    let activeNode;
+                    if (activeFund.nodes.activeIndex !== null) {
+                        activeNode = activeFund.nodes.nodes[activeFund.nodes.activeIndex];
+                    }
 
-                    let parentNode = getParentNode(nodeFromTree, activeFund.fundTree.nodes);
-
+                    let parentNode = getParentNode(activeNode, activeFund.nodes.nodes);
                     if (parentNode === null) {
-                        parentNode = createFundRoot(fund);
+                        parentNode = createFundRoot(activeFund);
                     }
                     
-                    dispatch(fundSelectSubNode(fund.versionId, node.id, parentNode, openNewTab, null, true));
+                    dispatch(fundSelectSubNode(fund.versionId, node.id, parentNode, openNewTab, null, false));
                 });
             } else {
-                const nodeFromTree = activeFund.fundTree.nodes.find(n => n.id === node.id);
+                const activeFund = this.getActiveIndex(arrRegion);
 
-                let parentNode = getParentNode(nodeFromTree, activeFund.fundTree.nodes);
-                if (parentNode === null) {
-                    parentNode = createFundRoot(fund);
+                let activeNode;
+                if (activeFund.nodes.activeIndex !== null) {
+                    activeNode = activeFund.nodes.nodes[activeFund.nodes.activeIndex];
                 }
 
-                dispatch(fundSelectSubNode(fund.versionId, node.id, parentNode, openNewTab, null, true));
+                let parentNode = getParentNode(activeNode, activeFund.nodes.nodes);
+                if (parentNode === null) {
+                    parentNode = createFundRoot(activeFund);
+                }
+                    
+                dispatch(fundSelectSubNode(fund.versionId, node.id, parentNode, openNewTab, null, false));
             }
 
             // Vyplní vyhledávací políčko na stránce pořádání
@@ -176,7 +183,7 @@ class SearchFundsForm extends AbstractReactComponent {
             </div>
             {expanded && fund.nodes &&
                 <div className="nodes">
-                    {fund.nodes.map(node => this.renderNode(node))}
+                    {fund.nodes.map((node) => this.renderNode(node))}
                 </div>
             }
         </div>;
@@ -191,7 +198,7 @@ class SearchFundsForm extends AbstractReactComponent {
     renderNode = (node) => {
         const levels = createReferenceMark(node, null);
         const iconProps = getNodeIcon(true, node.icon);
-        return <div className="node">
+        return <div key={node.id} className="node">
             <div className="levels">{levels}</div>
             <Icon className="item-icon" {...iconProps}/>
             <div title={node.name} className="item-label">{node.name}</div>
@@ -241,7 +248,7 @@ class SearchFundsForm extends AbstractReactComponent {
                 </div>
             )
         }
-
+        
         return result;
     };
 
