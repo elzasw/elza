@@ -418,6 +418,7 @@ var messages = {
     "arr.output.panel.files.notGenerated": "Výstup nebyl vygenerován",
 
     "arr.fund.search.result.count": "Počet nalezených výsledků: {0}",
+    "arr.fund.search.noFulltext": "Pro zobrazení výsledků hledání v archivních souborech zadejte vyhledávací podmínku.",
 
     "change.arr.output.generating.title": "Generuje se výstup",
     "change.arr.output.outdated.title": "Výstup byl vygenerován, ale data nejsou aktuální",

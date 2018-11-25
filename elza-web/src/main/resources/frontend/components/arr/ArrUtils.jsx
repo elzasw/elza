@@ -269,7 +269,8 @@ export function getSettings(items, type = null, entityType = null, entityId = nu
  * @return {Object} virtuální kořenový uzel pro kořenový uzel AS
  */
 export function createFundRoot(fund) {
-    return {id: 'ROOT_' + fund.versionId, name: fund.name, root: true};
+    const version = typeof fund.versionId !== 'undefined' ? fund.versionId : fund.fundVersionId;
+    return {id: 'ROOT_' + version, name: fund.name, root: true};
 }
 
 /**
@@ -409,6 +410,58 @@ export function getGlyph(type) {
     } else {
         return type;
     }
+}
+
+export function getNodeIcon(colorCoded, iconCode) {
+    let iconStyle = {};
+    let backgroundColor, color;
+
+    if (colorCoded){
+        if (COLOR_MAP[iconCode]){
+            backgroundColor = COLOR_MAP[iconCode].background;
+            color = COLOR_MAP[iconCode].color;
+        } else {
+            backgroundColor = COLOR_MAP["default"].background;
+            color = COLOR_MAP["default"].color;
+        }
+
+        iconStyle = {
+            backgroundColor:backgroundColor,
+            color:color
+        };
+    }
+
+    let icon = getGlyph(iconCode);
+
+    if (ICON_REMAP[iconCode] && colorCoded){
+        icon = ICON_REMAP[iconCode];
+    }
+
+    return ({
+        glyph: icon,
+        style: iconStyle,
+        fill: iconStyle.backgroundColor,
+        stroke: "none"
+    });
+}
+
+export const ICON_REMAP = {
+    "fa-folder-o":"folder",
+    "ez-serie":"serie",
+    "fa-sitemap":"sitemap",
+    "fa-file-text-o":"fileText",
+    "ez-item-part-o":"fileTextPart",
+    "fa-exclamation-triangle":"triangleExclamation"
+};
+
+const COLOR_MAP = {
+    "fa-database":{background:"#fff",color:"#000"},
+    "fa-folder-o":{background:"#ffcc00",color:"#fff"},
+    "ez-serie":{background:"#6696dd", color:"#fff"},
+    "fa-sitemap":{background:"#4444cc", color:"#fff"},
+    "fa-file-text-o":{background:"#ff972c", color:"#fff"},
+    "ez-item-part-o":{background:"#cc3820", color: "#fff"},
+    "default":{background:"#333", color: "#fff"}
 }
 
 export const DIGITIZATION = "DIGITIZATION";
