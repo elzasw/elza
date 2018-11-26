@@ -206,7 +206,8 @@ public class IssueService {
      */
     public List<WfIssueList> findIssueListByFund(@NotNull ArrFund fund, @NotNull UserDetail userDetail) {
         Validate.notNull(fund, "Fund is null");
-        if (userDetail.getId() == null
+        if (userDetail.getId() == null // virtuální uživatel, obdobně jako superadmin
+                || userDetail.hasPermission(Permission.ADMIN)
                 || userDetail.hasPermission(Permission.FUND_ISSUE_ADMIN_ALL)
                 || userDetail.hasPermission(Permission.FUND_ISSUE_ADMIN_ALL, fund.getFundId())) {
             return findIssueListByFund(fund);
