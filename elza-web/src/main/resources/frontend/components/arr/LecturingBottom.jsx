@@ -12,7 +12,14 @@ import TextareaAutosize from 'react-autosize-textarea';
 
 import "./LecturingBottom.less"
 import i18n from "../i18n";
+import {modalDialogHide, modalDialogShow} from "../../actions/global/modalDialog";
+import IssueForm from "../form/IssueForm";
+import * as perms from "../../actions/user/Permission";
 
+
+/**
+ * Spodní část lektoringu, zajištující seznam komentářů, komentování a editaci
+ */
 class LecturingBottom extends React.Component {
 
     static propTypes = {
@@ -21,6 +28,8 @@ class LecturingBottom extends React.Component {
 
     state = {
         text: "",
+        comment: null,
+        submitting: false,
     };
 
     componentDidMount() {
@@ -37,19 +46,63 @@ class LecturingBottom extends React.Component {
         }
     }
 
-
     addComment = (nextStateId) => {
         const {issueDetail:{id}} = this.props;
-        WebApi.addIssueComment({issueId: id, comment: this.state.text, nextStateId}).then(() => {
-            this.setState({text:""});
-            this.props.dispatch(issuesActions.comments.invalidate(id));
+        this.setState({submitting: true});
+        WebApi.addIssueComment({issueId: id, comment: this.state.text, nextStateId}).then(this.afterSave)
+    };
+
+    editComment = (comment: CommentVO) => {
+        this.setState({comment, text: comment.comment});
+    };
+
+    reset = () => {
+        this.setState({text: "", submitting: false, comment: null});
+    };
+
+    afterSave = () => {
+        this.reset();
+        this.props.dispatch(issuesActions.comments.invalidate(this.props.issueDetail.id));
+    };
+
+    updateComment = () => {
+        const {comment, text} = this.state;
+        this.setState({submitting: true});
+        WebApi.updateIssueComment(comment.id, {...comment, comment: text}).then(this.afterSave);
+    };
+
+    editIssue = () => {
+        const {dispatch, issueDetail} = this.props;
+        dispatch(modalDialogShow(this, i18n("arr.issues.update.title"), <IssueForm update initialValues={issueDetail.data} onSubmit={this.updateIssue} onSubmitSuccess={() => {
+            dispatch(issuesActions.list.invalidate(issueDetail.issueListId));
+            dispatch(issuesActions.detail.invalidate(issueDetail.id));
+            dispatch(modalDialogHide());
+        }} />));
+    };
+
+    updateIssue = (data) => {
+        const {issueDetail} = this.props;
+        return WebApi.updateIssue(issueDetail.data.id, {
+            ...issueDetail.data,
+            ...data
         })
     };
 
     render() {
         const {issueStates, issueDetail, issueComments, userDetail} = this.props;
-
         const {id, data, fetched, isFetching} = issueDetail;
+        const {text, comment, submitting} = this.state;
+
+
+        const canWrite = fetched && (
+            userDetail.hasOne([perms.FUND_ISSUE_ADMIN_ALL]) || (
+                userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR] &&
+                userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR].issueListIds &&
+                userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR].issueListIds.indexOf(data.issueListId) !== -1
+            )
+        );
+        const canUpdateIssue = canWrite && userDetail.id === data.userCreate.id && issueComments.fetched && issueComments.rows.length === 0;
+
         return <div className="lecturing-bottom">
             {!id && <div className="text-center">{i18n("arr.issues.choose")}</div>}
             {isFetching && <Loading/>}
@@ -57,35 +110,67 @@ class LecturingBottom extends React.Component {
                 <div className="comments">
                     <div className="comment text-muted">
                         <div>{data.description}</div>
-                        <div className="text-right">{data.userCreate.username} ({dateTimeToString(new Date(data.timeCreated))})</div>
+                        <div className="text-right">
+                            {canUpdateIssue && <div className="pull-left">
+                                <Button bsStyle="action" onClick={this.editIssue}>
+                                    <Icon glyph="fa-pencil" />
+                                </Button>
+                            </div>}
+                            {data.userCreate.username} ({dateTimeToString(new Date(data.timeCreated))})
+                        </div>
                     </div>
-                    {issueComments.rows.map((item: CommentVO) => <div>
+                    {issueComments.rows.map((item: CommentVO, index, arr) => <div>
                         <div className={"comment" + (userDetail.id === item.user.id ? " text-muted" : "")}>
                             <div>{item.comment}</div>
-                            <div className="text-right">{item.user.username} ({dateTimeToString(new Date(item.timeCreated))})</div>
+                            <div className="text-right">
+                                {canWrite && userDetail.id === item.user.id && arr.length === index+1 && <div className="pull-left">
+                                    <Button bsStyle="action" onClick={this.editComment.bind(this, item)}>
+                                        <Icon glyph="fa-pencil" />
+                                    </Button>
+                                </div>}
+                                {item.user.username} ({dateTimeToString(new Date(item.timeCreated))})
+                            </div>
                         </div>
-                        {item.nextStateId !== item.prevStateId && <div className="state-change"><Icon glyph="fa-angle-double-right"/> {objectById(issueStates.data, item.nextStateId).name}</div>}
+                        {(item.nextStateId !== item.prevStateId || arr.length === index+1) && <div className="state-change"><Icon glyph="fa-angle-double-right"/> {objectById(issueStates.data, item.nextStateId).name}</div>}
                     </div>)}
+                    {!issueComments.rows.length && <div className="state-change"><Icon glyph="fa-angle-double-right"/> {objectById(issueStates.data, data.issueStateId).name}</div>}
                 </div>
-                <div>
-                    <TextareaAutosize
-                        className="form-control"
-                        maxRows={3}
-                        rows={3}
-                        value={this.state.text} onChange={({target:{value}}) => this.setState({text:value})}
-                        innerRef={ref => this.textarea = ref}
-                    />
-                </div>
-                <div className="text-right">
-                    <DropdownButton dropup pullRight noCaret title={i18n("arr.issues.state.change")} bsStyle="action" id="comment-state" disabled={!this.state.text}>
-                        {issueStates.data.filter(i => i.id !== data.issueStateId).map(i => <MenuItem key={i.id} onClick={this.addComment.bind(this,i.id)}>
-                            {i.name}
-                        </MenuItem>)}
-                    </DropdownButton>
-                    <Button bsStyle="action" disabled={!this.state.text} onClick={this.addComment.bind(this,null)}>
-                        <Icon glyph="fa-arrow-circle-up"/>
-                    </Button>
-                </div>
+                {canWrite && !comment && <div className="add-comment">
+                    <div>
+                        <TextareaAutosize
+                            className="form-control"
+                            maxRows={3}
+                            rows={3}
+                            value={this.state.text} onChange={({target:{value}}) => this.setState({text:value})}
+                            disabled={submitting}
+                        />
+                    </div>
+                    <div className="text-right">
+                        <DropdownButton dropup pullRight noCaret title={i18n("arr.issues.state.change")} bsStyle="action" id="comment-state" disabled={!this.state.text || submitting}>
+                            {issueStates.data.filter(i => i.id !== data.issueStateId).map(i => <MenuItem key={i.id} onClick={this.addComment.bind(this,i.id)}>
+                                {i.name}
+                            </MenuItem>)}
+                        </DropdownButton>
+                        <Button bsStyle="action" disabled={!this.state.text || submitting} onClick={this.addComment.bind(this,null)}>
+                            <Icon glyph="fa-arrow-circle-up"/>
+                        </Button>
+                    </div>
+                </div>}
+                {canWrite && comment && <div className="edit-comment">
+                    <div>
+                        <TextareaAutosize
+                            className="form-control"
+                            maxRows={3}
+                            rows={3}
+                            value={text} onChange={({target:{value}}) => this.setState({text:value})}
+                            disabled={submitting}
+                        />
+                    </div>
+                    <div className="text-right">
+                        <Button bsStyle="action" disabled={submitting} onClick={this.reset}>{i18n("global.action.cancel")}</Button>
+                        <Button bsStyle="action" disabled={!this.state.text || submitting} onClick={this.updateComment}><Icon glyph="fa-arrow-circle-up"/></Button>
+                    </div>
+                </div>}
             </div>}
         </div>
     }

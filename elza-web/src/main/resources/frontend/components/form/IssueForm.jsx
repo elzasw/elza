@@ -16,6 +16,10 @@ class IssueForm extends AbstractReactComponent {
         this.props.dispatch(issueTypesActions.fetchIfNeeded());
     }
 
+    static propTypes = {
+        update: React.PropTypes.bool,
+    };
+
     static requireFields = (...names) => data =>
         names.reduce((errors, name) => {
             if (!data[name]) {
@@ -25,7 +29,7 @@ class IssueForm extends AbstractReactComponent {
         }, {});
 
     render() {
-        const {handleSubmit, onClose, issueTypes, fields: {description, issueTypeId}} = this.props;
+        const {handleSubmit, onClose, issueTypes, fields: {description, issueTypeId}, update} = this.props;
         return (
             <Form onSubmit={handleSubmit}>
                 <Modal.Body>
@@ -35,7 +39,7 @@ class IssueForm extends AbstractReactComponent {
                     <FormInput componentClass="textarea" label={i18n('issue.text')} {...description}/>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button type="submit">{i18n('global.action.add')}</Button>
+                    <Button type="submit">{i18n(update ? 'global.action.update' : 'global.action.add')}</Button>
                     <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
                 </Modal.Footer>
             </Form>
