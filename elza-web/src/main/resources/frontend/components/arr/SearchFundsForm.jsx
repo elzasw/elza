@@ -246,6 +246,7 @@ class SearchFundsForm extends AbstractReactComponent {
                     placeholder={i18n('search.input.search')}
                     value={fundSearch.fulltext}
                 />
+                {fundSearch.isFetching && <HorizontalLoader hover showText={false} key="loader"/>}
                 {isFulltext && i18n('arr.fund.search.result.count', totalCount)}
                 <div className={`fund-search ${isFulltext && totalCount > 0 ? 'result' : 'no-fulltext'}`}>
                     {isFulltext 
@@ -261,10 +262,6 @@ class SearchFundsForm extends AbstractReactComponent {
         const {fundSearch} = this.props;
 
         const result = [];
-
-        if (fundSearch.isFetching) {
-            result.push(<HorizontalLoader hover showText={false} key="loader"/>);
-        }
 
         if (fundSearch.fetched) {
             result.push(
