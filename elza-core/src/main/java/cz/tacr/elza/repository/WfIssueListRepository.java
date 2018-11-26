@@ -10,20 +10,12 @@ import org.springframework.stereotype.Repository;
 import cz.tacr.elza.domain.WfIssueList;
 
 @Repository
-public interface WfIssueListRepository extends ElzaJpaRepository<WfIssueList, Integer> {
+public interface WfIssueListRepository extends ElzaJpaRepository<WfIssueList, Integer>, WfIssueListRepositoryCustom {
 
     @Query("select il" +
             " from wf_issue_list il" +
-            " where il.fund.fundId = :fundId" +
-            " order by il.open desc, il.name")
+            " where il.fund.fundId = :fundId")
     List<WfIssueList> findByFundId(@Param(value = "fundId") Integer fundId);
-
-    @Query("select il" +
-            " from wf_issue_list il" +
-            " where il.fund.fundId = :fundId" +
-            " and il.issueListId in (select pv.issueList.issueListId from usr_permission_view pv where pv.user.userId = :userId)" +
-            " order by il.open desc, il.name")
-    List<WfIssueList> findByFundIdWithPermission(@Param(value = "fundId") Integer fundId, @Param(value = "userId") Integer userId);
 
     @Query("select i.issueList.issueListId" +
             " from wf_issue i" +

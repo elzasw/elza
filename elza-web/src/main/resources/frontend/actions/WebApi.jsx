@@ -1399,7 +1399,7 @@ export class WebApiCls {
      * @returns {Promise} list druhů připomínek
      */
     findAllIssueTypes() {
-        return AjaxUtils.ajaxGet(WebApiCls.issueUrl+ '/issue_types');
+        return AjaxUtils.ajaxGet(WebApiCls.issueUrl + '/issue_types');
     }
 
     /**
@@ -1408,7 +1408,7 @@ export class WebApiCls {
      * @returns {Promise} list stavů připomínek
      */
     findAllIssueStates() {
-        return AjaxUtils.ajaxGet(WebApiCls.issueUrl+ '/issue_states');
+        return AjaxUtils.ajaxGet(WebApiCls.issueUrl + '/issue_states');
     }
 
     /**
@@ -1418,8 +1418,8 @@ export class WebApiCls {
      * @param open filter zda je issue list otevřen nebo zavřen
      * @returns {Promise} seznam protokolů
      */
-    findIssueListByFund(fundId : number, open: boolean = null) {
-        return AjaxUtils.ajaxGet(WebApiCls.issueUrl+ '/funds/' + fundId + '/issue_lists', {open});
+    findIssueListByFund(fundId : number, open : boolean = null) {
+        return AjaxUtils.ajaxGet(WebApiCls.issueUrl + '/funds/' + fundId + '/issue_lists', {open});
     }
 
     /**
@@ -1429,7 +1429,7 @@ export class WebApiCls {
      * @returns {Promise} detail protokolu
      */
     getIssueList(issueListId : number) {
-        return AjaxUtils.ajaxGet(WebApiCls.issueUrl+ '/issue_lists/' + issueListId);
+        return AjaxUtils.ajaxGet(WebApiCls.issueUrl + '/issue_lists/' + issueListId);
     }
 
     /**
@@ -1445,7 +1445,7 @@ export class WebApiCls {
             stateId,
             typeId
         };
-        return AjaxUtils.ajaxGet(WebApiCls.issueUrl+ '/issue_lists/' + issueListId + '/issues', requestParams);
+        return AjaxUtils.ajaxGet(WebApiCls.issueUrl + '/issue_lists/' + issueListId + '/issues', requestParams);
     }
 
     /**
@@ -1464,7 +1464,7 @@ export class WebApiCls {
      * @param data {IssueListVO} data pro uložení protokolu
      */
     updateIssueList(issueListId : number, data : IssueListVO) : IssueListVO {
-        return AjaxUtils.ajaxPut(WebApiCls.issueUrl+ '/issue_lists/' + issueListId, null, data)
+        return AjaxUtils.ajaxPut(WebApiCls.issueUrl + '/issue_lists/' + issueListId, null, data)
     }
 
     /**
@@ -1474,7 +1474,7 @@ export class WebApiCls {
      * @returns {Promise} detail připomínky
      */
     getIssue(issueId : number) {
-        return AjaxUtils.ajaxGet(WebApiCls.issueUrl+ '/issues/' + issueId);
+        return AjaxUtils.ajaxGet(WebApiCls.issueUrl + '/issues/' + issueId);
     }
 
     /**
@@ -1488,13 +1488,23 @@ export class WebApiCls {
     }
 
     /**
+     * Úprava připomínky.
+     *
+     * @param issueId identifikátor připomínky
+     * @param data {IssueVO} data pro uložení připomínky
+     */
+    updateIssue(issueId : number, data : IssueVO) {
+        return AjaxUtils.ajaxPut(WebApiCls.issueUrl + '/issues/' + issueId, null, data)
+    }
+
+    /**
      * Změna stavu připomínky.
      *
      * @param issueId      identifikátor připomínky
      * @param issueStateId identifikátor stavu připomínky
      * @returns {Promise}
      */
-    setIssueState(issueId : number, issueStateId: number) {
+    setIssueState(issueId : number, issueStateId : number) {
         const requestParams = {
             issueStateId,
         };
@@ -1508,7 +1518,7 @@ export class WebApiCls {
      * @returns {Promise} pole {CommentVO}
      */
     findIssueCommentByIssue(issueId : number) {
-        return AjaxUtils.ajaxGet(WebApiCls.issueUrl+ '/issues/' + issueId + '/comments');
+        return AjaxUtils.ajaxGet(WebApiCls.issueUrl + '/issues/' + issueId + '/comments');
     }
 
     /**
@@ -1518,7 +1528,7 @@ export class WebApiCls {
      * @returns {Promise} detail {CommentVO}
      */
     getIssueComment(commentId : number) {
-        return AjaxUtils.ajaxGet(WebApiCls.issueUrl+ '/comments/' + commentId);
+        return AjaxUtils.ajaxGet(WebApiCls.issueUrl + '/comments/' + commentId);
     }
 
     /**
@@ -1531,6 +1541,16 @@ export class WebApiCls {
         return AjaxUtils.ajaxPost(WebApiCls.issueUrl + '/comments', null, data)
     }
 
+    /**
+     * Úprava komentáře.
+     *
+     * @param commentId identifikátor komentáře
+     * @param data komentář
+     * @returns {Promise}
+     */
+    updateIssueComment(commentId : number, data : CommentVO) {
+        return AjaxUtils.ajaxPut(WebApiCls.issueUrl + '/comments/' + commentId, null, data)
+    }
 }
 
 declare class IssueListVO extends Object {

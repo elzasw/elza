@@ -2,6 +2,7 @@ package cz.tacr.elza.repository;
 
 import java.util.List;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -11,6 +12,12 @@ import cz.tacr.elza.domain.WfComment;
 
 @Repository
 public interface WfCommentRepository extends ElzaJpaRepository<WfComment, Integer> {
+
+    @Query("select c" +
+            " from wf_comment c" +
+            " where c.issue.issueId = :issueId" +
+            " order by c.timeCreated desc")
+    List<WfComment> findLastByIssueId(@Param(value = "issueId") Integer issueId, Pageable pageable);
 
     @Query("select c" +
             " from wf_comment c" +
@@ -28,4 +35,5 @@ public interface WfCommentRepository extends ElzaJpaRepository<WfComment, Intege
     @Query("delete from wf_comment c" +
             " where c.issue.issueId in (select i.issueId from wf_issue i where i.issueList.fund.fundId = :fundId)")
     void deleteByFundId(@Param(value = "fundId") Integer fundId);
+
 }

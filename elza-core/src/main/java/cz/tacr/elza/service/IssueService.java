@@ -23,6 +23,7 @@ import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -202,26 +203,20 @@ public class IssueService {
      * Vyhledá protokoly k danému archivní souboru - řazeno nejprve otevřené a pak uzavřené
      *
      * @param fund AS
+     * @param open filtr pro stav (otevřený/uzavřený)
      * @return seznam protokolů
      */
-    public List<WfIssueList> findIssueListByFund(@NotNull ArrFund fund, @NotNull UserDetail userDetail) {
+    public List<WfIssueList> findIssueListByFund(@NotNull ArrFund fund, @Nullable Boolean open, @NotNull UserDetail userDetail) {
         Validate.notNull(fund, "Fund is null");
-        if (userDetail.getId() == null // virtuální uživatel, obdobně jako superadmin
+
+        Integer userId = userDetail.getId() == null // virtuální uživatel, obdobně jako superadmin
                 || userDetail.hasPermission(Permission.ADMIN)
                 || userDetail.hasPermission(Permission.FUND_ISSUE_ADMIN_ALL)
-                || userDetail.hasPermission(Permission.FUND_ISSUE_ADMIN_ALL, fund.getFundId())) {
-            return findIssueListByFund(fund);
-        } else {
-            return findIssueListByFundWithPermission(fund, userDetail.getId());
-        }
-    }
+                || userDetail.hasPermission(Permission.FUND_ISSUE_ADMIN, fund.getFundId())
+                ? null
+                : userDetail.getId();
 
-    protected List<WfIssueList> findIssueListByFund(@NotNull ArrFund fund) {
-        return issueListRepository.findByFundId(fund.getFundId());
-    }
-
-    protected List<WfIssueList> findIssueListByFundWithPermission(@NotNull ArrFund fund, @NotNull Integer userId) {
-        return issueListRepository.findByFundIdWithPermission(fund.getFundId(), userId);
+        return issueListRepository.findByFundIdWithPermission(fund.getFundId(), open, userId);
     }
 
     /**
@@ -297,7 +292,7 @@ public class IssueService {
      */
     @Transactional
     @AuthMethod(permission = {Permission.FUND_ISSUE_LIST_WR})
-    public WfIssue addIssue(@AuthParam(type = AuthParam.Type.ISSUE_LIST) @NotNull WfIssueList issueList, @Nullable ArrNode node, @NotNull WfIssueType issueType, String description, @NotNull UsrUser user) {
+    public WfIssue addIssue(@AuthParam(type = AuthParam.Type.ISSUE_LIST) @NotNull WfIssueList issueList, @Nullable ArrNode node, @NotNull WfIssueType issueType, @NotNull String description, @NotNull UsrUser user) {
 
         Validate.notNull(issueList, "Issue list is null");
         Validate.notBlank(description, "Empty description");
@@ -325,6 +320,29 @@ public class IssueService {
     }
 
     /**
+     * Upraví připomínku
+     */
+    @Transactional
+    public WfIssue updateIssue(@NotNull WfIssue issue, @Nullable ArrNode node, @NotNull WfIssueType issueType, @NotNull WfIssueState issueState, @NotNull String description) {
+
+        Validate.notNull(issue, "Issue is null");
+        Validate.notNull(issueType, "Issue type is null");
+        Validate.notNull(issueState, "Issue state is null");
+        Validate.notBlank(description, "Empty description");
+
+        issue.setNode(node);
+        issue.setIssueType(issueType);
+        issue.setIssueState(issueState);
+        issue.setDescription(description);
+
+        issue = issueRepository.save(issue);
+
+        publishAccessPointEvent(issue.getIssueId(), EventType.ISSUE_CREATE);
+
+        return issue;
+    }
+
+    /**
      * Změna stavu připomínky
      */
     @Transactional
@@ -342,7 +360,7 @@ public class IssueService {
      */
     @Transactional
     @AuthMethod(permission = {Permission.FUND_ISSUE_LIST_WR})
-    public WfComment addComment(@AuthParam(type = AuthParam.Type.ISSUE) @NotNull WfIssue issue, String text, @Nullable WfIssueState nextState, @NotNull UsrUser user) {
+    public WfComment addComment(@AuthParam(type = AuthParam.Type.ISSUE) @NotNull WfIssue issue, @NotNull String text, @Nullable WfIssueState nextState, @NotNull UsrUser user) {
 
         Validate.notNull(issue, "Issue is null");
         Validate.notBlank(text, "Empty comment");
@@ -360,15 +378,53 @@ public class IssueService {
         return comment;
     }
 
-    protected WfComment createComment(@NotNull WfIssue issue, @Nullable WfIssueState nextState, String text, @NotNull UsrUser usrUser) {
+    protected WfComment createComment(@NotNull WfIssue issue, @Nullable WfIssueState nextState, @NotNull String text, @NotNull UsrUser user) {
         WfComment comment = new WfComment();
         comment.setIssue(issue);
         comment.setComment(text);
-        comment.setUser(usrUser);
+        comment.setUser(user);
         comment.setPrevState(issue.getIssueState());
         comment.setNextState(nextState != null ? nextState : issue.getIssueState());
         comment.setTimeCreated(LocalDateTime.now());
         return commentRepository.save(comment);
+    }
+
+    /**
+     * Získání posledního komentáře k dané připomínce
+     *
+     * @param issue připomínka
+     * @return komentář
+     */
+    public WfComment getLastComment(WfIssue issue) {
+        List<WfComment> commentList = commentRepository.findLastByIssueId(issue.getIssueId(), new PageRequest(0, 1));
+        return !commentList.isEmpty() ? commentList.get(0) : null;
+    }
+
+    /**
+     * Úprava komentáře
+     */
+    @Transactional
+    public WfComment updateComment(@NotNull WfComment comment, @NotNull String text, @Nullable WfIssueState nextState) {
+
+        Validate.notNull(comment, "Comment is null");
+        Validate.notBlank(text, "Empty comment");
+
+        comment.setComment(text);
+        if (nextState != null) {
+            comment.setNextState(nextState);
+        }
+        comment = commentRepository.save(comment);
+
+        WfIssue issue = comment.getIssue();
+
+        if (nextState != null) {
+            issue.setIssueState(nextState);
+            issueRepository.save(issue);
+        }
+
+        publishAccessPointEvent(issue.getIssueId(), EventType.ISSUE_UPDATE);
+
+        return comment;
     }
 
     /**

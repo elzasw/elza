@@ -9,7 +9,6 @@ import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 
-import cz.tacr.elza.controller.vo.*;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +24,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.factory.WfFactory;
+import cz.tacr.elza.controller.vo.UsrUserVO;
+import cz.tacr.elza.controller.vo.WfCommentVO;
+import cz.tacr.elza.controller.vo.WfIssueListVO;
+import cz.tacr.elza.controller.vo.WfIssueStateVO;
+import cz.tacr.elza.controller.vo.WfIssueTypeVO;
+import cz.tacr.elza.controller.vo.WfIssueVO;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.UsrUser;
@@ -98,18 +103,19 @@ public class IssueController {
      * Vyhledá protokoly k danému archivní souboru - řazeno nejprve otevřené a pak uzavřené
      *
      * @param fundId identifikátor AS
+     * @param open filtr pro stav (otevřený/uzavřený)
      * @return seznam protokolů
      */
     @RequestMapping(value = "/funds/{fundId}/issue_lists", method = RequestMethod.GET)
     @Transactional
-    public List<WfIssueListVO> findIssueListByFund(@PathVariable Integer fundId) {
+    public List<WfIssueListVO> findIssueListByFund(@PathVariable Integer fundId, @RequestParam(name = "open", required = false) Boolean open) {
 
         // kontrola existence
         ArrFund fund = arrangementService.getFund(fundId);
 
         UserDetail userDetail = userService.getLoggedUserDetail();
 
-        List<WfIssueList> issueListList = issueService.findIssueListByFund(fund, userDetail);
+        List<WfIssueList> issueListList = issueService.findIssueListByFund(fund, open, userDetail);
 
         return issueListList.stream().map(issueList -> factory.createIssueListVO(issueList, false)).collect(Collectors.toList());
     }
@@ -262,9 +268,45 @@ public class IssueController {
         ArrNode node = issueVO.getNodeId() != null ? arrangementService.getNode(issueVO.getNodeId()) : null;
 
         UsrUser user = userService.getLoggedUser();
-        Validate.notNull(user, "Uzivatel není prihlášený");
+        Validate.notNull(user, "Uživatel není přihlášený");
 
         WfIssue issue = issueService.addIssue(issueList, node, issueType, issueVO.getDescription(), user);
+
+        return factory.createIssueVO(issue);
+    }
+
+    /**
+     * Úprava připomínky
+     *
+     * @param issueId identifikátor připomínky
+     * @param issueVO data pro uložení připomínky
+     * @return detail založené připomínky
+     */
+    @RequestMapping(value = "/issues/{issueId}", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Transactional
+    public WfIssueVO updateIssue(@PathVariable Integer issueId, @RequestBody WfIssueVO issueVO) {
+
+        Validate.isTrue(issueId.equals(issueVO.getId()), "Neplatný identifikátor připomínky [id=" + issueVO.getId() + "]");
+        Validate.notNull(issueVO.getIssueTypeId(), "Chybí identifikátor druhu připomínky [issueTypeId]");
+        Validate.notNull(issueVO.getIssueStateId(), "Chybí identifikátor stavu připomínky [issueStateId]");
+        Validate.notBlank(issueVO.getDescription(), "Chybí popis připomínky [description]");
+
+        // validace na existenci
+        WfIssue issue = issueService.getIssue(issueId);
+        WfIssueType issueType = issueService.getIssueType(issueVO.getIssueTypeId());
+        WfIssueState issueState = issueService.getIssueState(issueVO.getIssueStateId());
+        ArrNode node = issueVO.getNodeId() != null ? arrangementService.getNode(issueVO.getNodeId()) : null;
+
+        UsrUser user = userService.getLoggedUser();
+        Validate.notNull(user, "Uživatel není přihlášený");
+
+        Validate.isTrue(issue.getUserCreate().getUserId().equals(user.getUserId()), "Uživatel není vlastník [userId=" + user.getUserId() + "]");
+
+        WfComment lastComment = issueService.getLastComment(issue);
+
+        Validate.isTrue(lastComment == null, "K připomínce již existují komentáře");
+
+        issue = issueService.updateIssue(issue, node, issueType, issueState, issueVO.getDescription());
 
         return factory.createIssueVO(issue);
     }
@@ -334,9 +376,44 @@ public class IssueController {
                 : null;
 
         UsrUser user = userService.getLoggedUser();
-        Validate.notNull(user, "Uzivatel není prihlášený");
+        Validate.notNull(user, "Uživatel není přihlášený");
 
         WfComment comment = issueService.addComment(issue, commentVO.getComment(), newIssueState, user);
+
+        return factory.createCommentVO(comment);
+    }
+
+    /**
+     * Úprava komentáře
+     *
+     * @param commentId identifikátor komentáře
+     * @param commentVO data pro založení protokolu
+     * @return detail založeného komentáře
+     */
+    @RequestMapping(value = "/comments/{commentId}", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Transactional
+    public WfCommentVO updateIssueComment(@PathVariable Integer commentId, @RequestBody WfCommentVO commentVO) {
+
+        Validate.isTrue(commentId.equals(commentVO.getId()), "Neplatný identifikátor komentáře [id=" + commentVO.getId() + "");
+        Validate.notBlank(commentVO.getComment(), "Chybí text připomínky [comment]");
+
+        // kontrola existence a opravneni
+        WfComment comment = issueService.getComment(commentId);
+
+        WfIssueState newIssueState = commentVO.getNextStateId() != null
+                ? issueService.getIssueState(commentVO.getNextStateId())
+                : null;
+
+        UsrUser user = userService.getLoggedUser();
+        Validate.notNull(user, "Uživatel není přihlášený");
+
+        Validate.isTrue(comment.getUser().getUserId().equals(user.getUserId()), "Uživatel není vlastník [userId=" + user.getUserId() + "]");
+
+        WfComment lastComment = issueService.getLastComment(comment.getIssue());
+
+        Validate.isTrue(commentId.equals(lastComment.getCommentId()), "Již existuje novější komentář");
+
+        comment = issueService.updateComment(comment, commentVO.getComment(), newIssueState);
 
         return factory.createCommentVO(comment);
     }
