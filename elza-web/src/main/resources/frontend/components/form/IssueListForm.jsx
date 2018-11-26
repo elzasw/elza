@@ -14,7 +14,7 @@ class IssueListForm extends AbstractReactComponent {
     static propTypes = {
         onCreate: React.PropTypes.func.isRequired,
         onSave: React.PropTypes.func.isRequired,
-        issueListId: React.PropTypes.number,
+        id: React.PropTypes.number,
         fundId: React.PropTypes.number.isRequired,
     };
 
@@ -41,8 +41,12 @@ class IssueListForm extends AbstractReactComponent {
         "wrUsers[].description"
     ];
 
+    static initialValues = {open: true, rdUsers: [], wrUsers: []};
+
     componentDidUpdate(prevProps: Readonly<P>, prevState: Readonly<S>, prevContext: any): void {
-        if (this.props.fields && prevProps.fields) {
+        if (prevProps.id && !this.props.id) {
+            this.props.resetForm();
+        } else if (this.props.fields && prevProps.fields && this.props.id && prevProps.id && this.props.dirty) {
             if (this.props.fields.rdUsers.length !== prevProps.fields.rdUsers.length ||
                 this.props.fields.wrUsers.length !== prevProps.fields.wrUsers.length) {
                 this.props.asyncValidate()
@@ -92,9 +96,9 @@ class IssueListForm extends AbstractReactComponent {
 }
 
 export default reduxForm({
-    form: "reduxIssueList",
+    form: "issueList",
     fields: IssueListForm.fields,
-    initialValues: {open: true, rdUsers: [], wrUsers: []},
+    initialValues: IssueListForm.initialValues,
     validate: IssueListForm.validate,
     asyncBlurFields: IssueListForm.fields,
     // Async validace zneužita k ukládání dat

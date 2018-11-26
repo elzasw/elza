@@ -17,11 +17,11 @@ import IssueForm from "../form/IssueForm";
 import objectById from "../../shared/utils/objectById";
 import indexById from "../../shared/utils/indexById";
 
-import "./LectoringTop.less";
+import "./LecturingTop.less";
 
 const basicOptionMap = (i) => <option key={i.id} value={i.id}>{i.name}</option>;
 
-class LectoringTop extends React.Component {
+class LecturingTop extends React.Component {
 
     state = {
         issueListId: null,
@@ -45,10 +45,10 @@ class LectoringTop extends React.Component {
         nextProps.dispatch(issuesActions.protocols.fetchIfNeeded(this.props.fund.id));
         if (nextProps.issueProtocols.fetched && nextProps.issueProtocols.count) {
             if (!issueListId) {
-                const issueListId = nextProps.issueProtocols.rows[0].id;
-                this.setState({issueListId});
-                nextProps.dispatch(issuesActions.list.fetchIfNeeded(issueListId));
+                const newIssueListId = nextProps.issueProtocols.rows[0].id;
+                this.selectIssueList(newIssueListId);
             } else {
+                nextProps.dispatch(issuesActions.protocol.fetchIfNeeded(issueListId));
                 nextProps.dispatch(issuesActions.list.fetchIfNeeded(issueListId));
             }
         }
@@ -92,17 +92,18 @@ class LectoringTop extends React.Component {
     };
 
     selectIssueList = (issueListId) => {
-        this.setState({issueListId});
-        this.props.dispatch(issuesActions.list.fetchIfNeeded(issueListId));
+        this.setState({issueListId}, () => {
+            this.props.dispatch(issuesActions.protocol.fetchIfNeeded(issueListId));
+            this.props.dispatch(issuesActions.list.fetchIfNeeded(issueListId));
+        });
     };
 
     render() {
         const {issueTypes, issueStates, issueList, issueProtocols} = this.props;
         const {issueListId, issueId} = this.state;
         const activeIndex = issueId !== null ? indexById(issueList.rows, issueId) : null;
-        console.log("aa", activeIndex)
 
-        return <div className="lectoring-top">
+        return <div className="lecturing-top">
             <div className="actions-container">
                 <div className="actions">
                     <DropdownButton disabled={!issueListId} bsStyle="default" id='dropdown-add-comment' noCaret title={<Icon glyph='fa-plus-circle' />}>
@@ -171,4 +172,4 @@ export default connect((state) => {
         issueList: storeFromArea(state, issuesActions.AREA_LIST),
         issueProtocols: storeFromArea(state, issuesActions.AREA_PROTOCOLS)
     }
-})(LectoringTop);
+})(LecturingTop);

@@ -1428,7 +1428,7 @@ export class WebApiCls {
      * @param issueListId identifikátor protokolu.
      * @returns {Promise} detail protokolu
      */
-    getIssueList(issueListId : number) {
+    getIssueList(issueListId : number) : IssueListVO {
         return AjaxUtils.ajaxGet(WebApiCls.issueUrl+ '/issue_lists/' + issueListId);
     }
 
