@@ -7,14 +7,14 @@ import AbstractReactComponent from "../../AbstractReactComponent";
  * Pane
  * state je upravován z venku pomocí ref
  */
-class Pane extends AbstractReactComponent {
+class HorizontalPane extends AbstractReactComponent {
 
     state = {};
 
     render() {
         let style = {};
         if (this.state.size) {
-            style.width = this.state.size;
+            style.height = this.state.size;
         }
         return (
             <div className={this.props.className} style={style}>
@@ -24,4 +24,4 @@ class Pane extends AbstractReactComponent {
     }
 }
 
-export default Pane;
+export default HorizontalPane;

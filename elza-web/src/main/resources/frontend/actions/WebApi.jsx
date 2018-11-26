@@ -1415,10 +1415,11 @@ export class WebApiCls {
      * Získání protokolů pro konkrétní archivní souboru.
      *
      * @param fundId identifikátor AS
+     * @param open filter zda je issue list otevřen nebo zavřen
      * @returns {Promise} seznam protokolů
      */
-    findIssueListByFund(fundId : number) {
-        return AjaxUtils.ajaxGet(WebApiCls.issueUrl+ '/funds/' + fundId + '/issue_lists');
+    findIssueListByFund(fundId : number, open: boolean = null) {
+        return AjaxUtils.ajaxGet(WebApiCls.issueUrl+ '/funds/' + fundId + '/issue_lists', {open});
     }
 
     /**
@@ -1452,7 +1453,7 @@ export class WebApiCls {
      *
      * @param data {IssueListVO} data pro založení protokolu
      */
-    addIssueList(data : IssueListVO) {
+    addIssueList(data : IssueListVO) : IssueListVO {
         return AjaxUtils.ajaxPost(WebApiCls.issueUrl + '/issue_lists', null, data)
     }
 
@@ -1462,7 +1463,7 @@ export class WebApiCls {
      * @param issueListId identifikátor protokolu.
      * @param data {IssueListVO} data pro uložení protokolu
      */
-    updateIssueList(issueListId : number, data : IssueListVO) {
+    updateIssueList(issueListId : number, data : IssueListVO) : IssueListVO {
         return AjaxUtils.ajaxPut(WebApiCls.issueUrl+ '/issue_lists/' + issueListId, null, data)
     }
 
@@ -1605,8 +1606,13 @@ export class UrlFactory {
     static downloadGeneratedDmsFile(id, fundId, mimeType){
         return serverContextPath + WebApiCls.dmsUrl +`/fund/${fundId}/${id}/generated?mimeType=${mimeType}`;
     }
+
     static downloadOutputResult(id) {
         return serverContextPath + '/api/outputResult/' + id
+    }
+
+    static exportIssueList(issueListId) {
+        return serverContextPath + WebApiCls.issueUrl + `/issue_lists/${issueListId}/export`;
     }
 }
 /**

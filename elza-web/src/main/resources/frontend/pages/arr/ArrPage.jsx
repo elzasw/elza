@@ -35,7 +35,7 @@ import {
     Ribbon,
     VisiblePolicyForm
 } from 'components/index.jsx';
-import {Button} from 'react-bootstrap';
+import {Button, DropdownButton, MenuItem} from 'react-bootstrap';
 import {WebApi} from 'actions/index.jsx';
 import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog.jsx'
 import {fundsFetchIfNeeded, showDaosJp, showRegisterJp} from 'actions/arr/fund.jsx'
@@ -71,6 +71,10 @@ import {structureTypesFetchIfNeeded} from "../../actions/refTables/structureType
 import objectById from "../../shared/utils/objectById";
 import FundTemplateSettingsForm from "../../components/arr/FundTemplateSettingsForm";
 import SearchFundsForm from "../../components/arr/SearchFundsForm";
+import Splitter from "../../components/shared/splitter/Splitter";
+import HorizontalSplitter from "../../components/shared/splitter/HorizontalSplitter";
+import LectoringTop from "../../components/arr/LectoringTop";
+import LectoringBottom from "../../components/arr/LectoringBottom";
 
 const keyModifier = Utils.getKeyModifier();
 
@@ -109,7 +113,8 @@ class ArrPage extends ArrParentPage {
             'renderPanel', 'renderDeveloperDescItems', 'handleShowHideSpecs', 'handleTabSelect', 'handleSelectErrorNode',
             'handleErrorPrevious', 'handleErrorNext', 'trySetFocus', 'handleOpenFundActionForm',
             'handleChangeFundSettingsSubmit',
-            "handleSetExtendedView"
+            "handleSetExtendedView",
+            "renderLectoringPanel"
         );
     }
     componentDidMount() {
@@ -466,6 +471,25 @@ class ArrPage extends ArrParentPage {
             </Button>
         );
 
+        // TODO @compel Jak získám context issue List ???
+        false && itemActions.push(
+            <Button key="next-issue" onClick={() => {}}>
+                <Icon glyph="fa-arrow-left"/>
+                <span className="btnText">{i18n('ribbon.action.arr.issue.previous')}</span>
+            </Button>,
+            <Button key="previous-issue" onClick={() => {}}>
+                <Icon glyph="fa-arrow-right"/>
+                <span className="btnText">{i18n('ribbon.action.arr.issue.next')}</span>
+            </Button>,
+            <DropdownButton bsStyle="default" title={<span>
+                <Icon glyph="fa-commenting"/>
+                <span className="btnText">{i18n('ribbon.action.arr.issue.add')}</span>
+            </span>} key="add-issue" id="add-issue">
+                <MenuItem eventKey="1" onClick={this.handleCreateTemplate}>{i18n("arr.issues.add.arr")}</MenuItem>
+                <MenuItem eventKey="2" onClick={this.handleUseTemplate}>{i18n("arr.issues.add.node")}</MenuItem>
+            </DropdownButton>
+        );
+
         const indexFund = arrRegion.activeIndex;
         if (indexFund !== null) {
             const activeFund = arrRegion.funds[indexFund];
@@ -805,6 +829,15 @@ class ArrPage extends ArrParentPage {
         </div>
     }
 
+    renderLectoringPanel(activeFund, node) {
+        return <div className='issues-panel'>
+            <HorizontalSplitter
+                                top={<LectoringTop fund={activeFund} node={node} />}
+                                bottom={<LectoringBottom />}
+            />
+        </div>
+    }
+
     handleTabSelect(item) {
         this.props.dispatch(selectTab(ArrPage.TAB_KEY, item.id));
         if (item.update) {  //Pokud má záložka definovánu funkci update(), pak se tato funkce zavolá.
@@ -916,6 +949,13 @@ class ArrPage extends ArrParentPage {
                         render:() => this.renderDeveloperScenarios(activeFund, node),
                         condition: developer.enabled,
                         showCondition: !!node
+                    },
+                    "xxx":{
+                        id: "xxx" ,
+                        key: "xxx" ,
+                        name: i18n('arr.panel.title.lectoring'),
+                        render:() => this.renderLectoringPanel(activeFund, node),
+
                     }
         };
         this.setState({tabs});

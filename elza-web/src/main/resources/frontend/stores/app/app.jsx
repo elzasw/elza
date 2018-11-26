@@ -17,6 +17,10 @@ const initialState = {
     extSystemDetail: DetailReducer(),
     extSystemList: SimpleListReducer(),   // seznam externích systémů
     mimeTypesList: SimpleListReducer(),   // seznam mime typů pro editaci systémů
+    issueDetail: DetailReducer(),
+    issueComments: SimpleListReducer(),
+    issueList: SimpleListReducer(undefined, undefined, {filter:{type: "", state: "", protocol: ""}}),
+    issueProtocols: SimpleListReducer(),
     registryList: SimpleListReducer(undefined, undefined, {filter:{text: null, registryTypeId: null, versionId: null, itemSpecId: null, parents: [], typesToRoot: null, scopeId: null, from: 0, excludeInvalid: true}}),
     arrStructure: SimpleListReducer(undefined, undefined, {filter:{text:"", fundVersionId: null, structureCode: null, from: 0, state: ""}}),
     shared: SharedReducer()

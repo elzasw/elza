@@ -1,4 +1,4 @@
-require ('./ArrFundPanel.less');
+import './ArrFundPanel.less';
 
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -11,37 +11,32 @@ import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx'
 import {fundChangeReadMode} from 'actions/arr/fund.jsx'
 import {setSettings, getOneSettings} from 'components/arr/ArrUtils.jsx';
 import * as perms from 'actions/user/Permission.jsx';
+import classNames from 'classnames';
+import TooltipTrigger from "../shared/tooltip/TooltipTrigger";
 
-var classNames = require('classnames');
+class ArrFundPanel extends AbstractReactComponent {
 
-var ArrFundPanel = class ArrFundPanel extends AbstractReactComponent {
-    constructor(props) {
-        super(props);
-
-        this.bindMethods('setReadMode');
-    }
-
-    setReadMode(readMode) {
+    setReadMode = (readMode) => {
         const {fund, userDetail} = this.props;
-        var settings = userDetail.settings;
+        let settings = userDetail.settings;
 
-        var item = getOneSettings(settings, 'FUND_READ_MODE', 'FUND', fund.id);
+        let item = getOneSettings(settings, 'FUND_READ_MODE', 'FUND', fund.id);
         item.value = readMode;
         settings = setSettings(settings, item.id, item);
         this.dispatch(fundChangeReadMode(fund.versionId, readMode));
         this.dispatch(userDetailsSaveSettings(settings));
-    }
+    };
 
     render() {
         const {fund, userDetail} = this.props;
 
-        var cls = ['arr-fund-panel'];
-        var action;
+        let cls = ['arr-fund-panel'];
+        let action;
 
-        var fundId = fund.id;
+        const fundId = fund.id;
 
-        var settings = getOneSettings(userDetail.settings, 'FUND_READ_MODE', 'FUND', fundId);
-        var readMode = settings.value != 'false';
+        const settings = getOneSettings(userDetail.settings, 'FUND_READ_MODE', 'FUND', fundId);
+        let readMode = settings.value != 'false';
 
         if (fund.lockDate || !userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId})) {
             readMode = true;
@@ -61,16 +56,33 @@ var ArrFundPanel = class ArrFundPanel extends AbstractReactComponent {
         const name = <span className="name">{fund.name}</span>
         const version = fund.lockDate != null ? <span className="lock"><span className="lockTitle">{i18n('arr.fund.panel.lockTitle')}</span>{dateToString(new Date(fund.lockDate))}</span> : null
 
+        let comments = null;
+        if (false && !readMode) { // TODO lectoring @compel asi pouze v editu
+            const tooltip = <span>// TODO...</span>; // měl by posktynout server získat z fund
+            comments = <span className="comments">
+                <TooltipTrigger
+                    content={tooltip}
+                    holdOnHover
+                    placement="auto"
+                    className="status"
+                    showDelay={50}
+                    hideDelay={0}
+                >
+                    <Icon glyph="fa-commenting"/>
+                </TooltipTrigger>
+            </span>
+        }
+
         return (
                 <div key='arr-fund-panel' className={classNames(cls)}>
-                    {name}{version}{action}
+                    {name}{version}{comments}{action}
                 </div>
         );
     }
 }
 
 function mapStateToProps(state) {
-    const {arrRegion, userDetail} = state
+    const {arrRegion, userDetail} = state;
     let fund = null;
     if (arrRegion.activeIndex != null) {
         fund = arrRegion.funds[arrRegion.activeIndex];

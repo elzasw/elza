@@ -417,6 +417,23 @@ var messages = {
     "arr.output.panel.template.noSettings": "Vybraná šablona nemá žádná nastavení",
     "arr.output.panel.files.notGenerated": "Výstup nebyl vygenerován",
 
+    "arr.issues.settings.title": "Nastavení lektorování",
+    "arr.issues.choose":"Vyberte protokol",
+    "arr.issues.state.change":"změnit stav...",
+    "arr.issues.add.arr":"Archivní soubor",
+    "arr.issues.add.node":"Zobrazená jednotka popisu",
+    "arr.issues.add.node.title":"Přidat připomínku - Jednotka popisu",
+    "arr.issues.add.arr.title":"Přidat připomínku - Archivní soubor",
+    "arr.issuesList.form.permission": "Oprávnění",
+    "arr.issuesList.form.permission.read": "Zobrazení",
+    "arr.issuesList.form.permission.write": "Tvorba připomínek",
+    "issue.type":"Typ připomínky",
+    "issue.text":"Text připomínky",
+    "issueList.name":"Název",
+    "issueList.open":"Stav",
+    "issueList.open.true":"Otevřený",
+    "issueList.open.false":"Zavřený",
+
     "arr.fund.search.result.count": "Počet nalezených výsledků: {0}",
     "arr.fund.search.noFulltext": "Pro zobrazení výsledků hledání v archivních souborech zadejte vyhledávací podmínku.",
 
@@ -448,6 +465,7 @@ var messages = {
     "arr.panel.title.discrepancies": "Nesrovnalosti",
     "arr.panel.title.visiblePolicies": "Kontroly",
     "arr.panel.title.files": "Přílohy",
+    "arr.panel.title.lectoring": "Lektorování",
 
     "arr.fund.panel.lockTitle": "v uzavřené verzi",
     "arr.fund.panel.allowEdit": "Povolit úpravy",

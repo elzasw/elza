@@ -27,6 +27,11 @@
     font-size: 1em;
     _outline: none !important;
 }
+.btn-xs {
+    height: 1.4em;
+    font-size: 1em;
+    line-height: 1.4em;
+}
 
 .btn-icon {
   border: 0;
@@ -128,7 +133,11 @@ input::-ms-clear {
 .flex{
     display: flex;
 
-    .flex-grow-1{
+    &.flex-column {
+        flex-direction: column;
+    }
+
+    .flex-grow-1 {
         width: 100%;
         flex-grow: 1;
     }
@@ -140,6 +149,7 @@ input::-ms-clear {
       flex:2
     }
 }
+
 
 .fa-stack-right-bottom {
   position:relative;

@@ -3,9 +3,8 @@ import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import Pane from './Pane'
 import AbstractReactComponent from "../../AbstractReactComponent";
-
-import './Splitter.less'
 import Resizer from "../resizer/Resizer";
+import './Splitter.less'
 
 class Splitter extends AbstractReactComponent {
 
@@ -18,7 +17,7 @@ class Splitter extends AbstractReactComponent {
         rightSize: this.props.rightSize || 200
     };
 
-    static PropTypes = {
+    static propTypes = {
         left: React.PropTypes.object,
         leftSize: React.PropTypes.number,
         center: React.PropTypes.object.isRequired,
@@ -116,7 +115,7 @@ class Splitter extends AbstractReactComponent {
                         resized: true
                     });
 
-                    var newState = {}
+                    let newState = {};
                     if (this.state.leftDragged) {
                         newState = {
                             leftSize: newSize,
