@@ -944,6 +944,7 @@ public class UserService {
 
             if (permission.getIssueList() != null) {
                 userPermission.addIssueListId(permission.getIssueList().getIssueListId());
+                userPermission.addFundId(permission.getIssueList().getFund().getFundId());
             }
         }
 
