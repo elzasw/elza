@@ -10,10 +10,10 @@ import Loading from "../shared/loading/Loading";
 import {dateTimeToString} from "../Utils";
 import TextareaAutosize from 'react-autosize-textarea';
 
-import "./LectoringBottom.less"
+import "./LecturingBottom.less"
 import i18n from "../i18n";
 
-class LectoringBottom extends React.Component {
+class LecturingBottom extends React.Component {
 
     static propTypes = {
         fund: React.PropTypes.object.isRequired,
@@ -50,10 +50,10 @@ class LectoringBottom extends React.Component {
         const {issueStates, issueDetail, issueComments, userDetail} = this.props;
 
         const {id, data, fetched, isFetching} = issueDetail;
-        return <div className="lectoring-bottom">
+        return <div className="lecturing-bottom">
             {!id && <div className="text-center">{i18n("arr.issues.choose")}</div>}
             {isFetching && <Loading/>}
-            {fetched && <div className="lectoring-bottom-container">
+            {fetched && <div className="lecturing-bottom-container">
                 <div className="comments">
                     <div className="comment text-muted">
                         <div>{data.description}</div>
@@ -99,4 +99,4 @@ export default connect((state) => {
         issueComments: storeFromArea(state, issuesActions.AREA_COMMENTS),
         userDetail: state.userDetail,
     }
-})(LectoringBottom);
+})(LecturingBottom);

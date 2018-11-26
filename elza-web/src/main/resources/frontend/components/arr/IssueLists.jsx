@@ -10,6 +10,7 @@ import ListBox from "../shared/listbox/ListBox";
 import indexById from "../../shared/utils/indexById";
 import Loading from "../shared/loading/Loading";
 import IssueListForm from "../form/IssueListForm";
+import {WebApi} from "../../actions";
 
 import "./IssueLists.less";
 
@@ -23,7 +24,7 @@ class IssueLists extends AbstractReactComponent {
     };
 
     componentWillReceiveProps(nextProps: Readonly<P>, nextContext: any): void {
-        nextProps.dispatch(issuesActions.detail.fetchIfNeeded(item.id));
+        nextProps.dispatch(issuesActions.protocols.fetchIfNeeded(this.props.fundId));
     }
 
     componentWillUnmount(): void {
@@ -32,12 +33,11 @@ class IssueLists extends AbstractReactComponent {
 
     select = ([index]) => {
         const item = this.props.issueProtocols.rows[index];
-
-        this.props.dispatch(issuesActions.detail.select(item.id));
+        WebApi.getIssueList(item.id).then(this.onSave);
     };
 
     create = () => {
-        this.setState({id: null, initialValues: undefined});
+        this.setState({id: null, initialValues: IssueListForm.initialValues});
     };
 
     onCreate = data => {
@@ -59,7 +59,7 @@ class IssueLists extends AbstractReactComponent {
         const activeIndex = id !== null ? indexById(issueProtocols.rows, this.state.id) : null;
         const isLoading = id && !initialValues;
         return (
-            <div>
+            <div className={"issue-list"}>
                 <Modal.Body>
                     <Row className="flex">
                         <Col xs={6} sm={3} className="flex flex-column">

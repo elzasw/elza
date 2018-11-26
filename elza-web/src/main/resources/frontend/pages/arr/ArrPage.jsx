@@ -59,7 +59,7 @@ import {setVisiblePolicyRequest} from 'actions/arr/visiblePolicy.jsx'
 import {routerNavigate} from 'actions/router.jsx'
 import {fundTreeFetchIfNeeded} from 'actions/arr/fundTree.jsx'
 import {Shortcuts} from 'react-shortcuts';
-import * as perms from 'actions/user/Permission.jsx';
+import * as perms from '../../actions/user/Permission.jsx';
 import {selectTab} from 'actions/global/tab.jsx'
 import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx'
 import {PropTypes} from 'prop-types';
@@ -73,8 +73,10 @@ import FundTemplateSettingsForm from "../../components/arr/FundTemplateSettingsF
 import SearchFundsForm from "../../components/arr/SearchFundsForm";
 import Splitter from "../../components/shared/splitter/Splitter";
 import HorizontalSplitter from "../../components/shared/splitter/HorizontalSplitter";
-import LectoringTop from "../../components/arr/LectoringTop";
-import LectoringBottom from "../../components/arr/LectoringBottom";
+import LecturingTop from "../../components/arr/LecturingTop";
+import LecturingBottom from "../../components/arr/LecturingBottom";
+import storeFromArea from "../../shared/utils/storeFromArea";
+import * as issuesActions from "../../actions/arr/issues";
 
 const keyModifier = Utils.getKeyModifier();
 
@@ -114,7 +116,7 @@ class ArrPage extends ArrParentPage {
             'handleErrorPrevious', 'handleErrorNext', 'trySetFocus', 'handleOpenFundActionForm',
             'handleChangeFundSettingsSubmit',
             "handleSetExtendedView",
-            "renderLectoringPanel"
+            "renderLecturingPanel"
         );
     }
     componentDidMount() {
@@ -445,12 +447,21 @@ class ArrPage extends ArrParentPage {
         ));
     };
 
+    createIssueFund = () => {
+
+    };
+
+    createIssueNode = () => {
+        const {issueProtocol} = this.props;
+
+    };
+
     /**
      * Sestavení Ribbonu.
      * @return {Object} view
      */
     buildRibbon(readMode, closed) {
-        const {arrRegion, userDetail} = this.props;
+        const {arrRegion, userDetail, issueProtocol} = this.props;
 
         const activeInfo = this.getActiveInfo();
 
@@ -469,25 +480,6 @@ class ArrPage extends ArrParentPage {
                 <Icon glyph="fa-th-list"/>
                 <span className="btnText">{i18n('ribbon.action.arr.show-daos')}</span>
             </Button>
-        );
-
-        // TODO @compel Jak získám context issue List ???
-        false && itemActions.push(
-            <Button key="next-issue" onClick={() => {}}>
-                <Icon glyph="fa-arrow-left"/>
-                <span className="btnText">{i18n('ribbon.action.arr.issue.previous')}</span>
-            </Button>,
-            <Button key="previous-issue" onClick={() => {}}>
-                <Icon glyph="fa-arrow-right"/>
-                <span className="btnText">{i18n('ribbon.action.arr.issue.next')}</span>
-            </Button>,
-            <DropdownButton bsStyle="default" title={<span>
-                <Icon glyph="fa-commenting"/>
-                <span className="btnText">{i18n('ribbon.action.arr.issue.add')}</span>
-            </span>} key="add-issue" id="add-issue">
-                <MenuItem eventKey="1" onClick={this.handleCreateTemplate}>{i18n("arr.issues.add.arr")}</MenuItem>
-                <MenuItem eventKey="2" onClick={this.handleUseTemplate}>{i18n("arr.issues.add.node")}</MenuItem>
-            </DropdownButton>
         );
 
         const indexFund = arrRegion.activeIndex;
@@ -519,10 +511,12 @@ class ArrPage extends ArrParentPage {
             }
 
             const nodeIndex = activeFund.nodes.activeIndex;
+            let subNodeId = null;
             if (nodeIndex !== null) {
                 const activeNode = activeFund.nodes.nodes[nodeIndex];
 
                 if (activeNode.selectedSubNodeId !== null) {
+                    subNodeId = activeNode.selectedSubNodeId;
                     itemActions.push(
                         <Button key="next-error" onClick={this.handleErrorPrevious.bind(this, activeFund.versionId, activeNode.selectedSubNodeId)}>
                             <Icon glyph="fa-arrow-left"/>
@@ -543,6 +537,42 @@ class ArrPage extends ArrParentPage {
                     }
                 }
             }
+
+
+
+            const isProtocolLoaded = !issueProtocol.isFetching && issueProtocol.data;
+
+            const haveProtocolPermissionToWrite =
+                isProtocolLoaded && (
+                    userDetail.hasOne([perms.FUND_ISSUE_ADMIN_ALL]) || (
+                        userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR] &&
+                        userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR].issueListIds &&
+                        userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR].issueListIds.indexOf(issueProtocol.data.id) !== -1
+                    )
+                );
+            const haveProtocolPermissionToRead =
+                haveProtocolPermissionToWrite || (isProtocolLoaded &&
+                userDetail.permissionsMap[perms.FUND_ISSUE_LIST_RD] &&
+                userDetail.permissionsMap[perms.FUND_ISSUE_LIST_RD].issueListIds &&
+                userDetail.permissionsMap[perms.FUND_ISSUE_LIST_RD].issueListIds.indexOf(issueProtocol.data.id) !== -1);
+            itemActions.push(
+                <Button key="next-issue" onClick={() => {}} disabled={!haveProtocolPermissionToRead || subNodeId === null}>
+                    <Icon glyph="fa-arrow-left"/>
+                    <span className="btnText">{i18n('ribbon.action.arr.issue.previous')}</span>
+                </Button>,
+                <Button key="previous-issue" onClick={() => {}} disabled={!haveProtocolPermissionToRead || subNodeId === null}>
+                    <Icon glyph="fa-arrow-right"/>
+                    <span className="btnText">{i18n('ribbon.action.arr.issue.next')}</span>
+                </Button>,
+                <DropdownButton bsStyle="default" disabled={!haveProtocolPermissionToWrite} title={<span>
+                <Icon glyph="fa-commenting"/>
+                <span className="btnText">{i18n('ribbon.action.arr.issue.add')}</span>
+            </span>} key="add-issue" id="add-issue">
+                    <MenuItem eventKey="1" onClick={this.createIssueFund}>{i18n("arr.issues.add.arr")}</MenuItem>
+                    <MenuItem eventKey="2" disabled={subNodeId !== null} onClick={this.createIssueNode}>{i18n("arr.issues.add.node")}</MenuItem>
+                </DropdownButton>
+            );
+
         }
         let altSection;
 
@@ -829,11 +859,11 @@ class ArrPage extends ArrParentPage {
         </div>
     }
 
-    renderLectoringPanel(activeFund, node) {
+    renderLecturingPanel(activeFund, node) {
         return <div className='issues-panel'>
             <HorizontalSplitter
-                                top={<LectoringTop fund={activeFund} node={node} />}
-                                bottom={<LectoringBottom />}
+                                top={<LecturingTop fund={activeFund} node={node} />}
+                                bottom={<LecturingBottom />}
             />
         </div>
     }
@@ -950,11 +980,11 @@ class ArrPage extends ArrParentPage {
                         condition: developer.enabled,
                         showCondition: !!node
                     },
-                    "xxx":{
-                        id: "xxx" ,
-                        key: "xxx" ,
-                        name: i18n('arr.panel.title.lectoring'),
-                        render:() => this.renderLectoringPanel(activeFund, node),
+                    "lecturing":{
+                        id: "lecturing" ,
+                        key: "lecturing" ,
+                        name: i18n('arr.panel.title.lecturing'),
+                        render:() => this.renderLecturingPanel(activeFund, node),
 
                     }
         };
@@ -1121,6 +1151,7 @@ function mapStateToProps(state) {
         descItemTypes: refTables.descItemTypes,
         ruleSet: refTables.ruleSet,
         selectedTabKey: tab.values[ArrPage.TAB_KEY],
+        issueProtocol: storeFromArea(state, issuesActions.AREA_PROTOCOL),
     }
 }
 
