@@ -316,6 +316,12 @@ public class IssueService {
 
         publishAccessPointEvent(issue.getIssueId(), EventType.ISSUE_CREATE);
 
+        if (node != null) {
+            publishAccessPointEvent(node.getNodeId(), EventType.NODES_CHANGE);
+        } else {
+            publishAccessPointEvent(issueList.getFund().getFundId(), EventType.FUND_UPDATE);
+        }
+
         return issue;
     }
 
@@ -323,21 +329,37 @@ public class IssueService {
      * Upraví připomínku
      */
     @Transactional
-    public WfIssue updateIssue(@NotNull WfIssue issue, @Nullable ArrNode node, @NotNull WfIssueType issueType, @NotNull WfIssueState issueState, @NotNull String description) {
+    public WfIssue updateIssue(@NotNull WfIssue issue, @Nullable ArrNode newNode, @NotNull WfIssueType issueType, @NotNull WfIssueState issueState, @NotNull String description) {
 
         Validate.notNull(issue, "Issue is null");
         Validate.notNull(issueType, "Issue type is null");
         Validate.notNull(issueState, "Issue state is null");
         Validate.notBlank(description, "Empty description");
 
-        issue.setNode(node);
+        ArrNode oldNode = issue.getNode();
+
+        issue.setNode(newNode);
         issue.setIssueType(issueType);
         issue.setIssueState(issueState);
         issue.setDescription(description);
 
         issue = issueRepository.save(issue);
 
-        publishAccessPointEvent(issue.getIssueId(), EventType.ISSUE_CREATE);
+        publishAccessPointEvent(issue.getIssueId(), EventType.ISSUE_UPDATE);
+
+        if (oldNode != null) {
+            // notifikujeme stary node
+            publishAccessPointEvent(oldNode.getNodeId(), EventType.NODES_CHANGE);
+        }
+
+        if (newNode != null) {
+            // notifikujeme novy node, ale pouze pokud jsme ho jiz nenotifikovali coby stary
+            if (oldNode == null || !newNode.getNodeId().equals(oldNode.getNodeId())) {
+                publishAccessPointEvent(newNode.getNodeId(), EventType.NODES_CHANGE);
+            }
+        } else {
+            publishAccessPointEvent(issue.getIssueList().getFund().getFundId(), EventType.FUND_UPDATE);
+        }
 
         return issue;
     }
@@ -348,11 +370,22 @@ public class IssueService {
     @Transactional
     @AuthMethod(permission = {Permission.FUND_ISSUE_LIST_WR})
     public void setIssueState(@AuthParam(type = AuthParam.Type.ISSUE) @NotNull WfIssue issue, @NotNull WfIssueState issueState) {
+
         Validate.notNull(issue, "Issue is null");
         Validate.notNull(issueState, "Issue state is null");
-        issue.setIssueState(issueState);
-        publishAccessPointEvent(issue.getIssueId(), EventType.ISSUE_UPDATE);
-        issueRepository.save(issue);
+
+        if (!issue.getIssueState().equals(issueState)) {
+
+            issue.setIssueState(issueState);
+            issueRepository.save(issue);
+
+            publishAccessPointEvent(issue.getIssueId(), EventType.ISSUE_UPDATE);
+            if (issue.getNode() != null) {
+                publishAccessPointEvent(issue.getNode().getNodeId(), EventType.NODES_CHANGE);
+            } else {
+                publishAccessPointEvent(issue.getIssueList().getFund().getFundId(), EventType.FUND_UPDATE);
+            }
+        }
     }
 
     /**
@@ -369,8 +402,18 @@ public class IssueService {
         WfComment comment = createComment(issue, nextState, text, user);
 
         if (nextState != null) {
-            issue.setIssueState(nextState);
-            issueRepository.save(issue);
+
+            if (!issue.getIssueState().equals(nextState)) {
+
+                issue.setIssueState(nextState);
+                issueRepository.save(issue);
+
+                if (issue.getNode() != null) {
+                    publishAccessPointEvent(issue.getNode().getNodeId(), EventType.NODES_CHANGE);
+                } else {
+                    publishAccessPointEvent(issue.getIssueList().getFund().getFundId(), EventType.FUND_UPDATE);
+                }
+            }
         }
 
         publishAccessPointEvent(issue.getIssueId(), EventType.ISSUE_UPDATE);
@@ -418,8 +461,17 @@ public class IssueService {
         WfIssue issue = comment.getIssue();
 
         if (nextState != null) {
-            issue.setIssueState(nextState);
-            issueRepository.save(issue);
+            if (!issue.getIssueState().equals(nextState)) {
+
+                issue.setIssueState(nextState);
+                issueRepository.save(issue);
+
+                if (issue.getNode() != null) {
+                    publishAccessPointEvent(issue.getNode().getNodeId(), EventType.NODES_CHANGE);
+                } else {
+                    publishAccessPointEvent(issue.getIssueList().getFund().getFundId(), EventType.FUND_UPDATE);
+                }
+            }
         }
 
         publishAccessPointEvent(issue.getIssueId(), EventType.ISSUE_UPDATE);

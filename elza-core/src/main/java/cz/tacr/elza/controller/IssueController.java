@@ -304,7 +304,7 @@ public class IssueController {
 
         WfComment lastComment = issueService.getLastComment(issue);
 
-        Validate.isTrue(lastComment == null, "K připomínce již existují komentáře");
+        Validate.isTrue(lastComment == null, "K připomínce již existují komentáře [issueId=" + issue.getIssueId() + "]");
 
         issue = issueService.updateIssue(issue, node, issueType, issueState, issueVO.getDescription());
 
@@ -411,7 +411,7 @@ public class IssueController {
 
         WfComment lastComment = issueService.getLastComment(comment.getIssue());
 
-        Validate.isTrue(commentId.equals(lastComment.getCommentId()), "Již existuje novější komentář");
+        Validate.isTrue(commentId.equals(lastComment.getCommentId()), "K připomínce existuje novější komentář [issueId=" + comment.getIssue().getIssueId() + "]");
 
         comment = issueService.updateComment(comment, commentVO.getComment(), newIssueState);
 
