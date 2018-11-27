@@ -4,11 +4,12 @@ import java.text.Collator;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.Validate;
+
+import cz.tacr.elza.core.ElzaLocale;
 
 /**
  * Collection of records
@@ -30,8 +31,11 @@ public class FilteredRecords {
      */
     private Collection<RecordWithLinks> records;
 
-    FilteredRecords(String filterType) {
+    private ElzaLocale elzaLocale;
+
+    FilteredRecords(ElzaLocale elzaLocale, String filterType) {
         this.filterType = Validate.notEmpty(filterType);
+        this.elzaLocale = elzaLocale;
     }
 
     public String getFilterType() {
@@ -91,7 +95,7 @@ public class FilteredRecords {
      * This method allows to sort items
      */
     public void nodesAdded() {
-        Collator collator = Collator.getInstance(Locale.forLanguageTag("cs"));
+        Collator collator = elzaLocale.getCollator();
         records = recordsMap.values().stream()
                 .sorted((v1, v2) -> collator.compare(v1.getPrefName().getFullName(), v2.getPrefName().getFullName()))
                 .collect(Collectors.toList());
