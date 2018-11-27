@@ -1,6 +1,7 @@
 package cz.tacr.elza.repository;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -82,11 +83,11 @@ public class WfIssueRepositoryImpl implements WfIssueRepositoryCustom {
     }
 
     @Override
-    public List<WfIssue> findOpenByNodeId(@NotNull Integer nodeId, @Nullable Integer userId) {
+    public List<WfIssue> findOpenByNodeId(@NotNull Collection<Integer> nodeIds, @Nullable Integer userId) {
 
         StringBuilder hql = new StringBuilder(256);
         hql.append("select i from wf_issue i" +
-                " where i.node.nodeId = :nodeId");
+                " where i.node.nodeId in :nodeIds");
         if (userId != null) {
             hql.append(" and i.issueList in (select pv.issueList from usr_permission_view pv where pv.user.userId = :userId)");
         }
@@ -96,7 +97,7 @@ public class WfIssueRepositoryImpl implements WfIssueRepositoryCustom {
 
         Query query = entityManager.createQuery(hql.toString());
 
-        query.setParameter("fundId", nodeId);
+        query.setParameter("nodeIds", nodeIds);
         if (userId != null) {
             query.setParameter("userId", userId);
         }

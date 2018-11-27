@@ -643,16 +643,36 @@ public class IssueService {
     /**
      * Seznam otevřených připomínek (tzn. nejsou v koncovém stavu) ze všech otevřených protokolů ke kontrétní JP.
      *
-     * @param node jednotka popisu
+     * @param nodeId identifikátor jednotky popisu
      * @param user přihlášený uživatel
      */
-    public List<WfIssue> findOpenIssueByNodeId(@NotNull ArrNode node, UserDetail userDetail) {
-        Validate.notNull(node, "Node is null");
+    public List<WfIssue> findOpenIssueByNodeId(@NotNull Integer nodeId, UserDetail userDetail) {
+        Validate.notNull(nodeId, "Node ID is null");
         if (userDetail == null) {
             return Collections.emptyList();
         }
         Integer userId = userDetail.hasPermission(UsrPermission.Permission.ADMIN) ? null : userDetail.getId();
-        return issueRepository.findOpenByNodeId(node.getNodeId(), userId);
+        return issueRepository.findOpenByNodeId(Collections.singletonList(nodeId), userId);
+    }
+
+    /**
+     * Seznam otevřených připomínek (tzn. nejsou v koncovém stavu) ze všech otevřených protokolů ke kontrétní JP.
+     *
+     * @param nodeIds seznam identifikátorů jednotek popisu
+     * @param user přihlášený uživatel
+     * @return seznam připomínek groupovaných podle identifikátoru jednotky popisu
+     */
+    public Map<Integer, List<WfIssue>> groupOpenIssueByNodeId(@NotNull Collection<Integer> nodeIds, UserDetail userDetail) {
+        Validate.notNull(nodeIds, "Node ID list is null");
+        if (nodeIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        if (userDetail == null) {
+            return Collections.emptyMap();
+        }
+        Integer userId = userDetail.hasPermission(UsrPermission.Permission.ADMIN) ? null : userDetail.getId();
+        List<WfIssue> issueList = issueRepository.findOpenByNodeId(nodeIds, userId);
+        return issueList.stream().collect(Collectors.groupingBy(issue -> issue.getNode().getNodeId()));
     }
 
     protected void publishAccessPointEvent(Integer id, final EventType type) {

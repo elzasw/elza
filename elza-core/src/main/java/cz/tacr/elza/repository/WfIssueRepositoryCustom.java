@@ -1,5 +1,6 @@
 package cz.tacr.elza.repository;
 
+import java.util.Collection;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -18,5 +19,5 @@ public interface WfIssueRepositoryCustom {
 
     List<WfIssue> findOpenByFundIdAndNodeNull(@NotNull Integer fundId, @Nullable Integer userId);
 
-    List<WfIssue> findOpenByNodeId(@NotNull Integer nodeId, @Nullable Integer userId);
+    List<WfIssue> findOpenByNodeId(@NotNull Collection<Integer> nodeIds, @Nullable Integer userId);
 }

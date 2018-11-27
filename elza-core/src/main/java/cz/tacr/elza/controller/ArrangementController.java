@@ -1173,7 +1173,7 @@ public class ArrangementController {
     @RequestMapping(value = "/nodeData", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
     public NodeData getNodeData(final @RequestBody NodeDataParam param) {
-        return levelTreeCacheService.getNodeData(param);
+        return levelTreeCacheService.getNodeData(param, userService.getLoggedUserDetail());
     }
 
     /**

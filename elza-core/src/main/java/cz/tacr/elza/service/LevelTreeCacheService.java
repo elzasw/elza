@@ -62,6 +62,7 @@ import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeConformityExt;
 import cz.tacr.elza.domain.ArrRequest;
 import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.WfIssue;
 import cz.tacr.elza.domain.vo.TitleValue;
 import cz.tacr.elza.domain.vo.TitleValues;
 import cz.tacr.elza.exception.SystemException;
@@ -70,6 +71,7 @@ import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.LevelRepositoryCustom;
 import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.event.CacheInvalidateEvent;
 import cz.tacr.elza.service.eventnotification.EventChangeMessage;
 import cz.tacr.elza.service.eventnotification.events.AbstractEventSimple;
@@ -134,6 +136,9 @@ public class LevelTreeCacheService {
 
     @Autowired
     private StaticDataService staticDataService;
+
+    @Autowired
+    private IssueService issueService;
 
     /**
      * Cache stromu pro danou verzi. (id verze -> nodeid uzlu -> uzel).
@@ -1180,9 +1185,10 @@ public class LevelTreeCacheService {
      * Získání dat pro JP (formálář, rodiče, potomky, sourozence, ...)
      *
      * @param param parametry požadovaných dat
+     * @param userDetail přihlášený uživatel
      * @return požadovaná data
      */
-    public NodeData getNodeData(final NodeDataParam param) {
+    public NodeData getNodeData(final NodeDataParam param, @Nullable UserDetail userDetail) {
 
         Validate.notNull(param);
         Validate.notNull(param.getFundVersionId());
@@ -1240,12 +1246,12 @@ public class LevelTreeCacheService {
             if (siblingsFrom < 0) {
                 throw new IllegalArgumentException("Index pro sourozence nesmí být záporný");
             }
-            LevelTreeCacheService.Siblings siblings = getNodeSiblings(node, fundVersion, siblingsFrom, maxCount, fulltext);
+            LevelTreeCacheService.Siblings siblings = getNodeSiblings(node, fundVersion, siblingsFrom, maxCount, fulltext, userDetail);
             result.setNodeIndex(siblings.getNodeIndex());
             result.setNodeCount(siblings.getSiblingsCount());
             result.setSiblings(siblings.getSiblings());
         } else if (fulltext != null) { // pokud je zafiltrováno, je nutné brát výsledky (index + počet sourozenů) vzhledem k filtru
-            LevelTreeCacheService.Siblings siblings = getNodeSiblings(node, fundVersion, 0, maxCount, fulltext);
+            LevelTreeCacheService.Siblings siblings = getNodeSiblings(node, fundVersion, 0, maxCount, fulltext, userDetail);
             result.setNodeIndex(siblings.getNodeIndex());
             result.setNodeCount(siblings.getSiblingsCount());
         }
@@ -1299,10 +1305,12 @@ public class LevelTreeCacheService {
      * Konverze požadovaných objektů do objektů pro accordion.
      *
      * @param nodes JP k převodu
+     * @param nodeToIssueMap
      * @return převedené JP
      */
-    private List<AccordionNodeVO> convertToAccordionNode(final Collection<Node> nodes) {
+    private List<AccordionNodeVO> convertToAccordionNode(final Collection<Node> nodes, Map<Integer, List<WfIssue>> nodeToIssueMap) {
         return nodes.stream().map(n -> {
+
             AccordionNodeVO accordionNode = new AccordionNodeVO();
             accordionNode.setId(n.getId());
             accordionNode.setAccordionLeft(n.getAccordionLeft());
@@ -1311,7 +1319,12 @@ public class LevelTreeCacheService {
             accordionNode.setDigitizationRequests(n.getDigitizationRequests());
             accordionNode.setNodeConformity(n.getNodeConformity());
             accordionNode.setVersion(n.getVersion());
+
+            List<WfIssue> issues = nodeToIssueMap.getOrDefault(n.getId(), Collections.emptyList());
+            accordionNode.setIssues(issues.stream().map(clientFactoryVO::createSimpleIssueVO).collect(Collectors.toList()));
+
             return accordionNode;
+
         }).collect(Collectors.toList());
     }
 
@@ -1763,9 +1776,10 @@ public class LevelTreeCacheService {
      * @param fromIndex   index JP v úrovni, od kterého chceme sourozence
      * @param maxCount    maximální počet sourozenců, které chceme
      * @param fulltextFilter    filtrování sourozenců
+     * @param userDetail  přihlášený uživatel
      * @return požadovaní sourozenci
      */
-    public Siblings getNodeSiblings(final TreeNode node, final ArrFundVersion fundVersion, final int fromIndex, final int maxCount, @Nullable final String fulltextFilter) {
+    public Siblings getNodeSiblings(final TreeNode node, final ArrFundVersion fundVersion, final int fromIndex, final int maxCount, @Nullable final String fulltextFilter, @Nullable UserDetail userDetail) {
         LinkedHashMap<Integer, TreeNode> nodesMap = new LinkedHashMap<>();
         TreeNode parentNode = node.getParent();
 
@@ -1797,9 +1811,11 @@ public class LevelTreeCacheService {
                 .digitizationRequest()
                 .nodeConformity();
 
-        LinkedHashMap<Integer, Node> nodes = getNodes(nodesMap, parentNode, param, fundVersion);
-        Collection<Node> values = nodes.values();
-        List<AccordionNodeVO> accordionNodes = convertToAccordionNode(values);
+        LinkedHashMap<Integer, Node> nodeMap = getNodes(nodesMap, parentNode, param, fundVersion);
+
+        Map<Integer, List<WfIssue>> nodeToIssueMap = issueService.groupOpenIssueByNodeId(nodeMap.keySet(), userDetail);
+
+        List<AccordionNodeVO> accordionNodes = convertToAccordionNode(nodeMap.values(), nodeToIssueMap);
 
         int nodeIndex = childs.indexOf(node);
         if (nodeIndex < 0) {
