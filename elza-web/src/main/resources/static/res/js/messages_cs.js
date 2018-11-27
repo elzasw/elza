@@ -423,6 +423,7 @@ var messages = {
     "arr.issues.settings.title": "Nastavení lektorování",
     "arr.issues.choose":"Vyberte připomínku",
     "arr.issues.state.change":"změnit stav...",
+    "arr.issues.update.title":"Úprava připomínky",
     "arr.issues.add.arr":"Archivní soubor",
     "arr.issues.add.node":"Zobrazená jednotka popisu",
     "arr.issues.add.node.title":"Přidat připomínku - Jednotka popisu",

@@ -342,7 +342,7 @@ public class ClientFactoryVO {
      * @param initPermissions mají se plnit oprávnění?
      * @return seznam VO
      */
-    public List<UsrUserVO> createUserList(final List<UsrUser> users, final boolean initPermissions) {
+    public List<UsrUserVO> createUserList(final Collection<UsrUser> users, final boolean initPermissions) {
         if (users == null) {
             return null;
         }

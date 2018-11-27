@@ -20,7 +20,7 @@ import {createFundRoot, getParentNode} from './ArrUtils.jsx'
 
 import {fundsSelectFund} from 'actions/fund/fund.jsx'
 import {selectFundTab} from 'actions/arr/fund.jsx'
-import {fundTreeFetch, fundTreeFulltextChange} from 'actions/arr/fundTree.jsx';
+import {fundTreeFetch, fundTreeFulltextChange, fundTreeFulltextResult, fundTreeSelectNode} from 'actions/arr/fundTree.jsx';
 import {fundSelectSubNode} from 'actions/arr/node.jsx'
 
 import './SearchFundsForm.less';
@@ -35,6 +35,7 @@ class SearchFundsForm extends AbstractReactComponent {
 
     componentWillReceiveProps(nextProps) {
         this.props.dispatch(fundSearchActions.fundSearchFetchIfNeeded());
+        console.warn(nextProps);
     }
 
     componentDidMount() {
@@ -94,7 +95,7 @@ class SearchFundsForm extends AbstractReactComponent {
                 this.props.dispatch(selectFundTab(fund));
                 this.props.dispatch(this.fundSelectSubNode(fund, node, false, true));
             });
-        } else {
+        } else {    
             this.props.dispatch(this.fundSelectSubNode(activeFund, node, false, false));
         }
     }
@@ -112,39 +113,72 @@ class SearchFundsForm extends AbstractReactComponent {
             const { arrRegion } = getState();
             const activeFund = this.getActiveIndex(arrRegion);
 
+            let activeNode;
+            if (activeFund.nodes.activeIndex !== null) {
+                activeNode = activeFund.nodes.nodes[activeFund.nodes.activeIndex];
+            }
+
+            let parentNode = getParentNode(activeNode, activeFund.nodes.nodes);
+            if (parentNode === null) {
+                parentNode = createFundRoot(activeFund);
+            }
+
             if (force) {
-                dispatch(fundTreeFetch(types.FUND_TREE_AREA_MAIN, fund.versionId, node.id, activeFund.expandedIds)).then(() => {
+                dispatch(fundTreeFetch(types.FUND_TREE_AREA_MAIN, fund.versionId, node.id, activeFund.fundTree.expandedIds)).then(() => {
                     const { arrRegion } = getState();
                     const activeFund = this.getActiveIndex(arrRegion);
 
-                    const nodeFromTree = activeFund.fundTree.nodes.find(n => n.id === node.id);
+                    let activeNode;
+                    if (activeFund.nodes.activeIndex !== null) {
+                        activeNode = activeFund.nodes.nodes[activeFund.nodes.activeIndex];
+                    }
 
-                    let parentNode = getParentNode(nodeFromTree, activeFund.fundTree.nodes);
-
+                    let parentNode = getParentNode(activeNode, activeFund.nodes.nodes);
                     if (parentNode === null) {
-                        parentNode = createFundRoot(fund);
+                        parentNode = createFundRoot(activeFund);
                     }
                     
-                    dispatch(fundSelectSubNode(fund.versionId, node.id, parentNode, openNewTab, null, true));
+                    dispatch(fundSelectSubNode(fund.versionId, node.id, parentNode, openNewTab, null, false));
                 });
             } else {
-                const nodeFromTree = activeFund.fundTree.nodes.find(n => n.id === node.id);
-
-                let parentNode = getParentNode(nodeFromTree, activeFund.fundTree.nodes);
-                if (parentNode === null) {
-                    parentNode = createFundRoot(fund);
-                }
-
-                dispatch(fundSelectSubNode(fund.versionId, node.id, parentNode, openNewTab, null, true));
+                dispatch(fundSelectSubNode(fund.versionId, node.id, parentNode, openNewTab, null, false));
             }
 
             // Vyplní vyhledávací políčko na stránce pořádání
-            dispatch(fundTreeFulltextChange(types.FUND_TREE_AREA_MAIN, fund.versionId, fulltext));
+            dispatch(fundTreeFulltextChange(types.FUND_TREE_AREA_MAIN, fund.versionId, fulltext))
+            
+            const searchedData = this.getSearchedData(fund.id);
+            const activeNodeIndex = searchedData.findIndex((data) => data.nodeId === node.id);
+
+            dispatch(fundTreeFulltextResult(types.FUND_TREE_AREA_MAIN, fund.versionId, fulltext, searchedData, false, {type: "FORM"}, null));
+            dispatch(fundTreeSelectNode(types.FUND_TREE_AREA_MAIN, fund.versionId, node.id, parentNode, false, activeNodeIndex, true));
         };
     }
 
     getActiveIndex(arrRegion) {
         return arrRegion.activeIndex !== null ? arrRegion.funds[arrRegion.activeIndex] : null;
+    }
+
+    getSearchedData(fundId) {
+        const { arrRegion, fundSearch } = this.props;
+
+        const activeFund = this.getActiveIndex(arrRegion);
+        const nodes = fundSearch.funds.find(fund => fund.id === fundId).nodes;
+
+        let searchedData = [];
+        nodes.map((node) => {
+            let parentNode = getParentNode(node, activeFund.nodes.nodes);
+            if (parentNode === null) {
+                parentNode = createFundRoot(activeFund);
+            }
+
+            searchedData.push({
+                nodeId: node.id,
+                parent: parentNode
+            });
+        })
+
+        return searchedData;
     }
 
     /**
@@ -176,7 +210,7 @@ class SearchFundsForm extends AbstractReactComponent {
             </div>
             {expanded && fund.nodes &&
                 <div className="nodes">
-                    {fund.nodes.map(node => this.renderNode(node))}
+                    {fund.nodes.map((node) => this.renderNode(node))}
                 </div>
             }
         </div>;
@@ -191,7 +225,7 @@ class SearchFundsForm extends AbstractReactComponent {
     renderNode = (node) => {
         const levels = createReferenceMark(node, null);
         const iconProps = getNodeIcon(true, node.icon);
-        return <div className="node">
+        return <div key={node.id} className="node">
             <div className="levels">{levels}</div>
             <Icon className="item-icon" {...iconProps}/>
             <div title={node.name} className="item-label">{node.name}</div>
@@ -212,6 +246,7 @@ class SearchFundsForm extends AbstractReactComponent {
                     placeholder={i18n('search.input.search')}
                     value={fundSearch.fulltext}
                 />
+                {fundSearch.isFetching && <HorizontalLoader hover showText={false} key="loader"/>}
                 {isFulltext && i18n('arr.fund.search.result.count', totalCount)}
                 <div className={`fund-search ${isFulltext && totalCount > 0 ? 'result' : 'no-fulltext'}`}>
                     {isFulltext 
@@ -228,10 +263,6 @@ class SearchFundsForm extends AbstractReactComponent {
 
         const result = [];
 
-        if (fundSearch.isFetching) {
-            result.push(<HorizontalLoader hover showText={false} key="loader"/>);
-        }
-
         if (fundSearch.fetched) {
             result.push(
                 <div key="result" className="result-list">
@@ -241,7 +272,7 @@ class SearchFundsForm extends AbstractReactComponent {
                 </div>
             )
         }
-
+        
         return result;
     };
 

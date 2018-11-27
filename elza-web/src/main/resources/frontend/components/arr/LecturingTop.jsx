@@ -9,7 +9,7 @@ import * as issueStatesActions from '../../actions/refTables/issueStates'
 import * as issuesActions from '../../actions/arr/issues'
 import ListBox from "../shared/listbox/ListBox";
 import storeFromArea from "../../shared/utils/storeFromArea";
-import {modalDialogShow} from "../../actions/global/modalDialog";
+import {modalDialogHide, modalDialogShow} from "../../actions/global/modalDialog";
 import IssueLists from "./IssueLists";
 import {downloadFile} from "../../actions/global/download";
 import {UrlFactory, WebApi} from "../../actions/WebApi";
@@ -18,9 +18,13 @@ import objectById from "../../shared/utils/objectById";
 import indexById from "../../shared/utils/indexById";
 
 import "./LecturingTop.less";
+import * as perms from "../../actions/user/Permission";
 
 const basicOptionMap = (i) => <option key={i.id} value={i.id}>{i.name}</option>;
 
+/**
+ * Horní část lektoringu, zajištující seznam protokolů, seznam připomínek a nastavení
+ */
 class LecturingTop extends React.Component {
 
     state = {
@@ -74,7 +78,7 @@ class LecturingTop extends React.Component {
             ...data,
             issueListId: this.state.issueListId,
             nodeId: null
-        })} />));
+        })}  onSubmitSuccess={this.afterAdd} />));
     };
 
     newNode = () => {
@@ -82,8 +86,15 @@ class LecturingTop extends React.Component {
             ...data,
             issueListId: this.state.issueListId,
             nodeId: this.props.node.id
-        })} />));
+        })}  onSubmitSuccess={this.afterAdd} />));
     };
+
+    afterAdd = (data) => {
+        const {dispatch} = this.props;
+        dispatch(issuesActions.list.invalidate(data.issueListId));
+        dispatch(issuesActions.detail.invalidate(data.id));
+        dispatch(modalDialogHide());
+    }
 
     selectIssue = ([index]) => {
         const issueId = this.props.issueList.rows[index].id;
@@ -98,20 +109,37 @@ class LecturingTop extends React.Component {
         });
     };
 
+    updateIssueState = (id, issueStateId) => {
+        const {issueListId} = this.state;
+        WebApi.setIssueState(id, issueStateId).then(() => {
+            this.props.dispatch(issuesActions.list.invalidate(issueListId));
+            this.props.dispatch(issuesActions.detail.invalidate(id));
+        });
+    };
+
     render() {
-        const {issueTypes, issueStates, issueList, issueProtocols} = this.props;
+        const {issueTypes, issueStates, issueList, issueProtocols, userDetail} = this.props;
         const {issueListId, issueId} = this.state;
         const activeIndex = issueId !== null ? indexById(issueList.rows, issueId) : null;
+
+        const hasAdmin = userDetail.hasOne([perms.FUND_ISSUE_ADMIN_ALL]);
+
+        const canWrite = !!issueListId && (
+             hasAdmin || (
+                userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR] &&
+                userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR].issueListIds &&
+                userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR].issueListIds.indexOf(issueListId) !== -1
+            )
+        );
 
         return <div className="lecturing-top">
             <div className="actions-container">
                 <div className="actions">
-                    <DropdownButton disabled={!issueListId} bsStyle="default" id='dropdown-add-comment' noCaret title={<Icon glyph='fa-plus-circle' />}>
+                    <DropdownButton disabled={!canWrite} bsStyle="default" id='dropdown-add-comment' noCaret title={<Icon glyph='fa-plus-circle' />}>
                         <MenuItem eventKey="1" onClick={this.newArr}>{i18n("arr.issues.add.arr")}</MenuItem>
                         <MenuItem eventKey="2" onClick={this.newNode}>{i18n("arr.issues.add.node")}</MenuItem>
                     </DropdownButton>
-                    {/* TODO Check permission */}
-                    <Button bsStyle="action" className="pull-right" onClick={this.settings}><Icon glyph='fa-cogs' /></Button>
+                    {hasAdmin && <Button bsStyle="action" className="pull-right" onClick={this.settings}><Icon glyph='fa-cogs' /></Button>}
                     <Button bsStyle="action" className="pull-right" disabled={!issueListId} onClick={this.download}><Icon glyph='fa-download' /></Button>
                 </div>
             </div>
@@ -140,23 +168,24 @@ class LecturingTop extends React.Component {
                     activeIndex={activeIndex}
                     onChangeSelection={this.selectIssue}
                     items={issueList.rows}
-                    renderItemContent={({item: {description, issueStateId, issueTypeId, number}, active}) => {
-                        console.log("xx", active);
-                        const state = objectById(issueStates.data, issueStateId);
+                    renderItemContent={({item: {description, issueStateId, issueTypeId, number, id}, active}) => {
+                        const state : IssueStateVO = objectById(issueStates.data, issueStateId);
                         const type = objectById(issueProtocols.data, issueTypeId);
                         // TODO lectoring @compel co s typem, jak tvořit kolečka a barvy + co context menu
                         return <TooltipTrigger className={"flex item"  + (active ? " active" : "")} content={<span><div>#{number} ({state.name})</div><div>{description}</div></span>}>
                             <div className={"flex-1"}>
                             <div>
+                                <span className={"circle"}>
+                                {state.finalState && (<Icon glyph={false ? "fa-check" : "fa-cross"}/>)}
+                                </span>
                                 #{number} - {description}
                             </div>
                             </div>
-                            <div className="actions">
-                                <DropdownButton disabled={!issueListId} pullRight bsStyle="action" id='issue' noCaret title={<Icon glyph='fa-ellipsis-h' />}>
-                                    <MenuItem eventKey="1" onClick={this.newArr}>{i18n("arr.issues.add.arr")}</MenuItem>
-                                    <MenuItem eventKey="2" onClick={this.newNode}>{i18n("arr.issues.add.node")}</MenuItem>
+                            {canWrite && <div className="actions">
+                                <DropdownButton pullRight bsStyle="action" id='issue-state' noCaret title={<Icon glyph='fa-ellipsis-h' />}>
+                                    {issueStates.data.map(i => <MenuItem key={'state-' + i.id} disabled={i.id === issueStateId} onClick={this.updateIssueState.bind(this, id, i.id)}>{i.name}</MenuItem>)}
                                 </DropdownButton>
-                            </div>
+                            </div>}
                         </TooltipTrigger>
                     }}
                 />
@@ -170,6 +199,7 @@ export default connect((state) => {
         issueTypes: state.refTables.issueTypes,
         issueStates: state.refTables.issueStates,
         issueList: storeFromArea(state, issuesActions.AREA_LIST),
-        issueProtocols: storeFromArea(state, issuesActions.AREA_PROTOCOLS)
+        issueProtocols: storeFromArea(state, issuesActions.AREA_PROTOCOLS),
+        userDetail: state.userDetail
     }
 })(LecturingTop);

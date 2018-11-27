@@ -24,12 +24,14 @@ export const protocol = {
 // List připomínek
 export const list = {
     fetchIfNeeded: (parent, force = false) => SimpleListActions.fetchIfNeeded(AREA_LIST, parent, (parent, filter) => WebApi.findIssueByIssueList(parent, filter.state, filter.type).then(dataToRowsHelper), force),
-    filter:(filter) => SimpleListActions.filter(AREA_LIST, filter)
+    filter:(filter) => SimpleListActions.filter(AREA_LIST, filter),
+    invalidate: (id) => SimpleListActions.invalidate(AREA_LIST, id)
 };
 
 // Detail připomínky
 export const detail = {
     fetchIfNeeded: (id, force = false) => DetailActions.fetchIfNeeded(AREA_DETAIL, id, id => WebApi.getIssue(id), force),
+    invalidate: (id) => DetailActions.invalidate(AREA_DETAIL, id),
 };
 
 // Komentáře připomínky

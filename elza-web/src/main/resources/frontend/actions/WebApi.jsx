@@ -1407,7 +1407,7 @@ export class WebApiCls {
      *
      * @returns {Promise} list stavů připomínek
      */
-    findAllIssueStates() {
+    findAllIssueStates() : IssueStateVO[] {
         return AjaxUtils.ajaxGet(WebApiCls.issueUrl + '/issue_states');
     }
 
@@ -1560,6 +1560,14 @@ declare class IssueListVO extends Object {
     open: boolean;
     rdUsers: UsrUserVO[];
     wrUsers: UsrUserVO[];
+}
+
+declare class IssueStateVO extends Object {
+    id: number;
+    code: string;
+    name: string;
+    startState: boolean;
+    finalState: boolean;
 }
 
 declare class IssueVO extends Object {

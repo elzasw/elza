@@ -50,7 +50,8 @@ import {
     updateExtSystem,
     userChange,
     changeAccessPoint,
-    changeFragment
+    changeFragment,
+    changeRequest
 } from './actions/global/change.jsx';
 
 import {Stomp} from 'stompjs';
@@ -61,6 +62,7 @@ import {fundTreeFetch} from "./actions/arr/fundTree";
 import * as types from "./actions/constants/ActionTypes";
 import {fundNodeSubNodeFulltextSearch} from "./actions/arr/node";
 import {PERSISTENT_SORT_CODE, ZP2015_INTRO_VYPOCET_EJ} from "./constants.tsx";
+import * as issuesActions from "./actions/arr/issues";
 
 const url = new URLParse(serverContextPath + '/stomp');
 
@@ -201,9 +203,7 @@ class websocket{
 let eventMap = {
     'DAO_LINK_CREATE': daoLink,
     'DAO_LINK_DELETE': daoLink,
-    'REQUEST_CHANGE': arrRequest,
     'REQUEST_DAO_CHANGE': arrRequest,
-    'REQUEST_CREATE': arrRequest,
     'REQUEST_DAO_CREATE': arrRequest,
     'CONFORMITY_INFO': conformityInfo,
     'INDEXING_FINISHED': indexingFinished,
@@ -252,7 +252,12 @@ let eventMap = {
     'FUND_EXTENSION_CHANGE': fundExtensionChange,
     'STRUCTURE_DATA_CHANGE': structureDataChange,
     'ACCESS_POINT_UPDATE':accessPointUpdate,
-    'FRAGMENT_UPDATE': fragmentUpdate
+    'FRAGMENT_UPDATE': fragmentUpdate,
+    'ISSUE_LIST_UPDATE': issueListUpdate,
+    'ISSUE_UPDATE': issueUpdate,
+    // Zatím nevyužité akce
+    //'ISSUE_LIST_CREATE': issueListCreate,
+    //'ISSUE_CREATE': issueCreate,
 }
 
 if (!window.ws) {
@@ -527,6 +532,14 @@ function accessPointUpdate(value) {
 
 function fragmentUpdate(value) {
     store.dispatch(changeFragment(value.ids));
+}
+
+function issueListUpdate({id}) {
+    store.dispatch(issuesActions.protocol.invalidate(id))
+}
+function issueUpdate({id}) {
+    store.dispatch(issuesActions.detail.invalidate(id));
+    store.dispatch(issuesActions.comments.invalidate(id));
 }
 
 /**
