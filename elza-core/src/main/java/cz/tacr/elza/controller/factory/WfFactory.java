@@ -11,22 +11,16 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.controller.vo.*;
+import cz.tacr.elza.domain.*;
+import cz.tacr.elza.security.UserDetail;
+import cz.tacr.elza.service.vo.WfConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import cz.tacr.elza.controller.config.ClientFactoryVO;
-import cz.tacr.elza.controller.vo.TreeNodeVO;
-import cz.tacr.elza.controller.vo.UsrUserVO;
-import cz.tacr.elza.controller.vo.WfCommentVO;
-import cz.tacr.elza.controller.vo.WfIssueListVO;
-import cz.tacr.elza.controller.vo.WfIssueVO;
-import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrPermission.Permission;
-import cz.tacr.elza.domain.UsrUser;
-import cz.tacr.elza.domain.WfComment;
-import cz.tacr.elza.domain.WfIssue;
-import cz.tacr.elza.domain.WfIssueList;
 import cz.tacr.elza.repository.PermissionRepository;
 import cz.tacr.elza.service.IssueService;
 
@@ -204,5 +198,15 @@ public class WfFactory {
         }
 
         return commentVOS;
+    }
+
+    public List<WfSimpleIssueVO> createSimpleIssues(final ArrFund fund, final UserDetail user) {
+        List<WfIssue> issues = issueService.findOpenIssueByFundIdAndNodeNull(fund, user);
+        return issues.stream().map(factoryVO::createSimpleIssueVO).collect(Collectors.toList());
+    }
+
+    public WfConfigVO createConfig(final ArrFundVersion fundVersion) {
+        WfConfig config = issueService.getConfig(fundVersion.getRuleSet());
+        return config == null ? null : new WfConfigVO(config.getColors(), config.getIcons());
     }
 }

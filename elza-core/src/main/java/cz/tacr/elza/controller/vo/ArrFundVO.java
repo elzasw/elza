@@ -30,11 +30,6 @@ public class ArrFundVO extends ArrFundBaseVO {
 
     private List<ArrOutputDefinitionVO> historicalNamedOutputs;
 
-    /**
-     * Seznam otevřených připomínek.
-     */
-    private List<WfSimpleIssueVO> issues;
-
     public Date getCreateDate() {
         return createDate;
     }
@@ -89,14 +84,6 @@ public class ArrFundVO extends ArrFundBaseVO {
 
     public void setHistoricalNamedOutputs(final List<ArrOutputDefinitionVO> historicalNamedOutputs) {
         this.historicalNamedOutputs = historicalNamedOutputs;
-    }
-
-    public List<WfSimpleIssueVO> getIssues() {
-        return issues;
-    }
-
-    public void setIssues(List<WfSimpleIssueVO> issues) {
-        this.issues = issues;
     }
 
     @Override

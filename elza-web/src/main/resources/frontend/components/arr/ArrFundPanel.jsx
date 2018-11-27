@@ -57,8 +57,9 @@ class ArrFundPanel extends AbstractReactComponent {
         const version = fund.lockDate != null ? <span className="lock"><span className="lockTitle">{i18n('arr.fund.panel.lockTitle')}</span>{dateToString(new Date(fund.lockDate))}</span> : null
 
         let comments = null;
-        if (fund.issues && fund.issues.length > 0) {
-            const tooltip = <span>{fund.issues.map((i: IssueVO) => <div key={i.id}>#{i.number} - {i.description}</div>)}</span>;
+        const activeVersion = fund.activeVersion;
+        if (activeVersion.issues && activeVersion.issues.length > 0) {
+            const tooltip = <span>{activeVersion.issues.map((i: IssueVO) => <div key={i.id}>#{i.number} - {i.description}</div>)}</span>;
             comments = <span className="comments">
                 <TooltipTrigger
                     content={tooltip}

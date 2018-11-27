@@ -18,6 +18,8 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.controller.factory.WfFactory;
+import cz.tacr.elza.controller.vo.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.NotImplementedException;
@@ -25,6 +27,7 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -37,60 +40,6 @@ import cz.tacr.elza.config.rules.TypeInfo;
 import cz.tacr.elza.config.rules.ViewConfiguration;
 import cz.tacr.elza.config.view.ViewTitles;
 import cz.tacr.elza.controller.factory.ApFactory;
-import cz.tacr.elza.controller.vo.ApAccessPointVO;
-import cz.tacr.elza.controller.vo.ApExternalSystemSimpleVO;
-import cz.tacr.elza.controller.vo.ApExternalSystemVO;
-import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
-import cz.tacr.elza.controller.vo.ArrDaoFileGroupVO;
-import cz.tacr.elza.controller.vo.ArrDaoFileVO;
-import cz.tacr.elza.controller.vo.ArrDaoLinkRequestVO;
-import cz.tacr.elza.controller.vo.ArrDaoLinkVO;
-import cz.tacr.elza.controller.vo.ArrDaoPackageVO;
-import cz.tacr.elza.controller.vo.ArrDaoRequestVO;
-import cz.tacr.elza.controller.vo.ArrDaoVO;
-import cz.tacr.elza.controller.vo.ArrDigitizationRequestVO;
-import cz.tacr.elza.controller.vo.ArrFileVO;
-import cz.tacr.elza.controller.vo.ArrFundVO;
-import cz.tacr.elza.controller.vo.ArrFundVersionVO;
-import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
-import cz.tacr.elza.controller.vo.ArrOutputDefinitionVO;
-import cz.tacr.elza.controller.vo.ArrOutputExtVO;
-import cz.tacr.elza.controller.vo.ArrOutputFileVO;
-import cz.tacr.elza.controller.vo.ArrOutputVO;
-import cz.tacr.elza.controller.vo.ArrRequestQueueItemVO;
-import cz.tacr.elza.controller.vo.ArrRequestVO;
-import cz.tacr.elza.controller.vo.ArrStructureDataVO;
-import cz.tacr.elza.controller.vo.BulkActionRunVO;
-import cz.tacr.elza.controller.vo.BulkActionVO;
-import cz.tacr.elza.controller.vo.DmsFileVO;
-import cz.tacr.elza.controller.vo.NodeConformityVO;
-import cz.tacr.elza.controller.vo.ParInstitutionVO;
-import cz.tacr.elza.controller.vo.ParPartyNameComplementVO;
-import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
-import cz.tacr.elza.controller.vo.ParPartyNameVO;
-import cz.tacr.elza.controller.vo.ParPartyVO;
-import cz.tacr.elza.controller.vo.ParRelationEntityVO;
-import cz.tacr.elza.controller.vo.ParRelationTypeVO;
-import cz.tacr.elza.controller.vo.ParRelationVO;
-import cz.tacr.elza.controller.vo.RulDataTypeVO;
-import cz.tacr.elza.controller.vo.RulDescItemSpecVO;
-import cz.tacr.elza.controller.vo.RulOutputTypeVO;
-import cz.tacr.elza.controller.vo.RulPolicyTypeVO;
-import cz.tacr.elza.controller.vo.RulRuleSetVO;
-import cz.tacr.elza.controller.vo.RulTemplateVO;
-import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
-import cz.tacr.elza.controller.vo.StructureExtensionFundVO;
-import cz.tacr.elza.controller.vo.SysExternalSystemSimpleVO;
-import cz.tacr.elza.controller.vo.SysExternalSystemVO;
-import cz.tacr.elza.controller.vo.TreeItemSpecsItem;
-import cz.tacr.elza.controller.vo.TreeNodeVO;
-import cz.tacr.elza.controller.vo.UISettingsVO;
-import cz.tacr.elza.controller.vo.UsrGroupVO;
-import cz.tacr.elza.controller.vo.UsrPermissionVO;
-import cz.tacr.elza.controller.vo.UsrUserVO;
-import cz.tacr.elza.controller.vo.WfIssueStateVO;
-import cz.tacr.elza.controller.vo.WfIssueTypeVO;
-import cz.tacr.elza.controller.vo.WfSimpleIssueVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.ItemTypeDescItemsLiteVO;
 import cz.tacr.elza.controller.vo.nodes.ItemTypeLiteVO;
@@ -210,7 +159,6 @@ import cz.tacr.elza.repository.UnitdateRepository;
 import cz.tacr.elza.repository.UserRepository;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.DaoService;
-import cz.tacr.elza.service.IssueService;
 import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.service.OutputServiceInternal;
 import cz.tacr.elza.service.SettingsService;
@@ -323,7 +271,8 @@ public class ClientFactoryVO {
     private ApFactory apFactory;
 
     @Autowired
-    private IssueService issueService;
+    @Lazy // TODO: odebrat a vyřešit cyklickou závislost
+    private WfFactory wfFactory;
 
     /**
      * Vytvoření nastavení.
@@ -681,16 +630,13 @@ public class ClientFactoryVO {
 
             List<ArrFundVersionVO> versionVOs = new ArrayList<>(versions.size());
             for (ArrFundVersion version : versions) {
-                versionVOs.add(createFundVersion(version));
+                versionVOs.add(createFundVersion(version, user));
             }
             fundVO.setVersions(versionVOs);
 
             fundVO.setValidNamedOutputs(createOutputDefinitions(outputDefinitionRepository.findValidOutputDefinitionByFund(fund), false));
             fundVO.setHistoricalNamedOutputs(createOutputDefinitions(outputDefinitionRepository.findHistoricalOutputDefinitionByFund(fund), true));
         }
-
-        List<WfIssue> issues = issueService.findOpenIssueByFundIdAndNodeNull(fund, user);
-        fundVO.setIssues(issues.stream().map(this::createSimpleIssueVO).collect(Collectors.toList()));
 
         return fundVO;
     }
@@ -699,9 +645,10 @@ public class ClientFactoryVO {
      * Vytvoří verzi archivní pomůcky.
      *
      * @param fundVersion verze archivní pomůcky
+     * @param user
      * @return VO verze archivní pomůcky
      */
-    public ArrFundVersionVO createFundVersion(final ArrFundVersion fundVersion) {
+    public ArrFundVersionVO createFundVersion(final ArrFundVersion fundVersion, final UserDetail user) {
         Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
 
         MapperFacade mapper = mapperFactory.getMapperFacade();
@@ -717,6 +664,9 @@ public class ClientFactoryVO {
         if (lockChange != null) {
             Date lockDate = Date.from(lockChange.getChangeDate().atZone(ZoneId.systemDefault()).toInstant());
             fundVersionVO.setLockDate(lockDate);
+        } else {
+            fundVersionVO.setIssues(wfFactory.createSimpleIssues(fundVersion.getFund(), user));
+            fundVersionVO.setConfig(wfFactory.createConfig(fundVersion));
         }
         fundVersionVO.setDateRange(fundVersion.getDateRange());
         fundVersionVO.setRuleSetId(fundVersion.getRuleSet().getRuleSetId());

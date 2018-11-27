@@ -1134,10 +1134,11 @@ public class ArrangementController {
 
         List<ArrFundVersion> versions = fundVersionRepository.findAll(idsParam.getIds());
 
+        UserDetail user = userService.getLoggedUserDetail();
         List<ArrFundVO> result = new LinkedList<>();
         for (ArrFundVersion version : versions) {
-            ArrFundVO fund = factoryVo.createFundVO(version.getFund(), false, userService.getLoggedUserDetail());
-            ArrFundVersionVO versionVo = factoryVo.createFundVersion(version);
+            ArrFundVO fund = factoryVo.createFundVO(version.getFund(), false, user);
+            ArrFundVersionVO versionVo = factoryVo.createFundVersion(version, user);
             fund.setVersions(Arrays.asList(versionVo));
 
             result.add(fund);
@@ -1210,8 +1211,9 @@ public class ArrangementController {
 
         Assert.notNull(version, "Nebyla nalezena verze s id " + versionId);
 
+        UserDetail user = userService.getLoggedUserDetail();
         ArrFundVersion nextVersion = arrangementService.approveVersion(version, dateRange);
-        return factoryVo.createFundVersion(nextVersion);
+        return factoryVo.createFundVersion(nextVersion, user);
     }
 
     /**

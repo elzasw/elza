@@ -17,6 +17,16 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
+import com.google.common.eventbus.Subscribe;
+import cz.tacr.elza.EventBusListener;
+import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.domain.*;
+import cz.tacr.elza.packageimport.PackageService;
+import cz.tacr.elza.packageimport.xml.SettingFundIssues;
+import cz.tacr.elza.repository.*;
+import cz.tacr.elza.service.event.CacheInvalidateEvent;
+import cz.tacr.elza.service.vo.WfConfig;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.QuoteMode;
 import org.apache.commons.lang3.StringUtils;
@@ -31,23 +41,8 @@ import org.springframework.transaction.annotation.Transactional;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
-import cz.tacr.elza.domain.ApName;
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.UsrPermission;
-import cz.tacr.elza.domain.UsrUser;
-import cz.tacr.elza.domain.WfComment;
-import cz.tacr.elza.domain.WfIssue;
-import cz.tacr.elza.domain.WfIssueList;
-import cz.tacr.elza.domain.WfIssueState;
-import cz.tacr.elza.domain.WfIssueType;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.repository.WfCommentRepository;
-import cz.tacr.elza.repository.WfIssueListRepository;
-import cz.tacr.elza.repository.WfIssueRepository;
-import cz.tacr.elza.repository.WfIssueStateRepository;
-import cz.tacr.elza.repository.WfIssueTypeRepository;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventType;
@@ -58,11 +53,14 @@ import static org.apache.commons.io.IOUtils.LINE_SEPARATOR_WINDOWS;
 
 @Service
 @Transactional(readOnly = true)
+@EventBusListener
 public class IssueService {
 
     private static final Logger logger = LoggerFactory.getLogger(IssueService.class);
 
     private static final int CVS_MAX_TEXT_LENGTH = 32760;
+
+    private Map<String, WfConfig> configs;
 
     // --- dao ---
 
@@ -71,6 +69,7 @@ public class IssueService {
     private final WfIssueRepository issueRepository;
     private final WfIssueStateRepository issueStateRepository;
     private final WfIssueTypeRepository issueTypeRepository;
+    private final SettingsRepository settingsRepository;
 
     // --- services ---
 
@@ -78,6 +77,7 @@ public class IssueService {
     private final ArrangementService arrangementService;
     private final IEventNotificationService eventNotificationService;
     private final UserService userService;
+    private final StaticDataService staticDataService;
 
     // --- constructor ---
 
@@ -91,8 +91,8 @@ public class IssueService {
             WfIssueListRepository issueListRepository,
             WfIssueRepository issueRepository,
             WfIssueStateRepository issueStateRepository,
-            WfIssueTypeRepository issueTypeRepository
-    ) {
+            WfIssueTypeRepository issueTypeRepository,
+            SettingsRepository settingsRepository, final StaticDataService staticDataService) {
         this.accessPointService = accessPointService;
         this.arrangementService = arrangementService;
         this.eventNotificationService = eventNotificationService;
@@ -102,6 +102,18 @@ public class IssueService {
         this.issueRepository = issueRepository;
         this.issueStateRepository = issueStateRepository;
         this.issueTypeRepository = issueTypeRepository;
+        this.settingsRepository = settingsRepository;
+        this.staticDataService = staticDataService;
+    }
+
+    @Subscribe
+    public synchronized void invalidateCache(final CacheInvalidateEvent cacheInvalidateEvent) {
+        if (cacheInvalidateEvent.contains(CacheInvalidateEvent.Type.VIEW)) {
+            if (configs != null) {
+                logger.info("Issues configs invalidated.");
+            }
+            configs = null;
+        }
     }
 
     // --- methods ---
@@ -173,7 +185,7 @@ public class IssueService {
      * @param issueId identifikátor připomínky
      * @return připomínka
      */
-    @AuthMethod(permission = {Permission.ADMIN, Permission.FUND_ISSUE_LIST_RD, Permission.FUND_ISSUE_LIST_WR})
+    @AuthMethod(permission = {Permission.ADMIN, Permission.FUND_ISSUE_ADMIN_ALL, Permission.FUND_ISSUE_ADMIN, Permission.FUND_ISSUE_LIST_RD, Permission.FUND_ISSUE_LIST_WR})
     public WfIssue getIssue(@AuthParam(type = AuthParam.Type.ISSUE) @NotNull Integer issueId) {
         WfIssue issue = issueRepository.findOne(issueId);
         if (issue == null) {
@@ -188,7 +200,7 @@ public class IssueService {
      * @param commentId identifikátor komentáře
      * @returns komentář
      */
-    @AuthMethod(permission = {Permission.ADMIN, Permission.FUND_ISSUE_LIST_RD, Permission.FUND_ISSUE_LIST_WR})
+    @AuthMethod(permission = {Permission.ADMIN, Permission.FUND_ISSUE_ADMIN_ALL, Permission.FUND_ISSUE_ADMIN, Permission.FUND_ISSUE_LIST_RD, Permission.FUND_ISSUE_LIST_WR})
     public WfComment getComment(@AuthParam(type = AuthParam.Type.COMMENT) @NotNull Integer commentId) {
         WfComment comment = commentRepository.findOne(commentId);
         if (comment == null) {
@@ -263,7 +275,7 @@ public class IssueService {
         issueList.setOpen(open);
         issueList = issueListRepository.save(issueList);
 
-        publishAccessPointEvent(issueList.getIssueListId(), EventType.ISSUE_LIST_CREATE);
+        publishEvent(issueList.getIssueListId(), EventType.ISSUE_LIST_CREATE);
 
         return issueList;
     }
@@ -285,7 +297,7 @@ public class IssueService {
         }
         issueList = issueListRepository.save(issueList);
 
-        publishAccessPointEvent(issueList.getIssueListId(), EventType.ISSUE_LIST_UPDATE);
+        publishEvent(issueList.getIssueListId(), EventType.ISSUE_LIST_UPDATE);
 
         return issueList;
     }
@@ -294,7 +306,7 @@ public class IssueService {
      * Založí novou připomínku k danému protokolu
      */
     @Transactional
-    @AuthMethod(permission = {Permission.FUND_ISSUE_LIST_WR})
+    @AuthMethod(permission = {Permission.ADMIN, Permission.FUND_ISSUE_ADMIN_ALL, Permission.FUND_ISSUE_ADMIN, Permission.FUND_ISSUE_LIST_WR})
     public WfIssue addIssue(@AuthParam(type = AuthParam.Type.ISSUE_LIST) @NotNull WfIssueList issueList, @Nullable ArrNode node, @NotNull WfIssueType issueType, @NotNull String description, @NotNull UsrUser user) {
 
         Validate.notNull(issueList, "Issue list is null");
@@ -317,12 +329,13 @@ public class IssueService {
 
         issue = issueRepository.save(issue);
 
-        publishAccessPointEvent(issue.getIssueId(), EventType.ISSUE_CREATE);
+        publishEvent(issue.getIssueId(), EventType.ISSUE_CREATE);
 
         if (node != null) {
-            publishAccessPointEvent(node.getNodeId(), EventType.NODES_CHANGE);
+            ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(issueList.getFund().getFundId());
+            publishVersionEvent(node.getNodeId(), fundVersion, EventType.NODES_CHANGE);
         } else {
-            publishAccessPointEvent(issueList.getFund().getFundId(), EventType.FUND_UPDATE);
+            publishEvent(issueList.getFund().getFundId(), EventType.FUND_UPDATE);
         }
 
         return issue;
@@ -348,20 +361,21 @@ public class IssueService {
 
         issue = issueRepository.save(issue);
 
-        publishAccessPointEvent(issue.getIssueId(), EventType.ISSUE_UPDATE);
+        publishEvent(issue.getIssueId(), EventType.ISSUE_UPDATE);
 
+        ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(issue.getFund().getFundId());
         if (oldNode != null) {
             // notifikujeme stary node
-            publishAccessPointEvent(oldNode.getNodeId(), EventType.NODES_CHANGE);
+            publishVersionEvent(oldNode.getNodeId(), fundVersion, EventType.NODES_CHANGE);
         }
 
         if (newNode != null) {
             // notifikujeme novy node, ale pouze pokud jsme ho jiz nenotifikovali coby stary
             if (oldNode == null || !newNode.getNodeId().equals(oldNode.getNodeId())) {
-                publishAccessPointEvent(newNode.getNodeId(), EventType.NODES_CHANGE);
+                publishVersionEvent(newNode.getNodeId(), fundVersion, EventType.NODES_CHANGE);
             }
         } else {
-            publishAccessPointEvent(issue.getIssueList().getFund().getFundId(), EventType.FUND_UPDATE);
+            publishEvent(issue.getIssueList().getFund().getFundId(), EventType.FUND_UPDATE);
         }
 
         return issue;
@@ -371,7 +385,7 @@ public class IssueService {
      * Změna druhu připomínky
      */
     @Transactional
-    @AuthMethod(permission = {Permission.FUND_ISSUE_LIST_WR})
+    @AuthMethod(permission = {Permission.ADMIN, Permission.FUND_ISSUE_ADMIN_ALL, Permission.FUND_ISSUE_ADMIN, Permission.FUND_ISSUE_LIST_WR})
     public void setIssueType(@AuthParam(type = AuthParam.Type.ISSUE) @NotNull WfIssue issue, @NotNull WfIssueType issueType) {
 
         Validate.notNull(issue, "Issue is null");
@@ -382,11 +396,12 @@ public class IssueService {
             issue.setIssueType(issueType);
             issueRepository.save(issue);
 
-            publishAccessPointEvent(issue.getIssueId(), EventType.ISSUE_UPDATE);
+            publishEvent(issue.getIssueId(), EventType.ISSUE_UPDATE);
             if (issue.getNode() != null) {
-                publishAccessPointEvent(issue.getNode().getNodeId(), EventType.NODES_CHANGE);
+                ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(issue.getFund().getFundId());
+                publishVersionEvent(issue.getNode().getNodeId(), fundVersion, EventType.NODES_CHANGE);
             } else {
-                publishAccessPointEvent(issue.getIssueList().getFund().getFundId(), EventType.FUND_UPDATE);
+                publishEvent(issue.getIssueList().getFund().getFundId(), EventType.FUND_UPDATE);
             }
         }
     }
@@ -395,7 +410,7 @@ public class IssueService {
      * Založí nový komentář k dané připomínce
      */
     @Transactional
-    @AuthMethod(permission = {Permission.FUND_ISSUE_LIST_WR})
+    @AuthMethod(permission = {Permission.ADMIN, Permission.FUND_ISSUE_ADMIN_ALL, Permission.FUND_ISSUE_ADMIN, Permission.FUND_ISSUE_LIST_WR})
     public WfComment addComment(@AuthParam(type = AuthParam.Type.ISSUE) @NotNull WfIssue issue, @NotNull String text, @Nullable WfIssueState nextState, @NotNull UsrUser user) {
 
         Validate.notNull(issue, "Issue is null");
@@ -412,14 +427,15 @@ public class IssueService {
                 issueRepository.save(issue);
 
                 if (issue.getNode() != null) {
-                    publishAccessPointEvent(issue.getNode().getNodeId(), EventType.NODES_CHANGE);
+                    ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(issue.getFund().getFundId());
+                    publishVersionEvent(issue.getNode().getNodeId(), fundVersion, EventType.NODES_CHANGE);
                 } else {
-                    publishAccessPointEvent(issue.getIssueList().getFund().getFundId(), EventType.FUND_UPDATE);
+                    publishEvent(issue.getIssueList().getFund().getFundId(), EventType.FUND_UPDATE);
                 }
             }
         }
 
-        publishAccessPointEvent(issue.getIssueId(), EventType.ISSUE_UPDATE);
+        publishEvent(issue.getIssueId(), EventType.ISSUE_UPDATE);
 
         return comment;
     }
@@ -470,14 +486,15 @@ public class IssueService {
                 issueRepository.save(issue);
 
                 if (issue.getNode() != null) {
-                    publishAccessPointEvent(issue.getNode().getNodeId(), EventType.NODES_CHANGE);
+                    ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(issue.getFund().getFundId());
+                    publishVersionEvent(issue.getNode().getNodeId(), fundVersion, EventType.NODES_CHANGE);
                 } else {
-                    publishAccessPointEvent(issue.getIssueList().getFund().getFundId(), EventType.FUND_UPDATE);
+                    publishEvent(issue.getIssueList().getFund().getFundId(), EventType.FUND_UPDATE);
                 }
             }
         }
 
-        publishAccessPointEvent(issue.getIssueId(), EventType.ISSUE_UPDATE);
+        publishEvent(issue.getIssueId(), EventType.ISSUE_UPDATE);
 
         return comment;
     }
@@ -685,7 +702,35 @@ public class IssueService {
         return issueList.stream().collect(Collectors.groupingBy(issue -> issue.getNode().getNodeId()));
     }
 
-    protected void publishAccessPointEvent(Integer id, final EventType type) {
+    protected void publishEvent(Integer id, final EventType type) {
         eventNotificationService.publishEvent(EventFactory.createIdEvent(type, id));
+    }
+
+    protected void publishVersionEvent(final Integer id, final ArrFundVersion fundVersion, final EventType type) {
+        eventNotificationService.publishEvent(EventFactory.createIdsInVersionEvent(type, fundVersion, id));
+    }
+
+    /**
+     * Získání oprávnění podle pravidel.
+     *
+     * @param ruleSet pravidla
+     * @return nastavení
+     */
+    @Nullable
+    public WfConfig getConfig(final RulRuleSet ruleSet) {
+        StaticDataProvider sdp = staticDataService.getData();
+        if (configs == null) {
+            configs = new HashMap<>();
+
+            // load relevant settings
+            List<UISettings> uiSettingsList = settingsRepository.findByUserAndSettingsTypeAndEntityType(null, UISettings.SettingsType.FUND_ISSUES, UISettings.EntityType.RULE);
+
+            uiSettingsList.forEach(uiSettings -> {
+                RulRuleSet rulRuleSet = sdp.getRuleSetById(uiSettings.getEntityId());
+                SettingFundIssues setting = (SettingFundIssues) PackageService.convertSetting(uiSettings, null);
+                configs.put(rulRuleSet.getCode(), new WfConfig(setting.getIssueTypeColors(), setting.getIssueStateIcons()));
+            });
+        }
+        return configs.get(ruleSet.getCode());
     }
 }
