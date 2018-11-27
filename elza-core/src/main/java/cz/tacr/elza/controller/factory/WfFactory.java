@@ -103,7 +103,7 @@ public class WfFactory {
             return null;
         }
 
-        List<UsrUser> users = new ArrayList<>();
+        Set<UsrUser> users = new HashSet<>();
         for (WfIssue issue : issues) {
             users.add(issue.getUserCreate());
         }
@@ -151,7 +151,7 @@ public class WfFactory {
             return null;
         }
 
-        List<UsrUser> users = new ArrayList<>();
+        Set<UsrUser> users = new HashSet<>();
         for (WfComment comment : comments) {
             users.add(comment.getUser());
         }
