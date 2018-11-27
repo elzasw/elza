@@ -21,13 +21,13 @@ import javax.xml.bind.annotation.XmlType;
 public class RuleSets {
 
     @XmlElement(name = "rule-set", required = true)
-    private List<RuleSet> ruleSets;
+    private List<RuleSetXml> ruleSets;
 
-    public List<RuleSet> getRuleSets() {
+    public List<RuleSetXml> getRuleSets() {
         return ruleSets;
     }
 
-    public void setRuleSets(final List<RuleSet> ruleSets) {
+    public void setRuleSets(final List<RuleSetXml> ruleSets) {
         this.ruleSets = ruleSets;
     }
 }

@@ -338,6 +338,15 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
+    <!-- Prvek popisu pro migraci String2Date -->
+    <item-type code="SRD_STRING2DATE" data-type="STRING">
+        <name>String Date for migration</name>
+        <shortcut>String Datum</shortcut>
+        <description>ZP5.2.5 Datum</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>false</can-be-ordered>
+        <use-specification>false</use-specification>
+    </item-type>
     <item-type code="SRD_SIMPLE_DATE" data-type="DATE">
         <name>Datum</name>
         <shortcut>Datum</shortcut>

@@ -1,11 +1,5 @@
 package cz.tacr.elza.packageimport;
 
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.PackageCode;
-import org.apache.commons.codec.binary.Hex;
-
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Unmarshaller;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -27,6 +21,15 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
+
+import org.apache.commons.codec.binary.Hex;
+
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.PackageCode;
 
 /**
  * Utils pro import balíčků.
@@ -103,6 +106,20 @@ public class PackageUtils {
             }
         }
         return null;
+    }
+
+    public static <T> ByteArrayOutputStream convertXmlObjectToStream(T data) {
+        try {
+            //File file = File.createTempFile(data.getClass().getSimpleName() + "-", ".xml");
+            JAXBContext jaxbContext = JAXBContext.newInstance(data.getClass());
+            Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
+            jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+            ByteArrayOutputStream result = new ByteArrayOutputStream();
+            jaxbMarshaller.marshal(data, result);
+            return result;
+        } catch (Exception e) {
+            throw new IllegalStateException("Problém při konverzi xml objektu do xml souboru", e);
+        }
     }
 
     /**

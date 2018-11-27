@@ -18,16 +18,16 @@ import javax.xml.bind.annotation.XmlType;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "package-actions")
 @XmlType(name = "package-actions")
-public class PackageActions {
+public class ActionsXml {
 
     @XmlElement(name = "package-action", required = true)
-    private List<PackageAction> packageActions;
+    private List<ActionXml> packageActions;
 
-    public List<PackageAction> getPackageActions() {
+    public List<ActionXml> getPackageActions() {
         return packageActions;
     }
 
-    public void setPackageActions(final List<PackageAction> packageActions) {
+    public void setPackageActions(final List<ActionXml> packageActions) {
         this.packageActions = packageActions;
     }
 }

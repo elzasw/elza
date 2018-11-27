@@ -550,7 +550,7 @@
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
-    <item-type code="ZP2015_FINDING_AID_DATE" data-type="STRING">
+    <item-type code="ZP2015_FINDING_AID_DATE" data-type="DATE">
         <name>Stav archivní pomůckou zpřístupněných archiválií ke dni</name>
         <shortcut>Datum AP</shortcut>
         <description>Stav archivní pomůckou zpřístupněných archiválií ke dni (uvádí se v tiráži)</description>

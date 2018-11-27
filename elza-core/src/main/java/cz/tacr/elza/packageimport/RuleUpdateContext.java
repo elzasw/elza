@@ -1,6 +1,8 @@
 package cz.tacr.elza.packageimport;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.domain.RulPackage;
@@ -12,11 +14,25 @@ import cz.tacr.elza.domain.RulRuleSet;
  */
 public class RuleUpdateContext {
 
+    public enum RuleState {
+        // Rules are new or already exists
+        UPDATE,
+        // This is only addon to existing rules
+        // Such rules are defined by another package
+        ADDON,
+        // Rules will be deleted
+        DELETE
+    }
+
+    public interface RuleUpdateAction {
+        void run(RuleUpdateContext ruc);
+    }
+
+    private final RuleState ruleState;
+
     private final PackageContext puc;
 
 	private final ResourcePathResolver resourcePathResolver;
-
-	private final RulPackage rulPackage;
 
 	private final RulRuleSet rulRuleSet;
 
@@ -33,22 +49,32 @@ public class RuleUpdateContext {
 	 *
 	 * This is usualy parent folder for the input ZIP file
 	 */
-	private final String keyDirPath;
+    private String keyDirPath;
 
-    public RuleUpdateContext(PackageContext puc, RulPackage rulPackage, RulRuleSet rulRuleSet,
-            ResourcePathResolver resourcePathResolver, String ruleDirPath) {
+    /**
+     * Collection of actions to be run in second phase
+     */
+    List<RuleUpdateAction> actionsPhase2 = new ArrayList<>();
+
+    public RuleUpdateContext(final RuleState ruleState,
+                             final PackageContext puc,
+                             final RulRuleSet rulRuleSet,
+                             final ResourcePathResolver resourcePathResolver) {
+        this.ruleState = ruleState;
         this.puc = puc;
-		this.rulPackage = rulPackage;
 		this.rulRuleSet = rulRuleSet;
 		this.resourcePathResolver = resourcePathResolver;
-		this.keyDirPath = ruleDirPath;
+        init();
 	}
 
 	/**
 	 * Initialize rule update context
 	 */
-	public void init()
+    private void init()
 	{
+        keyDirPath = PackageService.ZIP_DIR_RULE_SET + "/" + rulRuleSet.getCode() + "/";
+
+        RulPackage rulPackage = puc.getPackage();
 		dirActions = resourcePathResolver.getFunctionsDir(rulPackage, rulRuleSet).toFile();
 		if (!dirActions.exists()) {
 			dirActions.mkdirs();
@@ -88,7 +114,7 @@ public class RuleUpdateContext {
 	}
 
 	public RulPackage getRulPackage() {
-		return rulPackage;
+        return puc.getPackage();
 	}
 
 	public String getRulSetCode() {
@@ -101,6 +127,24 @@ public class RuleUpdateContext {
 
     public String getKeyDirPath() {
         return this.keyDirPath;
+    }
+
+    public RuleState getRuleState() {
+        return ruleState;
+    }
+
+    public <T> T convertXmlStreamToObject(final Class<T> classObject, String fileName) {
+        return puc.convertXmlStreamToObject(classObject, keyDirPath + fileName);
+    }
+
+    public void addActionPhase2(RuleUpdateAction action) {
+        actionsPhase2.add(action);
+    }
+
+    public void runActionsPhase2() {
+        actionsPhase2.forEach(
+                              action -> action.run(this));
+
     }
 
 }

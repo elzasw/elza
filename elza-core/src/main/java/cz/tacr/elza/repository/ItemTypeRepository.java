@@ -58,8 +58,4 @@ public interface ItemTypeRepository extends ElzaJpaRepository<RulItemType, Integ
 
 
     RulItemType findOneByCode(String code);
-
-    @Query(value = "SELECT t FROM rul_item_type t  WHERE t.code in (?1)")
-    Set<RulItemType> findByCode(Set<String> descItemTypeCodes);
-
 }

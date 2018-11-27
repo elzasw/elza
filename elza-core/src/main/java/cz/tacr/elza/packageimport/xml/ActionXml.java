@@ -17,7 +17,7 @@ import java.util.List;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "package-action")
-public class PackageAction {
+public class ActionXml {
 
     @XmlAttribute(name = "filename", required = true)
     private String filename;
