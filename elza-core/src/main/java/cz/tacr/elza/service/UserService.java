@@ -1518,7 +1518,7 @@ public class UserService {
      * Nastavení oprávnění k novému protokolu
      */
     @Transactional
-    @AuthMethod(permission = {Permission.FUND_ISSUE_ADMIN, Permission.FUND_ISSUE_ADMIN_ALL})
+    @AuthMethod(permission = {Permission.ADMIN, Permission.FUND_ISSUE_ADMIN_ALL, Permission.FUND_ISSUE_ADMIN})
     public void updateIssueListPermissions(@AuthParam(type = AuthParam.Type.ISSUE_LIST) @NotNull WfIssueList issueList, @Nullable Collection<UsrUser> rdUsers, @Nullable Collection<UsrUser> wrUsers) {
 
         Validate.notNull(issueList, "Issue list is null");

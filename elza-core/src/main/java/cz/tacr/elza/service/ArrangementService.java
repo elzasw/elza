@@ -1393,6 +1393,23 @@ public class ArrangementService {
     }
 
     /**
+     * Sestaví informace o zanoření
+     *
+     * @param fundId identifikátor archivního souboru
+     * @param nodeIds seznam identifikátorů jednotek popisu
+     */
+    public Map<Integer, TreeNodeVO> findNodeReferenceMark(@NotNull Integer fundId, Collection<Integer> nodeIds) {
+        if (nodeIds != null && !nodeIds.isEmpty()) {
+            ArrFundVersion fundVersion = getOpenVersionByFundId(fundId);
+            if (fundVersion != null) {
+                List<TreeNodeVO> nodes = levelTreeCacheService.getNodesByIds(nodeIds, fundVersion.getFundVersionId());
+                return nodes.stream().collect(Collectors.toMap(node -> node.getId(), node -> node));
+            }
+        }
+        return Collections.emptyMap();
+    }
+
+    /**
      * @return vrací session uživatele
      */
     @Bean

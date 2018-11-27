@@ -8,6 +8,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -32,7 +33,6 @@ import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.domain.ApName;
 import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
@@ -77,7 +77,6 @@ public class IssueService {
     private final AccessPointService accessPointService;
     private final ArrangementService arrangementService;
     private final IEventNotificationService eventNotificationService;
-    private final LevelTreeCacheService levelTreeCacheService;
     private final UserService userService;
 
     // --- constructor ---
@@ -87,7 +86,6 @@ public class IssueService {
             AccessPointService accessPointService,
             ArrangementService arrangementService,
             IEventNotificationService eventNotificationService,
-            LevelTreeCacheService levelTreeCacheService,
             UserService userService,
             WfCommentRepository commentRepository,
             WfIssueListRepository issueListRepository,
@@ -98,7 +96,6 @@ public class IssueService {
         this.accessPointService = accessPointService;
         this.arrangementService = arrangementService;
         this.eventNotificationService = eventNotificationService;
-        this.levelTreeCacheService = levelTreeCacheService;
         this.userService = userService;
         this.commentRepository = commentRepository;
         this.issueListRepository = issueListRepository;
@@ -161,7 +158,7 @@ public class IssueService {
      * @param issueListId identifikátor protokolu
      * @return protokol
      */
-    @AuthMethod(permission = {Permission.FUND_ISSUE_ADMIN_ALL, Permission.FUND_ISSUE_ADMIN, Permission.FUND_ISSUE_LIST_RD, Permission.FUND_ISSUE_LIST_WR})
+    @AuthMethod(permission = {Permission.ADMIN, Permission.FUND_ISSUE_ADMIN_ALL, Permission.FUND_ISSUE_ADMIN, Permission.FUND_ISSUE_LIST_RD, Permission.FUND_ISSUE_LIST_WR})
     public WfIssueList getIssueList(@AuthParam(type = AuthParam.Type.ISSUE_LIST) @NotNull Integer issueListId) {
         WfIssueList issueList = issueListRepository.findOne(issueListId);
         if (issueList == null) {
@@ -176,7 +173,7 @@ public class IssueService {
      * @param issueId identifikátor připomínky
      * @return připomínka
      */
-    @AuthMethod(permission = {Permission.FUND_ISSUE_LIST_RD, Permission.FUND_ISSUE_LIST_WR})
+    @AuthMethod(permission = {Permission.ADMIN, Permission.FUND_ISSUE_LIST_RD, Permission.FUND_ISSUE_LIST_WR})
     public WfIssue getIssue(@AuthParam(type = AuthParam.Type.ISSUE) @NotNull Integer issueId) {
         WfIssue issue = issueRepository.findOne(issueId);
         if (issue == null) {
@@ -191,7 +188,7 @@ public class IssueService {
      * @param commentId identifikátor komentáře
      * @returns komentář
      */
-    @AuthMethod(permission = {Permission.FUND_ISSUE_LIST_RD, Permission.FUND_ISSUE_LIST_WR})
+    @AuthMethod(permission = {Permission.ADMIN, Permission.FUND_ISSUE_LIST_RD, Permission.FUND_ISSUE_LIST_WR})
     public WfComment getComment(@AuthParam(type = AuthParam.Type.COMMENT) @NotNull Integer commentId) {
         WfComment comment = commentRepository.findOne(commentId);
         if (comment == null) {
@@ -232,7 +229,7 @@ public class IssueService {
      * @param issueState stav připomínky, dle kterého filtrujeme
      * @param issueType druh připomínky, dle kterého filtrujeme
      */
-    @AuthMethod(permission = {Permission.FUND_ISSUE_LIST_RD, Permission.FUND_ISSUE_LIST_WR})
+    @AuthMethod(permission = {Permission.ADMIN, Permission.FUND_ISSUE_LIST_RD, Permission.FUND_ISSUE_LIST_WR})
     public List<WfIssue> findIssueByIssueListId(@AuthParam(type = AuthParam.Type.ISSUE_LIST) @NotNull WfIssueList issueList, @Nullable WfIssueState issueState, @Nullable WfIssueType issueType) {
         Validate.notNull(issueList, "Issue list is null");
         return issueRepository.findByIssueListId(issueList.getIssueListId(), issueState, issueType);
@@ -244,7 +241,7 @@ public class IssueService {
      * @param issue připomínka
      * @return seznam komentářů
      */
-    @AuthMethod(permission = {Permission.FUND_ISSUE_LIST_RD, Permission.FUND_ISSUE_LIST_WR})
+    @AuthMethod(permission = {Permission.ADMIN, Permission.FUND_ISSUE_LIST_RD, Permission.FUND_ISSUE_LIST_WR})
     public List<WfComment> findCommentByIssueId(@AuthParam(type = AuthParam.Type.ISSUE) @NotNull WfIssue issue) {
         Validate.notNull(issue, "Issue is null");
         return commentRepository.findByIssueId(issue.getIssueId());
@@ -254,7 +251,7 @@ public class IssueService {
      * Založí nový protokol k danému AS
      */
     @Transactional
-    @AuthMethod(permission = {Permission.FUND_ISSUE_ADMIN, Permission.FUND_ISSUE_ADMIN_ALL})
+    @AuthMethod(permission = {Permission.ADMIN, Permission.FUND_ISSUE_ADMIN_ALL, Permission.FUND_ISSUE_ADMIN})
     public WfIssueList addIssueList(@AuthParam(type = AuthParam.Type.FUND) @NotNull ArrFund fund, String name, boolean open) {
 
         Validate.notNull(fund, "Fund is null");
@@ -275,7 +272,7 @@ public class IssueService {
      * Úprava vlastností existujícího protokolu
      */
     @Transactional
-    @AuthMethod(permission = {Permission.FUND_ISSUE_ADMIN, Permission.FUND_ISSUE_ADMIN_ALL})
+    @AuthMethod(permission = {Permission.ADMIN, Permission.FUND_ISSUE_ADMIN_ALL, Permission.FUND_ISSUE_ADMIN})
     public WfIssueList updateIssueList(@AuthParam(type = AuthParam.Type.ISSUE_LIST) @NotNull WfIssueList issueList, @Nullable String name, @Nullable Boolean open) {
 
         Validate.notNull(issueList, "Issue list is null");
@@ -506,14 +503,14 @@ public class IssueService {
         return findCommentByIssueIds(issueIds).stream().collect(Collectors.groupingBy(comment -> comment.getIssue().getIssueId()));
     }
 
-    @AuthMethod(permission = {Permission.FUND_ISSUE_LIST_RD, Permission.FUND_ISSUE_LIST_WR})
+    @AuthMethod(permission = {Permission.ADMIN, Permission.FUND_ISSUE_LIST_RD, Permission.FUND_ISSUE_LIST_WR})
     public void exportIssueList(@AuthParam(type = AuthParam.Type.ISSUE_LIST) @NotNull WfIssueList issueList, OutputStream os) throws IOException {
 
         Validate.notNull(issueList, "Issue list is null");
 
         List<WfIssue> issues = findIssueByIssueListId(issueList, null, null);
 
-        Map<Integer, TreeNodeVO> nodeMap = findNodeReferenceMark(issueList, issues);
+        Map<Integer, TreeNodeVO> nodeMap = findNodeReferenceMark(issues);
 
         Map<Integer, List<WfComment>> issueToCommentMap = groupCommentByIssueId(issues.stream().map(issue -> issue.getIssueId()).collect(Collectors.toList()));
 
@@ -585,15 +582,28 @@ public class IssueService {
         printer.flush();
     }
 
-    protected Map<Integer, TreeNodeVO> findNodeReferenceMark(@NotNull WfIssueList issueList, @NotNull List<WfIssue> issues) {
-        if (issues != null && !issues.isEmpty()) {
-            ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(issueList.getFund().getFundId());
-            if (fundVersion != null) {
-                List<TreeNodeVO> nodes = levelTreeCacheService.getNodesByIds(issues.stream().filter(issue -> issue.getNode() != null).map(issue -> issue.getNode().getNodeId()).collect(Collectors.toList()), fundVersion.getFundVersionId());
-                return nodes.stream().collect(Collectors.toMap(node -> node.getId(), node -> node));
+    /**
+     * Sestaví informace o zanoření
+     *
+     * @param issues seznam připomínek
+     */
+    public Map<Integer, TreeNodeVO> findNodeReferenceMark(@NotNull Collection<WfIssue> issues) {
+        if (issues == null || issues.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        Set<Integer> fundIds = new HashSet<>();
+        Set<Integer> nodeIds = new HashSet<>();
+        for (WfIssue issue : issues) {
+            if (issue.getNode() != null) {
+                fundIds.add(issue.getIssueList().getFund().getFundId());
+                nodeIds.add(issue.getNode().getNodeId());
             }
         }
-        return Collections.emptyMap();
+        if (nodeIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        Validate.isTrue(fundIds.size() == 1, "Připomínky jsou z různých archivních souborů");
+        return arrangementService.findNodeReferenceMark(fundIds.iterator().next(), nodeIds);
     }
 
     protected Map<Integer, ApName> findUserAccessPointNames(List<WfIssue> issues, Map<Integer, List<WfComment>> issueCommentMap) {

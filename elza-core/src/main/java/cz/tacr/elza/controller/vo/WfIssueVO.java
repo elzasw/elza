@@ -39,6 +39,12 @@ public class WfIssueVO {
     private Integer nodeId;
 
     /**
+     * Referenční označení jednotky popisu od kořene k uzlu - při zakládání není vyplněno
+     */
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String[] referenceMark;
+
+    /**
      * Indentifikátor druhu připomínky - při zakládání povinné
      */
     @NotNull
@@ -89,6 +95,14 @@ public class WfIssueVO {
 
     public void setNumber(Integer number) {
         this.number = number;
+    }
+
+    public String[] getReferenceMark() {
+        return referenceMark;
+    }
+
+    public void setReferenceMark(String[] referenceMark) {
+        this.referenceMark = referenceMark;
     }
 
     public Integer getNodeId() {

@@ -1,15 +1,23 @@
 package cz.tacr.elza.controller.factory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import cz.tacr.elza.controller.config.ClientFactoryVO;
-import cz.tacr.elza.controller.vo.UsrUserVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import cz.tacr.elza.controller.config.ClientFactoryVO;
+import cz.tacr.elza.controller.vo.TreeNodeVO;
+import cz.tacr.elza.controller.vo.UsrUserVO;
 import cz.tacr.elza.controller.vo.WfCommentVO;
 import cz.tacr.elza.controller.vo.WfIssueListVO;
 import cz.tacr.elza.controller.vo.WfIssueVO;
@@ -20,6 +28,7 @@ import cz.tacr.elza.domain.WfComment;
 import cz.tacr.elza.domain.WfIssue;
 import cz.tacr.elza.domain.WfIssueList;
 import cz.tacr.elza.repository.PermissionRepository;
+import cz.tacr.elza.service.IssueService;
 
 @Service
 @Transactional(readOnly = true)
@@ -33,13 +42,19 @@ public class WfFactory {
 
     private final PermissionRepository permissionRepository;
 
+    // --- service ---
+
+    private final IssueService issueService;
+
     // --- constructor ---
 
     @Autowired
     public WfFactory(final ClientFactoryVO factoryVO,
-                     final PermissionRepository permissionRepository) {
+                     final PermissionRepository permissionRepository,
+                     final IssueService issueService) {
         this.factoryVO = factoryVO;
         this.permissionRepository = permissionRepository;
+        this.issueService = issueService;
     }
 
     // --- methods ---
@@ -111,18 +126,34 @@ public class WfFactory {
         Map<Integer, UsrUserVO> usersMap = factoryVO.createUserList(users, false).stream()
                 .collect(Collectors.toMap(UsrUserVO::getId, Function.identity()));
 
+        Map<Integer, TreeNodeVO> nodeReferenceMarkMap = issueService.findNodeReferenceMark(issues);
+
         List<WfIssueVO> issueVOS = new ArrayList<>();
         for (WfIssue issue : issues) {
+
+            Integer nodeId;
+            String[] referenceMark;
+            if (issue.getNode() != null) {
+                nodeId = issue.getNode().getNodeId();
+                TreeNodeVO treeNodeVO = nodeReferenceMarkMap.get(nodeId);
+                referenceMark = treeNodeVO != null ? treeNodeVO.getReferenceMark() : null;
+            } else {
+                nodeId = null;
+                referenceMark = null;
+            }
+
             WfIssueVO issueVO = new WfIssueVO();
             issueVO.setId(issue.getIssueId());
             issueVO.setIssueListId(issue.getIssueList().getIssueListId());
             issueVO.setNumber(issue.getNumber());
-            issueVO.setNodeId(issue.getNode() != null ? issue.getNode().getNodeId() : null);
+            issueVO.setNodeId(nodeId);
+            issueVO.setReferenceMark(referenceMark);
             issueVO.setIssueTypeId(issue.getIssueType().getIssueTypeId());
             issueVO.setIssueStateId(issue.getIssueState().getIssueStateId());
             issueVO.setDescription(issue.getDescription());
             issueVO.setUserCreate(usersMap.get(issue.getUserCreate().getUserId()));
             issueVO.setTimeCreated(issue.getTimeCreated());
+
             issueVOS.add(issueVO);
         }
 
