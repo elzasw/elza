@@ -167,17 +167,20 @@ class LecturingTop extends React.Component {
                     activeIndex={activeIndex}
                     onChangeSelection={this.selectIssue}
                     items={issueList.rows}
-                    renderItemContent={({item: {description, issueStateId, issueTypeId, number, id}, active}) => {
+                    renderItemContent={({item: {description, issueStateId, issueTypeId, number, id, referenceMark}, active} : {item: IssueVO, active: boolean}) => {
                         const state : IssueStateVO = objectById(issueStates.data, issueStateId);
                         const type = objectById(issueProtocols.data, issueTypeId);
                         // TODO lectoring @compel co s typem, jak tvořit kolečka a barvy + co context menu
                         return <TooltipTrigger className={"flex item"  + (active ? " active" : "")} content={<span><div>#{number} ({state.name})</div><div>{description}</div></span>}>
                             <div className={"flex-1"}>
                             <div>
-                                <span className={"circle"}>
+                                <span className="circle">
                                 {state.finalState && (<Icon glyph={false ? "fa-check" : "fa-times"}/>)}
                                 </span>
                                 #{number} - {description}
+                                <div className="reference-mark">
+                                    {referenceMark && referenceMark.join(" ")}
+                                </div>
                             </div>
                             </div>
                             {canWrite && <div className="actions">

@@ -1580,6 +1580,7 @@ declare class IssueVO extends Object {
     description: string;
     userCreate: UsrUserVO;
     timeCreated: string;
+    referenceMark: string[];
 }
 
 declare class CommentVO extends Object {
