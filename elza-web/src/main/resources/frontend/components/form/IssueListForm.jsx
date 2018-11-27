@@ -46,11 +46,14 @@ class IssueListForm extends AbstractReactComponent {
     componentDidUpdate(prevProps: Readonly<P>, prevState: Readonly<S>, prevContext: any): void {
         if (prevProps.id && !this.props.id) {
             this.props.resetForm();
-        } else if (this.props.fields && prevProps.fields && this.props.id && prevProps.id && this.props.dirty) {
-            if (this.props.fields.rdUsers.length !== prevProps.fields.rdUsers.length ||
+        } else if (this.props.fields
+            && prevProps.fields
+            && this.props.id
+            && prevProps.id
+            && prevProps.id === this.props.id
+            && this.props.fields.rdUsers.length !== prevProps.fields.rdUsers.length ||
                 this.props.fields.wrUsers.length !== prevProps.fields.wrUsers.length) {
                 this.props.asyncValidate()
-            }
         }
     }
 

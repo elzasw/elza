@@ -19,6 +19,7 @@ export const protocols = {
 // Detail protokolu
 export const protocol = {
     fetchIfNeeded: (id, force = false) => DetailActions.fetchIfNeeded(AREA_PROTOCOL, id, id => WebApi.getIssueList(id), force),
+    invalidate: (id) => DetailActions.invalidate(AREA_PROTOCOL, id),
 };
 
 // List připomínek
@@ -32,6 +33,7 @@ export const list = {
 export const detail = {
     fetchIfNeeded: (id, force = false) => DetailActions.fetchIfNeeded(AREA_DETAIL, id, id => WebApi.getIssue(id), force),
     invalidate: (id) => DetailActions.invalidate(AREA_DETAIL, id),
+    select: (id) => DetailActions.select(AREA_DETAIL, id),
 };
 
 // Komentáře připomínky

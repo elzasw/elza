@@ -28,8 +28,7 @@ const basicOptionMap = (i) => <option key={i.id} value={i.id}>{i.name}</option>;
 class LecturingTop extends React.Component {
 
     state = {
-        issueListId: null,
-        issueId: null
+        issueListId: null
     };
 
     static propTypes = {
@@ -43,7 +42,7 @@ class LecturingTop extends React.Component {
     }
 
     componentWillReceiveProps(nextProps, nextContext) {
-        const {issueListId, issueId} = this.state;
+        const {issueListId} = this.state;
         nextProps.dispatch(issueTypesActions.fetchIfNeeded());
         nextProps.dispatch(issueStatesActions.fetchIfNeeded());
         nextProps.dispatch(issuesActions.protocols.fetchIfNeeded(this.props.fund.id));
@@ -55,9 +54,6 @@ class LecturingTop extends React.Component {
                 nextProps.dispatch(issuesActions.protocol.fetchIfNeeded(issueListId));
                 nextProps.dispatch(issuesActions.list.fetchIfNeeded(issueListId));
             }
-        }
-        if (issueId) {
-            nextProps.dispatch(issuesActions.detail.fetchIfNeeded(issueId))
         }
     }
 
@@ -82,10 +78,13 @@ class LecturingTop extends React.Component {
     };
 
     newNode = () => {
+        if (!this.props.node.selectedSubNodeId) {
+            return;
+        }
         this.props.dispatch(modalDialogShow(this, i18n("arr.issues.add.node.title"), <IssueForm onSubmit={(data) => WebApi.addIssue({
             ...data,
             issueListId: this.state.issueListId,
-            nodeId: this.props.node.id
+            nodeId: this.props.node.selectedSubNodeId
         })}  onSubmitSuccess={this.afterAdd} />));
     };
 
@@ -94,12 +93,11 @@ class LecturingTop extends React.Component {
         dispatch(issuesActions.list.invalidate(data.issueListId));
         dispatch(issuesActions.detail.invalidate(data.id));
         dispatch(modalDialogHide());
-    }
+    };
 
     selectIssue = ([index]) => {
         const issueId = this.props.issueList.rows[index].id;
-        this.setState({issueId});
-        this.props.dispatch(issuesActions.detail.fetchIfNeeded(issueId))
+        this.props.dispatch(issuesActions.detail.select(issueId));
     };
 
     selectIssueList = (issueListId) => {
@@ -109,17 +107,18 @@ class LecturingTop extends React.Component {
         });
     };
 
-    updateIssueState = (id, issueStateId) => {
+    updateIssueType = (id, issueTypeId) => {
         const {issueListId} = this.state;
-        WebApi.setIssueState(id, issueStateId).then(() => {
+        WebApi.setIssueType(id, issueTypeId).then(() => {
             this.props.dispatch(issuesActions.list.invalidate(issueListId));
             this.props.dispatch(issuesActions.detail.invalidate(id));
         });
     };
 
     render() {
-        const {issueTypes, issueStates, issueList, issueProtocols, userDetail} = this.props;
-        const {issueListId, issueId} = this.state;
+        const {issueTypes, issueStates, issueList, issueProtocols, userDetail, issueDetail} = this.props;
+        const {issueListId} = this.state;
+        const issueId = issueDetail.id;
         const activeIndex = issueId !== null ? indexById(issueList.rows, issueId) : null;
 
         const hasAdmin = userDetail.hasOne([perms.FUND_ISSUE_ADMIN_ALL]);
@@ -137,7 +136,7 @@ class LecturingTop extends React.Component {
                 <div className="actions">
                     <DropdownButton disabled={!canWrite} bsStyle="default" id='dropdown-add-comment' noCaret title={<Icon glyph='fa-plus-circle' />}>
                         <MenuItem eventKey="1" onClick={this.newArr}>{i18n("arr.issues.add.arr")}</MenuItem>
-                        <MenuItem eventKey="2" onClick={this.newNode}>{i18n("arr.issues.add.node")}</MenuItem>
+                        <MenuItem eventKey="2" disabled={!this.props.node.selectedSubNodeId} onClick={this.newNode}>{i18n("arr.issues.add.node")}</MenuItem>
                     </DropdownButton>
                     {hasAdmin && <Button bsStyle="action" className="pull-right" onClick={this.settings}><Icon glyph='fa-cogs' /></Button>}
                     <Button bsStyle="action" className="pull-right" disabled={!issueListId} onClick={this.download}><Icon glyph='fa-download' /></Button>
@@ -176,14 +175,14 @@ class LecturingTop extends React.Component {
                             <div className={"flex-1"}>
                             <div>
                                 <span className={"circle"}>
-                                {state.finalState && (<Icon glyph={false ? "fa-check" : "fa-cross"}/>)}
+                                {state.finalState && (<Icon glyph={false ? "fa-check" : "fa-times"}/>)}
                                 </span>
                                 #{number} - {description}
                             </div>
                             </div>
                             {canWrite && <div className="actions">
-                                <DropdownButton pullRight bsStyle="action" id='issue-state' noCaret title={<Icon glyph='fa-ellipsis-h' />}>
-                                    {issueStates.data.map(i => <MenuItem key={'state-' + i.id} disabled={i.id === issueStateId} onClick={this.updateIssueState.bind(this, id, i.id)}>{i.name}</MenuItem>)}
+                                <DropdownButton pullRight bsStyle="action" id='issue-type' noCaret title={<Icon glyph='fa-ellipsis-h' />}>
+                                    {issueTypes.data.map(i => <MenuItem key={'issue-type-' + i.id} disabled={i.id === issueTypeId} onClick={this.updateIssueType.bind(this, id, i.id)}>{i18n("arr.issue.type.change", i.name)}</MenuItem>)}
                                 </DropdownButton>
                             </div>}
                         </TooltipTrigger>
@@ -200,6 +199,7 @@ export default connect((state) => {
         issueStates: state.refTables.issueStates,
         issueList: storeFromArea(state, issuesActions.AREA_LIST),
         issueProtocols: storeFromArea(state, issuesActions.AREA_PROTOCOLS),
+        issueDetail: storeFromArea(state, issuesActions.AREA_DETAIL),
         userDetail: state.userDetail
     }
 })(LecturingTop);

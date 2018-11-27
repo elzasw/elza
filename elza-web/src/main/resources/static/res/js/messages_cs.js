@@ -428,6 +428,7 @@ var messages = {
     "arr.issues.add.node":"Zobrazená jednotka popisu",
     "arr.issues.add.node.title":"Přidat připomínku - Jednotka popisu",
     "arr.issues.add.arr.title":"Přidat připomínku - Archivní soubor",
+    "arr.issues.type.change":"Změnit druh: {0}",
     "arr.issuesList.form.permission": "Oprávnění",
     "arr.issuesList.form.permission.read": "Zobrazení",
     "arr.issuesList.form.permission.write": "Tvorba připomínek",

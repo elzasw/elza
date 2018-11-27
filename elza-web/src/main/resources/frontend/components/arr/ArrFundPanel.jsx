@@ -57,8 +57,8 @@ class ArrFundPanel extends AbstractReactComponent {
         const version = fund.lockDate != null ? <span className="lock"><span className="lockTitle">{i18n('arr.fund.panel.lockTitle')}</span>{dateToString(new Date(fund.lockDate))}</span> : null
 
         let comments = null;
-        if (false && !readMode) { // TODO lectoring @compel asi pouze v editu
-            const tooltip = <span>// TODO...</span>; // měl by posktynout server získat z fund
+        if (fund.issues && fund.issues.length > 0) {
+            const tooltip = <span>{fund.issues.map((i: IssueVO) => <div key={i.id}>#{i.number} - {i.description}</div>)}</span>;
             comments = <span className="comments">
                 <TooltipTrigger
                     content={tooltip}

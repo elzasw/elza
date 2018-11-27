@@ -10,6 +10,7 @@ import {savingApiWrapper} from 'actions/global/status.jsx';
 import {fundExtendedView} from "./fundExtended";
 import {developerNodeScenariosDirty} from 'actions/global/developer.jsx';
 import {fundNodeInfoReceive} from "./nodeInfo";
+import {getParentNode} from "../../components/arr/ArrUtils";
 
 export function isNodeAction(action) {
     switch (action.type) {
@@ -86,6 +87,30 @@ export function fundSelectSubNode(versionId, subNodeId, subNodeParentNode, openN
         }
         dispatch(fundSelectSubNodeInt(versionId, subNodeId, subNodeParentNode, openNewTab, newFilterCurrentIndex, ensureItemVisible, subNodeIndex));
         dispatch(developerNodeScenariosDirty(subNodeId, subNodeParentNode.routingKey, state.arrRegion.funds[state.arrRegion.activeIndex].versionId));
+    }
+}
+
+export function fundSelectSubNodeByNodeId(versionId, nodeId, openNewTab=false, newFilterCurrentIndex = null, ensureItemVisible=false, subNodeIndex = null) {
+    return (dispatch, getState) => {
+        const {arrRegion} = getState();
+        const activeFund = arrRegion.activeIndex !== null ? arrRegion.funds[arrRegion.activeIndex] : null;
+
+        const getParentNodeByNodeId = (nodeId, fundTreeNodes) => {
+            let index = indexById(fundTreeNodes, nodeId);
+            const node = fundTreeNodes[index];
+            while (--index >= 0) {
+                if (fundTreeNodes[index].depth < node.depth) {
+                    return fundTreeNodes[index];
+                }
+            }
+            return null;
+        };
+
+        let parentNode = getParentNodeByNodeId(nodeId, activeFund.nodes.nodes);
+        if (parentNode === null) {
+            parentNode = createFundRoot(activeFund);
+        }
+        dispatch(fundSelectSubNode(versionId, nodeId, parentNode, openNewTab, newFilterCurrentIndex, ensureItemVisible, subNodeIndex))
     }
 }
 

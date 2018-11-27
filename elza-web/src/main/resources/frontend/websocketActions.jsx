@@ -537,6 +537,7 @@ function fragmentUpdate(value) {
 function issueListUpdate({id}) {
     store.dispatch(issuesActions.protocol.invalidate(id))
 }
+
 function issueUpdate({id}) {
     store.dispatch(issuesActions.detail.invalidate(id));
     store.dispatch(issuesActions.comments.invalidate(id));

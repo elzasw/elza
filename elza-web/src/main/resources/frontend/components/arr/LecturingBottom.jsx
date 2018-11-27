@@ -34,7 +34,8 @@ class LecturingBottom extends React.Component {
 
     componentDidMount() {
         const {issueDetail} = this.props;
-        if (issueDetail && issueDetail.fetched) {
+        if (issueDetail && issueDetail.id) {
+            this.props.dispatch(issuesActions.detail.fetchIfNeeded(issueDetail.id));
             this.props.dispatch(issuesActions.comments.fetchIfNeeded(issueDetail.id));
         }
     }
@@ -42,6 +43,7 @@ class LecturingBottom extends React.Component {
     componentWillReceiveProps(nextProps, nextContext) {
         const {issueDetail} = nextProps;
         if (issueDetail.id) {
+            this.props.dispatch(issuesActions.detail.fetchIfNeeded(issueDetail.id));
             this.props.dispatch(issuesActions.comments.fetchIfNeeded(issueDetail.id));
         }
     }

@@ -1574,6 +1574,7 @@ declare class IssueVO extends Object {
     id: number;
     issueListId: number;
     nodeId: number;
+    number: number;
     issueTypeId: number;
     issueStateId: number;
     description: string;

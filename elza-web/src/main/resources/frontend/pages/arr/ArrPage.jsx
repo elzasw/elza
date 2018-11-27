@@ -52,7 +52,7 @@ import {canSetFocus, focusWasSet, isFocusFor, setFocus} from 'actions/global/foc
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx'
 import {fundNodesPolicyFetchIfNeeded} from 'actions/arr/fundNodesPolicy.jsx'
 import {fundActionFormChange, fundActionFormShow} from 'actions/arr/fundAction.jsx'
-import {fundSelectSubNode} from 'actions/arr/node.jsx';
+import {fundSelectSubNode, fundSelectSubNodeByNodeId} from 'actions/arr/node.jsx';
 import {fundNodeInfoInvalidate} from 'actions/arr/nodeInfo.jsx';
 import ArrHistoryForm from 'components/arr/ArrHistoryForm.jsx'
 import {setVisiblePolicyRequest} from 'actions/arr/visiblePolicy.jsx'
@@ -77,6 +77,7 @@ import LecturingTop from "../../components/arr/LecturingTop";
 import LecturingBottom from "../../components/arr/LecturingBottom";
 import storeFromArea from "../../shared/utils/storeFromArea";
 import * as issuesActions from "../../actions/arr/issues";
+import IssueForm from "../../components/form/IssueForm";
 
 const keyModifier = Utils.getKeyModifier();
 
@@ -172,6 +173,16 @@ class ArrPage extends ArrParentPage {
         } else {
             this.setState({fundNodesError: null});
         }
+
+        if (nextProps.issueDetail.id) {
+            nextProps.dispatch(issuesActions.detail.fetchIfNeeded(nextProps.issueDetail.id))
+        }
+        if (!this.props.issueDetail.fetched && nextProps.issueDetail.fetched) {
+            if (nextProps.issueDetail.data.nodeId) {
+                this.props.dispatch(fundSelectSubNodeByNodeId(activeFund.versionId, nextProps.issueDetail.data.nodeId, false, null, true));
+            }
+        }
+
         this.registerTabs(nextProps);
         this.trySetFocus(nextProps);
     }
@@ -448,20 +459,71 @@ class ArrPage extends ArrParentPage {
     };
 
     createIssueFund = () => {
+        const {issueProtocol, dispatch} = this.props;
 
+        dispatch(modalDialogShow(this, i18n("arr.issues.add.arr.title"), <IssueForm onSubmit={(data) => WebApi.addIssue({
+            ...data,
+            issueListId: issueProtocol.id
+        })}  onSubmitSuccess={(data) => {
+            dispatch(issuesActions.list.invalidate(data.issueListId));
+            dispatch(issuesActions.detail.invalidate(data.id));
+            dispatch(modalDialogHide());
+        }} />));
     };
 
     createIssueNode = () => {
-        const {issueProtocol} = this.props;
+        const {issueProtocol, dispatch} = this.props;
 
+        dispatch(modalDialogShow(this, i18n("arr.issues.add.node.title"), <IssueForm onSubmit={(data) => WebApi.addIssue({
+            ...data,
+            issueListId: issueProtocol.id,
+            nodeId: this.props.node.selectedSubNodeId
+        })}  onSubmitSuccess={(data) => {
+            dispatch(issuesActions.list.invalidate(data.issueListId));
+            dispatch(issuesActions.detail.invalidate(data.id));
+            dispatch(modalDialogHide());
+        }} />));
     };
+
+    handleIssuePrevious = () => {
+        const {dispatch, issueDetail, issueList} = this.props;
+        const nodeIssues = issueList.rows.filter(i => !!i.nodeId);
+        if (nodeIssues.length > 0) {
+            const index = indexById(nodeIssues, issueDetail.id);
+            let newIssue = null;
+            if (index == null || !nodeIssues[index-1]) {
+                newIssue = nodeIssues[0];
+            } else {
+                newIssue = nodeIssues[index-1]
+            }
+
+            dispatch(issuesActions.detail.select(newIssue.id));
+        }
+    };
+    
+    handleIssueNext = () => {
+        const {dispatch, issueDetail, issueList} = this.props;
+        const nodeIssues = issueList.rows.filter(i => !!i.nodeId);
+        if (nodeIssues.length > 0) {
+            const index = indexById(nodeIssues, issueDetail.id);
+            let newIssue = null;
+            if (index == null || !nodeIssues[index+1]) {
+                newIssue = nodeIssues[nodeIssues.length - 1];
+            } else {
+                newIssue = nodeIssues[index+1]
+            }
+
+            dispatch(issuesActions.detail.select(newIssue.id));
+        }
+    };
+
 
     /**
      * Sestavení Ribbonu.
      * @return {Object} view
      */
     buildRibbon(readMode, closed) {
-        const {arrRegion, userDetail, issueProtocol} = this.props;
+        const {arrRegion, userDetail} = this.props;
 
         const activeInfo = this.getActiveInfo();
 
@@ -538,7 +600,7 @@ class ArrPage extends ArrParentPage {
                 }
             }
 
-
+            const {issueProtocol} = this.props;
 
             const isProtocolLoaded = !issueProtocol.isFetching && issueProtocol.data;
 
@@ -555,12 +617,13 @@ class ArrPage extends ArrParentPage {
                 userDetail.permissionsMap[perms.FUND_ISSUE_LIST_RD] &&
                 userDetail.permissionsMap[perms.FUND_ISSUE_LIST_RD].issueListIds &&
                 userDetail.permissionsMap[perms.FUND_ISSUE_LIST_RD].issueListIds.indexOf(issueProtocol.data.id) !== -1);
+
             itemActions.push(
-                <Button key="next-issue" onClick={() => {}} disabled={!haveProtocolPermissionToRead || subNodeId === null}>
+                <Button key="next-issue" onClick={this.handleIssuePrevious} disabled={!haveProtocolPermissionToRead}>
                     <Icon glyph="fa-arrow-left"/>
                     <span className="btnText">{i18n('ribbon.action.arr.issue.previous')}</span>
                 </Button>,
-                <Button key="previous-issue" onClick={() => {}} disabled={!haveProtocolPermissionToRead || subNodeId === null}>
+                <Button key="previous-issue" onClick={this.handleIssueNext} disabled={!haveProtocolPermissionToRead}>
                     <Icon glyph="fa-arrow-right"/>
                     <span className="btnText">{i18n('ribbon.action.arr.issue.next')}</span>
                 </Button>,
@@ -569,7 +632,7 @@ class ArrPage extends ArrParentPage {
                 <span className="btnText">{i18n('ribbon.action.arr.issue.add')}</span>
             </span>} key="add-issue" id="add-issue">
                     <MenuItem eventKey="1" onClick={this.createIssueFund}>{i18n("arr.issues.add.arr")}</MenuItem>
-                    <MenuItem eventKey="2" disabled={subNodeId !== null} onClick={this.createIssueNode}>{i18n("arr.issues.add.node")}</MenuItem>
+                    <MenuItem eventKey="2" disabled={subNodeId !== null} onClick={subNodeId !== null ? this.createIssueNode : null}>{i18n("arr.issues.add.node")}</MenuItem>
                 </DropdownButton>
             );
 
@@ -1152,6 +1215,8 @@ function mapStateToProps(state) {
         ruleSet: refTables.ruleSet,
         selectedTabKey: tab.values[ArrPage.TAB_KEY],
         issueProtocol: storeFromArea(state, issuesActions.AREA_PROTOCOL),
+        issueDetail: storeFromArea(state, issuesActions.AREA_DETAIL),
+        issueList: storeFromArea(state, issuesActions.AREA_LIST),
     }
 }
 
