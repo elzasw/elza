@@ -167,6 +167,7 @@ import cz.tacr.elza.packageimport.xml.RuleSystems;
 import cz.tacr.elza.packageimport.xml.Setting;
 import cz.tacr.elza.packageimport.xml.SettingBase;
 import cz.tacr.elza.packageimport.xml.SettingFavoriteItemSpecs;
+import cz.tacr.elza.packageimport.xml.SettingFundIssues;
 import cz.tacr.elza.packageimport.xml.SettingFundViews;
 import cz.tacr.elza.packageimport.xml.SettingGridView;
 import cz.tacr.elza.packageimport.xml.SettingRecord;
@@ -3075,6 +3076,8 @@ public class PackageService {
             entity = new SettingStructureTypes();
         } else if (Objects.equals(uiSettings.getSettingsType(), UISettings.SettingsType.GRID_VIEW)) {
             entity = new SettingGridView();
+        } else if (Objects.equals(uiSettings.getSettingsType(), UISettings.SettingsType.FUND_ISSUES)) {
+            entity = new SettingFundIssues();
         } else {
             entity = new SettingBase();
         }
