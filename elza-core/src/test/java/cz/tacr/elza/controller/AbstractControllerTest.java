@@ -409,7 +409,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String FIND_ISSUES = ISSUE_CONTROLLER_URL + "/issue_lists/{issueListId}/issues";
     protected static final String FIND_COMMENTS = ISSUE_CONTROLLER_URL + "/issues/{issueId}/comments";
     protected static final String UPDATE_ISSUE_LIST = ISSUE_CONTROLLER_URL + "/issue_lists/{issueListId}";
-    protected static final String SET_ISSUE_STATE = ISSUE_CONTROLLER_URL + "/issues/{issueId}/setState";
+    protected static final String UPDATE_ISSUE = ISSUE_CONTROLLER_URL + "/issues/{issueId}";
+    protected static final String SET_ISSUE_TYPE = ISSUE_CONTROLLER_URL + "/issues/{issueId}/type";
+    protected static final String UPDATE_COMMENT = ISSUE_CONTROLLER_URL + "/comments/{commentId}";
     protected static final String EXPORT_ISSUE_LIST = ISSUE_CONTROLLER_URL + "/issue_lists/{issueListId}/export";
 
     protected final static DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.00");
@@ -3734,10 +3736,17 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * Vyhledá protokoly k danému archivní souboru - řazeno nejprve otevřené a pak uzavřené
      *
      * @param fundId identifikátor AS
+     * @param open filtr pro stav (otevřený/uzavřený)
      * @return seznam protokolů
      */
-    protected List<WfIssueListVO> findIssueListByFund(Integer fundId) {
-        return Arrays.asList(get(spec -> spec.pathParameter("fundId", fundId), FIND_ISSUE_LISTS).as(WfIssueListVO[].class));
+    public List<WfIssueListVO> findIssueListByFund(Integer fundId, Boolean open) {
+        return Arrays.asList(get(spec -> {
+            spec.pathParameter("fundId", fundId);
+            if (open != null) {
+                spec.queryParameter("open", open);
+            }
+            return spec;
+        }, FIND_ISSUE_LISTS).as(WfIssueListVO[].class));
     }
 
     /**
@@ -3751,10 +3760,10 @@ public abstract class AbstractControllerTest extends AbstractTest {
         return Arrays.asList(get(spec -> {
             spec.pathParameter("issueListId", issueListId);
             if (issueStateId != null) {
-                spec.queryParameter("issue_state_id", issueStateId);
+                spec.queryParameter("issueStateId", issueStateId);
             }
             if (issueTypeId != null) {
-                spec.queryParameter("issue_type_id", issueTypeId);
+                spec.queryParameter("issueTypeId", issueTypeId);
             }
             return spec;
         }, FIND_ISSUES).as(WfIssueVO[].class));
@@ -3785,14 +3794,41 @@ public abstract class AbstractControllerTest extends AbstractTest {
     }
 
     /**
-     * Změna stavu připomínky
+     * Úprava připomínky
      *
-     * @param issueStateId identifikátor stavu připomínky
+     * @param issueId identifikátor připomínky
+     * @param issueVO data pro uložení připomínky
+     * @return detail založené připomínky
      */
-    protected void setIssueState(Integer issueId, Integer issueStateId) {
-        post(spec -> spec
+    protected WfIssueVO updateIssue(Integer issueId, WfIssueVO issueVO) {
+        return put(spec -> spec
                 .pathParameter("issueId", issueId)
-                .queryParameter("issueStateId", issueStateId), SET_ISSUE_STATE);
+                .body(issueVO), UPDATE_ISSUE)
+                .getBody().as(WfIssueVO.class);
     }
 
+    /**
+     * Změna druhu připomínky
+     *
+     * @param issueTypeId identifikátor stavu připomínky
+     */
+    protected void setIssueType(Integer issueId, Integer issueTypeId) {
+        post(spec -> spec
+                .pathParameter("issueId", issueId)
+                .queryParameter("issueTypeId", issueTypeId), SET_ISSUE_TYPE);
+    }
+
+    /**
+     * Úprava komentáře
+     *
+     * @param commentId identifikátor komentáře
+     * @param commentVO data pro založení protokolu
+     * @return detail založeného komentáře
+     */
+    protected WfCommentVO updateIssueComment(Integer commentId, WfCommentVO commentVO) {
+        return put(spec -> spec
+                .pathParameter("commentId", commentId)
+                .body(commentVO), UPDATE_COMMENT)
+                .getBody().as(WfCommentVO.class);
+    }
 }

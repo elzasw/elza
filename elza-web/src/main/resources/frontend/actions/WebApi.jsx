@@ -1436,14 +1436,14 @@ export class WebApiCls {
      * Získání seznam připomínek dle parametrů.
      *
      * @param issueListId identifikátor protokolu.
-     * @param stateId     identifikátor stavu připomínky dle kterého filtrujeme
-     * @param typeId      identifikátor druhu připomínky dle kterého filtrujeme
+     * @param issueStateId identifikátor stavu připomínky dle kterého filtrujeme
+     * @param issueTypeId identifikátor druhu připomínky dle kterého filtrujeme
      * @returns {Promise} seznam připomínek
      */
-    findIssueByIssueList(issueListId : number, stateId : number = null, typeId : number = null) {
+    findIssueByIssueList(issueListId : number, issueStateId : number = null, issueTypeId : number = null) {
         const requestParams = {
-            stateId,
-            typeId
+            issueStateId,
+            issueTypeId
         };
         return AjaxUtils.ajaxGet(WebApiCls.issueUrl + '/issue_lists/' + issueListId + '/issues', requestParams);
     }
@@ -1498,17 +1498,17 @@ export class WebApiCls {
     }
 
     /**
-     * Změna stavu připomínky.
+     * Změna druhu připomínky.
      *
-     * @param issueId      identifikátor připomínky
-     * @param issueStateId identifikátor stavu připomínky
+     * @param issueId     identifikátor připomínky
+     * @param issueTypeId identifikátor stavu připomínky
      * @returns {Promise}
      */
-    setIssueState(issueId : number, issueStateId : number) {
+    setIssueType(issueId : number, issueTypeId : number) {
         const requestParams = {
-            issueStateId,
+            issueTypeId,
         };
-        return AjaxUtils.ajaxPost(WebApiCls.issueUrl + '/issues/' + issueId + '/setState', requestParams)
+        return AjaxUtils.ajaxPost(WebApiCls.issueUrl + '/issues/' + issueId + '/type', requestParams)
     }
 
     /**

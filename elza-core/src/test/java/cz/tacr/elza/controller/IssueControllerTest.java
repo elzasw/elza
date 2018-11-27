@@ -137,6 +137,7 @@ public class IssueControllerTest extends AbstractControllerTest {
                 String description = "description";
 
                 WfIssueTypeVO issueTypeVO1 = findAllIssueTypes().get(0);
+                WfIssueTypeVO issueTypeVO2 = findAllIssueTypes().get(1);
 
                 Integer issueId;
                 {
@@ -186,27 +187,15 @@ public class IssueControllerTest extends AbstractControllerTest {
                     issueStateId1 = issueVO3.getIssueStateId();
                 }
 
-                WfIssueStateVO issueStateVO2 = null;
                 {
-                    // najit jeden final state
-                    for (WfIssueStateVO issueStateVO : issueStateVOMap.values()) {
-                        if (issueStateVO.isFinalState()) {
-                            issueStateVO2 = issueStateVO;
-                            break;
-                        }
-                    }
-                    assertNotNull(issueStateVO2);
-                }
+                    // --- set issue type
 
-                {
-                    // --- set issue state
-
-                    setIssueState(issueVO.getId(), issueStateVO2.getId());
+                    setIssueType(issueVO.getId(), issueTypeVO2.getId());
 
                     WfIssueVO issueVO4 = getIssue(issueId);
 
                     assertNotNull(issueVO4);
-                    assertEquals(issueStateVO2.getId(), issueVO4.getIssueStateId());
+                    assertEquals(issueTypeVO2.getId(), issueVO4.getIssueTypeId());
 
                     issueVO = issueVO4;
                 }
@@ -245,7 +234,7 @@ public class IssueControllerTest extends AbstractControllerTest {
                 {
                     // --- find issue lists
 
-                    List<WfIssueListVO> issueListVOs = findIssueListByFund(fund.getId());
+                    List<WfIssueListVO> issueListVOs = findIssueListByFund(fund.getId(), null);
 
                     assertNotNull(issueListVOs);
                     assertFalse(issueListVOs.isEmpty());

@@ -143,8 +143,8 @@ public class IssueController {
     @RequestMapping(value = "/issue_lists/{issueListId}/issues", method = RequestMethod.GET)
     @Transactional
     public List<WfIssueVO> findIssueByIssueList(@PathVariable Integer issueListId,
-                                                @RequestParam(name = "issue_state_id", required = false) Integer issueStateId,
-                                                @RequestParam(name = "issue_type_id", required = false) Integer issueTypeId) {
+                                                @RequestParam(name = "issueStateId", required = false) Integer issueStateId,
+                                                @RequestParam(name = "issueTypeId", required = false) Integer issueTypeId) {
 
         // kontrola existence a opravneni
         WfIssueList issueList = issueService.getIssueList(issueListId);
@@ -172,7 +172,7 @@ public class IssueController {
         Validate.notBlank(issueListVO.getName(), "Chybí název protokolu [name]");
         Validate.notNull(issueListVO.getOpen(), "Chybí příznak stavu protokolu [open]");
 
-        // kontrola existence a opravneni
+        // kontrola existence
         ArrFund fund = arrangementService.getFund(issueListVO.getFundId());
 
         // validace uzivatelu
@@ -312,17 +312,17 @@ public class IssueController {
     }
 
     /**
-     * Změna stavu připomínky
+     * Změna druhu připomínky
      *
-     * @param issueStateId identifikátor stavu připomínky
+     * @param issueTypeId identifikátor stavu připomínky
      */
-    @RequestMapping(value = "/issues/{issueId}/setState", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/issues/{issueId}/type", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
-    public void setIssueState(@PathVariable Integer issueId, @RequestParam Integer issueStateId) {
-        // kontrola existence
+    public void setIssueType(@PathVariable Integer issueId, @RequestParam(name = "issueTypeId") Integer issueTypeId) {
+        // kontrola existence a opravneni
         WfIssue issue = issueService.getIssue(issueId);
-        WfIssueState issueState = issueService.getIssueState(issueStateId);
-        issueService.setIssueState(issue, issueState);
+        WfIssueType issueType = issueService.getIssueType(issueTypeId);
+        issueService.setIssueType(issue, issueType);
     }
 
     /**

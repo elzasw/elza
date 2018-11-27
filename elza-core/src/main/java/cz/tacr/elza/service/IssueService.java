@@ -371,18 +371,18 @@ public class IssueService {
     }
 
     /**
-     * Změna stavu připomínky
+     * Změna druhu připomínky
      */
     @Transactional
     @AuthMethod(permission = {Permission.FUND_ISSUE_LIST_WR})
-    public void setIssueState(@AuthParam(type = AuthParam.Type.ISSUE) @NotNull WfIssue issue, @NotNull WfIssueState issueState) {
+    public void setIssueType(@AuthParam(type = AuthParam.Type.ISSUE) @NotNull WfIssue issue, @NotNull WfIssueType issueType) {
 
         Validate.notNull(issue, "Issue is null");
-        Validate.notNull(issueState, "Issue state is null");
+        Validate.notNull(issueType, "Issue type is null");
 
-        if (!issue.getIssueState().equals(issueState)) {
+        if (!issue.getIssueType().equals(issueType)) {
 
-            issue.setIssueState(issueState);
+            issue.setIssueType(issueType);
             issueRepository.save(issue);
 
             publishAccessPointEvent(issue.getIssueId(), EventType.ISSUE_UPDATE);
