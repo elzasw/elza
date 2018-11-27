@@ -1078,7 +1078,7 @@ public class ArrangementController {
 
 		List<ArrFundVO> fundVOList = new ArrayList<>(fundList.size());
 		fundList.forEach(f -> {
-            ArrFundVO fundVO = factoryVo.createFundVO(f.getFund(), false);
+            ArrFundVO fundVO = factoryVo.createFundVO(f.getFund(), false, userService.getLoggedUserDetail());
 			//fundVO.setVersions(Arrays.asList(factoryVo.createFundVersion(f.getOpenVersion())));
 			fundVOList.add(fundVO);
         });
@@ -1098,7 +1098,7 @@ public class ArrangementController {
         if (fund == null) {
             throw new ObjectNotFoundException("AS s ID=" + fundId + " nebyl nalezen", ArrangementCode.FUND_NOT_FOUND).set("id", fundId);
         }
-        return factoryVo.createFundVO(fund, true);
+        return factoryVo.createFundVO(fund, true, userService.getLoggedUserDetail());
     }
 
     /**
@@ -1136,7 +1136,7 @@ public class ArrangementController {
 
         List<ArrFundVO> result = new LinkedList<>();
         for (ArrFundVersion version : versions) {
-            ArrFundVO fund = factoryVo.createFundVO(version.getFund(), false);
+            ArrFundVO fund = factoryVo.createFundVO(version.getFund(), false, userService.getLoggedUserDetail());
             ArrFundVersionVO versionVo = factoryVo.createFundVersion(version);
             fund.setVersions(Arrays.asList(versionVo));
 
@@ -1319,7 +1319,8 @@ public class ArrangementController {
                 .createFundWithScenario(createFund.getName(), ruleSet, createFund.getInternalCode(), institution, createFund.getDateRange());
 
         // Kontrola na vyplněnost uživatele nebo skupiny jako správce, pokud není admin
-        if (!userService.hasPermission(UsrPermission.Permission.FUND_ADMIN)) {
+        UserDetail userDetail = userService.getLoggedUserDetail();
+        if (!userDetail.hasPermission(UsrPermission.Permission.FUND_ADMIN)) {
             if (ObjectUtils.isEmpty(createFund.getAdminUsers()) && ObjectUtils.isEmpty(createFund.getAdminGroups())) {
                 Assert.isTrue(false, "Nebyl vybrán správce");
             }
@@ -1363,7 +1364,7 @@ public class ArrangementController {
 			        g -> userService.addFundAdminPermissions(null, g.getId(), newFund));
         }
 
-        return factoryVo.createFundVO(newFund, true);
+        return factoryVo.createFundVO(newFund, true, userDetail);
     }
 
     /**
@@ -1386,8 +1387,7 @@ public class ArrangementController {
                         factoryDO.createFund(arrFundVO),
                         ruleSetRepository.findOne(ruleSetId),
                         apScopes
-                ),
-                false
+                ), false, userService.getLoggedUserDetail()
         );
     }
 

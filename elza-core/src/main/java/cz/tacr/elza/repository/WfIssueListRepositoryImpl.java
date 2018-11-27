@@ -18,13 +18,17 @@ import cz.tacr.elza.domain.WfIssueList;
 @Component
 public class WfIssueListRepositoryImpl implements WfIssueListRepositoryCustom {
 
+    // --- fields ---
+
     @PersistenceContext
     private EntityManager entityManager;
+
+    // --- methods ---
 
     @Override
     public List<WfIssueList> findByFundIdWithPermission(@NotNull Integer fundId, @Nullable Boolean open, @Nullable Integer userId) {
 
-        StringBuilder hql = new StringBuilder();
+        StringBuilder hql = new StringBuilder(256);
 
         hql.append("select il" +
                 " from wf_issue_list il" +

@@ -90,6 +90,7 @@ import cz.tacr.elza.controller.vo.UsrPermissionVO;
 import cz.tacr.elza.controller.vo.UsrUserVO;
 import cz.tacr.elza.controller.vo.WfIssueStateVO;
 import cz.tacr.elza.controller.vo.WfIssueTypeVO;
+import cz.tacr.elza.controller.vo.WfSimpleIssueVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.ItemTypeDescItemsLiteVO;
 import cz.tacr.elza.controller.vo.nodes.ItemTypeLiteVO;
@@ -173,6 +174,7 @@ import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.UsrGroup;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.domain.WfIssue;
 import cz.tacr.elza.domain.WfIssueState;
 import cz.tacr.elza.domain.WfIssueType;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
@@ -206,7 +208,9 @@ import cz.tacr.elza.repository.RelationRepository;
 import cz.tacr.elza.repository.RequestQueueItemRepository;
 import cz.tacr.elza.repository.UnitdateRepository;
 import cz.tacr.elza.repository.UserRepository;
+import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.DaoService;
+import cz.tacr.elza.service.IssueService;
 import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.service.OutputServiceInternal;
 import cz.tacr.elza.service.SettingsService;
@@ -317,6 +321,9 @@ public class ClientFactoryVO {
 
     @Autowired
     private ApFactory apFactory;
+
+    @Autowired
+    private IssueService issueService;
 
     /**
      * Vytvoření nastavení.
@@ -653,11 +660,12 @@ public class ClientFactoryVO {
     /**
      * Vytvoření ArrFund a načtení verzí.
      *
-     * @param fund      DO
+     * @param fund archivní soubor
      * @param includeVersions true - budou do objektu donačteny všechny jeho verze, false- verze nebudou donačteny
+     * @param user přihlášený uživatel
      * @return VO
      */
-    public ArrFundVO createFundVO(final ArrFund fund, final boolean includeVersions) {
+    public ArrFundVO createFundVO(final ArrFund fund, final boolean includeVersions, UserDetail user) {
         Assert.notNull(fund, "AS musí být vyplněn");
 
         MapperFacade mapper = mapperFactory.getMapperFacade();
@@ -680,6 +688,9 @@ public class ClientFactoryVO {
             fundVO.setValidNamedOutputs(createOutputDefinitions(outputDefinitionRepository.findValidOutputDefinitionByFund(fund), false));
             fundVO.setHistoricalNamedOutputs(createOutputDefinitions(outputDefinitionRepository.findHistoricalOutputDefinitionByFund(fund), true));
         }
+
+        List<WfIssue> issues = issueService.findOpenIssueByFundIdAndNodeNull(fund, user);
+        fundVO.setIssues(issues.stream().map(this::createSimpleIssueVO).collect(Collectors.toList()));
 
         return fundVO;
     }
@@ -2270,4 +2281,11 @@ public class ClientFactoryVO {
         return createList(issueStateList, WfIssueStateVO.class, null);
     }
 
+    public WfSimpleIssueVO createSimpleIssueVO(WfIssue issue) {
+        WfSimpleIssueVO issueVO = new WfSimpleIssueVO();
+        issueVO.setId(issue.getIssueId());
+        issueVO.setNumber(issue.getNumber());
+        issueVO.setDescription(issue.getDescription());
+        return issueVO;
+    }
 }

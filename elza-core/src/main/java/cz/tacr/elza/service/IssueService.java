@@ -34,6 +34,7 @@ import cz.tacr.elza.domain.ApName;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.WfComment;
 import cz.tacr.elza.domain.WfIssue;
@@ -207,7 +208,12 @@ public class IssueService {
      * @return seznam protokolů
      */
     public List<WfIssueList> findIssueListByFund(@NotNull ArrFund fund, @Nullable Boolean open, @NotNull UserDetail userDetail) {
+
         Validate.notNull(fund, "Fund is null");
+
+        if (userDetail == null) {
+            return Collections.emptyList();
+        }
 
         Integer userId = userDetail.getId() == null // virtuální uživatel, obdobně jako superadmin
                 || userDetail.hasPermission(Permission.ADMIN)
@@ -619,8 +625,37 @@ public class IssueService {
         return userAccessPointNameMap.get(user.getUserId()).getName();
     }
 
+    /**
+     * Seznam otevřených připomínek (tzn. nejsou v koncovém stavu) ze všech otevřených protokolů bez JP na konkrétní AS.
+     *
+     * @param fund archivní soubor
+     * @param user přihlášený uživatel
+     */
+    public List<WfIssue> findOpenIssueByFundIdAndNodeNull(@NotNull ArrFund fund, UserDetail userDetail) {
+        Validate.notNull(fund, "Fund is null");
+        if (userDetail == null) {
+            return Collections.emptyList();
+        }
+        Integer userId = userDetail.hasPermission(UsrPermission.Permission.ADMIN) ? null : userDetail.getId();
+        return issueRepository.findOpenByFundIdAndNodeNull(fund.getFundId(), userId);
+    }
+
+    /**
+     * Seznam otevřených připomínek (tzn. nejsou v koncovém stavu) ze všech otevřených protokolů ke kontrétní JP.
+     *
+     * @param node jednotka popisu
+     * @param user přihlášený uživatel
+     */
+    public List<WfIssue> findOpenIssueByNodeId(@NotNull ArrNode node, UserDetail userDetail) {
+        Validate.notNull(node, "Node is null");
+        if (userDetail == null) {
+            return Collections.emptyList();
+        }
+        Integer userId = userDetail.hasPermission(UsrPermission.Permission.ADMIN) ? null : userDetail.getId();
+        return issueRepository.findOpenByNodeId(node.getNodeId(), userId);
+    }
+
     protected void publishAccessPointEvent(Integer id, final EventType type) {
         eventNotificationService.publishEvent(EventFactory.createIdEvent(type, id));
     }
-
 }

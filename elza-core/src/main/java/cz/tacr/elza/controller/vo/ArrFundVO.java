@@ -1,12 +1,12 @@
 package cz.tacr.elza.controller.vo;
 
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.apache.commons.lang.builder.ToStringBuilder;
-
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.commons.lang.builder.ToStringBuilder;
 
 /**
  * VO pro archivní pomůcku.
@@ -29,6 +29,11 @@ public class ArrFundVO extends ArrFundBaseVO {
     private List<ArrOutputDefinitionVO> validNamedOutputs;
 
     private List<ArrOutputDefinitionVO> historicalNamedOutputs;
+
+    /**
+     * Seznam otevřených připomínek.
+     */
+    private List<WfSimpleIssueVO> issues;
 
     public Date getCreateDate() {
         return createDate;
@@ -84,6 +89,14 @@ public class ArrFundVO extends ArrFundBaseVO {
 
     public void setHistoricalNamedOutputs(final List<ArrOutputDefinitionVO> historicalNamedOutputs) {
         this.historicalNamedOutputs = historicalNamedOutputs;
+    }
+
+    public List<WfSimpleIssueVO> getIssues() {
+        return issues;
+    }
+
+    public void setIssues(List<WfSimpleIssueVO> issues) {
+        this.issues = issues;
     }
 
     @Override

@@ -6,6 +6,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
@@ -24,8 +25,12 @@ import cz.tacr.elza.domain.WfIssueType;
 @Component
 public class WfIssueRepositoryImpl implements WfIssueRepositoryCustom {
 
+    // --- fields ---
+
     @PersistenceContext
     private EntityManager entityManager;
+
+    // --- methods ---
 
     @Override
     public List<WfIssue> findByIssueListId(@NotNull Integer issueListId, @Nullable WfIssueState issueState, @Nullable WfIssueType issueType) {
@@ -50,5 +55,52 @@ public class WfIssueRepositoryImpl implements WfIssueRepositoryCustom {
         query.orderBy(builder.asc(root.get("number")));
 
         return entityManager.createQuery(query).getResultList();
+    }
+
+    @Override
+    public List<WfIssue> findOpenByFundIdAndNodeNull(@NotNull Integer fundId, @Nullable Integer userId) {
+
+        StringBuilder hql = new StringBuilder(256);
+        hql.append("select i from wf_issue i" +
+                " where i.issueList.fund.fundId = :fundId");
+        if (userId != null) {
+            hql.append(" and i.issueList in (select pv.issueList from usr_permission_view pv where pv.user.userId = :userId)");
+        }
+        hql.append(" and i.issueState.finalState = false" +
+                " and i.issueList.open = true" +
+                " and i.node = null" +
+                " order by i.issueList.issueListId, i.number");
+
+        Query query = entityManager.createQuery(hql.toString());
+
+        query.setParameter("fundId", fundId);
+        if (userId != null) {
+            query.setParameter("userId", userId);
+        }
+
+        return query.getResultList();
+    }
+
+    @Override
+    public List<WfIssue> findOpenByNodeId(@NotNull Integer nodeId, @Nullable Integer userId) {
+
+        StringBuilder hql = new StringBuilder(256);
+        hql.append("select i from wf_issue i" +
+                " where i.node.nodeId = :nodeId");
+        if (userId != null) {
+            hql.append(" and i.issueList in (select pv.issueList from usr_permission_view pv where pv.user.userId = :userId)");
+        }
+        hql.append(" and i.issueState.finalState = false" +
+                " and i.issueList.open = true" +
+                " order by i.issueList.issueListId, i.number");
+
+        Query query = entityManager.createQuery(hql.toString());
+
+        query.setParameter("fundId", nodeId);
+        if (userId != null) {
+            query.setParameter("userId", userId);
+        }
+
+        return query.getResultList();
     }
 }

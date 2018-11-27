@@ -13,5 +13,10 @@ import cz.tacr.elza.domain.WfIssueType;
  * Metody pro samostatnou implementaci repository {@link WfIssueRepository}.
  */
 public interface WfIssueRepositoryCustom {
+
     List<WfIssue> findByIssueListId(@NotNull Integer issueListId, @Nullable WfIssueState issueState, @Nullable WfIssueType issueType);
+
+    List<WfIssue> findOpenByFundIdAndNodeNull(@NotNull Integer fundId, @Nullable Integer userId);
+
+    List<WfIssue> findOpenByNodeId(@NotNull Integer nodeId, @Nullable Integer userId);
 }
