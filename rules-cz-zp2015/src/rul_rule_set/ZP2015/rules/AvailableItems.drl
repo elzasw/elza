@@ -2191,10 +2191,12 @@ when $activeLevel: ActiveLevel( )
     // nastaveni prvku  
     $itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE" ) )
     $itemSpec: RulItemSpecExt( code in ( 
+        // autoři
+        "ZP2015_ENTITY_ROLE_1", 
         // objednatelé/příjemci 
-        "ZP2015_ENTITY_ROLE_19"
-        // typová označení zatím nejsou správně uvedena jako povinná
-        // - neměl by vzniknout příznak určující typovost?
+        "ZP2015_ENTITY_ROLE_19",
+        // typová označení a názvy výrobků a typových staveb
+        "ZP2015_ENTITY_ROLE_63"
      ) ) from $itemType.rulItemSpecList
 then
     $itemSpec.setType(RulItemSpec.Type.REQUIRED);
