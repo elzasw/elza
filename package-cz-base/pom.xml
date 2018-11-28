@@ -4,7 +4,7 @@
     <parent>
         <artifactId>elza</artifactId>
         <groupId>cz.tacr.elza</groupId>
-        <version>0.19.4-SNAPSHOT</version>
+        <version>0.19.0-SNAPSHOT</version>
     </parent>
     <artifactId>package-cz-base</artifactId>
     <name>Package Base CZ</name>
