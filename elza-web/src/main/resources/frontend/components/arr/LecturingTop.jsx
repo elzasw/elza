@@ -180,18 +180,17 @@ class LecturingTop extends React.Component {
                         if (config.icons && config.icons[state.code]) {
                             icon = config.icons[state.code];
                         }
-                        // TODO lectoring @compel co s typem, jak tvořit kolečka a barvy + co context menu
                         return <TooltipTrigger className={"flex item"  + (active ? " active" : "")} content={<span><div>#{number} ({state.name})</div><div>{description}</div></span>}>
-                            <div className={"flex-1"}>
-                            <div>
-                                <span className="circle" style={style}>
-                                {state.finalState && icon && <Icon glyph={icon}/>}
-                                </span>
-                                <span className={"description"}>#{number} - {description}</span>
+                            <div className={"info"}>
+                                <div className="flex">
+                                    <span className="circle" style={!state.finalState ? style : null}>
+                                    {state.finalState && icon && <Icon glyph={icon}/>}
+                                    </span>
+                                    <span className={"description"}>#{number} - {description}</span>
+                                </div>
                                 <div className="reference-mark">
                                     {referenceMark && referenceMark.join(" ")}
                                 </div>
-                            </div>
                             </div>
                             {canWrite && <div className="actions">
                                 <DropdownButton pullRight bsStyle="action" id='issue-type' noCaret title={<Icon glyph='fa-ellipsis-h' />}>
