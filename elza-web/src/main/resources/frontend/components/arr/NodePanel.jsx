@@ -697,7 +697,7 @@ return true
     }
 
     renderIssues(item) {
-        if (item.issues && item.issues.length < 1) {
+        if (!item.issues || item.issues.length < 1) {
             return null
         }
 
