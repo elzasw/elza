@@ -943,7 +943,6 @@ public class PackageService {
                     }
                 }
             }
-            bulkActionConfigManager.load();
         } catch (IOException e) {
             throw new SystemException(e);
         }
@@ -1978,8 +1977,6 @@ public class PackageService {
                          ZIP_DIR_RULE_SET + "/" + ruc.getRulSetCode() + "/" + ZIP_DIR_RULES,
                          rule.getComponent().getFilename());
             }
-
-            bulkActionConfigManager.load();
         } catch (IOException e) {
             throw new SystemException(e);
         }
