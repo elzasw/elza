@@ -14,21 +14,34 @@
         flex: 1;
         .listbox-wrapper {
             height: 100%;
+            max-width: 100%;
             .item {
                 padding: 3px 5px;
+                > .info {
+                    flex: 1 0;
+                    min-width: 0;
+                }
                 .circle {
-                    background: #333333;
+                    background: grey;
                     border-radius: 50%;
                     height: 1em;
                     width: 1em;
                     display: inline-block;
                     margin-right: 5px;
-                    line-height: 1em;
+                    line-height: 0.9em;
                     vertical-align: middle;
                     text-align: center;
+                    min-width: 1em;
                     .icon {
                         font-size: 0.8em;
+                        margin-top: -1px;
+                        color: white;
                     }
+                }
+                .description {
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
                 }
                 .reference-mark {
                     color: grey;

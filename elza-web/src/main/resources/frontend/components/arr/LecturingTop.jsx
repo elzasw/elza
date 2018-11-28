@@ -46,7 +46,7 @@ class LecturingTop extends React.Component {
         nextProps.dispatch(issueTypesActions.fetchIfNeeded());
         nextProps.dispatch(issueStatesActions.fetchIfNeeded());
         nextProps.dispatch(issuesActions.protocols.fetchIfNeeded(this.props.fund.id));
-        if (nextProps.issueProtocols.fetched && nextProps.issueProtocols.count) {
+        if (nextProps.issueProtocols.fetched && nextProps.issueProtocols.count > 0) {
             if (!issueListId) {
                 const newIssueListId = nextProps.issueProtocols.rows[0].id;
                 this.selectIssueList(newIssueListId);
@@ -66,7 +66,7 @@ class LecturingTop extends React.Component {
     };
 
     download = () => {
-        this.props.dispatch(downloadFile(UrlFactory.exportIssueList(this.props.issueList.filter.protocol)));
+        this.props.dispatch(downloadFile(UrlFactory.exportIssueList(this.state.issueListId)));
     };
 
     newArr = () => {
@@ -150,13 +150,13 @@ class LecturingTop extends React.Component {
             </FormControl>
             <Row>
                 <Col xs={12} sm={6}>
-                    <FormControl componentClass={"select"} name={"state"} onChange={({target: {value}}) => this.filter({state:value})} value={issueList.filter.state}>
+                    <FormControl componentClass={"select"} name={"state"} disabled={!issueListId} onChange={({target: {value}}) => this.filter({state:value})} value={issueList.filter.state}>
                         <option value={""}>{i18n("global.all")}</option>
                         {issueStates.fetched && issueStates.data.map(basicOptionMap)}
                     </FormControl>
                 </Col>
                 <Col xs={12} sm={6}>
-                    <FormControl componentClass={"select"} name={"type"} onChange={({target: {value}}) => this.filter({type:value})} value={issueList.filter.type}>
+                    <FormControl componentClass={"select"} name={"type"} disabled={!issueListId} onChange={({target: {value}}) => this.filter({type:value})} value={issueList.filter.type}>
                         <option value={""}>{i18n("global.all")}</option>
                         {issueTypes.fetched && issueTypes.data.map(basicOptionMap)}
                     </FormControl>
@@ -180,18 +180,17 @@ class LecturingTop extends React.Component {
                         if (config.icons && config.icons[state.code]) {
                             icon = config.icons[state.code];
                         }
-                        // TODO lectoring @compel co s typem, jak tvořit kolečka a barvy + co context menu
                         return <TooltipTrigger className={"flex item"  + (active ? " active" : "")} content={<span><div>#{number} ({state.name})</div><div>{description}</div></span>}>
-                            <div className={"flex-1"}>
-                            <div>
-                                <span className="circle" style={style}>
-                                {state.finalState && icon && <Icon glyph={icon}/>}
-                                </span>
-                                #{number} - {description}
+                            <div className={"info"}>
+                                <div className="flex">
+                                    <span className="circle" style={!state.finalState ? style : null}>
+                                    {state.finalState && icon && <Icon glyph={icon}/>}
+                                    </span>
+                                    <span className={"description"}>#{number} - {description}</span>
+                                </div>
                                 <div className="reference-mark">
                                     {referenceMark && referenceMark.join(" ")}
                                 </div>
-                            </div>
                             </div>
                             {canWrite && <div className="actions">
                                 <DropdownButton pullRight bsStyle="action" id='issue-type' noCaret title={<Icon glyph='fa-ellipsis-h' />}>

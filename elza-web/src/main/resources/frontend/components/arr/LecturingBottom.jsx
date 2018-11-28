@@ -166,7 +166,7 @@ class LecturingBottom extends React.Component {
                     <div>
                         <TextareaAutosize
                             className="form-control"
-                            maxRows={3}
+                            maxRows={12}
                             rows={3}
                             value={text} onChange={({target:{value}}) => this.setState({text:value})}
                             disabled={submitting}
