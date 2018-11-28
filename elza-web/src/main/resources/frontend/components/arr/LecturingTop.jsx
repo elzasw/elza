@@ -116,7 +116,7 @@ class LecturingTop extends React.Component {
     };
 
     render() {
-        const {issueTypes, issueStates, issueList, issueProtocols, userDetail, issueDetail} = this.props;
+        const {fund, issueTypes, issueStates, issueList, issueProtocols, userDetail, issueDetail} = this.props;
         const {issueListId} = this.state;
         const issueId = issueDetail.id;
         const activeIndex = issueId !== null ? indexById(issueList.rows, issueId) : null;
@@ -130,6 +130,8 @@ class LecturingTop extends React.Component {
                 userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR].issueListIds.indexOf(issueListId) !== -1
             )
         );
+
+        const config = fund.activeVersion.config;
 
         return <div className="lecturing-top">
             <div className="actions-container">
@@ -169,13 +171,21 @@ class LecturingTop extends React.Component {
                     items={issueList.rows}
                     renderItemContent={({item: {description, issueStateId, issueTypeId, number, id, referenceMark}, active} : {item: IssueVO, active: boolean}) => {
                         const state : IssueStateVO = objectById(issueStates.data, issueStateId);
-                        const type = objectById(issueProtocols.data, issueTypeId);
+                        const type = objectById(issueTypes.data, issueTypeId);
+                        const style = {};
+                        if (config.colors && config.colors[type.code]) {
+                            style.background = config.colors[type.code];
+                        }
+                        let icon = null;
+                        if (config.icons && config.icons[state.code]) {
+                            icon = config.icons[state.code];
+                        }
                         // TODO lectoring @compel co s typem, jak tvořit kolečka a barvy + co context menu
                         return <TooltipTrigger className={"flex item"  + (active ? " active" : "")} content={<span><div>#{number} ({state.name})</div><div>{description}</div></span>}>
                             <div className={"flex-1"}>
                             <div>
-                                <span className="circle">
-                                {state.finalState && (<Icon glyph={false ? "fa-check" : "fa-times"}/>)}
+                                <span className="circle" style={style}>
+                                {state.finalState && icon && <Icon glyph={icon}/>}
                                 </span>
                                 #{number} - {description}
                                 <div className="reference-mark">
@@ -185,7 +195,7 @@ class LecturingTop extends React.Component {
                             </div>
                             {canWrite && <div className="actions">
                                 <DropdownButton pullRight bsStyle="action" id='issue-type' noCaret title={<Icon glyph='fa-ellipsis-h' />}>
-                                    {issueTypes.data.map(i => <MenuItem key={'issue-type-' + i.id} disabled={i.id === issueTypeId} onClick={this.updateIssueType.bind(this, id, i.id)}>{i18n("arr.issue.type.change", i.name)}</MenuItem>)}
+                                    {issueTypes.data.map(i => <MenuItem key={'issue-type-' + i.id} disabled={i.id === issueTypeId} onClick={this.updateIssueType.bind(this, id, i.id)}>{i18n("arr.issues.type.change", i.name)}</MenuItem>)}
                                 </DropdownButton>
                             </div>}
                         </TooltipTrigger>
@@ -203,6 +213,6 @@ export default connect((state) => {
         issueList: storeFromArea(state, issuesActions.AREA_LIST),
         issueProtocols: storeFromArea(state, issuesActions.AREA_PROTOCOLS),
         issueDetail: storeFromArea(state, issuesActions.AREA_DETAIL),
-        userDetail: state.userDetail
+        userDetail: state.userDetail,
     }
 })(LecturingTop);

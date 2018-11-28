@@ -473,11 +473,17 @@ class ArrPage extends ArrParentPage {
 
     createIssueNode = () => {
         const {issueProtocol, dispatch} = this.props;
+        const activeFund = this.getActiveFund(this.props);
+
+        let node;
+        if (activeFund.nodes && activeFund.nodes.activeIndex !== null) {
+            node = activeFund.nodes.nodes[activeFund.nodes.activeIndex]
+        }
 
         dispatch(modalDialogShow(this, i18n("arr.issues.add.node.title"), <IssueForm onSubmit={(data) => WebApi.addIssue({
             ...data,
             issueListId: issueProtocol.id,
-            nodeId: this.props.node.selectedSubNodeId
+            nodeId: node.selectedSubNodeId
         })}  onSubmitSuccess={(data) => {
             dispatch(issuesActions.list.invalidate(data.issueListId));
             dispatch(issuesActions.detail.invalidate(data.id));
@@ -632,7 +638,7 @@ class ArrPage extends ArrParentPage {
                 <span className="btnText">{i18n('ribbon.action.arr.issue.add')}</span>
             </span>} key="add-issue" id="add-issue">
                     <MenuItem eventKey="1" onClick={this.createIssueFund}>{i18n("arr.issues.add.arr")}</MenuItem>
-                    <MenuItem eventKey="2" disabled={subNodeId !== null} onClick={subNodeId !== null ? this.createIssueNode : null}>{i18n("arr.issues.add.node")}</MenuItem>
+                    <MenuItem eventKey="2" disabled={subNodeId === null} onClick={subNodeId !== null ? this.createIssueNode : null}>{i18n("arr.issues.add.node")}</MenuItem>
                 </DropdownButton>
             );
 

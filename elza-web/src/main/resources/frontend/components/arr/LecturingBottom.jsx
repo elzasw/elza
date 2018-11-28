@@ -62,15 +62,19 @@ class LecturingBottom extends React.Component {
         this.setState({text: "", submitting: false, comment: null});
     };
 
-    afterSave = () => {
+    afterSave = (stateChanged = false) => {
         this.reset();
         this.props.dispatch(issuesActions.comments.invalidate(this.props.issueDetail.id));
+        if (stateChanged) {
+            this.props.dispatch(issuesActions.detail.invalidate(this.props.issueDetail.id));
+            this.props.dispatch(issuesActions.list.invalidate(this.props.issueDetail.issueListId));
+        }
     };
 
     updateComment = () => {
         const {comment, text} = this.state;
         this.setState({submitting: true});
-        WebApi.updateIssueComment(comment.id, {...comment, comment: text}).then(this.afterSave);
+        WebApi.updateIssueComment(comment.id, {...comment, comment: text}).then(this.afterSave.bind(this, true));
     };
 
     editIssue = () => {
