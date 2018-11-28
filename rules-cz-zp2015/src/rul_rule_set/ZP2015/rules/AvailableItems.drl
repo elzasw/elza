@@ -588,10 +588,63 @@ when
     $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER") ) from $activeLevel.descItems
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode == "ZP2015_ARRANGEMENT_INV" ) from $activeLevel.descItems
     $itemType : RulItemTypeExt(code == "ZP2015_UNIT_TYPE")
-    $itemSpec : RulItemSpecExt(code not in ("ZP2015_UNIT_TYPE_LIO", "ZP2015_UNIT_TYPE_LIP", "ZP2015_UNIT_TYPE_UKN",
-       "ZP2015_UNIT_TYPE_PPR", "ZP2015_UNIT_TYPE_IND", "ZP2015_UNIT_TYP_ELE", "ZP2015_UNIT_TYPE_REP", "ZP2015_UNIT_TYPE_KTT",
-       "ZP2015_UNIT_TYPE_PEC", "ZP2015_UNIT_TYPE_ATL", "ZP2015_UNIT_TYPE_FAL",
-       "ZP2015_UNIT_TYPE_TIO") ) from $itemType.rulItemSpecList
+    $itemSpec : RulItemSpecExt(
+    code in (
+    // Rukopis
+    "ZP2015_UNIT_TYPE_RKP",
+    // Hudebnina
+    "ZP2015_UNIT_TYPE_HDB",
+    // Razítko
+    "ZP2015_UNIT_TYPE_RAZ",
+    // Samostatná pečeť, odlitek pečeti, otisk typáře
+    "ZP2015_UNIT_TYPE_OTD",
+    // Kopie otisku
+    "ZP2015_UNIT_TYPE_OTC",
+    // Mapa
+    "ZP2015_UNIT_TYPE_MAP",
+    // Technický výkres
+    "ZP2015_UNIT_TYPE_TVY",
+    // Grafický list
+    "ZP2015_UNIT_TYPE_GLI",
+    // Kresba
+    "ZP2015_UNIT_TYPE_KRE",
+    // Fotografie na papírové podložce
+    "ZP2015_UNIT_TYPE_FSN",
+    // Fotografická deska
+    "ZP2015_UNIT_TYPE_FSD",
+    // Listový filmy
+    "ZP2015_UNIT_TYPE_LFI",
+    // Svitkový film
+    "ZP2015_UNIT_TYPE_SFI",
+    // Kinofilm
+    "ZP2015_UNIT_TYPE_KIN",
+    // Mikrofilm
+    "ZP2015_UNIT_TYPE_MF",
+    // Mikrofiš
+    "ZP2015_UNIT_TYPE_MFS",
+    // Digitální fotografie
+    "ZP2015_UNIT_TYPE_DFO",
+    // Kinematografický záznam (dílo) v analogové i digitální podobě
+    "ZP2015_UNIT_TYPE_KZA",
+    // Zvukový záznam (dílo) v analogové i digitální podobě
+    "ZP2015_UNIT_TYPE_ZZA",
+    // Tisk po roce 1800
+    "ZP2015_UNIT_TYPE_TIP",
+    // Pohlednice
+    "ZP2015_UNIT_TYPE_POH",
+    // Plakát
+    "ZP2015_UNIT_TYPE_PKT",
+    // Cenný papír
+    "ZP2015_UNIT_TYPE_CPA",
+    // Štoček
+    "ZP2015_UNIT_TYPE_STO",
+    // Předmět numizmatické povahy
+    "ZP2015_UNIT_TYPE_PNP",
+    // Předmět faleristické povahy
+    "ZP2015_UNIT_TYPE_PFP",
+    // Jiná
+    "ZP2015_UNIT_TYPE_JIN"    
+    )) from $itemType.rulItemSpecList
 then
     $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
 end
