@@ -590,7 +590,7 @@ when
     $itemType : RulItemTypeExt(code == "ZP2015_UNIT_TYPE")
     $itemSpec : RulItemSpecExt(code not in ("ZP2015_UNIT_TYPE_LIO", "ZP2015_UNIT_TYPE_LIP", "ZP2015_UNIT_TYPE_UKN",
        "ZP2015_UNIT_TYPE_PPR", "ZP2015_UNIT_TYPE_IND", "ZP2015_UNIT_TYP_ELE", "ZP2015_UNIT_TYPE_REP", "ZP2015_UNIT_TYPE_KTT",
-       "ZP2015_UNIT_TYPE_PEC", "ZP2015_UNIT_TYPE_MAP", "ZP2015_UNIT_TYPE_ATL", "ZP2015_UNIT_TYPE_FAL",
+       "ZP2015_UNIT_TYPE_PEC", "ZP2015_UNIT_TYPE_ATL", "ZP2015_UNIT_TYPE_FAL",
        "ZP2015_UNIT_TYPE_TIO") ) from $itemType.rulItemSpecList
 then
     $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
@@ -2071,7 +2071,9 @@ when $activeLevel: ActiveLevel( )
     $itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE" ) )
     $itemSpec: RulItemSpecExt( code in (
         // vydavatelé/nakladatelé
-        "ZP2015_ENTITY_ROLE_16"
+        "ZP2015_ENTITY_ROLE_16",
+        // kartografové
+        "ZP2015_ENTITY_ROLE_33"
      ) ) from $itemType.rulItemSpecList
 then
     $itemSpec.setType(RulItemSpec.Type.REQUIRED);
