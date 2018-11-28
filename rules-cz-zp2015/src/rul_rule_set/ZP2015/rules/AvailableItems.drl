@@ -137,7 +137,7 @@ when
     $itemType : RulItemTypeExt(code == "ZP2015_LEVEL_TYPE")
     $activeLevel  : ActiveLevel( parent!=null && $parentDescItems: parent.descItems )
     DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_SERIES" ) from $parentDescItems
-    $itemSpec : RulItemSpecExt(code == "ZP2015_LEVEL_SERIES" || code == "ZP2015_LEVEL_FOLDER" || code == "ZP2015_LEVEL_ITEM") from $itemType.rulItemSpecList
+    $itemSpec : RulItemSpecExt(code in ("ZP2015_LEVEL_SERIES", "ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM")) from $itemType.rulItemSpecList
 then
     $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
 end
@@ -878,9 +878,15 @@ rule "Datace - možná na složce a níže"
 no-loop
 when
     $activeLevel: ActiveLevel( )
-    $itemType : RulItemTypeExt(code in
-    ( "ZP2015_UNIT_DATE", "ZP2015_DATE_OTHER" ) )
+    $itemType : RulItemTypeExt(code in ( "ZP2015_UNIT_DATE", "ZP2015_DATE_OTHER" ) )
     $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
+    // neexistje nadrizeny level typu logicka slozka s dataci a posuzovana uroven je slozka
+    not ( $level : Level( this!=$activeLevel ) and
+         //DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_FOLDER" ) from $level.descItems and
+         DescItem(type=="ZP2015_FOLDER_TYPE" && specCode=="ZP2015_FOLDER_LOGICAL" ) from $level.descItems and
+         DescItem(type in ( "ZP2015_UNIT_DATE", "ZP2015_DATE_OTHER" )) from $level.descItems and
+         DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER") ) from $descItem
+         )    
 then
     $itemType.setType(RulItemType.Type.POSSIBLE);
 end
@@ -918,6 +924,14 @@ when
     $activeLevel: ActiveLevel( !hasChildren )
     $itemType : RulItemTypeExt(code in ( "ZP2015_UNIT_DATE" ) )
     $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM") ) from $activeLevel.descItems
+
+    // neexistje nadrizeny level typu logicka slozka s dataci a posuzovana uroven je slozka
+    not ( $level : Level( this!=$activeLevel ) and
+         //DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_FOLDER" ) from $level.descItems and
+         DescItem(type=="ZP2015_FOLDER_TYPE" && specCode=="ZP2015_FOLDER_LOGICAL" ) from $level.descItems and
+         DescItem(type in ( "ZP2015_UNIT_DATE", "ZP2015_DATE_OTHER" )) from $level.descItems and
+         DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER") ) from $descItem
+         )
 then
     $itemType.setType(RulItemType.Type.RECOMMENDED);
 end
