@@ -392,6 +392,13 @@ public class Authorization {
 				return ((IArrFund) value).getFund().getFundId();
 			}
 			break;
+		case COMMENT:
+			if (value instanceof Integer) {
+				return issueListRepository.findFundIdByCommentId((Integer) value);
+			} else if (value instanceof IWfIssueList) {
+				return issueListRepository.findFundIdByIssueListId(((IWfIssueList) value).getIssueListId());
+			}
+			break;
 		}
 		throw new IllegalStateException(type + ":" + value.getClass().getName());
 	}
