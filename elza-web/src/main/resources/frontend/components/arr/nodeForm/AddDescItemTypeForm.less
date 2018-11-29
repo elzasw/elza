@@ -17,8 +17,15 @@
 
     .item {
         padding: @item-padding;
+        &.type-impossible {
+            /* Added in AddDescItemTypeForm.jsx:40 */
+            background-color: #eee;
+            color: #888;
+            font-style: italic;
+        }
         &.type-possible {
-            background-color: #c0e7c3;
+            /* Added in AddDescItemTypeForm.jsx:40 */
+            background-color: transparent;
         }
         &.focus {
             background-color: #afafaf;

@@ -140,7 +140,7 @@
 				<textElement>
 					<font isBold="true"/>
 				</textElement>
-				<text><![CDATA[Vairantní forma jména:]]></text>
+				<text><![CDATA[Variantní forma jména:]]></text>
 			</staticText>
 		</band>
 		<band height="90">
