@@ -4,31 +4,28 @@
     hodnota 164.
     Komponenta využívat klíč 'global.action.show.more' z messages.
 */
+import * as React from 'react';
+import i18n from "./i18n";
 
-var React = require('react');
-var i18n = require('./i18n');
-
-export default React.createClass({
-    propTypes: {
+export default class LongText extends React.Component {
+    static propTypes = {
         // Maximální počet znaků pro zobrazení, pokud bude mít text více, bude zkrácen. Implicitně 164.
         max: React.PropTypes.number,
-    },
-    getInitialState: function() {
-        return { expanded: false };
-    },
-    handleShowMore: function() {
-        this.setState({ expanded: true });
-    },
-    render: function() {
-        var text = this.props.text;
-        var more=null;
+    };
+    state = { expanded: false };
+
+    handleShowMore = () => this.setState({ expanded: true });
+
+    render() {
+        let text = this.props.text;
+        let more = null;
 
         if (!this.state.expanded) {
-            var max = this.props.max || 164;
-                if (text.length > max) {
-                    text = text.substring(0, max-3) + "...";
-                    more = <span> (<a href="#" onClick={this.handleShowMore}>{i18n('global.action.show.more')}</a>)</span>
-                }
+            const max = this.props.max || 164;
+            if (text.length > max) {
+                text = text.substring(0, max-3) + "...";
+                more = <span> (<a href="#" onClick={this.handleShowMore}>{i18n('global.action.show.more')}</a>)</span>
+            }
         }
 
         return (
@@ -37,4 +34,4 @@ export default React.createClass({
             </span>
         );
     }
-});
+}

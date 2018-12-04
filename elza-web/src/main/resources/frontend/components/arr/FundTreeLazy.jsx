@@ -6,7 +6,7 @@ import {Nav, Input, NavItem, Button, DropdownButton} from 'react-bootstrap';
 const classNames = require('classnames');
 import {propsEquals} from 'components/Utils.jsx'
 import {indexById} from 'stores/app/utils.jsx'
-import {createReferenceMark, getGlyph, getNodePrevSibling, getNodeNextSibling, getNodeParent, getNodeFirstChild} from 'components/arr/ArrUtils.jsx'
+import {createReferenceMark, getNodeIcon, getNodePrevSibling, getNodeNextSibling, getNodeParent, getNodeFirstChild} from 'components/arr/ArrUtils.jsx'
 import './FundTreeLazy.less';
 import {Shortcuts} from 'react-shortcuts';
 import {PropTypes} from 'prop-types';
@@ -17,15 +17,6 @@ const TREE_NAME_MAX_CHARS = 60
 
 // Odsazení odshora, musí být definováno, jinak nefunguje ensureItemVisible
 const TREE_TOP_PADDING = 0
-
-const colorMap = {
-    "fa-folder-o":{background:"#ffcc00",color:"#fff"},
-    "ez-serie":{background:"#6696dd", color:"#fff"},
-    "fa-sitemap":{background:"#4444cc", color:"#fff"},
-    "fa-file-text-o":{background:"#ff972c", color:"#fff"},
-    "ez-item-part-o":{background:"#cc3820", color: "#fff"},
-    "default":{background:"#333", color: "#fff"}
-}
 
 /**
  * Strom archivních souborů.
@@ -217,39 +208,13 @@ class FundTreeLazy extends AbstractReactComponent {
                 name = name.substring(0, TREE_NAME_MAX_CHARS - 3) + '...'
             }
         }
-        let style = {};
-        let backgroundColor, color;
-
-        if(this.props.colorCoded){
-            if(colorMap[node.icon]){
-                backgroundColor = colorMap[node.icon].background;
-                color = colorMap[node.icon].color;
-            } else {
-                backgroundColor = colorMap["default"].background;
-                color = colorMap["default"].color;
-            }
-            style = {
-                backgroundColor:backgroundColor,
-                color:color
-            };
-        }
-        let icon = getGlyph(node.icon);
-        let iconRemap = {
-            "fa-folder-o":"folder",
-            "ez-serie":"serie",
-            "fa-sitemap":"sitemap",
-            "fa-file-text-o":"fileText",
-            "ez-item-part-o":"fileTextPart",
-            "fa-exclamation-triangle":"triangleExclamation"
-        };
-        if(iconRemap[icon] && this.props.colorCoded){
-            icon = iconRemap[icon];
-        }
+        
+        const iconProps = getNodeIcon(this.props.colorCoded, node.icon);
 
         return <div key={node.id} className={cls}>
             {levels}
             {expCol}
-            <Icon {...clickProps} className={iconClass} style={style} fill={backgroundColor} stroke="none" glyph={icon}/>
+            <Icon {...clickProps} className={iconClass} {...iconProps}/>
             <div
                 title={title}
                 className='node-label'

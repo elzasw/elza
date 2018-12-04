@@ -1,6 +1,8 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;
@@ -13,9 +15,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
  * Uživatelské nastavení.
@@ -205,7 +206,12 @@ public class UISettings {
         /**
          * Nastavení sloupců / atributů pro zobrazení v gridu
          */
-        GRID_VIEW(false, EntityType.RULE);
+        GRID_VIEW(false, EntityType.RULE),
+
+        /**
+         * Nastavení barev a ikon připomínek.
+         */
+        FUND_ISSUES(true, EntityType.RULE);
 
         /**
          * If settings can be global or has to be defined on some entity.

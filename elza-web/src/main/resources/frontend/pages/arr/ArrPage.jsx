@@ -35,7 +35,7 @@ import {
     Ribbon,
     VisiblePolicyForm
 } from 'components/index.jsx';
-import {Button} from 'react-bootstrap';
+import {Button, DropdownButton, MenuItem} from 'react-bootstrap';
 import {WebApi} from 'actions/index.jsx';
 import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog.jsx'
 import {fundsFetchIfNeeded, showDaosJp, showRegisterJp} from 'actions/arr/fund.jsx'
@@ -52,14 +52,14 @@ import {canSetFocus, focusWasSet, isFocusFor, setFocus} from 'actions/global/foc
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx'
 import {fundNodesPolicyFetchIfNeeded} from 'actions/arr/fundNodesPolicy.jsx'
 import {fundActionFormChange, fundActionFormShow} from 'actions/arr/fundAction.jsx'
-import {fundSelectSubNode} from 'actions/arr/node.jsx';
+import {fundSelectSubNode, fundSelectSubNodeByNodeId} from 'actions/arr/node.jsx';
 import {fundNodeInfoInvalidate} from 'actions/arr/nodeInfo.jsx';
 import ArrHistoryForm from 'components/arr/ArrHistoryForm.jsx'
 import {setVisiblePolicyRequest} from 'actions/arr/visiblePolicy.jsx'
 import {routerNavigate} from 'actions/router.jsx'
 import {fundTreeFetchIfNeeded} from 'actions/arr/fundTree.jsx'
 import {Shortcuts} from 'react-shortcuts';
-import * as perms from 'actions/user/Permission.jsx';
+import * as perms from '../../actions/user/Permission.jsx';
 import {selectTab} from 'actions/global/tab.jsx'
 import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx'
 import {PropTypes} from 'prop-types';
@@ -70,6 +70,14 @@ import ArrStructurePanel from "../../components/arr/ArrStructurePanel";
 import {structureTypesFetchIfNeeded} from "../../actions/refTables/structureTypes";
 import objectById from "../../shared/utils/objectById";
 import FundTemplateSettingsForm from "../../components/arr/FundTemplateSettingsForm";
+import SearchFundsForm from "../../components/arr/SearchFundsForm";
+import Splitter from "../../components/shared/splitter/Splitter";
+import HorizontalSplitter from "../../components/shared/splitter/HorizontalSplitter";
+import LecturingTop from "../../components/arr/LecturingTop";
+import LecturingBottom from "../../components/arr/LecturingBottom";
+import storeFromArea from "../../shared/utils/storeFromArea";
+import * as issuesActions from "../../actions/arr/issues";
+import IssueForm from "../../components/form/IssueForm";
 
 const keyModifier = Utils.getKeyModifier();
 
@@ -108,7 +116,8 @@ class ArrPage extends ArrParentPage {
             'renderPanel', 'renderDeveloperDescItems', 'handleShowHideSpecs', 'handleTabSelect', 'handleSelectErrorNode',
             'handleErrorPrevious', 'handleErrorNext', 'trySetFocus', 'handleOpenFundActionForm',
             'handleChangeFundSettingsSubmit',
-            "handleSetExtendedView"
+            "handleSetExtendedView",
+            "renderLecturingPanel"
         );
     }
     componentDidMount() {
@@ -164,6 +173,16 @@ class ArrPage extends ArrParentPage {
         } else {
             this.setState({fundNodesError: null});
         }
+
+        if (nextProps.issueDetail.id) {
+            nextProps.dispatch(issuesActions.detail.fetchIfNeeded(nextProps.issueDetail.id))
+        }
+        if (!this.props.issueDetail.fetched && nextProps.issueDetail.fetched) {
+            if (nextProps.issueDetail.data.nodeId) {
+                this.props.dispatch(fundSelectSubNodeByNodeId(activeFund.versionId, nextProps.issueDetail.data.nodeId, false, null, true));
+            }
+        }
+
         this.registerTabs(nextProps);
         this.trySetFocus(nextProps);
     }
@@ -429,6 +448,83 @@ class ArrPage extends ArrParentPage {
     };
 
     /**
+     * Vyvolání dialogu s vyhledáním na všemi AS.
+     */
+    handleFundsSearchForm = () => {
+        this.props.dispatch(modalDialogShow(
+            this,
+            i18n('arr.fund.title.search'),
+            <SearchFundsForm />
+        ));
+    };
+
+    createIssueFund = () => {
+        const {issueProtocol, dispatch} = this.props;
+
+        dispatch(modalDialogShow(this, i18n("arr.issues.add.arr.title"), <IssueForm onSubmit={(data) => WebApi.addIssue({
+            ...data,
+            issueListId: issueProtocol.id
+        })}  onSubmitSuccess={(data) => {
+            dispatch(issuesActions.list.invalidate(data.issueListId));
+            dispatch(issuesActions.detail.invalidate(data.id));
+            dispatch(modalDialogHide());
+        }} />));
+    };
+
+    createIssueNode = () => {
+        const {issueProtocol, dispatch} = this.props;
+        const activeFund = this.getActiveFund(this.props);
+
+        let node;
+        if (activeFund.nodes && activeFund.nodes.activeIndex !== null) {
+            node = activeFund.nodes.nodes[activeFund.nodes.activeIndex]
+        }
+
+        dispatch(modalDialogShow(this, i18n("arr.issues.add.node.title"), <IssueForm onSubmit={(data) => WebApi.addIssue({
+            ...data,
+            issueListId: issueProtocol.id,
+            nodeId: node.selectedSubNodeId
+        })}  onSubmitSuccess={(data) => {
+            dispatch(issuesActions.list.invalidate(data.issueListId));
+            dispatch(issuesActions.detail.invalidate(data.id));
+            dispatch(modalDialogHide());
+        }} />));
+    };
+
+    handleIssuePrevious = () => {
+        const {dispatch, issueDetail, issueList} = this.props;
+        const nodeIssues = issueList.rows.filter(i => !!i.nodeId);
+        if (nodeIssues.length > 0) {
+            const index = indexById(nodeIssues, issueDetail.id);
+            let newIssue = null;
+            if (index == null || !nodeIssues[index-1]) {
+                newIssue = nodeIssues[0];
+            } else {
+                newIssue = nodeIssues[index-1]
+            }
+
+            dispatch(issuesActions.detail.select(newIssue.id));
+        }
+    };
+    
+    handleIssueNext = () => {
+        const {dispatch, issueDetail, issueList} = this.props;
+        const nodeIssues = issueList.rows.filter(i => !!i.nodeId);
+        if (nodeIssues.length > 0) {
+            const index = indexById(nodeIssues, issueDetail.id);
+            let newIssue = null;
+            if (index == null || !nodeIssues[index+1]) {
+                newIssue = nodeIssues[nodeIssues.length - 1];
+            } else {
+                newIssue = nodeIssues[index+1]
+            }
+
+            dispatch(issuesActions.detail.select(newIssue.id));
+        }
+    };
+
+
+    /**
      * Sestavení Ribbonu.
      * @return {Object} view
      */
@@ -483,10 +579,12 @@ class ArrPage extends ArrParentPage {
             }
 
             const nodeIndex = activeFund.nodes.activeIndex;
+            let subNodeId = null;
             if (nodeIndex !== null) {
                 const activeNode = activeFund.nodes.nodes[nodeIndex];
 
                 if (activeNode.selectedSubNodeId !== null) {
+                    subNodeId = activeNode.selectedSubNodeId;
                     itemActions.push(
                         <Button key="next-error" onClick={this.handleErrorPrevious.bind(this, activeFund.versionId, activeNode.selectedSubNodeId)}>
                             <Icon glyph="fa-arrow-left"/>
@@ -507,8 +605,50 @@ class ArrPage extends ArrParentPage {
                     }
                 }
             }
+
+            const {issueProtocol} = this.props;
+
+            const isProtocolLoaded = !issueProtocol.isFetching && issueProtocol.data;
+
+            const haveProtocolPermissionToWrite =
+                isProtocolLoaded && (
+                    userDetail.hasOne([perms.FUND_ISSUE_ADMIN_ALL]) || (
+                        userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR] &&
+                        userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR].issueListIds &&
+                        userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR].issueListIds.indexOf(issueProtocol.data.id) !== -1
+                    )
+                );
+            const haveProtocolPermissionToRead =
+                haveProtocolPermissionToWrite || (isProtocolLoaded &&
+                userDetail.permissionsMap[perms.FUND_ISSUE_LIST_RD] &&
+                userDetail.permissionsMap[perms.FUND_ISSUE_LIST_RD].issueListIds &&
+                userDetail.permissionsMap[perms.FUND_ISSUE_LIST_RD].issueListIds.indexOf(issueProtocol.data.id) !== -1);
+
+            itemActions.push(
+                <Button key="next-issue" onClick={this.handleIssuePrevious} disabled={!haveProtocolPermissionToRead}>
+                    <Icon glyph="fa-arrow-left"/>
+                    <span className="btnText">{i18n('ribbon.action.arr.issue.previous')}</span>
+                </Button>,
+                <Button key="previous-issue" onClick={this.handleIssueNext} disabled={!haveProtocolPermissionToRead}>
+                    <Icon glyph="fa-arrow-right"/>
+                    <span className="btnText">{i18n('ribbon.action.arr.issue.next')}</span>
+                </Button>,
+                <DropdownButton bsStyle="default" disabled={!haveProtocolPermissionToWrite} title={<span>
+                <Icon glyph="fa-commenting"/>
+                <span className="btnText">{i18n('ribbon.action.arr.issue.add')}</span>
+            </span>} key="add-issue" id="add-issue">
+                    <MenuItem eventKey="1" onClick={this.createIssueFund}>{i18n("arr.issues.add.arr")}</MenuItem>
+                    <MenuItem eventKey="2" disabled={subNodeId === null} onClick={subNodeId !== null ? this.createIssueNode : null}>{i18n("arr.issues.add.node")}</MenuItem>
+                </DropdownButton>
+            );
+
         }
         let altSection;
+
+        altActions.push(
+            <Button key="search-fa" onClick={this.handleFundsSearchForm}><Icon glyph="fa-search" /><div><span className="btnText">{i18n('ribbon.action.arr.fund.search')}</span></div></Button>
+        );
+
         if (altActions.length > 0) {
             altSection = <RibbonGroup key="alt" className="small">{altActions}</RibbonGroup>
         }
@@ -788,6 +928,15 @@ class ArrPage extends ArrParentPage {
         </div>
     }
 
+    renderLecturingPanel(activeFund, node) {
+        return <div className='issues-panel'>
+            <HorizontalSplitter
+                                top={<LecturingTop fund={activeFund} node={node} />}
+                                bottom={<LecturingBottom />}
+            />
+        </div>
+    }
+
     handleTabSelect(item) {
         this.props.dispatch(selectTab(ArrPage.TAB_KEY, item.id));
         if (item.update) {  //Pokud má záložka definovánu funkci update(), pak se tato funkce zavolá.
@@ -899,6 +1048,13 @@ class ArrPage extends ArrParentPage {
                         render:() => this.renderDeveloperScenarios(activeFund, node),
                         condition: developer.enabled,
                         showCondition: !!node
+                    },
+                    "lecturing":{
+                        id: "lecturing" ,
+                        key: "lecturing" ,
+                        name: i18n('arr.panel.title.lecturing'),
+                        render:() => this.renderLecturingPanel(activeFund, node),
+
                     }
         };
         this.setState({tabs});
@@ -1064,6 +1220,9 @@ function mapStateToProps(state) {
         descItemTypes: refTables.descItemTypes,
         ruleSet: refTables.ruleSet,
         selectedTabKey: tab.values[ArrPage.TAB_KEY],
+        issueProtocol: storeFromArea(state, issuesActions.AREA_PROTOCOL),
+        issueDetail: storeFromArea(state, issuesActions.AREA_DETAIL),
+        issueList: storeFromArea(state, issuesActions.AREA_LIST),
     }
 }
 

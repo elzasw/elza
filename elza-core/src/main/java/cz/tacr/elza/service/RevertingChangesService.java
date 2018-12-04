@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -45,12 +46,12 @@ import cz.tacr.elza.domain.ArrFundStructureExtension;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrOutputDefinition;
+import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
@@ -60,6 +61,7 @@ import cz.tacr.elza.repository.StructuredObjectRepository;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.eventnotification.events.EventFunds;
 import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
+import cz.tacr.elza.service.eventnotification.events.EventStructureDataChange;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.vo.Change;
 import cz.tacr.elza.service.vo.ChangesResult;
@@ -118,6 +120,15 @@ public class RevertingChangesService {
     @Autowired
     private StructuredObjectRepository structuredObjectRepository;
 
+    @Autowired
+    private StructObjService structObjService;
+
+    @Autowired
+    private StructObjValueService structObjValueService;
+
+    @Autowired
+    private IssueService issueService;
+
     /**
      * Vyhledání provedení změn nad AS, případně nad konkrétní JP z AS.
      *
@@ -140,25 +151,18 @@ public class RevertingChangesService {
         Integer fromChangeId = fromChange == null ? null : fromChange.getChangeId();
         boolean isNodeContext = node != null;
 
-        // dotaz pro vyhledání
-        Query query = createFindQuery(fundId, nodeId, maxSize, offset, fromChangeId);
-
-        // dotaz pro celkový počet položek
-        Query queryCount = createFindQueryCount(fundId, nodeId, fromChangeId);
-
         // dotaz pro zjištění poslední změny (pro nastavení parametru outdated)
-        Query queryLastChange = createQueryLastChange(fundId, nodeId);
-
-        Object queryResult = queryLastChange.getSingleResult();
-        if (queryResult == null) {
+        ChangeResult lastChange = getLastChange(fundId, nodeId);
+        if (lastChange == null) {
             throw new BusinessException("Failed to find valid last change", ArrangementCode.DATA_NOT_FOUND)
                     .set("nodeId", nodeId);
         }
-        ChangeResult lastChange = convertResult((Object[]) queryResult);
-        Integer count = ((Number) queryCount.getSingleResult()).intValue();
+
+        // dotaz pro celkový počet položek
+        int count = countChange(fundId, nodeId, fromChangeId);
 
         // nalezené změny
-        List<ChangeResult> sqlResult = convertResults(query.getResultList());
+        List<ChangeResult> changeList = findChange(fundId, nodeId, maxSize, offset, fromChangeId);
 
         // typ oprávnění, podle kterého se určuje, zda-li je možné provést rozsáhlejší revert, nebo pouze své změny
         boolean fullRevertPermission = hasFullRevertPermission(fundVersion.getFund());
@@ -168,8 +172,7 @@ public class RevertingChangesService {
 
         // pokud nemám vyšší oprávnění a načítám starší změny, kontroluji, že neexistuje předchozí změna jiného uživatele
         if (!fullRevertPermission && offset > 0) {
-            Query findUserChangeQuery = createFindUserChangeQuery(fundId, nodeId, offset, fromChangeId);
-            Integer otherUserChangeCount = ((BigInteger) findUserChangeQuery.getSingleResult()).intValue();
+            int otherUserChangeCount = countUserChange(fundId, nodeId, offset, fromChangeId);
             canRevertByUserBefore = otherUserChangeCount == 0;
         }
 
@@ -177,17 +180,15 @@ public class RevertingChangesService {
         boolean canReverBefore = true;
 
         if (offset > 0 && isNodeContext) {
-            Query findQueryToChange = createFindQuery(fundId, nodeId, 1, offset, fromChangeId);
-            ChangeResult toChangeResult = convertResult((Object[]) findQueryToChange.getSingleResult());
-            Query findQueryCountBefore = createFindQueryCountBefore(fundId, nodeId, fromChangeId, toChangeResult.getChangeId());
-            Integer countBefore = ((BigInteger) findQueryCountBefore.getSingleResult()).intValue();
-
+            List<ChangeResult> toChangeResultList = findChange(fundId, nodeId, 1, offset, fromChangeId);
+            ChangeResult toChangeResult = toChangeResultList.get(0);
+            int countBefore = countChangeBefore(fundId, nodeId, fromChangeId, toChangeResult.getChangeId());
             if (countBefore > 0) {
                 canReverBefore = false;
             }
         }
 
-        List<Change> changes = convertChangeResults(sqlResult, fundVersion, fullRevertPermission, canReverBefore, canRevertByUserBefore, isNodeContext);
+        List<Change> changes = convertChangeResults(changeList, fundVersion, fullRevertPermission, canReverBefore, canRevertByUserBefore, isNodeContext);
 
         // sestavení odpovědi
         ChangesResult changesResult = new ChangesResult();
@@ -224,18 +225,7 @@ public class RevertingChangesService {
         Integer fromChangeId = fromChange.getChangeId();
 
         // dotaz pro zjištění pozice v seznamu podle datumu
-        Query queryIndex = createQueryIndex(fundId, nodeId, fromChangeId, fromDate);
-
-        final Object singleResult = queryIndex.getSingleResult();
-
-        Integer count = null;
-        if (singleResult instanceof Integer) {
-            count = (Integer) singleResult;
-        } else if (singleResult instanceof BigInteger) {
-            count = ((BigInteger) queryIndex.getSingleResult()).intValue();
-        } else {
-            throw new SystemException("Nedefinovaný typ výsledku dotazu. (" + (singleResult == null ? "null" : singleResult.getClass().getSimpleName()) + ")");
-        }
+        int count = countChangeIndex(fundId, nodeId, fromChangeId, fromDate);
 
         return findChanges(fundVersion, node, maxSize, count, fromChange);
     }
@@ -276,77 +266,111 @@ public class RevertingChangesService {
         Query nodeIdsQuery = findChangeNodeIdsQuery(fund, node, toChange);
         Set<Integer> nodeIdsChange = new HashSet<>(nodeIdsQuery.getResultList());
 
-        Query updateEntityQuery;
-        Query deleteEntityQuery;
-
-        deleteEntityQuery = createConformityDeleteForeignEntityQuery(fund, node, /*toChange,*/ "arr_node_conformity_error");
-        deleteEntityQuery.executeUpdate();
-
-        deleteEntityQuery = createConformityDeleteForeignEntityQuery(fund, node, /*toChange,*/ "arr_node_conformity_missing");
-        deleteEntityQuery.executeUpdate();
-
-        deleteEntityQuery = createConformityDeleteEntityQuery(fund, node/*, toChange*/);
-        deleteEntityQuery.executeUpdate();
+        {
+            Query deleteEntityQuery = createConformityDeleteForeignEntityQuery(fund, node, /*toChange,*/ "arr_node_conformity_error");
+            deleteEntityQuery.executeUpdate();
+        }
+        {
+            Query deleteEntityQuery = createConformityDeleteForeignEntityQuery(fund, node, /*toChange,*/ "arr_node_conformity_missing");
+            deleteEntityQuery.executeUpdate();
+        }
+        {
+            Query deleteEntityQuery = createConformityDeleteEntityQuery(fund, node/*, toChange*/);
+            deleteEntityQuery.executeUpdate();
+        }
 
         // drop used/fixed values
         usedValueRepository.deleteToChange(fund, toChange.getChangeId());
 
-        updateEntityQuery = createSimpleUpdateEntityQuery(fund, node, "deleteChange", "arr_level", toChange);
-        deleteEntityQuery = createSimpleDeleteEntityQuery(fund, node, "createChange", "arr_level", toChange);
-        updateEntityQuery.executeUpdate();
-        deleteEntityQuery.executeUpdate();
+        {
+            Query updateEntityQuery = createSimpleUpdateEntityQuery(fund, node, "deleteChange", "arr_level", toChange);
+            Query deleteEntityQuery = createSimpleDeleteEntityQuery(fund, node, "createChange", "arr_level", toChange);
+            updateEntityQuery.executeUpdate();
+            deleteEntityQuery.executeUpdate();
+        }
 
-        updateEntityQuery = createSimpleUpdateEntityQuery(fund, node, "deleteChange", "arr_node_register", toChange);
-        deleteEntityQuery = createSimpleDeleteEntityQuery(fund, node, "createChange", "arr_node_register", toChange);
-        updateEntityQuery.executeUpdate();
-        deleteEntityQuery.executeUpdate();
+        {
+            Query updateEntityQuery = createSimpleUpdateEntityQuery(fund, node, "deleteChange", "arr_node_register", toChange);
+            Query deleteEntityQuery = createSimpleDeleteEntityQuery(fund, node, "createChange", "arr_node_register", toChange);
+            updateEntityQuery.executeUpdate();
+            deleteEntityQuery.executeUpdate();
+        }
 
-        updateEntityQuery = createSimpleUpdateEntityQuery(fund, node, "deleteChange", "arr_node_extension", toChange);
-        deleteEntityQuery = createSimpleDeleteEntityQuery(fund, node, "createChange", "arr_node_extension", toChange);
-        updateEntityQuery.executeUpdate();
-        deleteEntityQuery.executeUpdate();
+        {
+            Query updateEntityQuery = createSimpleUpdateEntityQuery(fund, node, "deleteChange", "arr_node_extension", toChange);
+            Query deleteEntityQuery = createSimpleDeleteEntityQuery(fund, node, "createChange", "arr_node_extension", toChange);
+            updateEntityQuery.executeUpdate();
+            deleteEntityQuery.executeUpdate();
+        }
 
-        updateEntityQuery = createSimpleUpdateEntityQuery(fund, node, "deleteChange", "arr_dao_link", toChange);
-        deleteEntityQuery = createSimpleDeleteEntityQuery(fund, node, "createChange", "arr_dao_link", toChange);
-        updateEntityQuery.executeUpdate();
-        deleteEntityQuery.executeUpdate();
+        {
+            Query updateEntityQuery = createSimpleUpdateEntityQuery(fund, node, "deleteChange", "arr_dao_link", toChange);
+            Query deleteEntityQuery = createSimpleDeleteEntityQuery(fund, node, "createChange", "arr_dao_link", toChange);
+            updateEntityQuery.executeUpdate();
+            deleteEntityQuery.executeUpdate();
+        }
 
-        updateEntityQuery = createExtendUpdateEntityQuery(fund, node, "deleteChange", "arr_desc_item", "arr_item", toChange);
-        updateEntityQuery.executeUpdate();
+        {
+            Query updateEntityQuery = createExtendUpdateEntityQuery(fund, node, "deleteChange", "arr_desc_item", "arr_item", toChange);
+            updateEntityQuery.executeUpdate();
 
-        TypedQuery<ArrData> arrDataQuery = findChangeArrDataQuery(fund, node, toChange);
-        Set<ArrData> arrDataList = new HashSet<>(arrDataQuery.getResultList());
+            TypedQuery<ArrData> arrDataQuery = findChangeArrDataQuery(fund, node, toChange);
+            Set<ArrData> arrDataList = new HashSet<>(arrDataQuery.getResultList());
 
-        /*deleteEntityQuery = createDeleteForeignEntityQuery(fund, node, "createChange", "arr_desc_item", "item", "arr_data", toChange);
-        deleteEntityQuery.executeUpdate();*/
+            /*
+            Query deleteEntityQuery = createDeleteForeignEntityQuery(fund, node, "createChange", "arr_desc_item", "item", "arr_data", toChange);
+            deleteEntityQuery.executeUpdate();
+            */
 
-        deleteEntityQuery = createExtendDeleteEntityQuery(fund, node, "createChange", "arr_desc_item", /*"item",*/ "arr_item", toChange);
-        deleteEntityQuery.executeUpdate();
+            Query deleteEntityQuery = createExtendDeleteEntityQuery(fund, node, "createChange", "arr_desc_item", /*"item",*/ "arr_item", toChange);
+            deleteEntityQuery.executeUpdate();
 
-        dataRepository.delete(arrDataList);
+            dataRepository.delete(arrDataList);
+        }
 
-        updateEntityQuery = createUpdateOutputQuery(fund, node, toChange);
-        updateEntityQuery.executeUpdate();
+        if (nodeId == null) {
 
-        updateEntityQuery = createSimpleUpdateEntityQuery(fund, node, "deleteChange", "arr_node_output", toChange);
-        deleteEntityQuery = createSimpleDeleteEntityQuery(fund, node, "createChange", "arr_node_output", toChange);
-        updateEntityQuery.executeUpdate();
-        deleteEntityQuery.executeUpdate();
+            structuredItemDelete(fund, toChange);
+            structuredItemUpdate(fund, toChange);
 
-        updateEntityQuery = createUpdateActionQuery(fund, node, toChange);
-        updateEntityQuery.executeUpdate();
+            sobjVrequestDelete(fund, toChange);
 
-        deleteEntityQuery = createDeleteActionNodeQuery(fund, node, toChange);
-        deleteEntityQuery.executeUpdate();
+            structuredObjectDelete(fund, toChange);
+            structuredObjectUpdate(fund, toChange);
+        }
 
-        deleteEntityQuery = createDeleteActionRunQuery(fund, toChange);
-        deleteEntityQuery.executeUpdate();
+        {
+            Query updateEntityQuery = createUpdateOutputQuery(fund, node, toChange);
+            updateEntityQuery.executeUpdate();
+        }
+
+        {
+            Query updateEntityQuery = createSimpleUpdateEntityQuery(fund, node, "deleteChange", "arr_node_output", toChange);
+            Query deleteEntityQuery = createSimpleDeleteEntityQuery(fund, node, "createChange", "arr_node_output", toChange);
+            updateEntityQuery.executeUpdate();
+            deleteEntityQuery.executeUpdate();
+        }
+
+        {
+            Query updateEntityQuery = createUpdateActionQuery(fund, node, toChange);
+            updateEntityQuery.executeUpdate();
+        }
+        {
+            Query deleteEntityQuery = createDeleteActionNodeQuery(fund, node, toChange);
+            deleteEntityQuery.executeUpdate();
+        }
+        {
+            Query deleteEntityQuery = createDeleteActionRunQuery(fund, toChange);
+            deleteEntityQuery.executeUpdate();
+        }
 
         Query deleteNotUseChangesQuery = createDeleteNotUseChangesQuery();
         deleteNotUseChangesQuery.executeUpdate();
 
         Set<Integer> deleteNodeIds = getNodeIdsToDelete();
         nodeIdsChange.removeAll(deleteNodeIds);
+
+        issueService.resetIssueNode(deleteNodeIds);
 
         nodeCacheService.deleteNodes(deleteNodeIds);
 
@@ -403,11 +427,7 @@ public class RevertingChangesService {
      * @param toChangeId   identifikátor změny, vůči které provádíme vyhledávání
      * @return query objekt
      */
-    private Query createFindQueryCountBefore(@NotNull final Integer fundId,
-                                             @Nullable final Integer nodeId,
-                                             @Nullable final Integer fromChangeId,
-                                             @NotNull final Integer toChangeId) {
-        String querySkeleton = createFindQuerySkeleton();
+    private int countChangeBefore(@NotNull Integer fundId, @Nullable Integer nodeId, @Nullable Integer fromChangeId, @NotNull Integer toChangeId) {
 
         String selectParams = "COUNT(*)";
         String querySpecification = "";
@@ -426,15 +446,26 @@ public class RevertingChangesService {
             querySpecification = "WHERE " + String.join(" AND ", wheres) + " " + querySpecification;
         }
 
-        String queryString = String.format(querySkeleton, selectParams, createSubNodeQuery(fundId, nodeId), querySpecification);
+        Query query = createFindChangeQuery(selectParams, fundId, nodeId, querySpecification);
 
-        Query query = entityManager.createNativeQuery(queryString);
+        List<String> allowedChangeTypes = new ArrayList<>();
+        allowedChangeTypes.add(ArrChange.Type.ADD_RECORD_NODE.name());
+        allowedChangeTypes.add(ArrChange.Type.DELETE_RECORD_NODE.name());
+        allowedChangeTypes.add(ArrChange.Type.UPDATE_DESC_ITEM.name());
+        allowedChangeTypes.add(ArrChange.Type.ADD_DESC_ITEM.name());
+        allowedChangeTypes.add(ArrChange.Type.DELETE_DESC_ITEM.name());
 
-        query.setParameter("types", Arrays.asList(ArrChange.Type.ADD_RECORD_NODE.name(),
-                ArrChange.Type.DELETE_RECORD_NODE.name(),
-                ArrChange.Type.UPDATE_DESC_ITEM.name(),
-                ArrChange.Type.ADD_DESC_ITEM.name(),
-                ArrChange.Type.DELETE_DESC_ITEM.name()));
+        if (nodeId == null) {
+            allowedChangeTypes.add(ArrChange.Type.ADD_STRUCTURE_DATA.name());
+            allowedChangeTypes.add(ArrChange.Type.ADD_STRUCTURE_DATA_BATCH.name());
+            allowedChangeTypes.add(ArrChange.Type.UPDATE_STRUCT_DATA_BATCH.name());
+            allowedChangeTypes.add(ArrChange.Type.DELETE_STRUCTURE_DATA.name());
+            allowedChangeTypes.add(ArrChange.Type.ADD_STRUCTURE_ITEM.name());
+            allowedChangeTypes.add(ArrChange.Type.UPDATE_STRUCTURE_ITEM.name());
+            allowedChangeTypes.add(ArrChange.Type.DELETE_STRUCTURE_ITEM.name());
+        }
+
+        query.setParameter("types", allowedChangeTypes);
 
         query.setParameter("fundId", fundId);
 
@@ -447,7 +478,8 @@ public class RevertingChangesService {
         if (fromChangeId != null) {
             query.setParameter("fromChangeId", fromChangeId);
         }
-        return query;
+
+        return ((Number) query.getSingleResult()).intValue();
     }
 
     /**
@@ -463,14 +495,11 @@ public class RevertingChangesService {
                                              final @NotNull Integer fundId,
                                              final @Nullable Integer nodeId) {
         // dotaz pro zjištění poslední změny
-        Query queryLastChange = createQueryLastChange(fundId, nodeId);
-
-        Object queryResult = queryLastChange.getSingleResult();
-        if (queryResult == null) {
+        ChangeResult lastChange = getLastChange(fundId, nodeId);
+        if (lastChange == null) {
             throw new BusinessException("Failed to find valid last change", ArrangementCode.DATA_NOT_FOUND)
                     .set("nodeId", nodeId);
         }
-        ChangeResult lastChange = convertResult((Object[]) queryResult);
 
         if (!fromChange.getChangeId().equals(lastChange.getChangeId())) {
             throw new BusinessException("Existuje novější verze", ArrangementCode.EXISTS_NEWER_CHANGE);
@@ -481,25 +510,24 @@ public class RevertingChangesService {
         }
 
         if (nodeId != null) {
-            Query findQueryCountBefore = createFindQueryCountBefore(fundId, nodeId, fromChange.getChangeId(), toChange.getChangeId());
-            Integer countBefore = ((BigInteger) findQueryCountBefore.getSingleResult()).intValue();
+
+            int countBefore = countChangeBefore(fundId, nodeId, fromChange.getChangeId(), toChange.getChangeId());
             if (countBefore > 0) {
                 throw new BusinessException("Existuje blokující změna v JP", ArrangementCode.EXISTS_BLOCKING_CHANGE);
             }
-        }
-        // check if change includes structured types
-        // unsupported operation till 1.1 (MT11)
-        int itemsCnt = structuredItemRepository.countItemsWithinChangeRange(fundId, fromChange.getChangeId(),
-                                                                            toChange.getChangeId());
-        if (itemsCnt > 0) {
-            throw new BusinessException("Změna ve strukturovaném objektu, změnu bude možné vrátit až od verze 1.1",
-                    ArrangementCode.EXISTS_BLOCKING_CHANGE);
-        }
-        itemsCnt = structuredObjectRepository.countItemsWithinChangeRange(fundId, fromChange.getChangeId(),
-                                                                          toChange.getChangeId());
-        if (itemsCnt > 0) {
-            throw new BusinessException("Změna ve strukturovaném objektu, změnu bude možné vrátit až od verze 1.1",
-                    ArrangementCode.EXISTS_BLOCKING_CHANGE);
+
+            // check if change includes structured types
+            /*
+            int itemsCnt = structuredItemRepository.countItemsWithinChangeRange(fundId, fromChange.getChangeId(), toChange.getChangeId());
+            if (itemsCnt > 0) {
+                throw new BusinessException("Existuje změna ve strukturovaném objektu", ArrangementCode.EXISTS_BLOCKING_CHANGE);
+            }
+
+            int objectsCnt = structuredObjectRepository.countItemsWithinChangeRange(fundId, fromChange.getChangeId(), toChange.getChangeId());
+            if (objectsCnt > 0) {
+                throw new BusinessException("Existuje změna ve strukturovaném objektu", ArrangementCode.EXISTS_BLOCKING_CHANGE);
+            }
+            */
         }
     }
 
@@ -661,7 +689,7 @@ public class RevertingChangesService {
 
     /**
      * Delete from ARR_CHANGE unused change_ids
-     * 
+     *
      * @return
      */
     public Query createDeleteNotUseChangesQuery() {
@@ -675,7 +703,7 @@ public class RevertingChangesService {
                 {"arr_node_register", "deleteChange"},
                 {"arr_node_extension", "createChange"},
                 {"arr_node_extension", "deleteChange"},
-                
+
                 {"arr_fund_version", "createChange"},
                 {"arr_fund_version", "lockChange"},
                 {"arr_bulk_action_run", "change"},
@@ -684,10 +712,10 @@ public class RevertingChangesService {
                 {"arr_node_output", "createChange"},
                 {"arr_node_output", "deleteChange"},
                 {"arr_output_result", "change"},
-                
+
                 {"arr_dao_link", "createChange"},
                 {"arr_dao_link", "deleteChange"},
-                
+
                 {"arr_request_queue_item", "createChange"},
                 {"arr_request", "createChange"},
 
@@ -754,6 +782,92 @@ public class RevertingChangesService {
         }
 
         return query;
+    }
+
+    private void structuredItemDelete(@NotNull ArrFund fund, @NotNull ArrChange toChange) {
+
+        String hql = "DELETE FROM arr_structured_item i WHERE i.itemId IN (" +
+                " SELECT si.itemId FROM arr_structured_item si" +
+                " JOIN si.structuredObject so" +
+                " WHERE so.fund = :fund" +
+                " AND si.createChange >= :change" +
+                ")";
+
+        Query query = entityManager.createQuery(hql);
+
+        // nastavení parametrů dotazu
+        query.setParameter("fund", fund);
+        query.setParameter("change", toChange);
+
+        query.executeUpdate();
+    }
+
+    private void structuredItemUpdate(@NotNull final ArrFund fund, @NotNull final ArrChange change) {
+
+        List<ArrStructuredItem> structuredItemList = structuredItemRepository.findNotBeforeDeleteChange(fund, change);
+
+        structObjValueService.addToValidate(structuredItemList.stream().map(item -> item.getStructuredObject()).collect(Collectors.toList()));
+
+        for (ArrStructuredItem structuredItem : structuredItemList) {
+            structuredItem.setDeleteChange(null);
+        }
+
+        structuredItemRepository.save(structuredItemList);
+    }
+
+    private void sobjVrequestDelete(@NotNull ArrFund fund, @NotNull ArrChange toChange) {
+
+        String hql = "DELETE FROM arr_sobj_vrequest r" +
+                " WHERE r.structuredObject IN (" +
+                " SELECT so FROM arr_structured_object so" +
+                " WHERE so.fund = :fund" +
+                " AND so.createChange >= :change" +
+                ")";
+
+        Query query = entityManager.createQuery(hql);
+
+        // nastavení parametrů dotazu
+        query.setParameter("fund", fund);
+        query.setParameter("change", toChange);
+
+        query.executeUpdate();
+    }
+
+    private void structuredObjectDelete(@NotNull ArrFund fund, @NotNull ArrChange toChange) {
+
+        String hql = "DELETE FROM arr_structured_object so" +
+                " WHERE so.fund = :fund" +
+                " AND so.createChange >= :change";
+
+        Query query = entityManager.createQuery(hql);
+
+        // nastavení parametrů dotazu
+        query.setParameter("fund", fund);
+        query.setParameter("change", toChange);
+
+        query.executeUpdate();
+    }
+
+    private void structuredObjectUpdate(@NotNull final ArrFund fund, @NotNull final ArrChange change) {
+
+        List<ArrStructuredObject> structuredObjectList = structuredObjectRepository.findNotBeforeDeleteChange(fund, change);
+
+        structObjValueService.addToValidate(structuredObjectList);
+
+        List<Integer> structureDataIds = new ArrayList<>(structuredObjectList.size());
+        for (ArrStructuredObject structuredObject : structuredObjectList) {
+            structuredObject.setDeleteChange(null);
+            structureDataIds.add(structuredObject.getStructuredObjectId());
+        }
+
+        structuredObjectRepository.save(structuredObjectList);
+
+        eventNotificationService.publishEvent(new EventStructureDataChange(fund.getFundId(),
+                null,
+                null,
+                null,
+                structureDataIds,
+                null));
     }
 
     private Query findChangeNodeIdsQuery(@NotNull final ArrFund fund,
@@ -875,7 +989,7 @@ public class RevertingChangesService {
     /**
      * Převedení změn z databázového dotazu na změny pro odpověď.
      *
-     * @param sqlResult             změny z dotazu
+     * @param changeResultList      změny z dotazu
      * @param fundVersion           verze AS
      * @param fullRevertPermission  má úplné oprávnění?
      * @param isNodeContext         změny jsou v kontextu JP
@@ -883,7 +997,7 @@ public class RevertingChangesService {
      * @param canRevertByUserBefore může se revertovat změna - uživatel? (true - předchozí provedl stejný uživatel)
      * @return seznam změn pro odpověď
      */
-    private List<Change> convertChangeResults(final List<ChangeResult> sqlResult,
+    private List<Change> convertChangeResults(final List<ChangeResult> changeResultList,
                                               final ArrFundVersion fundVersion,
                                               final boolean fullRevertPermission,
                                               final boolean canReverBefore,
@@ -894,13 +1008,13 @@ public class RevertingChangesService {
         boolean canRevert = canReverBefore;
         boolean canRevertByUser = canRevertByUserBefore;
 
-        List<Change> changes = new ArrayList<>(sqlResult.size());
+        List<Change> changes = new ArrayList<>(changeResultList.size());
 
         HashMap<Integer, Integer> changeIdNodeIdMap = new HashMap<>();
 
         Set<Integer> userIds = new HashSet<>();
 
-        for (ChangeResult changeResult : sqlResult) {
+        for (ChangeResult changeResult : changeResultList) {
             Integer primaryNodeId = changeResult.getPrimaryNodeId();
             if (primaryNodeId != null) {
                 changeIdNodeIdMap.put(changeResult.changeId, changeResult.primaryNodeId);
@@ -911,8 +1025,7 @@ public class RevertingChangesService {
             }
         }
 
-        ViewTitles viewTitles = configView.getViewTitles(fundVersion.getRuleSetId(),
-                                                                    fundVersion.getFundId());
+        ViewTitles viewTitles = configView.getViewTitles(fundVersion.getRuleSetId(), fundVersion.getFundId());
         Set<Integer> descItemTypeCodes = viewTitles.getTreeItemIds() == null ? Collections.emptySet()
                 : new LinkedHashSet<>(viewTitles.getTreeItemIds());
 
@@ -927,17 +1040,27 @@ public class RevertingChangesService {
                 logger.warn("Nepodařilo se nalézt typy atributů s kódy " + org.apache.commons.lang.StringUtils.join(missingCodes, ", ") + ". Změňte kódy v"
                         + " konfiguraci.");
             }
-
         }
 
         HashMap<Map.Entry<Integer, Integer>, String> changeNodeMap = createNodeLabels(changeIdNodeIdMap, descItemTypes,
-                                                                                      fundVersion.getRuleSetId(),
-                                                                                      fundVersion.getFund()
-                                                                                              .getFundId());
+                fundVersion.getRuleSetId(),
+                fundVersion.getFund()
+                        .getFundId());
+
+        Map<Integer, Map<Integer, ArrStructuredObject>> changeIdStructuredObjectMap = structObjService.groupStructuredObjectByChange(
+                fundVersion.getFundId(),
+                changeResultList.stream().map(change -> change.getChangeId()).collect(Collectors.toList()));
 
         Map<Integer, UsrUser> users = userService.findUserMap(userIds);
 
-        for (ChangeResult changeResult : sqlResult) {
+        List<ArrChange.Type> allowedNodeChangeTypes = Arrays.asList(
+                ArrChange.Type.ADD_RECORD_NODE,
+                ArrChange.Type.DELETE_RECORD_NODE,
+                ArrChange.Type.UPDATE_DESC_ITEM,
+                ArrChange.Type.ADD_DESC_ITEM,
+                ArrChange.Type.DELETE_DESC_ITEM);
+
+        for (ChangeResult changeResult : changeResultList) {
             Change change = new Change();
             change.setChangeId(changeResult.changeId);
             change.setNodeChanges(changeResult.nodeChanges == null ? null : changeResult.nodeChanges.intValue());
@@ -952,12 +1075,8 @@ public class RevertingChangesService {
             }
 
             if (isNodeContext) {
-                if ((change.getType() != null &&
-                        !Arrays.asList(ArrChange.Type.ADD_RECORD_NODE,
-                                ArrChange.Type.DELETE_RECORD_NODE,
-                                ArrChange.Type.UPDATE_DESC_ITEM,
-                                ArrChange.Type.ADD_DESC_ITEM,
-                                ArrChange.Type.DELETE_DESC_ITEM).contains(change.getType())) || change.getNodeChanges() > 1) {
+                if (change.getType() != null && !allowedNodeChangeTypes.contains(change.getType())
+                        || change.getNodeChanges() > 1) {
                     canRevert = false;
                 }
             }
@@ -974,7 +1093,20 @@ public class RevertingChangesService {
             }
 
             change.setRevert(canRevert && canRevertByUser);
-            change.setLabel(changeNodeMap.get(new AbstractMap.SimpleImmutableEntry<>(changeResult.changeId, changeResult.primaryNodeId)));
+
+            String label = changeNodeMap.get(new AbstractMap.SimpleImmutableEntry<>(changeResult.changeId, changeResult.primaryNodeId));
+            if (label == null) {
+                // zkontrolovat, zda se nejedna o zmenu ve strukturovanem typu
+                Map<Integer, ArrStructuredObject> structuredObjectMap = changeIdStructuredObjectMap.get(changeResult.changeId);
+                if (structuredObjectMap != null) {
+                    label = structuredObjectMap.values()
+                            .stream()
+                            .sorted(Comparator.comparing(object -> object.getSortValue()))
+                            .map(object -> object.getValue())
+                            .collect(Collectors.joining(" "));
+                }
+            }
+            change.setLabel(label);
             changes.add(change);
         }
         return changes;
@@ -999,9 +1131,10 @@ public class RevertingChangesService {
         HashMap<Map.Entry<Integer, Integer>, String> result = new HashMap<>();
 
         for (Map.Entry<Integer, Integer> entry : changeIdNodeIdMap.entrySet()) {
+            Integer nodeId = entry.getValue();
             Map<Integer, TitleItemsByType> nodeValuesMap = descriptionItemService
-                    .createNodeValuesByItemTypeCodeMap(Collections.singleton(entry.getValue()), itemTypes, entry.getKey(), null);
-            TitleItemsByType items = nodeValuesMap.get(entry.getValue());
+                    .createNodeValuesByItemTypeCodeMap(Collections.singleton(nodeId), itemTypes, entry.getKey(), null);
+            TitleItemsByType items = nodeValuesMap.get(nodeId);
             if (items != null) {
                 List<String> titles = new ArrayList<>();
                 for (RulItemType itemType : itemTypes) {
@@ -1011,7 +1144,7 @@ public class RevertingChangesService {
             } else {
                 ViewTitles viewTitles = configView.getViewTitles(ruleSetId, fundId);
                 String defaultTitle = viewTitles.getDefaultTitle();
-                defaultTitle = StringUtils.isEmpty(defaultTitle) ? "JP <" + entry.getValue() + ">" : defaultTitle;
+                defaultTitle = StringUtils.isEmpty(defaultTitle) ? "JP <" + nodeId + ">" : defaultTitle;
                 result.put(entry, defaultTitle);
             }
         }
@@ -1075,23 +1208,18 @@ public class RevertingChangesService {
      * @param nodeId identifikátor JP
      * @return SQL řetězec
      */
-    private String createSubNodeQuery(@NotNull final Integer fundId,
-                                      @Nullable final Integer nodeId) {
-        Validate.notNull(fundId, "Identifikátor AS musí být vyplněn");
-        String query = "SELECT node_id FROM arr_node WHERE fund_id = :fundId";
-        if (nodeId != null) {
-            query += " AND node_id = :nodeId";
-        }
-        return query;
-    }
+    private Query createFindChangeQuery(String selectParams, @NotNull Integer fundId, @Nullable Integer nodeId, String querySpecification) {
 
-    /**
-     * Sestavení řetězce pro základní dotaz vyhledávání změn.
-     *
-     * @return SQL řetězec
-     */
-    private String createFindQuerySkeleton() {
-        return "SELECT  \n" +
+        Validate.notNull(fundId, "Identifikátor AS musí být vyplněn");
+
+        StringBuilder nodeSubquery = new StringBuilder(256);
+        nodeSubquery.append("SELECT node_id FROM arr_node WHERE fund_id = :fundId");
+        if (nodeId != null) {
+            nodeSubquery.append(" AND node_id = :nodeId");
+        }
+
+        StringBuilder sqlTemplate = new StringBuilder(1024);
+        sqlTemplate.append("SELECT  \n" +
                 "%1$s\n" +
                 "FROM\n" +
                 "  arr_change ch\n" +
@@ -1121,8 +1249,27 @@ public class RevertingChangesService {
                 "      UNION ALL\n" +
                 "      SELECT create_change_id, node_id, 1 AS weight FROM arr_dao_link WHERE node_id IN (%2$s)\n" +
                 "      UNION ALL\n" +
-                "      SELECT delete_change_id, node_id, 1 AS weight FROM arr_dao_link WHERE node_id IN (%2$s)\n" +
-                "      UNION ALL\n" +
+                "      SELECT delete_change_id, node_id, 1 AS weight FROM arr_dao_link WHERE node_id IN (%2$s)\n");
+
+        if (nodeId == null) {
+            sqlTemplate.append(
+                    "      UNION ALL\n" +
+                            "      SELECT i.create_change_id, null, 1 AS weight FROM arr_structured_item si\n" +
+                            "            JOIN arr_item i ON i.item_id = si.item_id\n" +
+                            "            JOIN arr_structured_object so ON so.structured_object_id = si.structured_object_id\n" +
+                            "            WHERE so.fund_id = :fundId\n" +
+                            "      UNION ALL\n" +
+                            "      SELECT i.delete_change_id, null, 1 AS weight FROM arr_structured_item si\n" +
+                            "            JOIN arr_item i ON i.item_id = si.item_id\n" +
+                            "            JOIN arr_structured_object so ON so.structured_object_id = si.structured_object_id\n" +
+                            "            WHERE so.fund_id = :fundId\n" +
+                            "      UNION ALL\n" +
+                            "      SELECT delete_change_id, null, 1 AS weight FROM arr_structured_object so WHERE so.fund_id = :fundId AND so.state <> '" + ArrStructuredObject.State.TEMP.name() + "'\n" +
+                            "      UNION ALL\n" +
+                            "      SELECT create_change_id, null, 1 AS weight FROM arr_structured_object so WHERE so.fund_id = :fundId AND so.state <> '" + ArrStructuredObject.State.TEMP.name() + "'\n");
+        }
+
+        sqlTemplate.append("      UNION ALL\n" +
                 "      SELECT change_id, null, 0 AS weight FROM arr_bulk_action_run r JOIN arr_fund_version v ON r.fund_version_id = v.fund_version_id WHERE v.fund_id = :fundId AND r.state = '" + ArrBulkActionRun.State.FINISHED + "'\n" +
                 //                "    ) chlx ORDER BY change_id DESC\n" +
                 "    ) chlx \n" +
@@ -1130,7 +1277,10 @@ public class RevertingChangesService {
                 ") chl\n" +
                 "ON\n" +
                 "  ch.change_id = chl.change_id\n" +
-                "%3$s";
+                "%3$s");
+
+        String queryString = String.format(sqlTemplate.toString(), selectParams, nodeSubquery, querySpecification);
+        return entityManager.createNativeQuery(queryString);
     }
 
     /**
@@ -1143,12 +1293,7 @@ public class RevertingChangesService {
      * @param fromChangeId identifikátor změny, vůči které provádíme vyhledávání
      * @return query objekt
      */
-    private Query createFindQuery(final Integer fundId,
-                                  final Integer nodeId,
-                                  final int maxSize,
-                                  final int offset,
-                                  final Integer fromChangeId) {
-        String querySkeleton = createFindQuerySkeleton();
+    private List<ChangeResult> findChange(@NotNull Integer fundId, @Nullable Integer nodeId, int maxSize, int offset, @Nullable Integer fromChangeId) {
 
         // doplňující parametry dotazu
         String selectParams = "ch.change_id, ch.change_date, ch.user_id, ch.type, ch.primary_node_id, chl.node_changes, chl.weights";
@@ -1158,8 +1303,7 @@ public class RevertingChangesService {
         }
 
         // vnoření parametrů a vytvoření query objektu
-        String queryString = String.format(querySkeleton, selectParams, createSubNodeQuery(fundId, nodeId), querySpecification);
-        Query query = entityManager.createNativeQuery(queryString);
+        Query query = createFindChangeQuery(selectParams, fundId, nodeId, querySpecification);
 
         // nastavení parametrů dotazu
         query.setParameter("fundId", fundId);
@@ -1172,7 +1316,7 @@ public class RevertingChangesService {
         query.setMaxResults(maxSize);
         query.setFirstResult(offset);
 
-        return query;
+        return convertResults(query.getResultList());
     }
 
     /**
@@ -1183,11 +1327,7 @@ public class RevertingChangesService {
      * @param fromChangeId identifikátor změny, vůči které provádíme vyhledávání
      * @return query objekt
      */
-    private Query createFindUserChangeQuery(final Integer fundId,
-                                            final Integer nodeId,
-                                            final int maxSize,
-                                            final Integer fromChangeId) {
-        String querySkeleton = createFindQuerySkeleton();
+    private int countUserChange(@NotNull Integer fundId, @Nullable Integer nodeId, int maxSize, @Nullable Integer fromChangeId) {
 
         UsrUser loggedUser = userService.getLoggedUser();
 
@@ -1208,8 +1348,7 @@ public class RevertingChangesService {
         }
 
         // vnoření parametrů a vytvoření query objektu
-        String queryString = String.format(querySkeleton, selectParams, createSubNodeQuery(fundId, nodeId), querySpecification);
-        Query query = entityManager.createNativeQuery(queryString);
+        Query query = createFindChangeQuery(selectParams, fundId, nodeId, querySpecification);
 
         // nastavení parametrů dotazu
         query.setParameter("fundId", fundId);
@@ -1224,7 +1363,7 @@ public class RevertingChangesService {
         }
         query.setMaxResults(maxSize);
 
-        return query;
+        return ((Number) query.getSingleResult()).intValue();
     }
 
     /**
@@ -1236,19 +1375,14 @@ public class RevertingChangesService {
      * @param fromDate     datum podle kterého počítám změny k přeskočení
      * @return query objekt
      */
-    private Query createQueryIndex(final Integer fundId,
-                                   final Integer nodeId,
-                                   final Integer fromChangeId,
-                                   final LocalDateTime fromDate) {
-        String querySkeleton = createFindQuerySkeleton();
+    private int countChangeIndex(@NotNull Integer fundId, @Nullable Integer nodeId, @NotNull Integer fromChangeId, @NotNull LocalDateTime fromDate) {
 
         // doplňující parametry dotazu
         String selectParams = "COUNT(*)";
         String querySpecification = "WHERE ch.change_id < :fromChangeId AND ch.change_date >= :changeDate";
 
         // vnoření parametrů a vytvoření query objektu
-        String queryString = String.format(querySkeleton, selectParams, createSubNodeQuery(fundId, nodeId), querySpecification);
-        Query query = entityManager.createNativeQuery(queryString);
+        Query query = createFindChangeQuery(selectParams, fundId, nodeId, querySpecification);
 
         // nastavení parametrů dotazu
         query.setParameter("fundId", fundId);
@@ -1258,7 +1392,7 @@ public class RevertingChangesService {
         query.setParameter("fromChangeId", fromChangeId);
         query.setParameter("changeDate", Timestamp.valueOf(fromDate), TemporalType.TIMESTAMP);
 
-        return query;
+        return ((Number) query.getSingleResult()).intValue();
     }
 
     /**
@@ -1268,8 +1402,9 @@ public class RevertingChangesService {
      * @param nodeId identifikátor JP
      * @return query objekt
      */
-    private Query createQueryLastChange(final Integer fundId, final Integer nodeId) {
-        return createFindQuery(fundId, nodeId, 1, 0, null);
+    private ChangeResult getLastChange(@NotNull Integer fundId, @Nullable Integer nodeId) {
+        List<ChangeResult> changeResultList = findChange(fundId, nodeId, 1, 0, null);
+        return changeResultList.size() > 0 ? changeResultList.get(0) : null;
     }
 
     /**
@@ -1280,8 +1415,7 @@ public class RevertingChangesService {
      * @param fromChangeId identifikátor změny, vůči které provádíme vyhledávání
      * @return query objekt
      */
-    private Query createFindQueryCount(final Integer fundId, final Integer nodeId, final Integer fromChangeId) {
-        String querySkeleton = createFindQuerySkeleton();
+    private int countChange(@NotNull Integer fundId, @Nullable Integer nodeId, @Nullable Integer fromChangeId) {
 
         String selectParams = "COUNT(*)";
         String querySpecification = "";
@@ -1290,9 +1424,7 @@ public class RevertingChangesService {
             querySpecification = "WHERE ch.change_id <= :fromChangeId " + querySpecification;
         }
 
-        String queryString = String.format(querySkeleton, selectParams, createSubNodeQuery(fundId, nodeId), querySpecification);
-
-        Query query = entityManager.createNativeQuery(queryString);
+        Query query = createFindChangeQuery(selectParams, fundId, nodeId, querySpecification);
 
         query.setParameter("fundId", fundId);
         if (nodeId != null) {
@@ -1301,7 +1433,8 @@ public class RevertingChangesService {
         if (fromChangeId != null) {
             query.setParameter("fromChangeId", fromChangeId);
         }
-        return query;
+
+        return ((Number) query.getSingleResult()).intValue();
     }
 
     /**

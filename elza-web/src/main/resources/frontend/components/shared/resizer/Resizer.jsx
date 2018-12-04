@@ -1,16 +1,10 @@
-'use strict';
-
-require ('./Resizer.less')
-
+import './Resizer.less'
 import React from 'react';
 
-export default React.createClass({
-
-    onMouseDown(event) {
-        this.props.onMouseDown(event);
-    },
+export default class Resizer extends React.Component {
 
     render() {
-        return (<span className='Resizer vertical' onMouseDown={this.onMouseDown} />);
+        return (<span className={'Resizer ' + (this.props.horizontal ? "horizontal" : "vertical")} onMouseDown={this.props.onMouseDown} />);
     }
-});
+}
+

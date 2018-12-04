@@ -1143,5 +1143,35 @@ public class StructObjService {
             }
             return result;
         }
-    }    
+    }
+
+    public Map<Integer, Map<Integer, ArrStructuredObject>> groupStructuredObjectByChange(Integer fundId, List<Integer> changeIdList) {
+
+        if (changeIdList.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        Map<Integer, Map<Integer, ArrStructuredObject>> changeIdStructuredObjectMap = new HashMap<>();
+
+        for (ArrStructuredObject structuredObject : structObjRepository.findByFundAndCreateChange(fundId, changeIdList)) {
+            Integer changeId = structuredObject.getCreateChange().getChangeId();
+            changeIdStructuredObjectMap.computeIfAbsent(changeId, k -> new HashMap<>()).put(structuredObject.getStructuredObjectId(), structuredObject);
+        }
+        for (ArrStructuredObject structuredObject : structObjRepository.findByFundAndDeleteChange(fundId, changeIdList)) {
+            Integer changeId = structuredObject.getDeleteChange().getChangeId();
+            changeIdStructuredObjectMap.computeIfAbsent(changeId, k -> new HashMap<>()).put(structuredObject.getStructuredObjectId(), structuredObject);
+        }
+        for (ArrStructuredItem structuredItem : structureItemRepository.findByFundAndCreateChange(fundId, changeIdList)) {
+            Integer changeId = structuredItem.getCreateChange().getChangeId();
+            ArrStructuredObject structuredObject = structuredItem.getStructuredObject();
+            changeIdStructuredObjectMap.computeIfAbsent(changeId, k -> new HashMap<>()).put(structuredObject.getStructuredObjectId(), structuredObject);
+        }
+        for (ArrStructuredItem structuredItem : structureItemRepository.findByFundAndDeleteChange(fundId, changeIdList)) {
+            Integer changeId = structuredItem.getDeleteChange().getChangeId();
+            ArrStructuredObject structuredObject = structuredItem.getStructuredObject();
+            changeIdStructuredObjectMap.computeIfAbsent(changeId, k -> new HashMap<>()).put(structuredObject.getStructuredObjectId(), structuredObject);
+        }
+        return changeIdStructuredObjectMap;
+    }
+
 }

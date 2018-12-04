@@ -55,6 +55,10 @@ public class UsrPermissionView {
     @JoinColumn(name = "scopeId")
     private ApScope scope;
 
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = WfIssueList.class)
+    @JoinColumn(name = "issueListId")
+    private WfIssueList issueList;
+
     public Integer getId() {
         return id;
     }
@@ -93,5 +97,13 @@ public class UsrPermissionView {
 
     public void setScope(final ApScope scope) {
         this.scope = scope;
+    }
+
+    public WfIssueList getIssueList() {
+        return issueList;
+    }
+
+    public void setIssueList(WfIssueList issueList) {
+        this.issueList = issueList;
     }
 }

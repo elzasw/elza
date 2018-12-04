@@ -64,7 +64,7 @@ public interface StructuredObjectRepository extends JpaRepository<ArrStructuredO
     ArrChange findTempChangeByStructuredObject(@Param("structuredObject") ArrStructuredObject structuredObject);
 
     List<ArrStructuredObject> findByFundAndDeleteChangeIsNull(ArrFund fund);
-    
+
     List<ArrStructuredObject> findByFund(ArrFund fund);
 
     void deleteByFund(ArrFund fund);
@@ -74,9 +74,31 @@ public interface StructuredObjectRepository extends JpaRepository<ArrStructuredO
             "WHERE so.state = 'TEMP'")
     List<ArrStructuredObject> findConnectedTempObjs();
 
+    @Query("SELECT so" +
+            " FROM arr_structured_object so" +
+            " WHERE so.fund.id = :fundId" +
+            " AND so.deleteChange.id in :deleteChangeIds" +
+            " AND so.state <> 'TEMP'" +
+            " ORDER BY so.sortValue")
+    List<ArrStructuredObject> findByFundAndDeleteChange(@Param("fundId") Integer fundId, @Param("deleteChangeIds") List<Integer> deleteChangeIds);
+
+    @Query("SELECT so" +
+            " FROM arr_structured_object so" +
+            " WHERE so.fund.id = :fundId" +
+            " AND so.createChange.id in :createChangeIds" +
+            " AND so.state <> 'TEMP'" +
+            " ORDER BY so.sortValue")
+    List<ArrStructuredObject> findByFundAndCreateChange(@Param("fundId") Integer fundId, @Param("createChangeIds") List<Integer> createChangeIds);
+
+    @Query("SELECT so" +
+            " FROM arr_structured_object so" +
+            " WHERE so.fund = :fund" +
+            " AND so.deleteChange >= :change")
+    List<ArrStructuredObject> findNotBeforeDeleteChange(@Param("fund") ArrFund fund, @Param("change") ArrChange change);
+
     /**
      * Count number of structured objects within two changeIds
-     * 
+     *
      * @param fundId
      * @param fromChange
      *            Higher change id

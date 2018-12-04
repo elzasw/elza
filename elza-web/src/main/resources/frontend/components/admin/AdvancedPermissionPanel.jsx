@@ -27,6 +27,7 @@ class AdvancedPermissionPanel extends AbstractReactComponent {
     static permCodes = [
         perms.ADMIN,
         perms.FUND_ADMIN,
+        perms.FUND_ISSUE_ADMIN_ALL,
         perms.FUND_CREATE,
         perms.USR_PERM,
         perms.INTERPI_MAPPING_WR,

@@ -16,12 +16,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
 import javax.transaction.Transactional;
+import javax.validation.constraints.NotNull;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -184,6 +186,36 @@ public class ArrangementService {
     private ApplicationContext appCtx;
 
     public static final String UNDEFINED = "Nezjištěno";
+
+    /**
+     * Načtení souboru na základě id.
+     *
+     * @param fundId id souboru
+     * @return konkrétní AP
+     * @throws ObjectNotFoundException objekt nenalezen
+     */
+    public ArrFund getFund(@NotNull Integer fundId) {
+        ArrFund fund = fundRepository.findOne(fundId);
+        if (fund == null) {
+            throw new ObjectNotFoundException("Nebyl nalezen AS s ID=" + fundId, ArrangementCode.FUND_NOT_FOUND).setId(fundId);
+        }
+        return fund;
+    }
+
+    /**
+     * Načtení uzlu na základě id.
+     *
+     * @param nodeId id souboru
+     * @return konkrétní uzel
+     * @throws ObjectNotFoundException objekt nenalezen
+     */
+    public ArrNode getNode(@NotNull Integer nodeId) {
+        ArrNode node = nodeRepository.findOne(nodeId);
+        if (node == null) {
+            throw new ObjectNotFoundException("Nebyla nalezena JP s ID=" + nodeId, ArrangementCode.NODE_NOT_FOUND).setId(nodeId);
+        }
+        return node;
+    }
 
     /**
      * Vytvoření archivního souboru.
@@ -734,15 +766,19 @@ public class ArrangementService {
         List<ArrFundFulltextResult> resultList = new ArrayList<>();
 
         if (!fundToNodeList.isEmpty()) {
-
-            Map<Integer, ArrFund> fundMap = fundList.stream().collect(Collectors.toMap(fund -> fund.getFundId(), fund -> fund));
+            List<Integer> fundIds = fundList.stream().map(ArrFund::getFundId).collect(Collectors.toList());
+            Map<Integer, ArrFundVersion> fundIdVersionsMap = getOpenVersionsByFundIds(fundIds).stream()
+                    .collect(Collectors.toMap(ArrFundVersion::getFundId, Function.identity()));
+            Map<Integer, ArrFund> fundMap = fundList.stream().collect(Collectors.toMap(ArrFund::getFundId, Function.identity()));
 
             for (ArrFundToNodeList fundCount : fundToNodeList) {
                 ArrFundFulltextResult result = new ArrFundFulltextResult();
                 ArrFund fund = fundMap.get(fundCount.getFundId());
+                ArrFundVersion fundVersion = fundIdVersionsMap.get(fundCount.getFundId());
                 result.setName(fund.getName());
                 result.setId(fundCount.getFundId());
                 result.setCount(fundCount.getNodeCount());
+                result.setFundVersionId(fundVersion.getFundVersionId());
                 resultList.add(result);
             }
         }
@@ -1342,6 +1378,23 @@ public class ArrangementService {
                 recursiveAddNodes(nodeIds, node, nodePolicyTypes, policiesMap, nodeProblemsMap, foundNode);
             }
         }
+    }
+
+    /**
+     * Sestaví informace o zanoření
+     *
+     * @param fundId identifikátor archivního souboru
+     * @param nodeIds seznam identifikátorů jednotek popisu
+     */
+    public Map<Integer, TreeNodeVO> findNodeReferenceMark(@NotNull Integer fundId, Collection<Integer> nodeIds) {
+        if (nodeIds != null && !nodeIds.isEmpty()) {
+            ArrFundVersion fundVersion = getOpenVersionByFundId(fundId);
+            if (fundVersion != null) {
+                List<TreeNodeVO> nodes = levelTreeCacheService.getNodesByIds(nodeIds, fundVersion.getFundVersionId());
+                return nodes.stream().collect(Collectors.toMap(node -> node.getId(), node -> node));
+            }
+        }
+        return Collections.emptyMap();
     }
 
     /**

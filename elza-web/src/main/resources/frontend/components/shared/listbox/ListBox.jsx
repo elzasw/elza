@@ -53,24 +53,25 @@ class ListBox extends AbstractReactComponent {
         }
     }
 
-    static PropTypes = {
+    static propTypes = {
         items: React.PropTypes.array.isRequired,
         onSelect: React.PropTypes.func,
         onCheck: React.PropTypes.func,
         onDelete: React.PropTypes.func,
-        canSelectItem: React.PropTypes.bool,
+        canSelectItem: React.PropTypes.func,
         multiselect: React.PropTypes.bool,
         onFocus: React.PropTypes.func,
         onChangeSelection: React.PropTypes.func,
+        activeIndex: React.PropTypes.number,
         activeIndexes: React.PropTypes.array,
         onChangeOrder: React.PropTypes.func,
         className: React.PropTypes.string,
-        renderItemContent: React.PropTypes.func.isRequired,
+        renderItemContent: React.PropTypes.func,
         sortable: React.PropTypes.bool
     };
 
     static defaultProps = {
-        renderItemContent: (item, isActive, index, onCheckItem) => {
+        renderItemContent: ({item, active, index}, onCheckItem) => {
             return (
                 <div>{item.name}</div>
             )

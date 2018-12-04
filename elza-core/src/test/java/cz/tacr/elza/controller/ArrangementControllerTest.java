@@ -21,9 +21,9 @@ import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.table.ElzaRow;
 import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.drools.DirectionLevel;
-import cz.tacr.elza.service.ArrIOService;
 import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.vo.ChangesResult;
+import cz.tacr.elza.utils.CsvUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang3.StringUtils;
@@ -114,7 +114,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    public void fundFulltextTest() {
+    public void fundFulltextTest() throws InterruptedException {
 
         final String value = "aaa";
         final int count = 2;
@@ -123,6 +123,9 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         for (int i = 0; i < 3; i++) {
             funds.add(createFundFulltext(i, count, value));
         }
+
+        // je třeba počkat na asychronné přeindexování (možná by se mělo řešit úplně jinak)
+        Thread.sleep(1000);
 
         try {
 
@@ -627,8 +630,8 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
             // Export a kontrola
             InputStream is = descItemCsvExport(fundVersion.getId(), descItemResult.getItem().getDescItemObjectId());
-            Reader in = new InputStreamReader(is, ArrIOService.CSV_EXCEL_ENCODING);
-            Iterable<CSVRecord> records = ArrIOService.CSV_EXCEL_FORMAT.withFirstRecordAsHeader().parse(in);
+            Reader in = new InputStreamReader(is, CsvUtils.CSV_EXCEL_ENCODING);
+            Iterable<CSVRecord> records = CsvUtils.CSV_EXCEL_FORMAT.withFirstRecordAsHeader().parse(in);
             List<CSVRecord> recordsList = new ArrayList<>();
             records.forEach(recordsList::add);
             assertTrue(recordsList.size() == 6); // šest řádků bez hlavičky

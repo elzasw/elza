@@ -18,6 +18,8 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.controller.factory.WfFactory;
+import cz.tacr.elza.controller.vo.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.NotImplementedException;
@@ -25,6 +27,7 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -165,6 +168,9 @@ import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.UsrGroup;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.domain.WfIssue;
+import cz.tacr.elza.domain.WfIssueState;
+import cz.tacr.elza.domain.WfIssueType;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
@@ -196,6 +202,7 @@ import cz.tacr.elza.repository.RelationRepository;
 import cz.tacr.elza.repository.RequestQueueItemRepository;
 import cz.tacr.elza.repository.UnitdateRepository;
 import cz.tacr.elza.repository.UserRepository;
+import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.DaoService;
 import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.service.OutputServiceInternal;
@@ -308,6 +315,10 @@ public class ClientFactoryVO {
     private ApFactory apFactory;
 
     @Autowired
+    @Lazy // TODO: odebrat a vyřešit cyklickou závislost
+    private WfFactory wfFactory;
+
+    @Autowired
     private StaticDataService staticDataService;
 
     /**
@@ -327,7 +338,7 @@ public class ClientFactoryVO {
      * @param initPermissions mají se plnit oprávnění?
      * @return seznam VO
      */
-    public List<UsrUserVO> createUserList(final List<UsrUser> users, final boolean initPermissions) {
+    public List<UsrUserVO> createUserList(final Collection<UsrUser> users, final boolean initPermissions) {
         if (users == null) {
             return null;
         }
@@ -645,11 +656,12 @@ public class ClientFactoryVO {
     /**
      * Vytvoření ArrFund a načtení verzí.
      *
-     * @param fund      DO
+     * @param fund archivní soubor
      * @param includeVersions true - budou do objektu donačteny všechny jeho verze, false- verze nebudou donačteny
+     * @param user přihlášený uživatel
      * @return VO
      */
-    public ArrFundVO createFundVO(final ArrFund fund, final boolean includeVersions) {
+    public ArrFundVO createFundVO(final ArrFund fund, final boolean includeVersions, UserDetail user) {
         Assert.notNull(fund, "AS musí být vyplněn");
 
         MapperFacade mapper = mapperFactory.getMapperFacade();
@@ -665,7 +677,7 @@ public class ClientFactoryVO {
 
             List<ArrFundVersionVO> versionVOs = new ArrayList<>(versions.size());
             for (ArrFundVersion version : versions) {
-                versionVOs.add(createFundVersion(version));
+                versionVOs.add(createFundVersion(version, user));
             }
             fundVO.setVersions(versionVOs);
 
@@ -680,9 +692,10 @@ public class ClientFactoryVO {
      * Vytvoří verzi archivní pomůcky.
      *
      * @param fundVersion verze archivní pomůcky
+     * @param user
      * @return VO verze archivní pomůcky
      */
-    public ArrFundVersionVO createFundVersion(final ArrFundVersion fundVersion) {
+    public ArrFundVersionVO createFundVersion(final ArrFundVersion fundVersion, final UserDetail user) {
         Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
 
         MapperFacade mapper = mapperFactory.getMapperFacade();
@@ -698,6 +711,9 @@ public class ClientFactoryVO {
         if (lockChange != null) {
             Date lockDate = Date.from(lockChange.getChangeDate().atZone(ZoneId.systemDefault()).toInstant());
             fundVersionVO.setLockDate(lockDate);
+        } else {
+            fundVersionVO.setIssues(wfFactory.createSimpleIssues(fundVersion.getFund(), user));
+            fundVersionVO.setConfig(wfFactory.createConfig(fundVersion));
         }
         fundVersionVO.setDateRange(fundVersion.getDateRange());
         fundVersionVO.setRuleSetId(fundVersion.getRuleSet().getRuleSetId());
@@ -2170,5 +2186,31 @@ public class ClientFactoryVO {
             return ApExternalSystemSimpleVO.newInstance((ApExternalSystem) extSystem);
         }
         return createSimpleEntity(extSystem, SysExternalSystemSimpleVO.class);
+    }
+
+    /**
+     * Seznam druhů připomínek.
+     *
+     * @returns seznam druhů připomínek
+     */
+    public List<WfIssueTypeVO> createIssueTypes(final List<WfIssueType> issueTypeList) {
+        return createList(issueTypeList, WfIssueTypeVO.class, null);
+    }
+
+    /**
+     * Seznam stavů připomínek.
+     *
+     * @returns seznam stavů připomínek
+     */
+    public List<WfIssueStateVO> createIssueStates(final List<WfIssueState> issueStateList) {
+        return createList(issueStateList, WfIssueStateVO.class, null);
+    }
+
+    public WfSimpleIssueVO createSimpleIssueVO(WfIssue issue) {
+        WfSimpleIssueVO issueVO = new WfSimpleIssueVO();
+        issueVO.setId(issue.getIssueId());
+        issueVO.setNumber(issue.getNumber());
+        issueVO.setDescription(issue.getDescription());
+        return issueVO;
     }
 }

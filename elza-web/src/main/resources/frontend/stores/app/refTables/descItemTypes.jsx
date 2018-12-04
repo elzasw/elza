@@ -1,29 +1,8 @@
 import * as types from 'actions/constants/ActionTypes.js';
+import {default as genericRefTable, genericRefTableState} from "./genericRefTable";
 
-const initialState = {
-    isFetching: false,
-    fetched: false,
-    dirty: false,
-    items: []
-};
-
-export default function descItemTypes(state = initialState, action = {}) {
+export default function descItemTypes(state = genericRefTableState, action = {}) {
     switch (action.type) {
-        case types.REF_DESC_ITEM_TYPES_REQUEST:{
-            return {
-                ...state,
-                isFetching: true
-            }
-        }
-        case types.REF_DESC_ITEM_TYPES_RECEIVE:{
-            return {
-                ...state, isFetching: false,
-                fetched: true,
-                dirty: false,
-                items: action.items,
-                lastUpdated: action.receivedAt
-            }
-        }
         case types.CHANGE_PACKAGE:{
             return {
                 ...state,
@@ -31,6 +10,6 @@ export default function descItemTypes(state = initialState, action = {}) {
             }
         }
         default:
-            return state
+            return genericRefTable(types.REF_DESC_ITEM_TYPES_REQUEST, types.REF_DESC_ITEM_TYPES_RECEIVE, state, action)
     }
 }

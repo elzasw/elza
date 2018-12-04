@@ -16,6 +16,7 @@ import cz.tacr.elza.bulkaction.BulkActionService;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.WfIssueList;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.BulkActionNodeRepository;
@@ -53,9 +54,13 @@ import cz.tacr.elza.repository.OutputFileRepository;
 import cz.tacr.elza.repository.OutputItemRepository;
 import cz.tacr.elza.repository.OutputRepository;
 import cz.tacr.elza.repository.OutputResultRepository;
+import cz.tacr.elza.repository.PermissionRepository;
 import cz.tacr.elza.repository.RequestQueueItemRepository;
 import cz.tacr.elza.repository.StructuredItemRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
+import cz.tacr.elza.repository.WfCommentRepository;
+import cz.tacr.elza.repository.WfIssueListRepository;
+import cz.tacr.elza.repository.WfIssueRepository;
 import cz.tacr.elza.service.DmsService;
 import cz.tacr.elza.service.IEventNotificationService;
 import cz.tacr.elza.service.PolicyService;
@@ -204,6 +209,18 @@ public class DeleteFundAction {
     @Autowired
     private DataFileRefRepository dataFileRefRepository;
 
+    @Autowired
+    private WfCommentRepository commentRepository;
+
+    @Autowired
+    private WfIssueListRepository issueListRepository;
+
+    @Autowired
+    private WfIssueRepository issueRepository;
+
+    @Autowired
+    private PermissionRepository permissionRepository;
+
     /**
      * Prepare fund deletion
      */
@@ -245,6 +262,7 @@ public class DeleteFundAction {
 
         prepare();
 
+        dropIssues();
         dropDaos();
         dropBulkActions();
         dropOutputs();
@@ -294,7 +312,7 @@ public class DeleteFundAction {
         structureDataRepository.deleteInBatch(objList);
         */
         structureDataRepository.deleteByFund(fund);
-        
+
         fundStructureExtensionRepository.deleteByFund(fund);
         em.flush();
 
@@ -305,7 +323,7 @@ public class DeleteFundAction {
      */
     private void dropNodeInfo() {
         policyService.deleteFundVisiblePolicies(fund);
-        userService.deleteByFund(fund);
+        userService.deletePermissionsByFund(fund);
 
         // delete node from cache
         cachedNodeRepository.deleteByFund(fund);
@@ -383,6 +401,25 @@ public class DeleteFundAction {
         daoFileGroupRepository.deleteByFund(fund);
         daoRepository.deleteByFund(fund);
         daoPackageRepository.deleteByFund(fund);
+
+        em.flush();
+    }
+
+    /**
+     * Smazání protokolů, připomínek, komentářů a oprávění uživatelů pro přístup k protokolům
+     */
+    private void dropIssues() {
+
+        List<WfIssueList> issueLists = issueListRepository.findByFundId(fundId);
+
+        for (WfIssueList issueList : issueLists) {
+            permissionRepository.deleteByIssueList(issueList);
+        }
+
+        commentRepository.deleteByFundId(fundId);
+        issueRepository.deleteByFundId(fundId);
+        // issueListRepository.deleteByFundId(fundId);
+        issueListRepository.delete(issueLists);
 
         em.flush();
     }

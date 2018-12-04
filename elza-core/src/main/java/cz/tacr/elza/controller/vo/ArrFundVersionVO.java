@@ -1,10 +1,13 @@
 package cz.tacr.elza.controller.vo;
 
 import java.util.Date;
+import java.util.List;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
+
+import javax.annotation.Nullable;
 
 /**
  * VO pro verzi archivní pomůcky.
@@ -27,6 +30,18 @@ public class ArrFundVersionVO {
     private Boolean strictMode;
 
     private Integer packageId;
+
+    /**
+     * Seznam otevřených připomínek.
+     */
+    @Nullable
+    private List<WfSimpleIssueVO> issues;
+
+    /**
+     * Nastavení zobrazení lektorování.
+     */
+    @Nullable
+    private WfConfigVO config;
 
     public Integer getId() {
         return id;
@@ -82,6 +97,22 @@ public class ArrFundVersionVO {
 
     public void setPackageId(final Integer packageId) {
         this.packageId = packageId;
+    }
+
+    public List<WfSimpleIssueVO> getIssues() {
+        return issues;
+    }
+
+    public void setIssues(List<WfSimpleIssueVO> issues) {
+        this.issues = issues;
+    }
+
+    public WfConfigVO getConfig() {
+        return config;
+    }
+
+    public void setConfig(final WfConfigVO config) {
+        this.config = config;
     }
 
     @Override

@@ -218,6 +218,9 @@ return true
 
     render() {
         const {actionAddons, className, fund, cutLongLabels} = this.props;
+        const searchText = typeof fund.fundTree.searchText !== 'undefined' 
+            ? fund.fundTree.searchText
+            : fund.fundTree.filterText;
 
         return (
             <FundTreeLazy
@@ -235,7 +238,7 @@ return true
                 onFulltextNextItem={this.handleFulltextNextItem}
                 onCollapse={this.handleCollapse}
                 extendedSearch
-                filterText={fund.fundTree.luceneQuery ? i18n('search.extended.label') : fund.fundTree.searchText}
+                filterText={fund.fundTree.luceneQuery ? i18n('search.extended.label') : searchText}
                 extendedReadOnly={fund.fundTree.luceneQuery}
                 onClickExtendedSearch={this.handleExtendedSearch}
             />

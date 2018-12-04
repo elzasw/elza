@@ -27,6 +27,7 @@ import {approveFund, deleteFund, exportFund, updateFund} from 'actions/arr/fund.
 import {scopesDirty} from 'actions/refTables/scopesData.jsx'
 import * as perms from 'actions/user/Permission.jsx';
 import {globalFundTreeInvalidate} from "../../actions/arr/globalFundTree";
+import SearchFundsForm from "../../components/arr/SearchFundsForm";
 
 class FundPage extends AbstractReactComponent {
     constructor(props) {
@@ -176,14 +177,34 @@ class FundPage extends AbstractReactComponent {
         return this.dispatch(updateFund(data));
     }
 
+    /**
+     * Vyvolání dialogu s vyhledáním na všemi AS.
+     */
+    handleFundsSearchForm = () => {
+        this.props.dispatch(modalDialogShow(
+            this,
+            i18n('arr.fund.title.search'),
+            <SearchFundsForm />
+        ));
+    };
+
     buildRibbon() {
         const {fundRegion, userDetail} = this.props
 
         const altActions = [];
         if (userDetail.hasOne(perms.FUND_ADMIN, perms.FUND_CREATE)) {
             altActions.push(
-                <Button key="add-fa" onClick={this.handleAddFund}><Icon glyph="fa-plus-circle" /><div><span className="btnText">{i18n('ribbon.action.arr.fund.add')}</span></div></Button>
+                <Button key="add-fa" onClick={this.handleAddFund}><Icon glyph="fa-plus-circle"/>
+                    <div><span className="btnText">{i18n('ribbon.action.arr.fund.add')}</span></div>
+                </Button>
             )
+        }
+
+        altActions.push(
+            <Button key="search-fa" onClick={this.handleFundsSearchForm}><Icon glyph="fa-search" /><div><span className="btnText">{i18n('ribbon.action.arr.fund.search')}</span></div></Button>
+        );
+
+        if (userDetail.hasOne(perms.FUND_ADMIN, perms.FUND_CREATE)) {
             altActions.push(
                 <Button key="fa-import" onClick={this.handleImport}><Icon glyph='fa-upload'/>
                     <div><span className="btnText">{i18n('ribbon.action.arr.fund.import')}</span></div>
