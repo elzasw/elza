@@ -1051,36 +1051,47 @@ public class AccessPointService {
     /**
      * Aktualizace přístupového bodu - není verzované!
      *
-     * @param accessPoint přístupový bod
-     * @param type        měněný typ přístupového bodu
+     * @param accessPointId
+     *            ID přístupového bodu
+     * @param type
+     *            měněný typ přístupového bodu
      * @return upravený přístupový bodu
      */
+    @Transactional
     @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
-    public ApAccessPoint updateAccessPoint(@AuthParam(type = AuthParam.Type.AP) final ApAccessPoint accessPoint,
-                                           final ApType type) {
-        Assert.notNull(accessPoint, "Přístupový bod musí být vyplněn");
-        Assert.notNull(type, "Typ musí být vyplněn");
+    public ApAccessPoint changeApType(@AuthParam(type = AuthParam.Type.AP) final Integer accessPointId,
+                                      final Integer apTypeId) {
+        Validate.notNull(accessPointId);
+        Validate.notNull(apTypeId);
+
+        // get ap type
+        StaticDataProvider sdp = this.staticDataService.createProvider();
+        ApType apType = sdp.getApTypeById(apTypeId);
+        Validate.notNull(apType, "AP Type not found, id={}", apTypeId);
+
+        // get ap
+        ApAccessPoint accessPoint = getAccessPoint(accessPointId);
+        Validate.notNull(accessPoint, "AP not found, id={}", accessPointId);
+
         apDataService.validationNotDeleted(accessPoint);
         apDataService.validationNotParty(accessPoint);
-        if (type.getApTypeId().equals(accessPoint.getApType().getApTypeId())) {
+
+        // check if modified
+        if (apTypeId.equals(accessPoint.getApTypeId())) {
             return accessPoint;
         }
-
-        accessPoint.setApType(type);
-        if (accessPoint.getRuleSystem() != null) {
-            accessPoint.setRuleSystem(type.getRuleSystem());
-        }
-        apRepository.save(accessPoint);
-
-        if (accessPoint.getRuleSystem() != null) {
+        accessPoint.setApType(apType);
+        accessPoint.setRuleSystem(apType.getRuleSystem());
+        ApAccessPoint result = apRepository.save(accessPoint);
+        if (result.getRuleSystem() != null) {
             ApChange change = apDataService.createChange(ApChange.Type.AP_UPDATE);
             //apGeneratorService.generateAndSetResult(accessPoint, change);
-            apGeneratorService.generateAsyncAfterCommit(accessPoint.getAccessPointId(), change.getChangeId());
+            apGeneratorService.generateAsyncAfterCommit(accessPointId, change.getChangeId());
         }
 
-        publishAccessPointUpdateEvent(accessPoint);
-        reindexDescItem(accessPoint);
-        return accessPoint;
+        publishAccessPointUpdateEvent(result);
+        reindexDescItem(result);
+        return result;
     }
 
     /**
@@ -1933,7 +1944,7 @@ public class AccessPointService {
             createExternalId(accessPoint, externalIdType, externalId, change);
             publishAccessPointCreateEvent(accessPoint);
         } else {
-            accessPoint = updateAccessPoint(accessPointExists, type);
+            accessPoint = changeApType(accessPointExists.getAccessPointId(), type.getApTypeId());
             invalidateAllNames(accessPoint, change);
             apDataService.changeDescription(accessPoint, description, change);
             publishAccessPointUpdateEvent(accessPoint);

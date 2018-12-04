@@ -143,6 +143,22 @@ actions:
                ZP2015_EXTRA_UNITS_PNP: pnp
                ZP2015_EXTRA_UNITS_PFP: pfp
                ZP2015_EXTRA_UNITS_JIN: jin
+           # Neevidovaná jednotlivost v kartonu - pocita se jako hromadina
+           - excludeWhen:
+               # Nesmí být nastaven jako připojený záznam
+               itemType: ZP2015_CONNECTED_RECORD
+             when:
+               all:
+                 - itemType: ZP2015_LEVEL_TYPE
+                   itemSpec: ZP2015_LEVEL_ITEM
+                 - itemType: ZP2015_UNIT_TYPE
+                   itemSpec: ZP2015_UNIT_TYPE_OTHER
+             stopProcessing: true
+             objectType: ZP2015_STORAGE_ID
+             objectItemType: ZP2015_PACKET_TYPE
+             objectItemMapping:
+               ZP2015_PACKET_TYPE_KAR: kar
+               ZP2015_PACKET_TYPE_FAS: fas
            - excludeWhen:
                # Nesmí být nastaven jako připojený záznam
                itemType: ZP2015_CONNECTED_RECORD

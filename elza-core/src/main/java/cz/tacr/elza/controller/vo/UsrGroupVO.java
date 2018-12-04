@@ -1,7 +1,8 @@
 package cz.tacr.elza.controller.vo;
 
 import java.util.List;
-import java.util.Objects;
+
+import cz.tacr.elza.domain.UsrGroup;
 
 /**
  * VO skupiny oprávnění.
@@ -22,6 +23,18 @@ public class UsrGroupVO {
     private List<UsrPermissionVO> permissions;
     /** Uživatelé přiřazení do skupiny. */
     private List<UsrUserVO> users;
+
+    public UsrGroupVO() {
+
+    }
+
+    public UsrGroupVO(UsrGroup group) {
+        id = group.getGroupId();
+        code = group.getCode();
+        name = group.getName();
+        description = group.getDescription();
+        // users in group has to be mapped manually
+    }
 
     public Integer getId() {
         return id;
@@ -71,21 +84,18 @@ public class UsrGroupVO {
         this.users = users;
     }
 
-    @Override
-    public boolean equals(final Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        UsrGroupVO that = (UsrGroupVO) o;
-        return Objects.equals(id, that.id) &&
-                Objects.equals(code, that.code) &&
-                Objects.equals(name, that.name) &&
-                Objects.equals(description, that.description) &&
-                Objects.equals(permissions, that.permissions) &&
-                Objects.equals(users, that.users);
+    public UsrGroup createEntity() {
+        UsrGroup entity = new UsrGroup();
+        entity.setGroupId(id);
+        entity.setCode(code);
+        entity.setName(name);
+        entity.setDescription(description);
+        // users in group has to be mapped manually
+        return entity;
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, code, name, description, permissions, users);
+    public static UsrGroupVO newInstance(UsrGroup group) {
+        UsrGroupVO vo = new UsrGroupVO(group);
+        return vo;
     }
 }

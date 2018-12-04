@@ -66,98 +66,98 @@
         <shortcut>Typ EJ</shortcut>
     </item-spec>
     <item-spec code="ZP2015_UNIT_TYPE_LIO" item-type="ZP2015_UNIT_TYPE">
-        <name>Listiny do roku 1850</name>
-        <description>Listiny do roku 1850</description>
+        <name>Listina do roku 1850</name>
+        <description>Listina do roku 1850</description>
         <shortcut>lio</shortcut>
     </item-spec>
     <item-spec code="ZP2015_UNIT_TYPE_LIP" item-type="ZP2015_UNIT_TYPE">
-        <name>Listiny po roce 1850</name>
-        <description>Listiny po roce 1850</description>
+        <name>Listina po roce 1850</name>
+        <description>Listina po roce 1850</description>
         <shortcut>lip</shortcut>
     </item-spec>
     <item-spec code="ZP2015_UNIT_TYPE_UKN" item-type="ZP2015_UNIT_TYPE">
-        <name>Úřední knihy</name>
-        <description>Úřední knihy</description>
+        <name>Úřední kniha</name>
+        <description>Úřední kniha</description>
         <shortcut>ukn</shortcut>
     </item-spec>
     <item-spec code="ZP2015_UNIT_TYPE_RKP" item-type="ZP2015_UNIT_TYPE">
-        <name>Rukopisy</name>
-        <description>Rukopisy</description>
+        <name>Rukopis</name>
+        <description>Rukopis</description>
         <shortcut>rkp</shortcut>
     </item-spec>
     <item-spec code="ZP2015_UNIT_TYPE_HDB" item-type="ZP2015_UNIT_TYPE">
-        <name>Hudebniny</name>
-        <description>Hudebniny</description>
+        <name>Hudebnina</name>
+        <description>Hudebnina</description>
         <shortcut>hdb</shortcut>
     </item-spec>
     <item-spec code="ZP2015_UNIT_TYPE_PPR" item-type="ZP2015_UNIT_TYPE">
-        <name>Podací protokoly</name>
-        <description>Podací protokoly</description>
+        <name>Podací protokol</name>
+        <description>Podací protokol</description>
         <shortcut>ppr</shortcut>
     </item-spec>
     <item-spec code="ZP2015_UNIT_TYPE_IND" item-type="ZP2015_UNIT_TYPE">
-        <name>Indexy</name>
-        <description>Indexy</description>
+        <name>Index</name>
+        <description>Index</description>
         <shortcut>ind</shortcut>
     </item-spec>
     <item-spec code="ZP2015_UNIT_TYP_ELE" item-type="ZP2015_UNIT_TYPE">
-        <name>Elenchy</name>
-        <description>Elenchy</description>
+        <name>Elench</name>
+        <description>Elench</description>
         <shortcut>ele</shortcut>
     </item-spec>
     <item-spec code="ZP2015_UNIT_TYPE_REP" item-type="ZP2015_UNIT_TYPE">
-        <name>Repertáře</name>
-        <description>Repertáře</description>
+        <name>Repertář</name>
+        <description>Repertář</description>
         <shortcut>rep</shortcut>
     </item-spec>
     <item-spec code="ZP2015_UNIT_TYPE_KTT" item-type="ZP2015_UNIT_TYPE">
-        <name>Kartotéky</name>
-        <description>Kartotéky</description>
+        <name>Kartotéka</name>
+        <description>Kartotéka</description>
         <shortcut>ktt</shortcut>
     </item-spec>
     <item-spec code="ZP2015_UNIT_TYPE_PEC" item-type="ZP2015_UNIT_TYPE">
-        <name>Pečetidla</name>
-        <description>Pečetidla</description>
+        <name>Pečetidlo</name>
+        <description>Pečetidlo</description>
         <shortcut>pec</shortcut>
     </item-spec>
     <item-spec code="ZP2015_UNIT_TYPE_RAZ" item-type="ZP2015_UNIT_TYPE">
-        <name>Razítka</name>
-        <description>Razítka</description>
+        <name>Razítko</name>
+        <description>Razítko</description>
         <shortcut>raz</shortcut>
     </item-spec>
     <item-spec code="ZP2015_UNIT_TYPE_OTD" item-type="ZP2015_UNIT_TYPE">
-        <name>Samostatné pečetě, odlitky pečetí a otisky typářů</name>
-        <description>Samostatné pečetě, odlitky pečetí a otisky typářů</description>
+        <name>Samostatná pečeť, odlitek pečeti, otisk typáře</name>
+        <description>Samostatná pečeť, odlitek pečeti, otisk typáře</description>
         <shortcut>otd</shortcut>
     </item-spec>
     <item-spec code="ZP2015_UNIT_TYPE_OTC" item-type="ZP2015_UNIT_TYPE">
-        <name>Kopie otisků</name>
-        <description>Kopie otisků</description>
+        <name>Kopie otisku</name>
+        <description>Kopie otisku</description>
         <shortcut>otc</shortcut>
     </item-spec>
     <item-spec code="ZP2015_UNIT_TYPE_MAP" item-type="ZP2015_UNIT_TYPE">
-        <name>Mapy</name>
-        <description>Mapy</description>
+        <name>Mapa</name>
+        <description>Mapa</description>
         <shortcut>map</shortcut>
     </item-spec>
     <item-spec code="ZP2015_UNIT_TYPE_ATL" item-type="ZP2015_UNIT_TYPE">
-        <name>Atlasy</name>
-        <description>Atlasy</description>
+        <name>Atlas</name>
+        <description>Atlas</description>
         <shortcut>atl</shortcut>
     </item-spec>
     <item-spec code="ZP2015_UNIT_TYPE_TVY" item-type="ZP2015_UNIT_TYPE">
-        <name>Technické výkresy</name>
-        <description>Technické výkresy</description>
+        <name>Technický výkres</name>
+        <description>Technický výkres</description>
         <shortcut>tvy</shortcut>
     </item-spec>
     <item-spec code="ZP2015_UNIT_TYPE_GLI" item-type="ZP2015_UNIT_TYPE">
-        <name>Grafické listy</name>
-        <description>Grafické listy</description>
+        <name>Grafický list</name>
+        <description>Grafický list</description>
         <shortcut>gli</shortcut>
     </item-spec>
     <item-spec code="ZP2015_UNIT_TYPE_KRE" item-type="ZP2015_UNIT_TYPE">
-        <name>Kresby</name>
-        <description>Kresby</description>
+        <name>Kresba</name>
+        <description>Kresba</description>
         <shortcut>kre</shortcut>
     </item-spec>
     <item-spec code="ZP2015_UNIT_TYPE_FSN" item-type="ZP2015_UNIT_TYPE">
@@ -166,38 +166,38 @@
         <shortcut>fsn</shortcut>
     </item-spec>
     <item-spec code="ZP2015_UNIT_TYPE_FSD" item-type="ZP2015_UNIT_TYPE">
-        <name>Fotografické desky</name>
-        <description>Fotografické desky</description>
+        <name>Fotografická deska</name>
+        <description>Fotografická deska</description>
         <shortcut>fsd</shortcut>
     </item-spec>
     <item-spec code="ZP2015_UNIT_TYPE_LFI" item-type="ZP2015_UNIT_TYPE">
-        <name>Listové filmy</name>
-        <description>Listové filmy</description>
+        <name>Listový filmy</name>
+        <description>Listový film</description>
         <shortcut>lfi</shortcut>
     </item-spec>
     <item-spec code="ZP2015_UNIT_TYPE_SFI" item-type="ZP2015_UNIT_TYPE">
-        <name>Svitkové filmy</name>
-        <description>Svitkové filmy</description>
+        <name>Svitkový film</name>
+        <description>Svitkový film</description>
         <shortcut>sfi</shortcut>
     </item-spec>
     <item-spec code="ZP2015_UNIT_TYPE_KIN" item-type="ZP2015_UNIT_TYPE">
-        <name>Kinofilmy</name>
-        <description>Kinofilmy</description>
+        <name>Kinofilm</name>
+        <description>Kinofilm</description>
         <shortcut>kin</shortcut>
     </item-spec>
     <item-spec code="ZP2015_UNIT_TYPE_MF" item-type="ZP2015_UNIT_TYPE">
-        <name>Mikrofilmy</name>
-        <description>Mikrofilmy</description>
+        <name>Mikrofilm</name>
+        <description>Mikrofilm</description>
         <shortcut>mf</shortcut>
     </item-spec>
     <item-spec code="ZP2015_UNIT_TYPE_MFS" item-type="ZP2015_UNIT_TYPE">
-        <name>Mikrofiše</name>
-        <description>Mikrofiše</description>
+        <name>Mikrofiš</name>
+        <description>Mikrofiš</description>
         <shortcut>mfis</shortcut>
     </item-spec>
     <item-spec code="ZP2015_UNIT_TYPE_FAL" item-type="ZP2015_UNIT_TYPE">
-        <name>Fotoalba</name>
-        <description>Fotoalba</description>
+        <name>Fotoalbum</name>
+        <description>Fotoalbum</description>
         <shortcut>fal</shortcut>
     </item-spec>
     <item-spec code="ZP2015_UNIT_TYPE_DFO" item-type="ZP2015_UNIT_TYPE">
@@ -206,23 +206,23 @@
         <shortcut>dfo</shortcut>
     </item-spec>
     <item-spec code="ZP2015_UNIT_TYPE_KZA" item-type="ZP2015_UNIT_TYPE">
-        <name>Kinematografické záznamy (díla) v analogové i digitální podobě</name>
-        <description>Kinematografické záznamy (díla) v analogové i digitální podobě</description>
+        <name>Kinematografický záznam (dílo) v analogové i digitální podobě</name>
+        <description>Kinematografický záznam (dílo) v analogové i digitální podobě</description>
         <shortcut>kza</shortcut>
     </item-spec>
     <item-spec code="ZP2015_UNIT_TYPE_ZZA" item-type="ZP2015_UNIT_TYPE">
-        <name>Zvukové záznamy (díla) v analogové i digitální podobě</name>
-        <description>Zvukové záznamy (díla) v analogové i digitální podobě</description>
+        <name>Zvukový záznam (dílo) v analogové i digitální podobě</name>
+        <description>Zvukový záznam (dílo) v analogové i digitální podobě</description>
         <shortcut>zza</shortcut>
     </item-spec>
     <item-spec code="ZP2015_UNIT_TYPE_TIO" item-type="ZP2015_UNIT_TYPE">
-        <name>Tisky do roku 1800</name>
-        <description>Tisky do roku 1800</description>
+        <name>Tisk do roku 1800</name>
+        <description>Tisk do roku 1800</description>
         <shortcut>tio</shortcut>
     </item-spec>
     <item-spec code="ZP2015_UNIT_TYPE_TIP" item-type="ZP2015_UNIT_TYPE">
-        <name>Tisky po roce 1800</name>
-        <description>Tisky po roce 1800</description>
+        <name>Tisk po roce 1800</name>
+        <description>Tisk po roce 1800</description>
         <shortcut>tip</shortcut>
     </item-spec>
     <item-spec code="ZP2015_UNIT_TYPE_POH" item-type="ZP2015_UNIT_TYPE">
@@ -231,33 +231,33 @@
         <shortcut>poh</shortcut>
     </item-spec>
     <item-spec code="ZP2015_UNIT_TYPE_PKT" item-type="ZP2015_UNIT_TYPE">
-        <name>Plakáty</name>
-        <description>Plakáty</description>
+        <name>Plakát</name>
+        <description>Plakát</description>
         <shortcut>pkt</shortcut>
     </item-spec>
     <item-spec code="ZP2015_UNIT_TYPE_CPA" item-type="ZP2015_UNIT_TYPE">
-        <name>Cenné papíry</name>
-        <description>Cenné papíry</description>
+        <name>Cenný papír</name>
+        <description>Cenný papír</description>
         <shortcut>cpa</shortcut>
     </item-spec>
     <item-spec code="ZP2015_UNIT_TYPE_STO" item-type="ZP2015_UNIT_TYPE">
-        <name>Štočky</name>
-        <description>Štočky</description>
+        <name>Štoček</name>
+        <description>Štoček</description>
         <shortcut>sto</shortcut>
     </item-spec>
     <item-spec code="ZP2015_UNIT_TYPE_PNP" item-type="ZP2015_UNIT_TYPE">
-        <name>Předměty numizmatické povahy</name>
-        <description>Předměty numizmatické povahy</description>
+        <name>Předmět numizmatické povahy</name>
+        <description>Předmět numizmatické povahy</description>
         <shortcut>pnp</shortcut>
     </item-spec>
     <item-spec code="ZP2015_UNIT_TYPE_PFP" item-type="ZP2015_UNIT_TYPE">
-        <name>Předměty faleristické povahy</name>
-        <description>Předměty faleristické povahy</description>
+        <name>Předmět faleristické povahy</name>
+        <description>Předmět faleristické povahy</description>
         <shortcut>pfp</shortcut>
     </item-spec>
     <item-spec code="ZP2015_UNIT_TYPE_JIN" item-type="ZP2015_UNIT_TYPE">
-        <name>Jiné</name>
-        <description>Jiné</description>
+        <name>Jiná</name>
+        <description>Jiná</description>
         <shortcut>jin</shortcut>
     </item-spec>
     <item-spec code="ZP2015_UNIT_TYPE_OTHER" item-type="ZP2015_UNIT_TYPE">
@@ -2743,6 +2743,16 @@
     </item-spec>
 
     <!-- Počet EJ -->
+    <item-spec code="ZP2015_UNIT_COUNT_KAR" item-type="ZP2015_UNIT_COUNT_ITEM">
+        <name>Karton</name>
+        <description>Karton</description>
+        <shortcut>kar</shortcut>
+    </item-spec>
+    <item-spec code="ZP2015_UNIT_COUNT_FAS" item-type="ZP2015_UNIT_COUNT_ITEM">
+        <name>Fascikl</name>
+        <description>Fascikl</description>
+        <shortcut>fas</shortcut>
+    </item-spec>
     <item-spec code="ZP2015_UNIT_COUNT_LIO" item-type="ZP2015_UNIT_COUNT_ITEM">
         <name>Listiny do roku 1850</name>
         <description>Listiny do roku 1850</description>

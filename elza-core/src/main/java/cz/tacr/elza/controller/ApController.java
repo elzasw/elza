@@ -1,6 +1,5 @@
 package cz.tacr.elza.controller;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -206,13 +205,12 @@ public class ApController {
 
         Map<Integer, Integer> recordIdPartyIdMap = partyService.findParPartyIdsByRecords(foundRecords);
 
-        List<ApAccessPointVO> foundRecordVOList = new ArrayList<>(foundRecords.size());
-        for (ApAccessPoint ap : foundRecords) {
+        return new FilteredResultVO<>(foundRecords, ap -> {
             ApAccessPointVO vo = apFactory.createVO(ap);
             vo.setPartyId(recordIdPartyIdMap.get(vo.getId()));
-            foundRecordVOList.add(vo);
-        }
-        return new FilteredResultVO<>(foundRecordVOList, foundRecordsCount);
+            return vo;
+        },
+                foundRecordsCount);
     }
 
 
@@ -253,10 +251,8 @@ public class ApController {
         final List<ApAccessPoint> foundRecords = accessPointRepository.findApAccessPointByTextAndType(search, apTypeIds,
                 from, count, scopeIds);
 
-        List<ApRecordSimple> foundRecordsVO = new ArrayList<>(foundRecords.size());
-        foundRecords.forEach(ap -> foundRecordsVO.add(apFactory.createVOSimple(ap)));
-
-        return new FilteredResultVO<>(foundRecordsVO, foundRecordsCount);
+        return new FilteredResultVO<>(foundRecords, ap -> apFactory.createVOSimple(ap),
+                foundRecordsCount);
     }
 
     /**
@@ -578,8 +574,13 @@ public class ApController {
         Assert.notNull(accessPointId, "Identifikátor rejstříkového hesla musí být vyplněn");
 
         ApAccessPoint ap = accessPointService.getAccessPoint(accessPointId);
-        ApAccessPointVO vo = apFactory.createVO(ap, true);
+        ApAccessPointVO vo = getAccessPoint(ap);
+        return vo;
+    }
 
+    private ApAccessPointVO getAccessPoint(ApAccessPoint ap) {
+        ApAccessPointVO vo = apFactory.createVO(ap, true);
+        
         ParParty party = partyService.findParPartyByAccessPoint(ap);
         if (party != null) {
             vo.setPartyId(party.getPartyId());
@@ -597,14 +598,12 @@ public class ApController {
     @Transactional
     @RequestMapping(value = "/{accessPointId}", method = RequestMethod.PUT)
     public ApAccessPointVO updateAccessPoint(@PathVariable final Integer accessPointId,
-                                             @RequestBody final ApAccessPointEditVO accessPoint) {
-        Assert.notNull(accessPointId, "Identifikátor přístupového bodu musí být vyplněn");
-        Assert.notNull(accessPoint, "Přístupový bod musí být vyplněn");
+                                             @RequestBody final ApAccessPointEditVO editVo) {
+        Validate.notNull(accessPointId, "Identifikátor přístupového bodu musí být vyplněn");
+        Validate.notNull(editVo);
 
-        ApAccessPoint accessPointEdit = accessPointService.getAccessPointInternalWithLock(accessPointId);
-        ApType type = accessPointService.getType(accessPoint.getTypeId());
-        ApAccessPoint editedAccessPoint = accessPointService.updateAccessPoint(accessPointEdit, type);
-        return getAccessPoint(editedAccessPoint.getAccessPointId());
+        ApAccessPoint ap = accessPointService.changeApType(accessPointId, editVo.getTypeId());
+        return getAccessPoint(ap);
     }
 
     /**

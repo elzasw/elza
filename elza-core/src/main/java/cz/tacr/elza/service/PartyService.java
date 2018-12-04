@@ -18,7 +18,6 @@ import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.NotImplementedException;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -665,17 +664,15 @@ public class PartyService {
 
             partyRepository.flush();
 
-            eventNotificationService.publishEvent(new EventId(EventType.PARTY_DELETE, party.getPartyId()));
             partyRepository.delete(party);
-            accessPointService.deleteAccessPoint(party.getAccessPointId(), false);
         } else {
-            // TODO: nepouzivat slozite nacitani a synch metodu pro nastaveni delete change
-            throw new NotImplementedException("nepouzivat slozite nacitani a synch metodu pro nastaveni delete change");
-            /* final ApAccessPoint record = party.getAccessPoint();
-            ApAccessPointData accessPointData = accessPointDataService.findAccessPointData(record);
-            record.setInvalid(true);
-            accessPointService.saveAccessPoint(accessPointData, false); */
+            // party is used -> cannot be deleted
         }
+        // invalidate AP
+        accessPointService.deleteAccessPoint(party.getAccessPointId(), false);
+
+        // send notification
+        eventNotificationService.publishEvent(new EventId(EventType.PARTY_DELETE, party.getPartyId()));
     }
 
     private boolean canBeDeleted(ParParty party) {

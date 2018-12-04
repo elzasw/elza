@@ -7,7 +7,6 @@ import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrNodeOutput;
 import cz.tacr.elza.domain.ArrOutputDefinition;
 import cz.tacr.elza.domain.ArrOutputItem;
 import cz.tacr.elza.domain.RulTemplate;
@@ -20,7 +19,7 @@ public class OutputParams {
 
     private final ArrFundVersion fundVersion;
 
-    private final List<ArrNodeOutput> outputNodes;
+    private final List<Integer> outputNodeIds;
 
     private final List<ArrOutputItem> outputItems;
 
@@ -29,7 +28,7 @@ public class OutputParams {
     public OutputParams(ArrOutputDefinition definition,
                         ArrChange change,
                         ArrFundVersion fundVersion,
-                        List<ArrNodeOutput> outputNodes,
+                        List<Integer> nodeIds,
                         List<ArrOutputItem> outputItems,
                         Path templateDir) {
         // sanity check
@@ -38,7 +37,7 @@ public class OutputParams {
         this.definition = definition;
         this.change = change;
         this.fundVersion = fundVersion;
-        this.outputNodes = outputNodes;
+        this.outputNodeIds = nodeIds;
         this.outputItems = outputItems;
         this.templateDir = templateDir;
     }
@@ -76,8 +75,8 @@ public class OutputParams {
         return fundVersion;
     }
 
-    public List<ArrNodeOutput> getOutputNodes() {
-        return outputNodes;
+    public List<Integer> getOutputNodeIds() {
+        return outputNodeIds;
     }
 
     public List<ArrOutputItem> getOutputItems() {

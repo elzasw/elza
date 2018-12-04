@@ -2,6 +2,7 @@ package cz.tacr.elza.controller;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
@@ -20,12 +21,13 @@ import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.FilteredResultVO;
 import cz.tacr.elza.controller.vo.UsrGroupVO;
 import cz.tacr.elza.controller.vo.UsrPermissionVO;
+import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.UsrGroup;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.repository.FilteredResult;
 import cz.tacr.elza.repository.FundRepository;
-import cz.tacr.elza.service.SettingsService;
 import cz.tacr.elza.service.UserService;
 
 /**
@@ -47,10 +49,10 @@ public class GroupController {
     private ClientFactoryDO factoryDO;
 
     @Autowired
-    private SettingsService settingsService;
+    private FundRepository fundRepository;
 
     @Autowired
-    private FundRepository fundRepository;
+    private StaticDataService staticDataService;
 
     /**
      * Načtení skupiny s daty pro zobrazení na detailu s možností editace.
@@ -82,8 +84,9 @@ public class GroupController {
                                                   @RequestParam("count") final Integer count
     ) {
         FilteredResult<UsrGroup> groups = userService.findGroup(search, from, count);
-        List<UsrGroupVO> resultVo = factoryVO.createGroupList(groups.getList(), false, false);
-        return new FilteredResultVO<>(resultVo, groups.getTotalCount());
+        return new FilteredResultVO<>(groups.getList(),
+                (entity) -> factoryVO.createGroup(entity, false, false),
+                groups.getTotalCount());
     }
 
     /**
@@ -101,8 +104,9 @@ public class GroupController {
                                                   @RequestParam("count") final Integer count
     ) {
         FilteredResult<UsrGroup> groups = userService.findGroupWithFundCreate(search, from, count);
-        List<UsrGroupVO> resultVo = factoryVO.createGroupList(groups.getList(), false, false);
-        return new FilteredResultVO<>(resultVo, groups.getTotalCount());
+        return new FilteredResultVO<>(groups.getList(),
+                (entity) -> factoryVO.createGroup(entity, false, false),
+                groups.getTotalCount());
     }
 
     /**
@@ -164,7 +168,12 @@ public class GroupController {
         UsrGroup group = userService.getGroup(groupId);
         List<UsrPermission> usrPermissions = factoryDO.createPermissionList(permissions);
         List<UsrPermission> result = userService.addGroupPermission(group, usrPermissions, true);
-        return factoryVO.createPermissionList(result, UsrGroup.class);
+
+        StaticDataProvider staticData = staticDataService.getData();
+        List<UsrPermissionVO> resultVOs = result.stream().map(
+                                                              p -> UsrPermissionVO.newInstance(p, true, staticData))
+                .collect(Collectors.toList());
+        return resultVOs;
     }
 
     /**

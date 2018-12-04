@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
+import cz.tacr.elza.core.ElzaLocale;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.fund.FundTreeProvider;
 import cz.tacr.elza.dataexchange.output.DEExportService;
@@ -42,9 +43,12 @@ public class OutputGeneratorFactory {
 
     private final ApplicationContext applicationContext;
 
+    private ElzaLocale elzaLocale;
+
     @Autowired
     public OutputGeneratorFactory(ApplicationContext applicationContext,
             StaticDataService staticDataService,
+                                  ElzaLocale elzaLocale,
             FundTreeProvider fundTreeProvider,
             NodeCacheService nodeCacheService,
             InstitutionRepository institutionRepository,
@@ -56,6 +60,7 @@ public class OutputGeneratorFactory {
             DEExportService exportService) {
         this.applicationContext = applicationContext;
         this.staticDataService = staticDataService;
+        this.elzaLocale = elzaLocale;
         this.fundTreeProvider = fundTreeProvider;
         this.nodeCacheService = nodeCacheService;
         this.institutionRepository = institutionRepository;
@@ -81,12 +86,14 @@ public class OutputGeneratorFactory {
     }
 
     public FreemarkerOutputGenerator createFreemarkerOutputGenerator() {
-        return new FreemarkerOutputGenerator(staticDataService, fundTreeProvider, nodeCacheService,
+        return new FreemarkerOutputGenerator(applicationContext, staticDataService, elzaLocale, fundTreeProvider,
+                nodeCacheService,
                 institutionRepository, apDescRepository, apNameRepository, apEidRepository, em, dmsService);
     }
 
     public JasperOutputGenerator createJasperOutputGenerator() {
-        return new JasperOutputGenerator(applicationContext, staticDataService, fundTreeProvider, nodeCacheService,
+        return new JasperOutputGenerator(applicationContext, staticDataService, elzaLocale,
+                fundTreeProvider, nodeCacheService,
                 institutionRepository,
                 apDescRepository, apNameRepository, apEidRepository, em, dmsService);
     }

@@ -6,16 +6,20 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
 import org.apache.commons.lang3.NotImplementedException;
+import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.FileSystemUtils;
@@ -58,9 +62,19 @@ public class PackageContext {
     PackageInfo packageInfo;
 
     /**
+     * Contexts for each updated rule
+     */
+    private List<RuleUpdateContext> ruleUpdateContexts = new ArrayList<>();
+
+    /**
      * Set of structured types to be regenerated
      */
     private Set<String> regenerateStructTypes = new HashSet<>();
+
+    /**
+     * Flag if node cache should be synchronized after update
+     */
+    private boolean syncNodeCache;
 
     public PackageContext(ResourcePathResolver resourcePathResolver) {
 		this.resourcePathResolver = resourcePathResolver;
@@ -76,10 +90,15 @@ public class PackageContext {
      */
     public void init(File file) throws ZipException, IOException {
         zipFile = new ZipFile(file);
-
         Enumeration<? extends ZipEntry> entries = zipFile.entries();
 
-        byteStreams = PackageUtils.createStreamsMap(zipFile, entries);
+        Map<String, ByteArrayInputStream> bss = PackageUtils.createStreamsMap(zipFile, entries);
+        init(bss);
+    }
+
+    public void init(final Map<String, ByteArrayInputStream> byteStreams) throws IOException {
+
+        this.byteStreams = byteStreams;
 
         // read package info
         // načtení info o importu
@@ -278,5 +297,36 @@ public class PackageContext {
 
     public Set<String> getRegenerateStructureTypes() {
         return regenerateStructTypes;
+    }
+
+    public boolean isSyncNodeCache() {
+        return syncNodeCache;
+    }
+
+    public void setSyncNodeCache(final boolean sync) {
+        this.syncNodeCache = sync;
+    }
+
+    public void addRuleUpdateContext(RuleUpdateContext ruc) {
+        // check that rules were not already added
+        for (RuleUpdateContext crc : ruleUpdateContexts) {
+            Validate.isTrue(!Objects.equals(crc.getRulSetCode(), ruc.getRulSetCode()));
+        }
+
+        ruleUpdateContexts.add(ruc);
+    }
+
+    public RuleUpdateContext getRuleUpdateContextByCode(String code) {
+        // check that rules were not already added
+        for (RuleUpdateContext ruc : ruleUpdateContexts) {
+            if (ruc.getRulSetCode().equals(code)) {
+                return ruc;
+            }
+        }
+        return null;
+    }
+
+    public List<RuleUpdateContext> getRuleUpdateContexts() {
+        return Collections.unmodifiableList(ruleUpdateContexts);
     }
 }

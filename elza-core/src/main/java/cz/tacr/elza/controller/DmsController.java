@@ -31,8 +31,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import cz.tacr.elza.common.CloseablePathResource;
-import cz.tacr.elza.controller.config.ClientFactoryDO;
-import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.ArrFileVO;
 import cz.tacr.elza.controller.vo.ArrOutputFileVO;
 import cz.tacr.elza.controller.vo.DmsFileVO;
@@ -45,6 +43,7 @@ import cz.tacr.elza.domain.DmsFile;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.FilteredResult;
+import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.OutputResultRepository;
 import cz.tacr.elza.service.DmsService;
 import cz.tacr.elza.service.attachment.AttachmentService;
@@ -60,12 +59,6 @@ public class DmsController {
     private ThreadLocal<SimpleDateFormat> FORMATTER_DATE_TIME = ThreadLocal.withInitial(() -> new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss"));
 
     @Autowired
-    private ClientFactoryDO factoryDO;
-
-    @Autowired
-    private ClientFactoryVO factoryVO;
-
-    @Autowired
     private DmsService dmsService;
 
     @Autowired
@@ -73,6 +66,9 @@ public class DmsController {
 
     @Autowired
     private AttachmentService attachmentService;
+
+    @Autowired
+    private FundRepository fundRepository;
 
     /**
      * Načtení seznamu editovatelných mime typů.
@@ -92,7 +88,7 @@ public class DmsController {
     @Transactional
     @RequestMapping(value = "/api/dms/common", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public void createFile(final DmsFileVO object) throws IOException {
-        create(object, factoryDO::createDmsFile);
+        create(object, src -> src.createEntity());
     }
 
     /**
@@ -104,8 +100,9 @@ public class DmsController {
     @RequestMapping(value = "/api/dms/fund", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ArrFileVO createFile(final ArrFileVO object) throws IOException {
         dmsService.checkFundWritePermission(object.getFundId());
-        DmsFile file = create(object, (fileVO) -> factoryDO.createArrFile((ArrFileVO) fileVO));
-        return factoryVO.createArrFile((ArrFile) file);
+
+        ArrFile file = create(object, (fileVO) -> object.createEntity(fundRepository));
+        return ArrFileVO.newInstance(file, attachmentService);
     }
 
     /**
@@ -116,7 +113,7 @@ public class DmsController {
     @Transactional
     @RequestMapping(value = "/api/dms/output", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public void createFile(final ArrOutputFileVO object) throws IOException {
-        create(object, (fileVO) -> factoryDO.createArrOutputFile((ArrOutputFileVO) fileVO));
+        create(object, (fileVO) -> object.createEntity(outputResultRepository));
     }
 
     /**
@@ -137,7 +134,8 @@ public class DmsController {
      * @return DO pro vrácení klientovi
      * @throws IOException
      */
-    private DmsFile create(final DmsFileVO objVO, final Function<DmsFileVO, DmsFile> factory) throws IOException {
+    private <T extends DmsFile> T create(final DmsFileVO objVO, final Function<DmsFileVO, T> factory)
+            throws IOException {
         Assert.notNull(objVO, "Soubor musí být vyplněn");
 
         final FileInfo fileInfo = getObjInfo(objVO);
@@ -147,7 +145,7 @@ public class DmsController {
 
         updateDmsFile(objVO, fileInfo);
 
-        DmsFile objDO = factory.apply(objVO);
+        T objDO = factory.apply(objVO);
 
         final InputStream inputStream = fileInfo.getInputStream();
         dmsService.createFile(objDO, inputStream);
@@ -261,7 +259,7 @@ public class DmsController {
     // kvůli IE nelze použít PUT protože nemůžeme uploadovat soubor
 //    @RequestMapping(value = "/api/dms/common/{fileId}", method = RequestMethod.POST)
     public void updateFile(@PathVariable(value = "fileId") Integer fileId, final DmsFileVO object) throws IOException {
-        update(fileId, object, factoryDO::createDmsFile);
+        update(fileId, object, (vo) -> object.createEntity());
     }
 
     /**
@@ -277,7 +275,7 @@ public class DmsController {
     public void updateFile(@PathVariable(value = "fileId") Integer fileId, final ArrFileVO object) throws IOException {
         ArrFile arrFile = dmsService.getArrFile(fileId);
         dmsService.checkFundWritePermission(arrFile.getFund().getFundId());
-        update(fileId, object, (fileVO) -> factoryDO.createArrFile((ArrFileVO) fileVO));
+        update(fileId, object, (fileVO) -> object.createEntity(fundRepository));
     }
 
     /**
@@ -291,7 +289,7 @@ public class DmsController {
     // kvůli IE nelze použít PUT protože nemůžeme uploadovat soubor
     @RequestMapping(value = "/api/dms/output/{fileId}", method = RequestMethod.POST)
     public void updateFile(@PathVariable(value = "fileId") Integer fileId, final ArrOutputFileVO object) throws IOException {
-        update(fileId, object, (fileVO) -> factoryDO.createArrOutputFile((ArrOutputFileVO) fileVO));
+        update(fileId, object, (fileVO) -> object.createEntity(outputResultRepository));
     }
 
 
@@ -302,17 +300,18 @@ public class DmsController {
      * @return DO pro vrácení klientovi
      * @throws IOException
      */
-    private DmsFile update(final Integer fileId, final DmsFileVO objVO, final Function<DmsFileVO, DmsFile> factory) throws IOException {
-        Assert.notNull(fileId, "Identifikátor souboru musí být vyplněn");
-        Assert.notNull(objVO, "Soubor musí být vyplněn");
-        Assert.isTrue(fileId.equals(objVO.getId()), "Id v URL neodpovídá ID objektu");
+    private <T extends DmsFile> T update(final Integer fileId, final DmsFileVO objVO,
+                                         final Function<DmsFileVO, T> factory) throws IOException {
+        Validate.notNull(fileId, "Identifikátor souboru musí být vyplněn");
+        Validate.notNull(objVO, "Soubor musí být vyplněn");
+        Validate.isTrue(fileId.equals(objVO.getId()), "Id v URL neodpovídá ID objektu");
 
         final FileInfo fileInfo = getObjInfo(objVO);
         if (fileInfo != null) {
             updateDmsFile(objVO, fileInfo);
         }
 
-        DmsFile objDO = factory.apply(objVO);
+        T objDO = factory.apply(objVO);
         final InputStream inputStream = fileInfo != null ? fileInfo.getInputStream() : null;
 
         dmsService.updateFile(objDO, inputStream);
@@ -402,7 +401,7 @@ public class DmsController {
                                                     @RequestParam(required = false, defaultValue = "0") final Integer from,
                                                     @RequestParam(required = false, defaultValue = "20") final Integer count) {
         FilteredResult<DmsFile> files = dmsService.findDmsFiles(search, from, count);
-        return new FilteredResultVO<>(factoryVO.createDmsFilesList(files.getList()), files.getTotalCount());
+        return new FilteredResultVO<>(files.getList(), DmsFileVO::newInstance, files.getTotalCount());
     }
 
     /**
@@ -419,7 +418,8 @@ public class DmsController {
                                                     @RequestParam(required = false, defaultValue = "0") final Integer from,
                                                     @RequestParam(required = false, defaultValue = "20") final Integer count) {
         FilteredResult<ArrFile> files = dmsService.findArrFiles(search, fundId, from, count);
-        return new FilteredResultVO<>(factoryVO.createArrFilesList(files.getList()), files.getTotalCount());
+        return new FilteredResultVO<>(files.getList(), (entity) -> ArrFileVO.newInstance(entity, attachmentService),
+                files.getTotalCount());
     }
 
     /**
@@ -436,11 +436,11 @@ public class DmsController {
         ArrFile file = dmsService.getArrFile(fileId);
         Assert.isTrue(fundId.equals(file.getFund().getFundId()), "Nesouhlasí id AS");
 
-        ArrFileVO result = factoryVO.createArrFile(file);
-
         if (!attachmentService.isEditable(file.getMimeType())) {
             throw new BusinessException("Soubor není možné editovat ručně.", BaseCode.INVALID_STATE);
         }
+
+        ArrFileVO result = ArrFileVO.newInstance(file, attachmentService);
 
         try (InputStream is = dmsService.downloadFile(file)) {
             String text = IOUtils.toString(is, "utf-8");
@@ -492,7 +492,9 @@ public class DmsController {
                                                     @RequestParam(required = false, defaultValue = "0") final Integer from,
                                                     @RequestParam(required = false, defaultValue = "20") final Integer count) {
         FilteredResult<ArrOutputFile> files = dmsService.findOutputFiles(search, outputResultId, from, count);
-        return new FilteredResultVO<>(factoryVO.createArrOutputFilesList(files.getList()), files.getTotalCount());
+        return new FilteredResultVO<>(files.getList(),
+                (entity) -> ArrOutputFileVO.newInstance(entity),
+                files.getTotalCount());
     }
 
     /**

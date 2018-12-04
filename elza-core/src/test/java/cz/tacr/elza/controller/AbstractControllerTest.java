@@ -399,16 +399,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     private List<RulDataTypeVO> dataTypes = null;
     private List<RulDescItemTypeExtVO> descItemTypes = null;
 
-    // Import institucí
-    private final static String XML_INSTITUTION = "institution-import.xml";
-
     private static Map<String, String> cookies = null;
-
-    public static File getResourceFile(String resourcePath) {
-        URL url = Thread.currentThread().getContextClassLoader().getResource(resourcePath);
-        Assert.assertNotNull(url);
-        return new File(url.getPath());
-    }
 
     @Override
     @Before
