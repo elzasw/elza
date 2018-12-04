@@ -9,13 +9,11 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
-import cz.tacr.elza.controller.factory.RuleFactory;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.util.Assert;
 
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -23,8 +21,8 @@ import cz.tacr.elza.bulkaction.BulkActionConfig;
 import cz.tacr.elza.bulkaction.generator.PersistentSortRunConfig;
 import cz.tacr.elza.common.GeometryConvertor;
 import cz.tacr.elza.controller.factory.ApFactory;
+import cz.tacr.elza.controller.factory.RuleFactory;
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
-import cz.tacr.elza.controller.vo.ApScopeVO;
 import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
 import cz.tacr.elza.controller.vo.ArrChangeVO;
 import cz.tacr.elza.controller.vo.ArrDaoFileGroupVO;
@@ -34,17 +32,14 @@ import cz.tacr.elza.controller.vo.ArrDigitalRepositorySimpleVO;
 import cz.tacr.elza.controller.vo.ArrDigitalRepositoryVO;
 import cz.tacr.elza.controller.vo.ArrDigitizationFrontdeskSimpleVO;
 import cz.tacr.elza.controller.vo.ArrDigitizationFrontdeskVO;
-import cz.tacr.elza.controller.vo.ArrFileVO;
 import cz.tacr.elza.controller.vo.ArrFundBaseVO;
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
 import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
 import cz.tacr.elza.controller.vo.ArrOutputDefinitionVO;
-import cz.tacr.elza.controller.vo.ArrOutputFileVO;
 import cz.tacr.elza.controller.vo.ArrOutputVO;
 import cz.tacr.elza.controller.vo.BulkActionRunVO;
 import cz.tacr.elza.controller.vo.BulkActionVO;
-import cz.tacr.elza.controller.vo.DmsFileVO;
 import cz.tacr.elza.controller.vo.NodeConformityErrorVO;
 import cz.tacr.elza.controller.vo.NodeConformityMissingVO;
 import cz.tacr.elza.controller.vo.NodeConformityVO;
@@ -80,7 +75,6 @@ import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
 import cz.tacr.elza.controller.vo.UIPartyGroupVO;
 import cz.tacr.elza.controller.vo.UISettingsVO;
 import cz.tacr.elza.controller.vo.UsrGroupVO;
-import cz.tacr.elza.controller.vo.UsrPermissionVO;
 import cz.tacr.elza.controller.vo.UsrUserVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.DescItemSpecLiteVO;
@@ -107,7 +101,6 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitidVO;
 import cz.tacr.elza.core.data.CalendarType;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
@@ -130,7 +123,6 @@ import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDataUnitid;
 import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrDigitizationFrontdesk;
-import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrItemCoordinates;
@@ -155,9 +147,7 @@ import cz.tacr.elza.domain.ArrNodeConformityMissing;
 import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutputDefinition;
-import cz.tacr.elza.domain.ArrOutputFile;
 import cz.tacr.elza.domain.ArrOutputResult;
-import cz.tacr.elza.domain.DmsFile;
 import cz.tacr.elza.domain.ParComplementType;
 import cz.tacr.elza.domain.ParCreator;
 import cz.tacr.elza.domain.ParDynasty;
@@ -192,7 +182,6 @@ import cz.tacr.elza.domain.RulTemplate;
 import cz.tacr.elza.domain.UIPartyGroup;
 import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.UsrGroup;
-import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.convertor.CalendarConverter;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
@@ -201,12 +190,9 @@ import cz.tacr.elza.packageimport.xml.SettingGridView;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.FundFileRepository;
-import cz.tacr.elza.repository.FundRepository;
-import cz.tacr.elza.repository.OutputResultRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
 import cz.tacr.elza.service.RuleService;
-import cz.tacr.elza.service.attachment.AttachmentService;
 import ma.glasnost.orika.CustomMapper;
 import ma.glasnost.orika.MapperFactory;
 import ma.glasnost.orika.MappingContext;
@@ -227,11 +213,7 @@ import ma.glasnost.orika.metadata.Type;
 public class ConfigMapperConfiguration {
 
     @Autowired
-    private FundRepository fundRepository;
-    @Autowired
     private FundFileRepository fundFileRepository;
-    @Autowired
-    private OutputResultRepository outputResultRepository;
     @Autowired
     private StructuredObjectRepository structureDataRepository;
     @Autowired
@@ -242,8 +224,6 @@ public class ConfigMapperConfiguration {
     private ApAccessPointRepository apAccessPointRepository;
     @Autowired
     private RuleService ruleService;
-    @Autowired
-    private AttachmentService attachmentService;
     @Autowired
     private ApFactory apFactory;
     @Autowired
@@ -482,38 +462,6 @@ public class ConfigMapperConfiguration {
                 }
         ).byDefault().register();
         mapperFactory.classMap(ArrBulkActionRun.class, BulkActionRunVO.class).field("bulkActionRunId", "id").field("bulkActionCode", "code").byDefault().register();
-        mapperFactory.classMap(ArrFile.class, ArrFileVO.class).field("fileId", "id").exclude("file").byDefault().customize(new CustomMapper<ArrFile, ArrFileVO>() {
-            @Override
-            public void mapAtoB(final ArrFile arrFile, final ArrFileVO arrFileVO, final MappingContext mappingContext) {
-
-                arrFileVO.setFundId(arrFile.getFund().getFundId());
-                arrFileVO.setEditable(attachmentService.isEditable(arrFile.getMimeType()));
-                arrFileVO.setGeneratePdf(attachmentService.supportGenerateTo(arrFile, "application/pdf"));
-            }
-
-            @Override
-            public void mapBtoA(final ArrFileVO arrFileVO, final ArrFile arrFile, final MappingContext mappingContext) {
-                if (arrFileVO.getFundId() != null) {
-                    ArrFund fund = fundRepository.findOne(arrFileVO.getFundId());
-                    Assert.notNull(fund, "Archivní pomůcka neexistuje (ID=" + arrFileVO.getFundId() + ")");
-                    arrFile.setFund(fund);
-                }
-            }
-        }).register();
-        mapperFactory.classMap(ArrOutputFile.class, ArrOutputFileVO.class).field("fileId", "id").exclude("file").byDefault().customize(new CustomMapper<ArrOutputFile, ArrOutputFileVO>() {
-            @Override
-            public void mapAtoB(final ArrOutputFile arrOutputFile, final ArrOutputFileVO arrOutputFileVO, final MappingContext mappingContext) {
-                arrOutputFileVO.setOutputResultId(arrOutputFile.getOutputResult().getOutputResultId());
-            }
-
-            @Override
-            public void mapBtoA(final ArrOutputFileVO arrOutputFileVO, final ArrOutputFile arrOutputFile, final MappingContext mappingContext) {
-                ArrOutputResult result = outputResultRepository.findOne(arrOutputFileVO.getOutputResultId());
-                Assert.notNull(result, "Archivní pomůcka neexistuje (ID=" + arrOutputFileVO.getOutputResultId() + ")");
-                arrOutputFile.setOutputResult(result);
-            }
-        }).register();
-        mapperFactory.classMap(DmsFile.class, DmsFileVO.class).field("fileId", "id").exclude("file").byDefault().register();
         mapperFactory.classMap(ParComplementType.class, ParComplementTypeVO.class).byDefault().register();
         mapperFactory.classMap(ParDynasty.class, ParDynastyVO.class).byDefault().register();
         mapperFactory.classMap(ParParty.class, ParPartyVO.class)
@@ -856,40 +804,6 @@ public class ConfigMapperConfiguration {
         mapperFactory.classMap(UsrGroup.class, UsrGroupVO.class)
                 .byDefault()
                 .field("groupId", "id")
-                .register();
-        mapperFactory.classMap(UsrPermission.class, UsrPermissionVO.class)
-                .byDefault()
-                .field("permissionId", "id")
-                .customize(new CustomMapper<UsrPermission, UsrPermissionVO>() {
-                    @Override
-                    public void mapAtoB(final UsrPermission usrPermission, final UsrPermissionVO usrPermissionVO, final MappingContext context) {
-                        Class<?> targetEntity = (Class<?>) context.getProperty("targetEntity");
-                        final boolean inherited;
-                        if (targetEntity == UsrUser.class) {
-                            inherited = usrPermission.getGroup() != null;
-                        } else if (targetEntity == UsrGroup.class) {
-                            inherited = false;
-                        } else {
-                            throw new IllegalStateException("Neznámý typ entity " + targetEntity);
-                        }
-                        usrPermissionVO.setInherited(inherited);
-                        if (inherited) {
-                            usrPermissionVO.setGroupId(usrPermission.getGroup().getGroupId());
-                        }
-                        // create scope VO
-                        ApScope apScope = usrPermission.getScope();
-                        if (apScope != null) {
-                            usrPermissionVO.setScope(ApScopeVO.newInstance(apScope, staticDataService.getData()));
-                        }
-                    }
-                    @Override
-                    public void mapBtoA(UsrPermissionVO usrPermissionVO, UsrPermission usrPermission, MappingContext context) {
-                        ApScopeVO apScopeVO = usrPermissionVO.getScope();
-                        if (apScopeVO != null) {
-                            usrPermission.setScope(apScopeVO.createEntity(staticDataService.getData()));
-                        }
-                    }
-                })
                 .register();
 
         mapperFactory.classMap(RulTemplate.class, RulTemplateVO.class)

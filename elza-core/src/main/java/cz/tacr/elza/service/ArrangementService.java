@@ -205,7 +205,7 @@ public class ArrangementService {
 
         //        Assert.isTrue(ruleSet.equals(arrangementType.getRuleSet()));
 
-        ArrLevel rootLevel = createLevel(change, null, uuid, fund);
+        ArrLevel rootLevel = createRootLevel(change, uuid, fund);
         createVersion(change, fund, ruleSet, rootLevel.getNode(), dateRange);
 
         return fund;
@@ -365,14 +365,13 @@ public class ArrangementService {
         return fundVersionRepository.save(version);
     }
 
-    private ArrLevel createLevel(final ArrChange createChange,
-                                 final ArrNode parentNode,
+    private ArrLevel createRootLevel(final ArrChange createChange,
                                  final String uuid,
                                  final ArrFund fund) {
         ArrLevel level = new ArrLevel();
         level.setPosition(1);
         level.setCreateChange(createChange);
-        level.setNodeParent(parentNode);
+        level.setNodeParent(null);
         level.setNode(createNode(uuid, fund, createChange));
         return levelRepository.saveAndFlush(level);
     }
@@ -405,18 +404,6 @@ public class ArrangementService {
         level.setNode(createNodeSimple(fund, uuid, createChange));
         return levelRepository.save(level);
     }
-
-    public ArrLevel createLevel(final ArrChange createChange, final ArrNode node, final ArrNode parentNode, final int position) {
-        Assert.notNull(createChange, "Změna musí být vyplněna");
-
-        ArrLevel level = new ArrLevel();
-        level.setPosition(position);
-        level.setCreateChange(createChange);
-        level.setNodeParent(parentNode);
-        level.setNode(node);
-        return levelRepository.saveAndFlush(level);
-    }
-
 
     /**
      * Vytvoření jednoznačného identifikátoru požadavku.

@@ -16,6 +16,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import cz.tacr.elza.controller.config.ClientFactoryVO;
+import cz.tacr.elza.core.ElzaLocale;
 import cz.tacr.elza.other.HelperTestService;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DataTypeRepository;
@@ -57,6 +58,9 @@ public abstract class AbstractTest {
 
     @Autowired
     protected StartupService startupService;
+
+    @Autowired
+    protected ElzaLocale elzaLocale;
 
     @Autowired
     protected EntityManager em;

@@ -78,6 +78,11 @@ public enum DataType {
         return name();
     }
 
+    /**
+     * Return entity DB id
+     * 
+     * @return
+     */
     public int getId() {
         return getEntity().getDataTypeId();
     }

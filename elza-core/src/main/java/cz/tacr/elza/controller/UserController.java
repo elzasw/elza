@@ -3,6 +3,7 @@ package cz.tacr.elza.controller;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
@@ -26,6 +27,8 @@ import cz.tacr.elza.controller.vo.UISettingsVO;
 import cz.tacr.elza.controller.vo.UserInfoVO;
 import cz.tacr.elza.controller.vo.UsrPermissionVO;
 import cz.tacr.elza.controller.vo.UsrUserVO;
+import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.UsrGroup;
@@ -63,6 +66,9 @@ public class UserController {
 
     @Autowired
     private FundRepository fundRepository;
+
+    @Autowired
+    private StaticDataService staticDataService;
 
     /**
 	 * Return detail user info
@@ -257,8 +263,9 @@ public class UserController {
         }
 
         FilteredResult<UsrUser> users = userService.findUser(search, active, disabled, from, count, excludedGroupId);
-        List<UsrUserVO> resultVo = factoryVO.createUserList(users.getList(), false);
-        return new FilteredResultVO<>(resultVo, users.getTotalCount());
+        return new FilteredResultVO<>(users.getList(),
+                (entity) -> factoryVO.createUser(entity, false, false),
+                users.getTotalCount());
     }
 
     /**
@@ -278,8 +285,9 @@ public class UserController {
                                                 @RequestParam("count") final Integer count
     ) {
         FilteredResult<UsrUser> users = userService.findUserWithFundCreate(search, from, count);
-        List<UsrUserVO> resultVo = factoryVO.createUserList(users.getList(), false);
-        return new FilteredResultVO<>(resultVo, users.getTotalCount());
+        return new FilteredResultVO<>(users.getList(),
+                (entity) -> factoryVO.createUser(entity, false, false),
+                users.getTotalCount());
     }
 
     /**
@@ -297,7 +305,9 @@ public class UserController {
                                                             @RequestParam("count") final Integer count
     ) {
         FilteredResult<ArrFund> funds = userService.findFundsWithPermissions(search, from, count);
-        return new FilteredResultVO<>(factoryVO.createSimpleEntity(funds.getList(), ArrFundBaseVO.class), funds.getTotalCount());
+        return new FilteredResultVO<>(funds.getList(),
+                (entity) -> ArrFundBaseVO.newInstance(entity),
+                funds.getTotalCount());
     }
 
     /**
@@ -371,7 +381,12 @@ public class UserController {
         UsrUser user = userService.getUser(userId);
         List<UsrPermission> usrPermissions = factoryDO.createPermissionList(permissions);
         List<UsrPermission> result = userService.addUserPermission(user, usrPermissions, true);
-        return factoryVO.createPermissionList(result, UsrUser.class);
+
+        StaticDataProvider staticData = staticDataService.getData();
+        List<UsrPermissionVO> resultVOs = result.stream().map(
+                                                              p -> UsrPermissionVO.newInstance(p, false, staticData))
+                .collect(Collectors.toList());
+        return resultVOs;
     }
 
     /**

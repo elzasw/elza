@@ -1,20 +1,25 @@
 package cz.tacr.elza.controller.vo;
 
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.apache.commons.lang.builder.ToStringBuilder;
+import cz.tacr.elza.domain.ArrFund;
 
 /**
  * Základní VO pro archivní pomůcku.
  *
- * @author Martin Šlapa
- * @since 19.07.2016
  */
 public class ArrFundBaseVO {
 
     private Integer id;
 
     private String name;
+
+    public ArrFundBaseVO() {
+
+    }
+
+    public ArrFundBaseVO(ArrFund fund) {
+        this.id = fund.getFundId();
+        this.name = fund.getName();
+    }
 
     public Integer getId() {
         return id;
@@ -32,18 +37,15 @@ public class ArrFundBaseVO {
         this.name = name;
     }
 
-    @Override
-    public boolean equals(final Object obj) {
-        return EqualsBuilder.reflectionEquals(this, obj);
+    public ArrFund createEntity() {
+        ArrFund entity = new ArrFund();
+        entity.setFundId(id);
+        entity.setName(name);
+        return entity;
     }
 
-    @Override
-    public int hashCode() {
-        return HashCodeBuilder.reflectionHashCode(this);
-    }
-
-    @Override
-    public String toString() {
-        return ToStringBuilder.reflectionToString(this);
+    public static ArrFundBaseVO newInstance(ArrFund fund) {
+        ArrFundBaseVO fundBaseVO = new ArrFundBaseVO(fund);
+        return fundBaseVO;
     }
 }

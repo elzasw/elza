@@ -86,7 +86,8 @@ public class OutputGeneratorFactory {
     }
 
     public FreemarkerOutputGenerator createFreemarkerOutputGenerator() {
-        return new FreemarkerOutputGenerator(staticDataService, elzaLocale, fundTreeProvider, nodeCacheService,
+        return new FreemarkerOutputGenerator(applicationContext, staticDataService, elzaLocale, fundTreeProvider,
+                nodeCacheService,
                 institutionRepository, apDescRepository, apNameRepository, apEidRepository, em, dmsService);
     }
 

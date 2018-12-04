@@ -1,12 +1,11 @@
 package cz.tacr.elza.controller.vo;
 
+import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.UsrPermission;
 
 /**
  * VO objektu jednoho oprávnění uživatele nebo skupiny.
  *
- * @author Pavel Stánek
- * @since 16.06.2016
  */
 public class UsrPermissionVO {
     /** Identifikátor. */
@@ -14,6 +13,7 @@ public class UsrPermissionVO {
 
     /**
      * Je právo zděděné ze skupiny?
+     * TODO: inherited a groupId jsou zjevně redundantní
      */
     private Boolean inherited;
 
@@ -34,6 +34,31 @@ public class UsrPermissionVO {
 
     /** Scope, ke kterému se vztahuje oprávnění. */
     private ApScopeVO scope;
+
+    public UsrPermissionVO() {
+
+    }
+
+    public UsrPermissionVO(UsrPermission srcPerm, boolean inheritedPermission, StaticDataProvider staticData) {
+        id = srcPerm.getPermissionId();
+        permission = srcPerm.getPermission();
+        if (srcPerm.getFund() != null) {
+            fund = ArrFundBaseVO.newInstance(srcPerm.getFund());
+        }
+        if (srcPerm.getScope() != null) {
+            scope = ApScopeVO.newInstance(srcPerm.getScope(), staticData);
+        }
+        if (srcPerm.getGroupControl() != null) {
+            groupControl = UsrGroupVO.newInstance(srcPerm.getGroupControl());
+        }
+        if (srcPerm.getUserControl() != null) {
+            userControl = UsrUserVO.newInstance(srcPerm.getUserControl());
+        }
+        groupId = srcPerm.getGroupId();
+        if (inheritedPermission) {
+            inherited = true;
+        }
+    }
 
     /** Typ oprávnění. */
     public UsrPermission.Permission getPermission() {
@@ -98,5 +123,31 @@ public class UsrPermissionVO {
 
     public void setUserControl(UsrUserVO userControl) {
         this.userControl = userControl;
+    }
+
+    public UsrPermission createEntity(StaticDataProvider staticData) {
+        UsrPermission entity = new UsrPermission();
+
+        entity.setPermissionId(id);
+        if (fund != null) {
+            entity.setFund(fund.createEntity());
+        }
+        entity.setPermission(permission);
+        if (scope != null) {
+            entity.setScope(scope.createEntity(staticData));
+        }
+        if (groupControl != null) {
+            entity.setGroupControl(groupControl.createEntity());
+        }
+        if (userControl != null) {
+            entity.setUserControl(userControl.createEntity());
+        }
+        return entity;
+    }
+
+    public static UsrPermissionVO newInstance(UsrPermission srcPerm, boolean inheritedPermission,
+                                              StaticDataProvider staticData) {
+        UsrPermissionVO vo = new UsrPermissionVO(srcPerm, inheritedPermission, staticData);
+        return vo;
     }
 }
