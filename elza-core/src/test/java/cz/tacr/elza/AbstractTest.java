@@ -1,5 +1,10 @@
 package cz.tacr.elza;
 
+import java.io.File;
+import java.net.URL;
+
+import javax.persistence.EntityManager;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -15,6 +20,7 @@ import cz.tacr.elza.other.HelperTestService;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DataTypeRepository;
 import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.service.StartupService;
@@ -29,6 +35,9 @@ import cz.tacr.elza.service.StartupService;
 @SpringBootTest(webEnvironment=WebEnvironment.RANDOM_PORT)
 public abstract class AbstractTest {
 
+    // Import institucí
+    protected final static String XML_INSTITUTION = "institution-import.xml";
+
     @Autowired
     protected ClientFactoryVO clientFactoryVO;
     @Autowired
@@ -40,12 +49,17 @@ public abstract class AbstractTest {
     @Autowired
     protected ItemTypeRepository itemTypeRepository;
     @Autowired
+    protected ItemSpecRepository itemSpecRepository;
+    @Autowired
     protected NodeRepository nodeRepository;
     @Autowired
     protected HelperTestService helperTestService;
 
     @Autowired
     protected StartupService startupService;
+
+    @Autowired
+    protected EntityManager em;
 
     @Before
     public void setUp() throws Exception {
@@ -64,4 +78,11 @@ public abstract class AbstractTest {
         // try to stop all services which were active during this test run
         helperTestService.waitForWorkers();
     }
+
+    public static File getResourceFile(String resourcePath) {
+        URL url = Thread.currentThread().getContextClassLoader().getResource(resourcePath);
+        Assert.assertNotNull(url);
+        return new File(url.getPath());
+    }
+
 }

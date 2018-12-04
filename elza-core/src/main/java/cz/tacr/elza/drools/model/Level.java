@@ -6,8 +6,6 @@ import java.util.List;
 /**
  * Objekt uzlu pro skripty pravidel.
  *
- * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
- * @author Petr Pytelka [<a href="mailto:petr.pytelka@lightcomp.cz">petr.pytelka@lightcomp.cz</a>]
  * @since 1.12.2015
  */
 public class Level {

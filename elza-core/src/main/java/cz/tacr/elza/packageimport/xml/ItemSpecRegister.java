@@ -5,11 +5,11 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlType;
 
+import cz.tacr.elza.domain.RulItemSpecRegister;
 
 /**
  * VO ItemSpecRegister.
  *
- * @author Martin Šlapa
  * @since 14.12.2015
  */
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -25,5 +25,11 @@ public class ItemSpecRegister {
 
     public void setRegisterType(final String registerType) {
         this.registerType = registerType;
+    }
+
+    public static ItemSpecRegister fromEntity(RulItemSpecRegister rulItemSpecRegister) {
+        ItemSpecRegister result = new ItemSpecRegister();
+        result.setRegisterType(rulItemSpecRegister.getApType().getCode());
+        return result;
     }
 }

@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import cz.tacr.elza.domain.ArrCachedNode;
 import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.RulItemType;
 
 
 /**
@@ -44,4 +45,8 @@ public interface CachedNodeRepository extends ElzaJpaRepository<ArrCachedNode, I
     @Modifying
     @Query("DELETE FROM arr_cached_node cn WHERE cn.nodeId IN (SELECT n.nodeId FROM arr_node n WHERE n.fund = ?1)")
 	void deleteByFund(ArrFund fund);
+
+    @Modifying
+    @Query("DELETE FROM arr_cached_node cn WHERE cn.nodeId IN (SELECT di.nodeId FROM arr_desc_item di WHERE di.itemType = ?1)")
+    int deleteByItemType(RulItemType itemType);
 }

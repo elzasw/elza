@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
@@ -208,6 +209,9 @@ public class HelperTestService {
     @Autowired
     private StaticDataService staticDataService;
 
+    @Autowired
+    protected EntityManager em;
+
     @Transactional
     public void importPackage(final File file) {
         packageService.importPackageInternal(file);
@@ -278,6 +282,9 @@ public class HelperTestService {
         apRepository.deleteAll();
         apChangeRepository.deleteAll();
         externalSystemRepository.deleteAll();
+
+        // DB has to be flushed before start
+        em.flush();
 
         logger.info("All tables cleaned.");
     }

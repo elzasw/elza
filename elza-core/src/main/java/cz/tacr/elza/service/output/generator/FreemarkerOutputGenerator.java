@@ -10,6 +10,7 @@ import java.util.Map;
 
 import javax.persistence.EntityManager;
 
+import cz.tacr.elza.core.ElzaLocale;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.fund.FundTreeProvider;
 import cz.tacr.elza.exception.ProcessException;
@@ -33,6 +34,7 @@ public class FreemarkerOutputGenerator extends DmsOutputGenerator {
     private final OutputModel outputModel;
 
     FreemarkerOutputGenerator(StaticDataService staticDataService,
+                              ElzaLocale elzaLocale,
                               FundTreeProvider fundTreeProvider,
                               NodeCacheService nodeCacheService,
                               InstitutionRepository institutionRepository,
@@ -42,7 +44,8 @@ public class FreemarkerOutputGenerator extends DmsOutputGenerator {
                               EntityManager em,
                               DmsService dmsService) {
         super(em, dmsService);
-        outputModel = new OutputModel(staticDataService, fundTreeProvider, nodeCacheService, institutionRepository,
+        outputModel = new OutputModel(staticDataService, elzaLocale,
+                fundTreeProvider, nodeCacheService, institutionRepository,
                 apDescRepository, apNameRepository, apEidRepository, null);
     }
 

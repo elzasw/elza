@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -22,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import cz.tacr.elza.common.db.HibernateUtils;
+import cz.tacr.elza.core.ElzaLocale;
 import cz.tacr.elza.core.data.PartyType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
@@ -154,15 +156,19 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
      */
     private AttPageProvider attPageProvider;
 
+    private ElzaLocale elzaLocale;
+
     public OutputModel(StaticDataService staticDataService,
+                       ElzaLocale elzaLocale,
                        FundTreeProvider fundTreeProvider,
                        NodeCacheService nodeCacheService,
                        InstitutionRepository institutionRepository,
                        ApDescriptionRepository apDescRepository,
                        ApNameRepository apNameRepository,
-            ApExternalIdRepository apEidRepository,
-            AttPageProvider attPageProvider) {
+                       ApExternalIdRepository apEidRepository,
+                       AttPageProvider attPageProvider) {
         this.staticDataService = staticDataService;
+        this.elzaLocale = elzaLocale;
         this.fundTreeProvider = fundTreeProvider;
         this.nodeCacheService = nodeCacheService;
         this.institutionRepository = institutionRepository;
@@ -291,7 +297,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
      * Prepare filtered list of records
      */
     private FilteredRecords filterRecords(String typeCode) {
-        FilteredRecords filteredAPs = new FilteredRecords(typeCode);
+        FilteredRecords filteredAPs = new FilteredRecords(elzaLocale, typeCode);
 
         // add all nodes
         Iterator<NodeId> nodeIdIterator = fund.getRootNodeId().getIteratorDFS();
@@ -753,5 +759,10 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         }
 
         return attPageProvider.getAttPagePlaceHolders(itemTypeCode);
+    }
+
+    @Override
+    public Locale getLocale() {
+        return elzaLocale.getLocale();
     }
 }
